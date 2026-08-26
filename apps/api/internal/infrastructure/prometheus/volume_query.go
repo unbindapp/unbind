@@ -72,7 +72,8 @@ func (self *PrometheusClient) GetPVCsVolumeStats(ctx context.Context, pvcNames [
 	return finalStats, nil
 }
 
-// getPrometheusUsageStats queries Prometheus for volume usage stats
+// getPrometheusUsageStats queries Prometheus for volume usage stats.
+// The 7d lookback (matching metrics retention) means detached volumes report their last known usage.
 func (self *PrometheusClient) getPrometheusUsageStats(ctx context.Context, pvcNames []string) (map[string]*float64, error) {
 	pvcRegex := strings.Join(pvcNames, "|")
 
@@ -82,7 +83,7 @@ func (self *PrometheusClient) getPrometheusUsageStats(ctx context.Context, pvcNa
     last_over_time(
       kubelet_volume_stats_used_bytes{
         persistentvolumeclaim=~"%s", job="kubelet"
-      }[10m]
+      }[7d]
     ) / 1024 / 1024 / 1024,
     "kind", "used", "persistentvolumeclaim", ".*"
   )

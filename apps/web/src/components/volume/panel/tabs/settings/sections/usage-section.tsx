@@ -2,7 +2,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { getVolumeUsageLevel, percentageFormatter } from "@/components/volume/helpers";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { ChartNoAxesColumnIcon } from "lucide-react";
+import { ChartNoAxesColumnIcon, HourglassIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -17,8 +17,17 @@ export default function UsageSection({ volume }: TProps) {
       ? Math.min(Math.max(0, (volume.used_gb / volume.capacity_gb) * 100), 100)
       : undefined;
 
-  const usageInfo =
-    usagePercentage !== undefined ? `${percentageFormatter(usagePercentage)}%` : "Unknown usage";
+  const isUnattached = !volume.mounted_on_service_id;
+
+  const usageInfo = volume.is_attaching
+    ? "Attaching"
+    : volume.is_pending_resize
+      ? "Expanding"
+      : usagePercentage !== undefined
+        ? `${percentageFormatter(usagePercentage)}%`
+        : isUnattached
+          ? "Unknown"
+          : "Measuring";
 
   const usageLevel = getVolumeUsageLevel(usagePercentage);
 
@@ -33,9 +42,13 @@ export default function UsageSection({ volume }: TProps) {
         <div className="text-muted-foreground flex w-full items-end justify-between px-1.5">
           <p className="max-w-1/2 truncate pr-2 font-medium">
             Used:{" "}
-            <span className="text-foreground group-data-error/section:text-destructive group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive font-semibold">
-              {volume.used_gb !== undefined ? formatGB(volume.used_gb) : "Unknown"}
-            </span>
+            {volume.used_gb !== undefined ? (
+              <span className="text-foreground group-data-error/section:text-destructive group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive font-semibold">
+                {formatGB(volume.used_gb)}
+              </span>
+            ) : (
+              <span className="font-semibold">{isUnattached ? "Unknown" : "Measuring"}</span>
+            )}
           </p>
           <p className="max-w-1/2 truncate pl-2 text-right font-medium">
             Total:{" "}
@@ -56,9 +69,17 @@ export default function UsageSection({ volume }: TProps) {
               className="data-has-usage:bg-foreground/8 data-has-usage:group-data-[usage=high]/section:bg-warning/8 data-has-usage:group-data-[usage=critical]/section:bg-destructive/8 h-full w-full origin-left"
             />
           </div>
-          <p className="group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive group-data-error/section:text-destructive relative max-w-full min-w-0 truncate leading-tight font-semibold">
-            {usageInfo}
-          </p>
+          <div className="text-muted-foreground relative flex max-w-full min-w-0 items-center gap-1.5">
+            {usagePercentage === undefined && !isUnattached && (
+              <HourglassIcon className="animate-hourglass size-3.5 shrink-0 scale-90" />
+            )}
+            <p
+              data-has-usage={usagePercentage !== undefined || undefined}
+              className="data-has-usage:text-foreground group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive group-data-error/section:text-destructive min-w-0 truncate leading-tight font-semibold"
+            >
+              {usageInfo}
+            </p>
+          </div>
         </div>
         {(usageLevel === "high" || usageLevel === "critical") && (
           <p className="text-foreground group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive w-full px-2 pt-px text-sm font-normal">
