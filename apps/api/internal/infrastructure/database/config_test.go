@@ -27,7 +27,7 @@ func TestGetSqlDbConnMock(t *testing.T) {
 	conn, err := GetSqlDbConn(nil, true)
 	assert.Nil(t, err)
 
-	assert.Equal(t, "file:testing?cache=shared&mode=memory&_fk=1", conn.DSN())
+	assert.Equal(t, "file:testing?cache=shared&mode=memory&_pragma=foreign_keys(1)", conn.DSN())
 	assert.Equal(t, "sqlite3", conn.Dialect())
 	assert.Equal(t, "sqlite", conn.Driver())
 }

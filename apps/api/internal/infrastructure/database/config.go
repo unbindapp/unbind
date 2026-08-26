@@ -42,7 +42,8 @@ type SqliteConn struct {
 }
 
 func (c *SqliteConn) DSN() string {
-	return fmt.Sprintf("file:%s?cache=shared&mode=%s&_fk=1", c.FileName, c.Mode)
+	// _pragma syntax is for the modernc.org/sqlite driver registered in entclient.go.
+	return fmt.Sprintf("file:%s?cache=shared&mode=%s&_pragma=foreign_keys(1)", c.FileName, c.Mode)
 }
 
 func (c *SqliteConn) Dialect() string {

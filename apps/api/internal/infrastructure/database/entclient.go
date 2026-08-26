@@ -6,6 +6,8 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/unbindapp/unbind-api/ent"
+	// Registers schema hooks and default funcs; without it every insert panics at runtime.
+	_ "github.com/unbindapp/unbind-api/ent/runtime"
 	_ "modernc.org/sqlite"
 )
 
