@@ -586,42 +586,43 @@ function RedeployTrigger({
           }}
           className="flex w-full flex-col gap-5"
         >
-          {showSkipBuildIfPossibleToggle && (
-            <div className="-mx-2.5 flex w-full max-w-[calc(100%+1.25rem)] justify-start">
-              <form.AppField
-                name="skipBuildIfPossible"
-                children={(field) => (
-                  <RedeployToggle
-                    label="Skip build if possible"
-                    checked={field.state.value}
-                    onToggle={() => {
-                      const checked = !field.state.value;
-                      field.handleChange(checked);
-                      if (checked) form.setFieldValue("skipBuildCache", false);
-                    }}
-                  />
-                )}
-              />
+          {(showSkipBuildIfPossibleToggle || showSkipBuildCacheToggle) && (
+            <div className="flex w-full flex-col gap-1.5">
+              {showSkipBuildCacheToggle && (
+                <form.AppField
+                  name="skipBuildCache"
+                  children={(field) => (
+                    <RedeployToggle
+                      label="Skip cache"
+                      checked={field.state.value}
+                      onToggle={() => {
+                        const checked = !field.state.value;
+                        field.handleChange(checked);
+                        if (checked) form.setFieldValue("skipBuildIfPossible", false);
+                      }}
+                    />
+                  )}
+                />
+              )}
+              {showSkipBuildIfPossibleToggle && (
+                <form.AppField
+                  name="skipBuildIfPossible"
+                  children={(field) => (
+                    <RedeployToggle
+                      label="Skip build if possible"
+                      checked={field.state.value}
+                      onToggle={() => {
+                        const checked = !field.state.value;
+                        field.handleChange(checked);
+                        if (checked) form.setFieldValue("skipBuildCache", false);
+                      }}
+                    />
+                  )}
+                />
+              )}
             </div>
           )}
-          {showSkipBuildCacheToggle && (
-            <div className="-mx-2.5 flex w-full max-w-[calc(100%+1.25rem)] justify-start">
-              <form.AppField
-                name="skipBuildCache"
-                children={(field) => (
-                  <RedeployToggle
-                    label="Skip build cache"
-                    checked={field.state.value}
-                    onToggle={() => {
-                      const checked = !field.state.value;
-                      field.handleChange(checked);
-                      if (checked) form.setFieldValue("skipBuildIfPossible", false);
-                    }}
-                  />
-                )}
-              />
-            </div>
-          )}
+
           {error && <ErrorLine message={error?.message} />}
           <div className="flex w-full flex-wrap items-center justify-end gap-2">
             <DialogClose asChild className="text-muted-foreground">
@@ -659,7 +660,7 @@ function RedeployToggle({
       variant="ghost"
       onClick={onToggle}
       data-checked={checked || undefined}
-      className="group/button has-hover:hover:bg-border -my-2 flex cursor-pointer items-center justify-between gap-4 py-2 pr-2 pl-2.5 text-left font-semibold"
+      className="group/button has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-center justify-between gap-6 border py-2.75 pr-2.75 pl-3.5 text-left font-normal"
     >
       <p className="min-w-0 shrink">{label}</p>
       <div className="bg-muted-more-foreground group-data-checked/button:bg-foreground relative h-5 w-9 shrink-0 rounded-full transition">
