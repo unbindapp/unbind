@@ -75,6 +75,8 @@ func (self *Builder) BuildDockerfile(ctx context.Context, buildSecrets map[strin
 		return "", repoName, fmt.Errorf("build failed: %v", err)
 	}
 
+	self.analyzeSource(tmpDir)
+
 	log.Infof("Built image %s from Dockerfile: %s", outputImage, self.config.ServiceDockerBuilderDockerfilePath)
 	return outputImage, repoName, nil
 }

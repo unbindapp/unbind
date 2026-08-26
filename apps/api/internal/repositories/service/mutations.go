@@ -347,6 +347,26 @@ func (self *ServiceRepository) UpdateConfig(
 		}
 	}
 
+	if input.Icon != nil && *input.Icon != "" {
+		upd.SetIcon(*input.Icon)
+	}
+
+	if input.Provider != nil {
+		if *input.Provider == enum.UnknownProvider {
+			upd.ClearRailpackProvider()
+		} else {
+			upd.SetRailpackProvider(*input.Provider)
+		}
+	}
+
+	if input.Framework != nil {
+		if *input.Framework == enum.UnknownFramework {
+			upd.ClearRailpackFramework()
+		} else {
+			upd.SetRailpackFramework(*input.Framework)
+		}
+	}
+
 	if input.S3BackupBucket != nil {
 		if *input.S3BackupBucket == "" {
 			upd.ClearS3BackupBucket()

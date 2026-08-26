@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/database"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
 	"github.com/unbindapp/unbind-api/pkg/builder/builders"
 	"github.com/unbindapp/unbind-api/pkg/builder/config"
@@ -356,6 +357,20 @@ func main() {
 
 		if err = repo.Service().SetCurrentDeployment(ctx, tx, serviceId, cfg.ServiceDeploymentID); err != nil {
 			log.Error("Failed to set current deployment", "service_id", serviceId, "deployment_id", cfg.ServiceDeploymentID, "err", err)
+		}
+
+		// Refresh detected metadata from the built source, so the icon follows
+		// what the service actually is (branch switches, stack changes, etc.)
+		if analysis := builder.AnalysisResult(); analysis != nil && cfg.ServiceType == schema.ServiceTypeGithub {
+			icon := analysis.Icon(string(cfg.ServiceType))
+			if err := repo.Service().UpdateConfig(ctx, tx, &service_repo.MutateConfigInput{
+				ServiceID: serviceId,
+				Provider:  &analysis.Provider,
+				Framework: &analysis.Framework,
+				Icon:      &icon,
+			}); err != nil {
+				log.Error("Failed to update detected service metadata", "service_id", serviceId, "err", err)
+			}
 		}
 
 		if err = markDeploymentSuccessful(ctx, cfg, webhooksService, tx, repo, cfg.ServiceDeploymentID); err != nil {

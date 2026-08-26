@@ -11,17 +11,40 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/internal/sourceanalyzer"
 	"github.com/unbindapp/unbind-api/pkg/builder/config"
 )
 
 type Builder struct {
-	config *config.Config
+	config         *config.Config
+	analysisResult *sourceanalyzer.AnalysisResult
 }
 
 func NewBuilder(config *config.Config) *Builder {
 	return &Builder{
 		config: config,
 	}
+}
+
+// AnalysisResult returns the provider/framework detection of the last
+// successful build, or nil if it wasn't run or failed.
+func (self *Builder) AnalysisResult() *sourceanalyzer.AnalysisResult {
+	return self.analysisResult
+}
+
+// analyzeSource detects provider/framework from the build's clone, best-effort:
+// a detection failure never fails a build that already succeeded.
+func (self *Builder) analyzeSource(tmpDir string) {
+	res, err := sourceanalyzer.AnalyzeSourceCodeAnchored(tmpDir, sourceanalyzer.AnalysisTarget{
+		DockerfilePath: self.config.ServiceDockerBuilderDockerfilePath,
+		BuildContext:   self.config.ServiceDockerBuilderBuildContext,
+		RunCommand:     self.config.ServiceRunCommand,
+	})
+	if err != nil {
+		log.Warnf("Source analysis failed: %v", err)
+		return
+	}
+	self.analysisResult = res
 }
 
 // BuildInputs is everything about a service that can change the content of the

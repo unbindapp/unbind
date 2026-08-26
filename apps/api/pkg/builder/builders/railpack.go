@@ -68,6 +68,8 @@ func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[str
 		return "", repoName, fmt.Errorf("build failed: %v", err)
 	}
 
+	self.analyzeSource(tmpDir)
+
 	log.Infof("Built image %s", outputImage)
 	return outputImage, repoName, nil
 }

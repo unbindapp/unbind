@@ -452,6 +452,69 @@ func (suite *ServiceMutationsSuite) TestUpdateConfig() {
 		suite.Equal("node:20", updated.Image)
 	})
 
+	suite.Run("UpdateConfig Detected Metadata Set", func() {
+		input := &MutateConfigInput{
+			ServiceID: suite.testService.ID,
+			Icon:      new("next"),
+			Provider:  new(enum.Node),
+			Framework: new(enum.Next),
+		}
+
+		err := suite.serviceRepo.UpdateConfig(suite.Ctx, nil, input)
+		suite.NoError(err)
+
+		updated, err := suite.DB.ServiceConfig.Query().
+			Where(serviceconfig.ServiceID(suite.testService.ID)).
+			Only(suite.Ctx)
+		suite.NoError(err)
+		suite.Equal("next", updated.Icon)
+		suite.NotNil(updated.RailpackProvider)
+		suite.Equal(enum.Node, *updated.RailpackProvider)
+		suite.NotNil(updated.RailpackFramework)
+		suite.Equal(enum.Next, *updated.RailpackFramework)
+	})
+
+	suite.Run("UpdateConfig Detected Metadata Clear With Unknown Sentinels", func() {
+		input := &MutateConfigInput{
+			ServiceID: suite.testService.ID,
+			Icon:      new("node"),
+			Provider:  new(enum.UnknownProvider),
+			Framework: new(enum.UnknownFramework),
+		}
+
+		err := suite.serviceRepo.UpdateConfig(suite.Ctx, nil, input)
+		suite.NoError(err)
+
+		updated, err := suite.DB.ServiceConfig.Query().
+			Where(serviceconfig.ServiceID(suite.testService.ID)).
+			Only(suite.Ctx)
+		suite.NoError(err)
+		suite.Equal("node", updated.Icon)
+		suite.Nil(updated.RailpackProvider)
+		suite.Nil(updated.RailpackFramework)
+	})
+
+	suite.Run("UpdateConfig Detected Metadata Skipped When Nil Or Empty", func() {
+		before, err := suite.DB.ServiceConfig.Query().
+			Where(serviceconfig.ServiceID(suite.testService.ID)).
+			Only(suite.Ctx)
+		suite.NoError(err)
+
+		input := &MutateConfigInput{
+			ServiceID: suite.testService.ID,
+			Icon:      new(""),
+		}
+
+		err = suite.serviceRepo.UpdateConfig(suite.Ctx, nil, input)
+		suite.NoError(err)
+
+		updated, err := suite.DB.ServiceConfig.Query().
+			Where(serviceconfig.ServiceID(suite.testService.ID)).
+			Only(suite.Ctx)
+		suite.NoError(err)
+		suite.Equal(before.Icon, updated.Icon)
+	})
+
 	suite.Run("UpdateConfig Add/Remove Ports", func() {
 		input := &MutateConfigInput{
 			ServiceID: suite.testService.ID,

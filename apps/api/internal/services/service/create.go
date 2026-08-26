@@ -215,7 +215,17 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 		defer os.RemoveAll(tmpDir)
 
-		analysisResult, err = sourceanalyzer.AnalyzeSourceCode(tmpDir)
+		target := sourceanalyzer.AnalysisTarget{}
+		if input.DockerBuilderDockerfilePath != nil {
+			target.DockerfilePath = *input.DockerBuilderDockerfilePath
+		}
+		if input.DockerBuilderBuildContext != nil {
+			target.BuildContext = *input.DockerBuilderBuildContext
+		}
+		if input.RunCommand != nil {
+			target.RunCommand = *input.RunCommand
+		}
+		analysisResult, err = sourceanalyzer.AnalyzeSourceCodeAnchored(tmpDir, target)
 		if err != nil {
 			log.Error("Error analyzing source code", "err", err)
 			return nil, err
