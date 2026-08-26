@@ -66,21 +66,21 @@
 
   /* If you change --background, also update the anti-flash <style> in index.html */
   --background: hsl(120 35% 95%);
-  --background-hover: hsl(120 35% 95%);
+  --background-hover: hsl(120 40% 96%);
   --foreground: hsl(120 90% 5%);
   --card: hsl(120 35% 95%);
   --card-foreground: hsl(120 90% 5%);
-  --popover: hsl(120 35% 95%);
+  --popover: hsl(120 40% 96%);
   --popover-foreground: hsl(120 90% 5%);
   --primary: hsl(120 90% 5%);
   --primary-foreground: hsl(120 35% 95%);
-  --secondary: hsl(120 20% 85%);
+  --secondary: hsl(120 20% 88%);
   --secondary-foreground: hsl(120 90% 5%);
-  --muted: hsl(120 20% 85%);
+  --muted: hsl(120 20% 88%);
   --muted-foreground: hsl(120 10% 35%);
   --muted-more-foreground: hsl(120 10% 50%);
   --muted-most-foreground: hsl(120 10% 65%);
-  --accent: hsl(120 20% 85%);
+  --accent: hsl(120 20% 88%);
   --accent-foreground: hsl(120 90% 5%);
   --destructive: hsl(0 84% 30%);
   --destructive-foreground: hsl(120 35% 95%);
@@ -93,8 +93,8 @@
   --wait: hsl(40 100% 25%);
   --wait-foreground: hsl(120 35% 95%);
   --shadow-color: hsl(120 30% 4%);
-  --border: hsl(120 20% 85%);
-  --input: hsl(120 50% 97%);
+  --border: hsl(120 20% 88%);
+  --input: hsl(120 40% 96%);
   --ring: hsl(120 90% 5%);
 
   --chart-1: hsl(120 100% 23%);
