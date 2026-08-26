@@ -182,7 +182,7 @@ export default function VariableCard({
         {isPlaceholder && (
           <div className="bg-foreground animate-skeleton mr-2 size-3.5 shrink-0 rounded-full" />
         )}
-        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-normal text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {isPlaceholder ? "Loading key" : variable.name}
         </p>
       </div>
@@ -225,7 +225,7 @@ export default function VariableCard({
                 classNameViewport="py-1.5"
               >
                 <div className="flex w-full justify-start">
-                  <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-px py-px pr-2 font-mono text-xs leading-tight wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+                  <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                     {referenceError
                       ? "The referenced value doesn't exist anymore. Consider deleting this."
                       : isPlaceholder || !isValueVisible
