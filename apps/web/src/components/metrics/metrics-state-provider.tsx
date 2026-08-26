@@ -42,7 +42,7 @@ const intervals: TInterval[] = [
   },
 ];
 
-export const metricsIntervalEnumDefault: TMetricsIntervalEnum = "24h";
+export const metricsIntervalEnumDefault: TMetricsIntervalEnum = "1h";
 export const metricsIntervalDefault =
   intervals.find((i) => i.value === metricsIntervalEnumDefault) ||
   intervals[Math.min(2, intervals.length - 1)];
@@ -57,8 +57,6 @@ export function getAgeBasedDefaultIntervalEnum(
   const elapsed = Date.now() - created;
   if (elapsed <= 5 * 60 * 1000) return "5m";
   if (elapsed <= 15 * 60 * 1000) return "15m";
-  if (elapsed <= 60 * 60 * 1000) return "1h";
-  if (elapsed <= 6 * 60 * 60 * 1000) return "6h";
   return undefined;
 }
 
