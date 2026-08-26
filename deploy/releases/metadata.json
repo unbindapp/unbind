@@ -78,5 +78,10 @@
     "version": "v0.1.15",
     "description": "Skip-build-cache redeploys, PVC and volume handling improvements, and deploy dialog polish",
     "breaking": false
+  },
+  "v0.1.16": {
+    "version": "v0.1.16",
+    "description": "Fix the startup crash introduced in v0.1.15 (missing ent runtime registration)",
+    "breaking": false
   }
 }
