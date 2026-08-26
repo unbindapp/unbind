@@ -207,7 +207,9 @@ const LinkButtonBase = React.forwardRef<HTMLAnchorElement, TLinkButtonBaseProps>
     },
     ref,
   ) => {
-    const isText = typeof children === "string";
+    const isText = React.Children.toArray(children).every(
+      (c) => typeof c === "string" || typeof c === "number",
+    );
     return (
       <a
         ref={ref}
