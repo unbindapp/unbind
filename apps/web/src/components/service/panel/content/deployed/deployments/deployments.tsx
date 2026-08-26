@@ -40,9 +40,16 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
     if (!deploymentsData) return undefined;
     const current = deploymentsData.current_deployment;
     if (current && current.status !== "removed") return current;
-    // Removed deployments belong to history, only show a newer deployment (e.g. an in-progress build) on top
+    // Removed and cancelled deployments belong to history, only show a newer deployment (e.g. an in-progress build) on top
     const newest = deploymentsData.deployments?.[0];
-    if (newest && newest.id !== current?.id) return newest;
+    if (
+      newest &&
+      newest.id !== current?.id &&
+      newest.status !== "build-cancelled" &&
+      newest.status !== "removed"
+    ) {
+      return newest;
+    }
     return undefined;
   }, [deploymentsData]);
 
@@ -57,8 +64,10 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
     deploymentsData?.deployments && deploymentsData.deployments.length === 0 ? true : false;
 
   const showNoActiveDeploymentCard =
-    deploymentsData?.current_deployment?.status === "removed" &&
-    currentOrLastDeployment === undefined;
+    (deploymentsData?.current_deployment === undefined ||
+      deploymentsData.current_deployment.status === "removed") &&
+    currentOrLastDeployment === undefined &&
+    !hasNoDeployment;
 
   return (
     <TabWrapper>
