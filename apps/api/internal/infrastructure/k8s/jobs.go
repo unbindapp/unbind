@@ -9,10 +9,11 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (self *KubeClient) CreateDeployment(ctx context.Context, deploymentID string, env map[string]string) (jobName string, err error) {
+func (self *KubeClient) CreateDeployment(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (jobName string, err error) {
 	// Build a unique job name
 	jobName = fmt.Sprintf("%s-deployment-%d", deploymentID, time.Now().Unix())
 
@@ -32,9 +33,10 @@ func (self *KubeClient) CreateDeployment(ctx context.Context, deploymentID strin
 		ObjectMeta: metav1.ObjectMeta{
 			Name: jobName,
 			Labels: map[string]string{
-				"unbind-deployment-job":   "true",
-				"unbind-deployment-build": deploymentID,
-				"job-name":                jobName,
+				"unbind-deployment-job":     "true",
+				"unbind-deployment-build":   deploymentID,
+				"unbind-deployment-service": serviceID,
+				"job-name":                  jobName,
 			},
 			Annotations: annotations,
 		},
@@ -47,9 +49,10 @@ func (self *KubeClient) CreateDeployment(ctx context.Context, deploymentID strin
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"unbind-deployment-job":   "true",
-						"unbind-deployment-build": deploymentID,
-						"job-name":                jobName,
+						"unbind-deployment-job":     "true",
+						"unbind-deployment-build":   deploymentID,
+						"unbind-deployment-service": serviceID,
+						"job-name":                  jobName,
 					},
 				},
 				Spec: corev1.PodSpec{
@@ -110,8 +113,7 @@ exec /app/builder`, self.config.GetBuildkitHost(), self.config.GetBuildkitHost()
 // For canceling jobs.
 func (self *KubeClient) CancelJobsByServiceID(ctx context.Context, serviceID string) error {
 	jobList, err := self.clientset.BatchV1().Jobs(self.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{
-		// We use the "serviceID" label to select jobs.
-		LabelSelector: fmt.Sprintf("serviceID=%s", serviceID),
+		LabelSelector: fmt.Sprintf("unbind-deployment-service=%s", serviceID),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to list jobs for service ID %s: %v", serviceID, err)
@@ -127,6 +129,18 @@ func (self *KubeClient) CancelJobsByServiceID(ctx context.Context, serviceID str
 			}
 			log.Infof("Canceled existing job %s for service %s\n", job.Name, serviceID)
 		}
+	}
+	return nil
+}
+
+// Deletes a single build job by name, cleaning up its pods. Missing jobs are not an error.
+func (self *KubeClient) DeleteDeploymentJob(ctx context.Context, jobName string) error {
+	deletePolicy := metav1.DeletePropagationForeground
+	err := self.clientset.BatchV1().Jobs(self.config.GetSystemNamespace()).Delete(ctx, jobName, metav1.DeleteOptions{
+		PropagationPolicy: &deletePolicy,
+	})
+	if err != nil && !apierrors.IsNotFound(err) {
+		return fmt.Errorf("failed to delete job %s: %v", jobName, err)
 	}
 	return nil
 }

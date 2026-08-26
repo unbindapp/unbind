@@ -101,6 +101,9 @@ func (self *DeploymentRepository) MarkStarted(ctx context.Context, tx repository
 	}
 
 	return db.Deployment.UpdateOneID(deploymentID).
+		Where(
+			deployment.StatusNEQ(schema.DeploymentStatusBuildCancelled),
+		).
 		SetStatus(schema.DeploymentStatusBuildRunning).
 		// ! TODO - retry deployments?
 		SetAttempts(1).
@@ -176,6 +179,17 @@ func (self *DeploymentRepository) MarkAsCancelled(ctx context.Context, jobIDs []
 			deployment.StatusNotIn(schema.DeploymentStatusBuildRunning, schema.DeploymentStatusBuildFailed, schema.DeploymentStatusBuildCancelled, schema.DeploymentStatusBuildSucceeded, schema.DeploymentStatusRemoved),
 		).
 		Exec(ctx)
+}
+
+// Cancels a single deployment, only if it hasn't finished yet
+func (self *DeploymentRepository) MarkCancelledByID(ctx context.Context, deploymentID uuid.UUID) (*ent.Deployment, error) {
+	return self.base.DB.Deployment.UpdateOneID(deploymentID).
+		Where(
+			deployment.StatusIn(schema.DeploymentStatusBuildPending, schema.DeploymentStatusBuildQueued, schema.DeploymentStatusBuildRunning),
+		).
+		SetStatus(schema.DeploymentStatusBuildCancelled).
+		SetCompletedAt(time.Now()).
+		Save(ctx)
 }
 
 // Assigns the kubernetes "Job" name to the build job

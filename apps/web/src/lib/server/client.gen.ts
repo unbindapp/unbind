@@ -39,69 +39,10 @@ export const BuildkitSettingsSchema = z
   })
   .strip();
 
-export const CapabilitiesSchema = z
+export const CancelDeploymentInputBodySchema = z
   .object({
-    add: z.array(z.string()).nullable().optional(),
-    drop: z.array(z.string()).nullable().optional(),
-  })
-  .strip();
-
-export const CertManagerConditionSchema = z.enum(['Ready', 'InvalidRequest', 'Approved', 'Denied']);
-
-export const CollisionOutputSchema = z
-  .object({
-    is_unique: z.boolean(), // True if the domain is unique, false otherwise
-  })
-  .strip();
-
-export const CheckUniqueDomainOutputBodySchema = z
-  .object({
-    data: CollisionOutputSchema, // The generated wildcard domain
-  })
-  .strip();
-
-export const ContainerStateSchema = z.enum([
-  'running',
-  'waiting',
-  'terminated',
-  'terminating',
-  'crashing',
-  'not_ready',
-  'image_pull_error',
-  'starting',
-]);
-
-export const ConvexAdminKeyParamsSchema = z
-  .object({
-    AdminKeyOutputKey: z.string(),
-    InstanceName: z.string(),
-    SecretOutputKey: z.string(),
-  })
-  .strip();
-
-export const CookieSchema = z
-  .object({
-    Domain: z.string(),
-    Expires: z.string().datetime({ offset: true }),
-    HttpOnly: z.boolean(),
-    MaxAge: z.number(),
-    Name: z.string(),
-    Partitioned: z.boolean(),
-    Path: z.string(),
-    Quoted: z.boolean(),
-    Raw: z.string(),
-    RawExpires: z.string(),
-    SameSite: z.number(),
-    Secure: z.boolean(),
-    Unparsed: z.array(z.string()).nullable(),
-    Value: z.string(),
-  })
-  .strip();
-
-export const CreateBuildInputBodySchema = z
-  .object({
+    deployment_id: z.string(),
     environment_id: z.string(),
-    git_sha: z.string().nullable().optional(), // The git sha of the deployment
     project_id: z.string(),
     service_id: z.string(),
     team_id: z.string(),
@@ -183,6 +124,81 @@ export const DeploymentResponseSchema = z
     status: DeploymentStatusSchema,
     status_message: z.string().optional(),
     updated_at: z.string().datetime({ offset: true }),
+  })
+  .strip();
+
+export const CancelDeploymentOutputBodySchema = z
+  .object({
+    data: DeploymentResponseSchema,
+  })
+  .strip();
+
+export const CapabilitiesSchema = z
+  .object({
+    add: z.array(z.string()).nullable().optional(),
+    drop: z.array(z.string()).nullable().optional(),
+  })
+  .strip();
+
+export const CertManagerConditionSchema = z.enum(['Ready', 'InvalidRequest', 'Approved', 'Denied']);
+
+export const CollisionOutputSchema = z
+  .object({
+    is_unique: z.boolean(), // True if the domain is unique, false otherwise
+  })
+  .strip();
+
+export const CheckUniqueDomainOutputBodySchema = z
+  .object({
+    data: CollisionOutputSchema, // The generated wildcard domain
+  })
+  .strip();
+
+export const ContainerStateSchema = z.enum([
+  'running',
+  'waiting',
+  'terminated',
+  'terminating',
+  'crashing',
+  'not_ready',
+  'image_pull_error',
+  'starting',
+]);
+
+export const ConvexAdminKeyParamsSchema = z
+  .object({
+    AdminKeyOutputKey: z.string(),
+    InstanceName: z.string(),
+    SecretOutputKey: z.string(),
+  })
+  .strip();
+
+export const CookieSchema = z
+  .object({
+    Domain: z.string(),
+    Expires: z.string().datetime({ offset: true }),
+    HttpOnly: z.boolean(),
+    MaxAge: z.number(),
+    Name: z.string(),
+    Partitioned: z.boolean(),
+    Path: z.string(),
+    Quoted: z.boolean(),
+    Raw: z.string(),
+    RawExpires: z.string(),
+    SameSite: z.number(),
+    Secure: z.boolean(),
+    Unparsed: z.array(z.string()).nullable(),
+    Value: z.string(),
+  })
+  .strip();
+
+export const CreateBuildInputBodySchema = z
+  .object({
+    environment_id: z.string(),
+    git_sha: z.string().nullable().optional(), // The git sha of the deployment
+    project_id: z.string(),
+    service_id: z.string(),
+    team_id: z.string(),
   })
   .strip();
 
@@ -2569,6 +2585,14 @@ export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
 export type AvailableVersion = z.infer<typeof AvailableVersionSchema>;
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
+export type CancelDeploymentInputBody = z.infer<typeof CancelDeploymentInputBodySchema>;
+export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
+export type GitCommitter = z.infer<typeof GitCommitterSchema>;
+export type EventType = z.infer<typeof EventTypeSchema>;
+export type EventRecord = z.infer<typeof EventRecordSchema>;
+export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
+export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
+export type CancelDeploymentOutputBody = z.infer<typeof CancelDeploymentOutputBodySchema>;
 export type Capabilities = z.infer<typeof CapabilitiesSchema>;
 export type CertManagerCondition = z.infer<typeof CertManagerConditionSchema>;
 export type CollisionOutput = z.infer<typeof CollisionOutputSchema>;
@@ -2577,12 +2601,6 @@ export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type ConvexAdminKeyParams = z.infer<typeof ConvexAdminKeyParamsSchema>;
 export type Cookie = z.infer<typeof CookieSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
-export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
-export type GitCommitter = z.infer<typeof GitCommitterSchema>;
-export type EventType = z.infer<typeof EventTypeSchema>;
-export type EventRecord = z.infer<typeof EventRecordSchema>;
-export type DeploymentStatus = z.infer<typeof DeploymentStatusSchema>;
-export type DeploymentResponse = z.infer<typeof DeploymentResponseSchema>;
 export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
 export type CreateEnvironmentInput = z.infer<typeof CreateEnvironmentInputSchema>;
 export type PermittedAction = z.infer<typeof PermittedActionSchema>;
@@ -3497,6 +3515,48 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
       },
     },
     deployments: {
+      cancel: async (
+        params: CancelDeploymentInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<CancelDeploymentOutputBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/deployments/cancel`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = CancelDeploymentInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = CancelDeploymentOutputBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
       create: async (
         params: CreateBuildInputBody,
         fetchOptions?: RequestInit,

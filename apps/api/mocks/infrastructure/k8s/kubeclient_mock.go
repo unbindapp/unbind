@@ -497,8 +497,8 @@ func (_c *KubeClientMock_CreateClientWithToken_Call) RunAndReturn(run func(token
 }
 
 // CreateDeployment provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) CreateDeployment(ctx context.Context, deploymentID string, env map[string]string) (string, error) {
-	ret := _mock.Called(ctx, deploymentID, env)
+func (_mock *KubeClientMock) CreateDeployment(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (string, error) {
+	ret := _mock.Called(ctx, deploymentID, serviceID, env)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateDeployment")
@@ -506,16 +506,16 @@ func (_mock *KubeClientMock) CreateDeployment(ctx context.Context, deploymentID 
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, map[string]string) (string, error)); ok {
-		return returnFunc(ctx, deploymentID, env)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, map[string]string) (string, error)); ok {
+		return returnFunc(ctx, deploymentID, serviceID, env)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, map[string]string) string); ok {
-		r0 = returnFunc(ctx, deploymentID, env)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, map[string]string) string); ok {
+		r0 = returnFunc(ctx, deploymentID, serviceID, env)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, map[string]string) error); ok {
-		r1 = returnFunc(ctx, deploymentID, env)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, map[string]string) error); ok {
+		r1 = returnFunc(ctx, deploymentID, serviceID, env)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -530,12 +530,13 @@ type KubeClientMock_CreateDeployment_Call struct {
 // CreateDeployment is a helper method to define mock.On call
 //   - ctx context.Context
 //   - deploymentID string
+//   - serviceID string
 //   - env map[string]string
-func (_e *KubeClientMock_Expecter) CreateDeployment(ctx any, deploymentID any, env any) *KubeClientMock_CreateDeployment_Call {
-	return &KubeClientMock_CreateDeployment_Call{Call: _e.mock.On("CreateDeployment", ctx, deploymentID, env)}
+func (_e *KubeClientMock_Expecter) CreateDeployment(ctx any, deploymentID any, serviceID any, env any) *KubeClientMock_CreateDeployment_Call {
+	return &KubeClientMock_CreateDeployment_Call{Call: _e.mock.On("CreateDeployment", ctx, deploymentID, serviceID, env)}
 }
 
-func (_c *KubeClientMock_CreateDeployment_Call) Run(run func(ctx context.Context, deploymentID string, env map[string]string)) *KubeClientMock_CreateDeployment_Call {
+func (_c *KubeClientMock_CreateDeployment_Call) Run(run func(ctx context.Context, deploymentID string, serviceID string, env map[string]string)) *KubeClientMock_CreateDeployment_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -545,14 +546,19 @@ func (_c *KubeClientMock_CreateDeployment_Call) Run(run func(ctx context.Context
 		if args[1] != nil {
 			arg1 = args[1].(string)
 		}
-		var arg2 map[string]string
+		var arg2 string
 		if args[2] != nil {
-			arg2 = args[2].(map[string]string)
+			arg2 = args[2].(string)
+		}
+		var arg3 map[string]string
+		if args[3] != nil {
+			arg3 = args[3].(map[string]string)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
+			arg3,
 		)
 	})
 	return _c
@@ -563,7 +569,7 @@ func (_c *KubeClientMock_CreateDeployment_Call) Return(jobName string, err error
 	return _c
 }
 
-func (_c *KubeClientMock_CreateDeployment_Call) RunAndReturn(run func(ctx context.Context, deploymentID string, env map[string]string) (string, error)) *KubeClientMock_CreateDeployment_Call {
+func (_c *KubeClientMock_CreateDeployment_Call) RunAndReturn(run func(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (string, error)) *KubeClientMock_CreateDeployment_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -912,6 +918,63 @@ func (_c *KubeClientMock_CreateVerificationRoute_Call) Return(s string, s1 strin
 }
 
 func (_c *KubeClientMock_CreateVerificationRoute_Call) RunAndReturn(run func(ctx context.Context, domain string, client kubernetes.Interface) (string, string, error)) *KubeClientMock_CreateVerificationRoute_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteDeploymentJob provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) DeleteDeploymentJob(ctx context.Context, jobName string) error {
+	ret := _mock.Called(ctx, jobName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteDeploymentJob")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = returnFunc(ctx, jobName)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// KubeClientMock_DeleteDeploymentJob_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteDeploymentJob'
+type KubeClientMock_DeleteDeploymentJob_Call struct {
+	*mock.Call
+}
+
+// DeleteDeploymentJob is a helper method to define mock.On call
+//   - ctx context.Context
+//   - jobName string
+func (_e *KubeClientMock_Expecter) DeleteDeploymentJob(ctx any, jobName any) *KubeClientMock_DeleteDeploymentJob_Call {
+	return &KubeClientMock_DeleteDeploymentJob_Call{Call: _e.mock.On("DeleteDeploymentJob", ctx, jobName)}
+}
+
+func (_c *KubeClientMock_DeleteDeploymentJob_Call) Run(run func(ctx context.Context, jobName string)) *KubeClientMock_DeleteDeploymentJob_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_DeleteDeploymentJob_Call) Return(err error) *KubeClientMock_DeleteDeploymentJob_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *KubeClientMock_DeleteDeploymentJob_Call) RunAndReturn(run func(ctx context.Context, jobName string) error) *KubeClientMock_DeleteDeploymentJob_Call {
 	_c.Call.Return(run)
 	return _c
 }

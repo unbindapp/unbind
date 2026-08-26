@@ -23,6 +23,9 @@ type DeploymentControllerInterface interface {
 	// cancelExistingJobs marks all pending jobs for a service as cancelled in the DB
 	// and removes them from the queue
 	CancelExistingJobs(ctx context.Context, serviceID uuid.UUID) error
+	// CancelDeployment aborts a single deployment: removes it from the queues, marks it
+	// cancelled, and deletes its Kubernetes job if one was already created.
+	CancelDeployment(ctx context.Context, serviceID uuid.UUID, deploymentID uuid.UUID) (*ent.Deployment, error)
 	// SyncJobStatuses synchronizes the status of all processing jobs with Kubernetes
 	SyncJobStatuses(ctx context.Context) error
 	// AreDependenciesReady checks if all dependencies for a service are ready

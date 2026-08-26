@@ -97,6 +97,80 @@ func (_c *DeploymentControllerMock_AreDependenciesReady_Call) RunAndReturn(run f
 	return _c
 }
 
+// CancelDeployment provides a mock function for the type DeploymentControllerMock
+func (_mock *DeploymentControllerMock) CancelDeployment(ctx context.Context, serviceID uuid.UUID, deploymentID uuid.UUID) (*ent.Deployment, error) {
+	ret := _mock.Called(ctx, serviceID, deploymentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CancelDeployment")
+	}
+
+	var r0 *ent.Deployment
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) (*ent.Deployment, error)); ok {
+		return returnFunc(ctx, serviceID, deploymentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID) *ent.Deployment); ok {
+		r0 = returnFunc(ctx, serviceID, deploymentID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Deployment)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, serviceID, deploymentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// DeploymentControllerMock_CancelDeployment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CancelDeployment'
+type DeploymentControllerMock_CancelDeployment_Call struct {
+	*mock.Call
+}
+
+// CancelDeployment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceID uuid.UUID
+//   - deploymentID uuid.UUID
+func (_e *DeploymentControllerMock_Expecter) CancelDeployment(ctx any, serviceID any, deploymentID any) *DeploymentControllerMock_CancelDeployment_Call {
+	return &DeploymentControllerMock_CancelDeployment_Call{Call: _e.mock.On("CancelDeployment", ctx, serviceID, deploymentID)}
+}
+
+func (_c *DeploymentControllerMock_CancelDeployment_Call) Run(run func(ctx context.Context, serviceID uuid.UUID, deploymentID uuid.UUID)) *DeploymentControllerMock_CancelDeployment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *DeploymentControllerMock_CancelDeployment_Call) Return(deployment *ent.Deployment, err error) *DeploymentControllerMock_CancelDeployment_Call {
+	_c.Call.Return(deployment, err)
+	return _c
+}
+
+func (_c *DeploymentControllerMock_CancelDeployment_Call) RunAndReturn(run func(ctx context.Context, serviceID uuid.UUID, deploymentID uuid.UUID) (*ent.Deployment, error)) *DeploymentControllerMock_CancelDeployment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CancelExistingJobs provides a mock function for the type DeploymentControllerMock
 func (_mock *DeploymentControllerMock) CancelExistingJobs(ctx context.Context, serviceID uuid.UUID) error {
 	ret := _mock.Called(ctx, serviceID)

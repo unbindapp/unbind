@@ -44,9 +44,11 @@ type KubeClientInterface interface {
 	// ExecInPod runs a command in a pod container as the token's user via impersonation,
 	// so the cluster's RBAC bindings apply as they would for kubectl exec.
 	ExecInPod(ctx context.Context, token string, opts ExecOptions) error
-	CreateDeployment(ctx context.Context, deploymentID string, env map[string]string) (jobName string, err error)
+	CreateDeployment(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (jobName string, err error)
 	// For canceling jobs.
 	CancelJobsByServiceID(ctx context.Context, serviceID string) error
+	// Deletes a single build job by name, cleaning up its pods. Missing jobs are not an error.
+	DeleteDeploymentJob(ctx context.Context, jobName string) error
 	CountActiveDeploymentJobs(ctx context.Context) (int, error)
 	GetJobStatus(ctx context.Context, jobName string) (JobStatus, error)
 	// This function is used to manage unbind-system resources

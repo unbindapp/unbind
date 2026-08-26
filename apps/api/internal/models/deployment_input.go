@@ -97,6 +97,31 @@ func (self *RemoveDeploymentInput) GetEnvironmentID() uuid.UUID {
 	return self.EnvironmentID
 }
 
+// Cancelling a pending or running deployment
+type CancelDeploymentInput struct {
+	TeamID        uuid.UUID `format:"uuid" required:"true" json:"team_id"`
+	ProjectID     uuid.UUID `format:"uuid" required:"true" json:"project_id"`
+	ServiceID     uuid.UUID `format:"uuid" required:"true" json:"service_id"`
+	EnvironmentID uuid.UUID `format:"uuid" required:"true" json:"environment_id"`
+	DeploymentID  uuid.UUID `format:"uuid" required:"true" json:"deployment_id"`
+}
+
+func (self *CancelDeploymentInput) GetTeamID() uuid.UUID {
+	return self.TeamID
+}
+
+func (self *CancelDeploymentInput) GetProjectID() uuid.UUID {
+	return self.ProjectID
+}
+
+func (self *CancelDeploymentInput) GetServiceID() uuid.UUID {
+	return self.ServiceID
+}
+
+func (self *CancelDeploymentInput) GetEnvironmentID() uuid.UUID {
+	return self.EnvironmentID
+}
+
 // Re-deploying specific deployment ID
 type RedeployExistingDeploymentInput struct {
 	TeamID            uuid.UUID `format:"uuid" required:"true" json:"team_id"`

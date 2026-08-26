@@ -34,6 +34,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import {
+  cancelDeployment as cancelDeploymentFn,
   redeployDeployment as redeployDeploymentFn,
   removeDeployment as removeDeploymentFn,
   type TDeploymentShallow,
@@ -45,6 +46,7 @@ import {
   EllipsisVerticalIcon,
   GitBranchIcon,
   GitCommitHorizontalIcon,
+  OctagonXIcon,
   RewindIcon,
   RocketIcon,
   RotateCcwIcon,
@@ -195,6 +197,16 @@ function ThreeDotButton({
       >
         <ScrollArea>
           <DropdownMenuGroup>
+            {(deployment.status === "build-pending" ||
+              deployment.status === "build-queued" ||
+              deployment.status === "build-running") && (
+              <AbortTrigger deployment={deployment} closeDropdown={() => setIsOpen(false)}>
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <OctagonXIcon className="-ml-0.5 size-5" />
+                  <p className="min-w-0 shrink leading-tight">Abort</p>
+                </DropdownMenuItem>
+              </AbortTrigger>
+            )}
             {isCurrentDeployment && deployment.status !== "removed" && (
               <RestartTrigger closeDropdown={() => setIsOpen(false)}>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -337,6 +349,69 @@ function RestartTrigger({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function AbortTrigger({
+  deployment,
+  closeDropdown,
+  children,
+}: {
+  deployment: TDeploymentShallow;
+  closeDropdown: () => void;
+  children: ReactNode;
+}) {
+  const { teamId, projectId, environmentId, serviceId } = useService();
+
+  const props = { teamId, projectId, environmentId, serviceId };
+  const { refetch: refetchDeployments } = useDeploymentsUtils({
+    ...props,
+  });
+  const { refetch: refetchService } = useServiceUtils({
+    ...props,
+  });
+  const { refetch: refetchServices } = useServicesUtils({
+    ...props,
+  });
+
+  const {
+    mutateAsync: cancelDeployment,
+    error,
+    reset,
+  } = useMutation({
+    mutationFn: cancelDeploymentFn,
+    onSuccess: async () => {
+      await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
+    },
+  });
+
+  return (
+    <DeleteEntityTrigger
+      variant="warning"
+      dialogTitle="Abort Build"
+      dialogDescription="Are you sure you want to abort this build?"
+      deletingEntityName=""
+      disableConfirmationInput
+      submitButtonText="Abort"
+      onSubmit={async () => {
+        await cancelDeployment({
+          teamId,
+          projectId,
+          environmentId,
+          serviceId,
+          deploymentId: deployment.id,
+        });
+      }}
+      onDialogCloseImmediate={() => {
+        closeDropdown();
+      }}
+      onDialogClose={() => {
+        reset();
+      }}
+      error={error}
+    >
+      {children}
+    </DeleteEntityTrigger>
   );
 }
 

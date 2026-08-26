@@ -958,6 +958,74 @@ func (_c *DeploymentRepositoryMock_MarkAsCancelled_Call) RunAndReturn(run func(c
 	return _c
 }
 
+// MarkCancelledByID provides a mock function for the type DeploymentRepositoryMock
+func (_mock *DeploymentRepositoryMock) MarkCancelledByID(ctx context.Context, deploymentID uuid.UUID) (*ent.Deployment, error) {
+	ret := _mock.Called(ctx, deploymentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MarkCancelledByID")
+	}
+
+	var r0 *ent.Deployment
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.Deployment, error)); ok {
+		return returnFunc(ctx, deploymentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.Deployment); ok {
+		r0 = returnFunc(ctx, deploymentID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Deployment)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, deploymentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// DeploymentRepositoryMock_MarkCancelledByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MarkCancelledByID'
+type DeploymentRepositoryMock_MarkCancelledByID_Call struct {
+	*mock.Call
+}
+
+// MarkCancelledByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - deploymentID uuid.UUID
+func (_e *DeploymentRepositoryMock_Expecter) MarkCancelledByID(ctx any, deploymentID any) *DeploymentRepositoryMock_MarkCancelledByID_Call {
+	return &DeploymentRepositoryMock_MarkCancelledByID_Call{Call: _e.mock.On("MarkCancelledByID", ctx, deploymentID)}
+}
+
+func (_c *DeploymentRepositoryMock_MarkCancelledByID_Call) Run(run func(ctx context.Context, deploymentID uuid.UUID)) *DeploymentRepositoryMock_MarkCancelledByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *DeploymentRepositoryMock_MarkCancelledByID_Call) Return(deployment *ent.Deployment, err error) *DeploymentRepositoryMock_MarkCancelledByID_Call {
+	_c.Call.Return(deployment, err)
+	return _c
+}
+
+func (_c *DeploymentRepositoryMock_MarkCancelledByID_Call) RunAndReturn(run func(ctx context.Context, deploymentID uuid.UUID) (*ent.Deployment, error)) *DeploymentRepositoryMock_MarkCancelledByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // MarkCancelledExcept provides a mock function for the type DeploymentRepositoryMock
 func (_mock *DeploymentRepositoryMock) MarkCancelledExcept(ctx context.Context, serviceID uuid.UUID, deploymentID uuid.UUID) error {
 	ret := _mock.Called(ctx, serviceID, deploymentID)

@@ -620,41 +620,84 @@ func (self *DeploymentController) CancelExistingJobs(ctx context.Context, servic
 
 	// Trigger webhooks
 	for _, jobID := range jobIDsToCancel {
-		// Trigger webhook
-		go func() {
-			event := schema.WebhookEventDeploymentCancelled
-			level := webhooks_service.WebhookLevelWarning
-
-			// Get service with edges
-			service, err := self.repo.Service().GetByID(context.Background(), serviceID)
-			if err != nil {
-				log.Errorf("Failed to get service %s: %v", serviceID.String(), err)
-				return
-			}
-
-			url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, service.Edges.Environment.Edges.Project.Edges.Team.ID.String(), "project", service.Edges.Environment.Edges.Project.ID.String(), "?environment="+service.EnvironmentID.String(), "&service="+service.ID.String(), "&deployment="+jobID.String())
-			data := webhooks_service.WebhookData{
-				Title: "Deployment Cancelled",
-				Url:   url,
-				Fields: []webhooks_service.WebhookDataField{
-					{
-						Name:  "Service",
-						Value: service.Name,
-					},
-					{
-						Name:  "Project & Environment",
-						Value: fmt.Sprintf("%s > %s", service.Edges.Environment.Edges.Project.Name, service.Edges.Environment.Name),
-					},
-				},
-			}
-
-			if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
-				log.Errorf("Failed to trigger webhook %s: %v", event, err)
-			}
-		}()
+		go self.sendDeploymentCancelledWebhook(serviceID, jobID)
 	}
 
 	return nil
+}
+
+func (self *DeploymentController) sendDeploymentCancelledWebhook(serviceID uuid.UUID, deploymentID uuid.UUID) {
+	event := schema.WebhookEventDeploymentCancelled
+	level := webhooks_service.WebhookLevelWarning
+
+	// Get service with edges
+	service, err := self.repo.Service().GetByID(context.Background(), serviceID)
+	if err != nil {
+		log.Errorf("Failed to get service %s: %v", serviceID.String(), err)
+		return
+	}
+
+	url, _ := utils.JoinURLPaths(self.cfg.ExternalUIUrl, service.Edges.Environment.Edges.Project.Edges.Team.ID.String(), "project", service.Edges.Environment.Edges.Project.ID.String(), "?environment="+service.EnvironmentID.String(), "&service="+service.ID.String(), "&deployment="+deploymentID.String())
+	data := webhooks_service.WebhookData{
+		Title: "Deployment Cancelled",
+		Url:   url,
+		Fields: []webhooks_service.WebhookDataField{
+			{
+				Name:  "Service",
+				Value: service.Name,
+			},
+			{
+				Name:  "Project & Environment",
+				Value: fmt.Sprintf("%s > %s", service.Edges.Environment.Edges.Project.Name, service.Edges.Environment.Name),
+			},
+		},
+	}
+
+	if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
+		log.Errorf("Failed to trigger webhook %s: %v", event, err)
+	}
+}
+
+// CancelDeployment aborts a single deployment: removes it from the queues, marks it
+// cancelled, and deletes its Kubernetes job if one was already created.
+func (self *DeploymentController) CancelDeployment(ctx context.Context, serviceID uuid.UUID, deploymentID uuid.UUID) (*ent.Deployment, error) {
+	deployment, err := self.repo.Deployment().GetByID(ctx, deploymentID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Deployment not found")
+		}
+		return nil, err
+	}
+	if deployment.ServiceID != serviceID {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Deployment not found")
+	}
+
+	// Best effort, the deployment may not be queued anymore
+	if err := self.jobQueue.Remove(ctx, deploymentID.String()); err == nil {
+		log.Infof("Removed deployment %s from build queue", deploymentID)
+	}
+	if err := self.dependentQueue.Remove(ctx, deploymentID.String()); err == nil {
+		log.Infof("Removed deployment %s from dependent queue", deploymentID)
+	}
+
+	// Mark cancelled before touching the job so late status writes can't override it
+	cancelled, err := self.repo.Deployment().MarkCancelledByID(ctx, deploymentID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Deployment is already finished")
+		}
+		return nil, err
+	}
+
+	if deployment.KubernetesJobName != "" {
+		if err := self.k8s.DeleteDeploymentJob(ctx, deployment.KubernetesJobName); err != nil {
+			log.Errorf("Failed to delete build job %s for deployment %s: %v", deployment.KubernetesJobName, deploymentID, err)
+		}
+	}
+
+	go self.sendDeploymentCancelledWebhook(serviceID, deploymentID)
+
+	return cancelled, nil
 }
 
 // processJob processes a job from the queue
@@ -681,7 +724,7 @@ func (self *DeploymentController) processJob(ctx context.Context, item *queue.Qu
 	}
 
 	// Start the actual Kubernetes job
-	k8sJobName, err := self.k8s.CreateDeployment(ctx, jobID.String(), req.Environment)
+	k8sJobName, err := self.k8s.CreateDeployment(ctx, jobID.String(), req.ServiceID.String(), req.Environment)
 	if err != nil {
 		log.Error("Failed to create Kubernetes job", "err", err)
 

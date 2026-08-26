@@ -50,6 +50,14 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	}, handlers.CreateNewRedeployment, oapi.OpenWorld)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
+		OperationID: "cancel-deployment",
+		Summary:     "Cancel Deployment",
+		Description: "Abort a queued or running build. The deployment is marked as cancelled and its build job is deleted.",
+		Path:        "/cancel",
+		Method:      http.MethodPost,
+	}, handlers.CancelDeployment, oapi.OpenWorld)
+
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "remove-deployment",
 		Summary:     "Remove Deployment",
 		Description: "Remove the active deployment by scaling the service to zero. The service stays offline until a new deployment is created.",

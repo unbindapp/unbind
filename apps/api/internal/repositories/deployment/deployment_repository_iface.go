@@ -25,6 +25,8 @@ type DeploymentRepositoryInterface interface {
 	MarkCancelledExcept(ctx context.Context, serviceID uuid.UUID, deploymentID uuid.UUID) error
 	// Mark cancelled by IDs
 	MarkAsCancelled(ctx context.Context, jobIDs []uuid.UUID) error
+	// Cancels a single deployment, only if it hasn't finished yet
+	MarkCancelledByID(ctx context.Context, deploymentID uuid.UUID) (*ent.Deployment, error)
 	// Assigns the kubernetes "Job" name to the build job
 	AssignKubernetesJobName(ctx context.Context, deploymentID uuid.UUID, jobName string) (*ent.Deployment, error)
 	SetKubernetesJobStatus(ctx context.Context, deploymentID uuid.UUID, status string) (*ent.Deployment, error)

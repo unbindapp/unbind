@@ -24,6 +24,7 @@ type TProps = {
   error: { message: string } | null;
   disableConfirmationInput?: boolean;
   submitButtonText?: string;
+  variant?: "destructive" | "warning";
   EntityNameBadge?: FC<{ className?: string }>;
   children: ReactNode;
 };
@@ -38,6 +39,7 @@ export function DeleteEntityTrigger({
   error,
   disableConfirmationInput,
   submitButtonText,
+  variant = "destructive",
   EntityNameBadge,
   children,
 }: TProps) {
@@ -94,7 +96,9 @@ export function DeleteEntityTrigger({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
-          <DialogTitle className="text-destructive">{dialogTitle}</DialogTitle>
+          <DialogTitle className={variant === "warning" ? "text-warning" : "text-destructive"}>
+            {dialogTitle}
+          </DialogTitle>
           {EntityNameBadge && <EntityNameBadge />}
           <DialogDescription>
             {dialogDescription}
@@ -103,7 +107,15 @@ export function DeleteEntityTrigger({
                 <br />
                 <br />
                 Type {`"`}
-                <span className="text-destructive font-semibold">{textToConfirm}</span>
+                <span
+                  className={
+                    variant === "warning"
+                      ? "text-warning font-semibold"
+                      : "text-destructive font-semibold"
+                  }
+                >
+                  {textToConfirm}
+                </span>
                 {`"`} to confirm.
               </>
             )}
@@ -151,7 +163,7 @@ export function DeleteEntityTrigger({
                 children={({ canSubmit, isSubmitting, values }) => (
                   <form.SubmitButton
                     data-submitting={isSubmitting || undefined}
-                    variant="destructive"
+                    variant={variant}
                     disabled={
                       !disableConfirmationInput &&
                       (!canSubmit ||
