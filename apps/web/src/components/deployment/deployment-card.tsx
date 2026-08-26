@@ -573,9 +573,10 @@ function getTitle({
     };
   }
   if (service.type === "github") {
+    const commitTitle = deployment.commit_message?.split("\n")[0].trim();
     return {
-      title: deployment.commit_message || "Commit message unavailable",
-      titleNotFound: !deployment.commit_message,
+      title: commitTitle || "Commit message unavailable",
+      titleNotFound: !commitTitle,
     };
   }
   if (service.type === "database") {
