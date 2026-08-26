@@ -13,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 func TestCreatePersistentVolumeClaim(t *testing.T) {
@@ -478,4 +479,90 @@ func isValidPVCName(name string) bool {
 	}
 
 	return true
+}
+
+func newBoundPVCAndPV(namespace, pvcName, pvName string, policy corev1.PersistentVolumeReclaimPolicy) (*corev1.PersistentVolumeClaim, *corev1.PersistentVolume) {
+	pvc := &corev1.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{Name: pvcName, Namespace: namespace},
+		Spec: corev1.PersistentVolumeClaimSpec{
+			VolumeName:  pvName,
+			AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+			Resources: corev1.VolumeResourceRequirements{
+				Requests: corev1.ResourceList{corev1.ResourceStorage: resource.MustParse("1Gi")},
+			},
+		},
+	}
+	pv := &corev1.PersistentVolume{
+		ObjectMeta: metav1.ObjectMeta{Name: pvName},
+		Spec: corev1.PersistentVolumeSpec{
+			PersistentVolumeReclaimPolicy: policy,
+			ClaimRef: &corev1.ObjectReference{
+				Namespace: namespace,
+				Name:      pvcName,
+			},
+		},
+	}
+	return pvc, pv
+}
+
+func TestDeletePVCReleasesRetainedPV(t *testing.T) {
+	pvc, pv := newBoundPVCAndPV("default", "test-pvc", "pv-1", corev1.PersistentVolumeReclaimRetain)
+	client := fake.NewSimpleClientset(pvc, pv)
+	kubeClient := &KubeClient{}
+
+	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", client)
+	require.NoError(t, err)
+
+	_, err = client.CoreV1().PersistentVolumeClaims("default").Get(context.Background(), "test-pvc", metav1.GetOptions{})
+	assert.Error(t, err)
+
+	updatedPV, err := client.CoreV1().PersistentVolumes().Get(context.Background(), "pv-1", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, corev1.PersistentVolumeReclaimDelete, updatedPV.Spec.PersistentVolumeReclaimPolicy)
+}
+
+func TestDeletePVCRefusesMismatchedPV(t *testing.T) {
+	pvc, pv := newBoundPVCAndPV("default", "test-pvc", "pv-1", corev1.PersistentVolumeReclaimRetain)
+	pv.Spec.ClaimRef.Name = "some-other-pvc"
+	client := fake.NewSimpleClientset(pvc, pv)
+	kubeClient := &KubeClient{}
+
+	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", client)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "not bound to PVC")
+
+	_, err = client.CoreV1().PersistentVolumeClaims("default").Get(context.Background(), "test-pvc", metav1.GetOptions{})
+	assert.NoError(t, err)
+
+	updatedPV, err := client.CoreV1().PersistentVolumes().Get(context.Background(), "pv-1", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, corev1.PersistentVolumeReclaimRetain, updatedPV.Spec.PersistentVolumeReclaimPolicy)
+}
+
+func TestDeletePVCWithoutBoundPV(t *testing.T) {
+	pvc, _ := newBoundPVCAndPV("default", "test-pvc", "", corev1.PersistentVolumeReclaimRetain)
+	client := fake.NewSimpleClientset(pvc)
+	kubeClient := &KubeClient{}
+
+	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", client)
+	require.NoError(t, err)
+
+	_, err = client.CoreV1().PersistentVolumeClaims("default").Get(context.Background(), "test-pvc", metav1.GetOptions{})
+	assert.Error(t, err)
+}
+
+func TestDeletePVCRevertsPolicyOnFailure(t *testing.T) {
+	pvc, pv := newBoundPVCAndPV("default", "test-pvc", "pv-1", corev1.PersistentVolumeReclaimRetain)
+	client := fake.NewSimpleClientset(pvc, pv)
+	client.PrependReactor("delete", "persistentvolumeclaims", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, fmt.Errorf("simulated apiserver failure")
+	})
+	kubeClient := &KubeClient{}
+
+	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", client)
+	require.Error(t, err)
+
+	updatedPV, err := client.CoreV1().PersistentVolumes().Get(context.Background(), "pv-1", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, corev1.PersistentVolumeReclaimRetain, updatedPV.Spec.PersistentVolumeReclaimPolicy)
 }

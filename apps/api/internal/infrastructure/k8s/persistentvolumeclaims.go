@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -596,11 +597,45 @@ func (self *KubeClient) DeletePersistentVolumeClaim(ctx context.Context, namespa
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Cannot delete PVC '%s' as it is currently in use by %d pod(s)", pvcName, len(blocking)))
 	}
 
+	// The default storage class retains PVs, so an explicit volume delete must
+	// switch the bound PV to Delete or the underlying storage is never freed.
+	pvName := pvc.Spec.VolumeName
+	var originalPolicy corev1.PersistentVolumeReclaimPolicy
+	patchedPV := false
+	if pvName != "" {
+		pv, err := client.CoreV1().PersistentVolumes().Get(ctx, pvName, metav1.GetOptions{})
+		switch {
+		case errors.IsNotFound(err):
+			// No backing volume left to release
+		case err != nil:
+			return fmt.Errorf("failed to get PersistentVolume '%s' backing PVC '%s': %w", pvName, pvcName, err)
+		case pv.Spec.ClaimRef != nil && (pv.Spec.ClaimRef.Namespace != namespace || pv.Spec.ClaimRef.Name != pvcName):
+			return fmt.Errorf("PersistentVolume '%s' is not bound to PVC '%s/%s', refusing to release it", pvName, namespace, pvcName)
+		case pv.Spec.PersistentVolumeReclaimPolicy != corev1.PersistentVolumeReclaimDelete:
+			originalPolicy = pv.Spec.PersistentVolumeReclaimPolicy
+			if err := patchPVReclaimPolicy(ctx, client, pvName, corev1.PersistentVolumeReclaimDelete); err != nil {
+				return fmt.Errorf("failed to set reclaim policy on PersistentVolume '%s': %w", pvName, err)
+			}
+			patchedPV = true
+		}
+	}
+
 	err = client.CoreV1().PersistentVolumeClaims(namespace).Delete(ctx, pvcName, metav1.DeleteOptions{})
 	if err != nil {
+		if patchedPV {
+			if revertErr := patchPVReclaimPolicy(ctx, client, pvName, originalPolicy); revertErr != nil {
+				log.Errorf("failed to restore reclaim policy '%s' on PersistentVolume '%s' after failed PVC deletion: %v", originalPolicy, pvName, revertErr)
+			}
+		}
 		return fmt.Errorf("failed to delete PersistentVolumeClaim '%s' in namespace '%s': %w", pvcName, namespace, err)
 	}
 	return nil
+}
+
+func patchPVReclaimPolicy(ctx context.Context, client kubernetes.Interface, pvName string, policy corev1.PersistentVolumeReclaimPolicy) error {
+	patch := fmt.Sprintf(`{"spec":{"persistentVolumeReclaimPolicy":%q}}`, policy)
+	_, err := client.CoreV1().PersistentVolumes().Patch(ctx, pvName, types.MergePatchType, []byte(patch), metav1.PatchOptions{})
+	return err
 }
 
 // GetPodsUsingPVC finds all pods in a given namespace that are mounting the specified PVC.
