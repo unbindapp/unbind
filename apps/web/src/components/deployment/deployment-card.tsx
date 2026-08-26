@@ -234,7 +234,10 @@ function ThreeDotButton({
               deployment.status === "build-queued" ||
               deployment.status === "build-running") && (
               <AbortTrigger deployment={deployment} closeDropdown={() => setIsOpen(false)}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <DropdownMenuItem
+                  onSelect={(e) => e.preventDefault()}
+                  className="active:bg-warning/10 data-highlighted:bg-warning/10 data-highlighted:text-warning"
+                >
                   <OctagonXIcon className="-ml-0.5 size-5" />
                   <p className="min-w-0 shrink leading-tight">Abort</p>
                 </DropdownMenuItem>

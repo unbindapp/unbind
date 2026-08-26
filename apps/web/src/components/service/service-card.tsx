@@ -11,7 +11,7 @@ import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-differen
 import { deploymentsListQuery } from "@/lib/queries/deployments";
 import { serviceQuery, TService, TServiceShallow } from "@/lib/queries/services";
 import { useQueryClient } from "@tanstack/react-query";
-import { HourglassIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
+import { HourglassIcon, LoaderIcon, OctagonXIcon, TriangleAlertIcon } from "lucide-react";
 import { ReactNode, useMemo } from "react";
 
 type TProps = {
@@ -313,7 +313,7 @@ function StatusIndicator({ deployment }: { deployment: NonNullable<TService["las
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
   if (deployment.status === "build-cancelled") {
-    return <XIcon className="size-3.5 shrink-0" />;
+    return <OctagonXIcon className="size-3.5 shrink-0" />;
   }
   if (deployment.status === "launch-error") {
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;

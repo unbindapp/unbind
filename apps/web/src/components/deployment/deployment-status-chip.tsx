@@ -1,7 +1,13 @@
 import BroomIcon from "@/components/icons/broom";
 import { cn } from "@/components/ui/utils";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
-import { CircleCheckIcon, HourglassIcon, LoaderIcon, TriangleAlertIcon, XIcon } from "lucide-react";
+import {
+  CircleCheckIcon,
+  HourglassIcon,
+  LoaderIcon,
+  OctagonXIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import { FC, useMemo } from "react";
 
 type TProps = {
@@ -22,7 +28,7 @@ export default function DeploymentStatusChip({
     if (deployment.status === "build-queued") return ["QUEUED", AnimatedHourglassIcon];
     if (deployment.status === "build-pending") return ["PENDING", AnimatedHourglassIcon];
     if (deployment.status === "build-running") return ["BUILDING", AnimatedLoaderIcon];
-    if (deployment.status === "build-cancelled") return ["CANCELLED", XIcon];
+    if (deployment.status === "build-cancelled") return ["CANCELLED", OctagonXIcon];
     if (deployment.status === "build-failed") return ["FAILED", TriangleAlertIcon];
     if (deployment.status === "build-succeeded") return ["LAUNCHING", AnimatedLoaderIcon];
     if (deployment.status === "launching") return ["LAUNCHING", AnimatedLoaderIcon];
