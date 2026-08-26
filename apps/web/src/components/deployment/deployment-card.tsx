@@ -755,7 +755,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
           </>
         )}
         {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
-          <span className="text-muted-more-foreground hidden leading-tight first:hidden lg:inline-block lg:first:inline-block">
+          <span className="text-muted-most-foreground hidden leading-tight first:hidden lg:inline-block lg:first:inline-block">
             |
           </span>
         )}
@@ -766,7 +766,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
           </p>
         )}
         {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
-          <span className="text-muted-more-foreground leading-tight first:hidden lg:first:inline-block">
+          <span className="text-muted-most-foreground leading-tight first:hidden lg:first:inline-block">
             |
           </span>
         )}
@@ -777,7 +777,7 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
           </p>
         )}
         {durationStr !== undefined && durationStr !== "" && (
-          <span className="text-muted-more-foreground leading-tight first:hidden lg:inline-block lg:first:inline-block">
+          <span className="text-muted-most-foreground leading-tight first:hidden lg:inline-block lg:first:inline-block">
             |
           </span>
         )}
