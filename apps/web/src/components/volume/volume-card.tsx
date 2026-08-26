@@ -4,7 +4,8 @@ import { getVolumeDisplayName } from "@/components/volume/helpers";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { HardDriveIcon, HourglassIcon } from "lucide-react";
+import { HardDriveIcon, LoaderIcon } from "lucide-react";
+import { useMemo } from "react";
 
 type TProps = {
   volume: TVolumeShallow;
@@ -12,41 +13,61 @@ type TProps = {
 };
 
 export default function VolumeCard({ volume, className }: TProps) {
+  const bottomLeftTextAndIcon = useMemo(() => {
+    if (volume.is_deleting)
+      return {
+        icon: <LoaderIcon className="text-destructive size-3.5 shrink-0 animate-spin" />,
+        text: "Deleting",
+      };
+    if (volume.is_detaching)
+      return {
+        icon: <LoaderIcon className="text-warning size-3.5 shrink-0 animate-spin" />,
+        text: "Detaching",
+      };
+    if (volume.is_pending_resize)
+      return {
+        icon: <LoaderIcon className="text-warning size-3.5 shrink-0 animate-spin" />,
+        text: "Expanding",
+      };
+
+    return {
+      icon: null,
+      text: "Not attached",
+    };
+  }, [volume.is_deleting, volume.is_detaching, volume.is_pending_resize]);
+
+  const bottomRightText = useMemo(() => {
+    if (volume.is_pending_resize) return "Unknown";
+    return formatGB(volume.capacity_gb);
+  }, [volume.is_pending_resize, volume.capacity_gb]);
+
   return (
-    <li className={cn("group/item flex min-h-38 w-full flex-col p-1", className)}>
+    <li
+      data-detaching={volume.is_detaching || undefined}
+      data-deleting={volume.is_deleting || undefined}
+      data-pending-resize={volume.is_pending_resize || undefined}
+      className={cn("group/item flex min-h-38 w-full flex-col p-1", className)}
+    >
       <VolumePanel volume={volume}>
         <Button
           variant="ghost"
           className="bg-background-hover flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold"
         >
           <div className="flex w-full items-center justify-start gap-2">
-            {volume.is_deleting || volume.is_detaching || volume.is_pending_resize ? (
-              <HourglassIcon className="animate-hourglass -ml-1 size-6 scale-85" />
-            ) : (
-              <HardDriveIcon className="-ml-1 size-6 scale-85" />
-            )}
+            <HardDriveIcon className="-ml-1 size-6 scale-85" />
             <h3 className="min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap">
               {getVolumeDisplayName(volume)}
             </h3>
           </div>
-          <div className="flex w-full flex-1 flex-col justify-end">
+          <div className="-mx-0.5 flex w-[calc(100%+0.25rem)] flex-1 flex-col items-center justify-end">
             <div className="text-muted-foreground flex w-full items-center justify-between gap-4 text-sm font-normal">
-              <p className="min-w-0 shrink truncate">
-                {volume.is_pending_resize ? "Expanding" : formatGB(volume.capacity_gb)}
-              </p>
-              <p
-                className={cn(
-                  "min-w-0 shrink truncate text-right",
-                  volume.is_deleting && "text-destructive",
-                  volume.is_detaching && "text-process",
-                )}
-              >
-                {volume.is_deleting
-                  ? "Deleting"
-                  : volume.is_detaching
-                    ? "Detaching"
-                    : "Not attached"}
-              </p>
+              <div className="flex min-w-0 shrink items-center gap-1.75">
+                {bottomLeftTextAndIcon.icon}
+                <p className="group-data-detaching/item:text-warning group-data-deleting/item:text-destructive group-data-pending-resize/item:text-warning min-w-0 shrink truncate text-right">
+                  {bottomLeftTextAndIcon.text}
+                </p>
+              </div>
+              <p className="min-w-0 shrink truncate">{bottomRightText}</p>
             </div>
           </div>
         </Button>

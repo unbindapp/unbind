@@ -105,9 +105,9 @@ const spinnerVariants = cva(
   {
     variants: {
       size: {
-        default: "size-6",
-        sm: "size-6",
-        lg: "size-7",
+        default: "size-5",
+        sm: "size-5",
+        lg: "size-6",
         icon: "size-5",
       },
     },
