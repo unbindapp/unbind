@@ -2,13 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CircleArrowUpIcon } from "lucide-react";
 import { ReactNode } from "react";
 
-import { LinkButton } from "@/components/ui/button";
+import { cn } from "@/components/ui/utils";
 import {
   useCheckForUpdates,
   useCheckNewVersion,
 } from "@/components/update/check-for-updates-provider";
 import UpdateAvailableSection from "@/components/update/update-available-section";
-import { cn } from "@/components/ui/utils";
 import UpdateNotAvailableSection, {
   GoHome,
 } from "@/components/update/update-not-available-section";
