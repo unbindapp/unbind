@@ -225,7 +225,7 @@ export default function VariableCard({
                 classNameViewport="py-1.5"
               >
                 <div className="flex w-full justify-start">
-                  <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-px py-px pr-2 font-mono text-xs leading-tight whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+                  <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden px-px py-px pr-2 font-mono text-xs leading-tight wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                     {referenceError
                       ? "The referenced value doesn't exist anymore. Consider deleting this."
                       : isPlaceholder || !isValueVisible
@@ -235,7 +235,7 @@ export default function VariableCard({
                               <span
                                 data-token={part.token !== null || undefined}
                                 key={index}
-                                className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-2px data-token:ring-1"
+                                className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-2px data-token:box-decoration-clone data-token:ring-1"
                               >
                                 {part.token !== null ? (
                                   <>
