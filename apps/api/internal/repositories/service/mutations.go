@@ -630,7 +630,11 @@ func (self *ServiceRepository) UpdateDatabaseStorageSize(
 		db = tx.Client()
 	}
 
-	newSize = utils.EnsureSuffix(newSize, "Gi")
+	qty, err := utils.ParseStorageQuantity(newSize)
+	if err != nil {
+		return nil, fmt.Errorf("invalid storage size %q: %w", newSize, err)
+	}
+	newSize = qty.String()
 
 	svcConfig, err := db.Service.Query().
 		Where(service.IDEQ(serviceID)).

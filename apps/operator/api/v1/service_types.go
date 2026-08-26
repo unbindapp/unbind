@@ -205,8 +205,10 @@ type DatabaseSpec struct {
 }
 
 type DatabaseConfigSpec struct {
-	Version             string `json:"version,omitempty"`
-	StorageSize         string `json:"storage,omitempty"`
+	Version string `json:"version,omitempty"`
+	// StorageSize must be a valid, non-negative Kubernetes resource quantity (e.g. "10Gi", "7680Mi")
+	// +kubebuilder:validation:Pattern=`^([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|([eE][-+]?([0-9]+(\.[0-9]*)?|\.[0-9]+)))?$`
+	StorageSize string `json:"storage,omitempty"`
 	DefaultDatabaseName string `json:"defaultDatabaseName,omitempty"`
 	InitDB              string `json:"initdb,omitempty"`
 	WalLevel            string `json:"walLevel,omitempty"`

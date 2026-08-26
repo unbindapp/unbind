@@ -111,10 +111,3 @@ func MatchesGlobPattern(value, pattern string) bool {
 
 	return true
 }
-
-func EnsureSuffix(s, suffix string) string {
-	if strings.HasSuffix(s, suffix) {
-		return s
-	}
-	return s + suffix
-}

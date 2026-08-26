@@ -335,12 +335,11 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 			log.Errorf("failed to get database config for service '%s': %v", binding.ServiceID.String(), err)
 			return nil, fmt.Errorf("failed to get database config for service '%s': %w", binding.ServiceID.String(), err)
 		} else if dbSvcConfig != nil && dbSvcConfig.StorageSize != "" {
-			// Parse storage size
 			qty, err := utils.ParseStorageQuantity(dbSvcConfig.StorageSize)
 			if err != nil {
-				return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", dbSvcConfig.StorageSize, binding.ServiceID.String(), err)
-			}
-			if qty.Value() > bytesValueCapacity {
+				// A corrupt stored size must not take down the whole PVC view
+				log.Errorf("failed to parse storage size '%s' for service '%s': %v", dbSvcConfig.StorageSize, binding.ServiceID.String(), err)
+			} else if qty.Value() > bytesValueCapacity {
 				isPendingResize = true
 			}
 		}
@@ -505,19 +504,18 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 
 		isPendingResize := bytesValueRequest > bytesValueCapacity
 
-		// If a databsae, query the DB config
+		// If a database, query the DB config
 		if binding.IsDatabase && binding.ServiceID != nil {
 			dbSvcConfig, err := self.repo.Service().GetDatabaseConfig(ctx, *binding.ServiceID)
 			if err != nil && !ent.IsNotFound(err) {
 				log.Errorf("failed to get database config for service '%s': %v", binding.ServiceID.String(), err)
 				return nil, fmt.Errorf("failed to get database config for service '%s': %w", binding.ServiceID.String(), err)
 			} else if dbSvcConfig != nil && dbSvcConfig.StorageSize != "" {
-				// Parse storage size
 				qty, err := utils.ParseStorageQuantity(dbSvcConfig.StorageSize)
 				if err != nil {
-					return nil, fmt.Errorf("failed to parse storage size '%s' for service '%s': %w", dbSvcConfig.StorageSize, binding.ServiceID.String(), err)
-				}
-				if qty.Value() > bytesValueCapacity {
+					// A corrupt stored size must not take down the whole PVC list
+					log.Errorf("failed to parse storage size '%s' for service '%s': %v", dbSvcConfig.StorageSize, binding.ServiceID.String(), err)
+				} else if qty.Value() > bytesValueCapacity {
 					isPendingResize = true
 				}
 			}

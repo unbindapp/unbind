@@ -858,6 +858,23 @@ func (suite *ServiceMutationsSuite) TestUpdateDatabaseStorageSize() {
 		suite.Equal("50Gi", newConfig.StorageSize) // Should auto-add Gi suffix
 	})
 
+	suite.Run("UpdateDatabaseStorageSize Fractional Size Keeps Mi Suffix", func() {
+		newConfig, err := suite.serviceRepo.UpdateDatabaseStorageSize(suite.Ctx, nil, suite.testService.ID, "7680Mi")
+		suite.NoError(err)
+		suite.NotNil(newConfig)
+		suite.Equal("7680Mi", newConfig.StorageSize)
+
+		newConfig, err = suite.serviceRepo.UpdateDatabaseStorageSize(suite.Ctx, nil, suite.testService.ID, "7.5")
+		suite.NoError(err)
+		suite.NotNil(newConfig)
+		suite.Equal("7680Mi", newConfig.StorageSize)
+	})
+
+	suite.Run("UpdateDatabaseStorageSize Rejects Invalid Quantity", func() {
+		_, err := suite.serviceRepo.UpdateDatabaseStorageSize(suite.Ctx, nil, suite.testService.ID, "7680MiGi")
+		suite.Error(err)
+	})
+
 	suite.Run("UpdateDatabaseStorageSize Create New Config", func() {
 		// Create service without database config
 		service := suite.DB.Service.Create().
@@ -885,6 +902,14 @@ func (suite *ServiceMutationsSuite) TestUpdateDatabaseStorageSize() {
 		suite.NoError(err)
 		suite.NotNil(updated.DatabaseConfig)
 		suite.Equal("15Gi", updated.DatabaseConfig.StorageSize)
+	})
+
+	suite.Run("Direct ent write with invalid storage is rejected by schema hook", func() {
+		err := suite.DB.ServiceConfig.UpdateOneID(suite.testConfig.ID).
+			SetDatabaseConfig(&schema.DatabaseConfig{StorageSize: "7680MiGi"}).
+			Exec(suite.Ctx)
+		suite.Error(err)
+		suite.ErrorContains(err, "invalid database storage size")
 	})
 
 	suite.Run("UpdateDatabaseStorageSize Non-existent Service", func() {
