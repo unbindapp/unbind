@@ -73,5 +73,10 @@
     "version": "v0.1.14",
     "description": "Deployment abort support, deploy state fixes, and volume card layout improvements",
     "breaking": false
+  },
+  "v0.1.15": {
+    "version": "v0.1.15",
+    "description": "Skip-build-cache redeploys, PVC and volume handling improvements, and deploy dialog polish",
+    "breaking": false
   }
 }
