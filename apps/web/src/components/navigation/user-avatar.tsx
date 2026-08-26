@@ -136,10 +136,7 @@ export default function UserAvatar({ email, className }: TProps) {
               href={updatesData.data.current_version_url}
               className="group/version hover:bg-border active:bg-border flex w-full items-center justify-start gap-1.25 px-4.25 py-3"
             >
-              <div className="text-muted-foreground group-hover/version:text-foreground group-active/version:text-foreground relative -ml-px size-3.75 shrink-0">
-                <GitBranchIcon className="size-full transition-[rotate,opacity] group-hover/version:rotate-90 group-hover/version:opacity-0 group-active/version:rotate-90 group-active/version:opacity-0" />
-                <ExternalLink className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-[rotate,opacity] group-hover/version:rotate-0 group-hover/version:opacity-100 group-active/version:rotate-0 group-active/version:opacity-100" />
-              </div>
+              <GitBranchOrExternalLinkIcon />
               <p className="text-muted-foreground group-hover/version:text-foreground group-active/version:text-foreground min-w-0 shrink text-center text-sm leading-tight">
                 Version: <span className="font-semibold">{updatesData.data.current_version}</span>
               </p>
@@ -208,10 +205,7 @@ export default function UserAvatar({ email, className }: TProps) {
                 rel="noopener noreferrer"
                 href={updatesData.data.current_version_url}
               >
-                <div className="text-muted-foreground group-hover/version:text-foreground group-active/version:text-foreground relative -ml-px size-3.75 shrink-0">
-                  <GitBranchIcon className="size-full transition-[rotate,opacity] group-hover/version:rotate-90 group-hover/version:opacity-0" />
-                  <ExternalLink className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-[rotate,opacity] group-hover/version:rotate-0 group-hover/version:opacity-100 group-active/version:rotate-0 group-active/version:opacity-100" />
-                </div>
+                <GitBranchOrExternalLinkIcon />
                 <p className="group-hover/version:text-foreground group-active/version:text-foreground text-muted-foreground min-w-0 shrink text-center text-sm leading-tight">
                   Version: <span className="font-semibold">{updatesData.data.current_version}</span>
                 </p>
@@ -237,6 +231,20 @@ export default function UserAvatar({ email, className }: TProps) {
         </DropdownMenuGroup>
       </DropdownOrDrawerContentForDropdown>
     </DropdownOrDrawer>
+  );
+}
+
+function GitBranchOrExternalLinkIcon({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn(
+        "text-muted-foreground has-hover:group-hover/version:text-foreground group-active/version:text-foreground relative -ml-px size-3.75 shrink-0 transition-[rotate,opacity] group-active/version:rotate-90 has-hover:group-hover/version:rotate-90",
+        className,
+      )}
+    >
+      <GitBranchIcon className="size-full group-active/version:opacity-0 has-hover:group-hover/version:opacity-0" />
+      <ExternalLink className="absolute top-0 left-0 size-full -rotate-90 opacity-0 group-active/version:opacity-100 has-hover:group-hover/version:opacity-100" />
+    </div>
   );
 }
 
