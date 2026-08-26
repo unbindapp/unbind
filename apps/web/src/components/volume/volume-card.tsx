@@ -41,7 +41,7 @@ export default function VolumeCard({ volume, className }: TProps) {
       data-detaching={volume.is_detaching || undefined}
       data-deleting={volume.is_deleting || undefined}
       data-pending-resize={volume.is_pending_resize || undefined}
-      className={cn("group/item flex min-h-38 w-full flex-col p-1", className)}
+      className={cn("group/item flex min-h-40 w-full flex-col p-1", className)}
     >
       <VolumePanel volume={volume}>
         <Button

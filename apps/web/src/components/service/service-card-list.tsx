@@ -153,7 +153,7 @@ export default function ServiceCardList() {
           >
             <Button
               variant="ghost"
-              className="text-muted-foreground flex min-h-36 w-full items-center justify-center rounded-xl border px-5 py-3.5 text-center font-medium"
+              className="text-muted-foreground flex min-h-38 w-full items-center justify-center rounded-xl border px-5 py-3.5 text-center font-medium"
             >
               <PlusIcon className="-ml-1.5 size-5 shrink-0" />
               <p className="min-w-0 shrink leading-tight">New Service</p>

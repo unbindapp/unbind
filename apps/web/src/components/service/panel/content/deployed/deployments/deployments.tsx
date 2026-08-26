@@ -174,7 +174,7 @@ function NoActiveDeploymentCard() {
   return (
     <NoItemsCard Icon={GlobeOffIcon}>
       <p className="w-full leading-tight">There is no active deployment</p>
-      {error && <ErrorLine message={error.message} />}
+      {error && <ErrorLine className="mt-2" message={error.message} />}
       <Button
         className="mt-2"
         onClick={() => deploy({ teamId, projectId, environmentId, serviceId })}

@@ -72,7 +72,7 @@ export default function ServiceGroupCard({
               teamId={teamId}
               projectId={projectId}
               environmentId={environmentId}
-              className={cn("min-h-38", classNameServiceCard)}
+              className={cn("min-h-40", classNameServiceCard)}
               classNameCard="rounded-lg"
               classNameVolumes="rounded-b-lg"
               classNameVolumeLast="rounded-b-lg"
