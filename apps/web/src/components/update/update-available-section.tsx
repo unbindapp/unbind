@@ -26,7 +26,7 @@ type TProps = {
   backTo: string;
 };
 
-export default function UpdateSection({
+export default function UpdateAvailableSection({
   latestVersion,
   latestVersionUrl,
   currentVersion,
@@ -160,14 +160,14 @@ function UpdateSectionInner({
 
       <div className="flex w-full flex-wrap items-center justify-center">
         {updatePhase === "idle" && (
-          <>
+          <div className="flex w-full flex-wrap items-center justify-center">
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
               <LinkButton to={backTo} variant="outline" className="text-muted-foreground w-full">
                 <ArrowLeftIcon className="size-4.5 shrink-0" />
                 <p className="min-w-0 shrink">Go Back</p>
               </LinkButton>
             </div>
-            <div className="flex w-full px-1 py-1.5 sm:w-1/2">
+            <div className="order-first flex w-full px-1 py-1.5 sm:order-0 sm:w-1/2">
               <Button
                 isPending={isPendingApplyUpdate}
                 onClick={() => applyUpdate(latestVersion)}
@@ -192,7 +192,7 @@ function UpdateSectionInner({
                 </a>
               </Button>
             </div>
-          </>
+          </div>
         )}
         {updatePhase === "updating" && (
           <div className="mt-1.5 flex w-full flex-col items-center gap-2">
