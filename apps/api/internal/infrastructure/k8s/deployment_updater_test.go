@@ -30,12 +30,32 @@ func testDeployment(name, image string) *appsv1.Deployment {
 	}
 }
 
-func testPod(deploymentName, image string, phase corev1.PodPhase) *corev1.Pod {
-	return &corev1.Pod{
+func testPod(deploymentName, image string, phase corev1.PodPhase, mutations ...func(*corev1.Pod)) *corev1.Pod {
+	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{Name: deploymentName + "-pod", Namespace: testNamespace, Labels: map[string]string{"app": deploymentName}},
 		Spec:       corev1.PodSpec{Containers: []corev1.Container{{Name: deploymentName, Image: image}}},
 		Status:     corev1.PodStatus{Phase: phase},
 	}
+	if phase == corev1.PodRunning {
+		pod.Status.Conditions = []corev1.PodCondition{{Type: corev1.PodReady, Status: corev1.ConditionTrue}}
+	}
+	for _, mutate := range mutations {
+		mutate(pod)
+	}
+	return pod
+}
+
+func named(name string) func(*corev1.Pod) {
+	return func(pod *corev1.Pod) { pod.Name = name }
+}
+
+func notReady(pod *corev1.Pod) {
+	pod.Status.Conditions = nil
+}
+
+func terminating(pod *corev1.Pod) {
+	now := metav1.Now()
+	pod.DeletionTimestamp = &now
 }
 
 func testKubeClient(t *testing.T, objects ...runtime.Object) (*KubeClient, *fake.Clientset) {
@@ -156,6 +176,35 @@ func TestCheckDeploymentsReady(t *testing.T) {
 				testPod("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3", corev1.PodPending),
 			},
 			expectedReady: false,
+		},
+		{
+			name:    "pod running but not ready",
+			version: "v1.2.3",
+			objects: []runtime.Object{
+				testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3"),
+				testPod("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3", corev1.PodRunning, notReady),
+			},
+			expectedReady: false,
+		},
+		{
+			name:    "old pod still serving next to ready new pod",
+			version: "v1.2.3",
+			objects: []runtime.Object{
+				testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3"),
+				testPod("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3", corev1.PodRunning),
+				testPod("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.2", corev1.PodRunning, named("unbind-api-deployment-old-pod")),
+			},
+			expectedReady: false,
+		},
+		{
+			name:    "terminating old pod is ignored",
+			version: "v1.2.3",
+			objects: []runtime.Object{
+				testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3"),
+				testPod("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.3", corev1.PodRunning),
+				testPod("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.2.2", corev1.PodRunning, named("unbind-api-deployment-old-pod"), terminating),
+			},
+			expectedReady: true,
 		},
 		{
 			name:          "no unbind deployments",

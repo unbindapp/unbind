@@ -82,7 +82,7 @@ func (k *KubeClient) retagDeployment(ctx context.Context, deployment *appsv1.Dep
 	return nil
 }
 
-// CheckDeploymentsReady reports whether every deployment using an unbind image has a running pod on the given version.
+// CheckDeploymentsReady reports whether every deployment using an unbind image serves only ready pods on the given version.
 func (k *KubeClient) CheckDeploymentsReady(ctx context.Context, version string) (bool, error) {
 	deployments, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{})
 	if err != nil {
@@ -104,7 +104,7 @@ func (k *KubeClient) CheckDeploymentsReady(ctx context.Context, version string) 
 		if err != nil {
 			return false, fmt.Errorf("failed to list pods for deployment %s: %w", deployment.Name, err)
 		}
-		if !podsRunImages(pods.Items, expected) {
+		if !podsReadyOnVersion(pods.Items, expected, version) {
 			return false, nil
 		}
 	}
@@ -125,19 +125,40 @@ func expectedImages(containers []corev1.Container, version string) []string {
 	return images
 }
 
-func podsRunImages(pods []corev1.Pod, images []string) bool {
-	for _, image := range images {
-		running := slices.ContainsFunc(pods, func(pod corev1.Pod) bool {
-			if pod.Status.Phase != corev1.PodRunning {
+func podsReadyOnVersion(pods []corev1.Pod, expected []string, version string) bool {
+	for _, image := range expected {
+		ready := slices.ContainsFunc(pods, func(pod corev1.Pod) bool {
+			if pod.DeletionTimestamp != nil || !podIsReady(pod) {
 				return false
 			}
 			return slices.ContainsFunc(pod.Spec.Containers, func(container corev1.Container) bool {
 				return container.Image == image
 			})
 		})
-		if !running {
+		if !ready {
 			return false
 		}
 	}
+
+	// Old-version pods may still be serving traffic until the rollout replaces them.
+	for _, pod := range pods {
+		if pod.DeletionTimestamp != nil {
+			continue
+		}
+		for _, container := range pod.Spec.Containers {
+			if updated, ok := versionedImage(container.Image, version); ok && container.Image != updated {
+				return false
+			}
+		}
+	}
 	return true
+}
+
+func podIsReady(pod corev1.Pod) bool {
+	if pod.Status.Phase != corev1.PodRunning {
+		return false
+	}
+	return slices.ContainsFunc(pod.Status.Conditions, func(condition corev1.PodCondition) bool {
+		return condition.Type == corev1.PodReady && condition.Status == corev1.ConditionTrue
+	})
 }
