@@ -143,7 +143,9 @@ function Button({
   ...props
 }: TButtonProps) {
   const Comp = asChild ? Slot : "button";
-  const isText = typeof children === "string";
+  const isText = React.Children.toArray(children).every(
+    (c) => typeof c === "string" || typeof c === "number",
+  );
   return (
     <Comp
       data-pending={isPending || undefined}
@@ -168,9 +170,9 @@ function Button({
             data-slot="button-spinner"
             className={cn(spinnerVariants(spinnerVariantProps))}
           />
-          {typeof children === "string" ? <p className="min-w-0 shrink">{children}</p> : children}
+          {isText ? <p className="min-w-0 shrink">{children}</p> : children}
         </>
-      ) : typeof children === "string" ? (
+      ) : isText ? (
         <p className="min-w-0 shrink">{children}</p>
       ) : (
         children
