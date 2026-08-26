@@ -108,6 +108,24 @@
   --chart-9: hsl(270 60% 30%);
   --chart-10: hsl(20 90% 30%);
 
+  /* ANSI palette: 0-7 normal, 8-15 bright (black, red, green, yellow, blue, magenta, cyan, white) */
+  --ansi-0: var(--foreground);
+  --ansi-1: var(--destructive);
+  --ansi-2: var(--success);
+  --ansi-3: var(--warning);
+  --ansi-4: var(--process);
+  --ansi-5: hsl(300 60% 40%);
+  --ansi-6: hsl(190 90% 28%);
+  --ansi-7: var(--muted-more-foreground);
+  --ansi-8: var(--muted-foreground);
+  --ansi-9: hsl(0 75% 45%);
+  --ansi-10: hsl(120 65% 32%);
+  --ansi-11: hsl(40 90% 35%);
+  --ansi-12: hsl(220 80% 48%);
+  --ansi-13: hsl(300 65% 52%);
+  --ansi-14: hsl(190 85% 35%);
+  --ansi-15: var(--muted-most-foreground);
+
   --link-chip: hsl(210 100% 18%);
 
   --top-loader: hsl(120 100% 30%);
@@ -211,6 +229,23 @@
   --chart-8: hsl(320 60% 60%);
   --chart-9: hsl(250 100% 75%);
   --chart-10: hsl(40 80% 65%);
+
+  --ansi-0: var(--muted-more-foreground);
+  --ansi-1: var(--destructive);
+  --ansi-2: var(--success);
+  --ansi-3: var(--warning);
+  --ansi-4: var(--process);
+  --ansi-5: hsl(300 70% 72%);
+  --ansi-6: hsl(185 75% 65%);
+  --ansi-7: var(--foreground);
+  --ansi-8: var(--muted-foreground);
+  --ansi-9: hsl(0 90% 78%);
+  --ansi-10: hsl(120 60% 75%);
+  --ansi-11: hsl(45 85% 68%);
+  --ansi-12: hsl(220 100% 80%);
+  --ansi-13: hsl(300 85% 80%);
+  --ansi-14: hsl(185 85% 72%);
+  --ansi-15: hsl(0 0% 100%);
 
   --link-chip: hsl(210 100% 85%);
 

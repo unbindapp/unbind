@@ -4,9 +4,10 @@ import {
 } from "@/components/logs/log-view-preferences-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { formatLogMessage } from "@/lib/helpers/format-log-message";
 import { TLogLineWithLevel, TLogType } from "@/lib/queries/logs";
 import { format } from "date-fns";
-import { ComponentProps, ReactNode } from "react";
+import { ComponentProps, ReactNode, useMemo } from "react";
 
 type TProps = ComponentProps<"div"> & {
   classNameInner?: string;
@@ -26,6 +27,12 @@ export default function LogLine({
   ...rest
 }: TProps) {
   const { preferences: viewPreferences } = useLogViewPreferences();
+
+  const message = logLine?.message;
+  const messageSegments = useMemo(
+    () => (message === undefined ? null : formatLogMessage(message).segments),
+    [message],
+  );
 
   const hasExtraColumns =
     viewPreferences.includes(logViewPreferenceKeys.timestamp) ||
@@ -94,7 +101,17 @@ export default function LogLine({
               {/* Message itself */}
               <div className="group-data-wrap/line:max-w-auto flex max-w-full py-1 pr-4 pl-1 group-data-wrap/line:min-w-0 group-data-wrap/line:shrink sm:pr-18 data-[container=page]:min-[87rem]:pr-4">
                 <p className="group-data-placeholder/line:bg-foreground group-data-placeholder/line:animate-skeleton leading-tight whitespace-pre select-text group-data-extra-columns/line:-mt-2 group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent group-data-wrap/line:min-w-0 group-data-wrap/line:shrink group-data-wrap/line:whitespace-pre-wrap lg:group-data-extra-columns/line:mt-0">
-                  {isPlaceholder ? "Loading the messages..." : logLine.message}
+                  {isPlaceholder || !messageSegments
+                    ? "Loading the messages..."
+                    : messageSegments.map((segment, index) =>
+                        segment.style ? (
+                          <span key={index} style={segment.style}>
+                            {segment.text}
+                          </span>
+                        ) : (
+                          segment.text
+                        ),
+                      )}
                 </p>
               </div>
             </div>
