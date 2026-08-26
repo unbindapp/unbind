@@ -175,8 +175,20 @@ type TServiceInfoLineProps = {
   className?: string;
 };
 
+type TDeployment = NonNullable<TService["last_deployment"]>;
+
+// A cancelled build is a deliberate no-op, fall back to the service's actual state
+function getDisplayDeployment(service: TServiceShallow): TDeployment | undefined {
+  const last = service.last_deployment;
+  if (last?.status !== "build-cancelled") return last;
+  const current = service.current_deployment;
+  if (current && current.status !== "removed") return current;
+  return current ?? undefined;
+}
+
 function ServiceInfoLine({ service, className }: TServiceInfoLineProps) {
-  const lastDeployment = service.last_deployment;
+  const deployment = getDisplayDeployment(service);
+  const showOfflineFallback = !deployment && Boolean(service.last_deployment);
 
   return (
     <div
@@ -185,26 +197,31 @@ function ServiceInfoLine({ service, className }: TServiceInfoLineProps) {
         className,
       )}
     >
-      {lastDeployment && <StatusIndicator deployment={lastDeployment} />}
-      <StatusText service={service} />
+      {(deployment || showOfflineFallback) && (
+        <StatusIndicator status={deployment?.status || "removed"} />
+      )}
+      <StatusText
+        service={service}
+        deployment={deployment}
+        showOfflineFallback={showOfflineFallback}
+      />
     </div>
   );
 }
 
 function StatusTextWrapper({
-  service,
+  deployment,
   children,
 }: {
-  service: TServiceShallow;
+  deployment: TDeployment | undefined;
   children: ReactNode;
 }) {
-  const lastDeployment = service.last_deployment;
   const color = useMemo(() => {
-    if (lastDeployment?.status === "crashing") return "destructive";
-    if (lastDeployment?.status === "build-failed") return "destructive";
-    if (lastDeployment?.status === "launch-error") return "destructive";
+    if (deployment?.status === "crashing") return "destructive";
+    if (deployment?.status === "build-failed") return "destructive";
+    if (deployment?.status === "launch-error") return "destructive";
     return "default";
-  }, [lastDeployment?.status]);
+  }, [deployment?.status]);
 
   return (
     <p
@@ -218,16 +235,16 @@ function StatusTextWrapper({
 }
 
 function StatusWithDuration({
-  service,
+  deployment,
   duration,
   children,
 }: {
-  service: TServiceShallow;
+  deployment: TDeployment;
   duration: string;
   children: ReactNode;
 }) {
   return (
-    <StatusTextWrapper service={service}>
+    <StatusTextWrapper deployment={deployment}>
       {children}
       <span className="text-muted-most-foreground px-[0.75ch]">|</span>
       <span className="font-mono" suppressHydrationWarning>
@@ -237,8 +254,15 @@ function StatusWithDuration({
   );
 }
 
-function StatusText({ service }: { service: TServiceShallow }) {
-  const deployment = service.last_deployment;
+function StatusText({
+  service,
+  deployment,
+  showOfflineFallback,
+}: {
+  service: TServiceShallow;
+  deployment: TDeployment | undefined;
+  showOfflineFallback: boolean;
+}) {
   const { str: timeDiffStr } = useTimeDifference({
     timestamp: deployment ? new Date(deployment.created_at).getTime() : 0,
   });
@@ -249,79 +273,80 @@ function StatusText({ service }: { service: TServiceShallow }) {
     start: new Date(deployment?.created_at || now).getTime(),
   });
 
-  if (!deployment) return "No deployments yet";
+  if (!deployment) {
+    if (showOfflineFallback) {
+      return <StatusTextWrapper deployment={deployment}>Offline</StatusTextWrapper>;
+    }
+    return "No deployments yet";
+  }
   if (deployment.status === "build-queued") {
     return (
-      <StatusWithDuration service={service} duration={durationStr}>
+      <StatusWithDuration deployment={deployment} duration={durationStr}>
         Build queued
       </StatusWithDuration>
     );
   }
   if (deployment.status === "build-pending") {
     return (
-      <StatusWithDuration service={service} duration={durationStr}>
+      <StatusWithDuration deployment={deployment} duration={durationStr}>
         Pending build
       </StatusWithDuration>
     );
   }
   if (deployment.status === "build-running") {
     return (
-      <StatusWithDuration service={service} duration={durationStr}>
+      <StatusWithDuration deployment={deployment} duration={durationStr}>
         Building
       </StatusWithDuration>
     );
   }
   if (deployment.status === "build-succeeded" || deployment.status === "launching") {
-    return <StatusTextWrapper service={service}>Launching</StatusTextWrapper>;
+    return <StatusTextWrapper deployment={deployment}>Launching</StatusTextWrapper>;
   }
   if (deployment.status === "launch-error") {
-    return <StatusTextWrapper service={service}>Couldn't launch</StatusTextWrapper>;
+    return <StatusTextWrapper deployment={deployment}>Couldn't launch</StatusTextWrapper>;
   }
   if (deployment.status === "build-failed") {
-    return <StatusTextWrapper service={service}>Build failed</StatusTextWrapper>;
+    return <StatusTextWrapper deployment={deployment}>Build failed</StatusTextWrapper>;
   }
   if (deployment.status === "build-cancelled") {
-    return <StatusTextWrapper service={service}>Build cancelled</StatusTextWrapper>;
+    return <StatusTextWrapper deployment={deployment}>Build cancelled</StatusTextWrapper>;
   }
   if (deployment.status === "crashing") {
-    return <StatusTextWrapper service={service}>Crashing</StatusTextWrapper>;
+    return <StatusTextWrapper deployment={deployment}>Crashing</StatusTextWrapper>;
   }
   if (deployment.status === "removed") {
-    return <StatusTextWrapper service={service}>Offline</StatusTextWrapper>;
+    return <StatusTextWrapper deployment={deployment}>Offline</StatusTextWrapper>;
   }
   if (deployment.status === "active")
     return (
-      <StatusTextWrapper service={service}>
+      <StatusTextWrapper deployment={deployment}>
         Online <span className="text-muted-most-foreground px-[0.75ch]">|</span> {timeDiffStr} via{" "}
         {sourceToTitle[service.type] || "Unknown"}
       </StatusTextWrapper>
     );
 }
 
-function StatusIndicator({ deployment }: { deployment: NonNullable<TService["last_deployment"]> }) {
-  if (deployment.status === "build-queued" || deployment.status === "build-pending") {
+function StatusIndicator({ status }: { status: TDeployment["status"] }) {
+  if (status === "build-queued" || status === "build-pending") {
     return <HourglassIcon className="animate-hourglass size-3.5 shrink-0" />;
   }
-  if (
-    deployment.status === "build-running" ||
-    deployment.status === "build-succeeded" ||
-    deployment.status === "launching"
-  ) {
+  if (status === "build-running" || status === "build-succeeded" || status === "launching") {
     return <LoaderIcon className="size-3.5 shrink-0 animate-spin" />;
   }
-  if (deployment.status === "build-failed") {
+  if (status === "build-failed") {
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
-  if (deployment.status === "build-cancelled") {
+  if (status === "build-cancelled") {
     return <OctagonXIcon className="size-3.5 shrink-0" />;
   }
-  if (deployment.status === "launch-error") {
+  if (status === "launch-error") {
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
-  if (deployment.status === "crashing") {
+  if (status === "crashing") {
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
-  if (deployment.status === "removed") {
+  if (status === "removed") {
     return (
       <div className="-ml-px flex size-3.5 shrink-0 items-center justify-center">
         <div className="flex size-3 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--muted-foreground)_40%,transparent)]">

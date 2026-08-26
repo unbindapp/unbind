@@ -68,5 +68,10 @@
     "version": "v0.1.13",
     "description": "Button pending state fix and shorter volume panel explanations",
     "breaking": false
+  },
+  "v0.1.14": {
+    "version": "v0.1.14",
+    "description": "Deployment abort support, deploy state fixes, and volume card layout improvements",
+    "breaking": false
   }
 }
