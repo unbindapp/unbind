@@ -341,9 +341,9 @@ func (self *DeploymentController) populateDatabaseEnv(ctx context.Context, env m
 		return fmt.Errorf("service database name or definition is nil")
 	}
 
-	var config *v1.DatabaseConfigSpec
-	if service.Edges.ServiceConfig.DatabaseConfig != nil {
-		config = service.Edges.ServiceConfig.DatabaseConfig.AsV1DatabaseConfig()
+	config, err := service.Edges.ServiceConfig.DatabaseConfig.AsV1DatabaseConfig()
+	if err != nil {
+		return err
 	}
 	marshalledConfig, err := json.Marshal(config)
 	if err != nil {

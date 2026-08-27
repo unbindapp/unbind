@@ -2975,8 +2975,7 @@ func (c *ServiceConfigClient) QueryS3BackupSources(_m *ServiceConfig) *S3Query {
 
 // Hooks returns the client hooks.
 func (c *ServiceConfigClient) Hooks() []Hook {
-	hooks := c.hooks.ServiceConfig
-	return append(hooks[:len(hooks):len(hooks)], serviceconfig.Hooks[:]...)
+	return c.hooks.ServiceConfig
 }
 
 // Interceptors returns the client interceptors.

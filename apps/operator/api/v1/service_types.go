@@ -18,6 +18,7 @@ package v1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -205,13 +206,11 @@ type DatabaseSpec struct {
 }
 
 type DatabaseConfigSpec struct {
-	Version string `json:"version,omitempty"`
-	// StorageSize must be a valid, non-negative Kubernetes resource quantity (e.g. "10Gi", "7680Mi")
-	// +kubebuilder:validation:Pattern=`^([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|([eE][-+]?([0-9]+(\.[0-9]*)?|\.[0-9]+)))?$`
-	StorageSize         string `json:"storage,omitempty"`
-	DefaultDatabaseName string `json:"defaultDatabaseName,omitempty"`
-	InitDB              string `json:"initdb,omitempty"`
-	WalLevel            string `json:"walLevel,omitempty"`
+	Version             string             `json:"version,omitempty"`
+	StorageSize         *resource.Quantity `json:"storage,omitempty"`
+	DefaultDatabaseName string             `json:"defaultDatabaseName,omitempty"`
+	InitDB              string             `json:"initdb,omitempty"`
+	WalLevel            string             `json:"walLevel,omitempty"`
 }
 
 func (self *DatabaseConfigSpec) AsMap() map[string]any {
@@ -219,8 +218,8 @@ func (self *DatabaseConfigSpec) AsMap() map[string]any {
 	if self.Version != "" {
 		res["version"] = self.Version
 	}
-	if self.StorageSize != "" {
-		res["storage"] = self.StorageSize
+	if self.StorageSize != nil {
+		res["storage"] = self.StorageSize.String()
 	}
 	if self.DefaultDatabaseName != "" {
 		res["defaultDatabaseName"] = self.DefaultDatabaseName

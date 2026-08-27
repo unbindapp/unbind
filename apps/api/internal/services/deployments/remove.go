@@ -46,7 +46,10 @@ func (self *DeploymentService) RemoveActiveDeployment(ctx context.Context, reque
 		return nil, err
 	}
 
-	crd := self.CreateCRDFromService(service)
+	crd, err := self.CreateCRDFromService(service)
+	if err != nil {
+		return nil, err
+	}
 	crd.Spec.DeploymentRef = deployment.ID.String()
 	crd.Spec.EnvVars = envVars
 	crd.Spec.Config.Replicas = new(int32(0))

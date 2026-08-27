@@ -638,9 +638,7 @@ func (_u *ServiceConfigUpdate) ClearS3BackupSources() *ServiceConfigUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *ServiceConfigUpdate) Save(ctx context.Context) (int, error) {
-	if err := _u.defaults(); err != nil {
-		return 0, err
-	}
+	_u.defaults()
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -667,15 +665,11 @@ func (_u *ServiceConfigUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (_u *ServiceConfigUpdate) defaults() error {
+func (_u *ServiceConfigUpdate) defaults() {
 	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if serviceconfig.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized serviceconfig.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
-		}
 		v := serviceconfig.UpdateDefaultUpdatedAt()
 		_u.mutation.SetUpdatedAt(v)
 	}
-	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -1618,9 +1612,7 @@ func (_u *ServiceConfigUpdateOne) Select(field string, fields ...string) *Servic
 
 // Save executes the query and returns the updated ServiceConfig entity.
 func (_u *ServiceConfigUpdateOne) Save(ctx context.Context) (*ServiceConfig, error) {
-	if err := _u.defaults(); err != nil {
-		return nil, err
-	}
+	_u.defaults()
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
@@ -1647,15 +1639,11 @@ func (_u *ServiceConfigUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (_u *ServiceConfigUpdateOne) defaults() error {
+func (_u *ServiceConfigUpdateOne) defaults() {
 	if _, ok := _u.mutation.UpdatedAt(); !ok {
-		if serviceconfig.UpdateDefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized serviceconfig.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
-		}
 		v := serviceconfig.UpdateDefaultUpdatedAt()
 		_u.mutation.SetUpdatedAt(v)
 	}
-	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

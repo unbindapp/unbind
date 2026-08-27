@@ -71,7 +71,10 @@ func (self *DeploymentService) redeployExistingImage(ctx context.Context, servic
 	}
 
 	// Create a CRD from the service configuration
-	newDeployment.ResourceDefinition = self.CreateCRDFromService(service)
+	newDeployment.ResourceDefinition, err = self.CreateCRDFromService(service)
+	if err != nil {
+		return nil, err
+	}
 
 	// Update deployment resource definition
 	newDeployment.ResourceDefinition.Spec.DeploymentRef = newDeployment.ID.String()
@@ -91,7 +94,10 @@ func (self *DeploymentService) redeployExistingImage(ctx context.Context, servic
 
 	// For database services, always use latest config
 	if service.Type == schema.ServiceTypeDatabase && service.Edges.ServiceConfig.DatabaseConfig != nil {
-		newDeployment.ResourceDefinition.Spec.Config.Database.Config = service.Edges.ServiceConfig.DatabaseConfig.AsV1DatabaseConfig()
+		newDeployment.ResourceDefinition.Spec.Config.Database.Config, err = service.Edges.ServiceConfig.DatabaseConfig.AsV1DatabaseConfig()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Deploy to kubernetes
@@ -201,14 +207,18 @@ func (self *DeploymentService) CreateRedeployment(ctx context.Context, requester
 }
 
 // CreateCRDFromService creates a CRD from the service configuration
-func (self *DeploymentService) CreateCRDFromService(service *ent.Service) *ubv1.Service {
+func (self *DeploymentService) CreateCRDFromService(service *ent.Service) (*ubv1.Service, error) {
 	crdToDeploy := &ubv1.Service{}
 
 	// For databsae fetch the crd from the current deployment
 	if service.Type == schema.ServiceTypeDatabase && service.Edges.CurrentDeployment != nil && service.Edges.CurrentDeployment.ResourceDefinition != nil {
 		crdToDeploy = service.Edges.CurrentDeployment.ResourceDefinition
 		if service.Edges.ServiceConfig.DatabaseConfig != nil {
-			crdToDeploy.Spec.Config.Database.Config = service.Edges.ServiceConfig.DatabaseConfig.AsV1DatabaseConfig()
+			dbConfig, err := service.Edges.ServiceConfig.DatabaseConfig.AsV1DatabaseConfig()
+			if err != nil {
+				return nil, err
+			}
+			crdToDeploy.Spec.Config.Database.Config = dbConfig
 		}
 	}
 
@@ -250,5 +260,5 @@ func (self *DeploymentService) CreateCRDFromService(service *ent.Service) *ubv1.
 	}
 	crdToDeploy.Spec.Config.Hosts = prunedHosts
 
-	return crdToDeploy
+	return crdToDeploy, nil
 }

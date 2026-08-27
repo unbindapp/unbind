@@ -967,14 +967,6 @@ func (suite *ServiceMutationsSuite) TestUpdateDatabaseStorageSize() {
 		suite.Equal("15Gi", updated.DatabaseConfig.StorageSize)
 	})
 
-	suite.Run("Direct ent write with invalid storage is rejected by schema hook", func() {
-		err := suite.DB.ServiceConfig.UpdateOneID(suite.testConfig.ID).
-			SetDatabaseConfig(&schema.DatabaseConfig{StorageSize: "7680MiGi"}).
-			Exec(suite.Ctx)
-		suite.Error(err)
-		suite.ErrorContains(err, "invalid database storage size")
-	})
-
 	suite.Run("UpdateDatabaseStorageSize Non-existent Service", func() {
 		_, err := suite.serviceRepo.UpdateDatabaseStorageSize(suite.Ctx, nil, uuid.New(), "10Gi")
 		suite.Error(err)

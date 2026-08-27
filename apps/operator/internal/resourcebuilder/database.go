@@ -52,7 +52,7 @@ func (rb *ResourceBuilder) buildDatabaseConfig() map[string]any {
 		dbConfig = rb.service.Spec.Config.Database.Config.AsMap()
 	}
 
-	storage := dbConfig["storage"]
+	storage, _ := dbConfig["storage"].(string)
 	if storage == "" {
 		storage = "1Gi"
 	}
@@ -81,7 +81,7 @@ func (rb *ResourceBuilder) applyDbEnvironment(dbConfig map[string]any) {
 	}
 }
 
-func (rb *ResourceBuilder) applyDbCommonConfig(dbConfig map[string]any, storage any) {
+func (rb *ResourceBuilder) applyDbCommonConfig(dbConfig map[string]any, storage string) {
 	commonMap := ensureMapKey(dbConfig, "common")
 	commonMap["namespace"] = rb.service.Namespace
 	commonMap["storage"] = storage

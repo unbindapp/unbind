@@ -82,14 +82,10 @@ func (r *ServiceReconciler) growReleasePVCs(ctx context.Context, service *v1.Ser
 
 func databaseStorageQuantity(service *v1.Service) (resource.Quantity, bool) {
 	config := service.Spec.Config.Database.Config
-	if config == nil || config.StorageSize == "" {
+	if config == nil || config.StorageSize == nil {
 		return resource.Quantity{}, false
 	}
-	quantity, err := resource.ParseQuantity(config.StorageSize)
-	if err != nil {
-		return resource.Quantity{}, false
-	}
-	return quantity, true
+	return *config.StorageSize, true
 }
 
 func (r *ServiceReconciler) orphanDeleteStatefulSets(ctx context.Context, namespace string, selector client.MatchingLabels) error {

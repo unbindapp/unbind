@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -363,18 +364,24 @@ type DatabaseConfig struct {
 	WalLevel            string `json:"walLevel,omitempty" required:"false" description:"PostgreSQL WAL level"`
 }
 
-func (self *DatabaseConfig) AsV1DatabaseConfig() *v1.DatabaseConfigSpec {
+func (self *DatabaseConfig) AsV1DatabaseConfig() (*v1.DatabaseConfigSpec, error) {
 	if self == nil {
-		return nil
+		return nil, nil
 	}
 	dbConfig := &v1.DatabaseConfigSpec{
 		Version:             self.Version,
-		StorageSize:         self.StorageSize,
 		DefaultDatabaseName: self.DefaultDatabaseName,
 		InitDB:              self.InitDB,
 		WalLevel:            self.WalLevel,
 	}
-	return dbConfig
+	if self.StorageSize != "" {
+		qty, err := utils.ParseStorageQuantity(self.StorageSize)
+		if err != nil {
+			return nil, fmt.Errorf("invalid database storage size %q: %w", self.StorageSize, err)
+		}
+		dbConfig.StorageSize = &qty
+	}
+	return dbConfig, nil
 }
 
 //* Enums

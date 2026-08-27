@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	// Import the operator API package
 	unbindv1 "github.com/unbindapp/unbind-operator/api/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,41 +11,50 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// DeployImage creates (or replaces) the service resource in the target namespace
-// for deployment after a successful build job.
+// DeployUnbindService creates (or replaces) the service resource in the target namespace,
+// validating it against the API server with a dry run before any real write.
 func (self *KubeClient) DeployUnbindService(ctx context.Context, service *unbindv1.Service) (*unstructured.Unstructured, *unbindv1.Service, error) {
-	// Convert to unstructured for the dynamic client
 	unstructuredObj, err := convertToUnstructured(service)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to convert service to unstructured: %v", err)
+		return nil, nil, fmt.Errorf("failed to convert service to unstructured: %w", err)
 	}
 
-	createdCR, err := self.client.Resource(servicesGVR).Namespace(service.Namespace).Create(ctx, unstructuredObj, metav1.CreateOptions{})
-	if err != nil {
-		// If the resource already exists, update it
-		if apierrors.IsAlreadyExists(err) {
-			res, err := updateExistingServiceCR(ctx, self, service.Namespace, unstructuredObj)
-			return res, service, err
-		}
-		return nil, nil, fmt.Errorf("failed to create service custom resource: %v", err)
+	services := self.client.Resource(servicesGVR).Namespace(service.Namespace)
+	dryRun := []string{metav1.DryRunAll}
+
+	if _, err := services.Create(ctx, unstructuredObj, metav1.CreateOptions{DryRun: dryRun}); err != nil && !apierrors.IsAlreadyExists(err) {
+		return nil, nil, fmt.Errorf("service custom resource failed validation: %w", err)
 	}
 
-	return createdCR, service, nil
+	createdCR, err := services.Create(ctx, unstructuredObj, metav1.CreateOptions{})
+	if err == nil {
+		return createdCR, service, nil
+	}
+	if !apierrors.IsAlreadyExists(err) {
+		return nil, nil, fmt.Errorf("failed to create service custom resource: %w", err)
+	}
+
+	res, err := updateExistingServiceCR(ctx, self, service.Namespace, unstructuredObj)
+	return res, service, err
 }
 
-// updateExistingServiceCR handles updating an existing Service custom resource
 func updateExistingServiceCR(ctx context.Context, client *KubeClient, namespace string, newCR *unstructured.Unstructured) (*unstructured.Unstructured, error) {
-	existingCR, err := client.client.Resource(servicesGVR).Namespace(namespace).Get(ctx, newCR.GetName(), metav1.GetOptions{})
+	services := client.client.Resource(servicesGVR).Namespace(namespace)
+
+	existingCR, err := services.Get(ctx, newCR.GetName(), metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve existing service: %v", err)
+		return nil, fmt.Errorf("failed to retrieve existing service: %w", err)
 	}
 
-	// Set the resourceVersion on the object to be updated
 	newCR.SetResourceVersion(existingCR.GetResourceVersion())
 
-	updatedCR, err := client.client.Resource(servicesGVR).Namespace(namespace).Update(ctx, newCR, metav1.UpdateOptions{})
+	if _, err := services.Update(ctx, newCR, metav1.UpdateOptions{DryRun: []string{metav1.DryRunAll}}); err != nil {
+		return nil, fmt.Errorf("service custom resource failed validation: %w", err)
+	}
+
+	updatedCR, err := services.Update(ctx, newCR, metav1.UpdateOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to update service custom resource: %v", err)
+		return nil, fmt.Errorf("failed to update service custom resource: %w", err)
 	}
 
 	return updatedCR, nil

@@ -82,6 +82,7 @@ func remediationScheme(t *testing.T) *runtime.Scheme {
 
 func remediationFixtures(releaseConditions []metav1.Condition, storageSize string) (*v1.Service, *helmv2.HelmRelease, *appsv1.StatefulSet, *corev1.PersistentVolumeClaim) {
 	controller := true
+	storage := resource.MustParse(storageSize)
 	service := &v1.Service{
 		ObjectMeta: metav1.ObjectMeta{Name: "my-redis", Namespace: "team-ns", UID: types.UID("svc-uid")},
 		Spec: v1.ServiceSpec{
@@ -89,7 +90,7 @@ func remediationFixtures(releaseConditions []metav1.Condition, storageSize strin
 			Config: v1.ServiceConfigSpec{
 				Database: v1.DatabaseSpec{
 					Type:   "redis",
-					Config: &v1.DatabaseConfigSpec{StorageSize: storageSize},
+					Config: &v1.DatabaseConfigSpec{StorageSize: &storage},
 				},
 			},
 		},

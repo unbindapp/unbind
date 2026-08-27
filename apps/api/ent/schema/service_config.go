@@ -1,9 +1,6 @@
 package schema
 
 import (
-	"context"
-	"fmt"
-
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
@@ -11,7 +8,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema/mixin"
-	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer/enum"
 )
 
@@ -84,27 +80,6 @@ func (ServiceConfig) Edges() []ent.Edge {
 		// O2M to backup sources
 		edge.From("s3_backup_sources", S3.Type).Ref("service_backup_source").Field("s3_backup_source_id").Unique(),
 	}
-}
-
-// Hooks of the ServiceConfig. Every write goes through these, regardless of
-// which repository or code path issued it.
-func (ServiceConfig) Hooks() []ent.Hook {
-	return []ent.Hook{
-		validateDatabaseConfigHook,
-	}
-}
-
-func validateDatabaseConfigHook(next ent.Mutator) ent.Mutator {
-	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-		if v, ok := m.Field("database_config"); ok {
-			if cfg, ok := v.(*DatabaseConfig); ok && cfg != nil && cfg.StorageSize != "" {
-				if _, err := utils.ParseStorageQuantity(cfg.StorageSize); err != nil {
-					return nil, fmt.Errorf("invalid database storage size %q: %w", cfg.StorageSize, err)
-				}
-			}
-		}
-		return next.Mutate(ctx, m)
-	})
 }
 
 // Annotations of the ServiceConfig
