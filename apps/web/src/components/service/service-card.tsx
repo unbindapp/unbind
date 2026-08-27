@@ -10,7 +10,13 @@ import { sourceToTitle } from "@/lib/constants";
 import { useIntent } from "@/lib/hooks/use-intent";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { deploymentsListQuery } from "@/lib/queries/deployments";
-import { serviceQuery, TService, TServiceShallow } from "@/lib/queries/services";
+import { instanceHealthQuery } from "@/lib/queries/instances";
+import {
+  serviceEndpointsQuery,
+  serviceQuery,
+  TService,
+  TServiceShallow,
+} from "@/lib/queries/services";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   HourglassIcon,
@@ -73,6 +79,8 @@ export default function ServiceCard({
       };
       queryClient.prefetchQuery(deploymentsListQuery(input));
       queryClient.prefetchQuery(serviceQuery(input));
+      queryClient.prefetchQuery(serviceEndpointsQuery(input));
+      queryClient.prefetchQuery(instanceHealthQuery(input));
     },
     enabled: !isPlaceholder,
   });
