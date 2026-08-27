@@ -1,0 +1,2 @@
+# Acknowledges the chart RBAC changes in this release (impersonator removal, updater SA)
+# as fresh-install-only; no manifests for existing installs.

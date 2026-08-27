@@ -161,6 +161,34 @@ rules:
     resources: ["subjectaccessreviews"]
     verbs: ["create"]
 ---
+# Lets users with their own kubeconfig list namespaces. Bound to the group the API
+# mints into every access token ("oidc:" prefix).
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "unbind.fullname" . }}-namespace-viewer
+  labels:
+    {{- include "unbind.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "unbind.fullname" . }}-namespace-viewer-binding
+  labels:
+    {{- include "unbind.labels" . | nindent 4 }}
+subjects:
+  - kind: Group
+    name: "oidc:users"
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: {{ include "unbind.fullname" . }}-namespace-viewer
+  apiGroup: rbac.authorization.k8s.io
+---
 # ClusterRoleBinding for namespace management
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
