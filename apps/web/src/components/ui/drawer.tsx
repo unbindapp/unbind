@@ -127,7 +127,11 @@ function DrawerContent({
               // containing block and break position:fixed descendants (e.g. the
               // fullscreen terminal)
               direction === "bottom" &&
-                "inset-x-0 bottom-0 mt-24 h-auto rounded-t-2xl data-ending-style:translate-y-full data-starting-style:translate-y-full data-swiping:translate-y-[var(--drawer-swipe-movement-y,0px)]",
+                cn(
+                  "inset-x-0 bottom-0 mt-24 h-auto rounded-t-2xl data-ending-style:translate-y-full data-starting-style:translate-y-full data-swiping:translate-y-[var(--drawer-swipe-movement-y,0px)]",
+                  // Fills the gap revealed below the sheet when it's overdragged upward
+                  "after:absolute after:inset-x-0 after:top-full after:h-[50vh] after:bg-inherit",
+                ),
               direction === "right" &&
                 "top-0 right-0 h-full rounded-l-2xl data-ending-style:translate-x-full data-starting-style:translate-x-full data-swiping:translate-x-[var(--drawer-swipe-movement-x,0px)]",
               className,
