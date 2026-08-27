@@ -118,15 +118,9 @@ function DrawerContent({
             data-slot="drawer-content"
             className={cn(
               "bg-background ring-border absolute z-50 flex flex-col ring-1 focus:outline-hidden focus-visible:outline-hidden",
-              // Base UI's VirtualKeyboardProvider sets this var to the software
-              // keyboard height while a field inside the drawer is focused
-              "pb-[var(--drawer-keyboard-inset,0px)]",
+              "pb-(--drawer-keyboard-inset,0px)",
               cn("transition-transform", drawerEase),
               "data-ending-style:duration-[calc(var(--drawer-swipe-strength,1)*500ms)]",
-              // No resting transform/translate: it would create a containing block
-              // and break position:fixed descendants (e.g. the fullscreen terminal).
-              // While swiping, Base UI moves the popup via inline styles; adding
-              // the swipe-movement var on top would double the movement.
               direction === "bottom" &&
                 cn(
                   "inset-x-0 bottom-0 mt-24 h-auto rounded-t-2xl data-ending-style:translate-y-full data-starting-style:translate-y-full",
