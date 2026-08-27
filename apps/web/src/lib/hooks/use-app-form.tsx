@@ -280,7 +280,13 @@ function StorageSizeInput({
     <div className={cn("flex flex-col", className)}>
       <div className="flex w-full gap-3">
         <Min />
-        <Slider {...rest} className={cn("flex-1", classNameInput)} />
+        {/* Callers pass `value={x ? [x] : undefined}`; falling back to defaultValue
+            keeps the slider controlled for its whole lifetime */}
+        <Slider
+          {...rest}
+          value={rest.value ?? rest.defaultValue}
+          className={cn("flex-1", classNameInput)}
+        />
         <Max />
       </div>
       {!hideError &&
