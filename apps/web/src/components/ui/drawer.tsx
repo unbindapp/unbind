@@ -117,6 +117,9 @@ function DrawerContent({
             data-slot="drawer-content"
             className={cn(
               "bg-background ring-border absolute z-50 flex flex-col ring-1 focus:outline-hidden focus-visible:outline-hidden",
+              // Base UI's VirtualKeyboardProvider sets this var to the software
+              // keyboard height while a field inside the drawer is focused
+              "pb-[var(--drawer-keyboard-inset,0px)]",
               cn("transition-transform", drawerEase),
               "data-ending-style:duration-[calc(var(--drawer-swipe-strength,1)*500ms)] data-swiping:transition-none",
               // Translate only while swiping: a resting transform would create a
