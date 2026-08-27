@@ -40,7 +40,6 @@ export default function ThemeButton({
     return (
       <Button
         onClick={(e) => {
-          e.preventDefault();
           toggleTheme();
         }}
         variant="ghost"
@@ -60,8 +59,8 @@ export default function ThemeButton({
   if (variant === "dropdown-menu-item") {
     return (
       <DropdownMenuItem
+        closeOnClick={false}
         onClick={(e) => {
-          e.preventDefault();
           toggleTheme();
         }}
         className="flex w-full items-center justify-start text-left leading-tight"
