@@ -123,5 +123,10 @@
     "version": "v0.1.24",
     "description": "Drawer swipe fixes, service endpoint and health prefetching, and stale update notification fix",
     "breaking": false
+  },
+  "v0.1.25": {
+    "version": "v0.1.25",
+    "description": "Volume expansion limited by available storage, and chart tooltip background fix",
+    "breaking": false
   }
 }
