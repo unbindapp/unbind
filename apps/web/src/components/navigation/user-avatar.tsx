@@ -238,12 +238,12 @@ function GitBranchOrExternalLinkIcon({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "text-muted-foreground has-hover:group-hover/version:text-foreground group-active/version:text-foreground relative -ml-px size-3.75 shrink-0 transition-[rotate,opacity] group-active/version:rotate-90 has-hover:group-hover/version:rotate-90",
+        "text-muted-foreground has-hover:group-hover/version:text-foreground group-active/version:text-foreground relative -ml-px size-3.75 shrink-0 transition-[rotate,opacity] group-active/version:rotate-45 has-hover:group-hover/version:rotate-45",
         className,
       )}
     >
       <GitBranchIcon className="size-full group-active/version:opacity-0 has-hover:group-hover/version:opacity-0" />
-      <ExternalLink className="absolute top-0 left-0 size-full -rotate-90 opacity-0 group-active/version:opacity-100 has-hover:group-hover/version:opacity-100" />
+      <ExternalLink className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/version:opacity-100 has-hover:group-hover/version:opacity-100" />
     </div>
   );
 }

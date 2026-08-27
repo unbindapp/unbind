@@ -229,9 +229,9 @@ function UpdateSectionInner({
                 asChild
               >
                 <a href={latestVersionUrl} target="_blank" rel="noopener noreferrer">
-                  <div className="relative size-4.5 shrink-0 transition-[rotate,opacity] group-active:rotate-90 has-hover:group-hover:rotate-90">
+                  <div className="relative size-4.5 shrink-0 transition-[rotate,opacity] group-active:rotate-45 has-hover:group-hover:rotate-45">
                     <FileTextIcon className="size-full group-active:opacity-0 has-hover:group-hover:opacity-0" />
-                    <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 group-active:opacity-100 has-hover:group-hover:opacity-100" />
+                    <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active:opacity-100 has-hover:group-hover:opacity-100" />
                   </div>
                   <p className="min-w-0 shrink">Changelog</p>
                 </a>
