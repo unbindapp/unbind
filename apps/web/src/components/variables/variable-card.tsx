@@ -437,7 +437,7 @@ function ThreeDotButton({
             {!isLocked && (
               <DropdownMenuItem
                 disabled={disableEdit}
-                onSelect={() => setIsEditingVariable((o) => !o)}
+                onClick={() => setIsEditingVariable((o) => !o)}
               >
                 {!disableEdit ? (
                   <PenIcon className="-ml-0.5 size-5" />

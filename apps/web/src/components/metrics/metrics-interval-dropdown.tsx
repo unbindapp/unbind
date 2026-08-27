@@ -47,7 +47,7 @@ export default function MetricsIntervalDropdown({ className }: TProps) {
           <DropdownMenuGroup>
             {intervals.map((i) => (
               <DropdownMenuItem
-                onSelect={() => setInterval(i.value)}
+                onClick={() => setInterval(i.value)}
                 key={i.value}
                 className="group/item gap-4 py-3.5 sm:py-2.25"
                 data-selected={i.value === interval.value || undefined}

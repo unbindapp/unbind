@@ -400,11 +400,10 @@ function DropdownItem<T>({
   });
   return (
     <DropdownMenuItem
-      onSelect={(e) => {
+      closeOnClick={!dontCloseMenuOnSelect}
+      onClick={() => {
         if (!dontCloseMenuOnSelect) {
           setOpen(false);
-        } else {
-          e.preventDefault();
         }
         onSelect(item.id);
       }}

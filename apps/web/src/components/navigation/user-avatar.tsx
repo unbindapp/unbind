@@ -179,7 +179,7 @@ export default function UserAvatar({ email, className }: TProps) {
           <DropdownMenuItem
             disabled={isPendingSignOut}
             className="p-0"
-            onSelect={() => {
+            onClick={() => {
               if (isPendingSignOut) return;
               signOut();
             }}

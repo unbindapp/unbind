@@ -172,8 +172,8 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
             <DropdownMenuItem
               data-not-default={!isDefaultState || undefined}
               disabled={isDefaultState}
-              onSelect={(e) => {
-                e.preventDefault();
+              closeOnClick={false}
+              onClick={() => {
                 resetPreferences();
               }}
               className="group/item data-not-default:text-warning data-not-default:focus:bg-warning/10 data-not-default:active:bg-warning/10 py-3.5 sm:py-2.25"
