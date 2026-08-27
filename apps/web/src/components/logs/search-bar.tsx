@@ -176,7 +176,7 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
               onClick={() => {
                 resetPreferences();
               }}
-              className="group/item data-not-default:text-warning data-not-default:focus:bg-warning/10 data-not-default:active:bg-warning/10 py-3.5 sm:py-2.25"
+              className="group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/10 data-not-default:active:bg-warning/10 py-3.5 sm:py-2.25"
             >
               <RotateCcwIcon className="-my-1 size-4.5 shrink-0 -rotate-90 transform transition-transform group-data-not-default/item:rotate-0" />
               <p className="min-w-0 shrink">Reset</p>

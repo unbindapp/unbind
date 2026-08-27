@@ -5,8 +5,18 @@ import { cn } from "@/components/ui/utils";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
 import { cva, VariantProps } from "class-variance-authority";
 
-function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
-  return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />;
+function DropdownMenu({ highlightItemOnHover, ...props }: MenuPrimitive.Root.Props) {
+  // On touch devices a tap fires synthesized mouse events at the tap point,
+  // which would highlight whichever item happens to land under the finger as
+  // the menu opens; there is no real hover to highlight there anyway
+  const highlightOnHoverDefault = !window.matchMedia("(pointer: coarse)").matches;
+  return (
+    <MenuPrimitive.Root
+      data-slot="dropdown-menu"
+      highlightItemOnHover={highlightItemOnHover ?? highlightOnHoverDefault}
+      {...props}
+    />
+  );
 }
 
 function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
@@ -122,7 +132,7 @@ function DropdownMenuItem({
       data-slot="dropdown-menu-item"
       data-inset={inset}
       className={cn(
-        "active:bg-accent focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center justify-start gap-2.5 rounded-md px-3 py-2.5 leading-tight font-medium outline-hidden select-none data-disabled:pointer-events-none data-inset:pl-8 [&>svg]:shrink-0",
+        "active:bg-accent data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex cursor-default items-center justify-start gap-2.5 rounded-md px-3 py-2.5 leading-tight font-medium outline-hidden select-none data-disabled:pointer-events-none data-inset:pl-8 [&>svg]:shrink-0",
         fadeOnDisabled && "data-disabled:opacity-50",
         className,
       )}
@@ -148,7 +158,7 @@ function DropdownMenuSubTrigger({
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset}
       className={cn(
-        "focus:bg-accent data-popup-open:bg-accent flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "data-highlighted:bg-accent data-popup-open:bg-accent flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-inset:pl-8 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className,
       )}
       {...props}
@@ -190,7 +200,7 @@ function DropdownMenuCheckboxItem({
     <MenuPrimitive.CheckboxItem
       data-slot="dropdown-menu-checkbox-item"
       className={cn(
-        "group/checkbox focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center justify-start rounded-md py-2.25 pr-3.5 pl-9.5 leading-tight font-medium outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50",
+        "group/checkbox data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex cursor-default items-center justify-start rounded-md py-2.25 pr-3.5 pl-9.5 leading-tight font-medium outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50",
         className,
       )}
       checked={checked}
@@ -215,7 +225,7 @@ function DropdownMenuRadioItem({ className, children, ...props }: MenuPrimitive.
     <MenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       className={cn(
-        "focus:bg-accent focus:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50",
+        "data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50",
         className,
       )}
       {...props}
