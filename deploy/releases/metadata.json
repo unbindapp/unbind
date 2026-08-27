@@ -93,5 +93,10 @@
     "version": "v0.1.18",
     "description": "Smart redeploy and cache bypass options, PVC permission error mapping, and UI polish",
     "breaking": false
+  },
+  "v0.1.19": {
+    "version": "v0.1.19",
+    "description": "More reliable platform updates with failure recovery, and persistent volume management permissions",
+    "breaking": false
   }
 }
