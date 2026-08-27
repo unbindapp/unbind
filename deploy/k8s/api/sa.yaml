@@ -90,6 +90,16 @@ rules:
     resources: ["certificaterequests"]
     verbs: ["get", "list", "watch"]
 ---
+# PersistentVolumes are cluster-scoped; the API flips reclaim policy to Delete when releasing a volume
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pv-manager
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "patch"]
+---
 # ClusterRoleBinding for role management
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -116,6 +126,19 @@ subjects:
 roleRef:
   kind: ClusterRole
   name: unbind-services-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pv-manager-binding
+subjects:
+  - kind: ServiceAccount
+    name: unbind-api-sa
+    namespace: unbind-system
+roleRef:
+  kind: ClusterRole
+  name: pv-manager
   apiGroup: rbac.authorization.k8s.io
 ---
 # ClusterRoleBinding for cluster resources reader
