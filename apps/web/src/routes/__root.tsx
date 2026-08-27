@@ -1,5 +1,6 @@
 import NotFoundTemplate from "@/components/navigation/not-found-template";
 import Providers from "@/components/providers/providers";
+import { Toaster } from "@/components/ui/sonner";
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet, redirect } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
@@ -68,6 +69,7 @@ function RootComponent() {
   return (
     <Providers>
       <Outlet />
+      <Toaster />
       {/*    {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-right" />} */}
     </Providers>
   );

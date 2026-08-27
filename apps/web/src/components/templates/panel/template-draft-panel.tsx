@@ -28,11 +28,11 @@ import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
 import { ServiceRenameSchema } from "@/lib/queries/services";
 import { EllipsisVerticalIcon, PenIcon, Trash2Icon, XIcon } from "lucide-react";
-import { ReactNode, useCallback, useRef, useState } from "react";
+import { ReactElement, useCallback, useRef, useState } from "react";
 
 type TProps = {
   templateDraft: TTemplateDraft;
-  children: ReactNode;
+  children: ReactElement;
 };
 
 export default function TemplateDraftPanel({ templateDraft, children }: TProps) {
@@ -50,18 +50,8 @@ export default function TemplateDraftPanel({ templateDraft, children }: TProps) 
   const { isExtraSmall } = useDeviceSize();
 
   return (
-    <Drawer
-      open={open}
-      onOpenChange={setOpen}
-      direction={isExtraSmall ? "bottom" : "right"}
-      handleOnly={!isExtraSmall}
-      // Vaul's input repositioning is for the mobile keyboard. On desktop (right
-      // direction) it fires on any visualViewport resize while an input is focused
-      // and pins an inline pixel height that overrides `sm:h-full`, leaving the
-      // drawer stuck at the wrong height. Only enable it on the mobile bottom drawer.
-      repositionInputs={isExtraSmall}
-    >
-      <DrawerTrigger asChild>{children}</DrawerTrigger>
+    <Drawer open={open} onOpenChange={setOpen} direction={isExtraSmall ? "bottom" : "right"}>
+      <DrawerTrigger render={children} />
       <DrawerContent
         hasHandle={isExtraSmall}
         className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
@@ -73,19 +63,21 @@ export default function TemplateDraftPanel({ templateDraft, children }: TProps) 
           </DrawerHeader>
           <DrawerHeaderButtonsWrapper>
             <ThreeDotButton templateDraft={templateDraft} className="rounded-lg" />
-            <DrawerClose asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="text-muted-more-foreground shrink-0 rounded-lg"
-              >
-                <XIcon className="size-5" />
-              </Button>
-            </DrawerClose>
+            <DrawerClose
+              render={
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-muted-more-foreground shrink-0 rounded-lg"
+                >
+                  <XIcon className="size-5" />
+                </Button>
+              }
+            />
           </DrawerHeaderButtonsWrapper>
         </div>
         {/* Content */}
-        <TemplateDraftPanelContent data-vaul-no-drag templateDraft={templateDraft} />
+        <TemplateDraftPanelContent data-base-ui-swipe-ignore templateDraft={templateDraft} />
       </DrawerContent>
     </Drawer>
   );
@@ -153,26 +145,28 @@ function ThreeDotButton({
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          data-open={isOpen || undefined}
-          fadeOnDisabled={false}
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
-            className,
-          )}
-        >
-          <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isOpen || undefined}
+            fadeOnDisabled={false}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
+              className,
+            )}
+          >
+            <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
+          </Button>
+        }
+      />
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
         data-open={isOpen || undefined}
         align="end"
-        forceMount={true}
+        keepMounted
       >
         <ScrollArea>
           <DropdownMenuGroup>
@@ -191,7 +185,7 @@ function ThreeDotButton({
               disableConfirmationInput
             >
               <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
+                closeOnClick={false}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
                 <Trash2Icon className="-ml-0.5 size-5" />

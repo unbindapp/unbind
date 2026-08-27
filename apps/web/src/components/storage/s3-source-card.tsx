@@ -51,7 +51,7 @@ import {
   FC,
   HTMLAttributes,
   LabelHTMLAttributes,
-  ReactNode,
+  ReactElement,
   useMemo,
   useRef,
   useState,
@@ -130,7 +130,7 @@ function S3SourceDialogConditional({
   teamId,
   children,
 }: {
-  children: ReactNode;
+  children: ReactElement;
   teamId: string | undefined;
   s3Source: TS3SourceShallow | undefined;
 }) {
@@ -151,12 +151,12 @@ function S3SourceDialog({
 }: {
   s3Source: TS3SourceShallow;
   teamId: string;
-  children: ReactNode;
+  children: ReactElement;
 } & HTMLAttributes<HTMLDivElement>) {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent hideXButton className="p-0" classNameInnerWrapper="w-128 max-w-full gap-0">
         <DialogHeader className="px-5 py-3.5">
           <DialogTitle className="sr-only">{s3Source.name}</DialogTitle>
@@ -285,11 +285,13 @@ function S3SourceDialogInnerContent({
           </DeleteTrigger>
         </div>
         <div className="max-w-1/2 px-1">
-          <DialogClose asChild>
-            <Button variant="ghost" className="text-muted-foreground px-4">
-              Close
-            </Button>
-          </DialogClose>
+          <DialogClose
+            render={
+              <Button variant="ghost" className="text-muted-foreground px-4">
+                Close
+              </Button>
+            }
+          />
         </div>
       </div>
     </>
@@ -309,26 +311,28 @@ function ThreeDotButton({
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          data-open={isOpen || undefined}
-          fadeOnDisabled={false}
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
-            className,
-          )}
-        >
-          <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isOpen || undefined}
+            fadeOnDisabled={false}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+              className,
+            )}
+          >
+            <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+          </Button>
+        }
+      />
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
         data-open={isOpen || undefined}
         align="end"
-        forceMount={true}
+        keepMounted
       >
         <ScrollArea>
           <DropdownMenuGroup>
@@ -337,7 +341,7 @@ function ThreeDotButton({
               teamId={teamId}
               closeDropdown={() => setIsOpen(false)}
             >
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <DropdownMenuItem closeOnClick={false}>
                 <PenIcon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Rename</p>
               </DropdownMenuItem>
@@ -348,7 +352,7 @@ function ThreeDotButton({
               closeDropdown={() => setIsOpen(false)}
             >
               <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
+                closeOnClick={false}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
                 <Trash2Icon className="-ml-0.5 size-5" />
@@ -417,7 +421,7 @@ function RenameTrigger({
   s3Source: TS3SourceShallow;
   teamId: string;
   closeDropdown: () => void;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   const {
     mutateAsync: updateS3Source,
@@ -475,7 +479,7 @@ function DeleteTrigger({
   s3Source: TS3SourceShallow;
   teamId: string;
   closeDropdown: () => void;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   const { invalidate: invalidateS3Sources } = useS3SourcesUtils({ teamId });
 
@@ -540,7 +544,13 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
   );
 }
 
-export function NewS3SourceTrigger({ teamId, children }: { children: ReactNode; teamId: string }) {
+export function NewS3SourceTrigger({
+  teamId,
+  children,
+}: {
+  children: ReactElement;
+  teamId: string;
+}) {
   const { invalidate: invalidateS3Sources } = useS3SourcesUtils({ teamId });
   const {
     mutateAsync: createS3Source,
@@ -609,7 +619,7 @@ export function NewS3SourceTrigger({ teamId, children }: { children: ReactNode; 
         }
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Create S3 Source</DialogTitle>
@@ -730,11 +740,14 @@ export function NewS3SourceTrigger({ teamId, children }: { children: ReactNode; 
             <ErrorLine className="mt-2" message={createS3SourceError?.message} />
           )}
           <div className="mt-2 flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </DialogClose>
+            <DialogClose
+              className="text-muted-foreground"
+              render={
+                <Button type="button" variant="ghost">
+                  Cancel
+                </Button>
+              }
+            />
             <form.Subscribe
               selector={(state) => ({ isSubmitting: state.isSubmitting })}
               children={({ isSubmitting }) => (

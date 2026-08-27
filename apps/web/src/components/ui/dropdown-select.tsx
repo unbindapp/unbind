@@ -11,7 +11,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { CheckIcon } from "lucide-react";
-import { FC, ReactNode, useRef, useState } from "react";
+import { FC, ReactElement, useRef, useState } from "react";
 
 export type TDropdownSelectItem = {
   value: string;
@@ -24,7 +24,7 @@ type TDropdownSelectProps = {
   items: TDropdownSelectItem[] | undefined;
   value: string;
   onChange: (value: string) => void;
-  children: ({ isOpen }: { isOpen: boolean }) => ReactNode;
+  children: ({ isOpen }: { isOpen: boolean }) => ReactElement;
   ItemIcon?: FC<{ className?: string; value: string }>;
   ItemSuffix?: FC<{ className?: string; value: string }>;
   isPending?: boolean;
@@ -58,12 +58,14 @@ export default function DropdownSelect({
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild className={className} disabled={disabled}>
-        {children({ isOpen })}
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={children({ isOpen })}
+        className={className}
+        disabled={disabled}
+      />
       <DropdownMenuContent
         animate={false}
-        className={cn("w-(--radix-popper-anchor-width)", classNameContent)}
+        className={cn("w-(--anchor-width)", classNameContent)}
         align={align}
       >
         <ScrollArea viewportRef={scrollAreaRef}>
@@ -88,7 +90,7 @@ export default function DropdownSelect({
               items.map((item) => (
                 <DropdownMenuItem
                   key={item.value}
-                  onSelect={() => {
+                  onClick={() => {
                     onChange(item.value);
                     setIsOpen(false);
                   }}

@@ -45,9 +45,10 @@ export function DropdownOrDrawer({
   const { isExtraSmall } = useDeviceSize();
 
   const childrenArray = Children.toArray(children);
-  const Trigger = childrenArray.find((child) =>
+  const triggerChild = childrenArray.find((child) =>
     hasChildRole(child, DROPDOWN_OR_DRAWER_ROLE.trigger),
   );
+  const Trigger = isValidElement(triggerChild) ? triggerChild : undefined;
   const ContentForDrawer = childrenArray.find((child) =>
     hasChildRole(child, DROPDOWN_OR_DRAWER_ROLE.contentForDrawer),
   );
@@ -72,9 +73,7 @@ export function DropdownOrDrawer({
 
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
-      <DropdownMenuTrigger asChild className="">
-        {Trigger}
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger className="" render={Trigger} />
       <DropdownMenuContent
         className={cn("sm:max-w-64", classNameDropdown)}
         align={align}

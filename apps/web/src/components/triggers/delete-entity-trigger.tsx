@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { FC, ReactNode, useCallback, useRef, useState } from "react";
+import { ReactElement, FC, ReactNode, useCallback, useRef, useState } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -26,7 +26,7 @@ type TProps = {
   submitButtonText?: string;
   variant?: "destructive" | "warning";
   EntityNameBadge?: FC<{ className?: string }>;
-  children: ReactNode;
+  children: ReactElement;
 };
 
 export function DeleteEntityTrigger({
@@ -93,7 +93,7 @@ export function DeleteEntityTrigger({
         if (!o) onClose();
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle className={variant === "warning" ? "text-warning" : "text-destructive"}>
@@ -149,11 +149,14 @@ export function DeleteEntityTrigger({
           <div className="mt-4 flex w-full flex-col gap-4 group-data-confirmation-disabled/form:mt-0">
             {error && <ErrorLine message={error?.message} />}
             <div className="flex w-full flex-wrap items-center justify-end gap-2">
-              <DialogClose asChild className="text-muted-foreground">
-                <Button type="button" variant="ghost">
-                  Cancel
-                </Button>
-              </DialogClose>
+              <DialogClose
+                className="text-muted-foreground"
+                render={
+                  <Button type="button" variant="ghost">
+                    Cancel
+                  </Button>
+                }
+              />
               <form.Subscribe
                 selector={(state) => ({
                   canSubmit: state.canSubmit,

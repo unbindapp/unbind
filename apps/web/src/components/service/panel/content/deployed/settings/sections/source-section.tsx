@@ -198,7 +198,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                 </BlockItemTitle>
               </BlockItemHeader>
               <BlockItemContent>
-                <field.AsyncCommandDropdown
+                <field.AsyncAndSearchableSelect
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
@@ -222,7 +222,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                       onBlur={field.handleBlur}
                     />
                   )}
-                </field.AsyncCommandDropdown>
+                </field.AsyncAndSearchableSelect>
               </BlockItemContent>
             </BlockItem>
           )}
@@ -349,7 +349,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                 <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>Tag</BlockItemTitle>
               </BlockItemHeader>
               <BlockItemContent>
-                <field.AsyncCommandDropdown
+                <field.AsyncAndSearchableSelect
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
@@ -377,7 +377,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                       fadeOnDisabled={false}
                     />
                   )}
-                </field.AsyncCommandDropdown>
+                </field.AsyncAndSearchableSelect>
               </BlockItemContent>
             </BlockItem>
           )}

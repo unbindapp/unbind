@@ -276,134 +276,132 @@ export default function TextareaWithTokens<T>({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         onClick={(e) => e.preventDefault()}
-        asChild
+        render={<div />}
         className={cn(
-          "bg-input focus-within:ring-foreground/50 relative overflow-hidden rounded-lg border text-left focus-within:ring-1",
+          "bg-input focus-within:ring-foreground/50 relative flex w-full flex-1 overflow-hidden rounded-lg border text-left focus-within:ring-1",
           className,
         )}
       >
-        <div className="flex w-full flex-1">
-          {/* Input with scroll area */}
-          <div className="max-h-35 min-w-0 flex-1 overflow-auto">
-            <div className="relative flex min-w-0 flex-1 items-start">
-              <div
-                aria-hidden="true"
-                className={cn(
-                  variants({
-                    variant,
-                    fadeOnDisabled,
-                    className: classNameTextarea,
-                  }),
-                  "pointer-events-none absolute top-0 right-0 bottom-0 left-0 flex h-full w-full overflow-hidden rounded-none border-none bg-transparent",
-                )}
-              >
-                <p className="w-full">
-                  {textParts.map((part, index) => (
-                    <span
-                      data-token={part.token !== null || undefined}
-                      key={index}
-                      className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-sm data-token:ring-1"
-                    >
-                      {!tokensDisabled && part.token !== null ? (
-                        <>
-                          <span className="text-process/50">
-                            {part.value.slice(0, tokenPrefix.length)}
-                          </span>
-                          <span>
-                            {part.value.slice(
-                              tokenPrefix.length,
-                              part.value.length - tokenSuffix.length,
-                            )}
-                          </span>
-                          <span className="text-process/50">
-                            {part.value.slice(
-                              part.value.length - tokenSuffix.length,
-                              part.value.length,
-                            )}
-                          </span>
-                        </>
-                      ) : (
-                        part.value
-                      )}
-                    </span>
-                  ))}
-                </p>
-              </div>
-              <TextareaAutosize
-                ref={(el) => {
-                  textareaRef.current = el;
-                  hotkeyRef(el);
-                }}
-                value={textareaValue}
-                onChange={(e) => {
-                  const prev = textareaValue;
-                  const newValue = e.target.value;
-                  setTextareaValue(newValue);
-
-                  const prevTriggerCount = prev.split(trigger).length - 1;
-                  const newTriggerCount = newValue.split(trigger).length - 1;
-                  if (prev.length > newValue.length && prevTriggerCount > newTriggerCount) {
-                    setOpen(false);
-                  }
-
-                  if (onChange) {
-                    onChange(e);
-                  }
-                }}
-                minRows={1}
-                className={cn(
-                  variants({
-                    variant,
-                    fadeOnDisabled,
-                    className: classNameTextarea,
-                  }),
-                  "caret-foreground relative border-none border-transparent bg-transparent text-transparent focus-visible:ring-0 focus-visible:ring-transparent",
-                )}
-                {...props}
-              />
-            </div>
-          </div>
-          {/* Dropdown button */}
-          {!tokensDisabled && (DropdownButtonIcon || dropdownButtonText) && (
-            <Button
-              data-has-value={textareaValue || undefined}
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const newOpen = !open;
-                setOpen((prev) => !prev);
-                if (newOpen) {
-                  setTextareaValueAndTriggerOnChange((prev) => `${prev}${trigger}`);
-                }
-                textareaRef.current?.focus();
-              }}
+        {/* Input with scroll area */}
+        <div className="max-h-35 min-w-0 flex-1 overflow-auto">
+          <div className="relative flex min-w-0 flex-1 items-start">
+            <div
+              aria-hidden="true"
               className={cn(
-                "text-muted-foreground focus:ring-primary group/button mt-1 mr-1 mb-auto h-8 max-w-1/2 gap-1 px-2 text-left font-semibold",
-                classNameDropdownButton,
+                variants({
+                  variant,
+                  fadeOnDisabled,
+                  className: classNameTextarea,
+                }),
+                "pointer-events-none absolute top-0 right-0 bottom-0 left-0 flex h-full w-full overflow-hidden rounded-none border-none bg-transparent",
               )}
             >
-              {DropdownButtonIcon && <DropdownButtonIcon className="size-4" />}
-              {dropdownButtonText && (
-                <p
-                  data-has-icon={DropdownButtonIcon || undefined}
-                  className="min-w-0 shrink truncate px-0.5 leading-tight data-has-icon:group-data-has-value/button:hidden"
-                >
-                  {dropdownButtonText}
-                </p>
+              <p className="w-full">
+                {textParts.map((part, index) => (
+                  <span
+                    data-token={part.token !== null || undefined}
+                    key={index}
+                    className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-sm data-token:ring-1"
+                  >
+                    {!tokensDisabled && part.token !== null ? (
+                      <>
+                        <span className="text-process/50">
+                          {part.value.slice(0, tokenPrefix.length)}
+                        </span>
+                        <span>
+                          {part.value.slice(
+                            tokenPrefix.length,
+                            part.value.length - tokenSuffix.length,
+                          )}
+                        </span>
+                        <span className="text-process/50">
+                          {part.value.slice(
+                            part.value.length - tokenSuffix.length,
+                            part.value.length,
+                          )}
+                        </span>
+                      </>
+                    ) : (
+                      part.value
+                    )}
+                  </span>
+                ))}
+              </p>
+            </div>
+            <TextareaAutosize
+              ref={(el) => {
+                textareaRef.current = el;
+                hotkeyRef(el);
+              }}
+              value={textareaValue}
+              onChange={(e) => {
+                const prev = textareaValue;
+                const newValue = e.target.value;
+                setTextareaValue(newValue);
+
+                const prevTriggerCount = prev.split(trigger).length - 1;
+                const newTriggerCount = newValue.split(trigger).length - 1;
+                if (prev.length > newValue.length && prevTriggerCount > newTriggerCount) {
+                  setOpen(false);
+                }
+
+                if (onChange) {
+                  onChange(e);
+                }
+              }}
+              minRows={1}
+              className={cn(
+                variants({
+                  variant,
+                  fadeOnDisabled,
+                  className: classNameTextarea,
+                }),
+                "caret-foreground relative border-none border-transparent bg-transparent text-transparent focus-visible:ring-0 focus-visible:ring-transparent",
               )}
-            </Button>
-          )}
+              {...props}
+            />
+          </div>
         </div>
+        {/* Dropdown button */}
+        {!tokensDisabled && (DropdownButtonIcon || dropdownButtonText) && (
+          <Button
+            data-has-value={textareaValue || undefined}
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const newOpen = !open;
+              setOpen((prev) => !prev);
+              if (newOpen) {
+                setTextareaValueAndTriggerOnChange((prev) => `${prev}${trigger}`);
+              }
+              textareaRef.current?.focus();
+            }}
+            className={cn(
+              "text-muted-foreground focus:ring-primary group/button mt-1 mr-1 mb-auto h-8 max-w-1/2 gap-1 px-2 text-left font-semibold",
+              classNameDropdownButton,
+            )}
+          >
+            {DropdownButtonIcon && <DropdownButtonIcon className="size-4" />}
+            {dropdownButtonText && (
+              <p
+                data-has-icon={DropdownButtonIcon || undefined}
+                className="min-w-0 shrink truncate px-0.5 leading-tight data-has-icon:group-data-has-value/button:hidden"
+              >
+                {dropdownButtonText}
+              </p>
+            )}
+          </Button>
+        )}
       </PopoverTrigger>
       {!tokensDisabled && (
         <PopoverContent
           animate={false}
           className={cn(
-            "flex h-68 max-h-[min(30rem,var(--radix-popper-available-height))] flex-col overflow-hidden rounded-lg p-0",
+            "flex h-68 max-h-[min(30rem,var(--available-height))] flex-col overflow-hidden rounded-lg p-0",
             classNameDropdownContent,
           )}
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onCloseAutoFocus={(e) => e.preventDefault()}
+          initialFocus={false}
+          finalFocus={false}
         >
           <Command
             ref={commandRef}

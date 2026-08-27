@@ -108,15 +108,7 @@ export default function DeploymentPanel({ service }: TProps) {
   const { isExtraSmall } = useDeviceSize();
 
   return (
-    <Drawer
-      open={open}
-      onOpenChange={onOpenChange}
-      direction={isExtraSmall ? "bottom" : "right"}
-      handleOnly={!isExtraSmall}
-      repositionInputs={isExtraSmall}
-      // Outer service panel drawer owns the body-scroll lock; touching it here resets scroll on close.
-      noBodyStyles
-    >
+    <Drawer open={open} onOpenChange={onOpenChange} direction={isExtraSmall ? "bottom" : "right"}>
       <DrawerContent
         transparentOverlay
         hasHandle={isExtraSmall}
@@ -227,15 +219,17 @@ function DeploymentPanelHeader({
         </DrawerTitle>
       </DrawerHeader>
       <DrawerHeaderButtonsWrapper>
-        <DrawerClose asChild>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="text-muted-more-foreground shrink-0 rounded-lg"
-          >
-            <XIcon className="size-5" />
-          </Button>
-        </DrawerClose>
+        <DrawerClose
+          render={
+            <Button
+              size="icon"
+              variant="ghost"
+              className="text-muted-more-foreground shrink-0 rounded-lg"
+            >
+              <XIcon className="size-5" />
+            </Button>
+          }
+        />
       </DrawerHeaderButtonsWrapper>
     </div>
   );

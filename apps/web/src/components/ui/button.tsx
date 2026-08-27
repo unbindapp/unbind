@@ -1,6 +1,4 @@
-"use client";
-
-import { Slot } from "@radix-ui/react-slot";
+import { useRender } from "@base-ui/react/use-render";
 import { createLink, type LinkComponent } from "@tanstack/react-router";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
@@ -122,7 +120,7 @@ export type TButtonProps = React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     spinnerVariants?: VariantProps<typeof spinnerVariants>;
   } & {
-    asChild?: boolean;
+    render?: useRender.RenderProp;
     isPending?: boolean;
   };
 
@@ -138,19 +136,19 @@ function Button({
   forceMinSize,
   loadingState,
   isPending,
-  asChild = false,
+  render,
   spinnerVariants: spinnerVariantProps,
   children,
   ...props
 }: TButtonProps) {
-  const Comp = asChild ? Slot : "button";
   const isText = React.Children.toArray(children).every(
     (c) => typeof c === "string" || typeof c === "number",
   );
-  return (
-    <Comp
-      data-pending={isPending || undefined}
-      className={cn(
+  return useRender({
+    render: render ?? <button />,
+    props: {
+      "data-pending": isPending || undefined,
+      className: cn(
         buttonVariants({
           variant,
           size,
@@ -161,11 +159,9 @@ function Button({
           layout: isText ? undefined : "flex",
           className,
         }),
-      )}
-      disabled={loadingState === "loading" || isPending ? true : disabled}
-      {...props}
-    >
-      {isPending ? (
+      ),
+      disabled: loadingState === "loading" || isPending ? true : disabled,
+      children: isPending ? (
         <>
           <LoaderIcon
             data-slot="button-spinner"
@@ -177,9 +173,10 @@ function Button({
         <p className="min-w-0 shrink">{children}</p>
       ) : (
         children
-      )}
-    </Comp>
-  );
+      ),
+      ...props,
+    },
+  });
 }
 
 type TLinkButtonBaseProps = Omit<React.ComponentPropsWithoutRef<"a">, "color"> &

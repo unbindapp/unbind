@@ -1,15 +1,16 @@
-"use client";
-
 import * as React from "react";
-import { Drawer as DrawerPrimitive } from "vaul";
+import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer";
 
 import { cn } from "@/components/ui/utils";
 
-type DrawerContext = {
+type TDrawerDirection = "bottom" | "right";
+
+type TDrawerContext = {
   hideHandle: boolean;
+  direction: TDrawerDirection;
 };
 
-const DrawerContext = React.createContext<DrawerContext | null>(null);
+const DrawerContext = React.createContext<TDrawerContext | null>(null);
 const useDrawerContext = () => {
   const context = React.useContext(DrawerContext);
   if (!context) {
@@ -19,9 +20,12 @@ const useDrawerContext = () => {
 };
 
 function Drawer({
-  shouldScaleBackground = false,
+  direction = "bottom",
+  onOpenChange,
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Root>) {
+}: Omit<DrawerPrimitive.Root.Props, "swipeDirection"> & {
+  direction?: TDrawerDirection;
+}) {
   const [hideHandle, setHideHandle] = React.useState(false);
 
   React.useEffect(() => {
@@ -32,27 +36,61 @@ function Drawer({
     }
   }, [props.open]);
 
+  const handleOpenChange: DrawerPrimitive.Root.Props["onOpenChange"] = (open, eventDetails) => {
+    // A click on a toast is interacting with the toast, not dismissing the drawer
+    if (!open && eventDetails.reason === "outside-press") {
+      const target = eventDetails.event.target;
+      if (target instanceof Element && target.closest("[data-sonner-toast]")) {
+        eventDetails.cancel();
+        return;
+      }
+    }
+    onOpenChange?.(open, eventDetails);
+  };
+
   return (
-    <DrawerContext.Provider value={{ hideHandle }}>
-      <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} {...props} />
+    <DrawerContext.Provider value={{ hideHandle, direction }}>
+      <DrawerPrimitive.Root
+        swipeDirection={direction === "bottom" ? "down" : "right"}
+        onOpenChange={handleOpenChange}
+        {...props}
+      />
     </DrawerContext.Provider>
   );
 }
 
-const DrawerTrigger = DrawerPrimitive.Trigger;
+function DrawerTrigger({ ...props }: DrawerPrimitive.Trigger.Props) {
+  return <DrawerPrimitive.Trigger data-slot="drawer-trigger" {...props} />;
+}
 
-const DrawerPortal = DrawerPrimitive.Portal;
+function DrawerPortal({ ...props }: DrawerPrimitive.Portal.Props) {
+  return <DrawerPrimitive.Portal data-slot="drawer-portal" {...props} />;
+}
 
-const DrawerClose = DrawerPrimitive.Close;
+function DrawerClose({ ...props }: DrawerPrimitive.Close.Props) {
+  return <DrawerPrimitive.Close data-slot="drawer-close" {...props} />;
+}
+
+// Matches vaul's feel: 500ms cubic-bezier(0.32, 0.72, 0, 1)
+const drawerEase = "duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]";
 
 function DrawerOverlay({
   className,
   transparent,
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Overlay> & { transparent?: boolean }) {
+}: DrawerPrimitive.Backdrop.Props & { transparent?: boolean }) {
   return (
-    <DrawerPrimitive.Overlay
-      className={cn("fixed inset-0 z-50", !transparent && "bg-barrier/barrier", className)}
+    <DrawerPrimitive.Backdrop
+      data-slot="drawer-overlay"
+      className={cn(
+        "fixed inset-0 z-50",
+        !transparent &&
+          cn(
+            "bg-barrier/barrier opacity-[calc(1-var(--drawer-swipe-progress,0))] transition-opacity data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:transition-none",
+            drawerEase,
+          ),
+        className,
+      )}
       {...props}
     />
   );
@@ -64,57 +102,51 @@ function DrawerContent({
   hasHandle = false,
   transparentOverlay,
   ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Content> & {
+}: DrawerPrimitive.Popup.Props & {
   hasHandle?: boolean;
   transparentOverlay?: boolean;
 }) {
-  const { hideHandle } = useDrawerContext();
-
-  // Radix dropdowns/selects/popovers render their content in a portal outside
-  // the drawer's DOM, so dismissing one with an outside click also reaches the
-  // drawer's dismissable layer and closes it. If such a popper is open, the
-  // click belongs to it (it's the top-most layer) and the drawer must stay open.
-  // We can't detect this inside `onPointerDownOutside`: vaul reports it deferred
-  // (on the `click`), by which point the popper has already closed/unmounted. So
-  // we record whether a popper was open at `pointerdown`, while it's still mounted.
-  const popperWasOpenOnPointerDownRef = React.useRef(false);
-  React.useEffect(() => {
-    const onPointerDown = () => {
-      popperWasOpenOnPointerDownRef.current =
-        document.querySelector("[data-radix-popper-content-wrapper]") !== null;
-    };
-    document.addEventListener("pointerdown", onPointerDown, true);
-    return () => document.removeEventListener("pointerdown", onPointerDown, true);
-  }, []);
+  const { hideHandle, direction } = useDrawerContext();
 
   return (
-    <DrawerPortal>
-      <DrawerOverlay transparent={transparentOverlay} />
-      <DrawerPrimitive.Content
-        onPointerDownOutside={(e) => {
-          const target = e.detail.originalEvent.target;
-          if (
-            popperWasOpenOnPointerDownRef.current ||
-            (target instanceof Element && target.closest("[data-sonner-toast]"))
-          ) {
-            e.preventDefault();
-          }
-        }}
-        className={cn(
-          `bg-background ring-border fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-2xl ring-1 focus:outline-hidden focus-visible:outline-hidden`,
-          className,
-        )}
-        {...props}
-      >
-        {hasHandle && (
-          <DrawerPrimitive.Handle
-            data-hide-handle={hideHandle || undefined}
-            className="bg-muted-more-foreground! absolute! left-1/2 h-1.5! w-[calc(min(33.3%,5rem))]! -translate-x-1/2 -translate-y-3.5! opacity-100! transition duration-100! data-hide-handle:translate-y-1.5!"
-          ></DrawerPrimitive.Handle>
-        )}
-        {children}
-      </DrawerPrimitive.Content>
-    </DrawerPortal>
+    <DrawerPrimitive.VirtualKeyboardProvider>
+      <DrawerPortal>
+        <DrawerOverlay transparent={transparentOverlay} />
+        <DrawerPrimitive.Viewport data-slot="drawer-viewport" className="fixed inset-0 z-50">
+          <DrawerPrimitive.Popup
+            data-slot="drawer-content"
+            className={cn(
+              "bg-background ring-border absolute z-50 flex flex-col ring-1 focus:outline-hidden focus-visible:outline-hidden",
+              cn("transition-transform", drawerEase),
+              "data-ending-style:duration-[calc(var(--drawer-swipe-strength,1)*500ms)] data-swiping:transition-none",
+              // Translate only while swiping: a resting transform would create a
+              // containing block and break position:fixed descendants (e.g. the
+              // fullscreen terminal)
+              direction === "bottom" &&
+                "inset-x-0 bottom-0 mt-24 h-auto rounded-t-2xl data-ending-style:translate-y-full data-starting-style:translate-y-full data-swiping:translate-y-[var(--drawer-swipe-movement-y,0px)]",
+              direction === "right" &&
+                "top-0 right-0 h-full rounded-l-2xl data-ending-style:translate-x-full data-starting-style:translate-x-full data-swiping:translate-x-[var(--drawer-swipe-movement-x,0px)]",
+              className,
+            )}
+            {...props}
+          >
+            {hasHandle && (
+              <div
+                aria-hidden
+                data-hide-handle={hideHandle || undefined}
+                className="bg-muted-more-foreground absolute top-0 left-1/2 h-1.5 w-[calc(min(33.3%,5rem))] -translate-x-1/2 -translate-y-3.5 rounded-full transition duration-100 data-hide-handle:translate-y-1.5"
+              />
+            )}
+            <DrawerPrimitive.Content
+              data-slot="drawer-content-inner"
+              className="flex min-h-0 w-full flex-1 flex-col"
+            >
+              {children}
+            </DrawerPrimitive.Content>
+          </DrawerPrimitive.Popup>
+        </DrawerPrimitive.Viewport>
+      </DrawerPortal>
+    </DrawerPrimitive.VirtualKeyboardProvider>
   );
 }
 
@@ -126,21 +158,20 @@ function DrawerFooter({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
   return <div className={cn("mt-auto flex flex-col gap-2 p-4", className)} {...props} />;
 }
 
-function DrawerTitle({ className, ...props }: React.ComponentProps<typeof DrawerPrimitive.Title>) {
+function DrawerTitle({ className, ...props }: DrawerPrimitive.Title.Props) {
   return (
     <DrawerPrimitive.Title
+      data-slot="drawer-title"
       className={cn("text-lg leading-tight font-semibold", className)}
       {...props}
     />
   );
 }
 
-function DrawerDescription({
-  className,
-  ...props
-}: React.ComponentProps<typeof DrawerPrimitive.Description>) {
+function DrawerDescription({ className, ...props }: DrawerPrimitive.Description.Props) {
   return (
     <DrawerPrimitive.Description
+      data-slot="drawer-description"
       className={cn("text-muted-foreground text-sm", className)}
       {...props}
     />

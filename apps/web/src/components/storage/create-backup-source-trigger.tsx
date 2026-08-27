@@ -12,12 +12,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TCommandItem } from "@/lib/hooks/use-app-form";
 import { PlusIcon } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactElement } from "react";
 
 export type TCreateBackupSourceTriggerProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  children: ReactNode;
+  children: ReactElement;
   teamId: string;
 };
 
@@ -29,15 +29,15 @@ export function CreateBackupSourceTrigger({
 }: TCreateBackupSourceTriggerProps) {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent animate={false} className="w-(--radix-popper-anchor-width)">
+      <DropdownMenuTrigger render={children} />
+      <DropdownMenuContent animate={false} className="w-(--anchor-width)">
         <ScrollArea>
           <DropdownMenuLabel className="border-b px-3">
             {"You don't have any buckets. Create a backup source."}
           </DropdownMenuLabel>
           <DropdownMenuGroup>
             <NewS3SourceTrigger teamId={teamId}>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-1.5">
+              <DropdownMenuItem closeOnClick={false} className="gap-1.5">
                 <PlusIcon className="-ml-1 size-5" />
                 <p className="min-w-0 shrink">Create Backup Source</p>
               </DropdownMenuItem>

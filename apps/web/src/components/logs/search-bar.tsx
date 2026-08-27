@@ -106,25 +106,27 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
 
   return (
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          data-open={isDropdownOpen || undefined}
-          aria-label="Log View Preferences"
-          type="button"
-          size="icon"
-          variant="ghost"
-          className={cn("touch-manipulation", className)}
-        >
-          <div
-            data-show={!isDefaultState || undefined}
-            className="bg-warning pointer-events-none absolute top-1.25 right-1.25 size-1.25 scale-75 rounded-full opacity-0 transition data-show:scale-100 data-show:opacity-100"
-          />
-          <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
-            <SettingsIcon className="size-full opacity-100 transition-opacity group-data-open/button:opacity-0" />
-            <XIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-open/button:opacity-100" />
-          </div>
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isDropdownOpen || undefined}
+            aria-label="Log View Preferences"
+            type="button"
+            size="icon"
+            variant="ghost"
+            className={cn("touch-manipulation", className)}
+          >
+            <div
+              data-show={!isDefaultState || undefined}
+              className="bg-warning pointer-events-none absolute top-1.25 right-1.25 size-1.25 scale-75 rounded-full opacity-0 transition data-show:scale-100 data-show:opacity-100"
+            />
+            <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
+              <SettingsIcon className="size-full opacity-100 transition-opacity group-data-open/button:opacity-0" />
+              <XIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-open/button:opacity-100" />
+            </div>
+          </Button>
+        }
+      />
       <DropdownMenuContent align="end" className="w-3xl sm:w-56">
         <ScrollArea>
           {logViewPreferences.map((group, index) => (

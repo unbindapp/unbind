@@ -1,75 +1,93 @@
-"use client";
-
 import * as React from "react";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
+
 import { cn } from "@/components/ui/utils";
 import { cva, VariantProps } from "class-variance-authority";
 import { XIcon } from "lucide-react";
 
-const Dialog = DialogPrimitive.Root;
+function Dialog({ onOpenChange, ...props }: DialogPrimitive.Root.Props) {
+  const handleOpenChange: DialogPrimitive.Root.Props["onOpenChange"] = (open, eventDetails) => {
+    // A click on a toast is interacting with the toast, not dismissing the dialog
+    if (!open && eventDetails.reason === "outside-press") {
+      const target = eventDetails.event.target;
+      if (target instanceof Element && target.closest("[data-sonner-toast]")) {
+        eventDetails.cancel();
+        return;
+      }
+    }
+    onOpenChange?.(open, eventDetails);
+  };
+  return <DialogPrimitive.Root data-slot="dialog" onOpenChange={handleOpenChange} {...props} />;
+}
 
-const DialogTrigger = DialogPrimitive.Trigger;
+function DialogTrigger({ ...props }: DialogPrimitive.Trigger.Props) {
+  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
+}
 
-const DialogPortal = DialogPrimitive.Portal;
+function DialogPortal({ ...props }: DialogPrimitive.Portal.Props) {
+  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
+}
 
-const DialogClose = DialogPrimitive.Close;
+function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
+  return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
+}
 
-export const dialogOverlayVariants = cva(
-  "bg-barrier/barrier fixed inset-0 z-[1000] flex w-full justify-center overflow-auto px-2 pt-[var(--dialog-top-padding)] sm:pt-[var(--dialog-top-padding-sm)] data-no-x-padding:px-0 data-no-y-padding:py-0",
+const dialogOverlayVariants = cva("bg-barrier/barrier fixed inset-0 z-[1000]", {
+  variants: {
+    animate: {
+      default:
+        "data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 duration-200 data-closed:duration-200 data-open:duration-200",
+      false: "",
+    },
+  },
+  defaultVariants: {
+    animate: "default",
+  },
+});
+
+type TDialogOverlayVariants = VariantProps<typeof dialogOverlayVariants>;
+
+function DialogOverlay({
+  className,
+  animate,
+  ...props
+}: DialogPrimitive.Backdrop.Props & TDialogOverlayVariants) {
+  return (
+    <DialogPrimitive.Backdrop
+      data-slot="dialog-overlay"
+      className={cn(dialogOverlayVariants({ animate, className }))}
+      {...props}
+    />
+  );
+}
+
+const dialogViewportVariants = cva(
+  "fixed inset-0 z-[1000] flex w-full justify-center overflow-auto px-2 pt-[var(--dialog-top-padding)] sm:pt-[var(--dialog-top-padding-sm)]",
   {
     variants: {
-      animate: {
-        default:
-          "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200 data-[state=closed]:duration-200 data-[state=open]:duration-200",
-        false: "",
-      },
       avoidKeyboard: {
         true: "pb-[calc(var(--dialog-bottom-padding)+var(--keyboard-inset-height))] sm:pb-[calc(var(--dialog-bottom-padding-sm)+var(--keyboard-inset-height))]",
         false: "pb-[var(--dialog-bottom-padding)] sm:pb-[var(--dialog-bottom-padding-sm)]",
       },
     },
     defaultVariants: {
-      animate: "default",
       avoidKeyboard: false,
     },
   },
 );
 
-type TDialogOverlayVariants = VariantProps<typeof dialogOverlayVariants>;
-
-function DialogOverlay({
-  className,
-  noXPadding,
-  noYPadding,
-  animate,
-  avoidKeyboard,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Overlay> & {
-  noXPadding?: boolean;
-  noYPadding?: boolean;
-} & TDialogOverlayVariants) {
-  return (
-    <DialogPrimitive.Overlay
-      data-no-x-padding={noXPadding}
-      data-no-y-padding={noYPadding}
-      className={cn(dialogOverlayVariants({ animate, avoidKeyboard, className }))}
-      {...props}
-    />
-  );
-}
-
 export const dialogContentVariants = cva(
-  "z-50 relative flex flex-col gap-5 w-auto max-w-full pointer-events-none my-auto outline-hidden focus:outline-hidden",
+  "relative z-50 my-auto flex w-auto max-w-full flex-col gap-5 outline-hidden focus:outline-hidden",
   {
     variants: {
       variant: {
         default:
-          "bg-background border rounded-xl p-5 pt-3.5 shadow-dialog shadow-shadow-color/shadow-opacity",
+          "bg-background shadow-dialog shadow-shadow-color/shadow-opacity rounded-xl border p-5 pt-3.5",
         styleless: "",
       },
       animate: {
         default:
-          "duration-200 data-[state=open]:duration-200 data-[state=closed]:duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-[95%] data-[state=open]:zoom-in-[95%] data-[state=closed]:slide-out-to-bottom-[5%] data-[state=open]:slide-in-from-bottom-[5%]",
+          "duration-200 data-open:duration-200 data-closed:duration-200 data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-[95%] data-open:zoom-in-[95%] data-closed:slide-out-to-bottom-[5%] data-open:slide-in-from-bottom-[5%]",
         false: "",
       },
     },
@@ -85,79 +103,29 @@ export type TDialogContentVariants = VariantProps<typeof dialogContentVariants>;
 function DialogContent({
   className,
   classNameInnerWrapper,
-  classNameOverlay,
   variant,
   animate,
   children,
-  onCloseAutoFocus,
-  onEscapeKeyDown,
-  noXPadding,
-  noYPadding,
   hideXButton,
   avoidKeyboard,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content> &
+}: DialogPrimitive.Popup.Props &
   TDialogContentVariants & {
     classNameInnerWrapper?: string;
-    classNameOverlay?: string;
-    noXPadding?: boolean;
-    noYPadding?: boolean;
     hideXButton?: boolean;
     avoidKeyboard?: boolean;
   }) {
-  const isCloseFromKey = React.useRef<boolean>(false);
-
-  const handleCloseAutoFocus = React.useCallback(
-    (e: Event) => {
-      if (onCloseAutoFocus) {
-        return onCloseAutoFocus(e);
-      }
-
-      if (isCloseFromKey.current) {
-        isCloseFromKey.current = false;
-        return;
-      }
-
-      e.preventDefault();
-    },
-    [onCloseAutoFocus],
-  );
-
-  const handleEscapeKeyDown = React.useCallback(
-    (e: KeyboardEvent) => {
-      isCloseFromKey.current = true;
-      if (onEscapeKeyDown) {
-        onEscapeKeyDown(e);
-      }
-    },
-    [onEscapeKeyDown],
-  );
-
   return (
     <DialogPortal>
-      <DialogOverlay
-        noYPadding={noYPadding}
-        noXPadding={noXPadding}
-        animate={animate}
-        avoidKeyboard={avoidKeyboard}
-        className={classNameOverlay}
+      <DialogOverlay animate={animate} />
+      <DialogPrimitive.Viewport
+        data-slot="dialog-viewport"
+        className={cn(dialogViewportVariants({ avoidKeyboard }))}
       >
-        <DialogPrimitive.Content
-          {...props}
-          onInteractOutside={
-            props.onInteractOutside
-              ? props.onInteractOutside
-              : (e) => {
-                  const target = e.currentTarget as HTMLElement;
-                  if (target && typeof target.closest === "function") {
-                    const isSonner = target.closest("[data-sonner-toast]") !== null;
-                    if (isSonner) e.preventDefault();
-                  }
-                }
-          }
-          onCloseAutoFocus={handleCloseAutoFocus}
-          onEscapeKeyDown={handleEscapeKeyDown}
+        <DialogPrimitive.Popup
+          data-slot="dialog-content"
           className={cn(dialogContentVariants({ variant, animate, className }))}
+          {...props}
         >
           <div className={cn("flex w-full flex-col gap-4", classNameInnerWrapper)}>
             {children}
@@ -168,40 +136,49 @@ function DialogContent({
               </DialogPrimitive.Close>
             )}
           </div>
-        </DialogPrimitive.Content>
-      </DialogOverlay>
+        </DialogPrimitive.Popup>
+      </DialogPrimitive.Viewport>
     </DialogPortal>
   );
 }
 
-function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex w-full flex-col items-start gap-2", className)} {...props} />;
-}
-
-function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
+      data-slot="dialog-header"
+      className={cn("flex w-full flex-col items-start gap-2", className)}
+      {...props}
+    />
+  );
+}
+
+function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dialog-footer"
       className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
       {...props}
     />
   );
 }
 
-function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
+function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
+      data-slot="dialog-title"
       className={cn("max-w-full pr-6 text-xl leading-tight font-semibold", className)}
       {...props}
     />
   );
 }
 
-function DialogDescription({
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Description>) {
+function DialogDescription({ className, ...props }: DialogPrimitive.Description.Props) {
   return (
-    <DialogPrimitive.Description className={cn("text-muted-foreground", className)} {...props} />
+    <DialogPrimitive.Description
+      data-slot="dialog-description"
+      className={cn("text-muted-foreground", className)}
+      {...props}
+    />
   );
 }
 

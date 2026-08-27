@@ -13,7 +13,7 @@ import useContextCommandPanelData from "@/components/command-panel/context-comma
 import { CommandPanelStoreProvider } from "@/components/command-panel/store/command-panel-store-provider";
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
-import { ReactNode, useMemo } from "react";
+import { ReactElement, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { z } from "zod";
 
@@ -22,7 +22,7 @@ type TTriggerType = z.infer<typeof TriggerTypeEnum>;
 
 type TProps = {
   context: TContextCommandPanelContext;
-  children?: ReactNode;
+  children?: ReactElement;
   triggerType: TTriggerType;
   title: string;
   description: string;

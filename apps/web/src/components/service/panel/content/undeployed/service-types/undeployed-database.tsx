@@ -302,7 +302,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                 <form.AppField
                   name="sourceAndBucket"
                   children={(field) => (
-                    <field.AsyncCommandDropdown
+                    <field.AsyncAndSearchableSelect
                       dontCheckUntilSubmit
                       field={field}
                       value={field.state.value}
@@ -358,7 +358,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                           />
                         );
                       }}
-                    </field.AsyncCommandDropdown>
+                    </field.AsyncAndSearchableSelect>
                   )}
                 />
               </BlockItemContent>

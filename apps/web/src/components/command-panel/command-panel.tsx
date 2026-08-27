@@ -23,6 +23,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -31,16 +32,15 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
-import { DialogDescription } from "@radix-ui/react-dialog";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
-import { FC, ReactNode, RefObject, useCallback, useEffect, useMemo, useRef } from "react";
+import { ReactElement, FC, RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 type TProps = {
   open: boolean;
   setOpen: (open: boolean) => void;
-  children?: ReactNode;
+  children?: ReactElement;
   title: string;
   description: string;
   dialogContentVariantOptions?: TDialogContentVariants;
@@ -86,6 +86,8 @@ export function CommandPanelTrigger({
     [dialogContentVariantOptions],
   );
 
+  const dialogContentRef = useRef<HTMLDivElement>(null);
+
   const onEscapeKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (rootPage.id !== currentPage.id) {
@@ -125,22 +127,25 @@ export function CommandPanelTrigger({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen, eventDetails) => {
+        // Escape in a subpage goes back a page instead of closing the panel
+        if (!newOpen && eventDetails.reason === "escape-key" && rootPage.id !== currentPage.id) {
+          eventDetails.cancel();
+          return;
+        }
+        setOpen(newOpen);
+      }}
+    >
+      {children && <DialogTrigger render={children} />}
       <DialogContent
-        onOpenAutoFocus={(e) => {
-          if (typeof window === "undefined") return;
+        ref={dialogContentRef}
+        initialFocus={() => {
           const isTouchScreen = window.matchMedia("(pointer: coarse)").matches;
-          if (!isTouchScreen) return;
-          const element = e.target as HTMLElement | null;
-          if (element === null) return;
-          const focusable = element.querySelector("[tabindex]");
-          if (!focusable) return;
-          e.preventDefault();
-          // @ts-expect-error this is a valid call
-          focusable.focus?.();
+          if (!isTouchScreen) return undefined;
+          return dialogContentRef.current?.querySelector<HTMLElement>("[tabindex]") ?? undefined;
         }}
-        onEscapeKeyDown={onEscapeKeyDown}
         {...mergedDialogContentVariantOptions}
       >
         <DialogHeader>

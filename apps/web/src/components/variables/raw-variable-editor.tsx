@@ -23,7 +23,7 @@ import { CheckCircleIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import Prism, { highlight } from "prismjs";
 import "prismjs/components/prism-ini";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactElement, useEffect, useRef, useState } from "react";
 import EditorImport from "react-simple-code-editor";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -34,7 +34,7 @@ const Editor = ((EditorImport as unknown as { default?: typeof EditorImport }).d
   EditorImport) as typeof EditorImport;
 
 type TProps = {
-  children: ReactNode;
+  children: ReactElement;
 };
 
 export default function RawVariableEditor({ children }: TProps) {
@@ -147,7 +147,7 @@ export default function RawVariableEditor({ children }: TProps) {
         }
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent
         hideXButton
         avoidKeyboard
@@ -174,11 +174,14 @@ export default function RawVariableEditor({ children }: TProps) {
         />
         {error && <ErrorLine message={error.message} />}
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
-          <DialogClose asChild className="text-muted-foreground">
-            <Button type="button" variant="ghost">
-              Close
-            </Button>
-          </DialogClose>
+          <DialogClose
+            className="text-muted-foreground"
+            render={
+              <Button type="button" variant="ghost">
+                Close
+              </Button>
+            }
+          />
           <Button
             disabled={isPending || variables === undefined}
             isPending={isPending}

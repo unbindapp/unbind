@@ -226,15 +226,13 @@ function UpdateSectionInner({
               <Button
                 variant="ghost"
                 className="text-muted-foreground group w-full cursor-pointer"
-                asChild
+                render={<a href={latestVersionUrl} target="_blank" rel="noopener noreferrer" />}
               >
-                <a href={latestVersionUrl} target="_blank" rel="noopener noreferrer">
-                  <div className="relative size-4.5 shrink-0 transition-[rotate,opacity] group-active:rotate-45 has-hover:group-hover:rotate-45">
-                    <FileTextIcon className="size-full group-active:opacity-0 has-hover:group-hover:opacity-0" />
-                    <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active:opacity-100 has-hover:group-hover:opacity-100" />
-                  </div>
-                  <p className="min-w-0 shrink">Changelog</p>
-                </a>
+                <div className="relative size-4.5 shrink-0 transition-[rotate,opacity] group-active:rotate-45 has-hover:group-hover:rotate-45">
+                  <FileTextIcon className="size-full group-active:opacity-0 has-hover:group-hover:opacity-0" />
+                  <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active:opacity-100 has-hover:group-hover:opacity-100" />
+                </div>
+                <p className="min-w-0 shrink">Changelog</p>
               </Button>
             </div>
           </div>
@@ -282,8 +280,8 @@ function UpdateSectionInner({
         )}
         {updatePhase === "succeeded" && (
           <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-            <Button asChild className="w-full">
-              <a href="/">Go Home</a>
+            <Button render={<a href="/" />} className="w-full">
+              Go Home
             </Button>
           </div>
         )}

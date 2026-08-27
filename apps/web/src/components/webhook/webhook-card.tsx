@@ -20,7 +20,7 @@ import { deleteWebhook as deleteWebhookFn, type TWebhookShallow } from "@/lib/qu
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactElement, useState } from "react";
 
 const placeholderArray = Array.from({ length: 6 }, (_, i) => i);
 
@@ -103,26 +103,28 @@ function ThreeDotButton({
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          data-open={isOpen || undefined}
-          fadeOnDisabled={false}
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
-            className,
-          )}
-        >
-          <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isOpen || undefined}
+            fadeOnDisabled={false}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
+              className,
+            )}
+          >
+            <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+          </Button>
+        }
+      />
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
         data-open={isOpen || undefined}
         align="end"
-        forceMount={true}
+        keepMounted
       >
         <ScrollArea>
           <DropdownMenuGroup>
@@ -132,7 +134,7 @@ function ThreeDotButton({
               closeDropdown={() => setIsOpen(false)}
             >
               <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
+                closeOnClick={false}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
                 <Trash2Icon className="-ml-0.5 size-5" />
@@ -156,7 +158,7 @@ function DeleteTrigger({
 }: {
   webhook: TWebhookShallow;
   closeDropdown: () => void;
-  children: ReactNode;
+  children: ReactElement;
 } & TWebhookProps) {
   const { invalidate: invalidateWebhooks } = useWebhooksUtils(
     type === "project"

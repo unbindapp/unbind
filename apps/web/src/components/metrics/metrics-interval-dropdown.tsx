@@ -24,22 +24,25 @@ export default function MetricsIntervalDropdown({ className }: TProps) {
 
   return (
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-      <DropdownMenuTrigger asChild className="px-3">
-        <Button
-          data-open={isDropdownOpen || undefined}
-          aria-label="Metrics Interval"
-          type="button"
-          variant="outline"
-          className={cn(
-            "group/button w-24 touch-manipulation justify-between py-2 text-left font-medium",
-            className,
-          )}
-        >
-          <p className="min-w-0 shrink truncate">{interval.label}</p>
-          <ChevronDownIcon className="text-muted-more-foreground -mr-1 size-4.5 shrink-0 transition-transform group-data-open/button:rotate-180" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-(--radix-popper-anchor-width)">
+      <DropdownMenuTrigger
+        className="px-3"
+        render={
+          <Button
+            data-open={isDropdownOpen || undefined}
+            aria-label="Metrics Interval"
+            type="button"
+            variant="outline"
+            className={cn(
+              "group/button w-24 touch-manipulation justify-between py-2 text-left font-medium",
+              className,
+            )}
+          >
+            <p className="min-w-0 shrink truncate">{interval.label}</p>
+            <ChevronDownIcon className="text-muted-more-foreground -mr-1 size-4.5 shrink-0 transition-transform group-data-open/button:rotate-180" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end" className="w-(--anchor-width)">
         <ScrollArea>
           <DropdownMenuGroup>
             {intervals.map((i) => (

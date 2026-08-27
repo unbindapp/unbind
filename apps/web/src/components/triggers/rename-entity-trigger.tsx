@@ -12,14 +12,14 @@ import {
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { serviceDescriptionMaxLength, serviceNameMaxLength } from "@/lib/queries/services";
-import { ReactNode, useCallback, useRef, useState } from "react";
+import { ReactElement, useCallback, useRef, useState } from "react";
 import { z } from "zod";
 
 type TPropsShared = {
   onDialogClose?: () => void;
   onDialogCloseImmediate?: () => void;
   error: { message: string } | null;
-  children: ReactNode;
+  children: ReactElement;
   dialogTitle: string;
   dialogDescription: string;
   formSchema: z.ZodSchema<{ name: string; description: string }>;
@@ -102,7 +102,7 @@ export default function RenameEntityTrigger({
         if (!o) onClose();
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
@@ -155,11 +155,14 @@ export default function RenameEntityTrigger({
           <div className="flex w-full flex-col gap-4">
             {error && <ErrorLine message={error.message} />}
             <div className="flex w-full flex-wrap items-center justify-end gap-2">
-              <DialogClose asChild className="text-muted-foreground">
-                <Button type="button" variant="ghost">
-                  Close
-                </Button>
-              </DialogClose>
+              <DialogClose
+                className="text-muted-foreground"
+                render={
+                  <Button type="button" variant="ghost">
+                    Close
+                  </Button>
+                }
+              />
               <form.Subscribe
                 selector={(state) => ({ isSubmitting: state.isSubmitting })}
                 children={({ isSubmitting }) => (

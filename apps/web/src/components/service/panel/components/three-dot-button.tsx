@@ -37,26 +37,28 @@ export default function ThreeDotButton({ service, className }: TProps) {
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          data-open={isOpen || undefined}
-          fadeOnDisabled={false}
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
-            className,
-          )}
-        >
-          <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isOpen || undefined}
+            fadeOnDisabled={false}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
+              className,
+            )}
+          >
+            <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
+          </Button>
+        }
+      />
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
         data-open={isOpen || undefined}
         align="end"
-        forceMount={true}
+        keepMounted
       >
         <ScrollArea>
           <DropdownMenuGroup>
@@ -77,7 +79,7 @@ export default function ThreeDotButton({ service, className }: TProps) {
               disableConfirmationInput
             >
               <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
+                closeOnClick={false}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
                 <Trash2Icon className="-ml-0.5 size-5" />

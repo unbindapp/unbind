@@ -19,7 +19,7 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { ReactNode, useMemo } from "react";
+import { ReactElement, ReactNode, useMemo } from "react";
 
 type TProps = {
   className?: string;
@@ -145,7 +145,7 @@ function ServicePanelOrPlaceholder({
   service,
   isPlaceholder,
   children,
-}: { children: ReactNode } & (
+}: { children: ReactElement } & (
   | {
       teamId: string;
       projectId: string;

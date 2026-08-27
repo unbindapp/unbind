@@ -1,7 +1,5 @@
-"use client";
-
 import * as React from "react";
-import { type DialogProps } from "@radix-ui/react-dialog";
+import { type Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { Command as CommandPrimitive } from "cmdk";
 import { cn } from "@/components/ui/utils";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -51,7 +49,9 @@ function Command({
   );
 }
 
-type CommandDialogProps = DialogProps & {};
+type CommandDialogProps = Omit<DialogPrimitive.Root.Props, "children"> & {
+  children?: React.ReactNode;
+};
 
 function CommandDialog({ children, ...props }: CommandDialogProps) {
   return (

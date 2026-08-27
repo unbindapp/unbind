@@ -27,12 +27,12 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { HardDriveIcon, PenIcon, XIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { ReactNode } from "react";
+import { ReactElement } from "react";
 import { toast } from "sonner";
 
 type TProps = {
   volume: TVolumeShallow;
-  children: ReactNode;
+  children: ReactElement;
 };
 
 export default function VolumePanel({ volume, children }: TProps) {
@@ -49,18 +49,8 @@ export default function VolumePanel({ volume, children }: TProps) {
   const { isExtraSmall } = useDeviceSize();
 
   return (
-    <Drawer
-      open={open}
-      onOpenChange={setOpen}
-      direction={isExtraSmall ? "bottom" : "right"}
-      handleOnly={!isExtraSmall}
-      // Vaul's input repositioning is for the mobile keyboard. On desktop (right
-      // direction) it fires on any visualViewport resize while an input is focused
-      // and pins an inline pixel height that overrides `sm:h-full`, leaving the
-      // drawer stuck at the wrong height. Only enable it on the mobile bottom drawer.
-      repositionInputs={isExtraSmall}
-    >
-      <DrawerTrigger asChild>{children}</DrawerTrigger>
+    <Drawer open={open} onOpenChange={setOpen} direction={isExtraSmall ? "bottom" : "right"}>
+      <DrawerTrigger render={children} />
       <DrawerContent
         hasHandle={isExtraSmall}
         className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
@@ -71,15 +61,17 @@ export default function VolumePanel({ volume, children }: TProps) {
             <TitleButton volume={volume} />
           </DrawerHeader>
           <DrawerHeaderButtonsWrapper>
-            <DrawerClose asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="text-muted-more-foreground shrink-0 rounded-lg"
-              >
-                <XIcon className="size-5" />
-              </Button>
-            </DrawerClose>
+            <DrawerClose
+              render={
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-muted-more-foreground shrink-0 rounded-lg"
+                >
+                  <XIcon className="size-5" />
+                </Button>
+              }
+            />
           </DrawerHeaderButtonsWrapper>
         </div>
         <VolumePanelContent volume={volume} />

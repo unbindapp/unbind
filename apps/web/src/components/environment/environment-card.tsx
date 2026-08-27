@@ -43,7 +43,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { CheckIcon, EllipsisVerticalIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { ReactNode, useRef, useState } from "react";
+import { ReactElement, useRef, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -138,26 +138,28 @@ function ThreeDotButton({
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          data-open={isOpen || undefined}
-          fadeOnDisabled={false}
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
-            className,
-          )}
-        >
-          <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isOpen || undefined}
+            fadeOnDisabled={false}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+              className,
+            )}
+          >
+            <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+          </Button>
+        }
+      />
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
         data-open={isOpen || undefined}
         align="end"
-        forceMount={true}
+        keepMounted
       >
         <ScrollArea>
           <DropdownMenuGroup>
@@ -167,7 +169,7 @@ function ThreeDotButton({
               projectId={projectId}
               closeDropdown={() => setIsOpen(false)}
             >
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <DropdownMenuItem closeOnClick={false}>
                 <PenIcon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Rename</p>
               </DropdownMenuItem>
@@ -180,7 +182,7 @@ function ThreeDotButton({
                 closeDropdown={() => setIsOpen(false)}
               >
                 <DropdownMenuItem
-                  onSelect={(e) => e.preventDefault()}
+                  closeOnClick={false}
                   className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
                 >
                   <Trash2Icon className="-ml-0.5 size-5" />
@@ -206,7 +208,7 @@ function DeleteTrigger({
   teamId: string;
   projectId: string;
   closeDropdown: () => void;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   const router = useRouter();
   const { environmentId } = useIdsFromPathname();
@@ -305,7 +307,7 @@ function RenameTrigger({
   teamId: string;
   projectId: string;
   closeDropdown: () => void;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   const {
     mutateAsync: updateEnvironment,
@@ -462,20 +464,18 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
         }
       }}
     >
-      <DialogTrigger asChild>
-        <li className="relative w-full p-1 sm:w-1/2">
-          <div className="group/item relative flex w-full items-center justify-start">
-            <Button
-              variant="outline"
-              className="text-muted-foreground flex w-full flex-row items-center justify-start px-4 py-3 font-medium"
-            >
-              <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
-              <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
-                New Environment
-              </p>
-            </Button>
-          </div>
-        </li>
+      <DialogTrigger render={<li className="relative w-full p-1 sm:w-1/2" />} nativeButton={false}>
+        <div className="group/item relative flex w-full items-center justify-start">
+          <Button
+            variant="outline"
+            className="text-muted-foreground flex w-full flex-row items-center justify-start px-4 py-3 font-medium"
+          >
+            <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
+            <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
+              New Environment
+            </p>
+          </Button>
+        </div>
       </DialogTrigger>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
@@ -510,11 +510,14 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
           </div>
           {createEnvironmentError && <ErrorLine message={createEnvironmentError?.message} />}
           <div className="flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </DialogClose>
+            <DialogClose
+              className="text-muted-foreground"
+              render={
+                <Button type="button" variant="ghost">
+                  Cancel
+                </Button>
+              }
+            />
             <form.Subscribe
               selector={(state) => ({ isSubmitting: state.isSubmitting })}
               children={({ isSubmitting }) => (

@@ -259,7 +259,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
               <form.AppField
                 name="tag"
                 children={(field) => (
-                  <field.AsyncCommandDropdown
+                  <field.AsyncAndSearchableSelect
                     dontCheckUntilSubmit
                     field={field}
                     value={field.state.value}
@@ -287,7 +287,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
                         fadeOnDisabled={false}
                       />
                     )}
-                  </field.AsyncCommandDropdown>
+                  </field.AsyncAndSearchableSelect>
                 )}
               />
             </BlockItemContent>

@@ -28,7 +28,7 @@ import {
   ButtonHTMLAttributes,
   cloneElement,
   isValidElement,
-  ReactNode,
+  ReactElement,
   useMemo,
   useRef,
   useState,
@@ -37,7 +37,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 export type TCreateEnvironmentDialogProps = {
-  children: ReactNode;
+  children: ReactElement;
   onFormSubmitSuccessful?: () => void;
   asyncOnFormSubmitSuccessful?: (args: {
     environment: TEnvironmentShallow;
@@ -140,7 +140,7 @@ export function CreateEnvironmentDialog({
         dialogOnOpenChange?.(o);
       }}
     >
-      <DialogTrigger asChild>{childrenWithRestProps}</DialogTrigger>
+      <DialogTrigger render={childrenWithRestProps} />
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Create Environment</DialogTitle>
@@ -174,11 +174,14 @@ export function CreateEnvironmentDialog({
             <ErrorLine message={createEnvironmentError?.message} className="mt-4" />
           )}
           <div className="mt-4 flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </DialogClose>
+            <DialogClose
+              className="text-muted-foreground"
+              render={
+                <Button type="button" variant="ghost">
+                  Cancel
+                </Button>
+              }
+            />
             <form.Subscribe
               selector={(state) => ({ isSubmitting: state.isSubmitting })}
               children={({ isSubmitting }) => (

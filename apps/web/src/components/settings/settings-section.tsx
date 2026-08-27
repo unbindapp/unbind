@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/components/ui/utils";
-import { FC, HTMLAttributes, ReactNode } from "react";
+import { ReactElement, FC, HTMLAttributes, ReactNode } from "react";
 
 type TProps = {
   title: string;
@@ -21,7 +21,7 @@ type TProps = {
   classNameHeader?: string;
   classNameContent?: string;
   changeCount?: number;
-  SubmitTrigger?: FC<{ children: ReactNode }>;
+  SubmitTrigger?: FC<{ children: ReactElement }>;
   onClickResetChanges?: () => void;
 } & TWrapperProps &
   TSubmitButtonProps;
@@ -45,7 +45,7 @@ export function SettingsSection({
 }: TProps) {
   const SubmitButtonElement = SubmitButton || Button;
   const SubmitTriggerElement =
-    SubmitTrigger || (({ children }: { children: ReactNode }) => children);
+    SubmitTrigger || (({ children }: { children: ReactElement }) => children);
 
   return (
     <Wrapper
@@ -174,22 +174,25 @@ function ResetTrigger({
 }: {
   changeCount: number;
   onClickResetChanges?: () => void;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   return (
     <Dialog>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent hideXButton className="w-lg max-w-full">
         <DialogHeader>
           <DialogTitle>Revert Changes: {changeCount}</DialogTitle>
           <DialogDescription>Are you sure you want to revert the changes?</DialogDescription>
         </DialogHeader>
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
-          <DialogClose asChild className="text-muted-foreground">
-            <Button type="button" variant="ghost">
-              Cancel
-            </Button>
-          </DialogClose>
+          <DialogClose
+            className="text-muted-foreground"
+            render={
+              <Button type="button" variant="ghost">
+                Cancel
+              </Button>
+            }
+          />
           <Button onClick={onClickResetChanges}>Confirm</Button>
         </div>
       </DialogContent>

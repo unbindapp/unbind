@@ -50,7 +50,7 @@ export default function Terminal() {
   useEffect(() => {
     if (!isFullscreen) return;
 
-    const drawer = wrapperRef.current?.closest<HTMLElement>("[data-vaul-drawer]");
+    const drawer = wrapperRef.current?.closest<HTMLElement>('[data-slot="drawer-content"]');
     if (!drawer) return;
     const prevWillChange = drawer.style.willChange;
     drawer.style.willChange = "auto";

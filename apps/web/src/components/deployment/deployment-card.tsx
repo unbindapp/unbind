@@ -53,7 +53,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { HTMLAttributes, ReactNode, useRef, useState } from "react";
+import { ReactElement, HTMLAttributes, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type TProps = HTMLAttributes<HTMLDivElement> &
@@ -177,29 +177,30 @@ function ThreeDotButton({
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          data-open={isOpen || undefined}
-          size="icon"
-          variant="ghost"
-          className="text-muted-more-foreground group/button active:bg-foreground/6 has-hover:hover:bg-foreground/6 focus-visible:bg-foreground/6"
-        >
-          {/* When radix thing is open rotate the three dots */}
-          <EllipsisVerticalIcon className="size-6 transition group-data-open/button:rotate-90" />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isOpen || undefined}
+            size="icon"
+            variant="ghost"
+            className="text-muted-more-foreground group/button active:bg-foreground/6 has-hover:hover:bg-foreground/6 focus-visible:bg-foreground/6"
+          >
+            <EllipsisVerticalIcon className="size-6 transition group-data-open/button:rotate-90" />
+          </Button>
+        }
+      />
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
         data-open={isOpen || undefined}
         align="end"
-        forceMount={true}
+        keepMounted
       >
         <ScrollArea>
           <DropdownMenuGroup>
             {isCurrentDeployment && deployment.status !== "removed" && (
               <RestartTrigger closeDropdown={() => setIsOpen(false)}>
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <DropdownMenuItem closeOnClick={false}>
                   <RotateCcwIcon className="-ml-0.5 size-5" />
                   <p className="min-w-0 shrink leading-tight">Restart</p>
                 </DropdownMenuItem>
@@ -214,7 +215,7 @@ function ThreeDotButton({
                 closeDropdown={() => setIsOpen(false)}
                 deployment={deployment}
               >
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <DropdownMenuItem closeOnClick={false}>
                   <RewindIcon className="-ml-0.5 size-5" />
                   <p className="min-w-0 shrink leading-tight">Rollback</p>
                 </DropdownMenuItem>
@@ -226,7 +227,7 @@ function ThreeDotButton({
               closeDropdown={() => setIsOpen(false)}
               deployment={deployment}
             >
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <DropdownMenuItem closeOnClick={false}>
                 <RocketIcon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Redeploy</p>
               </DropdownMenuItem>
@@ -236,7 +237,7 @@ function ThreeDotButton({
               deployment.status === "build-running") && (
               <AbortTrigger deployment={deployment} closeDropdown={() => setIsOpen(false)}>
                 <DropdownMenuItem
-                  onSelect={(e) => e.preventDefault()}
+                  closeOnClick={false}
                   className="active:bg-warning/10 data-highlighted:bg-warning/10 data-highlighted:text-warning"
                 >
                   <OctagonXIcon className="-ml-0.5 size-5" />
@@ -249,7 +250,7 @@ function ThreeDotButton({
               service.type !== "database" && (
                 <RemoveTrigger deployment={deployment} closeDropdown={() => setIsOpen(false)}>
                   <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
+                    closeOnClick={false}
                     className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
                   >
                     <Trash2Icon className="-ml-0.5 size-5" />
@@ -269,7 +270,7 @@ function RestartTrigger({
   children,
 }: {
   closeDropdown: () => void;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const { teamId, projectId, environmentId, serviceId } = useService();
@@ -324,7 +325,7 @@ function RestartTrigger({
         }
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Restart</DialogTitle>
@@ -332,11 +333,14 @@ function RestartTrigger({
         </DialogHeader>
         {error && <ErrorLine message={error?.message} />}
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
-          <DialogClose asChild className="text-muted-foreground">
-            <Button type="button" variant="ghost">
-              Cancel
-            </Button>
-          </DialogClose>
+          <DialogClose
+            className="text-muted-foreground"
+            render={
+              <Button type="button" variant="ghost">
+                Cancel
+              </Button>
+            }
+          />
           <Button
             onClick={() =>
               restartDeployment({
@@ -363,7 +367,7 @@ function AbortTrigger({
 }: {
   deployment: TDeploymentShallow;
   closeDropdown: () => void;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   const { teamId, projectId, environmentId, serviceId } = useService();
 
@@ -426,7 +430,7 @@ function RemoveTrigger({
 }: {
   deployment: TDeploymentShallow;
   closeDropdown: () => void;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   const { teamId, projectId, environmentId, serviceId } = useService();
 
@@ -506,7 +510,7 @@ function RedeployTrigger({
   title?: string;
   description?: string;
   buttonText?: string;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const { teamId, projectId, environmentId, serviceId } = useService();
@@ -570,7 +574,7 @@ function RedeployTrigger({
         }
       }}
     >
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>{title || "Redeploy"}</DialogTitle>
@@ -625,11 +629,14 @@ function RedeployTrigger({
 
           {error && <ErrorLine message={error?.message} />}
           <div className="flex w-full flex-wrap items-center justify-end gap-2">
-            <DialogClose asChild className="text-muted-foreground">
-              <Button type="button" variant="ghost">
-                Cancel
-              </Button>
-            </DialogClose>
+            <DialogClose
+              className="text-muted-foreground"
+              render={
+                <Button type="button" variant="ghost">
+                  Cancel
+                </Button>
+              }
+            />
             <form.Subscribe
               selector={(state) => ({ isSubmitting: state.isSubmitting })}
               children={({ isSubmitting }) => (

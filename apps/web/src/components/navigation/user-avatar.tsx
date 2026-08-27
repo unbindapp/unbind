@@ -197,20 +197,21 @@ export default function UserAvatar({ email, className }: TProps) {
         <DropdownMenuGroup>
           {updatesData ? (
             <DropdownMenuItem
-              asChild
               className="group/version flex w-full cursor-pointer items-center gap-1.5 px-3 py-2 text-left leading-tight"
-            >
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                href={updatesData.data.current_version_url}
-              >
-                <GitBranchOrExternalLinkIcon />
-                <p className="group-hover/version:text-foreground group-active/version:text-foreground text-muted-foreground min-w-0 shrink text-center text-sm leading-tight">
-                  Version: <span className="font-semibold">{updatesData.data.current_version}</span>
-                </p>
-              </a>
-            </DropdownMenuItem>
+              render={
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={updatesData.data.current_version_url}
+                >
+                  <GitBranchOrExternalLinkIcon />
+                  <p className="group-hover/version:text-foreground group-active/version:text-foreground text-muted-foreground min-w-0 shrink text-center text-sm leading-tight">
+                    Version:{" "}
+                    <span className="font-semibold">{updatesData.data.current_version}</span>
+                  </p>
+                </a>
+              }
+            />
           ) : (
             <div
               data-pending={isPendingUpdatesResult || undefined}

@@ -182,7 +182,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                 </BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
-                <field.AsyncCommandDropdown
+                <field.AsyncAndSearchableSelect
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
@@ -239,7 +239,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                       />
                     );
                   }}
-                </field.AsyncCommandDropdown>
+                </field.AsyncAndSearchableSelect>
               </BlockItemContent>
             </BlockItem>
           )}

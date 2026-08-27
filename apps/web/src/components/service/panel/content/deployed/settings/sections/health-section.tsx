@@ -16,7 +16,7 @@ import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { HealthCheckTypeSchema } from "@/lib/server/client.gen";
 import { THealthCheckType, TServiceShallow } from "@/lib/queries/services";
-import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
+import { CircleHelpIcon } from "lucide-react";
 import { useStore } from "@tanstack/react-form";
 import {
   CircleSlashIcon,
@@ -577,7 +577,7 @@ function HealthCheckIcon({
   if (type === "exec") return <TerminalSquareIcon className={className} />;
   if (type === "http") return <GlobeIcon className={className} />;
   if (type === "none") return <CircleSlashIcon className={className} />;
-  return <QuestionMarkCircledIcon className={className} />;
+  return <CircleHelpIcon className={className} />;
 }
 
 function healthCheckTypeToName(type: THealthCheckType | (string & {})) {

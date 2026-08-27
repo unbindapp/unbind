@@ -18,14 +18,14 @@ import {
 } from "@/components/ui/drawer";
 import { TServiceShallow } from "@/lib/queries/services";
 import { XIcon } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactElement } from "react";
 
 type TProps = {
   teamId: string;
   projectId: string;
   environmentId: string;
   service: TServiceShallow;
-  children: ReactNode;
+  children: ReactElement;
 };
 
 export default function ServicePanel({
@@ -51,23 +51,20 @@ export default function ServicePanel({
   return (
     <Drawer
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(newOpen, eventDetails) => {
+        // While the terminal is maximized, Esc exits fullscreen (handled in the
+        // terminal) instead of closing the drawer.
+        if (!newOpen && eventDetails.reason === "escape-key" && isTerminalFullscreen) {
+          eventDetails.cancel();
+          return;
+        }
+        setOpen(newOpen);
+      }}
       direction={isExtraSmall ? "bottom" : "right"}
-      handleOnly={!isExtraSmall}
-      // Vaul's input repositioning is for the mobile keyboard. On desktop (right
-      // direction) it fires on any visualViewport resize while an input is focused
-      // and pins an inline pixel height that overrides `sm:h-full`, leaving the
-      // drawer stuck at the wrong height. Only enable it on the mobile bottom drawer.
-      repositionInputs={isExtraSmall}
     >
-      <DrawerTrigger asChild>{children}</DrawerTrigger>
+      <DrawerTrigger render={children} />
       <DrawerContent
         hasHandle={isExtraSmall}
-        // While the terminal is maximized, Esc exits fullscreen (handled in the terminal) instead
-        // of closing the drawer. Radix dismisses on Esc unless the event is defaultPrevented here.
-        onEscapeKeyDown={(e) => {
-          if (isTerminalFullscreen) e.preventDefault();
-        }}
         className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
       >
         <ServiceProvider
@@ -90,15 +87,17 @@ export default function ServicePanel({
               {!service.last_deployment && (
                 <ThreeDotButton service={service} className="rounded-lg" />
               )}
-              <DrawerClose asChild>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="text-muted-more-foreground shrink-0 rounded-lg"
-                >
-                  <XIcon className="size-5" />
-                </Button>
-              </DrawerClose>
+              <DrawerClose
+                render={
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-muted-more-foreground shrink-0 rounded-lg"
+                  >
+                    <XIcon className="size-5" />
+                  </Button>
+                }
+              />
             </DrawerHeaderButtonsWrapper>
           </div>
           <ServiceEndpointsProvider

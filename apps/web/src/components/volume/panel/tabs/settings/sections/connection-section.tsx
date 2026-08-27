@@ -149,7 +149,7 @@ function AttachSection({ volume }: TProps) {
                 <BlockItemDescription>The service to attach this volume to.</BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
-                <field.AsyncCommandDropdown
+                <field.AsyncAndSearchableSelect
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
@@ -176,7 +176,7 @@ function AttachSection({ volume }: TProps) {
                       disabled={volume.is_deleting || volume.is_detaching}
                     />
                   )}
-                </field.AsyncCommandDropdown>
+                </field.AsyncAndSearchableSelect>
               </BlockItemContent>
             </BlockItem>
           )}

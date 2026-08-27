@@ -16,7 +16,7 @@ import { useMutation } from "@tanstack/react-query";
 import { EllipsisVerticalIcon, PenIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { toast } from "sonner";
-import { ReactNode, useState } from "react";
+import { ReactElement, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -132,26 +132,28 @@ function ThreeDotButton({
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          data-open={isOpen || undefined}
-          fadeOnDisabled={false}
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "text-muted-more-foreground group/button shrink-0 rounded-lg group-data-placeholder/card:text-transparent",
-            className,
-          )}
-        >
-          <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isOpen || undefined}
+            fadeOnDisabled={false}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-muted-more-foreground group/button shrink-0 rounded-lg group-data-placeholder/card:text-transparent",
+              className,
+            )}
+          >
+            <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
+          </Button>
+        }
+      />
       <DropdownMenuContent
         className="z-50 w-40"
         sideOffset={-1}
         data-open={isOpen || undefined}
         align="end"
-        forceMount={true}
+        keepMounted
       >
         <ScrollArea>
           <DropdownMenuGroup>
@@ -163,7 +165,7 @@ function ThreeDotButton({
               onSuccess={() => setIsOpen(false)}
               onDialogCloseImmediate={() => setIsOpen(false)}
             >
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <DropdownMenuItem closeOnClick={false}>
                 <PenIcon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Rename</p>
               </DropdownMenuItem>
@@ -177,7 +179,7 @@ function ThreeDotButton({
               onDialogCloseImmediate={() => setIsOpen(false)}
             >
               <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
+                closeOnClick={false}
                 className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
               >
                 <Trash2Icon className="-ml-0.5 size-5" />
@@ -198,7 +200,7 @@ type TRenameTriggerProps = {
   environmentId: string;
   onDialogCloseImmediate?: () => void;
   onSuccess?: () => void;
-  children: ReactNode;
+  children: ReactElement;
 };
 
 function RenameTrigger({
@@ -270,7 +272,7 @@ type TDeleteTriggerProps = {
   teamId: string;
   projectId: string;
   environmentId: string;
-  children: ReactNode;
+  children: ReactElement;
   onDialogCloseImmediate?: () => void;
   onSuccess?: () => void;
 };

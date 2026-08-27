@@ -43,19 +43,30 @@ export default function BottomDrawer({
   onEscapeKeyDown,
 }: TProps) {
   const childrenArray = Children.toArray(children);
-  const Trigger = childrenArray.find((child) => hasChildRole(child, BOTTOM_DRAWER_ROLE.trigger));
+  const triggerChild = childrenArray.find((child) =>
+    hasChildRole(child, BOTTOM_DRAWER_ROLE.trigger),
+  );
+  const Trigger = isValidElement(triggerChild) ? triggerChild : undefined;
   const Content = childrenArray.find((child) => hasChildRole(child, BOTTOM_DRAWER_ROLE.content));
 
   return (
     <Drawer
-      autoFocus={dontAutoFocus ? false : open}
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(newOpen, eventDetails) => {
+        if (!newOpen && eventDetails.reason === "escape-key" && onEscapeKeyDown) {
+          onEscapeKeyDown(eventDetails.event as KeyboardEvent);
+          if (eventDetails.event.defaultPrevented) {
+            eventDetails.cancel();
+            return;
+          }
+        }
+        onOpenChange(newOpen);
+      }}
       direction="bottom"
     >
-      <DrawerTrigger asChild>{Trigger}</DrawerTrigger>
+      <DrawerTrigger render={Trigger} />
       <DrawerContent
-        onEscapeKeyDown={onEscapeKeyDown}
+        initialFocus={dontAutoFocus ? false : undefined}
         className={cn("h-[calc(min(26.5rem,calc(100svh-3rem)))]", classNameContent)}
         hasHandle
       >

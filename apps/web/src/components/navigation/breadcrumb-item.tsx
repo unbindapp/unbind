@@ -27,6 +27,7 @@ import {
   ComponentProps,
   Dispatch,
   FC,
+  ReactElement,
   ReactNode,
   SetStateAction,
   useCallback,
@@ -62,7 +63,7 @@ type TProps<T> = {
         newItemIsPending: boolean;
         newItemDontCloseMenuOnSelect?: boolean;
         newItemComingSoon?: boolean;
-        NewItemWrapper?: FC<{ children: ReactNode }>;
+        NewItemWrapper?: FC<{ children: ReactElement }>;
         onSelectNewItem: (id: string) => void;
       }
     | {
@@ -120,7 +121,7 @@ export function BreadcrumbItem<T>({
     : undefined;
 
   const ConditionalNewItemWrapper = useCallback(
-    ({ children }: { children: ReactNode }) => {
+    ({ children }: { children: ReactElement }) => {
       if (NewItemWrapper) {
         return <NewItemWrapper>{children}</NewItemWrapper>;
       }
@@ -497,7 +498,7 @@ function Trigger<T>({
       </p>
       <ChevronDownIcon
         data-flip-chevron-sm={flipChevronOnSm || undefined}
-        className="text-muted-more-foreground relative -my-1 -ml-1 size-4 transition group-data-[state=open]/button:rotate-180 data-flip-chevron-sm:rotate-180 group-data-[state=open]/button:data-flip-chevron-sm:rotate-360 sm:data-flip-chevron-sm:rotate-0 sm:group-data-[state=open]/button:data-flip-chevron-sm:rotate-180"
+        className="text-muted-more-foreground relative -my-1 -ml-1 size-4 transition group-data-popup-open/button:rotate-180 data-flip-chevron-sm:rotate-180 group-data-popup-open/button:data-flip-chevron-sm:rotate-360 sm:data-flip-chevron-sm:rotate-0 sm:group-data-popup-open/button:data-flip-chevron-sm:rotate-180"
       />
     </Button>
   );

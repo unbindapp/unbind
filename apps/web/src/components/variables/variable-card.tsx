@@ -42,7 +42,7 @@ import {
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
-import { Dispatch, FC, ReactNode, useMemo, useState } from "react";
+import { Dispatch, FC, ReactElement, useMemo, useState } from "react";
 import { z } from "zod";
 
 const hiddenString = "••••••••••";
@@ -390,37 +390,39 @@ function ThreeDotButton({
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          data-open={isOpen || undefined}
-          fadeOnDisabled={false}
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
-            className,
-          )}
-        >
-          {isLocked ? (
-            <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
-              <LockIcon className="size-full transition-opacity group-data-open/button:opacity-0" />
-              <XIcon
-                strokeWidth={2.25}
-                className="absolute top-0 left-0 size-full opacity-0 transition-opacity group-data-open/button:opacity-100"
-              />
-            </div>
-          ) : (
-            <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
-          )}
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isOpen || undefined}
+            fadeOnDisabled={false}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+              className,
+            )}
+          >
+            {isLocked ? (
+              <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
+                <LockIcon className="size-full transition-opacity group-data-open/button:opacity-0" />
+                <XIcon
+                  strokeWidth={2.25}
+                  className="absolute top-0 left-0 size-full opacity-0 transition-opacity group-data-open/button:opacity-100"
+                />
+              </div>
+            ) : (
+              <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+            )}
+          </Button>
+        }
+      />
       <DropdownMenuContent
         data-locked={isLocked || undefined}
         className="z-50 w-40 data-locked:w-68"
         sideOffset={-1}
         data-open={isOpen || undefined}
         align="end"
-        forceMount={true}
+        keepMounted
       >
         <ScrollArea>
           <DropdownMenuGroup>
@@ -453,7 +455,7 @@ function ThreeDotButton({
               >
                 <DropdownMenuItem
                   disabled={disableDelete}
-                  onSelect={(e) => e.preventDefault()}
+                  closeOnClick={false}
                   className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
                 >
                   {!disableDelete ? (
@@ -590,7 +592,7 @@ function DeleteTrigger({
   variable: TVariableOrReferenceShallow;
   variableTypeProps: TEntityVariableTypeProps;
   closeDropdown: () => void;
-  children: ReactNode;
+  children: ReactElement;
 }) {
   const { invalidate: invalidateVariables, optimisticRemove: optimisticRemoveVariables } =
     useVariablesUtils({
