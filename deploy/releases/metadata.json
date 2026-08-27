@@ -88,5 +88,10 @@
     "version": "v0.1.17",
     "description": "ANSI log rendering, safer update resume, post-build service metadata refresh, and light theme polish",
     "breaking": false
+  },
+  "v0.1.18": {
+    "version": "v0.1.18",
+    "description": "Smart redeploy and cache bypass options, PVC permission error mapping, and UI polish",
+    "breaking": false
   }
 }
