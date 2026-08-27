@@ -113,5 +113,10 @@
     "version": "v0.1.22",
     "description": "Development tooling: pre-commit TypeScript checks for web",
     "breaking": false
+  },
+  "v0.1.23": {
+    "version": "v0.1.23",
+    "description": "New toast system, merged update status endpoints, database TCP endpoint reporting, and dialog fixes",
+    "breaking": false
   }
 }
