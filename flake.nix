@@ -35,6 +35,7 @@
               nixpkgs-helm3.legacyPackages.${system}.kubernetes-helm
               helmfile
               k3d
+              pre-commit
             ];
 
             shellHook = ''
