@@ -98,5 +98,10 @@
     "version": "v0.1.19",
     "description": "More reliable platform updates with failure recovery, and persistent volume management permissions",
     "breaking": false
+  },
+  "v0.1.20": {
+    "version": "v0.1.20",
+    "description": "Release v0.1.20",
+    "breaking": false
   }
 }
