@@ -54,6 +54,7 @@ function DialogOverlay({
 }: DialogPrimitive.Backdrop.Props & TDialogOverlayVariants) {
   return (
     <DialogPrimitive.Backdrop
+      forceRender
       data-slot="dialog-overlay"
       className={cn(dialogOverlayVariants({ animate, className }))}
       {...props}

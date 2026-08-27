@@ -81,6 +81,7 @@ function DrawerOverlay({
 }: DrawerPrimitive.Backdrop.Props & { transparent?: boolean }) {
   return (
     <DrawerPrimitive.Backdrop
+      forceRender
       data-slot="drawer-overlay"
       className={cn(
         "fixed inset-0 z-50",

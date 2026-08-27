@@ -43,7 +43,9 @@ function Slider<Value extends number | readonly number[]>({
       }
       thumbAlignment="edge"
       className={cn(
-        "data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full",
+        // The root is a plain wrapper around the control; center the control so
+        // the track stays aligned when a flex row stretches the root
+        "flex data-[orientation=horizontal]:w-full data-[orientation=horizontal]:items-center data-[orientation=vertical]:h-full data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-center",
         className,
       )}
       {...props}
