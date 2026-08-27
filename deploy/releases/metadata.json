@@ -83,5 +83,10 @@
     "version": "v0.1.16",
     "description": "Fix the startup crash introduced in v0.1.15 (missing ent runtime registration)",
     "breaking": false
+  },
+  "v0.1.17": {
+    "version": "v0.1.17",
+    "description": "ANSI log rendering, safer update resume, post-build service metadata refresh, and light theme polish",
+    "breaking": false
   }
 }
