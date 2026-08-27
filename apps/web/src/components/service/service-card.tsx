@@ -1,3 +1,4 @@
+import OnlineIcon from "@/components/icons/online";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useNow } from "@/components/providers/now-provider";
 import ServicePanel from "@/components/service/panel/service-panel";
@@ -11,7 +12,13 @@ import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-differen
 import { deploymentsListQuery } from "@/lib/queries/deployments";
 import { serviceQuery, TService, TServiceShallow } from "@/lib/queries/services";
 import { useQueryClient } from "@tanstack/react-query";
-import { HourglassIcon, LoaderIcon, OctagonXIcon, TriangleAlertIcon } from "lucide-react";
+import {
+  CircleSlash,
+  HourglassIcon,
+  LoaderIcon,
+  OctagonXIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import { ReactNode, useMemo } from "react";
 
 type TProps = {
@@ -347,19 +354,7 @@ function StatusIndicator({ status }: { status: TDeployment["status"] }) {
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
   if (status === "removed") {
-    return (
-      <div className="-ml-px flex size-3.5 shrink-0 items-center justify-center">
-        <div className="flex size-3 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--muted-foreground)_40%,transparent)]">
-          <div className="bg-muted-foreground size-1.5 rounded-full" />
-        </div>
-      </div>
-    );
+    return <CircleSlash className="size-3.5 shrink-0" />;
   }
-  return (
-    <div className="-ml-px flex size-3.5 shrink-0 items-center justify-center">
-      <div className="flex size-3 items-center justify-center rounded-full shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--success)_40%,transparent)]">
-        <div className="bg-success size-1.5 rounded-full" />
-      </div>
-    </div>
-  );
+  return <OnlineIcon className="text-success size-3.5 shrink-0" />;
 }
