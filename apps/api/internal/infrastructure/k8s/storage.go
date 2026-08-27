@@ -12,11 +12,12 @@ import (
 )
 
 type StorageMetadata struct {
-	StorageClassName          string  `json:"storage_class_name"`
-	MinimumStorageGB          float64 `json:"minimum_storage_gb"`
-	MaximumStorageGB          float64 `json:"maximum_storage_gb"`
-	StorageStepGB             float64 `json:"storage_step_gb"`
-	UnableToDetectAllocatable bool    `json:"unable_to_detect_allocatable"`
+	StorageClassName          string   `json:"storage_class_name"`
+	MinimumStorageGB          float64  `json:"minimum_storage_gb"`
+	MaximumStorageGB          float64  `json:"maximum_storage_gb"`
+	AvailableStorageGB        *float64 `json:"available_storage_gb,omitempty" required:"false" doc:"Free space left on the node; only reported for provisioners with node-local capacity (e.g. Longhorn). Expansion ceiling is current volume size + this value."`
+	StorageStepGB             float64  `json:"storage_step_gb"`
+	UnableToDetectAllocatable bool     `json:"unable_to_detect_allocatable"`
 }
 
 // AvailableStorageBytes inspects the default StorageClass and returns
@@ -94,6 +95,7 @@ func (self *KubeClient) AvailableStorageBytes(ctx context.Context) (*StorageMeta
 			maximumStorageGb := float64(maxFree.Value()) / (1024 * 1024 * 1024)
 			resp.MinimumStorageGB = 0.10
 			resp.MaximumStorageGB = maximumStorageGb
+			resp.AvailableStorageGB = &maximumStorageGb
 			resp.UnableToDetectAllocatable = false
 			resp.StorageStepGB = 0.25 // 256 MiB
 			return resp, nil

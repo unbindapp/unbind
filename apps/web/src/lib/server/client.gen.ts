@@ -2168,6 +2168,7 @@ export const SortOrderSchema = z.enum(['asc', 'desc']);
 
 export const StorageMetadataSchema = z
   .object({
+    available_storage_gb: z.number().optional(), // Free space left on the node; only reported for provisioners with node-local capacity (e.g. Longhorn). Expansion ceiling is current volume size + this value.
     maximum_storage_gb: z.number(),
     minimum_storage_gb: z.number(),
     storage_class_name: z.string(),

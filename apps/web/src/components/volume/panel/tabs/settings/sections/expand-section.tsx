@@ -39,9 +39,15 @@ export default function ExpandSection({ volume }: TProps) {
   const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
 
   const minStorageGb = volume.capacity_gb;
-  const maxStorageGb = Math.min(
-    volumeMaxStorageGb,
-    systemData?.data.storage.maximum_storage_gb || 100,
+  const availableStorageGb = systemData?.data.storage.available_storage_gb;
+  const maxStorageGb = Math.max(
+    minStorageGb,
+    Math.min(
+      volumeMaxStorageGb,
+      availableStorageGb !== undefined && availableStorageGb !== null
+        ? minStorageGb + availableStorageGb
+        : systemData?.data.storage.maximum_storage_gb || 100,
+    ),
   );
   const storageStepGb = systemData?.data.storage.storage_step_gb || 1;
 
