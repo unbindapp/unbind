@@ -45,6 +45,9 @@ Commands:
     group-to-k8s                 Sync group permissions with Kubernetes
     k8s-secrets                  Sync Kubernetes secrets with database
 
+  update:
+    apply-manifests --file=PATH  Apply rendered release manifests to the cluster
+
 For detailed help on a specific command, use: unbind-cli help [command]
 `
 )
@@ -62,6 +65,13 @@ func main() {
 	}
 
 	cfg := config.NewConfig()
+
+	// Runs in the update job with no database; must dispatch before NewCLI connects.
+	if len(os.Args) > 1 && os.Args[1] == "update:apply-manifests" {
+		runApplyManifests(cfg, os.Args[2:])
+		return
+	}
+
 	cli := NewCLI(cfg)
 
 	if len(os.Args) < 2 {

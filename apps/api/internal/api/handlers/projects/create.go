@@ -21,12 +21,12 @@ type CreateProjectResponse struct {
 }
 
 func (self *HandlerGroup) CreateProject(ctx context.Context, input *CreateProjectInput) (*CreateProjectResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	createdProject, err := self.srv.ProjectService.CreateProject(ctx, user.ID, input.Body, bearerToken)
+	createdProject, err := self.srv.ProjectService.CreateProject(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

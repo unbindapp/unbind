@@ -10,16 +10,13 @@ import (
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
 
-func (self *StorageService) DeletePVC(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.DeletePVCInput) error {
+func (self *StorageService) DeletePVC(ctx context.Context, requesterUserID uuid.UUID, input *models.DeletePVCInput) error {
 	team, _, _, err := self.validatePermissionsAndParseInputs(ctx, schema.ActionEditor, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return err
-	}
+	client := self.k8s.GetInternalClient()
 
 	pvc, err := self.k8s.GetPersistentVolumeClaim(ctx, team.Namespace, input.ID, client)
 	if err != nil {

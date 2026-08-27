@@ -104,16 +104,16 @@ func (suite *ResolveReferencesSuite) TestResolveSingleReference_PermissionDenied
 	suite.expectViewerCheck(denied)
 
 	// No client or repo access happens once the permission check fails.
-	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.token, suite.serviceID, uuid.New())
+	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.serviceID, uuid.New())
 	suite.ErrorIs(err, denied)
 }
 
 func (suite *ResolveReferencesSuite) TestResolveSingleReference_NotFound() {
 	suite.expectViewerCheck(nil)
-	suite.k8s.EXPECT().CreateClientWithToken(suite.token).Return(suite.k8sClient, nil).Once()
+	suite.k8s.EXPECT().GetInternalClient().Return(suite.k8sClient)
 	suite.varsRepo.EXPECT().GetReferenceByID(suite.ctx, mock.Anything).Return(nil, &ent.NotFoundError{}).Once()
 
-	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.token, suite.serviceID, uuid.New())
+	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.serviceID, uuid.New())
 	suite.ErrorContains(err, "Variable reference not found")
 }
 
@@ -124,10 +124,10 @@ func (suite *ResolveReferencesSuite) TestResolveSingleReference_WrongService() {
 	ref.TargetServiceID = uuid.New() // not suite.serviceID
 
 	suite.expectViewerCheck(nil)
-	suite.k8s.EXPECT().CreateClientWithToken(suite.token).Return(suite.k8sClient, nil).Once()
+	suite.k8s.EXPECT().GetInternalClient().Return(suite.k8sClient)
 	suite.varsRepo.EXPECT().GetReferenceByID(suite.ctx, ref.ID).Return(ref, nil).Once()
 
-	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.token, suite.serviceID, ref.ID)
+	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.serviceID, ref.ID)
 	suite.ErrorContains(err, "Variable reference not found")
 }
 
@@ -135,12 +135,12 @@ func (suite *ResolveReferencesSuite) TestResolveSingleReference_Success() {
 	ref := suite.secretRef("DB_URL")
 
 	suite.expectViewerCheck(nil)
-	suite.k8s.EXPECT().CreateClientWithToken(suite.token).Return(suite.k8sClient, nil).Once()
+	suite.k8s.EXPECT().GetInternalClient().Return(suite.k8sClient)
 	suite.varsRepo.EXPECT().GetReferenceByID(suite.ctx, ref.ID).Return(ref, nil).Once()
 	suite.svcRepo.EXPECT().GetDeploymentNamespace(suite.ctx, suite.serviceID).Return(suite.namespace, nil).Once()
 	suite.k8s.EXPECT().GetSecret(suite.ctx, "api", suite.namespace, suite.k8sClient).Return(suite.secret("resolved-value"), nil).Once()
 
-	value, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.token, suite.serviceID, ref.ID)
+	value, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.serviceID, ref.ID)
 	suite.NoError(err)
 	suite.Equal("resolved-value", value)
 }
@@ -151,14 +151,14 @@ func (suite *ResolveReferencesSuite) TestResolveSingleReference_AttachesErrorOnF
 	ref := suite.secretRef("DB_URL")
 
 	suite.expectViewerCheck(nil)
-	suite.k8s.EXPECT().CreateClientWithToken(suite.token).Return(suite.k8sClient, nil).Once()
+	suite.k8s.EXPECT().GetInternalClient().Return(suite.k8sClient)
 	suite.varsRepo.EXPECT().GetReferenceByID(suite.ctx, ref.ID).Return(ref, nil).Once()
 	suite.svcRepo.EXPECT().GetDeploymentNamespace(suite.ctx, suite.serviceID).Return(suite.namespace, nil).Once()
 	suite.k8s.EXPECT().GetSecret(suite.ctx, "api", suite.namespace, suite.k8sClient).
 		Return(nil, k8serrors.NewNotFound(corev1.Resource("secrets"), "api")).Once()
 	suite.varsRepo.EXPECT().AttachError(suite.ctx, ref.ID, mock.Anything).Return(nil, nil).Once()
 
-	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.token, suite.serviceID, ref.ID)
+	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.serviceID, ref.ID)
 	suite.ErrorContains(err, "Unable to resolve variable")
 }
 

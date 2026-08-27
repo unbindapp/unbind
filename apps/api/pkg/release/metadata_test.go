@@ -76,53 +76,6 @@ func (s *MetadataTestSuite) TestGetVersionMetadata() {
 	s.Equal(s.metadata, metadata)
 }
 
-func (s *MetadataTestSuite) TestGetNextAvailableVersion() {
-	tests := []struct {
-		name           string
-		currentVersion string
-		expected       string
-		expectError    bool
-	}{
-		{
-			name:           "can update to next version",
-			currentVersion: "v0.1.0",
-			expected:       "v0.2.0",
-			expectError:    false,
-		},
-		{
-			name:           "can update to version with satisfied dependencies",
-			currentVersion: "v0.2.0",
-			expected:       "v0.3.0",
-			expectError:    false,
-		},
-		{
-			name:           "can update to version with multiple satisfied dependencies",
-			currentVersion: "v0.3.0",
-			expected:       "v0.4.0",
-			expectError:    false,
-		},
-		{
-			name:           "latest version",
-			currentVersion: "v0.4.0",
-			expected:       "",
-			expectError:    true,
-		},
-	}
-
-	for _, tt := range tests {
-		s.Run(tt.name, func() {
-			version, err := s.manager.GetNextAvailableVersion(context.Background(), tt.currentVersion)
-			if tt.expectError {
-				s.Error(err)
-				s.Empty(version)
-			} else {
-				s.NoError(err)
-				s.Equal(tt.expected, version)
-			}
-		})
-	}
-}
-
 func (s *MetadataTestSuite) TestGetUpdatePath() {
 	tests := []struct {
 		name           string

@@ -21,12 +21,12 @@ type TemplateDeployResponse struct {
 }
 
 func (self *HandlerGroup) DeployTemplate(ctx context.Context, input *TemplateDeployInput) (*TemplateDeployResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	services, err := self.srv.TemplateService.DeployTemplate(ctx, user.ID, bearerToken, input.Body)
+	services, err := self.srv.TemplateService.DeployTemplate(ctx, user.ID, input.Body)
 	if err != nil {
 		log.Errorf("Error deploying template: %v", err)
 		return nil, oapi.MapError(err)

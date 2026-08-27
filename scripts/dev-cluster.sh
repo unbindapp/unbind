@@ -74,8 +74,9 @@ up() {
 
   kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
   kubectl apply --server-side -f apps/operator/config/crd/bases
-  # The unbind-app chart normally creates the builder SA/RBAC; dev skips that release.
+  # The unbind-app chart normally creates the builder and updater SA/RBAC; dev skips that release.
   kubectl apply -f deploy/k8s/builder/rbac.yaml
+  kubectl apply -f deploy/k8s/updater/rbac.yaml
 
   if [ "${SYNC:-}" = 1 ] || ! helm status unbind-operator -n "$NAMESPACE" >/dev/null 2>&1; then
     helmfile -f deploy/charts/helmfile.yaml.gotmpl -e dev sync

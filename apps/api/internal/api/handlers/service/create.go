@@ -21,7 +21,7 @@ type CreateServiceResponse struct {
 }
 
 func (self *HandlerGroup) CreateService(ctx context.Context, input *CreateServiceInput) (*CreateServiceResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func (self *HandlerGroup) CreateService(ctx context.Context, input *CreateServic
 		return nil, huma.Error400BadRequest("Missing body")
 	}
 
-	createdService, err := self.srv.ServiceService.CreateService(ctx, user.ID, input.Body, bearerToken)
+	createdService, err := self.srv.ServiceService.CreateService(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

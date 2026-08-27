@@ -21,7 +21,7 @@ type VariablesResponse struct {
 }
 
 func (self *HandlerGroup) ListVariables(ctx context.Context, input *ListVariablesInput) (*VariablesResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,6 @@ func (self *HandlerGroup) ListVariables(ctx context.Context, input *ListVariable
 	variableMap, err := self.srv.VariablesService.GetVariables(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.BaseVariablesInput,
 	)
 	if err != nil {

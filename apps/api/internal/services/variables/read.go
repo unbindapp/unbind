@@ -11,7 +11,7 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID, bearerToken string, input models.BaseVariablesInput) (*models.VariableResponse, error) {
+func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error) {
 	var permissionChecks []permissions_repo.PermissionCheck
 
 	switch input.Type {
@@ -64,10 +64,7 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 		}
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	secrets, err := self.k8s.GetSecretMap(ctx, secretName, team.Namespace, client)
 	if err != nil {

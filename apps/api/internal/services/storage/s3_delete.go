@@ -12,7 +12,7 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-func (self *StorageService) DeleteS3StorageByID(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, id uuid.UUID) error {
+func (self *StorageService) DeleteS3StorageByID(ctx context.Context, requesterUserID uuid.UUID, teamID, id uuid.UUID) error {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Team viewer can view s3 sources
 		{
@@ -45,10 +45,7 @@ func (self *StorageService) DeleteS3StorageByID(ctx context.Context, requesterUs
 		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 source not found")
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return err
-	}
+	client := self.k8s.GetInternalClient()
 
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		if err := self.repo.S3().Delete(ctx, tx, id); err != nil {

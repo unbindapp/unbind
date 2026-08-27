@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"slices"
-	"sort"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -15,7 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
-	"golang.org/x/mod/semver"
+	"github.com/unbindapp/unbind-api/pkg/release"
 )
 
 const updateKey = "update-in-progress"
@@ -70,8 +69,10 @@ func (self *HandlerGroup) CheckPermissions(ctx context.Context, requesterUserID 
 
 // * Check for updates
 type AvailableVersion struct {
-	Version string `json:"version"`
-	URL     string `json:"url"`
+	Version      string `json:"version"`
+	URL          string `json:"url"`
+	Description  string `json:"description,omitempty"`
+	ReleaseNotes string `json:"release_notes,omitempty"`
 }
 
 type UpdateCheckResponse struct {
@@ -105,23 +106,16 @@ func (self *HandlerGroup) CheckForUpdates(ctx context.Context, input *server.Bas
 		return resp, nil
 	}
 
-	// Filter to only show versions that can be updated to in sequence
-	availableUpdates := make([]AvailableVersion, 0)
+	// The update manager already returns newer-than-current versions, oldest first.
+	availableUpdates := make([]AvailableVersion, 0, len(allUpdates))
 	currentVersion := self.srv.UpdateManager.CurrentVersion
-
-	// Sort versions to ensure we process them in order
-	sort.Slice(allUpdates, func(i, j int) bool {
-		return semver.Compare(allUpdates[i], allUpdates[j]) < 0
-	})
-
-	// Filter out versions less than or equal to current version
-	for _, version := range allUpdates {
-		if semver.Compare(version, currentVersion) > 0 {
-			availableUpdates = append(availableUpdates, AvailableVersion{
-				Version: version,
-				URL:     self.srv.UpdateManager.ReleaseURL(version),
-			})
-		}
+	for _, update := range allUpdates {
+		availableUpdates = append(availableUpdates, AvailableVersion{
+			Version:      update.Version,
+			URL:          self.srv.UpdateManager.ReleaseURL(update.Version),
+			Description:  update.Description,
+			ReleaseNotes: update.ReleaseNotes,
+		})
 	}
 
 	resp := &UpdateCheckResponse{}
@@ -178,7 +172,9 @@ func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInp
 	}
 
 	// Validate version is in the available updates list
-	if !slices.Contains(availableUpdates, input.Body.TargetVersion) {
+	if !slices.ContainsFunc(availableUpdates, func(update release.VersionMetadata) bool {
+		return update.Version == input.Body.TargetVersion
+	}) {
 		return nil, huma.Error400BadRequest("Target version is not available for update")
 	}
 

@@ -52,10 +52,12 @@ spec:
             {{- toYaml .Values.api.resources | nindent 12 }}
           ports:
             - containerPort: {{ .Values.api.containerPort }}
-          {{- if .Values.api.env }}
           env:
-            {{- toYaml .Values.api.env | nindent 12 }}
-          {{- end }}
+            - name: UPDATER_SERVICE_ACCOUNT
+              value: {{ .Values.updater.serviceAccount.name | quote }}
+            {{- with .Values.api.env }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           {{- if .Values.api.startupProbe.enabled }}
           startupProbe:
             httpGet:

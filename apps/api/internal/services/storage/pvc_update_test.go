@@ -60,9 +60,8 @@ func (suite *UpdatePVCSuite) expectCommonReads(pvc *models.PVCInfo) {
 		Once()
 
 	suite.MockK8s.EXPECT().
-		CreateClientWithToken(suite.testBearerToken).
-		Return(suite.mockK8sClient, nil).
-		Once()
+		GetInternalClient().
+		Return(suite.mockK8sClient)
 
 	suite.MockK8s.EXPECT().
 		GetPersistentVolumeClaim(suite.Ctx, suite.testTeam.Namespace, suite.testPVCID, suite.mockK8sClient).
@@ -77,7 +76,7 @@ func (suite *UpdatePVCSuite) TestRejectsEmptyInput() {
 		ID:     suite.testPVCID,
 	}
 
-	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, suite.testBearerToken, input)
+	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, input)
 
 	suite.Nil(result)
 	suite.ErrorContains(err, "Nothing to update")
@@ -97,7 +96,7 @@ func (suite *UpdatePVCSuite) TestRejectsShrink() {
 		CapacityGB: new(float64(5)),
 	}
 
-	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, suite.testBearerToken, input)
+	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, input)
 
 	suite.Nil(result)
 	suite.ErrorContains(err, "New size must be greater than existing size")
@@ -148,7 +147,7 @@ func (suite *UpdatePVCSuite) TestRenameOnlyDoesNotTouchKubernetes() {
 		Return(nil).
 		Once()
 
-	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, suite.testBearerToken, input)
+	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, input)
 
 	suite.NoError(err)
 	suite.NotNil(result)
@@ -193,7 +192,7 @@ func (suite *UpdatePVCSuite) TestSameSizeSkipsResizeMachinery() {
 		Return(nil).
 		Once()
 
-	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, suite.testBearerToken, input)
+	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, input)
 
 	suite.NoError(err)
 	suite.NotNil(result)
@@ -263,7 +262,7 @@ func (suite *UpdatePVCSuite) TestManagedDatabaseResizePatchesEveryReplicaClaim()
 		Return(nil).
 		Once()
 
-	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, suite.testBearerToken, &models.UpdatePVCInput{
+	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, &models.UpdatePVCInput{
 		Type:       models.PvcScopeTeam,
 		TeamID:     suite.testTeamID,
 		ID:         primary,

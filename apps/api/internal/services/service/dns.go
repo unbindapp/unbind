@@ -13,7 +13,7 @@ import (
 )
 
 // Get a service by ID
-func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, projectID, environmentID, serviceID uuid.UUID) (*models.EndpointDiscovery, error) {
+func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID, serviceID uuid.UUID) (*models.EndpointDiscovery, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to admin service
 		{
@@ -41,10 +41,7 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service not found")
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	endpoints, err := self.k8s.DiscoverEndpointsByLabels(
 		ctx,

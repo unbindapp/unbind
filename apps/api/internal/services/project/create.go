@@ -22,7 +22,7 @@ type CreateProjectInput struct {
 	Description *string   `json:"description" required:"false"`
 }
 
-func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID uuid.UUID, input *CreateProjectInput, bearerToken string) (*models.ProjectResponse, error) {
+func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID uuid.UUID, input *CreateProjectInput) (*models.ProjectResponse, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Team editor can create projects
 		{
@@ -44,10 +44,7 @@ func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	var project *ent.Project
 	var environment *ent.Environment

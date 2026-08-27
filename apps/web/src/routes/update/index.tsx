@@ -31,7 +31,13 @@ export const Route = createFileRoute("/update/")({
 function UpdatePage() {
   const { from } = Route.useSearch();
   const { data, isPending, error } = useCheckForUpdates();
-  const { hasUpdateAvailable, latestVersion, latestVersionUrl } = useCheckNewVersion();
+  const {
+    hasUpdateAvailable,
+    latestVersion,
+    latestVersionUrl,
+    latestVersionDescription,
+    latestVersionReleaseNotes,
+  } = useCheckNewVersion();
   const isHardError = !data && !isPending && error;
 
   if (isHardError) {
@@ -68,6 +74,8 @@ function UpdatePage() {
       <UpdateAvailableSection
         latestVersion={latestVersion}
         latestVersionUrl={latestVersionUrl}
+        latestVersionDescription={latestVersionDescription}
+        latestVersionReleaseNotes={latestVersionReleaseNotes}
         currentVersion={data.data.current_version}
         backTo={from ?? "/"}
       />

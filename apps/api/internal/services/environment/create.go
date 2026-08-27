@@ -21,7 +21,7 @@ type CreateEnvironmentInput struct {
 	Description *string   `json:"description"`
 }
 
-func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requesterUserID uuid.UUID, input *CreateEnvironmentInput, bearerToken string) (*models.EnvironmentResponse, error) {
+func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requesterUserID uuid.UUID, input *CreateEnvironmentInput) (*models.EnvironmentResponse, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Project editor can create environments
 		{
@@ -45,10 +45,7 @@ func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requester
 	}
 	team := project.Edges.Team
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	// Create the environment
 	var environment *ent.Environment

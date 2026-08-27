@@ -27,7 +27,7 @@ type UpsertVariablesInput struct {
 }
 
 func (self *HandlerGroup) UpdateVariables(ctx context.Context, input *UpsertVariablesInput) (*VariablesResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,6 @@ func (self *HandlerGroup) UpdateVariables(ctx context.Context, input *UpsertVari
 	variableMap, err := self.srv.VariablesService.UpdateVariables(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.Body.VariableReferences,
 		input.Body.BaseVariablesJSONInput,
 		input.Body.Behavior,

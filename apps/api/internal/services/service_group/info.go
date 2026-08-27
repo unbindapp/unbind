@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.GetServiceGroupInput) (*models.ServiceGroupInfoResponse, error) {
+func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, requesterUserID uuid.UUID, input *models.GetServiceGroupInput) (*models.ServiceGroupInfoResponse, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		{
 			Action:       schema.ActionViewer,
@@ -49,10 +49,7 @@ func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, reques
 		return nil, err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	volumesByService, err := self.serviceService.GetVolumesForServices(ctx, project.Edges.Team.Namespace, input.TeamID, services)
 	if err != nil {

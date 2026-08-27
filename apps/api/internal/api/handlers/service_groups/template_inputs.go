@@ -20,12 +20,12 @@ type GetServiceGroupTemplateInputsResponse struct {
 }
 
 func (self *HandlerGroup) GetServiceGroupTemplateInputs(ctx context.Context, input *GetServiceGroupTemplateInputsInput) (*GetServiceGroupTemplateInputsResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := self.srv.ServiceGroupService.GetTemplateInputs(ctx, user.ID, bearerToken, &input.GetServiceGroupInput)
+	data, err := self.srv.ServiceGroupService.GetTemplateInputs(ctx, user.ID, &input.GetServiceGroupInput)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
@@ -47,12 +47,12 @@ type UpdateServiceGroupTemplateInputsResponse struct {
 }
 
 func (self *HandlerGroup) UpdateServiceGroupTemplateInputs(ctx context.Context, input *UpdateServiceGroupTemplateInputsInput) (*UpdateServiceGroupTemplateInputsResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := self.srv.ServiceGroupService.UpdateTemplateInputs(ctx, user.ID, bearerToken, input.Body)
+	data, err := self.srv.ServiceGroupService.UpdateTemplateInputs(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

@@ -650,3 +650,91 @@ func (_c *ConfigMock_GetSystemNamespace_Call) RunAndReturn(run func() string) *C
 	_c.Call.Return(run)
 	return _c
 }
+
+// GetUpdateJobImage provides a mock function for the type ConfigMock
+func (_mock *ConfigMock) GetUpdateJobImage() string {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUpdateJobImage")
+	}
+
+	var r0 string
+	if returnFunc, ok := ret.Get(0).(func() string); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+	return r0
+}
+
+// ConfigMock_GetUpdateJobImage_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUpdateJobImage'
+type ConfigMock_GetUpdateJobImage_Call struct {
+	*mock.Call
+}
+
+// GetUpdateJobImage is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetUpdateJobImage() *ConfigMock_GetUpdateJobImage_Call {
+	return &ConfigMock_GetUpdateJobImage_Call{Call: _e.mock.On("GetUpdateJobImage")}
+}
+
+func (_c *ConfigMock_GetUpdateJobImage_Call) Run(run func()) *ConfigMock_GetUpdateJobImage_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ConfigMock_GetUpdateJobImage_Call) Return(s string) *ConfigMock_GetUpdateJobImage_Call {
+	_c.Call.Return(s)
+	return _c
+}
+
+func (_c *ConfigMock_GetUpdateJobImage_Call) RunAndReturn(run func() string) *ConfigMock_GetUpdateJobImage_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetUpdaterServiceAccount provides a mock function for the type ConfigMock
+func (_mock *ConfigMock) GetUpdaterServiceAccount() string {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUpdaterServiceAccount")
+	}
+
+	var r0 string
+	if returnFunc, ok := ret.Get(0).(func() string); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+	return r0
+}
+
+// ConfigMock_GetUpdaterServiceAccount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUpdaterServiceAccount'
+type ConfigMock_GetUpdaterServiceAccount_Call struct {
+	*mock.Call
+}
+
+// GetUpdaterServiceAccount is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetUpdaterServiceAccount() *ConfigMock_GetUpdaterServiceAccount_Call {
+	return &ConfigMock_GetUpdaterServiceAccount_Call{Call: _e.mock.On("GetUpdaterServiceAccount")}
+}
+
+func (_c *ConfigMock_GetUpdaterServiceAccount_Call) Run(run func()) *ConfigMock_GetUpdaterServiceAccount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ConfigMock_GetUpdaterServiceAccount_Call) Return(s string) *ConfigMock_GetUpdaterServiceAccount_Call {
+	_c.Call.Return(s)
+	return _c
+}
+
+func (_c *ConfigMock_GetUpdaterServiceAccount_Call) RunAndReturn(run func() string) *ConfigMock_GetUpdaterServiceAccount_Call {
+	_c.Call.Return(run)
+	return _c
+}

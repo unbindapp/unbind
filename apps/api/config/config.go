@@ -25,6 +25,8 @@ type ConfigInterface interface {
 	GetNetworkingProvider() string
 	GetGatewayName() string
 	GetGatewayNamespace() string
+	GetUpdaterServiceAccount() string
+	GetUpdateJobImage() string
 }
 
 type Config struct {
@@ -79,6 +81,10 @@ type Config struct {
 	BuildImage string
 	// Override the release repository for testing
 	ReleaseRepoOverride string `env:"RELEASE_REPO_OVERRIDE"`
+	// Elevated service account the manifest-apply update job runs as
+	UpdaterServiceAccount string `env:"UPDATER_SERVICE_ACCOUNT" envDefault:"unbind-updater-sa"`
+	// Image override for the update job; empty uses the running app image
+	UpdateJobImage string `env:"UPDATE_JOB_IMAGE"`
 	// Networking provider used to generate and discover routing resources:
 	// nginx|traefik|gateway|auto (auto-detects from installed controllers).
 	NetworkingProvider string `env:"NETWORKING_PROVIDER" envDefault:"auto"`
@@ -143,6 +149,14 @@ func (self *Config) GetGatewayName() string {
 
 func (self *Config) GetGatewayNamespace() string {
 	return self.GatewayNamespace
+}
+
+func (self *Config) GetUpdaterServiceAccount() string {
+	return self.UpdaterServiceAccount
+}
+
+func (self *Config) GetUpdateJobImage() string {
+	return self.UpdateJobImage
 }
 
 // Parse environment variables into a Config struct

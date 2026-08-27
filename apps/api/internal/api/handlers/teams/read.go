@@ -17,12 +17,12 @@ type TeamResponse struct {
 
 // ListTeams handles GET /teams
 func (self *HandlerGroup) ListTeams(ctx context.Context, input *server.BaseAuthInput) (*TeamResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	teams, err := self.srv.TeamService.ListTeams(ctx, user.ID, bearerToken)
+	teams, err := self.srv.TeamService.ListTeams(ctx, user.ID)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

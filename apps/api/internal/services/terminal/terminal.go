@@ -57,16 +57,13 @@ type ExecTarget struct {
 
 // Resolve authorizes the request and picks the target pod/container. Runs before the
 // websocket upgrade so denials surface as normal HTTP errors.
-func (self *TerminalService) Resolve(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *ExecInput) (*ExecTarget, error) {
+func (self *TerminalService) Resolve(ctx context.Context, requesterUserID uuid.UUID, input *ExecInput) (*ExecTarget, error) {
 	team, service, err := self.validatePermissionsAndParseInputs(ctx, requesterUserID, input)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	pods, err := self.k8s.GetPodsByLabels(ctx, team.Namespace, map[string]string{"unbind-service": service.ID.String()}, client)
 	if err != nil {

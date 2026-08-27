@@ -434,68 +434,6 @@ func (_c *KubeClientMock_CountActiveDeploymentJobs_Call) RunAndReturn(run func(c
 	return _c
 }
 
-// CreateClientWithToken provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) CreateClientWithToken(token string) (kubernetes.Interface, error) {
-	ret := _mock.Called(token)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CreateClientWithToken")
-	}
-
-	var r0 kubernetes.Interface
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(string) (kubernetes.Interface, error)); ok {
-		return returnFunc(token)
-	}
-	if returnFunc, ok := ret.Get(0).(func(string) kubernetes.Interface); ok {
-		r0 = returnFunc(token)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(kubernetes.Interface)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(string) error); ok {
-		r1 = returnFunc(token)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// KubeClientMock_CreateClientWithToken_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateClientWithToken'
-type KubeClientMock_CreateClientWithToken_Call struct {
-	*mock.Call
-}
-
-// CreateClientWithToken is a helper method to define mock.On call
-//   - token string
-func (_e *KubeClientMock_Expecter) CreateClientWithToken(token any) *KubeClientMock_CreateClientWithToken_Call {
-	return &KubeClientMock_CreateClientWithToken_Call{Call: _e.mock.On("CreateClientWithToken", token)}
-}
-
-func (_c *KubeClientMock_CreateClientWithToken_Call) Run(run func(token string)) *KubeClientMock_CreateClientWithToken_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 string
-		if args[0] != nil {
-			arg0 = args[0].(string)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *KubeClientMock_CreateClientWithToken_Call) Return(interfaceParam kubernetes.Interface, err error) *KubeClientMock_CreateClientWithToken_Call {
-	_c.Call.Return(interfaceParam, err)
-	return _c
-}
-
-func (_c *KubeClientMock_CreateClientWithToken_Call) RunAndReturn(run func(token string) (kubernetes.Interface, error)) *KubeClientMock_CreateClientWithToken_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // CreateDeployment provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) CreateDeployment(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (string, error) {
 	ret := _mock.Called(ctx, deploymentID, serviceID, env)
@@ -2202,80 +2140,6 @@ func (_c *KubeClientMock_GetLoadBalancerIPs_Call) RunAndReturn(run func(ctx cont
 	return _c
 }
 
-// GetNamespaces provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) GetNamespaces(ctx context.Context, namespaceNames []string, bearerToken string) ([]*v1.Namespace, error) {
-	ret := _mock.Called(ctx, namespaceNames, bearerToken)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetNamespaces")
-	}
-
-	var r0 []*v1.Namespace
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []string, string) ([]*v1.Namespace, error)); ok {
-		return returnFunc(ctx, namespaceNames, bearerToken)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []string, string) []*v1.Namespace); ok {
-		r0 = returnFunc(ctx, namespaceNames, bearerToken)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*v1.Namespace)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, []string, string) error); ok {
-		r1 = returnFunc(ctx, namespaceNames, bearerToken)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// KubeClientMock_GetNamespaces_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNamespaces'
-type KubeClientMock_GetNamespaces_Call struct {
-	*mock.Call
-}
-
-// GetNamespaces is a helper method to define mock.On call
-//   - ctx context.Context
-//   - namespaceNames []string
-//   - bearerToken string
-func (_e *KubeClientMock_Expecter) GetNamespaces(ctx any, namespaceNames any, bearerToken any) *KubeClientMock_GetNamespaces_Call {
-	return &KubeClientMock_GetNamespaces_Call{Call: _e.mock.On("GetNamespaces", ctx, namespaceNames, bearerToken)}
-}
-
-func (_c *KubeClientMock_GetNamespaces_Call) Run(run func(ctx context.Context, namespaceNames []string, bearerToken string)) *KubeClientMock_GetNamespaces_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 []string
-		if args[1] != nil {
-			arg1 = args[1].([]string)
-		}
-		var arg2 string
-		if args[2] != nil {
-			arg2 = args[2].(string)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *KubeClientMock_GetNamespaces_Call) Return(namespaces []*v1.Namespace, err error) *KubeClientMock_GetNamespaces_Call {
-	_c.Call.Return(namespaces, err)
-	return _c
-}
-
-func (_c *KubeClientMock_GetNamespaces_Call) RunAndReturn(run func(ctx context.Context, namespaceNames []string, bearerToken string) ([]*v1.Namespace, error)) *KubeClientMock_GetNamespaces_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetOrCreateSecret provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) GetOrCreateSecret(ctx context.Context, name string, namespace string, client kubernetes.Interface) (*v1.Secret, bool, error) {
 	ret := _mock.Called(ctx, name, namespace, client)
@@ -3796,6 +3660,75 @@ func (_c *KubeClientMock_RollingRestartPodsByLabel_Call) Return(err error) *Kube
 }
 
 func (_c *KubeClientMock_RollingRestartPodsByLabel_Call) RunAndReturn(run func(ctx context.Context, namespace string, labelKey string, labelValue string, client kubernetes.Interface) error) *KubeClientMock_RollingRestartPodsByLabel_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RunManifestApplyJob provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) RunManifestApplyJob(ctx context.Context, version string, image string, manifests []byte) error {
+	ret := _mock.Called(ctx, version, image, manifests)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RunManifestApplyJob")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []byte) error); ok {
+		r0 = returnFunc(ctx, version, image, manifests)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// KubeClientMock_RunManifestApplyJob_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RunManifestApplyJob'
+type KubeClientMock_RunManifestApplyJob_Call struct {
+	*mock.Call
+}
+
+// RunManifestApplyJob is a helper method to define mock.On call
+//   - ctx context.Context
+//   - version string
+//   - image string
+//   - manifests []byte
+func (_e *KubeClientMock_Expecter) RunManifestApplyJob(ctx any, version any, image any, manifests any) *KubeClientMock_RunManifestApplyJob_Call {
+	return &KubeClientMock_RunManifestApplyJob_Call{Call: _e.mock.On("RunManifestApplyJob", ctx, version, image, manifests)}
+}
+
+func (_c *KubeClientMock_RunManifestApplyJob_Call) Run(run func(ctx context.Context, version string, image string, manifests []byte)) *KubeClientMock_RunManifestApplyJob_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 []byte
+		if args[3] != nil {
+			arg3 = args[3].([]byte)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_RunManifestApplyJob_Call) Return(err error) *KubeClientMock_RunManifestApplyJob_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *KubeClientMock_RunManifestApplyJob_Call) RunAndReturn(run func(ctx context.Context, version string, image string, manifests []byte) error) *KubeClientMock_RunManifestApplyJob_Call {
 	_c.Call.Return(run)
 	return _c
 }

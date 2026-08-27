@@ -33,7 +33,7 @@ var defaultDatabaseResources = &schema.Resources{
 }
 
 // CreateService creates a new service and its configuration
-func (self *ServiceService) CreateService(ctx context.Context, requesterUserID uuid.UUID, input *models.CreateServiceInput, bearerToken string) (*models.ServiceResponse, error) {
+func (self *ServiceService) CreateService(ctx context.Context, requesterUserID uuid.UUID, input *models.CreateServiceInput) (*models.ServiceResponse, error) {
 	var err error
 	var dbDefinition *databases.Definition
 	var dbVersion *string
@@ -251,10 +251,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	// Check if PVC is in use by a service
 	for _, volume := range input.Volumes {

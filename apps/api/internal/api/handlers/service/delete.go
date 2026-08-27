@@ -25,12 +25,12 @@ type DeleteServiceResponse struct {
 }
 
 func (self *HandlerGroup) DeleteService(ctx context.Context, input *DeleteServiceInput) (*DeleteServiceResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = self.srv.ServiceService.DeleteServiceByID(ctx, user.ID, bearerToken, input.Body.TeamID, input.Body.ProjectID, input.Body.EnvironmentID, input.Body.ServiceID)
+	err = self.srv.ServiceService.DeleteServiceByID(ctx, user.ID, input.Body.TeamID, input.Body.ProjectID, input.Body.EnvironmentID, input.Body.ServiceID)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

@@ -20,7 +20,7 @@ type DeleteProjectInput struct {
 	ProjectID uuid.UUID `format:"uuid" required:"true"`
 }
 
-func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID uuid.UUID, input *DeleteProjectInput, bearerToken string) error {
+func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID uuid.UUID, input *DeleteProjectInput) error {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to delete system resources
 		{
@@ -54,20 +54,14 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Project not found")
 	}
 
-	k8sClient, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return err
-	}
+	k8sClient := self.k8s.GetInternalClient()
 
 	environments, err := self.repo.Environment().GetForProject(ctx, nil, input.ProjectID, nil)
 	if err != nil {
 		return err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return err
-	}
+	client := self.k8s.GetInternalClient()
 
 	// Delete the project in cascading fashion
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {

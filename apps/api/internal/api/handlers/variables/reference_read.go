@@ -25,12 +25,12 @@ type ReferenceableVariablesResponse struct {
 }
 
 func (self *HandlerGroup) ListReferenceableVariables(ctx context.Context, input *ListReferenceableVariablesInput) (*ReferenceableVariablesResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	references, err := self.srv.VariablesService.GetAvailableVariableReferences(ctx, user.ID, bearerToken, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
+	references, err := self.srv.VariablesService.GetAvailableVariableReferences(ctx, user.ID, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
@@ -53,12 +53,12 @@ type ResolveAvailableVariableReferenceResponse struct {
 }
 
 func (self *HandlerGroup) ResolveAvailableVariableReference(ctx context.Context, input *ResolveAvailableVariableReferenceInput) (*ResolveAvailableVariableReferenceResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	resolved, err := self.srv.VariablesService.ResolveAvailableReferenceValue(ctx, user.ID, bearerToken, &input.ResolveVariableReferenceInput)
+	resolved, err := self.srv.VariablesService.ResolveAvailableReferenceValue(ctx, user.ID, &input.ResolveVariableReferenceInput)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
@@ -82,12 +82,12 @@ type ResolveVariableReferenceResponse struct {
 }
 
 func (self *HandlerGroup) ResolveVariableReference(ctx context.Context, input *ResolveVariableReferenceInput) (*ResolveVariableReferenceResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	resolved, err := self.srv.VariablesService.ResolveSingleReference(ctx, user.ID, bearerToken, input.ServiceID, input.ReferenceID)
+	resolved, err := self.srv.VariablesService.ResolveSingleReference(ctx, user.ID, input.ServiceID, input.ReferenceID)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

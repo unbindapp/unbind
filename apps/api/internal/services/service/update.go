@@ -36,7 +36,7 @@ func databasePortsWithNodePort(ports []schema.PortSpec, nodePort *int32) []schem
 }
 
 // UpdateService updates a service and its configuration
-func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.UpdateServiceInput) (*models.ServiceResponse, error) {
+func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID uuid.UUID, input *models.UpdateServiceInput) (*models.ServiceResponse, error) {
 	if input.GitTag != nil && !utils.IsValidGlobPattern(*input.GitTag) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid git tag")
 	}
@@ -140,10 +140,7 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		}
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	if err := self.applyDatabaseStorageSize(ctx, service, input.DatabaseConfig, client); err != nil {
 		return nil, err

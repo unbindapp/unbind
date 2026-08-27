@@ -16,7 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func (self *VariablesService) ResolveSingleReference(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, serviceID, referenceID uuid.UUID) (string, error) {
+func (self *VariablesService) ResolveSingleReference(ctx context.Context, requesterUserID uuid.UUID, serviceID, referenceID uuid.UUID) (string, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		{
 			Action:       schema.ActionViewer,
@@ -29,10 +29,7 @@ func (self *VariablesService) ResolveSingleReference(ctx context.Context, reques
 		return "", errdefs.MaskAsNotFound(err, "Service not found")
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return "", err
-	}
+	client := self.k8s.GetInternalClient()
 
 	reference, err := self.repo.Variables().GetReferenceByID(ctx, referenceID)
 	if err != nil {

@@ -87,7 +87,7 @@ type GetServiceGroupInfoResponse struct {
 
 // GetServiceGroupInfo handles GET /service_groups/info
 func (self *HandlerGroup) GetServiceGroupInfo(ctx context.Context, input *GetServiceGroupInfoInput) (*GetServiceGroupInfoResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,6 @@ func (self *HandlerGroup) GetServiceGroupInfo(ctx context.Context, input *GetSer
 	info, err := self.srv.ServiceGroupService.GetServiceGroupInfo(
 		ctx,
 		user.ID,
-		bearerToken,
 		&input.GetServiceGroupInput,
 	)
 	if err != nil {

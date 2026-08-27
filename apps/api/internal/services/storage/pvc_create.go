@@ -11,16 +11,13 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func (self *StorageService) CreatePVC(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.CreatePVCInput) (*models.PVCInfo, error) {
+func (self *StorageService) CreatePVC(ctx context.Context, requesterUserID uuid.UUID, input *models.CreatePVCInput) (*models.PVCInfo, error) {
 	team, _, _, err := self.validatePermissionsAndParseInputs(ctx, schema.ActionEditor, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	sizeStr := utils.FormatStorageGB(input.CapacityGB)
 	_, err = utils.ValidateStorageQuantity(sizeStr)

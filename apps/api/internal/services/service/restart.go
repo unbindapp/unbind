@@ -11,7 +11,7 @@ import (
 )
 
 // Restart a service by ID
-func (self *ServiceService) RestartServiceByID(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, projectID, environmentID, serviceID uuid.UUID) error {
+func (self *ServiceService) RestartServiceByID(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID, serviceID uuid.UUID) error {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to admin service
 		{
@@ -42,10 +42,7 @@ func (self *ServiceService) RestartServiceByID(ctx context.Context, requesterUse
 		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service not found")
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return err
-	}
+	client := self.k8s.GetInternalClient()
 
 	return self.k8s.RollingRestartPodsByLabel(ctx, project.Edges.Team.Namespace, "unbind-service", service.ID.String(), client)
 }

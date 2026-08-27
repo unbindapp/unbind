@@ -20,12 +20,12 @@ type CreatePVCResponse struct {
 }
 
 func (self *HandlerGroup) CreatePVC(ctx context.Context, input *CreatePVCInput) (*CreatePVCResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	pvc, err := self.srv.StorageService.CreatePVC(ctx, user.ID, bearerToken, input.Body)
+	pvc, err := self.srv.StorageService.CreatePVC(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

@@ -13,7 +13,7 @@ import (
 )
 
 // ListTeams retrieves all teams the user has permission to view
-func (self *TeamService) ListTeams(ctx context.Context, userID uuid.UUID, bearerToken string) ([]*models.TeamResponse, error) {
+func (self *TeamService) ListTeams(ctx context.Context, userID uuid.UUID) ([]*models.TeamResponse, error) {
 	teamPreds, err := self.repo.Permissions().GetAccessibleTeamPredicates(ctx, userID, schema.ActionViewer)
 	if err != nil {
 		return nil, fmt.Errorf("error getting accessible team predicates: %w", err)

@@ -11,7 +11,7 @@ import (
 )
 
 // Get kubernetes container statuses for a service
-func (self *InstanceService) GetInstanceStatuses(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.InstanceStatusInput) ([]k8s.PodContainerStatus, error) {
+func (self *InstanceService) GetInstanceStatuses(ctx context.Context, requesterUserID uuid.UUID, input *models.InstanceStatusInput) ([]k8s.PodContainerStatus, error) {
 	team, project, environment, service, err := self.validatePermissionsAndParseInputs(ctx, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return nil, err
@@ -31,10 +31,7 @@ func (self *InstanceService) GetInstanceStatuses(ctx context.Context, requesterU
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid instance type")
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	return self.k8s.GetPodContainerStatusByLabels(
 		ctx,
@@ -45,7 +42,7 @@ func (self *InstanceService) GetInstanceStatuses(ctx context.Context, requesterU
 }
 
 // Get kubernetes container statuses for a service, simplified response
-func (self *InstanceService) GetInstanceHealth(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.InstanceHealthInput) (*k8s.SimpleHealthStatus, error) {
+func (self *InstanceService) GetInstanceHealth(ctx context.Context, requesterUserID uuid.UUID, input *models.InstanceHealthInput) (*k8s.SimpleHealthStatus, error) {
 	team, _, _, service, err := self.validatePermissionsAndParseInputs(ctx, requesterUserID, models.InstanceTypeService, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return nil, err
@@ -55,10 +52,7 @@ func (self *InstanceService) GetInstanceHealth(ctx context.Context, requesterUse
 		"unbind-service": service.ID.String(),
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	// Override the expected replicas for not databases
 	// This will override checking kubernetes state for replicas (DBs are complicated and may not match)

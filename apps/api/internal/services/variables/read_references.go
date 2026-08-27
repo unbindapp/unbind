@@ -16,7 +16,7 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, projectID, environmentID, serviceID uuid.UUID) ([]models.AvailableVariableReference, error) {
+func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID, serviceID uuid.UUID) ([]models.AvailableVariableReference, error) {
 	team, project, currentEnvironment, currentService, err := self.validateInputs(ctx, teamID, projectID, environmentID, serviceID)
 	if err != nil {
 		return nil, err
@@ -99,10 +99,7 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 		}
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
@@ -173,7 +170,7 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 }
 
 // Resolve a variable reference value for a key
-func (self *VariablesService) ResolveAvailableReferenceValue(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.ResolveVariableReferenceInput) (string, error) {
+func (self *VariablesService) ResolveAvailableReferenceValue(ctx context.Context, requesterUserID uuid.UUID, input *models.ResolveVariableReferenceInput) (string, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{}
 	switch input.SourceType {
 	case schema.VariableReferenceSourceTypeTeam:
@@ -208,10 +205,7 @@ func (self *VariablesService) ResolveAvailableReferenceValue(ctx context.Context
 		return "", errdefs.MaskAsNotFound(err, "Resource not found")
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return "", err
-	}
+	client := self.k8s.GetInternalClient()
 
 	namespace, err := self.repo.Team().GetNamespace(ctx, input.TeamID)
 	if err != nil {

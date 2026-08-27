@@ -23,7 +23,7 @@ type DeleteVariablesInput struct {
 }
 
 func (self *HandlerGroup) DeleteVariables(ctx context.Context, input *DeleteVariablesInput) (*VariablesResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,6 @@ func (self *HandlerGroup) DeleteVariables(ctx context.Context, input *DeleteVari
 	variableMap, err := self.srv.VariablesService.DeleteVariablesByKey(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.Body.BaseVariablesJSONInput,
 		input.Body.Variables,
 		input.Body.VariableReferenceIDs,

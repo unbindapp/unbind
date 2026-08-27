@@ -23,7 +23,7 @@ type GetS3SourceByIDOutput struct {
 }
 
 func (self *HandlerGroup) GetS3SourceByID(ctx context.Context, input *GetS3SourceByIDInput) (*GetS3SourceByIDOutput, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,6 @@ func (self *HandlerGroup) GetS3SourceByID(ctx context.Context, input *GetS3Sourc
 	s3Source, err := self.srv.StorageService.GetS3StorageByID(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.TeamID,
 		input.ID,
 		input.WithBuckets,
@@ -58,7 +57,7 @@ type ListS3SourceOutput struct {
 }
 
 func (self *HandlerGroup) ListS3Source(ctx context.Context, input *ListS3SourceInput) (*ListS3SourceOutput, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +65,6 @@ func (self *HandlerGroup) ListS3Source(ctx context.Context, input *ListS3SourceI
 	s3Sources, err := self.srv.StorageService.ListS3StorageBackends(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.TeamID,
 		input.WithBuckets,
 	)

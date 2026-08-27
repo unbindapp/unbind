@@ -40,8 +40,8 @@ func (_m *VariablesServiceMock) EXPECT() *VariablesServiceMock_Expecter {
 }
 
 // DeleteVariablesByKey provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, bearerToken string, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error) {
-	ret := _mock.Called(ctx, userID, bearerToken, input, keys, referenceIDs)
+func (_mock *VariablesServiceMock) DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error) {
+	ret := _mock.Called(ctx, userID, input, keys, referenceIDs)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteVariablesByKey")
@@ -49,18 +49,18 @@ func (_mock *VariablesServiceMock) DeleteVariablesByKey(ctx context.Context, use
 
 	var r0 *models.VariableResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, models.BaseVariablesJSONInput, []models.VariableDeleteInput, []uuid.UUID) (*models.VariableResponse, error)); ok {
-		return returnFunc(ctx, userID, bearerToken, input, keys, referenceIDs)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput, []uuid.UUID) (*models.VariableResponse, error)); ok {
+		return returnFunc(ctx, userID, input, keys, referenceIDs)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, models.BaseVariablesJSONInput, []models.VariableDeleteInput, []uuid.UUID) *models.VariableResponse); ok {
-		r0 = returnFunc(ctx, userID, bearerToken, input, keys, referenceIDs)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput, []uuid.UUID) *models.VariableResponse); ok {
+		r0 = returnFunc(ctx, userID, input, keys, referenceIDs)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.VariableResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, models.BaseVariablesJSONInput, []models.VariableDeleteInput, []uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, userID, bearerToken, input, keys, referenceIDs)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, userID, input, keys, referenceIDs)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -75,15 +75,14 @@ type VariablesServiceMock_DeleteVariablesByKey_Call struct {
 // DeleteVariablesByKey is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID uuid.UUID
-//   - bearerToken string
 //   - input models.BaseVariablesJSONInput
 //   - keys []models.VariableDeleteInput
 //   - referenceIDs []uuid.UUID
-func (_e *VariablesServiceMock_Expecter) DeleteVariablesByKey(ctx any, userID any, bearerToken any, input any, keys any, referenceIDs any) *VariablesServiceMock_DeleteVariablesByKey_Call {
-	return &VariablesServiceMock_DeleteVariablesByKey_Call{Call: _e.mock.On("DeleteVariablesByKey", ctx, userID, bearerToken, input, keys, referenceIDs)}
+func (_e *VariablesServiceMock_Expecter) DeleteVariablesByKey(ctx any, userID any, input any, keys any, referenceIDs any) *VariablesServiceMock_DeleteVariablesByKey_Call {
+	return &VariablesServiceMock_DeleteVariablesByKey_Call{Call: _e.mock.On("DeleteVariablesByKey", ctx, userID, input, keys, referenceIDs)}
 }
 
-func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Run(run func(ctx context.Context, userID uuid.UUID, bearerToken string, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID)) *VariablesServiceMock_DeleteVariablesByKey_Call {
+func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Run(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID)) *VariablesServiceMock_DeleteVariablesByKey_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -93,21 +92,17 @@ func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Run(run func(ctx conte
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 string
+		var arg2 models.BaseVariablesJSONInput
 		if args[2] != nil {
-			arg2 = args[2].(string)
+			arg2 = args[2].(models.BaseVariablesJSONInput)
 		}
-		var arg3 models.BaseVariablesJSONInput
+		var arg3 []models.VariableDeleteInput
 		if args[3] != nil {
-			arg3 = args[3].(models.BaseVariablesJSONInput)
+			arg3 = args[3].([]models.VariableDeleteInput)
 		}
-		var arg4 []models.VariableDeleteInput
+		var arg4 []uuid.UUID
 		if args[4] != nil {
-			arg4 = args[4].([]models.VariableDeleteInput)
-		}
-		var arg5 []uuid.UUID
-		if args[5] != nil {
-			arg5 = args[5].([]uuid.UUID)
+			arg4 = args[4].([]uuid.UUID)
 		}
 		run(
 			arg0,
@@ -115,7 +110,6 @@ func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Run(run func(ctx conte
 			arg2,
 			arg3,
 			arg4,
-			arg5,
 		)
 	})
 	return _c
@@ -126,14 +120,14 @@ func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Return(variableRespons
 	return _c
 }
 
-func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, bearerToken string, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error)) *VariablesServiceMock_DeleteVariablesByKey_Call {
+func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error)) *VariablesServiceMock_DeleteVariablesByKey_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetAvailableVariableReferences provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) GetAvailableVariableReferences(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID uuid.UUID, projectID uuid.UUID, environmentID uuid.UUID, serviceID uuid.UUID) ([]models.AvailableVariableReference, error) {
-	ret := _mock.Called(ctx, requesterUserID, bearerToken, teamID, projectID, environmentID, serviceID)
+func (_mock *VariablesServiceMock) GetAvailableVariableReferences(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, projectID uuid.UUID, environmentID uuid.UUID, serviceID uuid.UUID) ([]models.AvailableVariableReference, error) {
+	ret := _mock.Called(ctx, requesterUserID, teamID, projectID, environmentID, serviceID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetAvailableVariableReferences")
@@ -141,18 +135,18 @@ func (_mock *VariablesServiceMock) GetAvailableVariableReferences(ctx context.Co
 
 	var r0 []models.AvailableVariableReference
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) ([]models.AvailableVariableReference, error)); ok {
-		return returnFunc(ctx, requesterUserID, bearerToken, teamID, projectID, environmentID, serviceID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) ([]models.AvailableVariableReference, error)); ok {
+		return returnFunc(ctx, requesterUserID, teamID, projectID, environmentID, serviceID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) []models.AvailableVariableReference); ok {
-		r0 = returnFunc(ctx, requesterUserID, bearerToken, teamID, projectID, environmentID, serviceID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) []models.AvailableVariableReference); ok {
+		r0 = returnFunc(ctx, requesterUserID, teamID, projectID, environmentID, serviceID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]models.AvailableVariableReference)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, requesterUserID, bearerToken, teamID, projectID, environmentID, serviceID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, requesterUserID, teamID, projectID, environmentID, serviceID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -167,16 +161,15 @@ type VariablesServiceMock_GetAvailableVariableReferences_Call struct {
 // GetAvailableVariableReferences is a helper method to define mock.On call
 //   - ctx context.Context
 //   - requesterUserID uuid.UUID
-//   - bearerToken string
 //   - teamID uuid.UUID
 //   - projectID uuid.UUID
 //   - environmentID uuid.UUID
 //   - serviceID uuid.UUID
-func (_e *VariablesServiceMock_Expecter) GetAvailableVariableReferences(ctx any, requesterUserID any, bearerToken any, teamID any, projectID any, environmentID any, serviceID any) *VariablesServiceMock_GetAvailableVariableReferences_Call {
-	return &VariablesServiceMock_GetAvailableVariableReferences_Call{Call: _e.mock.On("GetAvailableVariableReferences", ctx, requesterUserID, bearerToken, teamID, projectID, environmentID, serviceID)}
+func (_e *VariablesServiceMock_Expecter) GetAvailableVariableReferences(ctx any, requesterUserID any, teamID any, projectID any, environmentID any, serviceID any) *VariablesServiceMock_GetAvailableVariableReferences_Call {
+	return &VariablesServiceMock_GetAvailableVariableReferences_Call{Call: _e.mock.On("GetAvailableVariableReferences", ctx, requesterUserID, teamID, projectID, environmentID, serviceID)}
 }
 
-func (_c *VariablesServiceMock_GetAvailableVariableReferences_Call) Run(run func(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID uuid.UUID, projectID uuid.UUID, environmentID uuid.UUID, serviceID uuid.UUID)) *VariablesServiceMock_GetAvailableVariableReferences_Call {
+func (_c *VariablesServiceMock_GetAvailableVariableReferences_Call) Run(run func(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, projectID uuid.UUID, environmentID uuid.UUID, serviceID uuid.UUID)) *VariablesServiceMock_GetAvailableVariableReferences_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -186,9 +179,9 @@ func (_c *VariablesServiceMock_GetAvailableVariableReferences_Call) Run(run func
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 string
+		var arg2 uuid.UUID
 		if args[2] != nil {
-			arg2 = args[2].(string)
+			arg2 = args[2].(uuid.UUID)
 		}
 		var arg3 uuid.UUID
 		if args[3] != nil {
@@ -202,10 +195,6 @@ func (_c *VariablesServiceMock_GetAvailableVariableReferences_Call) Run(run func
 		if args[5] != nil {
 			arg5 = args[5].(uuid.UUID)
 		}
-		var arg6 uuid.UUID
-		if args[6] != nil {
-			arg6 = args[6].(uuid.UUID)
-		}
 		run(
 			arg0,
 			arg1,
@@ -213,7 +202,6 @@ func (_c *VariablesServiceMock_GetAvailableVariableReferences_Call) Run(run func
 			arg3,
 			arg4,
 			arg5,
-			arg6,
 		)
 	})
 	return _c
@@ -224,14 +212,14 @@ func (_c *VariablesServiceMock_GetAvailableVariableReferences_Call) Return(avail
 	return _c
 }
 
-func (_c *VariablesServiceMock_GetAvailableVariableReferences_Call) RunAndReturn(run func(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID uuid.UUID, projectID uuid.UUID, environmentID uuid.UUID, serviceID uuid.UUID) ([]models.AvailableVariableReference, error)) *VariablesServiceMock_GetAvailableVariableReferences_Call {
+func (_c *VariablesServiceMock_GetAvailableVariableReferences_Call) RunAndReturn(run func(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, projectID uuid.UUID, environmentID uuid.UUID, serviceID uuid.UUID) ([]models.AvailableVariableReference, error)) *VariablesServiceMock_GetAvailableVariableReferences_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // GetVariables provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) GetVariables(ctx context.Context, userID uuid.UUID, bearerToken string, input models.BaseVariablesInput) (*models.VariableResponse, error) {
-	ret := _mock.Called(ctx, userID, bearerToken, input)
+func (_mock *VariablesServiceMock) GetVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error) {
+	ret := _mock.Called(ctx, userID, input)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetVariables")
@@ -239,18 +227,18 @@ func (_mock *VariablesServiceMock) GetVariables(ctx context.Context, userID uuid
 
 	var r0 *models.VariableResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, models.BaseVariablesInput) (*models.VariableResponse, error)); ok {
-		return returnFunc(ctx, userID, bearerToken, input)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesInput) (*models.VariableResponse, error)); ok {
+		return returnFunc(ctx, userID, input)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, models.BaseVariablesInput) *models.VariableResponse); ok {
-		r0 = returnFunc(ctx, userID, bearerToken, input)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesInput) *models.VariableResponse); ok {
+		r0 = returnFunc(ctx, userID, input)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.VariableResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, models.BaseVariablesInput) error); ok {
-		r1 = returnFunc(ctx, userID, bearerToken, input)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, models.BaseVariablesInput) error); ok {
+		r1 = returnFunc(ctx, userID, input)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -265,13 +253,12 @@ type VariablesServiceMock_GetVariables_Call struct {
 // GetVariables is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID uuid.UUID
-//   - bearerToken string
 //   - input models.BaseVariablesInput
-func (_e *VariablesServiceMock_Expecter) GetVariables(ctx any, userID any, bearerToken any, input any) *VariablesServiceMock_GetVariables_Call {
-	return &VariablesServiceMock_GetVariables_Call{Call: _e.mock.On("GetVariables", ctx, userID, bearerToken, input)}
+func (_e *VariablesServiceMock_Expecter) GetVariables(ctx any, userID any, input any) *VariablesServiceMock_GetVariables_Call {
+	return &VariablesServiceMock_GetVariables_Call{Call: _e.mock.On("GetVariables", ctx, userID, input)}
 }
 
-func (_c *VariablesServiceMock_GetVariables_Call) Run(run func(ctx context.Context, userID uuid.UUID, bearerToken string, input models.BaseVariablesInput)) *VariablesServiceMock_GetVariables_Call {
+func (_c *VariablesServiceMock_GetVariables_Call) Run(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput)) *VariablesServiceMock_GetVariables_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -281,19 +268,14 @@ func (_c *VariablesServiceMock_GetVariables_Call) Run(run func(ctx context.Conte
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 string
+		var arg2 models.BaseVariablesInput
 		if args[2] != nil {
-			arg2 = args[2].(string)
-		}
-		var arg3 models.BaseVariablesInput
-		if args[3] != nil {
-			arg3 = args[3].(models.BaseVariablesInput)
+			arg2 = args[2].(models.BaseVariablesInput)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
-			arg3,
 		)
 	})
 	return _c
@@ -304,7 +286,7 @@ func (_c *VariablesServiceMock_GetVariables_Call) Return(variableResponse *model
 	return _c
 }
 
-func (_c *VariablesServiceMock_GetVariables_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, bearerToken string, input models.BaseVariablesInput) (*models.VariableResponse, error)) *VariablesServiceMock_GetVariables_Call {
+func (_c *VariablesServiceMock_GetVariables_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error)) *VariablesServiceMock_GetVariables_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -378,8 +360,8 @@ func (_c *VariablesServiceMock_ResolveAllReferences_Call) RunAndReturn(run func(
 }
 
 // ResolveAvailableReferenceValue provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) ResolveAvailableReferenceValue(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.ResolveVariableReferenceInput) (string, error) {
-	ret := _mock.Called(ctx, requesterUserID, bearerToken, input)
+func (_mock *VariablesServiceMock) ResolveAvailableReferenceValue(ctx context.Context, requesterUserID uuid.UUID, input *models.ResolveVariableReferenceInput) (string, error) {
+	ret := _mock.Called(ctx, requesterUserID, input)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ResolveAvailableReferenceValue")
@@ -387,16 +369,16 @@ func (_mock *VariablesServiceMock) ResolveAvailableReferenceValue(ctx context.Co
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, *models.ResolveVariableReferenceInput) (string, error)); ok {
-		return returnFunc(ctx, requesterUserID, bearerToken, input)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *models.ResolveVariableReferenceInput) (string, error)); ok {
+		return returnFunc(ctx, requesterUserID, input)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, *models.ResolveVariableReferenceInput) string); ok {
-		r0 = returnFunc(ctx, requesterUserID, bearerToken, input)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *models.ResolveVariableReferenceInput) string); ok {
+		r0 = returnFunc(ctx, requesterUserID, input)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, *models.ResolveVariableReferenceInput) error); ok {
-		r1 = returnFunc(ctx, requesterUserID, bearerToken, input)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *models.ResolveVariableReferenceInput) error); ok {
+		r1 = returnFunc(ctx, requesterUserID, input)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -411,13 +393,12 @@ type VariablesServiceMock_ResolveAvailableReferenceValue_Call struct {
 // ResolveAvailableReferenceValue is a helper method to define mock.On call
 //   - ctx context.Context
 //   - requesterUserID uuid.UUID
-//   - bearerToken string
 //   - input *models.ResolveVariableReferenceInput
-func (_e *VariablesServiceMock_Expecter) ResolveAvailableReferenceValue(ctx any, requesterUserID any, bearerToken any, input any) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
-	return &VariablesServiceMock_ResolveAvailableReferenceValue_Call{Call: _e.mock.On("ResolveAvailableReferenceValue", ctx, requesterUserID, bearerToken, input)}
+func (_e *VariablesServiceMock_Expecter) ResolveAvailableReferenceValue(ctx any, requesterUserID any, input any) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
+	return &VariablesServiceMock_ResolveAvailableReferenceValue_Call{Call: _e.mock.On("ResolveAvailableReferenceValue", ctx, requesterUserID, input)}
 }
 
-func (_c *VariablesServiceMock_ResolveAvailableReferenceValue_Call) Run(run func(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.ResolveVariableReferenceInput)) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
+func (_c *VariablesServiceMock_ResolveAvailableReferenceValue_Call) Run(run func(ctx context.Context, requesterUserID uuid.UUID, input *models.ResolveVariableReferenceInput)) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -427,19 +408,14 @@ func (_c *VariablesServiceMock_ResolveAvailableReferenceValue_Call) Run(run func
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 string
+		var arg2 *models.ResolveVariableReferenceInput
 		if args[2] != nil {
-			arg2 = args[2].(string)
-		}
-		var arg3 *models.ResolveVariableReferenceInput
-		if args[3] != nil {
-			arg3 = args[3].(*models.ResolveVariableReferenceInput)
+			arg2 = args[2].(*models.ResolveVariableReferenceInput)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
-			arg3,
 		)
 	})
 	return _c
@@ -450,14 +426,14 @@ func (_c *VariablesServiceMock_ResolveAvailableReferenceValue_Call) Return(s str
 	return _c
 }
 
-func (_c *VariablesServiceMock_ResolveAvailableReferenceValue_Call) RunAndReturn(run func(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.ResolveVariableReferenceInput) (string, error)) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
+func (_c *VariablesServiceMock_ResolveAvailableReferenceValue_Call) RunAndReturn(run func(ctx context.Context, requesterUserID uuid.UUID, input *models.ResolveVariableReferenceInput) (string, error)) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // ResolveSingleReference provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) ResolveSingleReference(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, serviceID uuid.UUID, referenceID uuid.UUID) (string, error) {
-	ret := _mock.Called(ctx, requesterUserID, bearerToken, serviceID, referenceID)
+func (_mock *VariablesServiceMock) ResolveSingleReference(ctx context.Context, requesterUserID uuid.UUID, serviceID uuid.UUID, referenceID uuid.UUID) (string, error) {
+	ret := _mock.Called(ctx, requesterUserID, serviceID, referenceID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ResolveSingleReference")
@@ -465,16 +441,16 @@ func (_mock *VariablesServiceMock) ResolveSingleReference(ctx context.Context, r
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) (string, error)); ok {
-		return returnFunc(ctx, requesterUserID, bearerToken, serviceID, referenceID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (string, error)); ok {
+		return returnFunc(ctx, requesterUserID, serviceID, referenceID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) string); ok {
-		r0 = returnFunc(ctx, requesterUserID, bearerToken, serviceID, referenceID)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) string); ok {
+		r0 = returnFunc(ctx, requesterUserID, serviceID, referenceID)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, uuid.UUID, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, requesterUserID, bearerToken, serviceID, referenceID)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, requesterUserID, serviceID, referenceID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -489,14 +465,13 @@ type VariablesServiceMock_ResolveSingleReference_Call struct {
 // ResolveSingleReference is a helper method to define mock.On call
 //   - ctx context.Context
 //   - requesterUserID uuid.UUID
-//   - bearerToken string
 //   - serviceID uuid.UUID
 //   - referenceID uuid.UUID
-func (_e *VariablesServiceMock_Expecter) ResolveSingleReference(ctx any, requesterUserID any, bearerToken any, serviceID any, referenceID any) *VariablesServiceMock_ResolveSingleReference_Call {
-	return &VariablesServiceMock_ResolveSingleReference_Call{Call: _e.mock.On("ResolveSingleReference", ctx, requesterUserID, bearerToken, serviceID, referenceID)}
+func (_e *VariablesServiceMock_Expecter) ResolveSingleReference(ctx any, requesterUserID any, serviceID any, referenceID any) *VariablesServiceMock_ResolveSingleReference_Call {
+	return &VariablesServiceMock_ResolveSingleReference_Call{Call: _e.mock.On("ResolveSingleReference", ctx, requesterUserID, serviceID, referenceID)}
 }
 
-func (_c *VariablesServiceMock_ResolveSingleReference_Call) Run(run func(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, serviceID uuid.UUID, referenceID uuid.UUID)) *VariablesServiceMock_ResolveSingleReference_Call {
+func (_c *VariablesServiceMock_ResolveSingleReference_Call) Run(run func(ctx context.Context, requesterUserID uuid.UUID, serviceID uuid.UUID, referenceID uuid.UUID)) *VariablesServiceMock_ResolveSingleReference_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -506,24 +481,19 @@ func (_c *VariablesServiceMock_ResolveSingleReference_Call) Run(run func(ctx con
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 string
+		var arg2 uuid.UUID
 		if args[2] != nil {
-			arg2 = args[2].(string)
+			arg2 = args[2].(uuid.UUID)
 		}
 		var arg3 uuid.UUID
 		if args[3] != nil {
 			arg3 = args[3].(uuid.UUID)
-		}
-		var arg4 uuid.UUID
-		if args[4] != nil {
-			arg4 = args[4].(uuid.UUID)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
-			arg4,
 		)
 	})
 	return _c
@@ -534,14 +504,14 @@ func (_c *VariablesServiceMock_ResolveSingleReference_Call) Return(s string, err
 	return _c
 }
 
-func (_c *VariablesServiceMock_ResolveSingleReference_Call) RunAndReturn(run func(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, serviceID uuid.UUID, referenceID uuid.UUID) (string, error)) *VariablesServiceMock_ResolveSingleReference_Call {
+func (_c *VariablesServiceMock_ResolveSingleReference_Call) RunAndReturn(run func(ctx context.Context, requesterUserID uuid.UUID, serviceID uuid.UUID, referenceID uuid.UUID) (string, error)) *VariablesServiceMock_ResolveSingleReference_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // UpdateVariables provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) UpdateVariables(ctx context.Context, userID uuid.UUID, bearerToken string, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, error) {
-	ret := _mock.Called(ctx, userID, bearerToken, referenceInput, input, behavior, newVariables)
+func (_mock *VariablesServiceMock) UpdateVariables(ctx context.Context, userID uuid.UUID, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, error) {
+	ret := _mock.Called(ctx, userID, referenceInput, input, behavior, newVariables)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateVariables")
@@ -549,18 +519,18 @@ func (_mock *VariablesServiceMock) UpdateVariables(ctx context.Context, userID u
 
 	var r0 *models.VariableResponse
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, []*models.VariableReferenceInputItem, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) (*models.VariableResponse, error)); ok {
-		return returnFunc(ctx, userID, bearerToken, referenceInput, input, behavior, newVariables)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []*models.VariableReferenceInputItem, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) (*models.VariableResponse, error)); ok {
+		return returnFunc(ctx, userID, referenceInput, input, behavior, newVariables)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, []*models.VariableReferenceInputItem, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) *models.VariableResponse); ok {
-		r0 = returnFunc(ctx, userID, bearerToken, referenceInput, input, behavior, newVariables)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []*models.VariableReferenceInputItem, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) *models.VariableResponse); ok {
+		r0 = returnFunc(ctx, userID, referenceInput, input, behavior, newVariables)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.VariableResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, string, []*models.VariableReferenceInputItem, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) error); ok {
-		r1 = returnFunc(ctx, userID, bearerToken, referenceInput, input, behavior, newVariables)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, []*models.VariableReferenceInputItem, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) error); ok {
+		r1 = returnFunc(ctx, userID, referenceInput, input, behavior, newVariables)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -575,16 +545,15 @@ type VariablesServiceMock_UpdateVariables_Call struct {
 // UpdateVariables is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID uuid.UUID
-//   - bearerToken string
 //   - referenceInput []*models.VariableReferenceInputItem
 //   - input models.BaseVariablesJSONInput
 //   - behavior models.VariableUpdateBehavior
 //   - newVariables map[string][]byte
-func (_e *VariablesServiceMock_Expecter) UpdateVariables(ctx any, userID any, bearerToken any, referenceInput any, input any, behavior any, newVariables any) *VariablesServiceMock_UpdateVariables_Call {
-	return &VariablesServiceMock_UpdateVariables_Call{Call: _e.mock.On("UpdateVariables", ctx, userID, bearerToken, referenceInput, input, behavior, newVariables)}
+func (_e *VariablesServiceMock_Expecter) UpdateVariables(ctx any, userID any, referenceInput any, input any, behavior any, newVariables any) *VariablesServiceMock_UpdateVariables_Call {
+	return &VariablesServiceMock_UpdateVariables_Call{Call: _e.mock.On("UpdateVariables", ctx, userID, referenceInput, input, behavior, newVariables)}
 }
 
-func (_c *VariablesServiceMock_UpdateVariables_Call) Run(run func(ctx context.Context, userID uuid.UUID, bearerToken string, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte)) *VariablesServiceMock_UpdateVariables_Call {
+func (_c *VariablesServiceMock_UpdateVariables_Call) Run(run func(ctx context.Context, userID uuid.UUID, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte)) *VariablesServiceMock_UpdateVariables_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -594,25 +563,21 @@ func (_c *VariablesServiceMock_UpdateVariables_Call) Run(run func(ctx context.Co
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 string
+		var arg2 []*models.VariableReferenceInputItem
 		if args[2] != nil {
-			arg2 = args[2].(string)
+			arg2 = args[2].([]*models.VariableReferenceInputItem)
 		}
-		var arg3 []*models.VariableReferenceInputItem
+		var arg3 models.BaseVariablesJSONInput
 		if args[3] != nil {
-			arg3 = args[3].([]*models.VariableReferenceInputItem)
+			arg3 = args[3].(models.BaseVariablesJSONInput)
 		}
-		var arg4 models.BaseVariablesJSONInput
+		var arg4 models.VariableUpdateBehavior
 		if args[4] != nil {
-			arg4 = args[4].(models.BaseVariablesJSONInput)
+			arg4 = args[4].(models.VariableUpdateBehavior)
 		}
-		var arg5 models.VariableUpdateBehavior
+		var arg5 map[string][]byte
 		if args[5] != nil {
-			arg5 = args[5].(models.VariableUpdateBehavior)
-		}
-		var arg6 map[string][]byte
-		if args[6] != nil {
-			arg6 = args[6].(map[string][]byte)
+			arg5 = args[5].(map[string][]byte)
 		}
 		run(
 			arg0,
@@ -621,7 +586,6 @@ func (_c *VariablesServiceMock_UpdateVariables_Call) Run(run func(ctx context.Co
 			arg3,
 			arg4,
 			arg5,
-			arg6,
 		)
 	})
 	return _c
@@ -632,7 +596,7 @@ func (_c *VariablesServiceMock_UpdateVariables_Call) Return(variableResponse *mo
 	return _c
 }
 
-func (_c *VariablesServiceMock_UpdateVariables_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, bearerToken string, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, error)) *VariablesServiceMock_UpdateVariables_Call {
+func (_c *VariablesServiceMock_UpdateVariables_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, error)) *VariablesServiceMock_UpdateVariables_Call {
 	_c.Call.Return(run)
 	return _c
 }

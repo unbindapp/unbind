@@ -17,7 +17,7 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-func (self *StorageService) CreateS3StorageBackend(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.S3BackendCreateInput) (*models.S3Response, error) {
+func (self *StorageService) CreateS3StorageBackend(ctx context.Context, requesterUserID uuid.UUID, input *models.S3BackendCreateInput) (*models.S3Response, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Team editor can create s3 sources
 		{
@@ -57,10 +57,7 @@ func (self *StorageService) CreateS3StorageBackend(ctx context.Context, requeste
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	var s3 *ent.S3
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {

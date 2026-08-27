@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 
-func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, projectID, environmentID, serviceID uuid.UUID) error {
+func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID, serviceID uuid.UUID) error {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to admin service
 		{
@@ -44,10 +44,7 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 		return err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return err
-	}
+	client := self.k8s.GetInternalClient()
 
 	// Delete kubernetes resources, db resource
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {

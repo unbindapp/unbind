@@ -51,12 +51,16 @@ type TNewVersion =
       hasUnseenUpdate: boolean;
       latestVersion: string;
       latestVersionUrl: string;
+      latestVersionDescription: string | null;
+      latestVersionReleaseNotes: string | null;
     }
   | {
       hasUpdateAvailable: false;
       hasUnseenUpdate: false;
       latestVersion: null;
       latestVersionUrl: null;
+      latestVersionDescription: null;
+      latestVersionReleaseNotes: null;
     };
 
 // Single source of truth for "is there an update": the API sets has_update_available
@@ -80,6 +84,8 @@ export const useCheckNewVersion = (): TNewVersion => {
       hasUnseenUpdate: false,
       latestVersion: null,
       latestVersionUrl: null,
+      latestVersionDescription: null,
+      latestVersionReleaseNotes: null,
     };
   }
 
@@ -88,6 +94,8 @@ export const useCheckNewVersion = (): TNewVersion => {
     hasUnseenUpdate: latest.version !== lastDismissedVersion,
     latestVersion: latest.version,
     latestVersionUrl: latest.url,
+    latestVersionDescription: latest.description ?? null,
+    latestVersionReleaseNotes: latest.release_notes ?? null,
   };
 };
 

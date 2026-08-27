@@ -34,9 +34,7 @@ func (self *HandlerGroup) GetLogsfunc(ctx context.Context, input *GetLogInput, s
 		})
 		return
 	}
-	bearerToken, _ := self.srv.GetBearerTokenFromContext(ctx)
-
-	if err := self.srv.LogService.StreamLogs(ctx, user.ID, bearerToken, &input.LogStreamInput, send); err != nil {
+	if err := self.srv.LogService.StreamLogs(ctx, user.ID, &input.LogStreamInput, send); err != nil {
 		self.handleSSEErr(err, send)
 	}
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.LogStreamInput, send sse.Sender) error {
+func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UUID, input *models.LogStreamInput, send sse.Sender) error {
 	team, project, environment, service, err := self.validatePermissionsAndParseInputs(ctx, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return err

@@ -1,6 +1,7 @@
 package updater
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
@@ -34,7 +35,7 @@ type Updater struct {
 }
 
 type UpdateCacheItem struct {
-	Updates   []string
+	Updates   []release.VersionMetadata
 	CheckedAt time.Time
 }
 
@@ -80,7 +81,7 @@ func NewWithReleaseManager(cfg *config.Config, currentVersion string, k8sClient 
 }
 
 // CheckForUpdates checks if there are any available updates
-func (self *Updater) CheckForUpdates(ctx context.Context) ([]string, error) {
+func (self *Updater) CheckForUpdates(ctx context.Context) ([]release.VersionMetadata, error) {
 	// Check cache first
 	cacheItem, err := self.redisCache.Get(ctx, "updates")
 	if err != nil {
@@ -108,7 +109,7 @@ func (self *Updater) CheckForUpdates(ctx context.Context) ([]string, error) {
 		}
 
 		log.Errorf("Failed to check for updates and no cache available: %v", err)
-		return []string{}, nil
+		return []release.VersionMetadata{}, nil
 	}
 
 	// Cache the updates with a 1 hour expiration
@@ -209,12 +210,25 @@ func (self *Updater) applyKustomizeManifests(ctx context.Context, version string
 	if err != nil {
 		return fmt.Errorf("failed to convert resources to YAML: %w", err)
 	}
+	// An empty kustomization acknowledges the release CI guard without running a job.
+	if len(bytes.TrimSpace(yaml)) == 0 {
+		return nil
+	}
 
-	if err := self.k8sClient.ApplyYAML(ctx, yaml); err != nil {
+	if err := self.k8sClient.RunManifestApplyJob(ctx, version, self.jobImage(), yaml); err != nil {
 		return fmt.Errorf("failed to apply resources: %w", err)
 	}
 
 	return nil
+}
+
+// jobImage picks the image the manifest-apply job runs: the running app image, which is
+// already pullable mid-update and is the binary that rendered the manifests.
+func (self *Updater) jobImage() string {
+	if image := self.cfg.GetUpdateJobImage(); image != "" {
+		return image
+	}
+	return k8s.AppImageRepository + ":" + self.CurrentVersion
 }
 
 func setKustomizationNamespace(path, namespace string) error {
@@ -257,50 +271,4 @@ func (self *Updater) CheckUpdateComplete(ctx context.Context, targetVersion stri
 		return false, nil
 	}
 	return self.k8sClient.CheckDeploymentsReady(ctx, targetVersion)
-}
-
-// GetNextAvailableVersion returns the next version that can be updated to from the current version
-func (self *Updater) GetNextAvailableVersion(ctx context.Context, currentVersion string) (string, error) {
-	// Check cache first
-	cacheKey := fmt.Sprintf("next-version-%s", currentVersion)
-	cacheItem, err := self.redisCache.Get(ctx, cacheKey)
-	if err != nil {
-		if err != redis.Nil {
-			log.Errorf("Error reading next version from cache: %v", err)
-		}
-	} else if cacheItem != nil {
-		// Check if time is older than 10 minutes
-		if time.Since(cacheItem.CheckedAt) < 10*time.Minute {
-			log.Infof("Returning cached next version %v from %v", cacheItem.Updates[0], cacheItem.CheckedAt)
-			return cacheItem.Updates[0], nil
-		}
-		log.Infof("Cache expired at %v", cacheItem.CheckedAt)
-	}
-
-	// Cache expired or empty, fetch new version
-	version, err := self.releaseManager.GetNextAvailableVersion(ctx, currentVersion)
-	if err != nil {
-		log.Errorf("Failed to get next available version, trying to return cache %v", err)
-
-		if cacheItem != nil {
-			// Return cached version if available
-			log.Infof("Returning stale cached next version %v from %v due to GitHub error", cacheItem.Updates[0], cacheItem.CheckedAt)
-			return cacheItem.Updates[0], nil
-		}
-
-		return "", fmt.Errorf("failed to get next available version: %w", err)
-	}
-
-	// Cache the version with a 1 hour expiration
-	cacheItem = &UpdateCacheItem{
-		Updates:   []string{version},
-		CheckedAt: time.Now(),
-	}
-	if err := self.redisCache.SetWithExpiration(ctx, cacheKey, cacheItem, time.Hour); err != nil {
-		log.Errorf("Failed to cache next version: %v", err)
-	} else {
-		log.Infof("Successfully cached next version %v until %v", version, time.Now().Add(time.Hour))
-	}
-
-	return version, nil
 }

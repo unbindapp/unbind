@@ -20,12 +20,12 @@ type ListPVCResponse struct {
 }
 
 func (self *HandlerGroup) ListPVCs(ctx context.Context, input *ListPVCInput) (*ListPVCResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	pvcs, err := self.srv.StorageService.ListPVCs(ctx, user.ID, bearerToken, &input.ListPVCInput)
+	pvcs, err := self.srv.StorageService.ListPVCs(ctx, user.ID, &input.ListPVCInput)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
@@ -51,12 +51,12 @@ type GetPVCResponse struct {
 }
 
 func (self *HandlerGroup) GetPVC(ctx context.Context, input *GetPVCInput) (*GetPVCResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	pvc, err := self.srv.StorageService.GetPVC(ctx, user.ID, bearerToken, &input.GetPVCInput)
+	pvc, err := self.srv.StorageService.GetPVC(ctx, user.ID, &input.GetPVCInput)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

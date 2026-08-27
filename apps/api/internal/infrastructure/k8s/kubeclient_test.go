@@ -1,17 +1,13 @@
 package k8s
 
 import (
-	"context"
 	"net/http"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/client-go/rest"
 
-	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
-	mocks_config "github.com/unbindapp/unbind-api/mocks/config"
 )
 
 // TestKubeClientStructure tests that we can create and use the KubeClient struct
@@ -29,47 +25,6 @@ func TestKubeClientStructure(t *testing.T) {
 	assert.NotNil(t, kubeClient.httpClient)
 }
 
-type fakeTokenVerifier struct {
-	claims *auth.VerifiedClaims
-	err    error
-}
-
-func (f fakeTokenVerifier) Verify(string) (*auth.VerifiedClaims, error) {
-	return f.claims, f.err
-}
-
-// TestKubeClient_CreateClientWithToken verifies the token and builds an impersonating client
-func TestKubeClient_CreateClientWithToken(t *testing.T) {
-	kubeClient := &KubeClient{
-		baseConfig: &rest.Config{Host: "https://test-cluster:6443"},
-		tokenVerifier: fakeTokenVerifier{
-			claims: &auth.VerifiedClaims{Email: "user@example.com", Groups: []string{"oidc:users"}},
-		},
-	}
-
-	client, err := kubeClient.CreateClientWithToken("test-token")
-
-	assert.NoError(t, err)
-	assert.NotNil(t, client)
-
-	cfg := kubeClient.impersonationConfig("user@example.com", []string{"oidc:users"})
-	assert.Equal(t, "user@example.com", cfg.Impersonate.UserName)
-	assert.Equal(t, []string{"oidc:users"}, cfg.Impersonate.Groups)
-}
-
-// TestKubeClient_CreateClientWithToken_InvalidToken surfaces verification errors
-func TestKubeClient_CreateClientWithToken_InvalidToken(t *testing.T) {
-	kubeClient := &KubeClient{
-		baseConfig:    &rest.Config{Host: "https://test-cluster:6443"},
-		tokenVerifier: fakeTokenVerifier{err: auth.ErrInvalidToken},
-	}
-
-	client, err := kubeClient.CreateClientWithToken("bad-token")
-
-	assert.Error(t, err)
-	assert.Nil(t, client)
-}
-
 // TestKubeClient_GetInternalClient tests getting the internal client
 func TestKubeClient_GetInternalClient(t *testing.T) {
 	kubeClient := &KubeClient{
@@ -78,123 +33,6 @@ func TestKubeClient_GetInternalClient(t *testing.T) {
 
 	result := kubeClient.GetInternalClient()
 	assert.Nil(t, result) // Since clientset is nil
-}
-
-// TestKubeClient_ApplyYAML tests YAML application logic
-func TestKubeClient_ApplyYAML(t *testing.T) {
-	tests := []struct {
-		name        string
-		yaml        string
-		expectError bool
-		errorMsg    string
-	}{
-		{
-			name:        "Empty YAML",
-			yaml:        "",
-			expectError: false,
-		},
-		{
-			name:        "Only separators",
-			yaml:        "---\n\n---\n",
-			expectError: false,
-		},
-		{
-			name:        "Invalid YAML",
-			yaml:        "invalid: yaml: content: [\ninvalid",
-			expectError: true,
-			errorMsg:    "failed to decode YAML",
-		},
-		{
-			name: "Valid YAML structure but will fail on apply (nil client)",
-			yaml: `
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: test-config
-data:
-  key: value
-`,
-			expectError: true, // Will panic/fail because we don't have a real cluster
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockConfig := &mocks_config.ConfigMock{}
-			if !tt.expectError || tt.errorMsg != "failed to decode YAML" {
-				mockConfig.On("GetSystemNamespace").Return("test-namespace")
-			}
-
-			kubeClient := &KubeClient{
-				config: mockConfig,
-				client: nil, // Will cause error on actual apply, which is expected
-			}
-
-			// Handle panics for cases where we expect errors due to nil client
-			defer func() {
-				if r := recover(); r != nil && tt.expectError {
-					// Expected panic due to nil client, test passes
-					return
-				} else if r != nil {
-					// Unexpected panic, re-panic
-					panic(r)
-				}
-			}()
-
-			err := kubeClient.ApplyYAML(context.Background(), []byte(tt.yaml))
-
-			if tt.expectError {
-				assert.Error(t, err)
-				if tt.errorMsg != "" {
-					assert.Contains(t, err.Error(), tt.errorMsg)
-				}
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
-}
-
-// TestKubeClient_ApplyYAML_MultipleDocuments tests multiple YAML documents
-func TestKubeClient_ApplyYAML_MultipleDocuments(t *testing.T) {
-	yaml := `
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-1
-data:
-  key1: value1
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: config-2
-data:
-  key2: value2
-`
-
-	mockConfig := &mocks_config.ConfigMock{}
-	mockConfig.On("GetSystemNamespace").Return("test-namespace")
-
-	kubeClient := &KubeClient{
-		config: mockConfig,
-		client: nil, // Will cause error, but that's expected
-	}
-
-	// Handle panics for cases where we expect errors due to nil client
-	defer func() {
-		if r := recover(); r != nil {
-			// Expected panic due to nil client, test passes
-			return
-		}
-	}()
-
-	err := kubeClient.ApplyYAML(context.Background(), []byte(yaml))
-
-	// Should get an error because client is nil, but the YAML parsing should work
-	assert.Error(t, err)
-	// The error should not be about YAML parsing
-	assert.NotContains(t, err.Error(), "failed to decode YAML")
 }
 
 // TestParseRegistryCredentials tests the registry credentials parsing
@@ -285,34 +123,4 @@ func TestBasicStructs(t *testing.T) {
 	assert.IsType(t, LoadBalancerAddresses{}, lbAddresses)
 	assert.IsType(t, RegistryCredential{}, regCred)
 	assert.IsType(t, JobStatus{}, jobStatus)
-}
-
-// TestErrorHandling tests various error conditions
-func TestErrorHandling(t *testing.T) {
-	kubeClient := &KubeClient{}
-
-	// Handle panics for cases where we expect errors due to nil config
-	defer func() {
-		if r := recover(); r != nil {
-			// Expected panic due to nil config, test passes
-			return
-		}
-	}()
-
-	// Test with nil config
-	_, err := kubeClient.CreateClientWithToken("token")
-	assert.Error(t, err) // Should error due to nil config
-}
-
-// TestKubeClientMethodsExist verifies that all expected methods exist
-// This is a basic "smoke test" to ensure the interface is properly implemented
-func TestKubeClientMethodsExist(t *testing.T) {
-	kubeClient := &KubeClient{}
-
-	// Test that methods exist and can be called (even if they'll error due to nil clients)
-	assert.NotNil(t, kubeClient.GetInternalClient) // Method exists
-
-	// Test ApplyYAML with empty YAML (should not error)
-	err := kubeClient.ApplyYAML(context.Background(), []byte(""))
-	assert.NoError(t, err)
 }

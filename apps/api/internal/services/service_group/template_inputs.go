@@ -42,8 +42,8 @@ type templateInputContext struct {
 }
 
 // GetTemplateInputs returns the deployed template's inputs, in definition order, with current values.
-func (self *ServiceGroupService) GetTemplateInputs(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.GetServiceGroupInput) (*models.ServiceGroupTemplateInputsResponse, error) {
-	tc, err := self.loadTemplateInputContext(ctx, requesterUserID, bearerToken, schema.ActionViewer, input.TeamID, input.ProjectID, input.EnvironmentID, input.ID)
+func (self *ServiceGroupService) GetTemplateInputs(ctx context.Context, requesterUserID uuid.UUID, input *models.GetServiceGroupInput) (*models.ServiceGroupTemplateInputsResponse, error) {
+	tc, err := self.loadTemplateInputContext(ctx, requesterUserID, schema.ActionViewer, input.TeamID, input.ProjectID, input.EnvironmentID, input.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (self *ServiceGroupService) GetTemplateInputs(ctx context.Context, requeste
 
 // loadTemplateInputContext gates the group as a template instance and resolves every input to its
 // current value and target resource(s).
-func (self *ServiceGroupService) loadTemplateInputContext(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, action schema.PermittedAction, teamID, projectID, environmentID, groupID uuid.UUID) (*templateInputContext, error) {
+func (self *ServiceGroupService) loadTemplateInputContext(ctx context.Context, requesterUserID uuid.UUID, action schema.PermittedAction, teamID, projectID, environmentID, groupID uuid.UUID) (*templateInputContext, error) {
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, []permissions_repo.PermissionCheck{
 		{Action: action, ResourceType: schema.ResourceTypeEnvironment, ResourceID: environmentID},
 	}); err != nil {
@@ -104,10 +104,7 @@ func (self *ServiceGroupService) loadTemplateInputContext(ctx context.Context, r
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service group is not a template instance")
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	volumesByService, err := self.serviceService.GetVolumesForServices(ctx, project.Edges.Team.Namespace, teamID, services)
 	if err != nil {
@@ -389,8 +386,8 @@ func findDatabasePVC(pvcs []*models.PVCInfo) *models.PVCInfo {
 }
 
 // UpdateTemplateInputs applies edits to a deployed template's inputs, re-projecting each to its resources.
-func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.UpdateServiceGroupTemplateInputsInput) (*models.ServiceGroupTemplateInputsResponse, error) {
-	tc, err := self.loadTemplateInputContext(ctx, requesterUserID, bearerToken, schema.ActionEditor, input.TeamID, input.ProjectID, input.EnvironmentID, input.ID)
+func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, requesterUserID uuid.UUID, input *models.UpdateServiceGroupTemplateInputsInput) (*models.ServiceGroupTemplateInputsResponse, error) {
+	tc, err := self.loadTemplateInputContext(ctx, requesterUserID, schema.ActionEditor, input.TeamID, input.ProjectID, input.EnvironmentID, input.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -400,10 +397,7 @@ func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, reque
 		byID[r.state.ID] = r
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 	_, project, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
@@ -539,7 +533,7 @@ func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, reque
 	// Apply size changes last (irreversible); UpdatePVC handles its own redeploy.
 	for _, se := range sizeEdits {
 		gb := se.gb
-		if _, err := self.storageService.UpdatePVC(ctx, requesterUserID, bearerToken, &models.UpdatePVCInput{
+		if _, err := self.storageService.UpdatePVC(ctx, requesterUserID, &models.UpdatePVCInput{
 			ID:            se.r.pvc.ID,
 			Type:          se.r.pvc.Type,
 			TeamID:        input.TeamID,
@@ -566,7 +560,7 @@ func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, reque
 		}
 	}
 
-	return self.GetTemplateInputs(ctx, requesterUserID, bearerToken, &models.GetServiceGroupInput{
+	return self.GetTemplateInputs(ctx, requesterUserID, &models.GetServiceGroupInput{
 		ID:            input.ID,
 		TeamID:        input.TeamID,
 		ProjectID:     input.ProjectID,

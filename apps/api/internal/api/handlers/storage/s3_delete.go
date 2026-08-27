@@ -23,7 +23,7 @@ type DeleteS3SourceByIDOutput struct {
 }
 
 func (self *HandlerGroup) DeleteS3Source(ctx context.Context, input *DeleteS3SourceByIDInput) (*DeleteS3SourceByIDOutput, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,6 @@ func (self *HandlerGroup) DeleteS3Source(ctx context.Context, input *DeleteS3Sou
 	err = self.srv.StorageService.DeleteS3StorageByID(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.Body.TeamID,
 		input.Body.ID,
 	)

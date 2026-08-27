@@ -24,7 +24,7 @@ type DeleteProjectResponse struct {
 }
 
 func (self *HandlerGroup) DeleteProject(ctx context.Context, input *DeleteProjectInput) (*DeleteProjectResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func (self *HandlerGroup) DeleteProject(ctx context.Context, input *DeleteProjec
 	err = self.srv.ProjectService.DeleteProject(ctx, user.ID, &project_service.DeleteProjectInput{
 		TeamID:    input.Body.TeamID,
 		ProjectID: input.Body.ProjectID,
-	}, bearerToken)
+	})
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

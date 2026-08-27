@@ -11,7 +11,7 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-func (self *EnvironmentService) DeleteEnvironmentByID(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, projectID, environmentID uuid.UUID) error {
+func (self *EnvironmentService) DeleteEnvironmentByID(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID uuid.UUID) error {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		{
 			Action:       schema.ActionAdmin,
@@ -34,10 +34,7 @@ func (self *EnvironmentService) DeleteEnvironmentByID(ctx context.Context, reque
 		return err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return err
-	}
+	client := self.k8s.GetInternalClient()
 
 	// Delete kubernetes resources, db resource
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {

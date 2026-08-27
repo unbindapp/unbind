@@ -14,7 +14,7 @@ import (
 )
 
 // Get a specific storage backend by ID
-func (self *StorageService) GetS3StorageByID(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, id uuid.UUID, withBuckets bool) (*models.S3Response, error) {
+func (self *StorageService) GetS3StorageByID(ctx context.Context, requesterUserID uuid.UUID, teamID, id uuid.UUID, withBuckets bool) (*models.S3Response, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Team viewer can view s3 sources
 		{
@@ -47,10 +47,7 @@ func (self *StorageService) GetS3StorageByID(ctx context.Context, requesterUserI
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 source not found")
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	secret, err := self.k8s.GetSecret(ctx, s3Source.KubernetesSecret, team.Namespace, client)
 	if err != nil {
@@ -85,7 +82,7 @@ func (self *StorageService) GetS3StorageByID(ctx context.Context, requesterUserI
 }
 
 // ListS3StorageBackends lists all S3 storage backends for a given team.
-func (self *StorageService) ListS3StorageBackends(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID uuid.UUID, withBuckets bool) ([]*models.S3Response, error) {
+func (self *StorageService) ListS3StorageBackends(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, withBuckets bool) ([]*models.S3Response, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Team viewer can view s3 sources
 		{
@@ -115,10 +112,7 @@ func (self *StorageService) ListS3StorageBackends(ctx context.Context, requester
 		return []*models.S3Response{}, nil
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	accessKeyMap := make(map[uuid.UUID]string)
 	secretKeyMap := make(map[uuid.UUID]string)

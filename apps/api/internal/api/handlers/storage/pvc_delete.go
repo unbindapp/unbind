@@ -20,12 +20,12 @@ type DeletePVCResponse struct {
 }
 
 func (self *HandlerGroup) DeletePVC(ctx context.Context, input *DeletePVCInput) (*DeletePVCResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = self.srv.StorageService.DeletePVC(ctx, user.ID, bearerToken, input.Body)
+	err = self.srv.StorageService.DeletePVC(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

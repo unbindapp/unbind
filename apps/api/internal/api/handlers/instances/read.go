@@ -23,7 +23,7 @@ type ListInstancesResponse struct {
 
 // ListInstances gets pods/statuses for a service
 func (self *HandlerGroup) ListInstances(ctx context.Context, input *ListInstancesInput) (*ListInstancesResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,6 @@ func (self *HandlerGroup) ListInstances(ctx context.Context, input *ListInstance
 	containers, err := self.srv.InstanceService.GetInstanceStatuses(
 		ctx,
 		user.ID,
-		bearerToken,
 		&input.InstanceStatusInput,
 	)
 	if err != nil {
@@ -57,7 +56,7 @@ type GetInstanceHealthResponse struct {
 
 // GetInstanceHealth gets pod health for a service
 func (self *HandlerGroup) GetInstanceHealth(ctx context.Context, input *GetInstanceHealthInput) (*GetInstanceHealthResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +64,6 @@ func (self *HandlerGroup) GetInstanceHealth(ctx context.Context, input *GetInsta
 	health, err := self.srv.InstanceService.GetInstanceHealth(
 		ctx,
 		user.ID,
-		bearerToken,
 		&input.InstanceHealthInput,
 	)
 	if err != nil {

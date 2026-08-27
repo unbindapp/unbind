@@ -41,8 +41,8 @@ type KubeClientInterface interface {
 	// DeleteOldVerificationRoutes deletes verification routes (Ingress + HTTPRoute)
 	// created more than 10 minutes ago.
 	DeleteOldVerificationRoutes(ctx context.Context, client kubernetes.Interface) error
-	// ExecInPod runs a command in a pod container as the token's user via impersonation,
-	// so the cluster's RBAC bindings apply as they would for kubectl exec.
+	// ExecInPod runs a command in a pod container after checking that the token's user is
+	// allowed to exec there, per the RBAC bindings synced from the user's permissions.
 	ExecInPod(ctx context.Context, token string, opts ExecOptions) error
 	CreateDeployment(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (jobName string, err error)
 	// For canceling jobs.
@@ -53,14 +53,10 @@ type KubeClientInterface interface {
 	GetJobStatus(ctx context.Context, jobName string) (JobStatus, error)
 	// This function is used to manage unbind-system resources
 	GetInternalClient() kubernetes.Interface
-	// SetTokenVerifier wires the token verifier used to derive per-user impersonating
-	// clients. It is set after construction because the token manager is built later.
+	// SetTokenVerifier wires the token verifier used to authorize per-user operations.
+	// It is set after construction because the token manager is built later.
 	SetTokenVerifier(verifier TokenVerifier)
-	// CreateClientWithToken returns a client that acts as the token's user via Kubernetes
-	// impersonation, backed by the API's own ServiceAccount. The username and groups match
-	// what the JWT carries, so the cluster's RBAC bindings apply unchanged.
-	CreateClientWithToken(token string) (kubernetes.Interface, error)
-	// ApplyYAML applies a YAML document to the cluster
+	// ApplyYAML applies a multi-document YAML bundle with server-side apply, dry-run first
 	ApplyYAML(ctx context.Context, yaml []byte) error
 	// GetLoadBalancerIPs returns the external IP addresses for load balancer services
 	// If labelSelector is provided, it will filter services based on the selector (e.g. "app.kubernetes.io/name=ingress-nginx")
@@ -79,12 +75,9 @@ type KubeClientInterface interface {
 	StreamPodLogs(ctx context.Context, namespace string, opts loki.LokiLogStreamOptions, meta loki.LogMetadata, client kubernetes.Interface, eventChan chan<- loki.LogEvents) error
 	// CreatePersistentVolumeClaim creates a new PersistentVolumeClaim in the specified namespace.
 	CreatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
-	// EnsurePersistentVolumeClaim creates the claim if it is absent and returns the existing one
-	// otherwise. It never resizes; UpdatePersistentVolumeClaim owns that.
+	// never resizes an existing claim; UpdatePersistentVolumeClaim owns that
 	EnsurePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
-	// SetPersistentVolumeClaimService binds a claim to a service, or releases it when serviceID
-	// is nil. The label is what makes a volume show as mounted and blocks it from being
-	// attached elsewhere.
+	// nil serviceID releases the claim
 	SetPersistentVolumeClaimService(ctx context.Context, namespace, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error
 	// UpdatePersistentVolumeClaim updates an existing PersistentVolumeClaim with new parameters (size, name)
 	UpdatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, newSize *string, client kubernetes.Interface) (*models.PVCInfo, error)
@@ -95,14 +88,10 @@ type KubeClientInterface interface {
 	DeletePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error
 	// GetPodsUsingPVC finds all pods in a given namespace that are mounting the specified PVC.
 	GetPodsUsingPVC(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) ([]corev1.Pod, error)
-	// RetainVolumeForClaim marks the volume backing a claim as Retain, so deleting the claim
-	// keeps the data. Claims that are not bound yet are skipped; the caller retries on the
-	// next reconcile.
+	// unbound claims (WaitForFirstConsumer) are skipped and picked up on the next reconcile
 	RetainVolumeForClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error
-	// RebindPersistentVolumeClaim renames a claim without moving data: the volume is retained,
-	// the old claim deleted, the volume reserved for the new name, and a replacement claim
-	// created bound to it. Databases derive their claim names from the service, so attaching an
-	// existing volume to one requires this.
+	// RebindPersistentVolumeClaim renames a claim without moving data: retain the PV, delete the
+	// claim, reserve the PV for the new name, recreate.
 	RebindPersistentVolumeClaim(ctx context.Context, namespace, fromName, toName string, client kubernetes.Interface) (*models.PVCInfo, error)
 	// GetPodContainerStatusByLabels efficiently fetches pod status with inferred events from container state
 	GetPodContainerStatusByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) ([]PodContainerStatus, error)
@@ -165,15 +154,16 @@ type KubeClientInterface interface {
 	//
 	// Anything else falls through with UnableToDetectAllocatable=true.
 	AvailableStorageBytes(ctx context.Context) (*StorageMetadata, error)
-	// Gets specified namespaces
-	GetNamespaces(ctx context.Context, namespaceNames []string, bearerToken string) ([]*corev1.Namespace, error)
 	// CreateNamespace creates a new namespace in the Kubernetes cluster
 	CreateNamespace(ctx context.Context, namespaceName string, client kubernetes.Interface) (*corev1.Namespace, error)
 	// Delete a custom unbind service CRD
 	DeleteUnbindService(ctx context.Context, namespace, name string) error
-	// DeployImage creates (or replaces) the service resource in the target namespace
-	// for deployment after a successful build job.
+	// DeployUnbindService creates (or replaces) the service resource in the target namespace,
+	// validating it against the API server with a dry run before any real write.
 	DeployUnbindService(ctx context.Context, service *unbindv1.Service) (*unstructured.Unstructured, *unbindv1.Service, error)
 	// GetUnbindServiceStatus returns nil without error when the CR has no status yet
 	GetUnbindServiceStatus(ctx context.Context, namespace, name string) (*unbindv1.ServiceStatus, error)
+	// RunManifestApplyJob applies rendered release manifests through a job running as the
+	// elevated updater service account, and waits for it to finish.
+	RunManifestApplyJob(ctx context.Context, version, image string, manifests []byte) error
 }

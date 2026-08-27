@@ -35,7 +35,7 @@ var defaultDatabaseResources = &schema.Resources{
 	MemoryLimitsMegabytes:   1548,
 }
 
-func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.TemplateDeployInput) ([]*models.ServiceResponse, error) {
+func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserID uuid.UUID, input *models.TemplateDeployInput) ([]*models.ServiceResponse, error) {
 	// Check permissions
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage teams
@@ -213,10 +213,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 		}
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	var secretNames []string
 	var newServices []*ent.Service

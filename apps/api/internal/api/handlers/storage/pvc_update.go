@@ -20,12 +20,12 @@ type UpdatePVCResponse struct {
 }
 
 func (self *HandlerGroup) UpdatePVC(ctx context.Context, input *UpdatePVCInput) (*UpdatePVCResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	pvc, err := self.srv.StorageService.UpdatePVC(ctx, user.ID, bearerToken, input.Body)
+	pvc, err := self.srv.StorageService.UpdatePVC(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

@@ -20,12 +20,12 @@ type DeleteServiceGroupResponse struct {
 }
 
 func (self *HandlerGroup) DeleteServiceGroup(ctx context.Context, input *DeleteServiceGroupInput) (*DeleteServiceGroupResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = self.srv.ServiceGroupService.DeleteServiceGroup(ctx, user.ID, bearerToken, input.Body)
+	err = self.srv.ServiceGroupService.DeleteServiceGroup(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

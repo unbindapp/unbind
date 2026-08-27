@@ -14,8 +14,7 @@ import (
 type SystemRepositoryInterface interface {
 	UpsertPVCMetadata(ctx context.Context, tx repository.TxInterface, pvcID string, name *string, description *string) error
 	GetPVCMetadata(ctx context.Context, tx repository.TxInterface, pvcIDs []string) (map[string]*ent.PVCMetadata, error)
-	// RenamePVCMetadata moves a volume's display metadata onto its new claim name, so a volume
-	// keeps its identity across a rebind.
+	// keeps a volume's display identity across a rebind
 	RenamePVCMetadata(ctx context.Context, tx repository.TxInterface, fromPvcID, toPvcID string) error
 	DeletePVCMetadata(ctx context.Context, tx repository.TxInterface, pvcID string) error
 	CreateRegistry(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool, insecure bool) (*ent.Registry, error)

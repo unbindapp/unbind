@@ -24,12 +24,12 @@ type DeleteEnvironmentResponse struct {
 }
 
 func (self *HandlerGroup) DeleteEnvironment(ctx context.Context, input *DeleteEnvironmentInput) (*DeleteEnvironmentResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = self.srv.EnvironmentService.DeleteEnvironmentByID(ctx, user.ID, bearerToken, input.Body.TeamID, input.Body.ProjectID, input.Body.EnvironmentID)
+	err = self.srv.EnvironmentService.DeleteEnvironmentByID(ctx, user.ID, input.Body.TeamID, input.Body.ProjectID, input.Body.EnvironmentID)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

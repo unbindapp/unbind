@@ -16,7 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.UpdatePVCInput) (*models.PVCInfo, error) {
+func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.UUID, input *models.UpdatePVCInput) (*models.PVCInfo, error) {
 	if input.CapacityGB == nil && input.Name == nil && input.Description == nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Nothing to update")
 	}
@@ -26,10 +26,7 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 		return nil, err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	pvc, err := self.k8s.GetPersistentVolumeClaim(ctx, team.Namespace, input.ID, client)
 	if err != nil {

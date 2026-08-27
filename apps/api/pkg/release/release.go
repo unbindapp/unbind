@@ -36,10 +36,9 @@ type RepositoriesServiceInterface interface {
 }
 
 type ManagerInterface interface {
-	AvailableUpdates(ctx context.Context, currentVersion string) ([]string, error)
+	AvailableUpdates(ctx context.Context, currentVersion string) ([]VersionMetadata, error)
 	GetLatestVersion(ctx context.Context) (string, error)
 	GetUpdatePath(ctx context.Context, currentVersion, targetVersion string) ([]string, error)
-	GetNextAvailableVersion(ctx context.Context, currentVersion string) (string, error)
 	DownloadVersionManifests(ctx context.Context, version, destDir string) (bool, error)
 	ReleaseURL(version string) string
 }
@@ -141,10 +140,10 @@ func canUpdateTo(meta VersionMetadata, currentVersion string) bool {
 }
 
 // AvailableUpdates returns the versions newer than currentVersion that it may update to, oldest first.
-func (self *Manager) AvailableUpdates(ctx context.Context, currentVersion string) ([]string, error) {
+func (self *Manager) AvailableUpdates(ctx context.Context, currentVersion string) ([]VersionMetadata, error) {
 	currentVersion = normalizeVersion(currentVersion)
 	if !semver.IsValid(currentVersion) {
-		return []string{}, nil
+		return []VersionMetadata{}, nil
 	}
 
 	versions, metadata, err := self.releasedVersions(ctx)
@@ -152,7 +151,7 @@ func (self *Manager) AvailableUpdates(ctx context.Context, currentVersion string
 		return nil, err
 	}
 
-	updates := make([]string, 0, len(versions))
+	updates := make([]VersionMetadata, 0, len(versions))
 	for _, version := range versions {
 		if semver.Compare(version, currentVersion) <= 0 {
 			continue
@@ -160,7 +159,9 @@ func (self *Manager) AvailableUpdates(ctx context.Context, currentVersion string
 		if !canUpdateTo(metadata[version], currentVersion) {
 			continue
 		}
-		updates = append(updates, version)
+		meta := metadata[version]
+		meta.Version = version
+		updates = append(updates, meta)
 	}
 
 	return updates, nil

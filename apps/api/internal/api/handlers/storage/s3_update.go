@@ -27,7 +27,7 @@ type UpdateS3SourceResponse struct {
 }
 
 func (self *HandlerGroup) UpdateS3Source(ctx context.Context, input *UpdateS3SourceInput) (*UpdateS3SourceResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,6 @@ func (self *HandlerGroup) UpdateS3Source(ctx context.Context, input *UpdateS3Sou
 	endpoint, err := self.srv.StorageService.UpdateS3Storage(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.Body.TeamID,
 		input.Body.ID,
 		input.Body.Name,

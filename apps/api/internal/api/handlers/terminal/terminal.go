@@ -69,7 +69,7 @@ func (self *HandlerGroup) Exec(ctx context.Context, input *ExecInput) (*huma.Str
 		return nil, err
 	}
 
-	target, err := self.srv.TerminalService.Resolve(ctx, user.ID, bearerToken, &terminal_service.ExecInput{
+	target, err := self.srv.TerminalService.Resolve(ctx, user.ID, &terminal_service.ExecInput{
 		TeamID:        input.TeamID,
 		ProjectID:     input.ProjectID,
 		EnvironmentID: input.EnvironmentID,

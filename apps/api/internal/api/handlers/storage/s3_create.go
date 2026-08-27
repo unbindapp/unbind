@@ -20,7 +20,7 @@ type CreateS3Output struct {
 }
 
 func (self *HandlerGroup) CreateS3(ctx context.Context, input *CreateS3Input) (*CreateS3Output, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,6 @@ func (self *HandlerGroup) CreateS3(ctx context.Context, input *CreateS3Input) (*
 	s3source, err := self.srv.StorageService.CreateS3StorageBackend(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.Body,
 	)
 	if err != nil {

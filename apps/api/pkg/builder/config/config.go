@@ -158,6 +158,14 @@ func (self *Config) GetGatewayNamespace() string {
 	return "unbind-system"
 }
 
+func (self *Config) GetUpdaterServiceAccount() string {
+	return "unbind-updater-sa"
+}
+
+func (self *Config) GetUpdateJobImage() string {
+	return ""
+}
+
 // Parse environment variables into a Config struct
 func NewConfig() *Config {
 	cfg := Config{}

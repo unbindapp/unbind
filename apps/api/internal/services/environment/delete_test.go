@@ -2,7 +2,6 @@ package environment_service
 
 import (
 	"context"
-	"errors"
 	"testing"
 
 	"github.com/google/uuid"
@@ -101,7 +100,7 @@ func (suite *DeleteEnvironmentSuite) TestDeleteEnvironmentByID_PermissionDenied(
 		Once()
 
 	// Execute
-	err := suite.service.DeleteEnvironmentByID(suite.Ctx, suite.testUserID, suite.testBearerToken, suite.testTeamID, suite.testProjectID, suite.testEnvironmentID)
+	err := suite.service.DeleteEnvironmentByID(suite.Ctx, suite.testUserID, suite.testTeamID, suite.testProjectID, suite.testEnvironmentID)
 
 	// Assert
 	suite.Error(err)
@@ -121,7 +120,7 @@ func (suite *DeleteEnvironmentSuite) TestDeleteEnvironmentByID_TeamNotFound() {
 		Once()
 
 	// Execute
-	err := suite.service.DeleteEnvironmentByID(suite.Ctx, suite.testUserID, suite.testBearerToken, suite.testTeamID, suite.testProjectID, suite.testEnvironmentID)
+	err := suite.service.DeleteEnvironmentByID(suite.Ctx, suite.testUserID, suite.testTeamID, suite.testProjectID, suite.testEnvironmentID)
 
 	// Assert
 	suite.Error(err)
@@ -150,9 +149,8 @@ func (suite *DeleteEnvironmentSuite) TestDeleteEnvironmentByID_LastEnvironmentIn
 		Once()
 
 	suite.MockK8s.EXPECT().
-		CreateClientWithToken(suite.testBearerToken).
-		Return(mockK8sClient, nil).
-		Once()
+		GetInternalClient().
+		Return(mockK8sClient)
 
 	suite.MockRepo.EXPECT().
 		WithTx(suite.Ctx, mock.AnythingOfType("func(repository.TxInterface) error")).
@@ -173,42 +171,11 @@ func (suite *DeleteEnvironmentSuite) TestDeleteEnvironmentByID_LastEnvironmentIn
 		Once()
 
 	// Execute
-	err := suite.service.DeleteEnvironmentByID(suite.Ctx, suite.testUserID, suite.testBearerToken, suite.testTeamID, suite.testProjectID, suite.testEnvironmentID)
+	err := suite.service.DeleteEnvironmentByID(suite.Ctx, suite.testUserID, suite.testTeamID, suite.testProjectID, suite.testEnvironmentID)
 
 	// Assert
 	suite.Error(err)
 	suite.Contains(err.Error(), "Cannot delete the last environment in a project")
-}
-
-func (suite *DeleteEnvironmentSuite) TestDeleteEnvironmentByID_K8sClientCreationFails() {
-	// Setup expectations
-	suite.MockPermissionsRepo.EXPECT().
-		Check(suite.Ctx, suite.testUserID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
-		Return(nil).
-		Once()
-
-	// VerifyInputs calls
-	suite.MockTeamRepo.EXPECT().
-		GetByID(suite.Ctx, suite.testTeamID).
-		Return(suite.testTeam, nil).
-		Once()
-
-	suite.MockServiceRepo.EXPECT().
-		GetByEnvironmentID(suite.Ctx, suite.testEnvironmentID, mock.AnythingOfType("predicate.Service"), false).
-		Return([]*ent.Service{}, nil).
-		Once()
-
-	suite.MockK8s.EXPECT().
-		CreateClientWithToken(suite.testBearerToken).
-		Return(nil, errors.New("k8s client creation failed")).
-		Once()
-
-	// Execute
-	err := suite.service.DeleteEnvironmentByID(suite.Ctx, suite.testUserID, suite.testBearerToken, suite.testTeamID, suite.testProjectID, suite.testEnvironmentID)
-
-	// Assert
-	suite.Error(err)
-	suite.Contains(err.Error(), "k8s client creation failed")
 }
 
 func TestDeleteEnvironmentSuite(t *testing.T) {

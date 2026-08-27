@@ -12,7 +12,7 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.DeleteServiceGroupInput) error {
+func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, requesterUserID uuid.UUID, input *models.DeleteServiceGroupInput) error {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage teams
 		{
@@ -41,10 +41,7 @@ func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, request
 			return err
 		}
 
-		client, err := self.k8s.CreateClientWithToken(bearerToken)
-		if err != nil {
-			return err
-		}
+		client := self.k8s.GetInternalClient()
 
 		// Delete kubernetes resources, db resource
 		if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {

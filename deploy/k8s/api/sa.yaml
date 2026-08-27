@@ -1,11 +1,12 @@
-# ServiceAccount definition in the unbind-system namespace
+# Manual mirror of deploy/charts/charts/unbind/templates/sa.yaml - keep in sync.
+# The chart's default-namespace secret Role is omitted: kustomization.yaml forces
+# every namespaced resource into unbind-system.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: unbind-api-sa
   namespace: unbind-system
 ---
-# Role for unbind-system namespace with full access
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -16,7 +17,6 @@ rules:
     resources: ["*"]
     verbs: ["*"]
 ---
-# RoleBinding for unbind-system namespace admin access
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -31,7 +31,15 @@ roleRef:
   name: unbind-system-admin
   apiGroup: rbac.authorization.k8s.io
 ---
-# ClusterRole for creating/managing Roles and RoleBindings in any namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: namespace-manager
+rules:
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -41,7 +49,6 @@ rules:
     resources: ["roles", "rolebindings"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
-# ClusterRole for services.unbind.unbind.app resources
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -51,7 +58,6 @@ rules:
     resources: ["services"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
-# ClusterRole for read-only access to cluster resources (visibility)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -89,18 +95,61 @@ rules:
   - apiGroups: ["cert-manager.io"]
     resources: ["certificaterequests"]
     verbs: ["get", "list", "watch"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["gateways", "gatewayclasses", "httproutes"]
+    verbs: ["get", "list", "watch"]
 ---
-# PersistentVolumes are cluster-scoped; the API flips reclaim policy to Delete when releasing a volume
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: pv-manager
+  name: resource-manager
 rules:
   - apiGroups: [""]
+    resources: ["configmaps", "endpoints", "events", "persistentvolumeclaims", "pods", "pods/log", "pods/exec", "secrets", "services"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # PersistentVolumes are cluster-scoped; released on volume delete, retained and re-pointed on rebinds
+  - apiGroups: [""]
     resources: ["persistentvolumes"]
-    verbs: ["get", "patch"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["batch"]
+    resources: ["cronjobs", "jobs"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["gateway.networking.k8s.io"]
+    resources: ["httproutes"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # Per-user authorization checks (e.g. pod exec)
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["subjectaccessreviews"]
+    verbs: ["create"]
 ---
-# ClusterRoleBinding for role management
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: node-reader
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: namespace-manager-binding
+subjects:
+  - kind: ServiceAccount
+    name: unbind-api-sa
+    namespace: unbind-system
+roleRef:
+  kind: ClusterRole
+  name: namespace-manager
+  apiGroup: rbac.authorization.k8s.io
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -114,7 +163,6 @@ roleRef:
   name: role-manager
   apiGroup: rbac.authorization.k8s.io
 ---
-# ClusterRoleBinding for unbind services admin
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
@@ -131,20 +179,6 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: pv-manager-binding
-subjects:
-  - kind: ServiceAccount
-    name: unbind-api-sa
-    namespace: unbind-system
-roleRef:
-  kind: ClusterRole
-  name: pv-manager
-  apiGroup: rbac.authorization.k8s.io
----
-# ClusterRoleBinding for cluster resources reader
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
   name: cluster-resources-reader-binding
 subjects:
   - kind: ServiceAccount
@@ -155,51 +189,18 @@ roleRef:
   name: cluster-resources-reader
   apiGroup: rbac.authorization.k8s.io
 ---
-# ! TODO - when I create teams we need to be able to create these roles under our SA
 apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+kind: ClusterRoleBinding
 metadata:
-  name: namespace-admin
-  namespace: unbind-user
-rules:
-  - apiGroups: [""]
-    resources: ["configmaps", "pods", "services", "secrets", "persistentvolumeclaims", "endpoints", "events"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["apps"]
-    resources: ["deployments", "statefulsets", "replicasets", "daemonsets"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["batch"]
-    resources: ["jobs", "cronjobs"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["networking.k8s.io"]
-    resources: ["ingresses", "networkpolicies"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  - apiGroups: ["rbac.authorization.k8s.io"]
-    resources: ["roles", "rolebindings"]
-    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: namespace-admin-binding
-  namespace: unbind-user
+  name: resource-manager-binding
 subjects:
   - kind: ServiceAccount
     name: unbind-api-sa
     namespace: unbind-system
 roleRef:
-  kind: Role
-  name: namespace-admin
+  kind: ClusterRole
+  name: resource-manager
   apiGroup: rbac.authorization.k8s.io
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: node-reader
-rules:
-  - apiGroups: [""]
-    resources: ["nodes"]
-    verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -214,56 +215,22 @@ roleRef:
   name: node-reader
   apiGroup: rbac.authorization.k8s.io
 ---
-# Impersonation: the API acts as the end user (validated from their OIDC token)
-# instead of routing through kube-oidc-proxy.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  name: unbind-impersonator
-rules:
-  - apiGroups: [""]
-    resources: ["users", "groups", "serviceaccounts"]
-    verbs: ["impersonate"]
-  - apiGroups: ["authentication.k8s.io"]
-    resources: ["userextras/scopes", "userextras/groups", "tokenreviews"]
-    verbs: ["create", "impersonate"]
-  - apiGroups: ["authorization.k8s.io"]
-    resources: ["subjectaccessreviews"]
-    verbs: ["create"]
+  name: unbind-updater-sa
+  namespace: unbind-system
 ---
+# cluster-admin: release manifests deliver arbitrary future cluster changes
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: unbind-impersonator-binding
+  name: unbind-updater-admin-binding
 subjects:
   - kind: ServiceAccount
-    name: unbind-api-sa
+    name: unbind-updater-sa
     namespace: unbind-system
 roleRef:
   kind: ClusterRole
-  name: unbind-impersonator
-  apiGroup: rbac.authorization.k8s.io
----
-# Lets impersonated users list namespaces. Bound to the group the API mints into
-# every access token ("oidc:" prefix). Adopts the role kube-oidc-proxy created.
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: unbind-team-namespace-viewer
-rules:
-  - apiGroups: [""]
-    resources: ["namespaces"]
-    verbs: ["list"]
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: users-namespace-list
-subjects:
-  - kind: Group
-    name: "oidc:users"
-    apiGroup: rbac.authorization.k8s.io
-roleRef:
-  kind: ClusterRole
-  name: unbind-team-namespace-viewer
+  name: cluster-admin
   apiGroup: rbac.authorization.k8s.io

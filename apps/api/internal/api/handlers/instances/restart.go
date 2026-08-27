@@ -31,7 +31,7 @@ type RestartServicesResponse struct {
 
 // RestartInstances handles PUT /instances/restart
 func (self *HandlerGroup) RestartInstances(ctx context.Context, input *RestartInstancesInput) (*RestartServicesResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,6 @@ func (self *HandlerGroup) RestartInstances(ctx context.Context, input *RestartIn
 	err = self.srv.ServiceService.RestartServiceByID(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.Body.TeamID,
 		input.Body.ProjectID,
 		input.Body.EnvironmentID,

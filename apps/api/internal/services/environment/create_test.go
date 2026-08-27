@@ -124,9 +124,8 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_Success() {
 		Once()
 
 	suite.MockK8s.EXPECT().
-		CreateClientWithToken(suite.testBearerToken).
-		Return(mockK8sClient, nil).
-		Once()
+		GetInternalClient().
+		Return(mockK8sClient)
 
 	suite.MockK8s.EXPECT().
 		GetOrCreateSecret(suite.Ctx, mock.MatchedBy(func(secretName string) bool {
@@ -168,7 +167,7 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_Success() {
 		Once()
 
 	// Execute
-	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input, suite.testBearerToken)
+	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input)
 
 	// Assert
 	suite.NoError(err)
@@ -195,7 +194,7 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_PermissionDenied() {
 		Once()
 
 	// Execute
-	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input, suite.testBearerToken)
+	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input)
 
 	// Assert
 	suite.Error(err)
@@ -222,44 +221,12 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_ProjectNotFound() {
 		Once()
 
 	// Execute
-	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input, suite.testBearerToken)
+	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input)
 
 	// Assert
 	suite.Error(err)
 	suite.Nil(result)
 	suite.Contains(err.Error(), "Project not found")
-}
-
-func (suite *CreateEnvironmentSuite) TestCreateEnvironment_K8sClientCreationFails() {
-	input := &CreateEnvironmentInput{
-		TeamID:    suite.testTeamID,
-		ProjectID: suite.testProjectID,
-		Name:      "Test Environment",
-	}
-
-	// Setup expectations
-	suite.MockPermissionsRepo.EXPECT().
-		Check(suite.Ctx, suite.testUserID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
-		Return(nil).
-		Once()
-
-	suite.MockProjectRepo.EXPECT().
-		GetByID(suite.Ctx, suite.testProjectID).
-		Return(suite.testProject, nil).
-		Once()
-
-	suite.MockK8s.EXPECT().
-		CreateClientWithToken(suite.testBearerToken).
-		Return(nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Failed to create k8s client")).
-		Once()
-
-	// Execute
-	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input, suite.testBearerToken)
-
-	// Assert
-	suite.Error(err)
-	suite.Nil(result)
-	suite.Contains(err.Error(), "Failed to create k8s client")
 }
 
 func (suite *CreateEnvironmentSuite) TestCreateEnvironment_SecretCreationFails() {
@@ -283,9 +250,8 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_SecretCreationFails()
 		Once()
 
 	suite.MockK8s.EXPECT().
-		CreateClientWithToken(suite.testBearerToken).
-		Return(mockK8sClient, nil).
-		Once()
+		GetInternalClient().
+		Return(mockK8sClient)
 
 	suite.MockRepo.EXPECT().
 		WithTx(suite.Ctx, mock.AnythingOfType("func(repository.TxInterface) error")).
@@ -306,7 +272,7 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_SecretCreationFails()
 		Once()
 
 	// Execute
-	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input, suite.testBearerToken)
+	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input)
 
 	// Assert
 	suite.Error(err)
@@ -341,9 +307,8 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_DatabaseTransactionFa
 		Once()
 
 	suite.MockK8s.EXPECT().
-		CreateClientWithToken(suite.testBearerToken).
-		Return(mockK8sClient, nil).
-		Once()
+		GetInternalClient().
+		Return(mockK8sClient)
 
 	suite.MockRepo.EXPECT().
 		WithTx(suite.Ctx, mock.AnythingOfType("func(repository.TxInterface) error")).
@@ -371,7 +336,7 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_DatabaseTransactionFa
 		Once()
 
 	// Execute
-	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input, suite.testBearerToken)
+	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input)
 
 	// Assert
 	suite.Error(err)
@@ -419,9 +384,8 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_SuccessAsFirstEnviron
 		Once()
 
 	suite.MockK8s.EXPECT().
-		CreateClientWithToken(suite.testBearerToken).
-		Return(mockK8sClient, nil).
-		Once()
+		GetInternalClient().
+		Return(mockK8sClient)
 
 	firstEnvironment := &ent.Environment{
 		ID:               suite.testEnvironment.ID,
@@ -473,7 +437,7 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_SuccessAsFirstEnviron
 		Once()
 
 	// Execute
-	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input, suite.testBearerToken)
+	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input)
 
 	// Assert
 	suite.NoError(err)

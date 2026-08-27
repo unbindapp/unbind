@@ -25,7 +25,7 @@ type ListEndpointsResponse struct {
 
 // ListEndpoints handles GET /services/endpoints/list
 func (self *HandlerGroup) ListEndpoints(ctx context.Context, input *ListEndpointsInput) (*ListEndpointsResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,6 @@ func (self *HandlerGroup) ListEndpoints(ctx context.Context, input *ListEndpoint
 	endpoints, err := self.srv.ServiceService.GetDNSForService(
 		ctx,
 		user.ID,
-		bearerToken,
 		input.TeamID,
 		input.ProjectID,
 		input.EnvironmentID,

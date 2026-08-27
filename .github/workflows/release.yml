@@ -23,8 +23,34 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: master
+          fetch-depth: 0
       - id: v
         run: echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+      - name: Require release manifests when chart RBAC changed
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+        run: |
+          git fetch --no-tags origin "refs/tags/${VERSION}:refs/tags/${VERSION}"
+          git fetch --tags origin
+          PREV=$(git tag -l 'v*.*.*' --sort=v:refname | grep -x -B1 "$VERSION" | head -1)
+          if [ -z "$PREV" ] || [ "$PREV" = "$VERSION" ]; then
+            echo "No previous release tag; skipping RBAC guard"
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only "$PREV" "$VERSION" -- 'deploy/charts/charts/*/templates/**' \
+            | grep -iE '(rbac|role|sa|serviceaccount)[^/]*\.yaml$' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No chart RBAC changes since $PREV"
+            exit 0
+          fi
+          if git ls-tree -d "$VERSION" "deploy/releases/$VERSION/" | grep -q .; then
+            echo "Chart RBAC changed and deploy/releases/$VERSION/ exists"
+            exit 0
+          fi
+          echo "::error::Chart RBAC templates changed since $PREV but deploy/releases/$VERSION/ is missing:"
+          echo "$CHANGED" | while read -r f; do echo "::error::  $f"; done
+          echo "::error::Existing installs only receive release manifests. Ship the change under deploy/releases/$VERSION/, or add an empty kustomization.yaml there to acknowledge it is fresh-install-only."
+          exit 1
       - name: Ensure a metadata entry for this version on master
         env:
           VERSION: ${{ steps.v.outputs.version }}

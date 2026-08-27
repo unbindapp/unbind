@@ -11,16 +11,13 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-func (self *StorageService) ListPVCs(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.ListPVCInput) ([]*models.PVCInfo, error) {
+func (self *StorageService) ListPVCs(ctx context.Context, requesterUserID uuid.UUID, input *models.ListPVCInput) ([]*models.PVCInfo, error) {
 	team, _, _, err := self.validatePermissionsAndParseInputs(ctx, schema.ActionViewer, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	labels := map[string]string{
 		"unbind-team": input.TeamID.String(),
@@ -94,16 +91,13 @@ func (self *StorageService) ListPVCs(ctx context.Context, requesterUserID uuid.U
 	return pvcs, nil
 }
 
-func (self *StorageService) GetPVC(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.GetPVCInput) (*models.PVCInfo, error) {
+func (self *StorageService) GetPVC(ctx context.Context, requesterUserID uuid.UUID, input *models.GetPVCInput) (*models.PVCInfo, error) {
 	team, _, _, err := self.validatePermissionsAndParseInputs(ctx, schema.ActionViewer, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	pvc, err := self.k8s.GetPersistentVolumeClaim(ctx, team.Namespace, input.ID, client)
 	if err != nil {

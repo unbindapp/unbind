@@ -185,10 +185,14 @@ func (s *ReleaseTestSuite) TestAvailableUpdates() {
 			updates, err := s.manager.AvailableUpdates(context.Background(), tt.currentVersion)
 			if tt.expectError {
 				s.Error(err)
-			} else {
-				s.NoError(err)
-				s.Equal(tt.expected, updates, "Expected updates for version %s to be %v, got %v", tt.currentVersion, tt.expected, updates)
+				return
 			}
+			s.NoError(err)
+			versions := make([]string, 0, len(updates))
+			for _, update := range updates {
+				versions = append(versions, update.Version)
+			}
+			s.Equal(tt.expected, versions, "Expected updates for version %s to be %v, got %v", tt.currentVersion, tt.expected, versions)
 		})
 	}
 }

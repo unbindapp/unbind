@@ -14,7 +14,7 @@ import (
 )
 
 // Delete a secret by key
-func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, bearerToken string, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error) {
+func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error) {
 	if len(referenceIDs) > 0 && input.Type != schema.VariableReferenceSourceTypeService {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Reference IDs are only valid for service variables")
 	}
@@ -63,10 +63,7 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 		return nil, err
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	secrets := make(map[string][]byte)
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {

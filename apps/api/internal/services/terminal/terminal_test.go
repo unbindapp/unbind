@@ -66,7 +66,7 @@ func (suite *ResolveSuite) TestRequiresEditor() {
 		})).
 		Return(errdefs.ErrUnauthorized)
 
-	target, err := suite.service.Resolve(suite.Ctx, suite.userID, "token", suite.input)
+	target, err := suite.service.Resolve(suite.Ctx, suite.userID, suite.input)
 	suite.Nil(target)
 	suite.ErrorIs(err, errdefs.ErrUnauthorized)
 }
@@ -76,12 +76,12 @@ func (suite *ResolveSuite) TestNoPodsFound() {
 		Check(suite.Ctx, suite.userID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
 		Return(nil)
 	suite.expectChainLookups()
-	suite.MockK8s.EXPECT().CreateClientWithToken("token").Return(nil, nil)
+	suite.MockK8s.EXPECT().GetInternalClient().Return(nil)
 	suite.MockK8s.EXPECT().
 		GetPodsByLabels(suite.Ctx, "test-ns", map[string]string{"unbind-service": suite.serviceID.String()}, nil).
 		Return(&corev1.PodList{}, nil)
 
-	target, err := suite.service.Resolve(suite.Ctx, suite.userID, "token", suite.input)
+	target, err := suite.service.Resolve(suite.Ctx, suite.userID, suite.input)
 	suite.Nil(target)
 	suite.ErrorIs(err, errdefs.ErrNotFound)
 }
@@ -91,7 +91,7 @@ func (suite *ResolveSuite) TestDefaultsToFirstRunningPod() {
 		Check(suite.Ctx, suite.userID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
 		Return(nil)
 	suite.expectChainLookups()
-	suite.MockK8s.EXPECT().CreateClientWithToken("token").Return(nil, nil)
+	suite.MockK8s.EXPECT().GetInternalClient().Return(nil)
 	suite.MockK8s.EXPECT().
 		GetPodsByLabels(suite.Ctx, "test-ns", map[string]string{"unbind-service": suite.serviceID.String()}, nil).
 		Return(&corev1.PodList{Items: []corev1.Pod{
@@ -107,7 +107,7 @@ func (suite *ResolveSuite) TestDefaultsToFirstRunningPod() {
 			},
 		}}, nil)
 
-	target, err := suite.service.Resolve(suite.Ctx, suite.userID, "token", suite.input)
+	target, err := suite.service.Resolve(suite.Ctx, suite.userID, suite.input)
 	suite.Require().NoError(err)
 	suite.Equal("running-pod", target.PodName)
 	suite.Equal("app", target.Container)
@@ -122,7 +122,7 @@ func (suite *ResolveSuite) TestRejectsUnknownContainer() {
 		Check(suite.Ctx, suite.userID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
 		Return(nil)
 	suite.expectChainLookups()
-	suite.MockK8s.EXPECT().CreateClientWithToken("token").Return(nil, nil)
+	suite.MockK8s.EXPECT().GetInternalClient().Return(nil)
 	suite.MockK8s.EXPECT().
 		GetPodsByLabels(suite.Ctx, "test-ns", map[string]string{"unbind-service": suite.serviceID.String()}, nil).
 		Return(&corev1.PodList{Items: []corev1.Pod{
@@ -133,7 +133,7 @@ func (suite *ResolveSuite) TestRejectsUnknownContainer() {
 			},
 		}}, nil)
 
-	target, err := suite.service.Resolve(suite.Ctx, suite.userID, "token", suite.input)
+	target, err := suite.service.Resolve(suite.Ctx, suite.userID, suite.input)
 	suite.Nil(target)
 	suite.ErrorIs(err, errdefs.ErrNotFound)
 }

@@ -17,6 +17,11 @@ serviceAccount:
 rbac:
   create: true
 
+# Elevated service account the in-app updater's manifest-apply job runs as
+updater:
+  serviceAccount:
+    name: unbind-updater-sa
+
 # Builder configuration
 builder:
   rbac:

@@ -20,12 +20,12 @@ type UpdatServiceResponse struct {
 }
 
 func (self *HandlerGroup) UpdateService(ctx context.Context, input *UpdateServiceInput) (*UpdatServiceResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	service, err := self.srv.ServiceService.UpdateService(ctx, user.ID, bearerToken, input.Body)
+	service, err := self.srv.ServiceService.UpdateService(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}

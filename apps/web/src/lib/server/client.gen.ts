@@ -27,6 +27,8 @@ export const AvailableVariableReferenceSchema = z
 
 export const AvailableVersionSchema = z
   .object({
+    description: z.string().optional(),
+    release_notes: z.string().optional(),
     url: z.string(),
     version: z.string(),
   })

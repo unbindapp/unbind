@@ -20,7 +20,6 @@ import (
 func (self *VariablesService) UpdateVariables(
 	ctx context.Context,
 	userID uuid.UUID,
-	bearerToken string,
 	referenceInput []*models.VariableReferenceInputItem,
 	input models.BaseVariablesJSONInput,
 	behavior models.VariableUpdateBehavior,
@@ -77,10 +76,7 @@ func (self *VariablesService) UpdateVariables(
 		}
 	}
 
-	client, err := self.k8s.CreateClientWithToken(bearerToken)
-	if err != nil {
-		return nil, err
-	}
+	client := self.k8s.GetInternalClient()
 
 	references := []*models.VariableReferenceResponse{}
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {

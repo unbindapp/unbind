@@ -14,7 +14,7 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, id uuid.UUID, name, accessKeyID, secretKey *string) (*models.S3Response, error) {
+func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID uuid.UUID, teamID, id uuid.UUID, name, accessKeyID, secretKey *string) (*models.S3Response, error) {
 	// Input validation
 	if name == nil && accessKeyID == nil && secretKey == nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "At least one field must be provided")
@@ -54,10 +54,7 @@ func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID
 
 	// Update secret
 	if accessKeyID != nil || secretKey != nil {
-		client, err := self.k8s.CreateClientWithToken(bearerToken)
-		if err != nil {
-			return nil, err
-		}
+		client := self.k8s.GetInternalClient()
 
 		secret, _, err := self.k8s.GetOrCreateSecret(ctx, s3Source.KubernetesSecret, team.Namespace, client)
 		if err != nil {
