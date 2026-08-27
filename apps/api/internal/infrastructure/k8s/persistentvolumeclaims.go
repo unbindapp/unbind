@@ -575,7 +575,7 @@ func (self *KubeClient) DeletePersistentVolumeClaim(ctx context.Context, namespa
 		if errors.IsNotFound(err) {
 			return errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("PersistentVolumeClaim '%s' not found", pvcName))
 		}
-		return fmt.Errorf("failed to get PersistentVolumeClaim '%s': %w", pvcName, err)
+		return wrapForbidden(err, fmt.Sprintf("failed to get PersistentVolumeClaim '%s'", pvcName))
 	}
 
 	// Check if PVC has any owner references
@@ -599,11 +599,14 @@ func (self *KubeClient) DeletePersistentVolumeClaim(ctx context.Context, namespa
 
 	// The default storage class retains PVs, so an explicit volume delete must
 	// switch the bound PV to Delete or the underlying storage is never freed.
+	// PersistentVolumes are cluster-scoped and users only have namespace RBAC,
+	// so this plumbing runs on the API's own ServiceAccount; the ClaimRef check
+	// keeps it limited to the PV backing exactly this PVC.
 	pvName := pvc.Spec.VolumeName
 	var originalPolicy corev1.PersistentVolumeReclaimPolicy
 	patchedPV := false
 	if pvName != "" {
-		pv, err := client.CoreV1().PersistentVolumes().Get(ctx, pvName, metav1.GetOptions{})
+		pv, err := self.clientset.CoreV1().PersistentVolumes().Get(ctx, pvName, metav1.GetOptions{})
 		switch {
 		case errors.IsNotFound(err):
 			// No backing volume left to release
@@ -613,7 +616,7 @@ func (self *KubeClient) DeletePersistentVolumeClaim(ctx context.Context, namespa
 			return fmt.Errorf("PersistentVolume '%s' is not bound to PVC '%s/%s', refusing to release it", pvName, namespace, pvcName)
 		case pv.Spec.PersistentVolumeReclaimPolicy != corev1.PersistentVolumeReclaimDelete:
 			originalPolicy = pv.Spec.PersistentVolumeReclaimPolicy
-			if err := patchPVReclaimPolicy(ctx, client, pvName, corev1.PersistentVolumeReclaimDelete); err != nil {
+			if err := patchPVReclaimPolicy(ctx, self.clientset, pvName, corev1.PersistentVolumeReclaimDelete); err != nil {
 				return fmt.Errorf("failed to set reclaim policy on PersistentVolume '%s': %w", pvName, err)
 			}
 			patchedPV = true
@@ -623,13 +626,22 @@ func (self *KubeClient) DeletePersistentVolumeClaim(ctx context.Context, namespa
 	err = client.CoreV1().PersistentVolumeClaims(namespace).Delete(ctx, pvcName, metav1.DeleteOptions{})
 	if err != nil {
 		if patchedPV {
-			if revertErr := patchPVReclaimPolicy(ctx, client, pvName, originalPolicy); revertErr != nil {
+			if revertErr := patchPVReclaimPolicy(ctx, self.clientset, pvName, originalPolicy); revertErr != nil {
 				log.Errorf("failed to restore reclaim policy '%s' on PersistentVolume '%s' after failed PVC deletion: %v", originalPolicy, pvName, revertErr)
 			}
 		}
-		return fmt.Errorf("failed to delete PersistentVolumeClaim '%s' in namespace '%s': %w", pvcName, namespace, err)
+		return wrapForbidden(err, fmt.Sprintf("failed to delete PersistentVolumeClaim '%s' in namespace '%s'", pvcName, namespace))
 	}
 	return nil
+}
+
+// wrapForbidden surfaces Kubernetes RBAC rejections as typed unauthorized errors
+// so they map to a 403 instead of a generic 500.
+func wrapForbidden(err error, msg string) error {
+	if errors.IsForbidden(err) {
+		return fmt.Errorf("%s: %w", msg, errdefs.ErrUnauthorized)
+	}
+	return fmt.Errorf("%s: %w", msg, err)
 }
 
 func patchPVReclaimPolicy(ctx context.Context, client kubernetes.Interface, pvName string, policy corev1.PersistentVolumeReclaimPolicy) error {

@@ -8,7 +8,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -505,18 +507,23 @@ func newBoundPVCAndPV(namespace, pvcName, pvName string, policy corev1.Persisten
 	return pvc, pv
 }
 
+// The user client only holds the PVC and the internal clientset only holds the
+// PV: cluster-scoped PV operations must go through the API's ServiceAccount, so
+// a regression back to the user client makes the PV invisible and fails the
+// reclaim-policy assertions.
 func TestDeletePVCReleasesRetainedPV(t *testing.T) {
 	pvc, pv := newBoundPVCAndPV("default", "test-pvc", "pv-1", corev1.PersistentVolumeReclaimRetain)
-	client := fake.NewSimpleClientset(pvc, pv)
-	kubeClient := &KubeClient{}
+	userClient := fake.NewSimpleClientset(pvc)
+	internalClient := fake.NewSimpleClientset(pv)
+	kubeClient := &KubeClient{clientset: internalClient}
 
-	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", client)
+	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", userClient)
 	require.NoError(t, err)
 
-	_, err = client.CoreV1().PersistentVolumeClaims("default").Get(context.Background(), "test-pvc", metav1.GetOptions{})
+	_, err = userClient.CoreV1().PersistentVolumeClaims("default").Get(context.Background(), "test-pvc", metav1.GetOptions{})
 	assert.Error(t, err)
 
-	updatedPV, err := client.CoreV1().PersistentVolumes().Get(context.Background(), "pv-1", metav1.GetOptions{})
+	updatedPV, err := internalClient.CoreV1().PersistentVolumes().Get(context.Background(), "pv-1", metav1.GetOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, corev1.PersistentVolumeReclaimDelete, updatedPV.Spec.PersistentVolumeReclaimPolicy)
 }
@@ -524,45 +531,61 @@ func TestDeletePVCReleasesRetainedPV(t *testing.T) {
 func TestDeletePVCRefusesMismatchedPV(t *testing.T) {
 	pvc, pv := newBoundPVCAndPV("default", "test-pvc", "pv-1", corev1.PersistentVolumeReclaimRetain)
 	pv.Spec.ClaimRef.Name = "some-other-pvc"
-	client := fake.NewSimpleClientset(pvc, pv)
-	kubeClient := &KubeClient{}
+	userClient := fake.NewSimpleClientset(pvc)
+	internalClient := fake.NewSimpleClientset(pv)
+	kubeClient := &KubeClient{clientset: internalClient}
 
-	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", client)
+	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", userClient)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "not bound to PVC")
 
-	_, err = client.CoreV1().PersistentVolumeClaims("default").Get(context.Background(), "test-pvc", metav1.GetOptions{})
+	_, err = userClient.CoreV1().PersistentVolumeClaims("default").Get(context.Background(), "test-pvc", metav1.GetOptions{})
 	assert.NoError(t, err)
 
-	updatedPV, err := client.CoreV1().PersistentVolumes().Get(context.Background(), "pv-1", metav1.GetOptions{})
+	updatedPV, err := internalClient.CoreV1().PersistentVolumes().Get(context.Background(), "pv-1", metav1.GetOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, corev1.PersistentVolumeReclaimRetain, updatedPV.Spec.PersistentVolumeReclaimPolicy)
 }
 
 func TestDeletePVCWithoutBoundPV(t *testing.T) {
 	pvc, _ := newBoundPVCAndPV("default", "test-pvc", "", corev1.PersistentVolumeReclaimRetain)
-	client := fake.NewSimpleClientset(pvc)
-	kubeClient := &KubeClient{}
+	userClient := fake.NewSimpleClientset(pvc)
+	kubeClient := &KubeClient{clientset: fake.NewSimpleClientset()}
 
-	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", client)
+	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", userClient)
 	require.NoError(t, err)
 
-	_, err = client.CoreV1().PersistentVolumeClaims("default").Get(context.Background(), "test-pvc", metav1.GetOptions{})
+	_, err = userClient.CoreV1().PersistentVolumeClaims("default").Get(context.Background(), "test-pvc", metav1.GetOptions{})
 	assert.Error(t, err)
 }
 
 func TestDeletePVCRevertsPolicyOnFailure(t *testing.T) {
 	pvc, pv := newBoundPVCAndPV("default", "test-pvc", "pv-1", corev1.PersistentVolumeReclaimRetain)
-	client := fake.NewSimpleClientset(pvc, pv)
-	client.PrependReactor("delete", "persistentvolumeclaims", func(action k8stesting.Action) (bool, runtime.Object, error) {
+	userClient := fake.NewSimpleClientset(pvc)
+	userClient.PrependReactor("delete", "persistentvolumeclaims", func(action k8stesting.Action) (bool, runtime.Object, error) {
 		return true, nil, fmt.Errorf("simulated apiserver failure")
 	})
-	kubeClient := &KubeClient{}
+	internalClient := fake.NewSimpleClientset(pv)
+	kubeClient := &KubeClient{clientset: internalClient}
 
-	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", client)
+	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", userClient)
 	require.Error(t, err)
 
-	updatedPV, err := client.CoreV1().PersistentVolumes().Get(context.Background(), "pv-1", metav1.GetOptions{})
+	updatedPV, err := internalClient.CoreV1().PersistentVolumes().Get(context.Background(), "pv-1", metav1.GetOptions{})
 	require.NoError(t, err)
 	assert.Equal(t, corev1.PersistentVolumeReclaimRetain, updatedPV.Spec.PersistentVolumeReclaimPolicy)
+}
+
+func TestDeletePVCMapsForbiddenToUnauthorized(t *testing.T) {
+	pvc, pv := newBoundPVCAndPV("default", "test-pvc", "pv-1", corev1.PersistentVolumeReclaimRetain)
+	userClient := fake.NewSimpleClientset(pvc)
+	userClient.PrependReactor("delete", "persistentvolumeclaims", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewForbidden(corev1.Resource("persistentvolumeclaims"), "test-pvc", fmt.Errorf("rbac denied"))
+	})
+	internalClient := fake.NewSimpleClientset(pv)
+	kubeClient := &KubeClient{clientset: internalClient}
+
+	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", userClient)
+	require.Error(t, err)
+	assert.ErrorIs(t, err, errdefs.ErrUnauthorized)
 }
