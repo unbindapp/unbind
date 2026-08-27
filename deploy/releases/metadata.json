@@ -108,5 +108,10 @@
     "version": "v0.1.21",
     "description": "Release 0.1.21",
     "breaking": false
+  },
+  "v0.1.22": {
+    "version": "v0.1.22",
+    "description": "Development tooling: pre-commit TypeScript checks for web",
+    "breaking": false
   }
 }
