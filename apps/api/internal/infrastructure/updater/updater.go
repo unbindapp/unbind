@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	gh "github.com/google/go-github/v69/github"
@@ -16,6 +17,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/cache"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/pkg/release"
+	"golang.org/x/mod/semver"
 	"sigs.k8s.io/kustomize/api/krusty"
 	"sigs.k8s.io/kustomize/api/types"
 	"sigs.k8s.io/kustomize/kyaml/filesys"
@@ -35,9 +37,18 @@ type Updater struct {
 }
 
 type UpdateCacheItem struct {
-	Updates   []release.VersionMetadata
-	CheckedAt time.Time
+	// ForVersion is the version the list was computed against; an entry written by
+	// another binary may contain the version this binary already runs.
+	ForVersion string
+	Updates    []release.VersionMetadata
+	CheckedAt  time.Time
 }
+
+const (
+	updatesCacheKey       = "updates"
+	updatesCacheTTL       = time.Hour
+	updatesCacheFreshness = 10 * time.Minute
+)
 
 // New creates a new updater instance
 func New(cfg *config.Config, currentVersion string, k8sClient k8s.KubeClientInterface, redisClient *redis.Client) *Updater {
@@ -82,48 +93,69 @@ func NewWithReleaseManager(cfg *config.Config, currentVersion string, k8sClient 
 
 // CheckForUpdates checks if there are any available updates
 func (self *Updater) CheckForUpdates(ctx context.Context) ([]release.VersionMetadata, error) {
-	// Check cache first
-	cacheItem, err := self.redisCache.Get(ctx, "updates")
+	cacheItem, err := self.redisCache.Get(ctx, updatesCacheKey)
 	if err != nil {
 		if err != redis.Nil {
 			log.Errorf("Error reading from cache: %v", err)
 		}
-	} else if cacheItem != nil {
-		// Check if time is older than 10 minutes
-		if time.Since(cacheItem.CheckedAt) < 10*time.Minute {
-			log.Infof("Returning cached updates from %v", cacheItem.CheckedAt)
-			return cacheItem.Updates, nil
-		}
-		log.Infof("Cache expired at %v", cacheItem.CheckedAt)
+		cacheItem = nil
+	} else if cacheItem != nil && cacheItem.ForVersion != self.CurrentVersion {
+		cacheItem = nil
+	}
+
+	if cacheItem != nil && time.Since(cacheItem.CheckedAt) < updatesCacheFreshness {
+		log.Infof("Returning cached updates from %v", cacheItem.CheckedAt)
+		return self.newerThanCurrent(cacheItem.Updates), nil
 	}
 
 	// Cache expired or empty, fetch new updates
 	updates, err := self.releaseManager.AvailableUpdates(ctx, self.CurrentVersion)
 	if err != nil {
-		log.Errorf("Failed to check for updates, trying to return cache %v", err)
-
 		if cacheItem != nil {
-			// Return cached updates if available
-			log.Infof("Returning stale cached updates from %v due to GitHub error", cacheItem.CheckedAt)
-			return cacheItem.Updates, nil
+			log.Errorf("Failed to check for updates, returning stale cache from %v: %v", cacheItem.CheckedAt, err)
+			return self.newerThanCurrent(cacheItem.Updates), nil
 		}
 
 		log.Errorf("Failed to check for updates and no cache available: %v", err)
 		return []release.VersionMetadata{}, nil
 	}
 
-	// Cache the updates with a 1 hour expiration
 	cacheItem = &UpdateCacheItem{
-		Updates:   updates,
-		CheckedAt: time.Now(),
+		ForVersion: self.CurrentVersion,
+		Updates:    updates,
+		CheckedAt:  time.Now(),
 	}
-	if err := self.redisCache.Set(ctx, "updates", cacheItem); err != nil {
+	if err := self.redisCache.SetWithExpiration(ctx, updatesCacheKey, cacheItem, updatesCacheTTL); err != nil {
 		log.Errorf("Failed to cache updates: %v", err)
-	} else {
-		log.Infof("Successfully cached updates until %v", time.Now().Add(time.Hour))
 	}
 
-	return updates, nil
+	return self.newerThanCurrent(updates), nil
+}
+
+// newerThanCurrent drops anything at or below the running version so no cache
+// entry, however stale, can report the current version as an update.
+func (self *Updater) newerThanCurrent(updates []release.VersionMetadata) []release.VersionMetadata {
+	current := self.CurrentVersion
+	if !strings.HasPrefix(current, "v") {
+		current = "v" + current
+	}
+	if !semver.IsValid(current) {
+		return updates
+	}
+
+	filtered := make([]release.VersionMetadata, 0, len(updates))
+	for _, update := range updates {
+		if semver.Compare(update.Version, current) <= 0 {
+			continue
+		}
+		filtered = append(filtered, update)
+	}
+	return filtered
+}
+
+// ClearUpdatesCache drops the cached release list so the next check hits GitHub.
+func (self *Updater) ClearUpdatesCache(ctx context.Context) error {
+	return self.redisCache.Delete(ctx, updatesCacheKey)
 }
 
 // ReleaseURL returns the GitHub release page URL for the given version

@@ -43,9 +43,25 @@ type TNewVersion =
       latestVersionReleaseNotes: null;
     };
 
+// Server responses can momentarily list versions the deployment already runs (e.g. a
+// stale cache right after an update), so never trust the list blindly.
+function isNewerVersion(version: string, currentVersion: string): boolean {
+  const parse = (v: string) => v.replace(/^v/, "").split(".").map(Number);
+  const [candidate, current] = [parse(version), parse(currentVersion)];
+  if (candidate.some(Number.isNaN) || current.some(Number.isNaN)) {
+    return version !== currentVersion;
+  }
+  for (let i = 0; i < Math.max(candidate.length, current.length); i++) {
+    const diff = (candidate[i] ?? 0) - (current[i] ?? 0);
+    if (diff !== 0) return diff > 0;
+  }
+  return false;
+}
+
 // The single hook for everything update related: the raw status query plus the derived
-// latest-version fields. The API sets has_update_available iff available_versions is
-// non-empty, so consumers get one check instead of re-deriving it.
+// latest-version fields. An update is only considered available when available_versions
+// contains something newer than current_version, regardless of what the API's
+// has_update_available flag claims.
 // `hasUnseenUpdate` additionally accounts for dismissal (toast dismissed or /update visited);
 // passive indicators like the avatar dot should use it, while surfaces that must always
 // reflect reality (the /update page, the menu card) use `hasUpdateAvailable`.
@@ -55,12 +71,14 @@ export const useUpdateStatus = (): TUpdateStatusQuery & TNewVersion => {
     throw new Error("useUpdateStatus must be used within an UpdateStatusProvider");
   }
   const lastDismissedVersion = useMainStore((s) => s.lastDismissedVersion);
-  const availableVersions = query.data?.data.available_versions;
+  const currentVersion = query.data?.data.current_version;
+  const newerVersions =
+    currentVersion !== undefined
+      ? query.data?.data.available_versions.filter((v) => isNewerVersion(v.version, currentVersion))
+      : undefined;
 
   const latest =
-    query.data?.data.has_update_available && availableVersions && availableVersions.length > 0
-      ? availableVersions[availableVersions.length - 1]
-      : null;
+    newerVersions && newerVersions.length > 0 ? newerVersions[newerVersions.length - 1] : null;
 
   if (!latest) {
     return {

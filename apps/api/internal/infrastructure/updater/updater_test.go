@@ -167,6 +167,68 @@ func (suite *UpdaterTestSuite) TestCheckForUpdates_Error() {
 	suite.mockReleaseManager.AssertExpectations(suite.T())
 }
 
+func (suite *UpdaterTestSuite) TestCheckForUpdates_IgnoresCacheFromOtherVersion() {
+	oldUpdater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
+	suite.mockReleaseManager.On("AvailableUpdates", suite.ctx, "v1.0.0").Return([]release.VersionMetadata{{Version: "v1.1.0"}}, nil).Once()
+
+	updates, err := oldUpdater.CheckForUpdates(suite.ctx)
+	suite.NoError(err)
+	suite.Len(updates, 1)
+
+	// A binary on v1.1.0 must not serve the v1.0.0 binary's cached list, which
+	// contains the version it already runs.
+	newUpdater := NewWithReleaseManager(suite.cfg, "v1.1.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
+	suite.mockReleaseManager.On("AvailableUpdates", suite.ctx, "v1.1.0").Return([]release.VersionMetadata{}, nil).Once()
+
+	updates, err = newUpdater.CheckForUpdates(suite.ctx)
+
+	suite.NoError(err)
+	suite.Empty(updates)
+	suite.mockReleaseManager.AssertExpectations(suite.T())
+}
+
+func (suite *UpdaterTestSuite) TestCheckForUpdates_FiltersCurrentAndOlderVersions() {
+	updater := NewWithReleaseManager(suite.cfg, "v1.1.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
+	suite.mockReleaseManager.On("AvailableUpdates", suite.ctx, "v1.1.0").Return([]release.VersionMetadata{
+		{Version: "v1.0.0"},
+		{Version: "v1.1.0"},
+		{Version: "v1.2.0"},
+	}, nil)
+
+	updates, err := updater.CheckForUpdates(suite.ctx)
+
+	suite.NoError(err)
+	suite.Equal([]release.VersionMetadata{{Version: "v1.2.0"}}, updates)
+}
+
+func (suite *UpdaterTestSuite) TestCheckForUpdates_CacheExpires() {
+	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
+	suite.mockReleaseManager.On("AvailableUpdates", suite.ctx, "v1.0.0").Return([]release.VersionMetadata{{Version: "v1.1.0"}}, nil)
+
+	_, err := updater.CheckForUpdates(suite.ctx)
+	suite.NoError(err)
+
+	ttl, err := suite.redisClient.TTL(suite.ctx, "unbind-updater:updates").Result()
+	suite.NoError(err)
+	suite.Greater(ttl, time.Duration(0))
+	suite.LessOrEqual(ttl, updatesCacheTTL)
+}
+
+func (suite *UpdaterTestSuite) TestClearUpdatesCache() {
+	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
+	suite.mockReleaseManager.On("AvailableUpdates", suite.ctx, "v1.0.0").Return([]release.VersionMetadata{{Version: "v1.1.0"}}, nil).Twice()
+
+	_, err := updater.CheckForUpdates(suite.ctx)
+	suite.NoError(err)
+
+	suite.NoError(updater.ClearUpdatesCache(suite.ctx))
+
+	// With the cache cleared, the next check must hit the release manager again.
+	_, err = updater.CheckForUpdates(suite.ctx)
+	suite.NoError(err)
+	suite.mockReleaseManager.AssertExpectations(suite.T())
+}
+
 // Test GetLatestVersion method
 func (suite *UpdaterTestSuite) TestGetLatestVersion_Success() {
 	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)

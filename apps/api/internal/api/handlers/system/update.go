@@ -233,6 +233,9 @@ func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.Bas
 		if err := self.srv.StringCache.Delete(ctx, updateKey); err != nil {
 			log.Errorf("Failed to clear update target: %v", err)
 		}
+		if err := self.srv.UpdateManager.ClearUpdatesCache(ctx); err != nil {
+			log.Errorf("Failed to clear updates cache: %v", err)
+		}
 	}
 
 	resp.Body.Ready = ready
