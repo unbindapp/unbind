@@ -78,7 +78,7 @@ export default function UserAvatar({ email, className }: TProps) {
         >
           <Blockies
             address={email}
-            className="size-full shrink-0 rounded-full transition group-active/button:rotate-45 group-data-open/button:rotate-360 has-hover:group-hover/button:rotate-45"
+            className="size-full shrink-0 rounded-full transition group-active/button:rotate-45 group-data-open/button:rotate-360 group-active/button:group-data-open/button:rotate-360 has-hover:group-hover/button:rotate-45 has-hover:group-hover/button:group-data-open/button:rotate-360"
           />
           {hasUnseenUpdate && (
             <div className="bg-background pointer-events-none absolute -top-0.5 -right-0.5 rounded-full p-0.5">
