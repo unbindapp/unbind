@@ -4,9 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import { TExternalEndpoint } from "@/lib/queries/services";
 import {
+  CheckIcon,
   ChevronUpIcon,
+  EthernetPortIcon,
   ExternalLinkIcon,
   GlobeIcon,
   HourglassIcon,
@@ -34,6 +37,7 @@ export default function ServiceUrl({
   className,
 }: TServiceUrlProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
 
   if (isPlaceholder) {
     if (error) {
@@ -74,6 +78,32 @@ export default function ServiceUrl({
           </div>
           <p className="bg-muted-foreground min-w-0 shrink truncate rounded-md">app.loading.com</p>
         </div>
+      </Wrapper>
+    );
+  }
+
+  if (!endpoint.is_ingress) {
+    const connectionString = getTcpDisplayStr(endpoint);
+    return (
+      <Wrapper className={className}>
+        <Button
+          type="button"
+          aria-label="Copy to clipboard"
+          data-copied={isRecentlyCopied || undefined}
+          onClick={() => copyToClipboard(connectionString)}
+          className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
+          variant="ghost"
+          size="sm"
+        >
+          <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-copied/button:rotate-90">
+            <EthernetPortIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
+            <CheckIcon
+              strokeWidth={3}
+              className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
+            />
+          </div>
+          <p className="min-w-0 shrink truncate">{connectionString}</p>
+        </Button>
       </Wrapper>
     );
   }
@@ -187,6 +217,12 @@ function Wrapper({ children, className }: { children: ReactNode; className?: str
 
 function getUrlDisplayStr(endpoint: TExternalEndpoint) {
   return endpoint.host + (endpoint.path === "/" ? "" : endpoint.path);
+}
+
+// LoadBalancer discovery embeds the port in the host already
+function getTcpDisplayStr(endpoint: TExternalEndpoint) {
+  if (!endpoint.target_port || endpoint.host.includes(":")) return endpoint.host;
+  return `${endpoint.host}:${endpoint.target_port.port}`;
 }
 
 function getUrl(endpoint: TExternalEndpoint) {

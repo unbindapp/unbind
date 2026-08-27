@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
@@ -67,46 +68,52 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 	}
 
 	// Append hosts missing from discovery
+	gatewayCluster := self.k8s.NetworkingProvider(ctx) == "gateway"
 	for _, host := range service.Edges.ServiceConfig.Hosts {
-		if _, exists := endpointMap[host.Host]; !exists {
-			path := host.Path
-			if path == "" {
-				path = "/"
-			}
-			var targetPort *schema.PortSpec
-			if host.TargetPort != nil {
-				matched := schema.PortSpec{
-					Port:     *host.TargetPort,
-					Protocol: utils.ToPtr(schema.ProtocolTCP),
-				}
-				for _, port := range service.Edges.ServiceConfig.Ports {
-					if port.Port == *host.TargetPort {
-						matched = port
-						break
-					}
-				}
-				targetPort = &matched
-			}
-			newHost := models.IngressEndpoint{
-				KubernetesName: service.KubernetesName,
-				IsIngress:      true,
-				Host:           host.Host,
-				Path:           path,
-				TargetPort:     targetPort,
-				DNSStatus:      models.DNSStatusUnknown,
-				TlsStatus:      models.TlsStatusPending,
-				TeamID:         project.Edges.Team.ID,
-				ProjectID:      project.ID,
-				EnvironmentID:  env.ID,
-				ServiceID:      serviceID,
-			}
-
-			if host.Path != "" {
-				newHost.Path = host.Path
-			}
-
-			endpoints.External = append(endpoints.External, newHost)
+		if _, exists := endpointMap[host.Host]; exists {
+			continue
 		}
+
+		if bridge := nodePortBridge(service.Edges.ServiceConfig.Ports, host.TargetPort); gatewayCluster && bridge != nil {
+			if !attachHostToL4Endpoints(endpoints.External, host.Host, *bridge.NodePort) {
+				endpoints.External = append(endpoints.External, l4HostEndpoint(service, project, env, host.Host, bridge))
+			}
+			continue
+		}
+
+		path := host.Path
+		if path == "" {
+			path = "/"
+		}
+		var targetPort *schema.PortSpec
+		if host.TargetPort != nil {
+			matched := schema.PortSpec{
+				Port:     *host.TargetPort,
+				Protocol: utils.ToPtr(schema.ProtocolTCP),
+			}
+			for _, port := range service.Edges.ServiceConfig.Ports {
+				if port.Port == *host.TargetPort {
+					matched = port
+					break
+				}
+			}
+			targetPort = &matched
+		}
+		newHost := models.IngressEndpoint{
+			KubernetesName: service.KubernetesName,
+			IsIngress:      true,
+			Host:           host.Host,
+			Path:           path,
+			TargetPort:     targetPort,
+			DNSStatus:      models.DNSStatusUnknown,
+			TlsStatus:      models.TlsStatusPending,
+			TeamID:         project.Edges.Team.ID,
+			ProjectID:      project.ID,
+			EnvironmentID:  env.ID,
+			ServiceID:      serviceID,
+		}
+
+		endpoints.External = append(endpoints.External, newHost)
 	}
 
 	// Infer internal endpoints that should exist and merge with the discovered internal endpoints
@@ -150,4 +157,51 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 	}
 
 	return endpoints, nil
+}
+
+// A node-port-bridged host is raw L4 exposure; no ingress or certificate will ever exist for it.
+func nodePortBridge(ports []schema.PortSpec, targetPort *int32) *schema.PortSpec {
+	if targetPort == nil {
+		return nil
+	}
+	for _, port := range ports {
+		if port.Port == *targetPort && port.IsNodePort && port.NodePort != nil {
+			return &port
+		}
+	}
+	return nil
+}
+
+func attachHostToL4Endpoints(external []models.IngressEndpoint, host string, listenerPort int32) bool {
+	attached := false
+	for i := range external {
+		endpoint := &external[i]
+		if endpoint.IsIngress || endpoint.TargetPort == nil || endpoint.TargetPort.Port != listenerPort {
+			continue
+		}
+		endpoint.Host = host
+		attached = true
+	}
+	return attached
+}
+
+func l4HostEndpoint(service *ent.Service, project *ent.Project, env *ent.Environment, host string, bridge *schema.PortSpec) models.IngressEndpoint {
+	protocol := bridge.Protocol
+	if protocol == nil {
+		protocol = utils.ToPtr(schema.ProtocolTCP)
+	}
+	return models.IngressEndpoint{
+		KubernetesName: service.KubernetesName,
+		Host:           host,
+		TargetPort: &schema.PortSpec{
+			Port:     *bridge.NodePort,
+			Protocol: protocol,
+		},
+		DNSStatus:     models.DNSStatusUnknown,
+		TlsStatus:     models.TlsStatusNotAvailable,
+		TeamID:        project.Edges.Team.ID,
+		ProjectID:     project.ID,
+		EnvironmentID: env.ID,
+		ServiceID:     service.ID,
+	}
 }
