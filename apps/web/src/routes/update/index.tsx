@@ -1,16 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CircleArrowUpIcon } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 
 import { cn } from "@/components/ui/utils";
-import {
-  useCheckForUpdates,
-  useCheckNewVersion,
-} from "@/components/update/check-for-updates-provider";
 import UpdateAvailableSection from "@/components/update/update-available-section";
 import UpdateNotAvailableSection, {
   GoHome,
 } from "@/components/update/update-not-available-section";
+import { useUpdateStatus } from "@/components/update/update-status-provider";
 
 type TUpdateSearch = { from?: string };
 
@@ -30,14 +27,14 @@ export const Route = createFileRoute("/update/")({
 
 function UpdatePage() {
   const { from } = Route.useSearch();
-  const { data, isPending, error } = useCheckForUpdates();
-  const {
-    hasUpdateAvailable,
-    latestVersion,
-    latestVersionUrl,
-    latestVersionDescription,
-    latestVersionReleaseNotes,
-  } = useCheckNewVersion();
+  const { data, isPending, error, hasUpdateAvailable, latestVersion, latestVersionUrl } =
+    useUpdateStatus();
+
+  // Once the update flow is on screen, keep it there: a background refetch after a
+  // successful update flips has_update_available to false, and swapping to
+  // "No updates available" would eat the success screen.
+  const showedUpdateFlowRef = useRef(false);
+
   const isHardError = !data && !isPending && error;
 
   if (isHardError) {
@@ -57,14 +54,23 @@ function UpdatePage() {
     );
   }
 
-  if (isPending || !hasUpdateAvailable) {
+  if (isPending || !data) {
     return (
-      <Wrapper data-pending={isPending || undefined} className="group/wrapper">
-        <UpdateNotAvailableSection
-          {...(isPending
-            ? { isPending: true }
-            : { isPending: false, currentVersion: data.data.current_version })}
-        />
+      <Wrapper data-pending className="group/wrapper">
+        <UpdateNotAvailableSection isPending={true} />
+      </Wrapper>
+    );
+  }
+
+  const status = data.data;
+  if (hasUpdateAvailable || status.in_progress || status.failed) {
+    showedUpdateFlowRef.current = true;
+  }
+
+  if (!showedUpdateFlowRef.current) {
+    return (
+      <Wrapper className="group/wrapper">
+        <UpdateNotAvailableSection isPending={false} currentVersion={status.current_version} />
       </Wrapper>
     );
   }
@@ -72,11 +78,9 @@ function UpdatePage() {
   return (
     <Wrapper>
       <UpdateAvailableSection
-        latestVersion={latestVersion}
+        latestVersion={latestVersion ?? status.target_version ?? status.current_version}
         latestVersionUrl={latestVersionUrl}
-        latestVersionDescription={latestVersionDescription}
-        latestVersionReleaseNotes={latestVersionReleaseNotes}
-        currentVersion={data.data.current_version}
+        currentVersion={status.current_version}
         backTo={from ?? "/"}
       />
     </Wrapper>

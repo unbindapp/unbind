@@ -15,10 +15,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
-import {
-  useCheckForUpdates,
-  useCheckNewVersion,
-} from "@/components/update/check-for-updates-provider";
+import { useUpdateStatus } from "@/components/update/update-status-provider";
 import { meQuery } from "@/lib/queries/me";
 import { getGoClient } from "@/lib/server/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -44,9 +41,10 @@ export default function UserAvatar({ email, className }: TProps) {
     data: updatesData,
     isPending: isPendingUpdatesResult,
     isError: isErrorUpdatesResult,
-  } = useCheckForUpdates();
-
-  const { hasUpdateAvailable, hasUnseenUpdate, latestVersion } = useCheckNewVersion();
+    hasUpdateAvailable,
+    hasUnseenUpdate,
+    latestVersion,
+  } = useUpdateStatus();
   const locationHref = useLocation({ select: (l) => l.href });
 
   return (

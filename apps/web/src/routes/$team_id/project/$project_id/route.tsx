@@ -35,7 +35,7 @@ import ServicePanelProvider from "@/components/service/panel/service-panel-provi
 import SystemProvider from "@/components/system/system-provider";
 import TemplateDraftPanelProvider from "@/components/templates/panel/template-draft-panel-provider";
 import TemplatesProvider from "@/components/templates/templates-provider";
-import { UpdateToastProvider } from "@/components/update/check-for-updates-provider";
+import { UpdateToastProvider } from "@/components/update/update-status-provider";
 import VolumePanelProvider from "@/components/volume/panel/volume-panel-provider";
 
 // All search params owned by the project area live here — every panel/logs/metrics

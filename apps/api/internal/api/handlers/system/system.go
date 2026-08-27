@@ -41,14 +41,6 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 	}, handlers.CheckDNSResolution, oapi.OpenWorld)
 
-	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "check-for-updates",
-		Summary:     "Check for Updates",
-		Description: "Check whether a newer Unbind release is available.",
-		Path:        "/update/check",
-		Method:      http.MethodGet,
-	}, handlers.CheckForUpdates, oapi.OpenWorld)
-
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "apply-update",
 		Summary:     "Apply Update",
@@ -60,10 +52,10 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-update-status",
 		Summary:     "Get Update Status",
-		Description: "Get the status of an in-progress or completed system update.",
+		Description: "Get available Unbind releases and the status of an in-progress or completed system update.",
 		Path:        "/update/status",
 		Method:      http.MethodGet,
-	}, handlers.GetUpdateStatus)
+	}, handlers.GetUpdateStatus, oapi.OpenWorld)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "generate-wildcard-domain",

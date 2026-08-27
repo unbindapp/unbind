@@ -2265,15 +2265,6 @@ export const UpdateApplyResponseBodySchema = z
   })
   .strip();
 
-export const UpdateCheckResponseBodySchema = z
-  .object({
-    available_versions: z.array(AvailableVersionSchema),
-    current_version: z.string(),
-    current_version_url: z.string(),
-    has_update_available: z.boolean(),
-  })
-  .strip();
-
 export const UpdateEnvironmentInputSchema = z
   .object({
     description: z.string().nullable(),
@@ -2459,8 +2450,11 @@ export const UpdateServiceInputSchema = z
 
 export const UpdateStatusResponseBodySchema = z
   .object({
+    available_versions: z.array(AvailableVersionSchema),
     current_version: z.string(),
+    current_version_url: z.string(),
     failed: z.boolean(),
+    has_update_available: z.boolean(),
     in_progress: z.boolean(),
     message: z.string().optional(),
     ready: z.boolean(),
@@ -2884,7 +2878,6 @@ export type TestS3OutputBody = z.infer<typeof TestS3OutputBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
 export type UpdateApplyInputBody = z.infer<typeof UpdateApplyInputBodySchema>;
 export type UpdateApplyResponseBody = z.infer<typeof UpdateApplyResponseBodySchema>;
-export type UpdateCheckResponseBody = z.infer<typeof UpdateCheckResponseBodySchema>;
 export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema>;
 export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
 export type UpdateGroupInputBody = z.infer<typeof UpdateGroupInputBodySchema>;
@@ -7435,47 +7428,6 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             const data = await response.json();
             const { data: parsedData, error } = UpdateApplyResponseBodySchema.safeParse(data);
-            if (error) {
-              console.error('Response validation error:', error);
-              console.error('Response data:', data);
-              throw new Error(error.message);
-            }
-            return parsedData;
-          } catch (error) {
-            if (import.meta.env.DEV) {
-              console.error('Error in API request:', error);
-            }
-            throw error;
-          }
-        },
-        check: async (
-          params?: undefined,
-          fetchOptions?: RequestInit,
-        ): Promise<UpdateCheckResponseBody> => {
-          try {
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-            const url = new URL(
-              `${apiUrl}/system/update/check`,
-              typeof window !== 'undefined' ? window.location.origin : undefined,
-            );
-
-            const options: RequestInit = {
-              method: 'GET',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              ...fetchOptions,
-            };
-
-            const response = await fetchFn(url.toString(), options);
-            if (!response.ok) {
-              throw await parseApiError(response, url.toString());
-            }
-            const data = await response.json();
-            const { data: parsedData, error } = UpdateCheckResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);

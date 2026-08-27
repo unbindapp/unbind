@@ -67,64 +67,11 @@ func (self *HandlerGroup) CheckPermissions(ctx context.Context, requesterUserID 
 	return nil
 }
 
-// * Check for updates
 type AvailableVersion struct {
 	Version      string `json:"version"`
 	URL          string `json:"url"`
 	Description  string `json:"description,omitempty"`
 	ReleaseNotes string `json:"release_notes,omitempty"`
-}
-
-type UpdateCheckResponse struct {
-	Body struct {
-		HasUpdateAvailable bool               `json:"has_update_available"`
-		AvailableVersions  []AvailableVersion `json:"available_versions" nullable:"false"`
-		CurrentVersion     string             `json:"current_version"`
-		CurrentVersionURL  string             `json:"current_version_url"`
-	}
-}
-
-func (self *HandlerGroup) CheckForUpdates(ctx context.Context, input *server.BaseAuthInput) (*UpdateCheckResponse, error) {
-	user, _, err := self.srv.AuthenticatedUser(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := self.CheckPermissions(ctx, user.ID); err != nil {
-		return nil, err
-	}
-
-	allUpdates, err := self.srv.UpdateManager.CheckForUpdates(ctx)
-	if err != nil {
-		// Log the error but return empty updates instead of error
-		log.Errorf("Failed to check for updates: %v", err)
-		resp := &UpdateCheckResponse{}
-		resp.Body.HasUpdateAvailable = false
-		resp.Body.AvailableVersions = []AvailableVersion{}
-		resp.Body.CurrentVersion = self.srv.UpdateManager.CurrentVersion
-		resp.Body.CurrentVersionURL = self.srv.UpdateManager.ReleaseURL(self.srv.UpdateManager.CurrentVersion)
-		return resp, nil
-	}
-
-	// The update manager already returns newer-than-current versions, oldest first.
-	availableUpdates := make([]AvailableVersion, 0, len(allUpdates))
-	currentVersion := self.srv.UpdateManager.CurrentVersion
-	for _, update := range allUpdates {
-		availableUpdates = append(availableUpdates, AvailableVersion{
-			Version:      update.Version,
-			URL:          self.srv.UpdateManager.ReleaseURL(update.Version),
-			Description:  update.Description,
-			ReleaseNotes: update.ReleaseNotes,
-		})
-	}
-
-	resp := &UpdateCheckResponse{}
-	resp.Body.HasUpdateAvailable = len(availableUpdates) > 0
-	resp.Body.AvailableVersions = availableUpdates
-	resp.Body.CurrentVersion = currentVersion
-	resp.Body.CurrentVersionURL = self.srv.UpdateManager.ReleaseURL(currentVersion)
-
-	return resp, nil
 }
 
 // * Apply update
@@ -212,14 +159,17 @@ func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInp
 // * Get update status
 type UpdateStatusResponse struct {
 	Body struct {
-		InProgress bool `json:"in_progress"`
-		Failed     bool `json:"failed"`
+		HasUpdateAvailable bool               `json:"has_update_available"`
+		AvailableVersions  []AvailableVersion `json:"available_versions" nullable:"false"`
+		CurrentVersion     string             `json:"current_version"`
+		CurrentVersionURL  string             `json:"current_version_url"`
+		InProgress         bool               `json:"in_progress"`
+		Failed             bool               `json:"failed"`
 		// Ready is only ever true when the binary serving this request already runs
 		// the version being checked, so clients can trust current_version with it.
-		Ready          bool   `json:"ready"`
-		TargetVersion  string `json:"target_version,omitempty"`
-		CurrentVersion string `json:"current_version"`
-		Message        string `json:"message,omitempty"`
+		Ready         bool   `json:"ready"`
+		TargetVersion string `json:"target_version,omitempty"`
+		Message       string `json:"message,omitempty"`
 	}
 }
 
@@ -235,6 +185,25 @@ func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.Bas
 
 	resp := &UpdateStatusResponse{}
 	resp.Body.CurrentVersion = self.srv.UpdateManager.CurrentVersion
+	resp.Body.CurrentVersionURL = self.srv.UpdateManager.ReleaseURL(self.srv.UpdateManager.CurrentVersion)
+	resp.Body.AvailableVersions = []AvailableVersion{}
+
+	// The release list is best-effort: an unreachable GitHub must not hide the
+	// state of an update that is already running.
+	allUpdates, err := self.srv.UpdateManager.CheckForUpdates(ctx)
+	if err != nil {
+		log.Errorf("Failed to check for updates: %v", err)
+	}
+	// The update manager already returns newer-than-current versions, oldest first.
+	for _, update := range allUpdates {
+		resp.Body.AvailableVersions = append(resp.Body.AvailableVersions, AvailableVersion{
+			Version:      update.Version,
+			URL:          self.srv.UpdateManager.ReleaseURL(update.Version),
+			Description:  update.Description,
+			ReleaseNotes: update.ReleaseNotes,
+		})
+	}
+	resp.Body.HasUpdateAvailable = len(resp.Body.AvailableVersions) > 0
 
 	state, err := self.getUpdateState(ctx)
 	if err != nil && !errors.Is(err, redis.Nil) {

@@ -4,7 +4,6 @@ import ErrorLine from "@/components/error-line";
 import { useNow } from "@/components/providers/now-provider";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { Button, LinkButton } from "@/components/ui/button";
-import { useCheckForUpdatesUtils } from "@/components/update/check-for-updates-provider";
 import UpdateStatusProvider, {
   useUpdateStatus,
   useUpdateStatusUtils,
@@ -21,54 +20,40 @@ import {
   HourglassIcon,
   RotateCcwIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const longUpdateThresholdMs = 15 * 60 * 1000;
 
 type TProps = {
   latestVersion: string;
-  latestVersionUrl: string;
-  latestVersionDescription: string | null;
-  latestVersionReleaseNotes: string | null;
+  latestVersionUrl: string | null;
   currentVersion: string;
   /** Internal path to return to via Go Back; validated by the /update route's `from` search param. */
   backTo: string;
 };
 
-export default function UpdateAvailableSection({
-  latestVersion,
-  latestVersionUrl,
-  latestVersionDescription,
-  latestVersionReleaseNotes,
-  currentVersion,
-  backTo,
-}: TProps) {
-  const [statusEnabled, setStatusEnabled] = useState(false);
+export default function UpdateAvailableSection(props: TProps) {
+  const { data } = useUpdateStatus();
   const setLastDismissedVersion = useMainStore((s) => s.setLastDismissedVersion);
 
+  // Fast polling only runs while an update is being watched; starts on when the
+  // page loads into an update already in progress on the server.
+  const [isWatchingUpdate, setIsWatchingUpdate] = useState(() => !!data?.data.in_progress);
+
+  const { latestVersion } = props;
   useEffect(() => {
     setLastDismissedVersion(latestVersion);
   }, [latestVersion, setLastDismissedVersion]);
 
   return (
-    // Always enabled so a page load during an update can detect and resume it;
-    // the interval only runs while an update is being watched.
-    <UpdateStatusProvider enabled={true} refetchInterval={statusEnabled ? 5000 : undefined}>
-      <UpdateSectionInner
-        latestVersion={latestVersion}
-        latestVersionUrl={latestVersionUrl}
-        latestVersionDescription={latestVersionDescription}
-        latestVersionReleaseNotes={latestVersionReleaseNotes}
-        currentVersion={currentVersion}
-        backTo={backTo}
-        setUpdateStatusEnabled={setStatusEnabled}
-      />
+    <UpdateStatusProvider refetchInterval={isWatchingUpdate ? 5000 : undefined}>
+      <UpdateSectionInner {...props} setIsWatchingUpdate={setIsWatchingUpdate} />
     </UpdateStatusProvider>
   );
 }
 
 type TPropsInner = TProps & {
-  setUpdateStatusEnabled: (enabled: boolean) => void;
+  setIsWatchingUpdate: (watching: boolean) => void;
 };
 
 type TUpdatePhases = "idle" | "updating" | "succeeded" | "failed";
@@ -78,15 +63,22 @@ function UpdateSectionInner({
   latestVersionUrl,
   currentVersion,
   backTo,
-  setUpdateStatusEnabled,
+  setIsWatchingUpdate,
 }: TPropsInner) {
   const now = useNow();
-  const [updatePhase, setUpdatePhase] = useState<TUpdatePhases>("idle");
-  const [updateStartTimestamp, setUpdateStartTimestamp] = useState<number | null>(null);
 
-  const { data: updateStatus, dataUpdatedAt } = useUpdateStatus();
-  const { invalidate: invalidateCheckForUpdates } = useCheckForUpdatesUtils();
+  const { data: updateStatusData, dataUpdatedAt } = useUpdateStatus();
   const { refetch: refetchUpdateStatus } = useUpdateStatusUtils();
+  const updateStatus = updateStatusData?.data;
+
+  const [updatePhase, setUpdatePhase] = useState<TUpdatePhases>(() => {
+    if (updateStatus?.in_progress) return "updating";
+    if (updateStatus?.failed) return "failed";
+    return "idle";
+  });
+  const [updateStartTimestamp, setUpdateStartTimestamp] = useState<number | null>(() =>
+    updateStatus?.in_progress ? Date.now() : null,
+  );
 
   const {
     mutate: applyUpdate,
@@ -95,7 +87,7 @@ function UpdateSectionInner({
   } = useMutation({
     mutationFn: applyUpdateFn,
     onSuccess: () => {
-      setUpdateStatusEnabled(true);
+      setIsWatchingUpdate(true);
       setUpdatePhase("updating");
       setUpdateStartTimestamp(Date.now());
       refetchUpdateStatus();
@@ -103,48 +95,38 @@ function UpdateSectionInner({
   });
 
   // On a resumed update the server's target is the truth, not the latest release.
-  const targetVersion = updateStatus?.data.target_version || latestVersion;
+  const targetVersion = updateStatus?.target_version || latestVersion;
 
-  // Resume an update already in progress on the server (e.g. after a page reload).
+  // Pick up an update started elsewhere (another tab or admin) while idling here.
   useEffect(() => {
     if (updatePhase !== "idle") return;
-    if (!updateStatus?.data.in_progress) return;
+    if (!updateStatus?.in_progress) return;
 
     setUpdatePhase("updating");
-    setUpdateStatusEnabled(true);
+    setIsWatchingUpdate(true);
     setUpdateStartTimestamp((t) => t ?? Date.now());
-  }, [updatePhase, updateStatus, setUpdateStatusEnabled]);
+  }, [updatePhase, updateStatus, setIsWatchingUpdate]);
 
   // `ready` can come from a status snapshot cached before the update started, so only
   // trust it when the server binary already runs the version we're updating to.
   useEffect(() => {
     if (updatePhase !== "updating") return;
-    if (!updateStatus?.data.ready) return;
-    if (updateStatus.data.current_version !== targetVersion) return;
+    if (!updateStatus?.ready) return;
+    if (updateStatus.current_version !== targetVersion) return;
 
     setUpdatePhase("succeeded");
-    setUpdateStatusEnabled(false);
-  }, [updatePhase, updateStatus, targetVersion, setUpdateStatusEnabled]);
+    setIsWatchingUpdate(false);
+  }, [updatePhase, updateStatus, targetVersion, setIsWatchingUpdate]);
 
   // The timestamp guard skips failed snapshots fetched before a retry started.
   useEffect(() => {
     if (updatePhase === "succeeded" || updatePhase === "failed") return;
-    if (!updateStatus?.data.failed) return;
+    if (!updateStatus?.failed) return;
     if (updateStartTimestamp !== null && dataUpdatedAt <= updateStartTimestamp) return;
 
     setUpdatePhase("failed");
-    setUpdateStatusEnabled(false);
-  }, [updatePhase, updateStatus, dataUpdatedAt, updateStartTimestamp, setUpdateStatusEnabled]);
-
-  // Invalidating while the succeeded screen is up would flip has_update_available
-  // to false and swap this screen for "No updates available", so wait for unmount.
-  const updatePhaseRef = useRef(updatePhase);
-  updatePhaseRef.current = updatePhase;
-  useEffect(() => {
-    return () => {
-      if (updatePhaseRef.current === "succeeded") invalidateCheckForUpdates();
-    };
-  }, [invalidateCheckForUpdates]);
+    setIsWatchingUpdate(false);
+  }, [updatePhase, updateStatus, dataUpdatedAt, updateStartTimestamp, setIsWatchingUpdate]);
 
   const isTakingLong =
     updatePhase === "updating" &&
@@ -228,19 +210,21 @@ function UpdateSectionInner({
                 <p className="min-w-0 shrink">Update Now</p>
               </Button>
             </div>
-            <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-              <Button
-                variant="ghost"
-                className="text-muted-foreground group w-full cursor-pointer"
-                render={<a href={latestVersionUrl} target="_blank" rel="noopener noreferrer" />}
-              >
-                <div className="relative size-4.5 shrink-0 transition-[rotate,opacity] group-active:rotate-45 has-hover:group-hover:rotate-45">
-                  <FileTextIcon className="size-full group-active:opacity-0 has-hover:group-hover:opacity-0" />
-                  <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active:opacity-100 has-hover:group-hover:opacity-100" />
-                </div>
-                <p className="min-w-0 shrink">Changelog</p>
-              </Button>
-            </div>
+            {latestVersionUrl && (
+              <div className="flex w-full px-1 py-1.5 sm:w-1/2">
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground group w-full cursor-pointer"
+                  render={<a href={latestVersionUrl} target="_blank" rel="noopener noreferrer" />}
+                >
+                  <div className="relative size-4.5 shrink-0 transition-[rotate,opacity] group-active:rotate-45 has-hover:group-hover:rotate-45">
+                    <FileTextIcon className="size-full group-active:opacity-0 has-hover:group-hover:opacity-0" />
+                    <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active:opacity-100 has-hover:group-hover:opacity-100" />
+                  </div>
+                  <p className="min-w-0 shrink">Changelog</p>
+                </Button>
+              </div>
+            )}
           </div>
         )}
         {updatePhase === "updating" && (
@@ -277,9 +261,9 @@ function UpdateSectionInner({
                 <p className="min-w-0 shrink">Retry Update</p>
               </Button>
             </div>
-            {updateStatus?.data.message && (
+            {updateStatus?.message && (
               <div className="flex w-full px-1 py-1.5">
-                <ErrorLine className="w-full" message={updateStatus.data.message} />
+                <ErrorLine className="w-full" message={updateStatus.message} />
               </div>
             )}
           </div>

@@ -11,7 +11,7 @@ import TeamNavbar from "@/components/team/team-navbar";
 import TeamProvider from "@/components/team/team-provider";
 import TeamsProvider from "@/components/team/teams-provider";
 import TemplatesProvider from "@/components/templates/templates-provider";
-import { UpdateToastProvider } from "@/components/update/check-for-updates-provider";
+import { UpdateToastProvider } from "@/components/update/update-status-provider";
 
 export const Route = createFileRoute("/$team_id/_team")({
   loader: ({ context: { queryClient }, params }) => {
