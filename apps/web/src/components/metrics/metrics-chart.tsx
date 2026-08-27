@@ -91,7 +91,7 @@ export default function MetricsChart({
   return (
     <div className={cn("flex w-full flex-col", className)}>
       {allDataKeysAreNull ? (
-        <div className="relative z-[1] flex h-56 w-full flex-col overflow-auto">
+        <div className="relative z-1 flex h-56 w-full flex-col overflow-auto">
           <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center px-2 pt-2 pb-8">
             <ChartColumnIcon className="size-6" />
             <p className="mt-2 w-full text-center text-sm leading-tight">No metrics yet</p>
@@ -99,7 +99,7 @@ export default function MetricsChart({
         </div>
       ) : (
         <ChartContainer
-          className={cn("relative z-[1] h-56 w-full", classNameChart)}
+          className={cn("relative z-1 h-56 w-full", classNameChart)}
           config={chartConfig}
         >
           <AreaChart accessibilityLayer data={chartData} margin={margin}>
