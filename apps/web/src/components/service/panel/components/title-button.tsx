@@ -11,7 +11,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { PenIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = {
   service: TServiceShallow;
@@ -59,7 +59,9 @@ export default function TitleButton({ service, teamId, projectId, environmentId 
 
         if (refetchRes.isErr()) {
           console.error(refetchRes.error);
-          toast.error("Failed to refetch services", {
+          toast.add({
+            type: "error",
+            title: "Failed to refetch services",
             description: refetchRes.error.message,
           });
         }

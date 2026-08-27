@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@plugin "tailwindcss-animate";
+@import "tw-animate-css";
 
 @font-face {
   font-family: "DM Sans";
@@ -305,7 +305,8 @@
 @theme {
   --transition-delay-*: initial;
 
-  --animate-*: initial;
+  --animate-pulse: initial;
+  --animate-bounce: initial;
   --animate-skeleton: skeleton 1.25s ease-in-out infinite;
   --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
   --animate-ping: ping 1s ease-in-out infinite;

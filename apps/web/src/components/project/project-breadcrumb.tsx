@@ -13,7 +13,7 @@ import { useMutation } from "@tanstack/react-query";
 import { errAsync, ResultAsync } from "neverthrow";
 import { useLocation, useRouter } from "@tanstack/react-router";
 import { ReactNode, useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = {
   className?: string;
@@ -138,14 +138,18 @@ export default function ProjectBreadcrumb({ className }: TProps) {
       const projectId = res.data?.id;
       const environments = res.data.environments;
       if (environments.length < 1) {
-        toast.error("No environments found", {
+        toast.add({
+          type: "error",
+          title: "No environments found",
           description: "There is no environment in this project",
         });
         return;
       }
       const environmentId = res.data.default_environment_id || environments[0].id;
       if (!projectId || !environmentId || !teamIdFromPathname) {
-        toast.error("Project or environment ID is missing", {
+        toast.add({
+          type: "error",
+          title: "Project or environment ID is missing",
           description: "Project ID or Environment ID is missing",
         });
         return;
@@ -164,15 +168,15 @@ export default function ProjectBreadcrumb({ className }: TProps) {
       );
 
       if (navigateRes.isErr()) {
-        toast.error("Failed to navigate to project", {
+        toast.add({
+          type: "error",
+          title: "Failed to navigate to project",
           description: navigateRes.error.message,
         });
       }
     },
     onError: (error) => {
-      toast.error("Failed to create project", {
-        description: error.message,
-      });
+      toast.add({ type: "error", title: "Failed to create project", description: error.message });
     },
   });
 

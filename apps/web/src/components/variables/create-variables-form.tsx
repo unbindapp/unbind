@@ -21,7 +21,7 @@ import {
 import { Link2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 type TProps = {
@@ -133,7 +133,9 @@ export default function CreateVariablesForm({
     },
     onSubmit: async ({ formApi, value }) => {
       if (!tokens) {
-        toast.warning("Variable references unavailable", {
+        toast.add({
+          type: "warning",
+          title: "Variable references unavailable",
           description: "Variable references are not available yet, please try again later.",
         });
         return;
@@ -156,7 +158,9 @@ export default function CreateVariablesForm({
       );
 
       if (result.isErr()) {
-        toast.error("Failed to refetch", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch",
           description: "Failed to refetch variables after creation, please refresh the page.",
         });
       }

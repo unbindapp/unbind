@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useCallback, useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 export default function DomainPortCard({
   mode,
@@ -67,7 +67,9 @@ export default function DomainPortCard({
         () => new Error("Failed to refetch service endpoints"),
       );
       if (result.isErr()) {
-        toast.error("Failed to refetch service endpoints", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch service endpoints",
           description:
             "Update was successful, but failed to refetch service endpoints. Please refresh the page.",
         });

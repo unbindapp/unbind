@@ -8,7 +8,7 @@ import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-q
 import { useLocation } from "@tanstack/react-router";
 import { GiftIcon } from "lucide-react";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TUpdateStatusQuery = UseQueryResult<TUpdateStatus, Error>;
 
@@ -115,27 +115,31 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
     if (!hasUnseenUpdate || latestVersion === null) return;
     if (updateShownRef.current) return;
 
-    toast.success("Update available!", {
+    toast.add({
+      type: "success",
+      title: "Update available!",
       id: "update_toast",
       description: `Version ${latestVersion} is out. You can update now!`,
-      icon: <GiftIcon className="size-full" />,
-      action: (
-        <div className="ml-auto max-w-full shrink-0 pl-4">
-          <LinkButton
-            onClick={() => {
-              toast.dismiss("update_toast");
-              setLastDismissedVersion(latestVersion);
-            }}
-            to="/update"
-            search={{ from: locationHref }}
-            size="sm"
-            className="w-full px-3"
-          >
-            Update
-          </LinkButton>
-        </div>
-      ),
-      onDismiss: () => {
+      data: {
+        icon: <GiftIcon className="size-full" />,
+        action: (
+          <div className="ml-auto max-w-full shrink-0 pl-4">
+            <LinkButton
+              onClick={() => {
+                toast.close("update_toast");
+                setLastDismissedVersion(latestVersion);
+              }}
+              to="/update"
+              search={{ from: locationHref }}
+              size="sm"
+              className="w-full px-3"
+            >
+              Update
+            </LinkButton>
+          </div>
+        ),
+      },
+      onClose: () => {
         setLastDismissedVersion(latestVersion);
       },
     });

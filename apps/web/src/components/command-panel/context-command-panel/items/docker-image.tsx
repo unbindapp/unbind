@@ -17,7 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DownloadIcon, PackageIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 type TProps = {
@@ -131,7 +131,9 @@ function useDockerImageItem({ context }: TProps) {
         () => new Error("Failed to refetch services"),
       );
       if (res.isErr()) {
-        toast.error("Failed to refetch services", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch services",
           description: res.error.message,
         });
         setIsPendingId(null);
@@ -143,9 +145,7 @@ function useDockerImageItem({ context }: TProps) {
       setIsPendingId(null);
     },
     onError: (error) => {
-      toast.error("Failed to create service", {
-        description: error.message,
-      });
+      toast.add({ type: "error", title: "Failed to create service", description: error.message });
       setIsPendingId(null);
     },
   });

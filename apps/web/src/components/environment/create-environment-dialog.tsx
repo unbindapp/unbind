@@ -33,7 +33,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 export type TCreateEnvironmentDialogProps = {
@@ -93,7 +93,9 @@ export function CreateEnvironmentDialog({
         () => new Error("Invalidation failed, reload the page to see the new environment"),
       );
       if (invalidateRes.isErr()) {
-        toast.error("Failed to refresh data", {
+        toast.add({
+          type: "error",
+          title: "Failed to refresh data",
           description: invalidateRes.error.message,
         });
         return;
@@ -105,7 +107,9 @@ export function CreateEnvironmentDialog({
       if (asyncOnFormSubmitSuccessful) {
         const result = await asyncOnFormSubmitSuccessful({ environment: res.data });
         if (result.isErr()) {
-          toast.error("Something went wrong", {
+          toast.add({
+            type: "error",
+            title: "Something went wrong",
             description: result.error.message,
           });
           return;

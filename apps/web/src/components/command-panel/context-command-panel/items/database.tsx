@@ -15,7 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import { DatabaseIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -114,7 +114,9 @@ function useDatabaseItem({ context }: TProps) {
       );
 
       if (res.isErr()) {
-        toast.error("Failed to refetch services", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch services",
           description: res.error.message,
         });
         setIsPendingId(null);
@@ -126,9 +128,7 @@ function useDatabaseItem({ context }: TProps) {
       setIsPendingId(null);
     },
     onError: (error) => {
-      toast.error("Failed to create service", {
-        description: error.message,
-      });
+      toast.add({ type: "error", title: "Failed to create service", description: error.message });
       setIsPendingId(null);
     },
   });

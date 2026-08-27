@@ -25,7 +25,7 @@ import Prism, { highlight } from "prismjs";
 import "prismjs/components/prism-ini";
 import { ReactElement, useEffect, useRef, useState } from "react";
 import EditorImport from "react-simple-code-editor";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 // Vite 8 / Rolldown mis-handles this CJS package's __esModule default export,
@@ -85,7 +85,9 @@ export default function RawVariableEditor({ children }: TProps) {
   } = useMutation({
     mutationFn: async () => {
       if (editorValue === null) {
-        toast.error("No value", {
+        toast.add({
+          type: "error",
+          title: "No value",
           description: "There is no value in the editor",
         });
         return;
@@ -122,7 +124,9 @@ export default function RawVariableEditor({ children }: TProps) {
         () => new Error("Failed to refetch variables"),
       );
       if (refetchRes.isErr()) {
-        toast.error("Failed to refetch variables", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch variables",
           description: refetchRes.error.message,
         });
         return;

@@ -44,7 +44,7 @@ import { useRouter } from "@tanstack/react-router";
 import { CheckIcon, EllipsisVerticalIcon, PenIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactElement, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 type TProps =
@@ -273,7 +273,9 @@ function DeleteTrigger({
           );
 
           if (navigateRes.isErr()) {
-            toast.error("Failed to navigate", {
+            toast.add({
+              type: "error",
+              title: "Failed to navigate",
               description: navigateRes.error.message,
             });
           }
@@ -284,7 +286,9 @@ function DeleteTrigger({
           );
 
           if (invalidateRes.isErr()) {
-            toast.error("Failed to fetch environments", {
+            toast.add({
+              type: "error",
+              title: "Failed to fetch environments",
               description: invalidateRes.error.message,
             });
           }
@@ -359,7 +363,9 @@ function RenameTrigger({
         );
 
         if (invalidateRes.isErr()) {
-          toast.error("Failed to fetch environments", {
+          toast.add({
+            type: "error",
+            title: "Failed to fetch environments",
             description: invalidateRes.error.message,
           });
         }
@@ -423,7 +429,9 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
       );
 
       if (invalidateRes.isErr()) {
-        toast.error("Failed to fetch environments", {
+        toast.add({
+          type: "error",
+          title: "Failed to fetch environments",
           description: invalidateRes.error.message,
         });
       }
@@ -436,7 +444,9 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
         () => new Error("Failed to navigate to environments"),
       );
       if (navigateRes.isErr()) {
-        toast.error("Failed to navigate", {
+        toast.add({
+          type: "error",
+          title: "Failed to navigate",
           description: navigateRes.error.message,
         });
       }

@@ -5,7 +5,7 @@ import { updateService, type TUpdateServiceInput } from "@/lib/queries/services"
 import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
 import { useCallback } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = {
   idToHighlight?: string;
@@ -41,7 +41,9 @@ export default function useUpdateService({ onSuccess, idToHighlight, manualRefet
         );
 
         if (result.isErr()) {
-          toast.error("Failed to refetch services", {
+          toast.add({
+            type: "error",
+            title: "Failed to refetch services",
             description:
               "Update was successful, but failed to refetch services. Please refresh the page.",
           });

@@ -22,7 +22,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -122,7 +122,9 @@ function useGitItem({ context }: TProps) {
         () => new Error("Failed to refetch services"),
       );
       if (refetchRes.isErr()) {
-        toast.error("Failed to refetch services", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch services",
           description: refetchRes.error.message,
         });
         setIsPendingId(null);
@@ -134,9 +136,7 @@ function useGitItem({ context }: TProps) {
       setIsPendingId(null);
     },
     onError: (error) => {
-      toast.error("Failed to create service", {
-        description: error.message,
-      });
+      toast.add({ type: "error", title: "Failed to create service", description: error.message });
       setIsPendingId(null);
     },
   });
@@ -209,17 +209,20 @@ function useGitItem({ context }: TProps) {
                         queryClient.resetQueries({ queryKey });
                       });
                       setCurrentPageId(subpageId);
-                      toast.success("GitHub app connected", {
+                      toast.add({
+                        type: "success",
+                        title: "GitHub app connected",
                         description: "GitHub app has been connected successfully.",
-                        duration: 5000,
-                        closeButton: false,
+                        timeout: 5000,
                       });
                     },
                   }),
                   () => new Error("Failed to create GitHub app"),
                 );
                 if (res.isErr()) {
-                  toast.error("Failed to create GitHub app", {
+                  toast.add({
+                    type: "error",
+                    title: "Failed to create GitHub app",
                     description: res.error.message,
                   });
                   setIsPendingId(null);
@@ -287,17 +290,20 @@ function useGitItem({ context }: TProps) {
                                     "git_configure_github_options_organization_enter_name",
                                   );
                                   setCurrentPageId(subpageId);
-                                  toast.success("GitHub app connected", {
+                                  toast.add({
+                                    type: "success",
+                                    title: "GitHub app connected",
                                     description: "GitHub app has been connected successfully.",
-                                    duration: 5000,
-                                    closeButton: false,
+                                    timeout: 5000,
                                   });
                                 },
                               }),
                               () => new Error("Failed to create GitHub app"),
                             );
                             if (res.isErr()) {
-                              toast.error("Failed to create GitHub app", {
+                              toast.add({
+                                type: "error",
+                                title: "Failed to create GitHub app",
                                 description: res.error.message,
                               });
                               setIsPendingId(null);
@@ -394,7 +400,7 @@ async function createGitHubApp({
   );
 
   if (!popup) {
-    toast.error("Popup was blocked. Please allow popups for this site.");
+    toast.add({ type: "error", title: "Popup was blocked. Please allow popups for this site." });
     return;
   }
 

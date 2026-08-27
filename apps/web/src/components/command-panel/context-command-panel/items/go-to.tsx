@@ -20,7 +20,7 @@ import {
 import { ResultAsync } from "neverthrow";
 import { useRouter } from "@tanstack/react-router";
 import { useCallback, useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -52,9 +52,11 @@ export default function useGoToItem({ context }: TProps) {
       setIsPendingId(isPendingId);
       const res = await ResultAsync.fromPromise(run(), () => new Error(error));
       if (res.isErr()) {
-        toast.error("Failed to navigate", {
+        toast.add({
+          type: "error",
+          title: "Failed to navigate",
           description: res.error.message,
-          duration: 3000,
+          timeout: 3000,
         });
         setIsPendingId(null);
         return;
@@ -68,21 +70,50 @@ export default function useGoToItem({ context }: TProps) {
   // Typesafe navigation options for a settings page. Project and team settings
   // live under different route trees, so branch on the context type.
   const settingsNav = useCallback(
-    (suffix: "" | "/environments" | "/storage" | "/variables" | "/members" | "/webhooks" | "/danger-zone") => {
+    (
+      suffix:
+        | ""
+        | "/environments"
+        | "/storage"
+        | "/variables"
+        | "/members"
+        | "/webhooks"
+        | "/danger-zone",
+    ) => {
       if (context.contextType === "project" || context.contextType === "new-service") {
         const params = { team_id: context.teamId, project_id: context.projectId };
         const search = { environment: environmentId ?? undefined };
         switch (suffix) {
           case "/environments":
-            return { to: "/$team_id/project/$project_id/settings/environments", params, search } as const;
+            return {
+              to: "/$team_id/project/$project_id/settings/environments",
+              params,
+              search,
+            } as const;
           case "/variables":
-            return { to: "/$team_id/project/$project_id/settings/variables", params, search } as const;
+            return {
+              to: "/$team_id/project/$project_id/settings/variables",
+              params,
+              search,
+            } as const;
           case "/members":
-            return { to: "/$team_id/project/$project_id/settings/members", params, search } as const;
+            return {
+              to: "/$team_id/project/$project_id/settings/members",
+              params,
+              search,
+            } as const;
           case "/webhooks":
-            return { to: "/$team_id/project/$project_id/settings/webhooks", params, search } as const;
+            return {
+              to: "/$team_id/project/$project_id/settings/webhooks",
+              params,
+              search,
+            } as const;
           case "/danger-zone":
-            return { to: "/$team_id/project/$project_id/settings/danger-zone", params, search } as const;
+            return {
+              to: "/$team_id/project/$project_id/settings/danger-zone",
+              params,
+              search,
+            } as const;
           default:
             return { to: "/$team_id/project/$project_id/settings", params, search } as const;
         }
@@ -256,7 +287,10 @@ export default function useGoToItem({ context }: TProps) {
                       });
                     },
                     onHighlight: () => {
-                      void router.preloadRoute({ to: "/$team_id", params: { team_id: context.teamId } });
+                      void router.preloadRoute({
+                        to: "/$team_id",
+                        params: { team_id: context.teamId },
+                      });
                     },
                     keywords: ["projects", "home page", "team", ...goToKeywords],
                   },

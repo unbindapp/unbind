@@ -12,7 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 export default function DeleteButton({
   domain,
@@ -55,7 +55,9 @@ export default function DeleteButton({
       );
 
       if (result.isErr()) {
-        toast.error("Failed to refetch", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch",
           description:
             "Update was successful, but failed to refetch service endpoints. Please refresh the page.",
         });

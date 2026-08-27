@@ -10,7 +10,7 @@ import { useRouter } from "@tanstack/react-router";
 import { FolderPlusIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -35,7 +35,9 @@ export default function useNewProjectItem({ context }: TProps) {
 
       const environments = res.data.environments;
       if (environments.length < 1) {
-        toast.error("No environments found", {
+        toast.add({
+          type: "error",
+          title: "No environments found",
           description: "There is no environment in this project",
         });
         setIsPendingId(null);
@@ -43,7 +45,9 @@ export default function useNewProjectItem({ context }: TProps) {
       }
       const environmentId = res.data.default_environment_id || environments[0].id;
       if (!projectId || !environmentId) {
-        toast.error("Project or environment ID is missing", {
+        toast.add({
+          type: "error",
+          title: "Project or environment ID is missing",
           description: "Project ID or Environment ID is missing",
         });
         setIsPendingId(null);
@@ -55,7 +59,9 @@ export default function useNewProjectItem({ context }: TProps) {
         () => new Error("Failed to invalidate projects"),
       );
       if (invalidateRes.isErr()) {
-        toast.error("Failed to invalidate projects", {
+        toast.add({
+          type: "error",
+          title: "Failed to invalidate projects",
           description: invalidateRes.error.message,
         });
         setIsPendingId(null);
@@ -71,7 +77,9 @@ export default function useNewProjectItem({ context }: TProps) {
         () => new Error("Failed to navigate to project"),
       );
       if (navigateRes.isErr()) {
-        toast.error("Failed to navigate to project", {
+        toast.add({
+          type: "error",
+          title: "Failed to navigate to project",
           description: navigateRes.error.message,
         });
         setIsPendingId(null);
@@ -82,9 +90,7 @@ export default function useNewProjectItem({ context }: TProps) {
       setIsPendingId(null);
     },
     onError: (error) => {
-      toast.error("Failed to create project", {
-        description: error.message,
-      });
+      toast.add({ type: "error", title: "Failed to create project", description: error.message });
       setIsPendingId(null);
     },
   });

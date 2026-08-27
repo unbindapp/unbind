@@ -15,7 +15,7 @@ import { ServiceRenameSchema } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { EllipsisVerticalIcon, PenIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { ReactElement, useState } from "react";
 import {
   DropdownMenu,
@@ -228,7 +228,9 @@ function RenameTrigger({
 
       if (refetchRes.isErr()) {
         console.error(refetchRes.error);
-        toast.error("Failed to refetch services", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch services",
           description: refetchRes.error.message,
         });
       }
@@ -303,7 +305,9 @@ function DeleteTrigger({
         () => new Error("Failed to refetch services"),
       );
       if (result.isErr()) {
-        toast.error("Failed to refetch services", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch services",
           description:
             "Successfully deleted the service group, but failed to refetch services. Please refresh the page.",
         });

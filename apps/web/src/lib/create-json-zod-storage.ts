@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 import { PersistStorage, createJSONStorage } from "zustand/middleware";
 
@@ -54,7 +54,9 @@ export function createJSONZodStorage<T>({
         if (result.success) {
           await jsonStorage.setItem(name, value);
         } else {
-          toast.error(`Couldn't save to storage`, {
+          toast.add({
+            type: "error",
+            title: `Couldn't save to storage`,
             description: `Validation failed. Couldn't save "${name}" to storage`,
           });
           console.error(

@@ -54,7 +54,7 @@ import {
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactElement, HTMLAttributes, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = HTMLAttributes<HTMLDivElement> &
   (
@@ -299,9 +299,11 @@ function RestartTrigger({
         () => new Error("Failed to refetch data"),
       );
       if (result.isErr()) {
-        toast.error("Failed to refetch", {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch",
           description: "Restarted successfuly but couldn't refetch the new data.",
-          duration: 5000,
+          timeout: 5000,
         });
       }
       setIsOpen(false);

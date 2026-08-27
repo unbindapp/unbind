@@ -28,7 +28,7 @@ import { useMutation } from "@tanstack/react-query";
 import { HardDriveIcon, PenIcon, XIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactElement } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = {
   volume: TVolumeShallow;
@@ -118,7 +118,9 @@ function TitleButton({ volume }: { volume: TVolumeShallow }) {
 
         if (refetchRes.isErr()) {
           console.error(refetchRes.error);
-          toast.error("Failed to refetch volumes", {
+          toast.add({
+            type: "error",
+            title: "Failed to refetch volumes",
             description: refetchRes.error.message,
           });
         }

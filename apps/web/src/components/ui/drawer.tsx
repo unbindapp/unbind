@@ -40,7 +40,7 @@ function Drawer({
     // A click on a toast is interacting with the toast, not dismissing the drawer
     if (!open && eventDetails.reason === "outside-press") {
       const target = eventDetails.event.target;
-      if (target instanceof Element && target.closest("[data-sonner-toast]")) {
+      if (target instanceof Element && target.closest('[data-slot="toast"]')) {
         eventDetails.cancel();
         return;
       }

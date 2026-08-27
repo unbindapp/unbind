@@ -56,7 +56,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 type TProps =
@@ -459,7 +459,9 @@ function RenameTrigger({
         );
 
         if (invalidateRes.isErr()) {
-          toast.error("Failed to fetch S3 sources", {
+          toast.add({
+            type: "error",
+            title: "Failed to fetch S3 sources",
             description: invalidateRes.error.message,
           });
         }
@@ -513,7 +515,9 @@ function DeleteTrigger({
         );
 
         if (invalidateRes.isErr()) {
-          toast.error("Failed to fetch S3 sources", {
+          toast.add({
+            type: "error",
+            title: "Failed to fetch S3 sources",
             description: invalidateRes.error.message,
           });
         }
@@ -591,7 +595,9 @@ export function NewS3SourceTrigger({
       );
 
       if (invalidateRes.isErr()) {
-        toast.error("Failed to fetch environments", {
+        toast.add({
+          type: "error",
+          title: "Failed to fetch environments",
           description: invalidateRes.error.message,
         });
       }

@@ -21,7 +21,7 @@ import { useMutation } from "@tanstack/react-query";
 import { FolderClosedIcon, ServerIcon, UnplugIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 type TProps = {
@@ -73,7 +73,9 @@ function AttachSection({ volume }: TProps) {
       );
 
       if (result.isErr()) {
-        toast.error("Data refetch failed", {
+        toast.add({
+          type: "error",
+          title: "Data refetch failed",
           description:
             "Attach was successful, but couldn't fetch the new data. Refresh the page to see the changes.",
         });

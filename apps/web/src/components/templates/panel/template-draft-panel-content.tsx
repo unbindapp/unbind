@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { HTMLAttributes, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import StorageSizeChip from "@/components/storage-size-chip";
@@ -126,7 +126,9 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
       if (res.isErr()) {
         console.error("Failed to invalidate services", res.error);
-        toast.error("Failed to invalidate services", {
+        toast.add({
+          type: "error",
+          title: "Failed to invalidate services",
           description: "Try refreshing the page to see the changes.",
         });
       }

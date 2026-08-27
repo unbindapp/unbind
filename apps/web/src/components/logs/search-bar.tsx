@@ -29,7 +29,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 
 type TProps = {
   isPendingLogs: boolean;
@@ -77,10 +77,11 @@ export default function SearchBar({ isPendingLogs, logType, className }: TProps)
           <Button
             aria-label="Filter Logs"
             onClick={() => {
-              toast.success("Filter", {
+              toast.add({
+                type: "success",
+                title: "Filter",
                 description: "This is fake",
-                duration: 2000,
-                closeButton: false,
+                timeout: 2000,
               });
             }}
             type="button"

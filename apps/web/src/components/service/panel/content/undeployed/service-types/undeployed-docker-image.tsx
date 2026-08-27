@@ -30,7 +30,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { PackageIcon, TagIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { useDebounce } from "use-debounce";
 
 type TProps = {
@@ -92,9 +92,11 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
       const { validVariables } = softValidateVariables(formValues.variables);
       if (validVariables.length >= 1) {
         if (!tokensRef.current) {
-          toast.warning("Reference variables are loading", {
+          toast.add({
+            type: "warning",
+            title: "Reference variables are loading",
             description: "Reference variables loading, please wait a bit.",
-            duration: 5000,
+            timeout: 5000,
           });
           return;
         }
@@ -165,7 +167,9 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
         () => new Error(`Failed to refetch`),
       );
       if (result.isErr()) {
-        toast.error(result.error.message, {
+        toast.add({
+          type: "error",
+          title: result.error.message,
           description: "Failed to refetch service, deployments, or variables.",
         });
       }

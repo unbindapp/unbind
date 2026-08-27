@@ -10,7 +10,7 @@ import { useTemplates } from "@/components/templates/templates-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { BlocksIcon } from "lucide-react";
 import { useMemo } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/toast";
 import { v4 as uuidv4 } from "uuid";
 
 type TProps = {
@@ -83,7 +83,9 @@ function useTemplateItem() {
           const id = uuidv4();
           const environmentId = environmentIdFromPathname || defaultEnvironmentId;
           if (!environmentId) {
-            toast.error("No environment", {
+            toast.add({
+              type: "error",
+              title: "No environment",
               description: "Environment not found.",
             });
             return;
