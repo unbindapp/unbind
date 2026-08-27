@@ -11,6 +11,8 @@ function Slider<Value extends number | readonly number[]>({
   value,
   min = 0,
   max = 100,
+  onValueChange,
+  onValueCommitted,
   ...props
 }: SliderProps<Value>) {
   const _values = Array.isArray(value)
@@ -19,6 +21,13 @@ function Slider<Value extends number | readonly number[]>({
       ? defaultValue
       : [min, max];
 
+  // Base UI emits a plain number from pointer interactions on single-thumb
+  // sliders even when `value`/`defaultValue` is an array (its keyboard path
+  // emits arrays) - normalize so array in always means array out
+  const expectsArray = Array.isArray(value ?? defaultValue);
+  const normalize = (v: number | readonly number[]) =>
+    (expectsArray && !Array.isArray(v) ? [v] : v) as Value extends number ? number : Value;
+
   return (
     <SliderPrimitive.Root
       data-slot="slider"
@@ -26,8 +35,17 @@ function Slider<Value extends number | readonly number[]>({
       value={value}
       min={min}
       max={max}
+      onValueChange={
+        onValueChange ? (v, details) => onValueChange(normalize(v), details) : undefined
+      }
+      onValueCommitted={
+        onValueCommitted ? (v, details) => onValueCommitted(normalize(v), details) : undefined
+      }
       thumbAlignment="edge"
-      className={cn("data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full", className)}
+      className={cn(
+        "data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full",
+        className,
+      )}
       {...props}
     >
       <SliderPrimitive.Control className="group/slider relative flex w-full touch-none items-center select-none before:absolute before:top-1/2 before:left-1/2 before:h-full before:min-h-11 before:w-full before:min-w-11 before:-translate-1/2 active:cursor-grabbing has-hover:hover:cursor-grab has-hover:hover:active:cursor-grabbing data-disabled:opacity-50 data-[orientation=vertical]:h-full data-[orientation=vertical]:min-h-44 data-[orientation=vertical]:w-auto data-[orientation=vertical]:flex-col">

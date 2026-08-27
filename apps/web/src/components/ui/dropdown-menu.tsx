@@ -122,6 +122,11 @@ function DropdownMenuItem({
   className,
   inset,
   fadeOnDisabled = true,
+  // Wrapping triggers (e.g. DialogTrigger render={...}) inject tabIndex={0},
+  // which makes the item tabbable so it steals focus and the highlight when
+  // the menu opens; the menu's own roving tabIndex must stay in charge
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  tabIndex: _tabIndex,
   ...props
 }: MenuPrimitive.Item.Props & {
   inset?: boolean;
