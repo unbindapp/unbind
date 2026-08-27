@@ -54,19 +54,23 @@ architecture: standalone
 
 # Persistence configuration
 # Quote values: CloudPirates' schema requires these as strings (unquoted "10" -> number).
-# The chart only labels volumeClaimTemplates with selectorLabels and persistence.labels, so the
-# unbind-* labels the platform uses to find PVCs must be passed here as well.
-# unbind-deployment changes every deploy; volumeClaimTemplates are immutable, so
-# including it makes every helm upgrade fail on the StatefulSet.
 persistence:
   enabled: true
   size: {{ .Parameters.common.storage | default "1Gi" | quote }}
+{{- if .Parameters.common.existingClaim }}
+  existingClaim: {{ .Parameters.common.existingClaim | quote }}
+{{- else }}
+  # The chart only labels volumeClaimTemplates with selectorLabels and persistence.labels, so the
+  # unbind-* labels the platform uses to find PVCs must be passed here as well.
+  # unbind-deployment changes every deploy; volumeClaimTemplates are immutable, so
+  # including it makes every helm upgrade fail on the StatefulSet.
   labels:
     {{- range $key, $value := .Parameters.labels }}
     {{- if and (hasPrefix "unbind" $key) (ne $key "unbind-deployment") }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
     {{- end }}
+{{- end }}
 
 # Resource configuration
 resources:

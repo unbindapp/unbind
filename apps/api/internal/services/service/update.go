@@ -3,6 +3,7 @@ package service_service
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -82,21 +83,17 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 			}
 		}
 
-		// Disallow attaching a PVC to a database service
-		if len(input.OverwriteVolumes) > 0 || len(input.AddVolumes) > 0 {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot attach a PVC to a database service")
+		if err := validateDatabaseVolumeInput(service, input.OverwriteVolumes, input.AddVolumes, input.RemoveVolumes, input.Replicas); err != nil {
+			return nil, err
 		}
 	}
 
-	// PVC validation, requires a path
-	for _, volume := range input.OverwriteVolumes {
-		if !utils.IsValidUnixPath(volume.MountPath) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid volume mount path")
-		}
-	}
-	for _, volume := range input.AddVolumes {
-		if !utils.IsValidUnixPath(volume.MountPath) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid volume mount path")
+	// databases mount at the path their engine expects, the caller only names the volume
+	if service.Type != schema.ServiceTypeDatabase {
+		for _, volume := range slices.Concat(input.OverwriteVolumes, input.AddVolumes) {
+			if !utils.IsValidUnixPath(volume.MountPath) {
+				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid volume mount path")
+			}
 		}
 	}
 
@@ -145,6 +142,10 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 
 	client, err := self.k8s.CreateClientWithToken(bearerToken)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := self.applyDatabaseStorageSize(ctx, service, input.DatabaseConfig, client); err != nil {
 		return nil, err
 	}
 
@@ -342,6 +343,16 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 			if err := input.HealthCheck.Validate(); err != nil {
 				return err
 			}
+		}
+
+		if service.Type == schema.ServiceTypeDatabase {
+			overwrite, remove, err := self.resolveDatabaseVolumeChange(ctx, tx, service, input, client)
+			if err != nil {
+				return err
+			}
+			input.OverwriteVolumes = overwrite
+			input.RemoveVolumes = remove
+			input.AddVolumes = nil
 		}
 
 		updateInput := &service_repo.MutateConfigInput{

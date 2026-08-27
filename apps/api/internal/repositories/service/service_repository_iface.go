@@ -43,6 +43,9 @@ type ServiceRepositoryInterface interface {
 	GetServicesUsingPVC(ctx context.Context, pvcID string) ([]*ent.Service, error)
 	// Get PVC mount paths by IDs
 	GetPVCMountPaths(ctx context.Context, pvcs []*models.PVCInfo) (map[string]string, error)
+	// GetDatabaseStorageConfig returns a database service's config alongside the volumes unbind
+	// provisioned for it. An empty volume set means the engine's operator still owns its storage.
+	GetDatabaseStorageConfig(ctx context.Context, serviceID uuid.UUID) (*schema.DatabaseConfig, []schema.ServiceVolume, error)
 	// Get database config for a service
 	GetDatabaseConfig(ctx context.Context, serviceID uuid.UUID) (*schema.DatabaseConfig, error)
 }

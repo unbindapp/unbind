@@ -229,12 +229,18 @@ func resolveInputs(def schema.TemplateDefinition, services []*ent.Service, secre
 			r.pvc = findDatabasePVC(volumesByService[svc.ID])
 			r.state.ServiceID = new(svc.ID)
 			r.state.Editable = r.pvc != nil
-			cfg := svc.Edges.ServiceConfig
-			if cfg == nil || cfg.DatabaseConfig == nil {
-				break
+			// desired size, not capacity, which lags during a resize; operator-owned volumes
+			// only carry it in the service config until the operator syncs
+			gb := float64(0)
+			if r.pvc != nil {
+				gb = r.pvc.RequestedGB
 			}
-			// Use the configured size (desired) rather than the PVC capacity, which lags during resize.
-			if gb, err := parseSizeGB(cfg.DatabaseConfig.StorageSize); err == nil {
+			if cfg := svc.Edges.ServiceConfig; cfg != nil && cfg.DatabaseConfig != nil {
+				if configured, err := parseSizeGB(cfg.DatabaseConfig.StorageSize); err == nil && configured > gb {
+					gb = configured
+				}
+			}
+			if gb > 0 {
 				gb = roundGB(gb)
 				r.state.CurrentValue = strconv.FormatFloat(gb, 'f', -1, 64)
 				r.state.CurrentValueGB = new(gb)

@@ -15,6 +15,9 @@ properties:
     type: "string"
     description: "Storage size"
     default: "1Gi"
+  existingClaim:
+    type: "string"
+    description: "Name of a pre-provisioned PVC to mount instead of provisioning one"
   exposeExternal:
     type: "boolean"
     description: "Expose external service"

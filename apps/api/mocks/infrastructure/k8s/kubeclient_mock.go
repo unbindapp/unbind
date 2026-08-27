@@ -1531,6 +1531,116 @@ func (_c *KubeClientMock_DiscoverEndpointsByLabels_Call) RunAndReturn(run func(c
 	return _c
 }
 
+// EnsurePersistentVolumeClaim provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) EnsurePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error) {
+	ret := _mock.Called(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for EnsurePersistentVolumeClaim")
+	}
+
+	var r0 *models.PVCInfo
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) (*models.PVCInfo, error)); ok {
+		return returnFunc(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) *models.PVCInfo); ok {
+		r0 = returnFunc(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.PVCInfo)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) error); ok {
+		r1 = returnFunc(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_EnsurePersistentVolumeClaim_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'EnsurePersistentVolumeClaim'
+type KubeClientMock_EnsurePersistentVolumeClaim_Call struct {
+	*mock.Call
+}
+
+// EnsurePersistentVolumeClaim is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespace string
+//   - pvcName string
+//   - displayName string
+//   - labels map[string]string
+//   - storageRequest string
+//   - accessModes []v1.PersistentVolumeAccessMode
+//   - storageClassName *string
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) EnsurePersistentVolumeClaim(ctx any, namespace any, pvcName any, displayName any, labels any, storageRequest any, accessModes any, storageClassName any, client any) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
+	return &KubeClientMock_EnsurePersistentVolumeClaim_Call{Call: _e.mock.On("EnsurePersistentVolumeClaim", ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)}
+}
+
+func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) Run(run func(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface)) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		var arg4 map[string]string
+		if args[4] != nil {
+			arg4 = args[4].(map[string]string)
+		}
+		var arg5 string
+		if args[5] != nil {
+			arg5 = args[5].(string)
+		}
+		var arg6 []v1.PersistentVolumeAccessMode
+		if args[6] != nil {
+			arg6 = args[6].([]v1.PersistentVolumeAccessMode)
+		}
+		var arg7 *string
+		if args[7] != nil {
+			arg7 = args[7].(*string)
+		}
+		var arg8 kubernetes.Interface
+		if args[8] != nil {
+			arg8 = args[8].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+			arg6,
+			arg7,
+			arg8,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) Return(pVCInfo *models.PVCInfo, err error) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
+	_c.Call.Return(pVCInfo, err)
+	return _c
+}
+
+func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) RunAndReturn(run func(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ExecInPod provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) ExecInPod(ctx context.Context, token string, opts k8s.ExecOptions) error {
 	ret := _mock.Called(ctx, token, opts)
@@ -3460,6 +3570,161 @@ func (_c *KubeClientMock_ParseRegistryCredentials_Call) RunAndReturn(run func(se
 	return _c
 }
 
+// RebindPersistentVolumeClaim provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) RebindPersistentVolumeClaim(ctx context.Context, namespace string, fromName string, toName string, client kubernetes.Interface) (*models.PVCInfo, error) {
+	ret := _mock.Called(ctx, namespace, fromName, toName, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RebindPersistentVolumeClaim")
+	}
+
+	var r0 *models.PVCInfo
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, kubernetes.Interface) (*models.PVCInfo, error)); ok {
+		return returnFunc(ctx, namespace, fromName, toName, client)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, kubernetes.Interface) *models.PVCInfo); ok {
+		r0 = returnFunc(ctx, namespace, fromName, toName, client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.PVCInfo)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string, kubernetes.Interface) error); ok {
+		r1 = returnFunc(ctx, namespace, fromName, toName, client)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_RebindPersistentVolumeClaim_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RebindPersistentVolumeClaim'
+type KubeClientMock_RebindPersistentVolumeClaim_Call struct {
+	*mock.Call
+}
+
+// RebindPersistentVolumeClaim is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespace string
+//   - fromName string
+//   - toName string
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) RebindPersistentVolumeClaim(ctx any, namespace any, fromName any, toName any, client any) *KubeClientMock_RebindPersistentVolumeClaim_Call {
+	return &KubeClientMock_RebindPersistentVolumeClaim_Call{Call: _e.mock.On("RebindPersistentVolumeClaim", ctx, namespace, fromName, toName, client)}
+}
+
+func (_c *KubeClientMock_RebindPersistentVolumeClaim_Call) Run(run func(ctx context.Context, namespace string, fromName string, toName string, client kubernetes.Interface)) *KubeClientMock_RebindPersistentVolumeClaim_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		var arg4 kubernetes.Interface
+		if args[4] != nil {
+			arg4 = args[4].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_RebindPersistentVolumeClaim_Call) Return(pVCInfo *models.PVCInfo, err error) *KubeClientMock_RebindPersistentVolumeClaim_Call {
+	_c.Call.Return(pVCInfo, err)
+	return _c
+}
+
+func (_c *KubeClientMock_RebindPersistentVolumeClaim_Call) RunAndReturn(run func(ctx context.Context, namespace string, fromName string, toName string, client kubernetes.Interface) (*models.PVCInfo, error)) *KubeClientMock_RebindPersistentVolumeClaim_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RetainVolumeForClaim provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) RetainVolumeForClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error {
+	ret := _mock.Called(ctx, namespace, pvcName, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RetainVolumeForClaim")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, kubernetes.Interface) error); ok {
+		r0 = returnFunc(ctx, namespace, pvcName, client)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// KubeClientMock_RetainVolumeForClaim_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RetainVolumeForClaim'
+type KubeClientMock_RetainVolumeForClaim_Call struct {
+	*mock.Call
+}
+
+// RetainVolumeForClaim is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespace string
+//   - pvcName string
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) RetainVolumeForClaim(ctx any, namespace any, pvcName any, client any) *KubeClientMock_RetainVolumeForClaim_Call {
+	return &KubeClientMock_RetainVolumeForClaim_Call{Call: _e.mock.On("RetainVolumeForClaim", ctx, namespace, pvcName, client)}
+}
+
+func (_c *KubeClientMock_RetainVolumeForClaim_Call) Run(run func(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface)) *KubeClientMock_RetainVolumeForClaim_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 kubernetes.Interface
+		if args[3] != nil {
+			arg3 = args[3].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_RetainVolumeForClaim_Call) Return(err error) *KubeClientMock_RetainVolumeForClaim_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *KubeClientMock_RetainVolumeForClaim_Call) RunAndReturn(run func(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error) *KubeClientMock_RetainVolumeForClaim_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RollingRestartPodsByLabel provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) RollingRestartPodsByLabel(ctx context.Context, namespace string, labelKey string, labelValue string, client kubernetes.Interface) error {
 	ret := _mock.Called(ctx, namespace, labelKey, labelValue, client)
@@ -3531,6 +3796,81 @@ func (_c *KubeClientMock_RollingRestartPodsByLabel_Call) Return(err error) *Kube
 }
 
 func (_c *KubeClientMock_RollingRestartPodsByLabel_Call) RunAndReturn(run func(ctx context.Context, namespace string, labelKey string, labelValue string, client kubernetes.Interface) error) *KubeClientMock_RollingRestartPodsByLabel_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetPersistentVolumeClaimService provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) SetPersistentVolumeClaimService(ctx context.Context, namespace string, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error {
+	ret := _mock.Called(ctx, namespace, pvcName, serviceID, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetPersistentVolumeClaimService")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, *uuid.UUID, kubernetes.Interface) error); ok {
+		r0 = returnFunc(ctx, namespace, pvcName, serviceID, client)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// KubeClientMock_SetPersistentVolumeClaimService_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetPersistentVolumeClaimService'
+type KubeClientMock_SetPersistentVolumeClaimService_Call struct {
+	*mock.Call
+}
+
+// SetPersistentVolumeClaimService is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespace string
+//   - pvcName string
+//   - serviceID *uuid.UUID
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) SetPersistentVolumeClaimService(ctx any, namespace any, pvcName any, serviceID any, client any) *KubeClientMock_SetPersistentVolumeClaimService_Call {
+	return &KubeClientMock_SetPersistentVolumeClaimService_Call{Call: _e.mock.On("SetPersistentVolumeClaimService", ctx, namespace, pvcName, serviceID, client)}
+}
+
+func (_c *KubeClientMock_SetPersistentVolumeClaimService_Call) Run(run func(ctx context.Context, namespace string, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface)) *KubeClientMock_SetPersistentVolumeClaimService_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 *uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(*uuid.UUID)
+		}
+		var arg4 kubernetes.Interface
+		if args[4] != nil {
+			arg4 = args[4].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_SetPersistentVolumeClaimService_Call) Return(err error) *KubeClientMock_SetPersistentVolumeClaimService_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *KubeClientMock_SetPersistentVolumeClaimService_Call) RunAndReturn(run func(ctx context.Context, namespace string, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error) *KubeClientMock_SetPersistentVolumeClaimService_Call {
 	_c.Call.Return(run)
 	return _c
 }

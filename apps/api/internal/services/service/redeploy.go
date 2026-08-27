@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
@@ -91,6 +92,10 @@ func (self *ServiceService) DeployAdhocServices(ctx context.Context, services []
 func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent.Service) (*ent.Deployment, error) {
 	if service.Edges.CurrentDeployment == nil || service.Edges.ServiceConfig == nil {
 		return nil, fmt.Errorf("service %s missing current deployment or config", service.ID)
+	}
+
+	if err := dbvolumes.Ensure(ctx, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
+		return nil, err
 	}
 
 	crdToDeploy := self.deploymentService.CreateCRDFromService(service)

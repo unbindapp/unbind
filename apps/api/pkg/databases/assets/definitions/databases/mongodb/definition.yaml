@@ -42,6 +42,9 @@ auth:
 persistence:
   enabled: true
   size: {{ .Parameters.common.storage | default "1Gi" | quote }}
+{{- if .Parameters.common.existingClaim }}
+  existingClaim: {{ .Parameters.common.existingClaim | quote }}
+{{- end }}
 
 # Resource configuration
 resources:

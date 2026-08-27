@@ -10,6 +10,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
@@ -57,6 +58,10 @@ func (self *DeploymentService) canRedeployWithoutBuild(ctx context.Context, serv
 func (self *DeploymentService) redeployExistingImage(ctx context.Context, service *ent.Service, deployment *ent.Deployment) (*models.DeploymentResponse, error) {
 	envVars, err := self.resolveReferences(ctx, service)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := dbvolumes.Ensure(ctx, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
 		return nil, err
 	}
 

@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	"github.com/unbindapp/unbind-api/internal/services"
@@ -197,6 +198,81 @@ func (suite *UpdatePVCSuite) TestSameSizeSkipsResizeMachinery() {
 	suite.NoError(err)
 	suite.NotNil(result)
 	suite.Equal(suite.testPVCID, result.Name)
+}
+
+// strict mocks fail this if the old operator dance (config write, STS orphaning, redeploy) runs
+func (suite *UpdatePVCSuite) TestManagedDatabaseResizePatchesEveryReplicaClaim() {
+	primary := "pgdata-my-db-abc123-0"
+	suite.testPVCID = primary
+	suite.expectCommonReads(&models.PVCInfo{
+		ID:                 primary,
+		TeamID:             suite.testTeamID,
+		CapacityGB:         10,
+		IsDatabase:         true,
+		MountedOnServiceID: &suite.testServiceID,
+	})
+
+	dbType := "postgres"
+	managed := &ent.Service{
+		ID:             suite.testServiceID,
+		Type:           schema.ServiceTypeDatabase,
+		Name:           "My DB",
+		KubernetesName: "my-db-abc123",
+		Database:       &dbType,
+	}
+	managed.Edges.ServiceConfig = &ent.ServiceConfig{
+		Replicas:       2,
+		Volumes:        []schema.ServiceVolume{{ID: primary, MountPath: "/home/postgres/pgdata"}},
+		DatabaseConfig: &schema.DatabaseConfig{StorageSize: "10Gi"},
+	}
+
+	suite.MockServiceRepo.EXPECT().
+		GetByID(suite.Ctx, suite.testServiceID).
+		Return(managed, nil).
+		Once()
+
+	for _, claim := range []string{primary, "pgdata-my-db-abc123-1"} {
+		suite.MockK8s.EXPECT().
+			UpdatePersistentVolumeClaim(suite.Ctx, suite.testTeam.Namespace, claim, mock.Anything, suite.mockK8sClient).
+			Return(&models.PVCInfo{ID: claim, TeamID: suite.testTeamID, CapacityGB: 20}, nil).
+			Once()
+	}
+
+	suite.MockK8s.EXPECT().
+		RollingRestartPodsByLabel(suite.Ctx, suite.testTeam.Namespace, "unbind-service", suite.testServiceID.String(), suite.mockK8sClient).
+		Return(nil).
+		Once()
+
+	suite.MockRepo.EXPECT().
+		WithTx(suite.Ctx, mock.AnythingOfType("func(repository.TxInterface) error")).
+		Run(func(ctx context.Context, fn func(repository.TxInterface) error) {
+			mockTx := suite.NewTxMockTyped()
+
+			suite.MockSystemRepo.EXPECT().
+				UpsertPVCMetadata(suite.Ctx, mockTx, primary, (*string)(nil), (*string)(nil)).
+				Return(nil).
+				Once()
+
+			suite.MockSystemRepo.EXPECT().
+				GetPVCMetadata(suite.Ctx, mockTx, []string{primary}).
+				Return(map[string]*ent.PVCMetadata{}, nil).
+				Once()
+
+			suite.NoError(fn(mockTx))
+		}).
+		Return(nil).
+		Once()
+
+	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, suite.testBearerToken, &models.UpdatePVCInput{
+		Type:       models.PvcScopeTeam,
+		TeamID:     suite.testTeamID,
+		ID:         primary,
+		CapacityGB: new(float64(20)),
+	})
+
+	suite.NoError(err)
+	suite.NotNil(result)
+	suite.Equal(float64(20), result.CapacityGB)
 }
 
 func TestUpdatePVCSuite(t *testing.T) {

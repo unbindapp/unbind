@@ -69,12 +69,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			"DATABASE_HTTP_PORT",
 		}
 
-		// Disallow pvc for database
-		if len(input.Volumes) > 0 {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-				"PVC is not supported for database services")
-		}
-
 		// Validate that if database is provided, name is set
 		if input.DatabaseType == nil {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
@@ -153,10 +147,12 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("received unsupported service type %s", input.Type))
 	}
 
-	// PVC validation, requires a path
-	for _, volume := range input.Volumes {
-		if !utils.IsValidUnixPath(volume.MountPath) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid PVC mount path")
+	// databases mount at the path their engine expects, the caller only names the volume
+	if input.Type != schema.ServiceTypeDatabase {
+		for _, volume := range input.Volumes {
+			if !utils.IsValidUnixPath(volume.MountPath) {
+				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid PVC mount path")
+			}
 		}
 	}
 
@@ -422,6 +418,14 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		// Override public if hosts and ports exist
 		if len(hosts) > 0 && len(ports) > 0 {
 			isPublic = new(true)
+		}
+
+		if input.Type == schema.ServiceTypeDatabase {
+			volumes, err := self.claimDatabaseVolume(ctx, tx, service, kubernetesName, project.Edges.Team.Namespace, input, client)
+			if err != nil {
+				return err
+			}
+			input.Volumes = volumes
 		}
 
 		createInput := &service_repo.MutateConfigInput{

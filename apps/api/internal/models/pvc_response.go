@@ -17,6 +17,7 @@ type PVCInfo struct {
 	MountPath          *string                    `json:"mount_path,omitempty"`
 	UsedGB             *float64                   `json:"used_gb,omitempty"` // e.g., "10"
 	CapacityGB         float64                    `json:"capacity_gb"`       // e.g., "10"
+	RequestedGB        float64                    `json:"requested_gb"`      // desired size, ahead of capacity while expanding
 	TeamID             uuid.UUID                  `json:"team_id" format:"uuid"`
 	ProjectID          *uuid.UUID                 `json:"project_id,omitempty" format:"uuid"`
 	EnvironmentID      *uuid.UUID                 `json:"environment_id,omitempty" format:"uuid"`

@@ -102,7 +102,7 @@ func ParseLokiResponse(resp *http.Response, opts LokiLogHTTPOptions) ([]LogEvent
 		return nil, fmt.Errorf("loki query returned error: %s - %s", queryResp.ErrorType, queryResp.Error)
 	}
 
-	allEvents := []LogEvent{}
+	var allEvents []LogEvent
 
 	switch queryResp.Data.ResultType {
 	case "streams":

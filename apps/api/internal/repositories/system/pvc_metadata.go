@@ -71,6 +71,20 @@ func (self *SystemRepository) GetPVCMetadata(ctx context.Context, tx repository.
 	return result, nil
 }
 
+// keeps a volume's display identity across a rebind
+func (self *SystemRepository) RenamePVCMetadata(ctx context.Context, tx repository.TxInterface, fromPvcID, toPvcID string) error {
+	if fromPvcID == toPvcID {
+		return nil
+	}
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+	return db.PVCMetadata.Update().Where(
+		pvcmetadata.PvcID(fromPvcID),
+	).SetPvcID(toPvcID).Exec(ctx)
+}
+
 func (self *SystemRepository) DeletePVCMetadata(ctx context.Context, tx repository.TxInterface, pvcID string) error {
 	db := self.base.DB
 	if tx != nil {

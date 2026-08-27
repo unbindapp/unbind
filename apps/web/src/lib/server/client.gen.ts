@@ -297,6 +297,7 @@ export const PVCInfoSchema = z
     mounted_on_service_id: z.string().optional(),
     name: z.string(),
     project_id: z.string().optional(),
+    requested_gb: z.number(),
     status: PersistentVolumeClaimPhaseSchema,
     team_id: z.string(),
     type: PvcScopeSchema,

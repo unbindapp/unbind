@@ -136,10 +136,10 @@ rules:
   - apiGroups: [""]
     resources: ["configmaps", "endpoints", "events", "persistentvolumeclaims", "pods", "pods/log", "pods/exec", "secrets", "services"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
-  # PersistentVolumes are cluster-scoped; the API flips reclaim policy to Delete when releasing a volume
+  # PersistentVolumes are cluster-scoped; released on volume delete, retained and re-pointed on rebinds
   - apiGroups: [""]
     resources: ["persistentvolumes"]
-    verbs: ["get", "patch"]
+    verbs: ["get", "update", "patch"]
   # Apps API resources
   - apiGroups: ["apps"]
     resources: ["daemonsets", "deployments", "replicasets", "statefulsets"]

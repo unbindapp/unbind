@@ -13,6 +13,7 @@ import (
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
+	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, teamID, projectID, environmentID, serviceID uuid.UUID) error {
@@ -60,7 +61,7 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 			return err
 		}
 
-		if err := self.k8s.DeleteSecret(ctx, service.KubernetesSecret, team.Namespace, client); err != nil {
+		if err := self.k8s.DeleteSecret(ctx, service.KubernetesSecret, team.Namespace, client); err != nil && !errors.IsNotFound(err) {
 			log.Error("Error deleting secret from k8s", "secret", service.KubernetesSecret, "err", err)
 			return err
 		}
@@ -71,6 +72,11 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 		return nil
 	}); err != nil {
 		return err
+	}
+
+	// claims outlive the service; releasing makes them attachable right away
+	if err := self.releaseDatabaseVolumes(ctx, team.Namespace, service, client); err != nil {
+		log.Error("Error releasing database volumes", "svc", service.KubernetesName, "err", err)
 	}
 
 	// Trigger webhook

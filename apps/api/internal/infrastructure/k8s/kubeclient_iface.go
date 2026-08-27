@@ -25,7 +25,7 @@ type KubeClientInterface interface {
 	SyncDatabaseSecretForService(ctx context.Context, service *ent.Service) error
 	// UpdateDeploymentImages retags every unbind image in the system namespace; the app deployment (which runs this API) rolls last.
 	UpdateDeploymentImages(ctx context.Context, newVersion string) error
-	// CheckDeploymentsReady reports whether every deployment using an unbind image has a running pod on the given version.
+	// CheckDeploymentsReady reports whether every deployment using an unbind image serves only ready pods on the given version.
 	CheckDeploymentsReady(ctx context.Context, version string) (bool, error)
 	// DiscoverEndpointsByLabels returns both internal (services) and external (ingresses) endpoints
 	// matching the provided labels in a namespace
@@ -79,6 +79,13 @@ type KubeClientInterface interface {
 	StreamPodLogs(ctx context.Context, namespace string, opts loki.LokiLogStreamOptions, meta loki.LogMetadata, client kubernetes.Interface, eventChan chan<- loki.LogEvents) error
 	// CreatePersistentVolumeClaim creates a new PersistentVolumeClaim in the specified namespace.
 	CreatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
+	// EnsurePersistentVolumeClaim creates the claim if it is absent and returns the existing one
+	// otherwise. It never resizes; UpdatePersistentVolumeClaim owns that.
+	EnsurePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
+	// SetPersistentVolumeClaimService binds a claim to a service, or releases it when serviceID
+	// is nil. The label is what makes a volume show as mounted and blocks it from being
+	// attached elsewhere.
+	SetPersistentVolumeClaimService(ctx context.Context, namespace, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error
 	// UpdatePersistentVolumeClaim updates an existing PersistentVolumeClaim with new parameters (size, name)
 	UpdatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, newSize *string, client kubernetes.Interface) (*models.PVCInfo, error)
 	GetPersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) (*models.PVCInfo, error)
@@ -88,6 +95,15 @@ type KubeClientInterface interface {
 	DeletePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error
 	// GetPodsUsingPVC finds all pods in a given namespace that are mounting the specified PVC.
 	GetPodsUsingPVC(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) ([]corev1.Pod, error)
+	// RetainVolumeForClaim marks the volume backing a claim as Retain, so deleting the claim
+	// keeps the data. Claims that are not bound yet are skipped; the caller retries on the
+	// next reconcile.
+	RetainVolumeForClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error
+	// RebindPersistentVolumeClaim renames a claim without moving data: the volume is retained,
+	// the old claim deleted, the volume reserved for the new name, and a replacement claim
+	// created bound to it. Databases derive their claim names from the service, so attaching an
+	// existing volume to one requires this.
+	RebindPersistentVolumeClaim(ctx context.Context, namespace, fromName, toName string, client kubernetes.Interface) (*models.PVCInfo, error)
 	// GetPodContainerStatusByLabels efficiently fetches pod status with inferred events from container state
 	GetPodContainerStatusByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) ([]PodContainerStatus, error)
 	// GetPodContainerStatusByLabelsWithOptions efficiently fetches pod status with configurable options

@@ -175,7 +175,7 @@ func (self *KubeClient) DeleteStatefulSetsWithOrphanCascade(ctx context.Context,
 
 	for _, sts := range statefulSets.Items {
 		err = client.AppsV1().StatefulSets(namespace).Delete(ctx, sts.Name, metav1.DeleteOptions{
-			OrphanDependents: new(true),
+			PropagationPolicy: new(metav1.DeletePropagationOrphan),
 		})
 		if err != nil {
 			return fmt.Errorf("failed to delete StatefulSet %s: %w", sts.Name, err)

@@ -86,6 +86,10 @@ func (rb *ResourceBuilder) applyDbCommonConfig(dbConfig map[string]any, storage 
 	commonMap["namespace"] = rb.service.Namespace
 	commonMap["storage"] = storage
 
+	if claim := rb.existingClaimName(); claim != "" {
+		commonMap["existingClaim"] = claim
+	}
+
 	replicaCount := int32(1)
 	if rb.service.Spec.Config.Replicas != nil {
 		replicaCount = *rb.service.Spec.Config.Replicas
@@ -116,6 +120,18 @@ func (rb *ResourceBuilder) applyDbCommonConfig(dbConfig map[string]any, storage 
 	}
 }
 
+// empty for engines whose StatefulSet templates the claim, and for pre-managed services
+func (rb *ResourceBuilder) existingClaimName() string {
+	if !databases.MountsExistingClaim(strings.ToLower(rb.service.Spec.Config.Database.Type)) {
+		return ""
+	}
+	volumes := rb.service.Spec.Config.Volumes
+	if len(volumes) == 0 {
+		return ""
+	}
+	return volumes[0].Name
+}
+
 func (rb *ResourceBuilder) applyDbTypeConfig(dbConfig map[string]any) {
 	dbType := strings.ToLower(rb.service.Spec.Config.Database.Type)
 
@@ -129,11 +145,7 @@ func (rb *ResourceBuilder) applyDbTypeConfig(dbConfig map[string]any) {
 	}
 
 	if dbType == "clickhouse" {
-		clusterName := fmt.Sprintf("chi-%s", rb.service.Spec.ServiceRef)
-		if len(clusterName) > 15 {
-			clusterName = clusterName[:15]
-		}
-		dbConfig["clusterName"] = clusterName
+		dbConfig["clusterName"] = databases.ClickhouseClusterName(rb.service.Spec.ServiceRef)
 		dbConfig["existingSecretName"] = fmt.Sprintf("%s-clickhouse-secret", rb.service.Spec.ServiceRef)
 	}
 }

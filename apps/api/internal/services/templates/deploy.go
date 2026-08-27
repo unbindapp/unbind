@@ -15,6 +15,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -380,9 +381,14 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 			}
 			createService.Edges.ServiceGroup = serviceGroup
 
-			// Create volumes
+			// databases derive their claim below; a template volume would be provisioned then dropped
 			var volumes []schema.ServiceVolume
-			for _, volume := range templateService.Volumes {
+			isDatabase := templateService.Type == schema.ServiceTypeDatabase && templateService.DatabaseType != nil
+			templateVolumes := templateService.Volumes
+			if isDatabase {
+				templateVolumes = nil
+			}
+			for _, volume := range templateVolumes {
 				labels := map[string]string{
 					"unbind-team":        input.TeamID.String(),
 					"unbind-project":     input.ProjectID.String(),
@@ -424,6 +430,20 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					ID:        pvc.ID,
 					MountPath: volume.MountPath,
 				})
+			}
+
+			if isDatabase {
+				volumes, err = dbvolumes.PrimaryVolumeFor(
+					*templateService.DatabaseType,
+					kubernetesName,
+					createService.ID.String(),
+					templateService.Name,
+					1,
+					"",
+				)
+				if err != nil {
+					return err
+				}
 			}
 
 			var hosts []schema.HostSpec

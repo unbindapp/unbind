@@ -10,7 +10,7 @@ func InferOperatorPVCMountPath(databaseType string) *string {
 	case "mysql":
 		return new("/var/lib/mysql")
 	case "mongodb":
-		return new("/bitnami/mongodb")
+		return new("/data/db")
 	case "clickhouse":
 		return new("/var/lib/clickhouse")
 	}

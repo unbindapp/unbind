@@ -519,6 +519,20 @@ func (self *ServiceRepository) GetPVCMountPaths(ctx context.Context, pvcs []*mod
 	return mountPaths, nil
 }
 
+// empty volume set means the engine's operator still owns the storage
+func (self *ServiceRepository) GetDatabaseStorageConfig(ctx context.Context, serviceID uuid.UUID) (*schema.DatabaseConfig, []schema.ServiceVolume, error) {
+	svcConfig, err := self.base.DB.Service.Query().
+		Where(service.IDEQ(serviceID)).
+		QueryServiceConfig().
+		Select(serviceconfig.FieldDatabaseConfig, serviceconfig.FieldVolumes).
+		Only(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return svcConfig.DatabaseConfig, svcConfig.Volumes, nil
+}
+
 // Get database config for a service
 func (self *ServiceRepository) GetDatabaseConfig(ctx context.Context, serviceID uuid.UUID) (*schema.DatabaseConfig, error) {
 	svcConfig, err := self.base.DB.Service.Query().

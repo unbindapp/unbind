@@ -17,6 +17,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/queue"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
@@ -346,6 +347,11 @@ func (self *DeploymentController) populateDatabaseEnv(ctx context.Context, env m
 	}
 	marshalledConfig, err := json.Marshal(config)
 	if err != nil {
+		return err
+	}
+
+	// the builder applies the CR but has no rights over storage
+	if err := dbvolumes.Ensure(ctx, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
 		return err
 	}
 

@@ -3,8 +3,9 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"maps"
+	"math"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
@@ -20,6 +21,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+)
+
+const (
+	teamLabel        = "unbind-team"
+	projectLabel     = "unbind-project"
+	environmentLabel = "unbind-environment"
+	serviceLabel     = "unbind-service"
+	displayNameLabel = "pvc-display-name"
 )
 
 // CreatePersistentVolumeClaim creates a new PersistentVolumeClaim in the specified namespace.
@@ -52,13 +61,17 @@ func (self *KubeClient) CreatePersistentVolumeClaim(
 		return nil, fmt.Errorf("failed to parse storageRequest '%s': %w", storageRequest, err)
 	}
 
-	labels["pvc-display-name"] = displayName
+	pvcLabels := maps.Clone(labels)
+	if pvcLabels == nil {
+		pvcLabels = map[string]string{}
+	}
+	pvcLabels[displayNameLabel] = displayName
 
 	pvc := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pvcName,
 			Namespace: namespace,
-			Labels:    labels,
+			Labels:    pvcLabels,
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
 			AccessModes: accessModes,
@@ -81,6 +94,63 @@ func (self *KubeClient) CreatePersistentVolumeClaim(
 
 	// Return the created PVC info using GetPersistentVolumeClaim
 	return self.GetPersistentVolumeClaim(ctx, namespace, pvcName, client)
+}
+
+// never resizes an existing claim; UpdatePersistentVolumeClaim owns that
+func (self *KubeClient) EnsurePersistentVolumeClaim(
+	ctx context.Context,
+	namespace string,
+	pvcName string,
+	displayName string,
+	labels map[string]string,
+	storageRequest string,
+	accessModes []corev1.PersistentVolumeAccessMode,
+	storageClassName *string,
+	client kubernetes.Interface,
+) (*models.PVCInfo, error) {
+	_, err := client.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, pvcName, metav1.GetOptions{})
+	if err == nil {
+		return self.GetPersistentVolumeClaim(ctx, namespace, pvcName, client)
+	}
+	if !errors.IsNotFound(err) {
+		return nil, fmt.Errorf("failed to get PersistentVolumeClaim '%s' in namespace '%s': %w", pvcName, namespace, err)
+	}
+
+	return self.CreatePersistentVolumeClaim(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+}
+
+// nil serviceID releases the claim
+func (self *KubeClient) SetPersistentVolumeClaimService(ctx context.Context, namespace, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error {
+	pvc, err := client.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, pvcName, metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) && serviceID == nil {
+			return nil
+		}
+		if errors.IsNotFound(err) {
+			return errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("PersistentVolumeClaim '%s' not found", pvcName))
+		}
+		return fmt.Errorf("failed to get PersistentVolumeClaim '%s': %w", pvcName, err)
+	}
+
+	if pvc.Labels == nil {
+		pvc.Labels = map[string]string{}
+	}
+	current, bound := pvc.Labels[serviceLabel]
+	switch {
+	case serviceID == nil && !bound:
+		return nil
+	case serviceID == nil:
+		delete(pvc.Labels, serviceLabel)
+	case current == serviceID.String():
+		return nil
+	default:
+		pvc.Labels[serviceLabel] = serviceID.String()
+	}
+
+	if _, err := client.CoreV1().PersistentVolumeClaims(namespace).Update(ctx, pvc, metav1.UpdateOptions{}); err != nil {
+		return fmt.Errorf("failed to update labels on PersistentVolumeClaim '%s': %w", pvcName, err)
+	}
+	return nil
 }
 
 // UpdatePersistentVolumeClaim updates an existing PersistentVolumeClaim with new parameters (size, name)
@@ -134,7 +204,7 @@ func (self *KubeClient) UpdatePersistentVolumeClaim(
 // PVC. It returns the bound service ID and whether that service is a database.
 // A nil service ID means the PVC is unbound; parse failures are logged and
 // treated as unbound, while DB errors are returned for the caller to handle.
-func (self *KubeClient) resolvePVCServiceBinding(ctx context.Context, pvcName, serviceLabel string, pvcLabels map[string]string) (boundToServiceID *uuid.UUID, isDatabase bool, err error) {
+func (self *KubeClient) resolvePVCServiceBinding(ctx context.Context, pvcName string, pvcLabels map[string]string) (boundToServiceID *uuid.UUID, isDatabase bool, err error) {
 	serviceIDStr := pvcLabels[serviceLabel]
 	if serviceIDStr == "" {
 		services, err := self.repo.Service().GetServicesUsingPVC(ctx, pvcName)
@@ -177,8 +247,8 @@ type pvcBinding struct {
 // service still exists. Pods otherwise just signal whether mounts are still
 // physically live, so a volume whose service was deleted reports as detaching
 // while its old pods terminate instead of appearing mounted.
-func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName, serviceLabel string, pvcLabels map[string]string, pods []corev1.Pod) (*pvcBinding, error) {
-	serviceID, isDatabase, err := self.resolvePVCServiceBinding(ctx, pvcName, serviceLabel, pvcLabels)
+func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName string, pvcLabels map[string]string, pods []corev1.Pod) (*pvcBinding, error) {
+	serviceID, isDatabase, err := self.resolvePVCServiceBinding(ctx, pvcName, pvcLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -240,86 +310,58 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 		return nil, fmt.Errorf("failed to get PersistentVolumeClaim '%s' in namespace '%s': %w", pvcName, namespace, err)
 	}
 
-	const ( // Define label keys for consistency
-		teamLabel        = "unbind-team"
-		projectLabel     = "unbind-project"
-		environmentLabel = "unbind-environment"
-		serviceLabel     = "unbind-service"
-	)
-
-	pvcLabels := pvc.GetLabels()
-	teamIDStr := pvcLabels[teamLabel]
-	// Skip if the PVC doesn't have the unbind-team label
-	if teamIDStr == "" {
-		return nil, fmt.Errorf("PVC '%s' does not have required team label", pvcName)
-	}
-
-	teamID, err := uuid.Parse(teamIDStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid team ID in PVC '%s': %w", pvcName, err)
-	}
-
-	projectIDStr := pvcLabels[projectLabel]
-	environmentIDStr := pvcLabels[environmentLabel]
-	sizeGBValueStr := ""
-	var sizeGBValue float64
-	var bytesValueCapacity int64
-	var bytesValueRequest int64
-	var bytesValue int64
-	if pvc.Status.Capacity != nil {
-		if capacityQuantity, ok := pvc.Status.Capacity[corev1.ResourceStorage]; ok {
-			bytesValue = capacityQuantity.Value()
-			bytesValueCapacity = bytesValue
-		}
-	}
-	if storageRequest, ok := pvc.Spec.Resources.Requests[corev1.ResourceStorage]; ok {
-		if pvc.Status.Capacity == nil {
-			bytesValue = storageRequest.Value()
-		}
-		bytesValueRequest = storageRequest.Value()
-	}
-	gbValue := float64(bytesValue) / (1024 * 1024 * 1024)
-	sizeGBValueStr = fmt.Sprintf("%.2f", gbValue) // Format to 2 decimal places
-	sizeGBValueStr = strings.TrimSuffix(sizeGBValueStr, ".00")
-	sizeGBValue, err = strconv.ParseFloat(sizeGBValueStr, 64)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse sizeGBValue '%s': %w", sizeGBValueStr, err)
-	}
-
 	pods, err := self.GetPodsUsingPVC(ctx, pvc.Namespace, pvc.Name, client)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pods using PVC '%s': %w", pvcName, err)
 	}
 
-	binding, err := self.resolvePVCBinding(ctx, pvcName, serviceLabel, pvcLabels, pods)
+	info, err := self.buildPVCInfo(ctx, pvc, pods)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil {
+		return nil, fmt.Errorf("PVC '%s' does not have required team label", pvcName)
+	}
+	return info, nil
+}
+
+// nil result means no valid unbind-team label, so the claim is not ours
+func (self *KubeClient) buildPVCInfo(ctx context.Context, pvc *corev1.PersistentVolumeClaim, pods []corev1.Pod) (*models.PVCInfo, error) {
+	pvcLabels := pvc.GetLabels()
+	teamID, err := uuid.Parse(pvcLabels[teamLabel])
+	if err != nil {
+		return nil, nil
+	}
+
+	var capacityBytes, requestBytes int64
+	if capacity, ok := pvc.Status.Capacity[corev1.ResourceStorage]; ok {
+		capacityBytes = capacity.Value()
+	}
+	if request, ok := pvc.Spec.Resources.Requests[corev1.ResourceStorage]; ok {
+		requestBytes = request.Value()
+	}
+
+	reportedBytes := capacityBytes
+	if capacityBytes == 0 {
+		reportedBytes = requestBytes
+	}
+
+	capacityGB := bytesToGB(reportedBytes)
+	requestedGB := bytesToGB(requestBytes)
+
+	binding, err := self.resolvePVCBinding(ctx, pvc.Name, pvcLabels, pods)
 	if err != nil {
 		return nil, err
 	}
 
-	var projectID *uuid.UUID
-	if projectIDStr != "" {
-		projectIDParsed, err := uuid.Parse(projectIDStr)
-		if err == nil {
-			projectID = &projectIDParsed
-		}
-	}
-
-	var environmentID *uuid.UUID
-	if environmentIDStr != "" {
-		environmentIDParsed, err := uuid.Parse(environmentIDStr)
-		if err == nil {
-			environmentID = &environmentIDParsed
-		}
-	}
+	projectID := parseOptionalUUID(pvcLabels[projectLabel])
+	environmentID := parseOptionalUUID(pvcLabels[environmentLabel])
 
 	// A PVC with a deletion timestamp is terminating — kubernetes removes the
 	// object asynchronously once its finalizers are cleared.
 	isDeleting := pvc.DeletionTimestamp != nil
-
-	// Check if PVC can be deleted (no owners, not in use, not already terminating)
 	canDelete := len(pvc.OwnerReferences) == 0 && binding.ServiceID == nil && !binding.InUseByPods && !isDeleting
 
-	// Get type
 	pvcType := models.PvcScopeTeam
 	if projectID != nil && environmentID != nil {
 		pvcType = models.PvcScopeEnvironment
@@ -327,35 +369,17 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 		pvcType = models.PvcScopeProject
 	}
 
-	isPendingResize := bytesValueRequest > bytesValueCapacity
-
-	// If a database, query the DB config
-	if binding.IsDatabase && binding.ServiceID != nil {
-		dbSvcConfig, err := self.repo.Service().GetDatabaseConfig(ctx, *binding.ServiceID)
-		if err != nil && !ent.IsNotFound(err) {
-			log.Errorf("failed to get database config for service '%s': %v", binding.ServiceID.String(), err)
-			return nil, fmt.Errorf("failed to get database config for service '%s': %w", binding.ServiceID.String(), err)
-		} else if dbSvcConfig != nil && dbSvcConfig.StorageSize != "" {
-			qty, err := utils.ParseStorageQuantity(dbSvcConfig.StorageSize)
-			if err != nil {
-				// A corrupt stored size must not take down the whole PVC view
-				log.Errorf("failed to parse storage size '%s' for service '%s': %v", dbSvcConfig.StorageSize, binding.ServiceID.String(), err)
-			} else if qty.Value() > bytesValueCapacity {
-				isPendingResize = true
-			}
-		}
-	}
-
-	// Assume PVC not created yet
-	if bytesValueCapacity == 0 {
-		isPendingResize = false
+	isPendingResize, err := self.isPendingResize(ctx, binding, capacityBytes, requestBytes)
+	if err != nil {
+		return nil, err
 	}
 
 	return &models.PVCInfo{
 		ID:                 pvc.Name,
 		Type:               pvcType,
 		IsPendingResize:    isPendingResize,
-		CapacityGB:         sizeGBValue,
+		CapacityGB:         capacityGB,
+		RequestedGB:        requestedGB,
 		TeamID:             teamID,
 		ProjectID:          projectID,
 		EnvironmentID:      environmentID,
@@ -369,6 +393,51 @@ func (self *KubeClient) GetPersistentVolumeClaim(ctx context.Context, namespace 
 		CanDelete:          canDelete,
 		CreatedAt:          pvc.CreationTimestamp.Time,
 	}, nil
+}
+
+// operator-owned database volumes only get their request bumped once the operator syncs, so
+// the service config is the earlier resize signal for those
+func (self *KubeClient) isPendingResize(ctx context.Context, binding *pvcBinding, capacityBytes, requestBytes int64) (bool, error) {
+	if capacityBytes == 0 {
+		return false, nil
+	}
+	if requestBytes > capacityBytes {
+		return true, nil
+	}
+	if !binding.IsDatabase || binding.ServiceID == nil {
+		return false, nil
+	}
+
+	dbConfig, volumes, err := self.repo.Service().GetDatabaseStorageConfig(ctx, *binding.ServiceID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to get database config for service '%s': %w", binding.ServiceID, err)
+	}
+	if dbConfig == nil || dbConfig.StorageSize == "" || len(volumes) > 0 {
+		return false, nil
+	}
+
+	qty, err := utils.ParseStorageQuantity(dbConfig.StorageSize)
+	if err != nil {
+		// a corrupt stored size must not take down the whole PVC view
+		log.Errorf("failed to parse storage size '%s' for service '%s': %v", dbConfig.StorageSize, binding.ServiceID, err)
+		return false, nil
+	}
+	return qty.Value() > capacityBytes, nil
+}
+
+func bytesToGB(value int64) float64 {
+	return math.Round(float64(value)/(1024*1024*1024)*100) / 100
+}
+
+func parseOptionalUUID(value string) *uuid.UUID {
+	parsed, err := uuid.Parse(value)
+	if err != nil {
+		return nil
+	}
+	return &parsed
 }
 
 // anyPodRunning reports whether any of the pods referencing a PVC is actually
@@ -418,133 +487,16 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 	}
 
 	var result []*models.PVCInfo
-	const (
-		teamLabel        = "unbind-team"
-		projectLabel     = "unbind-project"
-		environmentLabel = "unbind-environment"
-		serviceLabel     = "unbind-service"
-	)
-
-	for _, pvc := range pvcList.Items {
-		pvcLabels := pvc.GetLabels()
-		teamIDStr := pvcLabels[teamLabel]
-		// Skip if the PVC doesn't have the unbind-team label
-		if teamIDStr == "" {
-			continue
-		}
-
-		teamID, err := uuid.Parse(teamIDStr)
-
-		// Skip if the team ID is not valid
+	for i := range pvcList.Items {
+		pvc := &pvcList.Items[i]
+		info, err := self.buildPVCInfo(ctx, pvc, pvcToPods[pvc.Name])
 		if err != nil {
+			return nil, err
+		}
+		if info == nil {
 			continue
 		}
-
-		projectIDStr := pvcLabels[projectLabel]
-		environmentIDStr := pvcLabels[environmentLabel]
-		sizeGBValueStr := ""
-		var sizeGBValue float64
-		var bytesValueCapacity int64
-		var bytesValueRequest int64
-		var bytesValue int64
-		if pvc.Status.Capacity != nil {
-			if capacityQuantity, ok := pvc.Status.Capacity[corev1.ResourceStorage]; ok {
-				bytesValue = capacityQuantity.Value()
-				bytesValueCapacity = bytesValue
-			}
-		}
-		if storageRequest, ok := pvc.Spec.Resources.Requests[corev1.ResourceStorage]; ok {
-			if pvc.Status.Capacity == nil {
-				bytesValue = storageRequest.Value()
-			}
-			bytesValueRequest = storageRequest.Value()
-		}
-		gbValue := float64(bytesValue) / (1024 * 1024 * 1024)
-		sizeGBValueStr = fmt.Sprintf("%.2f", gbValue) // Format to 2 decimal places
-		sizeGBValueStr = strings.TrimSuffix(sizeGBValueStr, ".00")
-		sizeGBValue, err = strconv.ParseFloat(sizeGBValueStr, 64)
-		if err != nil {
-			continue
-		}
-
-		binding, err := self.resolvePVCBinding(ctx, pvc.Name, serviceLabel, pvcLabels, pvcToPods[pvc.Name])
-		if err != nil {
-			log.Errorf("failed to resolve binding for PVC '%s': %v", pvc.Name, err)
-			continue
-		}
-
-		var projectID *uuid.UUID
-		if projectIDStr != "" {
-			projectIDParsed, err := uuid.Parse(projectIDStr)
-			if err == nil {
-				projectID = &projectIDParsed
-			}
-		}
-
-		var environmentID *uuid.UUID
-		if environmentIDStr != "" {
-			environmentIDParsed, err := uuid.Parse(environmentIDStr)
-			if err == nil {
-				environmentID = &environmentIDParsed
-			}
-		}
-		// A PVC with a deletion timestamp is terminating — kubernetes removes the
-		// object asynchronously once its finalizers are cleared.
-		isDeleting := pvc.DeletionTimestamp != nil
-
-		// Check if PVC can be deleted (no owners, not in use, not already terminating)
-		canDelete := len(pvc.OwnerReferences) == 0 && binding.ServiceID == nil && !binding.InUseByPods && !isDeleting
-
-		// Figure out type
-		pvcType := models.PvcScopeTeam
-		if projectID != nil && environmentID != nil {
-			pvcType = models.PvcScopeEnvironment
-		} else if projectID != nil {
-			pvcType = models.PvcScopeProject
-		}
-
-		isPendingResize := bytesValueRequest > bytesValueCapacity
-
-		// If a database, query the DB config
-		if binding.IsDatabase && binding.ServiceID != nil {
-			dbSvcConfig, err := self.repo.Service().GetDatabaseConfig(ctx, *binding.ServiceID)
-			if err != nil && !ent.IsNotFound(err) {
-				log.Errorf("failed to get database config for service '%s': %v", binding.ServiceID.String(), err)
-				return nil, fmt.Errorf("failed to get database config for service '%s': %w", binding.ServiceID.String(), err)
-			} else if dbSvcConfig != nil && dbSvcConfig.StorageSize != "" {
-				qty, err := utils.ParseStorageQuantity(dbSvcConfig.StorageSize)
-				if err != nil {
-					// A corrupt stored size must not take down the whole PVC list
-					log.Errorf("failed to parse storage size '%s' for service '%s': %v", dbSvcConfig.StorageSize, binding.ServiceID.String(), err)
-				} else if qty.Value() > bytesValueCapacity {
-					isPendingResize = true
-				}
-			}
-		}
-
-		// Assume PVC not created yet
-		if bytesValueCapacity == 0 {
-			isPendingResize = false
-		}
-
-		result = append(result, &models.PVCInfo{
-			ID:                 pvc.Name,
-			Type:               pvcType,
-			IsPendingResize:    isPendingResize,
-			CapacityGB:         sizeGBValue,
-			TeamID:             teamID,
-			ProjectID:          projectID,
-			EnvironmentID:      environmentID,
-			MountedOnServiceID: binding.ServiceID,
-			Status:             models.PersistentVolumeClaimPhase(pvc.Status.Phase),
-			IsDatabase:         binding.IsDatabase,
-			IsAvailable:        canDelete,
-			IsDeleting:         isDeleting,
-			IsAttaching:        binding.IsAttaching,
-			IsDetaching:        binding.IsDetaching,
-			CanDelete:          canDelete,
-			CreatedAt:          pvc.CreationTimestamp.Time,
-		})
+		result = append(result, info)
 	}
 
 	// Sort the result by CreatedAt in descending order

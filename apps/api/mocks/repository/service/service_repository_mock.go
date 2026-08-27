@@ -765,6 +765,82 @@ func (_c *ServiceRepositoryMock_GetDatabaseConfig_Call) RunAndReturn(run func(ct
 	return _c
 }
 
+// GetDatabaseStorageConfig provides a mock function for the type ServiceRepositoryMock
+func (_mock *ServiceRepositoryMock) GetDatabaseStorageConfig(ctx context.Context, serviceID uuid.UUID) (*schema.DatabaseConfig, []schema.ServiceVolume, error) {
+	ret := _mock.Called(ctx, serviceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetDatabaseStorageConfig")
+	}
+
+	var r0 *schema.DatabaseConfig
+	var r1 []schema.ServiceVolume
+	var r2 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*schema.DatabaseConfig, []schema.ServiceVolume, error)); ok {
+		return returnFunc(ctx, serviceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *schema.DatabaseConfig); ok {
+		r0 = returnFunc(ctx, serviceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*schema.DatabaseConfig)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) []schema.ServiceVolume); ok {
+		r1 = returnFunc(ctx, serviceID)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).([]schema.ServiceVolume)
+		}
+	}
+	if returnFunc, ok := ret.Get(2).(func(context.Context, uuid.UUID) error); ok {
+		r2 = returnFunc(ctx, serviceID)
+	} else {
+		r2 = ret.Error(2)
+	}
+	return r0, r1, r2
+}
+
+// ServiceRepositoryMock_GetDatabaseStorageConfig_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetDatabaseStorageConfig'
+type ServiceRepositoryMock_GetDatabaseStorageConfig_Call struct {
+	*mock.Call
+}
+
+// GetDatabaseStorageConfig is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceID uuid.UUID
+func (_e *ServiceRepositoryMock_Expecter) GetDatabaseStorageConfig(ctx any, serviceID any) *ServiceRepositoryMock_GetDatabaseStorageConfig_Call {
+	return &ServiceRepositoryMock_GetDatabaseStorageConfig_Call{Call: _e.mock.On("GetDatabaseStorageConfig", ctx, serviceID)}
+}
+
+func (_c *ServiceRepositoryMock_GetDatabaseStorageConfig_Call) Run(run func(ctx context.Context, serviceID uuid.UUID)) *ServiceRepositoryMock_GetDatabaseStorageConfig_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetDatabaseStorageConfig_Call) Return(databaseConfig *schema.DatabaseConfig, serviceVolumes []schema.ServiceVolume, err error) *ServiceRepositoryMock_GetDatabaseStorageConfig_Call {
+	_c.Call.Return(databaseConfig, serviceVolumes, err)
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetDatabaseStorageConfig_Call) RunAndReturn(run func(ctx context.Context, serviceID uuid.UUID) (*schema.DatabaseConfig, []schema.ServiceVolume, error)) *ServiceRepositoryMock_GetDatabaseStorageConfig_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetDatabaseType provides a mock function for the type ServiceRepositoryMock
 func (_mock *ServiceRepositoryMock) GetDatabaseType(ctx context.Context, serviceID uuid.UUID) (string, error) {
 	ret := _mock.Called(ctx, serviceID)

@@ -10,8 +10,10 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	"k8s.io/client-go/kubernetes"
 )
 
 func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.UUID, bearerToken string, input *models.UpdatePVCInput) (*models.PVCInfo, error) {
@@ -81,42 +83,26 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 		}
 	}
 
+	operatorOwned := isResize && pvc.IsDatabase && targetService != nil && !dbvolumes.Managed(targetService)
+
 	updatedPvc := pvc
-	var shouldTriggerDeployment bool
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		err := self.repo.System().UpsertPVCMetadata(ctx, tx, pvc.ID, input.Name, input.Description)
-		if err != nil {
+		if err := self.repo.System().UpsertPVCMetadata(ctx, tx, pvc.ID, input.Name, input.Description); err != nil {
 			return err
 		}
 
-		if isResize {
-			// If database, then update database spec
-			if updatedPvc.IsDatabase && updatedPvc.MountedOnServiceID != nil {
-				_, err := self.repo.Service().UpdateDatabaseStorageSize(
-					ctx,
-					tx,
-					*updatedPvc.MountedOnServiceID,
-					*newCapacity,
-				)
-				if err != nil {
-					log.Errorf("Failed to update database storage size: %v", err)
-					return err
-				}
-
-				// Mark that we should trigger deployment after transaction commits
-				shouldTriggerDeployment = true
-			} else {
-				updatedPvc, err = self.k8s.UpdatePersistentVolumeClaim(ctx,
-					team.Namespace,
-					pvc.ID,
-					newCapacity,
-					client,
-				)
+		switch {
+		case !isResize:
+		case operatorOwned:
+			if _, err := self.repo.Service().UpdateDatabaseStorageSize(ctx, tx, targetService.ID, *newCapacity); err != nil {
+				return err
 			}
-		}
-
-		if err != nil {
-			return err
+		default:
+			resized, err := self.resizeClaims(ctx, team.Namespace, pvc, newCapacity, targetService, client)
+			if err != nil {
+				return err
+			}
+			updatedPvc = resized
 		}
 
 		pvcMetadata, err := self.repo.System().GetPVCMetadata(ctx, tx, []string{pvc.ID})
@@ -124,76 +110,83 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 			return err
 		}
 
+		updatedPvc.Name = pvc.ID
 		if metadata, ok := pvcMetadata[pvc.ID]; ok {
 			if metadata.Name != nil {
 				updatedPvc.Name = *metadata.Name
-			} else {
-				updatedPvc.Name = pvc.ID
 			}
 			updatedPvc.Description = metadata.Description
-		} else {
-			updatedPvc.Name = pvc.ID
 		}
 		return nil
-
 	}); err != nil {
 		return nil, err
 	}
 
-	// Trigger deployment after transaction is committed
-	if shouldTriggerDeployment && targetService != nil {
-		// Re-fetch the service to get the updated database config
-		targetService, err = self.repo.Service().GetByID(ctx, *pvc.MountedOnServiceID)
+	if operatorOwned {
+		updatedPvc, err = self.resizeOperatorOwned(ctx, team.Namespace, updatedPvc, newCapacity, targetService, client)
 		if err != nil {
-			log.Errorf("Failed to re-fetch service after database update: %v", err)
-		} else {
-			// Update underlying PVC for some databases
-			if targetService.Database != nil && slices.Contains([]string{"mysql", "redis", "mongodb"}, *targetService.Database) {
-				// For Redis and MongoDB, we need to delete the StatefulSet first
-				if slices.Contains([]string{"redis", "mongodb"}, *targetService.Database) {
-					// Delete StatefulSets with orphan cascade
-					err = self.k8s.DeleteStatefulSetsWithOrphanCascade(ctx, team.Namespace, map[string]string{
-						"unbind-service": targetService.ID.String(),
-					}, self.k8s.GetInternalClient())
-					if err != nil {
-						log.Errorf("Failed to delete StatefulSets for database %s: %v", *targetService.Database, err)
-						return nil, err
-					}
-				}
-
-				updatedPvc, err = self.k8s.UpdatePersistentVolumeClaim(ctx,
-					team.Namespace,
-					pvc.ID,
-					newCapacity,
-					client,
-				)
-				if err != nil {
-					log.Errorf("Failed to update PVC after database update: %v", err)
-					return nil, err
-				}
-			}
-
-			_, err = self.svcService.DeployAdhocServices(ctx, []*ent.Service{targetService})
-			if err != nil {
-				log.Errorf("Failed to enqueue full build deployments for service %s: %v", targetService.ID, err)
-			}
-
+			return nil, err
 		}
 	}
 
-	// Restart pods if needed
-	if isResize && updatedPvc.MountedOnServiceID != nil {
-		err = self.k8s.RollingRestartPodsByLabel(
-			ctx,
-			team.Namespace,
-			"unbind-service",
-			(*updatedPvc.MountedOnServiceID).String(),
-			client,
-		)
-		if err != nil {
+	// filesystem growth needs a remount on drivers without online expansion
+	if isResize && pvc.MountedOnServiceID != nil {
+		if err := self.k8s.RollingRestartPodsByLabel(ctx, team.Namespace, "unbind-service", pvc.MountedOnServiceID.String(), client); err != nil {
 			log.Error(ctx, "Failed to restart pods after resizing volume: %v", err)
 		}
 	}
 
 	return updatedPvc, nil
+}
+
+// replicas each hold a full copy, so all claims grow together
+func (self *StorageService) resizeClaims(ctx context.Context, namespace string, pvc *models.PVCInfo, newCapacity *string, targetService *ent.Service, client kubernetes.Interface) (*models.PVCInfo, error) {
+	claims := dbvolumes.Claims(targetService)
+	if !slices.Contains(claims, pvc.ID) {
+		claims = append(claims, pvc.ID)
+	}
+
+	updated := pvc
+	for _, claim := range claims {
+		resized, err := self.k8s.UpdatePersistentVolumeClaim(ctx, namespace, claim, newCapacity, client)
+		if err != nil {
+			return nil, err
+		}
+		if claim == pvc.ID {
+			updated = resized
+		}
+	}
+	return updated, nil
+}
+
+func (self *StorageService) resizeOperatorOwned(ctx context.Context, namespace string, pvc *models.PVCInfo, newCapacity *string, targetService *ent.Service, client kubernetes.Interface) (*models.PVCInfo, error) {
+	targetService, err := self.repo.Service().GetByID(ctx, targetService.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Altinity's StatefulSet provisioner never resizes a provisioned claim, so clickhouse
+	// gets the direct patch too
+	updated := pvc
+	if targetService.Database != nil && slices.Contains([]string{"mysql", "redis", "mongodb", "clickhouse"}, *targetService.Database) {
+		if slices.Contains([]string{"redis", "mongodb"}, *targetService.Database) {
+			if err := self.k8s.DeleteStatefulSetsWithOrphanCascade(ctx, namespace, map[string]string{
+				"unbind-service": targetService.ID.String(),
+			}, self.k8s.GetInternalClient()); err != nil {
+				return nil, err
+			}
+		}
+
+		updated, err = self.k8s.UpdatePersistentVolumeClaim(ctx, namespace, pvc.ID, newCapacity, client)
+		if err != nil {
+			return nil, err
+		}
+		updated.Name = pvc.Name
+		updated.Description = pvc.Description
+	}
+
+	if _, err := self.svcService.DeployAdhocServices(ctx, []*ent.Service{targetService}); err != nil {
+		return nil, err
+	}
+	return updated, nil
 }
