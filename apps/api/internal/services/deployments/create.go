@@ -30,6 +30,16 @@ func (self *DeploymentService) CreateManualDeployment(ctx context.Context, reque
 		return nil, err
 	}
 
+	// Check if we can deploy the current image without rebuilding, disabling the build cache implies a rebuild
+	if input.SmartRedeploy && !input.DisableBuildCache {
+		currentDeployment := service.Edges.CurrentDeployment
+		matchesRequestedSha := input.GitSha == nil ||
+			(currentDeployment != nil && currentDeployment.CommitSha != nil && *currentDeployment.CommitSha == *input.GitSha)
+		if matchesRequestedSha && self.canRedeployWithoutBuild(ctx, service, currentDeployment) {
+			return self.redeployExistingImage(ctx, service, currentDeployment)
+		}
+	}
+
 	// Get git information if applicable
 	var commitSHA string
 	var commitMessage string
@@ -75,13 +85,14 @@ func (self *DeploymentService) CreateManualDeployment(ctx context.Context, reque
 	}
 
 	job, err := self.deploymentController.EnqueueDeploymentJob(ctx, deployctl.DeploymentJobRequest{
-		ServiceID:     input.ServiceID,
-		Environment:   env,
-		Source:        schema.DeploymentSourceManual,
-		CommitSHA:     commitSHA,
-		GitBranch:     gitBranch,
-		CommitMessage: commitMessage,
-		Committer:     committer,
+		ServiceID:         input.ServiceID,
+		Environment:       env,
+		Source:            schema.DeploymentSourceManual,
+		CommitSHA:         commitSHA,
+		GitBranch:         gitBranch,
+		CommitMessage:     commitMessage,
+		Committer:         committer,
+		DisableBuildCache: input.DisableBuildCache,
 	})
 	if err != nil {
 		return nil, err

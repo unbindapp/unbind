@@ -80,12 +80,14 @@ export async function createDeployment(input: {
   projectId: string;
   environmentId: string;
   serviceId: string;
+  skipBuildCache?: boolean;
 }) {
   const res = await getGoClient().deployments.create({
     team_id: input.teamId,
     project_id: input.projectId,
     environment_id: input.environmentId,
     service_id: input.serviceId,
+    disable_build_cache: input.skipBuildCache,
   });
   return { deployment: res.data };
 }

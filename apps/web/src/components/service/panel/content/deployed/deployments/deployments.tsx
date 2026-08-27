@@ -177,7 +177,7 @@ function NoActiveDeploymentCard() {
       {error && <ErrorLine className="mt-2" message={error.message} />}
       <Button
         className="mt-2"
-        onClick={() => deploy({ teamId, projectId, environmentId, serviceId })}
+        onClick={() => deploy({ teamId, projectId, environmentId, serviceId, skipBuildCache: true })}
         isPending={isPending}
       >
         Deploy

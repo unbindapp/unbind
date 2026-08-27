@@ -35,6 +35,25 @@ func (self *DeploymentService) resolveReferences(ctx context.Context, service *e
 	return envVars, nil
 }
 
+func (self *DeploymentService) canRedeployWithoutBuild(ctx context.Context, service *ent.Service, deployment *ent.Deployment) bool {
+	if deployment == nil || deployment.ResourceDefinition == nil {
+		return false
+	}
+
+	// For database and docker image services, we can always redeploy
+	if service.Type == schema.ServiceTypeDatabase || service.Type == schema.ServiceTypeDockerimage {
+		return true
+	}
+
+	// For other services, check if we can pull the existing image
+	if deployment.Image != nil {
+		canPullImage, _ := self.registryTester.CanPullImage(ctx, *deployment.Image)
+		return canPullImage
+	}
+
+	return false
+}
+
 func (self *DeploymentService) redeployExistingImage(ctx context.Context, service *ent.Service, deployment *ent.Deployment) (*models.DeploymentResponse, error) {
 	envVars, err := self.resolveReferences(ctx, service)
 	if err != nil {
@@ -132,23 +151,8 @@ func (self *DeploymentService) CreateRedeployment(ctx context.Context, requester
 	}
 
 	// Check if we can redeploy without rebuilding, disabling the build cache implies a rebuild
-	if input.SmartRedeploy && !input.DisableBuildCache && deployment.ResourceDefinition != nil {
-		canRedeploy := false
-
-		// For non-database services, check if we can pull the existing image
-		if service.Type != schema.ServiceTypeDatabase && deployment.Image != nil {
-			canPullImage, _ := self.registryTester.CanPullImage(ctx, *deployment.Image)
-			canRedeploy = canPullImage
-		}
-
-		// For database and docker image services, we can always redeploy
-		if service.Type == schema.ServiceTypeDatabase || service.Type == schema.ServiceTypeDockerimage {
-			canRedeploy = true
-		}
-
-		if canRedeploy {
-			return self.redeployExistingImage(ctx, service, deployment)
-		}
+	if input.SmartRedeploy && !input.DisableBuildCache && self.canRedeployWithoutBuild(ctx, service, deployment) {
+		return self.redeployExistingImage(ctx, service, deployment)
 	}
 
 	// Get git information if applicable

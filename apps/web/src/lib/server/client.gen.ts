@@ -194,10 +194,12 @@ export const CookieSchema = z
 
 export const CreateBuildInputBodySchema = z
   .object({
+    disable_build_cache: z.boolean().optional(), // Disable build cache for this deployment
     environment_id: z.string(),
     git_sha: z.string().nullable().optional(), // The git sha of the deployment
     project_id: z.string(),
     service_id: z.string(),
+    smart_redeploy: z.boolean().optional(), // Try to intelligently deploy the current image without rebuilding if possible
     team_id: z.string(),
   })
   .strip();

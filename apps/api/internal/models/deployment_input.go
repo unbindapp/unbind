@@ -49,11 +49,13 @@ func (self *GetDeploymentBaseInput) GetEnvironmentID() uuid.UUID {
 // Triggering build
 
 type CreateDeploymentInput struct {
-	TeamID        uuid.UUID `format:"uuid" required:"true" json:"team_id"`
-	ProjectID     uuid.UUID `format:"uuid" required:"true" json:"project_id"`
-	ServiceID     uuid.UUID `format:"uuid" required:"true" json:"service_id"`
-	EnvironmentID uuid.UUID `format:"uuid" required:"true" json:"environment_id"`
-	GitSha        *string   `json:"git_sha" required:"false" doc:"The git sha of the deployment"`
+	TeamID            uuid.UUID `format:"uuid" required:"true" json:"team_id"`
+	ProjectID         uuid.UUID `format:"uuid" required:"true" json:"project_id"`
+	ServiceID         uuid.UUID `format:"uuid" required:"true" json:"service_id"`
+	EnvironmentID     uuid.UUID `format:"uuid" required:"true" json:"environment_id"`
+	GitSha            *string   `json:"git_sha" required:"false" doc:"The git sha of the deployment"`
+	DisableBuildCache bool      `json:"disable_build_cache" required:"false" doc:"Disable build cache for this deployment"`
+	SmartRedeploy     bool      `json:"smart_redeploy" required:"false" doc:"Try to intelligently deploy the current image without rebuilding if possible"`
 }
 
 func (self *CreateDeploymentInput) GetTeamID() uuid.UUID {
