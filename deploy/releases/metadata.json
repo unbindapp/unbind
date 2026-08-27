@@ -118,5 +118,10 @@
     "version": "v0.1.23",
     "description": "New toast system, merged update status endpoints, database TCP endpoint reporting, and dialog fixes",
     "breaking": false
+  },
+  "v0.1.24": {
+    "version": "v0.1.24",
+    "description": "Drawer swipe fixes, service endpoint and health prefetching, and stale update notification fix",
+    "breaking": false
   }
 }
