@@ -32,10 +32,10 @@ export function CreateBackupSourceTrigger({
       <DropdownMenuTrigger render={children} />
       <DropdownMenuContent animate={false} className="w-(--anchor-width)">
         <ScrollArea>
-          <DropdownMenuLabel className="border-b px-3">
-            {"You don't have any buckets. Create a backup source."}
-          </DropdownMenuLabel>
           <DropdownMenuGroup>
+            <DropdownMenuLabel className="-mx-1 border-b px-3">
+              {"You don't have any buckets. Create a backup source."}
+            </DropdownMenuLabel>
             <NewS3SourceTrigger teamId={teamId}>
               <DropdownMenuItem closeOnClick={false} className="gap-1.5">
                 <PlusIcon className="-ml-1 size-5" />

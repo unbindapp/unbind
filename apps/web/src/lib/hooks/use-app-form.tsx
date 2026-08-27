@@ -707,13 +707,13 @@ function AsyncDropdownMenu({
           align={dropdownMenuContentAlign}
         >
           <ScrollArea viewportRef={scrollAreaRef}>
-            {dropdownTitle && (
-              <>
-                <DropdownMenuLabel>{dropdownTitle}</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-              </>
-            )}
             <DropdownMenuGroup>
+              {dropdownTitle && (
+                <>
+                  <DropdownMenuLabel>{dropdownTitle}</DropdownMenuLabel>
+                  <DropdownMenuSeparator className="-mx-1" />
+                </>
+              )}
               {!items && !isPending && error && (
                 <ErrorCard className="rounded-md" message={error} />
               )}

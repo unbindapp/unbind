@@ -132,8 +132,8 @@ function SettingsButton({ logType, className }: { logType: TLogType; className?:
           {logViewPreferences.map((group, index) => (
             <div key={group.label} className="flex w-full flex-col">
               {index > 0 && <DropdownMenuSeparator />}
-              <DropdownMenuLabel className="pb-0">{group.label}</DropdownMenuLabel>
               <DropdownMenuGroup title={group.label}>
+                <DropdownMenuLabel className="pb-0">{group.label}</DropdownMenuLabel>
                 {group.items
                   .filter(
                     (i) => i.value !== logViewPreferenceKeys.serviceId || logType !== "deployment",

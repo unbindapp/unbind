@@ -206,9 +206,9 @@ export function BreadcrumbItem<T>({
         </div>
       </DropdownOrDrawerContentForDrawer>
       <DropdownOrDrawerContentForDropdown>
-        <DropdownMenuLabel>{title}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          <DropdownMenuLabel>{title}</DropdownMenuLabel>
+          <DropdownMenuSeparator className="-mx-1" />
           {items?.map((i) => {
             return (
               <DropdownItem

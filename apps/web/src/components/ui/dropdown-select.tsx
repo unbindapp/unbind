@@ -69,13 +69,13 @@ export default function DropdownSelect({
         align={align}
       >
         <ScrollArea viewportRef={scrollAreaRef}>
-          {title && (
-            <>
-              <DropdownMenuLabel>{title}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-            </>
-          )}
           <DropdownMenuGroup>
+            {title && (
+              <>
+                <DropdownMenuLabel>{title}</DropdownMenuLabel>
+                <DropdownMenuSeparator className="-mx-1" />
+              </>
+            )}
             {!items && !isPending && error && <ErrorCard className="rounded-md" message={error} />}
             {!items &&
               isPending &&
