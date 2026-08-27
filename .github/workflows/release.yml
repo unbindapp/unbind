@@ -43,7 +43,7 @@ jobs:
             echo "No chart RBAC changes since $PREV"
             exit 0
           fi
-          if git ls-tree -d "$VERSION" "deploy/releases/$VERSION/" | grep -q .; then
+          if git ls-tree -d "$VERSION" "deploy/releases/$VERSION" | grep -q .; then
             echo "Chart RBAC changed and deploy/releases/$VERSION/ exists"
             exit 0
           fi
