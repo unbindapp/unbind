@@ -76,8 +76,6 @@ type TUpdatePhases = "idle" | "updating" | "succeeded" | "failed";
 function UpdateSectionInner({
   latestVersion,
   latestVersionUrl,
-  latestVersionDescription,
-  latestVersionReleaseNotes,
   currentVersion,
   backTo,
   setUpdateStatusEnabled,
@@ -200,11 +198,6 @@ function UpdateSectionInner({
             </p>
           </div>
         )}
-        {updatePhase === "idle" && latestVersionDescription && (
-          <p className="text-muted-foreground mt-1 w-full text-center">
-            {latestVersionDescription}
-          </p>
-        )}
         <p className="text-muted-foreground mt-2 w-full group-data-[phase=succeeded]/section:text-center">
           {updatePhase === "idle" &&
             "The process will take a few minutes. During the update your services will continue to run but Unbind's UI and API will be down."}
@@ -217,13 +210,6 @@ function UpdateSectionInner({
       </div>
 
       <div className="flex w-full flex-wrap items-center justify-center">
-        {updatePhase === "idle" && latestVersionReleaseNotes && (
-          <div className="flex w-full px-1 py-1.5">
-            <p className="bg-card text-muted-foreground max-h-48 w-full overflow-auto rounded-lg border px-3 py-2 text-sm whitespace-pre-wrap">
-              {latestVersionReleaseNotes}
-            </p>
-          </div>
-        )}
         {updatePhase === "idle" && (
           <div className="flex w-full flex-wrap items-center justify-center">
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
