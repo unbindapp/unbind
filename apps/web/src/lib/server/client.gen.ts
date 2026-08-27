@@ -2456,7 +2456,10 @@ export const UpdateServiceInputSchema = z
 
 export const UpdateStatusResponseBodySchema = z
   .object({
+    current_version: z.string(),
+    failed: z.boolean(),
     in_progress: z.boolean(),
+    message: z.string().optional(),
     ready: z.boolean(),
     target_version: z.string().optional(),
   })

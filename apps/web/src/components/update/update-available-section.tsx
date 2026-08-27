@@ -5,18 +5,25 @@ import { useNow } from "@/components/providers/now-provider";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { Button, LinkButton } from "@/components/ui/button";
 import { useCheckForUpdatesUtils } from "@/components/update/check-for-updates-provider";
-import UpdateStatusProvider, { useUpdateStatus } from "@/components/update/update-status-provider";
+import UpdateStatusProvider, {
+  useUpdateStatus,
+  useUpdateStatusUtils,
+} from "@/components/update/update-status-provider";
 import { applyUpdate as applyUpdateFn } from "@/lib/queries/system";
 import { useMutation } from "@tanstack/react-query";
 import {
   ArrowLeftIcon,
   CircleArrowUpIcon,
   CircleCheckBigIcon,
+  CircleXIcon,
   ExternalLinkIcon,
   FileTextIcon,
   HourglassIcon,
+  RotateCcwIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+
+const longUpdateThresholdMs = 15 * 60 * 1000;
 
 type TProps = {
   latestVersion: string;
@@ -71,8 +78,9 @@ function UpdateSectionInner({
   const [updatePhase, setUpdatePhase] = useState<TUpdatePhases>("idle");
   const [updateStartTimestamp, setUpdateStartTimestamp] = useState<number | null>(null);
 
-  const { data: updateStatus } = useUpdateStatus();
+  const { data: updateStatus, dataUpdatedAt } = useUpdateStatus();
   const { invalidate: invalidateCheckForUpdates } = useCheckForUpdatesUtils();
+  const { refetch: refetchUpdateStatus } = useUpdateStatusUtils();
 
   const {
     mutate: applyUpdate,
@@ -80,15 +88,16 @@ function UpdateSectionInner({
     isPending: isPendingApplyUpdate,
   } = useMutation({
     mutationFn: applyUpdateFn,
-    onSuccess: (d) => {
-      if (!d.data.started) {
-        throw new Error("Update couldn't start");
-      }
+    onSuccess: () => {
       setUpdateStatusEnabled(true);
       setUpdatePhase("updating");
       setUpdateStartTimestamp(Date.now());
+      refetchUpdateStatus();
     },
   });
+
+  // On a resumed update the server's target is the truth, not the latest release.
+  const targetVersion = updateStatus?.data.target_version || latestVersion;
 
   // Resume an update already in progress on the server (e.g. after a page reload).
   useEffect(() => {
@@ -100,13 +109,26 @@ function UpdateSectionInner({
     setUpdateStartTimestamp((t) => t ?? Date.now());
   }, [updatePhase, updateStatus, setUpdateStatusEnabled]);
 
+  // `ready` can come from a status snapshot cached before the update started, so only
+  // trust it when the server binary already runs the version we're updating to.
   useEffect(() => {
     if (updatePhase !== "updating") return;
     if (!updateStatus?.data.ready) return;
+    if (updateStatus.data.current_version !== targetVersion) return;
 
     setUpdatePhase("succeeded");
     setUpdateStatusEnabled(false);
-  }, [updatePhase, updateStatus, setUpdateStatusEnabled]);
+  }, [updatePhase, updateStatus, targetVersion, setUpdateStatusEnabled]);
+
+  // The timestamp guard skips failed snapshots fetched before a retry started.
+  useEffect(() => {
+    if (updatePhase === "succeeded" || updatePhase === "failed") return;
+    if (!updateStatus?.data.failed) return;
+    if (updateStartTimestamp !== null && dataUpdatedAt <= updateStartTimestamp) return;
+
+    setUpdatePhase("failed");
+    setUpdateStatusEnabled(false);
+  }, [updatePhase, updateStatus, dataUpdatedAt, updateStartTimestamp, setUpdateStatusEnabled]);
 
   // Invalidating while the succeeded screen is up would flip has_update_available
   // to false and swap this screen for "No updates available", so wait for unmount.
@@ -118,8 +140,10 @@ function UpdateSectionInner({
     };
   }, [invalidateCheckForUpdates]);
 
-  // On a resumed update the server's target is the truth, not the latest release.
-  const targetVersion = updateStatus?.data.target_version || latestVersion;
+  const isTakingLong =
+    updatePhase === "updating" &&
+    updateStartTimestamp !== null &&
+    now - updateStartTimestamp > longUpdateThresholdMs;
 
   const updateDurationStr = useMemo(() => {
     if (!updateStartTimestamp) return "00:00";
@@ -141,6 +165,7 @@ function UpdateSectionInner({
           <CircleArrowUpIcon className="size-full opacity-0 transition group-data-[phase=idle]/section:opacity-100" />
           <HourglassIcon className="animate-hourglass-long text-process touch: absolute top-0 left-0 size-full scale-80 opacity-0 transition group-data-[phase=updating]/section:opacity-100" />
           <CircleCheckBigIcon className="text-success absolute top-0 left-0 size-full opacity-0 transition group-data-[phase=succeeded]/section:opacity-100" />
+          <CircleXIcon className="text-destructive absolute top-0 left-0 size-full opacity-0 transition group-data-[phase=failed]/section:opacity-100" />
         </div>
         <h1 className="w-full px-2 text-center text-2xl leading-tight font-medium">
           {updatePhase === "idle" && (
@@ -156,6 +181,9 @@ function UpdateSectionInner({
           {updatePhase === "succeeded" && (
             <span className="text-success">Updated to {targetVersion}</span>
           )}
+          {updatePhase === "failed" && (
+            <span className="text-destructive">Update to {targetVersion} failed</span>
+          )}
         </h1>
         {updatePhase === "idle" && (
           <div className="mt-0.5 flex w-full items-center justify-center px-1">
@@ -170,6 +198,8 @@ function UpdateSectionInner({
           {updatePhase === "updating" &&
             "You can close this page and come back after a few minutes. Unbind UI and API might be unavailable for a short while."}
           {updatePhase === "succeeded" && "Unbind has been updated successfully."}
+          {updatePhase === "failed" &&
+            "The update didn't complete. Your services are unaffected and you can retry the update."}
         </p>
       </div>
 
@@ -217,6 +247,37 @@ function UpdateSectionInner({
             <p className="max-w-full text-center font-mono text-xl leading-tight font-semibold">
               {updateDurationStr}
             </p>
+            {isTakingLong && (
+              <p className="text-muted-foreground w-full px-1 text-center text-sm">
+                This is taking longer than expected. The update may still be rolling out. If it
+                doesn't complete soon, check the Unbind deployments in your cluster.
+              </p>
+            )}
+          </div>
+        )}
+        {updatePhase === "failed" && (
+          <div className="flex w-full flex-wrap items-center justify-center">
+            <div className="flex w-full px-1 py-1.5 sm:w-1/2">
+              <LinkButton to={backTo} variant="outline" className="text-muted-foreground w-full">
+                <ArrowLeftIcon className="size-4.5 shrink-0" />
+                <p className="min-w-0 shrink">Go Back</p>
+              </LinkButton>
+            </div>
+            <div className="order-first flex w-full px-1 py-1.5 sm:order-0 sm:w-1/2">
+              <Button
+                isPending={isPendingApplyUpdate}
+                onClick={() => applyUpdate(targetVersion)}
+                className="w-full"
+              >
+                <RotateCcwIcon className="size-4.5 shrink-0" />
+                <p className="min-w-0 shrink">Retry Update</p>
+              </Button>
+            </div>
+            {updateStatus?.data.message && (
+              <div className="flex w-full px-1 py-1.5">
+                <ErrorLine className="w-full" message={updateStatus.data.message} />
+              </div>
+            )}
           </div>
         )}
         {updatePhase === "succeeded" && (

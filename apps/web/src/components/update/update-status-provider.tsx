@@ -1,8 +1,8 @@
 "use client";
 
-import { checkUpdateStatusQuery, type TUpdateStatus } from "@/lib/queries/system";
-import { useQuery, type UseQueryResult } from "@tanstack/react-query";
-import { createContext, ReactNode, useContext } from "react";
+import { checkUpdateStatusQuery, queryKeySystem, type TUpdateStatus } from "@/lib/queries/system";
+import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
+import { createContext, ReactNode, useCallback, useContext } from "react";
 
 type TUpdateStatusContext = UseQueryResult<TUpdateStatus, Error>;
 
@@ -29,6 +29,15 @@ export const useUpdateStatus = () => {
     throw new Error("useUpdateStatus must be used within an UpdateStatusProvider");
   }
   return context;
+};
+
+export const useUpdateStatusUtils = () => {
+  const queryClient = useQueryClient();
+  const refetch = useCallback(
+    () => queryClient.refetchQueries({ queryKey: queryKeySystem.updateStatus() }),
+    [queryClient],
+  );
+  return { refetch };
 };
 
 export default UpdateStatusProvider;

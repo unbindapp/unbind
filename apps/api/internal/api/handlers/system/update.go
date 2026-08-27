@@ -2,9 +2,11 @@ package system_handler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"slices"
 	"sort"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -17,6 +19,38 @@ import (
 )
 
 const updateKey = "update-in-progress"
+
+// updateStateTTL bounds how long a stale state can pin the system in "updating"
+// if an update wedges without ever reporting completion or failure.
+const updateStateTTL = 30 * time.Minute
+
+type updateState struct {
+	TargetVersion string `json:"target_version"`
+	Failed        bool   `json:"failed,omitempty"`
+	Message       string `json:"message,omitempty"`
+}
+
+func (self *HandlerGroup) getUpdateState(ctx context.Context) (*updateState, error) {
+	raw, err := self.srv.StringCache.Get(ctx, updateKey)
+	if err != nil {
+		return nil, err
+	}
+
+	var state updateState
+	if err := json.Unmarshal([]byte(raw), &state); err != nil || state.TargetVersion == "" {
+		// Older versions stored the bare target version string.
+		return &updateState{TargetVersion: raw}, nil
+	}
+	return &state, nil
+}
+
+func (self *HandlerGroup) setUpdateState(ctx context.Context, state *updateState) error {
+	encoded, err := json.Marshal(state)
+	if err != nil {
+		return err
+	}
+	return self.srv.StringCache.SetWithExpiration(ctx, updateKey, string(encoded), updateStateTTL)
+}
 
 func (self *HandlerGroup) CheckPermissions(ctx context.Context, requesterUserID uuid.UUID) error {
 	permissionChecks := []permissions_repo.PermissionCheck{
@@ -123,6 +157,19 @@ func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInp
 		return nil, err
 	}
 
+	if state, err := self.getUpdateState(ctx); err == nil && !state.Failed {
+		ready, err := self.srv.UpdateManager.CheckUpdateComplete(ctx, state.TargetVersion)
+		if err != nil || !ready {
+			return nil, huma.Error409Conflict("An update is already in progress")
+		}
+		// The previous update finished but its state was never polled away.
+		if err := self.srv.StringCache.Delete(ctx, updateKey); err != nil {
+			log.Errorf("Failed to clear completed update state: %v", err)
+		}
+	} else if err != nil && !errors.Is(err, redis.Nil) {
+		log.Errorf("Failed to read update state: %v", err)
+	}
+
 	availableUpdates, err := self.srv.UpdateManager.CheckForUpdates(ctx)
 	if err != nil {
 		// Log the error but return error since this is an apply operation
@@ -135,22 +182,30 @@ func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInp
 		return nil, huma.Error400BadRequest("Target version is not available for update")
 	}
 
+	targetVersion := input.Body.TargetVersion
+
 	// Refuse to start an update we can't track; the status endpoint would have no
 	// target to check against.
-	if err := self.srv.StringCache.Set(ctx, updateKey, input.Body.TargetVersion); err != nil {
+	if err := self.setUpdateState(ctx, &updateState{TargetVersion: targetVersion}); err != nil {
 		log.Errorf("Failed to record update target: %v", err)
 		return nil, huma.Error500InternalServerError("Failed to record update target: " + err.Error())
 	}
 
-	if err := self.srv.UpdateManager.UpdateToVersion(ctx, input.Body.TargetVersion); err != nil {
-		log.Errorf("Failed to apply update: %v", err)
-		// Clear the cache if the update fails
-		err = self.srv.StringCache.Delete(ctx, updateKey)
-		if err != nil {
-			log.Errorf("Failed to clear cached update status: %v", err)
+	// Run the update detached from the request so closing the page can't abort it
+	// half-applied; the status endpoint is the source of truth from here on.
+	bgCtx := context.WithoutCancel(ctx)
+	go func() {
+		updateCtx, cancel := context.WithTimeout(bgCtx, updateStateTTL)
+		defer cancel()
+
+		if err := self.srv.UpdateManager.UpdateToVersion(updateCtx, targetVersion); err != nil {
+			log.Errorf("Failed to apply update to %s: %v", targetVersion, err)
+			failed := &updateState{TargetVersion: targetVersion, Failed: true, Message: err.Error()}
+			if err := self.setUpdateState(bgCtx, failed); err != nil {
+				log.Errorf("Failed to record update failure: %v", err)
+			}
 		}
-		return nil, huma.Error500InternalServerError("Failed to apply update: " + err.Error())
-	}
+	}()
 
 	resp := &UpdateApplyResponse{}
 	resp.Body.Started = true
@@ -161,9 +216,14 @@ func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInp
 // * Get update status
 type UpdateStatusResponse struct {
 	Body struct {
-		InProgress    bool   `json:"in_progress"`
-		TargetVersion string `json:"target_version,omitempty"`
-		Ready         bool   `json:"ready"`
+		InProgress bool `json:"in_progress"`
+		Failed     bool `json:"failed"`
+		// Ready is only ever true when the binary serving this request already runs
+		// the version being checked, so clients can trust current_version with it.
+		Ready          bool   `json:"ready"`
+		TargetVersion  string `json:"target_version,omitempty"`
+		CurrentVersion string `json:"current_version"`
+		Message        string `json:"message,omitempty"`
 	}
 }
 
@@ -177,14 +237,26 @@ func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.Bas
 		return nil, err
 	}
 
-	targetVersion, err := self.srv.StringCache.Get(ctx, updateKey)
-	updateInProgress := err == nil
-	if err != nil {
-		if !errors.Is(err, redis.Nil) {
-			log.Errorf("Failed to get update target: %v", err)
-		}
-		// No update in progress; report whether the cluster matches this binary.
-		targetVersion = self.srv.UpdateManager.CurrentVersion
+	resp := &UpdateStatusResponse{}
+	resp.Body.CurrentVersion = self.srv.UpdateManager.CurrentVersion
+
+	state, err := self.getUpdateState(ctx)
+	if err != nil && !errors.Is(err, redis.Nil) {
+		log.Errorf("Failed to get update state: %v", err)
+	}
+
+	if state != nil && state.Failed {
+		resp.Body.Failed = true
+		resp.Body.TargetVersion = state.TargetVersion
+		resp.Body.Message = state.Message
+		return resp, nil
+	}
+
+	// With no update in progress, report whether the cluster matches this binary.
+	targetVersion := self.srv.UpdateManager.CurrentVersion
+	updateInProgress := state != nil
+	if state != nil {
+		targetVersion = state.TargetVersion
 	}
 
 	ready, err := self.srv.UpdateManager.CheckUpdateComplete(ctx, targetVersion)
@@ -198,7 +270,6 @@ func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.Bas
 		}
 	}
 
-	resp := &UpdateStatusResponse{}
 	resp.Body.Ready = ready
 	resp.Body.InProgress = updateInProgress && !ready
 	if updateInProgress {
