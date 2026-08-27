@@ -92,9 +92,10 @@ export function CommandPanelTrigger({
     (e: KeyboardEvent) => {
       if (rootPage.id !== currentPage.id) {
         e.preventDefault();
+        goToParentPage(e);
       }
     },
-    [currentPage, rootPage],
+    [currentPage, rootPage, goToParentPage],
   );
 
   if (isExtraSmall) {
@@ -130,9 +131,12 @@ export function CommandPanelTrigger({
     <Dialog
       open={open}
       onOpenChange={(newOpen, eventDetails) => {
-        // Escape in a subpage goes back a page instead of closing the panel
+        // Escape in a subpage goes back a page instead of closing the panel.
+        // The popup consumes the keydown, so the `esc` hotkey in CommandPanel
+        // never sees it - navigate from here
         if (!newOpen && eventDetails.reason === "escape-key" && rootPage.id !== currentPage.id) {
           eventDetails.cancel();
+          goToParentPage(eventDetails.event as KeyboardEvent);
           return;
         }
         setOpen(newOpen);

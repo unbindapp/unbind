@@ -169,6 +169,7 @@ export default function UserAvatar({ email, className }: TProps) {
         <DropdownMenuGroup>
           {hasUpdateAvailable && (
             <NewVersionCard
+              tabbable={false}
               className="px-0.5 pt-0.5 pb-1.5"
               version={latestVersion}
               fromHref={locationHref}
@@ -184,13 +185,10 @@ export default function UserAvatar({ email, className }: TProps) {
               signOut();
             }}
           >
-            <button
-              className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight"
-              type="button"
-            >
+            <div className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight">
               <LogOutIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
               <p className="min-w-0 shrink leading-tight">Sign Out</p>
-            </button>
+            </div>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -255,12 +253,16 @@ function NewVersionCard({
   onUpdateClicked,
   className,
   classNameInner,
+  tabbable = true,
 }: {
   version: string;
   fromHref: string;
   onUpdateClicked: () => void;
   className?: string;
   classNameInner?: string;
+  // Inside a menu popup the link must not be tabbable, or it steals focus
+  // (and the highlight) from the menu when it opens
+  tabbable?: boolean;
 }) {
   return (
     <div className={cn("w-full", className)}>
@@ -291,6 +293,7 @@ function NewVersionCard({
           size="sm"
           className="rounded-sm"
           variant="success"
+          tabIndex={tabbable ? undefined : -1}
         >
           Update
         </LinkButton>
