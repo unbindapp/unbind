@@ -13,10 +13,10 @@ import { deploymentsListQuery } from "@/lib/queries/deployments";
 import { serviceQuery, TService, TServiceShallow } from "@/lib/queries/services";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  CircleSlash,
   HourglassIcon,
   LoaderIcon,
   OctagonXIcon,
+  PowerIcon,
   TriangleAlertIcon,
 } from "lucide-react";
 import { ReactElement, ReactNode, useMemo } from "react";
@@ -354,7 +354,7 @@ function StatusIndicator({ status }: { status: TDeployment["status"] }) {
     return <TriangleAlertIcon className="text-destructive size-3.5 shrink-0" />;
   }
   if (status === "removed") {
-    return <CircleSlash className="size-3.5 shrink-0" />;
+    return <PowerIcon className="size-3.5 shrink-0" />;
   }
   return <OnlineIcon className="text-success size-3.5 shrink-0" />;
 }
