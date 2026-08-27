@@ -39,9 +39,7 @@ export default function ThemeButton({
   if (variant === "drawer-item") {
     return (
       <Button
-        onClick={(e) => {
-          toggleTheme();
-        }}
+        onClick={toggleTheme}
         variant="ghost"
         className="flex w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-2.5 text-left leading-tight font-medium"
       >
@@ -60,9 +58,7 @@ export default function ThemeButton({
     return (
       <DropdownMenuItem
         closeOnClick={false}
-        onClick={(e) => {
-          toggleTheme();
-        }}
+        onClick={toggleTheme}
         className="flex w-full items-center justify-start text-left leading-tight"
       >
         <Icon suppressHydrationWarning className="-my-1 -ml-0.5 size-5 shrink-0" />
