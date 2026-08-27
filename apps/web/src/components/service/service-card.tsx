@@ -77,9 +77,9 @@ export default function ServiceCard({
     >
       <ServicePanelOrPlaceholder {...panelProps}>
         <Button
-          variant="ghost"
+          variant="card"
           className={cn(
-            "bg-background-hover flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold",
+            "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold",
             classNameCard,
             volumes && volumes.length > 0 && "rounded-b-none border-b-0",
           )}
@@ -113,7 +113,7 @@ export default function ServiceCard({
         </Button>
       </ServicePanelOrPlaceholder>
       {volumes && volumes.length > 0 && (
-        <div className={cn("bg-background-hover rounded-b-xl text-xs", classNameVolumes)}>
+        <div className={cn("bg-background rounded-b-xl text-xs", classNameVolumes)}>
           {volumes.map((volume, index) => (
             <VolumeLine
               key={volume.id}

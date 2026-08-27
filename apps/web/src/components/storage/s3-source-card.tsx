@@ -85,7 +85,7 @@ export default function S3SourceCard({ s3Source, teamId, isPlaceholder }: TProps
             disabled={isPlaceholder}
             fadeOnDisabled={false}
             variant="outline-muted"
-            className="has-hover:group-hover/item:bg-background-hover flex w-full flex-col items-start justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
+            className="has-hover:group-hover/item:bg-card flex w-full flex-col items-start justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
           >
             {s3Source && <NewEntityIndicator id={s3Source.id} />}
             <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight font-semibold group-data-pending/item:rounded-md group-data-pending/item:text-transparent">

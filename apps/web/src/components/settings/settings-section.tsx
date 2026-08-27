@@ -55,7 +55,7 @@ export function SettingsSection({
     >
       <div
         className={cn(
-          "text-muted-foreground group-data-changed/wrapper:text-process bg-background-hover group-data-changed/wrapper:border-process/20 group-data-changed/wrapper:bg-process/8 relative flex w-full items-start justify-between gap-4 border-b px-3.5 sm:px-4",
+          "text-muted-foreground group-data-changed/wrapper:text-process bg-card group-data-changed/wrapper:border-process/20 group-data-changed/wrapper:bg-process/8 relative flex w-full items-start justify-between gap-4 border-b px-3.5 sm:px-4",
           classNameHeader,
         )}
       >

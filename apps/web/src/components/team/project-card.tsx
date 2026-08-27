@@ -52,8 +52,8 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
       <ConditionalButton
         project={project}
         linkProps={linkProps}
-        variant="ghost"
-        className="bg-background-hover flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold"
+        variant="card"
+        className="flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold"
       >
         {project && <NewEntityIndicator id={project.id} />}
         <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton max-w-full overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">

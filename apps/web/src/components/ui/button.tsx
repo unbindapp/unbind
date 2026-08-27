@@ -29,7 +29,7 @@ const buttonVariants = cva(
         outline:
           "border border-border bg-background has-hover:hover:bg-border active:bg-border has-hover:hover:text-foreground active:text-foreground",
         "outline-muted":
-          "border border-border bg-background has-hover:hover:bg-background-hover active:bg-background-hover has-hover:hover:text-foreground active:text-foreground",
+          "border border-border bg-background has-hover:hover:bg-card active:bg-card has-hover:hover:text-foreground active:text-foreground",
         "outline-foreground":
           "border border-foreground bg-background has-hover:hover:bg-foreground/8 active:bg-foreground/8 has-hover:hover:text-foreground active:text-foreground",
         "outline-process":
@@ -48,6 +48,7 @@ const buttonVariants = cva(
           "text-process has-hover:hover:bg-process/12 has-hover:hover:text-process active:bg-process/12 active:text-process",
         "ghost-foreground":
           "text-foreground has-hover:hover:bg-foreground/8 has-hover:hover:text-foreground active:bg-foreground/8 active:text-foreground",
+        card: "bg-card text-foreground has-hover:hover:bg-card-hover active:bg-card-hover",
         link: "text-primary underline-offset-4 has-hover:hover:underline active:underline",
         google: "bg-google text-google-foreground has-hover:hover:bg-google/85 active:bg-google/85",
         discord:

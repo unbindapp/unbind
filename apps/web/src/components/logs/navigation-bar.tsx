@@ -34,7 +34,7 @@ export default function NavigationBar({
         variant="ghost"
         size="icon"
         onClick={scrollToTop}
-        className="bg-background-hover data-disabled:text-muted-more-foreground rounded-lg rounded-b-none border-t border-r border-l"
+        className="bg-card data-disabled:text-muted-more-foreground rounded-lg rounded-b-none border-t border-r border-l"
       >
         <ArrowUpIcon className="size-5" />
       </Button>
@@ -46,7 +46,7 @@ export default function NavigationBar({
         variant="ghost"
         size="icon"
         onClick={scrollToBottom}
-        className="bg-background-hover data-disabled:text-muted-more-foreground rounded-lg rounded-t-none border-r border-b border-l"
+        className="bg-card data-disabled:text-muted-more-foreground rounded-lg rounded-t-none border-r border-b border-l"
       >
         <ArrowDownIcon className="size-5" />
       </Button>

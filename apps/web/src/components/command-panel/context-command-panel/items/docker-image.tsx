@@ -166,7 +166,7 @@ function useDockerImageItem({ context }: TProps) {
         usesSearchAsync: true,
         ExplanationCard: ({ className }) => (
           <div className={cn("w-full px-1 pt-1", className)}>
-            <div className="text-muted-foreground bg-background-hover mb-1 w-full rounded-md border text-sm leading-relaxed">
+            <div className="text-muted-foreground bg-card mb-1 w-full rounded-md border text-sm leading-relaxed">
               <div className="flex w-full flex-col pt-2.25 pb-2.5">
                 <p className="w-full px-3 leading-tight">
                   You can also enter images from supported registries:

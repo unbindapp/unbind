@@ -17,7 +17,7 @@ export default function KeyboardShortcut({ className, showOnTouchscreen, childre
 
   return (
     <div className={cn("shrink-0", className)}>
-      <div className="ring-border bg-background-hover rounded px-1.5 py-1.25 text-xs leading-none ring-1">
+      <div className="ring-border bg-card rounded px-1.5 py-1.25 text-xs leading-none ring-1">
         {children}
       </div>
     </div>

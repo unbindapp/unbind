@@ -26,7 +26,7 @@ export default function NewProjectButton({ teamId, className }: TProps) {
       context={context}
     >
       <Button
-        className={cn("bg-background-hover -my-2 rounded-lg py-2", className)}
+        className={cn("bg-card -my-2 rounded-lg py-2", className)}
         size="sm"
         variant="outline"
       >

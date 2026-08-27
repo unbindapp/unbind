@@ -203,7 +203,7 @@ function VariableEditorOrPlaceholder({
     return (
       <div
         style={{ paddingLeft: 14, paddingRight: 14, paddingTop: 10, paddingBottom: 10 }}
-        className="bg-background-hover flex flex-1 flex-col gap-1 overflow-hidden rounded-lg border font-mono"
+        className="bg-card flex flex-1 flex-col gap-1 overflow-hidden rounded-lg border font-mono"
       >
         {Array.from({ length: 20 }).map((_, i) => (
           <div
@@ -255,7 +255,7 @@ function VariableEditor({
     <div className="relative -mx-3 flex w-[calc(100%+1.5rem)] flex-1 flex-col overflow-hidden sm:mx-0 sm:w-full">
       <ScrollArea
         classNameViewport="[&>div]:group-data-[orientation=vertical]/root:flex-1"
-        className="bg-background-hover flex flex-1 flex-col overflow-auto rounded-lg border font-mono"
+        className="bg-card flex flex-1 flex-col overflow-auto rounded-lg border font-mono"
       >
         <div className="flex w-full flex-1 flex-col">
           <Editor

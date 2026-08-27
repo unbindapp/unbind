@@ -233,7 +233,7 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
           )}
         />
       </div>
-      <div className="bg-background-hover flex w-full items-center justify-end rounded-b-xl border-t p-2 sm:p-2.5">
+      <div className="bg-card flex w-full items-center justify-end rounded-b-xl border-t p-2 sm:p-2.5">
         <form.Subscribe selector={(state) => ({ isSubmitting: state.isSubmitting })}>
           {({ isSubmitting }) => (
             <form.SubmitButton className="px-4" isPending={isSubmitting}>

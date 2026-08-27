@@ -159,7 +159,7 @@ function UpdateSectionInner({
         </h1>
         {updatePhase === "idle" && (
           <div className="mt-0.5 flex w-full items-center justify-center px-1">
-            <p className="text-muted-foreground bg-background-hover max-w-full rounded-full border px-2.5 py-0.5 text-center text-sm font-medium">
+            <p className="text-muted-foreground bg-card max-w-full rounded-full border px-2.5 py-0.5 text-center text-sm font-medium">
               Current version: <span className="font-bold">{currentVersion}</span>
             </p>
           </div>

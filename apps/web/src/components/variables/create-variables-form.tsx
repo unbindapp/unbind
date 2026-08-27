@@ -191,7 +191,7 @@ export default function CreateVariablesForm({
         }}
       >
         <VariablesFormField form={form} tokenProps={tokenProps} />
-        <div className="bg-background-hover flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:mt-3.5 md:p-2.5">
+        <div className="bg-card flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:mt-3.5 md:p-2.5">
           {createOrUpdateVariablesError && (
             <ErrorLine message={createOrUpdateVariablesError.message} />
           )}

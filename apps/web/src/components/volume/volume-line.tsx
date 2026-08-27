@@ -29,7 +29,7 @@ export default function VolumeLine({ volume, className }: TProps) {
   return (
     <VolumePanel volume={volume}>
       <Button
-        variant={"ghost"}
+        variant={"card"}
         data-usage={usageLevel}
         key={volume.id}
         className={cn(

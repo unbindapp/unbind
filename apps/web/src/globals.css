@@ -66,21 +66,19 @@
 
   /* If you change --background, also update the anti-flash <style> in index.html */
   --background: hsl(120 35% 95%);
-  --background-hover: hsl(120 40% 96%);
   --foreground: hsl(120 90% 5%);
-  --card: hsl(120 35% 95%);
-  --card-foreground: hsl(120 90% 5%);
+  --card: hsl(120 40% 96%);
+  --card-hover: hsl(120 18% 90%);
   --popover: hsl(120 40% 96%);
-  --popover-foreground: hsl(120 90% 5%);
   --primary: hsl(120 90% 5%);
   --primary-foreground: hsl(120 35% 95%);
-  --secondary: hsl(120 13% 86%);
+  --secondary: hsl(120 14% 86%);
   --secondary-foreground: hsl(120 90% 5%);
-  --muted: hsl(120 13% 86%);
+  --muted: hsl(120 14% 86%);
   --muted-foreground: hsl(120 10% 35%);
   --muted-more-foreground: hsl(120 10% 50%);
   --muted-most-foreground: hsl(120 10% 65%);
-  --accent: hsl(120 13% 86%);
+  --accent: hsl(120 14% 86%);
   --accent-foreground: hsl(120 90% 5%);
   --destructive: hsl(0 84% 30%);
   --destructive-foreground: hsl(120 35% 95%);
@@ -93,7 +91,7 @@
   --wait: hsl(40 100% 25%);
   --wait-foreground: hsl(120 35% 95%);
   --shadow-color: hsl(120 30% 4%);
-  --border: hsl(120 13% 86%);
+  --border: hsl(120 14% 86%);
   --input: hsl(120 40% 96%);
   --ring: hsl(120 90% 5%);
 
@@ -188,12 +186,10 @@
 .dark {
   /* If you change --background, also update the anti-flash <style> in index.html */
   --background: hsl(120 9% 6%);
-  --background-hover: hsl(120 7% 8%);
   --foreground: hsl(120 100% 97%);
-  --card: hsl(120 9% 6%);
-  --card-foreground: hsl(120 100% 97%);
+  --card: hsl(120 7% 8%);
+  --card-hover: hsl(120 5% 12%);
   --popover: hsl(120 7% 8%);
-  --popover-foreground: hsl(120 100% 97%);
   --primary: hsl(120 100% 97%);
   --primary-foreground: hsl(120 9% 6%);
   --secondary: hsl(120 5% 12%);
@@ -421,15 +417,13 @@
 
 @theme inline {
   --color-background: var(--background);
-  --color-background-hover: var(--background-hover);
 
   --color-foreground: var(--foreground);
 
   --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
+  --color-card-hover: var(--card-hover);
 
   --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
