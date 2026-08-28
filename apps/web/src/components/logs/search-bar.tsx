@@ -179,8 +179,8 @@ function FilterButton() {
           </Button>
         }
       />
-      <PopoverContent align="end" className="w-72 p-0">
-        <ScrollArea className="max-h-[min(60vh,30rem)]">
+      <PopoverContent align="end" className="flex w-3xl flex-col p-0 sm:w-72">
+        <ScrollArea className="max-h-[min(30rem,var(--available-height))]">
           <div className="flex w-full flex-col gap-4 p-3.5">
             <FilterSection title="Levels">
               <div className="flex flex-col gap-1">
@@ -334,13 +334,13 @@ function CustomRangeInputs() {
 
   return (
     <div className="flex w-full flex-col gap-1.5 pt-1">
-      <div className="flex w-full items-center gap-2">
+      <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
         <Input
           type="datetime-local"
           aria-label="From"
           value={fromValue}
           onChange={(e) => applyCustom(e.target.value, toValue)}
-          className="min-w-0 flex-1 px-2 py-1.5 text-xs"
+          className="w-full min-w-0 appearance-none px-2 py-1.5 text-xs"
         />
         <span className="text-muted-foreground shrink-0 text-xs">to</span>
         <Input
@@ -348,7 +348,7 @@ function CustomRangeInputs() {
           aria-label="To"
           value={toValue}
           onChange={(e) => applyCustom(fromValue, e.target.value)}
-          className="min-w-0 flex-1 px-2 py-1.5 text-xs"
+          className="w-full min-w-0 appearance-none px-2 py-1.5 text-xs"
         />
       </div>
       {custom && (
