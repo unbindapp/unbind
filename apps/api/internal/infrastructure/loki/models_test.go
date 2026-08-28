@@ -119,40 +119,6 @@ func (suite *ModelsTestSuite) TestLokiDirection_Schema_AlreadyRegistered() {
 	suite.Len(registry.Map(), 1)
 }
 
-func (suite *ModelsTestSuite) TestLokiLogStreamOptions_Struct() {
-	opts := LokiLogStreamOptions{
-		Label:      LokiLabelTeam,
-		LabelValue: "team-1",
-		RawFilter:  "|= \"error\"",
-		Since:      3600000000000, // 1 hour in nanoseconds
-		Limit:      100,
-	}
-
-	suite.Equal(LokiLabelTeam, opts.Label)
-	suite.Equal("team-1", opts.LabelValue)
-	suite.Equal("|= \"error\"", opts.RawFilter)
-	suite.Equal(int64(3600000000000), int64(opts.Since))
-	suite.Equal(100, opts.Limit)
-}
-
-func (suite *ModelsTestSuite) TestLokiLogHTTPOptions_Struct() {
-	opts := LokiLogHTTPOptions{
-		Label:      LokiLabelService,
-		LabelValue: "service-1",
-		RawFilter:  "|= \"warn\"",
-	}
-
-	suite.Equal(LokiLabelService, opts.Label)
-	suite.Equal("service-1", opts.LabelValue)
-	suite.Equal("|= \"warn\"", opts.RawFilter)
-	suite.Nil(opts.Start)
-	suite.Nil(opts.End)
-	suite.Nil(opts.Since)
-	suite.Nil(opts.Time)
-	suite.Nil(opts.Limit)
-	suite.Nil(opts.Direction)
-}
-
 func (suite *ModelsTestSuite) TestLogMetadata_Struct() {
 	metadata := LogMetadata{
 		ServiceID:     "service-123",

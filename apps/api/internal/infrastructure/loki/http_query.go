@@ -20,11 +20,7 @@ func (self *LokiLogQuerier) QueryLokiLogs(
 	ctx context.Context,
 	opts LokiLogHTTPOptions,
 ) ([]LogEvent, error) {
-	queryStr := fmt.Sprintf("{%s=\"%s\"}", opts.Label, opts.LabelValue)
-
-	if opts.RawFilter != "" {
-		queryStr = fmt.Sprintf("%s %s", queryStr, opts.RawFilter)
-	}
+	queryStr := buildLogQL(opts.Label, opts.LabelValue, opts.ServiceIDs, opts.RawFilter)
 
 	reqURL, err := url.Parse(self.endpoint)
 	if err != nil {
@@ -36,14 +32,12 @@ func (self *LokiLogQuerier) QueryLokiLogs(
 	q := reqURL.Query()
 	q.Set("query", queryStr)
 
-	if opts.Time != nil {
-		q.Set("time", strconv.FormatInt(opts.Time.Unix(), 10))
-	}
 	if opts.Limit != nil {
-		if *opts.Limit > 1000 {
-			*opts.Limit = 1000
+		limit := *opts.Limit
+		if limit > 1000 {
+			limit = 1000
 		}
-		q.Set("limit", strconv.Itoa(int(*opts.Limit)))
+		q.Set("limit", strconv.Itoa(limit))
 	}
 	if opts.Direction != nil {
 		q.Set("direction", string(*opts.Direction))
@@ -182,6 +176,7 @@ func parseStreamsResult(streams []Stream) []LogEvent {
 				PodName:   instance,
 				Timestamp: timestamp,
 				Message:   message,
+				Level:     DetectLevel(message),
 				Metadata: LogMetadata{
 					TeamID:        teamID,
 					ProjectID:     projectID,
@@ -221,6 +216,7 @@ func parseMatrixResult(matrixValues []MatrixValue) []LogEvent {
 				PodName:   instance,
 				Timestamp: timestamp,
 				Message:   message,
+				Level:     LogLevelInfo,
 				Metadata: LogMetadata{
 					TeamID:        teamID,
 					ProjectID:     projectID,
@@ -259,6 +255,7 @@ func parseVectorResult(vectorValues []VectorValue) []LogEvent {
 			PodName:   instance,
 			Timestamp: timestamp,
 			Message:   message,
+			Level:     LogLevelInfo,
 			Metadata: LogMetadata{
 				TeamID:        teamID,
 				ProjectID:     projectID,

@@ -54,8 +54,9 @@ type LogStreamInput struct {
 	Start         time.Time `query:"start"`
 	Since         string    `query:"since" default:"10m" doc:"Duration to look back (e.g., '1h', '30m')"`
 	Limit         int64     `query:"limit" default:"100" doc:"Number of lines to get from the end"`
-	Timestamps    bool      `query:"timestamps" default:"true" doc:"Include timestamps in logs"`
-	Filters       string    `query:"filters" doc:"Optional logql filter string"`
+	Search        string    `query:"search" doc:"Search expression: bare words (case-insensitive), \"quoted phrases\", AND/OR, -negation, @key:value for JSON fields"`
+	Levels        string    `query:"levels" doc:"Comma-separated log levels to include (debug, info, warn, error)"`
+	ServiceIDs    string    `query:"service_ids" doc:"Comma-separated service IDs to include (team/project/environment scope only)"`
 	LastEventID   string    `header:"Last-Event-Id" doc:"Resume cursor (nanosecond timestamp); set automatically by the SSE client on reconnect"`
 }
 
@@ -67,10 +68,13 @@ type LogQueryInput struct {
 	EnvironmentID uuid.UUID          `query:"environment_id" required:"false"`
 	ServiceID     uuid.UUID          `query:"service_id" required:"false"`
 	DeploymentID  uuid.UUID          `query:"deployment_id" required:"false"`
-	Filters       string             `query:"filters" doc:"Optional logql filter string"`
+	Search        string             `query:"search" doc:"Search expression: bare words (case-insensitive), \"quoted phrases\", AND/OR, -negation, @key:value for JSON fields"`
+	Levels        string             `query:"levels" doc:"Comma-separated log levels to include (debug, info, warn, error)"`
+	ServiceIDs    string             `query:"service_ids" doc:"Comma-separated service IDs to include (team/project/environment scope only)"`
 	Start         time.Time          `query:"start" doc:"Start time for the query"`
 	End           time.Time          `query:"end" doc:"End time for the query"`
 	Since         string             `query:"since" doc:"Duration to look back (e.g., '1h', '30m')"`
 	Limit         int                `query:"limit" doc:"Number of log lines to get"`
 	Direction     loki.LokiDirection `query:"direction" doc:"Direction of the logs (forward or backward)"`
+	Cursor        string             `query:"cursor" doc:"Pagination cursor from a previous response; returns strictly older logs (backward direction only)"`
 }

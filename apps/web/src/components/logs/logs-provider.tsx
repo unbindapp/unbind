@@ -1,28 +1,162 @@
 "use client";
 
-import { logsListQuery, type TLogLineWithLevel, type TLogType } from "@/lib/queries/logs";
-import { useLogViewState } from "@/components/logs/log-view-state-provider";
-import { createSearchFilter } from "@/components/logs/search-filter";
+import {
+  defaultLogRange,
+  isLiveRange,
+  resolveLogRange,
+  useLogFilters,
+} from "@/components/logs/log-filters-provider";
+import { logLineKey } from "@/components/logs/log-utils";
+import { parseSearchInput } from "@/components/logs/search-syntax";
+import { useServices } from "@/components/service/services-provider";
 import { useAppConfig } from "@/components/providers/app-config-provider";
-import useSSEQuery from "@/lib/hooks/use-sse-query";
-import { LogEventSchema } from "@/lib/server/client.gen";
-import { getLogLevelFromMessage } from "@/lib/helpers/get-log-level-from-message";
-import { useQuery } from "@tanstack/react-query";
-import { createContext, ReactNode, useContext, useMemo, useState } from "react";
-import { z } from "zod";
+import useLogStream from "@/lib/hooks/use-log-stream";
+import {
+  fetchLogsPage,
+  logsListQuery,
+  type TLogLevel,
+  type TLogLine,
+  type TLogType,
+} from "@/lib/queries/logs";
+import type { LogEvent } from "@/lib/server/client.gen";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  createContext,
+  ReactNode,
+  RefObject,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
+
+const LOGS_PAGE_LIMIT = 1000;
+const MAX_BUFFER_LINES = 10_000;
+
+type TLogsChange = "reset" | "append" | "prepend";
+
+export type TBufferedLogLine = TLogLine & { key: string };
+
+type TBufferState = {
+  identityKey: string | null;
+  lines: TBufferedLogLine[];
+  keys: Set<string>;
+  nextCursor: string | undefined;
+  hasMoreOlder: boolean;
+  lastChange: TLogsChange;
+};
+
+const emptyBuffer: TBufferState = {
+  identityKey: null,
+  lines: [],
+  keys: new Set(),
+  nextCursor: undefined,
+  hasMoreOlder: false,
+  lastChange: "reset",
+};
+
+function withKeys(lines: TLogLine[], seen: Set<string>): TBufferedLogLine[] {
+  const fresh: TBufferedLogLine[] = [];
+  for (const line of lines) {
+    const key = logLineKey(line);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    fresh.push({ ...line, key });
+  }
+  return fresh;
+}
+
+type TBufferAction =
+  | {
+      type: "reset";
+      identityKey: string;
+      lines: TLogLine[];
+      nextCursor: string | undefined;
+    }
+  | { type: "append"; identityKey: string; batch: TLogLine[]; allowTrim: boolean }
+  | { type: "prepend"; identityKey: string; lines: TLogLine[]; nextCursor: string | undefined };
+
+function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState {
+  switch (action.type) {
+    case "reset": {
+      const keys = new Set<string>();
+      const lines = withKeys(action.lines, keys);
+      return {
+        identityKey: action.identityKey,
+        lines,
+        keys,
+        nextCursor: action.nextCursor,
+        hasMoreOlder: Boolean(action.nextCursor),
+        lastChange: "reset",
+      };
+    }
+    case "append": {
+      if (state.identityKey !== action.identityKey) return state;
+      const keys = new Set(state.keys);
+      const fresh = withKeys(action.batch, keys);
+      if (fresh.length === 0) return state;
+
+      let lines = [...state.lines, ...fresh];
+
+      let nextCursor = state.nextCursor;
+      let hasMoreOlder = state.hasMoreOlder;
+      // trimming is skipped while the user reads history so eviction can't
+      // fight the pages they just scrolled up to
+      if (action.allowTrim && lines.length > MAX_BUFFER_LINES) {
+        const trimmed = lines.slice(0, lines.length - MAX_BUFFER_LINES);
+        lines = lines.slice(lines.length - MAX_BUFFER_LINES);
+        for (const line of trimmed) keys.delete(line.key);
+        const oldest = lines[0];
+        if (oldest?.timestamp) {
+          // evicted lines are reachable again through the query endpoint
+          nextCursor = oldest.timestamp;
+          hasMoreOlder = true;
+        }
+      }
+
+      return { ...state, lines, keys, nextCursor, hasMoreOlder, lastChange: "append" };
+    }
+    case "prepend": {
+      if (state.identityKey !== action.identityKey) return state;
+      const keys = new Set(state.keys);
+      const fresh = withKeys(action.lines, keys);
+      // an all-duplicate page with an unchanged cursor would loop forever
+      if (fresh.length === 0 && action.nextCursor === state.nextCursor) {
+        return { ...state, hasMoreOlder: false, lastChange: "prepend" };
+      }
+      return {
+        ...state,
+        lines: fresh.length ? [...fresh, ...state.lines] : state.lines,
+        keys,
+        nextCursor: action.nextCursor,
+        hasMoreOlder: Boolean(action.nextCursor),
+        lastChange: "prepend",
+      };
+    }
+  }
+}
 
 type TLogsContext = {
-  data: TLogLineWithLevel[] | null;
+  logs: TBufferedLogLine[] | null;
+  logsRef: RefObject<TBufferedLogLine[] | null>;
   isPending: boolean;
+  isRefreshing: boolean;
   error: Error | null;
+  streamStatus: "idle" | "connecting" | "live" | "reconnecting" | "error";
+  streamErrorMessage: string | null;
+  isLive: boolean;
+  hasMoreOlder: boolean;
+  isFetchingOlder: boolean;
+  fetchOlder: () => void;
+  lastChange: TLogsChange;
+  searchError: string | null;
+  setEvictionPaused: (paused: boolean) => void;
 };
 
 const LogsContext = createContext<TLogsContext | null>(null);
-
-export const LOGS_LIMIT = 1000;
-
-export const MessageSchema = z.object({ type: z.string(), logs: LogEventSchema.array() }).strip();
-export type TMessage = z.infer<typeof MessageSchema>;
 
 type TBaseProps = {
   children: ReactNode;
@@ -75,95 +209,256 @@ export const LogsProvider: React.FC<TProps> = ({
   httpDefaultEndTimestamp,
   children,
 }) => {
-  const { search } = useLogViewState();
-  const [start] = useState(
-    new Date(httpDefaultStartTimestamp || Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-  );
-  const [end] = useState(
-    httpDefaultEndTimestamp ? new Date(httpDefaultEndTimestamp).toISOString() : null,
-  );
-  const isFiniteQuery = !!start && !!end;
-
-  const filtersStr = createSearchFilter(search);
-
+  const { search, levels, serviceIds, range, servicesEnabled } = useLogFilters();
   const {
-    data: httpData,
-    isPending: httpIsPending,
-    error: httpError,
-  } = useQuery({
-    ...logsListQuery({
+    query: { data: servicesData },
+  } = useServices();
+
+  const parsedSearch = useMemo(() => parseSearchInput(search), [search]);
+
+  const mergedLevels = useMemo(() => {
+    const merged = new Set<TLogLevel>([...levels, ...parsedSearch.levels]);
+    return [...merged].sort();
+  }, [levels, parsedSearch.levels]);
+
+  const { mergedServiceIds, serviceNameError } = useMemo(() => {
+    if (parsedSearch.serviceNames.length > 0 && !servicesEnabled) {
+      return {
+        mergedServiceIds: [...serviceIds].sort(),
+        serviceNameError: "@service is only available in environment logs",
+      };
+    }
+    const merged = new Set<string>(serviceIds);
+    let unknown: string | null = null;
+    for (const name of parsedSearch.serviceNames) {
+      const service = servicesData?.services.find(
+        (s) => s.name.toLowerCase() === name.toLowerCase(),
+      );
+      if (!service) {
+        unknown = name;
+        continue;
+      }
+      merged.add(service.id);
+    }
+    return {
+      mergedServiceIds: [...merged].sort(),
+      serviceNameError: unknown ? `No service named "${unknown}"` : null,
+    };
+  }, [serviceIds, parsedSearch.serviceNames, servicesData, servicesEnabled]);
+
+  const searchError = parsedSearch.error ?? serviceNameError;
+
+  // Anchor the window when the range changes, not on every render.
+  const rangeKey = JSON.stringify(range);
+  const explicitWindow = Boolean(httpDefaultStartTimestamp || httpDefaultEndTimestamp);
+  const timeWindow = useMemo(() => {
+    if (explicitWindow) {
+      return {
+        start: httpDefaultStartTimestamp
+          ? new Date(httpDefaultStartTimestamp).toISOString()
+          : resolveLogRange(defaultLogRange).start,
+        end: httpDefaultEndTimestamp ? new Date(httpDefaultEndTimestamp).toISOString() : null,
+      };
+    }
+    return resolveLogRange(range);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rangeKey, explicitWindow, httpDefaultStartTimestamp, httpDefaultEndTimestamp]);
+
+  const isLive = explicitWindow ? !httpDefaultEndTimestamp : isLiveRange(range);
+
+  const queryInput = useMemo(
+    () => ({
       type,
       teamId,
       projectId,
       environmentId,
       serviceId,
       deploymentId,
-      filters: filtersStr,
-      limit: LOGS_LIMIT,
-      start,
-      end: end!,
+      search: parsedSearch.serverSearch || undefined,
+      levels: mergedLevels.length ? mergedLevels.join(",") : undefined,
+      serviceIds: mergedServiceIds.length ? mergedServiceIds.join(",") : undefined,
+      start: timeWindow.start,
+      end: timeWindow.end ?? undefined,
+      limit: LOGS_PAGE_LIMIT,
     }),
-    enabled: isFiniteQuery,
+    [
+      type,
+      teamId,
+      projectId,
+      environmentId,
+      serviceId,
+      deploymentId,
+      parsedSearch.serverSearch,
+      mergedLevels,
+      mergedServiceIds,
+      timeWindow,
+    ],
+  );
+
+  const identityKey = useMemo(() => JSON.stringify(queryInput), [queryInput]);
+
+  const initialQuery = useQuery({
+    ...logsListQuery(queryInput),
+    enabled: !searchError,
+    placeholderData: keepPreviousData,
+    staleTime: 10_000,
+    refetchOnWindowFocus: false,
   });
 
+  const [buffer, dispatch] = useReducer(bufferReducer, emptyBuffer);
+  const [isFetchingOlder, setIsFetchingOlder] = useState(false);
+  const [streamErrorMessage, setStreamErrorMessage] = useState<string | null>(null);
+
+  // Seed/replace the buffer whenever the initial page for the current
+  // identity lands; stale identities keep rendering until then.
+  const initialData = initialQuery.data;
+  const initialIsPlaceholder = initialQuery.isPlaceholderData;
+  useEffect(() => {
+    if (!initialData || initialIsPlaceholder) return;
+    dispatch({
+      type: "reset",
+      identityKey,
+      lines: initialData.logs,
+      nextCursor: initialData.nextCursor,
+    });
+    setStreamErrorMessage(null);
+  }, [initialData, initialIsPlaceholder, identityKey]);
+
+  const bufferReady = buffer.identityKey === identityKey;
+
   const { apiUrl } = useAppConfig();
-  const sseUrl = useMemo(() => {
+  const streamUrl = useMemo(() => {
+    if (!isLive || !bufferReady || searchError) return null;
     const params = new URLSearchParams({
-      type: type,
+      type,
       team_id: teamId,
       project_id: projectId || "",
       environment_id: environmentId || "",
-      limit: LOGS_LIMIT.toString(),
-      start: start,
+      limit: LOGS_PAGE_LIMIT.toString(),
     });
-    if (type === "service" || type === "deployment") {
-      params.set("service_id", serviceId);
-    }
-    if (type === "deployment" || type === "build") {
-      params.set("deployment_id", deploymentId);
-    }
-    if (filtersStr) {
-      params.set("filters", filtersStr);
-    }
+    if (type === "service" || type === "deployment") params.set("service_id", serviceId);
+    if (type === "deployment" || type === "build") params.set("deployment_id", deploymentId);
+    if (parsedSearch.serverSearch) params.set("search", parsedSearch.serverSearch);
+    if (mergedLevels.length) params.set("levels", mergedLevels.join(","));
+    if (mergedServiceIds.length) params.set("service_ids", mergedServiceIds.join(","));
+    // resume right where the initial page ended; overlap is deduped by key
+    const newest = buffer.lines[buffer.lines.length - 1]?.timestamp;
+    params.set("start", newest ?? timeWindow.start);
     return `${apiUrl}/logs/stream?${params.toString()}`;
-  }, [type, apiUrl, teamId, projectId, environmentId, serviceId, deploymentId, filtersStr, start]);
+    // the buffer's newest line only matters at connect time
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    isLive,
+    bufferReady,
+    searchError,
+    type,
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+    deploymentId,
+    parsedSearch.serverSearch,
+    mergedLevels,
+    mergedServiceIds,
+    timeWindow.start,
+    apiUrl,
+    identityKey,
+  ]);
 
-  const { data: streamDataRaw, error: streamError } = useSSEQuery({
-    url: sseUrl,
-    parser: MessageSchema,
-    disabled: isFiniteQuery,
-    filter: (obj) => obj.type === "log",
+  const identityKeyRef = useRef(identityKey);
+  identityKeyRef.current = identityKey;
+
+  const evictionPausedRef = useRef(false);
+  const setEvictionPaused = useCallback((paused: boolean) => {
+    evictionPausedRef.current = paused;
+  }, []);
+
+  const onBatch = useCallback((batch: LogEvent[]) => {
+    if (batch.length === 0) return;
+    dispatch({
+      type: "append",
+      identityKey: identityKeyRef.current,
+      batch,
+      allowTrim: !evictionPausedRef.current,
+    });
+    setStreamErrorMessage(null);
+  }, []);
+
+  const onErrorEvent = useCallback((message: string) => {
+    setStreamErrorMessage(message);
+  }, []);
+
+  const { status: streamStatus, error: streamFatalError } = useLogStream({
+    url: streamUrl,
+    onBatch,
+    onErrorEvent,
   });
 
-  const streamData = useMemo(() => {
-    const logs: TLogLineWithLevel[] = [];
-    if (!streamDataRaw) return null;
-    for (const entry of streamDataRaw) {
-      const { logs: logEntries } = entry;
-      for (const logEntry of logEntries) {
-        const logLevel = getLogLevelFromMessage(logEntry.message);
-        logs.push({
-          ...logEntry,
-          level: logLevel,
-        });
-      }
+  const fetchOlderRef = useRef(false);
+  const fetchOlder = useCallback(async () => {
+    if (fetchOlderRef.current || !bufferReady || !buffer.nextCursor) return;
+    fetchOlderRef.current = true;
+    setIsFetchingOlder(true);
+    // tie the page to the identity it was requested for, so a filter change
+    // mid-flight can't leak the wrong logs into the fresh buffer
+    const requestIdentityKey = identityKey;
+    const cursor = buffer.nextCursor;
+    try {
+      const page = /^\d+$/.test(cursor)
+        ? await fetchLogsPage({ ...queryInput, cursor })
+        : // eviction-minted cursors are raw timestamps; end is exclusive too
+          await fetchLogsPage({ ...queryInput, end: cursor });
+      dispatch({
+        type: "prepend",
+        identityKey: requestIdentityKey,
+        lines: page.logs,
+        nextCursor: page.nextCursor,
+      });
+    } catch {
+      // scrolling up again retries
+    } finally {
+      fetchOlderRef.current = false;
+      setIsFetchingOlder(false);
     }
-    return logs;
-  }, [streamDataRaw]);
+  }, [bufferReady, buffer.nextCursor, queryInput, identityKey]);
 
-  const isPending = isFiniteQuery ? httpIsPending : !streamData;
-  const error = httpError || streamError;
-  const data: TLogLineWithLevel[] | null = useMemo(() => {
-    if (isFiniteQuery && httpData) {
-      return [...httpData.logs];
-    }
-    if (!isFiniteQuery && streamData) {
-      return streamData;
-    }
-    return null;
-  }, [httpData, streamData, isFiniteQuery]);
+  const logsRef = useRef<TBufferedLogLine[] | null>(null);
+  const logs = buffer.identityKey !== null ? buffer.lines : null;
+  logsRef.current = logs;
 
-  const value: TLogsContext = useMemo(() => ({ data, isPending, error }), [data, isPending, error]);
+  const value: TLogsContext = useMemo(
+    () => ({
+      logs,
+      logsRef,
+      isPending: buffer.identityKey === null && initialQuery.isPending,
+      isRefreshing: !bufferReady && buffer.identityKey !== null,
+      error: initialQuery.error,
+      streamStatus,
+      streamErrorMessage: streamErrorMessage ?? streamFatalError,
+      isLive,
+      hasMoreOlder: bufferReady && buffer.hasMoreOlder,
+      isFetchingOlder,
+      fetchOlder,
+      lastChange: buffer.lastChange,
+      searchError,
+      setEvictionPaused,
+    }),
+    [
+      logs,
+      bufferReady,
+      buffer,
+      initialQuery.isPending,
+      initialQuery.error,
+      streamStatus,
+      streamErrorMessage,
+      streamFatalError,
+      isLive,
+      isFetchingOlder,
+      fetchOlder,
+      searchError,
+      setEvictionPaused,
+    ],
+  );
 
   return <LogsContext.Provider value={value}>{children}</LogsContext.Provider>;
 };

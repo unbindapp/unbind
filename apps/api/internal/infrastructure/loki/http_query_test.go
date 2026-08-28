@@ -217,7 +217,6 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_WithTimeOptions() {
 	opts := LokiLogHTTPOptions{
 		Label:      LokiLabelTeam,
 		LabelValue: "team-1",
-		Time:       &now,
 		Start:      &start,
 		End:        &end,
 		Since:      &since,
@@ -231,7 +230,6 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_WithTimeOptions() {
 
 	// Verify query parameters
 	suite.Contains(capturedQuery, "query=%7Bunbind_team%3D%22team-1%22%7D") // URL encoded {unbind_team="team-1"}
-	suite.Contains(capturedQuery, fmt.Sprintf("time=%d", now.Unix()))
 	suite.Contains(capturedQuery, fmt.Sprintf("start=%d", start.UnixNano()))
 	suite.Contains(capturedQuery, fmt.Sprintf("end=%d", end.UnixNano()))
 	suite.Contains(capturedQuery, "limit=500")

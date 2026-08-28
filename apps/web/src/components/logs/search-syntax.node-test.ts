@@ -1,0 +1,96 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+import { parseSearchInput } from "./search-syntax.ts";
+
+test("empty input", () => {
+  const result = parseSearchInput("");
+  assert.equal(result.serverSearch, "");
+  assert.deepEqual(result.levels, []);
+  assert.deepEqual(result.serviceNames, []);
+  assert.equal(result.error, null);
+});
+
+test("plain words pass through", () => {
+  const result = parseSearchInput("timeout redis");
+  assert.equal(result.serverSearch, "timeout redis");
+  assert.equal(result.error, null);
+});
+
+test("quoted phrases pass through", () => {
+  const result = parseSearchInput('"connection refused" -"GET /healthz"');
+  assert.equal(result.serverSearch, '"connection refused" -"GET /healthz"');
+  assert.equal(result.error, null);
+});
+
+test("level tokens are extracted", () => {
+  const result = parseSearchInput("@level:error timeout @level:WARN");
+  assert.equal(result.serverSearch, "timeout");
+  assert.deepEqual(result.levels, ["error", "warn"]);
+});
+
+test("duplicate levels are collapsed", () => {
+  const result = parseSearchInput("@level:error @level:error");
+  assert.deepEqual(result.levels, ["error"]);
+});
+
+test("unknown level errors", () => {
+  const result = parseSearchInput("@level:verbose");
+  assert.match(result.error ?? "", /Unknown level/);
+});
+
+test("service tokens are extracted", () => {
+  const result = parseSearchInput("@service:api timeout");
+  assert.equal(result.serverSearch, "timeout");
+  assert.deepEqual(result.serviceNames, ["api"]);
+});
+
+test("negated attribute tokens error", () => {
+  const result = parseSearchInput("-@level:error");
+  assert.match(result.error ?? "", /cannot be negated/);
+});
+
+test("other @ tokens pass through to the server", () => {
+  const result = parseSearchInput("@status:500");
+  assert.equal(result.serverSearch, "@status:500");
+  assert.equal(result.error, null);
+});
+
+test("unclosed quote errors", () => {
+  const result = parseSearchInput('"unterminated');
+  assert.match(result.error ?? "", /Unclosed quote/);
+});
+
+test("dangling operator errors", () => {
+  assert.match(parseSearchInput("timeout OR").error ?? "", /dangling/);
+  assert.match(parseSearchInput("timeout AND").error ?? "", /dangling/);
+});
+
+test("operators inside expressions pass through", () => {
+  const result = parseSearchInput("timeout OR refused AND -debug");
+  assert.equal(result.serverSearch, "timeout OR refused AND -debug");
+  assert.equal(result.error, null);
+});
+
+test("extracting a token swallows an adjacent AND", () => {
+  const result = parseSearchInput("foo AND @level:error");
+  assert.equal(result.serverSearch, "foo");
+  assert.deepEqual(result.levels, ["error"]);
+  assert.equal(result.error, null);
+});
+
+test("leading extraction keeps the rest valid", () => {
+  const result = parseSearchInput("@level:error AND foo");
+  assert.equal(result.serverSearch, "foo");
+  assert.deepEqual(result.levels, ["error"]);
+  assert.equal(result.error, null);
+});
+
+test("extracted token next to OR errors instead of leaving a dangling operator", () => {
+  assert.match(parseSearchInput("foo OR @level:error").error ?? "", /combined with OR/);
+  assert.match(parseSearchInput("@service:api OR foo").error ?? "", /combined with OR/);
+});
+
+test("doubled operators error", () => {
+  assert.match(parseSearchInput("a AND AND b").error ?? "", /misplaced/);
+});

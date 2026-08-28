@@ -55,6 +55,7 @@ func (self *HandlerGroup) handleSSEErr(err error, send sse.Sender) {
 				ErrorMessage: fmt.Sprintf("invalid input %v", err.Error()),
 			},
 		)
+		return
 	}
 	if errors.Is(err, errdefs.ErrUnauthorized) {
 		_ = send.Data(
@@ -63,6 +64,7 @@ func (self *HandlerGroup) handleSSEErr(err error, send sse.Sender) {
 				ErrorMessage: fmt.Sprintf("unauthorized %v", err.Error()),
 			},
 		)
+		return
 	}
 	if ent.IsNotFound(err) || errors.Is(err, errdefs.ErrNotFound) {
 		_ = send.Data(
@@ -71,6 +73,7 @@ func (self *HandlerGroup) handleSSEErr(err error, send sse.Sender) {
 				ErrorMessage: fmt.Sprintf("entity not found %v", err.Error()),
 			},
 		)
+		return
 	}
 	log.Error("Unknown error streaming logs", "err", err)
 	_ = send.Data(

@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/internal/infrastructure/loki"
 	"github.com/unbindapp/unbind-api/internal/models"
 	unbindv1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -71,8 +70,6 @@ type KubeClientInterface interface {
 	GetActiveControllerIP(ctx context.Context) (*LoadBalancerAddresses, error)
 	// GetUnusedNodePort returns an unused NodePort, determined by letting kubernetes allocate one then deleting the temp service
 	GetUnusedNodePort(ctx context.Context) (int32, error)
-	// StreamPodLogs streams logs from a pod to the provided writer with filtering
-	StreamPodLogs(ctx context.Context, namespace string, opts loki.LokiLogStreamOptions, meta loki.LogMetadata, client kubernetes.Interface, eventChan chan<- loki.LogEvents) error
 	// CreatePersistentVolumeClaim creates a new PersistentVolumeClaim in the specified namespace.
 	CreatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
 	// never resizes an existing claim; UpdatePersistentVolumeClaim owns that

@@ -11,7 +11,6 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
-	"github.com/unbindapp/unbind-api/internal/infrastructure/loki"
 	"github.com/unbindapp/unbind-api/internal/models"
 	v10 "github.com/unbindapp/unbind-operator/api/v1"
 	"k8s.io/api/core/v1"
@@ -3845,87 +3844,6 @@ func (_c *KubeClientMock_SetTokenVerifier_Call) Return() *KubeClientMock_SetToke
 
 func (_c *KubeClientMock_SetTokenVerifier_Call) RunAndReturn(run func(verifier k8s.TokenVerifier)) *KubeClientMock_SetTokenVerifier_Call {
 	_c.Run(run)
-	return _c
-}
-
-// StreamPodLogs provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) StreamPodLogs(ctx context.Context, namespace string, opts loki.LokiLogStreamOptions, meta loki.LogMetadata, client kubernetes.Interface, eventChan chan<- loki.LogEvents) error {
-	ret := _mock.Called(ctx, namespace, opts, meta, client, eventChan)
-
-	if len(ret) == 0 {
-		panic("no return value specified for StreamPodLogs")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, loki.LokiLogStreamOptions, loki.LogMetadata, kubernetes.Interface, chan<- loki.LogEvents) error); ok {
-		r0 = returnFunc(ctx, namespace, opts, meta, client, eventChan)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// KubeClientMock_StreamPodLogs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StreamPodLogs'
-type KubeClientMock_StreamPodLogs_Call struct {
-	*mock.Call
-}
-
-// StreamPodLogs is a helper method to define mock.On call
-//   - ctx context.Context
-//   - namespace string
-//   - opts loki.LokiLogStreamOptions
-//   - meta loki.LogMetadata
-//   - client kubernetes.Interface
-//   - eventChan chan<- loki.LogEvents
-func (_e *KubeClientMock_Expecter) StreamPodLogs(ctx any, namespace any, opts any, meta any, client any, eventChan any) *KubeClientMock_StreamPodLogs_Call {
-	return &KubeClientMock_StreamPodLogs_Call{Call: _e.mock.On("StreamPodLogs", ctx, namespace, opts, meta, client, eventChan)}
-}
-
-func (_c *KubeClientMock_StreamPodLogs_Call) Run(run func(ctx context.Context, namespace string, opts loki.LokiLogStreamOptions, meta loki.LogMetadata, client kubernetes.Interface, eventChan chan<- loki.LogEvents)) *KubeClientMock_StreamPodLogs_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		var arg2 loki.LokiLogStreamOptions
-		if args[2] != nil {
-			arg2 = args[2].(loki.LokiLogStreamOptions)
-		}
-		var arg3 loki.LogMetadata
-		if args[3] != nil {
-			arg3 = args[3].(loki.LogMetadata)
-		}
-		var arg4 kubernetes.Interface
-		if args[4] != nil {
-			arg4 = args[4].(kubernetes.Interface)
-		}
-		var arg5 chan<- loki.LogEvents
-		if args[5] != nil {
-			arg5 = args[5].(chan<- loki.LogEvents)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-			arg3,
-			arg4,
-			arg5,
-		)
-	})
-	return _c
-}
-
-func (_c *KubeClientMock_StreamPodLogs_Call) Return(err error) *KubeClientMock_StreamPodLogs_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *KubeClientMock_StreamPodLogs_Call) RunAndReturn(run func(ctx context.Context, namespace string, opts loki.LokiLogStreamOptions, meta loki.LogMetadata, client kubernetes.Interface, eventChan chan<- loki.LogEvents) error) *KubeClientMock_StreamPodLogs_Call {
-	_c.Call.Return(run)
 	return _c
 }
 

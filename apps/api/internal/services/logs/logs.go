@@ -2,6 +2,8 @@ package logs_service
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -117,6 +119,56 @@ func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, 
 	}
 
 	return team, project, environment, service, nil
+}
+
+type logFilters struct {
+	compiledSearch string
+	levels         []loki.LogLevel
+	serviceIDs     []string
+}
+
+func parseLogFilters(logType models.LogType, search, levelsCSV, serviceIDsCSV string) (logFilters, error) {
+	var filters logFilters
+
+	compiled, err := loki.CompileSearch(search)
+	if err != nil {
+		return filters, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("invalid search expression: %v", err))
+	}
+	filters.compiledSearch = compiled
+
+	if levelsCSV != "" {
+		seen := make(map[loki.LogLevel]bool, len(loki.LogLevelValues))
+		for _, part := range strings.Split(levelsCSV, ",") {
+			level, ok := loki.ParseLogLevel(part)
+			if !ok {
+				return filters, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("invalid log level %q", part))
+			}
+			if seen[level] {
+				continue
+			}
+			seen[level] = true
+			filters.levels = append(filters.levels, level)
+		}
+		// selecting every level is the same as not filtering
+		if len(filters.levels) == len(loki.LogLevelValues) {
+			filters.levels = nil
+		}
+	}
+
+	if serviceIDsCSV != "" {
+		if logType != models.LogTypeTeam && logType != models.LogTypeProject && logType != models.LogTypeEnvironment {
+			return filters, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "service_ids is only valid for team, project, or environment logs")
+		}
+		for _, part := range strings.Split(serviceIDsCSV, ",") {
+			id, err := uuid.Parse(strings.TrimSpace(part))
+			if err != nil {
+				return filters, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("invalid service id %q", part))
+			}
+			filters.serviceIDs = append(filters.serviceIDs, id.String())
+		}
+	}
+
+	return filters, nil
 }
 
 type lokiSelector struct {

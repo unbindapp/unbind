@@ -2,8 +2,8 @@ package logs_service
 
 import (
 	"context"
-	"fmt"
 	"strconv"
+	"sync/atomic"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2/sse"
@@ -12,6 +12,13 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/loki"
 	"github.com/unbindapp/unbind-api/internal/models"
+)
+
+const (
+	streamInitialBackoff     = time.Second
+	streamMaxBackoff         = 30 * time.Second
+	streamStableConnDuration = 30 * time.Second
+	streamFailuresBeforeWarn = 3
 )
 
 func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UUID, input *models.LogStreamInput, send sse.Sender) error {
@@ -25,7 +32,11 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 		return err
 	}
 
-	// Parse 'since' duration
+	filters, err := parseLogFilters(input.Type, input.Search, input.Levels, input.ServiceIDs)
+	if err != nil {
+		return err
+	}
+
 	var since time.Duration
 	if input.Since != "" {
 		since, err = time.ParseDuration(input.Since)
@@ -36,61 +47,49 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 
 	start, since := clampLogStart(input.Start, since, selector.startBound)
 
-	// Create a channel for log events
 	eventChan := make(chan loki.LogEvents, 100)
 
-	// Create a context with cancellation
 	streamCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	lokiLogOptions := loki.LokiLogStreamOptions{
+	baseOpts := loki.LokiLogStreamOptions{
 		Label:      selector.label,
 		LabelValue: selector.labelValue,
+		ServiceIDs: filters.serviceIDs,
+		RawFilter:  filters.compiledSearch,
 		Limit:      int(input.Limit),
-		RawFilter:  input.Filters,
 		Since:      since,
 		Start:      start,
 	}
 
-	// Resume after the client's Last-Event-Id instead of replaying history.
+	// Track the newest delivered timestamp so reconnects (ours or the
+	// client's via Last-Event-Id) resume instead of replaying history.
+	var lastEventNs atomic.Int64
 	if cursor, ok := parseEventCursor(input.LastEventID); ok {
-		lokiLogOptions.Start = cursor
-		lokiLogOptions.Since = 0
+		lastEventNs.Store(cursor)
 	}
 
-	// Stream from Loki
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				log.Errorf("Recovered from panic in log streaming goroutine: %v", r)
-			}
-		}()
-
-		err := self.lokiQuerier.StreamLokiPodLogs(streamCtx, lokiLogOptions, eventChan)
-		if err != nil {
-			// Wrap the send in a select with context check to avoid sending on canceled contexts
-			select {
-			case <-streamCtx.Done():
-				return
-			default:
-				_ = send.Data(loki.LogEvents{
-					MessageType:  loki.LogEventsMessageTypeError,
-					ErrorMessage: fmt.Sprintf("Error streaming logs: %v", err),
-				})
-			}
-		}
-	}()
+	go self.runLokiStream(streamCtx, baseOpts, &lastEventNs, eventChan)
 
 	// Comment lines are the standard SSE keep-alive: clients must ignore them
 	// (https://html.spec.whatwg.org/multipage/server-sent-events.html#event-stream-interpretation).
 	keepAlive := time.NewTicker(10 * time.Second)
 	defer keepAlive.Stop()
 
-	// Send events to the client
 	for {
 		select {
 		case event := <-eventChan:
-			_ = send(sse.Message{ID: latestEventID(event), Data: event})
+			// the id must cover the whole pre-filter batch, or a client
+			// reconnect replays lines the level filter already dropped
+			id := 0
+			if event.MessageType == loki.LogEventsMessageTypeLog {
+				if ns := latestEventNs(event); ns > lastEventNs.Load() {
+					lastEventNs.Store(ns)
+				}
+				id = int(lastEventNs.Load())
+				event.Logs = loki.FilterEventsByLevel(event.Logs, filters.levels)
+			}
+			_ = send(sse.Message{ID: id, Data: event})
 		case <-keepAlive.C:
 			_ = send.Comment("keep-alive")
 		case <-ctx.Done():
@@ -99,27 +98,81 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 	}
 }
 
-func parseEventCursor(lastEventID string) (time.Time, bool) {
-	if lastEventID == "" {
-		return time.Time{}, false
+// runLokiStream keeps the Loki tail alive, reconnecting with backoff and
+// resuming from the last delivered timestamp. Persistent failures surface as a
+// single error event while retries continue in the background.
+func (self *LogsService) runLokiStream(ctx context.Context, baseOpts loki.LokiLogStreamOptions, lastEventNs *atomic.Int64, eventChan chan<- loki.LogEvents) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Recovered from panic in log streaming goroutine: %v", r)
+		}
+	}()
+
+	backoff := streamInitialBackoff
+	failures := 0
+
+	for {
+		opts := baseOpts
+		if ns := lastEventNs.Load(); ns > 0 {
+			opts.Start = time.Unix(0, ns+1)
+			opts.Since = 0
+		}
+
+		connectedAt := time.Now()
+		err := self.lokiQuerier.StreamLokiPodLogs(ctx, opts, eventChan)
+		if ctx.Err() != nil {
+			return
+		}
+
+		if time.Since(connectedAt) > streamStableConnDuration {
+			failures = 0
+			backoff = streamInitialBackoff
+		} else {
+			failures++
+		}
+
+		if err != nil {
+			log.Warnf("Loki stream disconnected (attempt %d): %v", failures, err)
+		}
+		if failures == streamFailuresBeforeWarn {
+			select {
+			case eventChan <- loki.LogEvents{
+				MessageType:  loki.LogEventsMessageTypeError,
+				ErrorMessage: "Log stream interrupted, retrying in the background",
+			}:
+			case <-ctx.Done():
+				return
+			}
+		}
+
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(backoff):
+		}
+		if backoff < streamMaxBackoff {
+			backoff *= 2
+		}
 	}
-	nanos, err := strconv.ParseInt(lastEventID, 10, 64)
-	if err != nil {
-		return time.Time{}, false
-	}
-	return time.Unix(0, nanos+1), true
 }
 
-// latestEventID returns 0 for non-log batches so errors don't advance the cursor.
-func latestEventID(event loki.LogEvents) int {
-	if event.MessageType != loki.LogEventsMessageTypeLog {
-		return 0
+func parseEventCursor(lastEventID string) (int64, bool) {
+	if lastEventID == "" {
+		return 0, false
 	}
+	nanos, err := strconv.ParseInt(lastEventID, 10, 64)
+	if err != nil || nanos <= 0 {
+		return 0, false
+	}
+	return nanos, true
+}
+
+func latestEventNs(event loki.LogEvents) int64 {
 	var latest int64
 	for _, l := range event.Logs {
 		if ns := l.Timestamp.UnixNano(); ns > latest {
 			latest = ns
 		}
 	}
-	return int(latest)
+	return latest
 }

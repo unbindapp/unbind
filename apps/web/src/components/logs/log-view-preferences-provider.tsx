@@ -1,9 +1,7 @@
 "use client";
 
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
-
-const routeApi = getRouteApi("/$team_id/project/$project_id");
+import { useLocalStorage } from "usehooks-ts";
 
 type TLogViewPreferencesContext = {
   preferences: string[];
@@ -80,66 +78,44 @@ const defaultStateWithoutService = [
   logViewPreferenceKeys.lineWrapping,
 ].sort(logViewPreferencesSort);
 
-export const logViewPreferencesKey = "log_view";
-
 export const LogViewPreferencesProvider: React.FC<{
   children: ReactNode;
+  storageKey: string;
   hideServiceByDefault?: boolean;
-}> = ({ hideServiceByDefault, children }) => {
+}> = ({ storageKey, hideServiceByDefault, children }) => {
   const defaultState = hideServiceByDefault ? defaultStateWithoutService : defaultStateNormal;
 
-  // Stored in the URL as a comma-joined string (array semantics preserved here).
-  const navigate = useNavigate();
-  const preferencesStr = routeApi.useSearch({
-    select: (s) => s[logViewPreferencesKey] ?? defaultState.join(","),
-  });
-  const preferences = useMemo(
-    () => (preferencesStr ? preferencesStr.split(",") : []),
-    [preferencesStr],
+  const [preferences, setStored] = useLocalStorage<string[]>(
+    `log-view-prefs:${storageKey}`,
+    defaultState,
   );
+
   const setPreferences = useCallback(
-    (next: string[] | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({
-          ...prev,
-          [logViewPreferencesKey]: next === null ? undefined : next.join(","),
-        }),
-        replace: true,
-      }),
-    [navigate],
+    (next: ((old: string[]) => string[] | null) | string[] | null) => {
+      setStored((prev) => {
+        const resolved = typeof next === "function" ? next(prev) : next;
+        if (resolved === null) return defaultState;
+        return resolved.toSorted(logViewPreferencesSort);
+      });
+    },
+    [setStored, defaultState],
   );
+
+  const resetPreferences = useCallback(() => {
+    setStored(defaultState);
+  }, [setStored, defaultState]);
 
   const isDefaultState =
     preferences.toSorted(logViewPreferencesSort).join(",") === defaultState.join(",");
 
-  const _setPreferences: (next: ((old: string[]) => string[] | null) | string[] | null) => void =
-    useCallback(
-      (next) => {
-        if (next === null) {
-          return setPreferences(null);
-        }
-        if (typeof next === "function") {
-          const pref = next(preferences);
-          return setPreferences(pref === null ? null : pref.toSorted(logViewPreferencesSort));
-        }
-        return setPreferences(next.toSorted(logViewPreferencesSort));
-      },
-      [setPreferences, preferences],
-    );
-
-  const resetPreferences = useCallback(() => {
-    _setPreferences(defaultState);
-  }, [_setPreferences, defaultState]);
-
   const value = useMemo(
     () => ({
       preferences,
-      setPreferences: _setPreferences,
+      setPreferences,
       isDefaultState,
       resetPreferences,
     }),
-    [preferences, _setPreferences, isDefaultState, resetPreferences],
+    [preferences, setPreferences, isDefaultState, resetPreferences],
   );
 
   return (

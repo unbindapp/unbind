@@ -22,11 +22,6 @@ export function containsAnsi(message: string): boolean {
   return message.includes("\u001b");
 }
 
-export function stripAnsi(message: string): string {
-  if (!containsAnsi(message)) return message;
-  return message.replace(ansiSequenceRegex, "");
-}
-
 export function parseAnsi(message: string): TLogMessageSegment[] {
   const segments: TLogMessageSegment[] = [];
   const state = createDefaultState();

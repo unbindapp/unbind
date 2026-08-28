@@ -2,7 +2,9 @@ package loki
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -23,7 +25,8 @@ const (
 type LokiLogStreamOptions struct {
 	Label      LokiLabelName // Label to filter logs by
 	LabelValue string        // Value of the label to filter logs by
-	RawFilter  string        // Raw logql filter string
+	ServiceIDs []string      // Optionally narrow to these services (broad scopes only)
+	RawFilter  string        // Compiled logql pipeline (see CompileSearch)
 	Since      time.Duration // Get logs from this time ago
 	Limit      int           // Number of log lines to get
 	Start      time.Time     // Get logs from a specific time
@@ -33,16 +36,27 @@ type LokiLogStreamOptions struct {
 type LokiLogHTTPOptions struct {
 	Label      LokiLabelName // Label to filter logs by
 	LabelValue string        // Value of the label to filter logs by
-	RawFilter  string        // Raw logql filter string
+	ServiceIDs []string      // Optionally narrow to these services (broad scopes only)
+	RawFilter  string        // Compiled logql pipeline (see CompileSearch)
 	// * Query range options
 	Start *time.Time     // Start time for the query
 	End   *time.Time     // End time for the query
 	Since *time.Duration // Get logs from this time ago
-	// * Query options
-	Time *time.Time // Time for the query
 	// * Shared options
 	Limit     *int           // Number of log lines to get
 	Direction *LokiDirection // Direction of the logs (forward or backward)
+}
+
+func buildLogQL(label LokiLabelName, labelValue string, serviceIDs []string, rawFilter string) string {
+	selector := fmt.Sprintf("%s=%q", label, labelValue)
+	if len(serviceIDs) > 0 && label != LokiLabelService {
+		selector = fmt.Sprintf("%s, %s=~%q", selector, LokiLabelService, strings.Join(serviceIDs, "|"))
+	}
+	query := "{" + selector + "}"
+	if rawFilter != "" {
+		query += " " + rawFilter
+	}
+	return query
 }
 
 type LogMetadata struct {
@@ -87,6 +101,7 @@ type LogEvent struct {
 	PodName   string      `json:"pod_name"`
 	Timestamp time.Time   `json:"timestamp,omitempty"`
 	Message   string      `json:"message"`
+	Level     LogLevel    `json:"level"`
 	Metadata  LogMetadata `json:"metadata"`
 }
 

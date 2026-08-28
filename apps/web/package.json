@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test": "node --test 'src/**/*.node-test.ts'",
     "generate-sdk": "go -C ../api run ./cmd/openapi > /tmp/unbind-openapi.gen.yaml && node ./scripts/generate-sdk/main.ts -i /tmp/unbind-openapi.gen.yaml"
   },
   "dependencies": {

@@ -1,46 +1,15 @@
 "use client";
 
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
-
-const routeApi = getRouteApi("/$team_id/project/$project_id");
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 
 type TLogViewDropdownContext = [boolean, (open: boolean | ((open: boolean) => boolean)) => void];
 
 const LogViewDropdownContext = createContext<TLogViewDropdownContext | null>(null);
 
-export const logViewPreferencesDropdownId = "log_view_preferences";
-
 export const LogViewDropdownProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const navigate = useNavigate();
-  const dropdown = routeApi.useSearch({ select: (s) => s.dropdown ?? null });
-  const setDropdown = useCallback(
-    (value: string | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, dropdown: value ?? undefined }),
-        resetScroll: false,
-        replace: true,
-      }),
-    [navigate],
-  );
-
-  const open = dropdown === logViewPreferencesDropdownId;
-
-  const setOpen = useCallback(
-    (prop: boolean | ((prop: boolean) => boolean)) => {
-      if (typeof prop === "function") {
-        const isOpen = prop(open);
-        setDropdown(isOpen ? logViewPreferencesDropdownId : null);
-        return;
-      }
-
-      setDropdown(prop ? logViewPreferencesDropdownId : null);
-    },
-    [setDropdown, open],
-  );
+  const [open, setOpen] = useState(false);
 
   const value: TLogViewDropdownContext = useMemo(() => [open, setOpen], [open, setOpen]);
 

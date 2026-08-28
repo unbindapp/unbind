@@ -1863,6 +1863,8 @@ export const ListWebhooksResponseBodySchema = z
   })
   .strip();
 
+export const LogLevelSchema = z.enum(['debug', 'info', 'warn', 'error']);
+
 export const LogMetadataSchema = z
   .object({
     deployment_id: z.string().optional(),
@@ -1875,6 +1877,7 @@ export const LogMetadataSchema = z
 
 export const LogEventSchema = z
   .object({
+    level: LogLevelSchema,
     message: z.string(),
     metadata: LogMetadataSchema,
     pod_name: z.string(),
@@ -1925,6 +1928,7 @@ export const MeResponseBodySchema = z
 export const QueryLogsResponseBodySchema = z
   .object({
     data: z.array(LogEventSchema),
+    next_cursor: z.string().optional(), // Pass as cursor to fetch the next (older) page; absent when there are no more logs
   })
   .strip();
 
@@ -2816,6 +2820,7 @@ export type ListTemplatesResponseBody = z.infer<typeof ListTemplatesResponseBody
 export type ListUserGroupsResponseBody = z.infer<typeof ListUserGroupsResponseBodySchema>;
 export type ListUsersResponseBody = z.infer<typeof ListUsersResponseBodySchema>;
 export type ListWebhooksResponseBody = z.infer<typeof ListWebhooksResponseBodySchema>;
+export type LogLevel = z.infer<typeof LogLevelSchema>;
 export type LogMetadata = z.infer<typeof LogMetadataSchema>;
 export type LogEvent = z.infer<typeof LogEventSchema>;
 export type LogEventsMessageType = z.infer<typeof LogEventsMessageTypeSchema>;
@@ -3040,12 +3045,15 @@ export const query_logsQuerySchema = z
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
     deployment_id: z.string().optional(),
-    filters: z.string().optional(), // Optional logql filter string
+    search: z.string().optional(), // Search expression: bare words (case-insensitive), "quoted phrases", AND/OR, -negation, @key:value for JSON fields
+    levels: z.string().optional(), // Comma-separated log levels to include (debug, info, warn, error)
+    service_ids: z.string().optional(), // Comma-separated service IDs to include (team/project/environment scope only)
     start: z.string().datetime({ offset: true }).optional(), // Start time for the query
     end: z.string().datetime({ offset: true }).optional(), // End time for the query
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
     limit: z.number().optional(), // Number of log lines to get
     direction: LokiDirectionSchema.optional(), // Direction of the logs (forward or backward)
+    cursor: z.string().optional(), // Pagination cursor from a previous response; returns strictly older logs (backward direction only)
   })
   .passthrough();
 
@@ -3060,8 +3068,9 @@ export const stream_logsQuerySchema = z
     start: z.string().datetime({ offset: true }).optional(),
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
     limit: z.number().optional(), // Number of lines to get from the end
-    timestamps: z.boolean().optional(), // Include timestamps in logs
-    filters: z.string().optional(), // Optional logql filter string
+    search: z.string().optional(), // Search expression: bare words (case-insensitive), "quoted phrases", AND/OR, -negation, @key:value for JSON fields
+    levels: z.string().optional(), // Comma-separated log levels to include (debug, info, warn, error)
+    service_ids: z.string().optional(), // Comma-separated service IDs to include (team/project/environment scope only)
   })
   .passthrough();
 
@@ -5104,12 +5113,15 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             'environment_id',
             'service_id',
             'deployment_id',
-            'filters',
+            'search',
+            'levels',
+            'service_ids',
             'start',
             'end',
             'since',
             'limit',
             'direction',
+            'cursor',
           ];
           queryKeys.forEach((key) => {
             const value = validatedQuery[key as keyof typeof validatedQuery];
@@ -5168,8 +5180,9 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             'start',
             'since',
             'limit',
-            'timestamps',
-            'filters',
+            'search',
+            'levels',
+            'service_ids',
           ];
           queryKeys.forEach((key) => {
             const value = validatedQuery[key as keyof typeof validatedQuery];

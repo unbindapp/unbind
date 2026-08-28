@@ -8,7 +8,6 @@ import {
   deploymentPanelTabKey,
   DeploymentPanelTabEnum,
 } from "@/components/deployment/panel/constants";
-import { logViewPreferencesKey } from "@/components/logs/log-view-preferences-provider";
 import { metricsIntervalSearchParamKey } from "@/components/metrics/metrics-state-provider";
 import {
   servicePanelServiceIdKey,
@@ -55,10 +54,23 @@ const searchSchema = z.object({
   [templateDraftPanelTemplateDraftIdKey]: z.string().optional(),
   // Metrics
   [metricsIntervalSearchParamKey]: MetricsIntervalEnum.optional(),
-  // Logs
+  // Logs (one namespace per log scope, see log-filters-provider)
   q: z.string().optional(),
-  dropdown: z.string().optional(),
-  [logViewPreferencesKey]: z.string().optional(),
+  levels: z.string().optional(),
+  services: z.string().optional(),
+  range: z.string().optional(),
+  sq: z.string().optional(),
+  slevels: z.string().optional(),
+  sservices: z.string().optional(),
+  srange: z.string().optional(),
+  dq: z.string().optional(),
+  dlevels: z.string().optional(),
+  dservices: z.string().optional(),
+  drange: z.string().optional(),
+  bq: z.string().optional(),
+  blevels: z.string().optional(),
+  bservices: z.string().optional(),
+  brange: z.string().optional(),
 });
 
 export const Route = createFileRoute("/$team_id/project/$project_id")({

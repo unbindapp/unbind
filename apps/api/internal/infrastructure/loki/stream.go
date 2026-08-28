@@ -20,11 +20,7 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 	opts LokiLogStreamOptions,
 	eventChan chan<- LogEvents,
 ) error {
-	queryStr := fmt.Sprintf("{%s=\"%s\"}", opts.Label, opts.LabelValue)
-
-	if opts.RawFilter != "" {
-		queryStr = fmt.Sprintf("%s %s", queryStr, opts.RawFilter)
-	}
+	queryStr := buildLogQL(opts.Label, opts.LabelValue, opts.ServiceIDs, opts.RawFilter)
 
 	reqURL, err := url.Parse(self.endpoint)
 	if err != nil {
@@ -64,6 +60,7 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 	httpOpts := LokiLogHTTPOptions{
 		Label:      opts.Label,
 		LabelValue: opts.LabelValue,
+		ServiceIDs: opts.ServiceIDs,
 		RawFilter:  opts.RawFilter,
 		Limit:      new(1),
 	}
@@ -238,6 +235,7 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 					PodName:   instance,
 					Timestamp: timestamp,
 					Message:   message,
+					Level:     DetectLevel(message),
 					Metadata: LogMetadata{
 						TeamID:        teamID,
 						ProjectID:     projectID,
@@ -257,14 +255,12 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 			sort.Slice(allEvents, func(i, j int) bool {
 				return allEvents[i].Timestamp.Before(allEvents[j].Timestamp)
 			})
+			// Block until the consumer drains; dropping here would lose logs silently.
 			select {
 			case eventChan <- LogEvents{MessageType: LogEventsMessageTypeLog, Logs: allEvents}:
 			case <-done:
 				// Context canceled
 				return nil
-			default:
-				// Channel is blocked, log a warning but continue
-				log.Warnf("Event channel blocked, couldn't send %d log events", len(allEvents))
 			}
 		}
 	}
