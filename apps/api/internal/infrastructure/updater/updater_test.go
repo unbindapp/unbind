@@ -326,6 +326,30 @@ func (suite *UpdaterTestSuite) TestUpdateToVersion_JobImageOverride() {
 	suite.mockK8sClient.AssertExpectations(suite.T())
 }
 
+func (suite *UpdaterTestSuite) TestUpdateToVersion_DefaultsNamespaceKeepsExplicit() {
+	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
+
+	suite.mockReleaseManager.On("GetUpdatePath", suite.ctx, "v1.0.0", "v1.1.0").Return([]string{"v1.1.0"}, nil)
+	suite.mockReleaseManager.On("DownloadVersionManifests", suite.ctx, "v1.1.0", mock.AnythingOfType("string")).
+		Run(suite.writeManifests(map[string]string{
+			"kustomization.yaml": "resources:\n  - configmap.yaml\n  - recurringjob.yaml\n",
+			"configmap.yaml":     "apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: test-cm\n",
+			"recurringjob.yaml":  "apiVersion: longhorn.io/v1beta2\nkind: RecurringJob\nmetadata:\n  name: test-job\n  namespace: longhorn-system\nspec:\n  task: snapshot-cleanup\n",
+		})).
+		Return(true, nil)
+
+	var applied []byte
+	suite.mockK8sClient.On("RunManifestApplyJob", suite.ctx, "v1.1.0", mock.Anything, mock.Anything).
+		Run(func(args mock.Arguments) { applied = args.Get(3).([]byte) }).
+		Return(nil)
+	suite.mockK8sClient.On("UpdateDeploymentImages", suite.ctx, "v1.1.0").Return(nil)
+
+	suite.NoError(updater.UpdateToVersion(suite.ctx, "v1.1.0"))
+	suite.Contains(string(applied), "namespace: default")
+	suite.Contains(string(applied), "namespace: longhorn-system")
+	suite.mockK8sClient.AssertExpectations(suite.T())
+}
+
 func (suite *UpdaterTestSuite) TestUpdateToVersion_EmptyKustomizationSkipsJob() {
 	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
 

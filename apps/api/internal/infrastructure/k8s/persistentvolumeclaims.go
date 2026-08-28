@@ -194,6 +194,11 @@ func (self *KubeClient) UpdatePersistentVolumeClaim(
 		}
 		return nil, fmt.Errorf("failed to update PersistentVolumeClaim '%s' in namespace '%s': %w", pvcName, namespace, err)
 	}
+
+	if newSize != nil {
+		go self.cleanupExpansionSnapshotsAfterResize(namespace, pvcName)
+	}
+
 	// Return the updated PVC info using GetPersistentVolumeClaim
 	return self.GetPersistentVolumeClaim(ctx, namespace, pvcName, client)
 }

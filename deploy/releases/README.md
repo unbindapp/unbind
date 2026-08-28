@@ -39,10 +39,24 @@ breaking releases need the entry written by hand before tagging, so `depends_on`
 
 Put a flat `kustomization.yaml` (plus the files it references) under `deploy/releases/<tag>/`
 to have extra Kubernetes resources applied before the images are retagged. The directory is
-read at the version's tag via the GitHub contents API; subdirectories are ignored and the
-kustomization's namespace is forced to the system namespace (cluster-scoped resources keep
-their scope). Versions without a directory just retag the `unbind` and `unbind-operator`
-images.
+read at the version's tag via the GitHub contents API; subdirectories are ignored.
+Resources without a namespace default to the system namespace; explicit namespaces are
+kept (cluster-scoped resources keep their scope). Versions without a directory just retag
+the `unbind` and `unbind-operator` images.
+
+The kustomization is rendered by the binary the install is updating *from*, not the target
+version — and a multi-version update path renders every step with that same old binary.
+Updaters before v0.1.23 forced every resource into the system namespace, so until no
+supported update path starts before v0.1.23, a bundle targeting another namespace must
+force it back via its own `transformers:` entry:
+
+```yaml
+apiVersion: builtin
+kind: NamespaceTransformer
+metadata:
+  name: force-namespace
+  namespace: <target-namespace>
+```
 
 The rendered manifests are applied by a short-lived job running as the elevated
 `unbind-updater-sa` service account (cluster-admin, created by the chart at install time),

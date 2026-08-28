@@ -227,7 +227,7 @@ func (self *Updater) applyKustomizeManifests(ctx context.Context, version string
 		return nil
 	}
 
-	if err := setKustomizationNamespace(filepath.Join(dir, release.KustomizationFile), self.cfg.GetSystemNamespace()); err != nil {
+	if err := addDefaultNamespaceTransformer(dir, self.cfg.GetSystemNamespace()); err != nil {
 		return err
 	}
 
@@ -263,7 +263,10 @@ func (self *Updater) jobImage() string {
 	return k8s.AppImageRepository + ":" + self.CurrentVersion
 }
 
-func setKustomizationNamespace(path, namespace string) error {
+const defaultNamespaceTransformerFile = "unbind-default-namespace-transformer.yaml"
+
+func addDefaultNamespaceTransformer(dir, namespace string) error {
+	path := filepath.Join(dir, release.KustomizationFile)
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return fmt.Errorf("failed to read kustomization file: %w", err)
@@ -273,7 +276,7 @@ func setKustomizationNamespace(path, namespace string) error {
 	if err := yaml.Unmarshal(data, &kustomization); err != nil {
 		return fmt.Errorf("failed to parse kustomization file: %w", err)
 	}
-	kustomization.Namespace = namespace
+	kustomization.Transformers = append(kustomization.Transformers, defaultNamespaceTransformerFile)
 
 	data, err = yaml.Marshal(&kustomization)
 	if err != nil {
@@ -281,6 +284,17 @@ func setKustomizationNamespace(path, namespace string) error {
 	}
 	if err := os.WriteFile(path, data, 0644); err != nil {
 		return fmt.Errorf("failed to write kustomization file: %w", err)
+	}
+
+	transformer := fmt.Sprintf(`apiVersion: builtin
+kind: NamespaceTransformer
+metadata:
+  name: unbind-default-namespace
+  namespace: %s
+unsetOnly: true
+`, namespace)
+	if err := os.WriteFile(filepath.Join(dir, defaultNamespaceTransformerFile), []byte(transformer), 0644); err != nil {
+		return fmt.Errorf("failed to write namespace transformer: %w", err)
 	}
 
 	return nil

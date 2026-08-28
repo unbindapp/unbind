@@ -123,6 +123,9 @@ rules:
   - apiGroups: ["gateway.networking.k8s.io"]
     resources: ["httproutes"]
     verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: ["longhorn.io"]
+    resources: ["snapshots"]
+    verbs: ["get", "list", "delete"]
   # Per-user authorization checks (e.g. pod exec)
   - apiGroups: ["authorization.k8s.io"]
     resources: ["subjectaccessreviews"]

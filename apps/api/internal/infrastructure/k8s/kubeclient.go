@@ -26,17 +26,18 @@ type TokenVerifier interface {
 //
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i KubeClientInterface -p k8s -s KubeClient -o kubeclient_iface.go
 type KubeClient struct {
-	config                config.ConfigInterface
-	baseConfig            *rest.Config
-	tokenVerifier         TokenVerifier
-	client                dynamic.Interface
-	clientset             kubernetes.Interface
-	applier               *Applier
-	updateJobPollInterval time.Duration
-	certmanagerclient     *certmanagerclientset.Clientset
-	dnsChecker            *utils.DNSChecker
-	httpClient            *http.Client
-	repo                  repositories.RepositoriesInterface
+	config                    config.ConfigInterface
+	baseConfig                *rest.Config
+	tokenVerifier             TokenVerifier
+	client                    dynamic.Interface
+	clientset                 kubernetes.Interface
+	applier                   *Applier
+	updateJobPollInterval     time.Duration
+	resizeCleanupPollInterval time.Duration
+	certmanagerclient         *certmanagerclientset.Clientset
+	dnsChecker                *utils.DNSChecker
+	httpClient                *http.Client
+	repo                      repositories.RepositoriesInterface
 }
 
 func NewKubeClient(cfg config.ConfigInterface, repo repositories.RepositoriesInterface) *KubeClient {
@@ -73,14 +74,15 @@ func NewKubeClient(cfg config.ConfigInterface, repo repositories.RepositoriesInt
 	}
 
 	return &KubeClient{
-		config:                cfg,
-		baseConfig:            kubeConfig,
-		client:                dynamicClient,
-		clientset:             clientSet,
-		applier:               NewApplier(dynamicClient, clientSet.Discovery(), cfg.GetSystemNamespace()),
-		updateJobPollInterval: 3 * time.Second,
-		certmanagerclient:     certManagerClientSet,
-		dnsChecker:            utils.NewDNSChecker(),
+		config:                    cfg,
+		baseConfig:                kubeConfig,
+		client:                    dynamicClient,
+		clientset:                 clientSet,
+		applier:                   NewApplier(dynamicClient, clientSet.Discovery(), cfg.GetSystemNamespace()),
+		updateJobPollInterval:     3 * time.Second,
+		resizeCleanupPollInterval: 10 * time.Second,
+		certmanagerclient:         certManagerClientSet,
+		dnsChecker:                utils.NewDNSChecker(),
 		httpClient: &http.Client{
 			Timeout: 1 * time.Second,
 		},
