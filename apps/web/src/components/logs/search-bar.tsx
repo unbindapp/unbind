@@ -184,13 +184,16 @@ function FilterButton({ className }: { className?: string }) {
     servicesEnabled,
   } = useLogFilters();
 
-  const showActiveDot = levels.length > 0 || serviceIds.length > 0 || rangeIsSet;
+  const isNotDefaultState = levels.length > 0 || serviceIds.length > 0 || rangeIsSet;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger
         render={
           <Button
+            data-open={isDropdownOpen || undefined}
+            data-non-default={isNotDefaultState || undefined}
             aria-label="Filter Logs"
             type="button"
             size="icon"
@@ -200,11 +203,11 @@ function FilterButton({ className }: { className?: string }) {
               className,
             )}
           >
-            <ActiveDot show={showActiveDot} />
-            <FilterIcon
-              data-active={showActiveDot || undefined}
-              className="data-active:text-warning size-5 transition-colors"
-            />
+            <div className="relative size-5 transition-transform group-data-open/button:rotate-45">
+              <FilterIcon className="size-full opacity-100 group-data-open/button:opacity-0" />
+              <XIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-data-open/button:opacity-100" />
+            </div>
+            <NonDefaultIndicator isNotDefaultState={isNotDefaultState} />
           </Button>
         }
       />
@@ -293,11 +296,11 @@ function FilterButton({ className }: { className?: string }) {
   );
 }
 
-function ActiveDot({ show }: { show: boolean }) {
+function NonDefaultIndicator({ isNotDefaultState }: { isNotDefaultState: boolean }) {
   return (
     <div
-      data-show={show || undefined}
-      className="bg-warning pointer-events-none absolute top-1.25 right-1.25 size-1.25 scale-75 rounded-full opacity-0 transition data-show:scale-100 data-show:opacity-100"
+      data-non-default={isNotDefaultState || undefined}
+      className="bg-warning absolute top-1 right-1 h-1.5 w-1.5 scale-50 rounded-full opacity-0 transition-[scale,opacity] data-non-default:scale-100 data-non-default:opacity-100"
     />
   );
 }
@@ -451,6 +454,7 @@ function SettingsButton({
       <DropdownMenuTrigger
         render={
           <Button
+            data-non-default={!isDefaultState || undefined}
             data-open={isDropdownOpen || undefined}
             aria-label="Log View Preferences"
             type="button"
@@ -458,11 +462,11 @@ function SettingsButton({
             variant="ghost"
             className={cn("touch-manipulation", className)}
           >
-            <ActiveDot show={!isDefaultState} />
-            <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
-              <SettingsIcon className="size-full opacity-100 transition-opacity group-data-open/button:opacity-0" />
-              <XIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-open/button:opacity-100" />
+            <div className="relative size-5 transition-transform group-data-open/button:rotate-45">
+              <SettingsIcon className="size-full opacity-100 group-data-open/button:opacity-0" />
+              <XIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-data-open/button:opacity-100" />
             </div>
+            <NonDefaultIndicator isNotDefaultState={!isDefaultState} />
           </Button>
         }
       />

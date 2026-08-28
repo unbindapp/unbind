@@ -242,21 +242,21 @@ function Logs({
   const listItems = useMemo(() => {
     if (!isPending && error && !logs) {
       return (
-        <div className="w-full px-2 pt-2.5 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
-          <ErrorCard message={error.message} />
+        <div className="w-full px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
+          <ErrorCard message={error.message} className="min-h-38" />
         </div>
       );
     }
     if (!isPending && (!logs || logs.length === 0) && searchError) {
       return (
-        <div className="px-2 pt-2.5 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
+        <div className="px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
           <NoLogsFound data-container={containerType} />
         </div>
       );
     }
     if (!isPending && logs && logs.length === 0) {
       return (
-        <div className="px-2 pt-2.5 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
+        <div className="px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
           <NoLogsFound
             data-container={containerType}
             shouldHaveLogs={shouldHaveLogs && !searchError}
@@ -351,13 +351,20 @@ function Logs({
         </div>
       </div>
       {error && logs && logs.length > 0 && (
-        <div className="w-full px-2 pt-1.5 group-data-[container=page]/wrapper:px-[max(0.5rem,calc((100%-80rem-1.25rem)/2))] sm:px-2.5">
-          <ErrorLine message={error.message} />
+        <div className="w-full pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+          <div className="w-full px-2 sm:px-2.5">
+            <ErrorLine className="border-destructive/8 border py-1.25" message={error.message} />
+          </div>
         </div>
       )}
       {streamErrorMessage && (
-        <div className="w-full px-2 pt-1.5 group-data-[container=page]/wrapper:px-[max(0.5rem,calc((100%-80rem-1.25rem)/2))] sm:px-2.5">
-          <ErrorLine message={streamErrorMessage} />
+        <div className="w-full pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+          <div className="w-full px-2 sm:px-2.5">
+            <ErrorLine
+              className="border-destructive/8 border py-1.25"
+              message={streamErrorMessage}
+            />
+          </div>
         </div>
       )}
       {/* List */}
