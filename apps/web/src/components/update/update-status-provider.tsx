@@ -141,20 +141,17 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
       data: {
         icon: <GiftIcon className="size-full" />,
         action: (
-          <div className="ml-auto max-w-full shrink-0 pl-4">
-            <LinkButton
-              onClick={() => {
-                toast.close("update_toast");
-                setLastDismissedVersion(latestVersion);
-              }}
-              to="/update"
-              search={{ from: locationHref }}
-              size="sm"
-              className="w-full px-3"
-            >
-              Update
-            </LinkButton>
-          </div>
+          <LinkButton
+            onClick={() => {
+              toast.close("update_toast");
+              setLastDismissedVersion(latestVersion);
+            }}
+            to="/update"
+            search={{ from: locationHref }}
+            size="sm"
+          >
+            Update
+          </LinkButton>
         ),
       },
       onClose: () => {

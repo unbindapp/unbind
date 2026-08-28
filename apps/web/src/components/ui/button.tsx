@@ -182,14 +182,6 @@ function Button({
 type TLinkButtonBaseProps = Omit<React.ComponentPropsWithoutRef<"a">, "color"> &
   VariantProps<typeof buttonVariants>;
 
-// Styled anchor wired into TanStack Router via `createLink`. This is the part
-// that matters: `createLink` gives us *typed* navigation (`to`/`params`/`search`)
-// and, crucially, intercepts clicks to do client-side navigation. The old
-// approach wrapped `<Link>` and typed props as `ComponentProps<typeof Link>`,
-// which collapsed the router generics — so call sites passed `href`, it landed
-// on the anchor as a plain attribute, and every click was a full page reload
-// (the blank flash). With `createLink`, `href` isn't a navigation prop; you must
-// use `to`, and the route/params/search are all type-checked.
 const LinkButtonBase = React.forwardRef<HTMLAnchorElement, TLinkButtonBaseProps>(
   (
     {
@@ -223,9 +215,10 @@ const LinkButtonBase = React.forwardRef<HTMLAnchorElement, TLinkButtonBaseProps>
             className,
           }),
         )}
+
         {...props}
       >
-        {children}
+        {isText ? <p className="min-w-0 shrink">{children}</p> : children}
       </a>
     );
   },

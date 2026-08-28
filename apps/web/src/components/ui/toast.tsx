@@ -1,14 +1,15 @@
-import * as React from "react";
 import { Toast as ToastPrimitive } from "@base-ui/react/toast";
 import {
   CheckCircleIcon,
+  CircleAlertIcon,
   InfoIcon,
   LoaderIcon,
-  OctagonXIcon,
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
+import * as React from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 
 type TToastData = {
@@ -27,7 +28,7 @@ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
     <ToastPrimitive.Viewport
       data-slot="toast-viewport"
       className={cn(
-        "pointer-events-none fixed inset-x-4 bottom-4 z-[2000] mx-auto w-auto max-w-sm font-sans outline-none sm:right-4 sm:left-auto sm:mx-0 sm:w-full",
+        "pointer-events-none fixed inset-x-4 bottom-4 z-2000 mx-auto w-auto max-w-sm font-sans outline-none sm:right-4 sm:left-auto sm:mx-0 sm:w-full",
         className,
       )}
       {...props}
@@ -67,7 +68,7 @@ function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
     <ToastPrimitive.Content
       data-slot="toast-content"
       className={cn(
-        "flex h-full items-start gap-2 overflow-hidden px-4 py-3 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
+        "flex h-full gap-2 overflow-hidden px-4 py-3.5 pr-12 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
         className,
       )}
       {...props}
@@ -106,23 +107,22 @@ function ToastClose({ className, ...props }: ToastPrimitive.Close.Props) {
     <ToastPrimitive.Close
       data-slot="toast-close"
       aria-label="Close toast"
-      className={cn(
-        "border-border bg-background text-muted-foreground shadow-shadow-color/shadow-opacity has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground absolute -top-1.75 -left-1.75 z-10 size-6 rounded-full border p-1 shadow-md",
-        "before:absolute before:top-1/2 before:left-1/2 before:z-[-1] before:h-full before:min-h-[48px] before:w-full before:min-w-[48px] before:-translate-1/2 before:bg-transparent",
-        className,
-      )}
+      className={cn("text-muted-more-foreground absolute top-1 right-1", className)}
+      render={
+        <Button variant="ghost" size="icon">
+          <XIcon className="size-4.5" />
+        </Button>
+      }
       {...props}
-    >
-      <XIcon className="size-full" />
-    </ToastPrimitive.Close>
+    ></ToastPrimitive.Close>
   );
 }
 
 const toastIcons: Record<string, React.ReactNode> = {
   success: <CheckCircleIcon className="size-full" />,
   info: <InfoIcon className="size-full" />,
-  warning: <TriangleAlertIcon className="size-full" />,
-  error: <OctagonXIcon className="size-full" />,
+  warning: <CircleAlertIcon className="size-full" />,
+  error: <TriangleAlertIcon className="size-full" />,
   loading: <LoaderIcon className="size-full animate-spin" />,
 };
 
@@ -147,11 +147,15 @@ function ToastList() {
     <Toast key={toastItem.id} toast={toastItem}>
       <ToastContent>
         <ToastIcon icon={toastItem.data?.icon} type={toastItem.type} />
-        <div className="flex min-w-0 shrink flex-col gap-1">
-          <ToastTitle />
-          <ToastDescription />
+        <div className="flex w-full min-w-0 shrink flex-col items-start justify-start gap-2.5">
+          <div className="flex w-full min-w-0 shrink flex-col gap-1">
+            <ToastTitle />
+            <ToastDescription />
+          </div>
+          {toastItem.data?.action && (
+            <div className="flex w-full pb-0.5">{toastItem.data?.action}</div>
+          )}
         </div>
-        {toastItem.data?.action}
         <ToastClose />
       </ToastContent>
     </Toast>
@@ -170,4 +174,4 @@ function Toaster({ toastManager = toast, timeout = 0, ...props }: ToastPrimitive
   );
 }
 
-export { Toaster, toast };
+export { toast, Toaster };
