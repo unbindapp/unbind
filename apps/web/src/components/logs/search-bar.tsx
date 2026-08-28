@@ -142,6 +142,7 @@ function SearchBar({
 
 const dropdownCollisionPadding = { top: 16, bottom: 16, left: 8, right: 8 };
 const dropdownItemClassName = "py-3.5 sm:py-2.25";
+const filterCheckboxItemClassName = "py-3 sm:py-1.75";
 
 function FilterButton() {
   const {
@@ -172,7 +173,10 @@ function FilterButton() {
             className="relative h-auto w-10 touch-manipulation rounded-none border-l"
           >
             <ActiveDot show={showActiveDot} />
-            <FilterIcon className="size-5" />
+            <FilterIcon
+              data-active={showActiveDot || undefined}
+              className="data-active:text-warning size-5 transition-colors"
+            />
           </Button>
         }
       />
@@ -181,13 +185,13 @@ function FilterButton() {
         collisionPadding={dropdownCollisionPadding}
         className="w-3xl sm:w-72"
       >
-        <ScrollArea>
+        <ScrollArea className="min-h-0 shrink">
           <DropdownMenuGroup>
             <DropdownMenuLabel className="pb-0">Levels</DropdownMenuLabel>
             {logLevels.map((level) => (
               <DropdownMenuCheckboxItem
                 key={level}
-                className={dropdownItemClassName}
+                className={filterCheckboxItemClassName}
                 checked={levels.includes(level)}
                 onCheckedChange={(checked) =>
                   setLevels(checked ? [...levels, level] : levels.filter((l) => l !== level))
@@ -237,23 +241,23 @@ function FilterButton() {
               </DropdownMenuGroup>
             </>
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem
-              data-not-default={hasActiveFilters || undefined}
-              disabled={!hasActiveFilters}
-              closeOnClick={false}
-              onClick={() => resetFilters()}
-              className={cn(
-                "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/10 data-not-default:active:bg-warning/10",
-                dropdownItemClassName,
-              )}
-            >
-              <RotateCcwIcon className="-my-1 size-4.5 shrink-0 -rotate-90 transform transition-transform group-data-not-default/item:rotate-0" />
-              <p className="min-w-0 shrink">Reset Filters</p>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
         </ScrollArea>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            data-not-default={hasActiveFilters || undefined}
+            disabled={!hasActiveFilters}
+            closeOnClick={false}
+            onClick={() => resetFilters()}
+            className={cn(
+              "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/10 data-not-default:active:bg-warning/10",
+              dropdownItemClassName,
+            )}
+          >
+            <RotateCcwIcon className="-my-1 size-4.5 shrink-0 -rotate-90 transform transition-transform group-data-not-default/item:rotate-0" />
+            <p className="min-w-0 shrink">Reset Filters</p>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -289,7 +293,7 @@ function ServicesFilterGroup({
         {servicesData.services.map((service) => (
           <DropdownMenuCheckboxItem
             key={service.id}
-            className={dropdownItemClassName}
+            className={filterCheckboxItemClassName}
             checked={serviceIds.includes(service.id)}
             onCheckedChange={(checked) =>
               setServiceIds(
