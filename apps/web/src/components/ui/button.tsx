@@ -215,7 +215,6 @@ const LinkButtonBase = React.forwardRef<HTMLAnchorElement, TLinkButtonBaseProps>
             className,
           }),
         )}
-
         {...props}
       >
         {isText ? <p className="min-w-0 shrink">{children}</p> : children}

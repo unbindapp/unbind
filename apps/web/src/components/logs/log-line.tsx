@@ -222,9 +222,7 @@ function LogLineDetails({
               <p className="text-muted-more-foreground text-[0.65rem] font-medium tracking-wide uppercase">
                 {key}
               </p>
-              <p className="text-muted-foreground min-w-0 text-xs break-all select-text">
-                {value}
-              </p>
+              <p className="text-muted-foreground min-w-0 text-xs break-all select-text">{value}</p>
             </div>
           ))}
         </div>

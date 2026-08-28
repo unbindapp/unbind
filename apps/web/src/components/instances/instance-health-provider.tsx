@@ -1,6 +1,10 @@
 "use client";
 
-import { instanceHealthQuery, queryKeyInstances, type TInstanceHealth } from "@/lib/queries/instances";
+import {
+  instanceHealthQuery,
+  queryKeyInstances,
+  type TInstanceHealth,
+} from "@/lib/queries/instances";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
 

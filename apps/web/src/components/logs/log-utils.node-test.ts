@@ -12,7 +12,3 @@ test("logLineKey uses timestamp, pod and message", () => {
 test("logLineKey tolerates missing timestamp", () => {
   assert.equal(logLineKey({ pod_name: "p", message: "m" }), "#p#m");
 });
-
-
-
-

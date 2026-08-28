@@ -192,9 +192,7 @@ function FilterButton() {
                     <Checkbox
                       checked={levels.includes(level)}
                       onCheckedChange={(checked) =>
-                        setLevels(
-                          checked ? [...levels, level] : levels.filter((l) => l !== level),
-                        )
+                        setLevels(checked ? [...levels, level] : levels.filter((l) => l !== level))
                       }
                     />
                     <span
@@ -218,9 +216,7 @@ function FilterButton() {
                       key={preset}
                       type="button"
                       size="sm"
-                      variant={
-                        "preset" in range && range.preset === preset ? "default" : "outline"
-                      }
+                      variant={"preset" in range && range.preset === preset ? "default" : "outline"}
                       onClick={() => setRange({ preset })}
                       className="px-2.5 py-1.5 font-mono"
                     >

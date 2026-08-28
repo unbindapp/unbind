@@ -1,6 +1,10 @@
 "use client";
 
-import { deploymentsListQuery, queryKeyDeployments, type TDeploymentsList } from "@/lib/queries/deployments";
+import {
+  deploymentsListQuery,
+  queryKeyDeployments,
+  type TDeploymentsList,
+} from "@/lib/queries/deployments";
 import { useService } from "@/components/service/service-provider";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
