@@ -446,7 +446,6 @@ function StreamStatusChip({
     if (streamStatus === "live") return { label: "Live", tone: "success" as const };
     if (streamStatus === "reconnecting") return { label: "Reconnecting", tone: "warning" as const };
     if (streamStatus === "error") return { label: "Disconnected", tone: "warning" as const };
-    if (streamStatus === "idle") return { label: "Paused", tone: "muted" as const };
     return { label: "Connecting", tone: "warning" as const };
   }, [isLive, streamStatus]);
 
