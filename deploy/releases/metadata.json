@@ -138,5 +138,10 @@
     "version": "v0.1.27",
     "description": "Log search, filtering, and pagination, log viewer UI improvements, and toast improvements",
     "breaking": false
+  },
+  "v0.1.28": {
+    "version": "v0.1.28",
+    "description": "Log viewer scrolling, filtering and error improvements, and variable reference propagation fixes",
+    "breaking": false
   }
 }
