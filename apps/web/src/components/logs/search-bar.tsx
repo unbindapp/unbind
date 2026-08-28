@@ -183,9 +183,9 @@ function FilterButton() {
       <DropdownMenuContent
         align="end"
         collisionPadding={dropdownCollisionPadding}
-        className="w-3xl sm:w-72"
+        className="max-h-[calc(var(--available-height)-3rem)] w-3xl sm:max-h-[min(40rem,calc(var(--available-height)-3rem))] sm:w-80"
       >
-        <ScrollArea className="min-h-0 shrink">
+        <ScrollArea className="min-h-0 shrink" classNameViewport="pb-4">
           <DropdownMenuGroup>
             <DropdownMenuLabel className="pb-0">Levels</DropdownMenuLabel>
             {logLevels.map((level) => (
@@ -284,13 +284,21 @@ function ServicesFilterGroup({
     query: { data: servicesData },
   } = useServices();
 
-  if (!servicesData || servicesData.services.length === 0) return null;
+  if (!servicesData) return null;
 
   return (
     <>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
         <DropdownMenuLabel className="pb-0">Services</DropdownMenuLabel>
+        {servicesData.services.length === 0 && (
+          <DropdownMenuItem
+            disabled
+            className={cn("text-muted-foreground", filterCheckboxItemClassName)}
+          >
+            <p className="min-w-0 shrink">No services yet</p>
+          </DropdownMenuItem>
+        )}
         {servicesData.services.map((service) => (
           <DropdownMenuCheckboxItem
             key={service.id}
