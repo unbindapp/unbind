@@ -365,9 +365,10 @@ function Logs({
             size="sm"
             aria-label="Jump to latest"
             data-show={!isAtBottom || undefined}
-            tabIndex={isAtBottom ? -1 : undefined}
+            disabled={isAtBottom}
+            fadeOnDisabled={false}
             onClick={scrollToBottom}
-            className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] gap-1.5 rounded-full shadow-md transition-transform data-show:pointer-events-auto data-show:translate-y-0 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
+            className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] gap-1.5 rounded-full shadow-md transition-transform data-show:translate-y-0 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
           >
             <ArrowDownIcon className="size-4" />
             Jump
