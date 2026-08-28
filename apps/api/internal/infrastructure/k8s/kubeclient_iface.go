@@ -16,12 +16,14 @@ import (
 
 // KubeClientInterface ...
 type KubeClientInterface interface {
-	// SyncDatabaseSecrets syncs all database secrets with the operator logic
-	SyncDatabaseSecrets(ctx context.Context) error
+	// SyncDatabaseSecrets syncs all database secrets with the operator logic, returning
+	// the changed variable keys per service so callers can redeploy referencing services
+	SyncDatabaseSecrets(ctx context.Context) (map[uuid.UUID][]string, error)
 	// SyncDatabaseSecretForServiceID syncs the database secret for a specific service ID
 	SyncDatabaseSecretForServiceID(ctx context.Context, serviceID uuid.UUID) error
-	// SyncDatabaseSecretForService syncs the database secret for a specific service
-	SyncDatabaseSecretForService(ctx context.Context, service *ent.Service) error
+	// SyncDatabaseSecretForService syncs the database secret for a specific service,
+	// returning the keys whose values changed
+	SyncDatabaseSecretForService(ctx context.Context, service *ent.Service) ([]string, error)
 	// UpdateDeploymentImages retags every unbind image in the system namespace; the app deployment (which runs this API) rolls last.
 	UpdateDeploymentImages(ctx context.Context, newVersion string) error
 	// CheckDeploymentsReady reports whether every deployment using an unbind image serves only ready pods on the given version.

@@ -345,8 +345,13 @@ func startAPI(cfg *config.Config) {
 		gocron.NewTask(
 			func(ctx context.Context) {
 				log.Infof("Syncing database secrets.")
-				if err := kubeClient.SyncDatabaseSecrets(ctx); err != nil {
+				changed, err := kubeClient.SyncDatabaseSecrets(ctx)
+				if err != nil {
 					log.Error("Failed to sync database secrets", "err", err)
+					return
+				}
+				for sourceServiceID, keys := range changed {
+					serviceService.RedeployReferencingServices(ctx, sourceServiceID, keys)
 				}
 			},
 			ctx,

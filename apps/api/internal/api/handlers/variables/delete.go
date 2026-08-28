@@ -53,6 +53,15 @@ func (self *HandlerGroup) DeleteVariables(ctx context.Context, input *DeleteVari
 		}
 	}
 
+	// Re-deploy anything referencing the deleted variables so breakage surfaces instead of going stale
+	if len(input.Body.Variables) > 0 {
+		keys := make([]string, len(input.Body.Variables))
+		for i, variable := range input.Body.Variables {
+			keys[i] = variable.Name
+		}
+		self.srv.ServiceService.RedeployReferencingServices(ctx, variableSourceID(input.Body.BaseVariablesJSONInput), keys)
+	}
+
 	resp := &VariablesResponse{}
 	resp.Body.Data = variableMap
 	return resp, nil

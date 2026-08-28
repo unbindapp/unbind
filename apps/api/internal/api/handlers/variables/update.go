@@ -69,29 +69,24 @@ func (self *HandlerGroup) UpdateVariables(ctx context.Context, input *UpsertVari
 		for i, variable := range input.Body.Variables {
 			keys[i] = variable.Name
 		}
-		var sourceId uuid.UUID
-		switch input.Body.Type {
-		case schema.VariableReferenceSourceTypeTeam:
-			sourceId = input.Body.TeamID
-		case schema.VariableReferenceSourceTypeProject:
-			sourceId = input.Body.ProjectID
-		case schema.VariableReferenceSourceTypeEnvironment:
-			sourceId = input.Body.EnvironmentID
-		case schema.VariableReferenceSourceTypeService:
-			sourceId = input.Body.ServiceID
-		}
-		services, err := self.srv.Repository.Variables().GetServicesReferencingID(ctx, sourceId, keys)
-		if err != nil {
-			log.Errorf("Error getting services referencing variable: %v", err)
-		} else {
-			_, err := self.srv.ServiceService.DeployAdhocServices(ctx, services)
-			if err != nil {
-				log.Errorf("Error deploying service: %v", err)
-			}
-		}
+		self.srv.ServiceService.RedeployReferencingServices(ctx, variableSourceID(input.Body.BaseVariablesJSONInput), keys)
 	}
 
 	resp := &VariablesResponse{}
 	resp.Body.Data = variableMap
 	return resp, nil
+}
+
+func variableSourceID(input models.BaseVariablesJSONInput) uuid.UUID {
+	switch input.Type {
+	case schema.VariableReferenceSourceTypeTeam:
+		return input.TeamID
+	case schema.VariableReferenceSourceTypeProject:
+		return input.ProjectID
+	case schema.VariableReferenceSourceTypeEnvironment:
+		return input.EnvironmentID
+	case schema.VariableReferenceSourceTypeService:
+		return input.ServiceID
+	}
+	return uuid.Nil
 }

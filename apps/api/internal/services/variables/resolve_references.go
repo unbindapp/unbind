@@ -2,7 +2,9 @@ package variables_service
 
 import (
 	"context"
+	stderrors "errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/google/uuid"
@@ -168,10 +170,16 @@ func (self *VariablesService) resolveReference(ctx context.Context, client kuber
 
 		value, err := self.resolveSourceValue(ctx, client, namespace, source)
 		if err != nil {
-			if referenceErr := self.handleReferenceError(ctx, reference.ID, err); referenceErr != nil {
+			cause := err.Error()
+			var customErr *errdefs.CustomError
+			if stderrors.As(err, &customErr) {
+				cause = customErr.Message
+			}
+			resolveErr := errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Unable to resolve %s from ${%s.%s}: %s", reference.TargetName, source.SourceKubernetesName, source.Key, cause))
+			if referenceErr := self.handleReferenceError(ctx, reference.ID, resolveErr); referenceErr != nil {
 				return "", referenceErr
 			}
-			return "", errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Unable to resolve variable %s ${%s.%s}", reference.TargetName, source.SourceKubernetesName, source.Key))
+			return "", resolveErr
 		}
 		sourceValues[sourceKey] = value
 	}
@@ -181,8 +189,19 @@ func (self *VariablesService) resolveReference(ctx context.Context, client kuber
 	for k, v := range sourceValues {
 		template = strings.ReplaceAll(template, k, v)
 	}
+
+	if leftover := referenceTokenPattern.FindString(template); leftover != "" {
+		resolveErr := errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Unable to resolve %s: no source for %s", reference.TargetName, leftover))
+		if referenceErr := self.handleReferenceError(ctx, reference.ID, resolveErr); referenceErr != nil {
+			return "", referenceErr
+		}
+		return "", resolveErr
+	}
 	return template, nil
 }
+
+// Matches ${source.key} tokens that survived interpolation, meaning the stored sources drifted from the template
+var referenceTokenPattern = regexp.MustCompile(`\$\{[^}\s.]+\.[^}\s]+\}`)
 
 // Helper function to handle errors consistently
 func (self *VariablesService) handleReferenceError(ctx context.Context, referenceID uuid.UUID, err error) error {

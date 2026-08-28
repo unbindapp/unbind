@@ -57,9 +57,8 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 	}
 
 	if input.Type == schema.VariableReferenceSourceTypeService {
-		// Sync database secrets
-		err = self.k8s.SyncDatabaseSecretForService(ctx, service)
-		if err != nil {
+		// Sync database secrets; the periodic sync redeploys referencing services if values changed
+		if _, err := self.k8s.SyncDatabaseSecretForService(ctx, service); err != nil {
 			log.Warnf("Failed to sync database secret for database service %s: %v", service.ID, err)
 		}
 	}
@@ -98,6 +97,8 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 		for _, ref := range references {
 			value, err := self.resolveReference(ctx, client, team.Namespace, ref)
 			if err != nil {
+				errMessage := err.Error()
+				ref.Error = &errMessage
 				continue
 			}
 			resolvedValues[ref.ID] = value

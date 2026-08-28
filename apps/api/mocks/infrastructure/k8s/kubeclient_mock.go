@@ -3848,20 +3848,31 @@ func (_c *KubeClientMock_SetTokenVerifier_Call) RunAndReturn(run func(verifier k
 }
 
 // SyncDatabaseSecretForService provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) SyncDatabaseSecretForService(ctx context.Context, service *ent.Service) error {
+func (_mock *KubeClientMock) SyncDatabaseSecretForService(ctx context.Context, service *ent.Service) ([]string, error) {
 	ret := _mock.Called(ctx, service)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SyncDatabaseSecretForService")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.Service) error); ok {
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.Service) ([]string, error)); ok {
+		return returnFunc(ctx, service)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.Service) []string); ok {
 		r0 = returnFunc(ctx, service)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.Service) error); ok {
+		r1 = returnFunc(ctx, service)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // KubeClientMock_SyncDatabaseSecretForService_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SyncDatabaseSecretForService'
@@ -3894,12 +3905,12 @@ func (_c *KubeClientMock_SyncDatabaseSecretForService_Call) Run(run func(ctx con
 	return _c
 }
 
-func (_c *KubeClientMock_SyncDatabaseSecretForService_Call) Return(err error) *KubeClientMock_SyncDatabaseSecretForService_Call {
-	_c.Call.Return(err)
+func (_c *KubeClientMock_SyncDatabaseSecretForService_Call) Return(strings []string, err error) *KubeClientMock_SyncDatabaseSecretForService_Call {
+	_c.Call.Return(strings, err)
 	return _c
 }
 
-func (_c *KubeClientMock_SyncDatabaseSecretForService_Call) RunAndReturn(run func(ctx context.Context, service *ent.Service) error) *KubeClientMock_SyncDatabaseSecretForService_Call {
+func (_c *KubeClientMock_SyncDatabaseSecretForService_Call) RunAndReturn(run func(ctx context.Context, service *ent.Service) ([]string, error)) *KubeClientMock_SyncDatabaseSecretForService_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -3962,20 +3973,31 @@ func (_c *KubeClientMock_SyncDatabaseSecretForServiceID_Call) RunAndReturn(run f
 }
 
 // SyncDatabaseSecrets provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) SyncDatabaseSecrets(ctx context.Context) error {
+func (_mock *KubeClientMock) SyncDatabaseSecrets(ctx context.Context) (map[uuid.UUID][]string, error) {
 	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SyncDatabaseSecrets")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+	var r0 map[uuid.UUID][]string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (map[uuid.UUID][]string, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) map[uuid.UUID][]string); ok {
 		r0 = returnFunc(ctx)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID][]string)
+		}
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // KubeClientMock_SyncDatabaseSecrets_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SyncDatabaseSecrets'
@@ -4002,12 +4024,12 @@ func (_c *KubeClientMock_SyncDatabaseSecrets_Call) Run(run func(ctx context.Cont
 	return _c
 }
 
-func (_c *KubeClientMock_SyncDatabaseSecrets_Call) Return(err error) *KubeClientMock_SyncDatabaseSecrets_Call {
-	_c.Call.Return(err)
+func (_c *KubeClientMock_SyncDatabaseSecrets_Call) Return(uUIDToStrings map[uuid.UUID][]string, err error) *KubeClientMock_SyncDatabaseSecrets_Call {
+	_c.Call.Return(uUIDToStrings, err)
 	return _c
 }
 
-func (_c *KubeClientMock_SyncDatabaseSecrets_Call) RunAndReturn(run func(ctx context.Context) error) *KubeClientMock_SyncDatabaseSecrets_Call {
+func (_c *KubeClientMock_SyncDatabaseSecrets_Call) RunAndReturn(run func(ctx context.Context) (map[uuid.UUID][]string, error)) *KubeClientMock_SyncDatabaseSecrets_Call {
 	_c.Call.Return(run)
 	return _c
 }

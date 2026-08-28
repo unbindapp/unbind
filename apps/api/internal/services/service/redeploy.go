@@ -2,8 +2,11 @@ package service_service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
@@ -74,24 +77,28 @@ func (self *ServiceService) EnqueueFullBuildDeployments(ctx context.Context, ser
 // DeployAdhocServices deploys services that need an ad-hoc deployment (config changes only)
 func (self *ServiceService) DeployAdhocServices(ctx context.Context, services []*ent.Service) ([]*ent.Deployment, error) {
 	var newDeployments []*ent.Deployment
+	var errs []error
 
 	for _, service := range services {
 		deployment, err := self.deployAdhocService(ctx, service)
 		if err != nil {
-			return nil, fmt.Errorf("failed to deploy service %s: %w", service.ID, err)
+			log.Errorf("failed to deploy service %s: %v", service.ID, err)
+			errs = append(errs, fmt.Errorf("failed to deploy service %s: %w", service.ID, err))
+			continue
 		}
 		if deployment != nil {
 			newDeployments = append(newDeployments, deployment)
 		}
 	}
 
-	return newDeployments, nil
+	return newDeployments, errors.Join(errs...)
 }
 
 // deployAdhocService handles the adhoc deployment of a single service
 func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent.Service) (*ent.Deployment, error) {
 	if service.Edges.CurrentDeployment == nil || service.Edges.ServiceConfig == nil {
-		return nil, fmt.Errorf("service %s missing current deployment or config", service.ID)
+		// Never deployed, nothing to refresh - the first deployment resolves references itself
+		return nil, nil
 	}
 
 	if err := dbvolumes.Ensure(ctx, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
@@ -147,7 +154,8 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 			if _, err := self.repo.Deployment().MarkFailed(ctx, tx, newDeployment.ID, err.Error(), time.Now()); err != nil {
 				return err
 			}
-			return err
+			// Commit so the failed deployment stays visible
+			return nil
 		}
 		envVars := make([]corev1.EnvVar, len(additionalEnv))
 		i := 0
@@ -199,6 +207,25 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 	}
 
 	return newDeployment, nil
+}
+
+// RedeployReferencingServices redeploys services whose variable references point at any of
+// the given keys on the source, so changed values propagate into their environments
+func (self *ServiceService) RedeployReferencingServices(ctx context.Context, sourceID uuid.UUID, keys []string) {
+	if len(keys) == 0 {
+		return
+	}
+	services, err := self.repo.Variables().GetServicesReferencingID(ctx, sourceID, keys)
+	if err != nil {
+		log.Errorf("failed to find services referencing %s: %v", sourceID, err)
+		return
+	}
+	if len(services) == 0 {
+		return
+	}
+	if _, err := self.DeployAdhocServices(ctx, services); err != nil {
+		log.Errorf("failed to redeploy services referencing %s: %v", sourceID, err)
+	}
 }
 
 // RedeployServices determines which services need rebuilding vs redeploying and performs the appropriate action

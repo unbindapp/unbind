@@ -145,6 +145,22 @@ func (suite *ResolveReferencesSuite) TestResolveSingleReference_Success() {
 	suite.Equal("resolved-value", value)
 }
 
+// A template token with no matching source must fail instead of resolving to the literal token.
+func (suite *ResolveReferencesSuite) TestResolveSingleReference_LeftoverTokenFails() {
+	ref := suite.secretRef("DB_URL")
+	ref.ValueTemplate = "${renamed-service.KEY}"
+
+	suite.expectViewerCheck(nil)
+	suite.k8s.EXPECT().GetInternalClient().Return(suite.k8sClient)
+	suite.varsRepo.EXPECT().GetReferenceByID(suite.ctx, ref.ID).Return(ref, nil).Once()
+	suite.svcRepo.EXPECT().GetDeploymentNamespace(suite.ctx, suite.serviceID).Return(suite.namespace, nil).Once()
+	suite.k8s.EXPECT().GetSecret(suite.ctx, "api", suite.namespace, suite.k8sClient).Return(suite.secret("resolved-value"), nil).Once()
+	suite.varsRepo.EXPECT().AttachError(suite.ctx, ref.ID, mock.Anything).Return(nil, nil).Once()
+
+	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.serviceID, ref.ID)
+	suite.ErrorContains(err, "no source for ${renamed-service.KEY}")
+}
+
 // When a source can't be resolved, the failure is persisted onto the reference
 // before being returned to the caller.
 func (suite *ResolveReferencesSuite) TestResolveSingleReference_AttachesErrorOnFailure() {
@@ -159,7 +175,7 @@ func (suite *ResolveReferencesSuite) TestResolveSingleReference_AttachesErrorOnF
 	suite.varsRepo.EXPECT().AttachError(suite.ctx, ref.ID, mock.Anything).Return(nil, nil).Once()
 
 	_, err := suite.service.ResolveSingleReference(suite.ctx, suite.userID, suite.serviceID, ref.ID)
-	suite.ErrorContains(err, "Unable to resolve variable")
+	suite.ErrorContains(err, "Unable to resolve DB_URL from ${api.KEY}")
 }
 
 // Empty reference set resolves to an empty map without touching kubernetes.
