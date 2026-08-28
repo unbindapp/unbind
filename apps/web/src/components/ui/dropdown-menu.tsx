@@ -69,6 +69,7 @@ function DropdownMenuContent({
   TDropdownContentVariants) {
   return (
     <MenuPrimitive.Portal keepMounted={keepMounted}>
+      <MenuPrimitive.Backdrop className="fixed inset-0 z-998" />
       <MenuPrimitive.Positioner
         data-ui-popup=""
         align={align}
