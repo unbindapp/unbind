@@ -13,7 +13,6 @@ import {
 import type { TBufferedLogLine } from "@/components/logs/logs-provider";
 import { useServices } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -25,7 +24,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
@@ -142,6 +140,9 @@ function SearchBar({
   );
 }
 
+const dropdownCollisionPadding = { top: 16, bottom: 16, left: 8, right: 8 };
+const dropdownItemClassName = "py-3.5 sm:py-2.25";
+
 function FilterButton() {
   const {
     levels,
@@ -156,106 +157,118 @@ function FilterButton() {
     rangeEnabled,
     servicesEnabled,
   } = useLogFilters();
-  const [open, setOpen] = useState(false);
 
   const showActiveDot = levels.length > 0 || serviceIds.length > 0 || rangeIsSet;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger
+    <DropdownMenu>
+      <DropdownMenuTrigger
         render={
           <Button
             aria-label="Filter Logs"
             type="button"
             size="icon"
             variant="ghost"
-            className="relative h-auto w-10 rounded-none border-l"
+            className="relative h-auto w-10 touch-manipulation rounded-none border-l"
           >
-            <div
-              data-show={showActiveDot || undefined}
-              className="bg-warning pointer-events-none absolute top-1.25 right-1.25 size-1.25 scale-75 rounded-full opacity-0 transition data-show:scale-100 data-show:opacity-100"
-            />
+            <ActiveDot show={showActiveDot} />
             <FilterIcon className="size-5" />
           </Button>
         }
       />
-      <PopoverContent align="end" className="flex w-3xl flex-col p-0 sm:w-72">
-        <ScrollArea className="max-h-[min(30rem,var(--available-height))]">
-          <div className="flex w-full flex-col gap-4 p-3.5">
-            <FilterSection title="Levels">
-              <div className="flex flex-col gap-1">
-                {logLevels.map((level) => (
-                  <label
-                    key={level}
-                    className="hover:bg-border flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5"
-                  >
-                    <Checkbox
-                      checked={levels.includes(level)}
-                      onCheckedChange={(checked) =>
-                        setLevels(checked ? [...levels, level] : levels.filter((l) => l !== level))
-                      }
-                    />
-                    <span
-                      data-level={level}
-                      className="data-[level=error]:text-destructive data-[level=warn]:text-warning data-[level=debug]:text-muted-foreground text-sm leading-tight font-medium"
-                    >
-                      {levelLabels[level]}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </FilterSection>
-            {servicesEnabled && (
-              <ServicesFilterSection serviceIds={serviceIds} setServiceIds={setServiceIds} />
-            )}
-            {rangeEnabled && (
-              <FilterSection title="Time Range">
-                <div className="flex flex-wrap gap-1.5">
-                  {logRangePresets.map((preset) => (
-                    <Button
-                      key={preset}
-                      type="button"
-                      size="sm"
-                      variant={"preset" in range && range.preset === preset ? "default" : "outline"}
-                      onClick={() => setRange({ preset })}
-                      className="px-2.5 py-1.5 font-mono"
-                    >
-                      {preset}
-                    </Button>
-                  ))}
+      <DropdownMenuContent
+        align="end"
+        collisionPadding={dropdownCollisionPadding}
+        className="w-3xl sm:w-72"
+      >
+        <ScrollArea>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="pb-0">Levels</DropdownMenuLabel>
+            {logLevels.map((level) => (
+              <DropdownMenuCheckboxItem
+                key={level}
+                className={dropdownItemClassName}
+                checked={levels.includes(level)}
+                onCheckedChange={(checked) =>
+                  setLevels(checked ? [...levels, level] : levels.filter((l) => l !== level))
+                }
+              >
+                <p
+                  data-level={level}
+                  className="data-[level=error]:text-destructive data-[level=warn]:text-warning data-[level=debug]:text-muted-foreground min-w-0 shrink"
+                >
+                  {levelLabels[level]}
+                </p>
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuGroup>
+          {servicesEnabled && (
+            <ServicesFilterGroup serviceIds={serviceIds} setServiceIds={setServiceIds} />
+          )}
+          {rangeEnabled && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="pb-0">Time Range</DropdownMenuLabel>
+                <div
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") return;
+                    e.stopPropagation();
+                  }}
+                  className="flex w-full flex-col gap-1.5 px-1.5 pt-1.5 pb-1.5"
+                >
+                  <div className="grid w-full grid-cols-3 gap-1.5">
+                    {logRangePresets.map((preset) => (
+                      <Button
+                        key={preset}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        data-selected={("preset" in range && range.preset === preset) || undefined}
+                        onClick={() => setRange({ preset })}
+                        className="data-selected:bg-primary data-selected:text-primary-foreground data-selected:border-primary data-selected:has-hover:hover:bg-primary/85 data-selected:active:bg-primary/85 data-selected:has-hover:hover:text-primary-foreground data-selected:active:text-primary-foreground w-full px-2 py-1.5 font-mono"
+                      >
+                        {preset}
+                      </Button>
+                    ))}
+                  </div>
+                  <CustomRangeInputs />
                 </div>
-                <CustomRangeInputs />
-              </FilterSection>
-            )}
-            <Button
-              type="button"
-              variant="outline"
+              </DropdownMenuGroup>
+            </>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              data-not-default={hasActiveFilters || undefined}
               disabled={!hasActiveFilters}
+              closeOnClick={false}
               onClick={() => resetFilters()}
-              className="text-warning w-full gap-1.5"
+              className={cn(
+                "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/10 data-not-default:active:bg-warning/10",
+                dropdownItemClassName,
+              )}
             >
-              <RotateCcwIcon className="size-4" />
-              Reset Filters
-            </Button>
-          </div>
+              <RotateCcwIcon className="-my-1 size-4.5 shrink-0 -rotate-90 transform transition-transform group-data-not-default/item:rotate-0" />
+              <p className="min-w-0 shrink">Reset Filters</p>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
         </ScrollArea>
-      </PopoverContent>
-    </Popover>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
-function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
+function ActiveDot({ show }: { show: boolean }) {
   return (
-    <div className="flex w-full flex-col gap-1.5">
-      <p className="text-muted-foreground px-1 text-xs leading-tight font-semibold tracking-wide uppercase">
-        {title}
-      </p>
-      {children}
-    </div>
+    <div
+      data-show={show || undefined}
+      className="bg-warning pointer-events-none absolute top-1.25 right-1.25 size-1.25 scale-75 rounded-full opacity-0 transition data-show:scale-100 data-show:opacity-100"
+    />
   );
 }
 
-function ServicesFilterSection({
+function ServicesFilterGroup({
   serviceIds,
   setServiceIds,
 }: {
@@ -269,30 +282,28 @@ function ServicesFilterSection({
   if (!servicesData || servicesData.services.length === 0) return null;
 
   return (
-    <FilterSection title="Services">
-      <div className="flex flex-col gap-1">
+    <>
+      <DropdownMenuSeparator />
+      <DropdownMenuGroup>
+        <DropdownMenuLabel className="pb-0">Services</DropdownMenuLabel>
         {servicesData.services.map((service) => (
-          <label
+          <DropdownMenuCheckboxItem
             key={service.id}
-            className="hover:bg-border flex cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5"
+            className={dropdownItemClassName}
+            checked={serviceIds.includes(service.id)}
+            onCheckedChange={(checked) =>
+              setServiceIds(
+                checked
+                  ? [...serviceIds, service.id]
+                  : serviceIds.filter((id) => id !== service.id),
+              )
+            }
           >
-            <Checkbox
-              checked={serviceIds.includes(service.id)}
-              onCheckedChange={(checked) =>
-                setServiceIds(
-                  checked
-                    ? [...serviceIds, service.id]
-                    : serviceIds.filter((id) => id !== service.id),
-                )
-              }
-            />
-            <span className="min-w-0 truncate text-sm leading-tight font-medium">
-              {service.name}
-            </span>
-          </label>
+            <p className="min-w-0 truncate">{service.name}</p>
+          </DropdownMenuCheckboxItem>
         ))}
-      </div>
-    </FilterSection>
+      </DropdownMenuGroup>
+    </>
   );
 }
 
@@ -329,7 +340,7 @@ function CustomRangeInputs() {
   };
 
   return (
-    <div className="flex w-full flex-col gap-1.5 pt-1">
+    <div className="flex w-full flex-col gap-1.5">
       <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
         <Input
           type="datetime-local"
@@ -397,10 +408,7 @@ function SettingsButton({
             variant="ghost"
             className={cn("touch-manipulation", className)}
           >
-            <div
-              data-show={!isDefaultState || undefined}
-              className="bg-warning pointer-events-none absolute top-1.25 right-1.25 size-1.25 scale-75 rounded-full opacity-0 transition data-show:scale-100 data-show:opacity-100"
-            />
+            <ActiveDot show={!isDefaultState} />
             <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
               <SettingsIcon className="size-full opacity-100 transition-opacity group-data-open/button:opacity-0" />
               <XIcon className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-open/button:opacity-100" />
@@ -408,7 +416,11 @@ function SettingsButton({
           </Button>
         }
       />
-      <DropdownMenuContent align="end" className="w-3xl sm:w-56">
+      <DropdownMenuContent
+        align="end"
+        collisionPadding={dropdownCollisionPadding}
+        className="w-3xl sm:w-56"
+      >
         <ScrollArea>
           {logViewPreferences.map((group, index) => (
             <div key={group.label} className="flex w-full flex-col">
@@ -424,7 +436,7 @@ function SettingsButton({
                   .map((item) =>
                     item.type === "checkbox" ? (
                       <DropdownMenuCheckboxItem
-                        className="py-3.5 sm:py-2.25"
+                        className={dropdownItemClassName}
                         checked={preferences.includes(item.value)}
                         onCheckedChange={(checked) => {
                           setPreferences((prevSettings) => {
@@ -442,7 +454,7 @@ function SettingsButton({
                         <p className="min-w-0 shrink">{item.label}</p>
                       </DropdownMenuCheckboxItem>
                     ) : (
-                      <DropdownMenuItem className="py-3.5 sm:py-2.25" key={item.value}>
+                      <DropdownMenuItem className={dropdownItemClassName} key={item.value}>
                         <p className="min-w-0 shrink">{item.label}</p>
                       </DropdownMenuItem>
                     ),
@@ -455,7 +467,7 @@ function SettingsButton({
             <DropdownMenuItem
               disabled={!hasLogs}
               onClick={downloadLogs}
-              className="py-3.5 sm:py-2.25"
+              className={dropdownItemClassName}
             >
               <DownloadIcon className="-my-1 size-4.5 shrink-0" />
               <p className="min-w-0 shrink">Download Logs</p>
@@ -470,7 +482,10 @@ function SettingsButton({
               onClick={() => {
                 resetPreferences();
               }}
-              className="group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/10 data-not-default:active:bg-warning/10 py-3.5 sm:py-2.25"
+              className={cn(
+                "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/10 data-not-default:active:bg-warning/10",
+                dropdownItemClassName,
+              )}
             >
               <RotateCcwIcon className="-my-1 size-4.5 shrink-0 -rotate-90 transform transition-transform group-data-not-default/item:rotate-0" />
               <p className="min-w-0 shrink">Reset</p>
