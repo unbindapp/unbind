@@ -354,24 +354,29 @@ function CustomRangeInputs() {
 
   return (
     <div className="flex w-full flex-col gap-1.5">
-      <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-        <Input
-          type="datetime-local"
-          tabIndex={-1}
-          aria-label="From"
-          value={fromValue}
-          onChange={(e) => applyCustom(e.target.value, toValue)}
-          className="w-full min-w-0 appearance-none px-2 py-1.5 text-xs"
-        />
-        <span className="text-muted-foreground shrink-0 text-xs">to</span>
-        <Input
-          type="datetime-local"
-          tabIndex={-1}
-          aria-label="To"
-          value={toValue}
-          onChange={(e) => applyCustom(fromValue, e.target.value)}
-          className="w-full min-w-0 appearance-none px-2 py-1.5 text-xs"
-        />
+      <div className="flex w-full flex-col gap-1.5">
+        <label className="flex w-full items-center gap-2">
+          <span className="text-muted-foreground w-10 shrink-0 text-sm font-medium">From</span>
+          <Input
+            type="datetime-local"
+            tabIndex={-1}
+            aria-label="From"
+            value={fromValue}
+            onChange={(e) => applyCustom(e.target.value, toValue)}
+            className="w-full min-w-0 appearance-none px-2.5 py-2"
+          />
+        </label>
+        <label className="flex w-full items-center gap-2">
+          <span className="text-muted-foreground w-10 shrink-0 text-sm font-medium">To</span>
+          <Input
+            type="datetime-local"
+            tabIndex={-1}
+            aria-label="To"
+            value={toValue}
+            onChange={(e) => applyCustom(fromValue, e.target.value)}
+            className="w-full min-w-0 appearance-none px-2.5 py-2"
+          />
+        </label>
       </div>
       {custom && (
         <p className="text-muted-foreground px-1 text-xs leading-tight">
