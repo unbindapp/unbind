@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/lib/queries/logs";
-import { ArrowDownIcon, ArrowUpIcon, HourglassIcon, LoaderIcon, SearchIcon } from "lucide-react";
+import { ArrowDownIcon, HourglassIcon, LoaderIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
@@ -137,7 +137,6 @@ function Logs({
   const prevScrollY = useRef<number | null>(null);
   const scrolledOnce = useRef(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
-  const [isAtTop, setIsAtTop] = useState(false);
   const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(new Set());
 
   const { preferences: viewPreferences } = useLogViewPreferences();
@@ -151,14 +150,6 @@ function Logs({
     for (const service of servicesData?.services ?? []) names.set(service.id, service.name);
     return names;
   }, [servicesData]);
-
-  const scrollToTop = useCallback(() => {
-    follow.current = false;
-    const virtualList = virtualListRef.current;
-    if (!virtualList) return;
-    virtualList.scrollToIndex(0);
-    return;
-  }, []);
 
   const scrollToBottom = useCallback(() => {
     follow.current = true;
@@ -210,7 +201,6 @@ function Logs({
 
     const distanceToBottom = maxScroll - scrollY;
     const newIsAtBottom = distanceToBottom < SCROLL_THRESHOLD;
-    const newIsAtTop = scrollY < SCROLL_THRESHOLD;
 
     // If the user scrolls up, stop following
     if (prevScrollY.current !== null && scrollY < prevScrollY.current) {
@@ -225,8 +215,6 @@ function Logs({
     } else {
       setIsAtBottom(false);
     }
-
-    setIsAtTop(newIsAtTop);
 
     // eviction would yank away the history the user is reading
     setEvictionPaused(!newIsAtBottom);
@@ -372,29 +360,21 @@ function Logs({
           className="absolute top-2 right-2.5 z-10 sm:right-4"
         />
         {logs && logs.length > 0 && (
-          <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]">
-            {(!isAtTop || hasMoreOlder) && <JumpButton direction="up" onClick={scrollToTop} />}
-            {!isAtBottom && <JumpButton direction="down" onClick={scrollToBottom} />}
-          </div>
+          <Button
+            type="button"
+            size="sm"
+            aria-label="Jump to latest"
+            data-show={!isAtBottom || undefined}
+            tabIndex={isAtBottom ? -1 : undefined}
+            onClick={scrollToBottom}
+            className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] gap-1.5 rounded-full shadow-md transition-transform data-show:pointer-events-auto data-show:translate-y-0 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
+          >
+            <ArrowDownIcon className="size-4" />
+            Jump
+          </Button>
         )}
       </div>
     </div>
-  );
-}
-
-function JumpButton({ direction, onClick }: { direction: "up" | "down"; onClick: () => void }) {
-  const Icon = direction === "up" ? ArrowUpIcon : ArrowDownIcon;
-  return (
-    <Button
-      type="button"
-      size="sm"
-      aria-label={direction === "up" ? "Jump to top" : "Jump to latest"}
-      onClick={onClick}
-      className="gap-1.5 rounded-full shadow-md"
-    >
-      <Icon className="size-4" />
-      Jump
-    </Button>
   );
 }
 
@@ -435,7 +415,7 @@ function StreamStatusChip({
 
 function OlderLogsIndicator({ isFetching }: { isFetching: boolean }) {
   return (
-    <div className="text-muted-foreground flex w-full items-center justify-center gap-1.5 px-2 py-2.5 font-sans text-xs">
+    <div className="text-muted-foreground flex w-full items-center justify-center gap-1.5 px-2 py-3 font-sans text-xs">
       <LoaderIcon
         data-fetching={isFetching || undefined}
         className="size-3.5 opacity-0 data-fetching:animate-spin data-fetching:opacity-100"
