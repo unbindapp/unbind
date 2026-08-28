@@ -1,11 +1,7 @@
 "use client";
 
-import {
-  defaultLogRange,
-  isLiveRange,
-  resolveLogRange,
-  useLogFilters,
-} from "@/components/logs/log-filters-provider";
+import { useLogFilters } from "@/components/logs/log-filters-provider";
+import { defaultLogRange, isLiveRange, resolveLogRange } from "@/components/logs/log-range";
 import { logLineKey } from "@/components/logs/log-utils";
 import { parseSearchInput } from "@/components/logs/search-syntax";
 import { useServices } from "@/components/service/services-provider";

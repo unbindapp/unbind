@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  decodeRange,
+  defaultLogRange,
+  encodeRange,
+  type TLogRange,
+} from "@/components/logs/log-range";
 import { TLogLevel, TLogType } from "@/lib/queries/logs";
 import { LogLevelSchema } from "@/lib/server/client.gen";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
@@ -21,56 +27,6 @@ export const logTypeCapabilities: Record<
   deployment: { range: false, services: false, serviceColumn: false },
   build: { range: false, services: false, serviceColumn: false },
 };
-
-export const logRangePresets = ["5m", "15m", "1h", "6h", "24h", "3d", "7d", "30d"] as const;
-export type TLogRangePreset = (typeof logRangePresets)[number];
-
-export type TLogRange = { preset: TLogRangePreset } | { from: number; to?: number };
-
-export const defaultLogRange: TLogRange = { preset: "24h" };
-
-const presetMs: Record<TLogRangePreset, number> = {
-  "5m": 5 * 60 * 1000,
-  "15m": 15 * 60 * 1000,
-  "1h": 60 * 60 * 1000,
-  "6h": 6 * 60 * 60 * 1000,
-  "24h": 24 * 60 * 60 * 1000,
-  "3d": 3 * 24 * 60 * 60 * 1000,
-  "7d": 7 * 24 * 60 * 60 * 1000,
-  "30d": 30 * 24 * 60 * 60 * 1000,
-};
-
-export function resolveLogRange(range: TLogRange): { start: string; end: string | null } {
-  if ("preset" in range) {
-    return { start: new Date(Date.now() - presetMs[range.preset]).toISOString(), end: null };
-  }
-  return {
-    start: new Date(range.from).toISOString(),
-    end: range.to ? new Date(range.to).toISOString() : null,
-  };
-}
-
-export function isLiveRange(range: TLogRange): boolean {
-  return "preset" in range || !range.to;
-}
-
-function encodeRange(range: TLogRange): string {
-  if ("preset" in range) return range.preset;
-  return `c:${range.from}:${range.to ?? ""}`;
-}
-
-function decodeRange(value: string | undefined): TLogRange {
-  if (!value) return defaultLogRange;
-  if ((logRangePresets as readonly string[]).includes(value)) {
-    return { preset: value as TLogRangePreset };
-  }
-  const custom = /^c:(\d+):(\d*)$/.exec(value);
-  if (!custom) return defaultLogRange;
-  const from = Number(custom[1]);
-  const to = custom[2] ? Number(custom[2]) : undefined;
-  if (!Number.isFinite(from)) return defaultLogRange;
-  return { from, to };
-}
 
 function decodeLevels(value: string | undefined): TLogLevel[] {
   if (!value) return [];
@@ -192,7 +148,7 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
           [keys.services]: undefined,
           [keys.range]: encodeRange({
             from: aroundMs - contextWindowMs,
-            to: aroundMs + contextWindowMs,
+            until: aroundMs + contextWindowMs,
           }),
         }),
         replace: true,

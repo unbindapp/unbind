@@ -1,10 +1,13 @@
 import {
   logLevels,
-  logRangePresets,
   logTypeCapabilities,
-  type TLogRangePreset,
   useLogFilters,
 } from "@/components/logs/log-filters-provider";
+import {
+  activeLogRangePreset,
+  logRangePresets,
+  type TLogRangePreset,
+} from "@/components/logs/log-range";
 import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider";
 import {
   logViewPreferenceKeys,
@@ -246,8 +249,10 @@ function FilterButton({ className }: { className?: string }) {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Time Range</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
-                  value={"preset" in range ? range.preset : null}
-                  onValueChange={(preset: TLogRangePreset) => setRange({ preset })}
+                  value={activeLogRangePreset(range)}
+                  onValueChange={(preset: TLogRangePreset) =>
+                    setRange({ preset, until: range.until })
+                  }
                   className="grid w-full grid-cols-4 gap-1.5 px-1.5 pt-1.5"
                 >
                   {logRangePresets.map((preset) => (
@@ -360,60 +365,87 @@ function toDatetimeLocal(ms: number | undefined): string {
 
 function CustomRangeInputs({ className }: { className?: string }) {
   const { range, setRange } = useLogFilters();
-  const custom = "preset" in range ? null : range;
 
-  const [fromValue, setFromValue] = useState(toDatetimeLocal(custom?.from));
-  const [toValue, setToValue] = useState(toDatetimeLocal(custom?.to));
+  const [fromValue, setFromValue] = useState(toDatetimeLocal(range.from));
+  const [untilValue, setUntilValue] = useState(toDatetimeLocal(range.until));
+  const [error, setError] = useState<string | null>(null);
 
   // follow external range changes (presets, reset, view-in-context)
-  const lastApplied = useRef({ from: custom?.from, to: custom?.to });
+  const lastApplied = useRef({ from: range.from, until: range.until });
   useEffect(() => {
-    if (custom?.from === lastApplied.current.from && custom?.to === lastApplied.current.to) return;
-    lastApplied.current = { from: custom?.from, to: custom?.to };
-    setFromValue(toDatetimeLocal(custom?.from));
-    setToValue(toDatetimeLocal(custom?.to));
-  }, [custom?.from, custom?.to]);
+    if (range.from === lastApplied.current.from && range.until === lastApplied.current.until) {
+      return;
+    }
+    lastApplied.current = { from: range.from, until: range.until };
+    setFromValue(toDatetimeLocal(range.from));
+    setUntilValue(toDatetimeLocal(range.until));
+    setError(null);
+  }, [range.from, range.until]);
 
-  const applyCustom = (from: string, to: string) => {
+  const apply = (from: string, until: string) => {
     setFromValue(from);
-    setToValue(to);
-    const fromMs = from ? new Date(from).getTime() : NaN;
-    const toMs = to ? new Date(to).getTime() : undefined;
-    if (!Number.isFinite(fromMs)) return;
-    if (toMs !== undefined && (!Number.isFinite(toMs) || toMs <= fromMs)) return;
-    lastApplied.current = { from: fromMs, to: toMs };
-    setRange({ from: fromMs, to: toMs });
+    setUntilValue(until);
+
+    const fromMs = from ? new Date(from).getTime() : undefined;
+    const untilMs = until ? new Date(until).getTime() : undefined;
+    if (fromMs !== undefined && !Number.isFinite(fromMs)) return;
+    if (untilMs !== undefined && !Number.isFinite(untilMs)) return;
+    if (fromMs !== undefined && untilMs !== undefined && untilMs <= fromMs) {
+      setError("Until must be after from.");
+      return;
+    }
+
+    setError(null);
+    lastApplied.current = { from: fromMs, until: untilMs };
+    if (fromMs === undefined && untilMs === undefined) {
+      setRange(null);
+      return;
+    }
+    setRange({ preset: range.preset, from: fromMs, until: untilMs });
   };
+
+  const hint = error
+    ? error
+    : range.until !== undefined
+      ? "Historical data, not live."
+      : range.from !== undefined
+        ? "Live from the start time."
+        : null;
 
   return (
     <div className={cn("flex w-full flex-col gap-1.5", className)}>
       <div className="flex w-full flex-col gap-1.5">
         <label className="flex w-full items-center gap-4">
-          <span className="text-muted-foreground w-10 shrink-0 px-1 text-sm font-medium">From</span>
+          <span className="text-muted-foreground w-12 shrink-0 px-1 text-sm font-medium">From</span>
           <Input
             type="datetime-local"
             tabIndex={-1}
             aria-label="From"
             value={fromValue}
-            onChange={(e) => applyCustom(e.target.value, toValue)}
+            onChange={(e) => apply(e.target.value, untilValue)}
             className="bg-background w-full min-w-0 appearance-none px-2.5 py-2"
           />
         </label>
         <label className="flex w-full items-center gap-4">
-          <span className="text-muted-foreground w-10 shrink-0 px-1 text-sm font-medium">To</span>
+          <span className="text-muted-foreground w-12 shrink-0 px-1 text-sm font-medium">
+            Until
+          </span>
           <Input
             type="datetime-local"
             tabIndex={-1}
-            aria-label="To"
-            value={toValue}
-            onChange={(e) => applyCustom(fromValue, e.target.value)}
+            aria-label="Until"
+            value={untilValue}
+            onChange={(e) => apply(fromValue, e.target.value)}
             className="bg-background w-full min-w-0 appearance-none px-2.5 py-2"
           />
         </label>
       </div>
-      {custom && (
-        <p className="text-muted-foreground px-1.75 pt-0.5 text-right text-sm leading-tight">
-          {custom.to ? "Fixed range, not live." : "Live from the start time."}
+      {hint && (
+        <p
+          data-error={error ? true : undefined}
+          className="text-muted-foreground data-error:text-destructive px-1.75 pt-0.5 text-right text-sm leading-tight"
+        >
+          {hint}
         </p>
       )}
     </div>
