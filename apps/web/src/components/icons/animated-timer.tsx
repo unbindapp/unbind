@@ -22,8 +22,9 @@ export default function AnimatedTimerIcon({
     >
       <line x1="10" x2="14" y1="2" y2="2" />
       <line
+        data-animate={animate || undefined}
         style={{ transformOrigin: "50% 58.33333%" }}
-        className={animate ? "animate-spin duration-4000" : undefined}
+        className="data-animate:animate-[spin_2s_linear_infinite]"
         x1="12"
         x2="15"
         y1="14"
