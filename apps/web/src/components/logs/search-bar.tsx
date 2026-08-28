@@ -412,8 +412,8 @@ function CustomRangeInputs({ className }: { className?: string }) {
         </label>
       </div>
       {custom && (
-        <p className="text-muted-foreground px-1 text-xs leading-tight">
-          {custom.to ? "Fixed range (not live)" : "Live from the start time"}
+        <p className="text-muted-foreground px-1.75 pt-0.5 text-right text-sm leading-tight">
+          {custom.to ? "Fixed range, not live." : "Live from the start time."}
         </p>
       )}
     </div>
