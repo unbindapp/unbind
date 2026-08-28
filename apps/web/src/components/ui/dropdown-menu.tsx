@@ -226,21 +226,29 @@ function DropdownMenuRadioGroup({ ...props }: MenuPrimitive.RadioGroup.Props) {
   return <MenuPrimitive.RadioGroup data-slot="dropdown-menu-radio-group" {...props} />;
 }
 
-function DropdownMenuRadioItem({ className, children, ...props }: MenuPrimitive.RadioItem.Props) {
+function DropdownMenuRadioItem({
+  className,
+  children,
+  hideIndicator,
+  ...props
+}: MenuPrimitive.RadioItem.Props & { hideIndicator?: boolean }) {
   return (
     <MenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
       className={cn(
         "data-highlighted:bg-accent data-highlighted:text-accent-foreground relative flex cursor-default items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50",
+        hideIndicator && "pl-2",
         className,
       )}
       {...props}
     >
-      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-        <MenuPrimitive.RadioItemIndicator>
-          <CircleIcon className="h-2 w-2 fill-current" />
-        </MenuPrimitive.RadioItemIndicator>
-      </span>
+      {!hideIndicator && (
+        <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+          <MenuPrimitive.RadioItemIndicator>
+            <CircleIcon className="h-2 w-2 fill-current" />
+          </MenuPrimitive.RadioItemIndicator>
+        </span>
+      )}
       {children}
     </MenuPrimitive.RadioItem>
   );

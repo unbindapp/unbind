@@ -148,21 +148,43 @@ function Logs({
     return names;
   }, [servicesData]);
 
+  // log lines only render once service names are in, so skeletons stay up until then
+  const isShowingPlaceholders = !logs || !servicesData;
+  // the log list renders a leading indicator above the lines
+  const itemCount = isShowingPlaceholders ? placeholderArray.length : logs.length + 1;
+
   const scrollToBottom = useCallback(() => {
     follow.current = true;
+    setIsAtBottom(true);
     const virtualList = virtualListRef.current;
     if (!virtualList) return;
-    virtualList.scrollToIndex((logs || placeholderArray).length + 1);
-  }, [logs]);
+    virtualList.scrollToIndex(itemCount - 1, { align: "end" });
+  }, [itemCount]);
 
+  const syncIsAtBottom = useCallback(() => {
+    const virtualList = virtualListRef.current;
+    if (!virtualList) return false;
+    const distanceToBottom =
+      virtualList.scrollSize - virtualList.viewportSize - virtualList.scrollOffset;
+    const atBottom = distanceToBottom < SCROLL_THRESHOLD;
+    setIsAtBottom(atBottom);
+    return atBottom;
+  }, []);
+
+  // isShowingPlaceholders is a dependency because swapping skeletons for log lines
+  // changes the scroll height without changing `logs` and without emitting a scroll
+  // event, so neither the follow nor the jump button can rely on those alone
   useEffect(() => {
     if (lastChange === "prepend") return;
-    if (!follow.current) return;
-    if (!autoFollow) return;
+
+    if (!follow.current || !autoFollow) {
+      syncIsAtBottom();
+      return;
+    }
 
     scrollToBottom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [logs]);
+  }, [logs, isShowingPlaceholders]);
 
   useEffect(() => {
     if (!autoFollow) return;
@@ -194,10 +216,6 @@ function Logs({
     if (!virtualList) return;
 
     const scrollY = virtualList.scrollOffset;
-    const maxScroll = virtualList.scrollSize - virtualList.viewportSize;
-
-    const distanceToBottom = maxScroll - scrollY;
-    const newIsAtBottom = distanceToBottom < SCROLL_THRESHOLD;
 
     // If the user scrolls up, stop following
     if (prevScrollY.current !== null && scrollY < prevScrollY.current) {
@@ -206,11 +224,9 @@ function Logs({
 
     prevScrollY.current = scrollY;
 
+    const newIsAtBottom = syncIsAtBottom();
     if (newIsAtBottom) {
       follow.current = true;
-      setIsAtBottom(true);
-    } else {
-      setIsAtBottom(false);
     }
 
     // eviction would yank away the history the user is reading
@@ -219,7 +235,7 @@ function Logs({
     if (scrollY < FETCH_OLDER_THRESHOLD && hasMoreOlder && !isFetchingOlder) {
       fetchOlder();
     }
-  }, [hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused]);
+  }, [hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused, syncIsAtBottom]);
 
   const throttledOnScroll = useThrottledCallback(onScroll, 50);
 
@@ -248,7 +264,7 @@ function Logs({
         </div>
       );
     }
-    if (!logs || !servicesData) {
+    if (isShowingPlaceholders) {
       return placeholderArray.map((_, index) => (
         <LogLine
           isPlaceholder
@@ -287,7 +303,7 @@ function Logs({
     ];
   }, [
     logs,
-    servicesData,
+    isShowingPlaceholders,
     serviceNamesById,
     containerType,
     error,

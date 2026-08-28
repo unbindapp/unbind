@@ -2,6 +2,7 @@ import {
   logLevels,
   logRangePresets,
   logTypeCapabilities,
+  type TLogRangePreset,
   useLogFilters,
 } from "@/components/logs/log-filters-provider";
 import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider";
@@ -20,6 +21,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -239,29 +242,30 @@ function FilterButton({ className }: { className?: string }) {
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Time Range</DropdownMenuLabel>
+                <DropdownMenuRadioGroup
+                  value={"preset" in range ? range.preset : null}
+                  onValueChange={(preset: TLogRangePreset) => setRange({ preset })}
+                  className="grid w-full grid-cols-4 gap-1.5 px-1.5 pt-1.5"
+                >
+                  {logRangePresets.map((preset) => (
+                    <Button
+                      key={preset}
+                      size="sm"
+                      variant="outline"
+                      render={<DropdownMenuRadioItem hideIndicator value={preset} />}
+                      className="data-checked:border-foreground text-muted-foreground data-checked:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-mono font-semibold"
+                    >
+                      {preset}
+                    </Button>
+                  ))}
+                </DropdownMenuRadioGroup>
                 <div
                   onKeyDown={(e) => {
                     if (e.key === "Escape") return;
                     e.stopPropagation();
                   }}
-                  className="flex w-full flex-col gap-1.5 px-1.5 pt-1.5 pb-1.5"
+                  className="w-full px-1.5 pt-1.5 pb-1.5"
                 >
-                  <div className="grid w-full grid-cols-4 gap-1.5">
-                    {logRangePresets.map((preset) => (
-                      <Button
-                        key={preset}
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        tabIndex={-1}
-                        data-selected={("preset" in range && range.preset === preset) || undefined}
-                        onClick={() => setRange({ preset })}
-                        className="data-selected:border-foreground text-muted-foreground data-selected:text-foreground w-full px-2 py-1.5 font-mono font-semibold"
-                      >
-                        {preset}
-                      </Button>
-                    ))}
-                  </div>
                   <CustomRangeInputs className="pt-1.5" />
                 </div>
               </DropdownMenuGroup>
