@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -46,26 +47,6 @@ func (m *MockReleaseManager) ReleaseURL(version string) string {
 	return args.String(0)
 }
 
-// MockRedisClient is a mock for Redis client
-type MockRedisClient struct {
-	mock.Mock
-}
-
-func (m *MockRedisClient) Get(ctx context.Context, key string) *redis.StringCmd {
-	args := m.Called(ctx, key)
-	return args.Get(0).(*redis.StringCmd)
-}
-
-func (m *MockRedisClient) Set(ctx context.Context, key string, value any, expiration time.Duration) *redis.StatusCmd {
-	args := m.Called(ctx, key, value, expiration)
-	return args.Get(0).(*redis.StatusCmd)
-}
-
-func (m *MockRedisClient) Del(ctx context.Context, keys ...string) *redis.IntCmd {
-	args := m.Called(ctx, keys)
-	return args.Get(0).(*redis.IntCmd)
-}
-
 // UpdaterTestSuite defines the test suite for Updater
 type UpdaterTestSuite struct {
 	suite.Suite
@@ -74,6 +55,7 @@ type UpdaterTestSuite struct {
 	cfg                *config.Config
 	mockK8sClient      *mocks_k8s.KubeClientMock
 	mockReleaseManager *MockReleaseManager
+	miniRedis          *miniredis.Miniredis
 	redisClient        *redis.Client
 }
 
@@ -93,22 +75,24 @@ func (suite *UpdaterTestSuite) TearDownSuite() {
 }
 
 func (suite *UpdaterTestSuite) SetupTest() {
-	// Setup mocks
 	suite.mockK8sClient = &mocks_k8s.KubeClientMock{}
 	suite.mockReleaseManager = &MockReleaseManager{}
 
-	// Create a real Redis client for testing (you might want to use a test instance)
+	var err error
+	suite.miniRedis, err = miniredis.Run()
+	suite.Require().NoError(err)
 	suite.redisClient = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
-		DB:   15, // Use a test database
+		Addr: suite.miniRedis.Addr(),
 	})
+}
 
-	// Reset mock expectations
-	suite.mockK8sClient.ExpectedCalls = nil
-	suite.mockReleaseManager.ExpectedCalls = nil
-
-	// Clear test cache
-	suite.redisClient.FlushDB(suite.ctx)
+func (suite *UpdaterTestSuite) TearDownTest() {
+	if suite.redisClient != nil {
+		suite.redisClient.Close()
+	}
+	if suite.miniRedis != nil {
+		suite.miniRedis.Close()
+	}
 }
 
 // Test New function

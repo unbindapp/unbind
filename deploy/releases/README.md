@@ -46,8 +46,8 @@ the `unbind` and `unbind-operator` images.
 
 The kustomization is rendered by the binary the install is updating *from*, not the target
 version — and a multi-version update path renders every step with that same old binary.
-Updaters before v0.1.23 forced every resource into the system namespace, so until no
-supported update path starts before v0.1.23, a bundle targeting another namespace must
+Updaters before v0.1.26 forced every resource into the system namespace, so until no
+supported update path starts before v0.1.26, a bundle targeting another namespace must
 force it back via its own `transformers:` entry:
 
 ```yaml
