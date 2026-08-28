@@ -55,7 +55,7 @@ type LogStreamInput struct {
 	Since         string    `query:"since" default:"10m" doc:"Duration to look back (e.g., '1h', '30m')"`
 	Limit         int64     `query:"limit" default:"100" doc:"Number of lines to get from the end"`
 	Search        string    `query:"search" doc:"Search expression: bare words (case-insensitive), \"quoted phrases\", AND/OR, -negation, @key:value for JSON fields"`
-	Levels        string    `query:"levels" doc:"Comma-separated log levels to include (debug, info, warn, error)"`
+	Levels        string    `query:"levels" doc:"Comma-separated log levels to include (debug, info, warning, error)"`
 	ServiceIDs    string    `query:"service_ids" doc:"Comma-separated service IDs to include (team/project/environment scope only)"`
 	LastEventID   string    `header:"Last-Event-Id" doc:"Resume cursor (nanosecond timestamp); set automatically by the SSE client on reconnect"`
 }
@@ -69,7 +69,7 @@ type LogQueryInput struct {
 	ServiceID     uuid.UUID          `query:"service_id" required:"false"`
 	DeploymentID  uuid.UUID          `query:"deployment_id" required:"false"`
 	Search        string             `query:"search" doc:"Search expression: bare words (case-insensitive), \"quoted phrases\", AND/OR, -negation, @key:value for JSON fields"`
-	Levels        string             `query:"levels" doc:"Comma-separated log levels to include (debug, info, warn, error)"`
+	Levels        string             `query:"levels" doc:"Comma-separated log levels to include (debug, info, warning, error)"`
 	ServiceIDs    string             `query:"service_ids" doc:"Comma-separated service IDs to include (team/project/environment scope only)"`
 	Start         time.Time          `query:"start" doc:"Start time for the query"`
 	End           time.Time          `query:"end" doc:"End time for the query"`

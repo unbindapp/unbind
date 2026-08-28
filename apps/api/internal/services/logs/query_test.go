@@ -39,13 +39,13 @@ func TestParseLogFilters(t *testing.T) {
 	})
 
 	t.Run("levels parsed", func(t *testing.T) {
-		filters, err := parseLogFilters(models.LogTypeService, "", "error, warn", "")
+		filters, err := parseLogFilters(models.LogTypeService, "", "error, warning", "")
 		require.NoError(t, err)
 		assert.Equal(t, []loki.LogLevel{loki.LogLevelError, loki.LogLevelWarn}, filters.levels)
 	})
 
 	t.Run("all levels normalizes to no filter", func(t *testing.T) {
-		filters, err := parseLogFilters(models.LogTypeService, "", "debug,info,warn,error", "")
+		filters, err := parseLogFilters(models.LogTypeService, "", "debug,info,warning,error", "")
 		require.NoError(t, err)
 		assert.Empty(t, filters.levels)
 	})

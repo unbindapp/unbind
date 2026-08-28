@@ -14,7 +14,7 @@ type LogLevel string
 const (
 	LogLevelDebug LogLevel = "debug"
 	LogLevelInfo  LogLevel = "info"
-	LogLevelWarn  LogLevel = "warn"
+	LogLevelWarn  LogLevel = "warning"
 	LogLevelError LogLevel = "error"
 )
 
@@ -45,7 +45,7 @@ func ParseLogLevel(s string) (LogLevel, bool) {
 		return LogLevelDebug, true
 	case LogLevelInfo:
 		return LogLevelInfo, true
-	case LogLevelWarn:
+	case LogLevelWarn, "warn":
 		return LogLevelWarn, true
 	case LogLevelError:
 		return LogLevelError, true

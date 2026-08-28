@@ -17,6 +17,10 @@ function isLevel(value: string): value is TSearchLogLevel {
   return (LogLevelSchema.options as readonly string[]).includes(value);
 }
 
+function normalizeLevel(value: string): string {
+  return value === "warn" ? "warning" : value;
+}
+
 type TPart = { kind: "term" | "and" | "or"; text: string };
 
 export function parseSearchInput(input: string): TParsedSearchInput {
@@ -81,9 +85,9 @@ export function parseSearchInput(input: string): TParsedSearchInput {
       return result;
     }
     if (key === "level") {
-      const level = value.toLowerCase();
+      const level = normalizeLevel(value.toLowerCase());
       if (!isLevel(level)) {
-        result.error = `Unknown level "${value}" (use debug, info, warn or error)`;
+        result.error = `Unknown level "${value}" (use debug, info, warning or error)`;
         return result;
       }
       if (!result.levels.includes(level)) result.levels.push(level);

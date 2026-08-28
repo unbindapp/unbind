@@ -54,7 +54,7 @@ type TProps = {
 const levelLabels: Record<TLogLevel, string> = {
   debug: "Debug",
   info: "Info",
-  warn: "Warning",
+  warning: "Warning",
   error: "Error",
 };
 
@@ -202,7 +202,7 @@ function FilterButton() {
               >
                 <p
                   data-level={level}
-                  className="data-[level=error]:text-destructive data-[level=warn]:text-warning data-[level=debug]:text-muted-foreground min-w-0 shrink"
+                  className="data-[level=error]:text-destructive data-[level=warning]:text-warning data-[level=debug]:text-muted-foreground min-w-0 shrink"
                 >
                   {levelLabels[level]}
                 </p>

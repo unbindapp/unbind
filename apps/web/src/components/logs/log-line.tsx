@@ -98,12 +98,12 @@ export default function LogLine({
               }
         }
         className={cn(
-          `group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-data-real/line:group-hover/line:bg-border group-data-[level=warn]/line:group-data-real/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/20 group-data-expanded/line:bg-border group-data-[level=warn]/line:group-data-expanded/line:bg-warning/20 group-data-[level=error]/line:group-data-expanded/line:bg-destructive/20 flex w-full cursor-default items-center pl-3 group-data-real/line:cursor-pointer sm:pl-4`,
+          `group-data-[level=warning]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-data-real/line:group-hover/line:bg-border group-data-[level=warning]/line:group-data-real/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/20 group-data-expanded/line:bg-border group-data-[level=warning]/line:group-data-expanded/line:bg-warning/20 group-data-[level=error]/line:group-data-expanded/line:bg-destructive/20 flex w-full cursor-default items-center pl-3 group-data-real/line:cursor-pointer sm:pl-4`,
           classNameInner,
         )}
       >
         <div className="flex shrink-0 self-stretch py-1 pr-1.5">
-          <div className="bg-muted-more-foreground/50 group-data-[level=warn]/line:bg-warning group-data-[level=error]/line:bg-destructive group-data-[level=debug]/line:bg-muted-more-foreground/30 w-0.75 self-stretch rounded-full" />
+          <div className="bg-muted-more-foreground/50 group-data-[level=warning]/line:bg-warning group-data-[level=error]/line:bg-destructive group-data-[level=debug]/line:bg-muted-more-foreground/30 w-0.75 self-stretch rounded-full" />
         </div>
         <div className="flex min-w-0 flex-1 mask-[linear-gradient(to_left,transparent,black_1rem)]">
           <ConditionalScrollArea>
@@ -112,7 +112,7 @@ export default function LogLine({
               {hasExtraColumns && (
                 <div className="sticky left-0 z-10 flex items-center justify-start py-1 group-data-wrap/line:relative group-data-wrap/line:left-auto group-data-wrap/line:w-full md:group-data-wrap/line:w-auto">
                   <div className="bg-background flex min-w-0 flex-1 mask-[linear-gradient(to_left,transparent,black_1rem)] md:min-w-auto">
-                    <div className="bg-background group-data-real/line:group-hover/line:bg-border group-data-expanded/line:bg-border group-data-[level=warn]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-data-[level=warn]/line:group-data-real/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/20 group-data-[level=warn]/line:group-data-expanded/line:bg-warning/20 group-data-[level=error]/line:group-data-expanded/line:bg-destructive/20 flex min-w-0 flex-1 items-center justify-start md:min-w-auto">
+                    <div className="bg-background group-data-real/line:group-hover/line:bg-border group-data-expanded/line:bg-border group-data-[level=warning]/line:bg-warning/10 group-data-[level=error]/line:bg-destructive/10 group-data-[level=warning]/line:group-data-real/line:group-hover/line:bg-warning/20 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/20 group-data-[level=warning]/line:group-data-expanded/line:bg-warning/20 group-data-[level=error]/line:group-data-expanded/line:bg-destructive/20 flex min-w-0 flex-1 items-center justify-start md:min-w-auto">
                       {viewPreferences.includes(logViewPreferenceKeys.timestamp) && (
                         <div className="w-36 min-w-0 shrink overflow-hidden pr-4 pl-1">
                           <p

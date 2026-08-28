@@ -1863,7 +1863,7 @@ export const ListWebhooksResponseBodySchema = z
   })
   .strip();
 
-export const LogLevelSchema = z.enum(['debug', 'info', 'warn', 'error']);
+export const LogLevelSchema = z.enum(['debug', 'info', 'warning', 'error']);
 
 export const LogMetadataSchema = z
   .object({
@@ -3046,7 +3046,7 @@ export const query_logsQuerySchema = z
     service_id: z.string().optional(),
     deployment_id: z.string().optional(),
     search: z.string().optional(), // Search expression: bare words (case-insensitive), "quoted phrases", AND/OR, -negation, @key:value for JSON fields
-    levels: z.string().optional(), // Comma-separated log levels to include (debug, info, warn, error)
+    levels: z.string().optional(), // Comma-separated log levels to include (debug, info, warning, error)
     service_ids: z.string().optional(), // Comma-separated service IDs to include (team/project/environment scope only)
     start: z.string().datetime({ offset: true }).optional(), // Start time for the query
     end: z.string().datetime({ offset: true }).optional(), // End time for the query
@@ -3069,7 +3069,7 @@ export const stream_logsQuerySchema = z
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
     limit: z.number().optional(), // Number of lines to get from the end
     search: z.string().optional(), // Search expression: bare words (case-insensitive), "quoted phrases", AND/OR, -negation, @key:value for JSON fields
-    levels: z.string().optional(), // Comma-separated log levels to include (debug, info, warn, error)
+    levels: z.string().optional(), // Comma-separated log levels to include (debug, info, warning, error)
     service_ids: z.string().optional(), // Comma-separated service IDs to include (team/project/environment scope only)
   })
   .passthrough();

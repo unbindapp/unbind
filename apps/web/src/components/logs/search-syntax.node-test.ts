@@ -26,7 +26,13 @@ test("quoted phrases pass through", () => {
 test("level tokens are extracted", () => {
   const result = parseSearchInput("@level:error timeout @level:WARN");
   assert.equal(result.serverSearch, "timeout");
-  assert.deepEqual(result.levels, ["error", "warn"]);
+  assert.deepEqual(result.levels, ["error", "warning"]);
+});
+
+test("warn is accepted as an alias for warning", () => {
+  const result = parseSearchInput("@level:warning @level:warn");
+  assert.deepEqual(result.levels, ["warning"]);
+  assert.equal(result.error, null);
 });
 
 test("duplicate levels are collapsed", () => {
