@@ -68,6 +68,7 @@ function SearchBar({
 }: TProps) {
   const { search, setSearch } = useLogFilters();
   const [inputValue, setInputValue] = useState(search);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const debouncedSetSearch = useDebouncedCallback(setSearch, defaultDebounceMs);
 
@@ -80,6 +81,14 @@ function SearchBar({
     lastSyncedSearch.current = search;
     setInputValue(search);
   }, [search, debouncedSetSearch]);
+
+  const onClearInput = () => {
+    debouncedSetSearch.cancel();
+    lastSyncedSearch.current = "";
+    setInputValue("");
+    setSearch("");
+    inputRef.current?.focus();
+  };
 
   return (
     <div className={cn("flex w-full flex-col", className)}>
@@ -99,6 +108,7 @@ function SearchBar({
             )}
           </div>
           <Input
+            ref={inputRef}
             value={inputValue}
             type="search"
             onChange={(e) => {
@@ -118,16 +128,25 @@ function SearchBar({
             inputMode="search"
             enterKeyHint="search"
             aria-invalid={searchError ? true : undefined}
-            className="flex-1 rounded-lg py-2.25 pr-22 pl-8.5"
-            placeholder={`Search logs...   e.g. "timeout" -healthz @level:error`}
+            className="flex-1 rounded-lg py-2.25 pr-31 pl-8.5"
+            placeholder={`Search logs: @level:error @service:my-app`}
           />
           <div className="absolute top-0 right-0 flex h-full justify-end">
-            <FilterButton />
+            <Button
+              data-has-value={(inputValue !== undefined && inputValue !== "") || undefined}
+              disabled={inputValue === "" || inputValue === undefined}
+              onClick={onClearInput}
+              variant="ghost"
+              className="text-muted-more-foreground relative z-0 h-full w-10 translate-x-10 rounded-none transition data-has-value:translate-x-0"
+            >
+              <XIcon className="size-4.5" />
+            </Button>
+            <FilterButton className="bg-card z-1 border-t border-b" />
             <SettingsButton
               logType={logType}
               hasLogs={hasLogs}
               getLogsForDownload={getLogsForDownload}
-              className="group/button relative h-auto w-10 rounded-l-none rounded-r-lg border-l"
+              className="bg-card group/button relative z-1 h-auto w-10 rounded-l-none rounded-r-lg border-t border-r border-b border-l"
             />
           </div>
         </form>
@@ -147,7 +166,7 @@ const dropdownCollisionPadding = { top: 16, bottom: 16, left: 8, right: 8 };
 const dropdownItemClassName = "py-3.5 sm:py-2.25";
 const filterCheckboxItemClassName = "py-3 sm:py-2.25";
 
-function FilterButton() {
+function FilterButton({ className }: { className?: string }) {
   const {
     levels,
     setLevels,
@@ -173,7 +192,10 @@ function FilterButton() {
             type="button"
             size="icon"
             variant="ghost"
-            className="relative h-auto w-10 touch-manipulation rounded-none border-l"
+            className={cn(
+              "relative h-auto w-10 touch-manipulation rounded-none border-l",
+              className,
+            )}
           >
             <ActiveDot show={showActiveDot} />
             <FilterIcon
