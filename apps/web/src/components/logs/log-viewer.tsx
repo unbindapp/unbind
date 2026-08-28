@@ -16,7 +16,6 @@ import LogsProvider, {
   TServiceLogsProps,
   useLogs,
 } from "@/components/logs/logs-provider";
-import NavigationBar from "@/components/logs/navigation-bar";
 import SearchBar from "@/components/logs/search-bar";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
@@ -25,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/lib/queries/logs";
-import { ArrowDownIcon, HourglassIcon, LoaderIcon, SearchIcon } from "lucide-react";
+import { ArrowDownIcon, ArrowUpIcon, HourglassIcon, LoaderIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 import { VList, VListHandle } from "virtua";
@@ -344,12 +343,12 @@ function Logs({
         />
       </div>
       {error && logs && logs.length > 0 && (
-        <div className="w-full px-2 pt-1.5 sm:px-2.5 group-data-[container=page]/wrapper:px-[max(0.5rem,calc((100%-80rem-1.25rem)/2))]">
+        <div className="w-full px-2 pt-1.5 group-data-[container=page]/wrapper:px-[max(0.5rem,calc((100%-80rem-1.25rem)/2))] sm:px-2.5">
           <ErrorLine message={error.message} />
         </div>
       )}
       {streamErrorMessage && (
-        <div className="w-full px-2 pt-1.5 sm:px-2.5 group-data-[container=page]/wrapper:px-[max(0.5rem,calc((100%-80rem-1.25rem)/2))]">
+        <div className="w-full px-2 pt-1.5 group-data-[container=page]/wrapper:px-[max(0.5rem,calc((100%-80rem-1.25rem)/2))] sm:px-2.5">
           <ErrorLine message={streamErrorMessage} />
         </div>
       )}
@@ -372,27 +371,30 @@ function Logs({
           streamStatus={streamStatus}
           className="absolute top-2 right-2.5 z-10 sm:right-4"
         />
-        {isLive && !isAtBottom && logs && logs.length > 0 && (
-          <Button
-            type="button"
-            size="sm"
-            onClick={scrollToBottom}
-            className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 gap-1.5 rounded-full shadow-md sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
-          >
-            <ArrowDownIcon className="size-4" />
-            Jump to latest
-          </Button>
+        {logs && logs.length > 0 && (
+          <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]">
+            {(!isAtTop || hasMoreOlder) && <JumpButton direction="up" onClick={scrollToTop} />}
+            {!isAtBottom && <JumpButton direction="down" onClick={scrollToBottom} />}
+          </div>
         )}
-        <NavigationBar
-          data-container={containerType}
-          className="right-2.5 hidden data-[container=page]:bottom-3 data-[container=sheet]:bottom-[calc(0.75rem+var(--safe-area-inset-bottom))] sm:right-4 sm:flex sm:data-[container=page]:bottom-[calc(1rem+var(--safe-area-inset-bottom))] sm:data-[container=sheet]:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
-          isAtBottom={isAtBottom}
-          isAtTop={isAtTop && !hasMoreOlder}
-          scrollToBottom={scrollToBottom}
-          scrollToTop={scrollToTop}
-        />
       </div>
     </div>
+  );
+}
+
+function JumpButton({ direction, onClick }: { direction: "up" | "down"; onClick: () => void }) {
+  const Icon = direction === "up" ? ArrowUpIcon : ArrowDownIcon;
+  return (
+    <Button
+      type="button"
+      size="sm"
+      aria-label={direction === "up" ? "Jump to top" : "Jump to latest"}
+      onClick={onClick}
+      className="gap-1.5 rounded-full shadow-md"
+    >
+      <Icon className="size-4" />
+      Jump
+    </Button>
   );
 }
 
@@ -424,7 +426,7 @@ function StreamStatusChip({
     >
       <div
         data-tone={tone}
-        className="bg-muted-more-foreground size-1.75 rounded-full data-[tone=success]:bg-success data-[tone=success]:animate-pulse data-[tone=warning]:bg-warning data-[tone=warning]:animate-pulse"
+        className="bg-muted-more-foreground data-[tone=success]:bg-success data-[tone=warning]:bg-warning size-1.75 rounded-full data-[tone=success]:animate-pulse data-[tone=warning]:animate-pulse"
       />
       {label}
     </div>
