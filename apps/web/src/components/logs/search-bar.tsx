@@ -228,6 +228,7 @@ function FilterButton() {
                         type="button"
                         size="sm"
                         variant="outline"
+                        tabIndex={-1}
                         data-selected={("preset" in range && range.preset === preset) || undefined}
                         onClick={() => setRange({ preset })}
                         className="data-selected:bg-primary data-selected:text-primary-foreground data-selected:border-primary data-selected:has-hover:hover:bg-primary/85 data-selected:active:bg-primary/85 data-selected:has-hover:hover:text-primary-foreground data-selected:active:text-primary-foreground w-full px-2 py-1.5 font-mono"
@@ -348,6 +349,7 @@ function CustomRangeInputs() {
       <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
         <Input
           type="datetime-local"
+          tabIndex={-1}
           aria-label="From"
           value={fromValue}
           onChange={(e) => applyCustom(e.target.value, toValue)}
@@ -356,6 +358,7 @@ function CustomRangeInputs() {
         <span className="text-muted-foreground shrink-0 text-xs">to</span>
         <Input
           type="datetime-local"
+          tabIndex={-1}
           aria-label="To"
           value={toValue}
           onChange={(e) => applyCustom(fromValue, e.target.value)}
