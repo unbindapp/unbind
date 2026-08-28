@@ -133,5 +133,10 @@
     "version": "v0.1.26",
     "description": "Release 0.1.26",
     "breaking": false
+  },
+  "v0.1.27": {
+    "version": "v0.1.27",
+    "description": "Log search, filtering, and pagination, log viewer UI improvements, and toast improvements",
+    "breaking": false
   }
 }
