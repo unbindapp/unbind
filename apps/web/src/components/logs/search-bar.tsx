@@ -35,6 +35,7 @@ import {
   LoaderIcon,
   RotateCcwIcon,
   SearchIcon,
+  ServerIcon,
   SettingsIcon,
   XIcon,
 } from "lucide-react";
@@ -142,7 +143,7 @@ function SearchBar({
 
 const dropdownCollisionPadding = { top: 16, bottom: 16, left: 8, right: 8 };
 const dropdownItemClassName = "py-3.5 sm:py-2.25";
-const filterCheckboxItemClassName = "py-3 sm:py-1.75";
+const filterCheckboxItemClassName = "py-3 sm:py-2.25";
 
 function FilterButton() {
   const {
@@ -183,11 +184,11 @@ function FilterButton() {
       <DropdownMenuContent
         align="end"
         collisionPadding={dropdownCollisionPadding}
-        className="max-h-[calc(var(--available-height)-3rem)] w-3xl sm:max-h-[min(40rem,calc(var(--available-height)-3rem))] sm:w-80"
+        className="max-h-[calc(var(--available-height)-4rem)] w-3xl sm:max-h-[min(45rem,calc(var(--available-height)-4rem))] sm:w-80"
       >
         <ScrollArea className="min-h-0 shrink" classNameViewport="pb-4">
           <DropdownMenuGroup>
-            <DropdownMenuLabel className="pb-0">Levels</DropdownMenuLabel>
+            <DropdownMenuLabel>Levels</DropdownMenuLabel>
             {logLevels.map((level) => (
               <DropdownMenuCheckboxItem
                 key={level}
@@ -213,7 +214,7 @@ function FilterButton() {
             <>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuLabel className="pb-0">Time Range</DropdownMenuLabel>
+                <DropdownMenuLabel>Time Range</DropdownMenuLabel>
                 <div
                   onKeyDown={(e) => {
                     if (e.key === "Escape") return;
@@ -221,7 +222,7 @@ function FilterButton() {
                   }}
                   className="flex w-full flex-col gap-1.5 px-1.5 pt-1.5 pb-1.5"
                 >
-                  <div className="grid w-full grid-cols-3 gap-1.5">
+                  <div className="grid w-full grid-cols-4 gap-1.5">
                     {logRangePresets.map((preset) => (
                       <Button
                         key={preset}
@@ -231,13 +232,13 @@ function FilterButton() {
                         tabIndex={-1}
                         data-selected={("preset" in range && range.preset === preset) || undefined}
                         onClick={() => setRange({ preset })}
-                        className="data-selected:bg-primary data-selected:text-primary-foreground data-selected:border-primary data-selected:has-hover:hover:bg-primary/85 data-selected:active:bg-primary/85 data-selected:has-hover:hover:text-primary-foreground data-selected:active:text-primary-foreground w-full px-2 py-1.5 font-mono"
+                        className="data-selected:border-foreground text-muted-foreground data-selected:text-foreground w-full px-2 py-1.5 font-mono font-semibold"
                       >
                         {preset}
                       </Button>
                     ))}
                   </div>
-                  <CustomRangeInputs />
+                  <CustomRangeInputs className="pt-1.5" />
                 </div>
               </DropdownMenuGroup>
             </>
@@ -290,13 +291,14 @@ function ServicesFilterGroup({
     <>
       <DropdownMenuSeparator />
       <DropdownMenuGroup>
-        <DropdownMenuLabel className="pb-0">Services</DropdownMenuLabel>
+        <DropdownMenuLabel>Services</DropdownMenuLabel>
         {servicesData.services.length === 0 && (
           <DropdownMenuItem
             disabled
-            className={cn("text-muted-foreground", filterCheckboxItemClassName)}
+            className={cn("text-muted-foreground px-2.5", filterCheckboxItemClassName)}
           >
-            <p className="min-w-0 shrink">No services yet</p>
+            <ServerIcon className="size-4" />
+            <p className="min-w-0 shrink font-normal">No services yet</p>
           </DropdownMenuItem>
         )}
         {servicesData.services.map((service) => (
@@ -325,7 +327,7 @@ function toDatetimeLocal(ms: number | undefined): string {
   return format(new Date(ms), "yyyy-MM-dd'T'HH:mm");
 }
 
-function CustomRangeInputs() {
+function CustomRangeInputs({ className }: { className?: string }) {
   const { range, setRange } = useLogFilters();
   const custom = "preset" in range ? null : range;
 
@@ -353,28 +355,28 @@ function CustomRangeInputs() {
   };
 
   return (
-    <div className="flex w-full flex-col gap-1.5">
+    <div className={cn("flex w-full flex-col gap-1.5", className)}>
       <div className="flex w-full flex-col gap-1.5">
-        <label className="flex w-full items-center gap-2">
-          <span className="text-muted-foreground w-10 shrink-0 text-sm font-medium">From</span>
+        <label className="flex w-full items-center gap-4">
+          <span className="text-muted-foreground w-10 shrink-0 px-1 text-sm font-medium">From</span>
           <Input
             type="datetime-local"
             tabIndex={-1}
             aria-label="From"
             value={fromValue}
             onChange={(e) => applyCustom(e.target.value, toValue)}
-            className="w-full min-w-0 appearance-none px-2.5 py-2"
+            className="bg-background w-full min-w-0 appearance-none px-2.5 py-2"
           />
         </label>
-        <label className="flex w-full items-center gap-2">
-          <span className="text-muted-foreground w-10 shrink-0 text-sm font-medium">To</span>
+        <label className="flex w-full items-center gap-4">
+          <span className="text-muted-foreground w-10 shrink-0 px-1 text-sm font-medium">To</span>
           <Input
             type="datetime-local"
             tabIndex={-1}
             aria-label="To"
             value={toValue}
             onChange={(e) => applyCustom(fromValue, e.target.value)}
-            className="w-full min-w-0 appearance-none px-2.5 py-2"
+            className="bg-background w-full min-w-0 appearance-none px-2.5 py-2"
           />
         </label>
       </div>

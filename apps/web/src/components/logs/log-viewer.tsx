@@ -60,10 +60,7 @@ export default function LogViewer({
   error,
 }: TProps) {
   const typeAndIds:
-    | TEnvironmentLogsProps
-    | TServiceLogsProps
-    | TDeploymentLogsProps
-    | TDeploymentBuildLogsProps =
+    TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps | TDeploymentBuildLogsProps =
     type === "service"
       ? { type: "service", environmentId: environmentId, serviceId }
       : type === "deployment"
@@ -320,15 +317,22 @@ function Logs({
       className="group/wrapper relative flex min-h-0 w-full flex-1 flex-col overflow-hidden"
     >
       {/* Top bar that has the input */}
-      <div className="flex w-full items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
-        <SearchBar
-          logType={type}
-          isPendingLogs={(isPending || isRefreshing) && !error}
-          searchError={searchError}
-          hasLogs={Boolean(logs && logs.length > 0)}
-          getLogsForDownload={getLogsForDownload}
-          className="px-2 pt-2 sm:px-2.5 sm:pt-2.5"
-        />
+      <div className="relative flex w-full items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+        <div className="relative w-full">
+          <SearchBar
+            logType={type}
+            isPendingLogs={(isPending || isRefreshing) && !error}
+            searchError={searchError}
+            hasLogs={Boolean(logs && logs.length > 0)}
+            getLogsForDownload={getLogsForDownload}
+            className="z-20 px-2 pt-2 sm:px-2.5 sm:pt-2.5"
+          />
+          <StreamStatusChip
+            isLive={isLive}
+            streamStatus={streamStatus}
+            className="absolute right-2 bottom-0 z-10 translate-y-[calc(100%+0.5rem)] sm:right-2.5"
+          />
+        </div>
       </div>
       {error && logs && logs.length > 0 && (
         <div className="w-full px-2 pt-1.5 group-data-[container=page]/wrapper:px-[max(0.5rem,calc((100%-80rem-1.25rem)/2))] sm:px-2.5">
@@ -354,11 +358,6 @@ function Logs({
             {listItems}
           </VList>
         </div>
-        <StreamStatusChip
-          isLive={isLive}
-          streamStatus={streamStatus}
-          className="absolute top-2 right-2.5 z-10 sm:right-4"
-        />
         {logs && logs.length > 0 && (
           <Button
             type="button"
@@ -370,46 +369,11 @@ function Logs({
             onClick={scrollToBottom}
             className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] gap-1.5 rounded-full shadow-md transition-transform data-show:translate-y-0 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
           >
-            <ArrowDownIcon className="size-4" />
-            Jump
+            <ArrowDownIcon className="-ml-1.25 size-4" />
+            <span className="min-w-0 shrink truncate">Jump</span>
           </Button>
         )}
       </div>
-    </div>
-  );
-}
-
-function StreamStatusChip({
-  isLive,
-  streamStatus,
-  className,
-}: {
-  isLive: boolean;
-  streamStatus: "idle" | "connecting" | "live" | "reconnecting" | "error";
-  className?: string;
-}) {
-  const { label, tone } = useMemo(() => {
-    if (!isLive) return { label: "Historical", tone: "muted" as const };
-    if (streamStatus === "live") return { label: "Live", tone: "success" as const };
-    if (streamStatus === "reconnecting") return { label: "Reconnecting", tone: "warning" as const };
-    if (streamStatus === "error") return { label: "Disconnected", tone: "warning" as const };
-    if (streamStatus === "idle") return { label: "Paused", tone: "muted" as const };
-    return { label: "Connecting", tone: "muted" as const };
-  }, [isLive, streamStatus]);
-
-  return (
-    <div
-      data-tone={tone}
-      className={cn(
-        "bg-card text-muted-foreground pointer-events-none flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-sans text-xs leading-tight font-medium select-none",
-        className,
-      )}
-    >
-      <div
-        data-tone={tone}
-        className="bg-muted-more-foreground data-[tone=success]:bg-success data-[tone=warning]:bg-warning size-1.75 rounded-full data-[tone=success]:animate-pulse data-[tone=warning]:animate-pulse"
-      />
-      {label}
     </div>
   );
 }
@@ -428,7 +392,7 @@ function OlderLogsIndicator({ isFetching }: { isFetching: boolean }) {
 
 function LogsStartIndicator() {
   return (
-    <div className="text-muted-foreground flex w-full items-center gap-2 pt-3 pr-2.5 pb-2 pl-2 font-mono text-xs sm:pr-3 sm:pl-2.5 group-data-[container=page]/wrapper:xl:pr-[calc(0.75rem-((100vw-80rem)/2))] group-data-[container=page]/wrapper:xl:pl-[calc(0.625rem-((100vw-80rem)/2))]">
+    <div className="text-muted-foreground flex w-full items-center gap-2 pt-2.25 pr-2.5 pb-2 pl-2 font-mono text-xs sm:pr-3 sm:pl-2.5 group-data-[container=page]/wrapper:xl:pr-[calc(0.75rem-((100vw-80rem)/2))] group-data-[container=page]/wrapper:xl:pl-[calc(0.625rem-((100vw-80rem)/2))]">
       <p className="left max-w-[calc(100%-4rem)] shrink-0 rounded-md border px-2 py-1">
         Start of the range
       </p>
@@ -461,5 +425,39 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
         )}
       </p>
     </NoItemsCard>
+  );
+}
+
+export type TLogStreamStatus = "idle" | "connecting" | "live" | "reconnecting" | "error";
+
+function StreamStatusChip({
+  isLive,
+  streamStatus,
+  className,
+}: {
+  isLive: boolean;
+  streamStatus: TLogStreamStatus;
+  className?: string;
+}) {
+  const { label, tone } = useMemo(() => {
+    if (!isLive) return { label: "Historical", tone: "process" as const };
+    if (streamStatus === "live") return { label: "Live", tone: "success" as const };
+    if (streamStatus === "reconnecting") return { label: "Reconnecting", tone: "warning" as const };
+    if (streamStatus === "error") return { label: "Disconnected", tone: "warning" as const };
+    if (streamStatus === "idle") return { label: "Paused", tone: "muted" as const };
+    return { label: "Connecting", tone: "warning" as const };
+  }, [isLive, streamStatus]);
+
+  return (
+    <div
+      data-tone={tone}
+      className={cn(
+        "bg-card text-muted-foreground data-[tone=success]:text-success data-[tone=warning]:text-warning data-[tone=process]:text-process group/chip pointer-events-none flex max-w-[calc(min(30%,10rem))] items-center gap-1.5 rounded-md border px-2.5 py-0.75 font-sans text-sm leading-tight font-semibold select-none",
+        className,
+      )}
+    >
+      <div className="bg-muted-more-foreground group-data-[tone=success]/chip:bg-success group-data-[tone=warning]/chip:bg-warning group-data-[tone=process]/chip:bg-process -ml-0.5 size-1.75 shrink-0 rounded-full" />
+      <p className="min-w-0 shrink truncate">{label}</p>
+    </div>
   );
 }
