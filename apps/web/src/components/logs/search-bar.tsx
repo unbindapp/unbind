@@ -133,9 +133,11 @@ function SearchBar({
         </form>
       </div>
       {searchError && (
-        <p className="text-destructive w-full px-1 pt-1.5 text-xs leading-tight font-medium">
-          {searchError}
-        </p>
+        <div className="w-full py-1.5">
+          <p className="text-warning bg-warning/8 max-w-full rounded-sm px-2.5 py-1 text-xs leading-tight font-medium">
+            {searchError}
+          </p>
+        </div>
       )}
     </div>
   );

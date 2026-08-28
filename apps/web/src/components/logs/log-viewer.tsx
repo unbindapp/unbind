@@ -380,12 +380,14 @@ function Logs({
 
 function OlderLogsIndicator({ isFetching }: { isFetching: boolean }) {
   return (
-    <div className="text-muted-foreground flex w-full items-center justify-center gap-1.5 px-2 py-3 font-sans text-xs">
+    <div className="text-muted-foreground flex w-full items-center justify-center gap-1.5 px-2 pt-4 pb-2.5 font-sans text-xs">
       <LoaderIcon
         data-fetching={isFetching || undefined}
         className="size-3.5 opacity-0 data-fetching:animate-spin data-fetching:opacity-100"
       />
-      <p>{isFetching ? "Loading older logs" : "Scroll up for older logs"}</p>
+      <p className="min-w-0 shrink">
+        {isFetching ? "Loading older logs" : "Scroll up for older logs"}
+      </p>
     </div>
   );
 }
