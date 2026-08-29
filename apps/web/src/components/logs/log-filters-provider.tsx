@@ -30,10 +30,7 @@ export const logTypeCapabilities: Record<
 
 function decodeLevels(value: string | undefined): TLogLevel[] {
   if (!value) return [];
-  return value
-    .split(",")
-    .map((l) => (l === "warn" ? "warning" : l))
-    .filter((l): l is TLogLevel => (logLevels as string[]).includes(l));
+  return value.split(",").filter((l): l is TLogLevel => (logLevels as string[]).includes(l));
 }
 
 function decodeList(value: string | undefined): string[] {

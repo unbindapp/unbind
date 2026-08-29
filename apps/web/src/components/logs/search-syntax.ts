@@ -18,10 +18,6 @@ function isLevel(value: string): value is TSearchLogLevel {
   return (LogLevelSchema.options as readonly string[]).includes(value);
 }
 
-function normalizeLevel(value: string): string {
-  return value === "warn" ? "warning" : value;
-}
-
 /** Undefined means the service list hasn't loaded yet, so assume it resolves. */
 function isKnownService(value: string, known: ReadonlySet<string> | undefined) {
   return !known || known.has(value.toLowerCase());
@@ -118,7 +114,7 @@ export function parseSearchInput(
     // A value we don't recognise isn't an error: the dropdown offers the real
     // ones, and forwarding it as an ordinary term lets the server deal with it
     // rather than blocking the whole search.
-    const level = attribute?.key === "level" ? normalizeLevel(attribute.value.toLowerCase()) : null;
+    const level = attribute?.key === "level" ? attribute.value.toLowerCase() : null;
     const isExtractable =
       attribute !== null &&
       ((attribute.key === "service" && isKnownService(attribute.value, knownServiceTokens)) ||

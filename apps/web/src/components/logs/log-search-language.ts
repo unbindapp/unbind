@@ -103,8 +103,7 @@ function buildAttributeDecorations(view: EditorView) {
 
         const value = node.node.getChild("AttrValue");
         if (!value || name !== "level") return;
-        const raw = view.state.sliceDoc(value.from, value.to).toLowerCase();
-        const mark = levelValue[raw === "warn" ? "warning" : raw];
+        const mark = levelValue[view.state.sliceDoc(value.from, value.to).toLowerCase()];
         if (mark) builder.add(value.from, value.to, mark);
       },
     });

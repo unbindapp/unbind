@@ -47,11 +47,12 @@ func TestDetectLevel(t *testing.T) {
 }
 
 func TestParseLogLevel(t *testing.T) {
-	for _, valid := range []string{"debug", "info", "warning", "warn", "error", " WARN ", "Error"} {
+	for _, valid := range []string{"debug", "info", "warning", " WARNING ", "error", "Error"} {
 		_, ok := ParseLogLevel(valid)
 		assert.True(t, ok, valid)
 	}
-	for _, invalid := range []string{"", "critical", "all"} {
+	// "warn" was the old API's spelling; the level is "warning" now
+	for _, invalid := range []string{"", "warn", "critical", "all"} {
 		_, ok := ParseLogLevel(invalid)
 		assert.False(t, ok, invalid)
 	}

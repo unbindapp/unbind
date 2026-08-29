@@ -636,9 +636,11 @@
     color: var(--warning);
   }
 
+  /* AND/OR are keywords like @level and @service, so they share their color.
+     Color only: bolding shifts the rest of the line the moment the word is
+     recognized. */
   .tok-operator {
-    color: var(--muted-foreground);
-    font-weight: 600;
+    color: var(--process);
   }
 
   .tok-negation {
@@ -757,9 +759,9 @@
   text-overflow: ellipsis;
 }
 
+/* Color only: bolding the match reflows the label as you type. */
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .cm-completionMatchedText {
   text-decoration: none;
-  font-weight: 700;
   color: var(--process);
 }
 

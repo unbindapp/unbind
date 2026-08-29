@@ -45,7 +45,7 @@ func ParseLogLevel(s string) (LogLevel, bool) {
 		return LogLevelDebug, true
 	case LogLevelInfo:
 		return LogLevelInfo, true
-	case LogLevelWarn, "warn":
+	case LogLevelWarn:
 		return LogLevelWarn, true
 	case LogLevelError:
 		return LogLevelError, true

@@ -23,15 +23,16 @@ test("quoted phrases pass through", () => {
   assert.equal(result.error, null);
 });
 
-test("level tokens are extracted", () => {
-  const result = parseSearchInput("@level:error timeout @level:WARN");
+test("level tokens are extracted, case insensitively", () => {
+  const result = parseSearchInput("@level:error timeout @level:WARNING");
   assert.equal(result.serverSearch, "timeout");
   assert.deepEqual(result.levels, ["error", "warning"]);
 });
 
-test("warn is accepted as an alias for warning", () => {
+test("warn is no longer an alias, it is forwarded like any other value", () => {
   const result = parseSearchInput("@level:warning @level:warn");
   assert.deepEqual(result.levels, ["warning"]);
+  assert.equal(result.serverSearch, "@level:warn");
   assert.equal(result.error, null);
 });
 
