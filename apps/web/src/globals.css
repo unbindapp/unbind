@@ -707,6 +707,12 @@
     right: var(--token-field-anchor-right, 0.75rem) !important;
     width: auto !important;
     max-width: none !important;
+
+    /* CodeMirror caps the list at min(700px, 95vw). Once the popup is stretched
+       to the field, that cap leaves dead space down the right-hand side. */
+    & > ul {
+      max-width: none !important;
+    }
   }
 
   /* Clear the whole field rather than just the caret's line. */
@@ -738,6 +744,14 @@
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li[aria-selected] {
   background-color: var(--border);
   color: var(--foreground);
+}
+
+/* The flex layout above defeats CodeMirror's own ellipsis on the li, so the
+   label has to shrink and truncate itself. */
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .cm-completionLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .cm-completionMatchedText {
