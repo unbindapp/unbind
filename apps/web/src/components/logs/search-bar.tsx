@@ -24,6 +24,7 @@ import BrandIcon from "@/components/icons/brand";
 import { IconCache, type TCachedIcon } from "@/components/icons/icon-cache";
 import { iconCompletionAddition } from "@/components/ui/token-field/icon-completion";
 import type { TBufferedLogLine } from "@/components/logs/logs-provider";
+import ServiceIcon from "@/components/service/service-icon";
 import { useServices } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -293,23 +294,27 @@ function FilterButton({ className }: { className?: string }) {
         <ScrollArea className="min-h-0 shrink" classNameViewport="pb-4">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Levels</DropdownMenuLabel>
-            {logLevels.map((level) => (
-              <DropdownMenuCheckboxItem
-                key={level}
-                className={filterCheckboxItemClassName}
-                checked={levels.includes(level)}
-                onCheckedChange={(checked) =>
-                  setLevels(checked ? [...levels, level] : levels.filter((l) => l !== level))
-                }
-              >
-                <p
-                  data-level={level}
-                  className="data-[level=error]:text-destructive data-[level=warning]:text-warning data-[level=debug]:text-muted-foreground min-w-0 shrink"
+            {logLevels.map((level) => {
+              const Icon = levelIcons[level];
+              return (
+                <DropdownMenuCheckboxItem
+                  key={level}
+                  className={filterCheckboxItemClassName}
+                  checked={levels.includes(level)}
+                  onCheckedChange={(checked) =>
+                    setLevels(checked ? [...levels, level] : levels.filter((l) => l !== level))
+                  }
                 >
-                  {levelLabels[level]}
-                </p>
-              </DropdownMenuCheckboxItem>
-            ))}
+                  <div
+                    data-level={level}
+                    className="data-[level=error]:text-destructive data-[level=warning]:text-warning flex min-w-0 shrink items-center gap-2"
+                  >
+                    <Icon className="size-4.5 shrink-0" />
+                    <p className="min-w-0 shrink">{levelLabels[level]}</p>
+                  </div>
+                </DropdownMenuCheckboxItem>
+              );
+            })}
           </DropdownMenuGroup>
           {servicesEnabled && (
             <ServicesFilterGroup serviceIds={serviceIds} setServiceIds={setServiceIds} />
@@ -421,7 +426,10 @@ function ServicesFilterGroup({
               )
             }
           >
-            <p className="min-w-0 truncate">{service.name}</p>
+            <div className="flex min-w-0 shrink items-center gap-2">
+              <ServiceIcon service={service} className="size-4.5 shrink-0" />
+              <p className="min-w-0 truncate">{service.name}</p>
+            </div>
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuGroup>

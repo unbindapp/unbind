@@ -387,16 +387,15 @@ function Logs({
         {logs && logs.length > 0 && (
           <Button
             type="button"
-            size="sm"
+            size="icon"
             aria-label="Jump to latest"
             data-show={!isAtBottom || undefined}
             disabled={isAtBottom}
             fadeOnDisabled={false}
             onClick={scrollToBottom}
-            className="absolute bottom-3 left-1/2 z-10 -translate-x-1/2 translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] gap-1.5 rounded-full shadow-md transition-transform data-show:translate-y-0 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
+            className="absolute bottom-3 left-1/2 z-10 size-9 -translate-x-1/2 translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] rounded-full shadow-md transition-transform data-show:translate-y-0 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
           >
-            <ArrowDownIcon className="-ml-1.25 size-4" />
-            <span className="min-w-0 shrink truncate">Jump</span>
+            <ArrowDownIcon className="size-4" />
           </Button>
         )}
       </div>

@@ -221,7 +221,7 @@ function VariableValueField({ Field, subField, language, referencesDisabled }: T
             variant="outline"
             aria-label="Insert reference"
             onClick={() => fieldRef.current?.insertAndComplete("${")}
-            className="text-muted-foreground focus:ring-primary mt-1 mr-1 mb-auto size-8 rounded-md"
+            className="text-muted-foreground focus:ring-primary mt-1 mr-1 mb-auto h-8 w-9 rounded-md"
           >
             <Link2Icon className="size-4" />
           </Button>
