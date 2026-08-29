@@ -1,0 +1,17 @@
+// Variable values are free text with ${Source.KEY} references embedded.
+// Whether a reference actually resolves is a lookup the app does against the
+// available references; the grammar only cares about the shape.
+//
+// Reference and IncompleteReference overlap by design: maximal munch picks the
+// closed form when a "}" is present, and the open form while it is being typed,
+// which is when completion needs to fire.
+
+@top Value { (Reference | IncompleteReference | Dollar | Text)* }
+
+@tokens {
+  Reference { "${" ![}\n]* "}" }
+  IncompleteReference { "${" ![}\n]* }
+  Dollar { "$" }
+  Text { ![$]+ }
+  @precedence { Reference, IncompleteReference, Dollar }
+}

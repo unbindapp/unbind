@@ -1,0 +1,45 @@
+import { HighlightStyle } from "@codemirror/language";
+import { EditorView } from "@codemirror/view";
+import { tags as t } from "@lezer/highlight";
+
+// Padding lives on the wrapper, not on .cm-content, so long values scroll
+// beside the field's icons and buttons instead of underneath them.
+export const tokenFieldTheme = EditorView.theme({
+  "&": {
+    backgroundColor: "transparent",
+    color: "inherit",
+    fontSize: "inherit",
+    fontFamily: "inherit",
+  },
+  "&.cm-focused": { outline: "none" },
+  ".cm-scroller": {
+    fontFamily: "inherit",
+    lineHeight: "inherit",
+    alignItems: "flex-start",
+  },
+  ".cm-content": {
+    padding: "0",
+    caretColor: "var(--foreground)",
+    minHeight: "auto",
+  },
+  ".cm-line": { padding: "0" },
+  ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--foreground)" },
+  ".cm-placeholder": {
+    color: "color-mix(in oklab, var(--muted-foreground) 75%, transparent)",
+    fontWeight: "500",
+  },
+  "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
+    backgroundColor: "color-mix(in oklab, var(--top-loader) 50%, transparent)",
+  },
+});
+
+// Classes are defined in globals.css so the colors sit next to the Prism token
+// rules the raw variable editor already uses.
+export const tokenFieldHighlightStyle = HighlightStyle.define([
+  { tag: t.propertyName, class: "tok-key" },
+  { tag: t.punctuation, class: "tok-punct" },
+  { tag: t.string, class: "tok-value" },
+  { tag: t.logicOperator, class: "tok-operator" },
+  { tag: t.operator, class: "tok-negation" },
+  { tag: t.invalid, class: "tok-invalid" },
+]);

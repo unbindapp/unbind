@@ -1,0 +1,31 @@
+// Mirrors the server-side tokenizer in
+// apps/api/internal/infrastructure/loki/logql.go, which owns this syntax.
+//
+// Whitespace is a delimiter here, not filler, so there is no skip set and
+// Space is an explicit node. AttrValue is required rather than optional:
+// half-typed input like "@level:" is handled by error recovery, which puts an
+// error node exactly where the completion source needs to resolve.
+
+@precedence { negate @right }
+
+@top Search { (Space | item)* }
+
+item { Attribute | Negated | Phrase | Operator | Term | Minus }
+
+Negated { Minus !negate (Phrase | Term) }
+Attribute { AttrKey Colon AttrValue }
+
+@tokens {
+  Space { $[ \t\n\r]+ }
+  // Matches a bare "@" so a just-typed trigger still resolves to an Attribute
+  AttrKey { "@" $[a-zA-Z0-9_]* }
+  Colon { ":" }
+  AttrValue { ![ \t\n\r":]+ }
+  Phrase { '"' ![\n"]* '"'? }
+  Minus { "-" }
+  Term { ![ \t\n\r"@:-] ![ \t\n\r":]* }
+  @precedence { AttrKey, Term }
+}
+
+Operator { kw<"AND"> | kw<"OR"> }
+kw<term> { @specialize[@name={term}]<Term, term> }

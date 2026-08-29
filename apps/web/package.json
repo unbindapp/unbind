@@ -10,11 +10,19 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "node --test 'src/**/*.node-test.ts'",
-    "generate-sdk": "go -C ../api run ./cmd/openapi > /tmp/unbind-openapi.gen.yaml && node ./scripts/generate-sdk/main.ts -i /tmp/unbind-openapi.gen.yaml"
+    "generate-sdk": "go -C ../api run ./cmd/openapi > /tmp/unbind-openapi.gen.yaml && node ./scripts/generate-sdk/main.ts -i /tmp/unbind-openapi.gen.yaml",
+    "generate-grammars": "lezer-generator --typeScript src/components/logs/log-search.grammar -o src/components/logs/log-search.gen.ts && lezer-generator --typeScript src/components/variables/variable-reference.grammar -o src/components/variables/variable-reference.gen.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
+    "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/commands": "^6.11.0",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/state": "^6.7.1",
+    "@codemirror/view": "^6.43.9",
     "@fortaine/fetch-event-source": "^3.0.6",
+    "@lezer/highlight": "^1.2.3",
+    "@lezer/lr": "^1.4.10",
     "@tanstack/react-form": "^1.33.0",
     "@tanstack/react-hotkeys": "^0.10.0",
     "@tanstack/react-query": "^5.101.0",
@@ -42,7 +50,6 @@
     "react-hotkeys-hook": "^4.6.1",
     "react-scan": "^0.2.4",
     "react-simple-code-editor": "^0.14.1",
-    "react-textarea-autosize": "^8.5.9",
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.2",
     "use-debounce": "^10.0.4",
@@ -60,6 +67,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",
+    "@lezer/generator": "^1.8.0",
     "@tailwindcss/vite": "^4.3.1",
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-plugin": "^1.168.18",

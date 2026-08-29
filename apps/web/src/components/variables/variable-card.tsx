@@ -13,9 +13,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { splitByTokens, TSplitItem, TToken } from "@/components/ui/textarea-with-tokens";
+import { referenceMapFromTokens, type TVariableToken } from "@/components/variables/tokens";
+import {
+  splitByReferences,
+  type TReferencePart,
+} from "@/components/variables/variable-reference-parts";
 import { cn } from "@/components/ui/utils";
-import { getReferenceVariableReadableNames } from "@/components/variables/helpers";
+import { getReferenceVariableReadableNames } from "@/components/variables/tokens";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useVariablesUtils } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -91,58 +95,54 @@ export default function VariableCard({
   const [isValueVisible, setIsValueVisible] = useState(false);
   const [isEditingVariable, setIsEditingVariable] = useState(false);
 
-  const variableValueParts: TSplitItem<TVariableReferenceShallowSource>[] = useMemo(() => {
-    if (isPlaceholder) return [{ value: hiddenString, token: null }];
-    if (variable.variable_type !== "reference") return [{ value: hiddenString, token: null }];
+  const variableValueParts: TReferencePart<TVariableToken<TVariableReferenceShallowSource>>[] =
+    useMemo(() => {
+      const plain = [{ value: hiddenString, from: 0, to: hiddenString.length, reference: null }];
+      if (isPlaceholder) return plain;
+      if (variable.variable_type !== "reference") return plain;
 
-    const sources = variable.sources;
-    const sourceMap = new Map<string, string>();
+      const sources = variable.sources;
+      const sourceMap = new Map<string, string>();
 
-    sources.forEach((source) => {
-      const key = source.key;
-      const { sourceName: _sourceName, readableKey: _readableKey } =
-        getReferenceVariableReadableNames({
-          key,
-          object: source,
-        });
-      const sourceName = _sourceName;
-      let readableKey = _readableKey;
+      sources.forEach((source) => {
+        const key = source.key;
+        const { sourceName: _sourceName, readableKey: _readableKey } =
+          getReferenceVariableReadableNames({
+            key,
+            object: source,
+          });
+        const sourceName = _sourceName;
+        let readableKey = _readableKey;
 
-      const number = 1;
+        if (source.type === "internal_endpoint") {
+          readableKey = source.key.replace(source.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
+        } else if (source.type === "external_endpoint") {
+          readableKey = `UNBIND_EXTERNAL_URL`;
+        }
 
-      if (source.type === "internal_endpoint") {
-        readableKey = source.key.replace(source.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
-        if (number > 1) readableKey += `_${number}`;
-      } else if (source.type === "external_endpoint") {
-        readableKey = `UNBIND_EXTERNAL_URL`;
-        if (number > 1) readableKey += `_${number}`;
-      }
-
-      sourceMap.set(
-        `${tokenPrefix}${source.source_kubernetes_name}.${source.key}${tokenSuffix}`,
-        `${tokenPrefix}${sourceName}.${readableKey}${tokenSuffix}`,
-      );
-    });
-
-    let textValue = variable.value;
-    sourceMap.forEach((readableKey, key) => {
-      textValue = textValue.replaceAll(key, readableKey);
-    });
-
-    const tokens: TToken<TVariableReferenceShallowSource>[] = variable.sources.map((source) => {
-      const value =
-        sourceMap.get(
+        sourceMap.set(
           `${tokenPrefix}${source.source_kubernetes_name}.${source.key}${tokenSuffix}`,
-        ) || "";
-      return {
-        object: source,
-        value,
-      };
-    });
+          `${tokenPrefix}${sourceName}.${readableKey}${tokenSuffix}`,
+        );
+      });
 
-    const splitItems = splitByTokens<TVariableReferenceShallowSource>(textValue, tokens);
-    return splitItems;
-  }, [variable, isPlaceholder]);
+      let textValue = variable.value;
+      sourceMap.forEach((readableKey, key) => {
+        textValue = textValue.replaceAll(key, readableKey);
+      });
+
+      const tokens: TVariableToken<TVariableReferenceShallowSource>[] = variable.sources.map(
+        (source) => ({
+          object: source,
+          value:
+            sourceMap.get(
+              `${tokenPrefix}${source.source_kubernetes_name}.${source.key}${tokenSuffix}`,
+            ) || "",
+        }),
+      );
+
+      return splitByReferences(textValue, referenceMapFromTokens(tokens));
+    }, [variable, isPlaceholder]);
 
   const referenceError =
     variable?.variable_type === "reference" && variable.error ? variable.error : null;
@@ -233,11 +233,11 @@ export default function VariableCard({
                         : variable.variable_type === "reference"
                           ? variableValueParts.map((part, index) => (
                               <span
-                                data-token={part.token !== null || undefined}
+                                data-token={part.reference !== null || undefined}
                                 key={index}
                                 className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-2px data-token:box-decoration-clone data-token:ring-1"
                               >
-                                {part.token !== null ? (
+                                {part.reference !== null ? (
                                   <>
                                     <span className="text-process/50">
                                       {part.value.slice(0, tokenPrefix.length)}

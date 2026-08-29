@@ -10,10 +10,15 @@ import {
 } from "@/components/logs/log-range";
 import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider";
 import {
+  createLogSearchLanguage,
+  type TLogSearchData,
+} from "@/components/logs/log-search-language";
+import {
   logViewPreferenceKeys,
   logViewPreferences,
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
+import { buildServiceTokens } from "@/components/logs/service-tokens";
 import type { TBufferedLogLine } from "@/components/logs/logs-provider";
 import { useServices } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
@@ -31,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import TokenField, { type TTokenFieldHandle } from "@/components/ui/token-field/token-field";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { TLogLevel, TLogType } from "@/lib/queries/logs";
@@ -45,7 +51,7 @@ import {
   SettingsIcon,
   XIcon,
 } from "lucide-react";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 type TProps = {
@@ -72,9 +78,31 @@ function SearchBar({
   getLogsForDownload,
   className,
 }: TProps) {
-  const { search, setSearch } = useLogFilters();
+  const { search, setSearch, servicesEnabled } = useLogFilters();
   const [inputValue, setInputValue] = useState(search);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<TTokenFieldHandle>(null);
+
+  const {
+    query: { data: servicesData },
+  } = useServices();
+
+  // Read through a ref so loading services never rebuilds the editor.
+  const searchDataRef = useRef<TLogSearchData>({
+    levels: logLevels,
+    services: undefined,
+    servicesEnabled,
+  });
+  searchDataRef.current = {
+    levels: logLevels,
+    services: servicesData
+      ? buildServiceTokens(servicesData.services).map((s) => ({
+          token: s.token,
+          detail: s.token === s.name ? undefined : s.name,
+        }))
+      : undefined,
+    servicesEnabled,
+  };
+  const language = useMemo(() => createLogSearchLanguage(() => searchDataRef.current), []);
 
   const debouncedSetSearch = useDebouncedCallback(setSearch, defaultDebounceMs);
 
@@ -113,28 +141,25 @@ function SearchBar({
               <SearchIcon className="size-full" />
             )}
           </div>
-          <Input
+          <TokenField
             ref={inputRef}
             value={inputValue}
-            type="search"
-            onChange={(e) => {
-              setInputValue(e.target.value);
-              lastSyncedSearch.current = e.target.value;
-              if (!e.target.value) {
+            language={language}
+            onSubmit={() => debouncedSetSearch.flush()}
+            onChange={(value) => {
+              setInputValue(value);
+              lastSyncedSearch.current = value;
+              if (!value) {
                 debouncedSetSearch.cancel();
                 setSearch("");
                 return;
               }
-              debouncedSetSearch(e.target.value);
+              debouncedSetSearch(value);
             }}
-            name="search"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="off"
-            inputMode="search"
-            enterKeyHint="search"
-            aria-invalid={searchError ? true : undefined}
-            className="flex-1 rounded-lg py-2.25 pr-31 pl-8.5"
+            ariaLabel="Search logs"
+            ariaInvalid={searchError ? true : undefined}
+            className="flex-1"
+            classNameEditor="py-2.25 pr-31 pl-8.5"
             placeholder={`Search logs: @level:error @service:my-app`}
           />
           <div className="absolute top-0 right-0 flex h-full justify-end">

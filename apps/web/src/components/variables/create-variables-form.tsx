@@ -1,24 +1,25 @@
 import ErrorLine from "@/components/error-line";
-import BrandIcon from "@/components/icons/brand";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
-import { TToken, TTokenProps } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
+import { getVariablesPair } from "@/components/variables/helpers";
 import {
-  getReferenceVariableReadableNames,
-  getVariablesPair,
-} from "@/components/variables/helpers";
+  buildReferenceTokens,
+  type TReferenceExtended,
+  type TVariableToken,
+} from "@/components/variables/tokens";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
-import { VariablesFormField } from "@/components/variables/variables-form-field";
+import {
+  VariablesFormField,
+  type TReferenceProps,
+} from "@/components/variables/variables-form-field";
 import { useVariables } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
-  TAvailableVariableReference,
   TVariableForCreate,
   VariableForCreateSchema,
   VariableReferenceForCreateSchema,
 } from "@/lib/queries/variables";
-import { Link2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "@/components/ui/toast";
@@ -36,11 +37,6 @@ export const CreateVariablesFormSchema = z
     variables: z.array(VariableForCreateSchema).min(1),
   })
   .strip();
-
-type TReferenceExtended = TAvailableVariableReference & {
-  template: string;
-  key: string;
-};
 
 export default function CreateVariablesForm({
   afterSuccessfulSubmit,
@@ -60,69 +56,15 @@ export default function CreateVariablesForm({
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
-  const tokens: TToken<TReferenceExtended>[] | undefined = useMemo(() => {
+  const tokens: TVariableToken<TReferenceExtended>[] | undefined = useMemo(() => {
     if (!variableReferencesData) return undefined;
-    const sourceNameMap = new Map<string, string[]>();
-    const allKeys: TToken<TReferenceExtended>[] = [];
-    for (const obj of variableReferencesData.variables) {
-      obj.keys?.forEach((key, index) => {
-        const { sourceName: _sourceName, readableKey: _readableKey } =
-          getReferenceVariableReadableNames({
-            key,
-            object: obj,
-          });
-        const sourceName = _sourceName;
-        let readableKey = _readableKey;
-
-        const number = index + 1;
-
-        if (!sourceNameMap.has(sourceName)) {
-          sourceNameMap.set(sourceName, [obj.source_kubernetes_name]);
-        } else {
-          const sourceNameList = sourceNameMap.get(sourceName);
-          if (sourceNameList) {
-            sourceNameMap.set(sourceName, [...sourceNameList, obj.source_kubernetes_name]);
-          }
-        }
-
-        const sourceNameIndex = sourceNameMap
-          .get(obj.source_name)
-          ?.indexOf(obj.source_kubernetes_name);
-
-        const sourceNameSuffix =
-          sourceNameIndex !== undefined && sourceNameIndex >= 1 ? `(${sourceNameIndex + 1})` : "";
-
-        if (obj.type === "internal_endpoint") {
-          if (number > 1) readableKey += `_${number}`;
-        } else if (obj.type === "external_endpoint") {
-          if (number > 1) readableKey += `_${number}`;
-        }
-
-        allKeys.push({
-          value: `\${${sourceName}${sourceNameSuffix}.${readableKey}}`,
-          Icon: ({ className }: { className?: string }) => (
-            <BrandIcon color="brand" brand={obj.source_icon} className={className} />
-          ),
-          object: { ...obj, template: `\${${obj.source_kubernetes_name}.${key}}`, key },
-        });
-      });
-    }
-    return allKeys;
+    return buildReferenceTokens(variableReferencesData.variables);
   }, [variableReferencesData]);
 
-  const tokenProps: TTokenProps<TReferenceExtended> = useMemo(() => {
-    if (tokensDisabled) return { tokensDisabled: true };
-    return {
-      tokenPrefix: "${",
-      tokenSuffix: "}",
-      tokens: tokens,
-      tokensNoneAvailableMessage: "No references available yet",
-      tokensNoMatchingMessage: "No matching references",
-      tokensErrorMessage: variableReferencesError?.message || null,
-      dropdownButtonText: "Reference",
-      DropdownButtonIcon: Link2Icon,
-    };
-  }, [tokensDisabled, tokens, variableReferencesError]);
+  const referenceProps: TReferenceProps = useMemo(
+    () => (tokensDisabled ? { tokens: [], disabled: true } : { tokens }),
+    [tokensDisabled, tokens],
+  );
 
   const form = useAppForm({
     defaultValues: {
@@ -194,7 +136,7 @@ export default function CreateVariablesForm({
           form.handleSubmit(e);
         }}
       >
-        <VariablesFormField form={form} tokenProps={tokenProps} />
+        <VariablesFormField form={form} referenceProps={referenceProps} />
         <div className="bg-card flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:mt-3.5 md:p-2.5">
           {createOrUpdateVariablesError && (
             <ErrorLine message={createOrUpdateVariablesError.message} />

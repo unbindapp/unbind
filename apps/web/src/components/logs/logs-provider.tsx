@@ -4,6 +4,7 @@ import { useLogFilters } from "@/components/logs/log-filters-provider";
 import { defaultLogRange, isLiveRange, resolveLogRange } from "@/components/logs/log-range";
 import { logLineKey } from "@/components/logs/log-utils";
 import { parseSearchInput } from "@/components/logs/search-syntax";
+import { buildServiceTokens, findServiceByToken } from "@/components/logs/service-tokens";
 import { useServices } from "@/components/service/services-provider";
 import { useAppConfig } from "@/components/providers/app-config-provider";
 import useLogStream from "@/lib/hooks/use-log-stream";
@@ -225,11 +226,10 @@ export const LogsProvider: React.FC<TProps> = ({
       };
     }
     const merged = new Set<string>(serviceIds);
+    const serviceTokens = buildServiceTokens(servicesData?.services ?? []);
     let unknown: string | null = null;
     for (const name of parsedSearch.serviceNames) {
-      const service = servicesData?.services.find(
-        (s) => s.name.toLowerCase() === name.toLowerCase(),
-      );
+      const service = findServiceByToken(serviceTokens, name);
       if (!service) {
         unknown = name;
         continue;

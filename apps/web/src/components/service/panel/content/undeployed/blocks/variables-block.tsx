@@ -1,20 +1,23 @@
-import BrandIcon from "@/components/icons/brand";
+import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
-import { TToken, TTokenProps } from "@/components/ui/textarea-with-tokens";
 import { cn } from "@/components/ui/utils";
-import { getReferenceVariableReadableNames } from "@/components/variables/helpers";
+import {
+  buildReferenceTokens,
+  type TReferenceExtended,
+  type TVariableToken,
+} from "@/components/variables/tokens";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import {
-  TReferenceExtended,
   VariablesFormField,
   variablesFormFieldDefaultVariables,
+  type TReferenceProps,
 } from "@/components/variables/variables-form-field";
 import { withForm } from "@/lib/hooks/use-app-form";
 import { useStore } from "@tanstack/react-form";
-import { ChevronDownIcon, KeyIcon, Link2Icon } from "lucide-react";
+import { ChevronDownIcon, KeyIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-type TOnTokensChanged = (tokens: TToken<TReferenceExtended>[] | undefined) => void;
+type TOnTokensChanged = (tokens: TVariableToken<TReferenceExtended>[] | undefined) => void;
 
 const VariablesBlock = withForm({
   defaultValues: {
@@ -37,72 +40,16 @@ const VariablesBlock = withForm({
       if (variableErrors && variableErrors.length > 0) setIsOpen(true);
     }, [variableErrors]);
 
-    const tokens: TToken<TReferenceExtended>[] | undefined = useMemo(() => {
+    const tokens: TVariableToken<TReferenceExtended>[] | undefined = useMemo(() => {
       if (!variableReferencesData) return undefined;
-      const sourceNameMap = new Map<string, string[]>();
-      const allKeys: TToken<TReferenceExtended>[] = [];
-      for (const obj of variableReferencesData.variables) {
-        obj.keys?.forEach((key, index) => {
-          const { sourceName: _sourceName, readableKey: _readableKey } =
-            getReferenceVariableReadableNames({
-              key,
-              object: obj,
-            });
-          const sourceName = _sourceName;
-          let readableKey = _readableKey;
-
-          const number = index + 1;
-
-          if (!sourceNameMap.has(sourceName)) {
-            sourceNameMap.set(sourceName, [obj.source_kubernetes_name]);
-          } else {
-            const sourceNameList = sourceNameMap.get(sourceName);
-            if (sourceNameList) {
-              sourceNameMap.set(sourceName, [...sourceNameList, obj.source_kubernetes_name]);
-            }
-          }
-
-          const sourceNameIndex = sourceNameMap
-            .get(obj.source_name)
-            ?.indexOf(obj.source_kubernetes_name);
-
-          const sourceNameSuffix =
-            sourceNameIndex !== undefined && sourceNameIndex >= 1 ? `(${sourceNameIndex + 1})` : "";
-
-          if (obj.type === "internal_endpoint") {
-            if (number > 1) readableKey += `_${number}`;
-          } else if (obj.type === "external_endpoint") {
-            if (number > 1) readableKey += `_${number}`;
-          }
-
-          allKeys.push({
-            value: `\${${sourceName}${sourceNameSuffix}.${readableKey}}`,
-            Icon: ({ className }: { className?: string }) => (
-              <BrandIcon color="brand" brand={obj.source_icon} className={className} />
-            ),
-            object: { ...obj, template: `\${${obj.source_kubernetes_name}.${key}}`, key },
-          });
-        });
-      }
-      return allKeys;
+      return buildReferenceTokens(variableReferencesData.variables);
     }, [variableReferencesData]);
 
     useEffect(() => {
       onTokensChanged?.(tokens);
     }, [tokens, onTokensChanged]);
 
-    const tokenProps: TTokenProps<TReferenceExtended> = useMemo(() => {
-      return {
-        tokenPrefix: "${",
-        tokenSuffix: "}",
-        tokens: tokens,
-        tokensNoneAvailableMessage: "No references available yet",
-        tokensNoMatchingMessage: "No matching references",
-        tokensErrorMessage: variableReferencesError?.message || null,
-        dropdownButtonText: "Reference",
-        DropdownButtonIcon: Link2Icon,
-      };
-    }, [tokens, variableReferencesError]);
+    const referenceProps: TReferenceProps = useMemo(() => ({ tokens }), [tokens]);
 
     return (
       <div
@@ -122,7 +69,12 @@ const VariablesBlock = withForm({
         </Button>
         {isOpen && (
           <div className="flex w-full flex-col pb-1 md:pt-1 md:pb-3.5">
-            <VariablesFormField form={form} tokenProps={tokenProps} />
+            {variableReferencesError && (
+              <div className="px-3 pb-1 md:px-4">
+                <ErrorLine message={variableReferencesError.message} />
+              </div>
+            )}
+            <VariablesFormField form={form} referenceProps={referenceProps} />
           </div>
         )}
       </div>

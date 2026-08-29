@@ -1,10 +1,10 @@
-import { splitByTokens, TToken } from "@/components/ui/textarea-with-tokens";
-import { TReferenceExtended } from "@/components/variables/variables-form-field";
-import {
-  TAvailableVariableReference,
+// Relative imports so this can run under `node --test`.
+import { referenceMapFromTokens, type TReferenceExtended, type TVariableToken } from "./tokens.ts";
+import { splitByReferences } from "./variable-reference-parts.ts";
+import type {
   TVariableForCreate,
   TVariableReferenceForCreate,
-} from "@/lib/queries/variables";
+} from "../../lib/queries/variables.ts";
 
 export function unwrapQuotes(value: string) {
   let newValue = value;
@@ -27,74 +27,47 @@ export function getVariablesFromRawText(text: string) {
   return pairs;
 }
 
-export function getReferenceVariableReadableNames({
-  key,
-  object,
-}: {
-  key: string;
-  object: Pick<TAvailableVariableReference, "source_name"> &
-    Pick<TAvailableVariableReference, "source_type"> &
-    Pick<TAvailableVariableReference, "type"> &
-    Pick<TAvailableVariableReference, "source_kubernetes_name">;
-}) {
-  let readableKey = key;
-
-  if (object.type === "internal_endpoint") {
-    readableKey = key.replace(object.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
-  } else if (object.type === "external_endpoint") {
-    readableKey = `UNBIND_EXTERNAL_URL`;
-  }
-
-  let sourceName = object.source_name;
-
-  if (object.source_type === "team") sourceName = "Team";
-  else if (object.source_type === "project") sourceName = "Project";
-  else if (object.source_type === "environment") sourceName = "Environment";
-
-  return {
-    readableKey,
-    sourceName,
-  };
-}
-
 export function getVariablesPair({
   variables,
   tokens,
 }: {
   variables: TVariableForCreate[];
-  tokens: TToken<TReferenceExtended>[];
+  tokens: readonly TVariableToken<TReferenceExtended>[];
 }) {
-  const variablesWithTokens = variables.map((v) => ({
+  const referencesByValue = referenceMapFromTokens(tokens);
+  const variablesWithParts = variables.map((v) => ({
     name: v.name,
-    value: splitByTokens(v.value, tokens),
+    parts: splitByReferences(v.value, referencesByValue),
   }));
 
-  const variablesRegular: TVariableForCreate[] = variablesWithTokens
-    .filter((v) => v.value.every((v) => v.token === null))
-    .map((v) => ({ name: v.name, value: v.value.map((i) => i.value).join("") }));
+  const variablesRegular: TVariableForCreate[] = variablesWithParts
+    .filter((v) => v.parts.every((p) => p.reference === null))
+    .map((v) => ({ name: v.name, value: v.parts.map((p) => p.value).join("") }));
 
-  const variableReferences: TVariableReferenceForCreate[] = variablesWithTokens
-    .filter((v) => v.value.some((v) => v.token !== null))
+  const variableReferences: TVariableReferenceForCreate[] = variablesWithParts
+    .filter((v) => v.parts.some((p) => p.reference !== null))
     .map((v) => {
       // TODO: Filter to only unique sources
-      const sources: TVariableReferenceForCreate["sources"] = v.value
-        .filter((i) => i.token !== null)
-        .map((i) => {
-          const t = i.token!;
+      const sources: TVariableReferenceForCreate["sources"] = v.parts
+        .filter((p) => p.reference !== null)
+        .map((p) => {
+          const object = p.reference!.object;
           return {
-            key: t.object.key,
-            type: t.object.type,
-            source_id: t.object.source_id,
-            source_kubernetes_name: t.object.source_kubernetes_name,
-            source_type: t.object.source_type,
-            source_name: t.object.source_name,
-            source_icon: t.object.source_icon,
+            key: object.key,
+            type: object.type,
+            source_id: object.source_id,
+            source_kubernetes_name: object.source_kubernetes_name,
+            source_type: object.source_type,
+            source_name: object.source_name,
+            source_icon: object.source_icon,
           };
         });
 
       return {
         name: v.name,
-        value: v.value.map((i) => (i.token !== null ? i.token.object.template : i.value)).join(""),
+        value: v.parts
+          .map((p) => (p.reference !== null ? p.reference.object.template : p.value))
+          .join(""),
         sources,
       };
     });

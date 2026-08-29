@@ -2,8 +2,7 @@ import { useDeploymentsUtils } from "@/components/deployment/deployments-provide
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useService } from "@/components/service/service-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
-import { TToken } from "@/components/ui/textarea-with-tokens";
-import { TReferenceExtended } from "@/components/variables/variables-form-field";
+import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
 import { useVariablesUtils } from "@/components/variables/variables-provider";
 import { createDeployment as createDeploymentFn } from "@/lib/queries/deployments";
 import { updateService as updateServiceFn } from "@/lib/queries/services";
@@ -47,10 +46,13 @@ export default function useCreateFirstDeployment() {
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
-  const tokensRef = useRef<TToken<TReferenceExtended>[] | undefined>(undefined);
-  const onTokensChanged = useCallback((tokens: TToken<TReferenceExtended>[] | undefined) => {
-    tokensRef.current = tokens;
-  }, []);
+  const tokensRef = useRef<TVariableToken<TReferenceExtended>[] | undefined>(undefined);
+  const onTokensChanged = useCallback(
+    (tokens: TVariableToken<TReferenceExtended>[] | undefined) => {
+      tokensRef.current = tokens;
+    },
+    [],
+  );
 
   const obj = useMemo(
     () => ({

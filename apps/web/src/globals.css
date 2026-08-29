@@ -615,6 +615,33 @@
     color: color-mix(in oklab, var(--foreground) 75%, transparent);
   }
 
+  /* Token field syntax colors, kept in step with the Prism tokens above. */
+  .tok-key {
+    color: var(--process);
+  }
+
+  .tok-punct {
+    color: color-mix(in oklab, var(--process) 50%, transparent);
+  }
+
+  .tok-value {
+    color: var(--success);
+  }
+
+  .tok-operator {
+    color: var(--muted-foreground);
+    font-weight: 600;
+  }
+
+  .tok-negation {
+    color: var(--destructive);
+  }
+
+  .tok-invalid {
+    color: var(--destructive);
+    text-decoration: underline wavy;
+  }
+
   input[type="checkbox"],
   label {
     touch-action: manipulation;
@@ -659,4 +686,59 @@
    to match so the padding strip blends seamlessly with the terminal background. */
 .xterm .xterm-viewport {
   background-color: var(--background) !important;
+}
+
+/* CodeMirror injects its own tooltip styles unlayered, so these rules stay
+   unlayered too and lean on the extra .token-field-tooltip class to win. */
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 15px -3px color-mix(in oklab, var(--shadow-color) 10%, transparent);
+  overflow: hidden;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul {
+  font-family: inherit;
+  max-height: 16rem;
+  min-width: 12rem;
+  padding: 0.25rem;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: calc(var(--radius) - 2px);
+  line-height: 1.2;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li[aria-selected] {
+  background-color: var(--border);
+  color: var(--foreground);
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .cm-completionMatchedText {
+  text-decoration: none;
+  font-weight: 700;
+  color: var(--process);
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .cm-completionDetail {
+  margin-left: auto;
+  padding-left: 0.75rem;
+  font-style: normal;
+  font-size: 0.875em;
+  color: var(--muted-more-foreground);
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .token-field-option-level {
+  font-weight: 600;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .token-field-option-pending {
+  color: var(--muted-foreground);
+  pointer-events: none;
 }

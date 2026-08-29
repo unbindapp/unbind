@@ -23,7 +23,8 @@ import { Input, InputProps } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider, SliderProps } from "@/components/ui/slider";
-import TextareaWithTokens, { TTextareaWithTokensProps } from "@/components/ui/textarea-with-tokens";
+import TokenFieldFallback from "@/components/ui/token-field/token-field-fallback";
+import type { TTokenFieldProps } from "@/components/ui/token-field/token-field";
 import { cn } from "@/components/ui/utils";
 import { appLocale } from "@/lib/constants";
 import {
@@ -33,7 +34,7 @@ import {
   useStore,
 } from "@tanstack/react-form";
 import { CheckIcon, RotateCcwIcon } from "lucide-react";
-import { FC, ReactElement, useCallback, useMemo, useRef, useState } from "react";
+import { FC, lazy, ReactElement, Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 const { fieldContext, formContext } = createFormHookContexts();
@@ -106,7 +107,17 @@ function InputWithInfo({
   );
 }
 
-function TextareaWithTokensWithInfo<T>({
+const TokenFieldLazy = lazy(() => import("@/components/ui/token-field/token-field"));
+
+function TokenField(props: TTokenFieldProps) {
+  return (
+    <Suspense fallback={<TokenFieldFallback {...props} />}>
+      <TokenFieldLazy {...props} />
+    </Suspense>
+  );
+}
+
+function TokenFieldWithInfo({
   className,
   hideError,
   field,
@@ -114,17 +125,17 @@ function TextareaWithTokensWithInfo<T>({
   classNameInfo,
   dontCheckUntilSubmit,
   ...rest
-}: TTextareaWithTokensProps<T> & TFieldProps) {
+}: TTokenFieldProps & TFieldProps) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
 
   if (hideError) {
-    return <TextareaWithTokens {...rest} className={cn("w-full", className, classNameInput)} />;
+    return <TokenField {...rest} className={cn("w-full", className, classNameInput)} />;
   }
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <TextareaWithTokens {...rest} className={cn("w-full", classNameInput)} />
+      <TokenField {...rest} className={cn("w-full", classNameInput)} />
       {(field.state.meta.isTouched || isFormSubmitted) &&
       (field.state.meta.isBlurred || isFormSubmitted) &&
       (!dontCheckUntilSubmit || isFormSubmitted) &&
@@ -783,7 +794,7 @@ export const { useAppForm, withForm } = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
     AsyncInputWithItems,
-    TextareaWithTokens: TextareaWithTokensWithInfo,
+    TokenField: TokenFieldWithInfo,
     DomainInput,
     StorageSizeInput,
     AsyncAndSearchableSelect,

@@ -1,0 +1,210 @@
+import {
+  tokenFieldAutocomplete,
+  type TCompletionAddition,
+} from "@/components/ui/token-field/autocomplete";
+import { tokenFieldHighlightStyle, tokenFieldTheme } from "@/components/ui/token-field/theme";
+import {
+  tokenFieldEditorClassName,
+  tokenFieldWrapperClassName,
+} from "@/components/ui/token-field/styles";
+import { cn } from "@/components/ui/utils";
+import { history, historyKeymap, standardKeymap } from "@codemirror/commands";
+import { type LanguageSupport, syntaxHighlighting } from "@codemirror/language";
+import { Compartment, EditorState, type Extension } from "@codemirror/state";
+import { startCompletion } from "@codemirror/autocomplete";
+import { EditorView, keymap, placeholder as placeholderExt } from "@codemirror/view";
+import { useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from "react";
+
+export type TTokenFieldHandle = {
+  focus: () => void;
+  /** Inserts at the cursor and opens the dropdown, for trigger buttons. */
+  insertAndComplete: (text: string) => void;
+};
+
+export type TTokenFieldProps = {
+  value: string;
+  onChange: (value: string) => void;
+  /** Omitted for a plain field with no highlighting or completion. */
+  language?: LanguageSupport;
+  onSubmit?: () => void;
+  onBlur?: () => void;
+  placeholder?: string;
+  multiline?: boolean;
+  /** Extra DOM injected into each completion option, e.g. an icon. */
+  completionAdditions?: TCompletionAddition[];
+  ariaLabel?: string;
+  ariaInvalid?: boolean;
+  disabled?: boolean;
+  /** Rendered inside the field box, after the editor. */
+  trailing?: ReactNode;
+  className?: string;
+  classNameEditor?: string;
+  ref?: Ref<TTokenFieldHandle>;
+};
+
+// Pasting multiple lines into a one-line field flattens instead of being dropped.
+const singleLineFilter = EditorState.transactionFilter.of((tr) => {
+  if (!tr.docChanged) return tr;
+  if (tr.newDoc.lines <= 1) return tr;
+
+  const flattened = tr.newDoc.toString().replace(/\s*\r?\n\s*/g, " ");
+  return {
+    changes: { from: 0, to: tr.startState.doc.length, insert: flattened },
+    selection: { anchor: Math.min(tr.newSelection.main.head, flattened.length) },
+  };
+});
+
+export default function TokenField({
+  value,
+  onChange,
+  language,
+  onSubmit,
+  onBlur,
+  placeholder,
+  multiline,
+  completionAdditions,
+  ariaLabel,
+  ariaInvalid,
+  disabled,
+  trailing,
+  className,
+  classNameEditor,
+  ref,
+}: TTokenFieldProps) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<EditorView | null>(null);
+  const languageCompartment = useRef(new Compartment());
+  const editableCompartment = useRef(new Compartment());
+
+  // Latest values without re-creating the editor on every render.
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const onSubmitRef = useRef(onSubmit);
+  onSubmitRef.current = onSubmit;
+  const onBlurRef = useRef(onBlur);
+  onBlurRef.current = onBlur;
+  // Tracks the value both sides agree on, so neither direction echoes the other.
+  const syncedValueRef = useRef(value);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => viewRef.current?.focus(),
+      insertAndComplete: (text: string) => {
+        const view = viewRef.current;
+        if (!view) return;
+        const at = view.state.selection.main;
+        view.dispatch({
+          changes: { from: at.from, to: at.to, insert: text },
+          selection: { anchor: at.from + text.length },
+        });
+        view.focus();
+        startCompletion(view);
+      },
+    }),
+    [],
+  );
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    const extensions: Extension[] = [
+      history(),
+      keymap.of([
+        ...(multiline
+          ? []
+          : [
+              {
+                key: "Enter",
+                run: () => {
+                  onSubmitRef.current?.();
+                  return true;
+                },
+              },
+            ]),
+        ...historyKeymap,
+        ...standardKeymap,
+      ]),
+      languageCompartment.current.of(language ?? []),
+      editableCompartment.current.of(EditorView.editable.of(!disabled)),
+      syntaxHighlighting(tokenFieldHighlightStyle),
+      tokenFieldAutocomplete(completionAdditions),
+      tokenFieldTheme,
+      EditorView.contentAttributes.of({
+        spellcheck: "false",
+        autocorrect: "off",
+        autocapitalize: "off",
+        enterkeyhint: multiline ? "enter" : "search",
+        ...(ariaLabel ? { "aria-label": ariaLabel } : {}),
+      }),
+      EditorView.domEventHandlers({
+        blur: () => {
+          onBlurRef.current?.();
+          return false;
+        },
+      }),
+      EditorView.updateListener.of((update) => {
+        if (!update.docChanged) return;
+        const next = update.state.doc.toString();
+        if (next === syncedValueRef.current) return;
+        syncedValueRef.current = next;
+        onChangeRef.current(next);
+      }),
+      ...(multiline ? [EditorView.lineWrapping] : [singleLineFilter]),
+    ];
+
+    const view = new EditorView({
+      state: EditorState.create({
+        doc: value,
+        extensions: placeholder ? [...extensions, placeholderExt(placeholder)] : extensions,
+      }),
+      parent: host,
+    });
+    viewRef.current = view;
+
+    return () => {
+      view.destroy();
+      viewRef.current = null;
+    };
+    // The editor is created once; live updates flow through the effects below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [multiline, placeholder, ariaLabel, completionAdditions]);
+
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    view.dispatch({ effects: languageCompartment.current.reconfigure(language ?? []) });
+  }, [language]);
+
+  // Adopt writes that came from outside the field (navigation, reset, clear).
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    if (value === syncedValueRef.current) return;
+    syncedValueRef.current = value;
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: value },
+      selection: { anchor: Math.min(view.state.selection.main.anchor, value.length) },
+    });
+  }, [value]);
+
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    view.dispatch({
+      effects: editableCompartment.current.reconfigure(EditorView.editable.of(!disabled)),
+    });
+  }, [disabled]);
+
+  return (
+    <div
+      data-disabled={disabled || undefined}
+      aria-invalid={ariaInvalid || undefined}
+      className={cn(tokenFieldWrapperClassName, className)}
+    >
+      <div ref={hostRef} className={cn(tokenFieldEditorClassName, classNameEditor)} />
+      {trailing}
+    </div>
+  );
+}

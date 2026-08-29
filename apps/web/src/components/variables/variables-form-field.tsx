@@ -1,33 +1,50 @@
 import { Button } from "@/components/ui/button";
-import { TTokenProps } from "@/components/ui/textarea-with-tokens";
+import type { TTokenFieldHandle, TTokenFieldProps } from "@/components/ui/token-field/token-field";
+import { BrandIconCache } from "@/components/variables/brand-icon-cache";
+import {
+  createVariableReferenceLanguage,
+  referenceCompletionIcon,
+  type TVariableReferenceData,
+} from "@/components/variables/variable-reference-language";
+import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
 import { withForm } from "@/lib/hooks/use-app-form";
-import { TAvailableVariableReference, TVariableForCreate } from "@/lib/queries/variables";
+import type { LanguageSupport } from "@codemirror/language";
+import type { AnyFieldApi } from "@tanstack/react-form";
+import { TVariableForCreate } from "@/lib/queries/variables";
 import { InfoIcon, Link2Icon, PlusIcon, Trash2Icon } from "lucide-react";
-import { useCallback } from "react";
+import { useCallback, useMemo, useRef, type FC } from "react";
 
-const tokenProps: TTokenProps<TReferenceExtended> = {
-  tokens: [],
-  tokenPrefix: "${",
-  tokenSuffix: "}",
-  tokensNoneAvailableMessage: "No references available yet",
-  tokensNoMatchingMessage: "No matching references",
-  dropdownButtonText: "Reference",
-  DropdownButtonIcon: Link2Icon,
-  tokensErrorMessage: null,
+export type TReferenceProps = {
+  /** undefined while references are loading */
+  tokens: readonly TVariableToken<TReferenceExtended>[] | undefined;
+  /** References are unavailable in this scope, so the field is plain text. */
+  disabled?: boolean;
 };
 
 export const variablesFormFieldDefaultVariables: TVariableForCreate[] = [{ name: "", value: "" }];
 
-const props: {
-  tokenProps: TTokenProps<TReferenceExtended>;
-} = { tokenProps };
+const completionAdditions = [referenceCompletionIcon];
+
+const props: { referenceProps: TReferenceProps } = { referenceProps: { tokens: [] } };
 
 export const VariablesFormField = withForm({
   defaultValues: {
     variables: variablesFormFieldDefaultVariables,
   },
   props,
-  render: function Render({ form, tokenProps }) {
+  render: function Render({ form, referenceProps }) {
+    const dataRef = useRef<TVariableReferenceData<TReferenceExtended>>({ tokens: undefined });
+    dataRef.current = { tokens: referenceProps.tokens };
+    const language = useMemo(() => createVariableReferenceLanguage(() => dataRef.current), []);
+
+    const brands = useMemo(() => {
+      const distinct = new Set<string>();
+      for (const token of referenceProps.tokens ?? []) {
+        if (token.brand) distinct.add(token.brand);
+      }
+      return [...distinct];
+    }, [referenceProps.tokens]);
+
     const onPaste = useCallback(
       (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
         const clipboardData = e.clipboardData;
@@ -67,6 +84,7 @@ export const VariablesFormField = withForm({
         mode="array"
         children={(field) => (
           <div className="flex w-full flex-col items-start gap-2">
+            {!referenceProps.disabled && <BrandIconCache brands={brands} />}
             {/* All secret rows */}
             <div className="flex w-full flex-col items-start gap-1">
               {field.state.value.map((_, i) => {
@@ -102,28 +120,14 @@ export const VariablesFormField = withForm({
                         }}
                       </form.AppField>
                       <form.AppField key={`variables[${i}].value`} name={`variables[${i}].value`}>
-                        {(subField) => {
-                          return (
-                            <field.TextareaWithTokens
-                              {...tokenProps}
-                              dontCheckUntilSubmit
-                              field={subField}
-                              value={subField.state.value}
-                              onBlur={subField.handleBlur}
-                              onChange={(e) => subField.handleChange(e.target.value)}
-                              classNameTextarea="font-mono"
-                              classNameDropdownContent="font-mono"
-                              className="flex-1"
-                              placeholder={
-                                tokenProps.tokensDisabled ? "Value" : "Value or ${Reference}"
-                              }
-                              autoCapitalize="off"
-                              autoCorrect="off"
-                              autoComplete="off"
-                              spellCheck="false"
-                            />
-                          );
-                        }}
+                        {(subField) => (
+                          <VariableValueField
+                            Field={field.TokenField}
+                            subField={subField}
+                            language={language}
+                            referencesDisabled={referenceProps.disabled}
+                          />
+                        )}
                       </form.AppField>
                       <form.Subscribe
                         selector={(state) => ({ firstVariable: state.values.variables[0] })}
@@ -179,6 +183,48 @@ export const VariablesFormField = withForm({
   },
 });
 
+type TValueFieldProps = {
+  Field: FC<TTokenFieldProps & { field: AnyFieldApi; dontCheckUntilSubmit?: boolean }>;
+  subField: AnyFieldApi;
+  language: LanguageSupport;
+  referencesDisabled?: boolean;
+};
+
+function VariableValueField({ Field, subField, language, referencesDisabled }: TValueFieldProps) {
+  const fieldRef = useRef<TTokenFieldHandle>(null);
+
+  return (
+    <Field
+      dontCheckUntilSubmit
+      ref={fieldRef}
+      field={subField}
+      value={subField.state.value}
+      onBlur={subField.handleBlur}
+      onChange={(value) => subField.handleChange(value)}
+      language={referencesDisabled ? undefined : language}
+      completionAdditions={referencesDisabled ? undefined : completionAdditions}
+      multiline
+      trailing={
+        referencesDisabled ? undefined : (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => fieldRef.current?.insertAndComplete("${")}
+            className="text-muted-foreground focus:ring-primary mt-1 mr-1 mb-auto h-8 max-w-1/2 gap-1 px-2 text-left font-semibold"
+          >
+            <Link2Icon className="size-4" />
+            <p className="min-w-0 shrink truncate px-0.5 leading-tight">Reference</p>
+          </Button>
+        )
+      }
+      classNameEditor="font-mono max-h-35 overflow-auto"
+      className="flex-1"
+      placeholder={referencesDisabled ? "Value" : "Value or ${Reference}"}
+    />
+  );
+}
+
 export function getVariablesFromRawText(text: string) {
   const cleaned = text.trim();
   const lines = cleaned ? cleaned.split("\n") : [];
@@ -200,7 +246,4 @@ export function unwrapQuotes(value: string) {
   return newValue;
 }
 
-export type TReferenceExtended = TAvailableVariableReference & {
-  template: string;
-  key: string;
-};
+export type { TReferenceExtended };
