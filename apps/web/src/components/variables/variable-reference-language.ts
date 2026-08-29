@@ -1,6 +1,6 @@
 import { resolveReferenceTarget } from "@/components/variables/variable-reference-completion";
 import type { TVariableToken } from "@/components/variables/tokens";
-import type { TBrandedCompletion } from "@/components/ui/token-field/brand-completion";
+import type { TIconCompletion } from "@/components/ui/token-field/icon-completion";
 import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { LanguageSupport, LRLanguage, syntaxTree } from "@codemirror/language";
 import { RangeSetBuilder } from "@codemirror/state";
@@ -75,9 +75,9 @@ function completionAt<T>(
     };
   }
 
-  const options: TBrandedCompletion[] = data.tokens.map((token) => ({
+  const options: TIconCompletion[] = data.tokens.map((token) => ({
     label: token.value,
-    brand: token.brand,
+    iconKey: token.brand,
     type: "reference",
   }));
 

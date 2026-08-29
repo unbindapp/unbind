@@ -11,6 +11,7 @@ import {
 import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider";
 import {
   createLogSearchLanguage,
+  levelIconKey,
   type TLogSearchData,
 } from "@/components/logs/log-search-language";
 import {
@@ -19,8 +20,9 @@ import {
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
 import { buildServiceTokens, toServiceToken } from "@/components/logs/service-tokens";
-import { BrandIconCache } from "@/components/icons/brand-icon-cache";
-import { brandCompletionIcon } from "@/components/ui/token-field/brand-completion";
+import BrandIcon from "@/components/icons/brand";
+import { IconCache, type TCachedIcon } from "@/components/icons/icon-cache";
+import { iconCompletionAddition } from "@/components/ui/token-field/icon-completion";
 import type { TBufferedLogLine } from "@/components/logs/logs-provider";
 import { useServices } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
@@ -44,16 +46,20 @@ import { defaultDebounceMs } from "@/lib/constants";
 import { TLogLevel, TLogType } from "@/lib/queries/logs";
 import { format } from "date-fns";
 import {
+  BugIcon,
+  CircleAlertIcon,
   DownloadIcon,
   FilterIcon,
+  InfoIcon,
   LoaderIcon,
   RotateCcwIcon,
   SearchIcon,
   ServerIcon,
   SettingsIcon,
+  TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState, type FC } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
 type TProps = {
@@ -65,7 +71,21 @@ type TProps = {
   className?: string;
 };
 
-const completionAdditions = [brandCompletionIcon];
+const completionAdditions = [iconCompletionAddition];
+
+const levelIcons: Record<TLogLevel, FC<{ className?: string }>> = {
+  debug: BugIcon,
+  info: InfoIcon,
+  warning: CircleAlertIcon,
+  error: TriangleAlertIcon,
+};
+
+// The option's own class carries the color, and the icons stroke with
+// currentColor, so both stay in step.
+const levelIconNodes: TCachedIcon[] = logLevels.map((level) => {
+  const Icon = levelIcons[level];
+  return { key: levelIconKey(level), node: <Icon className="size-4.5 shrink-0" /> };
+});
 
 const levelLabels: Record<TLogLevel, string> = {
   debug: "Debug",
@@ -116,7 +136,16 @@ function SearchBar({
     servicesEnabled,
   };
 
-  const brands = useMemo(() => [...new Set(serviceIconsById.values())], [serviceIconsById]);
+  const icons: TCachedIcon[] = useMemo(
+    () => [
+      ...levelIconNodes,
+      ...[...new Set(serviceIconsById.values())].map((brand) => ({
+        key: brand,
+        node: <BrandIcon color="brand" brand={brand} className="size-4.5 shrink-0" />,
+      })),
+    ],
+    [serviceIconsById],
+  );
   const language = useMemo(() => createLogSearchLanguage(() => searchDataRef.current), []);
 
   const debouncedSetSearch = useDebouncedCallback(setSearch, defaultDebounceMs);
@@ -156,7 +185,7 @@ function SearchBar({
               <SearchIcon className="size-full" />
             )}
           </div>
-          <BrandIconCache brands={brands} />
+          <IconCache icons={icons} />
           <TokenField
             ref={inputRef}
             value={inputValue}

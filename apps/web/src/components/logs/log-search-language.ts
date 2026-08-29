@@ -1,10 +1,13 @@
 import type { TChainedCompletion } from "@/components/ui/token-field/autocomplete";
-import type { TBrandedCompletion } from "@/components/ui/token-field/brand-completion";
+import type { TIconCompletion } from "@/components/ui/token-field/icon-completion";
 import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { LanguageSupport, LRLanguage } from "@codemirror/language";
 import { styleTags, tags as t } from "@lezer/highlight";
 import { resolveCompletionTarget } from "./log-search-completion";
 import { parser } from "./log-search.gen";
+
+/** Namespaced so a service brand can never collide with a level. */
+export const levelIconKey = (level: string) => `level:${level}`;
 
 // Keys the client resolves itself; anything else is forwarded to the server.
 export const clientAttributeKeys = ["level", "service"] as const;
@@ -63,7 +66,11 @@ function completionAt(context: CompletionContext, data: TLogSearchData): Complet
     return {
       from: target.from,
       to: target.to,
-      options: data.levels.map((level) => ({ label: level, type: "level" })),
+      options: data.levels.map((level) => ({
+        label: level,
+        iconKey: levelIconKey(level),
+        type: `level-${level}`,
+      })),
       validFor: /^[^\s":]*$/,
     };
   }
@@ -72,10 +79,10 @@ function completionAt(context: CompletionContext, data: TLogSearchData): Complet
     if (!data.servicesEnabled) return null;
     // undefined while services are still loading: no menu rather than a wrong one
     if (!data.services) return null;
-    const options: TBrandedCompletion[] = data.services.map((service) => ({
+    const options: TIconCompletion[] = data.services.map((service) => ({
       label: service.token,
       detail: service.detail,
-      brand: service.brand,
+      iconKey: service.brand,
       type: "service",
     }));
     return { from: target.from, to: target.to, options, validFor: /^[^\s":]*$/ };

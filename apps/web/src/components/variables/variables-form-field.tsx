@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import type { TTokenFieldHandle, TTokenFieldProps } from "@/components/ui/token-field/token-field";
-import { BrandIconCache } from "@/components/icons/brand-icon-cache";
-import { brandCompletionIcon } from "@/components/ui/token-field/brand-completion";
+import BrandIcon from "@/components/icons/brand";
+import { IconCache, type TCachedIcon } from "@/components/icons/icon-cache";
+import { iconCompletionAddition } from "@/components/ui/token-field/icon-completion";
 import {
   createVariableReferenceLanguage,
   type TVariableReferenceData,
@@ -23,7 +24,7 @@ export type TReferenceProps = {
 
 export const variablesFormFieldDefaultVariables: TVariableForCreate[] = [{ name: "", value: "" }];
 
-const completionAdditions = [brandCompletionIcon];
+const completionAdditions = [iconCompletionAddition];
 
 const props: { referenceProps: TReferenceProps } = { referenceProps: { tokens: [] } };
 
@@ -42,12 +43,15 @@ export const VariablesFormField = withForm({
       [referenceProps.tokens],
     );
 
-    const brands = useMemo(() => {
+    const icons: TCachedIcon[] = useMemo(() => {
       const distinct = new Set<string>();
       for (const token of referenceProps.tokens ?? []) {
         if (token.brand) distinct.add(token.brand);
       }
-      return [...distinct];
+      return [...distinct].map((brand) => ({
+        key: brand,
+        node: <BrandIcon color="brand" brand={brand} className="size-4.5 shrink-0" />,
+      }));
     }, [referenceProps.tokens]);
 
     const onPaste = useCallback(
@@ -89,7 +93,7 @@ export const VariablesFormField = withForm({
         mode="array"
         children={(field) => (
           <div className="flex w-full flex-col items-start gap-2">
-            {!referenceProps.disabled && <BrandIconCache brands={brands} />}
+            {!referenceProps.disabled && <IconCache icons={icons} />}
             {/* All secret rows */}
             <div className="flex w-full flex-col items-start gap-1">
               {field.state.value.map((_, i) => {
