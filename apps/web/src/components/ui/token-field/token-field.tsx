@@ -42,6 +42,9 @@ export type TTokenFieldProps = {
   ref?: Ref<TTokenFieldHandle>;
 };
 
+// Matches the sideOffset our Popover and DropdownMenu use.
+const anchorGap = 4;
+
 // Pasting multiple lines into a one-line field flattens instead of being dropped.
 const singleLineFilter = EditorState.transactionFilter.of((tr) => {
   if (!tr.docChanged) return tr;
@@ -100,6 +103,21 @@ export default function TokenField({
     style.setProperty(
       "--token-field-anchor-right",
       `${Math.round(window.innerWidth - rect.right)}px`,
+    );
+
+    // CodeMirror anchors the dropdown to the caret's line, so it lands inside
+    // the field. These are the extra offsets needed to clear the whole box,
+    // expressed as margins so they hold whether the tooltip is positioned
+    // fixed (desktop) or absolute (iOS).
+    const view = viewRef.current;
+    const caret = view?.coordsAtPos(view.state.selection.main.head);
+    style.setProperty(
+      "--token-field-anchor-gap-below",
+      `${Math.round(caret ? rect.bottom - caret.bottom + anchorGap : anchorGap)}px`,
+    );
+    style.setProperty(
+      "--token-field-anchor-gap-above",
+      `${Math.round(caret ? -(caret.top - rect.top + anchorGap) : -anchorGap)}px`,
     );
   };
 
@@ -166,7 +184,14 @@ export default function TokenField({
         },
       }),
       EditorView.updateListener.of((update) => {
-        if (update.focusChanged || update.geometryChanged) publishAnchorInsets();
+        if (
+          update.focusChanged ||
+          update.geometryChanged ||
+          update.docChanged ||
+          update.selectionSet
+        ) {
+          publishAnchorInsets();
+        }
         if (!update.docChanged) return;
         const next = update.state.doc.toString();
         if (next === syncedValueRef.current) return;

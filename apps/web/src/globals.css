@@ -708,6 +708,15 @@
     width: auto !important;
     max-width: none !important;
   }
+
+  /* Clear the whole field rather than just the caret's line. */
+  &.cm-tooltip-below {
+    margin-top: var(--token-field-anchor-gap-below, 0px);
+  }
+
+  &.cm-tooltip-above {
+    margin-top: var(--token-field-anchor-gap-above, 0px);
+  }
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul {
