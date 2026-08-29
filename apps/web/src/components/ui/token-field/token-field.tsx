@@ -72,6 +72,7 @@ export default function TokenField({
   ref,
 }: TTokenFieldProps) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const languageCompartment = useRef(new Compartment());
   const editableCompartment = useRef(new Compartment());
@@ -87,6 +88,20 @@ export default function TokenField({
   const completionAdditionsRef = useRef(completionAdditions);
   // Tracks the value both sides agree on, so neither direction echoes the other.
   const syncedValueRef = useRef(value);
+
+  // The dropdown renders in the body, so it can't inherit the field's width.
+  // Publishing the focused field's insets lets the mobile CSS line the two up.
+  const publishAnchorInsets = () => {
+    const element = wrapperRef.current;
+    if (!element) return;
+    const rect = element.getBoundingClientRect();
+    const style = document.documentElement.style;
+    style.setProperty("--token-field-anchor-left", `${Math.round(rect.left)}px`);
+    style.setProperty(
+      "--token-field-anchor-right",
+      `${Math.round(window.innerWidth - rect.right)}px`,
+    );
+  };
 
   useImperativeHandle(
     ref,
@@ -151,6 +166,7 @@ export default function TokenField({
         },
       }),
       EditorView.updateListener.of((update) => {
+        if (update.focusChanged || update.geometryChanged) publishAnchorInsets();
         if (!update.docChanged) return;
         const next = update.state.doc.toString();
         if (next === syncedValueRef.current) return;
@@ -205,6 +221,7 @@ export default function TokenField({
 
   return (
     <div
+      ref={wrapperRef}
       data-disabled={disabled || undefined}
       aria-invalid={ariaInvalid || undefined}
       className={cn(tokenFieldWrapperClassName, className)}
