@@ -51,5 +51,4 @@ export const tokenFieldHighlightStyle = HighlightStyle.define([
   { tag: t.string, class: "tok-value" },
   { tag: t.logicOperator, class: "tok-operator" },
   { tag: t.operator, class: "tok-negation" },
-  { tag: t.invalid, class: "tok-invalid" },
 ]);

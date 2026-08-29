@@ -637,11 +637,6 @@
     color: var(--destructive);
   }
 
-  .tok-invalid {
-    color: var(--destructive);
-    text-decoration: underline wavy;
-  }
-
   input[type="checkbox"],
   label {
     touch-action: manipulation;

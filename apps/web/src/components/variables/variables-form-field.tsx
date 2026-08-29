@@ -35,7 +35,12 @@ export const VariablesFormField = withForm({
   render: function Render({ form, referenceProps }) {
     const dataRef = useRef<TVariableReferenceData<TReferenceExtended>>({ tokens: undefined });
     dataRef.current = { tokens: referenceProps.tokens };
-    const language = useMemo(() => createVariableReferenceLanguage(() => dataRef.current), []);
+    // Rebuilt when the reference list arrives so already-typed values re-colour.
+    const language = useMemo(
+      () => createVariableReferenceLanguage(() => dataRef.current),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [referenceProps.tokens],
+    );
 
     const brands = useMemo(() => {
       const distinct = new Set<string>();
