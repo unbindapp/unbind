@@ -12,7 +12,7 @@ import { history, historyKeymap, standardKeymap } from "@codemirror/commands";
 import { type LanguageSupport, syntaxHighlighting } from "@codemirror/language";
 import { Compartment, EditorState, type Extension } from "@codemirror/state";
 import { startCompletion } from "@codemirror/autocomplete";
-import { EditorView, keymap, placeholder as placeholderExt } from "@codemirror/view";
+import { EditorView, keymap, placeholder as placeholderExt, tooltips } from "@codemirror/view";
 import { useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from "react";
 
 export type TTokenFieldHandle = {
@@ -83,6 +83,8 @@ export default function TokenField({
   onSubmitRef.current = onSubmit;
   const onBlurRef = useRef(onBlur);
   onBlurRef.current = onBlur;
+  // Static config, read once: reacting to it would rebuild the whole editor.
+  const completionAdditionsRef = useRef(completionAdditions);
   // Tracks the value both sides agree on, so neither direction echoes the other.
   const syncedValueRef = useRef(value);
 
@@ -129,7 +131,11 @@ export default function TokenField({
       languageCompartment.current.of(language ?? []),
       editableCompartment.current.of(EditorView.editable.of(!disabled)),
       syntaxHighlighting(tokenFieldHighlightStyle),
-      tokenFieldAutocomplete(completionAdditions),
+      tokenFieldAutocomplete(completionAdditionsRef.current),
+      // CodeMirror falls back to absolute tooltip positioning on iOS, where an
+      // ancestor's overflow:hidden then clips the dropdown. Rendering into the
+      // body escapes every clipping ancestor.
+      tooltips({ parent: document.body }),
       tokenFieldTheme,
       EditorView.contentAttributes.of({
         spellcheck: "false",
@@ -169,7 +175,7 @@ export default function TokenField({
     };
     // The editor is created once; live updates flow through the effects below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multiline, placeholder, ariaLabel, completionAdditions]);
+  }, [multiline, placeholder, ariaLabel]);
 
   useEffect(() => {
     const view = viewRef.current;

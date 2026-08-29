@@ -18,7 +18,7 @@ import {
   logViewPreferences,
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
-import { buildServiceTokens } from "@/components/logs/service-tokens";
+import { buildServiceTokens, toServiceToken } from "@/components/logs/service-tokens";
 import type { TBufferedLogLine } from "@/components/logs/logs-provider";
 import { useServices } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
@@ -97,7 +97,9 @@ function SearchBar({
     services: servicesData
       ? buildServiceTokens(servicesData.services).map((s) => ({
           token: s.token,
-          detail: s.token === s.name ? undefined : s.name,
+          // only worth showing when characters were rewritten ("Web App" ->
+          // "Web-App"); a uniqueness suffix speaks for itself
+          detail: toServiceToken(s.name) === s.name ? undefined : s.name,
         }))
       : undefined,
     servicesEnabled,

@@ -81,6 +81,23 @@ test("parts always rebuild the original value", () => {
   }
 });
 
+test("a bare dollar opens the dropdown", () => {
+  assert.deepEqual(resolveReferenceTarget("$", 1), { from: 0, to: 1 });
+  assert.deepEqual(resolveReferenceTarget("prefix $", 8), { from: 7, to: 8 });
+});
+
+test("a dollar only counts with the cursor right after it", () => {
+  // cursor before the $ in "a$b"
+  assert.equal(resolveReferenceTarget("a$b", 1), null);
+  // cursor after the b
+  assert.equal(resolveReferenceTarget("a$b", 3), null);
+});
+
+test("typing past a dollar closes it again", () => {
+  assert.equal(resolveReferenceTarget("$5", 2), null);
+  assert.equal(resolveReferenceTarget("costs $5 today", 14), null);
+});
+
 test("completion opens inside a reference being typed", () => {
   assert.deepEqual(resolveReferenceTarget("${", 2), { from: 0, to: 2 });
   assert.deepEqual(resolveReferenceTarget("${Post", 6), { from: 0, to: 6 });

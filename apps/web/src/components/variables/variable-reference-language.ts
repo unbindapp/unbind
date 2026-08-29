@@ -48,7 +48,7 @@ function completionAt<T>(
     from: target.from,
     to: target.to,
     options,
-    validFor: /^\$\{[^}\n]*$/,
+    validFor: /^\$\{?[^}\n]*$/,
   };
 }
 
