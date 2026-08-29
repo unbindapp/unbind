@@ -19,6 +19,8 @@ import {
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
 import { buildServiceTokens, toServiceToken } from "@/components/logs/service-tokens";
+import { BrandIconCache } from "@/components/icons/brand-icon-cache";
+import { brandCompletionIcon } from "@/components/ui/token-field/brand-completion";
 import type { TBufferedLogLine } from "@/components/logs/logs-provider";
 import { useServices } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
@@ -63,6 +65,8 @@ type TProps = {
   className?: string;
 };
 
+const completionAdditions = [brandCompletionIcon];
+
 const levelLabels: Record<TLogLevel, string> = {
   debug: "Debug",
   info: "Info",
@@ -86,6 +90,12 @@ function SearchBar({
     query: { data: servicesData },
   } = useServices();
 
+  const serviceIconsById = useMemo(() => {
+    const icons = new Map<string, string>();
+    for (const service of servicesData?.services ?? []) icons.set(service.id, service.config.icon);
+    return icons;
+  }, [servicesData]);
+
   // Read through a ref so loading services never rebuilds the editor.
   const searchDataRef = useRef<TLogSearchData>({
     levels: logLevels,
@@ -100,10 +110,13 @@ function SearchBar({
           // only worth showing when characters were rewritten ("Web App" ->
           // "Web-App"); a uniqueness suffix speaks for itself
           detail: toServiceToken(s.name) === s.name ? undefined : s.name,
+          brand: serviceIconsById.get(s.id),
         }))
       : undefined,
     servicesEnabled,
   };
+
+  const brands = useMemo(() => [...new Set(serviceIconsById.values())], [serviceIconsById]);
   const language = useMemo(() => createLogSearchLanguage(() => searchDataRef.current), []);
 
   const debouncedSetSearch = useDebouncedCallback(setSearch, defaultDebounceMs);
@@ -143,6 +156,7 @@ function SearchBar({
               <SearchIcon className="size-full" />
             )}
           </div>
+          <BrandIconCache brands={brands} />
           <TokenField
             ref={inputRef}
             value={inputValue}
@@ -158,6 +172,7 @@ function SearchBar({
               }
               debouncedSetSearch(value);
             }}
+            completionAdditions={completionAdditions}
             ariaLabel="Search logs"
             ariaInvalid={searchError ? true : undefined}
             className="flex-1"

@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import type { TTokenFieldHandle, TTokenFieldProps } from "@/components/ui/token-field/token-field";
-import { BrandIconCache } from "@/components/variables/brand-icon-cache";
+import { BrandIconCache } from "@/components/icons/brand-icon-cache";
+import { brandCompletionIcon } from "@/components/ui/token-field/brand-completion";
 import {
   createVariableReferenceLanguage,
-  referenceCompletionIcon,
   type TVariableReferenceData,
 } from "@/components/variables/variable-reference-language";
 import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
@@ -23,7 +23,7 @@ export type TReferenceProps = {
 
 export const variablesFormFieldDefaultVariables: TVariableForCreate[] = [{ name: "", value: "" }];
 
-const completionAdditions = [referenceCompletionIcon];
+const completionAdditions = [brandCompletionIcon];
 
 const props: { referenceProps: TReferenceProps } = { referenceProps: { tokens: [] } };
 

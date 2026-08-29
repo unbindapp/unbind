@@ -1,12 +1,10 @@
-import { cloneBrandIcon } from "@/components/variables/brand-icon-cache";
 import { resolveReferenceTarget } from "@/components/variables/variable-reference-completion";
 import type { TVariableToken } from "@/components/variables/tokens";
-import type { Completion, CompletionContext, CompletionResult } from "@codemirror/autocomplete";
+import type { TBrandedCompletion } from "@/components/ui/token-field/brand-completion";
+import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { LanguageSupport, LRLanguage } from "@codemirror/language";
 import { styleTags, tags as t } from "@lezer/highlight";
 import { parser } from "./variable-reference.gen";
-
-export type TBrandedCompletion = Completion & { brand?: string };
 
 export type TVariableReferenceData<T> = {
   /** undefined while references are still loading */
@@ -63,8 +61,3 @@ export function createVariableReferenceLanguage<T>(getData: () => TVariableRefer
     }),
   );
 }
-
-export const referenceCompletionIcon = {
-  position: 20,
-  render: (completion: Completion) => cloneBrandIcon((completion as TBrandedCompletion).brand),
-};

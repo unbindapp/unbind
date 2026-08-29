@@ -1,4 +1,5 @@
 import type { TChainedCompletion } from "@/components/ui/token-field/autocomplete";
+import type { TBrandedCompletion } from "@/components/ui/token-field/brand-completion";
 import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { LanguageSupport, LRLanguage } from "@codemirror/language";
 import { styleTags, tags as t } from "@lezer/highlight";
@@ -14,6 +15,8 @@ export type TServiceCompletion = {
   token: string;
   /** Shown next to the token, e.g. the real name when it differs. */
   detail?: string;
+  /** Brand key for the option's icon. */
+  brand?: string;
 };
 
 export type TLogSearchData = {
@@ -69,16 +72,13 @@ function completionAt(context: CompletionContext, data: TLogSearchData): Complet
     if (!data.servicesEnabled) return null;
     // undefined while services are still loading: no menu rather than a wrong one
     if (!data.services) return null;
-    return {
-      from: target.from,
-      to: target.to,
-      options: data.services.map((service) => ({
-        label: service.token,
-        detail: service.detail,
-        type: "service",
-      })),
-      validFor: /^[^\s":]*$/,
-    };
+    const options: TBrandedCompletion[] = data.services.map((service) => ({
+      label: service.token,
+      detail: service.detail,
+      brand: service.brand,
+      type: "service",
+    }));
+    return { from: target.from, to: target.to, options, validFor: /^[^\s":]*$/ };
   }
 
   return null;

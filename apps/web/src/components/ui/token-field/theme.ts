@@ -27,6 +27,12 @@ export const tokenFieldTheme = EditorView.theme({
     minHeight: "auto",
   },
   ".cm-line": { padding: "0" },
+  // CodeMirror puts a 1em, text-top aligned buffer <img> beside every widget,
+  // which makes the placeholder's line one pixel taller than a line of text and
+  // shows up as the field twitching on first keystroke. The placeholder is the
+  // only widget these fields use, and it needs no cursor affordance, so drop it
+  // there only.
+  ".cm-line:has(.cm-placeholder) .cm-widgetBuffer": { display: "none" },
   ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--foreground)" },
   ".cm-placeholder": {
     color: "color-mix(in oklab, var(--muted-foreground) 75%, transparent)",
