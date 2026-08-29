@@ -15,7 +15,7 @@ import {
   TDeploymentShallow,
 } from "@/lib/queries/deployments";
 import { TServiceShallow } from "@/lib/queries/services";
-import { GlobeOffIcon, HistoryIcon, RocketIcon, ServerIcon } from "lucide-react";
+import { HistoryIcon, PowerIcon, RocketIcon, ServerIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useInstanceHealth } from "@/components/instances/instance-health-provider";
 import { useMutation } from "@tanstack/react-query";
@@ -172,12 +172,14 @@ function NoActiveDeploymentCard() {
   });
 
   return (
-    <NoItemsCard Icon={GlobeOffIcon}>
+    <NoItemsCard Icon={PowerIcon}>
       <p className="w-full leading-tight">There is no active deployment</p>
       {error && <ErrorLine className="mt-2" message={error.message} />}
       <Button
         className="mt-2"
-        onClick={() => deploy({ teamId, projectId, environmentId, serviceId, skipBuildCache: true })}
+        onClick={() =>
+          deploy({ teamId, projectId, environmentId, serviceId, skipBuildCache: true })
+        }
         isPending={isPending}
       >
         Deploy
