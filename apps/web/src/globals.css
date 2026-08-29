@@ -697,6 +697,16 @@
   border-radius: var(--radius);
   box-shadow: 0 10px 15px -3px color-mix(in oklab, var(--shadow-color) 10%, transparent);
   overflow: hidden;
+
+  /* On phones the caret-anchored popup reads badly and can sit off-centre, so
+     it spans the screen with equal gutters like a normal dropdown. These need
+     !important to beat CodeMirror's inline positioning. */
+  @variant max-sm {
+    left: 0.75rem !important;
+    right: 0.75rem !important;
+    width: auto !important;
+    max-width: none !important;
+  }
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul {
