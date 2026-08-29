@@ -60,10 +60,7 @@ export default function LogViewer({
   error,
 }: TProps) {
   const typeAndIds:
-    | TEnvironmentLogsProps
-    | TServiceLogsProps
-    | TDeploymentLogsProps
-    | TDeploymentBuildLogsProps =
+    TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps | TDeploymentBuildLogsProps =
     type === "service"
       ? { type: "service", environmentId: environmentId, serviceId }
       : type === "deployment"
@@ -395,7 +392,7 @@ function Logs({
             onClick={scrollToBottom}
             className="absolute bottom-3 left-1/2 z-10 size-9 -translate-x-1/2 translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] rounded-full shadow-md transition-transform data-show:translate-y-0 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
           >
-            <ArrowDownIcon className="size-4" />
+            <ArrowDownIcon className="size-5" />
           </Button>
         )}
       </div>
