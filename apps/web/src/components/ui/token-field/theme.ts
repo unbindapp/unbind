@@ -12,11 +12,15 @@ export const tokenFieldTheme = EditorView.theme({
     fontFamily: "inherit",
   },
   "&.cm-focused": { outline: "none" },
+  // The scroller overflows horizontally on a long single line; a text field
+  // shouldn't show a scrollbar for that.
   ".cm-scroller": {
     fontFamily: "inherit",
     lineHeight: "inherit",
     alignItems: "flex-start",
+    scrollbarWidth: "none",
   },
+  ".cm-scroller::-webkit-scrollbar": { display: "none" },
   ".cm-content": {
     padding: "0",
     caretColor: "var(--foreground)",

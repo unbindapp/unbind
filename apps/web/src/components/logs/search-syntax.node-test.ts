@@ -40,9 +40,18 @@ test("duplicate levels are collapsed", () => {
   assert.deepEqual(result.levels, ["error"]);
 });
 
-test("unknown level errors", () => {
+test("an unrecognised level is forwarded instead of erroring", () => {
   const result = parseSearchInput("@level:verbose");
-  assert.match(result.error ?? "", /Unknown level/);
+  assert.equal(result.error, null);
+  assert.equal(result.serverSearch, "@level:verbose");
+  assert.deepEqual(result.levels, []);
+});
+
+test("a known level next to an unrecognised one is still extracted", () => {
+  const result = parseSearchInput("@level:error @level:verbose timeout");
+  assert.equal(result.error, null);
+  assert.deepEqual(result.levels, ["error"]);
+  assert.equal(result.serverSearch, "@level:verbose timeout");
 });
 
 test("service tokens are extracted", () => {

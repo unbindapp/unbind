@@ -106,7 +106,16 @@ export function parseSearchInput(input: string): TParsedSearchInput {
     }
 
     const attribute = readAttribute(input, node);
-    if (!attribute || (attribute.key !== "level" && attribute.key !== "service")) {
+    // A @level: value we don't recognise isn't an error: the dropdown offers the
+    // real ones, and forwarding it lets the server match a JSON level field of
+    // that name instead of blocking the whole search.
+    const level = attribute?.key === "level" ? normalizeLevel(attribute.value.toLowerCase()) : null;
+    const isExtractable =
+      attribute !== null &&
+      (attribute.key === "service" ||
+        (attribute.key === "level" && level !== null && isLevel(level)));
+
+    if (!isExtractable) {
       parts.push({ kind: "term", text });
       continue;
     }
@@ -120,12 +129,9 @@ export function parseSearchInput(input: string): TParsedSearchInput {
     }
 
     if (attribute.key === "level") {
-      const level = normalizeLevel(attribute.value.toLowerCase());
-      if (!isLevel(level)) {
-        result.error = `Unknown level "${attribute.value}" (use debug, info, warning or error)`;
-        return result;
+      if (level !== null && isLevel(level) && !result.levels.includes(level)) {
+        result.levels.push(level);
       }
-      if (!result.levels.includes(level)) result.levels.push(level);
       continue;
     }
 
