@@ -21,7 +21,8 @@ export type TVariableReferenceData<T> = {
 // Nothing is styled from the grammar: whether a ${...} is a real reference
 // depends on the live reference list, so it's decorated below instead. A
 // half-typed one is left plain — the dropdown is already showing the matches.
-const resolvedReference = Decoration.mark({ class: "tok-key" });
+const referenceName = Decoration.mark({ class: "tok-key" });
+const referencePunctuation = Decoration.mark({ class: "tok-punct" });
 
 /**
  * Highlights only the references that actually resolve. An unresolved ${...} is
@@ -31,14 +32,36 @@ function resolvedReferenceHighlighter<T>(getData: () => TVariableReferenceData<T
   const build = (view: EditorView) => {
     const known = new Set((getData().tokens ?? []).map((token) => token.value));
     const builder = new RangeSetBuilder<Decoration>();
+    const mark = (from: number, to: number, decoration: Decoration) => {
+      if (from < to) builder.add(from, to, decoration);
+    };
+
     for (const { from, to } of view.visibleRanges) {
       syntaxTree(view.state).iterate({
         from,
         to,
         enter: (node) => {
           if (node.name !== "Reference") return;
-          if (!known.has(view.state.sliceDoc(node.from, node.to))) return;
-          builder.add(node.from, node.to, resolvedReference);
+          const text = view.state.sliceDoc(node.from, node.to);
+          if (!known.has(text)) return;
+
+          // The "${", the dot and the closing "}" are scaffolding; dimming them
+          // leaves the source and key names as the part you actually read.
+          const innerFrom = node.from + 2;
+          const innerTo = node.to - 1;
+          mark(node.from, innerFrom, referencePunctuation);
+
+          const dot = text.indexOf(".", 2);
+          const dotAt = dot < 0 ? -1 : node.from + dot;
+          if (dotAt > innerFrom && dotAt < innerTo) {
+            mark(innerFrom, dotAt, referenceName);
+            mark(dotAt, dotAt + 1, referencePunctuation);
+            mark(dotAt + 1, innerTo, referenceName);
+          } else {
+            mark(innerFrom, innerTo, referenceName);
+          }
+
+          mark(innerTo, node.to, referencePunctuation);
         },
       });
     }
