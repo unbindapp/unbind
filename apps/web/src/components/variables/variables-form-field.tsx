@@ -208,13 +208,13 @@ function VariableValueField({ Field, subField, language, referencesDisabled }: T
         referencesDisabled ? undefined : (
           <Button
             type="button"
-            size="sm"
+            size="icon"
             variant="outline"
+            aria-label="Insert reference"
             onClick={() => fieldRef.current?.insertAndComplete("${")}
-            className="text-muted-foreground focus:ring-primary mt-1 mr-1 mb-auto h-8 max-w-1/2 gap-1 px-2 text-left font-semibold"
+            className="text-muted-foreground focus:ring-primary mt-1 mr-1 mb-auto size-8 rounded-md"
           >
             <Link2Icon className="size-4" />
-            <p className="min-w-0 shrink truncate px-0.5 leading-tight">Reference</p>
           </Button>
         )
       }
