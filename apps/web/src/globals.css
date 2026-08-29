@@ -628,6 +628,14 @@
     color: var(--success);
   }
 
+  .tok-level-error {
+    color: var(--destructive);
+  }
+
+  .tok-level-warning {
+    color: var(--warning);
+  }
+
   .tok-operator {
     color: var(--muted-foreground);
     font-weight: 600;

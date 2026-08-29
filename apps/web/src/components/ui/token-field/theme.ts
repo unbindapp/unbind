@@ -44,10 +44,9 @@ export const tokenFieldTheme = EditorView.theme({
 });
 
 // Classes are defined in globals.css so the colors sit next to the Prism token
-// rules the raw variable editor already uses.
+// rules the raw variable editor already uses. tok-key and tok-punct aren't here
+// because they're applied by the languages' own decorations, not by a tag.
 export const tokenFieldHighlightStyle = HighlightStyle.define([
-  { tag: t.propertyName, class: "tok-key" },
-  { tag: t.punctuation, class: "tok-punct" },
   { tag: t.string, class: "tok-value" },
   { tag: t.logicOperator, class: "tok-operator" },
   { tag: t.operator, class: "tok-negation" },

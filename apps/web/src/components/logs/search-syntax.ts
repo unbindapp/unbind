@@ -22,6 +22,11 @@ function normalizeLevel(value: string): string {
   return value === "warn" ? "warning" : value;
 }
 
+/** Undefined means the service list hasn't loaded yet, so assume it resolves. */
+function isKnownService(value: string, known: ReadonlySet<string> | undefined) {
+  return !known || known.has(value.toLowerCase());
+}
+
 type TPart = { kind: "term" | "and" | "or"; text: string };
 
 type TNode = { name: string; from: number; to: number };
@@ -48,7 +53,11 @@ function readAttribute(input: string, node: TNode) {
   return { key, value, text };
 }
 
-export function parseSearchInput(input: string): TParsedSearchInput {
+export function parseSearchInput(
+  input: string,
+  /** Lowercased service tokens; omit while the service list is still loading. */
+  knownServiceTokens?: ReadonlySet<string>,
+): TParsedSearchInput {
   const result: TParsedSearchInput = {
     serverSearch: "",
     levels: [],
@@ -106,13 +115,13 @@ export function parseSearchInput(input: string): TParsedSearchInput {
     }
 
     const attribute = readAttribute(input, node);
-    // A @level: value we don't recognise isn't an error: the dropdown offers the
-    // real ones, and forwarding it lets the server match a JSON level field of
-    // that name instead of blocking the whole search.
+    // A value we don't recognise isn't an error: the dropdown offers the real
+    // ones, and forwarding it as an ordinary term lets the server deal with it
+    // rather than blocking the whole search.
     const level = attribute?.key === "level" ? normalizeLevel(attribute.value.toLowerCase()) : null;
     const isExtractable =
       attribute !== null &&
-      (attribute.key === "service" ||
+      ((attribute.key === "service" && isKnownService(attribute.value, knownServiceTokens)) ||
         (attribute.key === "level" && level !== null && isLevel(level)));
 
     if (!isExtractable) {

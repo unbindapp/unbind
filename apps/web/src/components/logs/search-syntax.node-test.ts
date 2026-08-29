@@ -60,6 +60,39 @@ test("service tokens are extracted", () => {
   assert.deepEqual(result.serviceNames, ["api"]);
 });
 
+test("an unknown service is forwarded instead of filtered", () => {
+  const known = new Set(["api", "web-app"]);
+  const result = parseSearchInput("@service:nope timeout", known);
+  assert.equal(result.error, null);
+  assert.deepEqual(result.serviceNames, []);
+  assert.equal(result.serverSearch, "@service:nope timeout");
+});
+
+test("a known service is still extracted", () => {
+  const known = new Set(["api", "web-app"]);
+  const result = parseSearchInput("@service:api timeout", known);
+  assert.deepEqual(result.serviceNames, ["api"]);
+  assert.equal(result.serverSearch, "timeout");
+});
+
+test("service matching ignores case", () => {
+  const known = new Set(["web-app"]);
+  assert.deepEqual(parseSearchInput("@service:Web-App", known).serviceNames, ["Web-App"]);
+});
+
+test("every service is extracted while the list is still loading", () => {
+  const result = parseSearchInput("@service:anything");
+  assert.deepEqual(result.serviceNames, ["anything"]);
+  assert.equal(result.serverSearch, "");
+});
+
+test("a forwarded service keeps an adjacent AND intact", () => {
+  const known = new Set(["api"]);
+  const result = parseSearchInput("foo AND @service:nope", known);
+  assert.equal(result.error, null);
+  assert.equal(result.serverSearch, "foo AND @service:nope");
+});
+
 test("negated attribute tokens error", () => {
   const result = parseSearchInput("-@level:error");
   assert.match(result.error ?? "", /cannot be negated/);

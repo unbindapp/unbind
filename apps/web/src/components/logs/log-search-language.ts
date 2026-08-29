@@ -1,7 +1,15 @@
 import type { TChainedCompletion } from "@/components/ui/token-field/autocomplete";
 import type { TIconCompletion } from "@/components/ui/token-field/icon-completion";
 import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
-import { LanguageSupport, LRLanguage } from "@codemirror/language";
+import { LanguageSupport, LRLanguage, syntaxTree } from "@codemirror/language";
+import { RangeSetBuilder } from "@codemirror/state";
+import {
+  Decoration,
+  ViewPlugin,
+  type DecorationSet,
+  type EditorView,
+  type ViewUpdate,
+} from "@codemirror/view";
 import { styleTags, tags as t } from "@lezer/highlight";
 import { resolveCompletionTarget } from "./log-search-completion";
 import { parser } from "./log-search.gen";
@@ -28,18 +36,81 @@ export type TLogSearchData = {
   servicesEnabled: boolean;
 };
 
+// Attributes aren't styled from the grammar: whether @foo is one of our keys,
+// and what color its value takes, depends on the key rather than the shape, so
+// they're decorated below instead.
 const parserWithTags = parser.configure({
   props: [
     styleTags({
-      AttrKey: t.propertyName,
-      Colon: t.punctuation,
-      AttrValue: t.string,
       Phrase: t.string,
       "Operator/...": t.logicOperator,
       Minus: t.operator,
     }),
   ],
 });
+
+const punctuation = Decoration.mark({ class: "tok-punct" });
+const attributeKey = Decoration.mark({ class: "tok-key" });
+// Only the levels that carry a color in the dropdown; debug and info read as
+// plain foreground there, so they do here too.
+const levelValue: Record<string, Decoration> = {
+  error: Decoration.mark({ class: "tok-level-error" }),
+  warning: Decoration.mark({ class: "tok-level-warning" }),
+};
+
+function isClientAttributeKey(key: string): key is TClientAttributeKey {
+  return (clientAttributeKeys as readonly string[]).includes(key);
+}
+
+/**
+ * Highlights `@level:` / `@service:` only. An unrecognised `@foo` is forwarded
+ * as an ordinary search term, so it reads as one. The `@` and `:` are dimmed
+ * together, and a level's value takes the same color it has in the dropdown.
+ */
+const attributeHighlighter = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+    constructor(view: EditorView) {
+      this.decorations = buildAttributeDecorations(view);
+    }
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = buildAttributeDecorations(update.view);
+      }
+    }
+  },
+  { decorations: (plugin) => plugin.decorations },
+);
+
+function buildAttributeDecorations(view: EditorView) {
+  const builder = new RangeSetBuilder<Decoration>();
+  for (const { from, to } of view.visibleRanges) {
+    syntaxTree(view.state).iterate({
+      from,
+      to,
+      enter: (node) => {
+        if (node.name !== "Attribute") return;
+        const key = node.node.getChild("AttrKey");
+        if (!key) return;
+        const name = view.state.sliceDoc(key.from + 1, key.to);
+        if (!isClientAttributeKey(name)) return;
+
+        builder.add(key.from, key.from + 1, punctuation);
+        builder.add(key.from + 1, key.to, attributeKey);
+
+        const colon = node.node.getChild("Colon");
+        if (colon) builder.add(colon.from, colon.to, punctuation);
+
+        const value = node.node.getChild("AttrValue");
+        if (!value || name !== "level") return;
+        const raw = view.state.sliceDoc(value.from, value.to).toLowerCase();
+        const mark = levelValue[raw === "warn" ? "warning" : raw];
+        if (mark) builder.add(value.from, value.to, mark);
+      },
+    });
+  }
+  return builder.finish();
+}
 
 const attributeKeyOptions: TChainedCompletion[] = clientAttributeKeys.map((key) => ({
   label: `@${key}:`,
@@ -100,6 +171,7 @@ export function createLogSearchLanguage(getData: () => TLogSearchData) {
         autocomplete: (context: CompletionContext) => completionAt(context, getData()),
       },
     }),
+    attributeHighlighter,
   );
 }
 

@@ -211,7 +211,21 @@ export const LogsProvider: React.FC<TProps> = ({
     query: { data: servicesData },
   } = useServices();
 
-  const parsedSearch = useMemo(() => parseSearchInput(search), [search]);
+  const serviceTokens = useMemo(
+    () => buildServiceTokens(servicesData?.services ?? []),
+    [servicesData],
+  );
+  // Left undefined until the list loads so a real name isn't briefly demoted to
+  // a plain search term while the query is in flight.
+  const knownServiceTokens = useMemo(
+    () => (servicesData ? new Set(serviceTokens.map((t) => t.token.toLowerCase())) : undefined),
+    [servicesData, serviceTokens],
+  );
+
+  const parsedSearch = useMemo(
+    () => parseSearchInput(search, knownServiceTokens),
+    [search, knownServiceTokens],
+  );
 
   const mergedLevels = useMemo(() => {
     const merged = new Set<TLogLevel>([...levels, ...parsedSearch.levels]);
@@ -225,22 +239,14 @@ export const LogsProvider: React.FC<TProps> = ({
         serviceNameError: "@service is only available in environment logs",
       };
     }
+    // Only names that resolve reach here; the rest stayed in the search text.
     const merged = new Set<string>(serviceIds);
-    const serviceTokens = buildServiceTokens(servicesData?.services ?? []);
-    let unknown: string | null = null;
     for (const name of parsedSearch.serviceNames) {
       const service = findServiceByToken(serviceTokens, name);
-      if (!service) {
-        unknown = name;
-        continue;
-      }
-      merged.add(service.id);
+      if (service) merged.add(service.id);
     }
-    return {
-      mergedServiceIds: [...merged].sort(),
-      serviceNameError: unknown ? `No service named "${unknown}"` : null,
-    };
-  }, [serviceIds, parsedSearch.serviceNames, servicesData, servicesEnabled]);
+    return { mergedServiceIds: [...merged].sort(), serviceNameError: null };
+  }, [serviceIds, parsedSearch.serviceNames, serviceTokens, servicesEnabled]);
 
   const searchError = parsedSearch.error ?? serviceNameError;
 
