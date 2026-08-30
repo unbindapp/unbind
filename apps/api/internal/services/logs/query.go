@@ -11,11 +11,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-const (
-	defaultQueryLimit = 500
-	maxQueryLimit     = 1000
-)
-
 type LogQueryResult struct {
 	Data       []loki.LogEvent
 	NextCursor string
@@ -76,12 +71,11 @@ func (self *LogsService) QueryLogs(ctx context.Context, requesterUserID uuid.UUI
 		startTime = reference.Add(-sinceDuration)
 	}
 
+	// the transport declares the default and the bound; this only guards
+	// callers that build the input struct directly
 	limit := input.Limit
-	if limit <= 0 {
-		limit = defaultQueryLimit
-	}
-	if limit > maxQueryLimit {
-		limit = maxQueryLimit
+	if limit <= 0 || limit > loki.MaxQueryLimit {
+		limit = loki.MaxQueryLimit
 	}
 
 	opts := loki.LokiLogHTTPOptions{

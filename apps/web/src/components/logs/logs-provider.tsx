@@ -30,7 +30,6 @@ import {
   useState,
 } from "react";
 
-const LOGS_PAGE_LIMIT = 1000;
 const MAX_BUFFER_LINES = 10_000;
 
 type TLogsChange = "reset" | "append" | "prepend";
@@ -281,7 +280,6 @@ export const LogsProvider: React.FC<TProps> = ({
       serviceIds: mergedServiceIds.length ? mergedServiceIds.join(",") : undefined,
       start: timeWindow.start,
       end: timeWindow.end ?? undefined,
-      limit: LOGS_PAGE_LIMIT,
     }),
     [
       type,
@@ -336,7 +334,6 @@ export const LogsProvider: React.FC<TProps> = ({
       team_id: teamId,
       project_id: projectId || "",
       environment_id: environmentId || "",
-      limit: LOGS_PAGE_LIMIT.toString(),
     });
     if (type === "service" || type === "deployment") params.set("service_id", serviceId);
     if (type === "deployment" || type === "build") params.set("deployment_id", deploymentId);

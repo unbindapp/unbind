@@ -46,10 +46,7 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 	}
 
 	if opts.Limit > 0 {
-		if opts.Limit > 1000 {
-			opts.Limit = 1000
-		}
-		q.Set("limit", strconv.Itoa(opts.Limit))
+		q.Set("limit", strconv.Itoa(min(opts.Limit, MaxQueryLimit)))
 	}
 
 	reqURL.RawQuery = q.Encode()

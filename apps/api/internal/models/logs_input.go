@@ -53,7 +53,7 @@ type LogStreamInput struct {
 	DeploymentID  uuid.UUID `query:"deployment_id" required:"false"`
 	Start         time.Time `query:"start"`
 	Since         string    `query:"since" default:"10m" doc:"Duration to look back (e.g., '1h', '30m')"`
-	Limit         int64     `query:"limit" default:"100" doc:"Number of lines to get from the end"`
+	Limit         int64     `query:"limit" default:"1000" minimum:"1" maximum:"1000" doc:"Number of lines to get from the end (mirrors loki.MaxQueryLimit)"`
 	Search        string    `query:"search" doc:"Search expression: bare words (case-insensitive), \"quoted phrases\", AND/OR, -negation, @key:value for JSON fields"`
 	Levels        string    `query:"levels" doc:"Comma-separated log levels to include (debug, info, warning, error)"`
 	ServiceIDs    string    `query:"service_ids" doc:"Comma-separated service IDs to include (team/project/environment scope only)"`
@@ -74,7 +74,7 @@ type LogQueryInput struct {
 	Start         time.Time          `query:"start" doc:"Start time for the query"`
 	End           time.Time          `query:"end" doc:"End time for the query"`
 	Since         string             `query:"since" doc:"Duration to look back (e.g., '1h', '30m')"`
-	Limit         int                `query:"limit" doc:"Number of log lines to get"`
+	Limit         int                `query:"limit" default:"1000" minimum:"1" maximum:"1000" doc:"Number of log lines to get (mirrors loki.MaxQueryLimit)"`
 	Direction     loki.LokiDirection `query:"direction" doc:"Direction of the logs (forward or backward)"`
 	Cursor        string             `query:"cursor" doc:"Pagination cursor from a previous response; returns strictly older logs (backward direction only)"`
 }

@@ -16,7 +16,6 @@ export type TLogsListInput = {
   serviceIds?: string;
   start?: string;
   end?: string;
-  limit?: number;
   cursor?: string;
 };
 
@@ -36,7 +35,6 @@ export const queryKeyLogs = {
       input.serviceIds ?? null,
       input.start ?? null,
       input.end ?? null,
-      input.limit ?? null,
       input.cursor ?? null,
     ] as const,
 };
@@ -54,7 +52,6 @@ export async function fetchLogsPage(input: TLogsListInput): Promise<TLogsPage> {
     service_ids: input.serviceIds || undefined,
     start: input.start,
     end: input.end,
-    limit: input.limit ?? 1000,
     cursor: input.cursor,
     direction: "backward",
   });

@@ -33,10 +33,7 @@ func (self *LokiLogQuerier) QueryLokiLogs(
 	q.Set("query", queryStr)
 
 	if opts.Limit != nil {
-		limit := *opts.Limit
-		if limit > 1000 {
-			limit = 1000
-		}
+		limit := min(*opts.Limit, MaxQueryLimit)
 		q.Set("limit", strconv.Itoa(limit))
 	}
 	if opts.Direction != nil {
