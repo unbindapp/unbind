@@ -637,6 +637,65 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_InvalidURL() {
 	suite.Contains(err.Error(), "unable to parse loki query URL")
 }
 
+func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_LevelsReachLoki() {
+	var capturedQuery string
+	suite.testServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedQuery = r.URL.Query().Get("query")
+		fmt.Fprint(w, `{"status":"success","data":{"resultType":"streams","result":[]}}`)
+	}))
+	suite.querier.endpoint = suite.testServer.URL
+
+	_, err := suite.querier.QueryLokiLogs(context.Background(), LokiLogHTTPOptions{
+		Label:      LokiLabelService,
+		LabelValue: "svc-1",
+		Levels:     []LogLevel{LogLevelError},
+	})
+
+	suite.NoError(err)
+	suite.Equal(`{unbind_service="svc-1"} | detected_level=~"error|critical|fatal"`, capturedQuery)
+}
+
+func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_LevelComesFromStructuredMetadata() {
+	responseBody := `{
+		"status": "success",
+		"data": {
+			"resultType": "streams",
+			"result": [
+				{
+					"stream": {
+						"instance": "pod-1"
+					},
+					"values": [
+						["1609459200000000000", "boom", {"detected_level": "critical"}],
+						["1609459260000000000", "an error occured", {"detected_level": "warn"}],
+						["1609459320000000000", "plain line"]
+					]
+				}
+			]
+		}
+	}`
+
+	suite.setupMockServer(responseBody, http.StatusOK)
+
+	events, err := suite.querier.QueryLokiLogs(context.Background(), LokiLogHTTPOptions{
+		Label:      LokiLabelService,
+		LabelValue: "svc-1",
+	})
+
+	suite.Require().NoError(err)
+	suite.Require().Len(events, 3)
+
+	byMessage := map[string]LogLevel{}
+	for _, event := range events {
+		byMessage[event.Message] = event.Level
+	}
+	suite.Equal(LogLevelError, byMessage["boom"])
+	// loki's classification wins over what the text looks like
+	suite.Equal(LogLevelWarn, byMessage["an error occured"])
+	// entries ingested before level discovery read as info
+	suite.Equal(LogLevelInfo, byMessage["plain line"])
+}
+
 func (suite *HTTPQueryTestSuite) TestParseStreamsResult_EmptyInstance() {
 	streams := []Stream{
 		{
@@ -644,7 +703,7 @@ func (suite *HTTPQueryTestSuite) TestParseStreamsResult_EmptyInstance() {
 				"unbind_team": "team-1",
 			},
 			Values: []StreamValue{
-				{"1609459200000000000", "Log message"},
+				{Timestamp: "1609459200000000000", Line: "Log message"},
 			},
 		},
 	}

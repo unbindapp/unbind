@@ -20,7 +20,7 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 	opts LokiLogStreamOptions,
 	eventChan chan<- LogEvents,
 ) error {
-	queryStr := buildLogQL(opts.Label, opts.LabelValue, opts.ServiceIDs, opts.RawFilter)
+	queryStr := buildLogQL(opts.Label, opts.LabelValue, opts.ServiceIDs, opts.Levels, opts.RawFilter)
 
 	reqURL, err := url.Parse(self.endpoint)
 	if err != nil {
@@ -61,6 +61,7 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 		Label:      opts.Label,
 		LabelValue: opts.LabelValue,
 		ServiceIDs: opts.ServiceIDs,
+		Levels:     opts.Levels,
 		RawFilter:  opts.RawFilter,
 		Limit:      new(1),
 	}
@@ -213,14 +214,13 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 			}
 
 			for _, entry := range stream.Values {
-				// Entry format is [timestamp, log message]
-				if len(entry) != 2 {
+				if entry.Timestamp == "" {
 					log.Warnf("Unprocessable log entry format from loki %v", entry)
 					continue
 				}
 
 				var timestamp time.Time
-				if ts, err := strconv.ParseInt(entry[0], 10, 64); err == nil {
+				if ts, err := strconv.ParseInt(entry.Timestamp, 10, 64); err == nil {
 					// Loki timestamps are in nanoseconds
 					timestamp = time.Unix(0, ts)
 				} else {
@@ -229,13 +229,11 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 					timestamp = time.Now()
 				}
 
-				message := entry[1]
-
 				logEvent := LogEvent{
 					PodName:   instance,
 					Timestamp: timestamp,
-					Message:   message,
-					Level:     DetectLevel(message),
+					Message:   entry.Line,
+					Level:     LevelFromDetected(entry.Metadata[DetectedLevelLabel]),
 					Metadata: LogMetadata{
 						TeamID:        teamID,
 						ProjectID:     projectID,

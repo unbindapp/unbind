@@ -56,6 +56,7 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 		Label:      selector.label,
 		LabelValue: selector.labelValue,
 		ServiceIDs: filters.serviceIDs,
+		Levels:     filters.levels,
 		RawFilter:  filters.compiledSearch,
 		Limit:      int(input.Limit),
 		Since:      since,
@@ -79,15 +80,12 @@ func (self *LogsService) StreamLogs(ctx context.Context, requesterUserID uuid.UU
 	for {
 		select {
 		case event := <-eventChan:
-			// the id must cover the whole pre-filter batch, or a client
-			// reconnect replays lines the level filter already dropped
 			id := 0
 			if event.MessageType == loki.LogEventsMessageTypeLog {
 				if ns := latestEventNs(event); ns > lastEventNs.Load() {
 					lastEventNs.Store(ns)
 				}
 				id = int(lastEventNs.Load())
-				event.Logs = loki.FilterEventsByLevel(event.Logs, filters.levels)
 			}
 			_ = send(sse.Message{ID: id, Data: event})
 		case <-keepAlive.C:

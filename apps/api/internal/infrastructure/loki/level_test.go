@@ -1,49 +1,134 @@
 package loki
 
 import (
+	"fmt"
+	"regexp"
+	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestDetectLevel(t *testing.T) {
+func TestLevelFromDetected(t *testing.T) {
 	tests := []struct {
-		name    string
-		message string
-		want    LogLevel
+		detected string
+		want     LogLevel
 	}{
-		{name: "plain text", message: "listening on :8080", want: LogLevelInfo},
-		{name: "error keyword", message: "connection error: refused", want: LogLevelError},
-		{name: "failed keyword", message: "request failed with 500", want: LogLevelError},
-		{name: "panic keyword", message: "panic: nil pointer", want: LogLevelError},
-		{name: "bracketed error", message: "[ERROR] something broke", want: LogLevelError},
-		{name: "warn keyword", message: "WARN slow query", want: LogLevelWarn},
-		{name: "warning keyword", message: "warning: deprecated flag", want: LogLevelWarn},
-		{name: "debug keyword", message: "DEBUG cache miss", want: LogLevelDebug},
-		{name: "trace keyword", message: "trace: entering handler", want: LogLevelDebug},
-		{name: "error beats warn", message: "warning: retry failed", want: LogLevelError},
-		{name: "err token", message: "err=connection reset", want: LogLevelError},
-		{name: "substring not matched", message: "preferred stderrs terrors", want: LogLevelInfo},
-		{name: "ansi stripped", message: "\x1b[31mERROR\x1b[0m boom", want: LogLevelError},
-		{name: "json string level", message: `{"level":"warn","msg":"disk almost full"}`, want: LogLevelWarn},
-		{name: "json severity", message: `{"severity":"ERROR","message":"kaput"}`, want: LogLevelError},
-		{name: "json ecs level", message: `{"log.level":"debug","message":"x"}`, want: LogLevelDebug},
-		{name: "json numeric pino error", message: `{"level":50,"msg":"boom"}`, want: LogLevelError},
-		{name: "json numeric pino info", message: `{"level":30,"msg":"ok"}`, want: LogLevelInfo},
-		{name: "json numeric pino debug", message: `{"level":20,"msg":"dbg"}`, want: LogLevelDebug},
-		{name: "json level wins over keywords", message: `{"level":"info","msg":"user error handled"}`, want: LogLevelInfo},
-		{name: "json without level falls back", message: `{"msg":"request failed"}`, want: LogLevelError},
-		{name: "invalid json falls back", message: `{"level": broken`, want: LogLevelInfo},
-		{name: "fatal string level", message: `{"level":"fatal","msg":"bye"}`, want: LogLevelError},
-		{name: "notice maps to info", message: `{"level":"notice","msg":"hi"}`, want: LogLevelInfo},
+		{detected: "trace", want: LogLevelDebug},
+		{detected: "debug", want: LogLevelDebug},
+		{detected: "info", want: LogLevelInfo},
+		{detected: "warn", want: LogLevelWarn},
+		{detected: "error", want: LogLevelError},
+		{detected: "critical", want: LogLevelError},
+		{detected: "fatal", want: LogLevelError},
+		// loki's bucket for lines it could not classify
+		{detected: "unknown", want: LogLevelInfo},
+		// lines ingested before level discovery carry no value at all
+		{detected: "", want: LogLevelInfo},
+		{detected: "ERROR", want: LogLevelError},
+		{detected: "  Warn  ", want: LogLevelWarn},
+		// anything outside loki's vocabulary lands where unclassified lines do
+		{detected: "notice", want: LogLevelInfo},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.detected, func(t *testing.T) {
+			assert.Equal(t, tt.want, LevelFromDetected(tt.detected))
+		})
+	}
+}
+
+func TestDetectedLevelValuesPartition(t *testing.T) {
+	seen := map[string]LogLevel{}
+	for level, values := range detectedLevelValues {
+		for _, value := range values {
+			existing, duplicate := seen[value]
+			require.False(t, duplicate, "%q claimed by both %s and %s", value, existing, level)
+			seen[value] = level
+		}
+	}
+
+	// every value loki can emit has to land somewhere, or filtering on the
+	// level that owns it would silently drop lines
+	for _, value := range []string{"trace", "debug", "info", "warn", "error", "critical", "fatal", "unknown"} {
+		_, ok := seen[value]
+		assert.True(t, ok, "loki emits %q but no level claims it", value)
+	}
+}
+
+func TestDetectedLevelFilter(t *testing.T) {
+	tests := []struct {
+		name   string
+		levels []LogLevel
+		want   string
+	}{
+		{name: "no levels", levels: nil, want: ""},
+		{
+			name:   "every level matches everything",
+			levels: []LogLevel{LogLevelDebug, LogLevelInfo, LogLevelWarn, LogLevelError},
+			want:   "",
+		},
+		{
+			name:   "error",
+			levels: []LogLevel{LogLevelError},
+			want:   `| detected_level=~"error|critical|fatal"`,
+		},
+		{
+			name:   "warning",
+			levels: []LogLevel{LogLevelWarn},
+			want:   `| detected_level=~"warn"`,
+		},
+		{
+			name:   "info keeps unclassified lines",
+			levels: []LogLevel{LogLevelInfo},
+			want:   `| detected_level=~"info|unknown|"`,
+		},
+		{
+			name:   "debug",
+			levels: []LogLevel{LogLevelDebug},
+			want:   `| detected_level=~"trace|debug"`,
+		},
+		{
+			name:   "selection order does not matter",
+			levels: []LogLevel{LogLevelError, LogLevelWarn},
+			want:   `| detected_level=~"warn|error|critical|fatal"`,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, DetectLevel(tt.message), "message: %s", tt.message)
+			assert.Equal(t, tt.want, detectedLevelFilter(tt.levels))
 		})
 	}
+}
+
+// LogQL anchors label filter regexes, so each alternative has to match a whole
+// value and nothing else.
+func TestDetectedLevelFilterMatchesAnchored(t *testing.T) {
+	filter := detectedLevelFilter([]LogLevel{LogLevelWarn})
+	pattern := strings.Trim(strings.TrimPrefix(filter, "| detected_level=~"), `"`)
+
+	re, err := regexp.Compile(fmt.Sprintf("^(?:%s)$", pattern))
+	require.NoError(t, err)
+
+	assert.True(t, re.MatchString("warn"))
+	assert.False(t, re.MatchString("warning"), "anchoring must not let warn match warning")
+	assert.False(t, re.MatchString("error"))
+}
+
+func TestDetectedLevelFilterInfoMatchesMissingValue(t *testing.T) {
+	filter := detectedLevelFilter([]LogLevel{LogLevelInfo})
+	pattern := strings.Trim(strings.TrimPrefix(filter, "| detected_level=~"), `"`)
+
+	re, err := regexp.Compile(fmt.Sprintf("^(?:%s)$", pattern))
+	require.NoError(t, err)
+
+	assert.True(t, re.MatchString("info"))
+	assert.True(t, re.MatchString("unknown"))
+	// loki reads a label that is not set as empty
+	assert.True(t, re.MatchString(""))
+	assert.False(t, re.MatchString("error"))
 }
 
 func TestParseLogLevel(t *testing.T) {
@@ -51,40 +136,9 @@ func TestParseLogLevel(t *testing.T) {
 		_, ok := ParseLogLevel(valid)
 		assert.True(t, ok, valid)
 	}
-	// "warn" was the old API's spelling; the level is "warning" now
+	// "warn" is loki's spelling of the level, the api's is "warning"
 	for _, invalid := range []string{"", "warn", "critical", "all"} {
 		_, ok := ParseLogLevel(invalid)
 		assert.False(t, ok, invalid)
 	}
-}
-
-func TestFilterEventsByLevel(t *testing.T) {
-	now := time.Now()
-	events := []LogEvent{
-		{Message: "a", Level: LogLevelInfo, Timestamp: now},
-		{Message: "b", Level: LogLevelError, Timestamp: now},
-		{Message: "c", Level: LogLevelWarn, Timestamp: now},
-		{Message: "d", Level: LogLevelError, Timestamp: now},
-	}
-
-	t.Run("empty levels keeps all", func(t *testing.T) {
-		assert.Len(t, FilterEventsByLevel(events, nil), 4)
-	})
-
-	t.Run("single level", func(t *testing.T) {
-		filtered := FilterEventsByLevel(events, []LogLevel{LogLevelError})
-		assert.Len(t, filtered, 2)
-		assert.Equal(t, "b", filtered[0].Message)
-		assert.Equal(t, "d", filtered[1].Message)
-	})
-
-	t.Run("multiple levels", func(t *testing.T) {
-		filtered := FilterEventsByLevel(events, []LogLevel{LogLevelWarn, LogLevelError})
-		assert.Len(t, filtered, 3)
-	})
-
-	t.Run("no matches", func(t *testing.T) {
-		filtered := FilterEventsByLevel(events, []LogLevel{LogLevelDebug})
-		assert.Len(t, filtered, 0)
-	})
 }

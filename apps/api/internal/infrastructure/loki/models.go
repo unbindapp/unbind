@@ -26,6 +26,7 @@ type LokiLogStreamOptions struct {
 	Label      LokiLabelName // Label to filter logs by
 	LabelValue string        // Value of the label to filter logs by
 	ServiceIDs []string      // Optionally narrow to these services (broad scopes only)
+	Levels     []LogLevel    // Optionally narrow to these levels (empty means all)
 	RawFilter  string        // Compiled logql pipeline (see CompileSearch)
 	Since      time.Duration // Get logs from this time ago
 	Limit      int           // Number of log lines to get
@@ -37,6 +38,7 @@ type LokiLogHTTPOptions struct {
 	Label      LokiLabelName // Label to filter logs by
 	LabelValue string        // Value of the label to filter logs by
 	ServiceIDs []string      // Optionally narrow to these services (broad scopes only)
+	Levels     []LogLevel    // Optionally narrow to these levels (empty means all)
 	RawFilter  string        // Compiled logql pipeline (see CompileSearch)
 	// * Query range options
 	Start *time.Time     // Start time for the query
@@ -47,12 +49,16 @@ type LokiLogHTTPOptions struct {
 	Direction *LokiDirection // Direction of the logs (forward or backward)
 }
 
-func buildLogQL(label LokiLabelName, labelValue string, serviceIDs []string, rawFilter string) string {
+func buildLogQL(label LokiLabelName, labelValue string, serviceIDs []string, levels []LogLevel, rawFilter string) string {
 	selector := fmt.Sprintf("%s=%q", label, labelValue)
 	if len(serviceIDs) > 0 && label != LokiLabelService {
 		selector = fmt.Sprintf("%s, %s=~%q", selector, LokiLabelService, strings.Join(serviceIDs, "|"))
 	}
 	query := "{" + selector + "}"
+	// ahead of the search, which can compile to a json parser stage
+	if levelFilter := detectedLevelFilter(levels); levelFilter != "" {
+		query += " " + levelFilter
+	}
 	if rawFilter != "" {
 		query += " " + rawFilter
 	}
@@ -107,10 +113,7 @@ type LogEvent struct {
 
 // LokiStreamResponse represents the format of a Loki log stream response
 type LokiStreamResponse struct {
-	Streams []struct {
-		Stream map[string]string `json:"stream"`
-		Values [][2]string       `json:"values"` // [timestamp, message]
-	} `json:"streams"`
+	Streams []Stream `json:"streams"`
 }
 
 // LokiDirection represents the direction in which to return logs, loki defaults to backward
@@ -158,8 +161,38 @@ type LokiQueryData struct {
 	Stats      json.RawMessage `json:"stats,omitempty"`
 }
 
-// StreamValue represents a single log entry in a stream
-type StreamValue []string // [timestamp, message]
+// StreamValue is a single loki entry: [timestamp, line], with a structured
+// metadata object appended when the entry carries any.
+type StreamValue struct {
+	Timestamp string
+	Line      string
+	Metadata  map[string]string
+}
+
+func (self *StreamValue) UnmarshalJSON(data []byte) error {
+	var raw []json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	// one malformed entry must not fail the page it arrived in, so decoding is
+	// best effort throughout; parse sites drop entries left without a timestamp
+	if len(raw) < 2 {
+		return nil
+	}
+	_ = json.Unmarshal(raw[0], &self.Timestamp)
+	_ = json.Unmarshal(raw[1], &self.Line)
+	if len(raw) > 2 {
+		_ = json.Unmarshal(raw[2], &self.Metadata)
+	}
+	return nil
+}
+
+func (self StreamValue) MarshalJSON() ([]byte, error) {
+	if len(self.Metadata) == 0 {
+		return json.Marshal([]any{self.Timestamp, self.Line})
+	}
+	return json.Marshal([]any{self.Timestamp, self.Line, self.Metadata})
+}
 
 // Stream represents a stream of logs for a specific set of labels
 type Stream struct {
