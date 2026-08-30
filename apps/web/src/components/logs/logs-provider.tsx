@@ -132,8 +132,6 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
 type TLogsContext = {
   logs: TBufferedLogLine[] | null;
   logsRef: RefObject<TBufferedLogLine[] | null>;
-  /** Changes whenever the buffer is replaced wholesale, i.e. filters or range moved. */
-  bufferKey: string | null;
   isPending: boolean;
   isRefreshing: boolean;
   error: Error | null;
@@ -424,7 +422,6 @@ export const LogsProvider: React.FC<TProps> = ({
     () => ({
       logs,
       logsRef,
-      bufferKey: buffer.identityKey,
       isPending: buffer.identityKey === null && initialQuery.isPending,
       isRefreshing: !bufferReady && buffer.identityKey !== null,
       error: initialQuery.error,
