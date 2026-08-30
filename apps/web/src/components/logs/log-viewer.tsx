@@ -63,10 +63,7 @@ export default function LogViewer({
   error,
 }: TProps) {
   const typeAndIds:
-    | TEnvironmentLogsProps
-    | TServiceLogsProps
-    | TDeploymentLogsProps
-    | TDeploymentBuildLogsProps =
+    TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps | TDeploymentBuildLogsProps =
     type === "service"
       ? { type: "service", environmentId: environmentId, serviceId }
       : type === "deployment"
@@ -141,11 +138,13 @@ function Logs({
     return names;
   }, [servicesData]);
 
-  // log lines only render once service names are in, so skeletons stay up until then
-  const isShowingPlaceholders = !logs || !servicesData;
+  const isEmpty = Boolean(logs && logs.length === 0);
+  // log lines only render once service names are in, so skeletons stay up until
+  // then, though a result with no lines has no names to wait for
+  const isShowingPlaceholders = !logs || (!servicesData && !isEmpty);
   const rows = useMemo(() => buildLogRows(logs ?? []), [logs]);
 
-  if (logs && logs.length === 0 && errorFromProp) {
+  if (isEmpty && errorFromProp) {
     return (
       <ScrollArea>
         <TabWrapper>
@@ -156,7 +155,7 @@ function Logs({
   }
 
   const isPage = containerType === "page";
-  const listProps = { rows, type, containerType, serviceNamesById };
+  const listProps = { rows, type, containerType, serviceNamesById, isEmpty };
 
   const renderContent = () => {
     if (!isPending && error && !logs) {
@@ -166,25 +165,29 @@ function Logs({
         </CenteredCard>
       );
     }
-    if (!isPending && (!logs || logs.length === 0) && searchError) {
+    // nothing has ever loaded, so the search error is all there is to show
+    if (!isPending && !logs && searchError) {
       return (
         <CenteredCard>
           <NoLogsFound />
         </CenteredCard>
       );
     }
-    if (!isPending && logs && logs.length === 0) {
-      return (
-        <CenteredCard>
-          <NoLogsFound shouldHaveLogs={shouldHaveLogs && !searchError} />
-        </CenteredCard>
-      );
-    }
     if (isShowingPlaceholders) {
       return <PlaceholderList type={type} containerType={containerType} />;
     }
-    if (isPage) return <PageLogList {...listProps} />;
-    return <SheetLogList {...listProps} />;
+    // The list hides rather than unmounts while empty, so a filter that matches
+    // nothing doesn't tear down the virtualizer and the scroll state with it.
+    return (
+      <>
+        {isPage ? <PageLogList {...listProps} /> : <SheetLogList {...listProps} />}
+        {isEmpty && (
+          <CenteredCard>
+            <NoLogsFound shouldHaveLogs={shouldHaveLogs && !searchError} />
+          </CenteredCard>
+        )}
+      </>
+    );
   };
 
   return (
@@ -241,17 +244,19 @@ function Logs({
   );
 }
 
-type TListProps = {
+type TRowsProps = {
   rows: TLogRow[];
   type: TLogType;
   containerType: TContainerType;
   serviceNamesById: Map<string, string>;
 };
 
+type TListProps = TRowsProps & { isEmpty: boolean };
+
 // The document is the scroller so mobile Safari can collapse its address bar,
 // which a nested scroll container never does.
-function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps) {
-  const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused } = useLogs();
+function PageLogList({ rows, type, containerType, serviceNamesById, isEmpty }: TListProps) {
+  const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused, resultSetKey } = useLogs();
   const autoFollow = useAutoFollow();
 
   const listRef = useRef<HTMLDivElement>(null);
@@ -292,12 +297,12 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
     };
   }, []);
 
-  // followOnAppend only reacts to the list growing, so the first render and
-  // switching the toggle back on have to pin to the bottom by hand.
+  // followOnAppend only reacts to the list growing, so the first render, a new
+  // result set, and switching the toggle back on have to pin to the bottom by hand.
   useEffect(() => {
     if (!autoFollow) return;
     virtualizer.scrollToEnd();
-  }, [autoFollow, virtualizer]);
+  }, [autoFollow, virtualizer, resultSetKey]);
 
   const syncScrollState = useCallback(() => {
     const distanceToBottom =
@@ -326,7 +331,10 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
 
   return (
     <>
-      <div className="w-full group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
+      <div
+        data-empty={isEmpty || undefined}
+        className="w-full group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))] data-empty:hidden"
+      >
         <div
           ref={listRef}
           className="relative w-full font-mono"
@@ -356,8 +364,8 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
   );
 }
 
-function SheetLogList({ rows, type, containerType, serviceNamesById }: TListProps) {
-  const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused } = useLogs();
+function SheetLogList({ rows, type, containerType, serviceNamesById, isEmpty }: TListProps) {
+  const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused, resultSetKey } = useLogs();
   const autoFollow = useAutoFollow();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -375,12 +383,12 @@ function SheetLogList({ rows, type, containerType, serviceNamesById }: TListProp
     scrollEndThreshold: SCROLL_THRESHOLD,
   });
 
-  // followOnAppend only reacts to the list growing, so the first render and
-  // switching the toggle back on have to pin to the bottom by hand.
+  // followOnAppend only reacts to the list growing, so the first render, a new
+  // result set, and switching the toggle back on have to pin to the bottom by hand.
   useEffect(() => {
     if (!autoFollow) return;
     virtualizer.scrollToEnd();
-  }, [autoFollow, virtualizer]);
+  }, [autoFollow, virtualizer, resultSetKey]);
 
   const syncScrollState = useCallback(() => {
     const element = scrollRef.current;
@@ -404,7 +412,10 @@ function SheetLogList({ rows, type, containerType, serviceNamesById }: TListProp
   }, [rows.length, throttledSyncScrollState]);
 
   return (
-    <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
+    <div
+      data-empty={isEmpty || undefined}
+      className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden data-empty:hidden"
+    >
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
         <div
           ref={scrollRef}
@@ -458,7 +469,7 @@ function useExpandedKeys() {
   return { expandedKeys, toggleExpanded };
 }
 
-type TVirtualRowsProps = TListProps & {
+type TVirtualRowsProps = TRowsProps & {
   items: VirtualItem[];
   measureElement: (node: HTMLDivElement | null) => void;
   scrollMargin: number;
