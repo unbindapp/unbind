@@ -39,6 +39,46 @@ func TestLevelFromDetected(t *testing.T) {
 	}
 }
 
+func TestLevelForEntry(t *testing.T) {
+	tests := []struct {
+		name         string
+		streamLabels map[string]string
+		entry        StreamValue
+		want         LogLevel
+	}{
+		{
+			name:         "stream labels carry the level by default",
+			streamLabels: map[string]string{"instance": "pod-1", DetectedLevelLabel: "error"},
+			entry:        StreamValue{Line: "boom"},
+			want:         LogLevelError,
+		},
+		{
+			name:         "entry metadata wins when loki categorizes labels",
+			streamLabels: map[string]string{DetectedLevelLabel: "info"},
+			entry:        StreamValue{Line: "boom", Metadata: map[string]string{DetectedLevelLabel: "warn"}},
+			want:         LogLevelWarn,
+		},
+		{
+			name:         "an empty entry value falls back to the stream",
+			streamLabels: map[string]string{DetectedLevelLabel: "warn"},
+			entry:        StreamValue{Line: "boom", Metadata: map[string]string{DetectedLevelLabel: ""}},
+			want:         LogLevelWarn,
+		},
+		{
+			name:         "no level anywhere reads as info",
+			streamLabels: map[string]string{"instance": "pod-1"},
+			entry:        StreamValue{Line: "boom"},
+			want:         LogLevelInfo,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, levelForEntry(tt.streamLabels, tt.entry))
+		})
+	}
+}
+
 func TestDetectedLevelValuesPartition(t *testing.T) {
 	seen := map[string]LogLevel{}
 	for level, values := range detectedLevelValues {

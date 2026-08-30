@@ -89,6 +89,17 @@ func LevelFromDetected(detected string) LogLevel {
 	return LogLevelInfo
 }
 
+// levelForEntry resolves the level of a single log entry. Loki merges structured
+// metadata into the label set of the stream it returns, so detected_level
+// normally arrives alongside the other labels; it only rides on the entry when
+// the request asks for categorized labels.
+func levelForEntry(streamLabels map[string]string, entry StreamValue) LogLevel {
+	if detected := entry.Metadata[DetectedLevelLabel]; detected != "" {
+		return LevelFromDetected(detected)
+	}
+	return LevelFromDetected(streamLabels[DetectedLevelLabel])
+}
+
 // detectedLevelFilter renders the LogQL structured metadata filter for levels.
 // Label filter regexes are fully anchored, so each alternative matches a whole
 // value. Returns "" when nothing is selected or everything is, since both match

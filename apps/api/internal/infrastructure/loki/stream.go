@@ -230,7 +230,7 @@ func (self *LokiLogQuerier) StreamLokiPodLogs(
 					PodName:   instance,
 					Timestamp: timestamp,
 					Message:   entry.Line,
-					Level:     LevelFromDetected(entry.Metadata[DetectedLevelLabel]),
+					Level:     levelForEntry(stream.Stream, entry),
 					Metadata: LogMetadata{
 						TeamID:        teamID,
 						ProjectID:     projectID,

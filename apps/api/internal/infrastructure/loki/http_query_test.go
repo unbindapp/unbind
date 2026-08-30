@@ -655,7 +655,7 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_LevelsReachLoki() {
 	suite.Equal(`{unbind_service="svc-1"} | detected_level=~"error|critical|fatal"`, capturedQuery)
 }
 
-func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_LevelComesFromStructuredMetadata() {
+func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_LevelComesFromEntryMetadata() {
 	responseBody := `{
 		"status": "success",
 		"data": {
@@ -693,6 +693,50 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_LevelComesFromStructuredMetad
 	// loki's classification wins over what the text looks like
 	suite.Equal(LogLevelWarn, byMessage["an error occured"])
 	// entries ingested before level discovery read as info
+	suite.Equal(LogLevelInfo, byMessage["plain line"])
+}
+
+// Loki's default json encoding folds structured metadata into the labels of the
+// stream it returns, splitting one pod's logs into a stream per level.
+func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_LevelComesFromStreamLabels() {
+	responseBody := `{
+		"status": "success",
+		"data": {
+			"resultType": "streams",
+			"result": [
+				{
+					"stream": {"instance": "pod-1", "detected_level": "critical"},
+					"values": [["1609459200000000000", "boom"]]
+				},
+				{
+					"stream": {"instance": "pod-1", "detected_level": "warn"},
+					"values": [["1609459260000000000", "an error occured"]]
+				},
+				{
+					"stream": {"instance": "pod-1", "detected_level": "unknown"},
+					"values": [["1609459320000000000", "plain line"]]
+				}
+			]
+		}
+	}`
+
+	suite.setupMockServer(responseBody, http.StatusOK)
+
+	events, err := suite.querier.QueryLokiLogs(context.Background(), LokiLogHTTPOptions{
+		Label:      LokiLabelService,
+		LabelValue: "svc-1",
+	})
+
+	suite.Require().NoError(err)
+	suite.Require().Len(events, 3)
+
+	byMessage := map[string]LogLevel{}
+	for _, event := range events {
+		byMessage[event.Message] = event.Level
+		suite.Equal("pod-1", event.PodName)
+	}
+	suite.Equal(LogLevelError, byMessage["boom"])
+	suite.Equal(LogLevelWarn, byMessage["an error occured"])
 	suite.Equal(LogLevelInfo, byMessage["plain line"])
 }
 
