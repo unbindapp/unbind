@@ -148,5 +148,10 @@
     "version": "v0.1.29",
     "description": "Log search autocomplete, anchored log time ranges, and variable reference refinements",
     "breaking": false
+  },
+  "v0.1.30": {
+    "version": "v0.1.30",
+    "description": "Log virtualization and scrolling improvements, Loki-side log level filtering, and standardized log limits",
+    "breaking": false
   }
 }
