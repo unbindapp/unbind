@@ -25,7 +25,12 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/lib/queries/logs";
-import { useVirtualizer, useWindowVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
+import {
+  measureElement as measureRowElement,
+  useVirtualizer,
+  useWindowVirtualizer,
+  type VirtualItem,
+} from "@tanstack/react-virtual";
 import { ArrowDownIcon, HourglassIcon, LoaderIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
@@ -101,7 +106,8 @@ export default function LogViewer({
 
 const SCROLL_THRESHOLD = 50;
 const FETCH_OLDER_THRESHOLD = 300;
-const ESTIMATED_ROW_HEIGHT = 28;
+const SEED_ROW_HEIGHT = 28;
+const ROW_HEIGHT_SMOOTHING = 0.1;
 const OVERSCAN = 12;
 const placeholderArray = Array.from({ length: 50 });
 
@@ -251,8 +257,20 @@ type TListProps = {
 // The document is the scroller so mobile Safari can collapse its address bar,
 // which a nested scroll container never does.
 function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps) {
-  const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused } = useLogs();
+  const {
+    hasMoreOlder,
+    isFetchingOlder,
+    fetchOlder,
+    setEvictionPaused,
+    error,
+    streamErrorMessage,
+  } = useLogs();
   const autoFollow = useAutoFollow();
+  const { estimateSize, observeRowHeight } = useMeasuredRowHeight();
+
+  // The only chrome above the rows that comes and goes
+  const hasErrorLine = Boolean(error);
+  const hasStreamErrorLine = Boolean(streamErrorMessage);
 
   const listRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
@@ -261,7 +279,12 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
 
   const virtualizer = useWindowVirtualizer<HTMLDivElement>({
     count: rows.length,
-    estimateSize: () => ESTIMATED_ROW_HEIGHT,
+    estimateSize,
+    measureElement: (element, entry, instance) => {
+      const size = measureRowElement(element, entry, instance);
+      observeRowHeight(size);
+      return size;
+    },
     getItemKey: (index) => rows[index]!.key,
     overscan: OVERSCAN,
     scrollMargin,
@@ -271,26 +294,17 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
   });
 
   // Rows start below the search bar, so the virtualizer needs their document offset.
-  // It shifts whenever the chrome above them grows, not just on resize.
+  // It only moves when the chrome above them changes, never while scrolling.
   useLayoutEffect(() => {
     const element = listRef.current;
     if (!element) return;
 
-    const sync = () => {
-      const top = element.getBoundingClientRect().top + window.scrollY;
-      setScrollMargin((prev) => (Math.abs(prev - top) < 1 ? prev : top));
-    };
-
+    const sync = () => setScrollMargin(documentTop(element));
     sync();
-    const observer = new ResizeObserver(sync);
-    observer.observe(document.body);
     window.addEventListener("resize", sync);
 
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", sync);
-    };
-  }, []);
+    return () => window.removeEventListener("resize", sync);
+  }, [hasErrorLine, hasStreamErrorLine]);
 
   // followOnAppend only reacts to the list growing, so the first render and
   // switching the toggle back on have to pin to the bottom by hand.
@@ -359,6 +373,7 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
 function SheetLogList({ rows, type, containerType, serviceNamesById }: TListProps) {
   const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused } = useLogs();
   const autoFollow = useAutoFollow();
+  const { estimateSize, observeRowHeight } = useMeasuredRowHeight();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -367,7 +382,12 @@ function SheetLogList({ rows, type, containerType, serviceNamesById }: TListProp
   const virtualizer = useVirtualizer<HTMLDivElement, HTMLDivElement>({
     count: rows.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => ESTIMATED_ROW_HEIGHT,
+    estimateSize,
+    measureElement: (element, entry, instance) => {
+      const size = measureRowElement(element, entry, instance);
+      observeRowHeight(size);
+      return size;
+    },
     getItemKey: (index) => rows[index]!.key,
     overscan: OVERSCAN,
     anchorTo: "end",
@@ -435,6 +455,36 @@ function SheetLogList({ rows, type, containerType, serviceNamesById }: TListProp
       />
     </div>
   );
+}
+
+// Rows swing from a single line to a wrapped stack, so a fixed guess makes a jump
+// to the bottom land short and then crawl there as the tail measures. A rolling
+// average of what rows actually measure follows the viewport instead, and re-settles
+// within a screenful when rotating or toggling wrapping changes every height.
+function useMeasuredRowHeight() {
+  const measured = useRef<number | null>(null);
+
+  const estimateSize = useCallback(() => measured.current ?? SEED_ROW_HEIGHT, []);
+
+  const observeRowHeight = useCallback((size: number) => {
+    const previous = measured.current;
+    measured.current =
+      previous === null ? size : previous + (size - previous) * ROW_HEIGHT_SMOOTHING;
+  }, []);
+
+  return { estimateSize, observeRowHeight };
+}
+
+// offsetTop is a layout value, so unlike a viewport rect it can't drift while a
+// scroll is in flight — and scrollMargin feeds every row's position.
+function documentTop(element: HTMLElement) {
+  let top = 0;
+  let node: HTMLElement | null = element;
+  while (node) {
+    top += node.offsetTop;
+    node = node.offsetParent as HTMLElement | null;
+  }
+  return top;
 }
 
 function useAutoFollow() {
