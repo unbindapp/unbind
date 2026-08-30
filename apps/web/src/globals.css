@@ -55,7 +55,12 @@
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
   --keyboard-inset-height: 0px;
-  --navbar-height: 0px;
+  /* Navbar: tab row + bar row + borders. It sits at the bottom on phones (so it
+     also clears the home indicator) and at the top from sm up, losing the tab row
+     at lg once the tabs move inline. */
+  --navbar-height: calc(5.875rem + var(--safe-area-inset-bottom));
+  /* Log search bar: top padding + the token field (border + py-2.5 + line). */
+  --log-bar-height: 3.25rem;
   --safe-screen-height: calc(100svh - var(--safe-area-inset-bottom));
   --safe-screen-height-keyboard: calc(var(--safe-screen-height) - var(--keyboard-inset-height));
 
@@ -542,6 +547,19 @@
 
   --background-size-pattern: 10px 10px;
   --background-position-pattern: 0px 0px, 5px 5px;
+}
+
+@media (width >= 40rem) {
+  :root {
+    --navbar-height: 5.875rem;
+    --log-bar-height: 3.5rem;
+  }
+}
+
+@media (width >= 64rem) {
+  :root {
+    --navbar-height: 2.9375rem;
+  }
 }
 
 @layer utilities {

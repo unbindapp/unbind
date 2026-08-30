@@ -108,6 +108,8 @@ const SCROLL_THRESHOLD = 50;
 const FETCH_OLDER_THRESHOLD = 300;
 const SEED_ROW_HEIGHT = 28;
 const ROW_HEIGHT_SMOOTHING = 0.1;
+// Slack so a steady tail isn't rescanning the cache on every batch.
+const SIZE_CACHE_SLACK = 500;
 const OVERSCAN = 12;
 const placeholderArray = Array.from({ length: 50 });
 
@@ -198,15 +200,19 @@ function Logs({
       data-container={containerType}
       className={cn(
         "group/wrapper relative flex w-full flex-1 flex-col",
+        isPage && "pt-(--log-bar-height)",
         !isPage && "min-h-0 overflow-hidden",
       )}
     >
-      {/* Top bar that has the input. On the page it stays put while the document scrolls,
-          sitting below the navbar from sm up and above the content on phones. */}
+      {/* Top bar that has the input. On the page it is pinned to the viewport rather
+          than sticky: it never scrolls with the content, and staying out of flow keeps
+          it (and anything anchored to it) put when the list's height changes under it.
+          It sits below the navbar from sm up, and above the content on phones. */}
       <div
         className={cn(
           "relative flex w-full items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]",
-          isPage && "bg-background sticky top-0 z-30 sm:top-(--navbar-height)",
+          isPage &&
+            "bg-background fixed inset-x-0 top-0 z-30 h-(--log-bar-height) sm:top-(--navbar-height)",
         )}
       >
         <div className="relative w-full">
@@ -225,6 +231,15 @@ function Logs({
           />
         </div>
       </div>
+      {searchError && (
+        <div className="w-full pt-1.5 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+          <div className="w-full px-2 sm:px-2.5">
+            <p className="text-warning bg-warning/8 max-w-full rounded-sm px-2.5 py-1 text-xs leading-tight font-medium">
+              {searchError}
+            </p>
+          </div>
+        </div>
+      )}
       {error && logs && logs.length > 0 && (
         <div className="w-full pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
           <div className="w-full px-2 sm:px-2.5">
@@ -264,6 +279,7 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
     setEvictionPaused,
     error,
     streamErrorMessage,
+    bufferKey,
   } = useLogs();
   const autoFollow = useAutoFollow();
   const { estimateSize, observeRowHeight } = useMeasuredRowHeight();
@@ -293,6 +309,8 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
     scrollEndThreshold: SCROLL_THRESHOLD,
   });
 
+  usePrunedSizeCache(virtualizer.itemSizeCache, rows);
+
   // Rows start below the search bar, so the virtualizer needs their document offset.
   // It only moves when the chrome above them changes, never while scrolling.
   useLayoutEffect(() => {
@@ -306,8 +324,18 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
     return () => window.removeEventListener("resize", sync);
   }, [hasErrorLine, hasStreamErrorLine]);
 
-  // followOnAppend only reacts to the list growing, so the first render and
-  // switching the toggle back on have to pin to the bottom by hand.
+  // The newest matching lines are what the view should open on, so mounting and
+  // any wholesale buffer swap (filters, range) pin to the bottom. It has to land
+  // before paint: a filter change can replace a very tall list with a short one,
+  // and the frame in between renders against a page that no longer reaches the
+  // scroll position, which pushes sticky chrome out of its collapsed containing
+  // block and leaves popups anchored to it measuring an --available-height of 0.
+  useLayoutEffect(() => {
+    virtualizer.scrollToEnd();
+  }, [bufferKey, virtualizer]);
+
+  // followOnAppend only reacts to the list growing, so switching the toggle back
+  // on has to catch up by hand.
   useEffect(() => {
     if (!autoFollow) return;
     virtualizer.scrollToEnd();
@@ -371,7 +399,7 @@ function PageLogList({ rows, type, containerType, serviceNamesById }: TListProps
 }
 
 function SheetLogList({ rows, type, containerType, serviceNamesById }: TListProps) {
-  const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused } = useLogs();
+  const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused, bufferKey } = useLogs();
   const autoFollow = useAutoFollow();
   const { estimateSize, observeRowHeight } = useMeasuredRowHeight();
 
@@ -395,12 +423,24 @@ function SheetLogList({ rows, type, containerType, serviceNamesById }: TListProp
     scrollEndThreshold: SCROLL_THRESHOLD,
   });
 
-  // followOnAppend only reacts to the list growing, so the first render and
-  // switching the toggle back on have to pin to the bottom by hand.
+  // The newest matching lines are what the view should open on, so mounting and
+  // any wholesale buffer swap (filters, range) pin to the bottom. It has to land
+  // before paint: a filter change can replace a very tall list with a short one,
+  // and the frame in between renders against a page that no longer reaches the
+  // scroll position, which pushes sticky chrome out of its collapsed containing
+  // block and leaves popups anchored to it measuring an --available-height of 0.
+  useLayoutEffect(() => {
+    virtualizer.scrollToEnd();
+  }, [bufferKey, virtualizer]);
+
+  // followOnAppend only reacts to the list growing, so switching the toggle back
+  // on has to catch up by hand.
   useEffect(() => {
     if (!autoFollow) return;
     virtualizer.scrollToEnd();
   }, [autoFollow, virtualizer]);
+
+  usePrunedSizeCache(virtualizer.itemSizeCache, rows);
 
   const syncScrollState = useCallback(() => {
     const element = scrollRef.current;
@@ -455,6 +495,20 @@ function SheetLogList({ rows, type, containerType, serviceNamesById }: TListProp
       />
     </div>
   );
+}
+
+// The virtualizer keys measured heights by row key and never drops entries for rows
+// that leave the list, so a live tail leaks one key per line forever — and our keys
+// carry the whole log message. Trim it back to the rows that still exist.
+function usePrunedSizeCache(itemSizeCache: Map<string | number | bigint, number>, rows: TLogRow[]) {
+  useEffect(() => {
+    if (itemSizeCache.size <= rows.length + SIZE_CACHE_SLACK) return;
+
+    const live = new Set(rows.map((row) => row.key));
+    for (const key of itemSizeCache.keys()) {
+      if (!live.has(key as string)) itemSizeCache.delete(key);
+    }
+  }, [itemSizeCache, rows]);
 }
 
 // Rows swing from a single line to a wrapped stack, so a fixed guess makes a jump
