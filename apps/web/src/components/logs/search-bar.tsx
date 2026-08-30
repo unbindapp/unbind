@@ -81,11 +81,15 @@ const levelIcons: Record<TLogLevel, FC<{ className?: string }>> = {
   error: TriangleAlertIcon,
 };
 
+// Lucide's artwork fills more of its box than the brand icons it sits beside,
+// so the level icons shrink to match.
+const levelIconClassName = "size-4.5 shrink-0 scale-90";
+
 // The option's own class carries the color, and the icons stroke with
 // currentColor, so both stay in step.
 const levelIconNodes: TCachedIcon[] = logLevels.map((level) => {
   const Icon = levelIcons[level];
-  return { key: levelIconKey(level), node: <Icon className="size-4.5 shrink-0" /> };
+  return { key: levelIconKey(level), node: <Icon className={levelIconClassName} /> };
 });
 
 const levelLabels: Record<TLogLevel, string> = {
@@ -309,7 +313,7 @@ function FilterButton({ className }: { className?: string }) {
                     data-level={level}
                     className="data-[level=error]:text-destructive data-[level=warning]:text-warning flex min-w-0 shrink items-center gap-2"
                   >
-                    <Icon className="size-4.5 shrink-0" />
+                    <Icon className={levelIconClassName} />
                     <p className="min-w-0 shrink">{levelLabels[level]}</p>
                   </div>
                 </DropdownMenuCheckboxItem>
