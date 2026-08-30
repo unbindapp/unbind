@@ -25,9 +25,9 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/lib/queries/logs";
-import { useVirtualizer, useWindowVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
+import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
 import { ArrowDownIcon, HourglassIcon, LoaderIcon, SearchIcon } from "lucide-react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 
 type TContainerType = "page" | "sheet";
@@ -180,7 +180,7 @@ function Logs({
     // nothing doesn't tear down the virtualizer and the scroll state with it.
     return (
       <>
-        {isPage ? <PageLogList {...listProps} /> : <SheetLogList {...listProps} />}
+        <LogList {...listProps} />
         {isEmpty && (
           <CenteredCard>
             <NoLogsFound shouldHaveLogs={shouldHaveLogs && !searchError} />
@@ -194,18 +194,13 @@ function Logs({
     <div
       data-container={containerType}
       className={cn(
-        "group/wrapper relative flex w-full flex-1 flex-col",
-        !isPage && "min-h-0 overflow-hidden",
+        "group/wrapper relative flex min-h-0 w-full flex-col overflow-hidden",
+        // The navbar is in flow at the top from sm up and fixed to the bottom
+        // below it, so the same subtraction leaves the page exactly clear of it.
+        isPage ? "h-[calc(100svh-var(--navbar-height))]" : "flex-1",
       )}
     >
-      {/* Top bar that has the input. On the page it stays put while the document scrolls,
-          sitting below the navbar from sm up and above the content on phones. */}
-      <div
-        className={cn(
-          "relative flex w-full items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]",
-          isPage && "bg-background sticky top-0 z-30 sm:top-(--navbar-height)",
-        )}
-      >
+      <div className="relative flex w-full shrink-0 items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
         <div className="relative w-full">
           <SearchBar
             logType={type}
@@ -223,14 +218,14 @@ function Logs({
         </div>
       </div>
       {error && logs && logs.length > 0 && (
-        <div className="w-full pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+        <div className="w-full shrink-0 pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
           <div className="w-full px-2 sm:px-2.5">
             <ErrorLine className="border-destructive/8 border py-1.25" message={error.message} />
           </div>
         </div>
       )}
       {streamErrorMessage && (
-        <div className="w-full pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+        <div className="w-full shrink-0 pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
           <div className="w-full px-2 sm:px-2.5">
             <ErrorLine
               className="border-destructive/8 border py-1.25"
@@ -253,118 +248,7 @@ type TRowsProps = {
 
 type TListProps = TRowsProps & { isEmpty: boolean };
 
-// The document is the scroller so mobile Safari can collapse its address bar,
-// which a nested scroll container never does.
-function PageLogList({ rows, type, containerType, serviceNamesById, isEmpty }: TListProps) {
-  const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused, resultSetKey } = useLogs();
-  const autoFollow = useAutoFollow();
-
-  const listRef = useRef<HTMLDivElement>(null);
-  const [scrollMargin, setScrollMargin] = useState(0);
-  const [isAtBottom, setIsAtBottom] = useState(true);
-  const { expandedKeys, toggleExpanded } = useExpandedKeys();
-
-  const virtualizer = useWindowVirtualizer<HTMLDivElement>({
-    count: rows.length,
-    estimateSize: () => ESTIMATED_ROW_HEIGHT,
-    getItemKey: (index) => rows[index]!.key,
-    overscan: OVERSCAN,
-    scrollMargin,
-    anchorTo: "end",
-    followOnAppend: autoFollow,
-    scrollEndThreshold: SCROLL_THRESHOLD,
-  });
-
-  // Rows start below the search bar, so the virtualizer needs their document offset.
-  // It shifts whenever the chrome above them grows, not just on resize.
-  useLayoutEffect(() => {
-    const element = listRef.current;
-    if (!element) return;
-
-    const sync = () => {
-      const top = element.getBoundingClientRect().top + window.scrollY;
-      setScrollMargin((prev) => (Math.abs(prev - top) < 1 ? prev : top));
-    };
-
-    sync();
-    const observer = new ResizeObserver(sync);
-    observer.observe(document.body);
-    window.addEventListener("resize", sync);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", sync);
-    };
-  }, []);
-
-  // followOnAppend only reacts to the list growing, so the first render, a new
-  // result set, and switching the toggle back on have to pin to the bottom by hand.
-  useEffect(() => {
-    if (!autoFollow) return;
-    virtualizer.scrollToEnd();
-  }, [autoFollow, virtualizer, resultSetKey]);
-
-  const syncScrollState = useCallback(() => {
-    const distanceToBottom =
-      document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
-    const atBottom = distanceToBottom < SCROLL_THRESHOLD;
-    setIsAtBottom(atBottom);
-    // eviction would yank away the history the user is reading
-    setEvictionPaused(!atBottom);
-
-    if (window.scrollY - scrollMargin < FETCH_OLDER_THRESHOLD && hasMoreOlder && !isFetchingOlder) {
-      fetchOlder();
-    }
-  }, [scrollMargin, hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused]);
-
-  const throttledSyncScrollState = useThrottledCallback(syncScrollState, 50);
-
-  useEffect(() => {
-    window.addEventListener("scroll", throttledSyncScrollState, { passive: true });
-    return () => window.removeEventListener("scroll", throttledSyncScrollState);
-  }, [throttledSyncScrollState]);
-
-  // Growing the list moves the bottom without emitting a scroll event
-  useEffect(() => {
-    throttledSyncScrollState();
-  }, [rows.length, throttledSyncScrollState]);
-
-  return (
-    <>
-      <div
-        data-empty={isEmpty || undefined}
-        className="w-full group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))] data-empty:hidden"
-      >
-        <div
-          ref={listRef}
-          className="relative w-full font-mono"
-          style={{ height: virtualizer.getTotalSize() }}
-        >
-          <VirtualRows
-            items={virtualizer.getVirtualItems()}
-            measureElement={virtualizer.measureElement}
-            scrollMargin={scrollMargin}
-            rows={rows}
-            type={type}
-            containerType={containerType}
-            serviceNamesById={serviceNamesById}
-            expandedKeys={expandedKeys}
-            onToggleExpanded={toggleExpanded}
-            hasMoreOlder={hasMoreOlder}
-            isFetchingOlder={isFetchingOlder}
-          />
-        </div>
-      </div>
-      <JumpToLatestButton
-        isAtBottom={isAtBottom}
-        onClick={() => virtualizer.scrollToEnd()}
-        className="fixed bottom-[calc(var(--navbar-height)+0.75rem)] z-30 translate-y-[calc(100%+1.5rem)] sm:bottom-4"
-      />
-    </>
-  );
-}
-
-function SheetLogList({ rows, type, containerType, serviceNamesById, isEmpty }: TListProps) {
+function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TListProps) {
   const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused, resultSetKey } = useLogs();
   const autoFollow = useAutoFollow();
 
@@ -422,27 +306,35 @@ function SheetLogList({ rows, type, containerType, serviceNamesById, isEmpty }: 
           onScroll={throttledSyncScrollState}
           className="min-h-0 w-full flex-1 overflow-y-auto font-mono [overflow-anchor:none]"
         >
-          <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
-            <VirtualRows
-              items={virtualizer.getVirtualItems()}
-              measureElement={virtualizer.measureElement}
-              scrollMargin={0}
-              rows={rows}
-              type={type}
-              containerType={containerType}
-              serviceNamesById={serviceNamesById}
-              expandedKeys={expandedKeys}
-              onToggleExpanded={toggleExpanded}
-              hasMoreOlder={hasMoreOlder}
-              isFetchingOlder={isFetchingOlder}
-            />
+          {/* The width cap lives inside the scroller so the scrollbar stays at the
+              container edge and the fade spans the full width. */}
+          <div className="w-full group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
+            <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+              <VirtualRows
+                items={virtualizer.getVirtualItems()}
+                measureElement={virtualizer.measureElement}
+                rows={rows}
+                type={type}
+                containerType={containerType}
+                serviceNamesById={serviceNamesById}
+                expandedKeys={expandedKeys}
+                onToggleExpanded={toggleExpanded}
+                hasMoreOlder={hasMoreOlder}
+                isFetchingOlder={isFetchingOlder}
+              />
+            </div>
           </div>
         </div>
       </div>
       <JumpToLatestButton
         isAtBottom={isAtBottom}
         onClick={() => virtualizer.scrollToEnd()}
-        className="absolute bottom-3 z-10 translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
+        className={cn(
+          "absolute bottom-3 z-10 translate-y-[calc(100%+1.5rem)] sm:bottom-4",
+          // The sheet reaches the bottom of the screen, the page stops above the navbar
+          containerType === "sheet" &&
+            "translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]",
+        )}
       />
     </div>
   );
@@ -472,7 +364,6 @@ function useExpandedKeys() {
 type TVirtualRowsProps = TRowsProps & {
   items: VirtualItem[];
   measureElement: (node: HTMLDivElement | null) => void;
-  scrollMargin: number;
   expandedKeys: ReadonlySet<string>;
   onToggleExpanded: (key: string) => void;
   hasMoreOlder: boolean;
@@ -482,7 +373,6 @@ type TVirtualRowsProps = TRowsProps & {
 function VirtualRows({
   items,
   measureElement,
-  scrollMargin,
   rows,
   type,
   containerType,
@@ -502,7 +392,7 @@ function VirtualRows({
         data-index={item.index}
         ref={measureElement}
         className="absolute top-0 left-0 w-full"
-        style={{ transform: `translateY(${item.start - scrollMargin}px)` }}
+        style={{ transform: `translateY(${item.start}px)` }}
       >
         {row.kind === "leading" ? (
           hasMoreOlder ? (
@@ -515,7 +405,7 @@ function VirtualRows({
             type={type}
             data-container={containerType}
             data-last={item.index === rows.length - 1 || undefined}
-            classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
+            classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
             logLine={row.line}
             isExpanded={expandedKeys.has(row.key)}
             onToggleExpanded={() => onToggleExpanded(row.key)}
@@ -539,12 +429,7 @@ function PlaceholderList({
   containerType: TContainerType;
 }) {
   return (
-    <div
-      className={cn(
-        "w-full font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]",
-        containerType === "sheet" && "min-h-0 flex-1 overflow-hidden",
-      )}
-    >
+    <div className="min-h-0 w-full flex-1 overflow-hidden font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
       {placeholderArray.map((_, index) => (
         <LogLine
           isPlaceholder
@@ -553,7 +438,7 @@ function PlaceholderList({
           data-container={containerType}
           data-first={index === 0 || undefined}
           data-last={index === placeholderArray.length - 1 || undefined}
-          classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
+          classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
         />
       ))}
     </div>
@@ -562,10 +447,8 @@ function PlaceholderList({
 
 function CenteredCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
-      <div className="w-full px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans sm:px-2.5">
-        {children}
-      </div>
+    <div className="min-h-0 w-full flex-1 overflow-y-auto group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+      <div className="w-full px-2 py-2 font-sans sm:px-2.5">{children}</div>
     </div>
   );
 }
