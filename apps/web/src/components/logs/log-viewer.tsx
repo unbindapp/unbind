@@ -26,7 +26,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/lib/queries/logs";
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
-import { ArrowDownIcon, HourglassIcon, LoaderIcon, SearchIcon } from "lucide-react";
+import { ArrowDownIcon, HourglassIcon, LoaderIcon, RotateCwIcon, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 
@@ -249,7 +249,8 @@ type TRowsProps = {
 type TListProps = TRowsProps & { isEmpty: boolean };
 
 function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TListProps) {
-  const { hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused, resultSetKey } = useLogs();
+  const { hasMoreOlder, isFetchingOlder, olderError, fetchOlder, setEvictionPaused, resultSetKey } =
+    useLogs();
   const autoFollow = useAutoFollow();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -283,10 +284,16 @@ function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TList
     // eviction would yank away the history the user is reading
     setEvictionPaused(!atBottom);
 
-    if (element.scrollTop < FETCH_OLDER_THRESHOLD && hasMoreOlder && !isFetchingOlder) {
+    // a failed page disarms this until the user retries by hand
+    if (
+      element.scrollTop < FETCH_OLDER_THRESHOLD &&
+      hasMoreOlder &&
+      !isFetchingOlder &&
+      !olderError
+    ) {
       fetchOlder();
     }
-  }, [hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused]);
+  }, [hasMoreOlder, isFetchingOlder, olderError, fetchOlder, setEvictionPaused]);
 
   const throttledSyncScrollState = useThrottledCallback(syncScrollState, 50);
 
@@ -321,6 +328,8 @@ function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TList
                 onToggleExpanded={toggleExpanded}
                 hasMoreOlder={hasMoreOlder}
                 isFetchingOlder={isFetchingOlder}
+                olderError={olderError}
+                onRetryOlder={fetchOlder}
               />
             </div>
           </div>
@@ -368,6 +377,8 @@ type TVirtualRowsProps = TRowsProps & {
   onToggleExpanded: (key: string) => void;
   hasMoreOlder: boolean;
   isFetchingOlder: boolean;
+  olderError: string | null;
+  onRetryOlder: () => void;
 };
 
 function VirtualRows({
@@ -381,6 +392,8 @@ function VirtualRows({
   onToggleExpanded,
   hasMoreOlder,
   isFetchingOlder,
+  olderError,
+  onRetryOlder,
 }: TVirtualRowsProps) {
   return items.map((item) => {
     const row = rows[item.index];
@@ -396,7 +409,11 @@ function VirtualRows({
       >
         {row.kind === "leading" ? (
           hasMoreOlder ? (
-            <OlderLogsIndicator isFetching={isFetchingOlder} />
+            <OlderLogsIndicator
+              isFetching={isFetchingOlder}
+              error={olderError}
+              onRetry={onRetryOlder}
+            />
           ) : (
             <LogsStartIndicator />
           )
@@ -481,7 +498,31 @@ function JumpToLatestButton({
   );
 }
 
-function OlderLogsIndicator({ isFetching }: { isFetching: boolean }) {
+function OlderLogsIndicator({
+  isFetching,
+  error,
+  onRetry,
+}: {
+  isFetching: boolean;
+  error: string | null;
+  onRetry: () => void;
+}) {
+  if (error) {
+    return (
+      <div className="flex w-full flex-col items-start gap-2 px-2 pt-4 pb-2.5 font-sans sm:px-2.5">
+        <ErrorLine
+          withIcon
+          className="border-destructive/8 border py-1.25"
+          message={`Couldn't load older logs. ${error}`}
+        />
+        <Button size="sm" variant="outline" onClick={onRetry}>
+          <RotateCwIcon className="-ml-1.5 size-4" />
+          <p className="truncate leading-tight">Retry</p>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="text-muted-foreground flex w-full items-center justify-center gap-1.5 px-2 pt-4 pb-2.5 font-sans text-xs">
       <LoaderIcon

@@ -142,6 +142,7 @@ type TLogsContext = {
   isLive: boolean;
   hasMoreOlder: boolean;
   isFetchingOlder: boolean;
+  olderError: string | null;
   fetchOlder: () => void;
   searchError: string | null;
   setEvictionPaused: (paused: boolean) => void;
@@ -302,6 +303,7 @@ export const LogsProvider: React.FC<TProps> = ({
 
   const [buffer, dispatch] = useReducer(bufferReducer, emptyBuffer);
   const [isFetchingOlder, setIsFetchingOlder] = useState(false);
+  const [olderError, setOlderError] = useState<string | null>(null);
   const [streamErrorMessage, setStreamErrorMessage] = useState<string | null>(null);
 
   // Seed/replace the buffer whenever the initial page for the current
@@ -317,6 +319,7 @@ export const LogsProvider: React.FC<TProps> = ({
       nextCursor: initialData.nextCursor,
     });
     setStreamErrorMessage(null);
+    setOlderError(null);
   }, [initialData, initialIsPlaceholder, identityKey]);
 
   const bufferReady = buffer.identityKey === identityKey;
@@ -393,6 +396,7 @@ export const LogsProvider: React.FC<TProps> = ({
     if (fetchOlderRef.current || !bufferReady || !buffer.nextCursor) return;
     fetchOlderRef.current = true;
     setIsFetchingOlder(true);
+    setOlderError(null);
     // tie the page to the identity it was requested for, so a filter change
     // mid-flight can't leak the wrong logs into the fresh buffer
     const requestIdentityKey = identityKey;
@@ -408,8 +412,10 @@ export const LogsProvider: React.FC<TProps> = ({
         lines: page.logs,
         nextCursor: page.nextCursor,
       });
-    } catch {
-      // scrolling up again retries
+    } catch (error) {
+      // the scroll trigger stays disarmed until the user retries, so a failing
+      // endpoint isn't hammered by every jiggle at the top of the list
+      setOlderError(error instanceof Error ? error.message : "Failed to load older logs");
     } finally {
       fetchOlderRef.current = false;
       setIsFetchingOlder(false);
@@ -433,6 +439,7 @@ export const LogsProvider: React.FC<TProps> = ({
       isLive,
       hasMoreOlder: bufferReady && buffer.hasMoreOlder,
       isFetchingOlder,
+      olderError,
       fetchOlder,
       searchError,
       setEvictionPaused,
@@ -448,6 +455,7 @@ export const LogsProvider: React.FC<TProps> = ({
       streamFatalError,
       isLive,
       isFetchingOlder,
+      olderError,
       fetchOlder,
       searchError,
       setEvictionPaused,
