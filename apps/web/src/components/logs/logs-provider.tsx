@@ -32,8 +32,6 @@ import {
 
 const MAX_BUFFER_LINES = 10_000;
 
-type TLogsChange = "reset" | "append" | "prepend";
-
 export type TBufferedLogLine = TLogLine & { key: string };
 
 type TBufferState = {
@@ -42,7 +40,6 @@ type TBufferState = {
   keys: Set<string>;
   nextCursor: string | undefined;
   hasMoreOlder: boolean;
-  lastChange: TLogsChange;
 };
 
 const emptyBuffer: TBufferState = {
@@ -51,7 +48,6 @@ const emptyBuffer: TBufferState = {
   keys: new Set(),
   nextCursor: undefined,
   hasMoreOlder: false,
-  lastChange: "reset",
 };
 
 function withKeys(lines: TLogLine[], seen: Set<string>): TBufferedLogLine[] {
@@ -86,7 +82,6 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
         keys,
         nextCursor: action.nextCursor,
         hasMoreOlder: Boolean(action.nextCursor),
-        lastChange: "reset",
       };
     }
     case "append": {
@@ -113,7 +108,7 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
         }
       }
 
-      return { ...state, lines, keys, nextCursor, hasMoreOlder, lastChange: "append" };
+      return { ...state, lines, keys, nextCursor, hasMoreOlder };
     }
     case "prepend": {
       if (state.identityKey !== action.identityKey) return state;
@@ -121,7 +116,7 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
       const fresh = withKeys(action.lines, keys);
       // an all-duplicate page with an unchanged cursor would loop forever
       if (fresh.length === 0 && action.nextCursor === state.nextCursor) {
-        return { ...state, hasMoreOlder: false, lastChange: "prepend" };
+        return { ...state, hasMoreOlder: false };
       }
       return {
         ...state,
@@ -129,7 +124,6 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
         keys,
         nextCursor: action.nextCursor,
         hasMoreOlder: Boolean(action.nextCursor),
-        lastChange: "prepend",
       };
     }
   }
@@ -147,7 +141,6 @@ type TLogsContext = {
   hasMoreOlder: boolean;
   isFetchingOlder: boolean;
   fetchOlder: () => void;
-  lastChange: TLogsChange;
   searchError: string | null;
   setEvictionPaused: (paused: boolean) => void;
 };
@@ -438,7 +431,6 @@ export const LogsProvider: React.FC<TProps> = ({
       hasMoreOlder: bufferReady && buffer.hasMoreOlder,
       isFetchingOlder,
       fetchOlder,
-      lastChange: buffer.lastChange,
       searchError,
       setEvictionPaused,
     }),

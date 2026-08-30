@@ -55,6 +55,7 @@
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
   --keyboard-inset-height: 0px;
+  --navbar-height: 0px;
   --safe-screen-height: calc(100svh - var(--safe-area-inset-bottom));
   --safe-screen-height-keyboard: calc(var(--safe-screen-height) - var(--keyboard-inset-height));
 
