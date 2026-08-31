@@ -213,6 +213,7 @@ function VariableValueField({ Field, subField, language, referencesDisabled }: T
       onChange={(value) => subField.handleChange(value)}
       language={referencesDisabled ? undefined : language}
       completionAdditions={referencesDisabled ? undefined : completionAdditions}
+      anchorDropdownToField
       multiline
       trailing={
         referencesDisabled ? undefined : (

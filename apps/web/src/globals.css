@@ -736,10 +736,11 @@
   overflow: hidden;
 
   /* On phones the caret-anchored popup reads badly, so it lines up with the
-     field that triggered it. The insets are published by TokenField, since
-     CodeMirror has no anchor-width equivalent. These need !important to beat
-     CodeMirror's inline positioning. */
-  @variant max-sm {
+     field that triggered it; fields with anchorDropdownToField line up on every
+     viewport. The insets are published by TokenField, since CodeMirror has no
+     anchor-width equivalent. These need !important to beat CodeMirror's inline
+     positioning. */
+  &.token-field-tooltip-anchored {
     left: var(--token-field-anchor-left, 0.75rem) !important;
     right: var(--token-field-anchor-right, 0.75rem) !important;
     width: auto !important;
@@ -747,6 +748,17 @@
 
     /* CodeMirror caps the list at min(700px, 95vw). Once the popup is stretched
        to the field, that cap leaves dead space down the right-hand side. */
+    & > ul {
+      max-width: none !important;
+    }
+  }
+
+  @variant max-sm {
+    left: var(--token-field-anchor-left, 0.75rem) !important;
+    right: var(--token-field-anchor-right, 0.75rem) !important;
+    width: auto !important;
+    max-width: none !important;
+
     & > ul {
       max-width: none !important;
     }

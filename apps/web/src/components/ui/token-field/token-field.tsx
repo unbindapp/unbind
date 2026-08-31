@@ -39,6 +39,8 @@ export type TTokenFieldProps = {
   multiline?: boolean;
   /** Extra DOM injected into each completion option, e.g. an icon. */
   completionAdditions?: TCompletionAddition[];
+  /** Stretches the dropdown to the field's width on every viewport, not just phones. */
+  anchorDropdownToField?: boolean;
   ariaLabel?: string;
   ariaInvalid?: boolean;
   disabled?: boolean;
@@ -73,6 +75,7 @@ export default function TokenField({
   placeholder,
   multiline,
   completionAdditions,
+  anchorDropdownToField,
   ariaLabel,
   ariaInvalid,
   disabled,
@@ -96,6 +99,7 @@ export default function TokenField({
   onBlurRef.current = onBlur;
   // Static config, read once: reacting to it would rebuild the whole editor.
   const completionAdditionsRef = useRef(completionAdditions);
+  const anchorDropdownToFieldRef = useRef(anchorDropdownToField);
   // Tracks the value both sides agree on, so neither direction echoes the other.
   const syncedValueRef = useRef(value);
 
@@ -176,7 +180,7 @@ export default function TokenField({
       languageCompartment.current.of(language ?? []),
       editableCompartment.current.of(EditorView.editable.of(!disabled)),
       syntaxHighlighting(tokenFieldHighlightStyle),
-      tokenFieldAutocomplete(completionAdditionsRef.current),
+      tokenFieldAutocomplete(completionAdditionsRef.current, anchorDropdownToFieldRef.current),
       // CodeMirror falls back to absolute tooltip positioning on iOS, where an
       // ancestor's overflow:hidden then clips the dropdown. Rendering into the
       // body escapes every clipping ancestor.

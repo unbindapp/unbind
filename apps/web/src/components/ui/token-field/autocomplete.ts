@@ -10,13 +10,17 @@ export type TCompletionAddition = {
   render: (completion: Completion, state: EditorState, view: EditorView) => Node | null;
 };
 
-export function tokenFieldAutocomplete(addToOptions?: TCompletionAddition[]): Extension {
+export function tokenFieldAutocomplete(
+  addToOptions?: TCompletionAddition[],
+  anchorToField?: boolean,
+): Extension {
   return autocompletion({
     icons: false,
     closeOnBlur: true,
     maxRenderedOptions: 50,
     activateOnCompletion: (completion) => (completion as TChainedCompletion).chain === true,
-    tooltipClass: () => "token-field-tooltip",
+    tooltipClass: () =>
+      anchorToField ? "token-field-tooltip token-field-tooltip-anchored" : "token-field-tooltip",
     optionClass: (completion) => `token-field-option-${completion.type ?? "default"}`,
     ...(addToOptions ? { addToOptions } : {}),
   });
