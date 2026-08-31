@@ -68,7 +68,7 @@ function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
     <ToastPrimitive.Content
       data-slot="toast-content"
       className={cn(
-        "flex h-full gap-2 overflow-hidden px-4 py-3.5 pr-12 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
+        "flex h-full gap-2 overflow-hidden px-4 py-3.5 pr-10 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
         className,
       )}
       {...props}
@@ -109,7 +109,7 @@ function ToastClose({ className, ...props }: ToastPrimitive.Close.Props) {
       aria-label="Close toast"
       className={cn("text-muted-more-foreground absolute top-1 right-1", className)}
       render={
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="size-8">
           <XIcon className="size-4.5" />
         </Button>
       }
