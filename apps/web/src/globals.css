@@ -814,7 +814,7 @@
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .token-field-reference-punct {
-  color: var(--muted-more-foreground);
+  color: var(--muted-most-foreground);
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .token-field-reference-source {
