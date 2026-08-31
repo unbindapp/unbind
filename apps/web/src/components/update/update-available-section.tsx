@@ -151,7 +151,7 @@ function UpdateSectionInner({
       >
         <div className="relative size-8 transition group-data-[phase=updating]/section:rotate-180">
           <CircleArrowUpIcon className="size-full opacity-0 transition group-data-[phase=idle]/section:opacity-100" />
-          <HourglassIcon className="animate-hourglass-long text-process touch: absolute top-0 left-0 size-full scale-80 opacity-0 transition group-data-[phase=updating]/section:opacity-100" />
+          <HourglassIcon className="animate-hourglass-long text-process absolute top-0 left-0 size-full opacity-0 transition group-data-[phase=updating]/section:opacity-100" />
           <CircleCheckBigIcon className="text-success absolute top-0 left-0 size-full opacity-0 transition group-data-[phase=succeeded]/section:opacity-100" />
           <CircleXIcon className="text-destructive absolute top-0 left-0 size-full opacity-0 transition group-data-[phase=failed]/section:opacity-100" />
         </div>

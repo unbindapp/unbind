@@ -17,7 +17,7 @@ apps/web/src/components/icons/brand.tsx
 fallback:
 
 ```tsx
-return <BanIcon className={cn("scale-85", defaultClassName, className)} {...rest} />;
+return <BanIcon className={cn(defaultClassName, className)} {...rest} />;
 ```
 
 So `Icon: "myapp"` with no matching block → users see a "ban" (∅) icon. Both the template's
@@ -80,11 +80,11 @@ localStorage, max 10) and opens the deploy panel.
 `apps/web/src/components/templates/panel/template-draft-panel-content.tsx` builds the form
 from `template.definition.inputs`, skipping `hidden` inputs. Field by `type`:
 
-| Input type | Component |
-|------------|-----------|
-| `host` | `DomainInput` (auto-fills the install's wildcard domain) |
+| Input type                     | Component                                                                 |
+| ------------------------------ | ------------------------------------------------------------------------- |
+| `host`                         | `DomainInput` (auto-fills the install's wildcard domain)                  |
 | `database-size`, `volume-size` | `StorageSizeInput` slider (min/max/step from system storage settings; GB) |
-| `variable`, `generated-*` | text field |
+| `variable`, `generated-*`      | text field                                                                |
 
 `required`, `default`, and `description` drive validation, prefill, and help text. You get
 the form for free by declaring inputs correctly — no frontend work needed beyond the icon.

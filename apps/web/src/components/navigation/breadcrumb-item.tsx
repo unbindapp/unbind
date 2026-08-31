@@ -131,9 +131,7 @@ export function BreadcrumbItem<T>({
   );
 
   const ManageItemIcon = useCallback(
-    ({ className }: { className?: string }) => (
-      <SettingsIcon className={cn("scale-90", className)} />
-    ),
+    ({ className }: { className?: string }) => <SettingsIcon className={cn(className)} />,
     [],
   );
 
