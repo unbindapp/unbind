@@ -11,6 +11,7 @@ import {
   type ViewUpdate,
 } from "@codemirror/view";
 import { styleTags, tags as t } from "@lezer/highlight";
+import { decodeRangeToken, logRangePresets } from "./log-range";
 import { resolveCompletionTarget } from "./log-search-completion";
 import type { TClientAttributeKey } from "./log-search-scope";
 import { parser } from "./log-search.gen";
@@ -76,6 +77,9 @@ function resolveValueChip(key: string, value: string, data: TLogSearchData) {
     const level = value.toLowerCase();
     if (!data.levels.includes(level)) return null;
     return levelValueChip[level] ?? valueChip;
+  }
+  if (key === "range") {
+    return decodeRangeToken(value) ? valueChip : null;
   }
   if (key !== "service") return null;
   // Undefined until the list loads. parseSearchInput still extracts the name
@@ -158,6 +162,7 @@ function applyValue(view: EditorView, completion: Completion, from: number, to: 
 const attributeKeyOptions: Record<TClientAttributeKey, TChainedCompletion> = {
   level: { label: "@level:", type: "key", chain: true },
   service: { label: "@service:", type: "key", chain: true },
+  range: { label: "@range:", type: "key", chain: true },
 };
 
 function completionAt(context: CompletionContext, data: TLogSearchData): CompletionResult | null {
@@ -185,7 +190,20 @@ function completionAt(context: CompletionContext, data: TLogSearchData): Complet
         type: `level-${level}`,
         apply: applyValue,
       })),
-      validFor: /^[^\s":]*$/,
+      validFor: /^[^\s"]*$/,
+    };
+  }
+
+  if (target.key === "range") {
+    return {
+      from: target.from,
+      to: target.to,
+      options: logRangePresets.map((preset) => ({
+        label: preset,
+        type: "range",
+        apply: applyValue,
+      })),
+      validFor: /^[^\s"]*$/,
     };
   }
 
@@ -199,7 +217,7 @@ function completionAt(context: CompletionContext, data: TLogSearchData): Complet
       type: "service",
       apply: applyValue,
     }));
-    return { from: target.from, to: target.to, options, validFor: /^[^\s":]*$/ };
+    return { from: target.from, to: target.to, options, validFor: /^[^\s"]*$/ };
   }
 
   return null;

@@ -1,15 +1,19 @@
 "use client";
 
+import { buildSearchText, extractSearchFilters } from "@/components/logs/log-filter-search";
 import {
   decodeRange,
   defaultLogRange,
   encodeRange,
   type TLogRange,
 } from "@/components/logs/log-range";
+import { logSearchScopes } from "@/components/logs/log-search-scope";
+import { buildServiceTokens } from "@/components/logs/service-tokens";
+import { useServices } from "@/components/service/services-provider";
 import { TLogLevel, TLogType } from "@/lib/queries/logs";
 import { LogLevelSchema } from "@/lib/server/client.gen";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
 
 const routeApi = getRouteApi("/$team_id/project/$project_id");
 
@@ -50,8 +54,12 @@ const paramKeys: Record<TLogType, { [K in "q" | "levels" | "services" | "range"]
 };
 
 type TLogFiltersContext = {
+  /** The free-text part of the search (the `q` param), tokens already extracted. */
   search: string;
-  setSearch: (value: string | null) => void;
+  /** Canonical search bar text: the filters as tokens, then the free text. */
+  searchText: string;
+  /** Parses bar text into the filter params; returns the canonical text it committed. */
+  commitSearch: (value: string) => string;
   levels: TLogLevel[];
   setLevels: (levels: TLogLevel[]) => void;
   serviceIds: string[];
@@ -77,7 +85,17 @@ type TProps = {
 export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
   const { range: rangeEnabled, services: servicesEnabled } = logTypeCapabilities[logType];
   const keys = paramKeys[logType];
+  const { attributeKeys } = logSearchScopes[logType];
   const navigate = useNavigate();
+
+  const {
+    query: { data: servicesData },
+  } = useServices();
+  const serviceTokens = useMemo(
+    () => buildServiceTokens(servicesData?.services ?? []),
+    [servicesData],
+  );
+  const servicesLoaded = Boolean(servicesData);
 
   const rawParams = routeApi.useSearch({
     select: (s: Record<string, string | undefined>) => ({
@@ -102,13 +120,103 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
     [navigate],
   );
 
-  const setSearch = useCallback(
-    (value: string | null) => setParams({ [keys.q]: value || undefined }),
-    [setParams, keys.q],
+  const search = rawParams.q ?? "";
+  const levels = useMemo(() => decodeLevels(rawParams.levels), [rawParams.levels]);
+  const serviceIds = useMemo(
+    () => (servicesEnabled ? decodeList(rawParams.services) : []),
+    [servicesEnabled, rawParams.services],
   );
+  const range = useMemo(
+    () => (rangeEnabled ? decodeRange(rawParams.range) : defaultLogRange),
+    [rangeEnabled, rawParams.range],
+  );
+  const rangeIsSet = rangeEnabled && rawParams.range !== undefined;
+
+  const extractOptions = useMemo(
+    () => ({ attributeKeys, serviceTokens, servicesLoaded }),
+    [attributeKeys, serviceTokens, servicesLoaded],
+  );
+
+  const searchText = useMemo(
+    () =>
+      buildSearchText(
+        { levels, serviceIds, range: rangeIsSet ? range : null },
+        search,
+        serviceTokens,
+      ),
+    [levels, serviceIds, range, rangeIsSet, search, serviceTokens],
+  );
+
+  const commitSearch = useCallback(
+    (input: string): string => {
+      const extracted = extractSearchFilters(input, extractOptions);
+      if (extracted.error) {
+        // a typo shouldn't wipe the other filters; park the text and wait
+        setParams({ [keys.q]: input || undefined });
+        return buildSearchText(
+          { levels, serviceIds, range: rangeIsSet ? range : null },
+          input,
+          serviceTokens,
+        );
+      }
+      const patch: Record<string, string | undefined> = {
+        [keys.q]: extracted.q || undefined,
+        [keys.levels]: extracted.levels.length ? extracted.levels.join(",") : undefined,
+        [keys.range]: extracted.range ? encodeRange(extracted.range) : undefined,
+      };
+      // Replacing the services while the list is unknown would wipe filters
+      // the bar can't even render yet.
+      if (servicesLoaded) {
+        patch[keys.services] = extracted.serviceIds.length
+          ? extracted.serviceIds.join(",")
+          : undefined;
+      }
+      setParams(patch);
+      return buildSearchText(
+        {
+          levels: extracted.levels,
+          serviceIds: servicesLoaded ? extracted.serviceIds : serviceIds,
+          range: extracted.range,
+        },
+        extracted.q,
+        serviceTokens,
+      );
+    },
+    [
+      extractOptions,
+      setParams,
+      keys,
+      levels,
+      serviceIds,
+      range,
+      rangeIsSet,
+      serviceTokens,
+      servicesLoaded,
+    ],
+  );
+
+  // Tokens can be left sitting in `q` — committed before the service list
+  // loaded, or a hand-written URL. Fold them into the params once they resolve
+  // so the filter menu reflects them too; existing params win on conflict.
+  useEffect(() => {
+    if (!search) return;
+    const extracted = extractSearchFilters(search, extractOptions);
+    if (extracted.error || extracted.q === search) return;
+    const mergedLevels = [...new Set([...levels, ...extracted.levels])];
+    const patch: Record<string, string | undefined> = {
+      [keys.q]: extracted.q || undefined,
+      [keys.levels]: mergedLevels.length ? mergedLevels.join(",") : undefined,
+    };
+    if (servicesLoaded) {
+      const mergedServiceIds = [...new Set([...serviceIds, ...extracted.serviceIds])];
+      patch[keys.services] = mergedServiceIds.length ? mergedServiceIds.join(",") : undefined;
+    }
+    if (!rangeIsSet && extracted.range) patch[keys.range] = encodeRange(extracted.range);
+    setParams(patch);
+  }, [search, extractOptions, levels, serviceIds, rangeIsSet, servicesLoaded, keys, setParams]);
+
   const setLevels = useCallback(
-    (levels: TLogLevel[]) =>
-      setParams({ [keys.levels]: levels.length ? levels.join(",") : undefined }),
+    (next: TLogLevel[]) => setParams({ [keys.levels]: next.length ? next.join(",") : undefined }),
     [setParams, keys.levels],
   );
   const setServiceIds = useCallback(
@@ -116,8 +224,8 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
     [setParams, keys.services],
   );
   const setRange = useCallback(
-    (range: TLogRange | null) =>
-      setParams({ [keys.range]: range === null ? undefined : encodeRange(range) }),
+    (next: TLogRange | null) =>
+      setParams({ [keys.range]: next === null ? undefined : encodeRange(next) }),
     [setParams, keys.range],
   );
 
@@ -148,14 +256,11 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
     [setParams, keys],
   );
 
-  const value: TLogFiltersContext = useMemo(() => {
-    const levels = decodeLevels(rawParams.levels);
-    const serviceIds = servicesEnabled ? decodeList(rawParams.services) : [];
-    const range = rangeEnabled ? decodeRange(rawParams.range) : defaultLogRange;
-    const rangeIsSet = rangeEnabled && rawParams.range !== undefined;
-    return {
-      search: rawParams.q ?? "",
-      setSearch,
+  const value: TLogFiltersContext = useMemo(
+    () => ({
+      search,
+      searchText,
+      commitSearch,
       levels,
       setLevels,
       serviceIds,
@@ -164,23 +269,28 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
       setRange,
       viewInContext,
       resetFilters,
-      hasActiveFilters:
-        Boolean(rawParams.q) || levels.length > 0 || serviceIds.length > 0 || rangeIsSet,
+      hasActiveFilters: Boolean(search) || levels.length > 0 || serviceIds.length > 0 || rangeIsSet,
       rangeIsSet,
       rangeEnabled,
       servicesEnabled,
-    };
-  }, [
-    rawParams,
-    setSearch,
-    setLevels,
-    setServiceIds,
-    setRange,
-    viewInContext,
-    resetFilters,
-    rangeEnabled,
-    servicesEnabled,
-  ]);
+    }),
+    [
+      search,
+      searchText,
+      commitSearch,
+      levels,
+      setLevels,
+      serviceIds,
+      setServiceIds,
+      range,
+      setRange,
+      viewInContext,
+      resetFilters,
+      rangeIsSet,
+      rangeEnabled,
+      servicesEnabled,
+    ],
+  );
 
   return <LogFiltersContext.Provider value={value}>{children}</LogFiltersContext.Provider>;
 };

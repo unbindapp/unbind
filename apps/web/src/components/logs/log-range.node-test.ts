@@ -4,8 +4,10 @@ import { describe, it } from "node:test";
 import {
   activeLogRangePreset,
   decodeRange,
+  decodeRangeToken,
   defaultLogRange,
   encodeRange,
+  encodeRangeToken,
   isLiveRange,
   resolveLogRange,
   type TLogRange,
@@ -94,30 +96,93 @@ describe("range url codec", () => {
     });
   }
 
-  it("encodes a bare preset without the custom fields", () => {
+  it("encodes a bare preset for a live preset range", () => {
     assert.equal(encodeRange({ preset: "5m" }), "5m");
-    assert.equal(encodeRange({ preset: "5m", until }), `5m::${until}`);
-    assert.equal(encodeRange({ from, until }), `:${from}:${until}`);
+  });
+
+  it("writes UTC timestamps, dropping the parts that are zero", () => {
+    assert.equal(encodeRange({ preset: "5m", until }), "5m..2026-01-02_12:00");
+    assert.equal(encodeRange({ from, until }), "2026-01-01_12:00..2026-01-02_12:00");
+    assert.equal(encodeRange({ from: Date.UTC(2026, 0, 1) }), "2026-01-01..");
+    assert.equal(encodeRange({ from: Date.UTC(2026, 0, 1, 12, 0, 30) }), "2026-01-01_12:00:30..");
+  });
+
+  it("rounds sub-second moments outward", () => {
+    assert.equal(
+      encodeRange({ from: from + 900, until: until + 100 }),
+      "2026-01-01_12:00..2026-01-02_12:00:01",
+    );
   });
 
   it("drops the preset from the encoding once from pins the start", () => {
     assert.deepEqual(decodeRange(encodeRange({ preset: "5m", from })), { from, until: undefined });
   });
 
-  it("still reads links written in the old c:from:to form", () => {
-    assert.deepEqual(decodeRange(`c:${from}:${until}`), { from, until });
-    assert.deepEqual(decodeRange(`c:${from}:`), { from, until: undefined });
+  it("reads an until with no start as anchored to the default preset", () => {
+    const decoded = decodeRange("..2026-01-02_12:00");
+    assert.equal(activeLogRangePreset(decoded), "24h");
+    assert.deepEqual(resolveLogRange(decoded), resolveLogRange({ until }));
   });
 
   it("falls back to the default for empty or malformed values", () => {
     assert.deepEqual(decodeRange(undefined), defaultLogRange);
     assert.deepEqual(decodeRange(""), defaultLogRange);
-    assert.deepEqual(decodeRange("::"), defaultLogRange);
+    assert.deepEqual(decodeRange(".."), defaultLogRange);
     assert.deepEqual(decodeRange("nonsense"), defaultLogRange);
-    assert.deepEqual(decodeRange("1h:abc:def"), defaultLogRange);
+    assert.deepEqual(decodeRange("99y..2026-01-02_12:00"), defaultLogRange);
+    assert.deepEqual(decodeRange("2026-13-01.."), defaultLogRange);
+    assert.deepEqual(decodeRange("2026-01-01_25:00.."), defaultLogRange);
   });
 
-  it("repairs an unknown preset next to a valid until", () => {
-    assert.deepEqual(decodeRange(`99y::${until}`), { preset: "24h", until });
+  it("rejects a range that ends before it starts", () => {
+    assert.deepEqual(decodeRange("2026-01-02_12:00..2026-01-01_12:00"), defaultLogRange);
+    assert.deepEqual(decodeRange("2026-01-01_12:00..2026-01-01_12:00"), defaultLogRange);
   });
+});
+
+describe("range token codec", () => {
+  const localNoon = new Date(2026, 0, 1, 12, 0).getTime();
+  const localLater = new Date(2026, 0, 2, 12, 0).getTime();
+
+  it("writes local time and reads it back", () => {
+    assert.equal(encodeRangeToken({ preset: "1h" }), "1h");
+    assert.equal(
+      encodeRangeToken({ from: localNoon, until: localLater }),
+      "2026-01-01_12:00..2026-01-02_12:00",
+    );
+    assert.deepEqual(decodeRangeToken("2026-01-01_12:00..2026-01-02_12:00"), {
+      from: localNoon,
+      until: localLater,
+    });
+    assert.deepEqual(decodeRangeToken("2026-01-01_12:00.."), { from: localNoon, until: undefined });
+    assert.deepEqual(decodeRangeToken("1h..2026-01-02_12:00"), { preset: "1h", until: localLater });
+  });
+
+  it("accepts a bare date as local midnight", () => {
+    assert.deepEqual(decodeRangeToken("2026-01-01.."), {
+      from: new Date(2026, 0, 1).getTime(),
+      until: undefined,
+    });
+  });
+
+  it("is null for malformed values so they can stay plain terms", () => {
+    assert.equal(decodeRangeToken(""), null);
+    assert.equal(decodeRangeToken("nonsense"), null);
+    assert.equal(decodeRangeToken(".."), null);
+    assert.equal(decodeRangeToken("2026-01-02_12:00..2026-01-01_12:00"), null);
+  });
+
+  for (const range of [
+    { preset: "15m" },
+    { from: localNoon },
+    { from: localNoon, until: localLater },
+    { preset: "6h", until: localLater },
+  ] satisfies TLogRange[]) {
+    it(`round trips ${JSON.stringify(range)}`, () => {
+      const decoded = decodeRangeToken(encodeRangeToken(range));
+      assert.ok(decoded);
+      assert.deepEqual(resolveLogRange(decoded), resolveLogRange(range));
+      assert.equal(encodeRangeToken(decoded), encodeRangeToken(range));
+    });
+  }
 });

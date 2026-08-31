@@ -206,7 +206,7 @@ export const LogsProvider: React.FC<TProps> = ({
   httpDefaultEndTimestamp,
   children,
 }) => {
-  const { search, levels, serviceIds, range } = useLogFilters();
+  const { search, levels, serviceIds, range, rangeIsSet } = useLogFilters();
   const {
     query: { data: servicesData },
   } = useServices();
@@ -245,8 +245,12 @@ export const LogsProvider: React.FC<TProps> = ({
 
   const searchError = parsedSearch.error;
 
+  // A @range token still sitting in the text (not yet folded into the params)
+  // counts like the other merged filters; an explicit param wins.
+  const effectiveRange = rangeIsSet ? range : (parsedSearch.range ?? range);
+
   // Anchor the window when the range changes, not on every render.
-  const rangeKey = JSON.stringify(range);
+  const rangeKey = JSON.stringify(effectiveRange);
   const explicitWindow = Boolean(httpDefaultStartTimestamp || httpDefaultEndTimestamp);
   const timeWindow = useMemo(() => {
     if (explicitWindow) {
@@ -257,11 +261,11 @@ export const LogsProvider: React.FC<TProps> = ({
         end: httpDefaultEndTimestamp ? new Date(httpDefaultEndTimestamp).toISOString() : null,
       };
     }
-    return resolveLogRange(range);
+    return resolveLogRange(effectiveRange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rangeKey, explicitWindow, httpDefaultStartTimestamp, httpDefaultEndTimestamp]);
 
-  const isLive = explicitWindow ? !httpDefaultEndTimestamp : isLiveRange(range);
+  const isLive = explicitWindow ? !httpDefaultEndTimestamp : isLiveRange(effectiveRange);
 
   const queryInput = useMemo(
     () => ({

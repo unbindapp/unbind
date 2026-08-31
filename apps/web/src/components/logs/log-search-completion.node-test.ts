@@ -81,3 +81,18 @@ test("unknown keys resolve so the source can decline them", () => {
 test("quoted phrases are not attributes", () => {
   assert.equal(resolveCompletionTarget('"a b"', 3), null);
 });
+
+// Range values contain colons; only the first colon splits key from value.
+test("a value with colons is one replacement range", () => {
+  const input = "@range:2026-08-30_21:30..";
+  assert.deepEqual(resolveCompletionTarget(input, input.length), {
+    kind: "value",
+    key: "range",
+    from: 7,
+    to: input.length,
+  });
+});
+
+test("a colon inside a term does not start an attribute", () => {
+  assert.equal(resolveCompletionTarget("12:30:05", 8), null);
+});

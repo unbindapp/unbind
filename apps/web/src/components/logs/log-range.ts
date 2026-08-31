@@ -43,26 +43,112 @@ function isPreset(value: string): value is TLogRangePreset {
   return (logRangePresets as readonly string[]).includes(value);
 }
 
-export function encodeRange(range: TLogRange): string {
-  const preset = activeLogRangePreset(range);
-  if (preset !== null && range.until === undefined) return preset;
-  return `${preset ?? ""}:${range.from ?? ""}:${range.until ?? ""}`;
+// Both codecs speak the same readable format: a bare preset ("1h"), or
+// "from..until" where either side may be empty, the left side may be a preset
+// anchored to the end time ("1h..2026-08-30_21:30"), and a timestamp is
+// "yyyy-MM-dd", "yyyy-MM-dd_HH:mm" or "yyyy-MM-dd_HH:mm:ss". The URL param
+// codec reads and writes UTC; the search-token codec local time, and its
+// values contain no characters that would end a token in the search grammar.
+
+const dateTimePattern = /^(\d{4})-(\d{2})-(\d{2})(?:_(\d{2}):(\d{2})(?::(\d{2}))?)?$/;
+
+type TDateTimeCodec = {
+  toMs: (y: number, month: number, d: number, h: number, min: number, s: number) => number;
+  toParts: (ms: number) => [number, number, number, number, number, number];
+};
+
+const utcCodec: TDateTimeCodec = {
+  toMs: (y, month, d, h, min, s) => Date.UTC(y, month - 1, d, h, min, s),
+  toParts: (ms) => {
+    const date = new Date(ms);
+    return [
+      date.getUTCFullYear(),
+      date.getUTCMonth() + 1,
+      date.getUTCDate(),
+      date.getUTCHours(),
+      date.getUTCMinutes(),
+      date.getUTCSeconds(),
+    ];
+  },
+};
+
+const localCodec: TDateTimeCodec = {
+  toMs: (y, month, d, h, min, s) => new Date(y, month - 1, d, h, min, s).getTime(),
+  toParts: (ms) => {
+    const date = new Date(ms);
+    return [
+      date.getFullYear(),
+      date.getMonth() + 1,
+      date.getDate(),
+      date.getHours(),
+      date.getMinutes(),
+      date.getSeconds(),
+    ];
+  },
+};
+
+function parseDateTime(value: string, codec: TDateTimeCodec): number | undefined {
+  const match = dateTimePattern.exec(value);
+  if (!match) return undefined;
+  const [y, month, d, h, min, s] = match.slice(1).map((part) => Number(part ?? 0));
+  if (month < 1 || month > 12 || d < 1 || d > 31) return undefined;
+  if (h > 23 || min > 59 || s > 59) return undefined;
+  return codec.toMs(y, month, d, h, min, s);
 }
 
-function parseMs(value: string): number | undefined {
-  if (!value) return undefined;
-  const ms = Number(value);
-  return Number.isFinite(ms) ? ms : undefined;
+const pad = (value: number, length = 2) => String(value).padStart(length, "0");
+
+function formatDateTime(ms: number, codec: TDateTimeCodec): string {
+  const [y, month, d, h, min, s] = codec.toParts(ms);
+  const date = `${pad(y, 4)}-${pad(month)}-${pad(d)}`;
+  if (!h && !min && !s) return date;
+  const time = `${date}_${pad(h)}:${pad(min)}`;
+  return s ? `${time}:${pad(s)}` : time;
+}
+
+function encodeRangeWith(range: TLogRange, codec: TDateTimeCodec): string {
+  const preset = activeLogRangePreset(range);
+  if (preset !== null && range.until === undefined) return preset;
+  // sub-second moments round outward so the encoded window never shrinks
+  const from =
+    range.from === undefined
+      ? (preset ?? defaultLogRangePreset)
+      : formatDateTime(Math.floor(range.from / 1000) * 1000, codec);
+  const until =
+    range.until === undefined ? "" : formatDateTime(Math.ceil(range.until / 1000) * 1000, codec);
+  return `${from}..${until}`;
+}
+
+function decodeRangeWith(value: string, codec: TDateTimeCodec): TLogRange | null {
+  if (isPreset(value)) return { preset: value };
+  const sides = value.split("..");
+  if (sides.length !== 2) return null;
+  const [left, right] = sides;
+  const until = right ? parseDateTime(right, codec) : undefined;
+  if (right && until === undefined) return null;
+  if (isPreset(left)) return { preset: left, until };
+  if (!left) return until === undefined ? null : { until };
+  const from = parseDateTime(left, codec);
+  if (from === undefined) return null;
+  if (until !== undefined && until <= from) return null;
+  return { from, until };
+}
+
+/** URL param codec; timestamps are UTC and malformed values fall back to the default. */
+export function encodeRange(range: TLogRange): string {
+  return encodeRangeWith(range, utcCodec);
 }
 
 export function decodeRange(value: string | undefined): TLogRange {
   if (!value) return defaultLogRange;
-  if (isPreset(value)) return { preset: value };
-  const parts = /^([^:]*):(\d*):(\d*)$/.exec(value);
-  if (!parts) return defaultLogRange;
-  const from = parseMs(parts[2]);
-  const until = parseMs(parts[3]);
-  if (from === undefined && until === undefined) return defaultLogRange;
-  if (from !== undefined) return { from, until };
-  return { preset: isPreset(parts[1]) ? parts[1] : defaultLogRangePreset, until };
+  return decodeRangeWith(value, utcCodec) ?? defaultLogRange;
+}
+
+/** Search-token codec; timestamps are local time and malformed values are null so the token can fall back to a plain term. */
+export function encodeRangeToken(range: TLogRange): string {
+  return encodeRangeWith(range, localCodec);
+}
+
+export function decodeRangeToken(value: string): TLogRange | null {
+  return decodeRangeWith(value, localCodec);
 }

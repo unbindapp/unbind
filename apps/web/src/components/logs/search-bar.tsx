@@ -106,9 +106,9 @@ function SearchBar({
   getLogsForDownload,
   className,
 }: TProps) {
-  const { search, setSearch } = useLogFilters();
+  const { searchText, commitSearch } = useLogFilters();
   const scope = logSearchScopes[logType];
-  const [inputValue, setInputValue] = useState(search);
+  const [inputValue, setInputValue] = useState(searchText);
   const inputRef = useRef<TTokenFieldHandle>(null);
 
   const {
@@ -162,23 +162,28 @@ function SearchBar({
     [servicesData],
   );
 
-  const debouncedSetSearch = useDebouncedCallback(setSearch, defaultDebounceMs);
+  // A commit extracts the tokens into the filter params and reports the
+  // canonical text those params render back to; remembering it is what tells
+  // a later param change apart from an echo of our own write.
+  const lastSyncedSearch = useRef(searchText);
+  const debouncedCommit = useDebouncedCallback((value: string) => {
+    lastSyncedSearch.current = commitSearch(value);
+  }, defaultDebounceMs);
 
-  // adopt external changes (back/forward, shared links, reset) and drop any
-  // pending debounced write so it can't resurrect a filter the user cleared
-  const lastSyncedSearch = useRef(search);
+  // adopt external changes (filter menu, back/forward, shared links, reset) and
+  // drop any pending debounced write so it can't resurrect a filter the user
+  // cleared
   useEffect(() => {
-    if (search === lastSyncedSearch.current) return;
-    debouncedSetSearch.cancel();
-    lastSyncedSearch.current = search;
-    setInputValue(search);
-  }, [search, debouncedSetSearch]);
+    if (searchText === lastSyncedSearch.current) return;
+    debouncedCommit.cancel();
+    lastSyncedSearch.current = searchText;
+    setInputValue(searchText);
+  }, [searchText, debouncedCommit]);
 
   const onClearInput = () => {
-    debouncedSetSearch.cancel();
-    lastSyncedSearch.current = "";
+    debouncedCommit.cancel();
     setInputValue("");
-    setSearch("");
+    lastSyncedSearch.current = commitSearch("");
     inputRef.current?.focus();
   };
 
@@ -188,7 +193,7 @@ function SearchBar({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            debouncedSetSearch.flush();
+            debouncedCommit.flush();
           }}
           className="relative flex flex-1 items-stretch"
         >
@@ -204,16 +209,15 @@ function SearchBar({
             ref={inputRef}
             value={inputValue}
             language={language}
-            onSubmit={() => debouncedSetSearch.flush()}
+            onSubmit={() => debouncedCommit.flush()}
             onChange={(value) => {
               setInputValue(value);
-              lastSyncedSearch.current = value;
               if (!value) {
-                debouncedSetSearch.cancel();
-                setSearch("");
+                debouncedCommit.cancel();
+                lastSyncedSearch.current = commitSearch("");
                 return;
               }
-              debouncedSetSearch(value);
+              debouncedCommit(value);
             }}
             completionAdditions={completionAdditions}
             ariaLabel="Search logs"

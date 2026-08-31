@@ -2,9 +2,10 @@
 // so the token in the search bar only has to be readable and unambiguous — it
 // does not have to be the literal service name.
 //
-// The replaced set is the grammar's AttrValue exclusion set (see
-// log-search.grammar); a space, a quote and a colon all end the token equally.
-// Uses relative imports so it can run under `node --test`.
+// A space or a quote would end the token in the search grammar (see
+// log-search.grammar), and a colon reads like more key:value structure, so
+// all three are rewritten. Uses relative imports so it can run under
+// `node --test`.
 
 const unsafeCharacters = /[\s":]+/g;
 

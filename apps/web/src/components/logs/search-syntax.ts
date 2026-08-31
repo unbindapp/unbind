@@ -1,8 +1,10 @@
-// Client-side pass over the search input: pulls out @level / @service tokens
-// (which map to dedicated API params) and forwards the rest as the server
-// search expression. Uses relative imports so it can run under `node --test`.
+// Client-side pass over the search input: pulls out @level / @service / @range
+// tokens (which map to dedicated API params) and forwards the rest as the
+// server search expression. Uses relative imports so it can run under
+// `node --test`.
 
 import { LogLevelSchema, type LogLevel } from "../../lib/server/client.gen.ts";
+import { decodeRangeToken, type TLogRange } from "./log-range.ts";
 import { clientAttributeKeys } from "./log-search-scope.ts";
 import { parser } from "./log-search.gen.ts";
 
@@ -19,6 +21,7 @@ export type TParsedSearchInput = {
   serverSearch: string;
   levels: TSearchLogLevel[];
   serviceNames: string[];
+  range: TLogRange | null;
   error: string | null;
 };
 
@@ -71,6 +74,7 @@ export function parseSearchInput(
     serverSearch: "",
     levels: [],
     serviceNames: [],
+    range: null,
     error: null,
   };
   if (!input.trim()) return result;
@@ -128,11 +132,13 @@ export function parseSearchInput(
     // ones, and forwarding it as an ordinary term lets the server deal with it
     // rather than blocking the whole search.
     const level = attribute?.key === "level" ? attribute.value.toLowerCase() : null;
+    const range = attribute?.key === "range" ? decodeRangeToken(attribute.value) : null;
     const isExtractable =
       attribute !== null &&
       resolves(attribute.key) &&
       ((attribute.key === "service" && isKnownService(attribute.value, knownServiceTokens)) ||
-        (attribute.key === "level" && level !== null && isLevel(level)));
+        (attribute.key === "level" && level !== null && isLevel(level)) ||
+        range !== null);
 
     if (!isExtractable) {
       parts.push({ kind: "term", text });
@@ -154,6 +160,15 @@ export function parseSearchInput(
       continue;
     }
 
+    if (attribute.key === "range") {
+      if (result.range !== null) {
+        result.error = "@range cannot be repeated";
+        return result;
+      }
+      result.range = range;
+      continue;
+    }
+
     result.serviceNames.push(attribute.value);
   }
 
@@ -167,7 +182,8 @@ export function parseSearchInput(
   }
   while (parts.length && parts[parts.length - 1].kind !== "term") {
     const kind = parts[parts.length - 1].kind;
-    const hadExtractions = result.levels.length > 0 || result.serviceNames.length > 0;
+    const hadExtractions =
+      result.levels.length > 0 || result.serviceNames.length > 0 || result.range !== null;
     if (kind === "or" || !hadExtractions) {
       result.error = "Search ends with a dangling operator";
       return result;

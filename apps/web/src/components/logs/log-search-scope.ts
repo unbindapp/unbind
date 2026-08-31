@@ -1,14 +1,15 @@
 // What a log viewer's search bar understands. A scope already pinned to one
 // service has nothing to filter by service, so @service isn't offered,
 // highlighted or extracted there: it reads as ordinary text, like any other
-// unrecognised @token. The keys mirror logTypeCapabilities in
-// log-filters-provider.tsx, which decides the same thing for the filter menu.
+// unrecognised @token. The same goes for @range where the scope has no time
+// range. The keys mirror logTypeCapabilities in log-filters-provider.tsx,
+// which decides the same thing for the filter menu.
 // Uses relative imports so it can run under `node --test`.
 
 import type { TLogType } from "../../lib/queries/logs.ts";
 
 /** Keys the client resolves itself; anything else is forwarded to the server. */
-export const clientAttributeKeys = ["level", "service"] as const;
+export const clientAttributeKeys = ["level", "service", "range"] as const;
 export type TClientAttributeKey = (typeof clientAttributeKeys)[number];
 
 export type TLogSearchScope = {
@@ -22,6 +23,11 @@ const acrossServices: TLogSearchScope = {
 };
 
 const singleService: TLogSearchScope = {
+  attributeKeys: ["level", "range"],
+  placeholder: "Search: @level:error timeout",
+};
+
+const singleRun: TLogSearchScope = {
   attributeKeys: ["level"],
   placeholder: "Search: @level:error timeout",
 };
@@ -31,6 +37,6 @@ export const logSearchScopes: Record<TLogType, TLogSearchScope> = {
   project: acrossServices,
   environment: acrossServices,
   service: singleService,
-  deployment: singleService,
-  build: { attributeKeys: ["level"], placeholder: "Search: @level:error timeout" },
+  deployment: singleRun,
+  build: singleRun,
 };

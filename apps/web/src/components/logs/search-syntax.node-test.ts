@@ -187,6 +187,66 @@ test("doubled operators error", () => {
   assert.match(parseSearchInput("a AND AND b").error ?? "", /misplaced/);
 });
 
+test("range presets are extracted", () => {
+  const result = parseSearchInput("@range:1h timeout");
+  assert.deepEqual(result.range, { preset: "1h" });
+  assert.equal(result.serverSearch, "timeout");
+  assert.equal(result.error, null);
+});
+
+test("custom ranges are extracted as local time", () => {
+  const result = parseSearchInput("@range:2026-01-01_12:00..");
+  assert.deepEqual(result.range, {
+    from: new Date(2026, 0, 1, 12, 0).getTime(),
+    until: undefined,
+  });
+  const until = parseSearchInput("@range:2026-01-01..2026-01-02");
+  assert.deepEqual(until.range, {
+    from: new Date(2026, 0, 1).getTime(),
+    until: new Date(2026, 0, 2).getTime(),
+  });
+});
+
+test("an unparseable range is forwarded instead of erroring", () => {
+  const result = parseSearchInput("@range:yesterday");
+  assert.equal(result.error, null);
+  assert.equal(result.range, null);
+  assert.equal(result.serverSearch, "@range:yesterday");
+});
+
+test("a repeated range errors", () => {
+  assert.equal(parseSearchInput("@range:1h @range:5m").error, "@range cannot be repeated");
+});
+
+test("a repeated range only counts resolvable values", () => {
+  const result = parseSearchInput("@range:1h @range:bogus");
+  assert.equal(result.error, null);
+  assert.deepEqual(result.range, { preset: "1h" });
+  assert.equal(result.serverSearch, "@range:bogus");
+});
+
+test("a negated range errors", () => {
+  assert.equal(parseSearchInput("-@range:1h").error, "@range cannot be negated");
+});
+
+test("a range next to OR errors", () => {
+  assert.match(parseSearchInput("foo OR @range:1h").error ?? "", /combined with OR/);
+});
+
+test("a scope without a time range forwards @range as a term", () => {
+  const result = parseSearchInput("@range:1h timeout", levelOnly);
+  assert.equal(result.error, null);
+  assert.equal(result.range, null);
+  assert.equal(result.serverSearch, "@range:1h timeout");
+});
+
+test("an extracted range satisfies a trailing AND", () => {
+  const result = parseSearchInput("foo AND @range:1h");
+  assert.equal(result.serverSearch, "foo");
+  assert.deepEqual(result.range, { preset: "1h" });
+  assert.equal(result.error, null);
+});
+
 // Picking a value from the dropdown leaves a trailing space behind, so the next
 // token can be typed straight away.
 test("a trailing space is not a term of its own", () => {

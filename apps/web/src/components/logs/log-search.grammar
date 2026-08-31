@@ -20,10 +20,12 @@ Attribute { AttrKey Colon AttrValue }
   // Matches a bare "@" so a just-typed trigger still resolves to an Attribute
   AttrKey { "@" $[a-zA-Z0-9_]* }
   Colon { ":" }
-  AttrValue { ![ \t\n\r":]+ }
+  // Only the first colon splits key from value, so values may contain colons
+  // (e.g. @range:2026-08-30_21:30..), just like terms may (12:30:05).
+  AttrValue { ![ \t\n\r"]+ }
   Phrase { '"' ![\n"]* '"'? }
   Minus { "-" }
-  Term { ![ \t\n\r"@:-] ![ \t\n\r":]* }
+  Term { ![ \t\n\r"@:-] ![ \t\n\r"]* }
   @precedence { AttrKey, Term }
 }
 
