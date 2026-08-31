@@ -7,8 +7,11 @@ import { loadConfig } from "@/lib/config";
 import "@/globals.css";
 import { routeTree } from "./routeTree.gen";
 import { DEFAULT_INTENT_DELAY_MS } from "@/lib/hooks/use-intent";
+import PendingScreen from "@/components/navigation/pending-screen";
 
 const DEFAULT_STALE_TIME_MS = 5 * 1000;
+const DEFAULT_PENDING_MS = 1000;
+const DEFAULT_PENDING_MIN_MS = 250;
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: DEFAULT_STALE_TIME_MS } },
@@ -20,6 +23,9 @@ const router = createRouter({
   defaultPreload: "intent",
   defaultPreloadStaleTime: DEFAULT_STALE_TIME_MS,
   defaultPreloadDelay: DEFAULT_INTENT_DELAY_MS,
+  defaultPendingComponent: PendingScreen,
+  defaultPendingMs: DEFAULT_PENDING_MS,
+  defaultPendingMinMs: DEFAULT_PENDING_MIN_MS,
 });
 
 declare module "@tanstack/react-router" {
