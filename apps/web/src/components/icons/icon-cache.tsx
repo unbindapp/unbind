@@ -26,6 +26,10 @@ export function IconCache({ icons }: { icons: readonly TCachedIcon[] }) {
   );
 }
 
+export function hasCachedIcon(key: string): boolean {
+  return rendered.get(key)?.firstElementChild != null;
+}
+
 export function cloneCachedIcon(key: string | undefined): Node | null {
   if (!key) return null;
   const source = rendered.get(key)?.firstElementChild;

@@ -1,3 +1,4 @@
+import { cloneCachedIcon, hasCachedIcon } from "@/components/icons/icon-cache";
 import type { TChainedCompletion } from "@/components/ui/token-field/autocomplete";
 import type { TIconCompletion } from "@/components/ui/token-field/icon-completion";
 import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
@@ -6,17 +7,16 @@ import { RangeSetBuilder } from "@codemirror/state";
 import {
   Decoration,
   ViewPlugin,
+  WidgetType,
   type DecorationSet,
   type EditorView,
   type ViewUpdate,
 } from "@codemirror/view";
 import { styleTags, tags as t } from "@lezer/highlight";
 import { resolveCompletionTarget } from "./log-search-completion";
+import { attributeIconKey, levelIconKey } from "./log-search-icons";
 import type { TClientAttributeKey } from "./log-search-scope";
 import { parser } from "./log-search.gen";
-
-/** Namespaced so a service brand can never collide with a level. */
-export const levelIconKey = (level: string) => `level:${level}`;
 
 export type TServiceCompletion = {
   /** Tokenizer-safe form, both inserted and matched against. */
@@ -51,10 +51,39 @@ const punctuation = Decoration.mark({ class: "tok-punct" });
 const attributeKey = Decoration.mark({ class: "tok-key" });
 // Only the levels that carry a color in the dropdown; debug and info read as
 // plain foreground there, so they do here too.
-const levelValue: Record<string, Decoration> = {
-  error: Decoration.mark({ class: "tok-level-error" }),
-  warning: Decoration.mark({ class: "tok-level-warning" }),
+const levelColorClass: Record<string, string> = {
+  error: "tok-level-error",
+  warning: "tok-level-warning",
 };
+const levelValue: Record<string, Decoration> = Object.fromEntries(
+  Object.entries(levelColorClass).map(([level, className]) => [
+    level,
+    Decoration.mark({ class: className }),
+  ]),
+);
+
+/** Draws the value's icon in front of it, cloned from the off-screen cache. */
+class IconWidget extends WidgetType {
+  constructor(
+    readonly iconKey: string,
+    readonly className: string | undefined,
+  ) {
+    super();
+  }
+  eq(other: IconWidget) {
+    return other.iconKey === this.iconKey && other.className === this.className;
+  }
+  toDOM() {
+    // The color class sits on the host because the widget lands beside the
+    // value's mark rather than inside it; the icons stroke with currentColor.
+    const host = document.createElement("span");
+    host.className = this.className ? `cm-token-icon ${this.className}` : "cm-token-icon";
+    host.setAttribute("aria-hidden", "true");
+    const icon = cloneCachedIcon(this.iconKey);
+    if (icon) host.appendChild(icon);
+    return host;
+  }
+}
 
 function resolvesAttribute(keys: readonly TClientAttributeKey[], key: string) {
   return (keys as readonly string[]).includes(key);
@@ -64,19 +93,19 @@ function resolvesAttribute(keys: readonly TClientAttributeKey[], key: string) {
  * Highlights only the attributes this scope resolves. Anything else, whether an
  * unrecognised `@foo` or `@service` in a viewer already pinned to one service,
  * is forwarded as an ordinary search term, so it reads as one. The `@` and `:`
- * are dimmed together, and a level's value takes the same color it has in the
- * dropdown.
+ * are dimmed together, and a value the scope knows takes the same icon and
+ * color it has in the dropdown.
  */
 function createAttributeHighlighter(getData: () => TLogSearchData) {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
       constructor(view: EditorView) {
-        this.decorations = buildAttributeDecorations(view, getData().attributeKeys);
+        this.decorations = buildAttributeDecorations(view, getData());
       }
       update(update: ViewUpdate) {
         if (update.docChanged || update.viewportChanged) {
-          this.decorations = buildAttributeDecorations(update.view, getData().attributeKeys);
+          this.decorations = buildAttributeDecorations(update.view, getData());
         }
       }
     },
@@ -84,7 +113,7 @@ function createAttributeHighlighter(getData: () => TLogSearchData) {
   );
 }
 
-function buildAttributeDecorations(view: EditorView, keys: readonly TClientAttributeKey[]) {
+function buildAttributeDecorations(view: EditorView, data: TLogSearchData) {
   const builder = new RangeSetBuilder<Decoration>();
   for (const { from, to } of view.visibleRanges) {
     syntaxTree(view.state).iterate({
@@ -95,7 +124,7 @@ function buildAttributeDecorations(view: EditorView, keys: readonly TClientAttri
         const key = node.node.getChild("AttrKey");
         if (!key) return;
         const name = view.state.sliceDoc(key.from + 1, key.to);
-        if (!resolvesAttribute(keys, name)) return;
+        if (!resolvesAttribute(data.attributeKeys, name)) return;
 
         builder.add(key.from, key.from + 1, punctuation);
         builder.add(key.from + 1, key.to, attributeKey);
@@ -104,8 +133,20 @@ function buildAttributeDecorations(view: EditorView, keys: readonly TClientAttri
         if (colon) builder.add(colon.from, colon.to, punctuation);
 
         const value = node.node.getChild("AttrValue");
-        if (!value || name !== "level") return;
-        const mark = levelValue[view.state.sliceDoc(value.from, value.to).toLowerCase()];
+        if (!value) return;
+        const text = view.state.sliceDoc(value.from, value.to);
+        const level = name === "level" ? text.toLowerCase() : null;
+
+        // Point decorations sort before marks at the same position, so the icon
+        // goes in first. It waits for its icon to be cached rather than leaving
+        // an empty gap in front of the value.
+        const iconKey = attributeIconKey(name, text, data);
+        if (iconKey && hasCachedIcon(iconKey)) {
+          const widget = new IconWidget(iconKey, level ? levelColorClass[level] : undefined);
+          builder.add(value.from, value.from, Decoration.widget({ widget, side: -1 }));
+        }
+
+        const mark = level ? levelValue[level] : undefined;
         if (mark) builder.add(value.from, value.to, mark);
       },
     });

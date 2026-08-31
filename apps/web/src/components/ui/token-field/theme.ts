@@ -28,11 +28,23 @@ export const tokenFieldTheme = EditorView.theme({
   },
   ".cm-line": { padding: "0" },
   // CodeMirror puts a 1em, text-top aligned buffer <img> beside every widget,
-  // which makes the placeholder's line one pixel taller than a line of text and
-  // shows up as the field twitching on first keystroke. The placeholder is the
-  // only widget these fields use, and it needs no cursor affordance, so drop it
-  // there only.
-  ".cm-line:has(.cm-placeholder) .cm-widgetBuffer": { display: "none" },
+  // which pushes the line one pixel taller than a line of plain text: the field
+  // twitches the moment a placeholder or an inline icon appears. Centering the
+  // buffer keeps it inside the line box, so it still does its job of giving the
+  // cursor something to sit against.
+  ".cm-widgetBuffer": { verticalAlign: "middle" },
+  // Inline icons sit in a 1em box the artwork overflows, so a line with icons
+  // is exactly as tall as one without and the field never grows as a value
+  // resolves. They're decoration, not text: clicks fall through to the position
+  // behind them.
+  ".cm-token-icon": {
+    display: "inline-flex",
+    alignItems: "center",
+    height: "1em",
+    verticalAlign: "middle",
+    marginRight: "0.2em",
+    pointerEvents: "none",
+  },
   ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--foreground)" },
   ".cm-placeholder": {
     color: "color-mix(in oklab, var(--muted-foreground) 75%, transparent)",
