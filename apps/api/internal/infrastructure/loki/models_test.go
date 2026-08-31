@@ -185,18 +185,15 @@ func (suite *ModelsTestSuite) TestLogEvents_WithError() {
 
 func (suite *ModelsTestSuite) TestLokiStreamResponse_Struct() {
 	response := LokiStreamResponse{
-		Streams: []struct {
-			Stream map[string]string `json:"stream"`
-			Values [][2]string       `json:"values"`
-		}{
+		Streams: []Stream{
 			{
 				Stream: map[string]string{
 					"instance": "pod-1",
 					"app":      "test",
 				},
-				Values: [][2]string{
-					{"1609459200000000000", "Log message 1"},
-					{"1609459260000000000", "Log message 2"},
+				Values: []StreamValue{
+					{Timestamp: "1609459200000000000", Line: "Log message 1"},
+					{Timestamp: "1609459260000000000", Line: "Log message 2"},
 				},
 			},
 		},
@@ -206,8 +203,8 @@ func (suite *ModelsTestSuite) TestLokiStreamResponse_Struct() {
 	suite.Equal("pod-1", response.Streams[0].Stream["instance"])
 	suite.Equal("test", response.Streams[0].Stream["app"])
 	suite.Len(response.Streams[0].Values, 2)
-	suite.Equal("1609459200000000000", response.Streams[0].Values[0][0])
-	suite.Equal("Log message 1", response.Streams[0].Values[0][1])
+	suite.Equal("1609459200000000000", response.Streams[0].Values[0].Timestamp)
+	suite.Equal("Log message 1", response.Streams[0].Values[0].Line)
 }
 
 func (suite *ModelsTestSuite) TestLokiQueryResponse_Struct() {
@@ -241,15 +238,15 @@ func (suite *ModelsTestSuite) TestStream_Struct() {
 			"job":      "test-job",
 		},
 		Values: []StreamValue{
-			{"1609459200000000000", "Log message"},
+			{Timestamp: "1609459200000000000", Line: "Log message"},
 		},
 	}
 
 	suite.Equal("pod-1", stream.Stream["instance"])
 	suite.Equal("test-job", stream.Stream["job"])
 	suite.Len(stream.Values, 1)
-	suite.Equal("1609459200000000000", stream.Values[0][0])
-	suite.Equal("Log message", stream.Values[0][1])
+	suite.Equal("1609459200000000000", stream.Values[0].Timestamp)
+	suite.Equal("Log message", stream.Values[0].Line)
 }
 
 func (suite *ModelsTestSuite) TestMatrixValue_Struct() {

@@ -4,7 +4,7 @@ import NavbarScrollArea from "@/components/navigation/navbar-scroll-area";
 import UserAvatarOrSignIn from "@/components/navigation/user-avatar-or-sign-in";
 import { hasChildRole, withChildRole } from "@/components/ui/child-role";
 import { cn } from "@/components/ui/utils";
-import { Children, ReactNode } from "react";
+import { Children, ReactNode, useLayoutEffect, useRef } from "react";
 
 const NAVBAR_ROLE = {
   breadcrumb: "navbar.breadcrumb",
@@ -14,6 +14,27 @@ const NAVBAR_ROLE = {
 } as const;
 
 export function Navbar({ children, className }: { className?: string; children?: ReactNode }) {
+  const ref = useRef<HTMLElement>(null);
+
+  // Published so content can offset itself past the bar, which sits at the bottom
+  // on phones and at the top from sm up, with a height that varies by breakpoint.
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const publish = () =>
+      document.documentElement.style.setProperty("--navbar-height", `${element.offsetHeight}px`);
+
+    publish();
+    const observer = new ResizeObserver(publish);
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty("--navbar-height");
+    };
+  }, []);
+
   // Filter children by component type
   const childrenArray = Children.toArray(children);
   const breadcrumb = childrenArray.find((child) => hasChildRole(child, NAVBAR_ROLE.breadcrumb));
@@ -23,6 +44,7 @@ export function Navbar({ children, className }: { className?: string; children?:
 
   return (
     <nav
+      ref={ref}
       className={cn(
         `bg-background fixed bottom-0 left-0 z-40 flex w-full flex-col items-stretch justify-between border-t pb-(--safe-area-inset-bottom) sm:sticky sm:top-0 sm:border-t-0 sm:border-b sm:pb-0`,
         className,

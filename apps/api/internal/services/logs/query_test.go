@@ -1,11 +1,6 @@
 package logs_service
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"strconv"
 	"testing"
 	"time"
@@ -13,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/loki"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
@@ -95,140 +89,5 @@ func TestCursorFromOldest(t *testing.T) {
 
 	t.Run("empty events", func(t *testing.T) {
 		assert.Empty(t, cursorFromOldest(nil, loki.LokiDirectionBackward, true))
-	})
-}
-
-// lokiPage builds a query_range response with count lines ending (newest) at
-// newestNs, stepping 1ms per line. Every other line is an error-level message.
-func lokiPage(newestNs int64, count int) string {
-	values := make([][2]string, count)
-	for i := 0; i < count; i++ {
-		ns := newestNs - int64(i)*int64(time.Millisecond)
-		message := fmt.Sprintf("plain line %d", i)
-		if i%2 == 0 {
-			message = fmt.Sprintf("error line %d", i)
-		}
-		values[i] = [2]string{strconv.FormatInt(ns, 10), message}
-	}
-	page := map[string]any{
-		"status": "success",
-		"data": map[string]any{
-			"resultType": "streams",
-			"result": []map[string]any{
-				{"stream": map[string]string{"instance": "pod-1"}, "values": values},
-			},
-		},
-	}
-	out, _ := json.Marshal(page)
-	return string(out)
-}
-
-func newTestLogsService(t *testing.T, handler http.HandlerFunc) *LogsService {
-	t.Helper()
-	server := httptest.NewServer(handler)
-	t.Cleanup(server.Close)
-	querier, err := loki.NewLokiLogger(&config.Config{LokiEndpoint: server.URL})
-	require.NoError(t, err)
-	return &LogsService{lokiQuerier: querier}
-}
-
-func TestQueryWithLevelFilter(t *testing.T) {
-	newestNs := time.Now().UnixNano()
-
-	t.Run("single page exhausts range", func(t *testing.T) {
-		var requests []string
-		svc := newTestLogsService(t, func(w http.ResponseWriter, r *http.Request) {
-			requests = append(requests, r.URL.RawQuery)
-			fmt.Fprint(w, lokiPage(newestNs, 10))
-		})
-
-		direction := loki.LokiDirectionBackward
-		result, err := svc.queryWithLevelFilter(context.Background(), loki.LokiLogHTTPOptions{
-			Label:      loki.LokiLabelService,
-			LabelValue: "svc-1",
-			Direction:  &direction,
-		}, []loki.LogLevel{loki.LogLevelError}, 100)
-
-		require.NoError(t, err)
-		assert.Len(t, requests, 1)
-		assert.Len(t, result.Data, 5)
-		assert.Empty(t, result.NextCursor, "exhausted range has no cursor")
-		for _, event := range result.Data {
-			assert.Equal(t, loki.LogLevelError, event.Level)
-		}
-	})
-
-	t.Run("pages until limit and returns cursor", func(t *testing.T) {
-		var capturedEnds []string
-		page := 0
-		svc := newTestLogsService(t, func(w http.ResponseWriter, r *http.Request) {
-			capturedEnds = append(capturedEnds, r.URL.Query().Get("end"))
-			// two full pages: 1000 lines each, 500 errors per page
-			fmt.Fprint(w, lokiPage(newestNs-int64(page)*int64(time.Hour), 1000))
-			page++
-		})
-
-		direction := loki.LokiDirectionBackward
-		result, err := svc.queryWithLevelFilter(context.Background(), loki.LokiLogHTTPOptions{
-			Label:      loki.LokiLabelService,
-			LabelValue: "svc-1",
-			Direction:  &direction,
-		}, []loki.LogLevel{loki.LogLevelError}, 800)
-
-		require.NoError(t, err)
-		assert.Len(t, capturedEnds, 2)
-		assert.Empty(t, capturedEnds[0])
-		// second request continues from the oldest scanned line of page one
-		expectedEnd := newestNs - 999*int64(time.Millisecond)
-		assert.Equal(t, strconv.FormatInt(expectedEnd, 10), capturedEnds[1])
-
-		assert.Len(t, result.Data, 800)
-		require.NotEmpty(t, result.NextCursor)
-		oldestReturned := result.Data[len(result.Data)-1].Timestamp.UnixNano()
-		assert.Equal(t, strconv.FormatInt(oldestReturned, 10), result.NextCursor)
-	})
-
-	t.Run("page cap keeps a cursor even with zero matches", func(t *testing.T) {
-		requests := 0
-		var lastPageNewest int64
-		svc := newTestLogsService(t, func(w http.ResponseWriter, r *http.Request) {
-			// full pages with zero matching lines
-			lastPageNewest = newestNs - int64(requests)*int64(time.Hour)
-			fmt.Fprint(w, lokiPage(lastPageNewest, 1000))
-			requests++
-		})
-
-		direction := loki.LokiDirectionBackward
-		result, err := svc.queryWithLevelFilter(context.Background(), loki.LokiLogHTTPOptions{
-			Label:      loki.LokiLabelService,
-			LabelValue: "svc-1",
-			Direction:  &direction,
-		}, []loki.LogLevel{loki.LogLevelDebug}, 100)
-
-		require.NoError(t, err)
-		assert.Equal(t, maxLevelFilterPages, requests)
-		assert.NotNil(t, result.Data)
-		assert.Empty(t, result.Data)
-		// older logs may still match; the cursor continues from the scan position
-		expectedCursor := lastPageNewest - 999*int64(time.Millisecond)
-		assert.Equal(t, strconv.FormatInt(expectedCursor, 10), result.NextCursor)
-	})
-
-	t.Run("first page is sized to the requested limit", func(t *testing.T) {
-		var capturedLimits []string
-		svc := newTestLogsService(t, func(w http.ResponseWriter, r *http.Request) {
-			capturedLimits = append(capturedLimits, r.URL.Query().Get("limit"))
-			fmt.Fprint(w, lokiPage(newestNs, 10))
-		})
-
-		direction := loki.LokiDirectionBackward
-		_, err := svc.queryWithLevelFilter(context.Background(), loki.LokiLogHTTPOptions{
-			Label:      loki.LokiLabelService,
-			LabelValue: "svc-1",
-			Direction:  &direction,
-		}, []loki.LogLevel{loki.LogLevelError}, 50)
-
-		require.NoError(t, err)
-		assert.Equal(t, []string{"100"}, capturedLimits)
 	})
 }

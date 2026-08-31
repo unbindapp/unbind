@@ -2,6 +2,7 @@
 
 import { useLogFilters } from "@/components/logs/log-filters-provider";
 import { defaultLogRange, isLiveRange, resolveLogRange } from "@/components/logs/log-range";
+import { logSearchScopes } from "@/components/logs/log-search-scope";
 import { logLineKey } from "@/components/logs/log-utils";
 import { parseSearchInput } from "@/components/logs/search-syntax";
 import { buildServiceTokens, findServiceByToken } from "@/components/logs/service-tokens";
@@ -30,10 +31,7 @@ import {
   useState,
 } from "react";
 
-const LOGS_PAGE_LIMIT = 1000;
 const MAX_BUFFER_LINES = 10_000;
-
-type TLogsChange = "reset" | "append" | "prepend";
 
 export type TBufferedLogLine = TLogLine & { key: string };
 
@@ -43,7 +41,6 @@ type TBufferState = {
   keys: Set<string>;
   nextCursor: string | undefined;
   hasMoreOlder: boolean;
-  lastChange: TLogsChange;
 };
 
 const emptyBuffer: TBufferState = {
@@ -52,7 +49,6 @@ const emptyBuffer: TBufferState = {
   keys: new Set(),
   nextCursor: undefined,
   hasMoreOlder: false,
-  lastChange: "reset",
 };
 
 function withKeys(lines: TLogLine[], seen: Set<string>): TBufferedLogLine[] {
@@ -87,7 +83,6 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
         keys,
         nextCursor: action.nextCursor,
         hasMoreOlder: Boolean(action.nextCursor),
-        lastChange: "reset",
       };
     }
     case "append": {
@@ -114,7 +109,7 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
         }
       }
 
-      return { ...state, lines, keys, nextCursor, hasMoreOlder, lastChange: "append" };
+      return { ...state, lines, keys, nextCursor, hasMoreOlder };
     }
     case "prepend": {
       if (state.identityKey !== action.identityKey) return state;
@@ -122,7 +117,7 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
       const fresh = withKeys(action.lines, keys);
       // an all-duplicate page with an unchanged cursor would loop forever
       if (fresh.length === 0 && action.nextCursor === state.nextCursor) {
-        return { ...state, hasMoreOlder: false, lastChange: "prepend" };
+        return { ...state, hasMoreOlder: false };
       }
       return {
         ...state,
@@ -130,7 +125,6 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
         keys,
         nextCursor: action.nextCursor,
         hasMoreOlder: Boolean(action.nextCursor),
-        lastChange: "prepend",
       };
     }
   }
@@ -139,6 +133,8 @@ function bufferReducer(state: TBufferState, action: TBufferAction): TBufferState
 type TLogsContext = {
   logs: TBufferedLogLine[] | null;
   logsRef: RefObject<TBufferedLogLine[] | null>;
+  /** Changes only when a new set of filters seeds the buffer. */
+  resultSetKey: string | null;
   isPending: boolean;
   isRefreshing: boolean;
   error: Error | null;
@@ -147,8 +143,8 @@ type TLogsContext = {
   isLive: boolean;
   hasMoreOlder: boolean;
   isFetchingOlder: boolean;
+  olderError: string | null;
   fetchOlder: () => void;
-  lastChange: TLogsChange;
   searchError: string | null;
   setEvictionPaused: (paused: boolean) => void;
 };
@@ -206,7 +202,7 @@ export const LogsProvider: React.FC<TProps> = ({
   httpDefaultEndTimestamp,
   children,
 }) => {
-  const { search, levels, serviceIds, range, servicesEnabled } = useLogFilters();
+  const { search, levels, serviceIds, range } = useLogFilters();
   const {
     query: { data: servicesData },
   } = useServices();
@@ -222,9 +218,10 @@ export const LogsProvider: React.FC<TProps> = ({
     [servicesData, serviceTokens],
   );
 
+  const { attributeKeys } = logSearchScopes[type];
   const parsedSearch = useMemo(
-    () => parseSearchInput(search, knownServiceTokens),
-    [search, knownServiceTokens],
+    () => parseSearchInput(search, { attributeKeys, knownServiceTokens }),
+    [search, attributeKeys, knownServiceTokens],
   );
 
   const mergedLevels = useMemo(() => {
@@ -232,23 +229,17 @@ export const LogsProvider: React.FC<TProps> = ({
     return [...merged].sort();
   }, [levels, parsedSearch.levels]);
 
-  const { mergedServiceIds, serviceNameError } = useMemo(() => {
-    if (parsedSearch.serviceNames.length > 0 && !servicesEnabled) {
-      return {
-        mergedServiceIds: [...serviceIds].sort(),
-        serviceNameError: "@service is only available in environment logs",
-      };
-    }
-    // Only names that resolve reach here; the rest stayed in the search text.
+  // Only names this scope resolves reach here; the rest stayed in the search text.
+  const mergedServiceIds = useMemo(() => {
     const merged = new Set<string>(serviceIds);
     for (const name of parsedSearch.serviceNames) {
       const service = findServiceByToken(serviceTokens, name);
       if (service) merged.add(service.id);
     }
-    return { mergedServiceIds: [...merged].sort(), serviceNameError: null };
-  }, [serviceIds, parsedSearch.serviceNames, serviceTokens, servicesEnabled]);
+    return [...merged].sort();
+  }, [serviceIds, parsedSearch.serviceNames, serviceTokens]);
 
-  const searchError = parsedSearch.error ?? serviceNameError;
+  const searchError = parsedSearch.error;
 
   // Anchor the window when the range changes, not on every render.
   const rangeKey = JSON.stringify(range);
@@ -281,7 +272,6 @@ export const LogsProvider: React.FC<TProps> = ({
       serviceIds: mergedServiceIds.length ? mergedServiceIds.join(",") : undefined,
       start: timeWindow.start,
       end: timeWindow.end ?? undefined,
-      limit: LOGS_PAGE_LIMIT,
     }),
     [
       type,
@@ -309,6 +299,7 @@ export const LogsProvider: React.FC<TProps> = ({
 
   const [buffer, dispatch] = useReducer(bufferReducer, emptyBuffer);
   const [isFetchingOlder, setIsFetchingOlder] = useState(false);
+  const [olderError, setOlderError] = useState<string | null>(null);
   const [streamErrorMessage, setStreamErrorMessage] = useState<string | null>(null);
 
   // Seed/replace the buffer whenever the initial page for the current
@@ -324,6 +315,7 @@ export const LogsProvider: React.FC<TProps> = ({
       nextCursor: initialData.nextCursor,
     });
     setStreamErrorMessage(null);
+    setOlderError(null);
   }, [initialData, initialIsPlaceholder, identityKey]);
 
   const bufferReady = buffer.identityKey === identityKey;
@@ -336,7 +328,6 @@ export const LogsProvider: React.FC<TProps> = ({
       team_id: teamId,
       project_id: projectId || "",
       environment_id: environmentId || "",
-      limit: LOGS_PAGE_LIMIT.toString(),
     });
     if (type === "service" || type === "deployment") params.set("service_id", serviceId);
     if (type === "deployment" || type === "build") params.set("deployment_id", deploymentId);
@@ -401,6 +392,7 @@ export const LogsProvider: React.FC<TProps> = ({
     if (fetchOlderRef.current || !bufferReady || !buffer.nextCursor) return;
     fetchOlderRef.current = true;
     setIsFetchingOlder(true);
+    setOlderError(null);
     // tie the page to the identity it was requested for, so a filter change
     // mid-flight can't leak the wrong logs into the fresh buffer
     const requestIdentityKey = identityKey;
@@ -416,8 +408,10 @@ export const LogsProvider: React.FC<TProps> = ({
         lines: page.logs,
         nextCursor: page.nextCursor,
       });
-    } catch {
-      // scrolling up again retries
+    } catch (error) {
+      // the scroll trigger stays disarmed until the user retries, so a failing
+      // endpoint isn't hammered by every jiggle at the top of the list
+      setOlderError(error instanceof Error ? error.message : "Failed to load older logs");
     } finally {
       fetchOlderRef.current = false;
       setIsFetchingOlder(false);
@@ -432,6 +426,7 @@ export const LogsProvider: React.FC<TProps> = ({
     () => ({
       logs,
       logsRef,
+      resultSetKey: buffer.identityKey,
       isPending: buffer.identityKey === null && initialQuery.isPending,
       isRefreshing: !bufferReady && buffer.identityKey !== null,
       error: initialQuery.error,
@@ -440,8 +435,8 @@ export const LogsProvider: React.FC<TProps> = ({
       isLive,
       hasMoreOlder: bufferReady && buffer.hasMoreOlder,
       isFetchingOlder,
+      olderError,
       fetchOlder,
-      lastChange: buffer.lastChange,
       searchError,
       setEvictionPaused,
     }),
@@ -456,6 +451,7 @@ export const LogsProvider: React.FC<TProps> = ({
       streamFatalError,
       isLive,
       isFetchingOlder,
+      olderError,
       fetchOlder,
       searchError,
       setEvictionPaused,

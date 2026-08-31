@@ -1,9 +1,9 @@
 package loki
 
 import (
-	"encoding/json"
+	"fmt"
 	"reflect"
-	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -54,125 +54,71 @@ func ParseLogLevel(s string) (LogLevel, bool) {
 	}
 }
 
-var (
-	ansiPattern  = regexp.MustCompile(`\x1b\[[0-9;]*m`)
-	errorPattern = regexp.MustCompile(`(?i)(^|[^a-zA-Z0-9])(error|err|fatal|fail|failed|failure|panic|exception|critical)($|[^a-zA-Z0-9])`)
-	warnPattern  = regexp.MustCompile(`(?i)(^|[^a-zA-Z0-9])(warn|warning)($|[^a-zA-Z0-9])`)
-	debugPattern = regexp.MustCompile(`(?i)(^|[^a-zA-Z0-9])(debug|trace)($|[^a-zA-Z0-9])`)
-)
+// DetectedLevelLabel is the structured metadata field loki attaches at ingest
+// when discover_log_levels is enabled.
+const DetectedLevelLabel = "detected_level"
 
-// only the level-ish keys are decoded, so other fields cost nothing per line
-type jsonLevelFields struct {
-	Level    json.RawMessage `json:"level"`
-	Severity json.RawMessage `json:"severity"`
-	Lvl      json.RawMessage `json:"lvl"`
-	ECSLevel json.RawMessage `json:"log.level"`
+// detectedLevelValues folds loki's detected_level vocabulary into the four
+// levels the UI exposes. The buckets partition it, so every value loki emits
+// lands in exactly one level and selecting all four is the same as no filter.
+// The empty value covers lines ingested before level discovery was enabled.
+var detectedLevelValues = map[LogLevel][]string{
+	LogLevelDebug: {"trace", "debug"},
+	LogLevelInfo:  {"info", "unknown", ""},
+	LogLevelWarn:  {"warn"},
+	LogLevelError: {"error", "critical", "fatal"},
 }
 
-// pino/bunyan-style numeric levels
-func levelFromNumber(n float64) (LogLevel, bool) {
-	switch {
-	case n <= 0:
-		return "", false
-	case n < 30:
-		return LogLevelDebug, true
-	case n < 40:
-		return LogLevelInfo, true
-	case n < 50:
-		return LogLevelWarn, true
-	case n <= 100:
-		return LogLevelError, true
-	default:
-		return "", false
-	}
-}
-
-func levelFromString(s string) (LogLevel, bool) {
-	switch strings.ToLower(s) {
-	case "trace", "debug", "dbg", "fine", "finer", "finest":
-		return LogLevelDebug, true
-	case "info", "information", "notice", "log":
-		return LogLevelInfo, true
-	case "warn", "warning":
-		return LogLevelWarn, true
-	case "error", "err", "fatal", "panic", "crit", "critical", "alert", "emerg", "emergency", "severe":
-		return LogLevelError, true
-	default:
-		return "", false
-	}
-}
-
-func levelFromJSON(message string) (LogLevel, bool) {
-	trimmed := strings.TrimSpace(message)
-	if !strings.HasPrefix(trimmed, "{") {
-		return "", false
-	}
-
-	var fields jsonLevelFields
-	if err := json.Unmarshal([]byte(trimmed), &fields); err != nil {
-		return "", false
-	}
-
-	for _, raw := range [][]byte{fields.Level, fields.Severity, fields.Lvl, fields.ECSLevel} {
-		if raw == nil {
-			continue
-		}
-		var asString string
-		if err := json.Unmarshal(raw, &asString); err == nil {
-			if level, ok := levelFromString(asString); ok {
-				return level, true
-			}
-			continue
-		}
-		var asNumber float64
-		if err := json.Unmarshal(raw, &asNumber); err == nil {
-			if level, ok := levelFromNumber(asNumber); ok {
-				return level, true
-			}
+// derived from detectedLevelValues so the two directions cannot drift
+var levelByDetectedValue = func() map[string]LogLevel {
+	byValue := make(map[string]LogLevel)
+	for level, values := range detectedLevelValues {
+		for _, value := range values {
+			byValue[value] = level
 		}
 	}
-	return "", false
-}
+	return byValue
+}()
 
-// DetectLevel derives a log level from a raw log line: a JSON level field wins,
-// otherwise level-ish keywords in the text decide, defaulting to info.
-func DetectLevel(message string) LogLevel {
-	if level, ok := levelFromJSON(message); ok {
+// LevelFromDetected maps a detected_level value onto the level the UI renders.
+// Unrecognized values read as info, matching how loki's own "unknown" folds in.
+func LevelFromDetected(detected string) LogLevel {
+	if level, ok := levelByDetectedValue[strings.ToLower(strings.TrimSpace(detected))]; ok {
 		return level
-	}
-
-	plain := message
-	if strings.Contains(plain, "\x1b") {
-		plain = ansiPattern.ReplaceAllString(plain, "")
-	}
-
-	if errorPattern.MatchString(plain) {
-		return LogLevelError
-	}
-	if warnPattern.MatchString(plain) {
-		return LogLevelWarn
-	}
-	if debugPattern.MatchString(plain) {
-		return LogLevelDebug
 	}
 	return LogLevelInfo
 }
 
-// FilterEventsByLevel returns only the events whose level is in levels; an
-// empty levels slice keeps everything.
-func FilterEventsByLevel(events []LogEvent, levels []LogLevel) []LogEvent {
-	if len(levels) == 0 {
-		return events
+// levelForEntry resolves the level of a single log entry. Loki merges structured
+// metadata into the label set of the stream it returns, so detected_level
+// normally arrives alongside the other labels; it only rides on the entry when
+// the request asks for categorized labels.
+func levelForEntry(streamLabels map[string]string, entry StreamValue) LogLevel {
+	if detected := entry.Metadata[DetectedLevelLabel]; detected != "" {
+		return LevelFromDetected(detected)
 	}
-	allowed := make(map[LogLevel]bool, len(levels))
-	for _, l := range levels {
-		allowed[l] = true
+	return LevelFromDetected(streamLabels[DetectedLevelLabel])
+}
+
+// detectedLevelFilter renders the LogQL structured metadata filter for levels.
+// Label filter regexes are fully anchored, so each alternative matches a whole
+// value. Returns "" when nothing is selected or everything is, since both match
+// every line.
+func detectedLevelFilter(levels []LogLevel) string {
+	if len(levels) == 0 || len(levels) >= len(LogLevelValues) {
+		return ""
 	}
-	filtered := make([]LogEvent, 0, len(events))
-	for _, e := range events {
-		if allowed[e.Level] {
-			filtered = append(filtered, e)
+
+	var values []string
+	for _, level := range LogLevelValues {
+		if !slices.Contains(levels, level) {
+			continue
 		}
+		values = append(values, detectedLevelValues[level]...)
 	}
-	return filtered
+	if len(values) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf("| %s=~%q", DetectedLevelLabel, strings.Join(values, "|"))
 }

@@ -39,10 +39,10 @@ export function buildServiceTokens(
   });
 }
 
-export function findServiceByToken(
-  tokens: readonly TServiceToken[],
+export function findServiceByToken<T extends { token: string }>(
+  tokens: readonly T[],
   value: string,
-): TServiceToken | null {
+): T | null {
   const wanted = value.toLowerCase();
   return tokens.find((t) => t.token.toLowerCase() === wanted) ?? null;
 }

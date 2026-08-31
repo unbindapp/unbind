@@ -21,6 +21,7 @@ export type TVariableReferenceData<T> = {
 // Nothing is styled from the grammar: whether a ${...} is a real reference
 // depends on the live reference list, so it's decorated below instead. A
 // half-typed one is left plain — the dropdown is already showing the matches.
+const referenceChip = Decoration.mark({ class: "tok-chip tok-chip-process" });
 const referenceName = Decoration.mark({ class: "tok-key" });
 const referencePunctuation = Decoration.mark({ class: "tok-punct" });
 
@@ -44,6 +45,9 @@ function resolvedReferenceHighlighter<T>(getData: () => TVariableReferenceData<T
           if (node.name !== "Reference") return;
           const text = view.state.sliceDoc(node.from, node.to);
           if (!known.has(text)) return;
+
+          // The chip wraps everything else, so it has to open first.
+          mark(node.from, node.to, referenceChip);
 
           // The "${", the dot and the closing "}" are scaffolding; dimming them
           // leaves the source and key names as the part you actually read.

@@ -107,10 +107,7 @@ func (suite *StreamTestSuite) setupMockWebSocketServer(messages []LokiStreamResp
 func (suite *StreamTestSuite) TestStreamLokiPodLogs_Success() {
 	messages := []LokiStreamResponse{
 		{
-			Streams: []struct {
-				Stream map[string]string `json:"stream"`
-				Values [][2]string       `json:"values"`
-			}{
+			Streams: []Stream{
 				{
 					Stream: map[string]string{
 						"instance":           "pod-1",
@@ -120,9 +117,9 @@ func (suite *StreamTestSuite) TestStreamLokiPodLogs_Success() {
 						"unbind_service":     "service-1",
 						"unbind_deployment":  "deployment-1",
 					},
-					Values: [][2]string{
-						{"1609459200000000000", "Log message 1"},
-						{"1609459260000000000", "Log message 2"},
+					Values: []StreamValue{
+						{Timestamp: "1609459200000000000", Line: "Log message 1"},
+						{Timestamp: "1609459260000000000", Line: "Log message 2"},
 					},
 				},
 			},
@@ -248,17 +245,14 @@ func (suite *StreamTestSuite) TestStreamLokiPodLogs_NoInitialLogs() {
 	// Setup WebSocket server with messages
 	messages := []LokiStreamResponse{
 		{
-			Streams: []struct {
-				Stream map[string]string `json:"stream"`
-				Values [][2]string       `json:"values"`
-			}{
+			Streams: []Stream{
 				{
 					Stream: map[string]string{
 						"instance":    "pod-1",
 						"unbind_team": "team-1",
 					},
-					Values: [][2]string{
-						{"1609459200000000000", "New log message"},
+					Values: []StreamValue{
+						{Timestamp: "1609459200000000000", Line: "New log message"},
 					},
 				},
 			},
@@ -567,17 +561,14 @@ func (suite *StreamTestSuite) TestStreamLokiPodLogs_InvalidJSON() {
 func (suite *StreamTestSuite) TestStreamLokiPodLogs_InvalidLogEntry() {
 	messages := []LokiStreamResponse{
 		{
-			Streams: []struct {
-				Stream map[string]string `json:"stream"`
-				Values [][2]string       `json:"values"`
-			}{
+			Streams: []Stream{
 				{
 					Stream: map[string]string{
 						"instance": "pod-1",
 					},
-					Values: [][2]string{
-						{"1609459200000000000", "Log message 1"}, // Valid entry
-						{"1609459200000000000", ""},              // Entry with empty message - should still be processed
+					Values: []StreamValue{
+						{Timestamp: "1609459200000000000", Line: "Log message 1"}, // Valid entry
+						{Timestamp: "1609459200000000000", Line: ""},              // Entry with empty message - should still be processed
 					},
 				},
 			},
@@ -633,16 +624,13 @@ done:
 func (suite *StreamTestSuite) TestStreamLokiPodLogs_InvalidTimestamp() {
 	messages := []LokiStreamResponse{
 		{
-			Streams: []struct {
-				Stream map[string]string `json:"stream"`
-				Values [][2]string       `json:"values"`
-			}{
+			Streams: []Stream{
 				{
 					Stream: map[string]string{
 						"instance": "pod-1",
 					},
-					Values: [][2]string{
-						{"invalid_timestamp", "Log message"},
+					Values: []StreamValue{
+						{Timestamp: "invalid_timestamp", Line: "Log message"},
 					},
 				},
 			},
@@ -705,18 +693,15 @@ done:
 func (suite *StreamTestSuite) TestStreamLokiPodLogs_WithBuildLabel() {
 	messages := []LokiStreamResponse{
 		{
-			Streams: []struct {
-				Stream map[string]string `json:"stream"`
-				Values [][2]string       `json:"values"`
-			}{
+			Streams: []Stream{
 				{
 					Stream: map[string]string{
 						"instance":                "pod-1",
 						"unbind_team":             "team-1",
 						"unbind_deployment_build": "build-123",
 					},
-					Values: [][2]string{
-						{"1609459200000000000", "Log message"},
+					Values: []StreamValue{
+						{Timestamp: "1609459200000000000", Line: "Log message"},
 					},
 				},
 			},
@@ -777,17 +762,14 @@ done:
 func (suite *StreamTestSuite) TestStreamLokiPodLogs_MissingInstance() {
 	messages := []LokiStreamResponse{
 		{
-			Streams: []struct {
-				Stream map[string]string `json:"stream"`
-				Values [][2]string       `json:"values"`
-			}{
+			Streams: []Stream{
 				{
 					Stream: map[string]string{
 						"unbind_team": "team-1",
 						// Missing instance label
 					},
-					Values: [][2]string{
-						{"1609459200000000000", "Log message"},
+					Values: []StreamValue{
+						{Timestamp: "1609459200000000000", Line: "Log message"},
 					},
 				},
 			},

@@ -3051,7 +3051,7 @@ export const query_logsQuerySchema = z
     start: z.string().datetime({ offset: true }).optional(), // Start time for the query
     end: z.string().datetime({ offset: true }).optional(), // End time for the query
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
-    limit: z.number().optional(), // Number of log lines to get
+    limit: z.number().optional(), // Number of log lines to get (mirrors loki.MaxQueryLimit)
     direction: LokiDirectionSchema.optional(), // Direction of the logs (forward or backward)
     cursor: z.string().optional(), // Pagination cursor from a previous response; returns strictly older logs (backward direction only)
   })
@@ -3067,7 +3067,7 @@ export const stream_logsQuerySchema = z
     deployment_id: z.string().optional(),
     start: z.string().datetime({ offset: true }).optional(),
     since: z.string().optional(), // Duration to look back (e.g., '1h', '30m')
-    limit: z.number().optional(), // Number of lines to get from the end
+    limit: z.number().optional(), // Number of lines to get from the end (mirrors loki.MaxQueryLimit)
     search: z.string().optional(), // Search expression: bare words (case-insensitive), "quoted phrases", AND/OR, -negation, @key:value for JSON fields
     levels: z.string().optional(), // Comma-separated log levels to include (debug, info, warning, error)
     service_ids: z.string().optional(), // Comma-separated service IDs to include (team/project/environment scope only)

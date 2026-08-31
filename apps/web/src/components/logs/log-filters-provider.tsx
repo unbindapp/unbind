@@ -89,69 +89,63 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
     structuralSharing: true,
   });
 
-  const setParam = useCallback(
-    (key: string, value: string | undefined) =>
+  // Filters live in the URL, so every write is a navigation. Without
+  // resetScroll the router yanks the log list back to the top each time.
+  const setParams = useCallback(
+    (patch: Record<string, string | undefined>) =>
       navigate({
         to: ".",
-        search: (prev) => ({ ...prev, [key]: value }),
+        search: (prev) => ({ ...prev, ...patch }),
         replace: true,
+        resetScroll: false,
       }),
     [navigate],
   );
 
   const setSearch = useCallback(
-    (value: string | null) => setParam(keys.q, value || undefined),
-    [setParam, keys.q],
+    (value: string | null) => setParams({ [keys.q]: value || undefined }),
+    [setParams, keys.q],
   );
   const setLevels = useCallback(
-    (levels: TLogLevel[]) => setParam(keys.levels, levels.length ? levels.join(",") : undefined),
-    [setParam, keys.levels],
+    (levels: TLogLevel[]) =>
+      setParams({ [keys.levels]: levels.length ? levels.join(",") : undefined }),
+    [setParams, keys.levels],
   );
   const setServiceIds = useCallback(
-    (ids: string[]) => setParam(keys.services, ids.length ? ids.join(",") : undefined),
-    [setParam, keys.services],
+    (ids: string[]) => setParams({ [keys.services]: ids.length ? ids.join(",") : undefined }),
+    [setParams, keys.services],
   );
   const setRange = useCallback(
     (range: TLogRange | null) =>
-      setParam(keys.range, range === null ? undefined : encodeRange(range)),
-    [setParam, keys.range],
+      setParams({ [keys.range]: range === null ? undefined : encodeRange(range) }),
+    [setParams, keys.range],
   );
 
   const resetFilters = useCallback(
     () =>
-      navigate({
-        to: ".",
-        search: (prev) => ({
-          ...prev,
-          [keys.q]: undefined,
-          [keys.levels]: undefined,
-          [keys.services]: undefined,
-          [keys.range]: undefined,
-        }),
-        replace: true,
+      setParams({
+        [keys.q]: undefined,
+        [keys.levels]: undefined,
+        [keys.services]: undefined,
+        [keys.range]: undefined,
       }),
-    [navigate, keys],
+    [setParams, keys],
   );
 
   const viewInContext = useCallback(
     (aroundMs: number) => {
       const contextWindowMs = 15 * 60 * 1000;
-      navigate({
-        to: ".",
-        search: (prev) => ({
-          ...prev,
-          [keys.q]: undefined,
-          [keys.levels]: undefined,
-          [keys.services]: undefined,
-          [keys.range]: encodeRange({
-            from: aroundMs - contextWindowMs,
-            until: aroundMs + contextWindowMs,
-          }),
+      setParams({
+        [keys.q]: undefined,
+        [keys.levels]: undefined,
+        [keys.services]: undefined,
+        [keys.range]: encodeRange({
+          from: aroundMs - contextWindowMs,
+          until: aroundMs + contextWindowMs,
         }),
-        replace: true,
       });
     },
-    [navigate, keys],
+    [setParams, keys],
   );
 
   const value: TLogFiltersContext = useMemo(() => {

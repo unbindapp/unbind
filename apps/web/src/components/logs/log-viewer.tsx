@@ -2,8 +2,9 @@
 
 import ErrorCard from "@/components/error-card";
 import ErrorLine from "@/components/error-line";
+import LogFiltersProvider, { useLogFilters } from "@/components/logs/log-filters-provider";
 import LogLine from "@/components/logs/log-line";
-import LogFiltersProvider from "@/components/logs/log-filters-provider";
+import { buildLogRows, type TLogRow } from "@/components/logs/log-rows";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
 import LogViewPreferencesProvider, {
   logViewPreferenceKeys,
@@ -24,13 +25,22 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/lib/queries/logs";
-import { ArrowDownIcon, HourglassIcon, LoaderIcon, SearchIcon } from "lucide-react";
+import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
+import {
+  ArrowDownIcon,
+  HourglassIcon,
+  LoaderIcon,
+  RotateCcwIcon,
+  RotateCwIcon,
+  SearchIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
-import { VList, VListHandle } from "virtua";
+
+type TContainerType = "page" | "sheet";
 
 type TBaseProps = {
-  containerType: "page" | "sheet";
+  containerType: TContainerType;
   hideServiceByDefault?: boolean;
   className?: string;
   type: TLogType;
@@ -95,6 +105,8 @@ export default function LogViewer({
 
 const SCROLL_THRESHOLD = 50;
 const FETCH_OLDER_THRESHOLD = 300;
+const ESTIMATED_ROW_HEIGHT = 28;
+const OVERSCAN = 12;
 const placeholderArray = Array.from({ length: 50 });
 
 function Logs({
@@ -103,7 +115,7 @@ function Logs({
   shouldHaveLogs,
   error: errorFromProp,
 }: {
-  containerType: "page" | "sheet";
+  containerType: TContainerType;
   type: TLogType;
   shouldHaveLogs?: boolean;
   error?: string;
@@ -117,27 +129,12 @@ function Logs({
     streamStatus,
     streamErrorMessage,
     isLive,
-    hasMoreOlder,
-    isFetchingOlder,
-    fetchOlder,
-    lastChange,
     searchError,
-    setEvictionPaused,
   } = useLogs();
 
   // a search error disables fetching, so show "no matches" instead of skeletons
   const isPending = isPendingRaw && !searchError;
   const getLogsForDownload = useCallback(() => logsRef.current, [logsRef]);
-
-  const virtualListRef = useRef<VListHandle>(null);
-  const follow = useRef(true);
-  const prevScrollY = useRef<number | null>(null);
-  const scrolledOnce = useRef(false);
-  const [isAtBottom, setIsAtBottom] = useState(true);
-  const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(new Set());
-
-  const { preferences: viewPreferences } = useLogViewPreferences();
-  const autoFollow = viewPreferences.includes(logViewPreferenceKeys.autoFollow);
 
   const {
     query: { data: servicesData },
@@ -148,176 +145,13 @@ function Logs({
     return names;
   }, [servicesData]);
 
-  // log lines only render once service names are in, so skeletons stay up until then
-  const isShowingPlaceholders = !logs || !servicesData;
-  // the log list renders a leading indicator above the lines
-  const itemCount = isShowingPlaceholders ? placeholderArray.length : logs.length + 1;
+  const isEmpty = Boolean(logs && logs.length === 0);
+  // log lines only render once service names are in, so skeletons stay up until
+  // then, though a result with no lines has no names to wait for
+  const isShowingPlaceholders = !logs || (!servicesData && !isEmpty);
+  const rows = useMemo(() => buildLogRows(logs ?? []), [logs]);
 
-  const scrollToBottom = useCallback(() => {
-    follow.current = true;
-    setIsAtBottom(true);
-    const virtualList = virtualListRef.current;
-    if (!virtualList) return;
-    virtualList.scrollToIndex(itemCount - 1, { align: "end" });
-  }, [itemCount]);
-
-  const syncIsAtBottom = useCallback(() => {
-    const virtualList = virtualListRef.current;
-    if (!virtualList) return false;
-    const distanceToBottom =
-      virtualList.scrollSize - virtualList.viewportSize - virtualList.scrollOffset;
-    const atBottom = distanceToBottom < SCROLL_THRESHOLD;
-    setIsAtBottom(atBottom);
-    return atBottom;
-  }, []);
-
-  // isShowingPlaceholders is a dependency because swapping skeletons for log lines
-  // changes the scroll height without changing `logs` and without emitting a scroll
-  // event, so neither the follow nor the jump button can rely on those alone
-  useEffect(() => {
-    if (lastChange === "prepend") return;
-
-    if (!follow.current || !autoFollow) {
-      syncIsAtBottom();
-      return;
-    }
-
-    scrollToBottom();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [logs, isShowingPlaceholders]);
-
-  useEffect(() => {
-    if (!autoFollow) return;
-    scrollToBottom();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoFollow]);
-
-  const toggleExpanded = useCallback((key: string) => {
-    follow.current = false;
-    setExpandedKeys((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
-  }, []);
-
-  const onScroll = useCallback(() => {
-    // This is to prevent follow from being broken on initial load
-    if (!scrolledOnce.current) {
-      scrolledOnce.current = true;
-      return;
-    }
-
-    const virtualList = virtualListRef.current;
-    if (!virtualList) return;
-
-    const scrollY = virtualList.scrollOffset;
-
-    // If the user scrolls up, stop following
-    if (prevScrollY.current !== null && scrollY < prevScrollY.current) {
-      follow.current = false;
-    }
-
-    prevScrollY.current = scrollY;
-
-    const newIsAtBottom = syncIsAtBottom();
-    if (newIsAtBottom) {
-      follow.current = true;
-    }
-
-    // eviction would yank away the history the user is reading
-    setEvictionPaused(!newIsAtBottom);
-
-    if (scrollY < FETCH_OLDER_THRESHOLD && hasMoreOlder && !isFetchingOlder) {
-      fetchOlder();
-    }
-  }, [hasMoreOlder, isFetchingOlder, fetchOlder, setEvictionPaused, syncIsAtBottom]);
-
-  const throttledOnScroll = useThrottledCallback(onScroll, 50);
-
-  const listItems = useMemo(() => {
-    if (!isPending && error && !logs) {
-      return (
-        <div className="w-full px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
-          <ErrorCard message={error.message} className="min-h-38" />
-        </div>
-      );
-    }
-    if (!isPending && (!logs || logs.length === 0) && searchError) {
-      return (
-        <div className="px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
-          <NoLogsFound data-container={containerType} />
-        </div>
-      );
-    }
-    if (!isPending && logs && logs.length === 0) {
-      return (
-        <div className="px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+6.5rem)] font-sans group-data-[container=page]/wrapper:px-2 sm:px-2.5 group-data-[container=page]/wrapper:sm:px-2.5 group-data-[container=page]/wrapper:xl:px-[calc(0.625rem-((100vw-80rem)/2))]">
-          <NoLogsFound
-            data-container={containerType}
-            shouldHaveLogs={shouldHaveLogs && !searchError}
-          />
-        </div>
-      );
-    }
-    if (isShowingPlaceholders) {
-      return placeholderArray.map((_, index) => (
-        <LogLine
-          isPlaceholder
-          type={type}
-          key={index}
-          data-container={containerType}
-          data-first={index === 0 || undefined}
-          data-last={index === placeholderArray.length - 1 || undefined}
-          classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
-        />
-      ));
-    }
-    return [
-      hasMoreOlder ? (
-        <OlderLogsIndicator key="older-logs" isFetching={isFetchingOlder} />
-      ) : (
-        <LogsStartIndicator key="logs-start" />
-      ),
-      ...logs.map((logLine, index) => (
-        <LogLine
-          key={logLine.key}
-          type={type}
-          data-container={containerType}
-          data-last={index === logs.length - 1 || undefined}
-          classNameInner="min-[80.25rem]:group-data-[container=page]/line:rounded-sm"
-          logLine={logLine}
-          isExpanded={expandedKeys.has(logLine.key)}
-          onToggleExpanded={() => toggleExpanded(logLine.key)}
-          serviceName={
-            serviceNamesById.get(logLine.metadata.service_id ?? "") ||
-            logLine.metadata.service_id ||
-            "Unknown"
-          }
-        />
-      )),
-    ];
-  }, [
-    logs,
-    isShowingPlaceholders,
-    serviceNamesById,
-    containerType,
-    error,
-    isPending,
-    type,
-    shouldHaveLogs,
-    searchError,
-    hasMoreOlder,
-    isFetchingOlder,
-    expandedKeys,
-    toggleExpanded,
-  ]);
-
-  if (logs && logs.length === 0 && errorFromProp) {
+  if (isEmpty && errorFromProp) {
     return (
       <ScrollArea>
         <TabWrapper>
@@ -327,13 +161,53 @@ function Logs({
     );
   }
 
+  const isPage = containerType === "page";
+  const listProps = { rows, type, containerType, serviceNamesById, isEmpty };
+
+  const renderContent = () => {
+    if (!isPending && error && !logs) {
+      return (
+        <CenteredCard>
+          <ErrorCard message={error.message} className="min-h-38" />
+        </CenteredCard>
+      );
+    }
+    // nothing has ever loaded, so the search error is all there is to show
+    if (!isPending && !logs && searchError) {
+      return (
+        <CenteredCard>
+          <NoLogsFound />
+        </CenteredCard>
+      );
+    }
+    if (isShowingPlaceholders) {
+      return <PlaceholderList type={type} containerType={containerType} />;
+    }
+    // The list hides rather than unmounts while empty, so a filter that matches
+    // nothing doesn't tear down the virtualizer and the scroll state with it.
+    return (
+      <>
+        <LogList {...listProps} />
+        {isEmpty && (
+          <CenteredCard>
+            <NoLogsFound shouldHaveLogs={shouldHaveLogs && !searchError} />
+          </CenteredCard>
+        )}
+      </>
+    );
+  };
+
   return (
     <div
       data-container={containerType}
-      className="group/wrapper relative flex min-h-0 w-full flex-1 flex-col overflow-hidden"
+      className={cn(
+        "group/wrapper relative flex min-h-0 w-full flex-col overflow-hidden",
+        // The navbar is in flow at the top from sm up and fixed to the bottom
+        // below it, so the same subtraction leaves the page exactly clear of it.
+        isPage ? "h-[calc(100svh-var(--navbar-height))]" : "flex-1",
+      )}
     >
-      {/* Top bar that has the input */}
-      <div className="relative flex w-full items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+      <div className="relative flex w-full shrink-0 items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
         <div className="relative w-full">
           <SearchBar
             logType={type}
@@ -351,14 +225,14 @@ function Logs({
         </div>
       </div>
       {error && logs && logs.length > 0 && (
-        <div className="w-full pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+        <div className="w-full shrink-0 pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
           <div className="w-full px-2 sm:px-2.5">
             <ErrorLine className="border-destructive/8 border py-1.25" message={error.message} />
           </div>
         </div>
       )}
       {streamErrorMessage && (
-        <div className="w-full pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+        <div className="w-full shrink-0 pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
           <div className="w-full px-2 sm:px-2.5">
             <ErrorLine
               className="border-destructive/8 border py-1.25"
@@ -367,40 +241,295 @@ function Logs({
           </div>
         </div>
       )}
-      {/* List */}
-      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-        <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
-          <VList
-            overscan={20}
-            shift={lastChange === "prepend"}
-            style={{ height: undefined }}
-            className="min-h-0 w-full flex-1 font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]"
-            ref={virtualListRef}
-            onScroll={throttledOnScroll}
-          >
-            {listItems}
-          </VList>
-        </div>
-        {logs && logs.length > 0 && (
-          <Button
-            type="button"
-            size="icon"
-            aria-label="Jump to latest"
-            data-show={!isAtBottom || undefined}
-            disabled={isAtBottom}
-            fadeOnDisabled={false}
-            onClick={scrollToBottom}
-            className="absolute bottom-3 left-1/2 z-10 size-9 -translate-x-1/2 translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] rounded-full shadow-md transition-transform data-show:translate-y-0 sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]"
-          >
-            <ArrowDownIcon className="size-5" />
-          </Button>
-        )}
-      </div>
+      {renderContent()}
     </div>
   );
 }
 
-function OlderLogsIndicator({ isFetching }: { isFetching: boolean }) {
+type TRowsProps = {
+  rows: TLogRow[];
+  type: TLogType;
+  containerType: TContainerType;
+  serviceNamesById: Map<string, string>;
+};
+
+type TListProps = TRowsProps & { isEmpty: boolean };
+
+function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TListProps) {
+  const { hasMoreOlder, isFetchingOlder, olderError, fetchOlder, setEvictionPaused, resultSetKey } =
+    useLogs();
+  const autoFollow = useAutoFollow();
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const { expandedKeys, toggleExpanded } = useExpandedKeys();
+
+  const virtualizer = useVirtualizer<HTMLDivElement, HTMLDivElement>({
+    count: rows.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ESTIMATED_ROW_HEIGHT,
+    getItemKey: (index) => rows[index]!.key,
+    overscan: OVERSCAN,
+    anchorTo: "end",
+    followOnAppend: autoFollow,
+    scrollEndThreshold: SCROLL_THRESHOLD,
+  });
+
+  // followOnAppend only reacts to the list growing, so the first render, a new
+  // result set, and switching the toggle back on have to pin to the bottom by hand.
+  useEffect(() => {
+    if (!autoFollow) return;
+    virtualizer.scrollToEnd();
+  }, [autoFollow, virtualizer, resultSetKey]);
+
+  const syncScrollState = useCallback(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+    const distanceToBottom = element.scrollHeight - element.clientHeight - element.scrollTop;
+    const atBottom = distanceToBottom < SCROLL_THRESHOLD;
+    setIsAtBottom(atBottom);
+    // eviction would yank away the history the user is reading
+    setEvictionPaused(!atBottom);
+
+    // a failed page disarms this until the user retries by hand
+    if (
+      element.scrollTop < FETCH_OLDER_THRESHOLD &&
+      hasMoreOlder &&
+      !isFetchingOlder &&
+      !olderError
+    ) {
+      fetchOlder();
+    }
+  }, [hasMoreOlder, isFetchingOlder, olderError, fetchOlder, setEvictionPaused]);
+
+  const throttledSyncScrollState = useThrottledCallback(syncScrollState, 50);
+
+  // Growing the list moves the bottom without emitting a scroll event
+  useEffect(() => {
+    throttledSyncScrollState();
+  }, [rows.length, throttledSyncScrollState]);
+
+  return (
+    <div
+      data-empty={isEmpty || undefined}
+      className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden data-empty:hidden"
+    >
+      <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
+        <div
+          ref={scrollRef}
+          onScroll={throttledSyncScrollState}
+          className="min-h-0 w-full flex-1 overflow-y-auto font-mono [overflow-anchor:none]"
+        >
+          {/* The width cap lives inside the scroller so the scrollbar stays at the
+              container edge and the fade spans the full width. */}
+          <div className="w-full group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
+            <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
+              <VirtualRows
+                items={virtualizer.getVirtualItems()}
+                measureElement={virtualizer.measureElement}
+                rows={rows}
+                type={type}
+                containerType={containerType}
+                serviceNamesById={serviceNamesById}
+                expandedKeys={expandedKeys}
+                onToggleExpanded={toggleExpanded}
+                hasMoreOlder={hasMoreOlder}
+                isFetchingOlder={isFetchingOlder}
+                olderError={olderError}
+                onRetryOlder={fetchOlder}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <JumpToLatestButton
+        isAtBottom={isAtBottom}
+        onClick={() => virtualizer.scrollToEnd()}
+        className={cn(
+          "absolute bottom-3 z-10 translate-y-[calc(100%+1.5rem)] sm:bottom-4",
+          // The sheet reaches the bottom of the screen, the page stops above the navbar
+          containerType === "sheet" &&
+            "translate-y-[calc(100%+1.5rem+var(--safe-area-inset-bottom))] sm:bottom-[calc(1rem+var(--safe-area-inset-bottom))]",
+        )}
+      />
+    </div>
+  );
+}
+
+function useAutoFollow() {
+  const { preferences } = useLogViewPreferences();
+  return preferences.includes(logViewPreferenceKeys.autoFollow);
+}
+
+function useExpandedKeys() {
+  const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(new Set());
+  const toggleExpanded = useCallback((key: string) => {
+    setExpandedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, []);
+  return { expandedKeys, toggleExpanded };
+}
+
+type TVirtualRowsProps = TRowsProps & {
+  items: VirtualItem[];
+  measureElement: (node: HTMLDivElement | null) => void;
+  expandedKeys: ReadonlySet<string>;
+  onToggleExpanded: (key: string) => void;
+  hasMoreOlder: boolean;
+  isFetchingOlder: boolean;
+  olderError: string | null;
+  onRetryOlder: () => void;
+};
+
+function VirtualRows({
+  items,
+  measureElement,
+  rows,
+  type,
+  containerType,
+  serviceNamesById,
+  expandedKeys,
+  onToggleExpanded,
+  hasMoreOlder,
+  isFetchingOlder,
+  olderError,
+  onRetryOlder,
+}: TVirtualRowsProps) {
+  return items.map((item) => {
+    const row = rows[item.index];
+    if (!row) return null;
+
+    return (
+      <div
+        key={item.key}
+        data-index={item.index}
+        ref={measureElement}
+        className="absolute top-0 left-0 w-full"
+        style={{ transform: `translateY(${item.start}px)` }}
+      >
+        {row.kind === "leading" ? (
+          hasMoreOlder ? (
+            <OlderLogsIndicator
+              isFetching={isFetchingOlder}
+              error={olderError}
+              onRetry={onRetryOlder}
+            />
+          ) : (
+            <LogsStartIndicator />
+          )
+        ) : (
+          <LogLine
+            type={type}
+            data-container={containerType}
+            data-last={item.index === rows.length - 1 || undefined}
+            classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
+            logLine={row.line}
+            isExpanded={expandedKeys.has(row.key)}
+            onToggleExpanded={() => onToggleExpanded(row.key)}
+            serviceName={
+              serviceNamesById.get(row.line.metadata.service_id ?? "") ||
+              row.line.metadata.service_id ||
+              "Unknown"
+            }
+          />
+        )}
+      </div>
+    );
+  });
+}
+
+function PlaceholderList({
+  type,
+  containerType,
+}: {
+  type: TLogType;
+  containerType: TContainerType;
+}) {
+  return (
+    <div className="min-h-0 w-full flex-1 overflow-hidden font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
+      {placeholderArray.map((_, index) => (
+        <LogLine
+          isPlaceholder
+          type={type}
+          key={index}
+          data-container={containerType}
+          data-first={index === 0 || undefined}
+          data-last={index === placeholderArray.length - 1 || undefined}
+          classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
+        />
+      ))}
+    </div>
+  );
+}
+
+function CenteredCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-0 w-full flex-1 overflow-y-auto group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+      <div className="w-full px-2 py-2 font-sans sm:px-2.5">{children}</div>
+    </div>
+  );
+}
+
+function JumpToLatestButton({
+  isAtBottom,
+  onClick,
+  className,
+}: {
+  isAtBottom: boolean;
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <Button
+      type="button"
+      size="icon"
+      aria-label="Jump to latest"
+      data-show={!isAtBottom || undefined}
+      disabled={isAtBottom}
+      fadeOnDisabled={false}
+      onClick={onClick}
+      className={cn(
+        "left-1/2 size-9 -translate-x-1/2 rounded-full shadow-md transition-transform data-show:translate-y-0",
+        className,
+      )}
+    >
+      <ArrowDownIcon className="size-5" />
+    </Button>
+  );
+}
+
+function OlderLogsIndicator({
+  isFetching,
+  error,
+  onRetry,
+}: {
+  isFetching: boolean;
+  error: string | null;
+  onRetry: () => void;
+}) {
+  if (error) {
+    return (
+      <div className="flex w-full flex-col items-start gap-2 px-2 pt-4 pb-2.5 font-sans sm:px-2.5">
+        <ErrorLine
+          withIcon
+          className="border-destructive/8 border py-1.25"
+          message={`Couldn't load older logs. ${error}`}
+        />
+        <Button size="sm" variant="outline" onClick={onRetry}>
+          <RotateCwIcon className="-ml-1.5 size-4" />
+          <p className="truncate leading-tight">Retry</p>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="text-muted-foreground flex w-full items-center justify-center gap-1.5 px-2 pt-4 pb-2.5 font-sans text-xs">
       <LoaderIcon
@@ -431,6 +560,7 @@ function AnimatedHourglassIcon({ className }: { className?: string }) {
 
 function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
   const { searchError } = useLogs();
+  const { hasActiveFilters, resetFilters } = useLogFilters();
 
   const Icon = useMemo(() => {
     if (shouldHaveLogs) return AnimatedHourglassIcon;
@@ -448,6 +578,12 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
           <>No logs match the current filters</>
         )}
       </p>
+      {hasActiveFilters && (
+        <Button className="mt-2" onClick={() => resetFilters()}>
+          <RotateCcwIcon className="-ml-1 size-5 shrink-0" />
+          <p className="min-w-0 shrink">Clear Filters</p>
+        </Button>
+      )}
     </NoItemsCard>
   );
 }

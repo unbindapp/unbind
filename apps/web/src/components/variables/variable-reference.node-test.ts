@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { resolveReferenceTarget } from "./variable-reference-completion.ts";
+import {
+  resolveReferenceInsertion,
+  resolveReferenceTarget,
+} from "./variable-reference-completion.ts";
 import { splitByReferences } from "./variable-reference-parts.ts";
 
 const references = new Map([
@@ -117,4 +120,44 @@ test("completion stays shut in plain text", () => {
 
 test("a newline ends the reference being typed", () => {
   assert.equal(resolveReferenceTarget("${Post\nmore", 11), null);
+});
+
+test("the trigger button writes the trigger where there is none", () => {
+  assert.deepEqual(resolveReferenceInsertion("", 0), { from: 0, to: 0, insert: "${" });
+  assert.deepEqual(resolveReferenceInsertion("postgres://", 11), {
+    from: 11,
+    to: 11,
+    insert: "${",
+  });
+  assert.deepEqual(resolveReferenceInsertion("abc def", 4), { from: 4, to: 4, insert: "${" });
+});
+
+test("the trigger button leaves a trigger that is already there alone", () => {
+  assert.deepEqual(resolveReferenceInsertion("$", 1), { from: 1, to: 1, insert: "" });
+  assert.deepEqual(resolveReferenceInsertion("${", 2), { from: 2, to: 2, insert: "" });
+  assert.deepEqual(resolveReferenceInsertion("${Ap", 4), { from: 4, to: 4, insert: "" });
+  assert.deepEqual(resolveReferenceInsertion("pre ${Ap", 8), { from: 8, to: 8, insert: "" });
+});
+
+test("the trigger button never writes into or against a finished reference", () => {
+  const value = "${Api.PORT}";
+  assert.deepEqual(resolveReferenceInsertion(value, 5), { from: 11, to: 11, insert: "${" });
+  assert.deepEqual(resolveReferenceInsertion(value, 1), { from: 11, to: 11, insert: "${" });
+  // straight before it the two would merge into one malformed reference
+  assert.deepEqual(resolveReferenceInsertion(value, 0), { from: 11, to: 11, insert: "${" });
+  assert.deepEqual(resolveReferenceInsertion("pre " + value, 4), {
+    from: 15,
+    to: 15,
+    insert: "${",
+  });
+  // after it there is nothing to collide with
+  assert.deepEqual(resolveReferenceInsertion(value, 11), { from: 11, to: 11, insert: "${" });
+});
+
+test("a reference being typed only covers what is behind the cursor", () => {
+  // the node runs to the end of the line, but the text after the cursor is not
+  // part of what is being matched, nor of what a pick replaces
+  assert.deepEqual(resolveReferenceTarget("${ def", 2), { from: 0, to: 2 });
+  assert.deepEqual(resolveReferenceTarget("abc${ def", 5), { from: 3, to: 5 });
+  assert.deepEqual(resolveReferenceTarget("${Post more", 6), { from: 0, to: 6 });
 });

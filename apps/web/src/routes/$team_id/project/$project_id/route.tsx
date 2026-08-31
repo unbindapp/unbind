@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Navigate, Outlet, useMatch } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
@@ -93,6 +93,17 @@ function ProjectLayout() {
   const { environment } = Route.useSearch();
   const { data: projectData } = useQuery(projectQuery({ teamId, projectId }));
 
+  // The log viewer sizes itself to the viewport and scrolls internally, so the
+  // clearance the other pages need under the fixed phone navbar would only add a
+  // second scrollbar there.
+  const isLogsPage = Boolean(
+    useMatch({
+      from: "/$team_id/project/$project_id/logs/",
+      shouldThrow: false,
+      select: () => true,
+    }),
+  );
+
   // Resolve a valid environment into the URL for the whole project area. Moved
   // out of the loader so navigation isn't blocked on the project query.
   if (projectData) {
@@ -127,7 +138,7 @@ function ProjectLayout() {
                     <VolumePanelProvider>
                       <ProjectNavbar />
                       <Outlet />
-                      <NavbarSafeAreaInsetBottom className="sm:hidden" />
+                      {!isLogsPage && <NavbarSafeAreaInsetBottom className="sm:hidden" />}
                       <ContextCommandPanel
                         title="Project Command Panel"
                         description="Project command panel"

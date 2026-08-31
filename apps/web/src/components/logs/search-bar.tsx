@@ -14,6 +14,7 @@ import {
   levelIconKey,
   type TLogSearchData,
 } from "@/components/logs/log-search-language";
+import { logSearchScopes } from "@/components/logs/log-search-scope";
 import {
   logViewPreferenceKeys,
   logViewPreferences,
@@ -81,11 +82,15 @@ const levelIcons: Record<TLogLevel, FC<{ className?: string }>> = {
   error: TriangleAlertIcon,
 };
 
+// Lucide's artwork fills more of its box than the brand icons it sits beside,
+// so the level icons shrink to match.
+const levelIconClassName = "size-4.5 shrink-0 scale-90";
+
 // The option's own class carries the color, and the icons stroke with
 // currentColor, so both stay in step.
 const levelIconNodes: TCachedIcon[] = logLevels.map((level) => {
   const Icon = levelIcons[level];
-  return { key: levelIconKey(level), node: <Icon className="size-4.5 shrink-0" /> };
+  return { key: levelIconKey(level), node: <Icon className={levelIconClassName} /> };
 });
 
 const levelLabels: Record<TLogLevel, string> = {
@@ -103,7 +108,8 @@ function SearchBar({
   getLogsForDownload,
   className,
 }: TProps) {
-  const { search, setSearch, servicesEnabled } = useLogFilters();
+  const { search, setSearch } = useLogFilters();
+  const scope = logSearchScopes[logType];
   const [inputValue, setInputValue] = useState(search);
   const inputRef = useRef<TTokenFieldHandle>(null);
 
@@ -117,11 +123,12 @@ function SearchBar({
     return icons;
   }, [servicesData]);
 
-  // Read through a ref so loading services never rebuilds the editor.
+  // Read through a ref so the editor isn't recreated as services load; the
+  // language memo below is what asks it to redraw.
   const searchDataRef = useRef<TLogSearchData>({
     levels: logLevels,
     services: undefined,
-    servicesEnabled,
+    attributeKeys: scope.attributeKeys,
   });
   searchDataRef.current = {
     levels: logLevels,
@@ -134,7 +141,7 @@ function SearchBar({
           brand: serviceIconsById.get(s.id),
         }))
       : undefined,
-    servicesEnabled,
+    attributeKeys: scope.attributeKeys,
   };
 
   const icons: TCachedIcon[] = useMemo(
@@ -147,7 +154,15 @@ function SearchBar({
     ],
     [serviceIconsById],
   );
-  const language = useMemo(() => createLogSearchLanguage(() => searchDataRef.current), []);
+  // The highlighter reads its data through the ref, so a new language is the
+  // only thing that makes the field reconfigure and redraw. Rebuilding it when
+  // the services change is what settles a @service chip that was already in the
+  // field when the list loaded.
+  const language = useMemo(
+    () => createLogSearchLanguage(() => searchDataRef.current),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [servicesData],
+  );
 
   const debouncedSetSearch = useDebouncedCallback(setSearch, defaultDebounceMs);
 
@@ -206,8 +221,8 @@ function SearchBar({
             ariaLabel="Search logs"
             ariaInvalid={searchError ? true : undefined}
             className="flex-1"
-            classNameEditor="py-2.25 pr-31 pl-8.5"
-            placeholder={`Search logs: @level:error @service:my-app`}
+            classNameEditor="py-1.75 pr-31 pl-8.5"
+            placeholder={scope.placeholder}
           />
           <div className="absolute top-0 right-0 flex h-full justify-end">
             <Button
@@ -309,7 +324,7 @@ function FilterButton({ className }: { className?: string }) {
                     data-level={level}
                     className="data-[level=error]:text-destructive data-[level=warning]:text-warning flex min-w-0 shrink items-center gap-2"
                   >
-                    <Icon className="size-4.5 shrink-0" />
+                    <Icon className={levelIconClassName} />
                     <p className="min-w-0 shrink">{levelLabels[level]}</p>
                   </div>
                 </DropdownMenuCheckboxItem>
@@ -369,7 +384,7 @@ function FilterButton({ className }: { className?: string }) {
             )}
           >
             <RotateCcwIcon className="-my-1 size-4.5 shrink-0 -rotate-90 transform transition-transform group-data-not-default/item:rotate-0" />
-            <p className="min-w-0 shrink">Reset Filters</p>
+            <p className="min-w-0 shrink">Clear Filters</p>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

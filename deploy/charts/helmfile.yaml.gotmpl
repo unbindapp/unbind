@@ -248,6 +248,9 @@ releases:
             # Reduce concurrent tail requests to save memory
             max_concurrent_tail_requests: 50
             allow_structured_metadata: true
+            # the api filters logs by level through the detected_level structured
+            # metadata loki attaches here, so this cannot be left to the default
+            discover_log_levels: true
             volume_enabled: true
             retention_period: {{ .Values | get "overrides.loki.retentionPeriod" }}
           compactor:

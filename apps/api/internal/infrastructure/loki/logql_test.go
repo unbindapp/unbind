@@ -106,21 +106,36 @@ func assertBalancedLogQLStrings(t *testing.T, fragment string) {
 
 func TestBuildLogQL(t *testing.T) {
 	t.Run("plain selector", func(t *testing.T) {
-		assert.Equal(t, `{unbind_service="svc-1"}`, buildLogQL(LokiLabelService, "svc-1", nil, ""))
+		assert.Equal(t, `{unbind_service="svc-1"}`, buildLogQL(LokiLabelService, "svc-1", nil, nil, ""))
 	})
 
 	t.Run("with services", func(t *testing.T) {
-		got := buildLogQL(LokiLabelEnvironment, "env-1", []string{"a", "b"}, "")
+		got := buildLogQL(LokiLabelEnvironment, "env-1", []string{"a", "b"}, nil, "")
 		assert.Equal(t, `{unbind_environment="env-1", unbind_service=~"a|b"}`, got)
 	})
 
 	t.Run("service label ignores service ids", func(t *testing.T) {
-		got := buildLogQL(LokiLabelService, "svc-1", []string{"a"}, "")
+		got := buildLogQL(LokiLabelService, "svc-1", []string{"a"}, nil, "")
 		assert.Equal(t, `{unbind_service="svc-1"}`, got)
 	})
 
 	t.Run("with filter", func(t *testing.T) {
-		got := buildLogQL(LokiLabelTeam, "team-1", nil, `|~ "(?i)x"`)
+		got := buildLogQL(LokiLabelTeam, "team-1", nil, nil, `|~ "(?i)x"`)
 		assert.Equal(t, `{unbind_team="team-1"} |~ "(?i)x"`, got)
+	})
+
+	t.Run("with levels", func(t *testing.T) {
+		got := buildLogQL(LokiLabelService, "svc-1", nil, []LogLevel{LogLevelError}, "")
+		assert.Equal(t, `{unbind_service="svc-1"} | detected_level=~"error|critical|fatal"`, got)
+	})
+
+	t.Run("levels precede the search, which can compile to a parser stage", func(t *testing.T) {
+		got := buildLogQL(LokiLabelService, "svc-1", nil, []LogLevel{LogLevelError}, `| json | status =~ "(?i)500"`)
+		assert.Equal(t, `{unbind_service="svc-1"} | detected_level=~"error|critical|fatal" | json | status =~ "(?i)500"`, got)
+	})
+
+	t.Run("every level selected is the same as no filter", func(t *testing.T) {
+		got := buildLogQL(LokiLabelService, "svc-1", nil, LogLevelValues, "")
+		assert.Equal(t, `{unbind_service="svc-1"}`, got)
 	})
 }

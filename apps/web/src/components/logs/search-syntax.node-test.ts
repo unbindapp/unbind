@@ -63,7 +63,7 @@ test("service tokens are extracted", () => {
 
 test("an unknown service is forwarded instead of filtered", () => {
   const known = new Set(["api", "web-app"]);
-  const result = parseSearchInput("@service:nope timeout", known);
+  const result = parseSearchInput("@service:nope timeout", { knownServiceTokens: known });
   assert.equal(result.error, null);
   assert.deepEqual(result.serviceNames, []);
   assert.equal(result.serverSearch, "@service:nope timeout");
@@ -71,14 +71,17 @@ test("an unknown service is forwarded instead of filtered", () => {
 
 test("a known service is still extracted", () => {
   const known = new Set(["api", "web-app"]);
-  const result = parseSearchInput("@service:api timeout", known);
+  const result = parseSearchInput("@service:api timeout", { knownServiceTokens: known });
   assert.deepEqual(result.serviceNames, ["api"]);
   assert.equal(result.serverSearch, "timeout");
 });
 
 test("service matching ignores case", () => {
   const known = new Set(["web-app"]);
-  assert.deepEqual(parseSearchInput("@service:Web-App", known).serviceNames, ["Web-App"]);
+  assert.deepEqual(
+    parseSearchInput("@service:Web-App", { knownServiceTokens: known }).serviceNames,
+    ["Web-App"],
+  );
 });
 
 test("every service is extracted while the list is still loading", () => {
@@ -89,9 +92,49 @@ test("every service is extracted while the list is still loading", () => {
 
 test("a forwarded service keeps an adjacent AND intact", () => {
   const known = new Set(["api"]);
-  const result = parseSearchInput("foo AND @service:nope", known);
+  const result = parseSearchInput("foo AND @service:nope", { knownServiceTokens: known });
   assert.equal(result.error, null);
   assert.equal(result.serverSearch, "foo AND @service:nope");
+});
+
+// A viewer already scoped to one service resolves @level only, so @service has
+// to read like any other word there.
+const levelOnly = { attributeKeys: ["level"] } as const;
+
+test("a key the scope does not resolve is forwarded as an ordinary term", () => {
+  const result = parseSearchInput("@service:api timeout", {
+    ...levelOnly,
+    knownServiceTokens: new Set(["api"]),
+  });
+  assert.equal(result.error, null);
+  assert.deepEqual(result.serviceNames, []);
+  assert.equal(result.serverSearch, "@service:api timeout");
+});
+
+test("levels are still extracted in a scope that resolves them alone", () => {
+  const result = parseSearchInput("@level:error @service:api", {
+    ...levelOnly,
+    knownServiceTokens: new Set(["api"]),
+  });
+  assert.deepEqual(result.levels, ["error"]);
+  assert.equal(result.serverSearch, "@service:api");
+});
+
+test("a key the scope does not resolve can be negated", () => {
+  const result = parseSearchInput("-@service:api", levelOnly);
+  assert.equal(result.error, null);
+  assert.equal(result.serverSearch, "-@service:api");
+});
+
+test("a key the scope does not resolve can sit next to OR", () => {
+  const result = parseSearchInput("foo OR @service:api", levelOnly);
+  assert.equal(result.error, null);
+  assert.equal(result.serverSearch, "foo OR @service:api");
+});
+
+test("the OR error names only the keys the scope resolves", () => {
+  const result = parseSearchInput("@level:error OR foo", levelOnly);
+  assert.equal(result.error, "@level cannot be combined with OR");
 });
 
 test("negated attribute tokens error", () => {
@@ -142,4 +185,17 @@ test("extracted token next to OR errors instead of leaving a dangling operator",
 
 test("doubled operators error", () => {
   assert.match(parseSearchInput("a AND AND b").error ?? "", /misplaced/);
+});
+
+// Picking a value from the dropdown leaves a trailing space behind, so the next
+// token can be typed straight away.
+test("a trailing space is not a term of its own", () => {
+  const result = parseSearchInput("@level:error timeout ");
+  assert.equal(result.serverSearch, "timeout");
+  assert.deepEqual(result.levels, ["error"]);
+  assert.equal(result.error, null);
+
+  const attributesOnly = parseSearchInput("@level:error ");
+  assert.equal(attributesOnly.serverSearch, "");
+  assert.equal(attributesOnly.error, null);
 });

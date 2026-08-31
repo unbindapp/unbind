@@ -55,6 +55,7 @@
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
   --keyboard-inset-height: 0px;
+  --navbar-height: 0px;
   --safe-screen-height: calc(100svh - var(--safe-area-inset-bottom));
   --safe-screen-height-keyboard: calc(var(--safe-screen-height) - var(--keyboard-inset-height));
 
@@ -636,6 +637,37 @@
     color: var(--warning);
   }
 
+  /* Attributes and references read as chips. The tint does double duty as the
+     fill and as a 1px inset ring stacked on top of it, so the edge lands at
+     twice the fill's strength and, unlike a border, costs no layout.
+
+     The chip stays inline so a long reference wraps like the text around it
+     rather than being pushed onto a line of its own. That makes the fill the
+     font's ascent-to-descent band, which is taller than the text: the fields
+     carry the leading to hold it, see tokenFieldEditorClassName. */
+  .tok-chip {
+    --tok-chip: var(--foreground);
+    border-radius: var(--radius-sm);
+    padding: 0 0.25rem;
+    background-color: color-mix(in oklab, var(--tok-chip) 8%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tok-chip) 8%, transparent);
+    /* a chip split across lines gets a full fill and ring on each */
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .tok-chip-process {
+    --tok-chip: var(--process);
+  }
+
+  .tok-chip-error {
+    --tok-chip: var(--destructive);
+  }
+
+  .tok-chip-warning {
+    --tok-chip: var(--warning);
+  }
+
   /* AND/OR are keywords like @level and @service, so they share their color.
      Color only: bolding shifts the rest of the line the moment the word is
      recognized. */
@@ -774,21 +806,13 @@
 }
 
 /* Levels carry their severity color; the icons stroke with currentColor so they
-   follow. The matched substring inherits here rather than turning blue, so a
-   level never reads as two colors mid-word. */
+   follow. */
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li.token-field-option-level-error {
   color: var(--destructive);
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li.token-field-option-level-warning {
   color: var(--warning);
-}
-
-.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip
-  > ul
-  > li[class*="token-field-option-level-"]
-  .cm-completionMatchedText {
-  color: inherit;
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .token-field-option-pending {
