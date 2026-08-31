@@ -821,24 +821,12 @@
   color: var(--muted-foreground);
 }
 
-/* Matched characters step the process color the same way the plain text steps
-   the grays, so the key still reads first while typing. */
-.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip
-  .token-field-reference-punct
-  .cm-completionMatchedText {
-  color: color-mix(in oklab, var(--process) 50%, transparent);
-}
-
-.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip
-  .token-field-reference-source
-  .cm-completionMatchedText {
-  color: color-mix(in oklab, var(--process) 75%, transparent);
-}
-
-/* Color only: bolding the match reflows the label as you type. */
+/* Underline only: a color change is jarring and bolding the match reflows the
+   label as you type. The line inherits each segment's color, so a reference
+   label's muting steps carry through to it. */
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .cm-completionMatchedText {
-  text-decoration: none;
-  color: var(--process);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .cm-completionDetail {
