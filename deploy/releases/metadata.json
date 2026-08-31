@@ -163,5 +163,10 @@
     "version": "v0.1.32",
     "description": "Variable reference completion styling and loading polish, and log prepend indicator fixes",
     "breaking": false
+  },
+  "v0.1.33": {
+    "version": "v0.1.33",
+    "description": "Log line context highlighting, log search and filter syncing, and update toast refinements",
+    "breaking": false
   }
 }
