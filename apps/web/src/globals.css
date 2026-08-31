@@ -135,7 +135,7 @@
   --discord-foreground: hsl(0 0% 100%);
   --github: hsl(120 90% 5%);
   --github-foreground: hsl(0 0% 100%);
-  --gitlab: hsl(9 60% 48%);
+  --gitlab: hsl(8 76% 52%);
   --gitlab-foreground: hsl(0 0% 100%);
   --email: hsl(160 100% 24%);
   --email-foreground: hsl(0 0% 100%);
@@ -254,7 +254,7 @@
   --discord-foreground: hsl(120 100% 97%);
   --github: hsl(120 100% 97%);
   --github-foreground: hsl(120 9% 6%);
-  --gitlab: hsl(9 60% 48%);
+  --gitlab: hsl(8 76% 52%);
   --gitlab-foreground: hsl(0 0% 100%);
   --email: hsl(160 68% 60%);
   --email-foreground: hsl(120 9% 6%);
