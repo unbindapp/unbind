@@ -123,7 +123,8 @@ function SearchBar({
     return icons;
   }, [servicesData]);
 
-  // Read through a ref so loading services never rebuilds the editor.
+  // Read through a ref so the editor isn't recreated as services load; the
+  // language memo below is what asks it to redraw.
   const searchDataRef = useRef<TLogSearchData>({
     levels: logLevels,
     services: undefined,
@@ -153,7 +154,15 @@ function SearchBar({
     ],
     [serviceIconsById],
   );
-  const language = useMemo(() => createLogSearchLanguage(() => searchDataRef.current), []);
+  // The highlighter reads its data through the ref, so a new language is the
+  // only thing that makes the field reconfigure and redraw. Rebuilding it when
+  // the services change is what settles a @service chip that was already in the
+  // field when the list loaded.
+  const language = useMemo(
+    () => createLogSearchLanguage(() => searchDataRef.current),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [servicesData],
+  );
 
   const debouncedSetSearch = useDebouncedCallback(setSearch, defaultDebounceMs);
 

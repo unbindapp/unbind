@@ -14,6 +14,7 @@ import { styleTags, tags as t } from "@lezer/highlight";
 import { resolveCompletionTarget } from "./log-search-completion";
 import type { TClientAttributeKey } from "./log-search-scope";
 import { parser } from "./log-search.gen";
+import { findServiceByToken } from "./service-tokens";
 
 /** Namespaced so a service brand can never collide with a level. */
 export const levelIconKey = (level: string) => `level:${level}`;
@@ -66,6 +67,24 @@ function resolvesAttribute(keys: readonly TClientAttributeKey[], key: string) {
 }
 
 /**
+ * A chip is the field's "this resolves" signal, so a value only gets one when it
+ * names something real. Mirrors what parseSearchInput decides for the same
+ * value, which is what makes the chip mean the filter actually applies.
+ */
+function resolveValueChip(key: string, value: string, data: TLogSearchData) {
+  if (key === "level") {
+    const level = value.toLowerCase();
+    if (!data.levels.includes(level)) return null;
+    return levelValueChip[level] ?? valueChip;
+  }
+  if (key !== "service") return null;
+  // Undefined until the list loads. parseSearchInput still extracts the name
+  // then, so the chip agrees rather than blinking off and back on.
+  if (!data.services) return valueChip;
+  return findServiceByToken(data.services, value) ? valueChip : null;
+}
+
+/**
  * Highlights only the attributes this scope resolves. Anything else, whether an
  * unrecognised `@foo` or `@service` in a viewer already pinned to one service,
  * is forwarded as an ordinary search term, so it reads as one. The `@` and `:`
@@ -77,11 +96,11 @@ function createAttributeHighlighter(getData: () => TLogSearchData) {
     class {
       decorations: DecorationSet;
       constructor(view: EditorView) {
-        this.decorations = buildAttributeDecorations(view, getData().attributeKeys);
+        this.decorations = buildAttributeDecorations(view, getData());
       }
       update(update: ViewUpdate) {
         if (update.docChanged || update.viewportChanged) {
-          this.decorations = buildAttributeDecorations(update.view, getData().attributeKeys);
+          this.decorations = buildAttributeDecorations(update.view, getData());
         }
       }
     },
@@ -89,7 +108,7 @@ function createAttributeHighlighter(getData: () => TLogSearchData) {
   );
 }
 
-function buildAttributeDecorations(view: EditorView, keys: readonly TClientAttributeKey[]) {
+function buildAttributeDecorations(view: EditorView, data: TLogSearchData) {
   const builder = new RangeSetBuilder<Decoration>();
   for (const { from, to } of view.visibleRanges) {
     syntaxTree(view.state).iterate({
@@ -100,7 +119,7 @@ function buildAttributeDecorations(view: EditorView, keys: readonly TClientAttri
         const key = node.node.getChild("AttrKey");
         if (!key) return;
         const name = view.state.sliceDoc(key.from + 1, key.to);
-        if (!resolvesAttribute(keys, name)) return;
+        if (!resolvesAttribute(data.attributeKeys, name)) return;
 
         // A chip covers one run of same-colored text, so the dimmed "@" and ":"
         // ride along with the key. Each wraps the marks inside it, so it opens
@@ -113,9 +132,8 @@ function buildAttributeDecorations(view: EditorView, keys: readonly TClientAttri
 
         const value = node.node.getChild("AttrValue");
         if (!value) return;
-        const level =
-          name === "level" ? view.state.sliceDoc(value.from, value.to).toLowerCase() : null;
-        builder.add(value.from, value.to, (level && levelValueChip[level]) || valueChip);
+        const chip = resolveValueChip(name, view.state.sliceDoc(value.from, value.to), data);
+        if (chip) builder.add(value.from, value.to, chip);
       },
     });
   }
