@@ -37,7 +37,7 @@ The Kubernetes operator. Translates Unbind CRDs into native Kubernetes resources
 - Reinvent the wheel but do not reinvent the car. If you are solving a simple problem do not introduce a library. If you are solving a complex but a common problem, there is likely a modern library for it, if so, use it.
 - Never commit or push code unless explicitly asked to do so.
 - Never make a PR unless explicitly asked to do so.
-- Do not insert yourself into our commits or PRs in any way. Our codebase is not your ad space.
+- Do not insert yourself into our code, commits or PRs in any way. Our codebase is not your ad space.
 - After you make code changes, run precommit and fix any lint issues that arise from it.
 
 ## Commit Messages
