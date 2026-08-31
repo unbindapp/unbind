@@ -8,6 +8,7 @@ import UpdateStatusProvider, {
   useUpdateStatus,
   useUpdateStatusUtils,
 } from "@/components/update/update-status-provider";
+import { toast } from "@/components/ui/toast";
 import { applyUpdate as applyUpdateFn } from "@/lib/queries/system";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -43,6 +44,7 @@ export default function UpdateAvailableSection(props: TProps) {
   const { latestVersion } = props;
   useEffect(() => {
     setLastDismissedVersion(latestVersion);
+    toast.close("update_toast");
   }, [latestVersion, setLastDismissedVersion]);
 
   return (
