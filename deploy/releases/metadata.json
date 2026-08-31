@@ -168,5 +168,10 @@
     "version": "v0.1.33",
     "description": "Log line context highlighting, log search and filter syncing, and update toast refinements",
     "breaking": false
+  },
+  "v0.1.34": {
+    "version": "v0.1.34",
+    "description": "Increased log query limit to 2000",
+    "breaking": false
   }
 }
