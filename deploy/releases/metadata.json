@@ -153,5 +153,10 @@
     "version": "v0.1.30",
     "description": "Log virtualization and scrolling improvements, Loki-side log level filtering, and standardized log limits",
     "breaking": false
+  },
+  "v0.1.31": {
+    "version": "v0.1.31",
+    "description": "Log search attribute chips and completions, live log stream resume fixes, and a pending screen for route transitions",
+    "breaking": false
   }
 }
