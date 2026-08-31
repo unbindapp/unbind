@@ -291,7 +291,7 @@ function FilterButton({ className }: { className?: string }) {
               className,
             )}
           >
-            <div className="relative size-5 transition-transform group-data-open/button:rotate-45">
+            <div className="group-data-non-default/button:text-warning relative size-5 transition-transform group-data-open/button:rotate-45">
               <FilterIcon className="size-full opacity-100 group-data-open/button:opacity-0" />
               <XIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-data-open/button:opacity-100" />
             </div>
@@ -586,7 +586,7 @@ function SettingsButton({
             variant="ghost"
             className={cn("touch-manipulation", className)}
           >
-            <div className="relative size-5 transition-transform group-data-open/button:rotate-45">
+            <div className="group-data-non-default/button:text-warning relative size-5 transition-transform group-data-open/button:rotate-45">
               <SettingsIcon className="size-full opacity-100 group-data-open/button:opacity-0" />
               <XIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-data-open/button:opacity-100" />
             </div>
