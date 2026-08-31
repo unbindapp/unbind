@@ -57,6 +57,20 @@ describe("buildSearchText", () => {
     assert.equal(text, "@level:debug @level:error @service:Web-App @range:6h timeout");
   });
 
+  it("keeps a space behind a trailing token, like picking a completion does", () => {
+    const text = buildSearchText(
+      { levels: ["error"], serviceIds: [], range: null },
+      "",
+      serviceTokens,
+    );
+    assert.equal(text, "@level:error ");
+    const extracted = extractSearchFilters(text, options);
+    assert.deepEqual(extracted.levels, ["error"]);
+    assert.equal(extracted.q, "");
+    // and rebuilding is stable, so the sync never oscillates
+    assert.equal(buildSearchText(extracted, extracted.q, serviceTokens), text);
+  });
+
   it("skips services without a known token", () => {
     const text = buildSearchText(
       { levels: [], serviceIds: ["svc-gone"], range: null },

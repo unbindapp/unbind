@@ -56,7 +56,9 @@ export function extractSearchFilters(
 /**
  * Renders filters back into search text: level tokens in their canonical
  * order, then services, then the range, then the free text. A service whose
- * token is unknown (still loading, or deleted) renders nothing.
+ * token is unknown (still loading, or deleted) renders nothing. A trailing
+ * token keeps a space behind it, just like picking a completion, so typing
+ * carries on with a fresh term instead of extending the token.
  */
 export function buildSearchText(
   filters: { levels: readonly LogLevel[]; serviceIds: readonly string[]; range: TLogRange | null },
@@ -72,6 +74,7 @@ export function buildSearchText(
     if (service) parts.push(`@service:${service.token}`);
   }
   if (filters.range) parts.push(`@range:${encodeRangeToken(filters.range)}`);
-  if (q) parts.push(q);
-  return parts.join(" ");
+  const tokens = parts.join(" ");
+  if (!tokens) return q;
+  return q ? `${tokens} ${q}` : `${tokens} `;
 }
