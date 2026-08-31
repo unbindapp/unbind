@@ -5,6 +5,7 @@ import { IconCache, type TCachedIcon } from "@/components/icons/icon-cache";
 import { iconCompletionAddition } from "@/components/ui/token-field/icon-completion";
 import {
   createVariableReferenceLanguage,
+  loadingReferencesIconKey,
   type TVariableReferenceData,
 } from "@/components/variables/variable-reference-language";
 import { resolveReferenceInsertion } from "@/components/variables/variable-reference-completion";
@@ -13,7 +14,7 @@ import { withForm } from "@/lib/hooks/use-app-form";
 import type { LanguageSupport } from "@codemirror/language";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { TVariableForCreate } from "@/lib/queries/variables";
-import { InfoIcon, Link2Icon, PlusIcon, Trash2Icon } from "lucide-react";
+import { InfoIcon, Link2Icon, LoaderIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useCallback, useMemo, useRef, type FC } from "react";
 
 export type TReferenceProps = {
@@ -49,10 +50,16 @@ export const VariablesFormField = withForm({
       for (const token of referenceProps.tokens ?? []) {
         if (token.brand) distinct.add(token.brand);
       }
-      return [...distinct].map((brand) => ({
-        key: brand,
-        node: <BrandIcon color="brand" brand={brand} className="size-4.5 shrink-0" />,
-      }));
+      return [
+        {
+          key: loadingReferencesIconKey,
+          node: <LoaderIcon className="size-4 shrink-0 animate-spin" />,
+        },
+        ...[...distinct].map((brand) => ({
+          key: brand,
+          node: <BrandIcon color="brand" brand={brand} className="size-4.5 shrink-0" />,
+        })),
+      ];
     }, [referenceProps.tokens]);
 
     const onPaste = useCallback(

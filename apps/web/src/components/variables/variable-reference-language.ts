@@ -18,6 +18,9 @@ export type TVariableReferenceData<T> = {
   tokens: readonly TVariableToken<T>[] | undefined;
 };
 
+/** IconCache key for the spinner shown while references load. */
+export const loadingReferencesIconKey = "loading-references";
+
 // Nothing is styled from the grammar: whether a ${...} is a real reference
 // depends on the live reference list, so it's decorated below instead. A
 // half-typed one is left plain — the dropdown is already showing the matches.
@@ -94,12 +97,13 @@ function completionAt<T>(
   if (!target) return null;
 
   if (!data.tokens) {
-    return {
-      from: target.from,
-      to: target.to,
-      options: [{ label: "Loading references...", apply: () => {}, type: "pending" }],
-      filter: false,
+    const pending: TIconCompletion = {
+      label: "Loading references...",
+      apply: () => {},
+      type: "pending",
+      iconKey: loadingReferencesIconKey,
     };
+    return { from: target.from, to: target.to, options: [pending], filter: false };
   }
 
   const options: TIconCompletion[] = data.tokens.map((token) => ({
