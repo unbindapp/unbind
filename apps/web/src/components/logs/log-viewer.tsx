@@ -570,7 +570,7 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
   }, [shouldHaveLogs]);
 
   return (
-    <NoItemsCard Icon={Icon}>
+    <NoItemsCard Icon={Icon} className="min-h-42">
       <p className="w-full max-w-lg">
         {searchError ? (
           <>{searchError}</>
