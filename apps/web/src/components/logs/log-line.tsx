@@ -227,12 +227,12 @@ function LogLineDetails({
           ))}
         </div>
         <div className="relative flex w-full">
-          <p className="text-foreground bg-background min-w-0 flex-1 rounded border p-2 pr-10 font-mono text-xs break-all whitespace-pre-wrap select-text">
+          <p className="text-foreground bg-background min-w-0 flex-1 rounded border p-2 pr-9.5 font-mono text-xs break-all whitespace-pre-wrap select-text">
             {logLine.message}
           </p>
           <CopyButton
             valueToCopy={logLine.message}
-            className="absolute top-0.5 right-0.5"
+            className="absolute top-0.5 right-0.5 size-7.5 rounded-md sm:rounded-sm"
             classNameIcon="size-3.5"
           />
         </div>
