@@ -102,7 +102,7 @@ export default function LogLine({
               }
         }
         className={cn(
-          `group-data-[level=warning]/line:bg-warning/8 group-data-[level=error]/line:bg-destructive/8 group-data-real/line:group-hover/line:bg-border group-data-[level=warning]/line:group-data-real/line:group-hover/line:bg-warning/16 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/16 group-data-expanded/line:bg-border group-data-[level=warning]/line:group-data-expanded/line:bg-warning/16 group-data-[level=error]/line:group-data-expanded/line:bg-destructive/16 group-data-highlighted/line:inset-ring-success/50 flex w-full cursor-default items-center pl-3 group-data-highlighted/line:inset-ring-2 group-data-real/line:cursor-pointer sm:pl-4`,
+          `group-data-[level=warning]/line:bg-warning/8 group-data-[level=error]/line:bg-destructive/8 group-data-real/line:group-hover/line:bg-border group-data-[level=warning]/line:group-data-real/line:group-hover/line:bg-warning/16 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/16 group-data-expanded/line:bg-border group-data-[level=warning]/line:group-data-expanded/line:bg-warning/16 group-data-[level=error]/line:group-data-expanded/line:bg-destructive/16 group-data-highlighted/line:inset-ring-success flex w-full cursor-default items-center pl-3 group-data-highlighted/line:inset-ring group-data-real/line:cursor-pointer sm:pl-4`,
           classNameInner,
         )}
       >
