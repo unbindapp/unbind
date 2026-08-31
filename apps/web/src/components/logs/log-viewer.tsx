@@ -191,7 +191,7 @@ function Logs({
         <LogList {...listProps} />
         {isEmpty && (
           <CenteredCard>
-            <NoLogsFound shouldHaveLogs={shouldHaveLogs && !searchError} />
+            <NoLogsFound shouldHaveLogs={shouldHaveLogs} />
           </CenteredCard>
         )}
       </>
@@ -575,20 +575,19 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
   const { searchError } = useLogs();
   const { hasActiveFilters, resetFilters } = useLogFilters();
 
-  const Icon = useMemo(() => {
-    if (shouldHaveLogs) return AnimatedHourglassIcon;
-    return SearchIcon;
-  }, [shouldHaveLogs]);
+  // an empty result under active filters is a real answer, not Loki lag
+  const isWaitingForLogs = Boolean(shouldHaveLogs && !searchError && !hasActiveFilters);
+  const Icon = isWaitingForLogs ? AnimatedHourglassIcon : SearchIcon;
 
   return (
     <NoItemsCard Icon={Icon} className="min-h-42">
       <p className="w-full max-w-lg">
         {searchError ? (
           <>{searchError}</>
-        ) : shouldHaveLogs ? (
-          <>Waiting for logs</>
         ) : hasActiveFilters ? (
           <>No logs match the current filters</>
+        ) : isWaitingForLogs ? (
+          <>Waiting for logs</>
         ) : (
           <>No logs yet</>
         )}

@@ -3,6 +3,7 @@ import ErrorLine from "@/components/error-line";
 import LogViewer from "@/components/logs/log-viewer";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { expectsBuildLogs } from "@/lib/helpers/deployment-expects-logs";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { TriangleAlertIcon } from "lucide-react";
 
@@ -40,14 +41,6 @@ export default function BuildLogs({ deployment }: TProps) {
     );
   }
 
-  const shouldHaveLogs =
-    deployment?.status === "build-queued" ||
-    deployment?.status === "build-pending" ||
-    deployment?.status === "build-running" ||
-    deployment?.status === "build-succeeded" ||
-    deployment?.status === "launching" ||
-    deployment?.status === "launch-error";
-
   return (
     <LogViewer
       error={deployment.error}
@@ -59,7 +52,7 @@ export default function BuildLogs({ deployment }: TProps) {
       deploymentId={deploymentId}
       type="build"
       hideServiceByDefault
-      shouldHaveLogs={shouldHaveLogs}
+      shouldHaveLogs={expectsBuildLogs(deployment)}
       httpDefaultStartTimestamp={createdAtTimestamp ? createdAtTimestamp - hourInMs : undefined}
       httpDefaultEndTimestamp={completedAtTimestamp ? completedAtTimestamp + hourInMs : undefined}
     />

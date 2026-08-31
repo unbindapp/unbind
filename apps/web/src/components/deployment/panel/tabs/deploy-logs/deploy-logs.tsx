@@ -3,6 +3,7 @@ import ErrorLine from "@/components/error-line";
 import LogViewer from "@/components/logs/log-viewer";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { expectsDeployLogs } from "@/lib/helpers/deployment-expects-logs";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { TriangleAlertIcon } from "lucide-react";
 
@@ -43,11 +44,7 @@ export default function DeployLogs({ deployment }: TProps) {
       deploymentId={deploymentId}
       type="deployment"
       hideServiceByDefault
-      shouldHaveLogs={
-        deployment.status !== "removed" &&
-        deployment.status !== "build-cancelled" &&
-        deployment.status !== "build-failed"
-      }
+      shouldHaveLogs={expectsDeployLogs(deployment)}
       httpDefaultStartTimestamp={undefined}
       httpDefaultEndTimestamp={undefined}
     />
