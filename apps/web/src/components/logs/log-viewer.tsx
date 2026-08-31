@@ -576,8 +576,10 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
           <>{searchError}</>
         ) : shouldHaveLogs ? (
           <>Waiting for logs</>
-        ) : (
+        ) : hasActiveFilters ? (
           <>No logs match the current filters</>
+        ) : (
+          <>No logs yet</>
         )}
       </p>
       {hasActiveFilters && (
