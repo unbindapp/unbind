@@ -3,9 +3,17 @@
 // search expression. Uses relative imports so it can run under `node --test`.
 
 import { LogLevelSchema, type LogLevel } from "../../lib/server/client.gen.ts";
+import { clientAttributeKeys } from "./log-search-scope.ts";
 import { parser } from "./log-search.gen.ts";
 
 export type TSearchLogLevel = LogLevel;
+
+export type TParseSearchOptions = {
+  /** Keys this scope resolves; the rest are forwarded as ordinary terms. */
+  attributeKeys?: readonly string[];
+  /** Lowercased service tokens; omit while the service list is still loading. */
+  knownServiceTokens?: ReadonlySet<string>;
+};
 
 export type TParsedSearchInput = {
   serverSearch: string;
@@ -21,6 +29,11 @@ function isLevel(value: string): value is TSearchLogLevel {
 /** Undefined means the service list hasn't loaded yet, so assume it resolves. */
 function isKnownService(value: string, known: ReadonlySet<string> | undefined) {
   return !known || known.has(value.toLowerCase());
+}
+
+/** "@level and @service", or just "@level" where that is all the scope resolves. */
+function formatKeys(keys: readonly string[]) {
+  return keys.map((key) => `@${key}`).join(" and ");
 }
 
 type TPart = { kind: "term" | "and" | "or"; text: string };
@@ -51,9 +64,9 @@ function readAttribute(input: string, node: TNode) {
 
 export function parseSearchInput(
   input: string,
-  /** Lowercased service tokens; omit while the service list is still loading. */
-  knownServiceTokens?: ReadonlySet<string>,
+  { attributeKeys = clientAttributeKeys, knownServiceTokens }: TParseSearchOptions = {},
 ): TParsedSearchInput {
+  const resolves = (key: string) => attributeKeys.includes(key);
   const result: TParsedSearchInput = {
     serverSearch: "",
     levels: [],
@@ -96,7 +109,7 @@ export function parseSearchInput(
     const next = nodes[i + 1];
     if (node.name === "Minus" && next?.name === "Attribute" && next.from === node.to) {
       const attribute = readAttribute(input, next);
-      if (attribute && (attribute.key === "level" || attribute.key === "service")) {
+      if (attribute && resolves(attribute.key)) {
         result.error = `@${attribute.key} cannot be negated`;
         return result;
       }
@@ -117,6 +130,7 @@ export function parseSearchInput(
     const level = attribute?.key === "level" ? attribute.value.toLowerCase() : null;
     const isExtractable =
       attribute !== null &&
+      resolves(attribute.key) &&
       ((attribute.key === "service" && isKnownService(attribute.value, knownServiceTokens)) ||
         (attribute.key === "level" && level !== null && isLevel(level)));
 
@@ -146,7 +160,7 @@ export function parseSearchInput(
   // strip operators left dangling by extraction (or typed dangling)
   while (parts.length && parts[0].kind !== "term") {
     if (parts[0].kind === "or") {
-      result.error = "@level and @service cannot be combined with OR";
+      result.error = `${formatKeys(attributeKeys)} cannot be combined with OR`;
       return result;
     }
     parts.shift();

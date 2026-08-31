@@ -775,21 +775,13 @@
 }
 
 /* Levels carry their severity color; the icons stroke with currentColor so they
-   follow. The matched substring inherits here rather than turning blue, so a
-   level never reads as two colors mid-word. */
+   follow. */
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li.token-field-option-level-error {
   color: var(--destructive);
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li.token-field-option-level-warning {
   color: var(--warning);
-}
-
-.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip
-  > ul
-  > li[class*="token-field-option-level-"]
-  .cm-completionMatchedText {
-  color: inherit;
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .token-field-option-pending {

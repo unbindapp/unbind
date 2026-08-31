@@ -2,6 +2,7 @@
 
 import { useLogFilters } from "@/components/logs/log-filters-provider";
 import { defaultLogRange, isLiveRange, resolveLogRange } from "@/components/logs/log-range";
+import { logSearchScopes } from "@/components/logs/log-search-scope";
 import { logLineKey } from "@/components/logs/log-utils";
 import { parseSearchInput } from "@/components/logs/search-syntax";
 import { buildServiceTokens, findServiceByToken } from "@/components/logs/service-tokens";
@@ -201,7 +202,7 @@ export const LogsProvider: React.FC<TProps> = ({
   httpDefaultEndTimestamp,
   children,
 }) => {
-  const { search, levels, serviceIds, range, servicesEnabled } = useLogFilters();
+  const { search, levels, serviceIds, range } = useLogFilters();
   const {
     query: { data: servicesData },
   } = useServices();
@@ -217,9 +218,10 @@ export const LogsProvider: React.FC<TProps> = ({
     [servicesData, serviceTokens],
   );
 
+  const { attributeKeys } = logSearchScopes[type];
   const parsedSearch = useMemo(
-    () => parseSearchInput(search, knownServiceTokens),
-    [search, knownServiceTokens],
+    () => parseSearchInput(search, { attributeKeys, knownServiceTokens }),
+    [search, attributeKeys, knownServiceTokens],
   );
 
   const mergedLevels = useMemo(() => {
@@ -227,23 +229,17 @@ export const LogsProvider: React.FC<TProps> = ({
     return [...merged].sort();
   }, [levels, parsedSearch.levels]);
 
-  const { mergedServiceIds, serviceNameError } = useMemo(() => {
-    if (parsedSearch.serviceNames.length > 0 && !servicesEnabled) {
-      return {
-        mergedServiceIds: [...serviceIds].sort(),
-        serviceNameError: "@service is only available in environment logs",
-      };
-    }
-    // Only names that resolve reach here; the rest stayed in the search text.
+  // Only names this scope resolves reach here; the rest stayed in the search text.
+  const mergedServiceIds = useMemo(() => {
     const merged = new Set<string>(serviceIds);
     for (const name of parsedSearch.serviceNames) {
       const service = findServiceByToken(serviceTokens, name);
       if (service) merged.add(service.id);
     }
-    return { mergedServiceIds: [...merged].sort(), serviceNameError: null };
-  }, [serviceIds, parsedSearch.serviceNames, serviceTokens, servicesEnabled]);
+    return [...merged].sort();
+  }, [serviceIds, parsedSearch.serviceNames, serviceTokens]);
 
-  const searchError = parsedSearch.error ?? serviceNameError;
+  const searchError = parsedSearch.error;
 
   // Anchor the window when the range changes, not on every render.
   const rangeKey = JSON.stringify(range);

@@ -12,14 +12,11 @@ import {
 } from "@codemirror/view";
 import { styleTags, tags as t } from "@lezer/highlight";
 import { resolveCompletionTarget } from "./log-search-completion";
+import type { TClientAttributeKey } from "./log-search-scope";
 import { parser } from "./log-search.gen";
 
 /** Namespaced so a service brand can never collide with a level. */
 export const levelIconKey = (level: string) => `level:${level}`;
-
-// Keys the client resolves itself; anything else is forwarded to the server.
-export const clientAttributeKeys = ["level", "service"] as const;
-export type TClientAttributeKey = (typeof clientAttributeKeys)[number];
 
 export type TServiceCompletion = {
   /** Tokenizer-safe form, both inserted and matched against. */
@@ -33,7 +30,8 @@ export type TServiceCompletion = {
 export type TLogSearchData = {
   levels: readonly string[];
   services: TServiceCompletion[] | undefined;
-  servicesEnabled: boolean;
+  /** Keys this scope resolves; see logSearchScopes. */
+  attributeKeys: readonly TClientAttributeKey[];
 };
 
 // Attributes aren't styled from the grammar: whether @foo is one of our keys,
@@ -58,31 +56,35 @@ const levelValue: Record<string, Decoration> = {
   warning: Decoration.mark({ class: "tok-level-warning" }),
 };
 
-function isClientAttributeKey(key: string): key is TClientAttributeKey {
-  return (clientAttributeKeys as readonly string[]).includes(key);
+function resolvesAttribute(keys: readonly TClientAttributeKey[], key: string) {
+  return (keys as readonly string[]).includes(key);
 }
 
 /**
- * Highlights `@level:` / `@service:` only. An unrecognised `@foo` is forwarded
- * as an ordinary search term, so it reads as one. The `@` and `:` are dimmed
- * together, and a level's value takes the same color it has in the dropdown.
+ * Highlights only the attributes this scope resolves. Anything else, whether an
+ * unrecognised `@foo` or `@service` in a viewer already pinned to one service,
+ * is forwarded as an ordinary search term, so it reads as one. The `@` and `:`
+ * are dimmed together, and a level's value takes the same color it has in the
+ * dropdown.
  */
-const attributeHighlighter = ViewPlugin.fromClass(
-  class {
-    decorations: DecorationSet;
-    constructor(view: EditorView) {
-      this.decorations = buildAttributeDecorations(view);
-    }
-    update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged) {
-        this.decorations = buildAttributeDecorations(update.view);
+function createAttributeHighlighter(getData: () => TLogSearchData) {
+  return ViewPlugin.fromClass(
+    class {
+      decorations: DecorationSet;
+      constructor(view: EditorView) {
+        this.decorations = buildAttributeDecorations(view, getData().attributeKeys);
       }
-    }
-  },
-  { decorations: (plugin) => plugin.decorations },
-);
+      update(update: ViewUpdate) {
+        if (update.docChanged || update.viewportChanged) {
+          this.decorations = buildAttributeDecorations(update.view, getData().attributeKeys);
+        }
+      }
+    },
+    { decorations: (plugin) => plugin.decorations },
+  );
+}
 
-function buildAttributeDecorations(view: EditorView) {
+function buildAttributeDecorations(view: EditorView, keys: readonly TClientAttributeKey[]) {
   const builder = new RangeSetBuilder<Decoration>();
   for (const { from, to } of view.visibleRanges) {
     syntaxTree(view.state).iterate({
@@ -93,7 +95,7 @@ function buildAttributeDecorations(view: EditorView) {
         const key = node.node.getChild("AttrKey");
         if (!key) return;
         const name = view.state.sliceDoc(key.from + 1, key.to);
-        if (!isClientAttributeKey(name)) return;
+        if (!resolvesAttribute(keys, name)) return;
 
         builder.add(key.from, key.from + 1, punctuation);
         builder.add(key.from + 1, key.to, attributeKey);
@@ -111,11 +113,10 @@ function buildAttributeDecorations(view: EditorView) {
   return builder.finish();
 }
 
-const attributeKeyOptions: TChainedCompletion[] = clientAttributeKeys.map((key) => ({
-  label: `@${key}:`,
-  type: "key",
-  chain: true,
-}));
+const attributeKeyOptions: Record<TClientAttributeKey, TChainedCompletion> = {
+  level: { label: "@level:", type: "key", chain: true },
+  service: { label: "@service:", type: "key", chain: true },
+};
 
 function completionAt(context: CompletionContext, data: TLogSearchData): CompletionResult | null {
   const target = resolveCompletionTarget(context.state.doc.toString(), context.pos);
@@ -125,12 +126,12 @@ function completionAt(context: CompletionContext, data: TLogSearchData): Complet
     return {
       from: target.from,
       to: target.to,
-      options: data.servicesEnabled
-        ? attributeKeyOptions
-        : attributeKeyOptions.filter((o) => o.label !== "@service:"),
+      options: data.attributeKeys.map((key) => attributeKeyOptions[key]),
       validFor: /^@[a-zA-Z0-9_]*$/,
     };
   }
+
+  if (!resolvesAttribute(data.attributeKeys, target.key)) return null;
 
   if (target.key === "level") {
     return {
@@ -146,7 +147,6 @@ function completionAt(context: CompletionContext, data: TLogSearchData): Complet
   }
 
   if (target.key === "service") {
-    if (!data.servicesEnabled) return null;
     // undefined while services are still loading: no menu rather than a wrong one
     if (!data.services) return null;
     const options: TIconCompletion[] = data.services.map((service) => ({
@@ -170,7 +170,7 @@ export function createLogSearchLanguage(getData: () => TLogSearchData) {
         autocomplete: (context: CompletionContext) => completionAt(context, getData()),
       },
     }),
-    attributeHighlighter,
+    createAttributeHighlighter(getData),
   );
 }
 

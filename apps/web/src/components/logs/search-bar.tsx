@@ -14,6 +14,7 @@ import {
   levelIconKey,
   type TLogSearchData,
 } from "@/components/logs/log-search-language";
+import { logSearchScopes } from "@/components/logs/log-search-scope";
 import {
   logViewPreferenceKeys,
   logViewPreferences,
@@ -107,7 +108,8 @@ function SearchBar({
   getLogsForDownload,
   className,
 }: TProps) {
-  const { search, setSearch, servicesEnabled } = useLogFilters();
+  const { search, setSearch } = useLogFilters();
+  const scope = logSearchScopes[logType];
   const [inputValue, setInputValue] = useState(search);
   const inputRef = useRef<TTokenFieldHandle>(null);
 
@@ -125,7 +127,7 @@ function SearchBar({
   const searchDataRef = useRef<TLogSearchData>({
     levels: logLevels,
     services: undefined,
-    servicesEnabled,
+    attributeKeys: scope.attributeKeys,
   });
   searchDataRef.current = {
     levels: logLevels,
@@ -138,7 +140,7 @@ function SearchBar({
           brand: serviceIconsById.get(s.id),
         }))
       : undefined,
-    servicesEnabled,
+    attributeKeys: scope.attributeKeys,
   };
 
   const icons: TCachedIcon[] = useMemo(
@@ -211,7 +213,7 @@ function SearchBar({
             ariaInvalid={searchError ? true : undefined}
             className="flex-1"
             classNameEditor="py-2.25 pr-31 pl-8.5"
-            placeholder={`Search logs: @level:error @service:my-app`}
+            placeholder={scope.placeholder}
           />
           <div className="absolute top-0 right-0 flex h-full justify-end">
             <Button
