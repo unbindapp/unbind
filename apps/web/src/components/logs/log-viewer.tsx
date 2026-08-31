@@ -4,13 +4,13 @@ import ErrorCard from "@/components/error-card";
 import ErrorLine from "@/components/error-line";
 import LogFiltersProvider, { useLogFilters } from "@/components/logs/log-filters-provider";
 import LogLine from "@/components/logs/log-line";
-import { buildLogRows, type TLogRow } from "@/components/logs/log-rows";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
 import LogViewPreferencesProvider, {
   logViewPreferenceKeys,
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
 import LogsProvider, {
+  TBufferedLogLine,
   TDeploymentBuildLogsProps,
   TDeploymentLogsProps,
   TEnvironmentLogsProps,
@@ -34,7 +34,7 @@ import {
   RotateCwIcon,
   SearchIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 
 type TContainerType = "page" | "sheet";
@@ -150,7 +150,7 @@ function Logs({
   // log lines only render once service names are in, so skeletons stay up until
   // then, though a result with no lines has no names to wait for
   const isShowingPlaceholders = !logs || (!servicesData && !isEmpty);
-  const rows = useMemo(() => buildLogRows(logs ?? []), [logs]);
+  const lines = useMemo(() => logs ?? [], [logs]);
 
   if (isEmpty && errorFromProp) {
     return (
@@ -163,7 +163,7 @@ function Logs({
   }
 
   const isPage = containerType === "page";
-  const listProps = { rows, type, containerType, serviceNamesById, isEmpty };
+  const listProps = { lines, type, containerType, serviceNamesById, isEmpty };
 
   const renderContent = () => {
     if (!isPending && error && !logs) {
@@ -249,7 +249,7 @@ function Logs({
 }
 
 type TRowsProps = {
-  rows: TLogRow[];
+  lines: TBufferedLogLine[];
   type: TLogType;
   containerType: TContainerType;
   serviceNamesById: Map<string, string>;
@@ -257,7 +257,7 @@ type TRowsProps = {
 
 type TListProps = TRowsProps & { isEmpty: boolean };
 
-function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TListProps) {
+function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TListProps) {
   const { hasMoreOlder, isFetchingOlder, olderError, fetchOlder, setEvictionPaused, resultSetKey } =
     useLogs();
   const autoFollow = useAutoFollow();
@@ -266,12 +266,18 @@ function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TList
   const [isAtBottom, setIsAtBottom] = useState(true);
   const { expandedKeys, toggleExpanded } = useExpandedKeys();
 
+  // The indicator lives above the list in the same scroller, not as a virtual
+  // row: the prepend anchor grabs the item under the scroll offset, and an
+  // in-list indicator would pin the viewport to the top while older pages load.
+  const { indicatorRef, indicatorHeight } = useIndicatorHeight();
+
   const virtualizer = useVirtualizer<HTMLDivElement, HTMLDivElement>({
-    count: rows.length,
+    count: lines.length,
     getScrollElement: () => scrollRef.current,
     estimateSize: () => ESTIMATED_ROW_HEIGHT,
-    getItemKey: (index) => rows[index]!.key,
+    getItemKey: (index) => lines[index]!.key,
     overscan: OVERSCAN,
+    scrollMargin: indicatorHeight,
     anchorTo: "end",
     followOnAppend: autoFollow,
     scrollEndThreshold: SCROLL_THRESHOLD,
@@ -309,7 +315,7 @@ function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TList
   // Growing the list moves the bottom without emitting a scroll event
   useEffect(() => {
     throttledSyncScrollState();
-  }, [rows.length, throttledSyncScrollState]);
+  }, [lines.length, throttledSyncScrollState]);
 
   return (
     <div
@@ -325,20 +331,28 @@ function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TList
           {/* The width cap lives inside the scroller so the scrollbar stays at the
               container edge and the fade spans the full width. */}
           <div className="w-full group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
+            <div ref={indicatorRef} className="w-full">
+              {hasMoreOlder ? (
+                <OlderLogsIndicator
+                  isFetching={isFetchingOlder}
+                  error={olderError}
+                  onRetry={fetchOlder}
+                />
+              ) : (
+                <LogsStartIndicator />
+              )}
+            </div>
             <div className="relative w-full" style={{ height: virtualizer.getTotalSize() }}>
               <VirtualRows
                 items={virtualizer.getVirtualItems()}
                 measureElement={virtualizer.measureElement}
-                rows={rows}
+                scrollMargin={indicatorHeight}
+                lines={lines}
                 type={type}
                 containerType={containerType}
                 serviceNamesById={serviceNamesById}
                 expandedKeys={expandedKeys}
                 onToggleExpanded={toggleExpanded}
-                hasMoreOlder={hasMoreOlder}
-                isFetchingOlder={isFetchingOlder}
-                olderError={olderError}
-                onRetryOlder={fetchOlder}
               />
             </div>
           </div>
@@ -356,6 +370,21 @@ function LogList({ rows, type, containerType, serviceNamesById, isEmpty }: TList
       />
     </div>
   );
+}
+
+function useIndicatorHeight() {
+  const indicatorRef = useRef<HTMLDivElement>(null);
+  const [indicatorHeight, setIndicatorHeight] = useState(0);
+
+  useLayoutEffect(() => {
+    const element = indicatorRef.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => setIndicatorHeight(element.offsetHeight));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  return { indicatorRef, indicatorHeight };
 }
 
 function useAutoFollow() {
@@ -382,31 +411,25 @@ function useExpandedKeys() {
 type TVirtualRowsProps = TRowsProps & {
   items: VirtualItem[];
   measureElement: (node: HTMLDivElement | null) => void;
+  scrollMargin: number;
   expandedKeys: ReadonlySet<string>;
   onToggleExpanded: (key: string) => void;
-  hasMoreOlder: boolean;
-  isFetchingOlder: boolean;
-  olderError: string | null;
-  onRetryOlder: () => void;
 };
 
 function VirtualRows({
   items,
   measureElement,
-  rows,
+  scrollMargin,
+  lines,
   type,
   containerType,
   serviceNamesById,
   expandedKeys,
   onToggleExpanded,
-  hasMoreOlder,
-  isFetchingOlder,
-  olderError,
-  onRetryOlder,
 }: TVirtualRowsProps) {
   return items.map((item) => {
-    const row = rows[item.index];
-    if (!row) return null;
+    const line = lines[item.index];
+    if (!line) return null;
 
     return (
       <div
@@ -414,34 +437,22 @@ function VirtualRows({
         data-index={item.index}
         ref={measureElement}
         className="absolute top-0 left-0 w-full"
-        style={{ transform: `translateY(${item.start}px)` }}
+        style={{ transform: `translateY(${item.start - scrollMargin}px)` }}
       >
-        {row.kind === "leading" ? (
-          hasMoreOlder ? (
-            <OlderLogsIndicator
-              isFetching={isFetchingOlder}
-              error={olderError}
-              onRetry={onRetryOlder}
-            />
-          ) : (
-            <LogsStartIndicator />
-          )
-        ) : (
-          <LogLine
-            type={type}
-            data-container={containerType}
-            data-last={item.index === rows.length - 1 || undefined}
-            classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
-            logLine={row.line}
-            isExpanded={expandedKeys.has(row.key)}
-            onToggleExpanded={() => onToggleExpanded(row.key)}
-            serviceName={
-              serviceNamesById.get(row.line.metadata.service_id ?? "") ||
-              row.line.metadata.service_id ||
-              "Unknown"
-            }
-          />
-        )}
+        <LogLine
+          type={type}
+          data-container={containerType}
+          data-last={item.index === lines.length - 1 || undefined}
+          classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
+          logLine={line}
+          isExpanded={expandedKeys.has(line.key)}
+          onToggleExpanded={() => onToggleExpanded(line.key)}
+          serviceName={
+            serviceNamesById.get(line.metadata.service_id ?? "") ||
+            line.metadata.service_id ||
+            "Unknown"
+          }
+        />
       </div>
     );
   });
