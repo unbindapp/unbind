@@ -9,9 +9,9 @@ import {
   type TLogRangePreset,
 } from "@/components/logs/log-range";
 import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider";
-import { levelIconKey } from "@/components/logs/log-search-icons";
 import {
   createLogSearchLanguage,
+  levelIconKey,
   type TLogSearchData,
 } from "@/components/logs/log-search-language";
 import { logSearchScopes } from "@/components/logs/log-search-scope";
@@ -153,15 +153,7 @@ function SearchBar({
     ],
     [serviceIconsById],
   );
-  // The highlighter reads its data through the ref, so a new language is the
-  // only thing that makes the field reconfigure and redraw. Rebuilding it when
-  // the icons change is what puts an icon on a query that was already in the
-  // field when its services finished loading.
-  const language = useMemo(
-    () => createLogSearchLanguage(() => searchDataRef.current),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [serviceIconsById],
-  );
+  const language = useMemo(() => createLogSearchLanguage(() => searchDataRef.current), []);
 
   const debouncedSetSearch = useDebouncedCallback(setSearch, defaultDebounceMs);
 

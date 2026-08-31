@@ -639,16 +639,21 @@
 
   /* Attributes and references read as chips. The tint does double duty as the
      fill and as a 1px inset ring stacked on top of it, so the edge lands at
-     twice the fill's strength and, unlike a border, costs no layout. */
+     twice the fill's strength and, unlike a border, costs no layout.
+
+     An inline box would paint over the font's full ascent-to-descent band,
+     which is taller than the line and gets clipped at the top of a field. The
+     chip is an inline-block instead, so its own line-height sizes the fill and
+     the glyphs overflow it: the box lands inside the line, and the baseline
+     still matches the text around it. */
   .tok-chip {
     --tok-chip: var(--foreground);
+    display: inline-block;
+    line-height: 1.125;
     border-radius: var(--radius-sm);
     padding: 0 0.25em;
     background-color: color-mix(in oklab, var(--tok-chip) 8%, transparent);
     box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tok-chip) 8%, transparent);
-    /* the variable value field wraps, so each fragment gets its own fill */
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
   }
 
   .tok-chip-process {
