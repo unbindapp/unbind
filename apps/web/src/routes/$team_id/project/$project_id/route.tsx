@@ -59,18 +59,22 @@ const searchSchema = z.object({
   levels: z.string().optional(),
   services: z.string().optional(),
   range: z.string().optional(),
+  highlight_log: z.string().optional(),
   sq: z.string().optional(),
   slevels: z.string().optional(),
   sservices: z.string().optional(),
   srange: z.string().optional(),
+  shighlight_log: z.string().optional(),
   dq: z.string().optional(),
   dlevels: z.string().optional(),
   dservices: z.string().optional(),
   drange: z.string().optional(),
+  dhighlight_log: z.string().optional(),
   bq: z.string().optional(),
   blevels: z.string().optional(),
   bservices: z.string().optional(),
   brange: z.string().optional(),
+  bhighlight_log: z.string().optional(),
 });
 
 export const Route = createFileRoute("/$team_id/project/$project_id")({

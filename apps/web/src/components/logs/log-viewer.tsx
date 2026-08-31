@@ -17,6 +17,7 @@ import LogsProvider, {
   TServiceLogsProps,
   useLogs,
 } from "@/components/logs/logs-provider";
+import { matchesLogLineRef, nearestLogLineIndex } from "@/components/logs/log-utils";
 import SearchBar from "@/components/logs/search-bar";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
@@ -25,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/lib/queries/logs";
-import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
+import { useVirtualizer, type VirtualItem, type Virtualizer } from "@tanstack/react-virtual";
 import {
   ArrowDownIcon,
   HourglassIcon,
@@ -260,6 +261,7 @@ type TListProps = TRowsProps & { isEmpty: boolean };
 function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TListProps) {
   const { hasMoreOlder, isFetchingOlder, olderError, fetchOlder, setEvictionPaused, resultSetKey } =
     useLogs();
+  const { highlightedLog } = useLogFilters();
   const autoFollow = useAutoFollow();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -283,12 +285,20 @@ function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TLis
     scrollEndThreshold: SCROLL_THRESHOLD,
   });
 
+  const highlightIndex = useMemo(() => {
+    if (!highlightedLog) return -1;
+    return lines.findIndex((line) => matchesLogLineRef(highlightedLog, line));
+  }, [lines, highlightedLog]);
+
   // followOnAppend only reacts to the list growing, so the first render, a new
-  // result set, and switching the toggle back on have to pin to the bottom by hand.
+  // result set, and switching the toggle back on have to pin to the bottom by
+  // hand. A pending highlight owns the scroll position instead.
   useEffect(() => {
-    if (!autoFollow) return;
+    if (!autoFollow || highlightedLog) return;
     virtualizer.scrollToEnd();
-  }, [autoFollow, virtualizer, resultSetKey]);
+  }, [autoFollow, highlightedLog, virtualizer, resultSetKey]);
+
+  useScrollToHighlight({ virtualizer, scrollRef, lines, highlightIndex });
 
   const syncScrollState = useCallback(() => {
     const element = scrollRef.current;
@@ -353,6 +363,7 @@ function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TLis
                 serviceNamesById={serviceNamesById}
                 expandedKeys={expandedKeys}
                 onToggleExpanded={toggleExpanded}
+                highlightIndex={highlightIndex}
               />
             </div>
           </div>
@@ -370,6 +381,107 @@ function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TLis
       />
     </div>
   );
+}
+
+/**
+ * Brings the highlighted line into view. The line sits mid-window after "view
+ * in context", so it may be pages older than the initial (newest-first) fetch:
+ * older pages are pulled until it shows up or the buffer has reached past its
+ * timestamp — a line that is gone for good settles on the closest moment
+ * instead. Runs once per result set and highlight; historical windows never
+ * append or evict, so the target can't move once found.
+ */
+function useScrollToHighlight({
+  virtualizer,
+  scrollRef,
+  lines,
+  highlightIndex,
+}: {
+  virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
+  lines: TBufferedLogLine[];
+  highlightIndex: number;
+}) {
+  const { resultSetKey, hasMoreOlder, isFetchingOlder, olderError, fetchOlder } = useLogs();
+  const { highlightedLog } = useLogFilters();
+  const doneKeyRef = useRef<string | null>(null);
+
+  const scrollKey =
+    highlightedLog && resultSetKey
+      ? `${resultSetKey}#${highlightedLog.timestamp}~${highlightedLog.podName}`
+      : null;
+
+  useEffect(() => {
+    if (!scrollKey || !highlightedLog || doneKeyRef.current === scrollKey) return;
+
+    if (highlightIndex >= 0) {
+      doneKeyRef.current = scrollKey;
+      settleScrollToIndex(virtualizer, scrollRef.current, highlightIndex);
+      return;
+    }
+
+    const targetMs = Date.parse(highlightedLog.timestamp);
+    const oldestTimestamp = lines[0]?.timestamp;
+    const oldestMs = oldestTimestamp ? Date.parse(oldestTimestamp) : Number.NaN;
+    const reachedTarget = !Number.isNaN(oldestMs) && oldestMs <= targetMs;
+    if (hasMoreOlder && !reachedTarget) {
+      // a failed page leaves the indicator's retry in charge; its refetch
+      // cycles isFetchingOlder, which re-runs this effect
+      if (!isFetchingOlder && !olderError) fetchOlder();
+      return;
+    }
+
+    doneKeyRef.current = scrollKey;
+    const nearest = nearestLogLineIndex(lines, targetMs);
+    if (nearest >= 0) settleScrollToIndex(virtualizer, scrollRef.current, nearest);
+  }, [
+    scrollKey,
+    highlightedLog,
+    highlightIndex,
+    lines,
+    hasMoreOlder,
+    isFetchingOlder,
+    olderError,
+    fetchOlder,
+    virtualizer,
+    scrollRef,
+  ]);
+}
+
+const SCROLL_SETTLE_FRAMES = 8;
+
+// Rows are measured as they render, so a single scrollToIndex lands where the
+// estimates said the row was. Re-centering over a few frames follows the
+// measurements in; a scroll of the user's own cuts it short.
+function settleScrollToIndex(
+  virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>,
+  scrollElement: HTMLDivElement | null,
+  index: number,
+) {
+  let cancelled = false;
+  const cancel = () => {
+    cancelled = true;
+  };
+  scrollElement?.addEventListener("wheel", cancel, { passive: true });
+  scrollElement?.addEventListener("touchstart", cancel, { passive: true });
+  const cleanup = () => {
+    scrollElement?.removeEventListener("wheel", cancel);
+    scrollElement?.removeEventListener("touchstart", cancel);
+  };
+
+  virtualizer.scrollToIndex(index, { align: "center" });
+  let frames = 0;
+  const settle = () => {
+    if (cancelled) return cleanup();
+    virtualizer.scrollToIndex(index, { align: "center" });
+    frames++;
+    if (frames < SCROLL_SETTLE_FRAMES) {
+      requestAnimationFrame(settle);
+    } else {
+      cleanup();
+    }
+  };
+  requestAnimationFrame(settle);
 }
 
 function useIndicatorHeight() {
@@ -414,6 +526,7 @@ type TVirtualRowsProps = TRowsProps & {
   scrollMargin: number;
   expandedKeys: ReadonlySet<string>;
   onToggleExpanded: (key: string) => void;
+  highlightIndex: number;
 };
 
 function VirtualRows({
@@ -426,6 +539,7 @@ function VirtualRows({
   serviceNamesById,
   expandedKeys,
   onToggleExpanded,
+  highlightIndex,
 }: TVirtualRowsProps) {
   return items.map((item) => {
     const line = lines[item.index];
@@ -446,6 +560,7 @@ function VirtualRows({
           classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
           logLine={line}
           isExpanded={expandedKeys.has(line.key)}
+          isHighlighted={item.index === highlightIndex}
           onToggleExpanded={() => onToggleExpanded(line.key)}
           serviceName={
             serviceNamesById.get(line.metadata.service_id ?? "") ||

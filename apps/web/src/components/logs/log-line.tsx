@@ -21,6 +21,7 @@ type TProps = ComponentProps<"div"> & {
         logLine: TLogLine;
         serviceName: string;
         isExpanded: boolean;
+        isHighlighted?: boolean;
         onToggleExpanded: () => void;
         isPlaceholder?: never;
       }
@@ -28,6 +29,7 @@ type TProps = ComponentProps<"div"> & {
         logLine?: never;
         serviceName?: never;
         isExpanded?: never;
+        isHighlighted?: never;
         onToggleExpanded?: never;
         isPlaceholder: true;
       }
@@ -39,6 +41,7 @@ export default function LogLine({
   type,
   isPlaceholder,
   isExpanded,
+  isHighlighted,
   onToggleExpanded,
   className,
   classNameInner,
@@ -68,6 +71,7 @@ export default function LogLine({
       data-wrap={viewPreferences.includes(logViewPreferenceKeys.lineWrapping) || undefined}
       data-extra-columns={hasExtraColumns || undefined}
       data-expanded={isExpanded || undefined}
+      data-highlighted={isHighlighted || undefined}
       className={cn(
         `group/line flex w-full flex-col items-stretch py-px font-mono text-xs data-first:pt-3 data-last:pb-[calc(1rem+var(--safe-area-inset-bottom))] data-[container=page]:data-last:pb-4 sm:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] sm:data-[container=page]:data-last:pb-6`,
         className,
@@ -98,7 +102,7 @@ export default function LogLine({
               }
         }
         className={cn(
-          `group-data-[level=warning]/line:bg-warning/8 group-data-[level=error]/line:bg-destructive/8 group-data-real/line:group-hover/line:bg-border group-data-[level=warning]/line:group-data-real/line:group-hover/line:bg-warning/16 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/16 group-data-expanded/line:bg-border group-data-[level=warning]/line:group-data-expanded/line:bg-warning/16 group-data-[level=error]/line:group-data-expanded/line:bg-destructive/16 flex w-full cursor-default items-center pl-3 group-data-real/line:cursor-pointer sm:pl-4`,
+          `group-data-[level=warning]/line:bg-warning/8 group-data-[level=error]/line:bg-destructive/8 group-data-real/line:group-hover/line:bg-border group-data-[level=warning]/line:group-data-real/line:group-hover/line:bg-warning/16 group-data-[level=error]/line:group-data-real/line:group-hover/line:bg-destructive/16 group-data-expanded/line:bg-border group-data-[level=warning]/line:group-data-expanded/line:bg-warning/16 group-data-[level=error]/line:group-data-expanded/line:bg-destructive/16 group-data-highlighted/line:inset-ring-success/50 flex w-full cursor-default items-center pl-3 group-data-highlighted/line:inset-ring-2 group-data-real/line:cursor-pointer sm:pl-4`,
           classNameInner,
         )}
       >
@@ -242,7 +246,9 @@ function LogLineDetails({
               type="button"
               size="sm"
               variant="outline"
-              onClick={() => viewInContext(new Date(logLine.timestamp!).getTime())}
+              onClick={() =>
+                viewInContext({ timestamp: logLine.timestamp!, pod_name: logLine.pod_name })
+              }
             >
               View in context
             </Button>

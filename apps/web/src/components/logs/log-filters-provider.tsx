@@ -8,6 +8,7 @@ import {
   type TLogRange,
 } from "@/components/logs/log-range";
 import { logSearchScopes } from "@/components/logs/log-search-scope";
+import { logLineRef, parseLogLineRef, type TLogLineRef } from "@/components/logs/log-utils";
 import { buildServiceTokens } from "@/components/logs/service-tokens";
 import { useServices } from "@/components/service/services-provider";
 import { TLogLevel, TLogType } from "@/lib/queries/logs";
@@ -44,13 +45,52 @@ function decodeList(value: string | undefined): string[] {
 
 // Each log scope gets its own URL namespace so the page, service panel, and
 // deployment/build tabs never share or clobber each other's filters.
-const paramKeys: Record<TLogType, { [K in "q" | "levels" | "services" | "range"]: string }> = {
-  team: { q: "tq", levels: "tlevels", services: "tservices", range: "trange" },
-  project: { q: "q", levels: "levels", services: "services", range: "range" },
-  environment: { q: "q", levels: "levels", services: "services", range: "range" },
-  service: { q: "sq", levels: "slevels", services: "sservices", range: "srange" },
-  deployment: { q: "dq", levels: "dlevels", services: "dservices", range: "drange" },
-  build: { q: "bq", levels: "blevels", services: "bservices", range: "brange" },
+const paramKeys: Record<
+  TLogType,
+  { [K in "q" | "levels" | "services" | "range" | "highlight"]: string }
+> = {
+  team: {
+    q: "tq",
+    levels: "tlevels",
+    services: "tservices",
+    range: "trange",
+    highlight: "thighlight_log",
+  },
+  project: {
+    q: "q",
+    levels: "levels",
+    services: "services",
+    range: "range",
+    highlight: "highlight_log",
+  },
+  environment: {
+    q: "q",
+    levels: "levels",
+    services: "services",
+    range: "range",
+    highlight: "highlight_log",
+  },
+  service: {
+    q: "sq",
+    levels: "slevels",
+    services: "sservices",
+    range: "srange",
+    highlight: "shighlight_log",
+  },
+  deployment: {
+    q: "dq",
+    levels: "dlevels",
+    services: "dservices",
+    range: "drange",
+    highlight: "dhighlight_log",
+  },
+  build: {
+    q: "bq",
+    levels: "blevels",
+    services: "bservices",
+    range: "brange",
+    highlight: "bhighlight_log",
+  },
 };
 
 type TLogFiltersContext = {
@@ -66,8 +106,10 @@ type TLogFiltersContext = {
   setServiceIds: (ids: string[]) => void;
   range: TLogRange;
   setRange: (range: TLogRange | null) => void;
-  /** Clears every filter and zooms the range around a moment in time. */
-  viewInContext: (aroundMs: number) => void;
+  /** The line "view in context" targets; a marker for the viewer, not a filter. */
+  highlightedLog: TLogLineRef | null;
+  /** Clears every filter and zooms the range around the given line, highlighting it. */
+  viewInContext: (line: { timestamp: string; pod_name: string }) => void;
   resetFilters: () => void;
   hasActiveFilters: boolean;
   rangeIsSet: boolean;
@@ -103,6 +145,7 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
       levels: s[keys.levels],
       services: s[keys.services],
       range: s[keys.range],
+      highlight: s[keys.highlight],
     }),
     structuralSharing: true,
   });
@@ -131,6 +174,7 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
     [rangeEnabled, rawParams.range],
   );
   const rangeIsSet = rangeEnabled && rawParams.range !== undefined;
+  const highlightedLog = useMemo(() => parseLogLineRef(rawParams.highlight), [rawParams.highlight]);
 
   const extractOptions = useMemo(
     () => ({ attributeKeys, serviceTokens, servicesLoaded }),
@@ -152,7 +196,7 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
       const extracted = extractSearchFilters(input, extractOptions);
       if (extracted.error) {
         // a typo shouldn't wipe the other filters; park the text and wait
-        setParams({ [keys.q]: input || undefined });
+        setParams({ [keys.q]: input || undefined, [keys.highlight]: undefined });
         return buildSearchText(
           { levels, serviceIds, range: rangeIsSet ? range : null },
           input,
@@ -163,6 +207,7 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
         [keys.q]: extracted.q || undefined,
         [keys.levels]: extracted.levels.length ? extracted.levels.join(",") : undefined,
         [keys.range]: extracted.range ? encodeRange(extracted.range) : undefined,
+        [keys.highlight]: undefined,
       };
       // Replacing the services while the list is unknown would wipe filters
       // the bar can't even render yet.
@@ -215,18 +260,31 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
     setParams(patch);
   }, [search, extractOptions, levels, serviceIds, rangeIsSet, servicesLoaded, keys, setParams]);
 
+  // The highlight marks one line in one result set, so any change to what the
+  // list shows retires it alongside the write.
   const setLevels = useCallback(
-    (next: TLogLevel[]) => setParams({ [keys.levels]: next.length ? next.join(",") : undefined }),
-    [setParams, keys.levels],
+    (next: TLogLevel[]) =>
+      setParams({
+        [keys.levels]: next.length ? next.join(",") : undefined,
+        [keys.highlight]: undefined,
+      }),
+    [setParams, keys],
   );
   const setServiceIds = useCallback(
-    (ids: string[]) => setParams({ [keys.services]: ids.length ? ids.join(",") : undefined }),
-    [setParams, keys.services],
+    (ids: string[]) =>
+      setParams({
+        [keys.services]: ids.length ? ids.join(",") : undefined,
+        [keys.highlight]: undefined,
+      }),
+    [setParams, keys],
   );
   const setRange = useCallback(
     (next: TLogRange | null) =>
-      setParams({ [keys.range]: next === null ? undefined : encodeRange(next) }),
-    [setParams, keys.range],
+      setParams({
+        [keys.range]: next === null ? undefined : encodeRange(next),
+        [keys.highlight]: undefined,
+      }),
+    [setParams, keys],
   );
 
   const resetFilters = useCallback(
@@ -236,12 +294,14 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
         [keys.levels]: undefined,
         [keys.services]: undefined,
         [keys.range]: undefined,
+        [keys.highlight]: undefined,
       }),
     [setParams, keys],
   );
 
   const viewInContext = useCallback(
-    (aroundMs: number) => {
+    (line: { timestamp: string; pod_name: string }) => {
+      const aroundMs = new Date(line.timestamp).getTime();
       const contextWindowMs = 15 * 60 * 1000;
       setParams({
         [keys.q]: undefined,
@@ -251,6 +311,7 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
           from: aroundMs - contextWindowMs,
           until: aroundMs + contextWindowMs,
         }),
+        [keys.highlight]: logLineRef(line),
       });
     },
     [setParams, keys],
@@ -267,6 +328,7 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
       setServiceIds,
       range,
       setRange,
+      highlightedLog,
       viewInContext,
       resetFilters,
       hasActiveFilters: Boolean(search) || levels.length > 0 || serviceIds.length > 0 || rangeIsSet,
@@ -284,6 +346,7 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
       setServiceIds,
       range,
       setRange,
+      highlightedLog,
       viewInContext,
       resetFilters,
       rangeIsSet,
