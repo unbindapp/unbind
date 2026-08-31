@@ -1435,8 +1435,8 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
   }
 
   if (brand === "service-group") {
-    return <LayoutGridIcon className={cn("scale-80", defaultClassName, className)} {...rest} />;
+    return <LayoutGridIcon className={cn(defaultClassName, className)} {...rest} />;
   }
 
-  return <BanIcon className={cn("scale-85", defaultClassName, className)} {...rest} />;
+  return <BanIcon className={cn(defaultClassName, className)} {...rest} />;
 }
