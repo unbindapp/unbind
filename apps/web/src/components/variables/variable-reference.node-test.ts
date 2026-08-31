@@ -132,26 +132,44 @@ test("the trigger button writes the trigger where there is none", () => {
   assert.deepEqual(resolveReferenceInsertion("abc def", 4), { from: 4, to: 4, insert: "${" });
 });
 
-test("the trigger button leaves a trigger that is already there alone", () => {
+test("the trigger button leaves an empty trigger alone", () => {
   assert.deepEqual(resolveReferenceInsertion("$", 1), { from: 1, to: 1, insert: "" });
   assert.deepEqual(resolveReferenceInsertion("${", 2), { from: 2, to: 2, insert: "" });
-  assert.deepEqual(resolveReferenceInsertion("${Ap", 4), { from: 4, to: 4, insert: "" });
-  assert.deepEqual(resolveReferenceInsertion("pre ${Ap", 8), { from: 8, to: 8, insert: "" });
+  assert.deepEqual(resolveReferenceInsertion("pre ${", 6), { from: 6, to: 6, insert: "" });
 });
 
-test("the trigger button never writes into or against a finished reference", () => {
+test("the trigger button starts a fresh trigger after one that stopped matching", () => {
+  assert.deepEqual(resolveReferenceInsertion("${Ap", 4), { from: 4, to: 4, insert: "${" });
+  assert.deepEqual(resolveReferenceInsertion("${zzzzzz", 8), { from: 8, to: 8, insert: "${" });
+  assert.deepEqual(resolveReferenceInsertion("pre ${Ap", 8), { from: 8, to: 8, insert: "${" });
+});
+
+test("a second trigger after an unfinished one is its own token", () => {
+  // "$" ends a reference, so the second "${" is not swallowed by the first
+  assert.deepEqual(resolveReferenceTarget("${ejejejjr${", 12), { from: 10, to: 12 });
+  assert.deepEqual(resolveReferenceTarget("${a${Post", 9), { from: 3, to: 9 });
+  // and the button leaves it be, because it already opens the dropdown
+  assert.deepEqual(resolveReferenceInsertion("${ejejejjr${", 12), { from: 12, to: 12, insert: "" });
+});
+
+test("the trigger goes where it survives being written", () => {
+  // a "}" ahead of the cursor would close the trigger off, so it goes to the
+  // end of the line instead of the cursor
+  assert.deepEqual(resolveReferenceInsertion('{"a":1}', 0), { from: 7, to: 7, insert: "${" });
+  assert.deepEqual(resolveReferenceInsertion("abc}def", 0), { from: 7, to: 7, insert: "${" });
+  // with no "}" ahead it lands at the cursor
+  assert.deepEqual(resolveReferenceInsertion("abcdef", 3), { from: 3, to: 3, insert: "${" });
+});
+
+test("the trigger button never writes inside a finished reference", () => {
   const value = "${Api.PORT}";
+  // inside it the trigger would be swallowed, so it goes to the end of the line
   assert.deepEqual(resolveReferenceInsertion(value, 5), { from: 11, to: 11, insert: "${" });
   assert.deepEqual(resolveReferenceInsertion(value, 1), { from: 11, to: 11, insert: "${" });
-  // straight before it the two would merge into one malformed reference
-  assert.deepEqual(resolveReferenceInsertion(value, 0), { from: 11, to: 11, insert: "${" });
-  assert.deepEqual(resolveReferenceInsertion("pre " + value, 4), {
-    from: 15,
-    to: 15,
-    insert: "${",
-  });
-  // after it there is nothing to collide with
+  // at either edge it is an ordinary insert beside it
+  assert.deepEqual(resolveReferenceInsertion(value, 0), { from: 0, to: 0, insert: "${" });
   assert.deepEqual(resolveReferenceInsertion(value, 11), { from: 11, to: 11, insert: "${" });
+  assert.deepEqual(resolveReferenceInsertion("pre " + value, 4), { from: 4, to: 4, insert: "${" });
 });
 
 test("a reference being typed only covers what is behind the cursor", () => {

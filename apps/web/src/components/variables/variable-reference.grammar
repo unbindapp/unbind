@@ -5,12 +5,17 @@
 // Reference and IncompleteReference overlap by design: maximal munch picks the
 // closed form when a "}" is present, and the open form while it is being typed,
 // which is when completion needs to fire.
+//
+// A "$" ends both: it can't appear inside a ${Source.KEY}, and letting one
+// extend a reference meant a second "${" written after an unclosed first was
+// swallowed into it, leaving one malformed reference where there should be two
+// tokens.
 
 @top Value { (Reference | IncompleteReference | Dollar | Text)* }
 
 @tokens {
-  Reference { "${" ![}\n]* "}" }
-  IncompleteReference { "${" ![}\n]* }
+  Reference { "${" ![}$\n]* "}" }
+  IncompleteReference { "${" ![}$\n]* }
   Dollar { "$" }
   Text { ![$]+ }
   @precedence { Reference, IncompleteReference, Dollar }

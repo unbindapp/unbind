@@ -137,7 +137,7 @@ export default function TokenField({
         if (!view) return;
         const at = view.state.selection.main.head;
         const { from, to, insert } = resolve(view.state.doc.toString(), at);
-        if (insert || from !== to) {
+        if (insert !== view.state.sliceDoc(from, to)) {
           view.dispatch({
             changes: { from, to, insert },
             selection: { anchor: from + insert.length },
