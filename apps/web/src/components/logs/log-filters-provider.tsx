@@ -302,14 +302,17 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
   const viewInContext = useCallback(
     (line: { timestamp: string; pod_name: string }) => {
       const aroundMs = new Date(line.timestamp).getTime();
-      const contextWindowMs = 15 * 60 * 1000;
+      // asymmetric on purpose: what led up to the line matters more than what
+      // followed it, and the initial page loads newest-first from the end
+      const beforeMs = 10 * 60 * 1000;
+      const afterMs = 5 * 60 * 1000;
       setParams({
         [keys.q]: undefined,
         [keys.levels]: undefined,
         [keys.services]: undefined,
         [keys.range]: encodeRange({
-          from: aroundMs - contextWindowMs,
-          until: aroundMs + contextWindowMs,
+          from: aroundMs - beforeMs,
+          until: aroundMs + afterMs,
         }),
         [keys.highlight]: logLineRef(line),
       });

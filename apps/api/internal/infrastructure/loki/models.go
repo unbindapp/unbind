@@ -13,7 +13,7 @@ import (
 // MaxQueryLimit is the most lines loki is asked for in a single request. Loki
 // itself allows more (max_entries_limit_per_query defaults to 5000); this is
 // the ceiling unbind serves, mirrored by the api's limit query parameter.
-const MaxQueryLimit = 1000
+const MaxQueryLimit = 2000
 
 type LokiLabelName string
 

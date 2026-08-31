@@ -336,13 +336,13 @@ func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_LimitCapped() {
 	opts := LokiLogHTTPOptions{
 		Label:      LokiLabelTeam,
 		LabelValue: "team-1",
-		Limit:      new(2000), // Above 1000 limit
+		Limit:      new(3000), // Above the 2000 limit
 	}
 
 	_, err := suite.querier.QueryLokiLogs(context.Background(), opts)
 
 	suite.NoError(err)
-	suite.Contains(capturedQuery, "limit=1000") // Should be capped at 1000
+	suite.Contains(capturedQuery, "limit=2000") // Should be capped at MaxQueryLimit
 }
 
 func (suite *HTTPQueryTestSuite) TestQueryLokiLogs_ForwardDirection() {

@@ -436,7 +436,7 @@ func (suite *StreamTestSuite) TestStreamLokiPodLogs_LimitCapped() {
 	opts := LokiLogStreamOptions{
 		Label:      LokiLabelTeam,
 		LabelValue: "team-1",
-		Limit:      2000, // Above 1000 limit
+		Limit:      3000, // Above the 2000 limit
 	}
 
 	go func() {
@@ -446,10 +446,10 @@ func (suite *StreamTestSuite) TestStreamLokiPodLogs_LimitCapped() {
 	<-ctx.Done()
 	close(eventChan)
 
-	// Should be capped at 1000
+	// Should be capped at MaxQueryLimit
 	suite.NotNil(capturedURL)
 	query := capturedURL.Query()
-	suite.Equal("1000", query.Get("limit"))
+	suite.Equal("2000", query.Get("limit"))
 }
 
 func (suite *StreamTestSuite) TestStreamLokiPodLogs_HTTPStoWS() {
