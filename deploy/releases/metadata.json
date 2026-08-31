@@ -158,5 +158,10 @@
     "version": "v0.1.31",
     "description": "Log search attribute chips and completions, live log stream resume fixes, and a pending screen for route transitions",
     "breaking": false
+  },
+  "v0.1.32": {
+    "version": "v0.1.32",
+    "description": "Variable reference completion styling and loading polish, and log prepend indicator fixes",
+    "breaking": false
   }
 }
