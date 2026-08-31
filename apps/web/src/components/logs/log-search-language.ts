@@ -1,6 +1,6 @@
 import type { TChainedCompletion } from "@/components/ui/token-field/autocomplete";
 import type { TIconCompletion } from "@/components/ui/token-field/icon-completion";
-import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
+import type { Completion, CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { LanguageSupport, LRLanguage, syntaxTree } from "@codemirror/language";
 import { RangeSetBuilder } from "@codemirror/state";
 import {
@@ -140,6 +140,21 @@ function buildAttributeDecorations(view: EditorView, data: TLogSearchData) {
   return builder.finish();
 }
 
+/**
+ * A value closes its attribute off, so whatever is typed next belongs to a new
+ * token and needs a space in front of it. Keys don't take one: they chain
+ * straight into the value menu.
+ */
+function applyValue(view: EditorView, completion: Completion, from: number, to: number) {
+  const spaced = view.state.sliceDoc(to, to + 1) === " ";
+  const insert = spaced ? completion.label : `${completion.label} `;
+  view.dispatch({
+    changes: { from, to, insert },
+    selection: { anchor: from + insert.length + (spaced ? 1 : 0) },
+    userEvent: "input.complete",
+  });
+}
+
 const attributeKeyOptions: Record<TClientAttributeKey, TChainedCompletion> = {
   level: { label: "@level:", type: "key", chain: true },
   service: { label: "@service:", type: "key", chain: true },
@@ -168,6 +183,7 @@ function completionAt(context: CompletionContext, data: TLogSearchData): Complet
         label: level,
         iconKey: levelIconKey(level),
         type: `level-${level}`,
+        apply: applyValue,
       })),
       validFor: /^[^\s":]*$/,
     };
@@ -181,6 +197,7 @@ function completionAt(context: CompletionContext, data: TLogSearchData): Complet
       detail: service.detail,
       iconKey: service.brand,
       type: "service",
+      apply: applyValue,
     }));
     return { from: target.from, to: target.to, options, validFor: /^[^\s":]*$/ };
   }

@@ -186,3 +186,16 @@ test("extracted token next to OR errors instead of leaving a dangling operator",
 test("doubled operators error", () => {
   assert.match(parseSearchInput("a AND AND b").error ?? "", /misplaced/);
 });
+
+// Picking a value from the dropdown leaves a trailing space behind, so the next
+// token can be typed straight away.
+test("a trailing space is not a term of its own", () => {
+  const result = parseSearchInput("@level:error timeout ");
+  assert.equal(result.serverSearch, "timeout");
+  assert.deepEqual(result.levels, ["error"]);
+  assert.equal(result.error, null);
+
+  const attributesOnly = parseSearchInput("@level:error ");
+  assert.equal(attributesOnly.serverSearch, "");
+  assert.equal(attributesOnly.error, null);
+});
