@@ -221,7 +221,6 @@ function Logs({
           <StreamStatusChip
             mode={mode}
             isConnected={isStreamConnected}
-            isLoading={(isPending || isRefreshing) && !error}
             isError={Boolean(streamFatalError || (error && !logs))}
             className="absolute right-2 bottom-0 z-10 translate-y-[calc(100%+0.5rem)] sm:right-2.5"
           />
@@ -594,23 +593,22 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
 function StreamStatusChip({
   mode,
   isConnected,
-  isLoading,
   isError,
   className,
 }: {
   mode: "live" | "historical";
   isConnected: boolean;
-  isLoading: boolean;
   isError: boolean;
   className?: string;
 }) {
   const { label, tone } = useMemo(() => {
     if (isError) return { label: "Error", tone: "warning" as const };
-    if (isLoading) return { label: "Loading", tone: "process" as const };
+    // a fixed window can't grow, so there is nothing to connect to and nothing
+    // the first page landing would change about that
     if (mode === "historical") return { label: "Historical", tone: "process" as const };
     if (isConnected) return { label: "Live", tone: "success" as const };
     return { label: "Connecting", tone: "warning" as const };
-  }, [mode, isConnected, isLoading, isError]);
+  }, [mode, isConnected, isError]);
 
   return (
     <div
