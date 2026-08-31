@@ -4,4 +4,7 @@
 export const tokenFieldWrapperClassName =
   "bg-input focus-within:ring-primary/50 aria-invalid:border-destructive flex w-full rounded-lg border text-left transition-colors focus-within:ring-1 data-disabled:cursor-not-allowed data-disabled:opacity-50";
 
-export const tokenFieldEditorClassName = "w-0 min-w-0 flex-1 px-3 py-2.5 leading-tight font-medium";
+// The leading has to clear a chip's fill, which is the font's ascent-to-descent
+// band rather than the text height; tighter and the field clips the top of it.
+// The padding gives back what the leading takes so the field keeps its height.
+export const tokenFieldEditorClassName = "w-0 min-w-0 flex-1 px-3 py-2 leading-normal font-medium";

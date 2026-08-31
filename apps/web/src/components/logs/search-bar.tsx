@@ -221,7 +221,7 @@ function SearchBar({
             ariaLabel="Search logs"
             ariaInvalid={searchError ? true : undefined}
             className="flex-1"
-            classNameEditor="py-2.25 pr-31 pl-8.5"
+            classNameEditor="py-1.75 pr-31 pl-8.5"
             placeholder={scope.placeholder}
           />
           <div className="absolute top-0 right-0 flex h-full justify-end">

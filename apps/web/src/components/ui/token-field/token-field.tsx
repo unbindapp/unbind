@@ -17,8 +17,8 @@ import { useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from
 
 export type TTokenFieldHandle = {
   focus: () => void;
-  /** Inserts at the cursor and opens the dropdown, for trigger buttons. */
-  insertAndComplete: (text: string) => void;
+  /** Opens the completion dropdown at the cursor, for trigger buttons. */
+  openCompletion: () => void;
 };
 
 export type TTokenFieldProps = {
@@ -125,14 +125,9 @@ export default function TokenField({
     ref,
     () => ({
       focus: () => viewRef.current?.focus(),
-      insertAndComplete: (text: string) => {
+      openCompletion: () => {
         const view = viewRef.current;
         if (!view) return;
-        const at = view.state.selection.main;
-        view.dispatch({
-          changes: { from: at.from, to: at.to, insert: text },
-          selection: { anchor: at.from + text.length },
-        });
         view.focus();
         startCompletion(view);
       },

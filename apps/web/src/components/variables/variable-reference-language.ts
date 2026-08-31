@@ -1,4 +1,7 @@
-import { resolveReferenceTarget } from "@/components/variables/variable-reference-completion";
+import {
+  resolveExplicitTarget,
+  resolveReferenceTarget,
+} from "@/components/variables/variable-reference-completion";
 import type { TVariableToken } from "@/components/variables/tokens";
 import type { TIconCompletion } from "@/components/ui/token-field/icon-completion";
 import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
@@ -90,7 +93,12 @@ function completionAt<T>(
   context: CompletionContext,
   data: TVariableReferenceData<T>,
 ): CompletionResult | null {
-  const target = resolveReferenceTarget(context.state.doc.toString(), context.pos);
+  const doc = context.state.doc.toString();
+  // The trigger button asks for the dropdown outright, so it opens wherever the
+  // cursor is; typing only opens it on a trigger.
+  const target = context.explicit
+    ? resolveExplicitTarget(doc, context.pos)
+    : resolveReferenceTarget(doc, context.pos);
   if (!target) return null;
 
   if (!data.tokens) {

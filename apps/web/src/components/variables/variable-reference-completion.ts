@@ -8,13 +8,16 @@ import { parser } from "./variable-reference.gen.ts";
 
 export type TReferenceTarget = { from: number; to: number };
 
-export function resolveReferenceTarget(value: string, pos: number): TReferenceTarget | null {
+const targetNames = new Set(["IncompleteReference", "Dollar", "Reference"]);
+
+function nodeAt(value: string, pos: number) {
   const tree = parser.parse(value);
   let node = tree.resolveInner(pos, -1);
-  while (node.parent && node.name !== "IncompleteReference" && node.name !== "Dollar") {
-    node = node.parent;
-  }
+  while (node.parent && !targetNames.has(node.name)) node = node.parent;
+  return node;
+}
 
+function typedTarget(node: ReturnType<typeof nodeAt>, pos: number): TReferenceTarget | null {
   // "$" only counts with the cursor right after it; "a$b" mid-word does not.
   if (node.name === "Dollar") {
     if (pos !== node.to) return null;
@@ -24,4 +27,29 @@ export function resolveReferenceTarget(value: string, pos: number): TReferenceTa
   if (node.name !== "IncompleteReference") return null;
   if (pos < node.from + 2) return null;
   return { from: node.from, to: node.to };
+}
+
+export function resolveReferenceTarget(value: string, pos: number): TReferenceTarget | null {
+  return typedTarget(nodeAt(value, pos), pos);
+}
+
+/**
+ * Where an explicit request — the trigger button — puts its choice. Unlike
+ * typing it always resolves, because the button has to open the dropdown from
+ * wherever the cursor happens to be: it reuses a trigger that is already half
+ * typed rather than stacking a second one, and otherwise inserts at the cursor.
+ */
+export function resolveExplicitTarget(value: string, pos: number): TReferenceTarget {
+  const node = nodeAt(value, pos);
+
+  const typed = typedTarget(node, pos);
+  if (typed) return typed;
+
+  // Writing into the middle of a finished reference would break it, so the new
+  // one lands after it.
+  if (node.name === "Reference" && pos > node.from && pos < node.to) {
+    return { from: node.to, to: node.to };
+  }
+
+  return { from: pos, to: pos };
 }

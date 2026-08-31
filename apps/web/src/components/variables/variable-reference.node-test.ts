@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { resolveReferenceTarget } from "./variable-reference-completion.ts";
+import { resolveExplicitTarget, resolveReferenceTarget } from "./variable-reference-completion.ts";
 import { splitByReferences } from "./variable-reference-parts.ts";
 
 const references = new Map([
@@ -117,4 +117,26 @@ test("completion stays shut in plain text", () => {
 
 test("a newline ends the reference being typed", () => {
   assert.equal(resolveReferenceTarget("${Post\nmore", 11), null);
+});
+
+test("the trigger button resolves wherever the cursor is", () => {
+  assert.deepEqual(resolveExplicitTarget("", 0), { from: 0, to: 0 });
+  assert.deepEqual(resolveExplicitTarget("postgres://", 11), { from: 11, to: 11 });
+  assert.deepEqual(resolveExplicitTarget("abc def", 4), { from: 4, to: 4 });
+});
+
+test("the trigger button reuses a trigger that is already half typed", () => {
+  assert.deepEqual(resolveExplicitTarget("$", 1), { from: 0, to: 1 });
+  assert.deepEqual(resolveExplicitTarget("${", 2), { from: 0, to: 2 });
+  assert.deepEqual(resolveExplicitTarget("${Ap", 4), { from: 0, to: 4 });
+  assert.deepEqual(resolveExplicitTarget("pre ${Ap", 8), { from: 4, to: 8 });
+});
+
+test("the trigger button never writes into a finished reference", () => {
+  const value = "${Api.PORT}";
+  assert.deepEqual(resolveExplicitTarget(value, 5), { from: 11, to: 11 });
+  assert.deepEqual(resolveExplicitTarget(value, 1), { from: 11, to: 11 });
+  // at either edge it is an ordinary insert beside it
+  assert.deepEqual(resolveExplicitTarget(value, 0), { from: 0, to: 0 });
+  assert.deepEqual(resolveExplicitTarget(value, 11), { from: 11, to: 11 });
 });
