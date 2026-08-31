@@ -181,7 +181,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
               {...repositoryBlockProps}
               text={`${owner}/${repo}`}
               Icon={({ className }) => (
-                <BrandIcon brand="github" color="brand" className={className} />
+                <BrandIcon brand="github" color="brand" className={cn(className, "size-4.5")} />
               )}
             />
           </BlockItemContent>
@@ -215,7 +215,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                       asElement="button"
                       text={field.state.value}
                       Icon={({ className }) => (
-                        <GitBranchIcon className={cn("scale-90", className)} />
+                        <GitBranchIcon className={cn(className, "size-4.5")} />
                       )}
                       variant="outline"
                       open={isOpen}
@@ -332,7 +332,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
               text={image}
               Icon={({ className }) => {
                 if (imageIsNonDockerHub) {
-                  return <PackageIcon className={cn("scale-90", className)} />;
+                  return <PackageIcon className={className} />;
                 }
                 return <BrandIcon brand="docker" color="brand" className={className} />;
               }}
@@ -368,7 +368,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                     <BlockItemButtonLike
                       asElement="button"
                       text={field.state.value}
-                      Icon={({ className }) => <TagIcon className={cn("scale-90", className)} />}
+                      Icon={({ className }) => <TagIcon className={cn(className, "size-4.5")} />}
                       variant="outline"
                       open={isOpen}
                       onBlur={field.handleBlur}
@@ -409,7 +409,7 @@ function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
               asElement="div"
               text={databaseTypeToName(type)}
               Icon={({ className }) => (
-                <BrandIcon brand={type} color="brand" className={className} />
+                <BrandIcon brand={type} color="brand" className={cn(className, "size-4.5")} />
               )}
             />
           </BlockItemContent>
@@ -425,7 +425,7 @@ function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
             <BlockItemButtonLike
               asElement="div"
               text={version}
-              Icon={({ className }) => <MilestoneIcon className={cn("scale-90", className)} />}
+              Icon={({ className }) => <MilestoneIcon className={cn(className, "size-4.5")} />}
             />
           </BlockItemContent>
         </BlockItem>

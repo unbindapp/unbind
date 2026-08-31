@@ -255,7 +255,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                 asElement="div"
                 text={databaseTypeToName(type)}
                 Icon={({ className }) => (
-                  <BrandIcon brand={type} color="brand" className={className} />
+                  <BrandIcon brand={type} color="brand" className={cn(className, "size-4.5")} />
                 )}
               />
             </BlockItemContent>
@@ -283,7 +283,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                         asElement="button"
                         text={field.state.value}
                         Icon={({ className }) => (
-                          <MilestoneIcon className={cn("scale-90", className)} />
+                          <MilestoneIcon className={cn(className, "size-4.5")} />
                         )}
                         variant="outline"
                         open={isOpen}
@@ -354,7 +354,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                               )
                             }
                             Icon={({ className }) => (
-                              <CylinderIcon className={cn("scale-90", className)} />
+                              <CylinderIcon className={cn(className, "size-4.5")} />
                             )}
                             variant="outline"
                             open={isOpen}

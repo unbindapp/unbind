@@ -130,7 +130,7 @@ function TitleButton({ volume }: { volume: TVolumeShallow }) {
         variant="ghost"
         className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-2 px-2.5 py-1"
       >
-        <HardDriveIcon className="-ml-1 size-6 scale-85 sm:size-7" />
+        <HardDriveIcon className="-ml-1 size-5 sm:size-6" />
         <p className="min-w-0 shrink text-left text-xl leading-tight sm:text-2xl">
           {getVolumeDisplayName(volume)}
         </p>

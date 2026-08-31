@@ -263,7 +263,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   onChange={(v) => field.handleChange(v as THealthCheckType)}
                   items={healthCheckItems}
                   ItemIcon={({ className, value }) => (
-                    <HealthCheckIcon className={cn("scale-90", className)} type={value} />
+                    <HealthCheckIcon className={cn(className, "size-4.5")} type={value} />
                   )}
                   isPending={false}
                   error={undefined}
@@ -277,7 +277,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       Icon={({ className }) => (
                         <HealthCheckIcon
                           type={field.state.value}
-                          className={cn("scale-90", className)}
+                          className={cn(className, "size-4.5")}
                         />
                       )}
                       variant="outline"
@@ -339,7 +339,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                           asElement="button"
                           text={field.state.value}
                           Icon={({ className }) => (
-                            <EthernetPortIcon className={cn(className, "size-4.5 scale-90")} />
+                            <EthernetPortIcon className={cn(className, "size-4")} />
                           )}
                           variant="outline"
                           open={isOpen}

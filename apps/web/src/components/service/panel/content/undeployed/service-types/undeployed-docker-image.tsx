@@ -247,7 +247,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
                 text={image}
                 Icon={({ className }) => {
                   if (imageIsNonDockerHub) {
-                    return <PackageIcon className={cn("scale-90", className)} />;
+                    return <PackageIcon className={className} />;
                   }
                   return <BrandIcon brand="docker" color="brand" className={className} />;
                 }}
@@ -282,7 +282,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
                       <BlockItemButtonLike
                         asElement="button"
                         text={field.state.value}
-                        Icon={({ className }) => <TagIcon className={cn("scale-90", className)} />}
+                        Icon={({ className }) => <TagIcon className={cn(className, "size-4.5")} />}
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}

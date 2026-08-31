@@ -54,7 +54,7 @@ export default function VolumeLine({ volume, className }: TProps) {
               className="group/line flex min-w-0 shrink items-center gap-1.5"
             >
               {volume.is_attaching || volume.is_pending_resize || usagePercentage === undefined ? (
-                <HourglassIcon className="animate-hourglass size-3.5 min-w-0 shrink-0 scale-90" />
+                <HourglassIcon className="animate-hourglass size-3 min-w-0 shrink-0" />
               ) : (
                 <HardDriveIcon className="size-3.5 min-w-0 shrink-0" />
               )}

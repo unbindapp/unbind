@@ -49,7 +49,7 @@ export default function VolumeCard({ volume, className }: TProps) {
           className="flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold"
         >
           <div className="flex w-full items-center justify-start gap-2">
-            <HardDriveIcon className="-ml-1 size-6 scale-85" />
+            <HardDriveIcon className="-ml-1 size-5" />
             <h3 className="min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap">
               {getVolumeDisplayName(volume)}
             </h3>

@@ -98,7 +98,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     asElement="div"
                     text="loading.unbind"
                     Icon={({ className }: { className?: string }) => (
-                      <GlobeLockIcon className={cn("scale-90", className)} />
+                      <GlobeLockIcon className={cn(className, "size-4.5")} />
                     )}
                   />
                 )}
@@ -141,7 +141,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                   asElement="div"
                   text="loading.unbind:3000"
                   Icon={({ className }: { className?: string }) => (
-                    <GlobeLockIcon className={cn("scale-90", className)} />
+                    <GlobeLockIcon className={cn(className, "size-4.5")} />
                   )}
                 />
               )}

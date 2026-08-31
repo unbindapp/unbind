@@ -82,9 +82,7 @@ const levelIcons: Record<TLogLevel, FC<{ className?: string }>> = {
   error: TriangleAlertIcon,
 };
 
-// Lucide's artwork fills more of its box than the brand icons it sits beside,
-// so the level icons shrink to match.
-const levelIconClassName = "size-4.5 shrink-0 scale-90";
+const levelIconClassName = "size-4 shrink-0";
 
 // The option's own class carries the color, and the icons stroke with
 // currentColor, so both stay in step.
@@ -149,7 +147,7 @@ function SearchBar({
       ...levelIconNodes,
       ...[...new Set(serviceIconsById.values())].map((brand) => ({
         key: brand,
-        node: <BrandIcon color="brand" brand={brand} className="size-4.5 shrink-0" />,
+        node: <BrandIcon color="brand" brand={brand} className="size-4 shrink-0" />,
       })),
     ],
     [serviceIconsById],

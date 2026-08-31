@@ -99,7 +99,7 @@ export function DomainCard({
           {dnsCheckData?.data.is_cloudflare && (
             <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
               <div className="-ml-px size-3.5 shrink-0">
-                <BrandIcon brand="cloudflare" className="size-full scale-110" />
+                <BrandIcon brand="cloudflare" className="size-full" />
               </div>
               <p className="min-w-0 shrink leading-tight font-medium">Cloudflare detected</p>
             </div>

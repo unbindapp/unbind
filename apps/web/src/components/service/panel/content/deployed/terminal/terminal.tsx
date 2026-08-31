@@ -148,12 +148,12 @@ export default function Terminal() {
                       ? `Instance 1`
                       : `Instance ${data.data.findIndex((p) => p.kubernetes_name === activePod.kubernetes_name) + 1}`
                   }
-                  Icon={({ className }) => <ServerIcon className={cn("scale-90", className)} />}
+                  Icon={({ className }) => <ServerIcon className={className} />}
                   variant="outline"
                   open={isOpen}
                   className={compactTriggerClassName}
                   classNameChevron="size-4"
-                  classNameIcon="size-4 -ml-0.5"
+                  classNameIcon="size-3.5 -ml-0.5"
                 />
               )}
             </DropdownSelect>
@@ -170,12 +170,12 @@ export default function Terminal() {
                 <BlockItemButtonLike
                   asElement="button"
                   text={activeContainer}
-                  Icon={({ className }) => <BoxIcon className={cn("scale-90", className)} />}
+                  Icon={({ className }) => <BoxIcon className={className} />}
                   variant="outline"
                   open={isOpen}
                   className={compactTriggerClassName}
                   classNameChevron="size-4"
-                  classNameIcon="size-4"
+                  classNameIcon="size-3.5"
                 />
               )}
             </DropdownSelect>

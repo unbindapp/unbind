@@ -63,7 +63,7 @@ const VariablesBlock = withForm({
           type="button"
           onClick={() => setIsOpen((o) => !o)}
         >
-          <KeyIcon className="size-5 shrink-0 scale-90 transition group-data-open/button:rotate-90" />
+          <KeyIcon className="size-4.5 shrink-0 transition group-data-open/button:rotate-90" />
           <p className="min-w-0 shrink">Environment Variables</p>
           <ChevronDownIcon className="text-muted-foreground -mr-0.75 ml-auto size-5 shrink-0 transition group-data-open/button:rotate-180" />
         </Button>

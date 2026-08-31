@@ -230,7 +230,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                           )
                         }
                         Icon={({ className }) => (
-                          <CylinderIcon className={cn("scale-90", className)} />
+                          <CylinderIcon className={cn(className, "size-4.5")} />
                         )}
                         variant="outline"
                         open={isOpen}

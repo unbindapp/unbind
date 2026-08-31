@@ -15,7 +15,7 @@ export default function AdvancedSettingsButton({ isOpen, onClick }: TProps) {
       type="button"
       onClick={onClick}
     >
-      <CogIcon className="size-5 shrink-0 scale-90 transition group-data-open/button:rotate-90" />
+      <CogIcon className="size-4.5 shrink-0 transition group-data-open/button:rotate-90" />
       <p className="min-w-0 shrink">Advanced Settings</p>
       <ChevronDownIcon className="text-muted-foreground -mr-0.75 ml-auto size-5 shrink-0 transition group-data-open/button:rotate-180" />
     </Button>

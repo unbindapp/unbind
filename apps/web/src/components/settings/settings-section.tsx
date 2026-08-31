@@ -76,7 +76,7 @@ export function SettingsSection({
                 variant="outline-process"
                 size="icon"
               >
-                <RotateCcwIcon className="size-5 scale-90" />
+                <RotateCcwIcon className="size-4.5" />
               </Button>
             </ResetTrigger>
             <SubmitTriggerElement>

@@ -170,7 +170,7 @@ function AttachSection({ volume }: TProps) {
                         serviceItems?.find((item) => item.value === field.state.value)?.label ||
                         "Select a service"
                       }
-                      Icon={({ className }) => <ServerIcon className={cn("scale-90", className)} />}
+                      Icon={({ className }) => <ServerIcon className={cn(className, "size-4.5")} />}
                       variant="outline"
                       open={isOpen}
                       onBlur={field.handleBlur}

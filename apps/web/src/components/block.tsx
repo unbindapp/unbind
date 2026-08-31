@@ -264,12 +264,12 @@ export function BlockItemButtonLike({
         {asElement === "LinkButton" && href !== undefined && Icon ? (
           <div
             className={cn(
-              "relative size-5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45",
+              "relative size-4.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45",
               classNameIcon,
             )}
           >
             <Icon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
-            <ExternalLinkIcon className="absolute top-0 left-0 size-full scale-90 -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+            <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
           </div>
         ) : (
           Icon && (

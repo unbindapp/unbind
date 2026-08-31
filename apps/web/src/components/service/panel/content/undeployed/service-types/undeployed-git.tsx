@@ -290,7 +290,7 @@ export function UndeployedContentGit({
                 {...repositoryBlockProps}
                 text={`${owner}/${repo}`}
                 Icon={({ className }) => (
-                  <BrandIcon brand="github" color="brand" className={className} />
+                  <BrandIcon brand="github" color="brand" className={cn(className, "size-4.5")} />
                 )}
               />
             </BlockItemContent>
@@ -321,7 +321,7 @@ export function UndeployedContentGit({
                         asElement="button"
                         text={field.state.value}
                         Icon={({ className }) => (
-                          <GitBranchIcon className={cn("scale-90", className)} />
+                          <GitBranchIcon className={cn(className, "size-4.5")} />
                         )}
                         variant="outline"
                         open={isOpen}
@@ -372,7 +372,11 @@ export function UndeployedContentGit({
                             value: o,
                           }))}
                           ItemIcon={({ className, value }) => (
-                            <BrandIcon brand={value} className={className} color="brand" />
+                            <BrandIcon
+                              brand={value}
+                              className={cn(className, "size-4.5")}
+                              color="brand"
+                            />
                           )}
                           isPending={false}
                           error={undefined}
@@ -384,7 +388,7 @@ export function UndeployedContentGit({
                               Icon={({ className }) => (
                                 <BrandIcon
                                   brand={field.state.value}
-                                  className={className}
+                                  className={cn(className, "size-4.5")}
                                   color="brand"
                                 />
                               )}

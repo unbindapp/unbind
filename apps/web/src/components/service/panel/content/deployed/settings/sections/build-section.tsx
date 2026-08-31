@@ -1,5 +1,6 @@
 import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
 import BrandIcon from "@/components/icons/brand";
+import { cn } from "@/components/ui/utils";
 import {
   Block,
   BlockItem,
@@ -192,7 +193,7 @@ function GitSection({ service }: TGitSectionProps) {
                     value: o,
                   }))}
                   ItemIcon={({ className, value }) => (
-                    <BrandIcon brand={value} className={className} color="brand" />
+                    <BrandIcon brand={value} className={cn(className, "size-4.5")} color="brand" />
                   )}
                   isPending={false}
                   error={undefined}
@@ -202,7 +203,11 @@ function GitSection({ service }: TGitSectionProps) {
                       asElement="button"
                       text={builderEnumToName(field.state.value)}
                       Icon={({ className }) => (
-                        <BrandIcon brand={field.state.value} className={className} color="brand" />
+                        <BrandIcon
+                          brand={field.state.value}
+                          className={cn(className, "size-4.5")}
+                          color="brand"
+                        />
                       )}
                       variant="outline"
                       open={isOpen}
