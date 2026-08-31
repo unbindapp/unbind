@@ -18,12 +18,12 @@ export type TLogSearchScope = {
 
 const acrossServices: TLogSearchScope = {
   attributeKeys: clientAttributeKeys,
-  placeholder: "Search logs: @level:error @service:my-app",
+  placeholder: "Search: @service:Redis @level:error",
 };
 
 const singleService: TLogSearchScope = {
   attributeKeys: ["level"],
-  placeholder: "Search logs: @level:error timeout",
+  placeholder: "Search: @level:error timeout",
 };
 
 export const logSearchScopes: Record<TLogType, TLogSearchScope> = {
@@ -32,5 +32,5 @@ export const logSearchScopes: Record<TLogType, TLogSearchScope> = {
   environment: acrossServices,
   service: singleService,
   deployment: singleService,
-  build: { attributeKeys: ["level"], placeholder: "Search build logs: @level:error failed" },
+  build: { attributeKeys: ["level"], placeholder: "Search: @level:error timeout" },
 };
