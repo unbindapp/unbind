@@ -38,7 +38,7 @@ export default function TemplateDraftCard({
         >
           <div className="flex w-full items-center justify-between gap-4">
             <div className="flex min-w-0 shrink items-center justify-start gap-2">
-              <TemplateDraftIcon templateDraft={templateDraft} className="-ml-1 size-6" />
+              <TemplateDraftIcon templateDraft={templateDraft} className="-ml-1 size-5" />
               <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
                 {templateDraft.name}
               </h3>

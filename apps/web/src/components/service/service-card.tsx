@@ -103,9 +103,9 @@ export default function ServiceCard({
           {service && <NewEntityIndicator id={service.id} />}
           <div className="flex w-full items-center justify-start gap-2">
             {!isPlaceholder ? (
-              <ServiceIcon service={service} className="-ml-1 size-6" />
+              <ServiceIcon service={service} className="-ml-1 size-5" />
             ) : (
-              <div className="animate-skeleton bg-foreground -ml-1 size-6 rounded-full" />
+              <div className="animate-skeleton bg-foreground -ml-1 size-5 rounded-full" />
             )}
             <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
               {!isPlaceholder ? service.name : "Loading"}
