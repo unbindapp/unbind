@@ -2,7 +2,7 @@
 
 import ErrorCard from "@/components/error-card";
 import ErrorLine from "@/components/error-line";
-import LogFiltersProvider from "@/components/logs/log-filters-provider";
+import LogFiltersProvider, { useLogFilters } from "@/components/logs/log-filters-provider";
 import LogLine from "@/components/logs/log-line";
 import { buildLogRows, type TLogRow } from "@/components/logs/log-rows";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
@@ -26,7 +26,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/lib/queries/logs";
 import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual";
-import { ArrowDownIcon, HourglassIcon, LoaderIcon, RotateCwIcon, SearchIcon } from "lucide-react";
+import {
+  ArrowDownIcon,
+  HourglassIcon,
+  LoaderIcon,
+  RotateCcwIcon,
+  RotateCwIcon,
+  SearchIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useThrottledCallback } from "use-debounce";
 
@@ -553,6 +560,7 @@ function AnimatedHourglassIcon({ className }: { className?: string }) {
 
 function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
   const { searchError } = useLogs();
+  const { hasActiveFilters, resetFilters } = useLogFilters();
 
   const Icon = useMemo(() => {
     if (shouldHaveLogs) return AnimatedHourglassIcon;
@@ -570,6 +578,12 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
           <>No logs match the current filters</>
         )}
       </p>
+      {hasActiveFilters && (
+        <Button className="mt-2" onClick={() => resetFilters()}>
+          <RotateCcwIcon className="-ml-1 size-5 shrink-0" />
+          <p className="min-w-0 shrink">Clear Filters</p>
+        </Button>
+      )}
     </NoItemsCard>
   );
 }

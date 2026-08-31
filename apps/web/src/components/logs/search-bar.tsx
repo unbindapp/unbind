@@ -375,7 +375,7 @@ function FilterButton({ className }: { className?: string }) {
             )}
           >
             <RotateCcwIcon className="-my-1 size-4.5 shrink-0 -rotate-90 transform transition-transform group-data-not-default/item:rotate-0" />
-            <p className="min-w-0 shrink">Reset Filters</p>
+            <p className="min-w-0 shrink">Clear Filters</p>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
