@@ -126,9 +126,10 @@ function Logs({
     isPending: isPendingRaw,
     isRefreshing,
     error,
-    streamStatus,
+    mode,
+    isStreamConnected,
+    streamFatalError,
     streamErrorMessage,
-    isLive,
     searchError,
   } = useLogs();
 
@@ -218,8 +219,10 @@ function Logs({
             className="z-20 px-2 pt-2 sm:px-2.5 sm:pt-2.5"
           />
           <StreamStatusChip
-            isLive={isLive}
-            streamStatus={streamStatus}
+            mode={mode}
+            isConnected={isStreamConnected}
+            isLoading={(isPending || isRefreshing) && !error}
+            isError={Boolean(streamFatalError || (error && !logs))}
             className="absolute right-2 bottom-0 z-10 translate-y-[calc(100%+0.5rem)] sm:right-2.5"
           />
         </div>
@@ -588,24 +591,26 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
   );
 }
 
-export type TLogStreamStatus = "idle" | "connecting" | "live" | "reconnecting" | "error";
-
 function StreamStatusChip({
-  isLive,
-  streamStatus,
+  mode,
+  isConnected,
+  isLoading,
+  isError,
   className,
 }: {
-  isLive: boolean;
-  streamStatus: TLogStreamStatus;
+  mode: "live" | "historical";
+  isConnected: boolean;
+  isLoading: boolean;
+  isError: boolean;
   className?: string;
 }) {
   const { label, tone } = useMemo(() => {
-    if (!isLive) return { label: "Historical", tone: "process" as const };
-    if (streamStatus === "live") return { label: "Live", tone: "success" as const };
-    if (streamStatus === "reconnecting") return { label: "Reconnecting", tone: "warning" as const };
-    if (streamStatus === "error") return { label: "Disconnected", tone: "warning" as const };
+    if (isError) return { label: "Error", tone: "warning" as const };
+    if (isLoading) return { label: "Loading", tone: "process" as const };
+    if (mode === "historical") return { label: "Historical", tone: "process" as const };
+    if (isConnected) return { label: "Live", tone: "success" as const };
     return { label: "Connecting", tone: "warning" as const };
-  }, [isLive, streamStatus]);
+  }, [mode, isConnected, isLoading, isError]);
 
   return (
     <div

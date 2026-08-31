@@ -3,7 +3,8 @@
 import { useLogFilters } from "@/components/logs/log-filters-provider";
 import { defaultLogRange, isLiveRange, resolveLogRange } from "@/components/logs/log-range";
 import { logSearchScopes } from "@/components/logs/log-search-scope";
-import { logLineKey } from "@/components/logs/log-utils";
+import { buildLogStreamUrl } from "@/components/logs/log-stream-url";
+import { latestLogTimestamp, logLineKey } from "@/components/logs/log-utils";
 import { parseSearchInput } from "@/components/logs/search-syntax";
 import { buildServiceTokens, findServiceByToken } from "@/components/logs/service-tokens";
 import { useServices } from "@/components/service/services-provider";
@@ -138,9 +139,12 @@ type TLogsContext = {
   isPending: boolean;
   isRefreshing: boolean;
   error: Error | null;
-  streamStatus: "idle" | "connecting" | "live" | "reconnecting" | "error";
+  /** Live tails new lines as they land; historical is a window that can't grow. */
+  mode: "live" | "historical";
+  isStreamConnected: boolean;
+  /** Set once the stream has given up for good and stopped retrying. */
+  streamFatalError: string | null;
   streamErrorMessage: string | null;
-  isLive: boolean;
   hasMoreOlder: boolean;
   isFetchingOlder: boolean;
   olderError: string | null;
@@ -302,6 +306,10 @@ export const LogsProvider: React.FC<TProps> = ({
   const [olderError, setOlderError] = useState<string | null>(null);
   const [streamErrorMessage, setStreamErrorMessage] = useState<string | null>(null);
 
+  // Where the stream resumes moves with every batch, so it is kept out of the
+  // stream's identity: only a change in what the user asked for may reconnect.
+  const resumeRef = useRef<string | null>(null);
+
   // Seed/replace the buffer whenever the initial page for the current
   // identity lands; stale identities keep rendering until then.
   const initialData = initialQuery.data;
@@ -314,6 +322,9 @@ export const LogsProvider: React.FC<TProps> = ({
       lines: initialData.logs,
       nextCursor: initialData.nextCursor,
     });
+    // the buffer holds nothing past this page now, so anything the stream
+    // delivered beyond it has to be streamed again or it leaves a gap
+    resumeRef.current = latestLogTimestamp(null, initialData.logs);
     setStreamErrorMessage(null);
     setOlderError(null);
   }, [initialData, initialIsPlaceholder, identityKey]);
@@ -321,42 +332,14 @@ export const LogsProvider: React.FC<TProps> = ({
   const bufferReady = buffer.identityKey === identityKey;
 
   const { apiUrl } = useAppConfig();
-  const streamUrl = useMemo(() => {
-    if (!isLive || !bufferReady || searchError) return null;
-    const params = new URLSearchParams({
-      type,
-      team_id: teamId,
-      project_id: projectId || "",
-      environment_id: environmentId || "",
-    });
-    if (type === "service" || type === "deployment") params.set("service_id", serviceId);
-    if (type === "deployment" || type === "build") params.set("deployment_id", deploymentId);
-    if (parsedSearch.serverSearch) params.set("search", parsedSearch.serverSearch);
-    if (mergedLevels.length) params.set("levels", mergedLevels.join(","));
-    if (mergedServiceIds.length) params.set("service_ids", mergedServiceIds.join(","));
-    // resume right where the initial page ended; overlap is deduped by key
-    const newest = buffer.lines[buffer.lines.length - 1]?.timestamp;
-    params.set("start", newest ?? timeWindow.start);
-    return `${apiUrl}/logs/stream?${params.toString()}`;
-    // the buffer's newest line only matters at connect time
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isLive,
-    bufferReady,
-    searchError,
-    type,
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-    deploymentId,
-    parsedSearch.serverSearch,
-    mergedLevels,
-    mergedServiceIds,
-    timeWindow.start,
-    apiUrl,
-    identityKey,
-  ]);
+  const queryInputRef = useRef(queryInput);
+  queryInputRef.current = queryInput;
+
+  const streamKey = isLive && bufferReady && !searchError ? identityKey : null;
+  const buildUrl = useCallback(
+    () => buildLogStreamUrl(apiUrl, queryInputRef.current, resumeRef.current),
+    [apiUrl],
+  );
 
   const identityKeyRef = useRef(identityKey);
   identityKeyRef.current = identityKey;
@@ -368,6 +351,7 @@ export const LogsProvider: React.FC<TProps> = ({
 
   const onBatch = useCallback((batch: LogEvent[]) => {
     if (batch.length === 0) return;
+    resumeRef.current = latestLogTimestamp(resumeRef.current, batch);
     dispatch({
       type: "append",
       identityKey: identityKeyRef.current,
@@ -381,8 +365,9 @@ export const LogsProvider: React.FC<TProps> = ({
     setStreamErrorMessage(message);
   }, []);
 
-  const { status: streamStatus, error: streamFatalError } = useLogStream({
-    url: streamUrl,
+  const { isConnected: isStreamConnected, fatalError: streamFatalError } = useLogStream({
+    streamKey,
+    buildUrl,
     onBatch,
     onErrorEvent,
   });
@@ -430,9 +415,10 @@ export const LogsProvider: React.FC<TProps> = ({
       isPending: buffer.identityKey === null && initialQuery.isPending,
       isRefreshing: !bufferReady && buffer.identityKey !== null,
       error: initialQuery.error,
-      streamStatus,
+      mode: isLive ? "live" : "historical",
+      isStreamConnected,
+      streamFatalError,
       streamErrorMessage: streamErrorMessage ?? streamFatalError,
-      isLive,
       hasMoreOlder: bufferReady && buffer.hasMoreOlder,
       isFetchingOlder,
       olderError,
@@ -446,10 +432,10 @@ export const LogsProvider: React.FC<TProps> = ({
       buffer,
       initialQuery.isPending,
       initialQuery.error,
-      streamStatus,
+      isLive,
+      isStreamConnected,
       streamErrorMessage,
       streamFatalError,
-      isLive,
       isFetchingOlder,
       olderError,
       fetchOlder,
