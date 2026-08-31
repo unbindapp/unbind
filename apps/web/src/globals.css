@@ -637,6 +637,32 @@
     color: var(--warning);
   }
 
+  /* Attributes and references read as chips. The tint does double duty as the
+     fill and as a 1px inset ring stacked on top of it, so the edge lands at
+     twice the fill's strength and, unlike a border, costs no layout. */
+  .tok-chip {
+    --tok-chip: var(--foreground);
+    border-radius: var(--radius-sm);
+    padding: 0 0.25em;
+    background-color: color-mix(in oklab, var(--tok-chip) 8%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tok-chip) 8%, transparent);
+    /* the variable value field wraps, so each fragment gets its own fill */
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+
+  .tok-chip-process {
+    --tok-chip: var(--process);
+  }
+
+  .tok-chip-error {
+    --tok-chip: var(--destructive);
+  }
+
+  .tok-chip-warning {
+    --tok-chip: var(--warning);
+  }
+
   /* AND/OR are keywords like @level and @service, so they share their color.
      Color only: bolding shifts the rest of the line the moment the word is
      recognized. */

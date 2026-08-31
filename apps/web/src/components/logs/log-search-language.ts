@@ -61,6 +61,13 @@ const levelValue: Record<string, Decoration> = Object.fromEntries(
     Decoration.mark({ class: className }),
   ]),
 );
+const attributeChip = Decoration.mark({ class: "tok-chip" });
+const levelChip: Record<string, Decoration> = Object.fromEntries(
+  Object.keys(levelColorClass).map((level) => [
+    level,
+    Decoration.mark({ class: `tok-chip tok-chip-${level}` }),
+  ]),
+);
 
 /** Draws the value's icon in front of it, cloned from the off-screen cache. */
 class IconWidget extends WidgetType {
@@ -126,16 +133,21 @@ function buildAttributeDecorations(view: EditorView, data: TLogSearchData) {
         const name = view.state.sliceDoc(key.from + 1, key.to);
         if (!resolvesAttribute(data.attributeKeys, name)) return;
 
+        const value = node.node.getChild("AttrValue");
+        const text = value ? view.state.sliceDoc(value.from, value.to) : "";
+        const level = name === "level" ? text.toLowerCase() : null;
+
+        // The chip wraps everything else, so it has to open first.
+        const chip = level ? levelChip[level] : undefined;
+        builder.add(node.from, node.to, chip ?? attributeChip);
+
         builder.add(key.from, key.from + 1, punctuation);
         builder.add(key.from + 1, key.to, attributeKey);
 
         const colon = node.node.getChild("Colon");
         if (colon) builder.add(colon.from, colon.to, punctuation);
 
-        const value = node.node.getChild("AttrValue");
         if (!value) return;
-        const text = view.state.sliceDoc(value.from, value.to);
-        const level = name === "level" ? text.toLowerCase() : null;
 
         // Point decorations sort before marks at the same position, so the icon
         // goes in first. It waits for its icon to be cached rather than leaving
