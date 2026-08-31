@@ -7,7 +7,13 @@ export type TChainedCompletion = Completion & { chain?: boolean };
 
 export type TCompletionAddition = {
   position: number;
-  render: (completion: Completion, state: EditorState, view: EditorView) => Node | null;
+  /** match holds flat [from, to, ...] fuzzy-match ranges; CodeMirror passes it untyped. */
+  render: (
+    completion: Completion,
+    state: EditorState,
+    view: EditorView,
+    match?: readonly number[],
+  ) => Node | null;
 };
 
 export function tokenFieldAutocomplete(

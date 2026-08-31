@@ -797,10 +797,42 @@
 
 /* The flex layout above defeats CodeMirror's own ellipsis on the li, so the
    label has to shrink and truncate itself. */
-.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .cm-completionLabel {
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip
+  :is(.cm-completionLabel, .token-field-reference-label) {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Reference options render their own segmented label (variable-reference-label.ts)
+   so the scaffolding and the source can dim; the built-in flat one goes. */
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip
+  > ul
+  > li.token-field-option-reference
+  > .cm-completionLabel {
+  display: none;
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .token-field-reference-punct {
+  color: var(--muted-more-foreground);
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .token-field-reference-source {
+  color: var(--muted-foreground);
+}
+
+/* Matched characters step the process color the same way the plain text steps
+   the grays, so the key still reads first while typing. */
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip
+  .token-field-reference-punct
+  .cm-completionMatchedText {
+  color: color-mix(in oklab, var(--process) 50%, transparent);
+}
+
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip
+  .token-field-reference-source
+  .cm-completionMatchedText {
+  color: color-mix(in oklab, var(--process) 75%, transparent);
 }
 
 /* Color only: bolding the match reflows the label as you type. */

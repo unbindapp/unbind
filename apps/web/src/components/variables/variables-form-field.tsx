@@ -9,6 +9,7 @@ import {
   type TVariableReferenceData,
 } from "@/components/variables/variable-reference-language";
 import { resolveReferenceInsertion } from "@/components/variables/variable-reference-completion";
+import { referenceLabelCompletionAddition } from "@/components/variables/variable-reference-label";
 import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
 import { withForm } from "@/lib/hooks/use-app-form";
 import type { LanguageSupport } from "@codemirror/language";
@@ -26,7 +27,7 @@ export type TReferenceProps = {
 
 export const variablesFormFieldDefaultVariables: TVariableForCreate[] = [{ name: "", value: "" }];
 
-const completionAdditions = [iconCompletionAddition];
+const completionAdditions = [iconCompletionAddition, referenceLabelCompletionAddition];
 
 const props: { referenceProps: TReferenceProps } = { referenceProps: { tokens: [] } };
 
