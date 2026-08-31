@@ -15,10 +15,17 @@ import { startCompletion } from "@codemirror/autocomplete";
 import { EditorView, keymap, placeholder as placeholderExt, tooltips } from "@codemirror/view";
 import { useEffect, useImperativeHandle, useRef, type ReactNode, type Ref } from "react";
 
+/** Where a trigger button's text goes. An empty insert leaves the doc alone. */
+export type TTokenFieldInsertion = { from: number; to: number; insert: string };
+
 export type TTokenFieldHandle = {
   focus: () => void;
-  /** Opens the completion dropdown at the cursor, for trigger buttons. */
-  openCompletion: () => void;
+  /**
+   * Writes what the resolver picks for the cursor and opens the dropdown, for
+   * trigger buttons. The write is what leaves the field in a state the
+   * completion source recognises, so typing on from there keeps filtering.
+   */
+  insertAndComplete: (resolve: (doc: string, pos: number) => TTokenFieldInsertion) => void;
 };
 
 export type TTokenFieldProps = {
@@ -125,9 +132,19 @@ export default function TokenField({
     ref,
     () => ({
       focus: () => viewRef.current?.focus(),
-      openCompletion: () => {
+      insertAndComplete: (resolve) => {
         const view = viewRef.current;
         if (!view) return;
+        const at = view.state.selection.main.head;
+        const { from, to, insert } = resolve(view.state.doc.toString(), at);
+        if (insert || from !== to) {
+          view.dispatch({
+            changes: { from, to, insert },
+            selection: { anchor: from + insert.length },
+            // typed, as far as the completion source is concerned
+            userEvent: "input.type",
+          });
+        }
         view.focus();
         startCompletion(view);
       },

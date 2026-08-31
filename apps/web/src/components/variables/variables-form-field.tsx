@@ -7,6 +7,7 @@ import {
   createVariableReferenceLanguage,
   type TVariableReferenceData,
 } from "@/components/variables/variable-reference-language";
+import { resolveReferenceInsertion } from "@/components/variables/variable-reference-completion";
 import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
 import { withForm } from "@/lib/hooks/use-app-form";
 import type { LanguageSupport } from "@codemirror/language";
@@ -223,7 +224,7 @@ function VariableValueField({ Field, subField, language, referencesDisabled }: T
             // Keeps the focus in the field: a blur closes the dropdown on a
             // delay, which would land after this reopens it.
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => fieldRef.current?.openCompletion()}
+            onClick={() => fieldRef.current?.insertAndComplete(resolveReferenceInsertion)}
             className="text-muted-foreground focus:ring-primary mt-1 mr-1 mb-auto h-8 w-9 rounded-md"
           >
             <Link2Icon className="size-4" />
