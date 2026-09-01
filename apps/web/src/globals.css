@@ -177,6 +177,7 @@
   --nocodb: hsl(240 57% 49%);
   --appsmith: hsl(18 100% 59%);
   --flask: hsl(190 100% 30%);
+  --gluetun: hsl(120 85% 20%);
 
   --barrier: hsl(120 30% 4%);
 
@@ -296,6 +297,7 @@
   --nocodb: hsl(240 100% 70%);
   --appsmith: hsl(18 100% 59%);
   --flask: hsl(190 52% 55%);
+  --gluetun: hsl(120 50% 65%);
 
   --barrier: hsl(120 10% 4%);
 
@@ -547,6 +549,7 @@
   --color-nocodb: var(--nocodb);
   --color-appsmith: var(--appsmith);
   --color-flask: var(--flask);
+  --color-gluetun: var(--gluetun);
 
   --color-barrier: var(--barrier);
 

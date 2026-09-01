@@ -251,7 +251,7 @@ export function BlockItemButtonLike({
         // External anchors apply the button styling here since a plain <a> can't
         // take the `variant` prop.
         isLink && buttonVariants({ variant: "outline" }),
-        "group/button flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left data-pending:text-transparent",
+        "group/button bg-input flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left data-pending:text-transparent",
         className,
       )}
       {...(isLink ? { href, target: "_blank", rel: "noopener noreferrer" } : {})}
