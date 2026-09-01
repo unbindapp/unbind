@@ -17,10 +17,10 @@ import (
 // ! If needed a paginated approach is in commit ef4adf6ed6a0411897006586454de97c1d6e8a7f
 // For now we roll without it
 
-// Read user's admin repositories (that they can configure CI/CD on)
-func (self *GithubClient) ReadUserAdminRepositories(ctx context.Context, installations []*ent.GithubInstallation) ([]*GithubRepository, error) {
+// Installation tokens can't verify the requesting user's per-repo permissions, so this returns everything the installations can access.
+func (self *GithubClient) ReadInstallationRepositories(ctx context.Context, installations []*ent.GithubInstallation) ([]*GithubRepository, error) {
 	var mu sync.Mutex
-	allAdminRepos := make([]*GithubRepository, 0)
+	allRepos := make([]*GithubRepository, 0)
 
 	// limit concurrency
 	const maxConcurrency = 3
@@ -44,15 +44,15 @@ func (self *GithubClient) ReadUserAdminRepositories(ctx context.Context, install
 			}
 			defer authenticatedClient.Client().CloseIdleConnections()
 
-			adminRepos, err := self.fetchInstallationRepositories(gctx, authenticatedClient, inst)
+			repos, err := self.fetchInstallationRepositories(gctx, authenticatedClient, inst)
 			if err != nil {
 				return err
 			}
 
 			// Format and add to the result slice in a thread-safe way
-			formattedRepos := formatRepositoryResponse(adminRepos, inst.ID)
+			formattedRepos := formatRepositoryResponse(repos, inst.ID)
 			mu.Lock()
-			allAdminRepos = append(allAdminRepos, formattedRepos...)
+			allRepos = append(allRepos, formattedRepos...)
 			mu.Unlock()
 
 			return nil
@@ -63,13 +63,12 @@ func (self *GithubClient) ReadUserAdminRepositories(ctx context.Context, install
 		return nil, err
 	}
 
-	sortRepositories(allAdminRepos)
+	sortRepositories(allRepos)
 
-	return removeDuplicateRepositories(allAdminRepos), nil
+	return removeDuplicateRepositories(allRepos), nil
 }
 
-// fetchInstallationRepositories lists all repositories the installation was granted access to,
-// including private ones. Installing an app on a repository requires admin rights on it.
+// fetchInstallationRepositories lists all repositories the installation was granted access to, including private ones.
 func (self *GithubClient) fetchInstallationRepositories(ctx context.Context, client *github.Client, inst *ent.GithubInstallation) ([]*github.Repository, error) {
 	repos := make([]*github.Repository, 0)
 	opts := &github.ListOptions{

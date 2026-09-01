@@ -50,20 +50,12 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	}, handlers.HandleListGithubAppInstallations)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "list-admin-organizations",
-		Summary:     "List Admin Organizations",
-		Description: "List admin organizations for a user installation. Not valid for 'Organization' installations.",
-		Path:        "/installation/{installation_id}/organizations",
-		Method:      http.MethodGet,
-	}, handlers.HandleListGithubAdminOrganizations, oapi.OpenWorld)
-
-	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "list-admin-repos",
+		OperationID: "list-repositories",
 		Summary:     "List Repositories",
-		Description: "List repositories the user has admin access to across their installations.",
+		Description: "List all repositories accessible to the user's GitHub app installations. Per-user repository permissions are not verified.",
 		Path:        "/repositories",
 		Method:      http.MethodGet,
-	}, handlers.HandleListGithubAdminRepositories, oapi.OpenWorld)
+	}, handlers.HandleListGithubRepositories, oapi.OpenWorld)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "repo-detail",

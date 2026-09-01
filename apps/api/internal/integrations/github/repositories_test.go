@@ -112,25 +112,25 @@ OA1q6/kbt7BaP4cvSZglhFWqI4RKezuQBhAVZv7kQU10SJ+A9f/E+Q==
 	}
 }
 
-func (suite *RepositoriesTestSuite) TestReadUserAdminRepositories_EmptyInput() {
+func (suite *RepositoriesTestSuite) TestReadInstallationRepositories_EmptyInput() {
 	suite.client = NewGithubClient("https://github.com", suite.cfg)
 
-	repositories, err := suite.client.ReadUserAdminRepositories(suite.ctx, []*ent.GithubInstallation{})
+	repositories, err := suite.client.ReadInstallationRepositories(suite.ctx, []*ent.GithubInstallation{})
 
 	suite.NoError(err)
 	suite.Empty(repositories)
 }
 
-func (suite *RepositoriesTestSuite) TestReadUserAdminRepositories_NilInstallation() {
+func (suite *RepositoriesTestSuite) TestReadInstallationRepositories_NilInstallation() {
 	suite.client = NewGithubClient("https://github.com", suite.cfg)
 
-	repositories, err := suite.client.ReadUserAdminRepositories(suite.ctx, []*ent.GithubInstallation{nil})
+	repositories, err := suite.client.ReadInstallationRepositories(suite.ctx, []*ent.GithubInstallation{nil})
 
 	suite.NoError(err)
 	suite.Empty(repositories)
 }
 
-func (suite *RepositoriesTestSuite) TestReadUserAdminRepositories_InvalidInstallation() {
+func (suite *RepositoriesTestSuite) TestReadInstallationRepositories_InvalidInstallation() {
 	suite.client = NewGithubClient("https://github.com", suite.cfg)
 
 	invalidInstallation := &ent.GithubInstallation{
@@ -140,13 +140,13 @@ func (suite *RepositoriesTestSuite) TestReadUserAdminRepositories_InvalidInstall
 		Edges:       ent.GithubInstallationEdges{}, // Missing GithubApp
 	}
 
-	repositories, err := suite.client.ReadUserAdminRepositories(suite.ctx, []*ent.GithubInstallation{invalidInstallation})
+	repositories, err := suite.client.ReadInstallationRepositories(suite.ctx, []*ent.GithubInstallation{invalidInstallation})
 
 	suite.NoError(err)
 	suite.Empty(repositories)
 }
 
-func (suite *RepositoriesTestSuite) TestReadUserAdminRepositories_IncludesPrivateRepos() {
+func (suite *RepositoriesTestSuite) TestReadInstallationRepositories_IncludesPrivateRepos() {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/api/v3/app/installations/123/access_tokens":
@@ -191,7 +191,7 @@ func (suite *RepositoriesTestSuite) TestReadUserAdminRepositories_IncludesPrivat
 		client: githubClient,
 	}
 
-	repositories, err := client.ReadUserAdminRepositories(suite.ctx, []*ent.GithubInstallation{suite.testInstallation})
+	repositories, err := client.ReadInstallationRepositories(suite.ctx, []*ent.GithubInstallation{suite.testInstallation})
 
 	suite.NoError(err)
 	suite.Len(repositories, 2)

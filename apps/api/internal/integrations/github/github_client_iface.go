@@ -23,8 +23,8 @@ type GithubClientInterface interface {
 	CreateAppManifest(redirectUrl string, setupUrl string, forOrganization bool) (manifest *GitHubAppManifest, appName string, err error)
 	// ManifestCodeConversion gets app configruation from github using the code
 	ManifestCodeConversion(ctx context.Context, code string) (*github.AppConfig, error)
-	// Read user's admin repositories (that they can configure CI/CD on)
-	ReadUserAdminRepositories(ctx context.Context, installations []*ent.GithubInstallation) ([]*GithubRepository, error)
+	// Installation tokens can't verify the requesting user's per-repo permissions, so this returns everything the installations can access.
+	ReadInstallationRepositories(ctx context.Context, installations []*ent.GithubInstallation) ([]*GithubRepository, error)
 	// Get details for a repository
 	GetRepositoryDetail(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (*GithubRepositoryDetail, error)
 	// VerifyRepositoryAccess with resource cleanup
@@ -32,5 +32,4 @@ type GithubClientInterface interface {
 	// Get branch head summary - sha, message, author
 	// GetCommitSummary - get summary for a specific commit or branch head
 	GetCommitSummary(ctx context.Context, installation *ent.GithubInstallation, owner, repo string, branchOrSHA string, isCommitSHA bool) (commitSHA, commitMessage string, committer *schema.GitCommitter, err error)
-	ReadUserAdminOrganizations(ctx context.Context, installation *ent.GithubInstallation) ([]*github.Organization, error)
 }
