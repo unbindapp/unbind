@@ -13,7 +13,7 @@ func gluetunTemplate() *schema.TemplateDefinition {
 		Icon:        "gluetun",
 		Keywords:    []string{"gluetun", "vpn", "proxy", "http proxy", "wireguard", "mullvad", "nordvpn", "protonvpn"},
 		Description: "VPN client with a built-in HTTP proxy for routing other services' traffic.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 0.25,
@@ -150,7 +150,7 @@ func gluetunTemplate() *schema.TemplateDefinition {
 					{
 						Name:      "HTTP_PROXY_URL",
 						Generator: &schema.ValueGenerator{Type: schema.GeneratorTypeStringReplace},
-						Value:     "http://gluetun:${SERVICE_GLUETUN_HTTPPROXY_PASSWORD}@${SERVICE_GLUETUN_KUBE_NAME}.${NAMESPACE}:8888",
+						Value:     "http://gluetun:${SERVICE_GLUETUN_HTTPPROXY_PASSWORD}@${SERVICE_GLUETUN_KUBE_NAME}.${NAMESPACE}.svc.cluster.local:8888",
 					},
 				},
 				SecurityContext: &schema.SecurityContext{
