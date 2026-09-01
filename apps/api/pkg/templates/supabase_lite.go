@@ -42,7 +42,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "minio-data",
+					Name:      "minio-volume",
 					MountPath: "/data",
 				},
 				Description: "Size of the storage for the Supabase storage service.",

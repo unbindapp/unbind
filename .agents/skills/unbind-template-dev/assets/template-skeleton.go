@@ -46,7 +46,7 @@ func myAppTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "myapp-data",
+					Name:      "myapp-volume",
 					MountPath: "/data",
 				},
 				Description: "Disk for MyApp uploads.",

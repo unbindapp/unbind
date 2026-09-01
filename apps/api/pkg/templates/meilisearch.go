@@ -32,7 +32,7 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "meilisearch-data",
+					Name:      "meilisearch-volume",
 					MountPath: "/meili_data",
 				},
 				Description: "Size of the storage for the Meilisearch data.",

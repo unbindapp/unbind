@@ -335,7 +335,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                     >
                       {({ isOpen }) => (
                         <BlockItemButtonLike
-                          className="absolute top-1 right-1.25 z-10 w-24 gap-1 rounded-md px-2 py-1.5 font-mono text-sm"
+                          className="bg-background absolute top-1 right-1.25 z-10 w-24 gap-1 rounded-md px-2 py-1.5 font-mono text-sm"
                           asElement="button"
                           text={field.state.value}
                           Icon={({ className }) => (

@@ -21,7 +21,7 @@ func TestResolveTemplate(t *testing.T) {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "test-data",
+					Name:      "test-volume",
 					MountPath: "/data",
 				},
 				Description: "Size of the storage for the test data.",
@@ -136,7 +136,7 @@ func TestResolveTemplate(t *testing.T) {
 	// Verify volume resolution
 	require.Len(t, service.Volumes, 1)
 	volume := service.Volumes[0]
-	assert.Equal(t, "test-data", volume.Name)
+	assert.Equal(t, "test-volume", volume.Name)
 	assert.Equal(t, "2Gi", volume.CapacityGB)
 	assert.Equal(t, "/data", volume.MountPath)
 }
@@ -165,7 +165,7 @@ func TestResolveTemplateFractionalStorageSizes(t *testing.T) {
 					Name: "Storage Size",
 					Type: schema.InputTypeVolumeSize,
 					Volume: &schema.TemplateVolume{
-						Name:      "test-data",
+						Name:      "test-volume",
 						MountPath: "/data",
 					},
 					Required: true,

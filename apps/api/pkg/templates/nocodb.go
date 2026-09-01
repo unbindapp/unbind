@@ -41,7 +41,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "nocodb-data",
+					Name:      "nocodb-volume",
 					MountPath: "/usr/app/data/",
 				},
 				Description: "Size of the storage for NocoDB data.",

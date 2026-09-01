@@ -44,7 +44,7 @@ func teableTemplate() *schema.TemplateDefinition {
 				Default:     new("1"),
 				Collapsed:   true,
 				Volume: &schema.TemplateVolume{
-					Name:      "teable-data",
+					Name:      "teable-volume",
 					MountPath: "/app/.assets",
 				},
 			},

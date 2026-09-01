@@ -59,7 +59,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "convex-data",
+					Name:      "convex-volume",
 					MountPath: "/convex/data",
 				},
 				Description: "Disk for file storage, exports, and indexes.",

@@ -31,7 +31,7 @@ func appsmithTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "stacks-data",
+					Name:      "stacks-volume",
 					MountPath: "/appsmith-stacks",
 				},
 				Description: "Size of the storage for the Appsmith data.",

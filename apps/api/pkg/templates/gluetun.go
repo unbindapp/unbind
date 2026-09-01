@@ -23,7 +23,7 @@ func gluetunTemplate() *schema.TemplateDefinition {
 				ID:          "input_vpn_provider",
 				Name:        "VPN Provider",
 				Type:        schema.InputTypeVariable,
-				Description: "VPN service provider, e.g. protonvpn, mullvad, nordvpn, airvpn (see gluetun wiki).",
+				Description: `VPN service provider (e.g. "protonvpn").`,
 				Required:    true,
 			},
 			{
@@ -37,7 +37,7 @@ func gluetunTemplate() *schema.TemplateDefinition {
 				ID:          "input_wireguard_addresses",
 				Name:        "WireGuard Addresses",
 				Type:        schema.InputTypeVariable,
-				Description: "Tunnel IP(s) assigned by your provider, e.g. 10.64.222.21/32.",
+				Description: `Tunnel IP(s) assigned by your provider (e.g. "10.0.0.1/32").`,
 				Required:    true,
 			},
 			{
@@ -45,10 +45,10 @@ func gluetunTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "gluetun-data",
+					Name:      "gluetun-volume",
 					MountPath: "/gluetun",
 				},
-				Description: "Size of the storage for gluetun server data.",
+				Description: "Size of the storage for Gluetun server data.",
 				Required:    true,
 				Default:     new("1"),
 			},
@@ -67,8 +67,10 @@ func gluetunTemplate() *schema.TemplateDefinition {
 				},
 				Image: new("qmcgaw/gluetun:v3.41.3"),
 				Resources: &schema.Resources{
-					CPURequestsMillicores: 20,
-					CPULimitsMillicores:   400,
+					CPURequestsMillicores:   50,
+					CPULimitsMillicores:     1000,
+					MemoryRequestsMegabytes: 50,
+					MemoryLimitsMegabytes:   2000,
 				},
 				Ports: []schema.PortSpec{
 					{

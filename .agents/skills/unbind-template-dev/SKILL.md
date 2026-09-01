@@ -155,14 +155,14 @@ A database service auto-exposes these variables for other services to reference:
 Inputs render as the deploy form. Each is keyed by `ID` and attached to services via the
 service's `InputIDs`. Types (full table in [references/inputs-and-generators.md](references/inputs-and-generators.md)):
 
-| Type | Renders as | Notes |
-|------|-----------|-------|
-| `InputTypeHost` | Domain field | Routes ingress. `TargetPort` picks which service port. |
-| `InputTypeVolumeSize` | Storage slider | **`Volume` field required** (Name + MountPath). Appends a volume to the service. |
-| `InputTypeDatabaseSize` | Storage slider | Sets `DatabaseConfig.StorageSize` on the DB service. |
-| `InputTypeGeneratedNodePort` | (hidden/host) | Appends a NodePort to the service. |
-| `InputTypeGeneratedPassword` | hidden | A password generated once at deploy, reusable across services via `${INPUT_<ID>_VALUE}`. |
-| `InputTypeVariable` | Text field | Plain user value. |
+| Type                         | Renders as     | Notes                                                                                    |
+| ---------------------------- | -------------- | ---------------------------------------------------------------------------------------- |
+| `InputTypeHost`              | Domain field   | Routes ingress. `TargetPort` picks which service port.                                   |
+| `InputTypeVolumeSize`        | Storage slider | **`Volume` field required** (Name + MountPath). Appends a volume to the service.         |
+| `InputTypeDatabaseSize`      | Storage slider | Sets `DatabaseConfig.StorageSize` on the DB service.                                     |
+| `InputTypeGeneratedNodePort` | (hidden/host)  | Appends a NodePort to the service.                                                       |
+| `InputTypeGeneratedPassword` | hidden         | A password generated once at deploy, reusable across services via `${INPUT_<ID>_VALUE}`. |
+| `InputTypeVariable`          | Text field     | Plain user value.                                                                        |
 
 ```go
 Inputs: []schema.TemplateInput{
@@ -172,7 +172,7 @@ Inputs: []schema.TemplateInput{
 	},
 	{
 		ID: "input_storage_size", Name: "Storage Size", Type: schema.InputTypeVolumeSize,
-		Volume:      &schema.TemplateVolume{Name: "myapp-data", MountPath: "/data"},
+		Volume:      &schema.TemplateVolume{Name: "myapp-volume", MountPath: "/data"},
 		Description: "Disk for MyApp.", Required: true, Default: utils.ToPtr("1"),
 	},
 }
@@ -259,7 +259,11 @@ Add a block before the final `return <BanIcon ... />` fallback:
 ```tsx
 if (brand === "myapp") {
   return (
-    <svg className={cn(defaultClassName, className)} viewBox="0 0 24 24" {...rest}>
+    <svg
+      className={cn(defaultClassName, className)}
+      viewBox="0 0 24 24"
+      {...rest}
+    >
       <path d="..." />
     </svg>
   );

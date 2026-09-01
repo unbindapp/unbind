@@ -31,7 +31,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "flowise-data",
+					Name:      "flowise-volume",
 					MountPath: "/root/.flowise",
 				},
 				Description: "Size of the storage for the Flowise app data.",

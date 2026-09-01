@@ -31,7 +31,7 @@ func pocketBaseTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "pb-data",
+					Name:      "pocketbase-volume",
 					MountPath: "/pb_data",
 				},
 				Description: "Size of the storage for the PocketBase data.",
