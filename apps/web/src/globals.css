@@ -303,11 +303,9 @@
   --opacity-shadow: 60%;
 }
 
-/* skeleton-weaker enters through an opacity transition that must land exactly
-   on its 0% keyframe as its delay expires, so both share these values */
 :root {
-  --skeleton-weaker-opacity: 25%;
-  --skeleton-weaker-lead-in: 300ms;
+  --skeleton-smooth-opacity: 25%;
+  --skeleton-smooth-lead-in: 250ms;
 }
 
 @theme {
@@ -316,7 +314,7 @@
   --animate-pulse: initial;
   --animate-bounce: initial;
   --animate-skeleton: skeleton 1.25s ease-in-out infinite;
-  --animate-skeleton-weaker: skeleton-weaker 1.25s ease-in-out var(--skeleton-weaker-lead-in)
+  --animate-skeleton-smooth: skeleton-smooth 1.25s ease-in-out var(--skeleton-smooth-lead-in)
     infinite;
   --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
   --animate-ping: ping 1s ease-in-out infinite;
@@ -346,25 +344,25 @@
 
   @keyframes skeleton {
     0% {
-      opacity: 40%;
-    }
-    50% {
       opacity: 20%;
     }
-    100% {
+    50% {
       opacity: 40%;
+    }
+    100% {
+      opacity: 20%;
     }
   }
 
-  @keyframes skeleton-weaker {
+  @keyframes skeleton-smooth {
     0% {
-      opacity: var(--skeleton-weaker-opacity);
+      opacity: var(--skeleton-smooth-opacity);
     }
     50% {
       opacity: 50%;
     }
     100% {
-      opacity: var(--skeleton-weaker-opacity);
+      opacity: var(--skeleton-smooth-opacity);
     }
   }
 
