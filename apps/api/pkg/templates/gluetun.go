@@ -135,7 +135,8 @@ func gluetunTemplate() *schema.TemplateDefinition {
 					{
 						Name: "HTTPPROXY_PASSWORD",
 						Generator: &schema.ValueGenerator{
-							Type: schema.GeneratorTypePassword,
+							Type:     schema.GeneratorTypePassword,
+							HashType: utils.ToPtr(schema.ValueHashTypeSHA256),
 						},
 					},
 					{
