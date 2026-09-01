@@ -71,7 +71,8 @@ func (self *DeploymentService) AttachInstanceDataToServices(ctx context.Context,
 		}
 
 		statuses := serviceStatuses[service.ID]
-		instanceData := self.calculateInstanceData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment)
+		isDatabase := service.Type == schema.ServiceTypeDatabase
+		instanceData := self.calculateInstanceData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment, isDatabase)
 		self.applyDatabaseCRStatus(ctx, service, namespace, instanceData)
 		result[service.ID] = instanceData
 	}
@@ -80,7 +81,7 @@ func (self *DeploymentService) AttachInstanceDataToServices(ctx context.Context,
 }
 
 // calculateInstanceData processes pod statuses to determine deployment status and events
-func (self *DeploymentService) calculateInstanceData(statuses []k8s.PodContainerStatus, expectedReplicas int32, currentDeployment *ent.Deployment) *ServiceInstanceData {
+func (self *DeploymentService) calculateInstanceData(statuses []k8s.PodContainerStatus, expectedReplicas int32, currentDeployment *ent.Deployment, isDatabase bool) *ServiceInstanceData {
 	if currentDeployment != nil && currentDeployment.Status == schema.DeploymentStatusRemoved {
 		return &ServiceInstanceData{
 			Status:          schema.DeploymentStatusRemoved,
@@ -93,11 +94,13 @@ func (self *DeploymentService) calculateInstanceData(statuses []k8s.PodContainer
 	crashingReasons := []string{}
 	restartCount := int32(0)
 
-	// gated on the label existing: some database operators don't propagate it to pods
+	// gated on the label existing: some database operators don't propagate it to pods,
+	// and those that do never refresh it, so the deployment id goes stale. Database
+	// rollout progress comes from the CR condition in applyDatabaseCRStatus instead.
 	countedStatuses := statuses
 	staleEvents := []models.EventRecord{}
 	noCurrentPods := false
-	if currentDeployment != nil && anyPodHasDeploymentLabel(statuses) {
+	if currentDeployment != nil && !isDatabase && anyPodHasDeploymentLabel(statuses) {
 		countedStatuses = make([]k8s.PodContainerStatus, 0, len(statuses))
 		for _, status := range statuses {
 			if status.DeploymentID == currentDeployment.ID {
@@ -236,8 +239,10 @@ func (self *DeploymentService) applyDatabaseCRStatus(ctx context.Context, servic
 
 	switch condition.Reason {
 	case unbindv1.DatabaseReasonFailed:
+		// A running cluster keeps serving through non-fatal sync hiccups (Zalando reports
+		// SyncFailed/UpdateFailed for these), so surface the message but don't fail Active.
 		data.StatusMessage = condition.Message
-		if data.Status == schema.DeploymentStatusActive || data.Status == schema.DeploymentStatusLaunching {
+		if data.Status == schema.DeploymentStatusLaunching {
 			data.Status = schema.DeploymentStatusLaunchError
 		}
 	case unbindv1.DatabaseReasonProgressing:

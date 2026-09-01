@@ -99,9 +99,12 @@ spec:
         unbind/usd-type: {{ .Definition.Type | quote }}
         unbind/usd-version: {{ .Definition.Version | quote }}
         unbind/usd-category: databases
-        # Propagate custom labels to pods
+        # Propagate custom labels to pods. unbind-deployment is excluded: it changes
+        # every deploy and would roll the pods on the podTemplate change each time.
 {{- range $k, $v := $labels }}
+{{- if ne $k "unbind-deployment" }}
         {{ $k }}: {{ $v | quote }}
+{{- end }}
 {{- end }}
     spec:
       containers:

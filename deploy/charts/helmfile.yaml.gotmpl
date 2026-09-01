@@ -387,12 +387,14 @@ releases:
             memory: 50Mi
         configKubernetes:
           enable_persistent_volume_claim_deletion: false
+          # unbind-deployment is intentionally excluded: the operator never updates CR
+          # labels after creation, so pods would carry a permanently stale deployment id
+          # and every rollout would look stuck. Matches the redis/clickhouse definitions.
           inherited_labels:
             - unbind-team
             - unbind-project
             - unbind-environment
             - unbind-service
-            - unbind-deployment
             - unbind-is-system-db
             - app.kubernetes.io/managed-by
             - app.kubernetes.io/name

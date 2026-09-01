@@ -120,7 +120,7 @@ func (self *DeploymentService) AttachInstanceDataToCurrent(ctx context.Context, 
 	}
 
 	// Use the standard utility to calculate instance data with inferred events
-	instanceData := self.calculateInstanceData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment)
+	instanceData := self.calculateInstanceData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment, service.Type == schema.ServiceTypeDatabase)
 	self.applyDatabaseCRStatus(ctx, service, namespace, instanceData)
 
 	// Attach data to deployment responses using the shared utility

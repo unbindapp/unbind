@@ -58,6 +58,7 @@ func TestCalculateInstanceData(t *testing.T) {
 		statuses         []k8s.PodContainerStatus
 		expectedReplicas int32
 		deployment       *ent.Deployment
+		isDatabase       bool
 		expectedStatus   schema.DeploymentStatus
 		expectedEvents   int
 		expectReason     bool
@@ -102,6 +103,15 @@ func TestCalculateInstanceData(t *testing.T) {
 			expectedStatus:   schema.DeploymentStatusLaunchError,
 			expectedEvents:   1,
 			expectReason:     true,
+		},
+		{
+			name:             "database ignores stale deployment label past grace",
+			statuses:         []k8s.PodContainerStatus{podStatus(staleID, k8s.ContainerStateRunning, true, false)},
+			expectedReplicas: 1,
+			deployment:       currentDeployment(old),
+			isDatabase:       true,
+			expectedStatus:   schema.DeploymentStatusActive,
+			expectedEvents:   1,
 		},
 		{
 			name:             "stale crashing pod past grace is launch error not crashing",
@@ -155,7 +165,7 @@ func TestCalculateInstanceData(t *testing.T) {
 	svc := &DeploymentService{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := svc.calculateInstanceData(tt.statuses, tt.expectedReplicas, tt.deployment)
+			result := svc.calculateInstanceData(tt.statuses, tt.expectedReplicas, tt.deployment, tt.isDatabase)
 
 			assert.Equal(t, tt.expectedStatus, result.Status)
 			assert.Len(t, result.InstanceEvents, tt.expectedEvents)
@@ -189,11 +199,11 @@ func TestApplyDatabaseCRStatus(t *testing.T) {
 		expectedMessage string
 	}{
 		{
-			name:            "failed release overrides active",
+			name:            "failed release keeps active running with message",
 			service:         dbService,
 			crStatus:        statusWith(unbindv1.DatabaseReasonFailed, "upgrade retries exhausted"),
 			initialStatus:   schema.DeploymentStatusActive,
-			expectedStatus:  schema.DeploymentStatusLaunchError,
+			expectedStatus:  schema.DeploymentStatusActive,
 			expectedMessage: "upgrade retries exhausted",
 		},
 		{

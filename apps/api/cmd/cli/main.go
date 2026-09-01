@@ -97,6 +97,9 @@ func main() {
 	email := userCreateFlagSet.String("email", "", "Email for the new user")
 	password := userCreateFlagSet.String("password", "", "Password for the new user")
 
+	changePasswordEmail := userChangePasswordFlagSet.String("email", "", "Email of the user")
+	changePasswordPassword := userChangePasswordFlagSet.String("password", "", "New password for the user")
+
 	groupName := groupCreateFlagSet.String("name", "", "Name of the group")
 	groupDescription := groupCreateFlagSet.String("description", "", "Description of the group")
 
@@ -144,12 +147,12 @@ func main() {
 		FlagSet:     userChangePasswordFlagSet,
 		Handler: func() {
 			_ = userChangePasswordFlagSet.Parse(os.Args[2:])
-			if *email == "" || *password == "" {
+			if *changePasswordEmail == "" || *changePasswordPassword == "" {
 				fmt.Println("Error: email and password are required")
 				userChangePasswordFlagSet.Usage()
 				os.Exit(1)
 			}
-			cli.changeUserPassword(*email, *password)
+			cli.changeUserPassword(*changePasswordEmail, *changePasswordPassword)
 		},
 	}
 

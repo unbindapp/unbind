@@ -14,9 +14,11 @@ commonLabels:
 # readiness by the unbind-service label, so the pods need it. Only emit unbind-*
 # keys — the chart already sets app.kubernetes.io/* on the pod template, and
 # re-emitting them here produces duplicate map keys that break post-render.
+# unbind-deployment is excluded: it changes every deploy and would roll the pods
+# on the podTemplate change each time.
 podLabels:
   {{- range $key, $value := .Parameters.labels }}
-  {{- if hasPrefix "unbind" $key }}
+  {{- if and (hasPrefix "unbind" $key) (ne $key "unbind-deployment") }}
   {{ $key }}: {{ $value | quote }}
   {{- end }}
   {{- end }}
