@@ -205,6 +205,7 @@ type TBlockItemButtonLikeProps = {
   href?: string;
   classNameText?: string;
   classNameChevron?: string;
+  classNameContent?: string;
   classNameIcon?: string;
   SuffixComponent?: FC<{ className?: string }>;
 } & (
@@ -232,6 +233,7 @@ export function BlockItemButtonLike({
   classNameText,
   classNameChevron,
   classNameIcon,
+  classNameContent,
   hideChevron,
   href,
   SuffixComponent,
@@ -260,7 +262,12 @@ export function BlockItemButtonLike({
         : {})}
       {...props}
     >
-      <div className="group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2">
+      <div
+        className={cn(
+          "group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2",
+          classNameContent,
+        )}
+      >
         {asElement === "LinkButton" && href !== undefined && Icon ? (
           <div
             className={cn(

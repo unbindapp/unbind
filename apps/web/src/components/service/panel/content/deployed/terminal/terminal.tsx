@@ -154,6 +154,7 @@ export default function Terminal() {
                   className={compactTriggerClassName}
                   classNameChevron="size-4"
                   classNameIcon="size-3.5 -ml-0.5"
+                  classNameContent="items-center"
                 />
               )}
             </DropdownSelect>
