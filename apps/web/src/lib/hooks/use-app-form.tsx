@@ -29,15 +29,57 @@ import { cn } from "@/components/ui/utils";
 import { appLocale } from "@/lib/constants";
 import {
   AnyFieldApi,
+  AnyFormApi,
   createFormHook,
   createFormHookContexts,
+  FormAsyncValidateOrFn,
+  FormOptions,
+  FormValidateOrFn,
   useStore,
 } from "@tanstack/react-form";
 import { CheckIcon, RotateCcwIcon } from "lucide-react";
-import { FC, lazy, ReactElement, Suspense, useCallback, useMemo, useRef, useState } from "react";
+import {
+  FC,
+  lazy,
+  ReactElement,
+  Suspense,
+  useCallback,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { z } from "zod";
 
 const { fieldContext, formContext } = createFormHookContexts();
+
+// Keyed by the form's store: useForm returns a spread copy of the FormApi,
+// so the store is the only object shared by reference with each field's `field.form`
+const formDomIds = new WeakMap<AnyFormApi["store"], string>();
+
+function scrollToFirstInvalidField(formDomId: string) {
+  requestAnimationFrame(() => {
+    const element = document.querySelector<HTMLElement>(
+      `[data-form-id="${formDomId}"][data-invalid]`,
+    );
+    if (!element) return;
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
+    element
+      .querySelector<HTMLElement>("input, textarea, select, button, [tabindex]")
+      ?.focus({ preventScroll: true });
+  });
+}
+
+function useFieldError(field: AnyFieldApi, dontCheckUntilSubmit?: boolean) {
+  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
+  const isFormSubmitted = submissionAttempts > 0;
+  const hasError =
+    (field.state.meta.isTouched || isFormSubmitted) &&
+    (field.state.meta.isBlurred || isFormSubmitted) &&
+    (!dontCheckUntilSubmit || isFormSubmitted) &&
+    field.state.meta.errors.length > 0;
+  return { hasError, formDomId: formDomIds.get(field.form.store) };
+}
 
 type TFieldProps = {
   field: AnyFieldApi;
@@ -62,13 +104,16 @@ function InputWithInfo({
   classNameIcon,
   ...rest
 }: TInputWithInfoProps) {
-  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
-  const isFormSubmitted = submissionAttempts > 0;
+  const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
   const ref = useRef<HTMLInputElement>(null);
   const inputRef = rest.ref || ref;
 
   return (
-    <div className={cn("relative flex flex-col", className)}>
+    <div
+      data-form-id={formDomId}
+      data-invalid={hasError || undefined}
+      className={cn("relative flex flex-col", className)}
+    >
       {Icon && (
         <Icon
           className={cn("pointer-events-none absolute top-3 left-3.5 size-4.5", classNameIcon)}
@@ -77,6 +122,7 @@ function InputWithInfo({
       <Input
         ref={inputRef}
         {...rest}
+        aria-invalid={hasError || undefined}
         data-show-undo={showUndo || undefined}
         className={cn("w-full data-show-undo:pr-11", Icon && "pl-10", classNameInput)}
       />
@@ -93,11 +139,7 @@ function InputWithInfo({
           <RotateCcwIcon className="size-4.5" />
         </Button>
       )}
-      {!hideError &&
-      (field.state.meta.isTouched || isFormSubmitted) &&
-      (field.state.meta.isBlurred || isFormSubmitted) &&
-      (!dontCheckUntilSubmit || isFormSubmitted) &&
-      field.state.meta.errors.length ? (
+      {!hideError && hasError ? (
         <ErrorLine
           className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
@@ -126,20 +168,20 @@ function TokenFieldWithInfo({
   dontCheckUntilSubmit,
   ...rest
 }: TTokenFieldProps & TFieldProps) {
-  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
-  const isFormSubmitted = submissionAttempts > 0;
+  const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
 
   if (hideError) {
     return <TokenField {...rest} className={cn("w-full", className, classNameInput)} />;
   }
 
   return (
-    <div className={cn("flex flex-col", className)}>
+    <div
+      data-form-id={formDomId}
+      data-invalid={hasError || undefined}
+      className={cn("flex flex-col", className)}
+    >
       <TokenField {...rest} className={cn("w-full", classNameInput)} />
-      {(field.state.meta.isTouched || isFormSubmitted) &&
-      (field.state.meta.isBlurred || isFormSubmitted) &&
-      (!dontCheckUntilSubmit || isFormSubmitted) &&
-      field.state.meta.errors.length ? (
+      {hasError ? (
         <ErrorLine
           className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
@@ -168,8 +210,7 @@ function DomainInput({
   classNameIcon,
   ...rest
 }: TDomainInputWithInfoProps) {
-  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
-  const isFormSubmitted = submissionAttempts > 0;
+  const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
 
   const showCardType =
     autoGeneratedDomain !== undefined && field.state.value === autoGeneratedDomain
@@ -181,7 +222,11 @@ function DomainInput({
   const ref = useRef<HTMLInputElement>(null);
 
   return (
-    <div className={cn("relative flex flex-col", className)}>
+    <div
+      data-form-id={formDomId}
+      data-invalid={hasError || undefined}
+      className={cn("relative flex flex-col", className)}
+    >
       {Icon && (
         <Icon
           className={cn("pointer-events-none absolute top-3 left-3.5 z-11 size-4.5", classNameIcon)}
@@ -190,6 +235,7 @@ function DomainInput({
       <Input
         ref={ref}
         {...rest}
+        aria-invalid={hasError || undefined}
         data-show-reset={showReset || undefined}
         data-show-generated={showCardType === "auto-generated" || undefined}
         className={cn(
@@ -217,11 +263,7 @@ function DomainInput({
       {!rest.disabled && showCardType === "auto-generated" && (
         <AutoGeneratedDomainIndicator className="absolute top-4 right-1.25 z-10" />
       )}
-      {!hideError &&
-      (field.state.meta.isTouched || isFormSubmitted) &&
-      (field.state.meta.isBlurred || isFormSubmitted) &&
-      (!dontCheckUntilSubmit || isFormSubmitted) &&
-      field.state.meta.errors.length ? (
+      {!hideError && hasError ? (
         <ErrorLine
           className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
@@ -265,8 +307,7 @@ function StorageSizeInput({
   hideMinMax,
   ...rest
 }: TSliderWithInfoProps) {
-  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
-  const isFormSubmitted = submissionAttempts > 0;
+  const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
   const classNameMinMax = "min-w-0 text-muted-foreground shrink leading-tight text-xs font-medium";
 
   const Min = useCallback(() => {
@@ -288,7 +329,11 @@ function StorageSizeInput({
   }, [classNameMinMax, classNameMax, minMaxFormatter, rest.max, hideMinMax]);
 
   return (
-    <div className={cn("flex flex-col", className)}>
+    <div
+      data-form-id={formDomId}
+      data-invalid={hasError || undefined}
+      className={cn("flex flex-col", className)}
+    >
       <div className="flex w-full gap-3">
         <Min />
         {/* Callers pass `value={x ? [x] : undefined}`; falling back to defaultValue
@@ -300,11 +345,7 @@ function StorageSizeInput({
         />
         <Max />
       </div>
-      {!hideError &&
-      (field.state.meta.isTouched || isFormSubmitted) &&
-      (field.state.meta.isBlurred || isFormSubmitted) &&
-      (!dontCheckUntilSubmit || isFormSubmitted) &&
-      field.state.meta.errors.length ? (
+      {!hideError && hasError ? (
         <ErrorLine
           className={cn("mt-1 bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
@@ -367,8 +408,7 @@ function AsyncAndSearchableSelect({
   commandInputValueOnChange,
   commandShouldntFilter,
 }: TAsyncAndSearchableSelectProps) {
-  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
-  const isFormSubmitted = submissionAttempts > 0;
+  const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
 
   const [isOpen, setIsOpen] = useState(false);
   const [commandValue, setCommandValue] = useState(value);
@@ -382,7 +422,11 @@ function AsyncAndSearchableSelect({
   }, [isPending, commandShouldntFilter]);
 
   return (
-    <div className={cn("flex flex-col", className)}>
+    <div
+      data-form-id={formDomId}
+      data-invalid={hasError || undefined}
+      className={cn("flex flex-col", className)}
+    >
       {TriggerWrapper ? (
         <TriggerWrapper isOpen={isOpen} setIsOpen={setIsOpen}>
           {children({ isOpen })}
@@ -467,11 +511,7 @@ function AsyncAndSearchableSelect({
           </PopoverContent>
         </Popover>
       )}
-      {!hideError &&
-      (field.state.meta.isTouched || isFormSubmitted) &&
-      (field.state.meta.isBlurred || isFormSubmitted) &&
-      (!dontCheckUntilSubmit || isFormSubmitted) &&
-      field.state.meta.errors.length ? (
+      {!hideError && hasError ? (
         <ErrorLine
           className={cn("mt-1 bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
@@ -522,8 +562,7 @@ function AsyncInputWithItems({
   placeholder,
   commandFilter,
 }: TAsyncInputWithItemsProps) {
-  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
-  const isFormSubmitted = submissionAttempts > 0;
+  const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
 
   const [isOpen, setIsOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -531,7 +570,11 @@ function AsyncInputWithItems({
   const [commandInputValue, setCommandInputValue] = useState(String(value));
 
   return (
-    <div className={cn("flex flex-col", className)}>
+    <div
+      data-form-id={formDomId}
+      data-invalid={hasError || undefined}
+      className={cn("flex flex-col", className)}
+    >
       <Popover
         open={isOpen}
         onOpenChange={(o) => {
@@ -658,11 +701,7 @@ function AsyncInputWithItems({
           </PopoverContent>
         </Command>
       </Popover>
-      {!hideError &&
-      (field.state.meta.isTouched || isFormSubmitted) &&
-      (field.state.meta.isBlurred || isFormSubmitted) &&
-      (!dontCheckUntilSubmit || isFormSubmitted) &&
-      field.state.meta.errors.length ? (
+      {!hideError && hasError ? (
         <ErrorLine
           className={cn("mt-1 bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
@@ -708,14 +747,17 @@ function AsyncDropdownMenu({
   dropdownMenuContentAlign,
   children,
 }: TAsyncDropdownMenuProps) {
-  const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
-  const isFormSubmitted = submissionAttempts > 0;
+  const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
 
   const [isOpen, setIsOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className={cn("flex flex-col", className)}>
+    <div
+      data-form-id={formDomId}
+      data-invalid={hasError || undefined}
+      className={cn("flex flex-col", className)}
+    >
       <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
         <DropdownMenuTrigger render={children({ isOpen })} />
         <DropdownMenuContent
@@ -776,11 +818,7 @@ function AsyncDropdownMenu({
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
-      {!hideError &&
-      (field.state.meta.isTouched || isFormSubmitted) &&
-      (field.state.meta.isBlurred || isFormSubmitted) &&
-      (!dontCheckUntilSubmit || isFormSubmitted) &&
-      field.state.meta.errors.length ? (
+      {!hideError && hasError ? (
         <ErrorLine
           className={cn("mt-1 bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
@@ -790,7 +828,7 @@ function AsyncDropdownMenu({
   );
 }
 
-export const { useAppForm, withForm } = createFormHook({
+const { useAppForm: useAppFormBase, withForm } = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
     AsyncInputWithItems,
@@ -806,5 +844,48 @@ export const { useAppForm, withForm } = createFormHook({
   fieldContext,
   formContext,
 });
+
+export function useAppForm<
+  TFormData,
+  TOnMount extends undefined | FormValidateOrFn<TFormData>,
+  TOnChange extends undefined | FormValidateOrFn<TFormData>,
+  TOnChangeAsync extends undefined | FormAsyncValidateOrFn<TFormData>,
+  TOnBlur extends undefined | FormValidateOrFn<TFormData>,
+  TOnBlurAsync extends undefined | FormAsyncValidateOrFn<TFormData>,
+  TOnSubmit extends undefined | FormValidateOrFn<TFormData>,
+  TOnSubmitAsync extends undefined | FormAsyncValidateOrFn<TFormData>,
+  TOnDynamic extends undefined | FormValidateOrFn<TFormData>,
+  TOnDynamicAsync extends undefined | FormAsyncValidateOrFn<TFormData>,
+  TOnServer extends undefined | FormAsyncValidateOrFn<TFormData>,
+  TSubmitMeta,
+>(
+  options: FormOptions<
+    TFormData,
+    TOnMount,
+    TOnChange,
+    TOnChangeAsync,
+    TOnBlur,
+    TOnBlurAsync,
+    TOnSubmit,
+    TOnSubmitAsync,
+    TOnDynamic,
+    TOnDynamicAsync,
+    TOnServer,
+    TSubmitMeta
+  >,
+) {
+  const formDomId = useId();
+  const form = useAppFormBase({
+    ...options,
+    onSubmitInvalid: (props) => {
+      scrollToFirstInvalidField(formDomId);
+      options.onSubmitInvalid?.(props);
+    },
+  });
+  formDomIds.set(form.store, formDomId);
+  return form;
+}
+
+export { withForm };
 
 export const DomainFieldSchema = z.string().url();
