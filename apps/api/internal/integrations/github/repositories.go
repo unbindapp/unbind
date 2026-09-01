@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/go-github/v69/github"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"golang.org/x/sync/errgroup"
@@ -45,19 +44,7 @@ func (self *GithubClient) ReadUserAdminRepositories(ctx context.Context, install
 			}
 			defer authenticatedClient.Client().CloseIdleConnections()
 
-			// Process repositories with proper pagination
-			var adminRepos []*github.Repository
-
-			if inst.AccountType == githubinstallation.AccountTypeOrganization {
-				repos, e := self.fetchOrganizationAdminRepos(gctx, authenticatedClient, inst)
-				adminRepos = repos
-				err = e
-			} else {
-				repos, e := self.fetchUserAdminRepos(gctx, authenticatedClient, inst)
-				adminRepos = repos
-				err = e
-			}
-
+			adminRepos, err := self.fetchInstallationRepositories(gctx, authenticatedClient, inst)
 			if err != nil {
 				return err
 			}
@@ -81,14 +68,12 @@ func (self *GithubClient) ReadUserAdminRepositories(ctx context.Context, install
 	return removeDuplicateRepositories(allAdminRepos), nil
 }
 
-// fetchUserAdminRepos fetches all admin repositories for a user with proper pagination and memory limits
-func (self *GithubClient) fetchUserAdminRepos(ctx context.Context, client *github.Client, inst *ent.GithubInstallation) ([]*github.Repository, error) {
-	adminRepos := make([]*github.Repository, 0)
-	opts := &github.RepositoryListByUserOptions{
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-		Sort: "updated",
+// fetchInstallationRepositories lists all repositories the installation was granted access to,
+// including private ones. Installing an app on a repository requires admin rights on it.
+func (self *GithubClient) fetchInstallationRepositories(ctx context.Context, client *github.Client, inst *ent.GithubInstallation) ([]*github.Repository, error) {
+	repos := make([]*github.Repository, 0)
+	opts := &github.ListOptions{
+		PerPage: 100,
 	}
 
 	for {
@@ -98,32 +83,12 @@ func (self *GithubClient) fetchUserAdminRepos(ctx context.Context, client *githu
 		default:
 		}
 
-		ghRepositories, resp, err := client.Repositories.ListByUser(ctx, inst.AccountLogin, opts)
+		result, resp, err := client.Apps.ListRepos(ctx, opts)
 		if err != nil {
-			return nil, fmt.Errorf("error getting repositories for user %s: %v", inst.AccountLogin, err)
+			return nil, fmt.Errorf("error getting repositories for installation %s: %v", inst.AccountLogin, err)
 		}
 
-		for _, repo := range ghRepositories {
-			isAdmin := false
-
-			if inst.AccountType == githubinstallation.AccountTypeUser {
-				if repo.GetOwner().GetID() == inst.AccountID {
-					isAdmin = true
-				}
-			}
-
-			if !isAdmin {
-				if perms := repo.GetPermissions(); perms != nil {
-					if admin, ok := perms["admin"]; ok && admin {
-						isAdmin = true
-					}
-				}
-			}
-
-			if isAdmin {
-				adminRepos = append(adminRepos, repo)
-			}
-		}
+		repos = append(repos, result.Repositories...)
 
 		if resp.NextPage == 0 {
 			break
@@ -132,46 +97,7 @@ func (self *GithubClient) fetchUserAdminRepos(ctx context.Context, client *githu
 		opts.Page = resp.NextPage
 	}
 
-	return adminRepos, nil
-}
-
-func (self *GithubClient) fetchOrganizationAdminRepos(ctx context.Context, client *github.Client, inst *ent.GithubInstallation) ([]*github.Repository, error) {
-	adminRepos := make([]*github.Repository, 0)
-	opts := &github.RepositoryListByOrgOptions{
-		ListOptions: github.ListOptions{
-			PerPage: 100,
-		},
-		Sort: "updated",
-	}
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		default:
-		}
-
-		ghRepositories, resp, err := client.Repositories.ListByOrg(ctx, inst.AccountLogin, opts)
-		if err != nil {
-			return nil, fmt.Errorf("error getting repositories for user %s: %v", inst.AccountLogin, err)
-		}
-
-		for _, repo := range ghRepositories {
-			// TODO: Check if the user is an admin
-			isAdmin := true
-			if isAdmin {
-				adminRepos = append(adminRepos, repo)
-			}
-		}
-
-		if resp.NextPage == 0 {
-			break
-		}
-
-		opts.Page = resp.NextPage
-	}
-
-	return adminRepos, nil
+	return repos, nil
 }
 
 // Sort repositories sorts by updated field

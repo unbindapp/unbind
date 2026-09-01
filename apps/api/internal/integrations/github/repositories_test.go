@@ -146,6 +146,61 @@ func (suite *RepositoriesTestSuite) TestReadUserAdminRepositories_InvalidInstall
 	suite.Empty(repositories)
 }
 
+func (suite *RepositoriesTestSuite) TestReadUserAdminRepositories_IncludesPrivateRepos() {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/v3/app/installations/123/access_tokens":
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"token": "ghs_test_token", "expires_at": "2024-01-01T00:00:00Z"}`))
+		case "/api/v3/installation/repositories":
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{
+				"total_count": 2,
+				"repositories": [
+					{
+						"id": 1,
+						"name": "public-repo",
+						"full_name": "testuser/public-repo",
+						"private": false,
+						"updated_at": "2023-12-01T12:00:00Z",
+						"owner": {"id": 456, "login": "testuser"}
+					},
+					{
+						"id": 2,
+						"name": "private-repo",
+						"full_name": "testuser/private-repo",
+						"private": true,
+						"updated_at": "2023-12-02T12:00:00Z",
+						"owner": {"id": 456, "login": "testuser"}
+					}
+				]
+			}`))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer server.Close()
+
+	httpClient := &http.Client{}
+	githubClient := github.NewClient(httpClient)
+	githubClient, _ = githubClient.WithEnterpriseURLs(server.URL+"/api/v3/", server.URL+"/api/uploads/")
+	client := &GithubClient{
+		cfg:    suite.cfg,
+		client: githubClient,
+	}
+
+	repositories, err := client.ReadUserAdminRepositories(suite.ctx, []*ent.GithubInstallation{suite.testInstallation})
+
+	suite.NoError(err)
+	suite.Len(repositories, 2)
+	// Sorted by updated_at descending, so the private repo comes first
+	suite.Equal("testuser/private-repo", repositories[0].FullName)
+	suite.Equal("testuser/public-repo", repositories[1].FullName)
+	suite.Equal(int64(123), repositories[0].InstallationID)
+}
+
 func (suite *RepositoriesTestSuite) TestGetRepositoryDetail_Success() {
 	// Create a mock server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
