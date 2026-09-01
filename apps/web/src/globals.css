@@ -70,7 +70,7 @@
   --foreground: hsl(120 90% 5%);
   --card: hsl(120 40% 96%);
   --card-hover: hsl(120 18% 90%);
-  --popover: hsl(120 40% 96%);
+  --popover: hsl(120 80% 98%);
   --primary: hsl(120 90% 5%);
   --primary-foreground: hsl(120 35% 95%);
   --secondary: hsl(120 14% 86%);
@@ -93,7 +93,7 @@
   --wait-foreground: hsl(120 35% 95%);
   --shadow-color: hsl(120 30% 4%);
   --border: hsl(120 14% 86%);
-  --input: hsl(120 40% 96%);
+  --input: hsl(120 80% 98%);
   --ring: hsl(120 90% 5%);
 
   --chart-1: hsl(120 100% 23%);
@@ -189,17 +189,17 @@
   --background: hsl(120 9% 6%);
   --foreground: hsl(120 100% 97%);
   --card: hsl(120 7% 8%);
-  --card-hover: hsl(120 5% 12%);
-  --popover: hsl(120 7% 8%);
+  --card-hover: hsl(120 6% 13%);
+  --popover: hsl(120 6.5% 9%);
   --primary: hsl(120 100% 97%);
   --primary-foreground: hsl(120 9% 6%);
-  --secondary: hsl(120 5% 12%);
+  --secondary: hsl(120 6% 13%);
   --secondary-foreground: hsl(120 100% 97%);
-  --muted: hsl(120 5% 12%);
+  --muted: hsl(120 6% 13%);
   --muted-foreground: hsl(120 6% 65%);
   --muted-more-foreground: hsl(120 6% 40%);
   --muted-most-foreground: hsl(120 6% 27%);
-  --accent: hsl(120 5% 12%);
+  --accent: hsl(120 6% 13%);
   --accent-foreground: hsl(120 100% 97%);
   --destructive: hsl(0 80% 69%);
   --destructive-foreground: hsl(120 9% 6%);
@@ -212,8 +212,8 @@
   --wait: hsl(40 60% 55%);
   --wait-foreground: hsl(120 9% 6%);
   --shadow-color: hsl(120 11% 3%);
-  --border: hsl(120 5% 12%);
-  --input: hsl(120 7% 8%);
+  --border: hsl(120 6% 13%);
+  --input: hsl(120 6.5% 9%);
   --ring: hsl(120 100% 97%);
 
   --chart-1: hsl(120 70% 70%);

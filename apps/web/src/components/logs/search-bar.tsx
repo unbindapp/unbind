@@ -236,12 +236,12 @@ function SearchBar({
             >
               <XIcon className="size-4.5" />
             </Button>
-            <FilterButton className="bg-card z-1 border-t border-b" />
+            <FilterButton className="bg-input z-1 border-t border-b" />
             <SettingsButton
               logType={logType}
               hasLogs={hasLogs}
               getLogsForDownload={getLogsForDownload}
-              className="bg-card group/button relative z-1 h-auto w-10 rounded-l-none rounded-r-lg border-t border-r border-b border-l"
+              className="bg-input group/button relative z-1 h-auto w-10 rounded-l-none rounded-r-lg border-t border-r border-b border-l"
             />
           </div>
         </form>
