@@ -765,24 +765,26 @@ function StreamStatusChip({
   isError: boolean;
   className?: string;
 }) {
-  const { label, tone } = useMemo(() => {
-    if (isError) return { label: "Error", tone: "warning" as const };
+  const { label, tone, state } = useMemo(() => {
+    if (isError) return { label: "Error", tone: "warning", state: "error" as const };
     // a fixed window can't grow, so there is nothing to connect to and nothing
     // the first page landing would change about that
-    if (mode === "historical") return { label: "Historical", tone: "process" as const };
-    if (isConnected) return { label: "Live", tone: "success" as const };
-    return { label: "Connecting", tone: "warning" as const };
+    if (mode === "historical")
+      return { label: "Historical", tone: "process", state: "historical" as const };
+    if (isConnected) return { label: "Live", tone: "success", state: "live" as const };
+    return { label: "Connecting", tone: "warning", state: "connecting" as const };
   }, [mode, isConnected, isError]);
 
   return (
     <div
       data-tone={tone}
+      data-state={state}
       className={cn(
-        "bg-card text-muted-foreground data-[tone=success]:text-success data-[tone=warning]:text-warning data-[tone=process]:text-process group/chip pointer-events-none flex max-w-[calc(min(30%,10rem))] items-center gap-1.5 rounded-md border px-2.5 py-0.75 font-sans text-sm leading-tight font-semibold select-none",
+        "group/indicator bg-card text-muted-foreground data-[tone=success]:text-success data-[tone=warning]:text-warning data-[tone=process]:text-process group/chip pointer-events-none flex max-w-[calc(min(30%,10rem))] items-center gap-1.5 rounded-md border px-2.5 py-0.75 font-sans text-sm leading-tight font-semibold select-none",
         className,
       )}
     >
-      <div className="bg-muted-more-foreground group-data-[tone=success]/chip:bg-success group-data-[tone=warning]/chip:bg-warning group-data-[tone=process]/chip:bg-process -ml-0.5 size-1.75 shrink-0 rounded-full" />
+      <div className="bg-muted-more-foreground group-data-[tone=success]/chip:bg-success group-data-[tone=warning]/chip:bg-warning group-data-[tone=process]/chip:bg-process -ml-0.5 size-1.75 shrink-0 rounded-full group-data-[state=connecting]/indicator:animate-ping" />
       <p className="min-w-0 shrink truncate">{label}</p>
     </div>
   );
