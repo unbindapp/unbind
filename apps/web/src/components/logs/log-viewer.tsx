@@ -138,6 +138,9 @@ function Logs({
   const isPending = isPendingRaw && !searchError;
   const getLogsForDownload = useCallback(() => logsRef.current, [logsRef]);
 
+  // "view in context" counts as pending until the highlighted line is on screen
+  const [isLocatingHighlight, setIsLocatingHighlight] = useState(false);
+
   const {
     query: { data: servicesData },
   } = useServices();
@@ -164,8 +167,15 @@ function Logs({
   }
 
   const isPage = containerType === "page";
-  const listProps = { lines, type, containerType, serviceNamesById, isEmpty };
-  const isPendingAny = (isPending || isRefreshing) && !error;
+  const listProps = {
+    lines,
+    type,
+    containerType,
+    serviceNamesById,
+    isEmpty,
+    onLocatingHighlightChange: setIsLocatingHighlight,
+  };
+  const isPendingAny = (isPending || isRefreshing || isLocatingHighlight) && !error;
 
   return (
     <div
@@ -293,11 +303,28 @@ type TRowsProps = {
   serviceNamesById: Map<string, string>;
 };
 
-type TListProps = TRowsProps & { isEmpty: boolean };
+type TListProps = TRowsProps & {
+  isEmpty: boolean;
+  onLocatingHighlightChange: (isLocating: boolean) => void;
+};
 
-function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TListProps) {
-  const { hasMoreOlder, isFetchingOlder, olderError, fetchOlder, setEvictionPaused, resultSetKey } =
-    useLogs();
+function LogList({
+  lines,
+  type,
+  containerType,
+  serviceNamesById,
+  isEmpty,
+  onLocatingHighlightChange,
+}: TListProps) {
+  const {
+    hasMoreOlder,
+    isFetchingOlder,
+    olderError,
+    fetchOlder,
+    setEvictionPaused,
+    resultSetKey,
+    isRefreshing,
+  } = useLogs();
   const { highlightedLog } = useLogFilters();
   const autoFollow = useAutoFollow();
 
@@ -322,10 +349,12 @@ function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TLis
     scrollEndThreshold: SCROLL_THRESHOLD,
   });
 
+  // a stale buffer belongs to the previous query, so the highlight (border and
+  // scroll both) waits for the result set it was created for
   const highlightIndex = useMemo(() => {
-    if (!highlightedLog) return -1;
+    if (!highlightedLog || isRefreshing) return -1;
     return lines.findIndex((line) => matchesLogLineRef(highlightedLog, line));
-  }, [lines, highlightedLog]);
+  }, [lines, highlightedLog, isRefreshing]);
 
   // followOnAppend only reacts to the list growing, so the first render, a new
   // result set, and switching the toggle back on have to pin to the bottom by
@@ -335,7 +364,13 @@ function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TLis
     virtualizer.scrollToEnd();
   }, [autoFollow, highlightedLog, virtualizer, resultSetKey]);
 
-  useScrollToHighlight({ virtualizer, scrollRef, lines, highlightIndex });
+  useScrollToHighlight({
+    virtualizer,
+    scrollRef,
+    lines,
+    highlightIndex,
+    onLocatingChange: onLocatingHighlightChange,
+  });
 
   const syncScrollState = useCallback(() => {
     const element = scrollRef.current;
@@ -426,33 +461,45 @@ function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TLis
  * older pages are pulled until it shows up or the buffer has reached past its
  * timestamp — a line that is gone for good settles on the closest moment
  * instead. Runs once per result set and highlight; historical windows never
- * append or evict, so the target can't move once found.
+ * append or evict, so the target can't move once found. A stale buffer still
+ * belongs to the previous query, so it waits the refresh out. Reports the whole
+ * search as "locating" so the viewer can show it as pending — except while an
+ * older page has failed, when the retry UI should be readable instead.
  */
 function useScrollToHighlight({
   virtualizer,
   scrollRef,
   lines,
   highlightIndex,
+  onLocatingChange,
 }: {
   virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>;
   scrollRef: React.RefObject<HTMLDivElement | null>;
   lines: TBufferedLogLine[];
   highlightIndex: number;
+  onLocatingChange: (isLocating: boolean) => void;
 }) {
-  const { resultSetKey, hasMoreOlder, isFetchingOlder, olderError, fetchOlder } = useLogs();
+  const { resultSetKey, hasMoreOlder, isFetchingOlder, olderError, fetchOlder, isRefreshing } =
+    useLogs();
   const { highlightedLog } = useLogFilters();
-  const doneKeyRef = useRef<string | null>(null);
+  const [doneKey, setDoneKey] = useState<string | null>(null);
 
   const scrollKey =
     highlightedLog && resultSetKey
       ? `${resultSetKey}#${highlightedLog.timestamp}~${highlightedLog.podName}`
       : null;
 
+  const isLocating = Boolean(scrollKey) && doneKey !== scrollKey && !olderError;
   useEffect(() => {
-    if (!scrollKey || !highlightedLog || doneKeyRef.current === scrollKey) return;
+    onLocatingChange(isLocating);
+    return () => onLocatingChange(false);
+  }, [isLocating, onLocatingChange]);
+
+  useEffect(() => {
+    if (!scrollKey || !highlightedLog || isRefreshing || doneKey === scrollKey) return;
 
     if (highlightIndex >= 0) {
-      doneKeyRef.current = scrollKey;
+      setDoneKey(scrollKey);
       settleScrollToIndex(virtualizer, scrollRef.current, highlightIndex);
       return;
     }
@@ -468,16 +515,18 @@ function useScrollToHighlight({
       return;
     }
 
-    doneKeyRef.current = scrollKey;
+    setDoneKey(scrollKey);
     const nearest = nearestLogLineIndex(lines, targetMs);
     if (nearest >= 0) settleScrollToIndex(virtualizer, scrollRef.current, nearest);
   }, [
     scrollKey,
+    doneKey,
     highlightedLog,
     highlightIndex,
     lines,
     hasMoreOlder,
     isFetchingOlder,
+    isRefreshing,
     olderError,
     fetchOlder,
     virtualizer,
