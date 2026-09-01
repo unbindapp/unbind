@@ -5,6 +5,9 @@ import { cn } from "@/components/ui/utils";
 import { cva, VariantProps } from "class-variance-authority";
 import { XIcon } from "lucide-react";
 
+const createDialogHandle = DialogPrimitive.createHandle;
+export type TDialogHandle = DialogPrimitive.Handle<unknown>;
+
 function Dialog({ onOpenChange, ...props }: DialogPrimitive.Root.Props) {
   const handleOpenChange: DialogPrimitive.Root.Props["onOpenChange"] = (open, eventDetails) => {
     // A click on a toast is interacting with the toast, not dismissing the dialog
@@ -184,6 +187,7 @@ function DialogDescription({ className, ...props }: DialogPrimitive.Description.
 }
 
 export {
+  createDialogHandle,
   Dialog,
   DialogPortal,
   DialogOverlay,

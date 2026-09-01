@@ -8,6 +8,7 @@ import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
+  createDialogHandle,
   Dialog,
   DialogClose,
   DialogContent,
@@ -15,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  TDialogHandle,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -550,9 +552,11 @@ export function NewS3SourceCard({ teamId }: { teamId: string }) {
 
 export function NewS3SourceTrigger({
   teamId,
+  handle,
   children,
 }: {
-  children: ReactElement;
+  children?: ReactElement;
+  handle?: TDialogHandle;
   teamId: string;
 }) {
   const { invalidate: invalidateS3Sources } = useS3SourcesUtils({ teamId });
@@ -564,7 +568,8 @@ export function NewS3SourceTrigger({
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
-  const [open, setOpen] = useState(false);
+  const [internalHandle] = useState(() => createDialogHandle());
+  const dialogHandle = handle ?? internalHandle;
 
   const form = useAppForm({
     defaultValues: {
@@ -602,7 +607,7 @@ export function NewS3SourceTrigger({
         });
       }
 
-      setOpen(false);
+      dialogHandle.close();
       formApi.reset();
     },
   });
@@ -611,9 +616,8 @@ export function NewS3SourceTrigger({
 
   return (
     <Dialog
-      open={open}
+      handle={dialogHandle}
       onOpenChange={(o) => {
-        setOpen(o);
         if (!o) {
           if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -625,7 +629,7 @@ export function NewS3SourceTrigger({
         }
       }}
     >
-      <DialogTrigger render={children} />
+      {children && <DialogTrigger render={children} />}
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Create S3 Source</DialogTitle>

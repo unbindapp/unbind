@@ -1,5 +1,6 @@
 import { NewS3SourceTrigger } from "@/components/storage/s3-source-card";
 import { sourceAndBucketSeparator } from "@/components/service/helpers";
+import { createDialogHandle, DialogTrigger } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TCommandItem } from "@/lib/hooks/use-app-form";
 import { PlusIcon } from "lucide-react";
-import { ReactElement } from "react";
+import { ReactElement, useState } from "react";
 
 export type TCreateBackupSourceTriggerProps = {
   isOpen: boolean;
@@ -27,25 +28,34 @@ export function CreateBackupSourceTrigger({
   setIsOpen,
   children,
 }: TCreateBackupSourceTriggerProps) {
+  const [dialogHandle] = useState(() => createDialogHandle());
+
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger render={children} />
-      <DropdownMenuContent animate={false} className="w-(--anchor-width)">
-        <ScrollArea>
-          <DropdownMenuGroup>
-            <DropdownMenuLabel className="-mx-1 border-b px-3">
-              {"You don't have any buckets. Create a backup source."}
-            </DropdownMenuLabel>
-            <NewS3SourceTrigger teamId={teamId}>
-              <DropdownMenuItem closeOnClick={false} className="gap-1.5">
-                <PlusIcon className="-ml-1 size-5" />
-                <p className="min-w-0 shrink">Create Backup Source</p>
-              </DropdownMenuItem>
-            </NewS3SourceTrigger>
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger render={children} />
+        <DropdownMenuContent animate={false} className="w-(--anchor-width)">
+          <ScrollArea>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="-mx-1 border-b px-3">
+                {"You don't have any buckets. Create a backup source."}
+              </DropdownMenuLabel>
+              {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
+              <DialogTrigger
+                handle={dialogHandle}
+                render={
+                  <DropdownMenuItem className="gap-1.5">
+                    <PlusIcon className="-ml-1 size-5" />
+                    <p className="min-w-0 shrink">Create Backup Source</p>
+                  </DropdownMenuItem>
+                }
+              />
+            </DropdownMenuGroup>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <NewS3SourceTrigger teamId={teamId} handle={dialogHandle} />
+    </>
   );
 }
 
