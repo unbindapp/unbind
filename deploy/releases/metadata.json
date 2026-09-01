@@ -213,5 +213,10 @@
     "version": "v0.1.42",
     "description": "Gluetun proxy service URL fix and pending screen tweaks",
     "breaking": false
+  },
+  "v0.1.43": {
+    "version": "v0.1.43",
+    "description": "Service icon improvements and five icon slots on service group cards",
+    "breaking": false
   }
 }
