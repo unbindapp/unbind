@@ -165,43 +165,12 @@ function Logs({
 
   const isPage = containerType === "page";
   const listProps = { lines, type, containerType, serviceNamesById, isEmpty };
-
-  const renderContent = () => {
-    if (!isPending && error && !logs) {
-      return (
-        <CenteredCard>
-          <ErrorCard message={error.message} className="min-h-38" />
-        </CenteredCard>
-      );
-    }
-    // nothing has ever loaded, so the search error is all there is to show
-    if (!isPending && !logs && searchError) {
-      return (
-        <CenteredCard>
-          <NoLogsFound />
-        </CenteredCard>
-      );
-    }
-    if (isShowingPlaceholders) {
-      return <PlaceholderList type={type} containerType={containerType} />;
-    }
-    // The list hides rather than unmounts while empty, so a filter that matches
-    // nothing doesn't tear down the virtualizer and the scroll state with it.
-    return (
-      <>
-        <LogList {...listProps} />
-        {isEmpty && (
-          <CenteredCard>
-            <NoLogsFound shouldHaveLogs={shouldHaveLogs} />
-          </CenteredCard>
-        )}
-      </>
-    );
-  };
+  const isPendingAny = (isPending || isRefreshing) && !error;
 
   return (
     <div
       data-container={containerType}
+      data-pending={isPendingAny || undefined}
       className={cn(
         "group/wrapper relative flex min-h-0 w-full flex-col overflow-hidden",
         // The navbar is in flow at the top from sm up and fixed to the bottom
@@ -213,7 +182,7 @@ function Logs({
         <div className="relative w-full">
           <SearchBar
             logType={type}
-            isPendingLogs={(isPending || isRefreshing) && !error}
+            isPendingLogs={isPendingAny}
             searchError={searchError}
             hasLogs={Boolean(logs && logs.length > 0)}
             getLogsForDownload={getLogsForDownload}
@@ -244,8 +213,76 @@ function Logs({
           </div>
         </div>
       )}
-      {renderContent()}
+      <LogsContent
+        listProps={listProps}
+        error={error}
+        searchError={searchError}
+        isShowingPlaceholders={isShowingPlaceholders}
+        containerType={containerType}
+        isPending={isPendingAny}
+        logs={logs}
+        type={type}
+        shouldHaveLogs={shouldHaveLogs}
+        isEmpty={isEmpty}
+      />
     </div>
+  );
+}
+
+type TLogsContentProps = {
+  isPending: ReturnType<typeof useLogs>["isPending"];
+  logs: ReturnType<typeof useLogs>["logs"];
+  error: ReturnType<typeof useLogs>["error"];
+  searchError: ReturnType<typeof useLogs>["searchError"];
+  isShowingPlaceholders: boolean;
+  listProps: TListProps;
+  type: TLogType;
+  containerType: TContainerType;
+  shouldHaveLogs?: boolean;
+  isEmpty?: boolean;
+};
+
+function LogsContent({
+  logs,
+  isPending,
+  error,
+  searchError,
+  isShowingPlaceholders,
+  listProps,
+  type,
+  containerType,
+  shouldHaveLogs,
+  isEmpty,
+}: TLogsContentProps) {
+  if (!isPending && error && !logs) {
+    return (
+      <CenteredCard>
+        <ErrorCard message={error.message} className="min-h-38" />
+      </CenteredCard>
+    );
+  }
+  // nothing has ever loaded, so the search error is all there is to show
+  if (!isPending && !logs && searchError) {
+    return (
+      <CenteredCard>
+        <NoLogsFound />
+      </CenteredCard>
+    );
+  }
+  if (isShowingPlaceholders) {
+    return <PlaceholderList type={type} containerType={containerType} />;
+  }
+  // The list hides rather than unmounts while empty, so a filter that matches
+  // nothing doesn't tear down the virtualizer and the scroll state with it.
+  return (
+    <>
+      <LogList {...listProps} />
+      {isEmpty && (
+        <CenteredCard>
+          <NoLogsFound shouldHaveLogs={shouldHaveLogs} />
+        </CenteredCard>
+      )}
+    </>
   );
 }
 
@@ -330,7 +367,7 @@ function LogList({ lines, type, containerType, serviceNamesById, isEmpty }: TLis
   return (
     <div
       data-empty={isEmpty || undefined}
-      className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden data-empty:hidden"
+      className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden transition-opacity group-data-pending/wrapper:opacity-50 data-empty:hidden"
     >
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
         <div
@@ -599,7 +636,7 @@ function PlaceholderList({
 
 function CenteredCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-0 w-full flex-1 overflow-y-auto group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+    <div className="min-h-0 w-full flex-1 overflow-y-auto transition duration-300 group-data-pending/wrapper:opacity-25 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
       <div className="w-full px-2 py-2 font-sans sm:px-2.5">{children}</div>
     </div>
   );
