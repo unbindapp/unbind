@@ -193,5 +193,10 @@
     "version": "v0.1.38",
     "description": "Database deployment status fixes, action dialogs rendered outside dropdown menus, and brand icon updates",
     "breaking": false
+  },
+  "v0.1.39": {
+    "version": "v0.1.39",
+    "description": "Gluetun VPN proxy template, template naming improvements, and GitHub repository listing fixes",
+    "breaking": false
   }
 }
