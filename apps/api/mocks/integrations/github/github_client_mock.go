@@ -705,80 +705,12 @@ func (_c *GithubClientMock_ManifestCodeConversion_Call) RunAndReturn(run func(ct
 	return _c
 }
 
-// ReadUserAdminOrganizations provides a mock function for the type GithubClientMock
-func (_mock *GithubClientMock) ReadUserAdminOrganizations(ctx context.Context, installation *ent.GithubInstallation) ([]*github0.Organization, error) {
-	ret := _mock.Called(ctx, installation)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ReadUserAdminOrganizations")
-	}
-
-	var r0 []*github0.Organization
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation) ([]*github0.Organization, error)); ok {
-		return returnFunc(ctx, installation)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation) []*github0.Organization); ok {
-		r0 = returnFunc(ctx, installation)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*github0.Organization)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.GithubInstallation) error); ok {
-		r1 = returnFunc(ctx, installation)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// GithubClientMock_ReadUserAdminOrganizations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReadUserAdminOrganizations'
-type GithubClientMock_ReadUserAdminOrganizations_Call struct {
-	*mock.Call
-}
-
-// ReadUserAdminOrganizations is a helper method to define mock.On call
-//   - ctx context.Context
-//   - installation *ent.GithubInstallation
-func (_e *GithubClientMock_Expecter) ReadUserAdminOrganizations(ctx any, installation any) *GithubClientMock_ReadUserAdminOrganizations_Call {
-	return &GithubClientMock_ReadUserAdminOrganizations_Call{Call: _e.mock.On("ReadUserAdminOrganizations", ctx, installation)}
-}
-
-func (_c *GithubClientMock_ReadUserAdminOrganizations_Call) Run(run func(ctx context.Context, installation *ent.GithubInstallation)) *GithubClientMock_ReadUserAdminOrganizations_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 *ent.GithubInstallation
-		if args[1] != nil {
-			arg1 = args[1].(*ent.GithubInstallation)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *GithubClientMock_ReadUserAdminOrganizations_Call) Return(organizations []*github0.Organization, err error) *GithubClientMock_ReadUserAdminOrganizations_Call {
-	_c.Call.Return(organizations, err)
-	return _c
-}
-
-func (_c *GithubClientMock_ReadUserAdminOrganizations_Call) RunAndReturn(run func(ctx context.Context, installation *ent.GithubInstallation) ([]*github0.Organization, error)) *GithubClientMock_ReadUserAdminOrganizations_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// ReadUserAdminRepositories provides a mock function for the type GithubClientMock
-func (_mock *GithubClientMock) ReadUserAdminRepositories(ctx context.Context, installations []*ent.GithubInstallation) ([]*github.GithubRepository, error) {
+// ReadInstallationRepositories provides a mock function for the type GithubClientMock
+func (_mock *GithubClientMock) ReadInstallationRepositories(ctx context.Context, installations []*ent.GithubInstallation) ([]*github.GithubRepository, error) {
 	ret := _mock.Called(ctx, installations)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ReadUserAdminRepositories")
+		panic("no return value specified for ReadInstallationRepositories")
 	}
 
 	var r0 []*github.GithubRepository
@@ -801,19 +733,19 @@ func (_mock *GithubClientMock) ReadUserAdminRepositories(ctx context.Context, in
 	return r0, r1
 }
 
-// GithubClientMock_ReadUserAdminRepositories_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReadUserAdminRepositories'
-type GithubClientMock_ReadUserAdminRepositories_Call struct {
+// GithubClientMock_ReadInstallationRepositories_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReadInstallationRepositories'
+type GithubClientMock_ReadInstallationRepositories_Call struct {
 	*mock.Call
 }
 
-// ReadUserAdminRepositories is a helper method to define mock.On call
+// ReadInstallationRepositories is a helper method to define mock.On call
 //   - ctx context.Context
 //   - installations []*ent.GithubInstallation
-func (_e *GithubClientMock_Expecter) ReadUserAdminRepositories(ctx any, installations any) *GithubClientMock_ReadUserAdminRepositories_Call {
-	return &GithubClientMock_ReadUserAdminRepositories_Call{Call: _e.mock.On("ReadUserAdminRepositories", ctx, installations)}
+func (_e *GithubClientMock_Expecter) ReadInstallationRepositories(ctx any, installations any) *GithubClientMock_ReadInstallationRepositories_Call {
+	return &GithubClientMock_ReadInstallationRepositories_Call{Call: _e.mock.On("ReadInstallationRepositories", ctx, installations)}
 }
 
-func (_c *GithubClientMock_ReadUserAdminRepositories_Call) Run(run func(ctx context.Context, installations []*ent.GithubInstallation)) *GithubClientMock_ReadUserAdminRepositories_Call {
+func (_c *GithubClientMock_ReadInstallationRepositories_Call) Run(run func(ctx context.Context, installations []*ent.GithubInstallation)) *GithubClientMock_ReadInstallationRepositories_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -831,12 +763,12 @@ func (_c *GithubClientMock_ReadUserAdminRepositories_Call) Run(run func(ctx cont
 	return _c
 }
 
-func (_c *GithubClientMock_ReadUserAdminRepositories_Call) Return(githubRepositorys []*github.GithubRepository, err error) *GithubClientMock_ReadUserAdminRepositories_Call {
+func (_c *GithubClientMock_ReadInstallationRepositories_Call) Return(githubRepositorys []*github.GithubRepository, err error) *GithubClientMock_ReadInstallationRepositories_Call {
 	_c.Call.Return(githubRepositorys, err)
 	return _c
 }
 
-func (_c *GithubClientMock_ReadUserAdminRepositories_Call) RunAndReturn(run func(ctx context.Context, installations []*ent.GithubInstallation) ([]*github.GithubRepository, error)) *GithubClientMock_ReadUserAdminRepositories_Call {
+func (_c *GithubClientMock_ReadInstallationRepositories_Call) RunAndReturn(run func(ctx context.Context, installations []*ent.GithubInstallation) ([]*github.GithubRepository, error)) *GithubClientMock_ReadInstallationRepositories_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -10,14 +10,13 @@ import (
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
 )
 
-// GET Github admin organizations for installation
-type GithubAdminRepositoryListResponse struct {
+type GithubRepositoryListResponse struct {
 	Body struct {
 		Data []*github.GithubRepository `json:"data" nullable:"false"`
 	}
 }
 
-func (self *HandlerGroup) HandleListGithubAdminRepositories(ctx context.Context, input *server.BaseAuthInput) (*GithubAdminRepositoryListResponse, error) {
+func (self *HandlerGroup) HandleListGithubRepositories(ctx context.Context, input *server.BaseAuthInput) (*GithubRepositoryListResponse, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -30,7 +29,7 @@ func (self *HandlerGroup) HandleListGithubAdminRepositories(ctx context.Context,
 		return nil, huma.Error500InternalServerError("Failed to get github installation")
 	}
 	if len(installations) == 0 {
-		return &GithubAdminRepositoryListResponse{
+		return &GithubRepositoryListResponse{
 			Body: struct {
 				Data []*github.GithubRepository `json:"data" nullable:"false"`
 			}{
@@ -39,14 +38,14 @@ func (self *HandlerGroup) HandleListGithubAdminRepositories(ctx context.Context,
 		}, nil
 	}
 
-	adminRepos, err := self.srv.GithubClient.ReadUserAdminRepositories(ctx, installations)
+	repos, err := self.srv.GithubClient.ReadInstallationRepositories(ctx, installations)
 	if err != nil {
-		log.Error("Error getting user admin organizations", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to get user admin organizations")
+		log.Error("Error listing installation repositories", "err", err)
+		return nil, huma.Error500InternalServerError("Failed to list repositories")
 	}
 
-	resp := &GithubAdminRepositoryListResponse{}
-	resp.Body.Data = adminRepos
+	resp := &GithubRepositoryListResponse{}
+	resp.Body.Data = repos
 	return resp, nil
 }
 

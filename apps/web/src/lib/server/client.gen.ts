@@ -1402,113 +1402,6 @@ export const GetWebhookResponseBodySchema = z
   })
   .strip();
 
-export const PlanSchema = z
-  .object({
-    collaborators: z.number().optional(),
-    filled_seats: z.number().optional(),
-    name: z.string().optional(),
-    private_repos: z.number().optional(),
-    seats: z.number().optional(),
-    space: z.number().optional(),
-  })
-  .strip();
-
-export const OrganizationSchema = z
-  .object({
-    advanced_security_enabled_for_new_repositories: z.boolean().optional(),
-    avatar_url: z.string().optional(),
-    billing_email: z.string().optional(),
-    blog: z.string().optional(),
-    collaborators: z.number().optional(),
-    company: z.string().optional(),
-    created_at: z.string().optional(),
-    default_repository_permission: z.string().optional(),
-    default_repository_settings: z.string().optional(),
-    dependabot_alerts_enabled_for_new_repositories: z.boolean().optional(),
-    dependabot_security_updates_enabled_for_new_repositories: z.boolean().optional(),
-    dependency_graph_enabled_for_new_repositories: z.boolean().optional(),
-    description: z.string().optional(),
-    disk_usage: z.number().optional(),
-    email: z.string().optional(),
-    events_url: z.string().optional(),
-    followers: z.number().optional(),
-    following: z.number().optional(),
-    has_organization_projects: z.boolean().optional(),
-    has_repository_projects: z.boolean().optional(),
-    hooks_url: z.string().optional(),
-    html_url: z.string().optional(),
-    id: z.number().optional(),
-    is_verified: z.boolean().optional(),
-    issues_url: z.string().optional(),
-    location: z.string().optional(),
-    login: z.string().optional(),
-    members_allowed_repository_creation_type: z.string().optional(),
-    members_can_create_internal_repositories: z.boolean().optional(),
-    members_can_create_pages: z.boolean().optional(),
-    members_can_create_private_pages: z.boolean().optional(),
-    members_can_create_private_repositories: z.boolean().optional(),
-    members_can_create_public_pages: z.boolean().optional(),
-    members_can_create_public_repositories: z.boolean().optional(),
-    members_can_create_repositories: z.boolean().optional(),
-    members_can_fork_private_repositories: z.boolean().optional(),
-    members_url: z.string().optional(),
-    name: z.string().optional(),
-    node_id: z.string().optional(),
-    owned_private_repos: z.number().optional(),
-    plan: PlanSchema.optional(),
-    private_gists: z.number().optional(),
-    public_gists: z.number().optional(),
-    public_members_url: z.string().optional(),
-    public_repos: z.number().optional(),
-    repos_url: z.string().optional(),
-    secret_scanning_enabled_for_new_repositories: z.boolean().optional(),
-    secret_scanning_push_protection_enabled_for_new_repositories: z.boolean().optional(),
-    secret_scanning_validity_checks_enabled: z.boolean().optional(),
-    total_private_repos: z.number().optional(),
-    twitter_username: z.string().optional(),
-    two_factor_requirement_enabled: z.boolean().optional(),
-    type: z.string().optional(),
-    updated_at: z.string().optional(),
-    url: z.string().optional(),
-    web_commit_signoff_required: z.boolean().optional(),
-  })
-  .strip();
-
-export const GithubAdminOrganizationListResponseBodySchema = z
-  .object({
-    data: z.array(OrganizationSchema).nullable(),
-  })
-  .strip();
-
-export const GithubRepositoryOwnerSchema = z
-  .object({
-    avatar_url: z.string(),
-    id: z.number(),
-    login: z.string(),
-    name: z.string(),
-  })
-  .strip();
-
-export const GithubRepositorySchema = z
-  .object({
-    clone_url: z.string(),
-    full_name: z.string(),
-    homepage: z.string(),
-    html_url: z.string(),
-    id: z.number(),
-    installation_id: z.number(),
-    name: z.string(),
-    owner: GithubRepositoryOwnerSchema,
-    updated_at: z.string().datetime({ offset: true }),
-  })
-  .strip();
-
-export const GithubAdminRepositoryListResponseBodySchema = z
-  .object({
-    data: z.array(GithubRepositorySchema),
-  })
-  .strip();
-
 export const GithubInstallationPermissionsSchema = z
   .object({
     contents: z.string().optional(),
@@ -1579,6 +1472,29 @@ export const GithubBranchSchema = z
   })
   .strip();
 
+export const GithubRepositoryOwnerSchema = z
+  .object({
+    avatar_url: z.string(),
+    id: z.number(),
+    login: z.string(),
+    name: z.string(),
+  })
+  .strip();
+
+export const GithubRepositorySchema = z
+  .object({
+    clone_url: z.string(),
+    full_name: z.string(),
+    homepage: z.string(),
+    html_url: z.string(),
+    id: z.number(),
+    installation_id: z.number(),
+    name: z.string(),
+    owner: GithubRepositoryOwnerSchema,
+    updated_at: z.string().datetime({ offset: true }),
+  })
+  .strip();
+
 export const GithubTagSchema = z
   .object({
     name: z.string(),
@@ -1619,6 +1535,12 @@ export const GithubRepositoryDetailSchema = z
 export const GithubRepositoryDetailResponseBodySchema = z
   .object({
     data: GithubRepositoryDetailSchema,
+  })
+  .strip();
+
+export const GithubRepositoryListResponseBodySchema = z
+  .object({
+    data: z.array(GithubRepositorySchema),
   })
   .strip();
 
@@ -2756,16 +2678,6 @@ export type PVCStats = z.infer<typeof PVCStatsSchema>;
 export type VolumeMetricsResult = z.infer<typeof VolumeMetricsResultSchema>;
 export type GetVolumeMetricsResponseBody = z.infer<typeof GetVolumeMetricsResponseBodySchema>;
 export type GetWebhookResponseBody = z.infer<typeof GetWebhookResponseBodySchema>;
-export type Plan = z.infer<typeof PlanSchema>;
-export type Organization = z.infer<typeof OrganizationSchema>;
-export type GithubAdminOrganizationListResponseBody = z.infer<
-  typeof GithubAdminOrganizationListResponseBodySchema
->;
-export type GithubRepositoryOwner = z.infer<typeof GithubRepositoryOwnerSchema>;
-export type GithubRepository = z.infer<typeof GithubRepositorySchema>;
-export type GithubAdminRepositoryListResponseBody = z.infer<
-  typeof GithubAdminRepositoryListResponseBodySchema
->;
 export type GithubInstallationPermissions = z.infer<typeof GithubInstallationPermissionsSchema>;
 export type GithubInstallationAPIResponse = z.infer<typeof GithubInstallationAPIResponseSchema>;
 export type GithubAppAPIResponse = z.infer<typeof GithubAppAPIResponseSchema>;
@@ -2776,10 +2688,15 @@ export type GithubAppInstallationListResponseBody = z.infer<
 >;
 export type GithubAppListResponseBody = z.infer<typeof GithubAppListResponseBodySchema>;
 export type GithubBranch = z.infer<typeof GithubBranchSchema>;
+export type GithubRepositoryOwner = z.infer<typeof GithubRepositoryOwnerSchema>;
+export type GithubRepository = z.infer<typeof GithubRepositorySchema>;
 export type GithubTag = z.infer<typeof GithubTagSchema>;
 export type GithubRepositoryDetail = z.infer<typeof GithubRepositoryDetailSchema>;
 export type GithubRepositoryDetailResponseBody = z.infer<
   typeof GithubRepositoryDetailResponseBodySchema
+>;
+export type GithubRepositoryListResponseBody = z.infer<
+  typeof GithubRepositoryListResponseBodySchema
 >;
 export type ResourceType = z.infer<typeof ResourceTypeSchema>;
 export type GrantGroupPermissionInputBody = z.infer<typeof GrantGroupPermissionInputBodySchema>;
@@ -4276,52 +4193,6 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           throw error;
         }
       },
-      installation: {
-        installationId: (installationId: string | number | boolean) => ({
-          organizations: async (
-            params?: undefined,
-            fetchOptions?: RequestInit,
-          ): Promise<GithubAdminOrganizationListResponseBody> => {
-            try {
-              if (!apiUrl || typeof apiUrl !== 'string') {
-                throw new Error('API URL is undefined or not a string');
-              }
-              const url = new URL(
-                `${apiUrl}/github/installation/${installationId}/organizations`,
-                typeof window !== 'undefined' ? window.location.origin : undefined,
-              );
-
-              const options: RequestInit = {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                ...fetchOptions,
-              };
-
-              const response = await fetchFn(url.toString(), options);
-              if (!response.ok) {
-                throw await parseApiError(response, url.toString());
-              }
-              const data = await response.json();
-              const { data: parsedData, error } =
-                GithubAdminOrganizationListResponseBodySchema.safeParse(data);
-              if (error) {
-                console.error('Response validation error:', error);
-                console.error('Response data:', data);
-                throw new Error(error.message);
-              }
-              return parsedData;
-            } catch (error) {
-              if (import.meta.env.DEV) {
-                console.error('Error in API request:', error);
-              }
-              throw error;
-            }
-          },
-        }),
-      },
       installations: async (
         params?: undefined,
         fetchOptions?: RequestInit,
@@ -4368,7 +4239,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         async (
           params?: undefined,
           fetchOptions?: RequestInit,
-        ): Promise<GithubAdminRepositoryListResponseBody> => {
+        ): Promise<GithubRepositoryListResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -4393,7 +4264,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             const data = await response.json();
             const { data: parsedData, error } =
-              GithubAdminRepositoryListResponseBodySchema.safeParse(data);
+              GithubRepositoryListResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
