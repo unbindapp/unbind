@@ -95,11 +95,11 @@ export default function ServiceUrl({
           variant="ghost"
           size="sm"
         >
-          <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-copied/button:rotate-90">
-            <EthernetPortIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
+          <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-copied/button:rotate-45">
+            <EthernetPortIcon className="size-full group-data-copied/button:opacity-0" />
             <CheckIcon
               strokeWidth={3}
-              className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
+              className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-45 opacity-0 group-data-copied/button:opacity-100"
             />
           </div>
           <p className="min-w-0 shrink truncate">{connectionString}</p>

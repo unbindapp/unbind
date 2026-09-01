@@ -206,7 +206,7 @@ export function BreadcrumbItem<T>({
       <DropdownOrDrawerContentForDropdown>
         <DropdownMenuGroup>
           <DropdownMenuLabel>{title}</DropdownMenuLabel>
-          <DropdownMenuSeparator className="-mx-1" />
+          <DropdownMenuSeparator className="-mx-1 my-1" />
           {items?.map((i) => {
             return (
               <DropdownItem
@@ -339,15 +339,15 @@ function SheetItem<T>({
         </div>
       </div>
       {!comingSoon && (
-        <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-5">
+        <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-5 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-45">
           {selectedItem?.id === item.id && (
             <>
               <CheckIcon
-                className="size-full transition group-data-highlighted/item:group-data-show-arrow/item:rotate-90 group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
+                className="size-full group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
                 strokeWidth={2.5}
               />
               <ArrowRightIcon
-                className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition group-data-highlighted/item:group-data-show-arrow/item:rotate-0 group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
+                className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
                 strokeWidth={2.5}
               />
             </>
@@ -443,15 +443,15 @@ function DropdownItem<T>({
         </div>
       </div>
       {!comingSoon && (
-        <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-90">
+        <div className="group-data-pending/item:text-foreground relative -mr-0.5 size-4.5 shrink-0 transition-transform group-data-highlighted/item:group-data-show-arrow/item:rotate-45">
           {selectedItem?.id === item.id && (
             <>
               <CheckIcon
-                className="size-full transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
+                className="size-full group-data-highlighted/item:group-data-show-arrow/item:opacity-0"
                 strokeWidth={2.5}
               />
               <ArrowRightIcon
-                className="absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
+                className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-data-highlighted/item:group-data-show-arrow/item:opacity-100"
                 strokeWidth={2.5}
               />
             </>

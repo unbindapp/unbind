@@ -39,7 +39,7 @@ export default function CopyButton({
     >
       <div
         className={cn(
-          "relative size-4.5 transition-transform group-data-copied/button:rotate-90",
+          "relative size-4.5 transition-transform group-data-copied/button:rotate-45",
           classNameIcon,
         )}
       >
@@ -47,10 +47,10 @@ export default function CopyButton({
           <MinusIcon className="size-full" />
         ) : (
           <>
-            <CopyIcon className="group-data-copied/button:text-success size-full transition-opacity group-data-copied/button:opacity-0" />
+            <CopyIcon className="size-full group-data-copied/button:opacity-0" />
             <CheckIcon
               strokeWidth={3}
-              className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-90 opacity-0 transition-opacity group-data-copied/button:opacity-100"
+              className="group-data-copied/button:text-success absolute top-0 left-0 size-full -rotate-45 opacity-0 group-data-copied/button:opacity-100"
             />
             {isPlaceholder && (
               <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
