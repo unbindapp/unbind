@@ -104,7 +104,7 @@ function TitleButton({ serviceGroup, teamId, projectId, environmentId }: TTitleB
         variant="ghost"
         className="group/button -my-1 -ml-2 flex min-w-0 shrink items-center justify-start gap-2 rounded-md px-2 py-1"
       >
-        <ServiceGroupIcon groupObject={serviceGroup} color="brand" className="-ml-1 size-6" />
+        <ServiceGroupIcon groupObject={serviceGroup} color="brand" className="-ml-1 size-5" />
         <p className="min-w-0 shrink text-left leading-tight font-semibold">
           {serviceGroup.group.name}
         </p>

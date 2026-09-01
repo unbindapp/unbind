@@ -13,7 +13,7 @@ export default function ServiceGroupIcon({ groupObject, color = "brand", classNa
     <BrandIcon
       color={color}
       brand={groupObject.group.icon || "service-group"}
-      className={cn("size-6", className)}
+      className={cn("size-5", className)}
     />
   );
 }
