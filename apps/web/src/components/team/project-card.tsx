@@ -74,7 +74,7 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
               </p>
             </div>
             {serviceIcons !== undefined && serviceIcons.length > 0 && (
-              <div className="-mr-1 flex max-w-2/3 shrink-0 items-center gap-1 overflow-hidden">
+              <div className="-mr-1 flex max-w-2/3 shrink-0 items-center gap-1.25 overflow-hidden">
                 {serviceIcons.slice(0, iconLength).map((s, index) => (
                   <BrandIcon
                     brand={s}

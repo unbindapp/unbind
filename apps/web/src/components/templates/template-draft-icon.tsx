@@ -13,7 +13,7 @@ export default function TemplateDraftIcon({ templateDraft, color = "brand", clas
     <BrandIcon
       color={color}
       brand={templateDraft.template.icon}
-      className={cn("size-6", className)}
+      className={cn("size-5", className)}
     />
   );
 }
