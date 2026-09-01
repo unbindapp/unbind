@@ -178,5 +178,10 @@
     "version": "v0.1.35",
     "description": "Log viewer loading state and skeleton animation improvements",
     "breaking": false
+  },
+  "v0.1.36": {
+    "version": "v0.1.36",
+    "description": "Log highlight centering after loading older pages, and popover color tweaks",
+    "breaking": false
   }
 }
