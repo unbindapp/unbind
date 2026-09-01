@@ -461,7 +461,8 @@ function LogList({
  * older pages are pulled until it shows up or the buffer has reached past its
  * timestamp — a line that is gone for good settles on the closest moment
  * instead. Runs once per result set and highlight; historical windows never
- * append or evict, so the target can't move once found. A stale buffer still
+ * append or evict, so the target line stays in the buffer once found — though
+ * its index still shifts when the scroll trigger prepends more older pages. A stale buffer still
  * belongs to the previous query, so it waits the refresh out. Reports the whole
  * search as "locating" so the viewer can show it as pending — except while an
  * older page has failed, when the retry UI should be readable instead.
@@ -479,8 +480,15 @@ function useScrollToHighlight({
   highlightIndex: number;
   onLocatingChange: (isLocating: boolean) => void;
 }) {
-  const { resultSetKey, hasMoreOlder, isFetchingOlder, olderError, fetchOlder, isRefreshing } =
-    useLogs();
+  const {
+    resultSetKey,
+    hasMoreOlder,
+    isFetchingOlder,
+    olderError,
+    fetchOlder,
+    isRefreshing,
+    logsRef,
+  } = useLogs();
   const { highlightedLog } = useLogFilters();
   const [doneKey, setDoneKey] = useState<string | null>(null);
 
@@ -500,7 +508,7 @@ function useScrollToHighlight({
 
     if (highlightIndex >= 0) {
       setDoneKey(scrollKey);
-      settleScrollToIndex(virtualizer, scrollRef.current, highlightIndex);
+      settleScrollToLine(virtualizer, scrollRef.current, logsRef, lines[highlightIndex]!.key);
       return;
     }
 
@@ -517,7 +525,8 @@ function useScrollToHighlight({
 
     setDoneKey(scrollKey);
     const nearest = nearestLogLineIndex(lines, targetMs);
-    if (nearest >= 0) settleScrollToIndex(virtualizer, scrollRef.current, nearest);
+    if (nearest >= 0)
+      settleScrollToLine(virtualizer, scrollRef.current, logsRef, lines[nearest]!.key);
   }, [
     scrollKey,
     doneKey,
@@ -531,6 +540,7 @@ function useScrollToHighlight({
     fetchOlder,
     virtualizer,
     scrollRef,
+    logsRef,
   ]);
 }
 
@@ -538,11 +548,16 @@ const SCROLL_SETTLE_FRAMES = 8;
 
 // Rows are measured as they render, so a single scrollToIndex lands where the
 // estimates said the row was. Re-centering over a few frames follows the
-// measurements in; a scroll of the user's own cuts it short.
-function settleScrollToIndex(
+// measurements in; a scroll of the user's own cuts it short. The target is a
+// key resolved to an index on every frame: centering near the top of the
+// buffer can trigger another older-page fetch, and a prepend landing
+// mid-settle shifts every index, so a captured index would re-center a line a
+// full page older than the one asked for.
+function settleScrollToLine(
   virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>,
   scrollElement: HTMLDivElement | null,
-  index: number,
+  linesRef: React.RefObject<TBufferedLogLine[] | null>,
+  targetKey: string,
 ) {
   let cancelled = false;
   const cancel = () => {
@@ -555,11 +570,17 @@ function settleScrollToIndex(
     scrollElement?.removeEventListener("touchstart", cancel);
   };
 
-  virtualizer.scrollToIndex(index, { align: "center" });
+  const scrollToTarget = () => {
+    const index = linesRef.current?.findIndex((line) => line.key === targetKey) ?? -1;
+    if (index < 0) return false;
+    virtualizer.scrollToIndex(index, { align: "center" });
+    return true;
+  };
+
+  if (!scrollToTarget()) return cleanup();
   let frames = 0;
   const settle = () => {
-    if (cancelled) return cleanup();
-    virtualizer.scrollToIndex(index, { align: "center" });
+    if (cancelled || !scrollToTarget()) return cleanup();
     frames++;
     if (frames < SCROLL_SETTLE_FRAMES) {
       requestAnimationFrame(settle);
