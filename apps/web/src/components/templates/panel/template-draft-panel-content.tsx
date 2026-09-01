@@ -81,15 +81,16 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     const map = new Map<string, string>();
     for (const input of visibleInputs) {
       if (input.type === "host") {
-        const domain = generateDomain(
-          `${templateDraft.name} ${input.name.replace("Domain", "")}`,
+        const domain = generateDomain({
+          name: `${templateDraft.name} ${input.name.replace("Domain", "")}`,
           wildcardDomain,
-        );
+          seed: `${templateDraft.id}:${input.id}`,
+        });
         map.set(input.id, domain);
       }
     }
     return map;
-  }, [wildcardDomain, templateDraft.name, visibleInputs]);
+  }, [wildcardDomain, templateDraft.name, templateDraft.id, visibleInputs]);
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 

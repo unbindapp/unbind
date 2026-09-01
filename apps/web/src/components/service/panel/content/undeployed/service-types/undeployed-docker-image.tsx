@@ -201,9 +201,9 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     if (!wildcardDomain) return undefined;
     const imageParts = image.split("/");
     const imageName = imageParts[imageParts.length - 1];
-    const domain = generateDomain(imageName, wildcardDomain);
+    const domain = generateDomain({ name: imageName, wildcardDomain, seed: serviceId });
     return domain;
-  }, [wildcardDomain, image]);
+  }, [wildcardDomain, image, serviceId]);
 
   const form = useAppFormWithPersistence({
     defaultValues: {
