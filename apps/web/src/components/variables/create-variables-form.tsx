@@ -14,7 +14,7 @@ import {
   type TReferenceProps,
 } from "@/components/variables/variables-form-field";
 import { useVariables } from "@/components/variables/variables-provider";
-import { useAppForm } from "@/lib/hooks/use-app-form";
+import { useAppFormWithPersistence } from "@/lib/hooks/use-app-form-with-persistence";
 import {
   TVariableForCreate,
   VariableForCreateSchema,
@@ -37,6 +37,10 @@ export const CreateVariablesFormSchema = z
     variables: z.array(VariableForCreateSchema).min(1),
   })
   .strip();
+
+const CreateVariablesDraftSchema = z.object({
+  variables: z.array(z.object({ name: z.string(), value: z.string() })),
+});
 
 export default function CreateVariablesForm({
   afterSuccessfulSubmit,
@@ -66,13 +70,27 @@ export default function CreateVariablesForm({
     [tokensDisabled, tokens],
   );
 
-  const form = useAppForm({
+  const persistenceKey = [
+    "create-variables",
+    typedProps.type,
+    typedProps.teamId,
+    typedProps.projectId,
+    typedProps.environmentId,
+    typedProps.serviceId,
+  ]
+    .filter(Boolean)
+    .join(":");
+
+  const form = useAppFormWithPersistence({
     defaultValues: {
       variables: [{ name: "", value: "" }] as TVariableForCreate[],
     },
     validators: {
       onChange: CreateVariablesFormSchema,
     },
+    persistenceType: "session",
+    persistenceKey,
+    persistenceSchema: CreateVariablesDraftSchema,
     onSubmit: async ({ formApi, value }) => {
       if (!tokens) {
         toast.add({

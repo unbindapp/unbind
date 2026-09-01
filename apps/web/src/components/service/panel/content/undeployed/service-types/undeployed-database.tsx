@@ -30,7 +30,11 @@ import { CommandItem } from "@/components/ui/command";
 import { cn } from "@/components/ui/utils";
 import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
-import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
+import { TCommandItem } from "@/lib/hooks/use-app-form";
+import {
+  removeFormDraft,
+  useAppFormWithPersistence,
+} from "@/lib/hooks/use-app-form-with-persistence";
 import { TVariableForCreate } from "@/lib/queries/variables";
 import { databaseQuery } from "@/lib/queries/services";
 import { useQuery } from "@tanstack/react-query";
@@ -39,11 +43,18 @@ import { CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useCallback, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
+import { z } from "zod";
 
 type TProps = {
   type: string;
   version: string;
 };
+
+const DraftSchema = z.object({
+  version: z.string(),
+  variables: z.array(z.object({ name: z.string(), value: z.string() })),
+  sourceAndBucket: z.string(),
+});
 
 export function UndeployedContentDatabase(props: TProps) {
   const { teamId } = useService();
@@ -71,6 +82,8 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     tokensRef,
     onTokensChanged,
   } = useCreateFirstDeployment();
+
+  const persistenceKey = `undeployed-database:${serviceId}`;
 
   const backupsDisabled = type === "redis";
 
@@ -179,6 +192,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
       });
     },
     onSuccess: async () => {
+      removeFormDraft({ persistenceType: "session", persistenceKey });
       const result = await ResultAsync.fromPromise(
         Promise.all([
           refetchService(),
@@ -198,7 +212,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     },
   });
 
-  const form = useAppForm({
+  const form = useAppFormWithPersistence({
     defaultValues: {
       version: version,
       variables: [{ name: "", value: "" }] as TVariableForCreate[],
@@ -223,6 +237,9 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
       },
     },
     onSubmit: async ({ value }) => await createFirstDeployment(value),
+    persistenceType: "session",
+    persistenceKey,
+    persistenceSchema: DraftSchema,
   });
 
   const CreateBackupSourceTriggerMemoized = useCallback(

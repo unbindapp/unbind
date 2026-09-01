@@ -12,7 +12,10 @@ import { cn } from "@/components/ui/utils";
 import { drawerAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { generateDomain } from "@/lib/helpers/generate-domain";
-import { useAppForm } from "@/lib/hooks/use-app-form";
+import {
+  removeFormDraft,
+  useAppFormWithPersistence,
+} from "@/lib/hooks/use-app-form-with-persistence";
 import { TemplateInputTypeSchema } from "@/lib/server/client.gen";
 import { deployTemplate as deployTemplateFn } from "@/lib/queries/templates";
 import { useMutation } from "@tanstack/react-query";
@@ -101,6 +104,21 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
+  const persistenceKey = `template-draft:${templateDraft.id}`;
+  const persistenceSchema = useMemo(
+    () =>
+      z.object({
+        inputs: z
+          .array(TemplateInputSchema)
+          .refine(
+            (inputs) =>
+              inputs.length === visibleInputs.length &&
+              inputs.every((input, i) => input.id === visibleInputs[i].id),
+          ),
+      }),
+    [visibleInputs],
+  );
+
   const minStorageGb = useMemo(
     () => systemData?.data.storage.minimum_storage_gb || 1,
     [systemData],
@@ -118,6 +136,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
   } = useMutation({
     mutationFn: deployTemplateFn,
     onSuccess: async () => {
+      removeFormDraft({ persistenceType: "session", persistenceKey });
       const res = await ResultAsync.fromPromise(
         invalidateServices(),
         () => new Error("Failed to invalidate services"),
@@ -142,7 +161,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     },
   });
 
-  const form = useAppForm({
+  const form = useAppFormWithPersistence({
     defaultValues: {
       inputs: visibleInputs.map((input) => {
         if (input.type === "database-size" || input.type === "volume-size") {
@@ -195,6 +214,9 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         }
       }
     },
+    persistenceType: "session",
+    persistenceKey,
+    persistenceSchema,
   });
 
   return (

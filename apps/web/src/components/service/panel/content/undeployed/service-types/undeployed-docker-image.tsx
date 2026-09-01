@@ -22,7 +22,11 @@ import { getVariablesPair } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { defaultDebounceMs } from "@/lib/constants";
 import { generateDomain } from "@/lib/helpers/generate-domain";
-import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
+import { TCommandItem } from "@/lib/hooks/use-app-form";
+import {
+  removeFormDraft,
+  useAppFormWithPersistence,
+} from "@/lib/hooks/use-app-form-with-persistence";
 import { dockerTagsQuery } from "@/lib/queries/docker";
 import { TServiceShallow } from "@/lib/queries/services";
 import { TVariableForCreate } from "@/lib/queries/variables";
@@ -32,6 +36,7 @@ import { ResultAsync } from "neverthrow";
 import { useMemo, useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { useDebounce } from "use-debounce";
+import { z } from "zod";
 
 type TProps = {
   image: string;
@@ -39,6 +44,16 @@ type TProps = {
   detectedPort: string | undefined;
   service: TServiceShallow;
 };
+
+const DraftSchema = z.object({
+  image: z.string(),
+  tag: z.string(),
+  domain: z.string(),
+  isPublic: z.boolean(),
+  targetPort: z.string(),
+  variables: z.array(z.object({ name: z.string(), value: z.string() })),
+  startCommand: z.string(),
+});
 
 export function UndeployedContentDockerImage({ image, tag, detectedPort, service }: TProps) {
   const {
@@ -57,6 +72,8 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     tokensRef,
     onTokensChanged,
   } = useCreateFirstDeployment();
+
+  const persistenceKey = `undeployed-docker-image:${serviceId}`;
 
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
@@ -157,6 +174,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
       });
     },
     onSuccess: async () => {
+      removeFormDraft({ persistenceType: "session", persistenceKey });
       const result = await ResultAsync.fromPromise(
         Promise.all([
           refetchService(),
@@ -187,7 +205,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     return domain;
   }, [wildcardDomain, image]);
 
-  const form = useAppForm({
+  const form = useAppFormWithPersistence({
     defaultValues: {
       image: image,
       tag: tag,
@@ -216,6 +234,9 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
       },
     },
     onSubmit: async ({ value }) => await createFirstDeployment(value),
+    persistenceType: "session",
+    persistenceKey,
+    persistenceSchema: DraftSchema,
   });
 
   const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false);
