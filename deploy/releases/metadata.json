@@ -188,5 +188,10 @@
     "version": "v0.1.37",
     "description": "Auth form validation and stronger passwords, persisted form drafts, deterministic generated domains, and private installation repositories",
     "breaking": false
+  },
+  "v0.1.38": {
+    "version": "v0.1.38",
+    "description": "Database deployment status fixes, action dialogs rendered outside dropdown menus, and brand icon updates",
+    "breaking": false
   }
 }
