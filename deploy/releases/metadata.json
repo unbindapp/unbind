@@ -173,5 +173,10 @@
     "version": "v0.1.34",
     "description": "Increased log query limit to 2000",
     "breaking": false
+  },
+  "v0.1.35": {
+    "version": "v0.1.35",
+    "description": "Log viewer loading state and skeleton animation improvements",
+    "breaking": false
   }
 }
