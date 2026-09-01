@@ -183,5 +183,10 @@
     "version": "v0.1.36",
     "description": "Log highlight centering after loading older pages, and popover color tweaks",
     "breaking": false
+  },
+  "v0.1.37": {
+    "version": "v0.1.37",
+    "description": "Auth form validation and stronger passwords, persisted form drafts, deterministic generated domains, and private installation repositories",
+    "breaking": false
   }
 }
