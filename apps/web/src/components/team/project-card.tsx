@@ -15,7 +15,7 @@ type TProps = {
   { project: TProjectShallow; isPlaceholder?: never } | { project?: never; isPlaceholder: true }
 );
 
-const iconLength = 4;
+const maxIconSlots = 5;
 
 export default function ProjectCard({ project, isPlaceholder, className }: TProps) {
   const environments = !isPlaceholder ? project.environments : [];
@@ -29,6 +29,8 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
 
   const serviceCount = !isPlaceholder ? project.service_count : 1;
   const serviceIcons = !isPlaceholder ? project.service_icons : [];
+  const hasIconOverflow = serviceIcons !== undefined && serviceIcons.length > maxIconSlots;
+  const visibleIconCount = hasIconOverflow ? maxIconSlots - 1 : maxIconSlots;
 
   const environmentCount = !isPlaceholder ? environments.length : 1;
 
@@ -75,16 +77,16 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
             </div>
             {serviceIcons !== undefined && serviceIcons.length > 0 && (
               <div className="-mr-1 flex max-w-2/3 shrink-0 items-center gap-1.25 overflow-hidden">
-                {serviceIcons.slice(0, iconLength).map((s, index) => (
+                {serviceIcons.slice(0, visibleIconCount).map((s, index) => (
                   <BrandIcon
                     brand={s}
                     className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton size-5 group-data-placeholder/item:rounded-full group-data-placeholder/item:text-transparent"
                     key={`${s}-${index}`}
                   />
                 ))}
-                {serviceIcons.length > iconLength && (
+                {hasIconOverflow && (
                   <p className="flex h-5 min-w-5 items-center justify-center overflow-hidden rounded-full text-center text-sm font-semibold">
-                    +{serviceIcons.length - iconLength}
+                    +{serviceIcons.length - visibleIconCount}
                   </p>
                 )}
               </div>

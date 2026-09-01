@@ -12,7 +12,7 @@ type TProps = {
   classNameCard?: string;
 } & HTMLProps<HTMLLIElement>;
 
-const iconLength = 4;
+const maxIconSlots = 5;
 
 export default function TemplateDraftCard({
   templateDraft,
@@ -25,6 +25,8 @@ export default function TemplateDraftCard({
     () => [...new Set(templateDraft.template.definition.services.map((s) => s.icon))],
     [templateDraft.template.definition.services],
   );
+  const hasIconOverflow = serviceIcons.length > maxIconSlots;
+  const visibleIconCount = hasIconOverflow ? maxIconSlots - 1 : maxIconSlots;
 
   return (
     <li {...rest} className={cn("group/item flex w-full flex-col p-1", className)}>
@@ -60,16 +62,16 @@ export default function TemplateDraftCard({
               </div>
               {serviceIcons !== undefined && serviceIcons.length > 0 && (
                 <div className="-mr-1 flex max-w-2/3 shrink-0 items-center gap-1 overflow-hidden">
-                  {serviceIcons.slice(0, iconLength).map((s, index) => (
+                  {serviceIcons.slice(0, visibleIconCount).map((s, index) => (
                     <BrandIcon
                       brand={s}
                       className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton size-5 group-data-placeholder/item:rounded-full group-data-placeholder/item:text-transparent"
                       key={`${s}-${index}`}
                     />
                   ))}
-                  {serviceIcons.length > iconLength && (
+                  {hasIconOverflow && (
                     <p className="flex h-5 min-w-5 items-center justify-center overflow-hidden rounded-full text-center text-sm font-semibold">
-                      +{serviceIcons.length - iconLength}
+                      +{serviceIcons.length - visibleIconCount}
                     </p>
                   )}
                 </div>
