@@ -402,7 +402,7 @@ function LogList({
   return (
     <div
       data-empty={isEmpty || undefined}
-      className="group-data-pending/wrapper:animate-skeleton-weaker relative flex min-h-0 w-full flex-1 flex-col overflow-hidden transition-opacity duration-300 group-data-pending/wrapper:opacity-25 data-empty:hidden"
+      className="group-data-pending/wrapper:animate-skeleton-weaker relative flex min-h-0 w-full flex-1 flex-col overflow-hidden transition-opacity duration-(--skeleton-weaker-lead-in) group-data-pending/wrapper:opacity-(--skeleton-weaker-opacity) data-empty:hidden"
     >
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
         <div
@@ -685,7 +685,7 @@ function PlaceholderList({
 
 function CenteredCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className="group-data-pending/wrapper:animate-skeleton-weaker min-h-0 w-full flex-1 overflow-y-auto transition-opacity duration-300 group-data-pending/wrapper:opacity-25 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+    <div className="group-data-pending/wrapper:animate-skeleton-weaker min-h-0 w-full flex-1 overflow-y-auto transition-opacity duration-(--skeleton-weaker-lead-in) group-data-pending/wrapper:opacity-(--skeleton-weaker-opacity) group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
       <div className="w-full px-2 py-2 font-sans sm:px-2.5">{children}</div>
     </div>
   );
