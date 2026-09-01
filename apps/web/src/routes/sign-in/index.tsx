@@ -7,12 +7,16 @@ import { z } from "zod";
 
 import { getGoClient } from "@/lib/server/client";
 import ErrorLine from "@/components/error-line";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { AuthShell } from "../../components/auth-shell";
+import { useAppForm } from "@/lib/hooks/use-app-form";
 import { meQuery } from "@/lib/queries/me";
 
 const searchSchema = z.object({ redirect: z.string().optional() });
+
+const formSchema = z.object({
+  email: z.string().email("Enter a valid email address."),
+  password: z.string().min(1, "Password is required."),
+});
 
 export const Route = createFileRoute("/sign-in/")({
   validateSearch: zodValidator(searchSchema),
@@ -37,53 +41,80 @@ function SignIn() {
   const router = useRouter();
   const search = Route.useSearch();
   const queryClient = useQueryClient();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [isPending, setIsPending] = useState(false);
 
-  // TO-DO: Convert this to TanStack Form
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setIsPending(true);
-    try {
-      await getGoClient().auth.login({ email, password });
-      // Drop the stale "not signed in" cache and fetch /users/me fresh with the new
-      // session cookie before navigating, so the root guard sees the signed-in user.
-      queryClient.removeQueries({ queryKey: meQuery.queryKey });
-      await queryClient.ensureQueryData(meQuery);
-      router.history.push(search.redirect ?? "/");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign in");
-      setIsPending(false);
-    }
-  }
+  const form = useAppForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    validators: {
+      onSubmit: formSchema,
+    },
+    onSubmit: async ({ value }) => {
+      setError(null);
+      try {
+        await getGoClient().auth.login({ email: value.email, password: value.password });
+        // Drop the stale "not signed in" cache and fetch /users/me fresh with the new
+        // session cookie before navigating, so the root guard sees the signed-in user.
+        queryClient.removeQueries({ queryKey: meQuery.queryKey });
+        await queryClient.ensureQueryData(meQuery);
+        router.history.push(search.redirect ?? "/");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to sign in");
+      }
+    },
+  });
 
   return (
     <AuthShell subtitle="Sign in to continue">
-      <form className="mt-5 flex w-full max-w-xs flex-col gap-2" onSubmit={onSubmit}>
-        <Input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          Icon={MailIcon}
-          inputTitle="Email"
-          layout="label-included"
-          type="email"
-          autoComplete="email"
+      <form
+        className="mt-5 flex w-full max-w-xs flex-col gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit(e);
+        }}
+      >
+        <form.AppField
+          name="email"
+          children={(field) => (
+            <field.TextField
+              field={field}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              Icon={MailIcon}
+              inputTitle="Email"
+              layout="label-included"
+              type="email"
+              autoComplete="email"
+            />
+          )}
         />
-        <Input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          Icon={KeyRoundIcon}
-          inputTitle="Password"
-          layout="label-included"
-          type="password"
-          autoComplete="current-password"
+        <form.AppField
+          name="password"
+          children={(field) => (
+            <field.TextField
+              field={field}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              Icon={KeyRoundIcon}
+              inputTitle="Password"
+              layout="label-included"
+              type="password"
+              autoComplete="current-password"
+            />
+          )}
         />
-        <Button className="mt-1.5" type="submit" isPending={isPending}>
-          Sign In
-        </Button>
+        <form.Subscribe
+          selector={(state) => state.isSubmitting}
+          children={(isSubmitting) => (
+            <form.SubmitButton className="mt-1.5" type="submit" isPending={isSubmitting}>
+              Sign In
+            </form.SubmitButton>
+          )}
+        />
         {error && <ErrorLine message={error} />}
       </form>
     </AuthShell>
