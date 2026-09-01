@@ -198,5 +198,10 @@
     "version": "v0.1.39",
     "description": "Gluetun VPN proxy template, template naming improvements, and GitHub repository listing fixes",
     "breaking": false
+  },
+  "v0.1.40": {
+    "version": "v0.1.40",
+    "description": "Style improvements for copy buttons, breadcrumbs, and service URLs",
+    "breaking": false
   }
 }
