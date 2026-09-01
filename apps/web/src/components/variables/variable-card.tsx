@@ -5,6 +5,7 @@ import ErrorLine from "@/components/error-line";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
+import { createDialogHandle, DialogTrigger, TDialogHandle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -386,91 +387,100 @@ function ThreeDotButton({
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [deleteHandle] = useState(() => createDialogHandle());
   const isLocked = disableDelete === true && disableEdit === true;
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            data-open={isOpen || undefined}
-            fadeOnDisabled={false}
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
-              className,
-            )}
-          >
-            {isLocked ? (
-              <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
-                <LockIcon className="size-full transition-opacity group-data-open/button:opacity-0" />
-                <XIcon
-                  strokeWidth={2.25}
-                  className="absolute top-0 left-0 size-full opacity-0 transition-opacity group-data-open/button:opacity-100"
-                />
-              </div>
-            ) : (
-              <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
-            )}
-          </Button>
-        }
-      />
-      <DropdownMenuContent
-        data-locked={isLocked || undefined}
-        className="z-50 w-40 data-locked:w-68"
-        sideOffset={-1}
-        data-open={isOpen || undefined}
-        align="end"
-        keepMounted
-      >
-        <ScrollArea>
-          <DropdownMenuGroup>
-            {isLocked && (
-              <div className="text-muted-foreground flex w-full items-start justify-start gap-1.5 px-3 py-1.75 text-sm">
-                <InfoIcon className="-ml-1 size-4 shrink-0" />
-                <p className="-mt-0.5 min-w-0 shrink">
-                  {"This variable is auto-generated. It can't be edited or deleted."}
-                </p>
-              </div>
-            )}
-            {!isLocked && (
-              <DropdownMenuItem
-                disabled={disableEdit}
-                onClick={() => setIsEditingVariable((o) => !o)}
-              >
-                {!disableEdit ? (
-                  <PenIcon className="-ml-0.5 size-5" />
-                ) : (
-                  <LockIcon className="-ml-0.5 size-5" />
-                )}
-                <p className="min-w-0 shrink leading-tight">Edit</p>
-              </DropdownMenuItem>
-            )}
-            {!isLocked && (
-              <DeleteTrigger
-                variable={variable}
-                variableTypeProps={variableTypeProps}
-                closeDropdown={() => setIsOpen(false)}
-              >
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              data-open={isOpen || undefined}
+              fadeOnDisabled={false}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+                className,
+              )}
+            >
+              {isLocked ? (
+                <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
+                  <LockIcon className="size-full transition-opacity group-data-open/button:opacity-0" />
+                  <XIcon
+                    strokeWidth={2.25}
+                    className="absolute top-0 left-0 size-full opacity-0 transition-opacity group-data-open/button:opacity-100"
+                  />
+                </div>
+              ) : (
+                <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+              )}
+            </Button>
+          }
+        />
+        <DropdownMenuContent
+          data-locked={isLocked || undefined}
+          className="z-50 w-40 data-locked:w-68"
+          sideOffset={-1}
+          data-open={isOpen || undefined}
+          align="end"
+          keepMounted
+        >
+          <ScrollArea>
+            <DropdownMenuGroup>
+              {isLocked && (
+                <div className="text-muted-foreground flex w-full items-start justify-start gap-1.5 px-3 py-1.75 text-sm">
+                  <InfoIcon className="-ml-1 size-4 shrink-0" />
+                  <p className="-mt-0.5 min-w-0 shrink">
+                    {"This variable is auto-generated. It can't be edited or deleted."}
+                  </p>
+                </div>
+              )}
+              {!isLocked && (
                 <DropdownMenuItem
-                  disabled={disableDelete}
-                  closeOnClick={false}
-                  className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+                  disabled={disableEdit}
+                  onClick={() => setIsEditingVariable((o) => !o)}
                 >
-                  {!disableDelete ? (
-                    <Trash2Icon className="-ml-0.5 size-5" />
+                  {!disableEdit ? (
+                    <PenIcon className="-ml-0.5 size-5" />
                   ) : (
                     <LockIcon className="-ml-0.5 size-5" />
                   )}
-                  <p className="min-w-0 shrink leading-tight">Delete</p>
+                  <p className="min-w-0 shrink leading-tight">Edit</p>
                 </DropdownMenuItem>
-              </DeleteTrigger>
-            )}
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              )}
+              {!isLocked && (
+                /* The dialog lives outside the menu; nested inside the open modal menu it would be inert */
+                <DialogTrigger
+                  handle={deleteHandle}
+                  render={
+                    <DropdownMenuItem
+                      disabled={disableDelete}
+                      className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+                    >
+                      {!disableDelete ? (
+                        <Trash2Icon className="-ml-0.5 size-5" />
+                      ) : (
+                        <LockIcon className="-ml-0.5 size-5" />
+                      )}
+                      <p className="min-w-0 shrink leading-tight">Delete</p>
+                    </DropdownMenuItem>
+                  }
+                />
+              )}
+            </DropdownMenuGroup>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {!isLocked && (
+        <DeleteTrigger
+          variable={variable}
+          variableTypeProps={variableTypeProps}
+          handle={deleteHandle}
+        />
+      )}
+    </>
   );
 }
 
@@ -587,12 +597,14 @@ function DeleteTrigger({
   variable,
   variableTypeProps,
   closeDropdown,
+  handle,
   children,
 }: {
   variable: TVariableOrReferenceShallow;
   variableTypeProps: TEntityVariableTypeProps;
-  closeDropdown: () => void;
-  children: ReactElement;
+  closeDropdown?: () => void;
+  handle?: TDialogHandle;
+  children?: ReactElement;
 }) {
   const { invalidate: invalidateVariables, optimisticRemove: optimisticRemoveVariables } =
     useVariablesUtils({
@@ -611,7 +623,7 @@ function DeleteTrigger({
         variableReferences: variable.variable_type === "reference" ? [variable] : [],
       });
       invalidateVariables();
-      closeDropdown();
+      closeDropdown?.();
     },
   });
 
@@ -626,11 +638,12 @@ function DeleteTrigger({
           {variable.name}
         </p>
       )}
+      handle={handle}
       onDialogClose={() => {
         reset();
       }}
       onDialogCloseImmediate={() => {
-        closeDropdown();
+        closeDropdown?.();
       }}
       error={error}
       onSubmit={async () => {

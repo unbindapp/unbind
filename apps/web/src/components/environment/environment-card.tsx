@@ -10,6 +10,7 @@ import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button, LinkButton } from "@/components/ui/button";
 import {
+  createDialogHandle,
   Dialog,
   DialogClose,
   DialogContent,
@@ -17,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  TDialogHandle,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -135,65 +137,77 @@ function ThreeDotButton({
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [renameHandle] = useState(() => createDialogHandle());
+  const [deleteHandle] = useState(() => createDialogHandle());
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            data-open={isOpen || undefined}
-            fadeOnDisabled={false}
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
-              className,
-            )}
-          >
-            <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
-          </Button>
-        }
-      />
-      <DropdownMenuContent
-        className="z-50 w-40"
-        sideOffset={-1}
-        data-open={isOpen || undefined}
-        align="end"
-        keepMounted
-      >
-        <ScrollArea>
-          <DropdownMenuGroup>
-            <RenameTrigger
-              environment={environment}
-              teamId={teamId}
-              projectId={projectId}
-              closeDropdown={() => setIsOpen(false)}
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              data-open={isOpen || undefined}
+              fadeOnDisabled={false}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+                className,
+              )}
             >
-              <DropdownMenuItem closeOnClick={false}>
-                <PenIcon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Rename</p>
-              </DropdownMenuItem>
-            </RenameTrigger>
-            {!disableDelete && (
-              <DeleteTrigger
-                environment={environment}
-                teamId={teamId}
-                projectId={projectId}
-                closeDropdown={() => setIsOpen(false)}
-              >
-                <DropdownMenuItem
-                  closeOnClick={false}
-                  className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
-                >
-                  <Trash2Icon className="-ml-0.5 size-5" />
-                  <p className="min-w-0 shrink leading-tight">Delete</p>
-                </DropdownMenuItem>
-              </DeleteTrigger>
-            )}
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+            </Button>
+          }
+        />
+        <DropdownMenuContent
+          className="z-50 w-40"
+          sideOffset={-1}
+          data-open={isOpen || undefined}
+          align="end"
+          keepMounted
+        >
+          <ScrollArea>
+            <DropdownMenuGroup>
+              {/* The dialogs live outside the menu; nested inside the open modal menu they would be inert */}
+              <DialogTrigger
+                handle={renameHandle}
+                render={
+                  <DropdownMenuItem>
+                    <PenIcon className="-ml-0.5 size-5" />
+                    <p className="min-w-0 shrink leading-tight">Rename</p>
+                  </DropdownMenuItem>
+                }
+              />
+              {!disableDelete && (
+                <DialogTrigger
+                  handle={deleteHandle}
+                  render={
+                    <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
+                      <Trash2Icon className="-ml-0.5 size-5" />
+                      <p className="min-w-0 shrink leading-tight">Delete</p>
+                    </DropdownMenuItem>
+                  }
+                />
+              )}
+            </DropdownMenuGroup>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <RenameTrigger
+        environment={environment}
+        teamId={teamId}
+        projectId={projectId}
+        handle={renameHandle}
+      />
+      {!disableDelete && (
+        <DeleteTrigger
+          environment={environment}
+          teamId={teamId}
+          projectId={projectId}
+          handle={deleteHandle}
+        />
+      )}
+    </>
   );
 }
 
@@ -201,14 +215,14 @@ function DeleteTrigger({
   environment,
   teamId,
   projectId,
-  closeDropdown,
+  handle,
   children,
 }: {
   environment: TEnvironmentShallow;
   teamId: string;
   projectId: string;
-  closeDropdown: () => void;
-  children: ReactElement;
+  handle?: TDialogHandle;
+  children?: ReactElement;
 }) {
   const router = useRouter();
   const { environmentId } = useIdsFromPathname();
@@ -240,11 +254,9 @@ function DeleteTrigger({
       dialogDescription="Are you sure you want to delete this environment? This action cannot be undone. All the services inside this environment will be permanently deleted."
       error={deleteEnvironmentError}
       deletingEntityName={environment.name}
+      handle={handle}
       onDialogClose={() => {
         deleteEnvironmentReset();
-      }}
-      onDialogCloseImmediate={() => {
-        closeDropdown();
       }}
       onSubmit={async () => {
         const deletingCurrentEnv = environmentId === environment.id;
@@ -304,14 +316,14 @@ function RenameTrigger({
   environment,
   teamId,
   projectId,
-  closeDropdown,
+  handle,
   children,
 }: {
   environment: TEnvironmentShallow;
   teamId: string;
   projectId: string;
-  closeDropdown: () => void;
-  children: ReactElement;
+  handle?: TDialogHandle;
+  children?: ReactElement;
 }) {
   const {
     mutateAsync: updateEnvironment,
@@ -342,11 +354,9 @@ function RenameTrigger({
       dialogDescription="Give a new name and description to the environment."
       error={updateEnvironmentError}
       formSchema={EnvironmentRenameSchema}
+      handle={handle}
       onDialogClose={() => {
         updateEnvironmentReset();
-      }}
-      onDialogCloseImmediate={() => {
-        closeDropdown();
       }}
       onSubmit={async (value) => {
         await updateEnvironment({

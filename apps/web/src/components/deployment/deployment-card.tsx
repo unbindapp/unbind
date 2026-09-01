@@ -12,6 +12,7 @@ import { useService, useServiceUtils } from "@/components/service/service-provid
 import { useServicesUtils } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
 import {
+  createDialogHandle,
   Dialog,
   DialogClose,
   DialogContent,
@@ -19,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  TDialogHandle,
 } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -53,7 +55,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { ReactElement, HTMLAttributes, useRef, useState } from "react";
+import { HTMLAttributes, useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
 
 type TProps = HTMLAttributes<HTMLDivElement> &
@@ -174,105 +176,127 @@ function ThreeDotButton({
   isCurrentDeployment: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [restartHandle] = useState(() => createDialogHandle());
+  const [rollbackHandle] = useState(() => createDialogHandle());
+  const [redeployHandle] = useState(() => createDialogHandle());
+  const [abortHandle] = useState(() => createDialogHandle());
+  const [removeHandle] = useState(() => createDialogHandle());
+
+  const showRestart = isCurrentDeployment && deployment.status !== "removed";
+  const showRollback = deployment.status === "removed" && !isCurrentDeployment;
+  const showAbort =
+    deployment.status === "build-pending" ||
+    deployment.status === "build-queued" ||
+    deployment.status === "build-running";
+  const showRemove =
+    isCurrentDeployment && deployment.status !== "removed" && service.type !== "database";
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            data-open={isOpen || undefined}
-            size="icon"
-            variant="ghost"
-            className="text-muted-more-foreground group/button active:bg-foreground/6 has-hover:hover:bg-foreground/6 focus-visible:bg-foreground/6"
-          >
-            <EllipsisVerticalIcon className="size-6 transition group-data-open/button:rotate-90" />
-          </Button>
-        }
-      />
-      <DropdownMenuContent
-        className="z-50 w-40"
-        sideOffset={-1}
-        data-open={isOpen || undefined}
-        align="end"
-        keepMounted
-      >
-        <ScrollArea>
-          <DropdownMenuGroup>
-            {isCurrentDeployment && deployment.status !== "removed" && (
-              <RestartTrigger closeDropdown={() => setIsOpen(false)}>
-                <DropdownMenuItem closeOnClick={false}>
-                  <RotateCcwIcon className="-ml-0.5 size-5" />
-                  <p className="min-w-0 shrink leading-tight">Restart</p>
-                </DropdownMenuItem>
-              </RestartTrigger>
-            )}
-            {deployment.status === "removed" && !isCurrentDeployment && (
-              <RedeployTrigger
-                title="Rollback"
-                description="Are you sure you want to rollback this deployment?"
-                buttonText="Rollback"
-                skipBuildIfPossible={true}
-                closeDropdown={() => setIsOpen(false)}
-                deployment={deployment}
-              >
-                <DropdownMenuItem closeOnClick={false}>
-                  <RewindIcon className="-ml-0.5 size-5" />
-                  <p className="min-w-0 shrink leading-tight">Rollback</p>
-                </DropdownMenuItem>
-              </RedeployTrigger>
-            )}
-            <RedeployTrigger
-              showSkipBuildIfPossibleToggle={isCurrentDeployment}
-              showSkipBuildCacheToggle={service.type === "github"}
-              closeDropdown={() => setIsOpen(false)}
-              deployment={deployment}
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              data-open={isOpen || undefined}
+              size="icon"
+              variant="ghost"
+              className="text-muted-more-foreground group/button active:bg-foreground/6 has-hover:hover:bg-foreground/6 focus-visible:bg-foreground/6"
             >
-              <DropdownMenuItem closeOnClick={false}>
-                <RocketIcon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Redeploy</p>
-              </DropdownMenuItem>
-            </RedeployTrigger>
-            {(deployment.status === "build-pending" ||
-              deployment.status === "build-queued" ||
-              deployment.status === "build-running") && (
-              <AbortTrigger deployment={deployment} closeDropdown={() => setIsOpen(false)}>
-                <DropdownMenuItem
-                  closeOnClick={false}
-                  className="active:bg-warning/10 data-highlighted:bg-warning/10 data-highlighted:text-warning"
-                >
-                  <OctagonXIcon className="-ml-0.5 size-5" />
-                  <p className="min-w-0 shrink leading-tight">Abort</p>
-                </DropdownMenuItem>
-              </AbortTrigger>
-            )}
-            {isCurrentDeployment &&
-              deployment.status !== "removed" &&
-              service.type !== "database" && (
-                <RemoveTrigger deployment={deployment} closeDropdown={() => setIsOpen(false)}>
-                  <DropdownMenuItem
-                    closeOnClick={false}
-                    className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
-                  >
-                    <Trash2Icon className="-ml-0.5 size-5" />
-                    <p className="min-w-0 shrink leading-tight">Remove</p>
-                  </DropdownMenuItem>
-                </RemoveTrigger>
+              <EllipsisVerticalIcon className="size-6 transition group-data-open/button:rotate-90" />
+            </Button>
+          }
+        />
+        <DropdownMenuContent
+          className="z-50 w-40"
+          sideOffset={-1}
+          data-open={isOpen || undefined}
+          align="end"
+          keepMounted
+        >
+          <ScrollArea>
+            <DropdownMenuGroup>
+              {/* The dialogs live outside the menu; nested inside the open modal menu they would be inert */}
+              {showRestart && (
+                <DialogTrigger
+                  handle={restartHandle}
+                  render={
+                    <DropdownMenuItem>
+                      <RotateCcwIcon className="-ml-0.5 size-5" />
+                      <p className="min-w-0 shrink leading-tight">Restart</p>
+                    </DropdownMenuItem>
+                  }
+                />
               )}
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              {showRollback && (
+                <DialogTrigger
+                  handle={rollbackHandle}
+                  render={
+                    <DropdownMenuItem>
+                      <RewindIcon className="-ml-0.5 size-5" />
+                      <p className="min-w-0 shrink leading-tight">Rollback</p>
+                    </DropdownMenuItem>
+                  }
+                />
+              )}
+              <DialogTrigger
+                handle={redeployHandle}
+                render={
+                  <DropdownMenuItem>
+                    <RocketIcon className="-ml-0.5 size-5" />
+                    <p className="min-w-0 shrink leading-tight">Redeploy</p>
+                  </DropdownMenuItem>
+                }
+              />
+              {showAbort && (
+                <DialogTrigger
+                  handle={abortHandle}
+                  render={
+                    <DropdownMenuItem className="active:bg-warning/10 data-highlighted:bg-warning/10 data-highlighted:text-warning">
+                      <OctagonXIcon className="-ml-0.5 size-5" />
+                      <p className="min-w-0 shrink leading-tight">Abort</p>
+                    </DropdownMenuItem>
+                  }
+                />
+              )}
+              {showRemove && (
+                <DialogTrigger
+                  handle={removeHandle}
+                  render={
+                    <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
+                      <Trash2Icon className="-ml-0.5 size-5" />
+                      <p className="min-w-0 shrink leading-tight">Remove</p>
+                    </DropdownMenuItem>
+                  }
+                />
+              )}
+            </DropdownMenuGroup>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {showRestart && <RestartTrigger handle={restartHandle} />}
+      {showRollback && (
+        <RedeployTrigger
+          title="Rollback"
+          description="Are you sure you want to rollback this deployment?"
+          buttonText="Rollback"
+          skipBuildIfPossible={true}
+          handle={rollbackHandle}
+          deployment={deployment}
+        />
+      )}
+      <RedeployTrigger
+        showSkipBuildIfPossibleToggle={isCurrentDeployment}
+        showSkipBuildCacheToggle={service.type === "github"}
+        handle={redeployHandle}
+        deployment={deployment}
+      />
+      {showAbort && <AbortTrigger deployment={deployment} handle={abortHandle} />}
+      {showRemove && <RemoveTrigger deployment={deployment} handle={removeHandle} />}
+    </>
   );
 }
 
-function RestartTrigger({
-  closeDropdown,
-  children,
-}: {
-  closeDropdown: () => void;
-  children: ReactElement;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
+function RestartTrigger({ handle }: { handle: TDialogHandle }) {
   const { teamId, projectId, environmentId, serviceId } = useService();
 
   const props = { teamId, projectId, environmentId, serviceId };
@@ -306,8 +330,7 @@ function RestartTrigger({
           timeout: 5000,
         });
       }
-      setIsOpen(false);
-      closeDropdown();
+      handle.close();
     },
   });
 
@@ -315,11 +338,9 @@ function RestartTrigger({
 
   return (
     <Dialog
-      open={isOpen}
+      handle={handle}
       onOpenChange={(open) => {
-        setIsOpen(open);
         if (!open) {
-          closeDropdown();
           if (timeout.current) clearTimeout(timeout.current);
           timeout.current = setTimeout(() => {
             reset();
@@ -327,7 +348,6 @@ function RestartTrigger({
         }
       }}
     >
-      <DialogTrigger render={children} />
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Restart</DialogTitle>
@@ -364,12 +384,10 @@ function RestartTrigger({
 
 function AbortTrigger({
   deployment,
-  closeDropdown,
-  children,
+  handle,
 }: {
   deployment: TDeploymentShallow;
-  closeDropdown: () => void;
-  children: ReactElement;
+  handle: TDialogHandle;
 }) {
   const { teamId, projectId, environmentId, serviceId } = useService();
 
@@ -412,27 +430,21 @@ function AbortTrigger({
           deploymentId: deployment.id,
         });
       }}
-      onDialogCloseImmediate={() => {
-        closeDropdown();
-      }}
+      handle={handle}
       onDialogClose={() => {
         reset();
       }}
       error={error}
-    >
-      {children}
-    </DeleteEntityTrigger>
+    />
   );
 }
 
 function RemoveTrigger({
   deployment,
-  closeDropdown,
-  children,
+  handle,
 }: {
   deployment: TDeploymentShallow;
-  closeDropdown: () => void;
-  children: ReactElement;
+  handle: TDialogHandle;
 }) {
   const { teamId, projectId, environmentId, serviceId } = useService();
 
@@ -480,41 +492,34 @@ function RemoveTrigger({
           deploymentId: deployment.id,
         });
       }}
-      onDialogCloseImmediate={() => {
-        closeDropdown();
-      }}
+      handle={handle}
       onDialogClose={() => {
         reset();
       }}
       error={error}
-    >
-      {children}
-    </DeleteEntityTrigger>
+    />
   );
 }
 
 function RedeployTrigger({
   deployment,
-  closeDropdown,
+  handle,
   title,
   description,
   buttonText,
   skipBuildIfPossible,
   showSkipBuildIfPossibleToggle,
   showSkipBuildCacheToggle,
-  children,
 }: {
   deployment: TDeploymentShallow;
-  closeDropdown: () => void;
+  handle: TDialogHandle;
   skipBuildIfPossible?: boolean;
   showSkipBuildIfPossibleToggle?: boolean;
   showSkipBuildCacheToggle?: boolean;
   title?: string;
   description?: string;
   buttonText?: string;
-  children: ReactElement;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
   const { teamId, projectId, environmentId, serviceId } = useService();
 
   const props = { teamId, projectId, environmentId, serviceId };
@@ -537,8 +542,7 @@ function RedeployTrigger({
     mutationFn: redeployDeploymentFn,
     onSuccess: async () => {
       await Promise.all([refetchServices(), refetchService(), refetchDeployments()]);
-      setIsOpen(false);
-      closeDropdown();
+      handle.close();
     },
   });
 
@@ -564,11 +568,9 @@ function RedeployTrigger({
 
   return (
     <Dialog
-      open={isOpen}
+      handle={handle}
       onOpenChange={(open) => {
-        setIsOpen(open);
         if (!open) {
-          closeDropdown();
           if (timeout.current) clearTimeout(timeout.current);
           timeout.current = setTimeout(() => {
             reset();
@@ -576,7 +578,6 @@ function RedeployTrigger({
         }
       }}
     >
-      <DialogTrigger render={children} />
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>{title || "Redeploy"}</DialogTitle>

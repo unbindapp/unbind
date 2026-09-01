@@ -7,6 +7,7 @@ import { useTemplateDraftStore } from "@/components/templates/template-draft-sto
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
+import { createDialogHandle, DialogTrigger } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerClose,
@@ -130,6 +131,7 @@ function ThreeDotButton({
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [deleteHandle] = useState(() => createDialogHandle());
   const { closePanel } = useTemplateDraftPanel();
 
   const removeTemplateDraft = useTemplateDraftStore((s) => s.remove);
@@ -144,57 +146,59 @@ function ThreeDotButton({
   }, [templateDraft.id, closePanel, removeTemplateDraft]);
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            data-open={isOpen || undefined}
-            fadeOnDisabled={false}
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
-              className,
-            )}
-          >
-            <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
-          </Button>
-        }
-      />
-      <DropdownMenuContent
-        className="z-50 w-40"
-        sideOffset={-1}
-        data-open={isOpen || undefined}
-        align="end"
-        keepMounted
-      >
-        <ScrollArea>
-          <DropdownMenuGroup>
-            <DeleteEntityTrigger
-              dialogTitle="Delete Template Draft"
-              dialogDescription="Are you sure you want to delete this template draft? This action cannot be undone."
-              onSubmit={async () => {
-                deleteTemplateDraft();
-              }}
-              error={null}
-              deletingEntityName={templateDraft.name}
-              onDialogCloseImmediate={() => {
-                setIsOpen(false);
-              }}
-              onDialogClose={() => {}}
-              disableConfirmationInput
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              data-open={isOpen || undefined}
+              fadeOnDisabled={false}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
+                className,
+              )}
             >
-              <DropdownMenuItem
-                closeOnClick={false}
-                className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
-              >
-                <Trash2Icon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Delete</p>
-              </DropdownMenuItem>
-            </DeleteEntityTrigger>
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
+            </Button>
+          }
+        />
+        <DropdownMenuContent
+          className="z-50 w-40"
+          sideOffset={-1}
+          data-open={isOpen || undefined}
+          align="end"
+          keepMounted
+        >
+          <ScrollArea>
+            <DropdownMenuGroup>
+              {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
+              <DialogTrigger
+                handle={deleteHandle}
+                render={
+                  <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
+                    <Trash2Icon className="-ml-0.5 size-5" />
+                    <p className="min-w-0 shrink leading-tight">Delete</p>
+                  </DropdownMenuItem>
+                }
+              />
+            </DropdownMenuGroup>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <DeleteEntityTrigger
+        dialogTitle="Delete Template Draft"
+        dialogDescription="Are you sure you want to delete this template draft? This action cannot be undone."
+        onSubmit={async () => {
+          deleteTemplateDraft();
+        }}
+        error={null}
+        deletingEntityName={templateDraft.name}
+        handle={deleteHandle}
+        onDialogClose={() => {}}
+        disableConfirmationInput
+      />
+    </>
   );
 }

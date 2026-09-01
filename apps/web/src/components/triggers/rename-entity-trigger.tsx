@@ -1,6 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import {
+  createDialogHandle,
   Dialog,
   DialogClose,
   DialogContent,
@@ -8,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  TDialogHandle,
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -19,7 +21,8 @@ type TPropsShared = {
   onDialogClose?: () => void;
   onDialogCloseImmediate?: () => void;
   error: { message: string } | null;
-  children: ReactElement;
+  handle?: TDialogHandle;
+  children?: ReactElement;
   dialogTitle: string;
   dialogDescription: string;
   formSchema: z.ZodSchema<{ name: string; description: string }>;
@@ -59,11 +62,13 @@ export default function RenameEntityTrigger({
   onDialogClose,
   onDialogCloseImmediate,
   error,
+  handle,
   children,
   nameMaxLength = serviceNameMaxLength,
   descriptionMaxLength = serviceDescriptionMaxLength,
 }: TProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [internalHandle] = useState(() => createDialogHandle());
+  const dialogHandle = handle ?? internalHandle;
   const timeout = useRef<NodeJS.Timeout>(undefined);
 
   const form = useAppForm({
@@ -73,13 +78,11 @@ export default function RenameEntityTrigger({
     },
     onSubmit: async ({ value }) => {
       if (value.name === name && (type === "name-only" || value.description === description)) {
-        setIsDialogOpen(false);
-        onClose();
+        dialogHandle.close();
         return;
       }
       await onSubmit(value);
-      setIsDialogOpen(false);
-      onClose();
+      dialogHandle.close();
     },
   });
 
@@ -96,13 +99,12 @@ export default function RenameEntityTrigger({
 
   return (
     <Dialog
-      open={isDialogOpen}
+      handle={dialogHandle}
       onOpenChange={(o) => {
-        setIsDialogOpen(o);
         if (!o) onClose();
       }}
     >
-      <DialogTrigger render={children} />
+      {children && <DialogTrigger render={children} />}
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>

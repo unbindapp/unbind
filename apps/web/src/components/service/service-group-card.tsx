@@ -6,6 +6,7 @@ import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import ServiceGroupIcon from "@/components/service/service-group-icon";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
+import { createDialogHandle, DialogTrigger, TDialogHandle } from "@/components/ui/dialog";
 import { cn } from "@/components/ui/utils";
 import {
   deleteServiceGroup as deleteServiceGroupFn,
@@ -129,67 +130,75 @@ function ThreeDotButton({
   className,
 }: TThreeDotButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [renameHandle] = useState(() => createDialogHandle());
+  const [deleteHandle] = useState(() => createDialogHandle());
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            data-open={isOpen || undefined}
-            fadeOnDisabled={false}
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "text-muted-more-foreground group/button shrink-0 rounded-lg group-data-placeholder/card:text-transparent",
-              className,
-            )}
-          >
-            <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
-          </Button>
-        }
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              data-open={isOpen || undefined}
+              fadeOnDisabled={false}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "text-muted-more-foreground group/button shrink-0 rounded-lg group-data-placeholder/card:text-transparent",
+                className,
+              )}
+            >
+              <EllipsisVerticalIcon className="size-6 rotate-90 transition-transform group-data-open/button:rotate-180" />
+            </Button>
+          }
+        />
+        <DropdownMenuContent
+          className="z-50 w-40"
+          sideOffset={-1}
+          data-open={isOpen || undefined}
+          align="end"
+          keepMounted
+        >
+          <ScrollArea>
+            <DropdownMenuGroup>
+              {/* The dialogs live outside the menu; nested inside the open modal menu they would be inert */}
+              <DialogTrigger
+                handle={renameHandle}
+                render={
+                  <DropdownMenuItem>
+                    <PenIcon className="-ml-0.5 size-5" />
+                    <p className="min-w-0 shrink leading-tight">Rename</p>
+                  </DropdownMenuItem>
+                }
+              />
+              <DialogTrigger
+                handle={deleteHandle}
+                render={
+                  <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
+                    <Trash2Icon className="-ml-0.5 size-5" />
+                    <p className="min-w-0 shrink leading-tight">Delete</p>
+                  </DropdownMenuItem>
+                }
+              />
+            </DropdownMenuGroup>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <RenameTrigger
+        serviceGroup={serviceGroup}
+        teamId={teamId}
+        projectId={projectId}
+        environmentId={environmentId}
+        handle={renameHandle}
       />
-      <DropdownMenuContent
-        className="z-50 w-40"
-        sideOffset={-1}
-        data-open={isOpen || undefined}
-        align="end"
-        keepMounted
-      >
-        <ScrollArea>
-          <DropdownMenuGroup>
-            <RenameTrigger
-              serviceGroup={serviceGroup}
-              teamId={teamId}
-              projectId={projectId}
-              environmentId={environmentId}
-              onSuccess={() => setIsOpen(false)}
-              onDialogCloseImmediate={() => setIsOpen(false)}
-            >
-              <DropdownMenuItem closeOnClick={false}>
-                <PenIcon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Rename</p>
-              </DropdownMenuItem>
-            </RenameTrigger>
-            <DeleteTrigger
-              serviceGroup={serviceGroup}
-              teamId={teamId}
-              projectId={projectId}
-              environmentId={environmentId}
-              onSuccess={() => setIsOpen(false)}
-              onDialogCloseImmediate={() => setIsOpen(false)}
-            >
-              <DropdownMenuItem
-                closeOnClick={false}
-                className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
-              >
-                <Trash2Icon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Delete</p>
-              </DropdownMenuItem>
-            </DeleteTrigger>
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      <DeleteTrigger
+        serviceGroup={serviceGroup}
+        teamId={teamId}
+        projectId={projectId}
+        environmentId={environmentId}
+        handle={deleteHandle}
+      />
+    </>
   );
 }
 
@@ -198,9 +207,8 @@ type TRenameTriggerProps = {
   teamId: string;
   projectId: string;
   environmentId: string;
-  onDialogCloseImmediate?: () => void;
-  onSuccess?: () => void;
-  children: ReactElement;
+  handle?: TDialogHandle;
+  children?: ReactElement;
 };
 
 function RenameTrigger({
@@ -208,8 +216,7 @@ function RenameTrigger({
   teamId,
   projectId,
   environmentId,
-  onDialogCloseImmediate,
-  onSuccess,
+  handle,
   children,
 }: TRenameTriggerProps) {
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
@@ -234,7 +241,6 @@ function RenameTrigger({
           description: refetchRes.error.message,
         });
       }
-      onSuccess?.();
     },
   });
 
@@ -249,10 +255,8 @@ function RenameTrigger({
       description={serviceGroup.group.description || ""}
       formSchema={ServiceRenameSchema}
       error={error}
+      handle={handle}
       onDialogClose={() => reset()}
-      onDialogCloseImmediate={() => {
-        onDialogCloseImmediate?.();
-      }}
       onSubmit={async (value) => {
         await updateServiceGroup({
           id: serviceGroup.group.id,
@@ -274,9 +278,8 @@ type TDeleteTriggerProps = {
   teamId: string;
   projectId: string;
   environmentId: string;
-  children: ReactElement;
-  onDialogCloseImmediate?: () => void;
-  onSuccess?: () => void;
+  handle?: TDialogHandle;
+  children?: ReactElement;
 };
 
 function DeleteTrigger({
@@ -284,8 +287,7 @@ function DeleteTrigger({
   teamId,
   projectId,
   environmentId,
-  onSuccess,
-  onDialogCloseImmediate,
+  handle,
   children,
 }: TDeleteTriggerProps) {
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
@@ -312,7 +314,6 @@ function DeleteTrigger({
             "Successfully deleted the service group, but failed to refetch services. Please refresh the page.",
         });
       }
-      onSuccess?.();
     },
   });
 
@@ -331,9 +332,7 @@ function DeleteTrigger({
       }}
       error={errorDeleteGroup}
       deletingEntityName={`${serviceGroup.group.name} and all services inside it`}
-      onDialogCloseImmediate={() => {
-        onDialogCloseImmediate?.();
-      }}
+      handle={handle}
       onDialogClose={() => {
         resetDeleteGroup();
       }}

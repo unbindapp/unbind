@@ -1,6 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import {
+  createDialogHandle,
   Dialog,
   DialogClose,
   DialogContent,
@@ -8,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  TDialogHandle,
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -26,7 +28,8 @@ type TProps = {
   submitButtonText?: string;
   variant?: "destructive" | "warning";
   EntityNameBadge?: FC<{ className?: string }>;
-  children: ReactElement;
+  handle?: TDialogHandle;
+  children?: ReactElement;
 };
 
 export function DeleteEntityTrigger({
@@ -41,9 +44,11 @@ export function DeleteEntityTrigger({
   submitButtonText,
   variant = "destructive",
   EntityNameBadge,
+  handle,
   children,
 }: TProps) {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [internalHandle] = useState(() => createDialogHandle());
+  const dialogHandle = handle ?? internalHandle;
 
   const textToConfirm = `Delete ${deletingEntityName} permanently`;
 
@@ -66,8 +71,7 @@ export function DeleteEntityTrigger({
     },
     onSubmit: async ({ formApi }) => {
       await onSubmit();
-      setIsDialogOpen(false);
-      onClose();
+      dialogHandle.close();
       formApi.reset();
     },
   });
@@ -87,13 +91,12 @@ export function DeleteEntityTrigger({
 
   return (
     <Dialog
-      open={isDialogOpen}
+      handle={dialogHandle}
       onOpenChange={(o) => {
-        setIsDialogOpen(o);
         if (!o) onClose();
       }}
     >
-      <DialogTrigger render={children} />
+      {children && <DialogTrigger render={children} />}
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle className={variant === "warning" ? "text-warning" : "text-destructive"}>

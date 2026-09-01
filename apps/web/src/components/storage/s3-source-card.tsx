@@ -162,7 +162,7 @@ function S3SourceDialog({
       <DialogContent hideXButton className="p-0" classNameInnerWrapper="w-128 max-w-full gap-0">
         <DialogHeader className="px-5 py-3.5">
           <DialogTitle className="sr-only">{s3Source.name}</DialogTitle>
-          <RenameTrigger s3Source={s3Source} teamId={teamId} closeDropdown={() => null}>
+          <RenameTrigger s3Source={s3Source} teamId={teamId}>
             <Button
               variant="ghost"
               className="group/button -my-1 -ml-2.5 flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2.5 py-1"
@@ -172,11 +172,7 @@ function S3SourceDialog({
             </Button>
           </RenameTrigger>
         </DialogHeader>
-        <S3SourceDialogInnerContent
-          s3Source={s3Source}
-          teamId={teamId}
-          closeDropdown={() => setIsOpen(false)}
-        />
+        <S3SourceDialogInnerContent s3Source={s3Source} teamId={teamId} />
       </DialogContent>
     </Dialog>
   );
@@ -188,7 +184,6 @@ function S3SourceDialogInnerContent({
 }: {
   s3Source: TS3SourceShallow;
   teamId: string;
-  closeDropdown: () => void;
 }) {
   const { data, isPending, error } = useQuery(
     testS3Query({
@@ -279,7 +274,7 @@ function S3SourceDialogInnerContent({
       <div className="bg-border h-px w-full" />
       <div className="flex w-full items-center justify-between px-1 py-2">
         <div className="max-w-1/2 px-1">
-          <DeleteTrigger s3Source={s3Source} teamId={teamId} closeDropdown={() => {}}>
+          <DeleteTrigger s3Source={s3Source} teamId={teamId}>
             <Button variant="ghost-destructive" className="w-full px-4">
               <Trash2Icon className="-ml-0.75 size-4.5" />
               <p className="min-w-0 shrink">Delete</p>
@@ -310,61 +305,63 @@ function ThreeDotButton({
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [renameHandle] = useState(() => createDialogHandle());
+  const [deleteHandle] = useState(() => createDialogHandle());
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            data-open={isOpen || undefined}
-            fadeOnDisabled={false}
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
-              className,
-            )}
-          >
-            <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
-          </Button>
-        }
-      />
-      <DropdownMenuContent
-        className="z-50 w-40"
-        sideOffset={-1}
-        data-open={isOpen || undefined}
-        align="end"
-        keepMounted
-      >
-        <ScrollArea>
-          <DropdownMenuGroup>
-            <RenameTrigger
-              s3Source={s3Source}
-              teamId={teamId}
-              closeDropdown={() => setIsOpen(false)}
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              data-open={isOpen || undefined}
+              fadeOnDisabled={false}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+                className,
+              )}
             >
-              <DropdownMenuItem closeOnClick={false}>
-                <PenIcon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Rename</p>
-              </DropdownMenuItem>
-            </RenameTrigger>
-            <DeleteTrigger
-              teamId={teamId}
-              s3Source={s3Source}
-              closeDropdown={() => setIsOpen(false)}
-            >
-              <DropdownMenuItem
-                closeOnClick={false}
-                className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
-              >
-                <Trash2Icon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Delete</p>
-              </DropdownMenuItem>
-            </DeleteTrigger>
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+            </Button>
+          }
+        />
+        <DropdownMenuContent
+          className="z-50 w-40"
+          sideOffset={-1}
+          data-open={isOpen || undefined}
+          align="end"
+          keepMounted
+        >
+          <ScrollArea>
+            <DropdownMenuGroup>
+              {/* The dialogs live outside the menu; nested inside the open modal menu they would be inert */}
+              <DialogTrigger
+                handle={renameHandle}
+                render={
+                  <DropdownMenuItem>
+                    <PenIcon className="-ml-0.5 size-5" />
+                    <p className="min-w-0 shrink leading-tight">Rename</p>
+                  </DropdownMenuItem>
+                }
+              />
+              <DialogTrigger
+                handle={deleteHandle}
+                render={
+                  <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
+                    <Trash2Icon className="-ml-0.5 size-5" />
+                    <p className="min-w-0 shrink leading-tight">Delete</p>
+                  </DropdownMenuItem>
+                }
+              />
+            </DropdownMenuGroup>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <RenameTrigger s3Source={s3Source} teamId={teamId} handle={renameHandle} />
+      <DeleteTrigger s3Source={s3Source} teamId={teamId} handle={deleteHandle} />
+    </>
   );
 }
 
@@ -417,13 +414,13 @@ const RenameSchema = z.object({
 function RenameTrigger({
   s3Source,
   teamId,
-  closeDropdown,
+  handle,
   children,
 }: {
   s3Source: TS3SourceShallow;
   teamId: string;
-  closeDropdown: () => void;
-  children: ReactElement;
+  handle?: TDialogHandle;
+  children?: ReactElement;
 }) {
   const {
     mutateAsync: updateS3Source,
@@ -442,11 +439,9 @@ function RenameTrigger({
       dialogDescription="Give a new name to the S3 source."
       error={updateS3SourceError}
       formSchema={RenameSchema}
+      handle={handle}
       onDialogClose={() => {
         updateS3SourceReset();
-      }}
-      onDialogCloseImmediate={() => {
-        closeDropdown();
       }}
       onSubmit={async (value) => {
         await updateS3Source({
@@ -477,13 +472,13 @@ function RenameTrigger({
 function DeleteTrigger({
   s3Source,
   teamId,
-  closeDropdown,
+  handle,
   children,
 }: {
   s3Source: TS3SourceShallow;
   teamId: string;
-  closeDropdown: () => void;
-  children: ReactElement;
+  handle?: TDialogHandle;
+  children?: ReactElement;
 }) {
   const { invalidate: invalidateS3Sources } = useS3SourcesUtils({ teamId });
 
@@ -499,11 +494,9 @@ function DeleteTrigger({
       dialogDescription="Are you sure you want to delete this S3 source? This action cannot be undone. Services depending on this S3 source will have to be reconfigured."
       deletingEntityName={s3Source.name}
       error={deleteS3SourceError}
+      handle={handle}
       onDialogClose={() => {
         deleteS3SourceReset();
-      }}
-      onDialogCloseImmediate={() => {
-        closeDropdown();
       }}
       onSubmit={async () => {
         await deleteS3Source({

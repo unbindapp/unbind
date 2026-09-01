@@ -4,6 +4,7 @@ import BrandIcon from "@/components/icons/brand";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
+import { createDialogHandle, DialogTrigger, TDialogHandle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -98,53 +99,54 @@ function ThreeDotButton({
   className?: string;
 } & TWebhookProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [deleteHandle] = useState(() => createDialogHandle());
 
   const deleteTriggerProps = type === "project" ? { type, teamId, projectId } : { type, teamId };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            data-open={isOpen || undefined}
-            fadeOnDisabled={false}
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
-              className,
-            )}
-          >
-            <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
-          </Button>
-        }
-      />
-      <DropdownMenuContent
-        className="z-50 w-40"
-        sideOffset={-1}
-        data-open={isOpen || undefined}
-        align="end"
-        keepMounted
-      >
-        <ScrollArea>
-          <DropdownMenuGroup>
-            <DeleteTrigger
-              {...deleteTriggerProps}
-              webhook={webhook}
-              closeDropdown={() => setIsOpen(false)}
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              data-open={isOpen || undefined}
+              fadeOnDisabled={false}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
+                className,
+              )}
             >
-              <DropdownMenuItem
-                closeOnClick={false}
-                className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
-              >
-                <Trash2Icon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">Delete</p>
-              </DropdownMenuItem>
-            </DeleteTrigger>
-          </DropdownMenuGroup>
-        </ScrollArea>
-      </DropdownMenuContent>
-    </DropdownMenu>
+              <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+            </Button>
+          }
+        />
+        <DropdownMenuContent
+          className="z-50 w-40"
+          sideOffset={-1}
+          data-open={isOpen || undefined}
+          align="end"
+          keepMounted
+        >
+          <ScrollArea>
+            <DropdownMenuGroup>
+              {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
+              <DialogTrigger
+                handle={deleteHandle}
+                render={
+                  <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
+                    <Trash2Icon className="-ml-0.5 size-5" />
+                    <p className="min-w-0 shrink leading-tight">Delete</p>
+                  </DropdownMenuItem>
+                }
+              />
+            </DropdownMenuGroup>
+          </ScrollArea>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <DeleteTrigger {...deleteTriggerProps} webhook={webhook} handle={deleteHandle} />
+    </>
   );
 }
 
@@ -153,12 +155,12 @@ function DeleteTrigger({
   type,
   teamId,
   projectId,
-  closeDropdown,
+  handle,
   children,
 }: {
   webhook: TWebhookShallow;
-  closeDropdown: () => void;
-  children: ReactElement;
+  handle?: TDialogHandle;
+  children?: ReactElement;
 } & TWebhookProps) {
   const { invalidate: invalidateWebhooks } = useWebhooksUtils(
     type === "project"
@@ -178,7 +180,6 @@ function DeleteTrigger({
     mutationFn: deleteWebhookFn,
     onSuccess: async () => {
       await invalidateWebhooks();
-      closeDropdown();
     },
   });
 
@@ -193,11 +194,9 @@ function DeleteTrigger({
         </p>
       )}
       deletingEntityName={webhook.url}
+      handle={handle}
       onDialogClose={() => {
         deleteWebhookReset();
-      }}
-      onDialogCloseImmediate={() => {
-        closeDropdown();
       }}
       error={deleteWebhookError}
       onSubmit={async () => {
