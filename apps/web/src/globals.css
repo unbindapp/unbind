@@ -309,7 +309,9 @@
   --animate-pulse: initial;
   --animate-bounce: initial;
   --animate-skeleton: skeleton 1.25s ease-in-out infinite;
-  --animate-skeleton-weaker: skeleton-weaker 1.25s ease-in-out infinite;
+  /* the delay matches the 300ms opacity transition on the users of this
+     animation, whose target matches the 0% keyframe, so entry is seamless */
+  --animate-skeleton-weaker: skeleton-weaker 1.25s ease-in-out 0.3s infinite;
   --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
   --animate-ping: ping 1s ease-in-out infinite;
   --animate-spin: spin 1s linear infinite;
@@ -350,13 +352,13 @@
 
   @keyframes skeleton-weaker {
     0% {
-      opacity: 50%;
-    }
-    50% {
       opacity: 25%;
     }
-    100% {
+    50% {
       opacity: 50%;
+    }
+    100% {
+      opacity: 25%;
     }
   }
 
