@@ -107,6 +107,8 @@ function InputWithInfo({
   const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
   const ref = useRef<HTMLInputElement>(null);
   const inputRef = rest.ref || ref;
+  // The label-included layout renders the icon inside its floating label
+  const hasStandaloneIcon = Icon !== undefined && rest.layout !== "label-included";
 
   return (
     <div
@@ -114,7 +116,7 @@ function InputWithInfo({
       data-invalid={hasError || undefined}
       className={cn("relative flex flex-col", className)}
     >
-      {Icon && (
+      {hasStandaloneIcon && (
         <Icon
           className={cn("pointer-events-none absolute top-3 left-3.5 size-4.5", classNameIcon)}
         />
@@ -122,9 +124,10 @@ function InputWithInfo({
       <Input
         ref={inputRef}
         {...rest}
+        Icon={hasStandaloneIcon ? undefined : Icon}
         aria-invalid={hasError || undefined}
         data-show-undo={showUndo || undefined}
-        className={cn("w-full data-show-undo:pr-11", Icon && "pl-10", classNameInput)}
+        className={cn("w-full data-show-undo:pr-11", hasStandaloneIcon && "pl-10", classNameInput)}
       />
       {showUndo && (
         <Button
