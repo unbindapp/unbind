@@ -208,5 +208,10 @@
     "version": "v0.1.41",
     "description": "Gluetun proxy password hashing, and button, dropdown, and brand icon style tweaks",
     "breaking": false
+  },
+  "v0.1.42": {
+    "version": "v0.1.42",
+    "description": "Gluetun proxy service URL fix and pending screen tweaks",
+    "breaking": false
   }
 }
