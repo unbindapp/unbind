@@ -28,6 +28,13 @@ func TestResolveTemplate(t *testing.T) {
 				Required:    true,
 				Default:     new("1"),
 			},
+			{
+				ID:          "input_test_value",
+				Name:        "Test Value",
+				Type:        schema.InputTypeVariable,
+				Description: "A user-supplied value.",
+				Required:    true,
+			},
 		},
 		Services: []schema.TemplateService{
 			{
@@ -37,11 +44,20 @@ func TestResolveTemplate(t *testing.T) {
 				Builder: schema.ServiceBuilderDocker,
 				InputIDs: []string{
 					"input_storage_size",
+					"input_test_value",
 				},
 				Variables: []schema.TemplateVariable{
 					{
 						Name:  "STATIC_VAR",
 						Value: "static-value",
+					},
+					{
+						Name: "INPUT_VAR",
+						Generator: &schema.ValueGenerator{
+							Type:      schema.GeneratorTypeInput,
+							InputID:   "input_test_value",
+							AddPrefix: "prefix-",
+						},
 					},
 					{
 						Name: "GENERATED_PASSWORD",
@@ -68,6 +84,7 @@ func TestResolveTemplate(t *testing.T) {
 	// Test template resolution
 	inputs := map[string]string{
 		"input_storage_size": "2",
+		"input_test_value":   "user-value",
 	}
 	kubeNameMap := map[string]string{
 		"service_testservice": "test-service",
@@ -89,13 +106,18 @@ func TestResolveTemplate(t *testing.T) {
 	assert.Equal(t, template.Services[0].Name, service.Name)
 	assert.Equal(t, template.Services[0].Type, service.Type)
 	assert.Equal(t, template.Services[0].Builder, service.Builder)
-	assert.Len(t, service.Variables, 3)
+	assert.Len(t, service.Variables, 4)
 
 	// Verify static variable is preserved
 	staticVar := findVariable(service.Variables, "STATIC_VAR")
 	require.NotNil(t, staticVar)
 	assert.Equal(t, "static-value", staticVar.Value)
 	assert.Nil(t, staticVar.Generator)
+
+	// Verify input variable resolves to the user-supplied value
+	inputVar := findVariable(service.Variables, "INPUT_VAR")
+	require.NotNil(t, inputVar)
+	assert.Equal(t, "prefix-user-value", inputVar.Value)
 
 	// Verify password is generated
 	passwordVar := findVariable(service.Variables, "GENERATED_PASSWORD")

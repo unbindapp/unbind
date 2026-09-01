@@ -23,6 +23,7 @@ func (self *Templater) AvailableTemplates() []*schema.TemplateDefinition {
 		plausibleTemplate(),
 		umamiTemplate(),
 		wireGuardTemplate(),
+		gluetunTemplate(),
 		supabaseTemplate(),
 		n8nTemplate(),
 		pocketBaseTemplate(),
