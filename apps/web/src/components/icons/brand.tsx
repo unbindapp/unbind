@@ -23,6 +23,7 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
   const gradientId10 = useId();
   const gradientId11 = useId();
   const gradientId12 = useId();
+  const gradientId13 = useId();
 
   if (brand === "go") {
     return (
@@ -1412,6 +1413,52 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
           d="M15.984 6.343c-1.891-2.638-4.852-4.433-8.096-4.488 6.27-2.846 13.983 1.768 14.823 8.59a3.3 3.3 0 0 1-.305 1.85c-1.172 2.38-3.344 4.225-5.882 4.907 1.86-3.45 1.63-7.663-.54-10.86"
           fill={color === "monochrome" ? "currentColor" : "#EE342F"}
         />
+      </svg>
+    );
+  }
+
+  if (brand === "hono") {
+    return (
+      <svg
+        className={cn(defaultClassName, className)}
+        {...rest}
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {color === "monochrome" && (
+          <path
+            d="M12.45 1c3.816 4.49 8.081 10.775 8.081 14.367 0 4.49-4.265 7.633-8.305 7.633-4.939 0-8.756-3.816-8.756-8.306 0-1.347.674-5.388 2.47-8.082l1.57 2.02S9.53 4.593 12.45 1zm-.224 4.714c-11.45 12.347-2.47 14.816 0 14.816 3.143 0 10.55-3.368 0-14.816zm-.01 3.032c3.74 4.551 3.69 6.94 3.292 7.915-.235.577-.713 1.042-1.381 1.382-.684.348-1.425.487-1.902.487-.357 0-1.118-.104-1.877-.423-.757-.318-1.297-.755-1.568-1.277-.24-.462-.442-1.321.143-2.897.484-1.305 1.48-3.013 3.294-5.187z"
+            fill="currentColor"
+          />
+        )}
+        {color === "brand" && (
+          <>
+            <path
+              d="M5.94 6.612l1.57 2.02S9.532 4.593 12.45 1c3.816 4.49 8.081 10.775 8.081 14.367 0 4.49-4.265 7.633-8.306 7.633-4.939 0-8.755-3.816-8.755-8.306 0-1.347.673-5.388 2.47-8.082z"
+              fill={`url(#${gradientId13})`}
+            />
+            <path
+              d="M12.225 5.714c10.551 11.45 3.143 14.817 0 14.817-2.47 0-11.449-2.47 0-14.817z"
+              fill="#F95"
+            />
+            <defs>
+              <linearGradient
+                id={gradientId13}
+                x1="3.47"
+                y1="1"
+                x2="3.47"
+                y2="23"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stop-color="#F84" />
+                <stop offset="1" stop-color="#F30" />
+              </linearGradient>
+            </defs>
+          </>
+        )}
       </svg>
     );
   }
