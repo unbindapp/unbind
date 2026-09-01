@@ -309,6 +309,7 @@
   --animate-pulse: initial;
   --animate-bounce: initial;
   --animate-skeleton: skeleton 1.25s ease-in-out infinite;
+  --animate-skeleton-weaker: skeleton-weaker 1.25s ease-in-out infinite;
   --animate-pulse-scale: pulse-scale 1s ease-in-out infinite;
   --animate-ping: ping 1s ease-in-out infinite;
   --animate-spin: spin 1s linear infinite;
@@ -337,13 +338,25 @@
 
   @keyframes skeleton {
     0% {
-      opacity: 20%;
-    }
-    50% {
       opacity: 40%;
     }
-    100% {
+    50% {
       opacity: 20%;
+    }
+    100% {
+      opacity: 40%;
+    }
+  }
+
+  @keyframes skeleton-weaker {
+    0% {
+      opacity: 50%;
+    }
+    50% {
+      opacity: 25%;
+    }
+    100% {
+      opacity: 50%;
     }
   }
 
