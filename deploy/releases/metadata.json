@@ -218,5 +218,10 @@
     "version": "v0.1.43",
     "description": "Service icon improvements and five icon slots on service group cards",
     "breaking": false
+  },
+  "v0.1.44": {
+    "version": "v0.1.44",
+    "description": "Service and volume panels open through links, nested trigger fixes, and service URL animation tweaks",
+    "breaking": false
   }
 }
