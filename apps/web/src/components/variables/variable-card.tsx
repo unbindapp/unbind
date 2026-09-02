@@ -453,6 +453,7 @@ function ThreeDotButton({
               {!isLocked && (
                 /* The dialog lives outside the menu; nested inside the open modal menu it would be inert */
                 <DialogTrigger
+                  nativeButton={false}
                   handle={deleteHandle}
                   render={
                     <DropdownMenuItem

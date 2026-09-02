@@ -42,6 +42,7 @@ export function CreateBackupSourceTrigger({
               </DropdownMenuLabel>
               {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
               <DialogTrigger
+                nativeButton={false}
                 handle={dialogHandle}
                 render={
                   <DropdownMenuItem className="gap-1.5">

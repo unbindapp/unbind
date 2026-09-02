@@ -133,6 +133,7 @@ function ThreeDotButton({
             <DropdownMenuGroup>
               {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
               <DialogTrigger
+                nativeButton={false}
                 handle={deleteHandle}
                 render={
                   <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">

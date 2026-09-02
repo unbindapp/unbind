@@ -3,7 +3,11 @@ import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
 } from "@/components/deployment/deployment-status-chip";
 import { useDeploymentsUtils } from "@/components/deployment/deployments-provider";
-import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
+import {
+  deploymentPanelDefaultTabId,
+  deploymentPanelDeploymentIdKey,
+  deploymentPanelTabKey,
+} from "@/components/deployment/panel/constants";
 import ErrorLine from "@/components/error-line";
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import BrandIcon from "@/components/icons/brand";
@@ -44,6 +48,7 @@ import {
 import { restartInstances } from "@/lib/queries/instances";
 import { TServiceShallow } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
   EllipsisVerticalIcon,
   GitBranchIcon,
@@ -84,8 +89,6 @@ export default function DeploymentCard({
   showInstances,
   ...rest
 }: TProps) {
-  const { openPanel } = useDeploymentPanel();
-
   const { title, titleNotFound } = getTitle({ deployment, service, isPlaceholder });
   const brand = getBrand(service, isPlaceholder);
 
@@ -103,6 +106,44 @@ export default function DeploymentCard({
     showInstances &&
     (deployment?.status === "build-pending" || deployment?.status === "build-queued");
 
+  const cardClassName =
+    "has-hover:group-hover/card:bg-border/50 has-hover:group-hover/card:group-data-[color=destructive]/card:bg-destructive/7 has-hover:group-hover/card:group-data-[color=process]/card:bg-process/7 has-hover:group-hover/card:group-data-[color=success]/card:bg-success/7 has-hover:group-hover/card:group-data-[color=wait]/card:bg-wait/7 has-hover:hover:bg-border/50 has-hover:hover:group-data-[color=destructive]/card:bg-destructive/7 has-hover:hover:group-data-[color=process]/card:bg-process/7 has-hover:hover:group-data-[color=success]/card:bg-success/7 has-hover:hover:group-data-[color=wait]/card:bg-wait/7 focus-within:bg-border/50 focus-within:group-data-[color=success]/card:bg-success/7 focus-within:group-data-[color=destructive]/card:bg-destructive/7 focus-within:group-data-[color=process]/card:bg-process/7 focus-within:group-data-[color=wait]/card:bg-wait/7 focus-visible:bg-border/50 focus-visible:group-data-[color=process]/card:bg-process/7 focus-visible:group-data-[color=destructive]/card:bg-destructive/7 focus-visible:hover:group-data-[color=success]/card:bg-success/7 focus-visible:hover:group-data-[color=wait]/card:bg-wait/7 group-data-[color=destructive]/card:bg-destructive/4 group-data-[color=process]/card:bg-process/4 group-data-[color=success]/card:bg-success/4 group-data-[color=wait]/card:bg-wait/4 active:bg-border/50 active:group-data-[color=destructive]/card:bg-destructive/7 active:group-data-[color=process]/card:bg-process/7 active:group-data-[color=success]/card:bg-success/7 active:group-data-[color=wait]/card:bg-wait/7 group-data-[color=destructive]/card:border-destructive/12 group-data-[color=process]/card:border-process/12 group-data-[color=success]/card:border-success/12 group-data-[color=wait]/card:border-wait/12 focus-visible:ring-offset-background focus-visible:ring-primary/50 flex min-w-0 flex-1 flex-col rounded-xl border px-3.5 py-3 text-left focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:flex-row sm:items-center sm:py-3.5 sm:pr-13 sm:pl-4";
+
+  const cardContent = (
+    <>
+      <div className="flex shrink-0 flex-col items-start justify-start pr-8 sm:w-34 sm:pr-3">
+        <DeploymentStatusChip deployment={deployment} isPlaceholder={isPlaceholder} />
+      </div>
+      <div className="mt-2 flex shrink-0 flex-col items-start justify-center sm:mt-0">
+        <BrandIcon
+          brand={brand}
+          color="brand"
+          className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent"
+        />
+      </div>
+      <div className="mt-1.5 flex min-w-0 flex-1 flex-col items-start gap-2 pr-2 pb-0.5 sm:mt-0 sm:pl-3">
+        <div className="flex w-full flex-col gap-1.25 pb-0.5">
+          <div className="flex w-full flex-col items-start justify-start">
+            <p
+              data-no-title={titleNotFound || undefined}
+              className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight wrap-break-word group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-px data-no-title:rounded data-no-title:px-1.5 data-no-title:py-px"
+            >
+              {title}
+            </p>
+          </div>
+          {isPlaceholder ? (
+            <DeploymentInfo isPlaceholder={true} service={service} />
+          ) : (
+            <DeploymentInfo deployment={deployment} service={service} />
+          )}
+        </div>
+        {!temporarilyHideInstances && showInstances && (
+          <DeploymentInstances isPending={isPlaceholder} />
+        )}
+      </div>
+    </>
+  );
+
   return (
     <div
       {...rest}
@@ -110,45 +151,24 @@ export default function DeploymentCard({
       data-placeholder={isPlaceholder || undefined}
       className="group/card relative flex w-full flex-row items-stretch rounded-xl"
     >
-      <button
-        onClick={
-          deployment
-            ? () => openPanel(deployment.id, isDeployed ? "deploy-logs" : undefined)
-            : undefined
-        }
-        className="has-hover:group-hover/card:bg-border/50 has-hover:group-hover/card:group-data-[color=destructive]/card:bg-destructive/7 has-hover:group-hover/card:group-data-[color=process]/card:bg-process/7 has-hover:group-hover/card:group-data-[color=success]/card:bg-success/7 has-hover:group-hover/card:group-data-[color=wait]/card:bg-wait/7 has-hover:hover:bg-border/50 has-hover:hover:group-data-[color=destructive]/card:bg-destructive/7 has-hover:hover:group-data-[color=process]/card:bg-process/7 has-hover:hover:group-data-[color=success]/card:bg-success/7 has-hover:hover:group-data-[color=wait]/card:bg-wait/7 focus-within:bg-border/50 focus-within:group-data-[color=success]/card:bg-success/7 focus-within:group-data-[color=destructive]/card:bg-destructive/7 focus-within:group-data-[color=process]/card:bg-process/7 focus-within:group-data-[color=wait]/card:bg-wait/7 focus-visible:bg-border/50 focus-visible:group-data-[color=process]/card:bg-process/7 focus-visible:group-data-[color=destructive]/card:bg-destructive/7 focus-visible:hover:group-data-[color=success]/card:bg-success/7 focus-visible:hover:group-data-[color=wait]/card:bg-wait/7 group-data-[color=destructive]/card:bg-destructive/4 group-data-[color=process]/card:bg-process/4 group-data-[color=success]/card:bg-success/4 group-data-[color=wait]/card:bg-wait/4 active:bg-border/50 active:group-data-[color=destructive]/card:bg-destructive/7 active:group-data-[color=process]/card:bg-process/7 active:group-data-[color=success]/card:bg-success/7 active:group-data-[color=wait]/card:bg-wait/7 group-data-[color=destructive]/card:border-destructive/12 group-data-[color=process]/card:border-process/12 group-data-[color=success]/card:border-success/12 group-data-[color=wait]/card:border-wait/12 focus-visible:ring-offset-background focus-visible:ring-primary/50 flex min-w-0 flex-1 flex-col rounded-xl border px-3.5 py-3 text-left focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:flex-row sm:items-center sm:py-3.5 sm:pr-13 sm:pl-4"
-      >
-        <div className="flex shrink-0 flex-col items-start justify-start pr-8 sm:w-34 sm:pr-3">
-          <DeploymentStatusChip deployment={deployment} isPlaceholder={isPlaceholder} />
-        </div>
-        <div className="mt-2 flex shrink-0 flex-col items-start justify-center sm:mt-0">
-          <BrandIcon
-            brand={brand}
-            color="brand"
-            className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton size-6 group-data-placeholder/card:rounded-full group-data-placeholder/card:text-transparent"
-          />
-        </div>
-        <div className="mt-1.5 flex min-w-0 flex-1 flex-col items-start gap-2 pr-2 pb-0.5 sm:mt-0 sm:pl-3">
-          <div className="flex w-full flex-col gap-1.25 pb-0.5">
-            <div className="flex w-full flex-col items-start justify-start">
-              <p
-                data-no-title={titleNotFound || undefined}
-                className="data-no-title:bg-border data-no-title:text-muted-foreground group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton max-w-full min-w-0 shrink leading-tight wrap-break-word group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent data-no-title:-my-px data-no-title:rounded data-no-title:px-1.5 data-no-title:py-px"
-              >
-                {title}
-              </p>
-            </div>
-            {isPlaceholder ? (
-              <DeploymentInfo isPlaceholder={true} service={service} />
-            ) : (
-              <DeploymentInfo deployment={deployment} service={service} />
-            )}
-          </div>
-          {!temporarilyHideInstances && showInstances && (
-            <DeploymentInstances isPending={isPlaceholder} />
-          )}
-        </div>
-      </button>
+      {deployment ? (
+        <Link
+          from="/$team_id/project/$project_id"
+          to="."
+          search={(prev) => ({
+            ...prev,
+            [deploymentPanelDeploymentIdKey]: deployment.id,
+            [deploymentPanelTabKey]: isDeployed ? "deploy-logs" : deploymentPanelDefaultTabId,
+          })}
+          replace={true}
+          resetScroll={false}
+          className={cardClassName}
+        >
+          {cardContent}
+        </Link>
+      ) : (
+        <button className={cardClassName}>{cardContent}</button>
+      )}
       <div className="absolute top-1 right-1 shrink-0 sm:top-1/2 sm:right-2 sm:-translate-y-1/2">
         {isPlaceholder ? (
           <Button size="icon" variant="ghost" disabled fadeOnDisabled={false}>
@@ -218,6 +238,7 @@ function ThreeDotButton({
               {/* The dialogs live outside the menu; nested inside the open modal menu they would be inert */}
               {showRestart && (
                 <DialogTrigger
+                  nativeButton={false}
                   handle={restartHandle}
                   render={
                     <DropdownMenuItem>
@@ -229,6 +250,7 @@ function ThreeDotButton({
               )}
               {showRollback && (
                 <DialogTrigger
+                  nativeButton={false}
                   handle={rollbackHandle}
                   render={
                     <DropdownMenuItem>
@@ -239,6 +261,7 @@ function ThreeDotButton({
                 />
               )}
               <DialogTrigger
+                nativeButton={false}
                 handle={redeployHandle}
                 render={
                   <DropdownMenuItem>
@@ -249,6 +272,7 @@ function ThreeDotButton({
               />
               {showAbort && (
                 <DialogTrigger
+                  nativeButton={false}
                   handle={abortHandle}
                   render={
                     <DropdownMenuItem className="active:bg-warning/10 data-highlighted:bg-warning/10 data-highlighted:text-warning">
@@ -260,6 +284,7 @@ function ThreeDotButton({
               )}
               {showRemove && (
                 <DialogTrigger
+                  nativeButton={false}
                   handle={removeHandle}
                   render={
                     <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">

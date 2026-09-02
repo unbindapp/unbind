@@ -37,22 +37,21 @@ type TProps = {
 };
 
 export default function TemplateDraftPanel({ templateDraft, children }: TProps) {
-  const { closePanel, currentTemplateDraftId, openPanel } = useTemplateDraftPanel();
+  const { closePanel, currentTemplateDraftId } = useTemplateDraftPanel();
 
   const open = currentTemplateDraftId === templateDraft.id;
-
-  const setOpen = (open: boolean) => {
-    if (open) {
-      openPanel(templateDraft.id);
-    } else {
-      closePanel();
-    }
-  };
   const { isExtraSmall } = useDeviceSize();
 
   return (
-    <Drawer open={open} onOpenChange={setOpen} direction={isExtraSmall ? "bottom" : "right"}>
-      <DrawerTrigger render={children} />
+    <Drawer
+      open={open}
+      // Opening is driven by the trigger link's navigation, only closing is handled here.
+      onOpenChange={(newOpen) => {
+        if (!newOpen) closePanel();
+      }}
+      direction={isExtraSmall ? "bottom" : "right"}
+    >
+      <DrawerTrigger nativeButton={false} render={children} />
       <DrawerContent
         hasHandle={isExtraSmall}
         className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
@@ -175,6 +174,7 @@ function ThreeDotButton({
             <DropdownMenuGroup>
               {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
               <DialogTrigger
+                nativeButton={false}
                 handle={deleteHandle}
                 render={
                   <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">

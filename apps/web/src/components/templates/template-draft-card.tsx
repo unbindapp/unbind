@@ -1,8 +1,9 @@
 import BrandIcon from "@/components/icons/brand";
+import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
 import TemplateDraftPanel from "@/components/templates/panel/template-draft-panel";
 import TemplateDraftIcon from "@/components/templates/template-draft-icon";
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { HTMLProps, useMemo } from "react";
 
@@ -31,8 +32,16 @@ export default function TemplateDraftCard({
   return (
     <li {...rest} className={cn("group/item flex w-full flex-col p-1", className)}>
       <TemplateDraftPanel templateDraft={templateDraft}>
-        <Button
+        <LinkButton
           variant="ghost"
+          from="/$team_id/project/$project_id"
+          to="."
+          search={(prev) => ({
+            ...prev,
+            [templateDraftPanelTemplateDraftIdKey]: templateDraft.id,
+          })}
+          replace={true}
+          resetScroll={false}
           className={cn(
             "bg-process/8 dark:bg-process/6 dark:has-hover:hover:bg-process/12 dark:active:bg-process/12 has-hover:hover:bg-process/16 active:bg-process/16 dark:border-process/20 border-process/24 flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border border-dashed bg-[radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_8%,transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px] px-5 py-3.5 text-left font-semibold dark:bg-[radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px)]",
             classNameCard,
@@ -78,7 +87,7 @@ export default function TemplateDraftCard({
               )}
             </div>
           </div>
-        </Button>
+        </LinkButton>
       </TemplateDraftPanel>
     </li>
   );
