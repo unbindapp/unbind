@@ -23,6 +23,7 @@ type TProps = ComponentProps<"div"> & {
         isExpanded: boolean;
         isHighlighted?: boolean;
         onToggleExpanded: () => void;
+        onCollapseAll: () => void;
         isPlaceholder?: never;
       }
     | {
@@ -31,6 +32,7 @@ type TProps = ComponentProps<"div"> & {
         isExpanded?: never;
         isHighlighted?: never;
         onToggleExpanded?: never;
+        onCollapseAll?: never;
         isPlaceholder: true;
       }
   );
@@ -43,6 +45,7 @@ export default function LogLine({
   isExpanded,
   isHighlighted,
   onToggleExpanded,
+  onCollapseAll,
   className,
   classNameInner,
   ...rest
@@ -180,7 +183,7 @@ export default function LogLine({
           serviceName={serviceName}
           structured={structured}
           type={type}
-          onCollapse={onToggleExpanded}
+          onCollapseAll={onCollapseAll}
         />
       )}
     </div>
@@ -192,13 +195,13 @@ function LogLineDetails({
   serviceName,
   structured,
   type,
-  onCollapse,
+  onCollapseAll,
 }: {
   logLine: TLogLine;
   serviceName: string;
   structured: ReturnType<typeof parseStructuredLog>;
   type: TLogType;
-  onCollapse: () => void;
+  onCollapseAll: () => void;
 }) {
   const { hasActiveFilters, viewInContext, rangeEnabled } = useLogFilters();
 
@@ -250,7 +253,7 @@ function LogLineDetails({
               size="sm"
               variant="outline"
               onClick={() => {
-                onCollapse();
+                onCollapseAll();
                 viewInContext({ timestamp: logLine.timestamp!, pod_name: logLine.pod_name });
               }}
             >

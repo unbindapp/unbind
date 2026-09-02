@@ -330,7 +330,7 @@ function LogList({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
-  const { expandedKeys, toggleExpanded } = useExpandedKeys();
+  const { expandedKeys, toggleExpanded, collapseAll } = useExpandedKeys();
 
   // The indicator lives above the list in the same scroller, not as a virtual
   // row: the prepend anchor grabs the item under the scroll offset, and an
@@ -435,6 +435,7 @@ function LogList({
                 serviceNamesById={serviceNamesById}
                 expandedKeys={expandedKeys}
                 onToggleExpanded={toggleExpanded}
+                onCollapseAll={collapseAll}
                 highlightIndex={highlightIndex}
               />
             </div>
@@ -624,7 +625,8 @@ function useExpandedKeys() {
       return next;
     });
   }, []);
-  return { expandedKeys, toggleExpanded };
+  const collapseAll = useCallback(() => setExpandedKeys(new Set()), []);
+  return { expandedKeys, toggleExpanded, collapseAll };
 }
 
 type TVirtualRowsProps = TRowsProps & {
@@ -633,6 +635,7 @@ type TVirtualRowsProps = TRowsProps & {
   scrollMargin: number;
   expandedKeys: ReadonlySet<string>;
   onToggleExpanded: (key: string) => void;
+  onCollapseAll: () => void;
   highlightIndex: number;
 };
 
@@ -646,6 +649,7 @@ function VirtualRows({
   serviceNamesById,
   expandedKeys,
   onToggleExpanded,
+  onCollapseAll,
   highlightIndex,
 }: TVirtualRowsProps) {
   return items.map((item) => {
@@ -669,6 +673,7 @@ function VirtualRows({
           isExpanded={expandedKeys.has(line.key)}
           isHighlighted={item.index === highlightIndex}
           onToggleExpanded={() => onToggleExpanded(line.key)}
+          onCollapseAll={onCollapseAll}
           serviceName={
             serviceNamesById.get(line.metadata.service_id ?? "") ||
             line.metadata.service_id ||
