@@ -4,6 +4,7 @@ import { useNow } from "@/components/providers/now-provider";
 import { servicePanelServiceIdKey } from "@/components/service/panel/constants";
 import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
+import { useIsServiceDeleting } from "@/components/service/use-delete-service";
 import { Button, LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import VolumeLine from "@/components/volume/volume-line";
@@ -30,6 +31,7 @@ import { ReactElement, ReactNode, useMemo } from "react";
 
 type TProps = {
   className?: string;
+  isDeleting?: boolean;
   classNameCard?: string;
   classNameVolumes?: string;
   classNameVolume?: string;
@@ -57,12 +59,15 @@ export default function ServiceCard({
   projectId,
   environmentId,
   isPlaceholder,
+  isDeleting: isDeletingProp,
   className,
   classNameCard,
   classNameVolumes,
   classNameVolume,
   classNameVolumeLast,
 }: TProps) {
+  const isOwnDeleting = useIsServiceDeleting(service?.id);
+  const isDeleting = Boolean(isDeletingProp || isOwnDeleting);
   const panelProps = isPlaceholder
     ? ({ isPlaceholder: true } as const)
     : { teamId, projectId, environmentId, service };
@@ -83,7 +88,7 @@ export default function ServiceCard({
       queryClient.prefetchQuery(serviceEndpointsQuery(input));
       queryClient.prefetchQuery(instanceHealthQuery(input));
     },
-    enabled: !isPlaceholder,
+    enabled: !isPlaceholder && !isDeleting,
   });
 
   const cardClassName = cn(
@@ -111,6 +116,7 @@ export default function ServiceCard({
             <ServiceInfoLine
               className="min-w-0 shrink overflow-hidden text-sm font-normal text-ellipsis whitespace-nowrap"
               service={service}
+              isDeleting={isDeleting}
             />
           ) : (
             <p className="bg-muted-foreground animate-skeleton min-w-0 shrink overflow-hidden rounded-md text-sm font-normal text-ellipsis whitespace-nowrap text-transparent">
@@ -125,7 +131,11 @@ export default function ServiceCard({
   return (
     <li
       data-placeholder={isPlaceholder || undefined}
-      className={cn("group/item flex min-h-40 w-full flex-col p-1", className)}
+      data-deleting={isDeleting || undefined}
+      className={cn(
+        "group/item data-deleting:animate-skeleton-smooth flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-opacity)",
+        className,
+      )}
     >
       <ServicePanelOrPlaceholder {...panelProps}>
         {isPlaceholder ? (
@@ -140,6 +150,7 @@ export default function ServiceCard({
             search={(prev) => ({ ...prev, [servicePanelServiceIdKey]: service.id })}
             replace={true}
             resetScroll={false}
+            disabled={isDeleting}
             className={cardClassName}
             {...buttonIntentProps}
           >
@@ -207,6 +218,7 @@ function ServicePanelOrPlaceholder({
 
 type TServiceInfoLineProps = {
   service: TService;
+  isDeleting: boolean;
   className?: string;
 };
 
@@ -221,9 +233,23 @@ function getDisplayDeployment(service: TServiceShallow): TDeployment | undefined
   return current ?? undefined;
 }
 
-function ServiceInfoLine({ service, className }: TServiceInfoLineProps) {
+function ServiceInfoLine({ service, isDeleting, className }: TServiceInfoLineProps) {
   const deployment = getDisplayDeployment(service);
   const showOfflineFallback = !deployment && Boolean(service.last_deployment);
+
+  if (isDeleting) {
+    return (
+      <div
+        className={cn(
+          "text-destructive flex w-full items-center justify-start gap-1.75",
+          className,
+        )}
+      >
+        <LoaderIcon className="size-3.5 shrink-0 animate-spin" />
+        <p className="min-w-0 shrink truncate">Deleting</p>
+      </div>
+    );
+  }
 
   return (
     <div

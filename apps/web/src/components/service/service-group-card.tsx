@@ -2,6 +2,10 @@ import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import ServiceCard from "@/components/service/service-card";
 import { TServiceGroup } from "@/components/service/service-card-list";
 import { useServicesUtils } from "@/components/service/services-provider";
+import {
+  deleteServiceGroupMutationKey,
+  useIsServiceGroupDeleting,
+} from "@/components/service/use-delete-service";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import ServiceGroupIcon from "@/components/service/service-group-icon";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
@@ -46,11 +50,17 @@ export default function ServiceGroupCard({
   classNameServiceCard,
   ...rest
 }: TProps) {
+  const isDeleting = useIsServiceGroupDeleting(groupObject.group.id);
+
   return (
-    <li className={cn("flex w-full p-1", className)} {...rest}>
+    <li
+      data-deleting={isDeleting || undefined}
+      className={cn("group/group flex w-full p-1", className)}
+      {...rest}
+    >
       <div className="relative flex w-full flex-col rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_60%,transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px]">
         <NewEntityIndicator id={groupObject.group.id} />
-        <div className="flex w-full items-center gap-2 px-4 pt-2.5 pr-10 pb-1.5">
+        <div className="flex w-full items-center gap-2 px-4 pt-2.5 pr-10 pb-1.5 transition-opacity duration-(--skeleton-smooth-lead-in) group-data-deleting/group:pointer-events-none group-data-deleting/group:opacity-(--skeleton-smooth-opacity)">
           <TitleButton
             serviceGroup={groupObject}
             teamId={teamId}
@@ -73,6 +83,7 @@ export default function ServiceGroupCard({
               teamId={teamId}
               projectId={projectId}
               environmentId={environmentId}
+              isDeleting={isDeleting}
               className={cn("min-h-40", classNameServiceCard)}
               classNameCard="rounded-lg"
               classNameVolumes="rounded-b-lg"
@@ -302,6 +313,7 @@ function DeleteTrigger({
     error: errorDeleteGroup,
     reset: resetDeleteGroup,
   } = useMutation({
+    mutationKey: deleteServiceGroupMutationKey(serviceGroup.group.id),
     mutationFn: deleteServiceGroupFn,
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
