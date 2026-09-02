@@ -42,7 +42,7 @@ export default function ErrorCard({ className, message, variant, asElement = "di
         <p className="min-w-0 shrink text-left leading-tight font-medium">Something went wrong</p>
       </div>
       {message && (
-        <p className="text-muted-foreground bg-destructive/4 mt-1 w-full rounded-lg px-3 py-2 text-left font-mono text-xs">
+        <p className="text-muted-foreground bg-destructive/4 mt-1 w-full flex-1 rounded-lg px-3 py-2 text-left font-mono text-xs">
           {message}
         </p>
       )}
