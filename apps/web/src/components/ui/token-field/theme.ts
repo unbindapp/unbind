@@ -47,7 +47,6 @@ export const tokenFieldTheme = EditorView.theme({
 // rules the raw variable editor already uses. tok-key and tok-punct aren't here
 // because they're applied by the languages' own decorations, not by a tag.
 export const tokenFieldHighlightStyle = HighlightStyle.define([
-  { tag: t.string, class: "tok-value" },
   { tag: t.logicOperator, class: "tok-operator" },
   { tag: t.operator, class: "tok-negation" },
 ]);

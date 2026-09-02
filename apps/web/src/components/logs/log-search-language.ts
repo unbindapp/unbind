@@ -36,13 +36,12 @@ export type TLogSearchData = {
   attributeKeys: readonly TClientAttributeKey[];
 };
 
-// Attributes aren't styled from the grammar: whether @foo is one of our keys,
-// and what color its value takes, depends on the key rather than the shape, so
-// they're decorated below instead.
+// Attributes and phrases aren't styled from the grammar: whether @foo is one
+// of our keys, and what color its value takes, depends on the key rather than
+// the shape, and a phrase colors only its quotes, so they're decorated below.
 const parserWithTags = parser.configure({
   props: [
     styleTags({
-      Phrase: t.string,
       "Operator/...": t.logicOperator,
       Minus: t.operator,
     }),
@@ -51,6 +50,7 @@ const parserWithTags = parser.configure({
 
 const punctuation = Decoration.mark({ class: "tok-punct" });
 const attributeKey = Decoration.mark({ class: "tok-key" });
+const quote = Decoration.mark({ class: "tok-quote" });
 // AND/OR are keywords like the attribute keys, so they wear the same chip. A
 // negation is chipped as one unit, dash and term together, in the dash's color.
 const operatorChip = Decoration.mark({ class: "tok-chip tok-chip-process" });
@@ -129,6 +129,13 @@ function buildAttributeDecorations(view: EditorView, data: TLogSearchData) {
         }
         if (node.name === "Negated") {
           builder.add(node.from, node.to, negatedChip);
+          return;
+        }
+        if (node.name === "Phrase") {
+          builder.add(node.from, node.from + 1, quote);
+          const closed =
+            node.to - node.from > 1 && view.state.sliceDoc(node.to - 1, node.to) === '"';
+          if (closed) builder.add(node.to - 1, node.to, quote);
           return;
         }
         if (node.name !== "Attribute") return;

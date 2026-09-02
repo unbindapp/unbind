@@ -662,8 +662,14 @@
     color: color-mix(in oklab, var(--process) 50%, transparent);
   }
 
-  .tok-value {
+  /* Only the quotes are colored, so the phrase itself reads as plain text.
+     Inside a negation chip they take the chip's color. */
+  .tok-quote {
     color: var(--success);
+  }
+
+  .tok-chip-error .tok-quote {
+    color: var(--destructive);
   }
 
   .tok-level-error {
