@@ -308,7 +308,7 @@ function FilterButton({ className }: { className?: string }) {
         collisionPadding={dropdownCollisionPadding}
         className="max-h-[calc(var(--available-height)-4rem)] w-3xl sm:max-h-[min(45rem,calc(var(--available-height)-4rem))] sm:w-80"
       >
-        <ScrollArea className="min-h-0 shrink" classNameViewport="pb-4">
+        <ScrollArea className="min-h-0 shrink">
           <DropdownMenuGroup>
             <DropdownMenuLabel>Levels</DropdownMenuLabel>
             {logLevels.map((level) => {
@@ -339,7 +339,7 @@ function FilterButton({ className }: { className?: string }) {
           {rangeEnabled && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuGroup>
+              <DropdownMenuGroup className="pb-2">
                 <DropdownMenuLabel>Time Range</DropdownMenuLabel>
                 <DropdownMenuRadioGroup
                   value={activeLogRangePreset(range)}
