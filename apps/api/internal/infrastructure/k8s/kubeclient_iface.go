@@ -72,6 +72,8 @@ type KubeClientInterface interface {
 	GetActiveControllerIP(ctx context.Context) (*LoadBalancerAddresses, error)
 	// GetUnusedNodePort returns an unused NodePort, determined by letting kubernetes allocate one then deleting the temp service
 	GetUnusedNodePort(ctx context.Context) (int32, error)
+	// Longhorn only prunes a removed snapshot behind the volume head during a purge, and nothing else triggers one
+	PurgeRemovedLonghornSnapshots(ctx context.Context) error
 	// CreatePersistentVolumeClaim creates a new PersistentVolumeClaim in the specified namespace.
 	CreatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
 	// never resizes an existing claim; UpdatePersistentVolumeClaim owns that

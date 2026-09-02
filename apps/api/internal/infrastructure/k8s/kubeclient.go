@@ -34,6 +34,7 @@ type KubeClient struct {
 	applier                   *Applier
 	updateJobPollInterval     time.Duration
 	resizeCleanupPollInterval time.Duration
+	longhornBackendURL        string
 	certmanagerclient         *certmanagerclientset.Clientset
 	dnsChecker                *utils.DNSChecker
 	httpClient                *http.Client
@@ -81,6 +82,7 @@ func NewKubeClient(cfg config.ConfigInterface, repo repositories.RepositoriesInt
 		applier:                   NewApplier(dynamicClient, clientSet.Discovery(), cfg.GetSystemNamespace()),
 		updateJobPollInterval:     3 * time.Second,
 		resizeCleanupPollInterval: 10 * time.Second,
+		longhornBackendURL:        longhornBackendURL,
 		certmanagerclient:         certManagerClientSet,
 		dnsChecker:                utils.NewDNSChecker(),
 		httpClient: &http.Client{

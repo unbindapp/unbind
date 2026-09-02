@@ -2,13 +2,18 @@ package k8s
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -16,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 func longhornSnapshot(name, volume string) *unstructured.Unstructured {
@@ -152,4 +158,91 @@ func TestCleanupExpansionSnapshotsAfterResize_WaitsForCapacity(t *testing.T) {
 		t.Fatal("cleanup did not finish after resize completed")
 	}
 	assert.Empty(t, listSnapshotNames(t, dynamicClient))
+}
+
+func removedLonghornSnapshot(name, volume string) *unstructured.Unstructured {
+	snapshot := longhornSnapshot(name, volume)
+	snapshot.Object["status"] = map[string]any{"markRemoved": true, "children": map[string]any{"volume-head": true}}
+	return snapshot
+}
+
+type longhornBackendStub struct {
+	states       map[string]string
+	failPurgeFor map[string]bool
+	requests     []string
+}
+
+func (self *longhornBackendStub) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	self.requests = append(self.requests, r.Method+" "+r.URL.RequestURI())
+	volume := strings.TrimPrefix(r.URL.Path, "/v1/volumes/")
+	state, known := self.states[volume]
+	if !known {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	if r.Method == http.MethodPost && r.URL.Query().Get("action") == "snapshotPurge" {
+		if self.failPurgeFor[volume] {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	_ = json.NewEncoder(w).Encode(map[string]string{"state": state})
+}
+
+func TestPurgeRemovedLonghornSnapshots(t *testing.T) {
+	backend := &longhornBackendStub{states: map[string]string{"pvc-attached": "attached", "pvc-detached": "detached", "pvc-clean": "attached"}}
+	server := httptest.NewServer(backend)
+	defer server.Close()
+	kubeClient := &KubeClient{
+		client: newSnapshotDynamicClient(
+			removedLonghornSnapshot("expand-10737418240", "pvc-attached"),
+			removedLonghornSnapshot("expand-21474836480", "pvc-attached"),
+			removedLonghornSnapshot("expand-10737418240-detached", "pvc-detached"),
+			longhornSnapshot("user-snapshot", "pvc-clean"),
+		),
+		longhornBackendURL: server.URL,
+	}
+
+	require.NoError(t, kubeClient.PurgeRemovedLonghornSnapshots(context.Background()))
+
+	assert.Equal(t, []string{
+		"GET /v1/volumes/pvc-attached",
+		"POST /v1/volumes/pvc-attached?action=snapshotPurge",
+		"GET /v1/volumes/pvc-detached",
+	}, backend.requests)
+}
+
+func TestPurgeRemovedLonghornSnapshots_FailedPurgeDoesNotAbort(t *testing.T) {
+	backend := &longhornBackendStub{
+		states:       map[string]string{"pvc-a": "attached", "pvc-b": "attached"},
+		failPurgeFor: map[string]bool{"pvc-a": true},
+	}
+	server := httptest.NewServer(backend)
+	defer server.Close()
+	kubeClient := &KubeClient{
+		client:             newSnapshotDynamicClient(removedLonghornSnapshot("expand-a", "pvc-a"), removedLonghornSnapshot("expand-b", "pvc-b")),
+		longhornBackendURL: server.URL,
+	}
+
+	require.NoError(t, kubeClient.PurgeRemovedLonghornSnapshots(context.Background()))
+
+	assert.Contains(t, backend.requests, "POST /v1/volumes/pvc-a?action=snapshotPurge")
+	assert.Contains(t, backend.requests, "POST /v1/volumes/pvc-b?action=snapshotPurge")
+}
+
+func TestPurgeRemovedLonghornSnapshots_NoLonghornInstalled(t *testing.T) {
+	backend := &longhornBackendStub{}
+	server := httptest.NewServer(backend)
+	defer server.Close()
+	dynamicClient := newSnapshotDynamicClient()
+	dynamicClient.PrependReactor("list", "snapshots", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewNotFound(longhornSnapshotGVR.GroupResource(), "")
+	})
+	kubeClient := &KubeClient{client: dynamicClient, longhornBackendURL: server.URL}
+
+	require.NoError(t, kubeClient.PurgeRemovedLonghornSnapshots(context.Background()))
+
+	assert.Empty(t, backend.requests)
 }

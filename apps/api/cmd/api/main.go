@@ -361,6 +361,22 @@ func startAPI(cfg *config.Config) {
 		log.Fatal("Failed to create database sync job", "err", err)
 	}
 
+	// Reclaim disk pinned by removed Longhorn snapshots
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(6*time.Hour),
+		gocron.NewTask(
+			func(ctx context.Context) {
+				if err := kubeClient.PurgeRemovedLonghornSnapshots(ctx); err != nil {
+					log.Error("Failed to purge removed longhorn snapshots", "err", err)
+				}
+			},
+			ctx,
+		),
+	)
+	if err != nil {
+		log.Fatal("Failed to create longhorn snapshot purge job", "err", err)
+	}
+
 	scheduler.Start()
 	defer func() {
 		if err := scheduler.Shutdown(); err != nil {

@@ -302,8 +302,8 @@ fs.inotify.max_user_instances = 512`
 			},
 		},
 		{
-			Description: "Creating kubelet configuration file for swap support",
-			Progress:    0.04, // choose appropriate progress value
+			Description: "Creating kubelet configuration file",
+			Progress:    0.04,
 			Action: func(ctx context.Context) error {
 				kubeletConfig := `
 apiVersion: kubelet.config.k8s.io/v1beta1
@@ -313,6 +313,7 @@ featureGates:
   NodeSwap: true
 memorySwap:
   swapBehavior: LimitedSwap
+imageMaximumGCAge: 72h
 `
 				// Create the directory if it doesn't exist
 				if err := os.MkdirAll("/etc/rancher/k3s", 0755); err != nil {
