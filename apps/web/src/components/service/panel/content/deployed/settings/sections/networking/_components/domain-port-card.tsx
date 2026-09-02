@@ -163,6 +163,13 @@ export default function DomainPortCard({
 
   const isEditing = useStore(form.store, (s) => s.values.isEditing);
   const showDnsStatus = mode === "public" && !isEditing && dnsStatus !== undefined;
+  const savedStatus = useMemo(
+    () =>
+      mode === "public" && dnsStatus !== undefined
+        ? { domain, dnsStatus, isCloudflare: !!isCloudflare }
+        : undefined,
+    [mode, domain, dnsStatus, isCloudflare],
+  );
 
   const SuffixComponent = useCallback(
     ({ className }: { className?: string }) => {
@@ -294,6 +301,7 @@ export default function DomainPortCard({
                           autoCorrect="off"
                           autoComplete="off"
                           spellCheck="false"
+                          savedStatus={savedStatus}
                         />
                       </BlockItemContent>
                     </BlockItem>

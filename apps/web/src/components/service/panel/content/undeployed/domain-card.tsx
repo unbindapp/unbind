@@ -20,21 +20,32 @@ type TDomainStatusCardProps = {
   hideInstructions?: boolean;
 };
 
+export type TSavedDomainStatus = {
+  domain: string;
+  dnsStatus: DNSStatus;
+  isCloudflare: boolean;
+};
+
 export function DomainCard({
   domain,
   paragraph,
   className,
-}: Omit<TDomainStatusCardProps, "dnsStatus" | "isCloudflare">) {
+  savedStatus,
+}: Omit<TDomainStatusCardProps, "dnsStatus" | "isCloudflare"> & {
+  savedStatus?: TSavedDomainStatus;
+}) {
   const [isValidDebouncedDomain, setIsValidDebouncedDomain] = useState(false);
   const [isValidDomain, setIsValidDomain] = useState(false);
 
   const [debouncedDomain] = useDebounce(domain, defaultDebounceMs);
 
   const isValid = isValidDebouncedDomain && isValidDomain;
+  const isSaved = savedStatus !== undefined && domain === savedStatus.domain;
+  const isSavedDebounced = savedStatus !== undefined && debouncedDomain === savedStatus.domain;
 
   const { data: dnsCheckData } = useQuery({
     ...dnsCheckQuery({ domain: debouncedDomain }),
-    enabled: isValid,
+    enabled: isValid && !isSaved && !isSavedDebounced,
     refetchInterval: 5000,
   });
 
@@ -49,6 +60,18 @@ export function DomainCard({
   }, [domain]);
 
   if (!isValid) return null;
+
+  if (isSaved) {
+    return (
+      <DomainStatusCard
+        domain={domain}
+        dnsStatus={savedStatus.dnsStatus}
+        isCloudflare={savedStatus.isCloudflare}
+        paragraph="Create the DNS record below."
+        className={className}
+      />
+    );
+  }
 
   return (
     <DomainStatusCard
