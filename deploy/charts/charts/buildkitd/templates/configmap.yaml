@@ -8,6 +8,10 @@ data:
     [worker.oci]
     # Limit concurrency of build steps:
     max-parallelism = {{ .Values.maxParallelism }}
+    gc = true
+    reservedSpace = {{ .Values.gc.reservedSpace | quote }}
+    maxUsedSpace = {{ .Values.gc.maxUsedSpace | quote }}
+    minFreeSpace = {{ .Values.gc.minFreeSpace | quote }}
 
     {{- range .Values.registries }}
     [registry."{{ .url }}"]

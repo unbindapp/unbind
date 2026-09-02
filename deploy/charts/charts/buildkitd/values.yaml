@@ -1,6 +1,11 @@
 replicaCount: 1
 image: moby/buildkit:v0.32.2-rootless
 maxParallelism: 2
+# Build cache bounds, percentages are of the disk holding the cache
+gc:
+  reservedSpace: "5%"
+  maxUsedSpace: "20%"
+  minFreeSpace: "25%"
 registries: []
 # registries:
 #   - url: "docker-registry.default:5000"

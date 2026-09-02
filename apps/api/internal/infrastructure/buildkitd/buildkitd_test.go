@@ -18,6 +18,34 @@ enabled = true
 `
 
 func TestRenderInsecureRegistries(t *testing.T) {
+	t.Run("keeps worker gc bounds", func(t *testing.T) {
+		withGC := `[worker.oci]
+max-parallelism = 2
+gc = true
+reservedSpace = "5%"
+maxUsedSpace = "20%"
+minFreeSpace = "25%"
+[registry."old.example:5000"]
+http = true
+insecure = true
+[frontend."dockerfile.v0"]
+enabled = true
+`
+		assert.Equal(t, `[worker.oci]
+max-parallelism = 2
+gc = true
+reservedSpace = "5%"
+maxUsedSpace = "20%"
+minFreeSpace = "25%"
+[registry."new.example:5000"]
+http = true
+insecure = true
+
+[frontend."dockerfile.v0"]
+enabled = true
+`, renderInsecureRegistries(withGC, []string{"new.example:5000"}))
+	})
+
 	t.Run("unchanged when hosts match", func(t *testing.T) {
 		assert.Equal(t, chartToml, renderInsecureRegistries(chartToml, []string{"docker-registry.unbind-system:5000"}))
 	})

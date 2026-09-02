@@ -16,6 +16,34 @@ import (
 
 const K3S_VERSION = "v1.36.1+k3s1"
 
+const kubeletConfigPath = "/etc/rancher/k3s/kubelet-config.yaml"
+
+// Setting evictionHard replaces every kubelet default, so disk signals must be listed alongside memory.
+const kubeletConfig = `apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+failSwapOn: false
+featureGates:
+  NodeSwap: true
+memorySwap:
+  swapBehavior: LimitedSwap
+evictionSoft:
+  memory.available: 300Mi
+evictionSoftGracePeriod:
+  memory.available: 2m
+evictionHard:
+  memory.available: 150Mi
+  nodefs.available: 10%
+  nodefs.inodesFree: 5%
+  imagefs.available: 15%
+evictionMinimumReclaim:
+  memory.available: 128Mi
+  nodefs.available: 5%
+  imagefs.available: 5%
+imageGCHighThresholdPercent: 75
+imageGCLowThresholdPercent: 65
+imageMaximumGCAge: 72h
+`
+
 const (
 	// RegistryInternalHost is the in-cluster address of the self-hosted registry.
 	// Images are pushed and pulled under this name, so it never needs a public domain.
@@ -231,15 +259,9 @@ func (self *Installer) sendFact(fact string) {
 func (self *Installer) Install(ctx context.Context, selfHostedRegistry bool) (string, error) {
 	k3sInstallFlags := "--disable=traefik --disable=local-storage " +
 		"--kubelet-arg=fail-swap-on=false " +
-		"--kubelet-arg=config=/etc/rancher/k3s/kubelet-config.yaml " +
-		"--kubelet-arg=eviction-soft=memory.available<300Mi " +
-		"--kubelet-arg=eviction-soft-grace-period=memory.available=2m " +
-		"--kubelet-arg=eviction-hard=memory.available<150Mi " +
-		"--kubelet-arg=eviction-minimum-reclaim=memory.available=128Mi " +
+		"--kubelet-arg=config=" + kubeletConfigPath + " " +
 		"--kubelet-arg=system-reserved=memory=512Mi,cpu=400m " +
 		"--kubelet-arg=kube-reserved=memory=256Mi,cpu=200m " +
-		"--kubelet-arg=image-gc-high-threshold=85 " +
-		"--kubelet-arg=image-gc-low-threshold=80 " +
 		"--kube-controller-manager-arg=terminated-pod-gc-threshold=10 " +
 		"--kube-apiserver-arg=max-requests-inflight=100 " +
 		"--kube-apiserver-arg=max-mutating-requests-inflight=50 " +
@@ -305,22 +327,10 @@ fs.inotify.max_user_instances = 512`
 			Description: "Creating kubelet configuration file",
 			Progress:    0.04,
 			Action: func(ctx context.Context) error {
-				kubeletConfig := `
-apiVersion: kubelet.config.k8s.io/v1beta1
-kind: KubeletConfiguration
-failSwapOn: false
-featureGates:
-  NodeSwap: true
-memorySwap:
-  swapBehavior: LimitedSwap
-imageMaximumGCAge: 72h
-`
-				// Create the directory if it doesn't exist
-				if err := os.MkdirAll("/etc/rancher/k3s", 0755); err != nil {
+				if err := os.MkdirAll(filepath.Dir(kubeletConfigPath), 0755); err != nil {
 					return fmt.Errorf("failed to create kubelet config directory: %w", err)
 				}
-				configPath := "/etc/rancher/k3s/kubelet-config.yaml"
-				if err := os.WriteFile(configPath, []byte(kubeletConfig), 0644); err != nil {
+				if err := os.WriteFile(kubeletConfigPath, []byte(kubeletConfig), 0644); err != nil {
 					return fmt.Errorf("failed to write kubelet config file: %w", err)
 				}
 				return nil
@@ -905,6 +915,7 @@ LimitNPROC=65536
 					"--set", "defaultSettings.guaranteedInstanceManagerCPU=0",
 					"--set", "defaultSettings.kubernetesClusterAutoscalerEnabled=false",
 					"--set", "defaultSettings.autoCleanupSystemGeneratedSnapshot=true",
+					"--set", "defaultSettings.orphanResourceAutoDeletion=replica-data",
 					"--set", "defaultSettings.disableSchedulingOnCordonedNode=true",
 					"--set", "defaultSettings.fastReplicaRebuildEnabled=false",
 					"--set", "longhornUI.enabled=false",

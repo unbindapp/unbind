@@ -7,6 +7,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
   selector:
     matchLabels:
       app: buildkitd
@@ -36,6 +41,8 @@ spec:
             - tcp://0.0.0.0:1234
             - --config
             - /etc/buildkit/buildkitd.toml
+            - --root
+            - /var/lib/buildkit
             - --oci-worker-no-process-sandbox
           readinessProbe:
             exec:

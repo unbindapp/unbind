@@ -29,6 +29,10 @@ const (
 	DefaultBuildkitConfig = `[worker.oci]
 # Limit concurrency of build steps:
 max-parallelism = 2
+gc = true
+reservedSpace = "5%%"
+maxUsedSpace = "20%%"
+minFreeSpace = "25%%"
 [registry."docker-registry.%s:5000"]
 http = true
 insecure = true
