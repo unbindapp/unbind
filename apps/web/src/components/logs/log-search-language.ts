@@ -51,8 +51,10 @@ const parserWithTags = parser.configure({
 
 const punctuation = Decoration.mark({ class: "tok-punct" });
 const attributeKey = Decoration.mark({ class: "tok-key" });
-// AND/OR are keywords like the attribute keys, so they wear the same chip.
+// AND/OR are keywords like the attribute keys, so they wear the same chip. A
+// negation is chipped as one unit, dash and term together, in the dash's color.
 const operatorChip = Decoration.mark({ class: "tok-chip tok-chip-process" });
+const negatedChip = Decoration.mark({ class: "tok-chip tok-chip-error" });
 
 // The key and its value are chipped separately, each tinted with the color its
 // text already has: `@level:` keeps the keyword color while the value carries
@@ -123,6 +125,10 @@ function buildAttributeDecorations(view: EditorView, data: TLogSearchData) {
       enter: (node) => {
         if (node.name === "Operator") {
           builder.add(node.from, node.to, operatorChip);
+          return;
+        }
+        if (node.name === "Negated") {
+          builder.add(node.from, node.to, negatedChip);
           return;
         }
         if (node.name !== "Attribute") return;
