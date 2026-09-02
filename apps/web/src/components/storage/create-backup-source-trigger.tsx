@@ -37,7 +37,7 @@ export function CreateBackupSourceTrigger({
         <DropdownMenuContent animate={false} className="w-(--anchor-width)">
           <ScrollArea>
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="-mx-1 border-b px-3">
+              <DropdownMenuLabel className="-mx-1 mb-1 border-b px-3 pb-2 font-normal">
                 {"You don't have any buckets. Create a backup source."}
               </DropdownMenuLabel>
               {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
