@@ -1,4 +1,4 @@
-.PHONY: help dev dev-infra dev-infra-down dev-cluster dev-cluster-down dev-api dev-web web embed app run clean gen-web-types check-web-types \
+.PHONY: help dev dev-status dev-start dev-stop dev-reset dev-infra dev-infra-down dev-cluster dev-cluster-down dev-api dev-web web embed app run clean gen-web-types check-web-types \
 	api-ent api-interfaces api-migrate api-migrate-checksum api-test api-fmt api-run \
 	web-build web-dev web-lint web-typecheck web-gen \
 	operator-generate operator-manifests operator-build operator-run operator-test \
@@ -14,6 +14,10 @@ COMPOSE := deploy/compose/docker-compose.yaml
 help:
 	@echo "Local development (no Docker for the app itself):"
 	@echo "  make dev              - Everything: infra + cluster + API + Vite dev server (hot reload)"
+	@echo "  make dev-status       - Show which parts of the dev environment are up"
+	@echo "  make dev-start        - Same as make dev, but in the background"
+	@echo "  make dev-stop         - Stop the API, UI, cluster and infra; state is kept"
+	@echo "  make dev-reset        - Delete the cluster and the database"
 	@echo "  make dev-infra        - Start Postgres + Redis (docker compose)"
 	@echo "  make dev-infra-down   - Stop Postgres + Redis"
 	@echo "  make dev-cluster      - Create the local k3d cluster (full helmfile stack; SYNC=1 to re-sync charts)"
@@ -51,6 +55,18 @@ help:
 
 dev:
 	./scripts/dev.sh
+
+dev-status:
+	./scripts/dev-env.sh status
+
+dev-start:
+	./scripts/dev-env.sh start
+
+dev-stop:
+	./scripts/dev-env.sh stop
+
+dev-reset:
+	./scripts/dev-env.sh reset
 
 # --- Local infra ---
 dev-infra:

@@ -54,7 +54,21 @@ YAML
   kubectl annotate sc local-path storageclass.kubernetes.io/is-default-class=false --overwrite
 }
 
+cluster_running() {
+  k3d cluster list -o json 2>/dev/null | python3 -c '
+import json, sys
+name = sys.argv[1]
+for c in json.load(sys.stdin):
+    if c["name"] == name:
+        sys.exit(0 if c["serversRunning"] > 0 else 1)
+sys.exit(1)' "$CLUSTER"
+}
+
 up() {
+  if k3d cluster get "$CLUSTER" >/dev/null 2>&1 && ! cluster_running; then
+    k3d cluster start "$CLUSTER"
+  fi
+
   if ! k3d cluster get "$CLUSTER" >/dev/null 2>&1; then
     k3d cluster create "$CLUSTER" \
       --image "$K3S_IMAGE" \

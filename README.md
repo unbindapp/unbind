@@ -121,6 +121,14 @@ make dev           # everything: infra + k3d cluster + API on :8089 + Vite on :5
 ```
 
 First run is slow (nix shell + full cluster). Ctrl-C stops the API/UI; infra and cluster stay up.
+It also creates a dev admin user on first start: `admin@unbind.local` / `unbind-dev`.
+
+```bash
+make dev-status    # which parts are up
+make dev-start     # same as make dev, in the background (log: apps/api/.data/dev/dev.log)
+make dev-stop      # stop the API, UI, cluster and infra; everything is kept and resumes on start
+make dev-reset     # delete the cluster and the database
+```
 
 ### 0. Toolchains
 

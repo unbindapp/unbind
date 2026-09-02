@@ -69,4 +69,4 @@ Admin account, created automatically on first start:
     email: admin@unbind.local
     password: unbind-dev
 
-Open http://localhost:5173, or call the API directly at http://localhost:8089 (docs at /docs). Services deployed in the cluster get `*.localhost` domains served on ports 80 and 443.
+Open http://localhost:5173, or call the API directly at http://localhost:8089 (docs at /docs). Mutating API calls need the session cookies plus `Origin: http://localhost:5173` and `X-CSRF-Token: <csrf_token cookie>`. Deployed services are reachable at `https://<kubernetes_name>.localhost` (self-signed, `curl -k`); port 80 is 404 by design.

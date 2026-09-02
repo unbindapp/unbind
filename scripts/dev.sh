@@ -4,6 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 COMPOSE=deploy/compose/docker-compose.yaml
+DEV_ADMIN_EMAIL=admin@unbind.local
+DEV_ADMIN_PASSWORD=unbind-dev
 
 log() { printf '\033[1;34m[dev]\033[0m %s\n' "$*"; }
 
@@ -63,6 +65,13 @@ until curl -fsS -o /dev/null http://localhost:8089/health 2>/dev/null; do
   fi
 done
 log "API is healthy after ${waited}s"
+
+if curl -fsS http://localhost:8089/setup/status | grep -q '"is_first_user_created":false'; then
+  log "creating the dev admin user ${DEV_ADMIN_EMAIL}"
+  curl -fsS -o /dev/null -X POST http://localhost:8089/setup/create-user \
+    -H 'Content-Type: application/json' \
+    -d "{\"email\":\"${DEV_ADMIN_EMAIL}\",\"password\":\"${DEV_ADMIN_PASSWORD}\"}"
+fi
 
 log "starting the Vite dev server on :5173"
 (cd apps/web && VITE_DEV_API_PROXY=http://localhost:8089 npm run dev) &
