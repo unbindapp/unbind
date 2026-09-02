@@ -4,12 +4,12 @@ import { useNow } from "@/components/providers/now-provider";
 import { servicePanelServiceIdKey } from "@/components/service/panel/constants";
 import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
-import { useIsServiceDeleting } from "@/components/service/use-delete-service";
 import { Button, LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import VolumeLine from "@/components/volume/volume-line";
 import { sourceToTitle } from "@/lib/constants";
 import { useIntent } from "@/lib/hooks/use-intent";
+import { deleteMutationKeys, useIsDeleting } from "@/lib/hooks/use-is-deleting";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { deploymentsListQuery } from "@/lib/queries/deployments";
 import { instanceHealthQuery } from "@/lib/queries/instances";
@@ -66,7 +66,7 @@ export default function ServiceCard({
   classNameVolume,
   classNameVolumeLast,
 }: TProps) {
-  const isOwnDeleting = useIsServiceDeleting(service?.id);
+  const isOwnDeleting = useIsDeleting(deleteMutationKeys.service(service?.id ?? ""));
   const isDeleting = Boolean(isDeletingProp || isOwnDeleting);
   const panelProps = isPlaceholder
     ? ({ isPlaceholder: true } as const)

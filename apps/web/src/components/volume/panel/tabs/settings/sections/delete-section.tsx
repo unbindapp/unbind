@@ -6,6 +6,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
+import { deleteMutationKeys } from "@/lib/hooks/use-is-deleting";
 import { deleteVolume as deleteVolumeFn } from "@/lib/queries/storage";
 import { TVolumeShallow } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
@@ -30,6 +31,7 @@ export default function DeleteSection({ volume, className }: TProps) {
     error,
     reset,
   } = useMutation({
+    mutationKey: deleteMutationKeys.volume(volume.id),
     mutationFn: deleteVolumeFn,
     onSuccess: () => {
       closePanel();
@@ -86,9 +88,8 @@ export default function DeleteSection({ volume, className }: TProps) {
           </p>
         ) : volume.is_detaching ? (
           <p className="text-muted-foreground max-w-full px-1.5">
-            This volume is still{" "}
-            <span className="text-foreground font-semibold">detaching</span> from its previous
-            service. It can be deleted once detaching is complete.
+            This volume is still <span className="text-foreground font-semibold">detaching</span>{" "}
+            from its previous service. It can be deleted once detaching is complete.
           </p>
         ) : (
           <p className="text-muted-foreground max-w-full px-1.5">

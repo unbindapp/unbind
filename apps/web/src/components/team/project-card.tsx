@@ -4,9 +4,11 @@ import { useProjectsUtils } from "@/components/project/projects-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { deleteMutationKeys, useIsDeleting } from "@/lib/hooks/use-is-deleting";
 import { deleteProject as deleteProjectFn, type TProjectShallow } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
+import { LoaderIcon } from "lucide-react";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -18,6 +20,7 @@ type TProps = {
 const maxIconSlots = 5;
 
 export default function ProjectCard({ project, isPlaceholder, className }: TProps) {
+  const isDeleting = useIsDeleting(deleteMutationKeys.project(project?.id ?? ""));
   const environments = !isPlaceholder ? project.environments : [];
   const defaultEnvironment = !isPlaceholder
     ? environments.length >= 1
@@ -49,11 +52,16 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
   return (
     <li
       data-placeholder={isPlaceholder || undefined}
-      className={cn("group/item flex w-full flex-col p-1", className)}
+      data-deleting={isDeleting || undefined}
+      className={cn(
+        "group/item data-deleting:animate-skeleton-smooth flex w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-opacity)",
+        className,
+      )}
     >
       <ConditionalButton
         project={project}
         linkProps={linkProps}
+        isDeleting={isDeleting}
         variant="card"
         className="flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold"
       >
@@ -63,18 +71,25 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
         </h3>
         <div className="flex w-full flex-1 flex-col justify-end">
           <div className="text-muted-foreground flex w-full items-end justify-between gap-6">
-            <div className="py-0.375 flex min-w-0 shrink flex-col gap-0.75 text-sm font-medium">
-              <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
-                {environmentCount !== undefined && environmentCount > 0
-                  ? `${environmentCount} environment${environmentCount > 1 ? "s" : ""}`
-                  : "No environments"}
-              </p>
-              <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
-                {serviceCount !== undefined && serviceCount > 0
-                  ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`
-                  : "No services"}
-              </p>
-            </div>
+            {isDeleting ? (
+              <div className="text-destructive flex min-w-0 shrink items-center gap-1.75 text-sm font-medium">
+                <LoaderIcon className="size-3.5 shrink-0 animate-spin" />
+                <p className="min-w-0 shrink truncate">Deleting</p>
+              </div>
+            ) : (
+              <div className="py-0.375 flex min-w-0 shrink flex-col gap-0.75 text-sm font-medium">
+                <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+                  {environmentCount !== undefined && environmentCount > 0
+                    ? `${environmentCount} environment${environmentCount > 1 ? "s" : ""}`
+                    : "No environments"}
+                </p>
+                <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+                  {serviceCount !== undefined && serviceCount > 0
+                    ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`
+                    : "No services"}
+                </p>
+              </div>
+            )}
             {serviceIcons !== undefined && serviceIcons.length > 0 && (
               <div className="-mr-1 flex max-w-2/3 shrink-0 items-center gap-1.25 overflow-hidden">
                 {serviceIcons.slice(0, visibleIconCount).map((s, index) => (
@@ -108,12 +123,14 @@ function ConditionalButton({
   linkProps,
   variant,
   project,
+  isDeleting,
   className,
   children,
 }: {
   linkProps: TCardLinkProps | null | undefined;
   variant: TButtonVariants["variant"];
   project?: TProjectShallow;
+  isDeleting: boolean;
   className: string;
   children: ReactNode;
 }) {
@@ -123,6 +140,7 @@ function ConditionalButton({
     error,
     reset,
   } = useMutation({
+    mutationKey: deleteMutationKeys.project(project?.id ?? ""),
     mutationFn: deleteProjectFn,
     onSuccess: () => {
       invalidate();
@@ -160,7 +178,7 @@ function ConditionalButton({
   }
 
   return (
-    <LinkButton {...linkProps} variant={variant} className={className}>
+    <LinkButton {...linkProps} variant={variant} disabled={isDeleting} className={className}>
       {children}
     </LinkButton>
   );

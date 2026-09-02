@@ -2,10 +2,6 @@ import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import ServiceCard from "@/components/service/service-card";
 import { TServiceGroup } from "@/components/service/service-card-list";
 import { useServicesUtils } from "@/components/service/services-provider";
-import {
-  deleteServiceGroupMutationKey,
-  useIsServiceGroupDeleting,
-} from "@/components/service/use-delete-service";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import ServiceGroupIcon from "@/components/service/service-group-icon";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
@@ -16,6 +12,7 @@ import {
   deleteServiceGroup as deleteServiceGroupFn,
   updateServiceGroup as updateServiceGroupFn,
 } from "@/lib/queries/service-groups";
+import { deleteMutationKeys, useIsDeleting } from "@/lib/hooks/use-is-deleting";
 import { ServiceRenameSchema } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { EllipsisVerticalIcon, PenIcon, Trash2Icon } from "lucide-react";
@@ -50,7 +47,7 @@ export default function ServiceGroupCard({
   classNameServiceCard,
   ...rest
 }: TProps) {
-  const isDeleting = useIsServiceGroupDeleting(groupObject.group.id);
+  const isDeleting = useIsDeleting(deleteMutationKeys.serviceGroup(groupObject.group.id));
 
   return (
     <li
@@ -313,7 +310,7 @@ function DeleteTrigger({
     error: errorDeleteGroup,
     reset: resetDeleteGroup,
   } = useMutation({
-    mutationKey: deleteServiceGroupMutationKey(serviceGroup.group.id),
+    mutationKey: deleteMutationKeys.serviceGroup(serviceGroup.group.id),
     mutationFn: deleteServiceGroupFn,
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(

@@ -3,6 +3,7 @@
 import { useProject } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import DeleteCard from "@/components/settings/delete-card";
+import { deleteMutationKeys } from "@/lib/hooks/use-is-deleting";
 import { deleteProject as deleteProjectFn } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
@@ -24,6 +25,7 @@ export default function DeleteProjectSection({ className }: Props) {
     error,
     reset,
   } = useMutation({
+    mutationKey: deleteMutationKeys.project(projectId),
     mutationFn: deleteProjectFn,
     onSuccess: () => {
       invalidate();
