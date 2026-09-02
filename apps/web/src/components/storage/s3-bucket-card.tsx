@@ -559,9 +559,9 @@ function EditTrigger({
 
 export function AddS3BucketCard({ teamId }: { teamId: string }) {
   return (
-    <AddS3BucketTrigger teamId={teamId}>
-      <li className="relative w-full p-1 md:max-w-3xl">
-        <div className="group/item relative flex w-full items-center justify-start">
+    <li className="relative w-full p-1 md:max-w-3xl">
+      <div className="group/item relative flex w-full items-center justify-start">
+        <AddS3BucketTrigger teamId={teamId}>
           <Button
             variant="outline"
             className="text-muted-foreground flex w-full flex-row items-center justify-start px-4 py-3.25 font-medium"
@@ -571,9 +571,9 @@ export function AddS3BucketCard({ teamId }: { teamId: string }) {
               Add S3 Bucket
             </p>
           </Button>
-        </div>
-      </li>
-    </AddS3BucketTrigger>
+        </AddS3BucketTrigger>
+      </div>
+    </li>
   );
 }
 
