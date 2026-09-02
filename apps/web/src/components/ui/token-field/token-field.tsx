@@ -43,6 +43,8 @@ export type TTokenFieldProps = {
   anchorDropdownToField?: boolean;
   ariaLabel?: string;
   ariaInvalid?: boolean;
+  /** Softer than invalid: the field is usable but its value isn't being applied. */
+  warning?: boolean;
   disabled?: boolean;
   /** Rendered inside the field box, after the editor. */
   trailing?: ReactNode;
@@ -78,6 +80,7 @@ export default function TokenField({
   anchorDropdownToField,
   ariaLabel,
   ariaInvalid,
+  warning,
   disabled,
   trailing,
   className,
@@ -264,6 +267,7 @@ export default function TokenField({
     <div
       ref={wrapperRef}
       data-disabled={disabled || undefined}
+      data-warning={warning || undefined}
       aria-invalid={ariaInvalid || undefined}
       className={cn(tokenFieldWrapperClassName, className)}
     >

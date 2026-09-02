@@ -2,7 +2,7 @@
 // identical while the CodeMirror chunk is still in flight. Keep free of
 // CodeMirror imports.
 export const tokenFieldWrapperClassName =
-  "bg-input focus-within:ring-primary/50 aria-invalid:ring-destructive/60 focus-within:aria-invalid:ring-destructive/60 flex w-full rounded-lg border text-left transition-colors focus-within:ring-1 data-disabled:cursor-not-allowed data-disabled:opacity-50";
+  "bg-input focus-within:ring-primary/50 aria-invalid:ring-destructive/60 focus-within:aria-invalid:ring-destructive/60 data-warning:ring-warning/60 focus-within:data-warning:ring-warning/60 flex w-full rounded-lg border text-left transition-colors focus-within:ring-1 data-disabled:cursor-not-allowed data-disabled:opacity-50";
 
 // The leading has to clear a chip's fill, which is the font's ascent-to-descent
 // band rather than the text height; tighter and the field clips the top of it.

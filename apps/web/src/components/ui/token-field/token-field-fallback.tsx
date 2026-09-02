@@ -17,6 +17,7 @@ export default function TokenFieldFallback({
   multiline,
   ariaLabel,
   ariaInvalid,
+  warning,
   disabled,
   trailing,
   className,
@@ -25,6 +26,7 @@ export default function TokenFieldFallback({
   return (
     <div
       data-disabled={disabled || undefined}
+      data-warning={warning || undefined}
       aria-invalid={ariaInvalid || undefined}
       className={cn(tokenFieldWrapperClassName, className)}
     >

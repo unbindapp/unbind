@@ -222,7 +222,7 @@ function SearchBar({
             }}
             completionAdditions={completionAdditions}
             ariaLabel="Search logs"
-            ariaInvalid={searchError ? true : undefined}
+            warning={searchError ? true : undefined}
             className="flex-1"
             classNameEditor="py-1.75 pr-31 pl-8.5"
             placeholder={scope.placeholder}

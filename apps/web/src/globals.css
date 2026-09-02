@@ -705,9 +705,8 @@
     --tok-chip: var(--warning);
   }
 
-  /* AND/OR are keywords like @level and @service, so they share their color.
-     Color only: bolding shifts the rest of the line the moment the word is
-     recognized. */
+  /* AND/OR are keywords like @level and @service, so they share their color
+     and chip. Not bolded: that would shift the line as the word is recognized. */
   .tok-operator {
     color: var(--process);
   }
