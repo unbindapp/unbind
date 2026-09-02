@@ -87,6 +87,8 @@ export function CommandPanelTrigger({
   );
 
   const dialogContentRef = useRef<HTMLDivElement>(null);
+  const closedByAction = useCommandPanelStore((s) => s.closedByAction);
+  const setClosedByAction = useCommandPanelStore((s) => s.setClosedByAction);
 
   const onEscapeKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -149,6 +151,11 @@ export function CommandPanelTrigger({
           const isTouchScreen = window.matchMedia("(pointer: coarse)").matches;
           if (!isTouchScreen) return undefined;
           return dialogContentRef.current?.querySelector<HTMLElement>("[tabindex]") ?? undefined;
+        }}
+        finalFocus={() => {
+          if (!closedByAction) return true;
+          setClosedByAction(false);
+          return false;
         }}
         {...mergedDialogContentVariantOptions}
       >

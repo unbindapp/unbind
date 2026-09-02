@@ -6,6 +6,7 @@ export type TState = {
   search: string;
   inputValues: Record<string, string>;
   prevItemId: string | null;
+  closedByAction: boolean;
 };
 
 export type TActions = {
@@ -15,6 +16,7 @@ export type TActions = {
   setInputValue: (inputId: string, value: string) => void;
   setPrevItemId: (prevItemId: string | null) => void;
   clearInputValue: (inputId: string) => void;
+  setClosedByAction: (closedByAction: boolean) => void;
 };
 
 export type TCommandPanelStore = TState & TActions;
@@ -25,6 +27,7 @@ const defaultInitState: TState = {
   prevItemId: null,
   search: "",
   inputValues: {},
+  closedByAction: false,
 };
 
 export const createCommandPanelStore = (initState: TState = defaultInitState) => {
@@ -50,6 +53,9 @@ export const createCommandPanelStore = (initState: TState = defaultInitState) =>
     },
     setSearch: (search) => {
       set((state) => ({ ...state, search }));
+    },
+    setClosedByAction: (closedByAction) => {
+      set((state) => ({ ...state, closedByAction }));
     },
     clearInputValue: (id) => {
       set((state) => {

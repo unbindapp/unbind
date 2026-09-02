@@ -33,6 +33,7 @@ export default function useCommandPanel({ defaultPageId }: { defaultPageId: stri
   );
   const timeout = useRef<NodeJS.Timeout | null>(null);
   const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
+  const setClosedByAction = useCommandPanelStore((s) => s.setClosedByAction);
 
   const value = useMemo(
     () => ({
@@ -40,7 +41,9 @@ export default function useCommandPanel({ defaultPageId }: { defaultPageId: stri
       setPanelId,
       panelPageId,
       setPanelPageId,
+      // Closing after an action skips focus restore, the trigger would sit visibly focused
       closePanel: () => {
+        setClosedByAction(true);
         setPanelId(null);
         if (timeout.current) {
           clearTimeout(timeout.current);
@@ -51,7 +54,7 @@ export default function useCommandPanel({ defaultPageId }: { defaultPageId: stri
         }, defaultAnimationMs);
       },
     }),
-    [panelId, setPanelId, panelPageId, setPanelPageId, clearInputValue],
+    [panelId, setPanelId, panelPageId, setPanelPageId, clearInputValue, setClosedByAction],
   );
 
   return value;
