@@ -19,10 +19,12 @@ import { useService } from "@/components/service/service-provider";
 import useUpdateService from "@/components/service/use-update-service";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { DomainStatusCard } from "@/components/service/panel/content/undeployed/domain-card";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/lib/queries/services";
+import { DNSStatus } from "@/lib/server/client.gen";
 import { useStore } from "@tanstack/react-form";
 import {
   CheckCircleIcon,
@@ -30,6 +32,7 @@ import {
   EthernetPortIcon,
   GlobeIcon,
   GlobeLockIcon,
+  HourglassIcon,
   PenIcon,
   PlusIcon,
 } from "lucide-react";
@@ -42,9 +45,13 @@ export default function DomainPortCard({
   domain,
   port,
   service,
+  dnsStatus,
+  isCloudflare,
 }: {
   service: TServiceShallow;
   domain: string;
+  dnsStatus?: DNSStatus;
+  isCloudflare?: boolean;
 } & TModeAndPort) {
   const { teamId, projectId, environmentId, serviceId } = useService();
   const { refetch: refetchServiceEndpoints } = useServiceEndpointsUtils({
@@ -156,6 +163,7 @@ export default function DomainPortCard({
   });
 
   const isEditing = useStore(form.store, (s) => s.values.isEditing);
+  const showDnsStatus = mode === "public" && !isEditing && dnsStatus !== undefined;
 
   const SuffixComponent = useCallback(
     ({ className }: { className?: string }) => {
@@ -232,6 +240,8 @@ export default function DomainPortCard({
           Icon={({ className }: { className?: string }) =>
             port === undefined && !isEditing ? (
               <CircleAlertIcon className={cn("text-warning", className, "size-4.5")} />
+            ) : showDnsStatus && dnsStatus !== "resolved" ? (
+              <HourglassIcon className={cn("animate-hourglass", className, "size-4.5")} />
             ) : mode === "private" ? (
               <GlobeLockIcon className={cn(className, "size-4.5")} />
             ) : (
@@ -240,6 +250,15 @@ export default function DomainPortCard({
           }
           SuffixComponent={SuffixComponent}
         />
+        {showDnsStatus && (
+          <DomainStatusCard
+            domain={domain}
+            dnsStatus={dnsStatus}
+            isCloudflare={isCloudflare}
+            paragraph="Create the DNS record below."
+            className="rounded-none border-x-0 border-b-0"
+          />
+        )}
         {isEditing && (
           <form
             onSubmit={(e) => {

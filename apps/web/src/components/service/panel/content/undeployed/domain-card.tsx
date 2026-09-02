@@ -5,21 +5,25 @@ import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { isDomain } from "@/lib/helpers/is-domain";
 import { dnsCheckQuery } from "@/lib/queries/system";
+import { DNSStatus } from "@/lib/server/client.gen";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircleIcon, HourglassIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 
-export function DomainCard({
-  domain,
-  paragraph = "Create the DNS record below. You can also do it later.",
-  className,
-}: {
+type TDomainStatusCardProps = {
   domain: string;
+  dnsStatus: DNSStatus | undefined;
+  isCloudflare: boolean | undefined;
   paragraph?: string;
   className?: string;
-}) {
-  const { data, isPending, error } = useSystem();
+};
+
+export function DomainCard({
+  domain,
+  paragraph,
+  className,
+}: Omit<TDomainStatusCardProps, "dnsStatus" | "isCloudflare">) {
   const [isValidDebouncedDomain, setIsValidDebouncedDomain] = useState(false);
   const [isValidDomain, setIsValidDomain] = useState(false);
 
@@ -46,8 +50,29 @@ export function DomainCard({
   if (!isValid) return null;
 
   return (
+    <DomainStatusCard
+      domain={domain}
+      dnsStatus={dnsCheckData?.data.dns_status}
+      isCloudflare={dnsCheckData?.data.is_cloudflare}
+      paragraph={paragraph}
+      className={className}
+    />
+  );
+}
+
+export function DomainStatusCard({
+  domain,
+  dnsStatus,
+  isCloudflare,
+  paragraph = "Create the DNS record below. You can also do it later.",
+  className,
+}: TDomainStatusCardProps) {
+  const { data, isPending, error } = useSystem();
+  const isResolved = dnsStatus === "resolved";
+
+  return (
     <div
-      data-configured={(data && dnsCheckData?.data.dns_status === "resolved") || undefined}
+      data-configured={(data && isResolved) || undefined}
       data-pending={(!data && isPending) || undefined}
       data-error={(!data && !isPending && error) || undefined}
       className={cn(
@@ -55,7 +80,7 @@ export function DomainCard({
         className,
       )}
     >
-      {(!data || dnsCheckData?.data.dns_status !== "resolved") && (
+      {(!data || !isResolved) && (
         <div className="flex w-full flex-col items-start justify-start">
           <p className="w-full px-3 py-2.5 leading-tight font-medium">{paragraph}</p>
           <div className="flex w-full items-start justify-start border-t border-b px-3 pt-2 pb-2.5">
@@ -84,19 +109,17 @@ export function DomainCard({
         <div className="group-data-configured/card:text-success text-muted-foreground flex w-full flex-row flex-wrap gap-1.5 px-3 py-2.5 group-data-configured/card:mt-0">
           <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
             <div className="-ml-px size-3.5 shrink-0">
-              {dnsCheckData?.data.dns_status === "resolved" ? (
+              {isResolved ? (
                 <CheckCircleIcon className="size-full" />
               ) : (
                 <HourglassIcon className="animate-hourglass size-full" />
               )}
             </div>
             <p className="min-w-0 shrink leading-tight font-medium">
-              {dnsCheckData?.data.dns_status === "resolved"
-                ? "DNS record detected"
-                : "Waiting for DNS record"}
+              {isResolved ? "DNS record detected" : "Waiting for DNS record"}
             </p>
           </div>
-          {dnsCheckData?.data.is_cloudflare && (
+          {isCloudflare && (
             <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
               <div className="-ml-px size-3.5 shrink-0">
                 <BrandIcon brand="cloudflare" className="size-full" />

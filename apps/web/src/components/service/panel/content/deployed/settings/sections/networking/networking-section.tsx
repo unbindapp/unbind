@@ -109,6 +109,8 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                       key={`${endpoint.host}:${endpoint.target_port?.port}`}
                       domain={endpoint.host}
                       port={endpoint.target_port?.port}
+                      dnsStatus={endpoint.dns_status}
+                      isCloudflare={endpoint.is_cloudflare}
                       service={service}
                     />
                   ))}
