@@ -614,16 +614,9 @@ function useAutoFollow() {
 
 function useExpandedKeys() {
   const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(new Set());
+  // only one line stays expanded at a time
   const toggleExpanded = useCallback((key: string) => {
-    setExpandedKeys((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
-      return next;
-    });
+    setExpandedKeys((prev) => (prev.has(key) ? new Set() : new Set([key])));
   }, []);
   const collapseAll = useCallback(() => setExpandedKeys(new Set()), []);
   return { expandedKeys, toggleExpanded, collapseAll };
