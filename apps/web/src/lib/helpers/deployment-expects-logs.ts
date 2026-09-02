@@ -1,8 +1,8 @@
-import { TDeploymentShallow } from "@/lib/queries/deployments";
+import type { TDeploymentShallow } from "@/lib/queries/deployments";
 
 // Loki ingestion lags briefly, so a deployment that just finished can still be
 // missing its final logs even though nothing is running anymore.
-const lokiLagGraceMs = 2 * 60 * 1000;
+export const lokiLagGraceMs = 2 * 60 * 1000;
 
 function isWithinLokiLagGrace(deployment: TDeploymentShallow): boolean {
   const referenceTime = deployment.completed_at ?? deployment.created_at;

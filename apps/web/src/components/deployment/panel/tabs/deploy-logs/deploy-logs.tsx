@@ -4,8 +4,10 @@ import LogViewer from "@/components/logs/log-viewer";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { expectsDeployLogs } from "@/lib/helpers/deployment-expects-logs";
+import { deployLogsWindow } from "@/lib/helpers/deployment-log-window";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { TriangleAlertIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 type TProps = {
   deployment: TDeploymentShallow;
@@ -13,6 +15,19 @@ type TProps = {
 
 export default function DeployLogs({ deployment }: TProps) {
   const { teamId, projectId, environmentId, serviceId, deploymentId } = useDeployment();
+
+  // Kept in state so the pinned end doesn't move with every render.
+  const [now, setNow] = useState(() => Date.now());
+  const { start, end, liveUntil } = useMemo(
+    () => deployLogsWindow(deployment, now),
+    [deployment, now],
+  );
+
+  useEffect(() => {
+    if (liveUntil === undefined) return;
+    const timer = setTimeout(() => setNow(Date.now()), Math.max(0, liveUntil - now));
+    return () => clearTimeout(timer);
+  }, [liveUntil, now]);
 
   if (deployment.error && !deployment.job_name) {
     return (
@@ -45,8 +60,8 @@ export default function DeployLogs({ deployment }: TProps) {
       type="deployment"
       hideServiceByDefault
       shouldHaveLogs={expectsDeployLogs(deployment)}
-      httpDefaultStartTimestamp={undefined}
-      httpDefaultEndTimestamp={undefined}
+      httpDefaultStartTimestamp={start}
+      httpDefaultEndTimestamp={end}
     />
   );
 }
