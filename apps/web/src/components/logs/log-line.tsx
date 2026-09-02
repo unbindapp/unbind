@@ -225,8 +225,8 @@ function LogLineDetails({
 
   return (
     <div ref={rootRef} className="w-full py-1 pr-3 pl-4.75 sm:pl-5.75">
-      <div className="bg-card flex w-full flex-col gap-2 rounded-md border p-2.5 font-sans">
-        <div className="flex w-full flex-wrap gap-x-5 gap-y-1.5">
+      <div className="bg-card flex w-full flex-col gap-2 rounded-xl border p-2 font-sans">
+        <div className="flex w-full flex-wrap gap-x-5 gap-y-1.5 px-1.5 pt-0.5 pb-0.75">
           {fields.map(([key, value]) => (
             <div key={key} className="flex min-w-0 flex-col">
               <p className="text-muted-more-foreground text-[0.65rem] font-medium tracking-wide uppercase">
@@ -237,12 +237,12 @@ function LogLineDetails({
           ))}
         </div>
         <div className="relative flex w-full">
-          <p className="text-foreground bg-background min-w-0 flex-1 rounded border p-2 pr-9.5 font-mono text-xs break-all whitespace-pre-wrap select-text">
+          <p className="text-foreground bg-background min-w-0 flex-1 rounded-md border p-2 pr-9.5 font-mono text-xs break-all whitespace-pre-wrap select-text">
             {logLine.message}
           </p>
           <CopyButton
             valueToCopy={logLine.message}
-            className="absolute top-0.5 right-0.5 size-7.5 rounded-md sm:rounded-sm"
+            className="absolute top-0.75 right-0.75 size-7 rounded-sm sm:rounded-sm"
             classNameIcon="size-3.5"
           />
         </div>
