@@ -52,9 +52,9 @@ export default function ServiceUrl({
                   variant="ghost"
                   size="sm"
                 >
-                  <div className="text-destructive relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-open/button:rotate-90">
+                  <div className="text-destructive relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-open/button:rotate-45">
                     <GlobeIcon className="size-full group-data-open/button:opacity-0" />
-                    <ChevronUpIcon className="absolute top-0 left-0 size-full scale-110 -rotate-90 opacity-0 group-data-open/button:opacity-100" />
+                    <ChevronUpIcon className="absolute top-0 left-0 size-full scale-110 -rotate-45 opacity-0 group-data-open/button:opacity-100" />
                   </div>
                   <p className="text-destructive min-w-0 shrink truncate">Error</p>
                 </Button>
