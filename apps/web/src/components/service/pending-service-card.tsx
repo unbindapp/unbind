@@ -13,7 +13,7 @@ export default function PendingServiceCard({ pendingService, className }: TProps
   return (
     <li
       className={cn(
-        "group/item animate-skeleton-smooth pointer-events-none flex min-h-40 w-full flex-col p-1 opacity-(--skeleton-smooth-opacity)",
+        "group/item animate-skeleton-smooth-weaker pointer-events-none flex min-h-40 w-full flex-col p-1 opacity-(--skeleton-smooth-weaker-opacity)",
         className,
       )}
     >

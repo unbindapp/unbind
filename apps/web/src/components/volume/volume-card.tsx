@@ -46,7 +46,7 @@ export default function VolumeCard({ volume, className }: TProps) {
       data-deleting={isDeleting || undefined}
       data-pending-resize={volume.is_pending_resize || undefined}
       className={cn(
-        "group/item data-deleting:animate-skeleton-smooth flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-opacity)",
+        "group/item data-deleting:animate-skeleton-smooth-weaker flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity)",
         className,
       )}
     >

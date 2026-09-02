@@ -12,7 +12,7 @@ export default function PendingProjectCard({ pendingProject, className }: TProps
   return (
     <li
       className={cn(
-        "group/item animate-skeleton-smooth pointer-events-none flex w-full flex-col p-1 opacity-(--skeleton-smooth-opacity)",
+        "group/item animate-skeleton-smooth-weaker pointer-events-none flex w-full flex-col p-1 opacity-(--skeleton-smooth-weaker-opacity)",
         className,
       )}
     >

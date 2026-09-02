@@ -133,7 +133,7 @@ export default function ServiceCard({
       data-placeholder={isPlaceholder || undefined}
       data-deleting={isDeleting || undefined}
       className={cn(
-        "group/item data-deleting:animate-skeleton-smooth flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-opacity)",
+        "group/item data-deleting:animate-skeleton-smooth-weaker flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity)",
         className,
       )}
     >
