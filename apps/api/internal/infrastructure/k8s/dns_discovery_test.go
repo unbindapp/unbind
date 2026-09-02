@@ -169,7 +169,7 @@ func TestDiscoverEndpointsByLabels(t *testing.T) {
 
 				service := result.Internal[0]
 				assert.Equal(t, "web-service", service.KubernetesName)
-				assert.Equal(t, "web-service.default", service.DNS)
+				assert.Equal(t, "web-service.default.svc.cluster.local", service.DNS)
 				assert.Equal(t, teamID, service.TeamID)
 				assert.Equal(t, projectID, service.ProjectID)
 				assert.Equal(t, environmentID, service.EnvironmentID)

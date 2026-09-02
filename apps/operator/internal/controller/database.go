@@ -203,9 +203,9 @@ func (r *ServiceReconciler) ensureRedisSecret(ctx context.Context, service *v1.S
 	}
 	secret.Data["DATABASE_USERNAME"] = []byte("default")
 	secret.Data["DATABASE_PASSWORD"] = []byte(password)
-	secret.Data["DATABASE_URL"] = fmt.Appendf(nil, "redis://%s:%s@%s-headless.%s:%d", "default", password, service.Name, service.Namespace, 6379)
+	secret.Data["DATABASE_URL"] = fmt.Appendf(nil, "redis://%s:%s@%s:%d", "default", password, serviceFQDN(service.Name+"-headless", service.Namespace), 6379)
 	secret.Data["DATABASE_PORT"] = []byte("6379")
-	secret.Data["DATABASE_HOST"] = fmt.Appendf(nil, "%s-headless.%s", service.Name, service.Namespace)
+	secret.Data["DATABASE_HOST"] = []byte(serviceFQDN(service.Name+"-headless", service.Namespace))
 
 	logger.Info("Updating existing Redis secret", "secretName", secretName)
 	if err := r.Update(ctx, secret); err != nil {

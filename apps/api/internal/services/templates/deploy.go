@@ -341,7 +341,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 						return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("source service not found for local variable reference %s", ref.TargetName))
 					}
 					// Add the reference to the secret data
-					secretData[ref.TargetName] = fmt.Appendf(nil, "%s.%s", sourceKubeName, project.Edges.Team.Namespace)
+					secretData[ref.TargetName] = []byte(utils.ServiceFQDN(sourceKubeName, project.Edges.Team.Namespace))
 				}
 			}
 

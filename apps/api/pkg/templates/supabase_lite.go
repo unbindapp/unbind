@@ -2033,7 +2033,7 @@ basicauth_credentials:
 
 services:
   - name: auth-v1-open
-    url: http://${SERVICE_AUTH_KUBE_NAME}.${NAMESPACE}:9999/verify
+    url: http://${SERVICE_AUTH_KUBE_NAME}.${NAMESPACE}.svc.cluster.local:9999/verify
     routes:
       - name: auth-v1-open
         strip_path: true
@@ -2042,7 +2042,7 @@ services:
     plugins:
       - name: cors
   - name: auth-v1
-    url: http://${SERVICE_AUTH_KUBE_NAME}.${NAMESPACE}:9999/
+    url: http://${SERVICE_AUTH_KUBE_NAME}.${NAMESPACE}.svc.cluster.local:9999/
     routes:
       - name: auth-v1-all
         strip_path: true
@@ -2060,7 +2060,7 @@ services:
             - admin
             - anon
   - name: rest-v1
-    url: http://${SERVICE_POSTGREST_KUBE_NAME}.${NAMESPACE}:3000/
+    url: http://${SERVICE_POSTGREST_KUBE_NAME}.${NAMESPACE}.svc.cluster.local:3000/
     routes:
       - name: rest-v1-all
         strip_path: true
@@ -2078,7 +2078,7 @@ services:
             - admin
             - anon
   - name: storage-v1
-    url: http://${SERVICE_STORAGE_KUBE_NAME}.${NAMESPACE}:5000/
+    url: http://${SERVICE_STORAGE_KUBE_NAME}.${NAMESPACE}.svc.cluster.local:5000/
     routes:
       - name: storage-v1-all
         strip_path: true
@@ -2087,7 +2087,7 @@ services:
     plugins:
       - name: cors
   - name: functions-v1
-    url: http://${SERVICE_FUNCTIONS_KUBE_NAME}.${NAMESPACE}:9000/
+    url: http://${SERVICE_FUNCTIONS_KUBE_NAME}.${NAMESPACE}.svc.cluster.local:9000/
     routes:
       - name: functions-v1-all
         strip_path: true
@@ -2096,7 +2096,7 @@ services:
     plugins:
       - name: cors
   - name: meta
-    url: http://${SERVICE_POSTGRES_META_KUBE_NAME}.${NAMESPACE}:8080/
+    url: http://${SERVICE_POSTGRES_META_KUBE_NAME}.${NAMESPACE}.svc.cluster.local:8080/
     routes:
       - name: meta-all
         strip_path: true
@@ -2112,7 +2112,7 @@ services:
           allow:
             - admin
   - name: dashboard
-    url: http://${SERVICE_STUDIO_KUBE_NAME}.${NAMESPACE}:3000/
+    url: http://${SERVICE_STUDIO_KUBE_NAME}.${NAMESPACE}.svc.cluster.local:3000/
     routes:
       - name: dashboard-all
         strip_path: true

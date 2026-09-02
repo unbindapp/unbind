@@ -59,7 +59,7 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 		if svc.Spec.Type == corev1.ServiceTypeClusterIP {
 			endpoint := models.ServiceEndpoint{
 				KubernetesName: svc.Name,
-				DNS:            fmt.Sprintf("%s.%s", svc.Name, namespace),
+				DNS:            utils.ServiceFQDN(svc.Name, namespace),
 				Ports:          make([]schema.PortSpec, len(svc.Spec.Ports)),
 				TeamID:         teamID,
 				ProjectID:      projectID,

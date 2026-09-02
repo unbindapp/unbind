@@ -141,10 +141,10 @@ func updatePostgresSecretData(target, source *corev1.Secret, service *v1.Service
 	if password, ok := source.Data["password"]; ok {
 		target.Data["DATABASE_PASSWORD"] = password
 	}
-	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "postgresql://%s:%s@%s.%s:%d/%s?sslmode=disable", target.Data["DATABASE_USERNAME"], target.Data["DATABASE_PASSWORD"], service.Name, service.Namespace, 5432, dbName)
+	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "postgresql://%s:%s@%s:%d/%s?sslmode=disable", target.Data["DATABASE_USERNAME"], target.Data["DATABASE_PASSWORD"], serviceFQDN(service.Name, service.Namespace), 5432, dbName)
 	target.Data["DATABASE_DEFAULT_DB_NAME"] = []byte(dbName)
 	target.Data["DATABASE_PORT"] = []byte("5432")
-	target.Data["DATABASE_HOST"] = fmt.Appendf(nil, "%s.%s", service.Name, service.Namespace)
+	target.Data["DATABASE_HOST"] = []byte(serviceFQDN(service.Name, service.Namespace))
 }
 
 // updateMySQLSecretData writes the standard connection keys from a MOCO secret.
@@ -156,10 +156,10 @@ func updateMySQLSecretData(target, source *corev1.Secret, service *v1.Service) {
 
 	username := string(target.Data["DATABASE_USERNAME"])
 	password := string(target.Data["DATABASE_PASSWORD"])
-	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "mysql://%s:%s@moco-%s.%s:%d/moco", username, password, service.Name, service.Namespace, 3306)
+	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "mysql://%s:%s@%s:%d/moco", username, password, serviceFQDN("moco-"+service.Name, service.Namespace), 3306)
 	target.Data["DATABASE_DEFAULT_DB_NAME"] = []byte("moco")
 	target.Data["DATABASE_PORT"] = []byte("3306")
-	target.Data["DATABASE_HOST"] = fmt.Appendf(nil, "moco-%s.%s", service.Name, service.Namespace)
+	target.Data["DATABASE_HOST"] = []byte(serviceFQDN("moco-"+service.Name, service.Namespace))
 }
 
 // updateMongoDBSecretData writes the standard connection keys from a MongoDB secret.
@@ -170,10 +170,10 @@ func updateMongoDBSecretData(target, source *corev1.Secret, service *v1.Service)
 	}
 
 	password := string(target.Data["DATABASE_PASSWORD"])
-	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "mongodb://%s:%s@%s.%s:27017/admin?ssl=false", "root", password, service.Name, service.Namespace)
+	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "mongodb://%s:%s@%s:27017/admin?ssl=false", "root", password, serviceFQDN(service.Name, service.Namespace))
 	target.Data["DATABASE_DEFAULT_DB_NAME"] = []byte("admin")
 	target.Data["DATABASE_PORT"] = []byte("27017")
-	target.Data["DATABASE_HOST"] = fmt.Appendf(nil, "%s.%s", service.Name, service.Namespace)
+	target.Data["DATABASE_HOST"] = []byte(serviceFQDN(service.Name, service.Namespace))
 }
 
 // updateClickhouseSecretData writes the standard connection keys from a ClickHouse secret.
@@ -184,10 +184,14 @@ func updateClickhouseSecretData(target, source *corev1.Secret, service *v1.Servi
 	}
 
 	password := string(target.Data["DATABASE_PASSWORD"])
-	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "clickhouse://%s:%s@clickhouse-%s.%s:9000/default", "default", password, service.Name, service.Namespace)
-	target.Data["DATABASE_HTTP_URL"] = fmt.Appendf(nil, "http://%s:%s@clickhouse-%s.%s:8123/default", "default", password, service.Name, service.Namespace)
+	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "clickhouse://%s:%s@%s:9000/default", "default", password, serviceFQDN("clickhouse-"+service.Name, service.Namespace))
+	target.Data["DATABASE_HTTP_URL"] = fmt.Appendf(nil, "http://%s:%s@%s:8123/default", "default", password, serviceFQDN("clickhouse-"+service.Name, service.Namespace))
 	target.Data["DATABASE_DEFAULT_DB_NAME"] = []byte("default")
 	target.Data["DATABASE_PORT"] = []byte("9000")
 	target.Data["DATABASE_HTTP_PORT"] = []byte("8123")
-	target.Data["DATABASE_HOST"] = fmt.Appendf(nil, "clickhouse-%s.%s", service.Name, service.Namespace)
+	target.Data["DATABASE_HOST"] = []byte(serviceFQDN("clickhouse-"+service.Name, service.Namespace))
+}
+
+func serviceFQDN(name, namespace string) string {
+	return fmt.Sprintf("%s.%s.svc.cluster.local", name, namespace)
 }

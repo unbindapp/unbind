@@ -2,7 +2,6 @@ package service_service
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -129,7 +128,7 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 		internalPort.IsNodePort = false
 		internalPort.NodePort = nil
 
-		endpoint := fmt.Sprintf("%s.%s", service.KubernetesName, project.Edges.Team.Namespace)
+		endpoint := utils.ServiceFQDN(service.KubernetesName, project.Edges.Team.Namespace)
 		exists := false
 		for _, internalEndpoint := range endpoints.Internal {
 			// checking if the port exists in the internal endpoint, we only allocate 1 service per port really so this is enough

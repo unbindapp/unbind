@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -147,22 +148,22 @@ func (self *KubeClient) SyncDatabaseSecretForService(ctx context.Context, servic
 	var httpUrl string
 	switch *service.Database {
 	case "postgres":
-		host = fmt.Sprintf("%s.%s", service.KubernetesName, namespace)
+		host = utils.ServiceFQDN(service.KubernetesName, namespace)
 		url = fmt.Sprintf("postgresql://%s:%s@%s:%d/%s?sslmode=disable", username, password, host, 5432, postgresDBName)
 	case "redis":
-		host = fmt.Sprintf("%s-headless.%s", service.KubernetesName, namespace)
+		host = utils.ServiceFQDN(service.KubernetesName+"-headless", namespace)
 		url = fmt.Sprintf("redis://%s:%s@%s:%d", "default", password, host, 6379)
 	case "mysql":
-		host = fmt.Sprintf("moco-%s.%s", service.KubernetesName, namespace)
+		host = utils.ServiceFQDN("moco-"+service.KubernetesName, namespace)
 		url = fmt.Sprintf("mysql://%s:%s@%s:%d/%s", username, password, host, 3306, "moco")
 	case "mongodb":
-		host = fmt.Sprintf("%s.%s", service.KubernetesName, namespace)
+		host = utils.ServiceFQDN(service.KubernetesName, namespace)
 		url = fmt.Sprintf("mongodb://%s:%s@%s:27017/admin?ssl=false",
 			username,
 			password,
 			host)
 	case "clickhouse":
-		host = fmt.Sprintf("clickhouse-%s.%s", service.KubernetesName, namespace)
+		host = utils.ServiceFQDN("clickhouse-"+service.KubernetesName, namespace)
 		url = fmt.Sprintf("clickhouse://%s:%s@%s:9000/default", username, password, host)
 		httpUrl = fmt.Sprintf("http://%s:%s@%s:8123/default", username, password, host)
 	}
