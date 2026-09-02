@@ -223,5 +223,10 @@
     "version": "v0.1.44",
     "description": "Service and volume panels open through links, nested trigger fixes, and service URL animation tweaks",
     "breaking": false
+  },
+  "v0.1.45": {
+    "version": "v0.1.45",
+    "description": "FQDN internal service hostnames, registry cleanup and image expiry fixes, domain DNS status, and entity card state improvements",
+    "breaking": false
   }
 }
