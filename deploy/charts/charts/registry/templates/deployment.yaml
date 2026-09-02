@@ -7,6 +7,9 @@ metadata:
     app: registry
 spec:
   replicas: {{ .Values.replicaCount }}
+  # The data volume is ReadWriteOnce
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: registry

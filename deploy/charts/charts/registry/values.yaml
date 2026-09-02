@@ -1,6 +1,6 @@
 replicaCount: 1
 persistence:
-  size: 5Gi
+  size: 20Gi
 service:
   # Pin a stable in-cluster address so each node's containerd can be pointed at it
   # via registries.yaml. Empty lets Kubernetes assign one dynamically.
@@ -9,8 +9,14 @@ service:
     enabled: false
     port: 31571
 cleanup:
-  threshold: 4Gi # This should be around 80% of the total size, this is for the auto cleanup job
+  threshold: 16Gi # This should be around 80% of the total size, this is for the auto cleanup job
   schedule: "0 * * * *" # Cron schedule for the auto cleanup job
+  timeoutSeconds: 3600
+  # Runs the unbind CLI, so it ships with the API image
+  image:
+    repository: ghcr.io/unbindapp/unbind
+    tag: latest
+    pullPolicy: Always
 ingress:
   enabled: false
   host: registry.unbind.cloud

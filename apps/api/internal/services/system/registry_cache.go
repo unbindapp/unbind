@@ -180,6 +180,9 @@ func (self *SystemService) persistRegistryCacheSettings(ctx context.Context, inp
 	if input.CleanupSchedule != nil {
 		settings.CleanupSchedule = *input.CleanupSchedule
 	}
+	if input.PVCCapacityGB != nil {
+		settings.PVCCapacityGB = *input.PVCCapacityGB
+	}
 
 	_, err = self.repo.System().UpdateSystemSettings(ctx, &system_repo.SystemSettingUpdateInput{
 		RegistryCacheSettings: settings,
@@ -189,18 +192,23 @@ func (self *SystemService) persistRegistryCacheSettings(ctx context.Context, inp
 
 // ReconcileRegistryCache re-applies persisted cache settings to kubernetes,
 // used at startup so admin changes survive helm upgrades.
-func (self *SystemService) ReconcileRegistryCache(ctx context.Context) {
+func (self *SystemService) ReconcileRegistryCache(ctx context.Context, cleanupImage string) {
 	if !self.registryCacheManager.IsManaged(ctx) {
 		return
+	}
+	if err := self.registryCacheManager.MigrateCleanupJob(ctx, cleanupImage); err != nil {
+		log.Warnf("registry cache: cleanup job migration failed: %v", err)
 	}
 	settings, err := self.repo.System().GetSystemSettings(ctx, nil)
 	if err != nil || settings.RegistryCacheSettings == nil {
 		return
 	}
 
+	self.reconcilePVCCapacity(ctx, settings.RegistryCacheSettings.PVCCapacityGB)
+
 	var thresholdStr *string
 	if settings.RegistryCacheSettings.CleanupThresholdGB > 0 {
-		thresholdStr = new(fmt.Sprintf("%.2fGi", settings.RegistryCacheSettings.CleanupThresholdGB))
+		thresholdStr = new(utils.FormatStorageGB(settings.RegistryCacheSettings.CleanupThresholdGB))
 	}
 	var schedule *string
 	if settings.RegistryCacheSettings.CleanupSchedule != "" {
@@ -211,5 +219,30 @@ func (self *SystemService) ReconcileRegistryCache(ctx context.Context) {
 	}
 	if err := self.registryCacheManager.Apply(ctx, thresholdStr, schedule); err != nil {
 		log.Warnf("registry cache: reconcile failed: %v", err)
+	}
+}
+
+func (self *SystemService) reconcilePVCCapacity(ctx context.Context, desiredGB float64) {
+	if desiredGB <= 0 {
+		return
+	}
+
+	desired, err := utils.ValidateStorageQuantityGB(desiredGB)
+	if err != nil {
+		log.Warnf("registry cache: stored volume size is invalid: %v", err)
+		return
+	}
+
+	pvc, err := self.registryCacheManager.GetPVC(ctx)
+	if err != nil {
+		log.Warnf("registry cache: failed to read pvc: %v", err)
+		return
+	}
+	if desired.Value() <= pvc.RequestedBytes {
+		return
+	}
+
+	if err := self.registryCacheManager.UpdatePVCCapacity(ctx, desired.String()); err != nil {
+		log.Warnf("registry cache: failed to restore volume size: %v", err)
 	}
 }

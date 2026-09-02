@@ -27,27 +27,27 @@ func runApplyManifests(cfg *config.Config, args []string) {
 
 	manifests, err := os.ReadFile(*file)
 	if err != nil {
-		fatalApply("failed to read manifests: %v", err)
+		fatalf("failed to read manifests: %v", err)
 	}
 
 	restConfig, err := buildRestConfig(cfg.KubeConfig)
 	if err != nil {
-		fatalApply("failed to build kubernetes config: %v", err)
+		fatalf("failed to build kubernetes config: %v", err)
 	}
 
 	dynamicClient, err := dynamic.NewForConfig(restConfig)
 	if err != nil {
-		fatalApply("failed to create dynamic client: %v", err)
+		fatalf("failed to create dynamic client: %v", err)
 	}
 
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(restConfig)
 	if err != nil {
-		fatalApply("failed to create discovery client: %v", err)
+		fatalf("failed to create discovery client: %v", err)
 	}
 
 	applier := k8s.NewApplier(dynamicClient, discoveryClient, cfg.SystemNamespace)
 	if err := applier.Apply(context.Background(), manifests); err != nil {
-		fatalApply("failed to apply manifests: %v", err)
+		fatalf("failed to apply manifests: %v", err)
 	}
 
 	fmt.Printf("Applied manifests from %s\n", *file)
@@ -60,7 +60,7 @@ func buildRestConfig(kubeConfigPath string) (*rest.Config, error) {
 	return rest.InClusterConfig()
 }
 
-func fatalApply(format string, args ...any) {
+func fatalf(format string, args ...any) {
 	fmt.Fprintf(os.Stderr, format+"\n", args...)
 	os.Exit(1)
 }

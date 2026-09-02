@@ -19,6 +19,7 @@ type BuildkitSettings struct {
 type RegistryCacheSettings struct {
 	CleanupThresholdGB float64 `json:"cleanup_threshold_gb"`
 	CleanupSchedule    string  `json:"cleanup_schedule"`
+	PVCCapacityGB      float64 `json:"pvc_capacity_gb"`
 }
 
 // SystemSetting holds the schema definition for the SystemSetting entity.

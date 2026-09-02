@@ -71,9 +71,10 @@ overrides:
   registry:
     replicaCount: 1
     persistence:
-      size: 4Gi
+      # Images and the buildkit cache (exported with mode=max) share this volume
+      size: 20Gi
     cleanup:
-      threshold: 3Gi # This should be around 80% of the total size, this is for the auto cleanup job
+      threshold: 16Gi # This should be around 80% of the total size, this is for the auto cleanup job
       schedule: "0 * * * *" # Cron schedule for the auto cleanup job
 
   certManager:

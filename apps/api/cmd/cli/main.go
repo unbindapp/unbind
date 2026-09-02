@@ -48,6 +48,9 @@ Commands:
   update:
     apply-manifests --file=PATH  Apply rendered release manifests to the cluster
 
+  registry:
+    cleanup [--threshold=SIZE]   Prune the self-hosted registry when it grows past SIZE
+
 For detailed help on a specific command, use: unbind-cli help [command]
 `
 )
@@ -66,10 +69,16 @@ func main() {
 
 	cfg := config.NewConfig()
 
-	// Runs in the update job with no database; must dispatch before NewCLI connects.
-	if len(os.Args) > 1 && os.Args[1] == "update:apply-manifests" {
-		runApplyManifests(cfg, os.Args[2:])
-		return
+	// Run in jobs with no database; must dispatch before NewCLI connects.
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "update:apply-manifests":
+			runApplyManifests(cfg, os.Args[2:])
+			return
+		case "registry:cleanup":
+			runRegistryCleanup(cfg, os.Args[2:])
+			return
+		}
 	}
 
 	cli := NewCLI(cfg)

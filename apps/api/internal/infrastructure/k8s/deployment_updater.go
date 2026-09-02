@@ -35,6 +35,10 @@ func usesImageRepository(deployment *appsv1.Deployment, repository string) bool 
 
 // UpdateDeploymentImages retags every unbind image in the system namespace; the app deployment (which runs this API) rolls last.
 func (k *KubeClient) UpdateDeploymentImages(ctx context.Context, newVersion string) error {
+	if err := k.retagCronJobs(ctx, newVersion); err != nil {
+		return err
+	}
+
 	deployments, err := k.clientset.AppsV1().Deployments(k.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to list deployments: %w", err)
@@ -58,6 +62,34 @@ func (k *KubeClient) UpdateDeploymentImages(ctx context.Context, newVersion stri
 		}
 	}
 
+	return nil
+}
+
+func (k *KubeClient) retagCronJobs(ctx context.Context, version string) error {
+	cronJobs, err := k.clientset.BatchV1().CronJobs(k.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to list cronjobs: %w", err)
+	}
+
+	for i := range cronJobs.Items {
+		cronJob := &cronJobs.Items[i]
+		containers := cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers
+		updated := false
+		for j := range containers {
+			image, ok := versionedImage(containers[j].Image, version)
+			if !ok {
+				continue
+			}
+			containers[j].Image = image
+			updated = true
+		}
+		if !updated {
+			continue
+		}
+		if _, err := k.clientset.BatchV1().CronJobs(cronJob.Namespace).Update(ctx, cronJob, metav1.UpdateOptions{}); err != nil {
+			return fmt.Errorf("failed to update cronjob %s: %w", cronJob.Name, err)
+		}
+	}
 	return nil
 }
 

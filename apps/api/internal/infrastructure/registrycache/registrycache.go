@@ -2,12 +2,8 @@ package registrycache
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"sort"
-	"time"
+	"slices"
 
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/internal/common/log"
@@ -27,31 +23,35 @@ const (
 	RegistryServicePort    = 5000
 	ThresholdEnvVar        = "MAX_STORAGE"
 	DefaultCleanupSchedule = "0 * * * *"
+	cleanupTimeoutSeconds  = 3600
 )
+
+var cleanupCommand = []string{"/app/cli", "registry:cleanup"}
+
+// RegistryURL is the in-cluster address of the self-hosted registry.
+func RegistryURL(namespace string) string {
+	return fmt.Sprintf("http://%s.%s:%d", RegistryServiceName, namespace, RegistryServicePort)
+}
 
 // Manager configures and inspects the self-hosted registry cache (build cache +
 // images share a single registry volume). All operations target the system
 // namespace; when the registry is externally managed the resources are absent.
 type Manager struct {
-	cfg  *config.Config
-	k8s  *k8s.KubeClient
-	http *http.Client
+	cfg      *config.Config
+	k8s      *k8s.KubeClient
+	registry *Client
 }
 
 func NewManager(cfg *config.Config, k8sClient *k8s.KubeClient) *Manager {
 	return &Manager{
-		cfg:  cfg,
-		k8s:  k8sClient,
-		http: &http.Client{Timeout: 30 * time.Second},
+		cfg:      cfg,
+		k8s:      k8sClient,
+		registry: NewClient(RegistryURL(cfg.GetSystemNamespace())),
 	}
 }
 
 func (self *Manager) namespace() string {
 	return self.cfg.GetSystemNamespace()
-}
-
-func (self *Manager) registryURL() string {
-	return fmt.Sprintf("http://%s.%s:%d", RegistryServiceName, self.namespace(), RegistryServicePort)
 }
 
 // IsManaged reports whether this system runs the self-hosted registry cleanup
@@ -140,6 +140,59 @@ func (self *Manager) Apply(ctx context.Context, threshold *string, schedule *str
 		return fmt.Errorf("failed to update cleanup cronjob: %w", err)
 	}
 	return nil
+}
+
+// MigrateCleanupJob moves a CronJob still running the pre-v0.1.39 shell script onto the CLI.
+func (self *Manager) MigrateCleanupJob(ctx context.Context, image string) error {
+	cron, err := self.getCronJob(ctx)
+	if err != nil {
+		return err
+	}
+	container := self.cleanupContainer(cron)
+	if container == nil {
+		return fmt.Errorf("cleanup container not found")
+	}
+	if !convertCleanupContainer(container, image) {
+		return nil
+	}
+
+	cron.Spec.JobTemplate.Spec.ActiveDeadlineSeconds = new(int64(cleanupTimeoutSeconds))
+	if _, err := self.k8s.GetInternalClient().BatchV1().CronJobs(self.namespace()).Update(ctx, cron, metav1.UpdateOptions{}); err != nil {
+		return fmt.Errorf("failed to migrate cleanup cronjob: %w", err)
+	}
+	return nil
+}
+
+func convertCleanupContainer(container *corev1.Container, image string) bool {
+	if slices.Equal(container.Command, cleanupCommand) {
+		return false
+	}
+
+	threshold := ""
+	for _, env := range container.Env {
+		if env.Name == ThresholdEnvVar {
+			threshold = env.Value
+		}
+	}
+
+	container.Image = image
+	container.ImagePullPolicy = corev1.PullAlways
+	container.Command = cleanupCommand
+	container.Args = nil
+	container.Env = []corev1.EnvVar{
+		{Name: "SYSTEM_NAMESPACE", ValueFrom: &corev1.EnvVarSource{FieldRef: &corev1.ObjectFieldSelector{FieldPath: "metadata.namespace"}}},
+		{Name: ThresholdEnvVar, Value: threshold},
+	}
+	container.Resources = corev1.ResourceRequirements{
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("50m"),
+			corev1.ResourceMemory: resource.MustParse("64Mi"),
+		},
+		Limits: corev1.ResourceList{
+			corev1.ResourceMemory: resource.MustParse("256Mi"),
+		},
+	}
+	return true
 }
 
 // PVCInfo describes the registry volume sizing.
@@ -261,7 +314,7 @@ type UsageStats struct {
 // GetUsage walks the registry catalog and sums unique blob sizes (registry
 // stores each blob once, so deduping by digest yields real disk usage).
 func (self *Manager) GetUsage(ctx context.Context) (*UsageStats, error) {
-	repos, err := self.fetchRepositories(ctx)
+	repos, err := self.registry.Repositories(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -270,14 +323,14 @@ func (self *Manager) GetUsage(ctx context.Context) (*UsageStats, error) {
 	blobs := map[string]int64{}
 
 	for _, repo := range repos {
-		tags, err := self.fetchTags(ctx, repo)
+		tags, err := self.registry.Tags(ctx, repo)
 		if err != nil {
 			log.Warnf("registry cache: failed to list tags for %s: %v", repo, err)
 			continue
 		}
 		stats.TagCount += len(tags)
 		for _, tag := range tags {
-			if err := self.collectBlobs(ctx, repo, tag, blobs, 0); err != nil {
+			if err := collectBlobs(ctx, self.registry, repo, tag, blobs, 0); err != nil {
 				log.Warnf("registry cache: failed to read manifest %s:%s: %v", repo, tag, err)
 			}
 		}
@@ -287,93 +340,4 @@ func (self *Manager) GetUsage(ctx context.Context) (*UsageStats, error) {
 		stats.UsedBytes += size
 	}
 	return stats, nil
-}
-
-func (self *Manager) fetchRepositories(ctx context.Context) ([]string, error) {
-	var out struct {
-		Repositories []string `json:"repositories"`
-	}
-	if err := self.getJSON(ctx, fmt.Sprintf("%s/v2/_catalog", self.registryURL()), nil, &out); err != nil {
-		return nil, err
-	}
-	sort.Strings(out.Repositories)
-	return out.Repositories, nil
-}
-
-func (self *Manager) fetchTags(ctx context.Context, repo string) ([]string, error) {
-	var out struct {
-		Tags []string `json:"tags"`
-	}
-	if err := self.getJSON(ctx, fmt.Sprintf("%s/v2/%s/tags/list", self.registryURL(), repo), nil, &out); err != nil {
-		return nil, err
-	}
-	return out.Tags, nil
-}
-
-const manifestAccept = "application/vnd.oci.image.manifest.v1+json, application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.docker.distribution.manifest.list.v2+json"
-
-// collectBlobs accumulates unique config+layer blob sizes for a manifest
-// reference, recursing into image indexes (multi-arch) one level.
-func (self *Manager) collectBlobs(ctx context.Context, repo, ref string, blobs map[string]int64, depth int) error {
-	if depth > 2 {
-		return nil
-	}
-
-	var manifest struct {
-		Manifests []struct {
-			Digest string `json:"digest"`
-		} `json:"manifests"`
-		Config struct {
-			Digest string `json:"digest"`
-			Size   int64  `json:"size"`
-		} `json:"config"`
-		Layers []struct {
-			Digest string `json:"digest"`
-			Size   int64  `json:"size"`
-		} `json:"layers"`
-	}
-
-	headers := map[string]string{"Accept": manifestAccept}
-	if err := self.getJSON(ctx, fmt.Sprintf("%s/v2/%s/manifests/%s", self.registryURL(), repo, ref), headers, &manifest); err != nil {
-		return err
-	}
-
-	if len(manifest.Manifests) > 0 {
-		for _, sub := range manifest.Manifests {
-			if err := self.collectBlobs(ctx, repo, sub.Digest, blobs, depth+1); err != nil {
-				log.Warnf("registry cache: failed sub-manifest %s@%s: %v", repo, sub.Digest, err)
-			}
-		}
-		return nil
-	}
-
-	if manifest.Config.Digest != "" {
-		blobs[manifest.Config.Digest] = manifest.Config.Size
-	}
-	for _, layer := range manifest.Layers {
-		blobs[layer.Digest] = layer.Size
-	}
-	return nil
-}
-
-func (self *Manager) getJSON(ctx context.Context, url string, headers map[string]string, out any) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return err
-	}
-	for k, v := range headers {
-		req.Header.Set(k, v)
-	}
-
-	resp, err := self.http.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
-		return fmt.Errorf("registry returned %d: %s", resp.StatusCode, string(body))
-	}
-	return json.NewDecoder(resp.Body).Decode(out)
 }

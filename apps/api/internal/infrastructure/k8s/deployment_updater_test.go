@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	mocks_config "github.com/unbindapp/unbind-api/mocks/config"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -119,6 +120,39 @@ func TestUpdateDeploymentImages(t *testing.T) {
 			}
 		})
 	}
+}
+
+func testCronJob(name, image string) *batchv1.CronJob {
+	return &batchv1.CronJob{
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: testNamespace},
+		Spec: batchv1.CronJobSpec{
+			JobTemplate: batchv1.JobTemplateSpec{
+				Spec: batchv1.JobSpec{
+					Template: corev1.PodTemplateSpec{
+						Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: name, Image: image}}},
+					},
+				},
+			},
+		},
+	}
+}
+
+func TestUpdateDeploymentImagesRetagsCronJobs(t *testing.T) {
+	kubeClient, fakeClient := testKubeClient(t,
+		testDeployment("unbind-api-deployment", "ghcr.io/unbindapp/unbind:v1.0.0"),
+		testCronJob("registry-cleanup", "ghcr.io/unbindapp/unbind:v1.0.0"),
+		testCronJob("third-party", "busybox:1.37"),
+	)
+
+	require.NoError(t, kubeClient.UpdateDeploymentImages(context.Background(), "v1.1.0"))
+
+	cleanup, err := fakeClient.BatchV1().CronJobs(testNamespace).Get(context.Background(), "registry-cleanup", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, "ghcr.io/unbindapp/unbind:v1.1.0", cleanup.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Image)
+
+	untouched, err := fakeClient.BatchV1().CronJobs(testNamespace).Get(context.Background(), "third-party", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, "busybox:1.37", untouched.Spec.JobTemplate.Spec.Template.Spec.Containers[0].Image)
 }
 
 func TestUpdateDeploymentImages_AppRollsLast(t *testing.T) {

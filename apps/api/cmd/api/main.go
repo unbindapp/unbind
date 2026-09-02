@@ -162,7 +162,7 @@ func startAPI(cfg *config.Config) {
 	deploymentService := deployments_service.NewDeploymentService(repo, kubeClient, deploymentController, githubClient, lokiQuerier, registryTester, variableService)
 	serviceService := service_service.NewServiceService(cfg, repo, githubClient, kubeClient, deploymentController, dbProvider, webhooksService, variableService, promClient, deploymentService)
 	systemService := system_service.NewSystemService(cfg, repo, buildkitSettings, registryTester, registryCacheManager, kubeClient)
-	systemService.ReconcileRegistryCache(ctx)
+	systemService.ReconcileRegistryCache(ctx, k8s.AppImageRepository+":"+Version)
 	metricsService := metric_service.NewMetricService(promClient, repo, kubeClient)
 	instanceService := instance_service.NewInstanceService(cfg, repo, kubeClient)
 	storageService := storage_service.NewStorageService(cfg, repo, kubeClient, promClient, serviceService)
