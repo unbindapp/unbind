@@ -142,7 +142,7 @@ func (self *Manager) Apply(ctx context.Context, threshold *string, schedule *str
 	return nil
 }
 
-// MigrateCleanupJob moves a CronJob still running the pre-v0.1.39 shell script onto the CLI.
+// MigrateCleanupJob moves a CronJob still running the old shell script onto the CLI.
 func (self *Manager) MigrateCleanupJob(ctx context.Context, image string) error {
 	cron, err := self.getCronJob(ctx)
 	if err != nil {

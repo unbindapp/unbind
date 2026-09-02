@@ -19,9 +19,9 @@ func TestConvertCleanupContainerReplacesShellJob(t *testing.T) {
 		},
 	}
 
-	require.True(t, convertCleanupContainer(container, "ghcr.io/unbindapp/unbind:v0.1.39"))
+	require.True(t, convertCleanupContainer(container, "ghcr.io/unbindapp/unbind:v1.2.3"))
 
-	assert.Equal(t, "ghcr.io/unbindapp/unbind:v0.1.39", container.Image)
+	assert.Equal(t, "ghcr.io/unbindapp/unbind:v1.2.3", container.Image)
 	assert.Equal(t, cleanupCommand, container.Command)
 	require.Len(t, container.Env, 2)
 	assert.Equal(t, "metadata.namespace", container.Env[0].ValueFrom.FieldRef.FieldPath)
@@ -35,6 +35,6 @@ func TestConvertCleanupContainerLeavesCLIJobAlone(t *testing.T) {
 		Command: []string{"/app/cli", "registry:cleanup"},
 	}
 
-	assert.False(t, convertCleanupContainer(container, "ghcr.io/unbindapp/unbind:v0.1.39"))
+	assert.False(t, convertCleanupContainer(container, "ghcr.io/unbindapp/unbind:v1.2.3"))
 	assert.Equal(t, "ghcr.io/unbindapp/unbind:v0.1.40", container.Image)
 }
