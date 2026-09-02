@@ -307,7 +307,7 @@
 
 :root {
   --skeleton-smooth-opacity: 25%;
-  --skeleton-smooth-weaker-opacity: 35%;
+  --skeleton-smooth-weaker-opacity: 50%;
   --skeleton-smooth-lead-in: 250ms;
 }
 
@@ -376,7 +376,7 @@
       opacity: var(--skeleton-smooth-weaker-opacity);
     }
     50% {
-      opacity: 70%;
+      opacity: 100%;
     }
     100% {
       opacity: var(--skeleton-smooth-weaker-opacity);
