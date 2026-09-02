@@ -4,11 +4,14 @@ import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/com
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
+import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
+import { generateProjectName } from "@/lib/helpers/generate-project-name";
 import { createProject as createProjectFn } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { FolderPlusIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
+import { v4 as uuidv4 } from "uuid";
 import { useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 
@@ -20,6 +23,8 @@ export default function useNewProjectItem({ context }: TProps) {
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
+  const addPendingProject = usePendingEntityStore((s) => s.addPendingProject);
+  const removePendingProject = usePendingEntityStore((s) => s.removePendingProject);
 
   const router = useRouter();
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
@@ -29,6 +34,17 @@ export default function useNewProjectItem({ context }: TProps) {
 
   const { mutate: createProject } = useMutation({
     mutationFn: createProjectFn,
+    onMutate: ({ name }) => {
+      closePanel();
+      const pendingId = uuidv4();
+      addPendingProject({
+        id: pendingId,
+        teamId: context.teamId,
+        name: name || "",
+        createdAt: new Date().toISOString(),
+      });
+      return { pendingId };
+    },
     onSuccess: async (res) => {
       const projectId = res.data.id;
       temporarilyAddNewEntity(res.data.id);
@@ -86,12 +102,15 @@ export default function useNewProjectItem({ context }: TProps) {
         return;
       }
 
-      closePanel();
       setIsPendingId(null);
     },
     onError: (error) => {
       toast.add({ type: "error", title: "Failed to create project", description: error.message });
       setIsPendingId(null);
+    },
+    onSettled: (_data, _error, _variables, context) => {
+      if (!context) return;
+      removePendingProject(context.pendingId);
     },
   });
 
@@ -104,7 +123,7 @@ export default function useNewProjectItem({ context }: TProps) {
       onSelect: (props) => {
         if (props?.isPendingId === id) return;
         setIsPendingId(id);
-        createProject({ teamId: context.teamId });
+        createProject({ teamId: context.teamId, name: generateProjectName() });
       },
       Icon: FolderPlusIcon,
     };

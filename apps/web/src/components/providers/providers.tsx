@@ -4,6 +4,7 @@ import DeviceTypeProvider from "@/components/providers/device-type-provider";
 import NowProvider from "@/components/providers/now-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { MainStoreProvider } from "@/components/stores/main/main-store-provider";
+import { PendingEntityStoreProvider } from "@/components/stores/pending/pending-entity-store-provider";
 import { TemplateDraftStoreProvider } from "@/components/templates/template-draft-store-provider";
 import UpdateStatusProvider from "@/components/update/update-status-provider";
 import { getConfig } from "@/lib/config";
@@ -22,7 +23,9 @@ export default function Providers({ children }: Readonly<{ children: React.React
               <NowProvider>
                 <MainStoreProvider>
                   <TemplateDraftStoreProvider>
-                    <UpdateStatusProvider>{children}</UpdateStatusProvider>
+                    <PendingEntityStoreProvider>
+                      <UpdateStatusProvider>{children}</UpdateStatusProvider>
+                    </PendingEntityStoreProvider>
                   </TemplateDraftStoreProvider>
                 </MainStoreProvider>
               </NowProvider>

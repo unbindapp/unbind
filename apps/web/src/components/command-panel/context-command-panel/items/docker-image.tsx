@@ -8,6 +8,7 @@ import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
+import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
 import { cn } from "@/components/ui/utils";
 import { formatKMBT } from "@/lib/helpers/format-kmbt";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
@@ -16,6 +17,7 @@ import { createService as createServiceFn } from "@/lib/queries/services";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DownloadIcon, PackageIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
+import { v4 as uuidv4 } from "uuid";
 import { useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 import { z } from "zod";
@@ -59,6 +61,8 @@ function useDockerImageItem({ context }: TProps) {
   const subpageId = "docker-image_subpage";
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
+  const addPendingService = usePendingEntityStore((s) => s.addPendingService);
+  const removePendingService = usePendingEntityStore((s) => s.removePendingService);
 
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
@@ -91,10 +95,7 @@ function useDockerImageItem({ context }: TProps) {
   const { mutateAsync: createService } = useMutation({
     mutationKey: ["create-service", "docker-image"],
     mutationFn: async ({ image }: { image: string }) => {
-      const imageParts = image.split("/");
-      const imageName = imageParts[imageParts.length - 1];
-      const imageTag = imageName.split(":");
-      const imageNameWithoutTag = imageTag[0];
+      const imageNameWithoutTag = getImageName(image);
 
       const environmentId = environmentIdFromPathname || defaultEnvironmentId;
       if (!environmentId) {
@@ -118,11 +119,22 @@ function useDockerImageItem({ context }: TProps) {
 
       return result;
     },
-    onMutate: async (data) => {
+    onMutate: (data) => {
       setIsPendingId(`${subpageId}_${data.image}`);
+      closeCommandPanel();
+      const pendingId = uuidv4();
+      addPendingService({
+        id: pendingId,
+        teamId: context.teamId,
+        projectId,
+        environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
+        name: getImageName(data.image),
+        icon: "docker",
+        createdAt: new Date().toISOString(),
+      });
+      return { pendingId };
     },
     onSuccess: async (data) => {
-      closeCommandPanel();
       invalidateProject();
       invalidateProjects();
 
@@ -147,6 +159,10 @@ function useDockerImageItem({ context }: TProps) {
     onError: (error) => {
       toast.add({ type: "error", title: "Failed to create service", description: error.message });
       setIsPendingId(null);
+    },
+    onSettled: (_data, _error, _variables, context) => {
+      if (!context) return;
+      removePendingService(context.pendingId);
     },
   });
 
@@ -245,4 +261,9 @@ function useDockerImageItem({ context }: TProps) {
   );
 
   return value;
+}
+
+function getImageName(image: string) {
+  const imageWithTag = image.split("/").at(-1) ?? image;
+  return imageWithTag.split(":")[0];
 }

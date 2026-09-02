@@ -10,6 +10,7 @@ import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
+import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { getGoClient } from "@/lib/server/client";
 import { gitRepositoriesQuery, type TGitRepository } from "@/lib/queries/git";
@@ -21,6 +22,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
+import { v4 as uuidv4 } from "uuid";
 import { useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 
@@ -54,6 +56,8 @@ function useGitItem({ context }: TProps) {
   const subpageId = "git_subpage";
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
+  const addPendingService = usePendingEntityStore((s) => s.addPendingService);
+  const removePendingService = usePendingEntityStore((s) => s.removePendingService);
 
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
@@ -112,8 +116,21 @@ function useGitItem({ context }: TProps) {
 
       return result;
     },
-    onSuccess: async (data) => {
+    onMutate: ({ repository }) => {
       closeCommandPanel();
+      const pendingId = uuidv4();
+      addPendingService({
+        id: pendingId,
+        teamId: context.teamId,
+        projectId,
+        environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
+        name: repository.full_name.split("/")[1],
+        icon: "github",
+        createdAt: new Date().toISOString(),
+      });
+      return { pendingId };
+    },
+    onSuccess: async (data) => {
       invalidateProject();
       invalidateProjects();
 
@@ -138,6 +155,10 @@ function useGitItem({ context }: TProps) {
     onError: (error) => {
       toast.add({ type: "error", title: "Failed to create service", description: error.message });
       setIsPendingId(null);
+    },
+    onSettled: (_data, _error, _variables, context) => {
+      if (!context) return;
+      removePendingService(context.pendingId);
     },
   });
 

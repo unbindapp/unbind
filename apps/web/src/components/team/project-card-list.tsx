@@ -4,6 +4,8 @@ import ContextCommandPanel from "@/components/command-panel/context-command-pane
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
 import { useProjects } from "@/components/project/projects-provider";
+import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
+import PendingProjectCard from "@/components/team/pending-project-card";
 import ProjectCard from "@/components/team/project-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -19,6 +21,7 @@ const placeholderArray = Array.from({ length: 6 });
 export default function ProjectCardList({ teamId }: TProps) {
   const { data, isPending, error } = useProjects();
   const projects = data?.projects;
+  const pendingProjects = usePendingEntityStore((s) => s.pendingProjects);
 
   const context: TContextCommandPanelContext = useMemo(
     () => ({ contextType: "new-project", teamId }),
@@ -47,6 +50,11 @@ export default function ProjectCardList({ teamId }: TProps) {
 
   return (
     <Wrapper>
+      {pendingProjects
+        .filter((p) => p.teamId === teamId)
+        .map((p) => (
+          <PendingProjectCard key={p.id} pendingProject={p} className="w-full md:w-1/2 lg:w-1/3" />
+        ))}
       {projects.map((i) => (
         <ProjectCard key={i.id} project={i} className="w-full md:w-1/2 lg:w-1/3" />
       ))}

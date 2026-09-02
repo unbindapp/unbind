@@ -4,11 +4,14 @@ import ContextCommandPanel from "@/components/command-panel/context-command-pane
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
 import ServiceCard from "@/components/service/service-card";
+import PendingServiceCard from "@/components/service/pending-service-card";
 import ServiceGroupCard from "@/components/service/service-group-card";
 import { useServices } from "@/components/service/services-provider";
 import TemplateDraftCard from "@/components/templates/template-draft-card";
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
+import { TPendingService } from "@/components/stores/pending/pending-entity-store";
+import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TServiceShallow } from "@/lib/queries/services";
@@ -54,36 +57,28 @@ export default function ServiceCardList() {
   }, [services]);
 
   const templateDrafts = useTemplateDraftStore((s) => s.templateDrafts);
+  const pendingServices = usePendingEntityStore((s) => s.pendingServices);
 
   const servicesOrTemplateDrafts = useMemo(() => {
+    const isInEnvironment = (item: { teamId: string; projectId: string; environmentId: string }) =>
+      item.teamId === teamId &&
+      item.projectId === projectId &&
+      item.environmentId === environmentId;
+
     const allItems: TServiceOrTemplateDraft[] = [
+      ...pendingServices
+        .filter(isInEnvironment)
+        .map((p) => ({ type: "pending-service", obj: p }) as const),
       ...templateDrafts
-        .filter(
-          (t) =>
-            t.teamId === teamId && t.projectId === projectId && t.environmentId === environmentId,
-        )
+        .filter(isInEnvironment)
         .map((t) => ({ type: "template-draft", obj: t }) as const),
       ...(servicesOrGroups || []).map((s) => ({ type: "service", obj: s }) as const),
     ];
 
-    return allItems.toSorted((a, b) => {
-      const aTimestamp = new Date(
-        a.type === "template-draft"
-          ? a.obj.createdAt
-          : a.obj.type === "service-group"
-            ? a.obj.group.created_at
-            : a.obj.service.created_at,
-      ).getTime();
-      const bTimestamp = new Date(
-        b.type === "template-draft"
-          ? b.obj.createdAt
-          : b.obj.type === "service-group"
-            ? b.obj.group.created_at
-            : b.obj.service.created_at,
-      ).getTime();
-      return bTimestamp - aTimestamp;
-    });
-  }, [templateDrafts, servicesOrGroups, teamId, projectId, environmentId]);
+    return allItems.toSorted(
+      (a, b) => new Date(getCreatedAt(b)).getTime() - new Date(getCreatedAt(a)).getTime(),
+    );
+  }, [pendingServices, templateDrafts, servicesOrGroups, teamId, projectId, environmentId]);
 
   const context: TContextCommandPanelContext = useMemo(
     () => ({ contextType: "new-service", teamId, projectId, environmentId }),
@@ -113,7 +108,13 @@ export default function ServiceCardList() {
   return (
     <Wrapper>
       {servicesOrTemplateDrafts.map((item) =>
-        item.type === "template-draft" ? (
+        item.type === "pending-service" ? (
+          <PendingServiceCard
+            key={item.obj.id}
+            pendingService={item.obj}
+            className="w-full sm:w-1/2 lg:w-1/3"
+          />
+        ) : item.type === "template-draft" ? (
           <TemplateDraftCard
             data-hidden={item.obj.hidden}
             key={item.obj.id}
@@ -182,5 +183,12 @@ type TServiceOrServiceGroup =
     } & TServiceGroup);
 
 type TServiceOrTemplateDraft =
+  | { type: "pending-service"; obj: TPendingService }
   | { type: "template-draft"; obj: TTemplateDraft }
   | { type: "service"; obj: TServiceOrServiceGroup };
+
+function getCreatedAt(item: TServiceOrTemplateDraft) {
+  if (item.type === "pending-service" || item.type === "template-draft") return item.obj.createdAt;
+  if (item.obj.type === "service-group") return item.obj.group.created_at;
+  return item.obj.service.created_at;
+}
