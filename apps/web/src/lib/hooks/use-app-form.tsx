@@ -370,7 +370,15 @@ function StorageSizeInput({
 export type TCommandItem = {
   value: string;
   label: string;
+  description?: string;
+  keywords?: string[];
 };
+
+// cmdk only searches the value, so id-backed items need the visible text as keywords
+function commandItemKeywords(item: TCommandItem): string[] {
+  if (item.keywords) return item.keywords;
+  return item.description ? [item.label, item.description] : [item.label];
+}
 
 type TAsyncAndSearchableSelectProps = TFieldProps & {
   items: TCommandItem[] | undefined;
@@ -501,6 +509,7 @@ function AsyncAndSearchableSelect({
                             setIsOpen(false);
                           }}
                           value={item.value}
+                          keywords={commandItemKeywords(item)}
                           key={item.value}
                           className="group/item px-3"
                           data-checked={field.state.value === item.value || undefined}
@@ -551,7 +560,7 @@ type TAsyncInputWithItemsProps = TFieldProps & {
   classNameCommandEmpty?: string | (({ inputValue }: { inputValue: string }) => string);
   CommandEmptyText: string | FC<{ className?: string; inputValue: string }>;
   CommandEmptyIcon: FC<{ className?: string }>;
-  commandFilter?: (value: string, search: string) => number;
+  commandFilter?: (value: string, search: string, keywords?: string[]) => number;
 } & InputProps;
 
 function AsyncInputWithItems({
@@ -690,6 +699,7 @@ function AsyncInputWithItems({
                               field.handleChange(item.value);
                             }}
                             value={item.value}
+                            keywords={commandItemKeywords(item)}
                             key={item.value}
                             className="group/item px-3"
                             data-checked={value === item.value || undefined}

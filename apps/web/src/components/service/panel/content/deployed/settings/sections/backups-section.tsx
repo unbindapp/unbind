@@ -1,4 +1,3 @@
-import { getS3BucketItemLabel } from "@/components/service/helpers";
 import {
   Block,
   BlockItem,
@@ -101,7 +100,8 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
   const s3BucketItems = useMemo(() => {
     const items: TCommandItem[] | undefined = dataS3Buckets?.buckets.map((s3Bucket) => ({
       value: s3Bucket.id,
-      label: getS3BucketItemLabel(s3Bucket),
+      label: s3Bucket.name,
+      description: s3Bucket.bucket,
     }));
     return items;
   }, [dataS3Buckets]);

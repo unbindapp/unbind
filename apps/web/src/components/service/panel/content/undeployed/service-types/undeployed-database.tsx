@@ -1,7 +1,6 @@
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
-import { getS3BucketItemLabel } from "@/components/service/helpers";
 import {
   Block,
   BlockItem,
@@ -91,7 +90,8 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
   const s3BucketItems = useMemo(() => {
     const items: TCommandItem[] | undefined = dataS3Buckets?.buckets.map((s3Bucket) => ({
       value: s3Bucket.id,
-      label: getS3BucketItemLabel(s3Bucket),
+      label: s3Bucket.name,
+      description: s3Bucket.bucket,
     }));
     return items;
   }, [dataS3Buckets]);

@@ -1,4 +1,3 @@
-import { splitS3BucketItemLabel } from "@/components/service/helpers";
 import { AddS3BucketTrigger } from "@/components/storage/s3-bucket-card";
 import { createDialogHandle, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -78,10 +77,9 @@ export function S3BucketCommandItemElement({
   item: TCommandItem;
   className?: string;
 }) {
-  const { name, bucket } = splitS3BucketItemLabel(item.label);
   return (
     <p className={cn("min-w-0 leading-tight", className)}>
-      <S3BucketLabel name={name} bucket={bucket} />
+      <S3BucketLabel name={item.label} bucket={item.description ?? ""} />
     </p>
   );
 }
