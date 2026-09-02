@@ -13,7 +13,7 @@ import (
 	oauth_repo "github.com/unbindapp/unbind-api/internal/repositories/oauth"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	project_repo "github.com/unbindapp/unbind-api/internal/repositories/project"
-	s3_repo "github.com/unbindapp/unbind-api/internal/repositories/s3"
+	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
 	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	servicegroup_repo "github.com/unbindapp/unbind-api/internal/repositories/service_group"
 	system_repo "github.com/unbindapp/unbind-api/internal/repositories/system"
@@ -44,7 +44,7 @@ type Repositories struct {
 	webhooks     webhook_repo.WebhookRepositoryInterface
 	variables    variable_repo.VariableRepositoryInterface
 	bootstrap    bootstrap_repo.BootstrapRepositoryInterface
-	s3           s3_repo.S3RepositoryInterface
+	s3Bucket     s3bucket_repo.S3BucketRepositoryInterface
 	template     template_repo.TemplateRepositoryInterface
 	serviceGroup servicegroup_repo.ServiceGroupRepositoryInterface
 }
@@ -66,7 +66,7 @@ func NewRepositories(db *ent.Client) *Repositories {
 	webhooksRepo := webhook_repo.NewWebhookRepository(db)
 	variablesRepo := variable_repo.NewVariableRepository(db)
 	bootstrapRepo := bootstrap_repo.NewBootstrapRepository(db)
-	s3Repo := s3_repo.NewS3Repository(db)
+	s3BucketRepo := s3bucket_repo.NewS3BucketRepository(db)
 	templateRepo := template_repo.NewTemplateRepository(db)
 	serviceGroupRepo := servicegroup_repo.NewServiceGroupRepository(db)
 	return &Repositories{
@@ -86,7 +86,7 @@ func NewRepositories(db *ent.Client) *Repositories {
 		webhooks:     webhooksRepo,
 		variables:    variablesRepo,
 		bootstrap:    bootstrapRepo,
-		s3:           s3Repo,
+		s3Bucket:     s3BucketRepo,
 		template:     templateRepo,
 		serviceGroup: serviceGroupRepo,
 	}
@@ -167,9 +167,9 @@ func (r *Repositories) Bootstrap() bootstrap_repo.BootstrapRepositoryInterface {
 	return r.bootstrap
 }
 
-// S3 returns the S3 repository
-func (r *Repositories) S3() s3_repo.S3RepositoryInterface {
-	return r.s3
+// S3Bucket returns the S3 bucket repository
+func (r *Repositories) S3Bucket() s3bucket_repo.S3BucketRepositoryInterface {
+	return r.s3Bucket
 }
 
 // Template returns the Template repository

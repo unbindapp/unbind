@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/predicate"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
 )
@@ -21,13 +21,13 @@ import (
 // ServiceConfigQuery is the builder for querying ServiceConfig entities.
 type ServiceConfigQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []serviceconfig.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.ServiceConfig
-	withService         *ServiceQuery
-	withS3BackupSources *S3Query
-	modifiers           []func(*sql.Selector)
+	ctx                *QueryContext
+	order              []serviceconfig.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.ServiceConfig
+	withService        *ServiceQuery
+	withS3BackupBucket *S3BucketQuery
+	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -86,9 +86,9 @@ func (_q *ServiceConfigQuery) QueryService() *ServiceQuery {
 	return query
 }
 
-// QueryS3BackupSources chains the current query on the "s3_backup_sources" edge.
-func (_q *ServiceConfigQuery) QueryS3BackupSources() *S3Query {
-	query := (&S3Client{config: _q.config}).Query()
+// QueryS3BackupBucket chains the current query on the "s3_backup_bucket" edge.
+func (_q *ServiceConfigQuery) QueryS3BackupBucket() *S3BucketQuery {
+	query := (&S3BucketClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -99,8 +99,8 @@ func (_q *ServiceConfigQuery) QueryS3BackupSources() *S3Query {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(serviceconfig.Table, serviceconfig.FieldID, selector),
-			sqlgraph.To(s3.Table, s3.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, serviceconfig.S3BackupSourcesTable, serviceconfig.S3BackupSourcesColumn),
+			sqlgraph.To(s3bucket.Table, s3bucket.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, serviceconfig.S3BackupBucketTable, serviceconfig.S3BackupBucketColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -295,13 +295,13 @@ func (_q *ServiceConfigQuery) Clone() *ServiceConfigQuery {
 		return nil
 	}
 	return &ServiceConfigQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]serviceconfig.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.ServiceConfig{}, _q.predicates...),
-		withService:         _q.withService.Clone(),
-		withS3BackupSources: _q.withS3BackupSources.Clone(),
+		config:             _q.config,
+		ctx:                _q.ctx.Clone(),
+		order:              append([]serviceconfig.OrderOption{}, _q.order...),
+		inters:             append([]Interceptor{}, _q.inters...),
+		predicates:         append([]predicate.ServiceConfig{}, _q.predicates...),
+		withService:        _q.withService.Clone(),
+		withS3BackupBucket: _q.withS3BackupBucket.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -320,14 +320,14 @@ func (_q *ServiceConfigQuery) WithService(opts ...func(*ServiceQuery)) *ServiceC
 	return _q
 }
 
-// WithS3BackupSources tells the query-builder to eager-load the nodes that are connected to
-// the "s3_backup_sources" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ServiceConfigQuery) WithS3BackupSources(opts ...func(*S3Query)) *ServiceConfigQuery {
-	query := (&S3Client{config: _q.config}).Query()
+// WithS3BackupBucket tells the query-builder to eager-load the nodes that are connected to
+// the "s3_backup_bucket" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ServiceConfigQuery) WithS3BackupBucket(opts ...func(*S3BucketQuery)) *ServiceConfigQuery {
+	query := (&S3BucketClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withS3BackupSources = query
+	_q.withS3BackupBucket = query
 	return _q
 }
 
@@ -411,7 +411,7 @@ func (_q *ServiceConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withService != nil,
-			_q.withS3BackupSources != nil,
+			_q.withS3BackupBucket != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -441,9 +441,9 @@ func (_q *ServiceConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := _q.withS3BackupSources; query != nil {
-		if err := _q.loadS3BackupSources(ctx, query, nodes, nil,
-			func(n *ServiceConfig, e *S3) { n.Edges.S3BackupSources = e }); err != nil {
+	if query := _q.withS3BackupBucket; query != nil {
+		if err := _q.loadS3BackupBucket(ctx, query, nodes, nil,
+			func(n *ServiceConfig, e *S3Bucket) { n.Edges.S3BackupBucket = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -479,14 +479,14 @@ func (_q *ServiceConfigQuery) loadService(ctx context.Context, query *ServiceQue
 	}
 	return nil
 }
-func (_q *ServiceConfigQuery) loadS3BackupSources(ctx context.Context, query *S3Query, nodes []*ServiceConfig, init func(*ServiceConfig), assign func(*ServiceConfig, *S3)) error {
+func (_q *ServiceConfigQuery) loadS3BackupBucket(ctx context.Context, query *S3BucketQuery, nodes []*ServiceConfig, init func(*ServiceConfig), assign func(*ServiceConfig, *S3Bucket)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ServiceConfig)
 	for i := range nodes {
-		if nodes[i].S3BackupSourceID == nil {
+		if nodes[i].S3BackupBucketID == nil {
 			continue
 		}
-		fk := *nodes[i].S3BackupSourceID
+		fk := *nodes[i].S3BackupBucketID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -495,7 +495,7 @@ func (_q *ServiceConfigQuery) loadS3BackupSources(ctx context.Context, query *S3
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(s3.IDIn(ids...))
+	query.Where(s3bucket.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -503,7 +503,7 @@ func (_q *ServiceConfigQuery) loadS3BackupSources(ctx context.Context, query *S3
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "s3_backup_source_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "s3_backup_bucket_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -543,8 +543,8 @@ func (_q *ServiceConfigQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withService != nil {
 			_spec.Node.AddColumnOnce(serviceconfig.FieldServiceID)
 		}
-		if _q.withS3BackupSources != nil {
-			_spec.Node.AddColumnOnce(serviceconfig.FieldS3BackupSourceID)
+		if _q.withS3BackupBucket != nil {
+			_spec.Node.AddColumnOnce(serviceconfig.FieldS3BackupBucketID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

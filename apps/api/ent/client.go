@@ -29,7 +29,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/pvcmetadata"
 	"github.com/unbindapp/unbind-api/ent/registry"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
 	"github.com/unbindapp/unbind-api/ent/servicegroup"
@@ -74,8 +74,8 @@ type Client struct {
 	Project *ProjectClient
 	// Registry is the client for interacting with the Registry builders.
 	Registry *RegistryClient
-	// S3 is the client for interacting with the S3 builders.
-	S3 *S3Client
+	// S3Bucket is the client for interacting with the S3Bucket builders.
+	S3Bucket *S3BucketClient
 	// Service is the client for interacting with the Service builders.
 	Service *ServiceClient
 	// ServiceConfig is the client for interacting with the ServiceConfig builders.
@@ -118,7 +118,7 @@ func (c *Client) init() {
 	c.Permission = NewPermissionClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.Registry = NewRegistryClient(c.config)
-	c.S3 = NewS3Client(c.config)
+	c.S3Bucket = NewS3BucketClient(c.config)
 	c.Service = NewServiceClient(c.config)
 	c.ServiceConfig = NewServiceConfigClient(c.config)
 	c.ServiceGroup = NewServiceGroupClient(c.config)
@@ -233,7 +233,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Permission:         NewPermissionClient(cfg),
 		Project:            NewProjectClient(cfg),
 		Registry:           NewRegistryClient(cfg),
-		S3:                 NewS3Client(cfg),
+		S3Bucket:           NewS3BucketClient(cfg),
 		Service:            NewServiceClient(cfg),
 		ServiceConfig:      NewServiceConfigClient(cfg),
 		ServiceGroup:       NewServiceGroupClient(cfg),
@@ -275,7 +275,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Permission:         NewPermissionClient(cfg),
 		Project:            NewProjectClient(cfg),
 		Registry:           NewRegistryClient(cfg),
-		S3:                 NewS3Client(cfg),
+		S3Bucket:           NewS3BucketClient(cfg),
 		Service:            NewServiceClient(cfg),
 		ServiceConfig:      NewServiceConfigClient(cfg),
 		ServiceGroup:       NewServiceGroupClient(cfg),
@@ -316,7 +316,7 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Bootstrap, c.Deployment, c.Environment, c.GithubApp, c.GithubInstallation,
 		c.Group, c.JWTKey, c.Oauth2Code, c.Oauth2Token, c.PVCMetadata, c.Permission,
-		c.Project, c.Registry, c.S3, c.Service, c.ServiceConfig, c.ServiceGroup,
+		c.Project, c.Registry, c.S3Bucket, c.Service, c.ServiceConfig, c.ServiceGroup,
 		c.SystemSetting, c.Team, c.Template, c.User, c.VariableReference, c.Webhook,
 	} {
 		n.Use(hooks...)
@@ -329,7 +329,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Bootstrap, c.Deployment, c.Environment, c.GithubApp, c.GithubInstallation,
 		c.Group, c.JWTKey, c.Oauth2Code, c.Oauth2Token, c.PVCMetadata, c.Permission,
-		c.Project, c.Registry, c.S3, c.Service, c.ServiceConfig, c.ServiceGroup,
+		c.Project, c.Registry, c.S3Bucket, c.Service, c.ServiceConfig, c.ServiceGroup,
 		c.SystemSetting, c.Team, c.Template, c.User, c.VariableReference, c.Webhook,
 	} {
 		n.Intercept(interceptors...)
@@ -365,8 +365,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Project.mutate(ctx, m)
 	case *RegistryMutation:
 		return c.Registry.mutate(ctx, m)
-	case *S3Mutation:
-		return c.S3.mutate(ctx, m)
+	case *S3BucketMutation:
+		return c.S3Bucket.mutate(ctx, m)
 	case *ServiceMutation:
 		return c.Service.mutate(ctx, m)
 	case *ServiceConfigMutation:
@@ -2407,107 +2407,107 @@ func (c *RegistryClient) mutate(ctx context.Context, m *RegistryMutation) (Value
 	}
 }
 
-// S3Client is a client for the S3 schema.
-type S3Client struct {
+// S3BucketClient is a client for the S3Bucket schema.
+type S3BucketClient struct {
 	config
 }
 
-// NewS3Client returns a client for the S3 from the given config.
-func NewS3Client(c config) *S3Client {
-	return &S3Client{config: c}
+// NewS3BucketClient returns a client for the S3Bucket from the given config.
+func NewS3BucketClient(c config) *S3BucketClient {
+	return &S3BucketClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `s3.Hooks(f(g(h())))`.
-func (c *S3Client) Use(hooks ...Hook) {
-	c.hooks.S3 = append(c.hooks.S3, hooks...)
+// A call to `Use(f, g, h)` equals to `s3bucket.Hooks(f(g(h())))`.
+func (c *S3BucketClient) Use(hooks ...Hook) {
+	c.hooks.S3Bucket = append(c.hooks.S3Bucket, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `s3.Intercept(f(g(h())))`.
-func (c *S3Client) Intercept(interceptors ...Interceptor) {
-	c.inters.S3 = append(c.inters.S3, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `s3bucket.Intercept(f(g(h())))`.
+func (c *S3BucketClient) Intercept(interceptors ...Interceptor) {
+	c.inters.S3Bucket = append(c.inters.S3Bucket, interceptors...)
 }
 
-// Create returns a builder for creating a S3 entity.
-func (c *S3Client) Create() *S3Create {
-	mutation := newS3Mutation(c.config, OpCreate)
-	return &S3Create{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a S3Bucket entity.
+func (c *S3BucketClient) Create() *S3BucketCreate {
+	mutation := newS3BucketMutation(c.config, OpCreate)
+	return &S3BucketCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of S3 entities.
-func (c *S3Client) CreateBulk(builders ...*S3Create) *S3CreateBulk {
-	return &S3CreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of S3Bucket entities.
+func (c *S3BucketClient) CreateBulk(builders ...*S3BucketCreate) *S3BucketCreateBulk {
+	return &S3BucketCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *S3Client) MapCreateBulk(slice any, setFunc func(*S3Create, int)) *S3CreateBulk {
+func (c *S3BucketClient) MapCreateBulk(slice any, setFunc func(*S3BucketCreate, int)) *S3BucketCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &S3CreateBulk{err: fmt.Errorf("calling to S3Client.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &S3BucketCreateBulk{err: fmt.Errorf("calling to S3BucketClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*S3Create, rv.Len())
+	builders := make([]*S3BucketCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &S3CreateBulk{config: c.config, builders: builders}
+	return &S3BucketCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for S3.
-func (c *S3Client) Update() *S3Update {
-	mutation := newS3Mutation(c.config, OpUpdate)
-	return &S3Update{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for S3Bucket.
+func (c *S3BucketClient) Update() *S3BucketUpdate {
+	mutation := newS3BucketMutation(c.config, OpUpdate)
+	return &S3BucketUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *S3Client) UpdateOne(_m *S3) *S3UpdateOne {
-	mutation := newS3Mutation(c.config, OpUpdateOne, withS3(_m))
-	return &S3UpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *S3BucketClient) UpdateOne(_m *S3Bucket) *S3BucketUpdateOne {
+	mutation := newS3BucketMutation(c.config, OpUpdateOne, withS3Bucket(_m))
+	return &S3BucketUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *S3Client) UpdateOneID(id uuid.UUID) *S3UpdateOne {
-	mutation := newS3Mutation(c.config, OpUpdateOne, withS3ID(id))
-	return &S3UpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *S3BucketClient) UpdateOneID(id uuid.UUID) *S3BucketUpdateOne {
+	mutation := newS3BucketMutation(c.config, OpUpdateOne, withS3BucketID(id))
+	return &S3BucketUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for S3.
-func (c *S3Client) Delete() *S3Delete {
-	mutation := newS3Mutation(c.config, OpDelete)
-	return &S3Delete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for S3Bucket.
+func (c *S3BucketClient) Delete() *S3BucketDelete {
+	mutation := newS3BucketMutation(c.config, OpDelete)
+	return &S3BucketDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *S3Client) DeleteOne(_m *S3) *S3DeleteOne {
+func (c *S3BucketClient) DeleteOne(_m *S3Bucket) *S3BucketDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *S3Client) DeleteOneID(id uuid.UUID) *S3DeleteOne {
-	builder := c.Delete().Where(s3.ID(id))
+func (c *S3BucketClient) DeleteOneID(id uuid.UUID) *S3BucketDeleteOne {
+	builder := c.Delete().Where(s3bucket.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &S3DeleteOne{builder}
+	return &S3BucketDeleteOne{builder}
 }
 
-// Query returns a query builder for S3.
-func (c *S3Client) Query() *S3Query {
-	return &S3Query{
+// Query returns a query builder for S3Bucket.
+func (c *S3BucketClient) Query() *S3BucketQuery {
+	return &S3BucketQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeS3},
+		ctx:    &QueryContext{Type: TypeS3Bucket},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a S3 entity by its id.
-func (c *S3Client) Get(ctx context.Context, id uuid.UUID) (*S3, error) {
-	return c.Query().Where(s3.ID(id)).Only(ctx)
+// Get returns a S3Bucket entity by its id.
+func (c *S3BucketClient) Get(ctx context.Context, id uuid.UUID) (*S3Bucket, error) {
+	return c.Query().Where(s3bucket.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *S3Client) GetX(ctx context.Context, id uuid.UUID) *S3 {
+func (c *S3BucketClient) GetX(ctx context.Context, id uuid.UUID) *S3Bucket {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -2515,15 +2515,15 @@ func (c *S3Client) GetX(ctx context.Context, id uuid.UUID) *S3 {
 	return obj
 }
 
-// QueryTeam queries the team edge of a S3.
-func (c *S3Client) QueryTeam(_m *S3) *TeamQuery {
+// QueryTeam queries the team edge of a S3Bucket.
+func (c *S3BucketClient) QueryTeam(_m *S3Bucket) *TeamQuery {
 	query := (&TeamClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(s3.Table, s3.FieldID, id),
+			sqlgraph.From(s3bucket.Table, s3bucket.FieldID, id),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, s3.TeamTable, s3.TeamColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, s3bucket.TeamTable, s3bucket.TeamColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2531,15 +2531,15 @@ func (c *S3Client) QueryTeam(_m *S3) *TeamQuery {
 	return query
 }
 
-// QueryServiceBackupSource queries the service_backup_source edge of a S3.
-func (c *S3Client) QueryServiceBackupSource(_m *S3) *ServiceConfigQuery {
+// QueryServiceBackupConfigs queries the service_backup_configs edge of a S3Bucket.
+func (c *S3BucketClient) QueryServiceBackupConfigs(_m *S3Bucket) *ServiceConfigQuery {
 	query := (&ServiceConfigClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(s3.Table, s3.FieldID, id),
+			sqlgraph.From(s3bucket.Table, s3bucket.FieldID, id),
 			sqlgraph.To(serviceconfig.Table, serviceconfig.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, s3.ServiceBackupSourceTable, s3.ServiceBackupSourceColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, s3bucket.ServiceBackupConfigsTable, s3bucket.ServiceBackupConfigsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2548,27 +2548,27 @@ func (c *S3Client) QueryServiceBackupSource(_m *S3) *ServiceConfigQuery {
 }
 
 // Hooks returns the client hooks.
-func (c *S3Client) Hooks() []Hook {
-	return c.hooks.S3
+func (c *S3BucketClient) Hooks() []Hook {
+	return c.hooks.S3Bucket
 }
 
 // Interceptors returns the client interceptors.
-func (c *S3Client) Interceptors() []Interceptor {
-	return c.inters.S3
+func (c *S3BucketClient) Interceptors() []Interceptor {
+	return c.inters.S3Bucket
 }
 
-func (c *S3Client) mutate(ctx context.Context, m *S3Mutation) (Value, error) {
+func (c *S3BucketClient) mutate(ctx context.Context, m *S3BucketMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&S3Create{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&S3BucketCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&S3Update{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&S3BucketUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&S3UpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&S3BucketUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&S3Delete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&S3BucketDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown S3 mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown S3Bucket mutation op: %q", m.Op())
 	}
 }
 
@@ -2957,15 +2957,15 @@ func (c *ServiceConfigClient) QueryService(_m *ServiceConfig) *ServiceQuery {
 	return query
 }
 
-// QueryS3BackupSources queries the s3_backup_sources edge of a ServiceConfig.
-func (c *ServiceConfigClient) QueryS3BackupSources(_m *ServiceConfig) *S3Query {
-	query := (&S3Client{config: c.config}).Query()
+// QueryS3BackupBucket queries the s3_backup_bucket edge of a ServiceConfig.
+func (c *ServiceConfigClient) QueryS3BackupBucket(_m *ServiceConfig) *S3BucketQuery {
+	query := (&S3BucketClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(serviceconfig.Table, serviceconfig.FieldID, id),
-			sqlgraph.To(s3.Table, s3.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, serviceconfig.S3BackupSourcesTable, serviceconfig.S3BackupSourcesColumn),
+			sqlgraph.To(s3bucket.Table, s3bucket.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, serviceconfig.S3BackupBucketTable, serviceconfig.S3BackupBucketColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -3420,15 +3420,15 @@ func (c *TeamClient) QueryProjects(_m *Team) *ProjectQuery {
 	return query
 }
 
-// QueryS3Sources queries the s3_sources edge of a Team.
-func (c *TeamClient) QueryS3Sources(_m *Team) *S3Query {
-	query := (&S3Client{config: c.config}).Query()
+// QueryS3Buckets queries the s3_buckets edge of a Team.
+func (c *TeamClient) QueryS3Buckets(_m *Team) *S3BucketQuery {
+	query := (&S3BucketClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
-			sqlgraph.To(s3.Table, s3.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.S3SourcesTable, team.S3SourcesColumn),
+			sqlgraph.To(s3bucket.Table, s3bucket.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, team.S3BucketsTable, team.S3BucketsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -4174,14 +4174,14 @@ type (
 	hooks struct {
 		Bootstrap, Deployment, Environment, GithubApp, GithubInstallation, Group,
 		JWTKey, Oauth2Code, Oauth2Token, PVCMetadata, Permission, Project, Registry,
-		S3, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template, User,
-		VariableReference, Webhook []ent.Hook
+		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template,
+		User, VariableReference, Webhook []ent.Hook
 	}
 	inters struct {
 		Bootstrap, Deployment, Environment, GithubApp, GithubInstallation, Group,
 		JWTKey, Oauth2Code, Oauth2Token, PVCMetadata, Permission, Project, Registry,
-		S3, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template, User,
-		VariableReference, Webhook []ent.Interceptor
+		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template,
+		User, VariableReference, Webhook []ent.Interceptor
 	}
 )
 

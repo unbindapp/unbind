@@ -7,14 +7,14 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/s3"
 )
 
-// Test that S3 credentials are valid and can be used to list buckets and RW buckets
 type TestS3AccessInput struct {
 	server.BaseAuthInput
 	Body struct {
-		Endpoint    string `json:"endpoint" required:"true"`
+		Endpoint    string `json:"endpoint" required:"true" minLength:"1"`
 		Region      string `json:"region" required:"true"`
-		AccessKeyID string `json:"access_key_id" required:"true"`
-		SecretKey   string `json:"secret_key" required:"true"`
+		Bucket      string `json:"bucket" required:"true" minLength:"1"`
+		AccessKeyID string `json:"access_key_id" required:"true" minLength:"1"`
+		SecretKey   string `json:"secret_key" required:"true" minLength:"1"`
 	}
 }
 
@@ -30,6 +30,9 @@ type TestS3Output struct {
 }
 
 func (self *HandlerGroup) TestS3Access(ctx context.Context, input *TestS3AccessInput) (*TestS3Output, error) {
+	resp := &TestS3Output{}
+	resp.Body.Data = &S3TestResult{Valid: true}
+
 	s3client, err := s3.NewS3Client(
 		ctx,
 		input.Body.Endpoint,
@@ -37,26 +40,13 @@ func (self *HandlerGroup) TestS3Access(ctx context.Context, input *TestS3AccessI
 		input.Body.AccessKeyID,
 		input.Body.SecretKey,
 	)
-
 	if err != nil {
-		resp := &TestS3Output{}
-		resp.Body.Data = &S3TestResult{
-			Valid: false,
-			Error: err.Error(),
-		}
+		resp.Body.Data = &S3TestResult{Valid: false, Error: err.Error()}
 		return resp, nil
 	}
 
-	result := &S3TestResult{
-		Valid: true,
+	if err := s3client.ProbeBucketRW(ctx, input.Body.Bucket); err != nil {
+		resp.Body.Data = &S3TestResult{Valid: false, Error: err.Error()}
 	}
-	err = s3client.ProbeAnyBucketRW(ctx)
-	if err != nil {
-		result.Valid = false
-		result.Error = err.Error()
-	}
-
-	resp := &TestS3Output{}
-	resp.Body.Data = result
 	return resp, nil
 }

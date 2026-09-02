@@ -20,50 +20,50 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "test-s3-access",
 		Summary:     "Test S3 Access",
-		Description: "Validate S3 credentials by connecting to the bucket. Read-only against the remote, but reaches an external endpoint.",
+		Description: "Validate S3 credentials by writing and deleting a probe object in the bucket. Reaches an external endpoint.",
 		Path:        "/s3/test",
 		Method:      http.MethodPost,
 	}, handlers.TestS3Access, oapi.OpenWorld)
 
 	oapi.Register(grp, oapi.Create, huma.Operation{
-		OperationID: "create-s3-source",
-		Summary:     "Create S3 Source",
-		Description: "Store an S3 source (endpoint + credentials) for use as a backup target.",
+		OperationID: "create-s3-bucket",
+		Summary:     "Create S3 Bucket",
+		Description: "Store an S3 bucket (endpoint, bucket and credentials) for use as a backup target.",
 		Path:        "/s3/create",
 		Method:      http.MethodPost,
-	}, handlers.CreateS3, oapi.OpenWorld)
+	}, handlers.CreateS3Bucket, oapi.OpenWorld)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
-		OperationID: "update-s3-source",
-		Summary:     "Update S3 Source",
-		Description: "Update an S3 source's endpoint or credentials.",
+		OperationID: "update-s3-bucket",
+		Summary:     "Update S3 Bucket",
+		Description: "Update an S3 bucket's name, endpoint, region, bucket or credentials.",
 		Path:        "/s3/update",
 		Method:      http.MethodPost,
-	}, handlers.UpdateS3Source, oapi.OpenWorld)
+	}, handlers.UpdateS3Bucket, oapi.OpenWorld)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "get-s3-source-by-id",
-		Summary:     "Get S3 Source",
-		Description: "Get a single S3 source by ID. Secret keys are not returned.",
+		OperationID: "get-s3-bucket-by-id",
+		Summary:     "Get S3 Bucket",
+		Description: "Get a single S3 bucket by ID.",
 		Path:        "/s3/get",
 		Method:      http.MethodGet,
-	}, handlers.GetS3SourceByID)
+	}, handlers.GetS3BucketByID)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "list-s3-sources",
-		Summary:     "List S3 Sources",
-		Description: "List all S3 sources for a team.",
+		OperationID: "list-s3-buckets",
+		Summary:     "List S3 Buckets",
+		Description: "List all S3 buckets for a team.",
 		Path:        "/s3/list",
 		Method:      http.MethodGet,
-	}, handlers.ListS3Source)
+	}, handlers.ListS3Buckets)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
-		OperationID: "delete-s3-source",
-		Summary:     "Delete S3 Source",
-		Description: "Delete an S3 source.",
+		OperationID: "delete-s3-bucket",
+		Summary:     "Delete S3 Bucket",
+		Description: "Delete an S3 bucket.",
 		Path:        "/s3/delete",
 		Method:      http.MethodDelete,
-	}, handlers.DeleteS3Source)
+	}, handlers.DeleteS3Bucket)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-pvc",

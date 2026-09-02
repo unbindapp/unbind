@@ -25,8 +25,7 @@ type ServiceConfigResponse struct {
 	DockerBuilderDockerfilePath *string `json:"docker_builder_dockerfile_path,omitempty"`
 	DockerBuilderBuildContext   *string `json:"docker_builder_build_context,omitempty"`
 	// For backups
-	S3BackupSourceID     *uuid.UUID `json:"s3_backup_source_id,omitempty" format:"uuid"`
-	S3BackupBucket       *string    `json:"s3_backup_bucket,omitempty"`
+	S3BackupBucketID     *uuid.UUID `json:"s3_backup_bucket_id,omitempty" format:"uuid"`
 	BackupSchedule       string     `json:"backup_schedule"`
 	BackupRetentionCount int        `json:"backup_retention_count"`
 	// Volume
@@ -63,8 +62,7 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 			RunCommand:                    entity.RunCommand,
 			IsPublic:                      entity.IsPublic,
 			Image:                         entity.Image,
-			S3BackupSourceID:              entity.S3BackupSourceID,
-			S3BackupBucket:                entity.S3BackupBucket,
+			S3BackupBucketID:              entity.S3BackupBucketID,
 			BackupSchedule:                entity.BackupSchedule,
 			BackupRetentionCount:          entity.BackupRetentionCount,
 			SecurityContext:               entity.SecurityContext,

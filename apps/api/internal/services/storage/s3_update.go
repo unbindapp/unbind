@@ -2,30 +2,27 @@ package storage_service
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	"github.com/unbindapp/unbind-api/internal/infrastructure/s3"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
 )
 
-func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID uuid.UUID, teamID, id uuid.UUID, name, accessKeyID, secretKey *string) (*models.S3Response, error) {
-	// Input validation
-	if name == nil && accessKeyID == nil && secretKey == nil {
+func (self *StorageService) UpdateS3Bucket(ctx context.Context, requesterUserID uuid.UUID, input *models.S3BucketUpdateInput) (*models.S3BucketResponse, error) {
+	if !input.HasChanges() {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "At least one field must be provided")
 	}
 
 	permissionChecks := []permissions_repo.PermissionCheck{
-		// Team viewer can view s3 sources
+		// Team editor can update s3 buckets
 		{
 			Action:       schema.ActionEditor,
 			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   teamID,
+			ResourceID:   input.TeamID,
 		},
 	}
 
@@ -33,7 +30,7 @@ func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID
 		return nil, err
 	}
 
-	team, err := self.repo.Team().GetByID(ctx, teamID)
+	team, err := self.repo.Team().GetByID(ctx, input.TeamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Team not found")
@@ -41,82 +38,54 @@ func (self *StorageService) UpdateS3Storage(ctx context.Context, requesterUserID
 		return nil, err
 	}
 
-	s3Source, err := self.repo.S3().GetByID(ctx, id)
+	s3Bucket, err := self.getTeamS3Bucket(ctx, team, input.ID)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 source not found")
-		}
 		return nil, err
 	}
-	if s3Source.TeamID != team.ID {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 source not found")
+
+	client := self.k8s.GetInternalClient()
+
+	secret, err := self.k8s.GetSecret(ctx, s3Bucket.KubernetesSecret, team.Namespace, client)
+	if err != nil {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Secret not found")
 	}
 
-	// Update secret
-	if accessKeyID != nil || secretKey != nil {
-		client := self.k8s.GetInternalClient()
+	conn := s3Connection{
+		Endpoint:    valueOr(input.Endpoint, s3Bucket.Endpoint),
+		Region:      valueOr(input.Region, s3Bucket.Region),
+		Bucket:      valueOr(input.Bucket, s3Bucket.Bucket),
+		AccessKeyID: valueOr(input.AccessKeyID, string(secret.Data["access_key_id"])),
+		SecretKey:   valueOr(input.SecretKey, string(secret.Data["secret_key"])),
+	}
 
-		secret, _, err := self.k8s.GetOrCreateSecret(ctx, s3Source.KubernetesSecret, team.Namespace, client)
-		if err != nil {
+	if input.ConnectionChanged() {
+		if err := probeS3Bucket(ctx, conn); err != nil {
 			return nil, err
 		}
 
-		if accessKeyID != nil {
-			secret.Data["access_key_id"] = []byte(*accessKeyID)
-		}
-		if secretKey != nil {
-			secret.Data["secret_key"] = []byte(*secretKey)
-		}
-
-		// Aws config style
-		profile := "default"
-		region := strings.TrimSpace(s3Source.Region)
-
-		if accessKeyID != nil || secretKey != nil {
-			// Build INI-formatted that is sometimes what stuff wants (like mysql operator)
-			credentialsFile := fmt.Sprintf(`[%s]
-aws_access_key_id = %s
-aws_secret_access_key = %s
-`, profile, string(secret.Data["access_key_id"]), string(secret.Data["secret_key"]))
-
-			configFile := fmt.Sprintf(`[%s]
-region = %s
-output = json
-`, profile, region)
-
-			secret.Data["credentials"] = []byte(credentialsFile)
-			secret.Data["config"] = []byte(configFile)
-		}
-
-		// Test connectivity to the S3 backend
-		s3Client, err := s3.NewS3Client(
-			ctx,
-			s3Source.Endpoint,
-			s3Source.Region,
-			string(secret.Data["access_key_id"]),
-			string(secret.Data["secret_key"]),
-		)
-		if err != nil {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
-		}
-
-		err = s3Client.ProbeAnyBucketRW(ctx)
-		if err != nil {
-			// May be invalid credentials, etc.
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
-		}
-
-		if _, err := self.k8s.UpdateSecret(ctx, secret.Name, team.Namespace, secret.Data, client); err != nil {
+		if _, err := self.k8s.OverwriteSecretValues(ctx, secret.Name, team.Namespace, s3SecretValues(conn), client); err != nil {
 			return nil, err
 		}
 	}
 
-	if name != nil {
-		s3Source, err = self.repo.S3().Update(ctx, id, *name)
+	if input.Name != nil || input.Endpoint != nil || input.Region != nil || input.Bucket != nil {
+		s3Bucket, err = self.repo.S3Bucket().Update(ctx, input.ID, &s3bucket_repo.UpdateS3BucketInput{
+			Name:     input.Name,
+			Endpoint: input.Endpoint,
+			Region:   input.Region,
+			Bucket:   input.Bucket,
+		})
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return models.TransformS3Entity(s3Source, "", "", nil), nil
+	return models.TransformS3BucketEntity(s3Bucket, conn.AccessKeyID, conn.SecretKey), nil
+}
+
+func valueOr(value *string, fallback string) string {
+	if value == nil {
+		return fallback
+	}
+	return *value
 }

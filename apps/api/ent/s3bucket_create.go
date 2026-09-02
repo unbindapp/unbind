@@ -13,27 +13,27 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
 	"github.com/unbindapp/unbind-api/ent/team"
 )
 
-// S3Create is the builder for creating a S3 entity.
-type S3Create struct {
+// S3BucketCreate is the builder for creating a S3Bucket entity.
+type S3BucketCreate struct {
 	config
-	mutation *S3Mutation
+	mutation *S3BucketMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (_c *S3Create) SetCreatedAt(v time.Time) *S3Create {
+func (_c *S3BucketCreate) SetCreatedAt(v time.Time) *S3BucketCreate {
 	_c.mutation.SetCreatedAt(v)
 	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *S3Create) SetNillableCreatedAt(v *time.Time) *S3Create {
+func (_c *S3BucketCreate) SetNillableCreatedAt(v *time.Time) *S3BucketCreate {
 	if v != nil {
 		_c.SetCreatedAt(*v)
 	}
@@ -41,13 +41,13 @@ func (_c *S3Create) SetNillableCreatedAt(v *time.Time) *S3Create {
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (_c *S3Create) SetUpdatedAt(v time.Time) *S3Create {
+func (_c *S3BucketCreate) SetUpdatedAt(v time.Time) *S3BucketCreate {
 	_c.mutation.SetUpdatedAt(v)
 	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_c *S3Create) SetNillableUpdatedAt(v *time.Time) *S3Create {
+func (_c *S3BucketCreate) SetNillableUpdatedAt(v *time.Time) *S3BucketCreate {
 	if v != nil {
 		_c.SetUpdatedAt(*v)
 	}
@@ -55,57 +55,49 @@ func (_c *S3Create) SetNillableUpdatedAt(v *time.Time) *S3Create {
 }
 
 // SetName sets the "name" field.
-func (_c *S3Create) SetName(v string) *S3Create {
+func (_c *S3BucketCreate) SetName(v string) *S3BucketCreate {
 	_c.mutation.SetName(v)
 	return _c
 }
 
 // SetEndpoint sets the "endpoint" field.
-func (_c *S3Create) SetEndpoint(v string) *S3Create {
+func (_c *S3BucketCreate) SetEndpoint(v string) *S3BucketCreate {
 	_c.mutation.SetEndpoint(v)
 	return _c
 }
 
 // SetRegion sets the "region" field.
-func (_c *S3Create) SetRegion(v string) *S3Create {
+func (_c *S3BucketCreate) SetRegion(v string) *S3BucketCreate {
 	_c.mutation.SetRegion(v)
 	return _c
 }
 
-// SetForcePathStyle sets the "force_path_style" field.
-func (_c *S3Create) SetForcePathStyle(v bool) *S3Create {
-	_c.mutation.SetForcePathStyle(v)
-	return _c
-}
-
-// SetNillableForcePathStyle sets the "force_path_style" field if the given value is not nil.
-func (_c *S3Create) SetNillableForcePathStyle(v *bool) *S3Create {
-	if v != nil {
-		_c.SetForcePathStyle(*v)
-	}
+// SetBucket sets the "bucket" field.
+func (_c *S3BucketCreate) SetBucket(v string) *S3BucketCreate {
+	_c.mutation.SetBucket(v)
 	return _c
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (_c *S3Create) SetKubernetesSecret(v string) *S3Create {
+func (_c *S3BucketCreate) SetKubernetesSecret(v string) *S3BucketCreate {
 	_c.mutation.SetKubernetesSecret(v)
 	return _c
 }
 
 // SetTeamID sets the "team_id" field.
-func (_c *S3Create) SetTeamID(v uuid.UUID) *S3Create {
+func (_c *S3BucketCreate) SetTeamID(v uuid.UUID) *S3BucketCreate {
 	_c.mutation.SetTeamID(v)
 	return _c
 }
 
 // SetID sets the "id" field.
-func (_c *S3Create) SetID(v uuid.UUID) *S3Create {
+func (_c *S3BucketCreate) SetID(v uuid.UUID) *S3BucketCreate {
 	_c.mutation.SetID(v)
 	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (_c *S3Create) SetNillableID(v *uuid.UUID) *S3Create {
+func (_c *S3BucketCreate) SetNillableID(v *uuid.UUID) *S3BucketCreate {
 	if v != nil {
 		_c.SetID(*v)
 	}
@@ -113,38 +105,38 @@ func (_c *S3Create) SetNillableID(v *uuid.UUID) *S3Create {
 }
 
 // SetTeam sets the "team" edge to the Team entity.
-func (_c *S3Create) SetTeam(v *Team) *S3Create {
+func (_c *S3BucketCreate) SetTeam(v *Team) *S3BucketCreate {
 	return _c.SetTeamID(v.ID)
 }
 
-// AddServiceBackupSourceIDs adds the "service_backup_source" edge to the ServiceConfig entity by IDs.
-func (_c *S3Create) AddServiceBackupSourceIDs(ids ...uuid.UUID) *S3Create {
-	_c.mutation.AddServiceBackupSourceIDs(ids...)
+// AddServiceBackupConfigIDs adds the "service_backup_configs" edge to the ServiceConfig entity by IDs.
+func (_c *S3BucketCreate) AddServiceBackupConfigIDs(ids ...uuid.UUID) *S3BucketCreate {
+	_c.mutation.AddServiceBackupConfigIDs(ids...)
 	return _c
 }
 
-// AddServiceBackupSource adds the "service_backup_source" edges to the ServiceConfig entity.
-func (_c *S3Create) AddServiceBackupSource(v ...*ServiceConfig) *S3Create {
+// AddServiceBackupConfigs adds the "service_backup_configs" edges to the ServiceConfig entity.
+func (_c *S3BucketCreate) AddServiceBackupConfigs(v ...*ServiceConfig) *S3BucketCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddServiceBackupSourceIDs(ids...)
+	return _c.AddServiceBackupConfigIDs(ids...)
 }
 
-// Mutation returns the S3Mutation object of the builder.
-func (_c *S3Create) Mutation() *S3Mutation {
+// Mutation returns the S3BucketMutation object of the builder.
+func (_c *S3BucketCreate) Mutation() *S3BucketMutation {
 	return _c.mutation
 }
 
-// Save creates the S3 in the database.
-func (_c *S3Create) Save(ctx context.Context) (*S3, error) {
+// Save creates the S3Bucket in the database.
+func (_c *S3BucketCreate) Save(ctx context.Context) (*S3Bucket, error) {
 	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *S3Create) SaveX(ctx context.Context) *S3 {
+func (_c *S3BucketCreate) SaveX(ctx context.Context) *S3Bucket {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -153,76 +145,82 @@ func (_c *S3Create) SaveX(ctx context.Context) *S3 {
 }
 
 // Exec executes the query.
-func (_c *S3Create) Exec(ctx context.Context) error {
+func (_c *S3BucketCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *S3Create) ExecX(ctx context.Context) {
+func (_c *S3BucketCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *S3Create) defaults() {
+func (_c *S3BucketCreate) defaults() {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
-		v := s3.DefaultCreatedAt()
+		v := s3bucket.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		v := s3.DefaultUpdatedAt()
+		v := s3bucket.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.ForcePathStyle(); !ok {
-		v := s3.DefaultForcePathStyle
-		_c.mutation.SetForcePathStyle(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
-		v := s3.DefaultID()
+		v := s3bucket.DefaultID()
 		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *S3Create) check() error {
+func (_c *S3BucketCreate) check() error {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "S3.created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "S3Bucket.created_at"`)}
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "S3.updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "S3Bucket.updated_at"`)}
 	}
 	if _, ok := _c.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "S3.name"`)}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "S3Bucket.name"`)}
 	}
 	if v, ok := _c.mutation.Name(); ok {
-		if err := s3.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "S3.name": %w`, err)}
+		if err := s3bucket.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "S3Bucket.name": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Endpoint(); !ok {
-		return &ValidationError{Name: "endpoint", err: errors.New(`ent: missing required field "S3.endpoint"`)}
+		return &ValidationError{Name: "endpoint", err: errors.New(`ent: missing required field "S3Bucket.endpoint"`)}
+	}
+	if v, ok := _c.mutation.Endpoint(); ok {
+		if err := s3bucket.EndpointValidator(v); err != nil {
+			return &ValidationError{Name: "endpoint", err: fmt.Errorf(`ent: validator failed for field "S3Bucket.endpoint": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.Region(); !ok {
-		return &ValidationError{Name: "region", err: errors.New(`ent: missing required field "S3.region"`)}
+		return &ValidationError{Name: "region", err: errors.New(`ent: missing required field "S3Bucket.region"`)}
 	}
-	if _, ok := _c.mutation.ForcePathStyle(); !ok {
-		return &ValidationError{Name: "force_path_style", err: errors.New(`ent: missing required field "S3.force_path_style"`)}
+	if _, ok := _c.mutation.Bucket(); !ok {
+		return &ValidationError{Name: "bucket", err: errors.New(`ent: missing required field "S3Bucket.bucket"`)}
+	}
+	if v, ok := _c.mutation.Bucket(); ok {
+		if err := s3bucket.BucketValidator(v); err != nil {
+			return &ValidationError{Name: "bucket", err: fmt.Errorf(`ent: validator failed for field "S3Bucket.bucket": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.KubernetesSecret(); !ok {
-		return &ValidationError{Name: "kubernetes_secret", err: errors.New(`ent: missing required field "S3.kubernetes_secret"`)}
+		return &ValidationError{Name: "kubernetes_secret", err: errors.New(`ent: missing required field "S3Bucket.kubernetes_secret"`)}
 	}
 	if _, ok := _c.mutation.TeamID(); !ok {
-		return &ValidationError{Name: "team_id", err: errors.New(`ent: missing required field "S3.team_id"`)}
+		return &ValidationError{Name: "team_id", err: errors.New(`ent: missing required field "S3Bucket.team_id"`)}
 	}
 	if len(_c.mutation.TeamIDs()) == 0 {
-		return &ValidationError{Name: "team", err: errors.New(`ent: missing required edge "S3.team"`)}
+		return &ValidationError{Name: "team", err: errors.New(`ent: missing required edge "S3Bucket.team"`)}
 	}
 	return nil
 }
 
-func (_c *S3Create) sqlSave(ctx context.Context) (*S3, error) {
+func (_c *S3BucketCreate) sqlSave(ctx context.Context) (*S3Bucket, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -245,10 +243,10 @@ func (_c *S3Create) sqlSave(ctx context.Context) (*S3, error) {
 	return _node, nil
 }
 
-func (_c *S3Create) createSpec() (*S3, *sqlgraph.CreateSpec) {
+func (_c *S3BucketCreate) createSpec() (*S3Bucket, *sqlgraph.CreateSpec) {
 	var (
-		_node = &S3{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(s3.Table, sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID))
+		_node = &S3Bucket{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(s3bucket.Table, sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
@@ -256,39 +254,39 @@ func (_c *S3Create) createSpec() (*S3, *sqlgraph.CreateSpec) {
 		_spec.ID.Value = &id
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(s3.FieldCreatedAt, field.TypeTime, value)
+		_spec.SetField(s3bucket.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(s3.FieldUpdatedAt, field.TypeTime, value)
+		_spec.SetField(s3bucket.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := _c.mutation.Name(); ok {
-		_spec.SetField(s3.FieldName, field.TypeString, value)
+		_spec.SetField(s3bucket.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := _c.mutation.Endpoint(); ok {
-		_spec.SetField(s3.FieldEndpoint, field.TypeString, value)
+		_spec.SetField(s3bucket.FieldEndpoint, field.TypeString, value)
 		_node.Endpoint = value
 	}
 	if value, ok := _c.mutation.Region(); ok {
-		_spec.SetField(s3.FieldRegion, field.TypeString, value)
+		_spec.SetField(s3bucket.FieldRegion, field.TypeString, value)
 		_node.Region = value
 	}
-	if value, ok := _c.mutation.ForcePathStyle(); ok {
-		_spec.SetField(s3.FieldForcePathStyle, field.TypeBool, value)
-		_node.ForcePathStyle = value
+	if value, ok := _c.mutation.Bucket(); ok {
+		_spec.SetField(s3bucket.FieldBucket, field.TypeString, value)
+		_node.Bucket = value
 	}
 	if value, ok := _c.mutation.KubernetesSecret(); ok {
-		_spec.SetField(s3.FieldKubernetesSecret, field.TypeString, value)
+		_spec.SetField(s3bucket.FieldKubernetesSecret, field.TypeString, value)
 		_node.KubernetesSecret = value
 	}
 	if nodes := _c.mutation.TeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   s3.TeamTable,
-			Columns: []string{s3.TeamColumn},
+			Table:   s3bucket.TeamTable,
+			Columns: []string{s3bucket.TeamColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
@@ -300,12 +298,12 @@ func (_c *S3Create) createSpec() (*S3, *sqlgraph.CreateSpec) {
 		_node.TeamID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ServiceBackupSourceIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.ServiceBackupConfigsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   s3.ServiceBackupSourceTable,
-			Columns: []string{s3.ServiceBackupSourceColumn},
+			Table:   s3bucket.ServiceBackupConfigsTable,
+			Columns: []string{s3bucket.ServiceBackupConfigsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(serviceconfig.FieldID, field.TypeUUID),
@@ -322,7 +320,7 @@ func (_c *S3Create) createSpec() (*S3, *sqlgraph.CreateSpec) {
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.S3.Create().
+//	client.S3Bucket.Create().
 //		SetCreatedAt(v).
 //		OnConflict(
 //			// Update the row with the new values
@@ -331,13 +329,13 @@ func (_c *S3Create) createSpec() (*S3, *sqlgraph.CreateSpec) {
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.S3Upsert) {
+//		Update(func(u *ent.S3BucketUpsert) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *S3Create) OnConflict(opts ...sql.ConflictOption) *S3UpsertOne {
+func (_c *S3BucketCreate) OnConflict(opts ...sql.ConflictOption) *S3BucketUpsertOne {
 	_c.conflict = opts
-	return &S3UpsertOne{
+	return &S3BucketUpsertOne{
 		create: _c,
 	}
 }
@@ -345,132 +343,132 @@ func (_c *S3Create) OnConflict(opts ...sql.ConflictOption) *S3UpsertOne {
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.S3.Create().
+//	client.S3Bucket.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *S3Create) OnConflictColumns(columns ...string) *S3UpsertOne {
+func (_c *S3BucketCreate) OnConflictColumns(columns ...string) *S3BucketUpsertOne {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &S3UpsertOne{
+	return &S3BucketUpsertOne{
 		create: _c,
 	}
 }
 
 type (
-	// S3UpsertOne is the builder for "upsert"-ing
-	//  one S3 node.
-	S3UpsertOne struct {
-		create *S3Create
+	// S3BucketUpsertOne is the builder for "upsert"-ing
+	//  one S3Bucket node.
+	S3BucketUpsertOne struct {
+		create *S3BucketCreate
 	}
 
-	// S3Upsert is the "OnConflict" setter.
-	S3Upsert struct {
+	// S3BucketUpsert is the "OnConflict" setter.
+	S3BucketUpsert struct {
 		*sql.UpdateSet
 	}
 )
 
 // SetUpdatedAt sets the "updated_at" field.
-func (u *S3Upsert) SetUpdatedAt(v time.Time) *S3Upsert {
-	u.Set(s3.FieldUpdatedAt, v)
+func (u *S3BucketUpsert) SetUpdatedAt(v time.Time) *S3BucketUpsert {
+	u.Set(s3bucket.FieldUpdatedAt, v)
 	return u
 }
 
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *S3Upsert) UpdateUpdatedAt() *S3Upsert {
-	u.SetExcluded(s3.FieldUpdatedAt)
+func (u *S3BucketUpsert) UpdateUpdatedAt() *S3BucketUpsert {
+	u.SetExcluded(s3bucket.FieldUpdatedAt)
 	return u
 }
 
 // SetName sets the "name" field.
-func (u *S3Upsert) SetName(v string) *S3Upsert {
-	u.Set(s3.FieldName, v)
+func (u *S3BucketUpsert) SetName(v string) *S3BucketUpsert {
+	u.Set(s3bucket.FieldName, v)
 	return u
 }
 
 // UpdateName sets the "name" field to the value that was provided on create.
-func (u *S3Upsert) UpdateName() *S3Upsert {
-	u.SetExcluded(s3.FieldName)
+func (u *S3BucketUpsert) UpdateName() *S3BucketUpsert {
+	u.SetExcluded(s3bucket.FieldName)
 	return u
 }
 
 // SetEndpoint sets the "endpoint" field.
-func (u *S3Upsert) SetEndpoint(v string) *S3Upsert {
-	u.Set(s3.FieldEndpoint, v)
+func (u *S3BucketUpsert) SetEndpoint(v string) *S3BucketUpsert {
+	u.Set(s3bucket.FieldEndpoint, v)
 	return u
 }
 
 // UpdateEndpoint sets the "endpoint" field to the value that was provided on create.
-func (u *S3Upsert) UpdateEndpoint() *S3Upsert {
-	u.SetExcluded(s3.FieldEndpoint)
+func (u *S3BucketUpsert) UpdateEndpoint() *S3BucketUpsert {
+	u.SetExcluded(s3bucket.FieldEndpoint)
 	return u
 }
 
 // SetRegion sets the "region" field.
-func (u *S3Upsert) SetRegion(v string) *S3Upsert {
-	u.Set(s3.FieldRegion, v)
+func (u *S3BucketUpsert) SetRegion(v string) *S3BucketUpsert {
+	u.Set(s3bucket.FieldRegion, v)
 	return u
 }
 
 // UpdateRegion sets the "region" field to the value that was provided on create.
-func (u *S3Upsert) UpdateRegion() *S3Upsert {
-	u.SetExcluded(s3.FieldRegion)
+func (u *S3BucketUpsert) UpdateRegion() *S3BucketUpsert {
+	u.SetExcluded(s3bucket.FieldRegion)
 	return u
 }
 
-// SetForcePathStyle sets the "force_path_style" field.
-func (u *S3Upsert) SetForcePathStyle(v bool) *S3Upsert {
-	u.Set(s3.FieldForcePathStyle, v)
+// SetBucket sets the "bucket" field.
+func (u *S3BucketUpsert) SetBucket(v string) *S3BucketUpsert {
+	u.Set(s3bucket.FieldBucket, v)
 	return u
 }
 
-// UpdateForcePathStyle sets the "force_path_style" field to the value that was provided on create.
-func (u *S3Upsert) UpdateForcePathStyle() *S3Upsert {
-	u.SetExcluded(s3.FieldForcePathStyle)
+// UpdateBucket sets the "bucket" field to the value that was provided on create.
+func (u *S3BucketUpsert) UpdateBucket() *S3BucketUpsert {
+	u.SetExcluded(s3bucket.FieldBucket)
 	return u
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (u *S3Upsert) SetKubernetesSecret(v string) *S3Upsert {
-	u.Set(s3.FieldKubernetesSecret, v)
+func (u *S3BucketUpsert) SetKubernetesSecret(v string) *S3BucketUpsert {
+	u.Set(s3bucket.FieldKubernetesSecret, v)
 	return u
 }
 
 // UpdateKubernetesSecret sets the "kubernetes_secret" field to the value that was provided on create.
-func (u *S3Upsert) UpdateKubernetesSecret() *S3Upsert {
-	u.SetExcluded(s3.FieldKubernetesSecret)
+func (u *S3BucketUpsert) UpdateKubernetesSecret() *S3BucketUpsert {
+	u.SetExcluded(s3bucket.FieldKubernetesSecret)
 	return u
 }
 
 // SetTeamID sets the "team_id" field.
-func (u *S3Upsert) SetTeamID(v uuid.UUID) *S3Upsert {
-	u.Set(s3.FieldTeamID, v)
+func (u *S3BucketUpsert) SetTeamID(v uuid.UUID) *S3BucketUpsert {
+	u.Set(s3bucket.FieldTeamID, v)
 	return u
 }
 
 // UpdateTeamID sets the "team_id" field to the value that was provided on create.
-func (u *S3Upsert) UpdateTeamID() *S3Upsert {
-	u.SetExcluded(s3.FieldTeamID)
+func (u *S3BucketUpsert) UpdateTeamID() *S3BucketUpsert {
+	u.SetExcluded(s3bucket.FieldTeamID)
 	return u
 }
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
-//	client.S3.Create().
+//	client.S3Bucket.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(s3.FieldID)
+//				u.SetIgnore(s3bucket.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *S3UpsertOne) UpdateNewValues() *S3UpsertOne {
+func (u *S3BucketUpsertOne) UpdateNewValues() *S3BucketUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
-			s.SetIgnore(s3.FieldID)
+			s.SetIgnore(s3bucket.FieldID)
 		}
 		if _, exists := u.create.mutation.CreatedAt(); exists {
-			s.SetIgnore(s3.FieldCreatedAt)
+			s.SetIgnore(s3bucket.FieldCreatedAt)
 		}
 	}))
 	return u
@@ -479,149 +477,149 @@ func (u *S3UpsertOne) UpdateNewValues() *S3UpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.S3.Create().
+//	client.S3Bucket.Create().
 //	    OnConflict(sql.ResolveWithIgnore()).
 //	    Exec(ctx)
-func (u *S3UpsertOne) Ignore() *S3UpsertOne {
+func (u *S3BucketUpsertOne) Ignore() *S3BucketUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *S3UpsertOne) DoNothing() *S3UpsertOne {
+func (u *S3BucketUpsertOne) DoNothing() *S3BucketUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the S3Create.OnConflict
+// Update allows overriding fields `UPDATE` values. See the S3BucketCreate.OnConflict
 // documentation for more info.
-func (u *S3UpsertOne) Update(set func(*S3Upsert)) *S3UpsertOne {
+func (u *S3BucketUpsertOne) Update(set func(*S3BucketUpsert)) *S3BucketUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&S3Upsert{UpdateSet: update})
+		set(&S3BucketUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (u *S3UpsertOne) SetUpdatedAt(v time.Time) *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) SetUpdatedAt(v time.Time) *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetUpdatedAt(v)
 	})
 }
 
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *S3UpsertOne) UpdateUpdatedAt() *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) UpdateUpdatedAt() *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateUpdatedAt()
 	})
 }
 
 // SetName sets the "name" field.
-func (u *S3UpsertOne) SetName(v string) *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) SetName(v string) *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetName(v)
 	})
 }
 
 // UpdateName sets the "name" field to the value that was provided on create.
-func (u *S3UpsertOne) UpdateName() *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) UpdateName() *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateName()
 	})
 }
 
 // SetEndpoint sets the "endpoint" field.
-func (u *S3UpsertOne) SetEndpoint(v string) *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) SetEndpoint(v string) *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetEndpoint(v)
 	})
 }
 
 // UpdateEndpoint sets the "endpoint" field to the value that was provided on create.
-func (u *S3UpsertOne) UpdateEndpoint() *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) UpdateEndpoint() *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateEndpoint()
 	})
 }
 
 // SetRegion sets the "region" field.
-func (u *S3UpsertOne) SetRegion(v string) *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) SetRegion(v string) *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetRegion(v)
 	})
 }
 
 // UpdateRegion sets the "region" field to the value that was provided on create.
-func (u *S3UpsertOne) UpdateRegion() *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) UpdateRegion() *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateRegion()
 	})
 }
 
-// SetForcePathStyle sets the "force_path_style" field.
-func (u *S3UpsertOne) SetForcePathStyle(v bool) *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
-		s.SetForcePathStyle(v)
+// SetBucket sets the "bucket" field.
+func (u *S3BucketUpsertOne) SetBucket(v string) *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
+		s.SetBucket(v)
 	})
 }
 
-// UpdateForcePathStyle sets the "force_path_style" field to the value that was provided on create.
-func (u *S3UpsertOne) UpdateForcePathStyle() *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
-		s.UpdateForcePathStyle()
+// UpdateBucket sets the "bucket" field to the value that was provided on create.
+func (u *S3BucketUpsertOne) UpdateBucket() *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
+		s.UpdateBucket()
 	})
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (u *S3UpsertOne) SetKubernetesSecret(v string) *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) SetKubernetesSecret(v string) *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetKubernetesSecret(v)
 	})
 }
 
 // UpdateKubernetesSecret sets the "kubernetes_secret" field to the value that was provided on create.
-func (u *S3UpsertOne) UpdateKubernetesSecret() *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) UpdateKubernetesSecret() *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateKubernetesSecret()
 	})
 }
 
 // SetTeamID sets the "team_id" field.
-func (u *S3UpsertOne) SetTeamID(v uuid.UUID) *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) SetTeamID(v uuid.UUID) *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetTeamID(v)
 	})
 }
 
 // UpdateTeamID sets the "team_id" field to the value that was provided on create.
-func (u *S3UpsertOne) UpdateTeamID() *S3UpsertOne {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertOne) UpdateTeamID() *S3BucketUpsertOne {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateTeamID()
 	})
 }
 
 // Exec executes the query.
-func (u *S3UpsertOne) Exec(ctx context.Context) error {
+func (u *S3BucketUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for S3Create.OnConflict")
+		return errors.New("ent: missing options for S3BucketCreate.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *S3UpsertOne) ExecX(ctx context.Context) {
+func (u *S3BucketUpsertOne) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *S3UpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+func (u *S3BucketUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 	if u.create.driver.Dialect() == dialect.MySQL {
 		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
 		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: S3UpsertOne.ID is not supported by MySQL driver. Use S3UpsertOne.Exec instead")
+		return id, errors.New("ent: S3BucketUpsertOne.ID is not supported by MySQL driver. Use S3BucketUpsertOne.Exec instead")
 	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
@@ -631,7 +629,7 @@ func (u *S3UpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *S3UpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *S3BucketUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -639,28 +637,28 @@ func (u *S3UpsertOne) IDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// S3CreateBulk is the builder for creating many S3 entities in bulk.
-type S3CreateBulk struct {
+// S3BucketCreateBulk is the builder for creating many S3Bucket entities in bulk.
+type S3BucketCreateBulk struct {
 	config
 	err      error
-	builders []*S3Create
+	builders []*S3BucketCreate
 	conflict []sql.ConflictOption
 }
 
-// Save creates the S3 entities in the database.
-func (_c *S3CreateBulk) Save(ctx context.Context) ([]*S3, error) {
+// Save creates the S3Bucket entities in the database.
+func (_c *S3BucketCreateBulk) Save(ctx context.Context) ([]*S3Bucket, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*S3, len(_c.builders))
+	nodes := make([]*S3Bucket, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*S3Mutation)
+				mutation, ok := m.(*S3BucketMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -704,7 +702,7 @@ func (_c *S3CreateBulk) Save(ctx context.Context) ([]*S3, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *S3CreateBulk) SaveX(ctx context.Context) []*S3 {
+func (_c *S3BucketCreateBulk) SaveX(ctx context.Context) []*S3Bucket {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -713,13 +711,13 @@ func (_c *S3CreateBulk) SaveX(ctx context.Context) []*S3 {
 }
 
 // Exec executes the query.
-func (_c *S3CreateBulk) Exec(ctx context.Context) error {
+func (_c *S3BucketCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *S3CreateBulk) ExecX(ctx context.Context) {
+func (_c *S3BucketCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
@@ -728,7 +726,7 @@ func (_c *S3CreateBulk) ExecX(ctx context.Context) {
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.S3.CreateBulk(builders...).
+//	client.S3Bucket.CreateBulk(builders...).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -736,13 +734,13 @@ func (_c *S3CreateBulk) ExecX(ctx context.Context) {
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.S3Upsert) {
+//		Update(func(u *ent.S3BucketUpsert) {
 //			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *S3CreateBulk) OnConflict(opts ...sql.ConflictOption) *S3UpsertBulk {
+func (_c *S3BucketCreateBulk) OnConflict(opts ...sql.ConflictOption) *S3BucketUpsertBulk {
 	_c.conflict = opts
-	return &S3UpsertBulk{
+	return &S3BucketUpsertBulk{
 		create: _c,
 	}
 }
@@ -750,42 +748,42 @@ func (_c *S3CreateBulk) OnConflict(opts ...sql.ConflictOption) *S3UpsertBulk {
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.S3.Create().
+//	client.S3Bucket.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *S3CreateBulk) OnConflictColumns(columns ...string) *S3UpsertBulk {
+func (_c *S3BucketCreateBulk) OnConflictColumns(columns ...string) *S3BucketUpsertBulk {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &S3UpsertBulk{
+	return &S3BucketUpsertBulk{
 		create: _c,
 	}
 }
 
-// S3UpsertBulk is the builder for "upsert"-ing
-// a bulk of S3 nodes.
-type S3UpsertBulk struct {
-	create *S3CreateBulk
+// S3BucketUpsertBulk is the builder for "upsert"-ing
+// a bulk of S3Bucket nodes.
+type S3BucketUpsertBulk struct {
+	create *S3BucketCreateBulk
 }
 
 // UpdateNewValues updates the mutable fields using the new values that
 // were set on create. Using this option is equivalent to using:
 //
-//	client.S3.Create().
+//	client.S3Bucket.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(s3.FieldID)
+//				u.SetIgnore(s3bucket.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *S3UpsertBulk) UpdateNewValues() *S3UpsertBulk {
+func (u *S3BucketUpsertBulk) UpdateNewValues() *S3BucketUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
-				s.SetIgnore(s3.FieldID)
+				s.SetIgnore(s3bucket.FieldID)
 			}
 			if _, exists := b.mutation.CreatedAt(); exists {
-				s.SetIgnore(s3.FieldCreatedAt)
+				s.SetIgnore(s3bucket.FieldCreatedAt)
 			}
 		}
 	}))
@@ -795,146 +793,146 @@ func (u *S3UpsertBulk) UpdateNewValues() *S3UpsertBulk {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.S3.Create().
+//	client.S3Bucket.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-func (u *S3UpsertBulk) Ignore() *S3UpsertBulk {
+func (u *S3BucketUpsertBulk) Ignore() *S3BucketUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *S3UpsertBulk) DoNothing() *S3UpsertBulk {
+func (u *S3BucketUpsertBulk) DoNothing() *S3BucketUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the S3CreateBulk.OnConflict
+// Update allows overriding fields `UPDATE` values. See the S3BucketCreateBulk.OnConflict
 // documentation for more info.
-func (u *S3UpsertBulk) Update(set func(*S3Upsert)) *S3UpsertBulk {
+func (u *S3BucketUpsertBulk) Update(set func(*S3BucketUpsert)) *S3BucketUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&S3Upsert{UpdateSet: update})
+		set(&S3BucketUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (u *S3UpsertBulk) SetUpdatedAt(v time.Time) *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) SetUpdatedAt(v time.Time) *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetUpdatedAt(v)
 	})
 }
 
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *S3UpsertBulk) UpdateUpdatedAt() *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) UpdateUpdatedAt() *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateUpdatedAt()
 	})
 }
 
 // SetName sets the "name" field.
-func (u *S3UpsertBulk) SetName(v string) *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) SetName(v string) *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetName(v)
 	})
 }
 
 // UpdateName sets the "name" field to the value that was provided on create.
-func (u *S3UpsertBulk) UpdateName() *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) UpdateName() *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateName()
 	})
 }
 
 // SetEndpoint sets the "endpoint" field.
-func (u *S3UpsertBulk) SetEndpoint(v string) *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) SetEndpoint(v string) *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetEndpoint(v)
 	})
 }
 
 // UpdateEndpoint sets the "endpoint" field to the value that was provided on create.
-func (u *S3UpsertBulk) UpdateEndpoint() *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) UpdateEndpoint() *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateEndpoint()
 	})
 }
 
 // SetRegion sets the "region" field.
-func (u *S3UpsertBulk) SetRegion(v string) *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) SetRegion(v string) *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetRegion(v)
 	})
 }
 
 // UpdateRegion sets the "region" field to the value that was provided on create.
-func (u *S3UpsertBulk) UpdateRegion() *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) UpdateRegion() *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateRegion()
 	})
 }
 
-// SetForcePathStyle sets the "force_path_style" field.
-func (u *S3UpsertBulk) SetForcePathStyle(v bool) *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
-		s.SetForcePathStyle(v)
+// SetBucket sets the "bucket" field.
+func (u *S3BucketUpsertBulk) SetBucket(v string) *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
+		s.SetBucket(v)
 	})
 }
 
-// UpdateForcePathStyle sets the "force_path_style" field to the value that was provided on create.
-func (u *S3UpsertBulk) UpdateForcePathStyle() *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
-		s.UpdateForcePathStyle()
+// UpdateBucket sets the "bucket" field to the value that was provided on create.
+func (u *S3BucketUpsertBulk) UpdateBucket() *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
+		s.UpdateBucket()
 	})
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (u *S3UpsertBulk) SetKubernetesSecret(v string) *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) SetKubernetesSecret(v string) *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetKubernetesSecret(v)
 	})
 }
 
 // UpdateKubernetesSecret sets the "kubernetes_secret" field to the value that was provided on create.
-func (u *S3UpsertBulk) UpdateKubernetesSecret() *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) UpdateKubernetesSecret() *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateKubernetesSecret()
 	})
 }
 
 // SetTeamID sets the "team_id" field.
-func (u *S3UpsertBulk) SetTeamID(v uuid.UUID) *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) SetTeamID(v uuid.UUID) *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.SetTeamID(v)
 	})
 }
 
 // UpdateTeamID sets the "team_id" field to the value that was provided on create.
-func (u *S3UpsertBulk) UpdateTeamID() *S3UpsertBulk {
-	return u.Update(func(s *S3Upsert) {
+func (u *S3BucketUpsertBulk) UpdateTeamID() *S3BucketUpsertBulk {
+	return u.Update(func(s *S3BucketUpsert) {
 		s.UpdateTeamID()
 	})
 }
 
 // Exec executes the query.
-func (u *S3UpsertBulk) Exec(ctx context.Context) error {
+func (u *S3BucketUpsertBulk) Exec(ctx context.Context) error {
 	if u.create.err != nil {
 		return u.create.err
 	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
-			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the S3CreateBulk instead", i)
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the S3BucketCreateBulk instead", i)
 		}
 	}
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for S3CreateBulk.OnConflict")
+		return errors.New("ent: missing options for S3BucketCreateBulk.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *S3UpsertBulk) ExecX(ctx context.Context) {
+func (u *S3BucketUpsertBulk) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}

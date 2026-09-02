@@ -12,9 +12,9 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-func (self *StorageService) DeleteS3StorageByID(ctx context.Context, requesterUserID uuid.UUID, teamID, id uuid.UUID) error {
+func (self *StorageService) DeleteS3BucketByID(ctx context.Context, requesterUserID uuid.UUID, teamID, id uuid.UUID) error {
 	permissionChecks := []permissions_repo.PermissionCheck{
-		// Team viewer can view s3 sources
+		// Team editor can delete s3 buckets
 		{
 			Action:       schema.ActionEditor,
 			ResourceType: schema.ResourceTypeTeam,
@@ -34,33 +34,23 @@ func (self *StorageService) DeleteS3StorageByID(ctx context.Context, requesterUs
 		return err
 	}
 
-	s3Source, err := self.repo.S3().GetByID(ctx, id)
+	s3Bucket, err := self.getTeamS3Bucket(ctx, team, id)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 source not found")
-		}
 		return err
-	}
-	if s3Source.TeamID != team.ID {
-		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 source not found")
 	}
 
 	client := self.k8s.GetInternalClient()
 
-	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		if err := self.repo.S3().Delete(ctx, tx, id); err != nil {
+	return self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+		if err := self.repo.S3Bucket().Delete(ctx, tx, id); err != nil {
 			return err
 		}
 
-		if err := self.k8s.DeleteSecret(ctx, s3Source.KubernetesSecret, team.Namespace, client); err != nil {
-			log.Errorf("Failed to delete secret %s for s3 %s: %v", s3Source.KubernetesSecret, s3Source.ID, err)
+		if err := self.k8s.DeleteSecret(ctx, s3Bucket.KubernetesSecret, team.Namespace, client); err != nil {
+			log.Errorf("Failed to delete secret %s for s3 bucket %s: %v", s3Bucket.KubernetesSecret, s3Bucket.ID, err)
 			return err
 		}
 
 		return nil
-	}); err != nil {
-		return err
-	}
-
-	return nil
+	})
 }

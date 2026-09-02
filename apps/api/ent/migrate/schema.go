@@ -328,27 +328,27 @@ var (
 		Columns:    RegistriesColumns,
 		PrimaryKey: []*schema.Column{RegistriesColumns[0]},
 	}
-	// S3SourcesColumns holds the columns for the "s3_sources" table.
-	S3SourcesColumns = []*schema.Column{
+	// S3BucketsColumns holds the columns for the "s3_buckets" table.
+	S3BucketsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString},
 		{Name: "endpoint", Type: field.TypeString},
 		{Name: "region", Type: field.TypeString},
-		{Name: "force_path_style", Type: field.TypeBool, Default: true},
+		{Name: "bucket", Type: field.TypeString},
 		{Name: "kubernetes_secret", Type: field.TypeString},
 		{Name: "team_id", Type: field.TypeUUID},
 	}
-	// S3SourcesTable holds the schema information for the "s3_sources" table.
-	S3SourcesTable = &schema.Table{
-		Name:       "s3_sources",
-		Columns:    S3SourcesColumns,
-		PrimaryKey: []*schema.Column{S3SourcesColumns[0]},
+	// S3BucketsTable holds the schema information for the "s3_buckets" table.
+	S3BucketsTable = &schema.Table{
+		Name:       "s3_buckets",
+		Columns:    S3BucketsColumns,
+		PrimaryKey: []*schema.Column{S3BucketsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "s3_sources_teams_s3_sources",
-				Columns:    []*schema.Column{S3SourcesColumns[8]},
+				Symbol:     "s3_buckets_teams_s3_buckets",
+				Columns:    []*schema.Column{S3BucketsColumns[8]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -455,7 +455,6 @@ var (
 		{Name: "image", Type: field.TypeString, Nullable: true},
 		{Name: "definition_version", Type: field.TypeString, Nullable: true},
 		{Name: "database_config", Type: field.TypeJSON, Nullable: true},
-		{Name: "s3_backup_bucket", Type: field.TypeString, Nullable: true},
 		{Name: "backup_schedule", Type: field.TypeString, Default: "5 5 * * *"},
 		{Name: "backup_retention_count", Type: field.TypeInt, Default: 3},
 		{Name: "volumes", Type: field.TypeJSON, Nullable: true},
@@ -466,7 +465,7 @@ var (
 		{Name: "variable_metadata", Type: field.TypeJSON, Nullable: true},
 		{Name: "init_containers", Type: field.TypeJSON, Nullable: true},
 		{Name: "resources", Type: field.TypeJSON, Nullable: true},
-		{Name: "s3_backup_source_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "s3_backup_bucket_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "service_id", Type: field.TypeUUID, Unique: true},
 	}
 	// ServiceConfigsTable holds the schema information for the "service_configs" table.
@@ -476,14 +475,14 @@ var (
 		PrimaryKey: []*schema.Column{ServiceConfigsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "service_configs_s3_sources_service_backup_source",
-				Columns:    []*schema.Column{ServiceConfigsColumns[33]},
-				RefColumns: []*schema.Column{S3SourcesColumns[0]},
+				Symbol:     "service_configs_s3_buckets_service_backup_configs",
+				Columns:    []*schema.Column{ServiceConfigsColumns[32]},
+				RefColumns: []*schema.Column{S3BucketsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "service_configs_services_service_config",
-				Columns:    []*schema.Column{ServiceConfigsColumns[34]},
+				Columns:    []*schema.Column{ServiceConfigsColumns[33]},
 				RefColumns: []*schema.Column{ServicesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -756,7 +755,7 @@ var (
 		PermissionsTable,
 		ProjectsTable,
 		RegistriesTable,
-		S3SourcesTable,
+		S3BucketsTable,
 		ServicesTable,
 		ServiceConfigsTable,
 		ServiceGroupsTable,
@@ -820,9 +819,9 @@ func init() {
 	RegistriesTable.Annotation = &entsql.Annotation{
 		Table: "registries",
 	}
-	S3SourcesTable.ForeignKeys[0].RefTable = TeamsTable
-	S3SourcesTable.Annotation = &entsql.Annotation{
-		Table: "s3_sources",
+	S3BucketsTable.ForeignKeys[0].RefTable = TeamsTable
+	S3BucketsTable.Annotation = &entsql.Annotation{
+		Table: "s3_buckets",
 	}
 	ServicesTable.ForeignKeys[0].RefTable = EnvironmentsTable
 	ServicesTable.ForeignKeys[1].RefTable = GithubInstallationsTable
@@ -832,7 +831,7 @@ func init() {
 	ServicesTable.Annotation = &entsql.Annotation{
 		Table: "services",
 	}
-	ServiceConfigsTable.ForeignKeys[0].RefTable = S3SourcesTable
+	ServiceConfigsTable.ForeignKeys[0].RefTable = S3BucketsTable
 	ServiceConfigsTable.ForeignKeys[1].RefTable = ServicesTable
 	ServiceConfigsTable.Annotation = &entsql.Annotation{
 		Table: "service_configs",

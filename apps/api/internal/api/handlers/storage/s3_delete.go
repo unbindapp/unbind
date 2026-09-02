@@ -8,7 +8,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/server"
 )
 
-type DeleteS3SourceByIDInput struct {
+type DeleteS3BucketInput struct {
 	server.BaseAuthInput
 	Body struct {
 		ID     uuid.UUID `json:"id" format:"uuid" required:"true"`
@@ -16,29 +16,24 @@ type DeleteS3SourceByIDInput struct {
 	}
 }
 
-type DeleteS3SourceByIDOutput struct {
+type DeleteS3BucketOutput struct {
 	Body struct {
 		Data server.DeletedResponse `json:"data"`
 	}
 }
 
-func (self *HandlerGroup) DeleteS3Source(ctx context.Context, input *DeleteS3SourceByIDInput) (*DeleteS3SourceByIDOutput, error) {
+func (self *HandlerGroup) DeleteS3Bucket(ctx context.Context, input *DeleteS3BucketInput) (*DeleteS3BucketOutput, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = self.srv.StorageService.DeleteS3StorageByID(
-		ctx,
-		user.ID,
-		input.Body.TeamID,
-		input.Body.ID,
-	)
+	err = self.srv.StorageService.DeleteS3BucketByID(ctx, user.ID, input.Body.TeamID, input.Body.ID)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
 
-	resp := &DeleteS3SourceByIDOutput{}
+	resp := &DeleteS3BucketOutput{}
 	resp.Body.Data = server.DeletedResponse{
 		ID:      input.Body.ID.String(),
 		Deleted: true,

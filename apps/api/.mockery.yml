@@ -90,15 +90,15 @@ packages:
           filename: project_repository_mock.go
           structname: ProjectRepositoryMock
           pkgname: mocks_repository_project
-  github.com/unbindapp/unbind-api/internal/repositories/s3:
+  github.com/unbindapp/unbind-api/internal/repositories/s3bucket:
     config:
-      dir: ./mocks/repository/s3
+      dir: ./mocks/repository/s3bucket
     interfaces:
-      S3RepositoryInterface:
+      S3BucketRepositoryInterface:
         config:
-          filename: s3_repository_mock.go
-          structname: S3RepositoryMock
-          pkgname: mocks_repository_s3
+          filename: s3bucket_repository_mock.go
+          structname: S3BucketRepositoryMock
+          pkgname: mocks_repository_s3bucket
   github.com/unbindapp/unbind-api/internal/repositories/service:
     config:
       dir: ./mocks/repository/service

@@ -363,7 +363,7 @@ export default function useGoToItem({ context }: TProps) {
                     prefetchSettings("/storage");
                   },
                   Icon: ArchiveIcon,
-                  keywords: ["s3", "r2", "backup", "source", "storage", ...goToKeywords],
+                  keywords: ["s3", "r2", "backup", "bucket", "storage", ...goToKeywords],
                 },
               ]
             : []),

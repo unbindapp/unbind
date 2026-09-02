@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { getGoClient } from "@/lib/server/client";
 import { PvcScopeSchema } from "@/lib/server/client.gen";
-import type { PvcScope, S3Response } from "@/lib/server/client.gen";
+import type { PvcScope, S3BucketResponse } from "@/lib/server/client.gen";
 
 export const queryKeyStorage = {
   s3List: (input: { teamId: string }) => ["storage", "s3", "list", input.teamId] as const,
@@ -13,88 +13,91 @@ export const queryKeyStorage = {
     ["storage", "volume", "list", input.teamId, input.projectId, input.environmentId] as const,
 };
 
-// ---- S3 sources ----
+// ---- S3 buckets ----
 
-export const s3SourcesListQuery = (input: { teamId: string; withBuckets?: boolean }) =>
+export const s3BucketsListQuery = (input: { teamId: string }) =>
   queryOptions({
     queryKey: queryKeyStorage.s3List(input),
     queryFn: async () => {
-      const res = await getGoClient().storage.s3.list({
-        team_id: input.teamId,
-        with_buckets: input.withBuckets ?? true,
-      });
-      return { sources: res.data };
+      const res = await getGoClient().storage.s3.list({ team_id: input.teamId });
+      return { buckets: res.data };
     },
   });
 
-export const s3SourceQuery = (input: { id: string; teamId: string; withBuckets?: boolean }) =>
+export const s3BucketQuery = (input: { id: string; teamId: string }) =>
   queryOptions({
     queryKey: queryKeyStorage.s3Detail(input),
     queryFn: async () => {
-      const res = await getGoClient().storage.s3.get({
-        id: input.id,
-        team_id: input.teamId,
-        with_buckets: input.withBuckets ?? true,
-      });
-      return { source: res.data };
+      const res = await getGoClient().storage.s3.get({ id: input.id, team_id: input.teamId });
+      return { bucket: res.data };
     },
   });
 
-export async function createS3Source(input: {
-  teamId: string;
-  name: string;
+type TS3Connection = {
   endpoint: string;
+  region: string;
+  bucket: string;
   accessKeyId: string;
   secretKey: string;
-  region: string;
-}) {
+};
+
+export async function createS3Bucket(input: TS3Connection & { teamId: string; name: string }) {
   const res = await getGoClient().storage.s3.create({
     team_id: input.teamId,
+    name: input.name,
     endpoint: input.endpoint,
+    region: input.region,
+    bucket: input.bucket,
     access_key_id: input.accessKeyId,
     secret_key: input.secretKey,
-    name: input.name,
-    region: input.region,
   });
   return { data: res.data };
 }
 
-export async function updateS3Source(input: { id: string; teamId: string; name: string }) {
+export type TUpdateS3BucketInput = Partial<TS3Connection> & {
+  id: string;
+  teamId: string;
+  name?: string;
+};
+
+export async function updateS3Bucket(input: TUpdateS3BucketInput) {
   const res = await getGoClient().storage.s3.update({
     id: input.id,
     team_id: input.teamId,
     name: input.name,
+    endpoint: input.endpoint,
+    region: input.region,
+    bucket: input.bucket,
+    access_key_id: input.accessKeyId,
+    secret_key: input.secretKey,
   });
   return { data: res.data };
 }
 
-export async function deleteS3Source(input: { id: string; teamId: string }) {
+export async function deleteS3Bucket(input: { id: string; teamId: string }) {
   const res = await getGoClient().storage.s3.delete({ id: input.id, team_id: input.teamId });
   return { data: res.data };
 }
 
-export const testS3Query = (input: {
-  endpoint: string;
-  accessKeyId: string;
-  secretKey: string;
-  region: string;
-}) =>
+export const testS3Query = (input: TS3Connection) =>
   queryOptions({
     queryKey: [
       "storage",
       "s3",
       "test",
       input.endpoint,
+      input.region,
+      input.bucket,
       input.accessKeyId,
       input.secretKey,
-      input.region,
     ] as const,
     queryFn: async () => {
       const res = await getGoClient().storage.s3.test({
         endpoint: input.endpoint,
+        region: input.region,
+        bucket: input.bucket,
         access_key_id: input.accessKeyId,
         secret_key: input.secretKey,
-        region: input.region,
       });
       return { data: res.data };
     },
@@ -168,23 +171,36 @@ export async function renameVolume(input: TVolumeRef & { name: string; descripti
 
 // ---- Types ----
 
-export type TS3SourceShallow = S3Response;
+export type TS3BucketShallow = S3BucketResponse;
 
-export const s3SourceNameMinLength = 2;
-export const s3SourceNameMaxLength = 32;
+export const s3BucketNameMinLength = 2;
+export const s3BucketNameMaxLength = 32;
 
-export const S3SourceNameSchema = z
+export const S3BucketNameSchema = z
   .string()
-  .min(s3SourceNameMinLength, `Name should be at least ${s3SourceNameMinLength} characters.`)
-  .max(s3SourceNameMaxLength, `Name should be at most ${s3SourceNameMaxLength} characters.`);
+  .min(s3BucketNameMinLength, `Name should be at least ${s3BucketNameMinLength} characters.`)
+  .max(s3BucketNameMaxLength, `Name should be at most ${s3BucketNameMaxLength} characters.`);
 
-export const CreateS3SourceFormSchema = z.object({
-  name: S3SourceNameSchema,
+export const CreateS3BucketFormSchema = z.object({
+  name: S3BucketNameSchema,
   endpoint: z.string().url("Endpoint must be a valid URL."),
+  region: z.string(),
+  bucket: z.string().min(1, "Bucket name is required."),
   accessKeyId: z.string().min(1, "Access Key ID is required."),
   secretKey: z.string().min(1, "Secret Access Key is required."),
-  region: z.string(),
 });
+
+// Credentials are optional on edit, empty means keep the current ones
+export const EditS3BucketFormSchema = z.object({
+  name: S3BucketNameSchema,
+  endpoint: z.string().url("Endpoint must be a valid URL."),
+  region: z.string(),
+  bucket: z.string().min(1, "Bucket name is required."),
+  accessKeyId: z.string(),
+  secretKey: z.string(),
+});
+
+export type TS3BucketFormValues = z.infer<typeof CreateS3BucketFormSchema>;
 
 export type TVolumeType = z.infer<typeof PvcScopeSchema>;
 

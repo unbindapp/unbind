@@ -160,23 +160,11 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		}
 	}
 
-	// Verify backup sources (for databases)
-	// Make sure we can read and write to the S3 bucket provided
+	// Make sure we can read and write to the backup bucket (for databases)
 	if service.Type == schema.ServiceTypeDatabase &&
-		input.S3BackupSourceID != nil &&
-		*input.S3BackupSourceID != uuid.Nil &&
-		input.S3BackupBucket != nil &&
-		*input.S3BackupBucket != "" {
-		// Check if the S3 source exists
-		s3Source, err := self.repo.S3().GetByID(ctx, *input.S3BackupSourceID)
-		if err != nil {
-			if ent.IsNotFound(err) {
-				return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 source not found")
-			}
-			return nil, err
-		}
-
-		if err := self.verifyS3Access(ctx, s3Source, *input.S3BackupBucket, service.Edges.Environment.Edges.Project.Edges.Team.Namespace, client); err != nil {
+		input.S3BackupBucketID != nil &&
+		*input.S3BackupBucketID != uuid.Nil {
+		if err := self.verifyS3BackupBucket(ctx, *input.S3BackupBucketID, service.Edges.Environment.Edges.Project.Edges.Team, client); err != nil {
 			return nil, err
 		}
 	}
@@ -373,8 +361,7 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     input.DockerBuilderBuildContext,
 			DatabaseConfig:                input.DatabaseConfig,
-			S3BackupSourceID:              input.S3BackupSourceID,
-			S3BackupBucket:                input.S3BackupBucket,
+			S3BackupBucketID:              input.S3BackupBucketID,
 			BackupSchedule:                input.BackupSchedule,
 			BackupRetentionCount:          input.BackupRetentionCount,
 			OverwriteVolumes:              input.OverwriteVolumes,

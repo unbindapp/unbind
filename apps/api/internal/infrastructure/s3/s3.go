@@ -16,16 +16,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/smithy-go"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
-	"github.com/unbindapp/unbind-api/internal/models"
 )
 
 // S3APIInterface defines the interface for S3 operations we need
 type S3APIInterface interface {
-	ListBuckets(ctx context.Context, params *s3.ListBucketsInput, optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
 	PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error)
 	HeadObject(ctx context.Context, params *s3.HeadObjectInput, optFns ...func(*s3.Options)) (*s3.HeadObjectOutput, error)
 	DeleteObject(ctx context.Context, params *s3.DeleteObjectInput, optFns ...func(*s3.Options)) (*s3.DeleteObjectOutput, error)
@@ -80,9 +79,9 @@ func NewS3Client(ctx context.Context, endpoint, region, accessKeyID, secretKey s
 		config.WithCredentialsProvider(
 			credentials.NewStaticCredentialsProvider(accessKeyID, secretKey, ""),
 		),
-		// From R2 docs
-		config.WithRequestChecksumCalculation(0),
-		config.WithResponseChecksumValidation(0),
+		// R2 rejects the default "when supported" checksum behaviour
+		config.WithRequestChecksumCalculation(aws.RequestChecksumCalculationWhenRequired),
+		config.WithResponseChecksumValidation(aws.ResponseChecksumValidationWhenRequired),
 		config.WithHTTPClient(fastHTTP()),
 	)
 	if err != nil {
@@ -103,39 +102,7 @@ func NewS3ClientWithAPI(api S3APIInterface) *S3Client {
 	return &S3Client{client: api}
 }
 
-// ListBuckets lists all S3 buckets in the configured account.
-func (c *S3Client) ListBuckets(ctx context.Context) ([]*models.S3Bucket, error) {
-	buckets, err := c.client.ListBuckets(ctx, &s3.ListBucketsInput{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to list buckets: %w", err)
-	}
-	return models.TransformBucketEntities(buckets.Buckets), nil
-}
-
-// ProbeAnyBucketRW tries to write + read a probe object in the first bucket the
-// credentials can see.  If every step succeeds it returns nil.  All SDK errors
-// are normalised via mapS3Error so callers get the domain-specific errors they
-// expect.
-func (c *S3Client) ProbeAnyBucketRW(ctx context.Context) error {
-	lbOut, err := c.client.ListBuckets(ctx, &s3.ListBucketsInput{})
-	if err != nil {
-		return mapS3Error(err)
-	}
-	if len(lbOut.Buckets) == 0 {
-		return errdefs.NewCustomError(errdefs.ErrTypeNotFound,
-			"credentials are valid but no buckets are visible")
-	}
-
-	for _, b := range lbOut.Buckets {
-		if err := c.ProbeBucketRW(ctx, aws.ToString(b.Name)); err == nil {
-			return nil // success on this bucket
-		}
-	}
-	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-		"credentials can't read & write any visible bucket")
-}
-
-// probeBucketRW writes → heads → deletes a tiny object in one bucket.
+// ProbeBucketRW writes, heads, then deletes a tiny object in the bucket.
 func (c *S3Client) ProbeBucketRW(ctx context.Context, bucket string) error {
 	key := fmt.Sprintf(".probe-%s", uuid.NewString())
 
@@ -173,11 +140,26 @@ func (c *S3Client) deleteSilent(ctx context.Context, bucket, key string) error {
 
 // Translate S3 errors to our error types
 func mapS3Error(err error) error {
+	var apiErr smithy.APIError
+	if errors.As(err, &apiErr) {
+		switch apiErr.ErrorCode() {
+		case "InvalidAccessKeyId", "SignatureDoesNotMatch":
+			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+				"invalid access key ID or secret access key")
+		case "AccessDenied":
+			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+				"credentials are valid but are not allowed to read and write this bucket")
+		case "NoSuchBucket":
+			return errdefs.NewCustomError(errdefs.ErrTypeNotFound,
+				"bucket not found")
+		}
+	}
+
 	var respErr *smithyhttp.ResponseError
 	if errors.As(err, &respErr) {
 		switch respErr.Response.StatusCode {
 		case 403:
-			// Forbidden – caller treats this like an invalid endpoint for R2/MinIO
+			// Forbidden without an error code, R2/MinIO do this for bad hosts
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
 				"invalid endpoint URL or access forbidden (HTTP 403)")
 		case 404:
@@ -196,6 +178,6 @@ func mapS3Error(err error) error {
 			fmt.Sprintf("invalid endpoint URL: %v", urlErr))
 	}
 
-	// Fallback – surface the original error.
+	// Fallback: surface the original error.
 	return err
 }

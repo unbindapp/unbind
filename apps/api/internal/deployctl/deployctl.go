@@ -359,17 +359,17 @@ func (self *DeploymentController) populateDatabaseEnv(ctx context.Context, env m
 	env["SERVICE_DATABASE_USD_VERSION"] = *service.Edges.ServiceConfig.DefinitionVersion
 	env["SERVICE_DATABASE_CONFIG"] = base64.StdEncoding.EncodeToString(marshalledConfig)
 
-	if service.Edges.ServiceConfig.S3BackupBucket == nil || service.Edges.ServiceConfig.S3BackupSourceID == nil {
+	if service.Edges.ServiceConfig.S3BackupBucketID == nil {
 		return nil
 	}
-	s3Source, err := self.repo.S3().GetByID(ctx, *service.Edges.ServiceConfig.S3BackupSourceID)
+	s3Bucket, err := self.repo.S3Bucket().GetByID(ctx, *service.Edges.ServiceConfig.S3BackupBucketID)
 	if err != nil {
 		return err
 	}
-	env["SERVICE_DATABASE_BACKUP_BUCKET"] = *service.Edges.ServiceConfig.S3BackupBucket
-	env["SERVICE_DATABASE_BACKUP_REGION"] = s3Source.Region
-	env["SERVICE_DATABASE_BACKUP_ENDPOINT"] = s3Source.Endpoint
-	env["SERVICE_DATABASE_BACKUP_SECRET_NAME"] = s3Source.KubernetesSecret
+	env["SERVICE_DATABASE_BACKUP_BUCKET"] = s3Bucket.Bucket
+	env["SERVICE_DATABASE_BACKUP_REGION"] = s3Bucket.Region
+	env["SERVICE_DATABASE_BACKUP_ENDPOINT"] = s3Bucket.Endpoint
+	env["SERVICE_DATABASE_BACKUP_SECRET_NAME"] = s3Bucket.KubernetesSecret
 	env["SERVICE_DATABASE_BACKUP_SCHEDULE"] = service.Edges.ServiceConfig.BackupSchedule
 	env["SERVICE_DATABASE_BACKUP_RETENTION"] = strconv.Itoa(service.Edges.ServiceConfig.BackupRetentionCount)
 	return nil

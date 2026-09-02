@@ -9,70 +9,57 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-type GetS3SourceByIDInput struct {
+type GetS3BucketByIDInput struct {
 	server.BaseAuthInput
-	ID          uuid.UUID `query:"id" format:"uuid" required:"true"`
-	TeamID      uuid.UUID `query:"team_id" format:"uuid" required:"true"`
-	WithBuckets bool      `query:"with_buckets"`
+	ID     uuid.UUID `query:"id" format:"uuid" required:"true"`
+	TeamID uuid.UUID `query:"team_id" format:"uuid" required:"true"`
 }
 
-type GetS3SourceByIDOutput struct {
+type GetS3BucketByIDOutput struct {
 	Body struct {
-		Data *models.S3Response `json:"data"`
+		Data *models.S3BucketResponse `json:"data"`
 	}
 }
 
-func (self *HandlerGroup) GetS3SourceByID(ctx context.Context, input *GetS3SourceByIDInput) (*GetS3SourceByIDOutput, error) {
+func (self *HandlerGroup) GetS3BucketByID(ctx context.Context, input *GetS3BucketByIDInput) (*GetS3BucketByIDOutput, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	s3Source, err := self.srv.StorageService.GetS3StorageByID(
-		ctx,
-		user.ID,
-		input.TeamID,
-		input.ID,
-		input.WithBuckets,
-	)
+	s3Bucket, err := self.srv.StorageService.GetS3BucketByID(ctx, user.ID, input.TeamID, input.ID)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
 
-	resp := &GetS3SourceByIDOutput{}
-	resp.Body.Data = s3Source
+	resp := &GetS3BucketByIDOutput{}
+	resp.Body.Data = s3Bucket
 	return resp, nil
 }
 
-type ListS3SourceInput struct {
+type ListS3BucketsInput struct {
 	server.BaseAuthInput
-	TeamID      uuid.UUID `query:"team_id" format:"uuid" required:"true"`
-	WithBuckets bool      `query:"with_buckets"`
+	TeamID uuid.UUID `query:"team_id" format:"uuid" required:"true"`
 }
 
-type ListS3SourceOutput struct {
+type ListS3BucketsOutput struct {
 	Body struct {
-		Data []*models.S3Response `json:"data" nullable:"false"`
+		Data []*models.S3BucketResponse `json:"data" nullable:"false"`
 	}
 }
 
-func (self *HandlerGroup) ListS3Source(ctx context.Context, input *ListS3SourceInput) (*ListS3SourceOutput, error) {
+func (self *HandlerGroup) ListS3Buckets(ctx context.Context, input *ListS3BucketsInput) (*ListS3BucketsOutput, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	s3Sources, err := self.srv.StorageService.ListS3StorageBackends(
-		ctx,
-		user.ID,
-		input.TeamID,
-		input.WithBuckets,
-	)
+	s3Buckets, err := self.srv.StorageService.ListS3Buckets(ctx, user.ID, input.TeamID)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
 
-	resp := &ListS3SourceOutput{}
-	resp.Body.Data = s3Sources
+	resp := &ListS3BucketsOutput{}
+	resp.Body.Data = s3Buckets
 	return resp, nil
 }

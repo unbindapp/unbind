@@ -10,12 +10,12 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/team"
 )
 
-// S3 is the model entity for the S3 schema.
-type S3 struct {
+// S3Bucket is the model entity for the S3Bucket schema.
+type S3Bucket struct {
 	config `json:"-"`
 	// ID of the ent.
 	// The primary key of the entity.
@@ -30,24 +30,24 @@ type S3 struct {
 	Endpoint string `json:"endpoint,omitempty"`
 	// Region holds the value of the "region" field.
 	Region string `json:"region,omitempty"`
-	// ForcePathStyle holds the value of the "force_path_style" field.
-	ForcePathStyle bool `json:"force_path_style,omitempty"`
+	// Bucket holds the value of the "bucket" field.
+	Bucket string `json:"bucket,omitempty"`
 	// KubernetesSecret holds the value of the "kubernetes_secret" field.
 	KubernetesSecret string `json:"kubernetes_secret,omitempty"`
 	// TeamID holds the value of the "team_id" field.
 	TeamID uuid.UUID `json:"team_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the S3Query when eager-loading is set.
-	Edges        S3Edges `json:"edges"`
+	// The values are being populated by the S3BucketQuery when eager-loading is set.
+	Edges        S3BucketEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// S3Edges holds the relations/edges for other nodes in the graph.
-type S3Edges struct {
+// S3BucketEdges holds the relations/edges for other nodes in the graph.
+type S3BucketEdges struct {
 	// Team holds the value of the team edge.
 	Team *Team `json:"team,omitempty"`
-	// ServiceBackupSource holds the value of the service_backup_source edge.
-	ServiceBackupSource []*ServiceConfig `json:"service_backup_source,omitempty"`
+	// ServiceBackupConfigs holds the value of the service_backup_configs edge.
+	ServiceBackupConfigs []*ServiceConfig `json:"service_backup_configs,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -55,7 +55,7 @@ type S3Edges struct {
 
 // TeamOrErr returns the Team value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e S3Edges) TeamOrErr() (*Team, error) {
+func (e S3BucketEdges) TeamOrErr() (*Team, error) {
 	if e.Team != nil {
 		return e.Team, nil
 	} else if e.loadedTypes[0] {
@@ -64,27 +64,25 @@ func (e S3Edges) TeamOrErr() (*Team, error) {
 	return nil, &NotLoadedError{edge: "team"}
 }
 
-// ServiceBackupSourceOrErr returns the ServiceBackupSource value or an error if the edge
+// ServiceBackupConfigsOrErr returns the ServiceBackupConfigs value or an error if the edge
 // was not loaded in eager-loading.
-func (e S3Edges) ServiceBackupSourceOrErr() ([]*ServiceConfig, error) {
+func (e S3BucketEdges) ServiceBackupConfigsOrErr() ([]*ServiceConfig, error) {
 	if e.loadedTypes[1] {
-		return e.ServiceBackupSource, nil
+		return e.ServiceBackupConfigs, nil
 	}
-	return nil, &NotLoadedError{edge: "service_backup_source"}
+	return nil, &NotLoadedError{edge: "service_backup_configs"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*S3) scanValues(columns []string) ([]any, error) {
+func (*S3Bucket) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case s3.FieldForcePathStyle:
-			values[i] = new(sql.NullBool)
-		case s3.FieldName, s3.FieldEndpoint, s3.FieldRegion, s3.FieldKubernetesSecret:
+		case s3bucket.FieldName, s3bucket.FieldEndpoint, s3bucket.FieldRegion, s3bucket.FieldBucket, s3bucket.FieldKubernetesSecret:
 			values[i] = new(sql.NullString)
-		case s3.FieldCreatedAt, s3.FieldUpdatedAt:
+		case s3bucket.FieldCreatedAt, s3bucket.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case s3.FieldID, s3.FieldTeamID:
+		case s3bucket.FieldID, s3bucket.FieldTeamID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -94,62 +92,62 @@ func (*S3) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the S3 fields.
-func (_m *S3) assignValues(columns []string, values []any) error {
+// to the S3Bucket fields.
+func (_m *S3Bucket) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case s3.FieldID:
+		case s3bucket.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case s3.FieldCreatedAt:
+		case s3bucket.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
 			}
-		case s3.FieldUpdatedAt:
+		case s3bucket.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case s3.FieldName:
+		case s3bucket.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
 			}
-		case s3.FieldEndpoint:
+		case s3bucket.FieldEndpoint:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field endpoint", values[i])
 			} else if value.Valid {
 				_m.Endpoint = value.String
 			}
-		case s3.FieldRegion:
+		case s3bucket.FieldRegion:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field region", values[i])
 			} else if value.Valid {
 				_m.Region = value.String
 			}
-		case s3.FieldForcePathStyle:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field force_path_style", values[i])
+		case s3bucket.FieldBucket:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field bucket", values[i])
 			} else if value.Valid {
-				_m.ForcePathStyle = value.Bool
+				_m.Bucket = value.String
 			}
-		case s3.FieldKubernetesSecret:
+		case s3bucket.FieldKubernetesSecret:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kubernetes_secret", values[i])
 			} else if value.Valid {
 				_m.KubernetesSecret = value.String
 			}
-		case s3.FieldTeamID:
+		case s3bucket.FieldTeamID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field team_id", values[i])
 			} else if value != nil {
@@ -162,44 +160,44 @@ func (_m *S3) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the S3.
+// Value returns the ent.Value that was dynamically selected and assigned to the S3Bucket.
 // This includes values selected through modifiers, order, etc.
-func (_m *S3) Value(name string) (ent.Value, error) {
+func (_m *S3Bucket) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTeam queries the "team" edge of the S3 entity.
-func (_m *S3) QueryTeam() *TeamQuery {
-	return NewS3Client(_m.config).QueryTeam(_m)
+// QueryTeam queries the "team" edge of the S3Bucket entity.
+func (_m *S3Bucket) QueryTeam() *TeamQuery {
+	return NewS3BucketClient(_m.config).QueryTeam(_m)
 }
 
-// QueryServiceBackupSource queries the "service_backup_source" edge of the S3 entity.
-func (_m *S3) QueryServiceBackupSource() *ServiceConfigQuery {
-	return NewS3Client(_m.config).QueryServiceBackupSource(_m)
+// QueryServiceBackupConfigs queries the "service_backup_configs" edge of the S3Bucket entity.
+func (_m *S3Bucket) QueryServiceBackupConfigs() *ServiceConfigQuery {
+	return NewS3BucketClient(_m.config).QueryServiceBackupConfigs(_m)
 }
 
-// Update returns a builder for updating this S3.
-// Note that you need to call S3.Unwrap() before calling this method if this S3
+// Update returns a builder for updating this S3Bucket.
+// Note that you need to call S3Bucket.Unwrap() before calling this method if this S3Bucket
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *S3) Update() *S3UpdateOne {
-	return NewS3Client(_m.config).UpdateOne(_m)
+func (_m *S3Bucket) Update() *S3BucketUpdateOne {
+	return NewS3BucketClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the S3 entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the S3Bucket entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *S3) Unwrap() *S3 {
+func (_m *S3Bucket) Unwrap() *S3Bucket {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: S3 is not a transactional entity")
+		panic("ent: S3Bucket is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *S3) String() string {
+func (_m *S3Bucket) String() string {
 	var builder strings.Builder
-	builder.WriteString("S3(")
+	builder.WriteString("S3Bucket(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
@@ -216,8 +214,8 @@ func (_m *S3) String() string {
 	builder.WriteString("region=")
 	builder.WriteString(_m.Region)
 	builder.WriteString(", ")
-	builder.WriteString("force_path_style=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ForcePathStyle))
+	builder.WriteString("bucket=")
+	builder.WriteString(_m.Bucket)
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_secret=")
 	builder.WriteString(_m.KubernetesSecret)
@@ -228,5 +226,5 @@ func (_m *S3) String() string {
 	return builder.String()
 }
 
-// S3s is a parsable slice of S3.
-type S3s []*S3
+// S3Buckets is a parsable slice of S3Bucket.
+type S3Buckets []*S3Bucket

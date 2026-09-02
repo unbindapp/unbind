@@ -52,8 +52,7 @@ func (ServiceConfig) Fields() []ent.Field {
 		// Database
 		field.String("definition_version").Optional().Nillable().Comment("Version of the database custom resource definition"),
 		field.JSON("database_config", &DatabaseConfig{}).Optional().Comment("Database configuration for the service"),
-		field.UUID("s3_backup_source_id", uuid.UUID{}).Optional().Nillable().Comment("S3 source to backup to"),
-		field.String("s3_backup_bucket").Optional().Nillable().Comment("S3 bucket to backup to"),
+		field.UUID("s3_backup_bucket_id", uuid.UUID{}).Optional().Nillable().Comment("S3 bucket to backup to"),
 		field.String("backup_schedule").Default("5 5 * * *").Comment("Cron expression for the backup schedule"),
 		field.Int("backup_retention_count").Default(3).Comment("Number of base backups to retain"),
 		// Volume
@@ -77,8 +76,8 @@ func (ServiceConfig) Fields() []ent.Field {
 func (ServiceConfig) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("service", Service.Type).Ref("service_config").Field("service_id").Unique().Required(),
-		// O2M to backup sources
-		edge.From("s3_backup_sources", S3.Type).Ref("service_backup_source").Field("s3_backup_source_id").Unique(),
+		// M2O to the backup bucket
+		edge.From("s3_backup_bucket", S3Bucket.Type).Ref("service_backup_configs").Field("s3_backup_bucket_id").Unique(),
 	}
 }
 

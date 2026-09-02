@@ -1,11 +1,7 @@
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
-import {
-  getSourceAndBucketLabelFromValue,
-  getSourceIdAndBucketNameFromValue,
-  sourceAndBucketSeparator,
-} from "@/components/service/helpers";
+import { getS3BucketItemLabel } from "@/components/service/helpers";
 import {
   Block,
   BlockItem,
@@ -21,11 +17,12 @@ import { softValidateVariables } from "@/components/service/panel/content/undepl
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useService } from "@/components/service/service-provider";
 import {
-  CreateBackupSourceTrigger,
-  SourceAndBucketCommandItemElement,
-  TCreateBackupSourceTriggerProps,
-} from "@/components/storage/create-backup-source-trigger";
-import S3SourcesProvider, { useS3Sources } from "@/components/storage/s3-sources-provider";
+  CreateBackupBucketTrigger,
+  S3BucketCommandItemElement,
+  S3BucketLabel,
+  TCreateBackupBucketTriggerProps,
+} from "@/components/storage/create-backup-bucket-trigger";
+import S3BucketsProvider, { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { CommandItem } from "@/components/ui/command";
 import { cn } from "@/components/ui/utils";
 import { getVariablesPair } from "@/components/variables/helpers";
@@ -53,15 +50,15 @@ type TProps = {
 const DraftSchema = z.object({
   version: z.string(),
   variables: z.array(z.object({ name: z.string(), value: z.string() })),
-  sourceAndBucket: z.string(),
+  s3BucketId: z.string(),
 });
 
 export function UndeployedContentDatabase(props: TProps) {
   const { teamId } = useService();
   return (
-    <S3SourcesProvider teamId={teamId}>
+    <S3BucketsProvider teamId={teamId}>
       <UndeployedContentDatabase_ {...props} />
-    </S3SourcesProvider>
+    </S3BucketsProvider>
   );
 }
 
@@ -88,22 +85,16 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
   const backupsDisabled = type === "redis";
 
   const {
-    query: { data: dataS3Sources, isPending: isPendingS3Sources, error: errorS3Sources },
-  } = useS3Sources();
+    query: { data: dataS3Buckets, isPending: isPendingS3Buckets, error: errorS3Buckets },
+  } = useS3Buckets();
 
-  const sourceAndBucketItems = useMemo(() => {
-    const items: TCommandItem[] | undefined = dataS3Sources?.sources.flatMap((source) =>
-      source.buckets.map((bucket) => {
-        const value = `${source.name} / ${bucket.name}${sourceAndBucketSeparator}${source.name}${sourceAndBucketSeparator}${source.id}${sourceAndBucketSeparator}${bucket.name}`;
-        const label = getSourceAndBucketLabelFromValue(value);
-        return {
-          value,
-          label,
-        };
-      }),
-    );
+  const s3BucketItems = useMemo(() => {
+    const items: TCommandItem[] | undefined = dataS3Buckets?.buckets.map((s3Bucket) => ({
+      value: s3Bucket.id,
+      label: getS3BucketItemLabel(s3Bucket),
+    }));
     return items;
-  }, [dataS3Sources]);
+  }, [dataS3Buckets]);
 
   const {
     data: dataDatabase,
@@ -119,11 +110,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     return items;
   }, [dataDatabase]);
 
-  const hasNoBuckets = useMemo(() => {
-    return dataS3Sources && dataS3Sources.sources.flatMap((s) => s.buckets).length === 0
-      ? true
-      : false;
-  }, [dataS3Sources]);
+  const hasNoBuckets = dataS3Buckets ? dataS3Buckets.buckets.length === 0 : false;
 
   const {
     mutateAsync: createFirstDeployment,
@@ -167,11 +154,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
         );
       }
 
-      const { sourceId, bucketName } = getSourceIdAndBucketNameFromValue(
-        formValues.sourceAndBucket,
-      );
-      const s3Props =
-        sourceId && bucketName ? { s3BackupSourceId: sourceId, s3BackupBucket: bucketName } : {};
+      const s3Props = formValues.s3BucketId ? { s3BackupBucketId: formValues.s3BucketId } : {};
 
       await updateService({
         teamId,
@@ -216,7 +199,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     defaultValues: {
       version: version,
       variables: [{ name: "", value: "" }] as TVariableForCreate[],
-      sourceAndBucket: "",
+      s3BucketId: "",
     },
     validators: {
       onChange: ({ value }) => {
@@ -242,9 +225,9 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     persistenceSchema: DraftSchema,
   });
 
-  const CreateBackupSourceTriggerMemoized = useCallback(
-    (props: Omit<TCreateBackupSourceTriggerProps, "teamId">) => (
-      <CreateBackupSourceTrigger teamId={teamId} {...props} />
+  const CreateBackupBucketTriggerMemoized = useCallback(
+    (props: Omit<TCreateBackupBucketTriggerProps, "teamId">) => (
+      <CreateBackupBucketTrigger teamId={teamId} {...props} />
     ),
     [teamId],
   );
@@ -321,21 +304,21 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
               </BlockItemHeader>
               <BlockItemContent>
                 <form.AppField
-                  name="sourceAndBucket"
+                  name="s3BucketId"
                   children={(field) => (
                     <field.AsyncAndSearchableSelect
                       dontCheckUntilSubmit
                       field={field}
                       value={field.state.value}
                       onChange={(v) => field.handleChange(v)}
-                      items={sourceAndBucketItems}
-                      isPending={isPendingS3Sources}
-                      error={errorS3Sources?.message}
+                      items={s3BucketItems}
+                      isPending={isPendingS3Buckets}
+                      error={errorS3Buckets?.message}
                       commandInputPlaceholder="Search buckets..."
                       CommandEmptyText="No buckets found"
                       CommandEmptyIcon={CylinderIcon}
-                      CommandItemElement={SourceAndBucketCommandItemElement}
-                      TriggerWrapper={hasNoBuckets ? CreateBackupSourceTriggerMemoized : undefined}
+                      CommandItemElement={S3BucketCommandItemElement}
+                      TriggerWrapper={hasNoBuckets ? CreateBackupBucketTriggerMemoized : undefined}
                       CommandItemsPinned={({ setIsOpen, commandValue }) => {
                         if (commandValue === "" || hasNoBuckets) {
                           return null;
@@ -355,17 +338,15 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                       }}
                     >
                       {({ isOpen }) => {
-                        const label = getSourceAndBucketLabelFromValue(field.state.value);
+                        const selected = dataS3Buckets?.buckets.find(
+                          (s3Bucket) => s3Bucket.id === field.state.value,
+                        );
                         return (
                           <BlockItemButtonLike
                             asElement="button"
                             text={
-                              field.state.value !== "" ? (
-                                <>
-                                  {label.split(sourceAndBucketSeparator)[0]}
-                                  <span className="text-muted-more-foreground px-[0.5ch]">/</span>
-                                  {label.split(sourceAndBucketSeparator)[1]}
-                                </>
+                              selected ? (
+                                <S3BucketLabel name={selected.name} bucket={selected.bucket} />
                               ) : (
                                 "Select a bucket"
                               )
@@ -402,5 +383,5 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
 type TFormValues = {
   version: string;
   variables: TVariableForCreate[];
-  sourceAndBucket: string;
+  s3BucketId: string;
 };

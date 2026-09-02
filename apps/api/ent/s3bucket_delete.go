@@ -9,29 +9,29 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/unbindapp/unbind-api/ent/predicate"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 )
 
-// S3Delete is the builder for deleting a S3 entity.
-type S3Delete struct {
+// S3BucketDelete is the builder for deleting a S3Bucket entity.
+type S3BucketDelete struct {
 	config
 	hooks    []Hook
-	mutation *S3Mutation
+	mutation *S3BucketMutation
 }
 
-// Where appends a list predicates to the S3Delete builder.
-func (_d *S3Delete) Where(ps ...predicate.S3) *S3Delete {
+// Where appends a list predicates to the S3BucketDelete builder.
+func (_d *S3BucketDelete) Where(ps ...predicate.S3Bucket) *S3BucketDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *S3Delete) Exec(ctx context.Context) (int, error) {
+func (_d *S3BucketDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *S3Delete) ExecX(ctx context.Context) int {
+func (_d *S3BucketDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -39,8 +39,8 @@ func (_d *S3Delete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *S3Delete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(s3.Table, sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID))
+func (_d *S3BucketDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(s3bucket.Table, sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID))
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -56,32 +56,32 @@ func (_d *S3Delete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// S3DeleteOne is the builder for deleting a single S3 entity.
-type S3DeleteOne struct {
-	_d *S3Delete
+// S3BucketDeleteOne is the builder for deleting a single S3Bucket entity.
+type S3BucketDeleteOne struct {
+	_d *S3BucketDelete
 }
 
-// Where appends a list predicates to the S3Delete builder.
-func (_d *S3DeleteOne) Where(ps ...predicate.S3) *S3DeleteOne {
+// Where appends a list predicates to the S3BucketDelete builder.
+func (_d *S3BucketDeleteOne) Where(ps ...predicate.S3Bucket) *S3BucketDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *S3DeleteOne) Exec(ctx context.Context) error {
+func (_d *S3BucketDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{s3.Label}
+		return &NotFoundError{s3bucket.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *S3DeleteOne) ExecX(ctx context.Context) {
+func (_d *S3BucketDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

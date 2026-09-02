@@ -14,59 +14,59 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/predicate"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
 	"github.com/unbindapp/unbind-api/ent/team"
 )
 
-// S3Query is the builder for querying S3 entities.
-type S3Query struct {
+// S3BucketQuery is the builder for querying S3Bucket entities.
+type S3BucketQuery struct {
 	config
-	ctx                     *QueryContext
-	order                   []s3.OrderOption
-	inters                  []Interceptor
-	predicates              []predicate.S3
-	withTeam                *TeamQuery
-	withServiceBackupSource *ServiceConfigQuery
-	modifiers               []func(*sql.Selector)
+	ctx                      *QueryContext
+	order                    []s3bucket.OrderOption
+	inters                   []Interceptor
+	predicates               []predicate.S3Bucket
+	withTeam                 *TeamQuery
+	withServiceBackupConfigs *ServiceConfigQuery
+	modifiers                []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the S3Query builder.
-func (_q *S3Query) Where(ps ...predicate.S3) *S3Query {
+// Where adds a new predicate for the S3BucketQuery builder.
+func (_q *S3BucketQuery) Where(ps ...predicate.S3Bucket) *S3BucketQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *S3Query) Limit(limit int) *S3Query {
+func (_q *S3BucketQuery) Limit(limit int) *S3BucketQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *S3Query) Offset(offset int) *S3Query {
+func (_q *S3BucketQuery) Offset(offset int) *S3BucketQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *S3Query) Unique(unique bool) *S3Query {
+func (_q *S3BucketQuery) Unique(unique bool) *S3BucketQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *S3Query) Order(o ...s3.OrderOption) *S3Query {
+func (_q *S3BucketQuery) Order(o ...s3bucket.OrderOption) *S3BucketQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTeam chains the current query on the "team" edge.
-func (_q *S3Query) QueryTeam() *TeamQuery {
+func (_q *S3BucketQuery) QueryTeam() *TeamQuery {
 	query := (&TeamClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -77,9 +77,9 @@ func (_q *S3Query) QueryTeam() *TeamQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(s3.Table, s3.FieldID, selector),
+			sqlgraph.From(s3bucket.Table, s3bucket.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, s3.TeamTable, s3.TeamColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, s3bucket.TeamTable, s3bucket.TeamColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -87,8 +87,8 @@ func (_q *S3Query) QueryTeam() *TeamQuery {
 	return query
 }
 
-// QueryServiceBackupSource chains the current query on the "service_backup_source" edge.
-func (_q *S3Query) QueryServiceBackupSource() *ServiceConfigQuery {
+// QueryServiceBackupConfigs chains the current query on the "service_backup_configs" edge.
+func (_q *S3BucketQuery) QueryServiceBackupConfigs() *ServiceConfigQuery {
 	query := (&ServiceConfigClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -99,9 +99,9 @@ func (_q *S3Query) QueryServiceBackupSource() *ServiceConfigQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(s3.Table, s3.FieldID, selector),
+			sqlgraph.From(s3bucket.Table, s3bucket.FieldID, selector),
 			sqlgraph.To(serviceconfig.Table, serviceconfig.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, s3.ServiceBackupSourceTable, s3.ServiceBackupSourceColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, s3bucket.ServiceBackupConfigsTable, s3bucket.ServiceBackupConfigsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -109,21 +109,21 @@ func (_q *S3Query) QueryServiceBackupSource() *ServiceConfigQuery {
 	return query
 }
 
-// First returns the first S3 entity from the query.
-// Returns a *NotFoundError when no S3 was found.
-func (_q *S3Query) First(ctx context.Context) (*S3, error) {
+// First returns the first S3Bucket entity from the query.
+// Returns a *NotFoundError when no S3Bucket was found.
+func (_q *S3BucketQuery) First(ctx context.Context) (*S3Bucket, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{s3.Label}
+		return nil, &NotFoundError{s3bucket.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *S3Query) FirstX(ctx context.Context) *S3 {
+func (_q *S3BucketQuery) FirstX(ctx context.Context) *S3Bucket {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -131,22 +131,22 @@ func (_q *S3Query) FirstX(ctx context.Context) *S3 {
 	return node
 }
 
-// FirstID returns the first S3 ID from the query.
-// Returns a *NotFoundError when no S3 ID was found.
-func (_q *S3Query) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first S3Bucket ID from the query.
+// Returns a *NotFoundError when no S3Bucket ID was found.
+func (_q *S3BucketQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{s3.Label}
+		err = &NotFoundError{s3bucket.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *S3Query) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *S3BucketQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -154,10 +154,10 @@ func (_q *S3Query) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single S3 entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one S3 entity is found.
-// Returns a *NotFoundError when no S3 entities are found.
-func (_q *S3Query) Only(ctx context.Context) (*S3, error) {
+// Only returns a single S3Bucket entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one S3Bucket entity is found.
+// Returns a *NotFoundError when no S3Bucket entities are found.
+func (_q *S3BucketQuery) Only(ctx context.Context) (*S3Bucket, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -166,14 +166,14 @@ func (_q *S3Query) Only(ctx context.Context) (*S3, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{s3.Label}
+		return nil, &NotFoundError{s3bucket.Label}
 	default:
-		return nil, &NotSingularError{s3.Label}
+		return nil, &NotSingularError{s3bucket.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *S3Query) OnlyX(ctx context.Context) *S3 {
+func (_q *S3BucketQuery) OnlyX(ctx context.Context) *S3Bucket {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -181,10 +181,10 @@ func (_q *S3Query) OnlyX(ctx context.Context) *S3 {
 	return node
 }
 
-// OnlyID is like Only, but returns the only S3 ID in the query.
-// Returns a *NotSingularError when more than one S3 ID is found.
+// OnlyID is like Only, but returns the only S3Bucket ID in the query.
+// Returns a *NotSingularError when more than one S3Bucket ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *S3Query) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *S3BucketQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -193,15 +193,15 @@ func (_q *S3Query) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{s3.Label}
+		err = &NotFoundError{s3bucket.Label}
 	default:
-		err = &NotSingularError{s3.Label}
+		err = &NotSingularError{s3bucket.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *S3Query) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *S3BucketQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -209,18 +209,18 @@ func (_q *S3Query) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of S3s.
-func (_q *S3Query) All(ctx context.Context) ([]*S3, error) {
+// All executes the query and returns a list of S3Buckets.
+func (_q *S3BucketQuery) All(ctx context.Context) ([]*S3Bucket, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*S3, *S3Query]()
-	return withInterceptors[[]*S3](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*S3Bucket, *S3BucketQuery]()
+	return withInterceptors[[]*S3Bucket](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *S3Query) AllX(ctx context.Context) []*S3 {
+func (_q *S3BucketQuery) AllX(ctx context.Context) []*S3Bucket {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -228,20 +228,20 @@ func (_q *S3Query) AllX(ctx context.Context) []*S3 {
 	return nodes
 }
 
-// IDs executes the query and returns a list of S3 IDs.
-func (_q *S3Query) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of S3Bucket IDs.
+func (_q *S3BucketQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(s3.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(s3bucket.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *S3Query) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *S3BucketQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -250,16 +250,16 @@ func (_q *S3Query) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *S3Query) Count(ctx context.Context) (int, error) {
+func (_q *S3BucketQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*S3Query](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*S3BucketQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *S3Query) CountX(ctx context.Context) int {
+func (_q *S3BucketQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -268,7 +268,7 @@ func (_q *S3Query) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *S3Query) Exist(ctx context.Context) (bool, error) {
+func (_q *S3BucketQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -281,7 +281,7 @@ func (_q *S3Query) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *S3Query) ExistX(ctx context.Context) bool {
+func (_q *S3BucketQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -289,20 +289,20 @@ func (_q *S3Query) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the S3Query builder, including all associated steps. It can be
+// Clone returns a duplicate of the S3BucketQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *S3Query) Clone() *S3Query {
+func (_q *S3BucketQuery) Clone() *S3BucketQuery {
 	if _q == nil {
 		return nil
 	}
-	return &S3Query{
-		config:                  _q.config,
-		ctx:                     _q.ctx.Clone(),
-		order:                   append([]s3.OrderOption{}, _q.order...),
-		inters:                  append([]Interceptor{}, _q.inters...),
-		predicates:              append([]predicate.S3{}, _q.predicates...),
-		withTeam:                _q.withTeam.Clone(),
-		withServiceBackupSource: _q.withServiceBackupSource.Clone(),
+	return &S3BucketQuery{
+		config:                   _q.config,
+		ctx:                      _q.ctx.Clone(),
+		order:                    append([]s3bucket.OrderOption{}, _q.order...),
+		inters:                   append([]Interceptor{}, _q.inters...),
+		predicates:               append([]predicate.S3Bucket{}, _q.predicates...),
+		withTeam:                 _q.withTeam.Clone(),
+		withServiceBackupConfigs: _q.withServiceBackupConfigs.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -312,7 +312,7 @@ func (_q *S3Query) Clone() *S3Query {
 
 // WithTeam tells the query-builder to eager-load the nodes that are connected to
 // the "team" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *S3Query) WithTeam(opts ...func(*TeamQuery)) *S3Query {
+func (_q *S3BucketQuery) WithTeam(opts ...func(*TeamQuery)) *S3BucketQuery {
 	query := (&TeamClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -321,14 +321,14 @@ func (_q *S3Query) WithTeam(opts ...func(*TeamQuery)) *S3Query {
 	return _q
 }
 
-// WithServiceBackupSource tells the query-builder to eager-load the nodes that are connected to
-// the "service_backup_source" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *S3Query) WithServiceBackupSource(opts ...func(*ServiceConfigQuery)) *S3Query {
+// WithServiceBackupConfigs tells the query-builder to eager-load the nodes that are connected to
+// the "service_backup_configs" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *S3BucketQuery) WithServiceBackupConfigs(opts ...func(*ServiceConfigQuery)) *S3BucketQuery {
 	query := (&ServiceConfigClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withServiceBackupSource = query
+	_q.withServiceBackupConfigs = query
 	return _q
 }
 
@@ -342,15 +342,15 @@ func (_q *S3Query) WithServiceBackupSource(opts ...func(*ServiceConfigQuery)) *S
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.S3.Query().
-//		GroupBy(s3.FieldCreatedAt).
+//	client.S3Bucket.Query().
+//		GroupBy(s3bucket.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *S3Query) GroupBy(field string, fields ...string) *S3GroupBy {
+func (_q *S3BucketQuery) GroupBy(field string, fields ...string) *S3BucketGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &S3GroupBy{build: _q}
+	grbuild := &S3BucketGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = s3.Label
+	grbuild.label = s3bucket.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -364,23 +364,23 @@ func (_q *S3Query) GroupBy(field string, fields ...string) *S3GroupBy {
 //		CreatedAt time.Time `json:"created_at,omitempty"`
 //	}
 //
-//	client.S3.Query().
-//		Select(s3.FieldCreatedAt).
+//	client.S3Bucket.Query().
+//		Select(s3bucket.FieldCreatedAt).
 //		Scan(ctx, &v)
-func (_q *S3Query) Select(fields ...string) *S3Select {
+func (_q *S3BucketQuery) Select(fields ...string) *S3BucketSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &S3Select{S3Query: _q}
-	sbuild.label = s3.Label
+	sbuild := &S3BucketSelect{S3BucketQuery: _q}
+	sbuild.label = s3bucket.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a S3Select configured with the given aggregations.
-func (_q *S3Query) Aggregate(fns ...AggregateFunc) *S3Select {
+// Aggregate returns a S3BucketSelect configured with the given aggregations.
+func (_q *S3BucketQuery) Aggregate(fns ...AggregateFunc) *S3BucketSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *S3Query) prepareQuery(ctx context.Context) error {
+func (_q *S3BucketQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -392,7 +392,7 @@ func (_q *S3Query) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !s3.ValidColumn(f) {
+		if !s3bucket.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -406,20 +406,20 @@ func (_q *S3Query) prepareQuery(ctx context.Context) error {
 	return nil
 }
 
-func (_q *S3Query) sqlAll(ctx context.Context, hooks ...queryHook) ([]*S3, error) {
+func (_q *S3BucketQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*S3Bucket, error) {
 	var (
-		nodes       = []*S3{}
+		nodes       = []*S3Bucket{}
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withTeam != nil,
-			_q.withServiceBackupSource != nil,
+			_q.withServiceBackupConfigs != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*S3).scanValues(nil, columns)
+		return (*S3Bucket).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &S3{config: _q.config}
+		node := &S3Bucket{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
@@ -438,23 +438,25 @@ func (_q *S3Query) sqlAll(ctx context.Context, hooks ...queryHook) ([]*S3, error
 	}
 	if query := _q.withTeam; query != nil {
 		if err := _q.loadTeam(ctx, query, nodes, nil,
-			func(n *S3, e *Team) { n.Edges.Team = e }); err != nil {
+			func(n *S3Bucket, e *Team) { n.Edges.Team = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withServiceBackupSource; query != nil {
-		if err := _q.loadServiceBackupSource(ctx, query, nodes,
-			func(n *S3) { n.Edges.ServiceBackupSource = []*ServiceConfig{} },
-			func(n *S3, e *ServiceConfig) { n.Edges.ServiceBackupSource = append(n.Edges.ServiceBackupSource, e) }); err != nil {
+	if query := _q.withServiceBackupConfigs; query != nil {
+		if err := _q.loadServiceBackupConfigs(ctx, query, nodes,
+			func(n *S3Bucket) { n.Edges.ServiceBackupConfigs = []*ServiceConfig{} },
+			func(n *S3Bucket, e *ServiceConfig) {
+				n.Edges.ServiceBackupConfigs = append(n.Edges.ServiceBackupConfigs, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *S3Query) loadTeam(ctx context.Context, query *TeamQuery, nodes []*S3, init func(*S3), assign func(*S3, *Team)) error {
+func (_q *S3BucketQuery) loadTeam(ctx context.Context, query *TeamQuery, nodes []*S3Bucket, init func(*S3Bucket), assign func(*S3Bucket, *Team)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*S3)
+	nodeids := make(map[uuid.UUID][]*S3Bucket)
 	for i := range nodes {
 		fk := nodes[i].TeamID
 		if _, ok := nodeids[fk]; !ok {
@@ -481,9 +483,9 @@ func (_q *S3Query) loadTeam(ctx context.Context, query *TeamQuery, nodes []*S3, 
 	}
 	return nil
 }
-func (_q *S3Query) loadServiceBackupSource(ctx context.Context, query *ServiceConfigQuery, nodes []*S3, init func(*S3), assign func(*S3, *ServiceConfig)) error {
+func (_q *S3BucketQuery) loadServiceBackupConfigs(ctx context.Context, query *ServiceConfigQuery, nodes []*S3Bucket, init func(*S3Bucket), assign func(*S3Bucket, *ServiceConfig)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*S3)
+	nodeids := make(map[uuid.UUID]*S3Bucket)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -492,30 +494,30 @@ func (_q *S3Query) loadServiceBackupSource(ctx context.Context, query *ServiceCo
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(serviceconfig.FieldS3BackupSourceID)
+		query.ctx.AppendFieldOnce(serviceconfig.FieldS3BackupBucketID)
 	}
 	query.Where(predicate.ServiceConfig(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(s3.ServiceBackupSourceColumn), fks...))
+		s.Where(sql.InValues(s.C(s3bucket.ServiceBackupConfigsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.S3BackupSourceID
+		fk := n.S3BackupBucketID
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "s3_backup_source_id" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "s3_backup_bucket_id" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "s3_backup_source_id" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "s3_backup_bucket_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
 	return nil
 }
 
-func (_q *S3Query) sqlCount(ctx context.Context) (int, error) {
+func (_q *S3BucketQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -527,8 +529,8 @@ func (_q *S3Query) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *S3Query) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(s3.Table, s3.Columns, sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID))
+func (_q *S3BucketQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(s3bucket.Table, s3bucket.Columns, sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -537,14 +539,14 @@ func (_q *S3Query) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, s3.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, s3bucket.FieldID)
 		for i := range fields {
-			if fields[i] != s3.FieldID {
+			if fields[i] != s3bucket.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTeam != nil {
-			_spec.Node.AddColumnOnce(s3.FieldTeamID)
+			_spec.Node.AddColumnOnce(s3bucket.FieldTeamID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -570,12 +572,12 @@ func (_q *S3Query) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *S3Query) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *S3BucketQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(s3.Table)
+	t1 := builder.Table(s3bucket.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = s3.Columns
+		columns = s3bucket.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -606,33 +608,33 @@ func (_q *S3Query) sqlQuery(ctx context.Context) *sql.Selector {
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *S3Query) Modify(modifiers ...func(s *sql.Selector)) *S3Select {
+func (_q *S3BucketQuery) Modify(modifiers ...func(s *sql.Selector)) *S3BucketSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// S3GroupBy is the group-by builder for S3 entities.
-type S3GroupBy struct {
+// S3BucketGroupBy is the group-by builder for S3Bucket entities.
+type S3BucketGroupBy struct {
 	selector
-	build *S3Query
+	build *S3BucketQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *S3GroupBy) Aggregate(fns ...AggregateFunc) *S3GroupBy {
+func (_g *S3BucketGroupBy) Aggregate(fns ...AggregateFunc) *S3BucketGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *S3GroupBy) Scan(ctx context.Context, v any) error {
+func (_g *S3BucketGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*S3Query, *S3GroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*S3BucketQuery, *S3BucketGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *S3GroupBy) sqlScan(ctx context.Context, root *S3Query, v any) error {
+func (_g *S3BucketGroupBy) sqlScan(ctx context.Context, root *S3BucketQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -659,28 +661,28 @@ func (_g *S3GroupBy) sqlScan(ctx context.Context, root *S3Query, v any) error {
 	return sql.ScanSlice(rows, v)
 }
 
-// S3Select is the builder for selecting fields of S3 entities.
-type S3Select struct {
-	*S3Query
+// S3BucketSelect is the builder for selecting fields of S3Bucket entities.
+type S3BucketSelect struct {
+	*S3BucketQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *S3Select) Aggregate(fns ...AggregateFunc) *S3Select {
+func (_s *S3BucketSelect) Aggregate(fns ...AggregateFunc) *S3BucketSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *S3Select) Scan(ctx context.Context, v any) error {
+func (_s *S3BucketSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*S3Query, *S3Select](ctx, _s.S3Query, _s, _s.inters, v)
+	return scanWithInterceptors[*S3BucketQuery, *S3BucketSelect](ctx, _s.S3BucketQuery, _s, _s.inters, v)
 }
 
-func (_s *S3Select) sqlScan(ctx context.Context, root *S3Query, v any) error {
+func (_s *S3BucketSelect) sqlScan(ctx context.Context, root *S3BucketQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -702,7 +704,7 @@ func (_s *S3Select) sqlScan(ctx context.Context, root *S3Query, v any) error {
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *S3Select) Modify(modifiers ...func(s *sql.Selector)) *S3Select {
+func (_s *S3BucketSelect) Modify(modifiers ...func(s *sql.Selector)) *S3BucketSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

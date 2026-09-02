@@ -14,7 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/project"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/ent/webhook"
@@ -123,19 +123,19 @@ func (_c *TeamCreate) AddProjects(v ...*Project) *TeamCreate {
 	return _c.AddProjectIDs(ids...)
 }
 
-// AddS3SourceIDs adds the "s3_sources" edge to the S3 entity by IDs.
-func (_c *TeamCreate) AddS3SourceIDs(ids ...uuid.UUID) *TeamCreate {
-	_c.mutation.AddS3SourceIDs(ids...)
+// AddS3BucketIDs adds the "s3_buckets" edge to the S3Bucket entity by IDs.
+func (_c *TeamCreate) AddS3BucketIDs(ids ...uuid.UUID) *TeamCreate {
+	_c.mutation.AddS3BucketIDs(ids...)
 	return _c
 }
 
-// AddS3Sources adds the "s3_sources" edges to the S3 entity.
-func (_c *TeamCreate) AddS3Sources(v ...*S3) *TeamCreate {
+// AddS3Buckets adds the "s3_buckets" edges to the S3Bucket entity.
+func (_c *TeamCreate) AddS3Buckets(v ...*S3Bucket) *TeamCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddS3SourceIDs(ids...)
+	return _c.AddS3BucketIDs(ids...)
 }
 
 // AddMemberIDs adds the "members" edge to the User entity by IDs.
@@ -322,15 +322,15 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.S3SourcesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.S3BucketsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   team.S3SourcesTable,
-			Columns: []string{team.S3SourcesColumn},
+			Table:   team.S3BucketsTable,
+			Columns: []string{team.S3BucketsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

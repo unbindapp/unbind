@@ -160,8 +160,19 @@ func (self *ServiceService) prepareDatabaseExposure(ctx context.Context, tx repo
 	return host, &nodePort, nil
 }
 
-func (self *ServiceService) verifyS3Access(ctx context.Context, s3Source *ent.S3, bucket string, namespace string, client kubernetes.Interface) error {
-	secret, err := self.k8s.GetSecret(ctx, s3Source.KubernetesSecret, namespace, client)
+func (self *ServiceService) verifyS3BackupBucket(ctx context.Context, s3BucketID uuid.UUID, team *ent.Team, client kubernetes.Interface) error {
+	s3Bucket, err := self.repo.S3Bucket().GetByID(ctx, s3BucketID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 bucket not found")
+		}
+		return err
+	}
+	if s3Bucket.TeamID != team.ID {
+		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "S3 bucket not found")
+	}
+
+	secret, err := self.k8s.GetSecret(ctx, s3Bucket.KubernetesSecret, team.Namespace, client)
 	if err != nil {
 		return err
 	}
@@ -169,13 +180,13 @@ func (self *ServiceService) verifyS3Access(ctx context.Context, s3Source *ent.S3
 	secretKey := string(secret.Data["secret_key"])
 	if accessKeyId == "" || secretKey == "" {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-			"S3 source secret is missing access key or secret key")
+			"S3 bucket secret is missing access key or secret key")
 	}
 
 	s3Client, err := s3.NewS3Client(
 		ctx,
-		s3Source.Endpoint,
-		s3Source.Region,
+		s3Bucket.Endpoint,
+		s3Bucket.Region,
 		accessKeyId,
 		secretKey,
 	)
@@ -183,14 +194,8 @@ func (self *ServiceService) verifyS3Access(ctx context.Context, s3Source *ent.S3
 		return err
 	}
 
-	// Probe the bucket
-	err = s3Client.ProbeBucketRW(ctx, bucket)
-	if err != nil {
-		// s3 client already transforms into API handler compatible errors
-		return err
-	}
-
-	return nil
+	// s3 client already maps errors into API handler compatible errors
+	return s3Client.ProbeBucketRW(ctx, s3Bucket.Bucket)
 }
 
 func (self *ServiceService) validatePVC(ctx context.Context, teamID, projectID, environmentID uuid.UUID, name, namespace string, client kubernetes.Interface) error {

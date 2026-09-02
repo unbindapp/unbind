@@ -86,8 +86,7 @@ type MutateConfigInput struct {
 	DockerBuilderBuildContext     *string
 	CustomDefinitionVersion       *string
 	DatabaseConfig                *schema.DatabaseConfig
-	S3BackupSourceID              *uuid.UUID
-	S3BackupBucket                *string
+	S3BackupBucketID              *uuid.UUID
 	BackupSchedule                *string
 	BackupRetentionCount          *int
 	SecurityContext               *schema.SecurityContext
@@ -154,8 +153,7 @@ func (self *ServiceRepository) CreateConfig(
 		SetNillableDockerBuilderDockerfilePath(input.DockerBuilderDockerfilePath).
 		SetNillableDockerBuilderBuildContext(input.DockerBuilderBuildContext).
 		SetNillableDefinitionVersion(input.CustomDefinitionVersion).
-		SetNillableS3BackupSourceID(input.S3BackupSourceID).
-		SetNillableS3BackupBucket(input.S3BackupBucket).
+		SetNillableS3BackupBucketID(input.S3BackupBucketID).
 		SetNillableBackupSchedule(input.BackupSchedule).
 		SetNillableBackupRetentionCount(input.BackupRetentionCount)
 
@@ -367,19 +365,11 @@ func (self *ServiceRepository) UpdateConfig(
 		}
 	}
 
-	if input.S3BackupBucket != nil {
-		if *input.S3BackupBucket == "" {
-			upd.ClearS3BackupBucket()
+	if input.S3BackupBucketID != nil {
+		if *input.S3BackupBucketID == uuid.Nil {
+			upd.ClearS3BackupBucketID()
 		} else {
-			upd.SetS3BackupBucket(*input.S3BackupBucket)
-		}
-	}
-
-	if input.S3BackupSourceID != nil {
-		if *input.S3BackupSourceID == uuid.Nil {
-			upd.ClearS3BackupSourceID()
-		} else {
-			upd.SetS3BackupSourceID(*input.S3BackupSourceID)
+			upd.SetS3BackupBucketID(*input.S3BackupBucketID)
 		}
 	}
 

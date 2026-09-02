@@ -3,7 +3,6 @@ package storage_service
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -11,15 +10,15 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
-	"github.com/unbindapp/unbind-api/internal/infrastructure/s3"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
 )
 
-func (self *StorageService) CreateS3StorageBackend(ctx context.Context, requesterUserID uuid.UUID, input *models.S3BackendCreateInput) (*models.S3Response, error) {
+func (self *StorageService) CreateS3Bucket(ctx context.Context, requesterUserID uuid.UUID, input *models.S3BucketCreateInput) (*models.S3BucketResponse, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
-		// Team editor can create s3 sources
+		// Team editor can create s3 buckets
 		{
 			Action:       schema.ActionEditor,
 			ResourceType: schema.ResourceTypeTeam,
@@ -39,31 +38,24 @@ func (self *StorageService) CreateS3StorageBackend(ctx context.Context, requeste
 		return nil, err
 	}
 
-	// Test connectivity to the S3 backend
-	s3Client, err := s3.NewS3Client(
-		ctx,
-		input.Endpoint,
-		input.Region,
-		input.AccessKeyID,
-		input.SecretKey,
-	)
-	if err != nil {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+	conn := s3Connection{
+		Endpoint:    input.Endpoint,
+		Region:      input.Region,
+		Bucket:      input.Bucket,
+		AccessKeyID: input.AccessKeyID,
+		SecretKey:   input.SecretKey,
 	}
-
-	err = s3Client.ProbeAnyBucketRW(ctx)
-	if err != nil {
-		// May be invalid credentials, etc.
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+	if err := probeS3Bucket(ctx, conn); err != nil {
+		return nil, err
 	}
 
 	client := self.k8s.GetInternalClient()
 
-	var s3 *ent.S3
+	var s3Bucket *ent.S3Bucket
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		kubernetesName, err := utils.GenerateSlug(fmt.Sprintf("s3-%s", input.Name))
 		if err != nil {
-			log.Errorf("Failed to generate kubernetes name for S3 source %s: %v", input.Name, err)
+			log.Errorf("Failed to generate kubernetes name for S3 bucket %s: %v", input.Name, err)
 			return err
 		}
 
@@ -72,41 +64,23 @@ func (self *StorageService) CreateS3StorageBackend(ctx context.Context, requeste
 			return err
 		}
 
-		// Aws config style
-		profile := "default"
-		region := strings.TrimSpace(input.Region)
-
-		// Build INI-formatted that is sometimes what stuff wants (like mysql operator)
-		credentialsFile := fmt.Sprintf(`[%s]
-aws_access_key_id = %s
-aws_secret_access_key = %s
-`, profile, input.AccessKeyID, input.SecretKey)
-
-		configFile := fmt.Sprintf(`[%s]
-region = %s
-output = json
-`, profile, region)
-
-		values := map[string][]byte{
-			"access_key_id": []byte(input.AccessKeyID),
-			"secret_key":    []byte(input.SecretKey),
-			"credentials":   []byte(credentialsFile),
-			"config":        []byte(configFile),
-		}
-		_, err = self.k8s.OverwriteSecretValues(ctx, secret.Name, team.Namespace, values, client)
+		_, err = self.k8s.OverwriteSecretValues(ctx, secret.Name, team.Namespace, s3SecretValues(conn), client)
 		if err != nil {
 			return err
 		}
 
-		s3, err = self.repo.S3().Create(ctx, tx, input.TeamID, input.Name, input.Endpoint, input.Region, secret.Name)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		s3Bucket, err = self.repo.S3Bucket().Create(ctx, tx, &s3bucket_repo.CreateS3BucketInput{
+			TeamID:           input.TeamID,
+			Name:             input.Name,
+			Endpoint:         input.Endpoint,
+			Region:           input.Region,
+			Bucket:           input.Bucket,
+			KubernetesSecret: secret.Name,
+		})
+		return err
 	}); err != nil {
 		return nil, err
 	}
 
-	return models.TransformS3Entity(s3, input.AccessKeyID, input.SecretKey, nil), nil
+	return models.TransformS3BucketEntity(s3Bucket, input.AccessKeyID, input.SecretKey), nil
 }

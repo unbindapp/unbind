@@ -18,7 +18,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/repositories/oauth"
 	"github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/repositories/project"
-	"github.com/unbindapp/unbind-api/internal/repositories/s3"
+	"github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
 	"github.com/unbindapp/unbind-api/internal/repositories/service"
 	"github.com/unbindapp/unbind-api/internal/repositories/service_group"
 	"github.com/unbindapp/unbind-api/internal/repositories/system"
@@ -470,48 +470,48 @@ func (_c *RepositoriesMock_Project_Call) RunAndReturn(run func() project_repo.Pr
 	return _c
 }
 
-// S3 provides a mock function for the type RepositoriesMock
-func (_mock *RepositoriesMock) S3() s3_repo.S3RepositoryInterface {
+// S3Bucket provides a mock function for the type RepositoriesMock
+func (_mock *RepositoriesMock) S3Bucket() s3bucket_repo.S3BucketRepositoryInterface {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
-		panic("no return value specified for S3")
+		panic("no return value specified for S3Bucket")
 	}
 
-	var r0 s3_repo.S3RepositoryInterface
-	if returnFunc, ok := ret.Get(0).(func() s3_repo.S3RepositoryInterface); ok {
+	var r0 s3bucket_repo.S3BucketRepositoryInterface
+	if returnFunc, ok := ret.Get(0).(func() s3bucket_repo.S3BucketRepositoryInterface); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(s3_repo.S3RepositoryInterface)
+			r0 = ret.Get(0).(s3bucket_repo.S3BucketRepositoryInterface)
 		}
 	}
 	return r0
 }
 
-// RepositoriesMock_S3_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'S3'
-type RepositoriesMock_S3_Call struct {
+// RepositoriesMock_S3Bucket_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'S3Bucket'
+type RepositoriesMock_S3Bucket_Call struct {
 	*mock.Call
 }
 
-// S3 is a helper method to define mock.On call
-func (_e *RepositoriesMock_Expecter) S3() *RepositoriesMock_S3_Call {
-	return &RepositoriesMock_S3_Call{Call: _e.mock.On("S3")}
+// S3Bucket is a helper method to define mock.On call
+func (_e *RepositoriesMock_Expecter) S3Bucket() *RepositoriesMock_S3Bucket_Call {
+	return &RepositoriesMock_S3Bucket_Call{Call: _e.mock.On("S3Bucket")}
 }
 
-func (_c *RepositoriesMock_S3_Call) Run(run func()) *RepositoriesMock_S3_Call {
+func (_c *RepositoriesMock_S3Bucket_Call) Run(run func()) *RepositoriesMock_S3Bucket_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run()
 	})
 	return _c
 }
 
-func (_c *RepositoriesMock_S3_Call) Return(s3RepositoryInterface s3_repo.S3RepositoryInterface) *RepositoriesMock_S3_Call {
-	_c.Call.Return(s3RepositoryInterface)
+func (_c *RepositoriesMock_S3Bucket_Call) Return(s3BucketRepositoryInterface s3bucket_repo.S3BucketRepositoryInterface) *RepositoriesMock_S3Bucket_Call {
+	_c.Call.Return(s3BucketRepositoryInterface)
 	return _c
 }
 
-func (_c *RepositoriesMock_S3_Call) RunAndReturn(run func() s3_repo.S3RepositoryInterface) *RepositoriesMock_S3_Call {
+func (_c *RepositoriesMock_S3Bucket_Call) RunAndReturn(run func() s3bucket_repo.S3BucketRepositoryInterface) *RepositoriesMock_S3Bucket_Call {
 	_c.Call.Return(run)
 	return _c
 }

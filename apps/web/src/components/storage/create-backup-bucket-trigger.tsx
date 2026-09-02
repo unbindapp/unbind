@@ -1,5 +1,5 @@
-import { NewS3SourceTrigger } from "@/components/storage/s3-source-card";
-import { sourceAndBucketSeparator } from "@/components/service/helpers";
+import { NewS3BucketTrigger } from "@/components/storage/s3-bucket-card";
+import { splitS3BucketItemLabel } from "@/components/service/helpers";
 import { createDialogHandle, DialogTrigger } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -15,19 +15,19 @@ import { TCommandItem } from "@/lib/hooks/use-app-form";
 import { PlusIcon } from "lucide-react";
 import { ReactElement, useState } from "react";
 
-export type TCreateBackupSourceTriggerProps = {
+export type TCreateBackupBucketTriggerProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   children: ReactElement;
   teamId: string;
 };
 
-export function CreateBackupSourceTrigger({
+export function CreateBackupBucketTrigger({
   teamId,
   isOpen,
   setIsOpen,
   children,
-}: TCreateBackupSourceTriggerProps) {
+}: TCreateBackupBucketTriggerProps) {
   const [dialogHandle] = useState(() => createDialogHandle());
 
   return (
@@ -38,7 +38,7 @@ export function CreateBackupSourceTrigger({
           <ScrollArea>
             <DropdownMenuGroup>
               <DropdownMenuLabel className="-mx-1 mb-1 border-b px-3 pb-2 font-normal">
-                {"You don't have any buckets. Create a backup source."}
+                {"You don't have any buckets. Create a backup bucket."}
               </DropdownMenuLabel>
               {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
               <DialogTrigger
@@ -47,7 +47,7 @@ export function CreateBackupSourceTrigger({
                 render={
                   <DropdownMenuItem className="gap-1.5">
                     <PlusIcon className="-ml-1 size-5" />
-                    <p className="min-w-0 shrink">Create Backup Source</p>
+                    <p className="min-w-0 shrink">Create Backup Bucket</p>
                   </DropdownMenuItem>
                 }
               />
@@ -55,23 +55,32 @@ export function CreateBackupSourceTrigger({
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
-      <NewS3SourceTrigger teamId={teamId} handle={dialogHandle} />
+      <NewS3BucketTrigger teamId={teamId} handle={dialogHandle} />
     </>
   );
 }
 
-export function SourceAndBucketCommandItemElement({
+export function S3BucketLabel({ name, bucket }: { name: string; bucket: string }) {
+  return (
+    <>
+      {name}
+      <span className="text-muted-more-foreground px-[0.5ch]">/</span>
+      {bucket}
+    </>
+  );
+}
+
+export function S3BucketCommandItemElement({
   item,
   className,
 }: {
   item: TCommandItem;
   className?: string;
 }) {
+  const { name, bucket } = splitS3BucketItemLabel(item.label);
   return (
     <p className={cn("min-w-0 shrink leading-tight", className)}>
-      {item.label.split(sourceAndBucketSeparator)[0]}
-      <span className="text-muted-more-foreground px-[0.5ch]">/</span>
-      {item.label.split(sourceAndBucketSeparator)[1]}
+      <S3BucketLabel name={name} bucket={bucket} />
     </p>
   );
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/project"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/ent/webhook"
@@ -131,19 +131,19 @@ func (_u *TeamUpdate) AddProjects(v ...*Project) *TeamUpdate {
 	return _u.AddProjectIDs(ids...)
 }
 
-// AddS3SourceIDs adds the "s3_sources" edge to the S3 entity by IDs.
-func (_u *TeamUpdate) AddS3SourceIDs(ids ...uuid.UUID) *TeamUpdate {
-	_u.mutation.AddS3SourceIDs(ids...)
+// AddS3BucketIDs adds the "s3_buckets" edge to the S3Bucket entity by IDs.
+func (_u *TeamUpdate) AddS3BucketIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.AddS3BucketIDs(ids...)
 	return _u
 }
 
-// AddS3Sources adds the "s3_sources" edges to the S3 entity.
-func (_u *TeamUpdate) AddS3Sources(v ...*S3) *TeamUpdate {
+// AddS3Buckets adds the "s3_buckets" edges to the S3Bucket entity.
+func (_u *TeamUpdate) AddS3Buckets(v ...*S3Bucket) *TeamUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddS3SourceIDs(ids...)
+	return _u.AddS3BucketIDs(ids...)
 }
 
 // AddMemberIDs adds the "members" edge to the User entity by IDs.
@@ -202,25 +202,25 @@ func (_u *TeamUpdate) RemoveProjects(v ...*Project) *TeamUpdate {
 	return _u.RemoveProjectIDs(ids...)
 }
 
-// ClearS3Sources clears all "s3_sources" edges to the S3 entity.
-func (_u *TeamUpdate) ClearS3Sources() *TeamUpdate {
-	_u.mutation.ClearS3Sources()
+// ClearS3Buckets clears all "s3_buckets" edges to the S3Bucket entity.
+func (_u *TeamUpdate) ClearS3Buckets() *TeamUpdate {
+	_u.mutation.ClearS3Buckets()
 	return _u
 }
 
-// RemoveS3SourceIDs removes the "s3_sources" edge to S3 entities by IDs.
-func (_u *TeamUpdate) RemoveS3SourceIDs(ids ...uuid.UUID) *TeamUpdate {
-	_u.mutation.RemoveS3SourceIDs(ids...)
+// RemoveS3BucketIDs removes the "s3_buckets" edge to S3Bucket entities by IDs.
+func (_u *TeamUpdate) RemoveS3BucketIDs(ids ...uuid.UUID) *TeamUpdate {
+	_u.mutation.RemoveS3BucketIDs(ids...)
 	return _u
 }
 
-// RemoveS3Sources removes "s3_sources" edges to S3 entities.
-func (_u *TeamUpdate) RemoveS3Sources(v ...*S3) *TeamUpdate {
+// RemoveS3Buckets removes "s3_buckets" edges to S3Bucket entities.
+func (_u *TeamUpdate) RemoveS3Buckets(v ...*S3Bucket) *TeamUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveS3SourceIDs(ids...)
+	return _u.RemoveS3BucketIDs(ids...)
 }
 
 // ClearMembers clears all "members" edges to the User entity.
@@ -395,28 +395,28 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.S3SourcesCleared() {
+	if _u.mutation.S3BucketsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   team.S3SourcesTable,
-			Columns: []string{team.S3SourcesColumn},
+			Table:   team.S3BucketsTable,
+			Columns: []string{team.S3BucketsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedS3SourcesIDs(); len(nodes) > 0 && !_u.mutation.S3SourcesCleared() {
+	if nodes := _u.mutation.RemovedS3BucketsIDs(); len(nodes) > 0 && !_u.mutation.S3BucketsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   team.S3SourcesTable,
-			Columns: []string{team.S3SourcesColumn},
+			Table:   team.S3BucketsTable,
+			Columns: []string{team.S3BucketsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -424,15 +424,15 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.S3SourcesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.S3BucketsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   team.S3SourcesTable,
-			Columns: []string{team.S3SourcesColumn},
+			Table:   team.S3BucketsTable,
+			Columns: []string{team.S3BucketsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -649,19 +649,19 @@ func (_u *TeamUpdateOne) AddProjects(v ...*Project) *TeamUpdateOne {
 	return _u.AddProjectIDs(ids...)
 }
 
-// AddS3SourceIDs adds the "s3_sources" edge to the S3 entity by IDs.
-func (_u *TeamUpdateOne) AddS3SourceIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	_u.mutation.AddS3SourceIDs(ids...)
+// AddS3BucketIDs adds the "s3_buckets" edge to the S3Bucket entity by IDs.
+func (_u *TeamUpdateOne) AddS3BucketIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.AddS3BucketIDs(ids...)
 	return _u
 }
 
-// AddS3Sources adds the "s3_sources" edges to the S3 entity.
-func (_u *TeamUpdateOne) AddS3Sources(v ...*S3) *TeamUpdateOne {
+// AddS3Buckets adds the "s3_buckets" edges to the S3Bucket entity.
+func (_u *TeamUpdateOne) AddS3Buckets(v ...*S3Bucket) *TeamUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddS3SourceIDs(ids...)
+	return _u.AddS3BucketIDs(ids...)
 }
 
 // AddMemberIDs adds the "members" edge to the User entity by IDs.
@@ -720,25 +720,25 @@ func (_u *TeamUpdateOne) RemoveProjects(v ...*Project) *TeamUpdateOne {
 	return _u.RemoveProjectIDs(ids...)
 }
 
-// ClearS3Sources clears all "s3_sources" edges to the S3 entity.
-func (_u *TeamUpdateOne) ClearS3Sources() *TeamUpdateOne {
-	_u.mutation.ClearS3Sources()
+// ClearS3Buckets clears all "s3_buckets" edges to the S3Bucket entity.
+func (_u *TeamUpdateOne) ClearS3Buckets() *TeamUpdateOne {
+	_u.mutation.ClearS3Buckets()
 	return _u
 }
 
-// RemoveS3SourceIDs removes the "s3_sources" edge to S3 entities by IDs.
-func (_u *TeamUpdateOne) RemoveS3SourceIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	_u.mutation.RemoveS3SourceIDs(ids...)
+// RemoveS3BucketIDs removes the "s3_buckets" edge to S3Bucket entities by IDs.
+func (_u *TeamUpdateOne) RemoveS3BucketIDs(ids ...uuid.UUID) *TeamUpdateOne {
+	_u.mutation.RemoveS3BucketIDs(ids...)
 	return _u
 }
 
-// RemoveS3Sources removes "s3_sources" edges to S3 entities.
-func (_u *TeamUpdateOne) RemoveS3Sources(v ...*S3) *TeamUpdateOne {
+// RemoveS3Buckets removes "s3_buckets" edges to S3Bucket entities.
+func (_u *TeamUpdateOne) RemoveS3Buckets(v ...*S3Bucket) *TeamUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveS3SourceIDs(ids...)
+	return _u.RemoveS3BucketIDs(ids...)
 }
 
 // ClearMembers clears all "members" edges to the User entity.
@@ -943,28 +943,28 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.S3SourcesCleared() {
+	if _u.mutation.S3BucketsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   team.S3SourcesTable,
-			Columns: []string{team.S3SourcesColumn},
+			Table:   team.S3BucketsTable,
+			Columns: []string{team.S3BucketsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedS3SourcesIDs(); len(nodes) > 0 && !_u.mutation.S3SourcesCleared() {
+	if nodes := _u.mutation.RemovedS3BucketsIDs(); len(nodes) > 0 && !_u.mutation.S3BucketsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   team.S3SourcesTable,
-			Columns: []string{team.S3SourcesColumn},
+			Table:   team.S3BucketsTable,
+			Columns: []string{team.S3BucketsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -972,15 +972,15 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.S3SourcesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.S3BucketsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   team.S3SourcesTable,
-			Columns: []string{team.S3SourcesColumn},
+			Table:   team.S3BucketsTable,
+			Columns: []string{team.S3BucketsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(s3.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(s3bucket.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

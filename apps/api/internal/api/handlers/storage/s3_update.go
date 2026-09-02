@@ -3,49 +3,34 @@ package storage_handler
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-type UpdateS3SourceInput struct {
+type UpdateS3BucketInput struct {
 	server.BaseAuthInput
+	Body *models.S3BucketUpdateInput
+}
+
+type UpdateS3BucketOutput struct {
 	Body struct {
-		ID          uuid.UUID `json:"id" format:"uuid" required:"true"`
-		TeamID      uuid.UUID `json:"team_id" format:"uuid" required:"true"`
-		Name        *string   `json:"name,omitempty" required:"false" minLength:"1"`
-		AccessKeyID *string   `json:"access_key_id,omitempty" required:"false" minLength:"1"`
-		SecretKey   *string   `json:"secret_key,omitempty" required:"false" minLength:"1"`
+		Data *models.S3BucketResponse `json:"data"`
 	}
 }
 
-type UpdateS3SourceResponse struct {
-	Body struct {
-		Data *models.S3Response `json:"data"`
-	}
-}
-
-func (self *HandlerGroup) UpdateS3Source(ctx context.Context, input *UpdateS3SourceInput) (*UpdateS3SourceResponse, error) {
+func (self *HandlerGroup) UpdateS3Bucket(ctx context.Context, input *UpdateS3BucketInput) (*UpdateS3BucketOutput, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint, err := self.srv.StorageService.UpdateS3Storage(
-		ctx,
-		user.ID,
-		input.Body.TeamID,
-		input.Body.ID,
-		input.Body.Name,
-		input.Body.AccessKeyID,
-		input.Body.SecretKey,
-	)
+	s3Bucket, err := self.srv.StorageService.UpdateS3Bucket(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
 
-	resp := &UpdateS3SourceResponse{}
-	resp.Body.Data = endpoint
+	resp := &UpdateS3BucketOutput{}
+	resp.Body.Data = s3Bucket
 	return resp, nil
 }

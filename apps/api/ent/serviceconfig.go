@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
@@ -68,10 +68,8 @@ type ServiceConfig struct {
 	DefinitionVersion *string `json:"definition_version,omitempty"`
 	// Database configuration for the service
 	DatabaseConfig *schema.DatabaseConfig `json:"database_config,omitempty"`
-	// S3 source to backup to
-	S3BackupSourceID *uuid.UUID `json:"s3_backup_source_id,omitempty"`
 	// S3 bucket to backup to
-	S3BackupBucket *string `json:"s3_backup_bucket,omitempty"`
+	S3BackupBucketID *uuid.UUID `json:"s3_backup_bucket_id,omitempty"`
 	// Cron expression for the backup schedule
 	BackupSchedule string `json:"backup_schedule,omitempty"`
 	// Number of base backups to retain
@@ -102,8 +100,8 @@ type ServiceConfig struct {
 type ServiceConfigEdges struct {
 	// Service holds the value of the service edge.
 	Service *Service `json:"service,omitempty"`
-	// S3BackupSources holds the value of the s3_backup_sources edge.
-	S3BackupSources *S3 `json:"s3_backup_sources,omitempty"`
+	// S3BackupBucket holds the value of the s3_backup_bucket edge.
+	S3BackupBucket *S3Bucket `json:"s3_backup_bucket,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -120,15 +118,15 @@ func (e ServiceConfigEdges) ServiceOrErr() (*Service, error) {
 	return nil, &NotLoadedError{edge: "service"}
 }
 
-// S3BackupSourcesOrErr returns the S3BackupSources value or an error if the edge
+// S3BackupBucketOrErr returns the S3BackupBucket value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ServiceConfigEdges) S3BackupSourcesOrErr() (*S3, error) {
-	if e.S3BackupSources != nil {
-		return e.S3BackupSources, nil
+func (e ServiceConfigEdges) S3BackupBucketOrErr() (*S3Bucket, error) {
+	if e.S3BackupBucket != nil {
+		return e.S3BackupBucket, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: s3.Label}
+		return nil, &NotFoundError{label: s3bucket.Label}
 	}
-	return nil, &NotLoadedError{edge: "s3_backup_sources"}
+	return nil, &NotLoadedError{edge: "s3_backup_bucket"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -136,7 +134,7 @@ func (*ServiceConfig) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case serviceconfig.FieldS3BackupSourceID:
+		case serviceconfig.FieldS3BackupBucketID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case serviceconfig.FieldHosts, serviceconfig.FieldPorts, serviceconfig.FieldDatabaseConfig, serviceconfig.FieldVolumes, serviceconfig.FieldSecurityContext, serviceconfig.FieldHealthCheck, serviceconfig.FieldVariableMounts, serviceconfig.FieldProtectedVariables, serviceconfig.FieldVariableMetadata, serviceconfig.FieldInitContainers, serviceconfig.FieldResources:
 			values[i] = new([]byte)
@@ -144,7 +142,7 @@ func (*ServiceConfig) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case serviceconfig.FieldReplicas, serviceconfig.FieldBackupRetentionCount:
 			values[i] = new(sql.NullInt64)
-		case serviceconfig.FieldBuilder, serviceconfig.FieldIcon, serviceconfig.FieldDockerBuilderDockerfilePath, serviceconfig.FieldDockerBuilderBuildContext, serviceconfig.FieldRailpackProvider, serviceconfig.FieldRailpackFramework, serviceconfig.FieldGitBranch, serviceconfig.FieldGitTag, serviceconfig.FieldRailpackBuilderInstallCommand, serviceconfig.FieldRailpackBuilderBuildCommand, serviceconfig.FieldRunCommand, serviceconfig.FieldImage, serviceconfig.FieldDefinitionVersion, serviceconfig.FieldS3BackupBucket, serviceconfig.FieldBackupSchedule:
+		case serviceconfig.FieldBuilder, serviceconfig.FieldIcon, serviceconfig.FieldDockerBuilderDockerfilePath, serviceconfig.FieldDockerBuilderBuildContext, serviceconfig.FieldRailpackProvider, serviceconfig.FieldRailpackFramework, serviceconfig.FieldGitBranch, serviceconfig.FieldGitTag, serviceconfig.FieldRailpackBuilderInstallCommand, serviceconfig.FieldRailpackBuilderBuildCommand, serviceconfig.FieldRunCommand, serviceconfig.FieldImage, serviceconfig.FieldDefinitionVersion, serviceconfig.FieldBackupSchedule:
 			values[i] = new(sql.NullString)
 		case serviceconfig.FieldCreatedAt, serviceconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -319,19 +317,12 @@ func (_m *ServiceConfig) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field database_config: %w", err)
 				}
 			}
-		case serviceconfig.FieldS3BackupSourceID:
+		case serviceconfig.FieldS3BackupBucketID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field s3_backup_source_id", values[i])
+				return fmt.Errorf("unexpected type %T for field s3_backup_bucket_id", values[i])
 			} else if value.Valid {
-				_m.S3BackupSourceID = new(uuid.UUID)
-				*_m.S3BackupSourceID = *value.S.(*uuid.UUID)
-			}
-		case serviceconfig.FieldS3BackupBucket:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field s3_backup_bucket", values[i])
-			} else if value.Valid {
-				_m.S3BackupBucket = new(string)
-				*_m.S3BackupBucket = value.String
+				_m.S3BackupBucketID = new(uuid.UUID)
+				*_m.S3BackupBucketID = *value.S.(*uuid.UUID)
 			}
 		case serviceconfig.FieldBackupSchedule:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -427,9 +418,9 @@ func (_m *ServiceConfig) QueryService() *ServiceQuery {
 	return NewServiceConfigClient(_m.config).QueryService(_m)
 }
 
-// QueryS3BackupSources queries the "s3_backup_sources" edge of the ServiceConfig entity.
-func (_m *ServiceConfig) QueryS3BackupSources() *S3Query {
-	return NewServiceConfigClient(_m.config).QueryS3BackupSources(_m)
+// QueryS3BackupBucket queries the "s3_backup_bucket" edge of the ServiceConfig entity.
+func (_m *ServiceConfig) QueryS3BackupBucket() *S3BucketQuery {
+	return NewServiceConfigClient(_m.config).QueryS3BackupBucket(_m)
 }
 
 // Update returns a builder for updating this ServiceConfig.
@@ -541,14 +532,9 @@ func (_m *ServiceConfig) String() string {
 	builder.WriteString("database_config=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DatabaseConfig))
 	builder.WriteString(", ")
-	if v := _m.S3BackupSourceID; v != nil {
-		builder.WriteString("s3_backup_source_id=")
+	if v := _m.S3BackupBucketID; v != nil {
+		builder.WriteString("s3_backup_bucket_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	if v := _m.S3BackupBucket; v != nil {
-		builder.WriteString("s3_backup_bucket=")
-		builder.WriteString(*v)
 	}
 	builder.WriteString(", ")
 	builder.WriteString("backup_schedule=")

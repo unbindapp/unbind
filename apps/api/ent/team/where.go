@@ -529,21 +529,21 @@ func HasProjectsWith(preds ...predicate.Project) predicate.Team {
 	})
 }
 
-// HasS3Sources applies the HasEdge predicate on the "s3_sources" edge.
-func HasS3Sources() predicate.Team {
+// HasS3Buckets applies the HasEdge predicate on the "s3_buckets" edge.
+func HasS3Buckets() predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, S3SourcesTable, S3SourcesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, S3BucketsTable, S3BucketsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasS3SourcesWith applies the HasEdge predicate on the "s3_sources" edge with a given conditions (other predicates).
-func HasS3SourcesWith(preds ...predicate.S3) predicate.Team {
+// HasS3BucketsWith applies the HasEdge predicate on the "s3_buckets" edge with a given conditions (other predicates).
+func HasS3BucketsWith(preds ...predicate.S3Bucket) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
-		step := newS3SourcesStep()
+		step := newS3BucketsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

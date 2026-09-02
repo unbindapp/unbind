@@ -1,8 +1,8 @@
 "use client";
 
-import S3SourceCard, { NewS3SourceCard } from "@/components/storage/s3-source-card";
+import S3BucketCard, { NewS3BucketCard } from "@/components/storage/s3-bucket-card";
 import ErrorCard from "@/components/error-card";
-import { useS3Sources } from "@/components/storage/s3-sources-provider";
+import { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { cn } from "@/components/ui/utils";
 import { ReactNode } from "react";
 
@@ -12,11 +12,11 @@ export default function StorageTabContent({ className }: { className?: string })
   const {
     teamId,
     query: { data, error, isPending },
-  } = useS3Sources();
+  } = useS3Buckets();
 
-  const s3Sources = data?.sources;
+  const s3Buckets = data?.buckets;
 
-  if (error && !isPending && !s3Sources) {
+  if (error && !isPending && !s3Buckets) {
     return (
       <Wrapper className={className}>
         <ErrorCard message={error.message} />
@@ -24,11 +24,11 @@ export default function StorageTabContent({ className }: { className?: string })
     );
   }
 
-  if (isPending || !s3Sources) {
+  if (isPending || !s3Buckets) {
     return (
       <Wrapper asElement="ol" className={className}>
         {placeholderArray.map((i) => (
-          <S3SourceCard key={i} isPlaceholder={true} />
+          <S3BucketCard key={i} isPlaceholder={true} />
         ))}
       </Wrapper>
     );
@@ -36,10 +36,10 @@ export default function StorageTabContent({ className }: { className?: string })
 
   return (
     <Wrapper asElement="ol" className={className}>
-      {s3Sources.map((s3Source) => (
-        <S3SourceCard key={s3Source.id} s3Source={s3Source} teamId={teamId} />
+      {s3Buckets.map((s3Bucket) => (
+        <S3BucketCard key={s3Bucket.id} s3Bucket={s3Bucket} teamId={teamId} />
       ))}
-      <NewS3SourceCard teamId={teamId} />
+      <NewS3BucketCard teamId={teamId} />
     </Wrapper>
   );
 }

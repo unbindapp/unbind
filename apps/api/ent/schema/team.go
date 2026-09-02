@@ -38,8 +38,8 @@ func (Team) Edges() []ent.Edge {
 	return []ent.Edge{
 		// O2M to projects
 		edge.To("projects", Project.Type),
-		// O2M to s3 sources
-		edge.To("s3_sources", S3.Type),
+		// O2M to s3 buckets
+		edge.To("s3_buckets", S3Bucket.Type),
 		edge.From("members", User.Type).Ref("teams"),
 		// O2M edge for webhooks
 		edge.To("team_webhooks", Webhook.Type).Annotations(

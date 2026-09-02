@@ -17,7 +17,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/pvcmetadata"
 	"github.com/unbindapp/unbind-api/ent/registry"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
@@ -321,35 +321,39 @@ func init() {
 	registryDescID := registryMixinFields0[0].Descriptor()
 	// registry.DefaultID holds the default value on creation for the id field.
 	registry.DefaultID = registryDescID.Default.(func() uuid.UUID)
-	s3Mixin := schema.S3{}.Mixin()
-	s3MixinFields0 := s3Mixin[0].Fields()
-	_ = s3MixinFields0
-	s3MixinFields1 := s3Mixin[1].Fields()
-	_ = s3MixinFields1
-	s3Fields := schema.S3{}.Fields()
-	_ = s3Fields
-	// s3DescCreatedAt is the schema descriptor for created_at field.
-	s3DescCreatedAt := s3MixinFields1[0].Descriptor()
-	// s3.DefaultCreatedAt holds the default value on creation for the created_at field.
-	s3.DefaultCreatedAt = s3DescCreatedAt.Default.(func() time.Time)
-	// s3DescUpdatedAt is the schema descriptor for updated_at field.
-	s3DescUpdatedAt := s3MixinFields1[1].Descriptor()
-	// s3.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	s3.DefaultUpdatedAt = s3DescUpdatedAt.Default.(func() time.Time)
-	// s3.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	s3.UpdateDefaultUpdatedAt = s3DescUpdatedAt.UpdateDefault.(func() time.Time)
-	// s3DescName is the schema descriptor for name field.
-	s3DescName := s3Fields[0].Descriptor()
-	// s3.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	s3.NameValidator = s3DescName.Validators[0].(func(string) error)
-	// s3DescForcePathStyle is the schema descriptor for force_path_style field.
-	s3DescForcePathStyle := s3Fields[3].Descriptor()
-	// s3.DefaultForcePathStyle holds the default value on creation for the force_path_style field.
-	s3.DefaultForcePathStyle = s3DescForcePathStyle.Default.(bool)
-	// s3DescID is the schema descriptor for id field.
-	s3DescID := s3MixinFields0[0].Descriptor()
-	// s3.DefaultID holds the default value on creation for the id field.
-	s3.DefaultID = s3DescID.Default.(func() uuid.UUID)
+	s3bucketMixin := schema.S3Bucket{}.Mixin()
+	s3bucketMixinFields0 := s3bucketMixin[0].Fields()
+	_ = s3bucketMixinFields0
+	s3bucketMixinFields1 := s3bucketMixin[1].Fields()
+	_ = s3bucketMixinFields1
+	s3bucketFields := schema.S3Bucket{}.Fields()
+	_ = s3bucketFields
+	// s3bucketDescCreatedAt is the schema descriptor for created_at field.
+	s3bucketDescCreatedAt := s3bucketMixinFields1[0].Descriptor()
+	// s3bucket.DefaultCreatedAt holds the default value on creation for the created_at field.
+	s3bucket.DefaultCreatedAt = s3bucketDescCreatedAt.Default.(func() time.Time)
+	// s3bucketDescUpdatedAt is the schema descriptor for updated_at field.
+	s3bucketDescUpdatedAt := s3bucketMixinFields1[1].Descriptor()
+	// s3bucket.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	s3bucket.DefaultUpdatedAt = s3bucketDescUpdatedAt.Default.(func() time.Time)
+	// s3bucket.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	s3bucket.UpdateDefaultUpdatedAt = s3bucketDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// s3bucketDescName is the schema descriptor for name field.
+	s3bucketDescName := s3bucketFields[0].Descriptor()
+	// s3bucket.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	s3bucket.NameValidator = s3bucketDescName.Validators[0].(func(string) error)
+	// s3bucketDescEndpoint is the schema descriptor for endpoint field.
+	s3bucketDescEndpoint := s3bucketFields[1].Descriptor()
+	// s3bucket.EndpointValidator is a validator for the "endpoint" field. It is called by the builders before save.
+	s3bucket.EndpointValidator = s3bucketDescEndpoint.Validators[0].(func(string) error)
+	// s3bucketDescBucket is the schema descriptor for bucket field.
+	s3bucketDescBucket := s3bucketFields[3].Descriptor()
+	// s3bucket.BucketValidator is a validator for the "bucket" field. It is called by the builders before save.
+	s3bucket.BucketValidator = s3bucketDescBucket.Validators[0].(func(string) error)
+	// s3bucketDescID is the schema descriptor for id field.
+	s3bucketDescID := s3bucketMixinFields0[0].Descriptor()
+	// s3bucket.DefaultID holds the default value on creation for the id field.
+	s3bucket.DefaultID = s3bucketDescID.Default.(func() uuid.UUID)
 	serviceMixin := schema.Service{}.Mixin()
 	serviceMixinFields0 := serviceMixin[0].Fields()
 	_ = serviceMixinFields0
@@ -405,11 +409,11 @@ func init() {
 	// serviceconfig.DefaultIsPublic holds the default value on creation for the is_public field.
 	serviceconfig.DefaultIsPublic = serviceconfigDescIsPublic.Default.(bool)
 	// serviceconfigDescBackupSchedule is the schema descriptor for backup_schedule field.
-	serviceconfigDescBackupSchedule := serviceconfigFields[22].Descriptor()
+	serviceconfigDescBackupSchedule := serviceconfigFields[21].Descriptor()
 	// serviceconfig.DefaultBackupSchedule holds the default value on creation for the backup_schedule field.
 	serviceconfig.DefaultBackupSchedule = serviceconfigDescBackupSchedule.Default.(string)
 	// serviceconfigDescBackupRetentionCount is the schema descriptor for backup_retention_count field.
-	serviceconfigDescBackupRetentionCount := serviceconfigFields[23].Descriptor()
+	serviceconfigDescBackupRetentionCount := serviceconfigFields[22].Descriptor()
 	// serviceconfig.DefaultBackupRetentionCount holds the default value on creation for the backup_retention_count field.
 	serviceconfig.DefaultBackupRetentionCount = serviceconfigDescBackupRetentionCount.Default.(int)
 	// serviceconfigDescID is the schema descriptor for id field.

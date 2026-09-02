@@ -15,7 +15,7 @@ import (
 	oauth_repo "github.com/unbindapp/unbind-api/internal/repositories/oauth"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	project_repo "github.com/unbindapp/unbind-api/internal/repositories/project"
-	s3_repo "github.com/unbindapp/unbind-api/internal/repositories/s3"
+	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
 	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	servicegroup_repo "github.com/unbindapp/unbind-api/internal/repositories/service_group"
 	system_repo "github.com/unbindapp/unbind-api/internal/repositories/system"
@@ -58,8 +58,8 @@ type RepositoriesInterface interface {
 	Variables() variable_repo.VariableRepositoryInterface
 	// Bootstrap returns the Bootstrap repository
 	Bootstrap() bootstrap_repo.BootstrapRepositoryInterface
-	// S3 returns the S3 repository
-	S3() s3_repo.S3RepositoryInterface
+	// S3Bucket returns the S3 bucket repository
+	S3Bucket() s3bucket_repo.S3BucketRepositoryInterface
 	// Template returns the Template repository
 	Template() template_repo.TemplateRepositoryInterface
 	ServiceGroup() servicegroup_repo.ServiceGroupRepositoryInterface

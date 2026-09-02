@@ -26,7 +26,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/pvcmetadata"
 	"github.com/unbindapp/unbind-api/ent/registry"
-	"github.com/unbindapp/unbind-api/ent/s3"
+	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
@@ -63,7 +63,7 @@ const (
 	TypePermission         = "Permission"
 	TypeProject            = "Project"
 	TypeRegistry           = "Registry"
-	TypeS3                 = "S3"
+	TypeS3Bucket           = "S3Bucket"
 	TypeService            = "Service"
 	TypeServiceConfig      = "ServiceConfig"
 	TypeServiceGroup       = "ServiceGroup"
@@ -11219,41 +11219,41 @@ func (m *RegistryMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Registry edge %s", name)
 }
 
-// S3Mutation represents an operation that mutates the S3 nodes in the graph.
-type S3Mutation struct {
+// S3BucketMutation represents an operation that mutates the S3Bucket nodes in the graph.
+type S3BucketMutation struct {
 	config
-	op                           Op
-	typ                          string
-	id                           *uuid.UUID
-	created_at                   *time.Time
-	updated_at                   *time.Time
-	name                         *string
-	endpoint                     *string
-	region                       *string
-	force_path_style             *bool
-	kubernetes_secret            *string
-	clearedFields                map[string]struct{}
-	team                         *uuid.UUID
-	clearedteam                  bool
-	service_backup_source        map[uuid.UUID]struct{}
-	removedservice_backup_source map[uuid.UUID]struct{}
-	clearedservice_backup_source bool
-	done                         bool
-	oldValue                     func(context.Context) (*S3, error)
-	predicates                   []predicate.S3
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	created_at                    *time.Time
+	updated_at                    *time.Time
+	name                          *string
+	endpoint                      *string
+	region                        *string
+	bucket                        *string
+	kubernetes_secret             *string
+	clearedFields                 map[string]struct{}
+	team                          *uuid.UUID
+	clearedteam                   bool
+	service_backup_configs        map[uuid.UUID]struct{}
+	removedservice_backup_configs map[uuid.UUID]struct{}
+	clearedservice_backup_configs bool
+	done                          bool
+	oldValue                      func(context.Context) (*S3Bucket, error)
+	predicates                    []predicate.S3Bucket
 }
 
-var _ ent.Mutation = (*S3Mutation)(nil)
+var _ ent.Mutation = (*S3BucketMutation)(nil)
 
-// s3Option allows management of the mutation configuration using functional options.
-type s3Option func(*S3Mutation)
+// s3bucketOption allows management of the mutation configuration using functional options.
+type s3bucketOption func(*S3BucketMutation)
 
-// newS3Mutation creates new mutation for the S3 entity.
-func newS3Mutation(c config, op Op, opts ...s3Option) *S3Mutation {
-	m := &S3Mutation{
+// newS3BucketMutation creates new mutation for the S3Bucket entity.
+func newS3BucketMutation(c config, op Op, opts ...s3bucketOption) *S3BucketMutation {
+	m := &S3BucketMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeS3,
+		typ:           TypeS3Bucket,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -11262,20 +11262,20 @@ func newS3Mutation(c config, op Op, opts ...s3Option) *S3Mutation {
 	return m
 }
 
-// withS3ID sets the ID field of the mutation.
-func withS3ID(id uuid.UUID) s3Option {
-	return func(m *S3Mutation) {
+// withS3BucketID sets the ID field of the mutation.
+func withS3BucketID(id uuid.UUID) s3bucketOption {
+	return func(m *S3BucketMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *S3
+			value *S3Bucket
 		)
-		m.oldValue = func(ctx context.Context) (*S3, error) {
+		m.oldValue = func(ctx context.Context) (*S3Bucket, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().S3.Get(ctx, id)
+					value, err = m.Client().S3Bucket.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -11284,10 +11284,10 @@ func withS3ID(id uuid.UUID) s3Option {
 	}
 }
 
-// withS3 sets the old S3 of the mutation.
-func withS3(node *S3) s3Option {
-	return func(m *S3Mutation) {
-		m.oldValue = func(context.Context) (*S3, error) {
+// withS3Bucket sets the old S3Bucket of the mutation.
+func withS3Bucket(node *S3Bucket) s3bucketOption {
+	return func(m *S3BucketMutation) {
+		m.oldValue = func(context.Context) (*S3Bucket, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -11296,7 +11296,7 @@ func withS3(node *S3) s3Option {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m S3Mutation) Client() *Client {
+func (m S3BucketMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -11304,7 +11304,7 @@ func (m S3Mutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m S3Mutation) Tx() (*Tx, error) {
+func (m S3BucketMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -11314,14 +11314,14 @@ func (m S3Mutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of S3 entities.
-func (m *S3Mutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of S3Bucket entities.
+func (m *S3BucketMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *S3Mutation) ID() (id uuid.UUID, exists bool) {
+func (m *S3BucketMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -11332,7 +11332,7 @@ func (m *S3Mutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *S3Mutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *S3BucketMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -11341,19 +11341,19 @@ func (m *S3Mutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().S3.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().S3Bucket.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *S3Mutation) SetCreatedAt(t time.Time) {
+func (m *S3BucketMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *S3Mutation) CreatedAt() (r time.Time, exists bool) {
+func (m *S3BucketMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -11361,10 +11361,10 @@ func (m *S3Mutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the S3 entity.
-// If the S3 object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the S3Bucket entity.
+// If the S3Bucket object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *S3Mutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *S3BucketMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -11379,17 +11379,17 @@ func (m *S3Mutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) 
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *S3Mutation) ResetCreatedAt() {
+func (m *S3BucketMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (m *S3Mutation) SetUpdatedAt(t time.Time) {
+func (m *S3BucketMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
 }
 
 // UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *S3Mutation) UpdatedAt() (r time.Time, exists bool) {
+func (m *S3BucketMutation) UpdatedAt() (r time.Time, exists bool) {
 	v := m.updated_at
 	if v == nil {
 		return
@@ -11397,10 +11397,10 @@ func (m *S3Mutation) UpdatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldUpdatedAt returns the old "updated_at" field's value of the S3 entity.
-// If the S3 object wasn't provided to the builder, the object is fetched from the database.
+// OldUpdatedAt returns the old "updated_at" field's value of the S3Bucket entity.
+// If the S3Bucket object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *S3Mutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *S3BucketMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
 	}
@@ -11415,17 +11415,17 @@ func (m *S3Mutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) 
 }
 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *S3Mutation) ResetUpdatedAt() {
+func (m *S3BucketMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
 // SetName sets the "name" field.
-func (m *S3Mutation) SetName(s string) {
+func (m *S3BucketMutation) SetName(s string) {
 	m.name = &s
 }
 
 // Name returns the value of the "name" field in the mutation.
-func (m *S3Mutation) Name() (r string, exists bool) {
+func (m *S3BucketMutation) Name() (r string, exists bool) {
 	v := m.name
 	if v == nil {
 		return
@@ -11433,10 +11433,10 @@ func (m *S3Mutation) Name() (r string, exists bool) {
 	return *v, true
 }
 
-// OldName returns the old "name" field's value of the S3 entity.
-// If the S3 object wasn't provided to the builder, the object is fetched from the database.
+// OldName returns the old "name" field's value of the S3Bucket entity.
+// If the S3Bucket object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *S3Mutation) OldName(ctx context.Context) (v string, err error) {
+func (m *S3BucketMutation) OldName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldName is only allowed on UpdateOne operations")
 	}
@@ -11451,17 +11451,17 @@ func (m *S3Mutation) OldName(ctx context.Context) (v string, err error) {
 }
 
 // ResetName resets all changes to the "name" field.
-func (m *S3Mutation) ResetName() {
+func (m *S3BucketMutation) ResetName() {
 	m.name = nil
 }
 
 // SetEndpoint sets the "endpoint" field.
-func (m *S3Mutation) SetEndpoint(s string) {
+func (m *S3BucketMutation) SetEndpoint(s string) {
 	m.endpoint = &s
 }
 
 // Endpoint returns the value of the "endpoint" field in the mutation.
-func (m *S3Mutation) Endpoint() (r string, exists bool) {
+func (m *S3BucketMutation) Endpoint() (r string, exists bool) {
 	v := m.endpoint
 	if v == nil {
 		return
@@ -11469,10 +11469,10 @@ func (m *S3Mutation) Endpoint() (r string, exists bool) {
 	return *v, true
 }
 
-// OldEndpoint returns the old "endpoint" field's value of the S3 entity.
-// If the S3 object wasn't provided to the builder, the object is fetched from the database.
+// OldEndpoint returns the old "endpoint" field's value of the S3Bucket entity.
+// If the S3Bucket object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *S3Mutation) OldEndpoint(ctx context.Context) (v string, err error) {
+func (m *S3BucketMutation) OldEndpoint(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEndpoint is only allowed on UpdateOne operations")
 	}
@@ -11487,17 +11487,17 @@ func (m *S3Mutation) OldEndpoint(ctx context.Context) (v string, err error) {
 }
 
 // ResetEndpoint resets all changes to the "endpoint" field.
-func (m *S3Mutation) ResetEndpoint() {
+func (m *S3BucketMutation) ResetEndpoint() {
 	m.endpoint = nil
 }
 
 // SetRegion sets the "region" field.
-func (m *S3Mutation) SetRegion(s string) {
+func (m *S3BucketMutation) SetRegion(s string) {
 	m.region = &s
 }
 
 // Region returns the value of the "region" field in the mutation.
-func (m *S3Mutation) Region() (r string, exists bool) {
+func (m *S3BucketMutation) Region() (r string, exists bool) {
 	v := m.region
 	if v == nil {
 		return
@@ -11505,10 +11505,10 @@ func (m *S3Mutation) Region() (r string, exists bool) {
 	return *v, true
 }
 
-// OldRegion returns the old "region" field's value of the S3 entity.
-// If the S3 object wasn't provided to the builder, the object is fetched from the database.
+// OldRegion returns the old "region" field's value of the S3Bucket entity.
+// If the S3Bucket object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *S3Mutation) OldRegion(ctx context.Context) (v string, err error) {
+func (m *S3BucketMutation) OldRegion(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRegion is only allowed on UpdateOne operations")
 	}
@@ -11523,53 +11523,53 @@ func (m *S3Mutation) OldRegion(ctx context.Context) (v string, err error) {
 }
 
 // ResetRegion resets all changes to the "region" field.
-func (m *S3Mutation) ResetRegion() {
+func (m *S3BucketMutation) ResetRegion() {
 	m.region = nil
 }
 
-// SetForcePathStyle sets the "force_path_style" field.
-func (m *S3Mutation) SetForcePathStyle(b bool) {
-	m.force_path_style = &b
+// SetBucket sets the "bucket" field.
+func (m *S3BucketMutation) SetBucket(s string) {
+	m.bucket = &s
 }
 
-// ForcePathStyle returns the value of the "force_path_style" field in the mutation.
-func (m *S3Mutation) ForcePathStyle() (r bool, exists bool) {
-	v := m.force_path_style
+// Bucket returns the value of the "bucket" field in the mutation.
+func (m *S3BucketMutation) Bucket() (r string, exists bool) {
+	v := m.bucket
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldForcePathStyle returns the old "force_path_style" field's value of the S3 entity.
-// If the S3 object wasn't provided to the builder, the object is fetched from the database.
+// OldBucket returns the old "bucket" field's value of the S3Bucket entity.
+// If the S3Bucket object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *S3Mutation) OldForcePathStyle(ctx context.Context) (v bool, err error) {
+func (m *S3BucketMutation) OldBucket(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldForcePathStyle is only allowed on UpdateOne operations")
+		return v, errors.New("OldBucket is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldForcePathStyle requires an ID field in the mutation")
+		return v, errors.New("OldBucket requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldForcePathStyle: %w", err)
+		return v, fmt.Errorf("querying old value for OldBucket: %w", err)
 	}
-	return oldValue.ForcePathStyle, nil
+	return oldValue.Bucket, nil
 }
 
-// ResetForcePathStyle resets all changes to the "force_path_style" field.
-func (m *S3Mutation) ResetForcePathStyle() {
-	m.force_path_style = nil
+// ResetBucket resets all changes to the "bucket" field.
+func (m *S3BucketMutation) ResetBucket() {
+	m.bucket = nil
 }
 
 // SetKubernetesSecret sets the "kubernetes_secret" field.
-func (m *S3Mutation) SetKubernetesSecret(s string) {
+func (m *S3BucketMutation) SetKubernetesSecret(s string) {
 	m.kubernetes_secret = &s
 }
 
 // KubernetesSecret returns the value of the "kubernetes_secret" field in the mutation.
-func (m *S3Mutation) KubernetesSecret() (r string, exists bool) {
+func (m *S3BucketMutation) KubernetesSecret() (r string, exists bool) {
 	v := m.kubernetes_secret
 	if v == nil {
 		return
@@ -11577,10 +11577,10 @@ func (m *S3Mutation) KubernetesSecret() (r string, exists bool) {
 	return *v, true
 }
 
-// OldKubernetesSecret returns the old "kubernetes_secret" field's value of the S3 entity.
-// If the S3 object wasn't provided to the builder, the object is fetched from the database.
+// OldKubernetesSecret returns the old "kubernetes_secret" field's value of the S3Bucket entity.
+// If the S3Bucket object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *S3Mutation) OldKubernetesSecret(ctx context.Context) (v string, err error) {
+func (m *S3BucketMutation) OldKubernetesSecret(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldKubernetesSecret is only allowed on UpdateOne operations")
 	}
@@ -11595,17 +11595,17 @@ func (m *S3Mutation) OldKubernetesSecret(ctx context.Context) (v string, err err
 }
 
 // ResetKubernetesSecret resets all changes to the "kubernetes_secret" field.
-func (m *S3Mutation) ResetKubernetesSecret() {
+func (m *S3BucketMutation) ResetKubernetesSecret() {
 	m.kubernetes_secret = nil
 }
 
 // SetTeamID sets the "team_id" field.
-func (m *S3Mutation) SetTeamID(u uuid.UUID) {
+func (m *S3BucketMutation) SetTeamID(u uuid.UUID) {
 	m.team = &u
 }
 
 // TeamID returns the value of the "team_id" field in the mutation.
-func (m *S3Mutation) TeamID() (r uuid.UUID, exists bool) {
+func (m *S3BucketMutation) TeamID() (r uuid.UUID, exists bool) {
 	v := m.team
 	if v == nil {
 		return
@@ -11613,10 +11613,10 @@ func (m *S3Mutation) TeamID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldTeamID returns the old "team_id" field's value of the S3 entity.
-// If the S3 object wasn't provided to the builder, the object is fetched from the database.
+// OldTeamID returns the old "team_id" field's value of the S3Bucket entity.
+// If the S3Bucket object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *S3Mutation) OldTeamID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *S3BucketMutation) OldTeamID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTeamID is only allowed on UpdateOne operations")
 	}
@@ -11631,25 +11631,25 @@ func (m *S3Mutation) OldTeamID(ctx context.Context) (v uuid.UUID, err error) {
 }
 
 // ResetTeamID resets all changes to the "team_id" field.
-func (m *S3Mutation) ResetTeamID() {
+func (m *S3BucketMutation) ResetTeamID() {
 	m.team = nil
 }
 
 // ClearTeam clears the "team" edge to the Team entity.
-func (m *S3Mutation) ClearTeam() {
+func (m *S3BucketMutation) ClearTeam() {
 	m.clearedteam = true
-	m.clearedFields[s3.FieldTeamID] = struct{}{}
+	m.clearedFields[s3bucket.FieldTeamID] = struct{}{}
 }
 
 // TeamCleared reports if the "team" edge to the Team entity was cleared.
-func (m *S3Mutation) TeamCleared() bool {
+func (m *S3BucketMutation) TeamCleared() bool {
 	return m.clearedteam
 }
 
 // TeamIDs returns the "team" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TeamID instead. It exists only for internal usage by the builders.
-func (m *S3Mutation) TeamIDs() (ids []uuid.UUID) {
+func (m *S3BucketMutation) TeamIDs() (ids []uuid.UUID) {
 	if id := m.team; id != nil {
 		ids = append(ids, *id)
 	}
@@ -11657,74 +11657,74 @@ func (m *S3Mutation) TeamIDs() (ids []uuid.UUID) {
 }
 
 // ResetTeam resets all changes to the "team" edge.
-func (m *S3Mutation) ResetTeam() {
+func (m *S3BucketMutation) ResetTeam() {
 	m.team = nil
 	m.clearedteam = false
 }
 
-// AddServiceBackupSourceIDs adds the "service_backup_source" edge to the ServiceConfig entity by ids.
-func (m *S3Mutation) AddServiceBackupSourceIDs(ids ...uuid.UUID) {
-	if m.service_backup_source == nil {
-		m.service_backup_source = make(map[uuid.UUID]struct{})
+// AddServiceBackupConfigIDs adds the "service_backup_configs" edge to the ServiceConfig entity by ids.
+func (m *S3BucketMutation) AddServiceBackupConfigIDs(ids ...uuid.UUID) {
+	if m.service_backup_configs == nil {
+		m.service_backup_configs = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.service_backup_source[ids[i]] = struct{}{}
+		m.service_backup_configs[ids[i]] = struct{}{}
 	}
 }
 
-// ClearServiceBackupSource clears the "service_backup_source" edge to the ServiceConfig entity.
-func (m *S3Mutation) ClearServiceBackupSource() {
-	m.clearedservice_backup_source = true
+// ClearServiceBackupConfigs clears the "service_backup_configs" edge to the ServiceConfig entity.
+func (m *S3BucketMutation) ClearServiceBackupConfigs() {
+	m.clearedservice_backup_configs = true
 }
 
-// ServiceBackupSourceCleared reports if the "service_backup_source" edge to the ServiceConfig entity was cleared.
-func (m *S3Mutation) ServiceBackupSourceCleared() bool {
-	return m.clearedservice_backup_source
+// ServiceBackupConfigsCleared reports if the "service_backup_configs" edge to the ServiceConfig entity was cleared.
+func (m *S3BucketMutation) ServiceBackupConfigsCleared() bool {
+	return m.clearedservice_backup_configs
 }
 
-// RemoveServiceBackupSourceIDs removes the "service_backup_source" edge to the ServiceConfig entity by IDs.
-func (m *S3Mutation) RemoveServiceBackupSourceIDs(ids ...uuid.UUID) {
-	if m.removedservice_backup_source == nil {
-		m.removedservice_backup_source = make(map[uuid.UUID]struct{})
+// RemoveServiceBackupConfigIDs removes the "service_backup_configs" edge to the ServiceConfig entity by IDs.
+func (m *S3BucketMutation) RemoveServiceBackupConfigIDs(ids ...uuid.UUID) {
+	if m.removedservice_backup_configs == nil {
+		m.removedservice_backup_configs = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.service_backup_source, ids[i])
-		m.removedservice_backup_source[ids[i]] = struct{}{}
+		delete(m.service_backup_configs, ids[i])
+		m.removedservice_backup_configs[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedServiceBackupSource returns the removed IDs of the "service_backup_source" edge to the ServiceConfig entity.
-func (m *S3Mutation) RemovedServiceBackupSourceIDs() (ids []uuid.UUID) {
-	for id := range m.removedservice_backup_source {
+// RemovedServiceBackupConfigs returns the removed IDs of the "service_backup_configs" edge to the ServiceConfig entity.
+func (m *S3BucketMutation) RemovedServiceBackupConfigsIDs() (ids []uuid.UUID) {
+	for id := range m.removedservice_backup_configs {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ServiceBackupSourceIDs returns the "service_backup_source" edge IDs in the mutation.
-func (m *S3Mutation) ServiceBackupSourceIDs() (ids []uuid.UUID) {
-	for id := range m.service_backup_source {
+// ServiceBackupConfigsIDs returns the "service_backup_configs" edge IDs in the mutation.
+func (m *S3BucketMutation) ServiceBackupConfigsIDs() (ids []uuid.UUID) {
+	for id := range m.service_backup_configs {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetServiceBackupSource resets all changes to the "service_backup_source" edge.
-func (m *S3Mutation) ResetServiceBackupSource() {
-	m.service_backup_source = nil
-	m.clearedservice_backup_source = false
-	m.removedservice_backup_source = nil
+// ResetServiceBackupConfigs resets all changes to the "service_backup_configs" edge.
+func (m *S3BucketMutation) ResetServiceBackupConfigs() {
+	m.service_backup_configs = nil
+	m.clearedservice_backup_configs = false
+	m.removedservice_backup_configs = nil
 }
 
-// Where appends a list predicates to the S3Mutation builder.
-func (m *S3Mutation) Where(ps ...predicate.S3) {
+// Where appends a list predicates to the S3BucketMutation builder.
+func (m *S3BucketMutation) Where(ps ...predicate.S3Bucket) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the S3Mutation builder. Using this method,
+// WhereP appends storage-level predicates to the S3BucketMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *S3Mutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.S3, len(ps))
+func (m *S3BucketMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.S3Bucket, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -11732,48 +11732,48 @@ func (m *S3Mutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *S3Mutation) Op() Op {
+func (m *S3BucketMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *S3Mutation) SetOp(op Op) {
+func (m *S3BucketMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (S3).
-func (m *S3Mutation) Type() string {
+// Type returns the node type of this mutation (S3Bucket).
+func (m *S3BucketMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *S3Mutation) Fields() []string {
+func (m *S3BucketMutation) Fields() []string {
 	fields := make([]string, 0, 8)
 	if m.created_at != nil {
-		fields = append(fields, s3.FieldCreatedAt)
+		fields = append(fields, s3bucket.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
-		fields = append(fields, s3.FieldUpdatedAt)
+		fields = append(fields, s3bucket.FieldUpdatedAt)
 	}
 	if m.name != nil {
-		fields = append(fields, s3.FieldName)
+		fields = append(fields, s3bucket.FieldName)
 	}
 	if m.endpoint != nil {
-		fields = append(fields, s3.FieldEndpoint)
+		fields = append(fields, s3bucket.FieldEndpoint)
 	}
 	if m.region != nil {
-		fields = append(fields, s3.FieldRegion)
+		fields = append(fields, s3bucket.FieldRegion)
 	}
-	if m.force_path_style != nil {
-		fields = append(fields, s3.FieldForcePathStyle)
+	if m.bucket != nil {
+		fields = append(fields, s3bucket.FieldBucket)
 	}
 	if m.kubernetes_secret != nil {
-		fields = append(fields, s3.FieldKubernetesSecret)
+		fields = append(fields, s3bucket.FieldKubernetesSecret)
 	}
 	if m.team != nil {
-		fields = append(fields, s3.FieldTeamID)
+		fields = append(fields, s3bucket.FieldTeamID)
 	}
 	return fields
 }
@@ -11781,23 +11781,23 @@ func (m *S3Mutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *S3Mutation) Field(name string) (ent.Value, bool) {
+func (m *S3BucketMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case s3.FieldCreatedAt:
+	case s3bucket.FieldCreatedAt:
 		return m.CreatedAt()
-	case s3.FieldUpdatedAt:
+	case s3bucket.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case s3.FieldName:
+	case s3bucket.FieldName:
 		return m.Name()
-	case s3.FieldEndpoint:
+	case s3bucket.FieldEndpoint:
 		return m.Endpoint()
-	case s3.FieldRegion:
+	case s3bucket.FieldRegion:
 		return m.Region()
-	case s3.FieldForcePathStyle:
-		return m.ForcePathStyle()
-	case s3.FieldKubernetesSecret:
+	case s3bucket.FieldBucket:
+		return m.Bucket()
+	case s3bucket.FieldKubernetesSecret:
 		return m.KubernetesSecret()
-	case s3.FieldTeamID:
+	case s3bucket.FieldTeamID:
 		return m.TeamID()
 	}
 	return nil, false
@@ -11806,83 +11806,83 @@ func (m *S3Mutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *S3Mutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *S3BucketMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case s3.FieldCreatedAt:
+	case s3bucket.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case s3.FieldUpdatedAt:
+	case s3bucket.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case s3.FieldName:
+	case s3bucket.FieldName:
 		return m.OldName(ctx)
-	case s3.FieldEndpoint:
+	case s3bucket.FieldEndpoint:
 		return m.OldEndpoint(ctx)
-	case s3.FieldRegion:
+	case s3bucket.FieldRegion:
 		return m.OldRegion(ctx)
-	case s3.FieldForcePathStyle:
-		return m.OldForcePathStyle(ctx)
-	case s3.FieldKubernetesSecret:
+	case s3bucket.FieldBucket:
+		return m.OldBucket(ctx)
+	case s3bucket.FieldKubernetesSecret:
 		return m.OldKubernetesSecret(ctx)
-	case s3.FieldTeamID:
+	case s3bucket.FieldTeamID:
 		return m.OldTeamID(ctx)
 	}
-	return nil, fmt.Errorf("unknown S3 field %s", name)
+	return nil, fmt.Errorf("unknown S3Bucket field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *S3Mutation) SetField(name string, value ent.Value) error {
+func (m *S3BucketMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case s3.FieldCreatedAt:
+	case s3bucket.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case s3.FieldUpdatedAt:
+	case s3bucket.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case s3.FieldName:
+	case s3bucket.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
 		return nil
-	case s3.FieldEndpoint:
+	case s3bucket.FieldEndpoint:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEndpoint(v)
 		return nil
-	case s3.FieldRegion:
+	case s3bucket.FieldRegion:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRegion(v)
 		return nil
-	case s3.FieldForcePathStyle:
-		v, ok := value.(bool)
+	case s3bucket.FieldBucket:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetForcePathStyle(v)
+		m.SetBucket(v)
 		return nil
-	case s3.FieldKubernetesSecret:
+	case s3bucket.FieldKubernetesSecret:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetKubernetesSecret(v)
 		return nil
-	case s3.FieldTeamID:
+	case s3bucket.FieldTeamID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -11890,105 +11890,105 @@ func (m *S3Mutation) SetField(name string, value ent.Value) error {
 		m.SetTeamID(v)
 		return nil
 	}
-	return fmt.Errorf("unknown S3 field %s", name)
+	return fmt.Errorf("unknown S3Bucket field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *S3Mutation) AddedFields() []string {
+func (m *S3BucketMutation) AddedFields() []string {
 	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *S3Mutation) AddedField(name string) (ent.Value, bool) {
+func (m *S3BucketMutation) AddedField(name string) (ent.Value, bool) {
 	return nil, false
 }
 
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *S3Mutation) AddField(name string, value ent.Value) error {
+func (m *S3BucketMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown S3 numeric field %s", name)
+	return fmt.Errorf("unknown S3Bucket numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *S3Mutation) ClearedFields() []string {
+func (m *S3BucketMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *S3Mutation) FieldCleared(name string) bool {
+func (m *S3BucketMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *S3Mutation) ClearField(name string) error {
-	return fmt.Errorf("unknown S3 nullable field %s", name)
+func (m *S3BucketMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown S3Bucket nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *S3Mutation) ResetField(name string) error {
+func (m *S3BucketMutation) ResetField(name string) error {
 	switch name {
-	case s3.FieldCreatedAt:
+	case s3bucket.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case s3.FieldUpdatedAt:
+	case s3bucket.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case s3.FieldName:
+	case s3bucket.FieldName:
 		m.ResetName()
 		return nil
-	case s3.FieldEndpoint:
+	case s3bucket.FieldEndpoint:
 		m.ResetEndpoint()
 		return nil
-	case s3.FieldRegion:
+	case s3bucket.FieldRegion:
 		m.ResetRegion()
 		return nil
-	case s3.FieldForcePathStyle:
-		m.ResetForcePathStyle()
+	case s3bucket.FieldBucket:
+		m.ResetBucket()
 		return nil
-	case s3.FieldKubernetesSecret:
+	case s3bucket.FieldKubernetesSecret:
 		m.ResetKubernetesSecret()
 		return nil
-	case s3.FieldTeamID:
+	case s3bucket.FieldTeamID:
 		m.ResetTeamID()
 		return nil
 	}
-	return fmt.Errorf("unknown S3 field %s", name)
+	return fmt.Errorf("unknown S3Bucket field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *S3Mutation) AddedEdges() []string {
+func (m *S3BucketMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.team != nil {
-		edges = append(edges, s3.EdgeTeam)
+		edges = append(edges, s3bucket.EdgeTeam)
 	}
-	if m.service_backup_source != nil {
-		edges = append(edges, s3.EdgeServiceBackupSource)
+	if m.service_backup_configs != nil {
+		edges = append(edges, s3bucket.EdgeServiceBackupConfigs)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *S3Mutation) AddedIDs(name string) []ent.Value {
+func (m *S3BucketMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case s3.EdgeTeam:
+	case s3bucket.EdgeTeam:
 		if id := m.team; id != nil {
 			return []ent.Value{*id}
 		}
-	case s3.EdgeServiceBackupSource:
-		ids := make([]ent.Value, 0, len(m.service_backup_source))
-		for id := range m.service_backup_source {
+	case s3bucket.EdgeServiceBackupConfigs:
+		ids := make([]ent.Value, 0, len(m.service_backup_configs))
+		for id := range m.service_backup_configs {
 			ids = append(ids, id)
 		}
 		return ids
@@ -11997,21 +11997,21 @@ func (m *S3Mutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *S3Mutation) RemovedEdges() []string {
+func (m *S3BucketMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedservice_backup_source != nil {
-		edges = append(edges, s3.EdgeServiceBackupSource)
+	if m.removedservice_backup_configs != nil {
+		edges = append(edges, s3bucket.EdgeServiceBackupConfigs)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *S3Mutation) RemovedIDs(name string) []ent.Value {
+func (m *S3BucketMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case s3.EdgeServiceBackupSource:
-		ids := make([]ent.Value, 0, len(m.removedservice_backup_source))
-		for id := range m.removedservice_backup_source {
+	case s3bucket.EdgeServiceBackupConfigs:
+		ids := make([]ent.Value, 0, len(m.removedservice_backup_configs))
+		for id := range m.removedservice_backup_configs {
 			ids = append(ids, id)
 		}
 		return ids
@@ -12020,52 +12020,52 @@ func (m *S3Mutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *S3Mutation) ClearedEdges() []string {
+func (m *S3BucketMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.clearedteam {
-		edges = append(edges, s3.EdgeTeam)
+		edges = append(edges, s3bucket.EdgeTeam)
 	}
-	if m.clearedservice_backup_source {
-		edges = append(edges, s3.EdgeServiceBackupSource)
+	if m.clearedservice_backup_configs {
+		edges = append(edges, s3bucket.EdgeServiceBackupConfigs)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *S3Mutation) EdgeCleared(name string) bool {
+func (m *S3BucketMutation) EdgeCleared(name string) bool {
 	switch name {
-	case s3.EdgeTeam:
+	case s3bucket.EdgeTeam:
 		return m.clearedteam
-	case s3.EdgeServiceBackupSource:
-		return m.clearedservice_backup_source
+	case s3bucket.EdgeServiceBackupConfigs:
+		return m.clearedservice_backup_configs
 	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *S3Mutation) ClearEdge(name string) error {
+func (m *S3BucketMutation) ClearEdge(name string) error {
 	switch name {
-	case s3.EdgeTeam:
+	case s3bucket.EdgeTeam:
 		m.ClearTeam()
 		return nil
 	}
-	return fmt.Errorf("unknown S3 unique edge %s", name)
+	return fmt.Errorf("unknown S3Bucket unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *S3Mutation) ResetEdge(name string) error {
+func (m *S3BucketMutation) ResetEdge(name string) error {
 	switch name {
-	case s3.EdgeTeam:
+	case s3bucket.EdgeTeam:
 		m.ResetTeam()
 		return nil
-	case s3.EdgeServiceBackupSource:
-		m.ResetServiceBackupSource()
+	case s3bucket.EdgeServiceBackupConfigs:
+		m.ResetServiceBackupConfigs()
 		return nil
 	}
-	return fmt.Errorf("unknown S3 edge %s", name)
+	return fmt.Errorf("unknown S3Bucket edge %s", name)
 }
 
 // ServiceMutation represents an operation that mutates the Service nodes in the graph.
@@ -14045,7 +14045,6 @@ type ServiceConfigMutation struct {
 	image                            *string
 	definition_version               *string
 	database_config                  **schema.DatabaseConfig
-	s3_backup_bucket                 *string
 	backup_schedule                  *string
 	backup_retention_count           *int
 	addbackup_retention_count        *int
@@ -14064,8 +14063,8 @@ type ServiceConfigMutation struct {
 	clearedFields                    map[string]struct{}
 	service                          *uuid.UUID
 	clearedservice                   bool
-	s3_backup_sources                *uuid.UUID
-	cleareds3_backup_sources         bool
+	s3_backup_bucket                 *uuid.UUID
+	cleareds3_backup_bucket          bool
 	done                             bool
 	oldValue                         func(context.Context) (*ServiceConfig, error)
 	predicates                       []predicate.ServiceConfig
@@ -15201,62 +15200,13 @@ func (m *ServiceConfigMutation) ResetDatabaseConfig() {
 	delete(m.clearedFields, serviceconfig.FieldDatabaseConfig)
 }
 
-// SetS3BackupSourceID sets the "s3_backup_source_id" field.
-func (m *ServiceConfigMutation) SetS3BackupSourceID(u uuid.UUID) {
-	m.s3_backup_sources = &u
+// SetS3BackupBucketID sets the "s3_backup_bucket_id" field.
+func (m *ServiceConfigMutation) SetS3BackupBucketID(u uuid.UUID) {
+	m.s3_backup_bucket = &u
 }
 
-// S3BackupSourceID returns the value of the "s3_backup_source_id" field in the mutation.
-func (m *ServiceConfigMutation) S3BackupSourceID() (r uuid.UUID, exists bool) {
-	v := m.s3_backup_sources
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldS3BackupSourceID returns the old "s3_backup_source_id" field's value of the ServiceConfig entity.
-// If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServiceConfigMutation) OldS3BackupSourceID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldS3BackupSourceID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldS3BackupSourceID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldS3BackupSourceID: %w", err)
-	}
-	return oldValue.S3BackupSourceID, nil
-}
-
-// ClearS3BackupSourceID clears the value of the "s3_backup_source_id" field.
-func (m *ServiceConfigMutation) ClearS3BackupSourceID() {
-	m.s3_backup_sources = nil
-	m.clearedFields[serviceconfig.FieldS3BackupSourceID] = struct{}{}
-}
-
-// S3BackupSourceIDCleared returns if the "s3_backup_source_id" field was cleared in this mutation.
-func (m *ServiceConfigMutation) S3BackupSourceIDCleared() bool {
-	_, ok := m.clearedFields[serviceconfig.FieldS3BackupSourceID]
-	return ok
-}
-
-// ResetS3BackupSourceID resets all changes to the "s3_backup_source_id" field.
-func (m *ServiceConfigMutation) ResetS3BackupSourceID() {
-	m.s3_backup_sources = nil
-	delete(m.clearedFields, serviceconfig.FieldS3BackupSourceID)
-}
-
-// SetS3BackupBucket sets the "s3_backup_bucket" field.
-func (m *ServiceConfigMutation) SetS3BackupBucket(s string) {
-	m.s3_backup_bucket = &s
-}
-
-// S3BackupBucket returns the value of the "s3_backup_bucket" field in the mutation.
-func (m *ServiceConfigMutation) S3BackupBucket() (r string, exists bool) {
+// S3BackupBucketID returns the value of the "s3_backup_bucket_id" field in the mutation.
+func (m *ServiceConfigMutation) S3BackupBucketID() (r uuid.UUID, exists bool) {
 	v := m.s3_backup_bucket
 	if v == nil {
 		return
@@ -15264,39 +15214,39 @@ func (m *ServiceConfigMutation) S3BackupBucket() (r string, exists bool) {
 	return *v, true
 }
 
-// OldS3BackupBucket returns the old "s3_backup_bucket" field's value of the ServiceConfig entity.
+// OldS3BackupBucketID returns the old "s3_backup_bucket_id" field's value of the ServiceConfig entity.
 // If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ServiceConfigMutation) OldS3BackupBucket(ctx context.Context) (v *string, err error) {
+func (m *ServiceConfigMutation) OldS3BackupBucketID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldS3BackupBucket is only allowed on UpdateOne operations")
+		return v, errors.New("OldS3BackupBucketID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldS3BackupBucket requires an ID field in the mutation")
+		return v, errors.New("OldS3BackupBucketID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldS3BackupBucket: %w", err)
+		return v, fmt.Errorf("querying old value for OldS3BackupBucketID: %w", err)
 	}
-	return oldValue.S3BackupBucket, nil
+	return oldValue.S3BackupBucketID, nil
 }
 
-// ClearS3BackupBucket clears the value of the "s3_backup_bucket" field.
-func (m *ServiceConfigMutation) ClearS3BackupBucket() {
+// ClearS3BackupBucketID clears the value of the "s3_backup_bucket_id" field.
+func (m *ServiceConfigMutation) ClearS3BackupBucketID() {
 	m.s3_backup_bucket = nil
-	m.clearedFields[serviceconfig.FieldS3BackupBucket] = struct{}{}
+	m.clearedFields[serviceconfig.FieldS3BackupBucketID] = struct{}{}
 }
 
-// S3BackupBucketCleared returns if the "s3_backup_bucket" field was cleared in this mutation.
-func (m *ServiceConfigMutation) S3BackupBucketCleared() bool {
-	_, ok := m.clearedFields[serviceconfig.FieldS3BackupBucket]
+// S3BackupBucketIDCleared returns if the "s3_backup_bucket_id" field was cleared in this mutation.
+func (m *ServiceConfigMutation) S3BackupBucketIDCleared() bool {
+	_, ok := m.clearedFields[serviceconfig.FieldS3BackupBucketID]
 	return ok
 }
 
-// ResetS3BackupBucket resets all changes to the "s3_backup_bucket" field.
-func (m *ServiceConfigMutation) ResetS3BackupBucket() {
+// ResetS3BackupBucketID resets all changes to the "s3_backup_bucket_id" field.
+func (m *ServiceConfigMutation) ResetS3BackupBucketID() {
 	m.s3_backup_bucket = nil
-	delete(m.clearedFields, serviceconfig.FieldS3BackupBucket)
+	delete(m.clearedFields, serviceconfig.FieldS3BackupBucketID)
 }
 
 // SetBackupSchedule sets the "backup_schedule" field.
@@ -15874,44 +15824,31 @@ func (m *ServiceConfigMutation) ResetService() {
 	m.clearedservice = false
 }
 
-// SetS3BackupSourcesID sets the "s3_backup_sources" edge to the S3 entity by id.
-func (m *ServiceConfigMutation) SetS3BackupSourcesID(id uuid.UUID) {
-	m.s3_backup_sources = &id
+// ClearS3BackupBucket clears the "s3_backup_bucket" edge to the S3Bucket entity.
+func (m *ServiceConfigMutation) ClearS3BackupBucket() {
+	m.cleareds3_backup_bucket = true
+	m.clearedFields[serviceconfig.FieldS3BackupBucketID] = struct{}{}
 }
 
-// ClearS3BackupSources clears the "s3_backup_sources" edge to the S3 entity.
-func (m *ServiceConfigMutation) ClearS3BackupSources() {
-	m.cleareds3_backup_sources = true
-	m.clearedFields[serviceconfig.FieldS3BackupSourceID] = struct{}{}
+// S3BackupBucketCleared reports if the "s3_backup_bucket" edge to the S3Bucket entity was cleared.
+func (m *ServiceConfigMutation) S3BackupBucketCleared() bool {
+	return m.S3BackupBucketIDCleared() || m.cleareds3_backup_bucket
 }
 
-// S3BackupSourcesCleared reports if the "s3_backup_sources" edge to the S3 entity was cleared.
-func (m *ServiceConfigMutation) S3BackupSourcesCleared() bool {
-	return m.S3BackupSourceIDCleared() || m.cleareds3_backup_sources
-}
-
-// S3BackupSourcesID returns the "s3_backup_sources" edge ID in the mutation.
-func (m *ServiceConfigMutation) S3BackupSourcesID() (id uuid.UUID, exists bool) {
-	if m.s3_backup_sources != nil {
-		return *m.s3_backup_sources, true
-	}
-	return
-}
-
-// S3BackupSourcesIDs returns the "s3_backup_sources" edge IDs in the mutation.
+// S3BackupBucketIDs returns the "s3_backup_bucket" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// S3BackupSourcesID instead. It exists only for internal usage by the builders.
-func (m *ServiceConfigMutation) S3BackupSourcesIDs() (ids []uuid.UUID) {
-	if id := m.s3_backup_sources; id != nil {
+// S3BackupBucketID instead. It exists only for internal usage by the builders.
+func (m *ServiceConfigMutation) S3BackupBucketIDs() (ids []uuid.UUID) {
+	if id := m.s3_backup_bucket; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetS3BackupSources resets all changes to the "s3_backup_sources" edge.
-func (m *ServiceConfigMutation) ResetS3BackupSources() {
-	m.s3_backup_sources = nil
-	m.cleareds3_backup_sources = false
+// ResetS3BackupBucket resets all changes to the "s3_backup_bucket" edge.
+func (m *ServiceConfigMutation) ResetS3BackupBucket() {
+	m.s3_backup_bucket = nil
+	m.cleareds3_backup_bucket = false
 }
 
 // Where appends a list predicates to the ServiceConfigMutation builder.
@@ -15948,7 +15885,7 @@ func (m *ServiceConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceConfigMutation) Fields() []string {
-	fields := make([]string, 0, 34)
+	fields := make([]string, 0, 33)
 	if m.created_at != nil {
 		fields = append(fields, serviceconfig.FieldCreatedAt)
 	}
@@ -16015,11 +15952,8 @@ func (m *ServiceConfigMutation) Fields() []string {
 	if m.database_config != nil {
 		fields = append(fields, serviceconfig.FieldDatabaseConfig)
 	}
-	if m.s3_backup_sources != nil {
-		fields = append(fields, serviceconfig.FieldS3BackupSourceID)
-	}
 	if m.s3_backup_bucket != nil {
-		fields = append(fields, serviceconfig.FieldS3BackupBucket)
+		fields = append(fields, serviceconfig.FieldS3BackupBucketID)
 	}
 	if m.backup_schedule != nil {
 		fields = append(fields, serviceconfig.FieldBackupSchedule)
@@ -16103,10 +16037,8 @@ func (m *ServiceConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.DefinitionVersion()
 	case serviceconfig.FieldDatabaseConfig:
 		return m.DatabaseConfig()
-	case serviceconfig.FieldS3BackupSourceID:
-		return m.S3BackupSourceID()
-	case serviceconfig.FieldS3BackupBucket:
-		return m.S3BackupBucket()
+	case serviceconfig.FieldS3BackupBucketID:
+		return m.S3BackupBucketID()
 	case serviceconfig.FieldBackupSchedule:
 		return m.BackupSchedule()
 	case serviceconfig.FieldBackupRetentionCount:
@@ -16180,10 +16112,8 @@ func (m *ServiceConfigMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldDefinitionVersion(ctx)
 	case serviceconfig.FieldDatabaseConfig:
 		return m.OldDatabaseConfig(ctx)
-	case serviceconfig.FieldS3BackupSourceID:
-		return m.OldS3BackupSourceID(ctx)
-	case serviceconfig.FieldS3BackupBucket:
-		return m.OldS3BackupBucket(ctx)
+	case serviceconfig.FieldS3BackupBucketID:
+		return m.OldS3BackupBucketID(ctx)
 	case serviceconfig.FieldBackupSchedule:
 		return m.OldBackupSchedule(ctx)
 	case serviceconfig.FieldBackupRetentionCount:
@@ -16367,19 +16297,12 @@ func (m *ServiceConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDatabaseConfig(v)
 		return nil
-	case serviceconfig.FieldS3BackupSourceID:
+	case serviceconfig.FieldS3BackupBucketID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetS3BackupSourceID(v)
-		return nil
-	case serviceconfig.FieldS3BackupBucket:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetS3BackupBucket(v)
+		m.SetS3BackupBucketID(v)
 		return nil
 	case serviceconfig.FieldBackupSchedule:
 		v, ok := value.(string)
@@ -16550,11 +16473,8 @@ func (m *ServiceConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(serviceconfig.FieldDatabaseConfig) {
 		fields = append(fields, serviceconfig.FieldDatabaseConfig)
 	}
-	if m.FieldCleared(serviceconfig.FieldS3BackupSourceID) {
-		fields = append(fields, serviceconfig.FieldS3BackupSourceID)
-	}
-	if m.FieldCleared(serviceconfig.FieldS3BackupBucket) {
-		fields = append(fields, serviceconfig.FieldS3BackupBucket)
+	if m.FieldCleared(serviceconfig.FieldS3BackupBucketID) {
+		fields = append(fields, serviceconfig.FieldS3BackupBucketID)
 	}
 	if m.FieldCleared(serviceconfig.FieldVolumes) {
 		fields = append(fields, serviceconfig.FieldVolumes)
@@ -16636,11 +16556,8 @@ func (m *ServiceConfigMutation) ClearField(name string) error {
 	case serviceconfig.FieldDatabaseConfig:
 		m.ClearDatabaseConfig()
 		return nil
-	case serviceconfig.FieldS3BackupSourceID:
-		m.ClearS3BackupSourceID()
-		return nil
-	case serviceconfig.FieldS3BackupBucket:
-		m.ClearS3BackupBucket()
+	case serviceconfig.FieldS3BackupBucketID:
+		m.ClearS3BackupBucketID()
 		return nil
 	case serviceconfig.FieldVolumes:
 		m.ClearVolumes()
@@ -16740,11 +16657,8 @@ func (m *ServiceConfigMutation) ResetField(name string) error {
 	case serviceconfig.FieldDatabaseConfig:
 		m.ResetDatabaseConfig()
 		return nil
-	case serviceconfig.FieldS3BackupSourceID:
-		m.ResetS3BackupSourceID()
-		return nil
-	case serviceconfig.FieldS3BackupBucket:
-		m.ResetS3BackupBucket()
+	case serviceconfig.FieldS3BackupBucketID:
+		m.ResetS3BackupBucketID()
 		return nil
 	case serviceconfig.FieldBackupSchedule:
 		m.ResetBackupSchedule()
@@ -16786,8 +16700,8 @@ func (m *ServiceConfigMutation) AddedEdges() []string {
 	if m.service != nil {
 		edges = append(edges, serviceconfig.EdgeService)
 	}
-	if m.s3_backup_sources != nil {
-		edges = append(edges, serviceconfig.EdgeS3BackupSources)
+	if m.s3_backup_bucket != nil {
+		edges = append(edges, serviceconfig.EdgeS3BackupBucket)
 	}
 	return edges
 }
@@ -16800,8 +16714,8 @@ func (m *ServiceConfigMutation) AddedIDs(name string) []ent.Value {
 		if id := m.service; id != nil {
 			return []ent.Value{*id}
 		}
-	case serviceconfig.EdgeS3BackupSources:
-		if id := m.s3_backup_sources; id != nil {
+	case serviceconfig.EdgeS3BackupBucket:
+		if id := m.s3_backup_bucket; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -16826,8 +16740,8 @@ func (m *ServiceConfigMutation) ClearedEdges() []string {
 	if m.clearedservice {
 		edges = append(edges, serviceconfig.EdgeService)
 	}
-	if m.cleareds3_backup_sources {
-		edges = append(edges, serviceconfig.EdgeS3BackupSources)
+	if m.cleareds3_backup_bucket {
+		edges = append(edges, serviceconfig.EdgeS3BackupBucket)
 	}
 	return edges
 }
@@ -16838,8 +16752,8 @@ func (m *ServiceConfigMutation) EdgeCleared(name string) bool {
 	switch name {
 	case serviceconfig.EdgeService:
 		return m.clearedservice
-	case serviceconfig.EdgeS3BackupSources:
-		return m.cleareds3_backup_sources
+	case serviceconfig.EdgeS3BackupBucket:
+		return m.cleareds3_backup_bucket
 	}
 	return false
 }
@@ -16851,8 +16765,8 @@ func (m *ServiceConfigMutation) ClearEdge(name string) error {
 	case serviceconfig.EdgeService:
 		m.ClearService()
 		return nil
-	case serviceconfig.EdgeS3BackupSources:
-		m.ClearS3BackupSources()
+	case serviceconfig.EdgeS3BackupBucket:
+		m.ClearS3BackupBucket()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceConfig unique edge %s", name)
@@ -16865,8 +16779,8 @@ func (m *ServiceConfigMutation) ResetEdge(name string) error {
 	case serviceconfig.EdgeService:
 		m.ResetService()
 		return nil
-	case serviceconfig.EdgeS3BackupSources:
-		m.ResetS3BackupSources()
+	case serviceconfig.EdgeS3BackupBucket:
+		m.ResetS3BackupBucket()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceConfig edge %s", name)
@@ -18352,9 +18266,9 @@ type TeamMutation struct {
 	projects             map[uuid.UUID]struct{}
 	removedprojects      map[uuid.UUID]struct{}
 	clearedprojects      bool
-	s3_sources           map[uuid.UUID]struct{}
-	removeds3_sources    map[uuid.UUID]struct{}
-	cleareds3_sources    bool
+	s3_buckets           map[uuid.UUID]struct{}
+	removeds3_buckets    map[uuid.UUID]struct{}
+	cleareds3_buckets    bool
 	members              map[uuid.UUID]struct{}
 	removedmembers       map[uuid.UUID]struct{}
 	clearedmembers       bool
@@ -18789,58 +18703,58 @@ func (m *TeamMutation) ResetProjects() {
 	m.removedprojects = nil
 }
 
-// AddS3SourceIDs adds the "s3_sources" edge to the S3 entity by ids.
-func (m *TeamMutation) AddS3SourceIDs(ids ...uuid.UUID) {
-	if m.s3_sources == nil {
-		m.s3_sources = make(map[uuid.UUID]struct{})
+// AddS3BucketIDs adds the "s3_buckets" edge to the S3Bucket entity by ids.
+func (m *TeamMutation) AddS3BucketIDs(ids ...uuid.UUID) {
+	if m.s3_buckets == nil {
+		m.s3_buckets = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.s3_sources[ids[i]] = struct{}{}
+		m.s3_buckets[ids[i]] = struct{}{}
 	}
 }
 
-// ClearS3Sources clears the "s3_sources" edge to the S3 entity.
-func (m *TeamMutation) ClearS3Sources() {
-	m.cleareds3_sources = true
+// ClearS3Buckets clears the "s3_buckets" edge to the S3Bucket entity.
+func (m *TeamMutation) ClearS3Buckets() {
+	m.cleareds3_buckets = true
 }
 
-// S3SourcesCleared reports if the "s3_sources" edge to the S3 entity was cleared.
-func (m *TeamMutation) S3SourcesCleared() bool {
-	return m.cleareds3_sources
+// S3BucketsCleared reports if the "s3_buckets" edge to the S3Bucket entity was cleared.
+func (m *TeamMutation) S3BucketsCleared() bool {
+	return m.cleareds3_buckets
 }
 
-// RemoveS3SourceIDs removes the "s3_sources" edge to the S3 entity by IDs.
-func (m *TeamMutation) RemoveS3SourceIDs(ids ...uuid.UUID) {
-	if m.removeds3_sources == nil {
-		m.removeds3_sources = make(map[uuid.UUID]struct{})
+// RemoveS3BucketIDs removes the "s3_buckets" edge to the S3Bucket entity by IDs.
+func (m *TeamMutation) RemoveS3BucketIDs(ids ...uuid.UUID) {
+	if m.removeds3_buckets == nil {
+		m.removeds3_buckets = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.s3_sources, ids[i])
-		m.removeds3_sources[ids[i]] = struct{}{}
+		delete(m.s3_buckets, ids[i])
+		m.removeds3_buckets[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedS3Sources returns the removed IDs of the "s3_sources" edge to the S3 entity.
-func (m *TeamMutation) RemovedS3SourcesIDs() (ids []uuid.UUID) {
-	for id := range m.removeds3_sources {
+// RemovedS3Buckets returns the removed IDs of the "s3_buckets" edge to the S3Bucket entity.
+func (m *TeamMutation) RemovedS3BucketsIDs() (ids []uuid.UUID) {
+	for id := range m.removeds3_buckets {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// S3SourcesIDs returns the "s3_sources" edge IDs in the mutation.
-func (m *TeamMutation) S3SourcesIDs() (ids []uuid.UUID) {
-	for id := range m.s3_sources {
+// S3BucketsIDs returns the "s3_buckets" edge IDs in the mutation.
+func (m *TeamMutation) S3BucketsIDs() (ids []uuid.UUID) {
+	for id := range m.s3_buckets {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetS3Sources resets all changes to the "s3_sources" edge.
-func (m *TeamMutation) ResetS3Sources() {
-	m.s3_sources = nil
-	m.cleareds3_sources = false
-	m.removeds3_sources = nil
+// ResetS3Buckets resets all changes to the "s3_buckets" edge.
+func (m *TeamMutation) ResetS3Buckets() {
+	m.s3_buckets = nil
+	m.cleareds3_buckets = false
+	m.removeds3_buckets = nil
 }
 
 // AddMemberIDs adds the "members" edge to the User entity by ids.
@@ -19199,8 +19113,8 @@ func (m *TeamMutation) AddedEdges() []string {
 	if m.projects != nil {
 		edges = append(edges, team.EdgeProjects)
 	}
-	if m.s3_sources != nil {
-		edges = append(edges, team.EdgeS3Sources)
+	if m.s3_buckets != nil {
+		edges = append(edges, team.EdgeS3Buckets)
 	}
 	if m.members != nil {
 		edges = append(edges, team.EdgeMembers)
@@ -19221,9 +19135,9 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case team.EdgeS3Sources:
-		ids := make([]ent.Value, 0, len(m.s3_sources))
-		for id := range m.s3_sources {
+	case team.EdgeS3Buckets:
+		ids := make([]ent.Value, 0, len(m.s3_buckets))
+		for id := range m.s3_buckets {
 			ids = append(ids, id)
 		}
 		return ids
@@ -19249,8 +19163,8 @@ func (m *TeamMutation) RemovedEdges() []string {
 	if m.removedprojects != nil {
 		edges = append(edges, team.EdgeProjects)
 	}
-	if m.removeds3_sources != nil {
-		edges = append(edges, team.EdgeS3Sources)
+	if m.removeds3_buckets != nil {
+		edges = append(edges, team.EdgeS3Buckets)
 	}
 	if m.removedmembers != nil {
 		edges = append(edges, team.EdgeMembers)
@@ -19271,9 +19185,9 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case team.EdgeS3Sources:
-		ids := make([]ent.Value, 0, len(m.removeds3_sources))
-		for id := range m.removeds3_sources {
+	case team.EdgeS3Buckets:
+		ids := make([]ent.Value, 0, len(m.removeds3_buckets))
+		for id := range m.removeds3_buckets {
 			ids = append(ids, id)
 		}
 		return ids
@@ -19299,8 +19213,8 @@ func (m *TeamMutation) ClearedEdges() []string {
 	if m.clearedprojects {
 		edges = append(edges, team.EdgeProjects)
 	}
-	if m.cleareds3_sources {
-		edges = append(edges, team.EdgeS3Sources)
+	if m.cleareds3_buckets {
+		edges = append(edges, team.EdgeS3Buckets)
 	}
 	if m.clearedmembers {
 		edges = append(edges, team.EdgeMembers)
@@ -19317,8 +19231,8 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 	switch name {
 	case team.EdgeProjects:
 		return m.clearedprojects
-	case team.EdgeS3Sources:
-		return m.cleareds3_sources
+	case team.EdgeS3Buckets:
+		return m.cleareds3_buckets
 	case team.EdgeMembers:
 		return m.clearedmembers
 	case team.EdgeTeamWebhooks:
@@ -19342,8 +19256,8 @@ func (m *TeamMutation) ResetEdge(name string) error {
 	case team.EdgeProjects:
 		m.ResetProjects()
 		return nil
-	case team.EdgeS3Sources:
-		m.ResetS3Sources()
+	case team.EdgeS3Buckets:
+		m.ResetS3Buckets()
 		return nil
 	case team.EdgeMembers:
 		m.ResetMembers()

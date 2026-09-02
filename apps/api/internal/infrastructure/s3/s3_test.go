@@ -8,9 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/aws/smithy-go"
 	smithyhttp "github.com/aws/smithy-go/transport/http"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -20,14 +19,6 @@ import (
 // MockS3API is a mock implementation of the S3 API
 type MockS3API struct {
 	mock.Mock
-}
-
-func (m *MockS3API) ListBuckets(ctx context.Context, params *s3.ListBucketsInput, optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error) {
-	args := m.Called(ctx, params)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*s3.ListBucketsOutput), args.Error(1)
 }
 
 func (m *MockS3API) PutObject(ctx context.Context, params *s3.PutObjectInput, optFns ...func(*s3.Options)) (*s3.PutObjectOutput, error) {
@@ -105,116 +96,6 @@ func (suite *S3TestSuite) TestNewS3ClientWithAPI() {
 	suite.Equal(mockAPI, client.client)
 }
 
-// Test ListBuckets method
-func (suite *S3TestSuite) TestListBuckets_Success() {
-	// Setup mock response
-	buckets := []types.Bucket{
-		{
-			Name:         aws.String("bucket1"),
-			CreationDate: aws.Time(time.Now()),
-		},
-		{
-			Name:         aws.String("bucket2"),
-			CreationDate: aws.Time(time.Now()),
-		},
-	}
-
-	expectedOutput := &s3.ListBucketsOutput{
-		Buckets: buckets,
-	}
-
-	suite.mockS3API.On("ListBuckets", suite.ctx, mock.AnythingOfType("*s3.ListBucketsInput")).Return(expectedOutput, nil)
-
-	// Execute test
-	result, err := suite.s3Client.ListBuckets(suite.ctx)
-
-	// Assertions
-	suite.NoError(err)
-	suite.Len(result, 2)
-	suite.Equal("bucket1", result[0].Name)
-	suite.Equal("bucket2", result[1].Name)
-	suite.mockS3API.AssertExpectations(suite.T())
-}
-
-func (suite *S3TestSuite) TestListBuckets_Error() {
-	// Setup mock to return error
-	expectedError := errors.New("AWS error")
-	suite.mockS3API.On("ListBuckets", suite.ctx, mock.AnythingOfType("*s3.ListBucketsInput")).Return(nil, expectedError)
-
-	// Execute test
-	result, err := suite.s3Client.ListBuckets(suite.ctx)
-
-	// Assertions
-	suite.Error(err)
-	suite.Nil(result)
-	suite.Contains(err.Error(), "failed to list buckets")
-	suite.mockS3API.AssertExpectations(suite.T())
-}
-
-// Test ProbeAnyBucketRW method
-func (suite *S3TestSuite) TestProbeAnyBucketRW_Success() {
-	// Setup mock responses
-	buckets := []types.Bucket{
-		{Name: aws.String("test-bucket")},
-	}
-
-	listOutput := &s3.ListBucketsOutput{Buckets: buckets}
-	putOutput := &s3.PutObjectOutput{}
-	headOutput := &s3.HeadObjectOutput{}
-	deleteOutput := &s3.DeleteObjectOutput{}
-
-	suite.mockS3API.On("ListBuckets", suite.ctx, mock.AnythingOfType("*s3.ListBucketsInput")).Return(listOutput, nil)
-	suite.mockS3API.On("PutObject", suite.ctx, mock.AnythingOfType("*s3.PutObjectInput")).Return(putOutput, nil)
-	suite.mockS3API.On("HeadObject", suite.ctx, mock.AnythingOfType("*s3.HeadObjectInput")).Return(headOutput, nil)
-	suite.mockS3API.On("DeleteObject", suite.ctx, mock.AnythingOfType("*s3.DeleteObjectInput")).Return(deleteOutput, nil)
-
-	// Execute test
-	err := suite.s3Client.ProbeAnyBucketRW(suite.ctx)
-
-	// Assertions
-	suite.NoError(err)
-	suite.mockS3API.AssertExpectations(suite.T())
-}
-
-func (suite *S3TestSuite) TestProbeAnyBucketRW_NoBuckets() {
-	// Setup mock to return no buckets
-	listOutput := &s3.ListBucketsOutput{Buckets: []types.Bucket{}}
-
-	suite.mockS3API.On("ListBuckets", suite.ctx, mock.AnythingOfType("*s3.ListBucketsInput")).Return(listOutput, nil)
-
-	// Execute test
-	err := suite.s3Client.ProbeAnyBucketRW(suite.ctx)
-
-	// Assertions
-	suite.Error(err)
-	customErr := err.(*errdefs.CustomError)
-	suite.Equal(errdefs.ErrTypeNotFound, customErr.Type)
-	suite.Contains(customErr.Message, "no buckets are visible")
-	suite.mockS3API.AssertExpectations(suite.T())
-}
-
-func (suite *S3TestSuite) TestProbeAnyBucketRW_ListBucketsError() {
-	// Create a smithy-go ResponseError with proper type
-	httpErr := &smithyhttp.ResponseError{
-		Response: &smithyhttp.Response{
-			Response: &http.Response{StatusCode: 403},
-		},
-		Err: errors.New("forbidden"),
-	}
-
-	suite.mockS3API.On("ListBuckets", suite.ctx, mock.AnythingOfType("*s3.ListBucketsInput")).Return(nil, httpErr)
-
-	// Execute test
-	err := suite.s3Client.ProbeAnyBucketRW(suite.ctx)
-
-	// Assertions
-	suite.Error(err)
-	customErr := err.(*errdefs.CustomError)
-	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
-	suite.Contains(customErr.Message, "invalid endpoint URL or access forbidden")
-	suite.mockS3API.AssertExpectations(suite.T())
-}
-
 // Test ProbeBucketRW method
 func (suite *S3TestSuite) TestProbeBucketRW_Success() {
 	bucketName := "test-bucket"
@@ -280,7 +161,58 @@ func (suite *S3TestSuite) TestProbeBucketRW_HeadObjectError() {
 	suite.mockS3API.AssertExpectations(suite.T())
 }
 
+func (suite *S3TestSuite) TestProbeBucketRW_PutObjectAccessDenied() {
+	httpErr := &smithyhttp.ResponseError{
+		Response: &smithyhttp.Response{
+			Response: &http.Response{StatusCode: 403},
+		},
+		Err: &smithy.GenericAPIError{Code: "AccessDenied", Message: "Access Denied"},
+	}
+
+	suite.mockS3API.On("PutObject", suite.ctx, mock.AnythingOfType("*s3.PutObjectInput")).Return(nil, httpErr)
+
+	err := suite.s3Client.ProbeBucketRW(suite.ctx, "test-bucket")
+
+	suite.Error(err)
+	customErr := err.(*errdefs.CustomError)
+	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
+	suite.Contains(customErr.Message, "not allowed to read and write this bucket")
+	suite.mockS3API.AssertExpectations(suite.T())
+}
+
 // Test mapS3Error function
+func (suite *S3TestSuite) TestMapS3Error_InvalidAccessKey() {
+	for _, code := range []string{"InvalidAccessKeyId", "SignatureDoesNotMatch"} {
+		httpErr := &smithyhttp.ResponseError{
+			Response: &smithyhttp.Response{
+				Response: &http.Response{StatusCode: 403},
+			},
+			Err: &smithy.GenericAPIError{Code: code, Message: "bad key"},
+		}
+
+		result := mapS3Error(httpErr)
+
+		customErr := result.(*errdefs.CustomError)
+		suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
+		suite.Contains(customErr.Message, "invalid access key ID or secret access key")
+	}
+}
+
+func (suite *S3TestSuite) TestMapS3Error_NoSuchBucket() {
+	httpErr := &smithyhttp.ResponseError{
+		Response: &smithyhttp.Response{
+			Response: &http.Response{StatusCode: 404},
+		},
+		Err: &smithy.GenericAPIError{Code: "NoSuchBucket", Message: "missing"},
+	}
+
+	result := mapS3Error(httpErr)
+
+	customErr := result.(*errdefs.CustomError)
+	suite.Equal(errdefs.ErrTypeNotFound, customErr.Type)
+	suite.Contains(customErr.Message, "bucket not found")
+}
+
 func (suite *S3TestSuite) TestMapS3Error_403Forbidden() {
 	httpErr := &smithyhttp.ResponseError{
 		Response: &smithyhttp.Response{

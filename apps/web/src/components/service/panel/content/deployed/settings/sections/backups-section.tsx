@@ -1,9 +1,4 @@
-import {
-  getSourceAndBucketLabelFromValue,
-  getSourceIdAndBucketNameFromValue,
-  getValueFromSourceAndBucket,
-  sourceAndBucketSeparator,
-} from "@/components/service/helpers";
+import { getS3BucketItemLabel } from "@/components/service/helpers";
 import {
   Block,
   BlockItem,
@@ -21,11 +16,12 @@ import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TDatabaseSectionProps } from "@/components/settings/types";
 import {
-  CreateBackupSourceTrigger,
-  SourceAndBucketCommandItemElement,
-  TCreateBackupSourceTriggerProps,
-} from "@/components/storage/create-backup-source-trigger";
-import S3SourcesProvider, { useS3Sources } from "@/components/storage/s3-sources-provider";
+  CreateBackupBucketTrigger,
+  S3BucketCommandItemElement,
+  S3BucketLabel,
+  TCreateBackupBucketTriggerProps,
+} from "@/components/storage/create-backup-bucket-trigger";
+import S3BucketsProvider, { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { CommandItem } from "@/components/ui/command";
 import { cn } from "@/components/ui/utils";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
@@ -47,13 +43,13 @@ export default function BackupsSection({ service }: TProps) {
     }
 
     return (
-      <S3SourcesProvider teamId={teamId}>
+      <S3BucketsProvider teamId={teamId}>
         <DatabaseSection
           type={service.database_type}
           version={service.database_version}
           service={service}
         />
-      </S3SourcesProvider>
+      </S3BucketsProvider>
     );
   }
 
@@ -62,8 +58,8 @@ export default function BackupsSection({ service }: TProps) {
 
 function DatabaseSection({ service }: TDatabaseSectionProps) {
   const {
-    query: { data: dataS3Sources, isPending: isPendingS3Sources, error: errorS3Sources },
-  } = useS3Sources();
+    query: { data: dataS3Buckets, isPending: isPendingS3Buckets, error: errorS3Buckets },
+  } = useS3Buckets();
 
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
 
@@ -82,26 +78,15 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
 
   const form = useAppForm({
     defaultValues: {
-      sourceAndBucket:
-        service.config.s3_backup_source_id && service.config.s3_backup_bucket
-          ? getValueFromSourceAndBucket(
-              service.config.s3_backup_source_id,
-              dataS3Sources?.sources.find(
-                (source) => source.id === service.config.s3_backup_source_id,
-              )?.name,
-              service.config.s3_backup_bucket,
-            )
-          : "",
+      s3BucketId: service.config.s3_backup_bucket_id ?? "",
     },
     onSubmit: async ({ formApi, value }) => {
       let hasChanged = false;
       const changes: TUpdateServiceInputSimple = {};
 
-      if (formApi.getFieldMeta("sourceAndBucket")?.isDefaultValue === false) {
-        const { sourceId, bucketName } = getSourceIdAndBucketNameFromValue(value.sourceAndBucket);
-        changes.s3BackupSourceId =
-          sourceId === "" ? "00000000-0000-0000-0000-000000000000" : sourceId;
-        changes.s3BackupBucket = bucketName;
+      if (formApi.getFieldMeta("s3BucketId")?.isDefaultValue === false) {
+        changes.s3BackupBucketId =
+          value.s3BucketId === "" ? "00000000-0000-0000-0000-000000000000" : value.s3BucketId;
         hasChanged = true;
       }
 
@@ -113,35 +98,25 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
     },
   });
 
-  const sourceAndBucketItems = useMemo(() => {
-    const items: TCommandItem[] | undefined = dataS3Sources?.sources.flatMap((source) =>
-      source.buckets.map((bucket) => {
-        const value = getValueFromSourceAndBucket(source.id, source.name, bucket.name);
-        const label = getSourceAndBucketLabelFromValue(value);
-        return {
-          value,
-          label,
-        };
-      }),
-    );
+  const s3BucketItems = useMemo(() => {
+    const items: TCommandItem[] | undefined = dataS3Buckets?.buckets.map((s3Bucket) => ({
+      value: s3Bucket.id,
+      label: getS3BucketItemLabel(s3Bucket),
+    }));
     return items;
-  }, [dataS3Sources]);
+  }, [dataS3Buckets]);
 
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
-    if (s.fieldMeta.sourceAndBucket?.isDefaultValue === false) count++;
+    if (s.fieldMeta.s3BucketId?.isDefaultValue === false) count++;
     return count;
   });
 
-  const hasNoBuckets = useMemo(() => {
-    return dataS3Sources && dataS3Sources.sources.flatMap((s) => s.buckets).length === 0
-      ? true
-      : false;
-  }, [dataS3Sources]);
+  const hasNoBuckets = dataS3Buckets ? dataS3Buckets.buckets.length === 0 : false;
 
-  const CreateBackupSourceTriggerMemoized = useCallback(
-    (props: Omit<TCreateBackupSourceTriggerProps, "teamId">) => (
-      <CreateBackupSourceTrigger teamId={teamId} {...props} />
+  const CreateBackupBucketTriggerMemoized = useCallback(
+    (props: Omit<TCreateBackupBucketTriggerProps, "teamId">) => (
+      <CreateBackupBucketTrigger teamId={teamId} {...props} />
     ),
     [teamId],
   );
@@ -170,7 +145,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
     >
       <Block>
         <form.AppField
-          name="sourceAndBucket"
+          name="s3BucketId"
           children={(field) => (
             <BlockItem className="w-full md:w-full">
               <BlockItemHeader type="column">
@@ -187,14 +162,14 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                   field={field}
                   value={field.state.value}
                   onChange={(v) => field.handleChange(v)}
-                  items={sourceAndBucketItems}
-                  isPending={isPendingS3Sources}
-                  error={errorS3Sources?.message}
+                  items={s3BucketItems}
+                  isPending={isPendingS3Buckets}
+                  error={errorS3Buckets?.message}
                   commandInputPlaceholder="Search buckets..."
                   CommandEmptyText="No buckets found"
                   CommandEmptyIcon={CylinderIcon}
-                  CommandItemElement={SourceAndBucketCommandItemElement}
-                  TriggerWrapper={hasNoBuckets ? CreateBackupSourceTriggerMemoized : undefined}
+                  CommandItemElement={S3BucketCommandItemElement}
+                  TriggerWrapper={hasNoBuckets ? CreateBackupBucketTriggerMemoized : undefined}
                   CommandItemsPinned={({ setIsOpen, commandValue }) => {
                     if (commandValue === "" || hasNoBuckets) {
                       return null;
@@ -214,17 +189,15 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                   }}
                 >
                   {({ isOpen }) => {
-                    const label = getSourceAndBucketLabelFromValue(field.state.value);
+                    const selected = dataS3Buckets?.buckets.find(
+                      (s3Bucket) => s3Bucket.id === field.state.value,
+                    );
                     return (
                       <BlockItemButtonLike
                         asElement="button"
                         text={
-                          field.state.value !== "" ? (
-                            <>
-                              {label.split(sourceAndBucketSeparator)[0]}
-                              <span className="text-muted-more-foreground px-[0.5ch]">/</span>
-                              {label.split(sourceAndBucketSeparator)[1]}
-                            </>
+                          selected ? (
+                            <S3BucketLabel name={selected.name} bucket={selected.bucket} />
                           ) : (
                             "Select a bucket"
                           )
@@ -235,7 +208,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
-                        isPending={isPendingS3Sources}
+                        isPending={isPendingS3Buckets}
                       />
                     );
                   }}
