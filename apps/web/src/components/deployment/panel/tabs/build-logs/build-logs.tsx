@@ -4,23 +4,19 @@ import LogViewer from "@/components/logs/log-viewer";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { expectsBuildLogs } from "@/lib/helpers/deployment-expects-logs";
+import { buildLogsWindow } from "@/lib/helpers/deployment-log-window";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { TriangleAlertIcon } from "lucide-react";
+import { useLogsWindow } from "../use-logs-window";
 
 type TProps = {
   deployment: TDeploymentShallow;
 };
 
-const hourInMs = 60 * 60 * 1000;
-
 export default function BuildLogs({ deployment }: TProps) {
   const { teamId, projectId, environmentId, serviceId, deploymentId } = useDeployment();
 
-  const createdAt = deployment.created_at;
-  const completedAt = deployment.completed_at;
-
-  const createdAtTimestamp = createdAt ? new Date(createdAt).getTime() : undefined;
-  const completedAtTimestamp = completedAt ? new Date(completedAt).getTime() : undefined;
+  const { start, end } = useLogsWindow(deployment, buildLogsWindow);
 
   if (deployment.error && !deployment.job_name) {
     return (
@@ -53,8 +49,8 @@ export default function BuildLogs({ deployment }: TProps) {
       type="build"
       hideServiceByDefault
       shouldHaveLogs={expectsBuildLogs(deployment)}
-      httpDefaultStartTimestamp={createdAtTimestamp ? createdAtTimestamp - hourInMs : undefined}
-      httpDefaultEndTimestamp={completedAtTimestamp ? completedAtTimestamp + hourInMs : undefined}
+      httpDefaultStartTimestamp={start}
+      httpDefaultEndTimestamp={end}
     />
   );
 }

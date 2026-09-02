@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { deployLogsAreFinal, deployLogsWindow } from "./deployment-log-window.ts";
+import { buildLogsWindow, deployLogsAreFinal, deployLogsWindow } from "./deployment-log-window.ts";
 import type { TDeploymentShallow } from "../queries/deployments.ts";
 
-const HOUR = 60 * 60 * 1000;
 const MINUTE = 60 * 1000;
+const GRACE = 2 * MINUTE;
 const createdAt = Date.UTC(2026, 0, 1, 12, 0, 0);
 const queuedAt = createdAt + MINUTE;
 const startedAt = createdAt + 2 * MINUTE;
@@ -34,8 +34,8 @@ describe("deployLogsAreFinal", () => {
 });
 
 describe("deployLogsWindow", () => {
-  it("anchors the start an hour before the deployment started", () => {
-    const now = startedAt + HOUR;
+  it("anchors the start a grace before the deployment started", () => {
+    const now = startedAt + 10 * MINUTE;
     assert.deepEqual(
       deployLogsWindow(
         deployment({
@@ -44,17 +44,17 @@ describe("deployLogsWindow", () => {
         }),
         now,
       ),
-      { start: startedAt - HOUR },
+      { start: startedAt - GRACE },
     );
   });
 
   it("falls back to queued_at, then created_at", () => {
-    const now = createdAt + HOUR;
+    const now = createdAt + 10 * MINUTE;
     assert.deepEqual(
       deployLogsWindow(deployment({ queued_at: new Date(queuedAt).toISOString() }), now),
-      { start: queuedAt - HOUR },
+      { start: queuedAt - GRACE },
     );
-    assert.deepEqual(deployLogsWindow(deployment({}), now), { start: createdAt - HOUR });
+    assert.deepEqual(deployLogsWindow(deployment({}), now), { start: createdAt - GRACE });
   });
 
   it("stays live while a final status is inside the ingestion grace", () => {
@@ -65,11 +65,11 @@ describe("deployLogsWindow", () => {
         deployment({ status: "removed", updated_at: new Date(removedAt).toISOString() }),
         now,
       ),
-      { start: createdAt - HOUR, liveUntil: removedAt + 2 * MINUTE },
+      { start: createdAt - GRACE, liveUntil: removedAt + GRACE },
     );
   });
 
-  it("pins the end to now once the grace has passed", () => {
+  it("pins the end a grace after the final status landed", () => {
     const removedAt = createdAt + 10 * MINUTE;
     const now = removedAt + 3 * MINUTE;
     assert.deepEqual(
@@ -77,7 +77,37 @@ describe("deployLogsWindow", () => {
         deployment({ status: "removed", updated_at: new Date(removedAt).toISOString() }),
         now,
       ),
-      { start: createdAt - HOUR, end: now },
+      { start: createdAt - GRACE, end: removedAt + GRACE },
+    );
+  });
+});
+
+describe("buildLogsWindow", () => {
+  it("is live from a grace before creation until the build completes", () => {
+    assert.deepEqual(buildLogsWindow(deployment({}), createdAt + 10 * MINUTE), {
+      start: createdAt - GRACE,
+    });
+  });
+
+  it("stays live while completion is inside the ingestion grace", () => {
+    const completedAt = createdAt + 10 * MINUTE;
+    assert.deepEqual(
+      buildLogsWindow(
+        deployment({ completed_at: new Date(completedAt).toISOString() }),
+        completedAt + MINUTE,
+      ),
+      { start: createdAt - GRACE, liveUntil: completedAt + GRACE },
+    );
+  });
+
+  it("pins the end a grace after completion", () => {
+    const completedAt = createdAt + 10 * MINUTE;
+    assert.deepEqual(
+      buildLogsWindow(
+        deployment({ completed_at: new Date(completedAt).toISOString() }),
+        completedAt + 3 * MINUTE,
+      ),
+      { start: createdAt - GRACE, end: completedAt + GRACE },
     );
   });
 });

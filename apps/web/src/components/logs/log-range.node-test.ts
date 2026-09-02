@@ -8,7 +8,6 @@ import {
   defaultLogRange,
   encodeRange,
   encodeRangeToken,
-  isLiveRange,
   resolveLogRange,
   type TLogRange,
 } from "./log-range.ts";
@@ -70,12 +69,53 @@ describe("resolveLogRange", () => {
   });
 });
 
-describe("isLiveRange", () => {
-  it("is live until an until is set", () => {
-    assert.equal(isLiveRange({ preset: "1h" }), true);
-    assert.equal(isLiveRange({ from }), true);
-    assert.equal(isLiveRange({ preset: "1h", until }), false);
-    assert.equal(isLiveRange({ from, until }), false);
+describe("resolveLogRange within bounds", () => {
+  const boundsStart = from + HOUR;
+  const boundsEnd = until - HOUR;
+
+  it("anchors a preset to the bounded end and closes the window", () => {
+    assert.deepEqual(resolveLogRange({ preset: "1h" }, { start: boundsStart, end: boundsEnd }), {
+      start: new Date(boundsEnd - HOUR).toISOString(),
+      end: new Date(boundsEnd).toISOString(),
+    });
+  });
+
+  it("stays live when only the start is bounded", () => {
+    const { end } = resolveLogRange({ preset: "1h" }, { start: boundsStart });
+    assert.equal(end, null);
+  });
+
+  it("clamps a preset that reaches past the bounded start", () => {
+    assert.deepEqual(resolveLogRange({ preset: "30d" }, { start: boundsStart, end: boundsEnd }), {
+      start: new Date(boundsStart).toISOString(),
+      end: new Date(boundsEnd).toISOString(),
+    });
+  });
+
+  it("clamps explicit from and until to the bounds", () => {
+    assert.deepEqual(resolveLogRange({ from, until }, { start: boundsStart, end: boundsEnd }), {
+      start: new Date(boundsStart).toISOString(),
+      end: new Date(boundsEnd).toISOString(),
+    });
+  });
+
+  it("keeps a narrower explicit window as is", () => {
+    const narrowFrom = boundsStart + HOUR;
+    const narrowUntil = boundsEnd - HOUR;
+    assert.deepEqual(
+      resolveLogRange(
+        { from: narrowFrom, until: narrowUntil },
+        { start: boundsStart, end: boundsEnd },
+      ),
+      { start: new Date(narrowFrom).toISOString(), end: new Date(narrowUntil).toISOString() },
+    );
+  });
+
+  it("closes an explicit from at the bounded end", () => {
+    assert.deepEqual(resolveLogRange({ from: boundsStart }, { end: boundsEnd }), {
+      start: new Date(boundsStart).toISOString(),
+      end: new Date(boundsEnd).toISOString(),
+    });
   });
 });
 

@@ -15,6 +15,7 @@ import {
   type TLogSearchData,
 } from "@/components/logs/log-search-language";
 import { logSearchScopes } from "@/components/logs/log-search-scope";
+import { useLogs } from "@/components/logs/logs-provider";
 import {
   logViewPreferenceKeys,
   logViewPreferences,
@@ -272,7 +273,6 @@ function FilterButton({ className }: { className?: string }) {
     resetFilters,
     hasActiveFilters,
     rangeIsSet,
-    rangeEnabled,
     servicesEnabled,
   } = useLogFilters();
 
@@ -336,42 +336,36 @@ function FilterButton({ className }: { className?: string }) {
           {servicesEnabled && (
             <ServicesFilterGroup serviceIds={serviceIds} setServiceIds={setServiceIds} />
           )}
-          {rangeEnabled && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup className="pb-2">
-                <DropdownMenuLabel>Time Range</DropdownMenuLabel>
-                <DropdownMenuRadioGroup
-                  value={activeLogRangePreset(range)}
-                  onValueChange={(preset: TLogRangePreset) =>
-                    setRange({ preset, until: range.until })
-                  }
-                  className="grid w-full grid-cols-4 gap-1.5 px-1.5 pt-1.5"
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup className="pb-2">
+            <DropdownMenuLabel>Time Range</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={activeLogRangePreset(range)}
+              onValueChange={(preset: TLogRangePreset) => setRange({ preset, until: range.until })}
+              className="grid w-full grid-cols-4 gap-1.5 px-1.5 pt-1.5"
+            >
+              {logRangePresets.map((preset) => (
+                <Button
+                  key={preset}
+                  size="sm"
+                  variant="outline"
+                  render={<DropdownMenuRadioItem hideIndicator value={preset} />}
+                  className="data-checked:border-foreground text-muted-foreground data-checked:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-mono font-semibold"
                 >
-                  {logRangePresets.map((preset) => (
-                    <Button
-                      key={preset}
-                      size="sm"
-                      variant="outline"
-                      render={<DropdownMenuRadioItem hideIndicator value={preset} />}
-                      className="data-checked:border-foreground text-muted-foreground data-checked:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-mono font-semibold"
-                    >
-                      {preset}
-                    </Button>
-                  ))}
-                </DropdownMenuRadioGroup>
-                <div
-                  onKeyDown={(e) => {
-                    if (e.key === "Escape") return;
-                    e.stopPropagation();
-                  }}
-                  className="w-full px-1.5 pt-1.5 pb-1.5"
-                >
-                  <CustomRangeInputs className="pt-1.5" />
-                </div>
-              </DropdownMenuGroup>
-            </>
-          )}
+                  {preset}
+                </Button>
+              ))}
+            </DropdownMenuRadioGroup>
+            <div
+              onKeyDown={(e) => {
+                if (e.key === "Escape") return;
+                e.stopPropagation();
+              }}
+              className="w-full px-1.5 pt-1.5 pb-1.5"
+            >
+              <CustomRangeInputs className="pt-1.5" />
+            </div>
+          </DropdownMenuGroup>
         </ScrollArea>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -461,6 +455,7 @@ function toDatetimeLocal(ms: number | undefined): string {
 
 function CustomRangeInputs({ className }: { className?: string }) {
   const { range, setRange } = useLogFilters();
+  const { mode } = useLogs();
 
   const [fromValue, setFromValue] = useState(toDatetimeLocal(range.from));
   const [untilValue, setUntilValue] = useState(toDatetimeLocal(range.until));
@@ -502,7 +497,7 @@ function CustomRangeInputs({ className }: { className?: string }) {
 
   const hint = error
     ? error
-    : range.until !== undefined
+    : mode === "historical"
       ? "Historical data, not live."
       : range.from !== undefined
         ? "Live from the start time."

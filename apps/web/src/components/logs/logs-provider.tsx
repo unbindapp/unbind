@@ -1,7 +1,7 @@
 "use client";
 
 import { useLogFilters } from "@/components/logs/log-filters-provider";
-import { defaultLogRange, isLiveRange, resolveLogRange } from "@/components/logs/log-range";
+import { resolveLogRange } from "@/components/logs/log-range";
 import { logSearchScopes } from "@/components/logs/log-search-scope";
 import { buildLogStreamUrl } from "@/components/logs/log-stream-url";
 import { latestLogTimestamp, logLineKey } from "@/components/logs/log-utils";
@@ -248,24 +248,28 @@ export const LogsProvider: React.FC<TProps> = ({
   // A @range token still sitting in the text (not yet folded into the params)
   // counts like the other merged filters; an explicit param wins.
   const effectiveRange = rangeIsSet ? range : (parsedSearch.range ?? range);
+  const hasRange = rangeIsSet || parsedSearch.range !== null;
+
+  // The default timestamps bound the window; a user range narrows it from
+  // there, and without one the bounds are the window.
+  const windowRange =
+    !hasRange && httpDefaultStartTimestamp !== undefined
+      ? { from: httpDefaultStartTimestamp }
+      : effectiveRange;
 
   // Anchor the window when the range changes, not on every render.
-  const rangeKey = JSON.stringify(effectiveRange);
-  const explicitWindow = Boolean(httpDefaultStartTimestamp || httpDefaultEndTimestamp);
-  const timeWindow = useMemo(() => {
-    if (explicitWindow) {
-      return {
-        start: httpDefaultStartTimestamp
-          ? new Date(httpDefaultStartTimestamp).toISOString()
-          : resolveLogRange(defaultLogRange).start,
-        end: httpDefaultEndTimestamp ? new Date(httpDefaultEndTimestamp).toISOString() : null,
-      };
-    }
-    return resolveLogRange(effectiveRange);
+  const rangeKey = JSON.stringify(windowRange);
+  const timeWindow = useMemo(
+    () =>
+      resolveLogRange(windowRange, {
+        start: httpDefaultStartTimestamp,
+        end: httpDefaultEndTimestamp,
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rangeKey, explicitWindow, httpDefaultStartTimestamp, httpDefaultEndTimestamp]);
+    [rangeKey, httpDefaultStartTimestamp, httpDefaultEndTimestamp],
+  );
 
-  const isLive = explicitWindow ? !httpDefaultEndTimestamp : isLiveRange(effectiveRange);
+  const isLive = timeWindow.end === null;
 
   const queryInput = useMemo(
     () => ({

@@ -1,12 +1,7 @@
 "use client";
 
 import { buildSearchText, extractSearchFilters } from "@/components/logs/log-filter-search";
-import {
-  decodeRange,
-  defaultLogRange,
-  encodeRange,
-  type TLogRange,
-} from "@/components/logs/log-range";
+import { decodeRange, encodeRange, type TLogRange } from "@/components/logs/log-range";
 import { logSearchScopes } from "@/components/logs/log-search-scope";
 import { logLineRef, parseLogLineRef, type TLogLineRef } from "@/components/logs/log-utils";
 import { buildServiceTokens } from "@/components/logs/service-tokens";
@@ -20,18 +15,16 @@ const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 export const logLevels: TLogLevel[] = LogLevelSchema.options;
 
-// What each log scope supports, mirrored by the API's parseLogFilters allowlist.
-export const logTypeCapabilities: Record<
-  TLogType,
-  { range: boolean; services: boolean; serviceColumn: boolean }
-> = {
-  team: { range: true, services: true, serviceColumn: true },
-  project: { range: true, services: true, serviceColumn: true },
-  environment: { range: true, services: true, serviceColumn: true },
-  service: { range: true, services: false, serviceColumn: true },
-  deployment: { range: false, services: false, serviceColumn: false },
-  build: { range: false, services: false, serviceColumn: false },
-};
+// What each log scope supports; services mirrors the API's parseLogFilters allowlist.
+export const logTypeCapabilities: Record<TLogType, { services: boolean; serviceColumn: boolean }> =
+  {
+    team: { services: true, serviceColumn: true },
+    project: { services: true, serviceColumn: true },
+    environment: { services: true, serviceColumn: true },
+    service: { services: false, serviceColumn: true },
+    deployment: { services: false, serviceColumn: false },
+    build: { services: false, serviceColumn: false },
+  };
 
 function decodeLevels(value: string | undefined): TLogLevel[] {
   if (!value) return [];
@@ -113,7 +106,6 @@ type TLogFiltersContext = {
   resetFilters: () => void;
   hasActiveFilters: boolean;
   rangeIsSet: boolean;
-  rangeEnabled: boolean;
   servicesEnabled: boolean;
 };
 
@@ -125,7 +117,7 @@ type TProps = {
 };
 
 export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
-  const { range: rangeEnabled, services: servicesEnabled } = logTypeCapabilities[logType];
+  const { services: servicesEnabled } = logTypeCapabilities[logType];
   const keys = paramKeys[logType];
   const { attributeKeys } = logSearchScopes[logType];
   const navigate = useNavigate();
@@ -169,11 +161,8 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
     () => (servicesEnabled ? decodeList(rawParams.services) : []),
     [servicesEnabled, rawParams.services],
   );
-  const range = useMemo(
-    () => (rangeEnabled ? decodeRange(rawParams.range) : defaultLogRange),
-    [rangeEnabled, rawParams.range],
-  );
-  const rangeIsSet = rangeEnabled && rawParams.range !== undefined;
+  const range = useMemo(() => decodeRange(rawParams.range), [rawParams.range]);
+  const rangeIsSet = rawParams.range !== undefined;
   const highlightedLog = useMemo(() => parseLogLineRef(rawParams.highlight), [rawParams.highlight]);
 
   const extractOptions = useMemo(
@@ -336,7 +325,6 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
       resetFilters,
       hasActiveFilters: Boolean(search) || levels.length > 0 || serviceIds.length > 0 || rangeIsSet,
       rangeIsSet,
-      rangeEnabled,
       servicesEnabled,
     }),
     [
@@ -353,7 +341,6 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
       viewInContext,
       resetFilters,
       rangeIsSet,
-      rangeEnabled,
       servicesEnabled,
     ],
   );

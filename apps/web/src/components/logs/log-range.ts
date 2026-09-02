@@ -27,16 +27,23 @@ export function activeLogRangePreset(range: TLogRange): TLogRangePreset | null {
   return range.preset ?? defaultLogRangePreset;
 }
 
-export function resolveLogRange(range: TLogRange): { start: string; end: string | null } {
-  const end = range.until === undefined ? null : new Date(range.until).toISOString();
-  if (range.from !== undefined) return { start: new Date(range.from).toISOString(), end };
-  const anchor = range.until ?? Date.now();
-  const start = anchor - presetMs[range.preset ?? defaultLogRangePreset];
-  return { start: new Date(start).toISOString(), end };
-}
+/** Outer limits the resolved window stays inside; a bounded end also anchors presets. */
+export type TLogBounds = { start?: number; end?: number };
 
-export function isLiveRange(range: TLogRange): boolean {
-  return range.until === undefined;
+/** A null end means the window is open, so the viewer keeps tailing. */
+export function resolveLogRange(
+  range: TLogRange,
+  bounds: TLogBounds = {},
+): { start: string; end: string | null } {
+  const anchor = range.until ?? bounds.end ?? Date.now();
+  let start = range.from ?? anchor - presetMs[range.preset ?? defaultLogRangePreset];
+  let end = range.until ?? bounds.end ?? null;
+  if (bounds.start !== undefined && start < bounds.start) start = bounds.start;
+  if (bounds.end !== undefined && end !== null && end > bounds.end) end = bounds.end;
+  return {
+    start: new Date(start).toISOString(),
+    end: end === null ? null : new Date(end).toISOString(),
+  };
 }
 
 function isPreset(value: string): value is TLogRangePreset {

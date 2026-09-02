@@ -203,7 +203,7 @@ function LogLineDetails({
   type: TLogType;
   onCollapseAll: () => void;
 }) {
-  const { hasActiveFilters, viewInContext, rangeEnabled } = useLogFilters();
+  const { hasActiveFilters, viewInContext } = useLogFilters();
 
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -246,7 +246,7 @@ function LogLineDetails({
             classNameIcon="size-3.5"
           />
         </div>
-        {rangeEnabled && hasActiveFilters && logLine.timestamp && (
+        {hasActiveFilters && logLine.timestamp && (
           <div className="flex w-full justify-start">
             <Button
               type="button"
