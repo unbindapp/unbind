@@ -92,8 +92,8 @@ export default function S3BucketCard({ s3Bucket, teamId, isPlaceholder }: TProps
           <Button
             disabled={isPlaceholder}
             fadeOnDisabled={false}
-            variant="outline-muted"
-            className="has-hover:group-hover/item:bg-card flex w-full flex-col items-start justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
+            variant="outline"
+            className="bg-card flex w-full flex-col items-start justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
           >
             {s3Bucket && <NewEntityIndicator id={s3Bucket.id} />}
             <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight font-semibold group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
@@ -262,13 +262,11 @@ function Detail({
 }) {
   return (
     <li className={cn("w-full p-1 sm:w-1/2", className)}>
-      <div className="flex w-full flex-col gap-1 rounded-lg border px-3 py-2.5">
-        <p className="text-muted-foreground text-xs leading-tight font-medium">{label}</p>
-        <div className="flex w-full items-center justify-start gap-1.5">
-          {Icon && <Icon className="size-3.5 shrink-0" />}
-          <p className="min-w-0 shrink text-sm leading-tight font-medium wrap-break-word">
-            {value}
-          </p>
+      <div className="flex w-full flex-col gap-1.5 rounded-lg border px-3 py-2.5">
+        <p className="text-muted-foreground text-sm leading-tight font-normal">{label}</p>
+        <div className="flex w-full items-center justify-start gap-2">
+          {Icon && <Icon className="size-4 shrink-0" />}
+          <p className="min-w-0 shrink leading-tight font-medium wrap-break-word">{value}</p>
         </div>
       </div>
     </li>
@@ -379,7 +377,7 @@ function Chip({
       )}
     >
       <Icon className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton size-3.5 shrink-0 group-data-placeholder/card:rounded-full" />
-      <p className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink truncate group-data-placeholder/card:rounded">
+      <p className="group-data-placeholder/card:bg-muted-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink truncate font-medium group-data-placeholder/card:rounded">
         {name}
       </p>
     </div>
