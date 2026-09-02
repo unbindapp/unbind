@@ -180,6 +180,7 @@ export default function LogLine({
           serviceName={serviceName}
           structured={structured}
           type={type}
+          onCollapse={onToggleExpanded}
         />
       )}
     </div>
@@ -191,11 +192,13 @@ function LogLineDetails({
   serviceName,
   structured,
   type,
+  onCollapse,
 }: {
   logLine: TLogLine;
   serviceName: string;
   structured: ReturnType<typeof parseStructuredLog>;
   type: TLogType;
+  onCollapse: () => void;
 }) {
   const { hasActiveFilters, viewInContext, rangeEnabled } = useLogFilters();
 
@@ -246,11 +249,12 @@ function LogLineDetails({
               type="button"
               size="sm"
               variant="outline"
-              onClick={() =>
-                viewInContext({ timestamp: logLine.timestamp!, pod_name: logLine.pod_name })
-              }
+              onClick={() => {
+                onCollapse();
+                viewInContext({ timestamp: logLine.timestamp!, pod_name: logLine.pod_name });
+              }}
             >
-              View in context
+              View in Context
             </Button>
           </div>
         )}
