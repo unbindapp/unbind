@@ -219,12 +219,12 @@ function LogLineDetails({
     ...(logTypeCapabilities[type].serviceColumn
       ? ([["Service", serviceName]] as [string, string][])
       : []),
-    ["Pod", logLine.pod_name || "Unknown"],
+    ["Replica", logLine.pod_name || "Unknown"],
     ...(structured ? structured.attributes : []),
   ];
 
   return (
-    <div ref={rootRef} className="w-full py-1 pr-3 pl-4.75 sm:pl-5.75">
+    <div ref={rootRef} className="w-full px-2 py-1 sm:px-4">
       <div className="bg-card flex w-full flex-col gap-2 rounded-xl border p-2 font-sans">
         <div className="flex w-full flex-wrap gap-x-5 gap-y-1.5 px-1.5 pt-0.5 pb-0.75">
           {fields.map(([key, value]) => (
