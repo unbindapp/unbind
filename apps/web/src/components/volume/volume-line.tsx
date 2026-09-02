@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import {
   getVolumeDisplayName,
   getVolumeUsageLevel,
   percentageFormatter,
 } from "@/components/volume/helpers";
+import { volumePanelVolumeIdKey } from "@/components/volume/panel/constants";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { TVolumeUsageLevel } from "@/components/volume/types";
 import { TVolumeShallow } from "@/lib/queries/services";
@@ -28,10 +29,14 @@ export default function VolumeLine({ volume, className }: TProps) {
 
   return (
     <VolumePanel volume={volume}>
-      <Button
+      <LinkButton
         variant={"card"}
         data-usage={usageLevel}
-        key={volume.id}
+        from="/$team_id/project/$project_id"
+        to="."
+        search={(prev) => ({ ...prev, [volumePanelVolumeIdKey]: volume.id })}
+        replace={true}
+        resetScroll={false}
         className={cn(
           "group/line bg-background relative w-full overflow-hidden rounded-none border px-0 py-2",
           className,
@@ -73,7 +78,7 @@ export default function VolumeLine({ volume, className }: TProps) {
             </p>
           </div>
         </div>
-      </Button>
+      </LinkButton>
     </VolumePanel>
   );
 }

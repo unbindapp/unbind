@@ -35,34 +35,28 @@ export default function ServicePanel({
   service,
   children,
 }: TProps) {
-  const { closePanel, currentServiceId, setCurrentServiceId, isTerminalFullscreen } =
-    useServicePanel();
+  const { closePanel, currentServiceId, isTerminalFullscreen } = useServicePanel();
 
   const open = currentServiceId === service.id;
-  const setOpen = (open: boolean) => {
-    if (open) {
-      setCurrentServiceId(service.id);
-    } else {
-      closePanel();
-    }
-  };
   const { isExtraSmall } = useDeviceSize();
 
   return (
     <Drawer
       open={open}
       onOpenChange={(newOpen, eventDetails) => {
+        // Opening is driven by the trigger link's navigation, only closing is handled here.
+        if (newOpen) return;
         // While the terminal is maximized, Esc exits fullscreen (handled in the
         // terminal) instead of closing the drawer.
-        if (!newOpen && eventDetails.reason === "escape-key" && isTerminalFullscreen) {
+        if (eventDetails.reason === "escape-key" && isTerminalFullscreen) {
           eventDetails.cancel();
           return;
         }
-        setOpen(newOpen);
+        closePanel();
       }}
       direction={isExtraSmall ? "bottom" : "right"}
     >
-      <DrawerTrigger render={children} />
+      <DrawerTrigger nativeButton={false} render={children} />
       <DrawerContent
         hasHandle={isExtraSmall}
         className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"

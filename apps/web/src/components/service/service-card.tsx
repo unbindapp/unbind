@@ -1,9 +1,10 @@
 import OnlineIcon from "@/components/icons/online";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useNow } from "@/components/providers/now-provider";
+import { servicePanelServiceIdKey } from "@/components/service/panel/constants";
 import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
-import { Button } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import VolumeLine from "@/components/volume/volume-line";
 import { sourceToTitle } from "@/lib/constants";
@@ -85,47 +86,66 @@ export default function ServiceCard({
     enabled: !isPlaceholder,
   });
 
+  const cardClassName = cn(
+    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold",
+    classNameCard,
+    volumes && volumes.length > 0 && "rounded-b-none border-b-0",
+  );
+
+  const cardContent = (
+    <>
+      {service && <NewEntityIndicator id={service.id} />}
+      <div className="flex w-full items-center justify-start gap-2">
+        {!isPlaceholder ? (
+          <ServiceIcon service={service} className="-ml-1 size-5" />
+        ) : (
+          <div className="animate-skeleton bg-foreground -ml-1 size-5 rounded-full" />
+        )}
+        <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+          {!isPlaceholder ? service.name : "Loading"}
+        </h3>
+      </div>
+      <div className="flex w-full flex-1 flex-col justify-end">
+        <div className="-mx-0.5 flex w-[calc(100%+0.25rem)] items-center justify-between">
+          {!isPlaceholder ? (
+            <ServiceInfoLine
+              className="min-w-0 shrink overflow-hidden text-sm font-normal text-ellipsis whitespace-nowrap"
+              service={service}
+            />
+          ) : (
+            <p className="bg-muted-foreground animate-skeleton min-w-0 shrink overflow-hidden rounded-md text-sm font-normal text-ellipsis whitespace-nowrap text-transparent">
+              10 min. ago via GitHub
+            </p>
+          )}
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <li
       data-placeholder={isPlaceholder || undefined}
       className={cn("group/item flex min-h-40 w-full flex-col p-1", className)}
     >
       <ServicePanelOrPlaceholder {...panelProps}>
-        <Button
-          variant="card"
-          className={cn(
-            "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold",
-            classNameCard,
-            volumes && volumes.length > 0 && "rounded-b-none border-b-0",
-          )}
-          {...buttonIntentProps}
-        >
-          {service && <NewEntityIndicator id={service.id} />}
-          <div className="flex w-full items-center justify-start gap-2">
-            {!isPlaceholder ? (
-              <ServiceIcon service={service} className="-ml-1 size-5" />
-            ) : (
-              <div className="animate-skeleton bg-foreground -ml-1 size-5 rounded-full" />
-            )}
-            <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
-              {!isPlaceholder ? service.name : "Loading"}
-            </h3>
-          </div>
-          <div className="flex w-full flex-1 flex-col justify-end">
-            <div className="-mx-0.5 flex w-[calc(100%+0.25rem)] items-center justify-between">
-              {!isPlaceholder ? (
-                <ServiceInfoLine
-                  className="min-w-0 shrink overflow-hidden text-sm font-normal text-ellipsis whitespace-nowrap"
-                  service={service}
-                />
-              ) : (
-                <p className="bg-muted-foreground animate-skeleton min-w-0 shrink overflow-hidden rounded-md text-sm font-normal text-ellipsis whitespace-nowrap text-transparent">
-                  10 min. ago via GitHub
-                </p>
-              )}
-            </div>
-          </div>
-        </Button>
+        {isPlaceholder ? (
+          <Button variant="card" className={cardClassName}>
+            {cardContent}
+          </Button>
+        ) : (
+          <LinkButton
+            variant="card"
+            from="/$team_id/project/$project_id"
+            to="."
+            search={(prev) => ({ ...prev, [servicePanelServiceIdKey]: service.id })}
+            replace={true}
+            resetScroll={false}
+            className={cardClassName}
+            {...buttonIntentProps}
+          >
+            {cardContent}
+          </LinkButton>
+        )}
       </ServicePanelOrPlaceholder>
       {volumes && volumes.length > 0 && (
         <div className={cn("bg-background rounded-b-xl text-xs", classNameVolumes)}>

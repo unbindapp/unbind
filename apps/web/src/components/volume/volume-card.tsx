@@ -1,6 +1,7 @@
-import { Button } from "@/components/ui/button";
+import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { getVolumeDisplayName } from "@/components/volume/helpers";
+import { volumePanelVolumeIdKey } from "@/components/volume/panel/constants";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { TVolumeShallow } from "@/lib/queries/services";
@@ -44,8 +45,13 @@ export default function VolumeCard({ volume, className }: TProps) {
       className={cn("group/item flex min-h-40 w-full flex-col p-1", className)}
     >
       <VolumePanel volume={volume}>
-        <Button
+        <LinkButton
           variant="card"
+          from="/$team_id/project/$project_id"
+          to="."
+          search={(prev) => ({ ...prev, [volumePanelVolumeIdKey]: volume.id })}
+          replace={true}
+          resetScroll={false}
           className="flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold"
         >
           <div className="flex w-full items-center justify-start gap-2">
@@ -65,7 +71,7 @@ export default function VolumeCard({ volume, className }: TProps) {
               <p className="min-w-0 shrink truncate text-right">{formatGB(volume.capacity_gb)}</p>
             </div>
           </div>
-        </Button>
+        </LinkButton>
       </VolumePanel>
     </li>
   );

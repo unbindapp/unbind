@@ -36,21 +36,21 @@ type TProps = {
 };
 
 export default function VolumePanel({ volume, children }: TProps) {
-  const { closePanel, currentVolumeId, setCurrentVolumeId } = useVolumePanel();
+  const { closePanel, currentVolumeId } = useVolumePanel();
 
   const open = currentVolumeId === volume.id;
-  const setOpen = (open: boolean) => {
-    if (open) {
-      setCurrentVolumeId(volume.id);
-    } else {
-      closePanel();
-    }
-  };
   const { isExtraSmall } = useDeviceSize();
 
   return (
-    <Drawer open={open} onOpenChange={setOpen} direction={isExtraSmall ? "bottom" : "right"}>
-      <DrawerTrigger render={children} />
+    <Drawer
+      open={open}
+      // Opening is driven by the trigger link's navigation, only closing is handled here.
+      onOpenChange={(newOpen) => {
+        if (!newOpen) closePanel();
+      }}
+      direction={isExtraSmall ? "bottom" : "right"}
+    >
+      <DrawerTrigger nativeButton={false} render={children} />
       <DrawerContent
         hasHandle={isExtraSmall}
         className="flex h-[calc(100%-1.3rem)] w-full flex-col sm:top-0 sm:right-0 sm:my-0 sm:ml-auto sm:h-full sm:w-5xl sm:max-w-[calc(100%-4rem)] sm:rounded-l-2xl sm:rounded-r-none"
