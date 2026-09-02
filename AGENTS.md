@@ -22,29 +22,6 @@ This is what installs Unbind on users' machine(s).
 
 The Kubernetes operator. Translates Unbind CRDs into native Kubernetes resources.
 
-## Local Dev Environment
-
-A local dev environment may already exist on this machine. Check before assuming it does not:
-
-    ./scripts/dev-env.sh status
-
-It reports each layer as up, stopped, or missing: Postgres + Redis (docker compose), the k3d cluster `unbind-dev`, the API on :8089 and the Vite dev server on :5173. Only use the environment when asked to test or verify something against a running Unbind, not for every task.
-
-- `./scripts/dev-env.sh start` resumes whatever is stopped and starts the API and UI in the background. It creates nothing that already exists.
-- `./scripts/dev-env.sh stop` stops the API, UI, cluster and compose containers. State is kept.
-- When you are done testing, run `stop`. Do not leave the environment running after the work is finished unless the user asks you to keep it up. If it was already running when you started, leave it as you found it.
-- `./scripts/dev-env.sh reset` deletes the cluster and the database. Never run this unless the user explicitly asks for it.
-- `make dev` is the same as `start` but runs the API and UI in the foreground.
-
-Kubeconfig: `apps/api/.data/kubernetes/k3d.kubeconfig.yaml`. Use it with `KUBECONFIG=...`, never touch `~/.kube/config`.
-
-Admin account, created automatically on first start:
-
-    email: admin@unbind.local
-    password: unbind-dev
-
-Open http://localhost:5173, or call the API directly at http://localhost:8089 (docs at /docs). Services deployed in the cluster get `*.localhost` domains served on ports 80 and 443.
-
 ## General Rules:
 
 - Keep it simple. Do not overcomplicate things.
@@ -70,3 +47,26 @@ web: Fixed button colors
 api: Added new /system endpoints
 
 The title should be concise. Description should explain the work in more detail (only if required) while still being concise. Use simple language, do not try to sound smart.
+
+## Local Dev Environment
+
+A local dev environment may already exist on this machine. Check before assuming it does not:
+
+    ./scripts/dev-env.sh status
+
+It reports each layer as up, stopped, or missing: Postgres + Redis (docker compose), the k3d cluster `unbind-dev`, the API on :8089 and the Vite dev server on :5173. Only use the environment when asked to test or verify something against a running Unbind, not for every task.
+
+- `./scripts/dev-env.sh start` resumes whatever is stopped and starts the API and UI in the background. It creates nothing that already exists.
+- `./scripts/dev-env.sh stop` stops the API, UI, cluster and compose containers. State is kept.
+- When you are done testing, run `stop`. Do not leave the environment running after the work is finished unless the user asks you to keep it up. If it was already running when you started, leave it as you found it.
+- `./scripts/dev-env.sh reset` deletes the cluster and the database. Never run this unless the user explicitly asks for it.
+- `make dev` is the same as `start` but runs the API and UI in the foreground.
+
+Kubeconfig: `apps/api/.data/kubernetes/k3d.kubeconfig.yaml`. Use it with `KUBECONFIG=...`, never touch `~/.kube/config`.
+
+Admin account, created automatically on first start:
+
+    email: admin@unbind.local
+    password: unbind-dev
+
+Open http://localhost:5173, or call the API directly at http://localhost:8089 (docs at /docs). Services deployed in the cluster get `*.localhost` domains served on ports 80 and 443.
