@@ -1,11 +1,3 @@
-import CopyButton from "@/components/copy-button";
-import ErrorLine from "@/components/error-line";
-import DeleteButton from "@/components/service/panel/content/deployed/settings/sections/networking/_components/delete-button";
-import {
-  getNetworkingDisplayUrl,
-  getNetworkingEntityId,
-} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
-import { TModeAndPort } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
 import {
   Block,
   BlockItem,
@@ -14,12 +6,21 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import CopyButton from "@/components/copy-button";
+import ErrorLine from "@/components/error-line";
+import DeleteButton from "@/components/service/panel/content/deployed/settings/sections/networking/_components/delete-button";
+import {
+  getNetworkingDisplayUrl,
+  getNetworkingEntityId,
+} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
+import { TModeAndPort } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
+import { DomainStatusRow } from "@/components/service/panel/content/undeployed/domain-card";
 import { useServiceEndpointsUtils } from "@/components/service/service-endpoints-provider";
 import { useService } from "@/components/service/service-provider";
 import useUpdateService from "@/components/service/use-update-service";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
-import { DomainStatusCard } from "@/components/service/panel/content/undeployed/domain-card";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -32,13 +33,11 @@ import {
   EthernetPortIcon,
   GlobeIcon,
   GlobeLockIcon,
-  HourglassIcon,
   PenIcon,
   PlusIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useCallback, useMemo } from "react";
-import { toast } from "@/components/ui/toast";
 
 export default function DomainPortCard({
   mode,
@@ -213,12 +212,13 @@ export default function DomainPortCard({
     <div className="flex w-full flex-col gap-2">
       <div
         data-editing={isEditing || undefined}
+        data-has-dns={showDnsStatus || undefined}
         className="data-editing:border-process/25 group/field flex w-full flex-col overflow-hidden rounded-lg border"
       >
         <BlockItemButtonLike
           asElement="div"
           classNameText="whitespace-normal"
-          className="group-data-editing/field:bg-process/8 group-data-editing/field:text-process border-none group-data-editing/field:rounded-b-none"
+          className="group-data-editing/field:bg-process/8 group-data-editing/field:text-process group-data-has-dns/field:ring-border z-1 border-none group-data-editing/field:rounded-b-none group-data-has-dns/field:ring-1"
           text={getNetworkingDisplayUrl({
             host: domain,
             port: mode === "public" ? "" : port?.toString(),
@@ -226,22 +226,29 @@ export default function DomainPortCard({
           description={({ className }) => {
             if (port === undefined || mode !== "public") return null;
             return (
-              <div
-                className={cn(
-                  "text-muted-foreground group-data-editing/field:text-process/85 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
-                  className,
+              <div className="flex w-full flex-col">
+                <div
+                  className={cn(
+                    "text-muted-foreground group-data-editing/field:text-process/85 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
+                    className,
+                  )}
+                >
+                  <EthernetPortIcon className="mt-0.375 size-3.5 shrink-0" />
+                  <p className="min-w-0 shrink">{port}</p>
+                </div>
+                {showDnsStatus && (
+                  <DomainStatusRow
+                    dnsStatus={dnsStatus}
+                    isCloudflare={isCloudflare}
+                    className="mt-2 border-t px-0 pt-2 pb-0 text-xs"
+                  />
                 )}
-              >
-                <EthernetPortIcon className="mt-0.375 size-3.5 shrink-0" />
-                <p className="min-w-0 shrink">{port}</p>
               </div>
             );
           }}
           Icon={({ className }: { className?: string }) =>
             port === undefined && !isEditing ? (
               <CircleAlertIcon className={cn("text-warning", className, "size-4.5")} />
-            ) : showDnsStatus && dnsStatus !== "resolved" ? (
-              <HourglassIcon className={cn("animate-hourglass", className, "size-4.5")} />
             ) : mode === "private" ? (
               <GlobeLockIcon className={cn(className, "size-4.5")} />
             ) : (
@@ -250,15 +257,6 @@ export default function DomainPortCard({
           }
           SuffixComponent={SuffixComponent}
         />
-        {showDnsStatus && (
-          <DomainStatusCard
-            domain={domain}
-            dnsStatus={dnsStatus}
-            isCloudflare={isCloudflare}
-            paragraph="Create the DNS record below."
-            className="rounded-none border-x-0 border-b-0"
-          />
-        )}
         {isEditing && (
           <form
             onSubmit={(e) => {
@@ -296,7 +294,6 @@ export default function DomainPortCard({
                           autoCorrect="off"
                           autoComplete="off"
                           spellCheck="false"
-                          hideCard={field.state.meta.isDefaultValue}
                         />
                       </BlockItemContent>
                     </BlockItem>

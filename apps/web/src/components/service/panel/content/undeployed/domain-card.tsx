@@ -17,6 +17,7 @@ type TDomainStatusCardProps = {
   isCloudflare: boolean | undefined;
   paragraph?: string;
   className?: string;
+  hideInstructions?: boolean;
 };
 
 export function DomainCard({
@@ -66,9 +67,10 @@ export function DomainStatusCard({
   isCloudflare,
   paragraph = "Create the DNS record below. You can also do it later.",
   className,
+  hideInstructions,
 }: TDomainStatusCardProps) {
   const { data, isPending, error } = useSystem();
-  const isResolved = dnsStatus === "resolved";
+  const isResolved = getIsResolved(dnsStatus);
 
   return (
     <div
@@ -80,7 +82,7 @@ export function DomainStatusCard({
         className,
       )}
     >
-      {(!data || !isResolved) && (
+      {!hideInstructions && (!data || !isResolved) && (
         <div className="flex w-full flex-col items-start justify-start">
           <p className="w-full px-3 py-2.5 leading-tight font-medium">{paragraph}</p>
           <div className="flex w-full items-start justify-start border-t border-b px-3 pt-2 pb-2.5">
@@ -105,33 +107,53 @@ export function DomainStatusCard({
           </div>
         </div>
       )}
-      {data && (
-        <div className="group-data-configured/card:text-success text-muted-foreground flex w-full flex-row flex-wrap gap-1.5 px-3 py-2.5 group-data-configured/card:mt-0">
-          <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
-            <div className="-ml-px size-3.5 shrink-0">
-              {isResolved ? (
-                <CheckCircleIcon className="size-full" />
-              ) : (
-                <HourglassIcon className="animate-hourglass size-full" />
-              )}
-            </div>
-            <p className="min-w-0 shrink leading-tight font-medium">
-              {isResolved ? "DNS record detected" : "Waiting for DNS record"}
-            </p>
-          </div>
-          {isCloudflare && (
-            <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
-              <div className="-ml-px size-3.5 shrink-0">
-                <BrandIcon brand="cloudflare" className="size-full" />
-              </div>
-              <p className="min-w-0 shrink leading-tight font-medium">Cloudflare detected</p>
-            </div>
-          )}
-        </div>
-      )}
+      {data && <DomainStatusRow dnsStatus={dnsStatus} isCloudflare={!!isCloudflare} />}
       {error && (
         <div className="w-full p-1.5">
           <ErrorLine message={error.message} className="rounded-md" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function getIsResolved(dnsStatus: DNSStatus | undefined) {
+  return dnsStatus === "resolved";
+}
+
+export function DomainStatusRow({
+  dnsStatus,
+  isCloudflare,
+  className,
+}: Pick<TDomainStatusCardProps, "dnsStatus" | "isCloudflare"> & { className?: string }) {
+  const isResolved = getIsResolved(dnsStatus);
+  const { data } = useSystem();
+  return (
+    <div
+      data-configured={(data && isResolved) || undefined}
+      className={cn(
+        "data-configured:text-success group-data-configured/card:text-success text-muted-foreground flex w-full flex-row flex-wrap gap-1.5 px-3 py-2.5 leading-tight font-medium group-data-configured/card:mt-0",
+        className,
+      )}
+    >
+      <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
+        <div className="size-3.5 shrink-0">
+          {isResolved ? (
+            <CheckCircleIcon className="size-full" />
+          ) : (
+            <HourglassIcon className="animate-hourglass size-full" />
+          )}
+        </div>
+        <p className="min-w-0 shrink">
+          {isResolved ? "DNS record detected" : "Waiting for DNS record"}
+        </p>
+      </div>
+      {isCloudflare && (
+        <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
+          <div className="size-3.5 shrink-0">
+            <BrandIcon brand="cloudflare" className="size-full" />
+          </div>
+          <p className="min-w-0 shrink">Cloudflare detected</p>
         </div>
       )}
     </div>
