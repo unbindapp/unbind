@@ -29,7 +29,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
-import { useAppForm } from "@/lib/hooks/use-app-form";
+import {
+  removeFormDraft,
+  TFormPersistenceProps,
+  useAppFormWithPersistence,
+} from "@/lib/hooks/use-app-form-with-persistence";
 import {
   createS3Bucket as createS3BucketFn,
   CreateS3BucketFormSchema,
@@ -603,6 +607,7 @@ export function AddS3BucketTrigger({
       description="Connect an S3-compatible bucket. It can be used for backups."
       submitText="Add"
       schema={CreateS3BucketFormSchema}
+      persistenceKey={`s3-bucket-create:${teamId}`}
       secretKeyPlaceholder="AWS_SECRET_ACCESS_KEY"
       accessKeyIdPlaceholder="AWS_ACCESS_KEY_ID"
       defaultValues={{
@@ -632,6 +637,7 @@ function S3BucketFormDialog({
   description,
   submitText,
   schema,
+  persistenceKey,
   accessKeyIdPlaceholder,
   secretKeyPlaceholder,
   defaultValues,
@@ -645,6 +651,8 @@ function S3BucketFormDialog({
   description: string;
   submitText: string;
   schema: typeof CreateS3BucketFormSchema;
+  // Keeps a session draft of what was typed, only for the create form
+  persistenceKey?: string;
   accessKeyIdPlaceholder: string;
   secretKeyPlaceholder: string;
   defaultValues: TS3BucketFormValues;
@@ -653,7 +661,11 @@ function S3BucketFormDialog({
   onSubmit: (value: TS3BucketFormValues) => Promise<void>;
   children?: ReactElement;
 }) {
-  const form = useAppForm({
+  const persistence: TFormPersistenceProps<TS3BucketFormValues> = persistenceKey
+    ? { persistenceType: "session", persistenceKey, persistenceSchema: schema }
+    : { persistenceType: "none" };
+
+  const form = useAppFormWithPersistence({
     defaultValues,
     validators: {
       onChange: schema,
@@ -662,7 +674,11 @@ function S3BucketFormDialog({
       await onSubmit(value);
       handle.close();
       formApi.reset();
+      if (persistenceKey) {
+        removeFormDraft({ persistenceType: "session", persistenceKey });
+      }
     },
+    ...persistence,
   });
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -671,15 +687,16 @@ function S3BucketFormDialog({
     <Dialog
       handle={handle}
       onOpenChange={(o) => {
+        // A persisted draft survives closing, the edit form re-seeds from the server instead
         if (o) {
-          form.reset();
+          if (!persistenceKey) form.reset();
           return;
         }
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
         }
         timeoutRef.current = setTimeout(() => {
-          form.reset();
+          if (!persistenceKey) form.reset();
           resetError();
         }, defaultAnimationMs);
       }}
