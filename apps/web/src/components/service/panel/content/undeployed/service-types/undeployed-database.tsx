@@ -17,10 +17,10 @@ import { softValidateVariables } from "@/components/service/panel/content/undepl
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useService } from "@/components/service/service-provider";
 import {
-  CreateBackupBucketTrigger,
+  AddBackupBucketTrigger,
   S3BucketCommandItemElement,
   S3BucketLabel,
-  TCreateBackupBucketTriggerProps,
+  TAddBackupBucketTriggerProps,
 } from "@/components/storage/create-backup-bucket-trigger";
 import S3BucketsProvider, { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { CommandItem } from "@/components/ui/command";
@@ -225,9 +225,9 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     persistenceSchema: DraftSchema,
   });
 
-  const CreateBackupBucketTriggerMemoized = useCallback(
-    (props: Omit<TCreateBackupBucketTriggerProps, "teamId">) => (
-      <CreateBackupBucketTrigger teamId={teamId} {...props} />
+  const AddBackupBucketTriggerMemoized = useCallback(
+    (props: Omit<TAddBackupBucketTriggerProps, "teamId">) => (
+      <AddBackupBucketTrigger teamId={teamId} {...props} />
     ),
     [teamId],
   );
@@ -318,7 +318,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                       CommandEmptyText="No buckets found"
                       CommandEmptyIcon={CylinderIcon}
                       CommandItemElement={S3BucketCommandItemElement}
-                      TriggerWrapper={hasNoBuckets ? CreateBackupBucketTriggerMemoized : undefined}
+                      TriggerWrapper={hasNoBuckets ? AddBackupBucketTriggerMemoized : undefined}
                       CommandItemsPinned={({ setIsOpen, commandValue }) => {
                         if (commandValue === "" || hasNoBuckets) {
                           return null;

@@ -16,10 +16,10 @@ import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TDatabaseSectionProps } from "@/components/settings/types";
 import {
-  CreateBackupBucketTrigger,
+  AddBackupBucketTrigger,
   S3BucketCommandItemElement,
   S3BucketLabel,
-  TCreateBackupBucketTriggerProps,
+  TAddBackupBucketTriggerProps,
 } from "@/components/storage/create-backup-bucket-trigger";
 import S3BucketsProvider, { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { CommandItem } from "@/components/ui/command";
@@ -114,9 +114,9 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
 
   const hasNoBuckets = dataS3Buckets ? dataS3Buckets.buckets.length === 0 : false;
 
-  const CreateBackupBucketTriggerMemoized = useCallback(
-    (props: Omit<TCreateBackupBucketTriggerProps, "teamId">) => (
-      <CreateBackupBucketTrigger teamId={teamId} {...props} />
+  const AddBackupBucketTriggerMemoized = useCallback(
+    (props: Omit<TAddBackupBucketTriggerProps, "teamId">) => (
+      <AddBackupBucketTrigger teamId={teamId} {...props} />
     ),
     [teamId],
   );
@@ -169,7 +169,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                   CommandEmptyText="No buckets found"
                   CommandEmptyIcon={CylinderIcon}
                   CommandItemElement={S3BucketCommandItemElement}
-                  TriggerWrapper={hasNoBuckets ? CreateBackupBucketTriggerMemoized : undefined}
+                  TriggerWrapper={hasNoBuckets ? AddBackupBucketTriggerMemoized : undefined}
                   CommandItemsPinned={({ setIsOpen, commandValue }) => {
                     if (commandValue === "" || hasNoBuckets) {
                       return null;

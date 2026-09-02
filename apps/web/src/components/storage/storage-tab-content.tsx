@@ -1,6 +1,6 @@
 "use client";
 
-import S3BucketCard, { NewS3BucketCard } from "@/components/storage/s3-bucket-card";
+import S3BucketCard, { AddS3BucketCard } from "@/components/storage/s3-bucket-card";
 import ErrorCard from "@/components/error-card";
 import { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { cn } from "@/components/ui/utils";
@@ -39,7 +39,7 @@ export default function StorageTabContent({ className }: { className?: string })
       {s3Buckets.map((s3Bucket) => (
         <S3BucketCard key={s3Bucket.id} s3Bucket={s3Bucket} teamId={teamId} />
       ))}
-      <NewS3BucketCard teamId={teamId} />
+      <AddS3BucketCard teamId={teamId} />
     </Wrapper>
   );
 }

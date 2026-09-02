@@ -31,8 +31,8 @@ import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
-  CreateS3BucketFormSchema,
   createS3Bucket as createS3BucketFn,
+  CreateS3BucketFormSchema,
   deleteS3Bucket as deleteS3BucketFn,
   EditS3BucketFormSchema,
   s3BucketNameMaxLength,
@@ -97,15 +97,9 @@ export default function S3BucketCard({ s3Bucket, teamId, isPlaceholder }: TProps
             </p>
             <div className="-mx-2 -my-1 flex w-[calc(100%+1rem)] flex-row flex-wrap overflow-hidden">
               {isPlaceholder ? (
-                <>
-                  <Chip name="Loading bucket" isPlaceholder={true} />
-                  <Chip name="Loading endpoint" isPlaceholder={true} />
-                </>
+                <Chip name="Loading bucket" isPlaceholder={true} />
               ) : (
-                <>
-                  <Chip name={s3Bucket.bucket} />
-                  <Chip name={getEndpointHost(s3Bucket.endpoint)} Icon={GlobeIcon} />
-                </>
+                <Chip name={s3Bucket.bucket} />
               )}
             </div>
           </Button>
@@ -122,14 +116,6 @@ export default function S3BucketCard({ s3Bucket, teamId, isPlaceholder }: TProps
       </div>
     </li>
   );
-}
-
-function getEndpointHost(endpoint: string) {
-  try {
-    return new URL(endpoint).host;
-  } catch {
-    return endpoint;
-  }
 }
 
 function S3BucketDialogConditional({
@@ -177,19 +163,13 @@ function S3BucketDialog({
             </Button>
           </RenameTrigger>
         </DialogHeader>
-        <S3BucketDialogInnerContent s3Bucket={s3Bucket} teamId={teamId} />
+        <S3BucketDialogInnerContent s3Bucket={s3Bucket} />
       </DialogContent>
     </Dialog>
   );
 }
 
-function S3BucketDialogInnerContent({
-  s3Bucket,
-  teamId,
-}: {
-  s3Bucket: TS3BucketShallow;
-  teamId: string;
-}) {
+function S3BucketDialogInnerContent({ s3Bucket }: { s3Bucket: TS3BucketShallow }) {
   const { data, isPending, error } = useQuery(
     testS3Query({
       endpoint: s3Bucket.endpoint,
@@ -243,32 +223,18 @@ function S3BucketDialogInnerContent({
           {connectionStatusString}
         </p>
       </div>
-      <ol className="flex w-full flex-wrap px-4.25 pt-3.5 pb-5.5">
+      <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap px-4.25 pt-3.5 pb-4">
         <Detail label="Bucket" value={s3Bucket.bucket} Icon={CylinderIcon} />
         <Detail label="Region" value={s3Bucket.region || "Not set"} />
         <Detail label="Endpoint" value={s3Bucket.endpoint} Icon={GlobeIcon} className="sm:w-full" />
         <Detail label="Access Key ID" value={s3Bucket.access_key} className="sm:w-full" />
       </ol>
       <div className="bg-border h-px w-full" />
-      <div className="flex w-full items-center justify-between px-1 py-2">
-        <div className="max-w-1/2 px-1">
-          <DeleteTrigger s3Bucket={s3Bucket} teamId={teamId}>
-            <Button variant="ghost-destructive" className="w-full px-4">
-              <Trash2Icon className="-ml-0.75 size-4.5" />
-              <p className="min-w-0 shrink">Delete</p>
-            </Button>
-          </DeleteTrigger>
-        </div>
+      <div className="flex w-full items-center justify-end px-1 py-2">
         <div className="flex max-w-1/2 items-center justify-end px-1">
-          <EditTrigger s3Bucket={s3Bucket} teamId={teamId}>
-            <Button variant="ghost" className="px-4">
-              <SettingsIcon className="-ml-0.75 size-4.5" />
-              <p className="min-w-0 shrink">Edit</p>
-            </Button>
-          </EditTrigger>
           <DialogClose
             render={
-              <Button variant="ghost" className="text-muted-foreground px-4">
+              <Button variant="ghost" className="px-4">
                 Close
               </Button>
             }
@@ -291,12 +257,14 @@ function Detail({
   className?: string;
 }) {
   return (
-    <li className={cn("w-full p-0.75 sm:w-1/2", className)}>
-      <div className="flex w-full flex-col gap-1 rounded-md border px-3 py-2.5">
+    <li className={cn("w-full p-1 sm:w-1/2", className)}>
+      <div className="flex w-full flex-col gap-1 rounded-lg border px-3 py-2.5">
         <p className="text-muted-foreground text-xs leading-tight font-medium">{label}</p>
         <div className="flex w-full items-center justify-start gap-1.5">
-          {Icon && <Icon className="text-muted-foreground size-3.5 shrink-0" />}
-          <p className="min-w-0 shrink text-sm leading-tight font-medium break-all">{value}</p>
+          {Icon && <Icon className="size-3.5 shrink-0" />}
+          <p className="min-w-0 shrink text-sm leading-tight font-medium wrap-break-word">
+            {value}
+          </p>
         </div>
       </div>
     </li>
@@ -504,11 +472,13 @@ function DeleteTrigger({
 
   return (
     <DeleteEntityTrigger
-      dialogTitle="Delete S3 Bucket"
-      dialogDescription="Are you sure you want to delete this S3 bucket? This action cannot be undone. Services backing up to this bucket will have their backups disabled."
+      dialogTitle="Disconnect S3 Bucket"
+      dialogDescription="Are you sure you want to disconnectthis S3 bucket? This action cannot be undone. Services backing up to this bucket will have their backups disabled."
       deletingEntityName={s3Bucket.name}
       error={deleteS3BucketError}
+      textToConfirm={`Disconnect ${s3Bucket.name}`}
       handle={handle}
+      submitButtonText="Disconnect"
       onDialogClose={() => {
         deleteS3BucketReset();
       }}
@@ -550,9 +520,10 @@ function EditTrigger({
     <S3BucketFormDialog
       handle={dialogHandle}
       title="Edit S3 Bucket"
-      description="Change the bucket, endpoint, region or credentials. Leave the credentials empty to keep the current ones. Running services pick up the changes on their next deployment."
+      description="Change the display name, bucket, endpoint, region or credentials."
       submitText="Save"
       schema={EditS3BucketFormSchema}
+      accessKeyIdPlaceholder="Leave empty to keep the current key"
       secretKeyPlaceholder="Leave empty to keep the current key"
       defaultValues={{
         name: s3Bucket.name,
@@ -584,9 +555,9 @@ function EditTrigger({
   );
 }
 
-export function NewS3BucketCard({ teamId }: { teamId: string }) {
+export function AddS3BucketCard({ teamId }: { teamId: string }) {
   return (
-    <NewS3BucketTrigger teamId={teamId}>
+    <AddS3BucketTrigger teamId={teamId}>
       <li className="relative w-full p-1 md:max-w-3xl">
         <div className="group/item relative flex w-full items-center justify-start">
           <Button
@@ -595,16 +566,16 @@ export function NewS3BucketCard({ teamId }: { teamId: string }) {
           >
             <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
             <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
-              New S3 Bucket
+              Add S3 Bucket
             </p>
           </Button>
         </div>
       </li>
-    </NewS3BucketTrigger>
+    </AddS3BucketTrigger>
   );
 }
 
-export function NewS3BucketTrigger({
+export function AddS3BucketTrigger({
   teamId,
   handle,
   children,
@@ -628,11 +599,12 @@ export function NewS3BucketTrigger({
   return (
     <S3BucketFormDialog
       handle={dialogHandle}
-      title="Create S3 Bucket"
-      description="Connect an S3-compatible bucket. The credentials only need read and write access to this one bucket. It can be used for database backups."
-      submitText="Create"
+      title="Add S3 Bucket"
+      description="Connect an S3-compatible bucket. It can be used for backups."
+      submitText="Add"
       schema={CreateS3BucketFormSchema}
       secretKeyPlaceholder="AWS_SECRET_ACCESS_KEY"
+      accessKeyIdPlaceholder="AWS_ACCESS_KEY_ID"
       defaultValues={{
         name: "",
         endpoint: "",
@@ -660,6 +632,7 @@ function S3BucketFormDialog({
   description,
   submitText,
   schema,
+  accessKeyIdPlaceholder,
   secretKeyPlaceholder,
   defaultValues,
   error,
@@ -672,6 +645,7 @@ function S3BucketFormDialog({
   description: string;
   submitText: string;
   schema: typeof CreateS3BucketFormSchema;
+  accessKeyIdPlaceholder: string;
   secretKeyPlaceholder: string;
   defaultValues: TS3BucketFormValues;
   error: Error | null;
@@ -726,13 +700,13 @@ function S3BucketFormDialog({
         >
           <div className="flex w-full flex-col gap-4">
             <InputWrapper>
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Display Name</Label>
               <form.AppField
                 name="name"
                 children={(field) => (
                   <field.TextField
                     id="name"
-                    placeholder="Production Backups"
+                    placeholder="Backup Bucket"
                     autoCapitalize="none"
                     dontCheckUntilSubmit
                     field={field}
@@ -745,27 +719,27 @@ function S3BucketFormDialog({
                 )}
               />
             </InputWrapper>
+            <InputWrapper>
+              <Label htmlFor="endpoint">Endpoint</Label>
+              <form.AppField
+                name="endpoint"
+                children={(field) => (
+                  <field.TextField
+                    id="endpoint"
+                    placeholder="https://s3.amazonaws.com"
+                    autoCapitalize="none"
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    className="w-full"
+                  />
+                )}
+              />
+            </InputWrapper>
             <div className="flex w-full flex-col gap-4 sm:flex-row sm:gap-0">
-              <InputWrapper className="w-full sm:w-2/3 sm:pr-4">
-                <Label htmlFor="endpoint">Endpoint</Label>
-                <form.AppField
-                  name="endpoint"
-                  children={(field) => (
-                    <field.TextField
-                      id="endpoint"
-                      placeholder="https://s3.amazonaws.com"
-                      autoCapitalize="none"
-                      dontCheckUntilSubmit
-                      field={field}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className="w-full"
-                    />
-                  )}
-                />
-              </InputWrapper>
-              <InputWrapper className="w-full sm:w-1/3">
+              <InputWrapper className="w-full sm:w-1/2 sm:pr-2">
                 <Label htmlFor="region">Region</Label>
                 <form.AppField
                   name="region"
@@ -784,26 +758,27 @@ function S3BucketFormDialog({
                   )}
                 />
               </InputWrapper>
+              <InputWrapper className="w-full sm:w-1/2 sm:pl-2">
+                <Label htmlFor="bucket">Bucket</Label>
+                <form.AppField
+                  name="bucket"
+                  children={(field) => (
+                    <field.TextField
+                      id="bucket"
+                      placeholder="my-backups"
+                      autoCapitalize="none"
+                      dontCheckUntilSubmit
+                      field={field}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="w-full"
+                    />
+                  )}
+                />
+              </InputWrapper>
             </div>
-            <InputWrapper>
-              <Label htmlFor="bucket">Bucket</Label>
-              <form.AppField
-                name="bucket"
-                children={(field) => (
-                  <field.TextField
-                    id="bucket"
-                    placeholder="my-backups"
-                    autoCapitalize="none"
-                    dontCheckUntilSubmit
-                    field={field}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="w-full"
-                  />
-                )}
-              />
-            </InputWrapper>
+
             <InputWrapper>
               <Label htmlFor="accessKeyId">Access Key ID</Label>
               <form.AppField
@@ -811,7 +786,7 @@ function S3BucketFormDialog({
                 children={(field) => (
                   <field.TextField
                     id="accessKeyId"
-                    placeholder="AWS_ACCESS_KEY_ID"
+                    placeholder={accessKeyIdPlaceholder}
                     autoCapitalize="none"
                     dontCheckUntilSubmit
                     field={field}

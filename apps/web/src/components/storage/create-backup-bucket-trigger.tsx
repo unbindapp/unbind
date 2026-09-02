@@ -1,5 +1,5 @@
-import { NewS3BucketTrigger } from "@/components/storage/s3-bucket-card";
 import { splitS3BucketItemLabel } from "@/components/service/helpers";
+import { AddS3BucketTrigger } from "@/components/storage/s3-bucket-card";
 import { createDialogHandle, DialogTrigger } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -15,19 +15,19 @@ import { TCommandItem } from "@/lib/hooks/use-app-form";
 import { PlusIcon } from "lucide-react";
 import { ReactElement, useState } from "react";
 
-export type TCreateBackupBucketTriggerProps = {
+export type TAddBackupBucketTriggerProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   children: ReactElement;
   teamId: string;
 };
 
-export function CreateBackupBucketTrigger({
+export function AddBackupBucketTrigger({
   teamId,
   isOpen,
   setIsOpen,
   children,
-}: TCreateBackupBucketTriggerProps) {
+}: TAddBackupBucketTriggerProps) {
   const [dialogHandle] = useState(() => createDialogHandle());
 
   return (
@@ -38,7 +38,7 @@ export function CreateBackupBucketTrigger({
           <ScrollArea>
             <DropdownMenuGroup>
               <DropdownMenuLabel className="-mx-1 mb-1 border-b px-3 pb-2 font-normal">
-                {"You don't have any buckets. Create a backup bucket."}
+                {"You don't have any buckets. Add one first."}
               </DropdownMenuLabel>
               {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
               <DialogTrigger
@@ -47,7 +47,7 @@ export function CreateBackupBucketTrigger({
                 render={
                   <DropdownMenuItem className="gap-1.5">
                     <PlusIcon className="-ml-1 size-5" />
-                    <p className="min-w-0 shrink">Create Backup Bucket</p>
+                    <p className="min-w-0 shrink">Add Backup Bucket</p>
                   </DropdownMenuItem>
                 }
               />
@@ -55,7 +55,7 @@ export function CreateBackupBucketTrigger({
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
-      <NewS3BucketTrigger teamId={teamId} handle={dialogHandle} />
+      <AddS3BucketTrigger teamId={teamId} handle={dialogHandle} />
     </>
   );
 }
@@ -63,9 +63,10 @@ export function CreateBackupBucketTrigger({
 export function S3BucketLabel({ name, bucket }: { name: string; bucket: string }) {
   return (
     <>
-      {name}
-      <span className="text-muted-more-foreground px-[0.5ch]">/</span>
-      {bucket}
+      <span className="pr-2">{name}</span>
+      <span className="bg-foreground/6 border-foreground/6 -my-1 rounded-sm border px-1.25 font-mono text-sm font-normal">
+        {bucket}
+      </span>
     </>
   );
 }
@@ -79,7 +80,7 @@ export function S3BucketCommandItemElement({
 }) {
   const { name, bucket } = splitS3BucketItemLabel(item.label);
   return (
-    <p className={cn("min-w-0 shrink leading-tight", className)}>
+    <p className={cn("min-w-0 leading-tight", className)}>
       <S3BucketLabel name={name} bucket={bucket} />
     </p>
   );

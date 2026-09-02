@@ -30,6 +30,7 @@ type TProps = {
   EntityNameBadge?: FC<{ className?: string }>;
   handle?: TDialogHandle;
   children?: ReactElement;
+  textToConfirm?: string;
 };
 
 export function DeleteEntityTrigger({
@@ -45,12 +46,13 @@ export function DeleteEntityTrigger({
   variant = "destructive",
   EntityNameBadge,
   handle,
+  textToConfirm: textToConfirmProp,
   children,
 }: TProps) {
   const [internalHandle] = useState(() => createDialogHandle());
   const dialogHandle = handle ?? internalHandle;
 
-  const textToConfirm = `Delete ${deletingEntityName} permanently`;
+  const textToConfirm = textToConfirmProp || `Delete ${deletingEntityName} permanently`;
 
   const form = useAppForm({
     defaultValues: disableConfirmationInput
