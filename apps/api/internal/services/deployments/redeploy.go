@@ -19,21 +19,11 @@ import (
 )
 
 func (self *DeploymentService) resolveReferences(ctx context.Context, service *ent.Service) ([]corev1.EnvVar, error) {
-	additionalEnv, err := self.variableService.ResolveAllReferences(ctx, service.ID)
+	rendered, err := self.variableService.RenderServiceVariables(ctx, service.ID)
 	if err != nil {
 		return nil, err
 	}
-	envVars := make([]corev1.EnvVar, len(additionalEnv))
-	i := 0
-	for k, v := range additionalEnv {
-		envVars[i] = corev1.EnvVar{
-			Name:  k,
-			Value: v,
-		}
-		i++
-	}
-
-	return envVars, nil
+	return rendered.EnvVars(), nil
 }
 
 func (self *DeploymentService) canRedeployWithoutBuild(ctx context.Context, service *ent.Service, deployment *ent.Deployment) bool {

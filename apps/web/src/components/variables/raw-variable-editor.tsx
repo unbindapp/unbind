@@ -1,5 +1,6 @@
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
+import { IconCache } from "@/components/icons/icon-cache";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,9 +12,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { getVariablesFromRawText } from "@/components/variables/helpers";
+import {
+  getVariablesFromRawText,
+  referenceMapForVariables,
+  toReadableValue,
+  toStoredValue,
+} from "@/components/variables/helpers";
+import { readableTokenMap } from "@/components/variables/tokens";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
+import { useVariableReferences } from "@/components/variables/variable-references-provider";
+import {
+  referenceCompletionAdditions,
+  useVariableReferenceLanguage,
+} from "@/components/variables/variables-form-field";
 import { useVariables } from "@/components/variables/variables-provider";
 import { defaultAnimationMs } from "@/lib/constants";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
@@ -21,17 +32,11 @@ import { TVariableShallow, VariableForCreateSchema } from "@/lib/queries/variabl
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircleIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import Prism, { highlight } from "prismjs";
-import "prismjs/components/prism-ini";
-import { ReactElement, useEffect, useRef, useState } from "react";
-import EditorImport from "react-simple-code-editor";
+import { lazy, ReactElement, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
-// Vite 8 / Rolldown mis-handles this CJS package's __esModule default export,
-// yielding the module namespace object instead of the component. Unwrap defensively.
-const Editor = ((EditorImport as unknown as { default?: typeof EditorImport }).default ??
-  EditorImport) as typeof EditorImport;
+const TokenFieldLazy = lazy(() => import("@/components/ui/token-field/token-field"));
 
 type TProps = {
   children: ReactElement;
@@ -48,9 +53,14 @@ export default function RawVariableEditor({ children }: TProps) {
     createOrUpdate: { mutateAsync: createOrUpdateVariables },
     ...typedProps
   } = useVariables();
+  const { tokens } = useVariableReferences();
 
   const variables = variablesData?.variables;
-  const [editorValue, setEditorValue] = useState(variables ? getEditorValue({ variables }) : "");
+  const editorText = useMemo(
+    () => (variables ? getEditorValue({ variables, tokens }) : ""),
+    [variables, tokens],
+  );
+  const [editorValue, setEditorValue] = useState(editorText);
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
@@ -62,19 +72,15 @@ export default function RawVariableEditor({ children }: TProps) {
     ttl: 3000,
   });
 
-  const resetEditorValue = () => {
-    setEditorValue(variables ? getEditorValue({ variables }) : "");
-  };
-
   useEffect(() => {
     if (!variables) return;
-    setEditorValue(getEditorValue({ variables }));
-  }, [variables]);
+    setEditorValue(editorText);
+  }, [variables, editorText]);
 
   useEffect(() => {
     if (!variables) return;
     if (!recentlySucceeded) return;
-    setEditorValue(getEditorValue({ variables }));
+    setEditorValue(editorText);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recentlySucceeded]);
 
@@ -84,32 +90,35 @@ export default function RawVariableEditor({ children }: TProps) {
     error: replaceVariablesError,
   } = useMutation({
     mutationFn: async () => {
-      if (editorValue === null) {
+      if (!variables) return;
+      if (!tokens) {
         toast.add({
-          type: "error",
-          title: "No value",
-          description: "There is no value in the editor",
+          type: "warning",
+          title: "Variable references unavailable",
+          description: "Variable references are not available yet, please try again later.",
         });
         return;
       }
 
-      const variables = getVariablesFromRawText(editorValue);
+      const referencesByValue = referenceMapForVariables(tokens, variables);
       const parsedVariables: z.infer<typeof VariableForCreateSchema>[] = [];
 
-      for (const variable of variables) {
+      for (const variable of getVariablesFromRawText(editorValue)) {
         const res = VariableForCreateSchema.safeParse(variable);
         if (!res.success) {
           console.error("Invalid variable", res.error);
           throw new Error(`Invalid variable "${variable.name}": ${res.error.errors[0].message}`);
         }
-        parsedVariables.push({ name: res.data.name, value: res.data.value });
+        parsedVariables.push({
+          name: res.data.name,
+          value: toStoredValue(res.data.value, referencesByValue),
+        });
       }
 
       await createOrUpdateVariables({
         ...typedProps,
         behavior: "overwrite",
         variables: parsedVariables,
-        variableReferences: undefined,
       });
 
       for (const i of parsedVariables) {
@@ -146,7 +155,7 @@ export default function RawVariableEditor({ children }: TProps) {
         if (!o) {
           if (timeoutRef.current) clearTimeout(timeoutRef.current);
           timeoutRef.current = setTimeout(() => {
-            resetEditorValue();
+            setEditorValue(editorText);
           }, defaultAnimationMs);
         }
       }}
@@ -170,12 +179,17 @@ export default function RawVariableEditor({ children }: TProps) {
             />
           </div>
         </DialogHeader>
-        <VariableEditorOrPlaceholder
-          variables={variables}
-          recentlySucceeded={recentlySucceeded}
-          editorValue={editorValue}
-          onEditorValueChange={setEditorValue}
-        />
+        {variables ? (
+          <VariableEditor
+            variables={variables}
+            referencesDisabled={typedProps.type !== "service"}
+            recentlySucceeded={recentlySucceeded}
+            editorValue={editorValue}
+            onEditorValueChange={setEditorValue}
+          />
+        ) : (
+          <EditorSkeleton />
+        )}
         {error && <ErrorLine message={error.message} />}
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
           <DialogClose
@@ -200,46 +214,27 @@ export default function RawVariableEditor({ children }: TProps) {
   );
 }
 
-function VariableEditorOrPlaceholder({
-  variables,
-  editorValue,
-  onEditorValueChange,
-  recentlySucceeded,
-}: Omit<TVariableEditorProps, "variables"> & { variables?: TVariableShallow[] }) {
-  if (!variables) {
-    return (
-      <div
-        style={{ paddingLeft: 14, paddingRight: 14, paddingTop: 10, paddingBottom: 10 }}
-        className="bg-card flex flex-1 flex-col gap-1 overflow-hidden rounded-lg border font-mono"
-      >
-        {Array.from({ length: 20 }).map((_, i) => (
-          <div
-            key={i}
-            className="pointer-events-none flex w-full items-center gap-1 text-transparent select-none"
-          >
-            <span className="bg-foreground animate-skeleton flex-1 rounded-md leading-tight">
-              N
-            </span>
-            <span className="bg-muted-more-foreground animate-skeleton flex-2 rounded-md leading-tight">
-              V
-            </span>
-          </div>
-        ))}
-      </div>
-    );
-  }
+function EditorSkeleton() {
   return (
-    <VariableEditor
-      variables={variables}
-      editorValue={editorValue}
-      onEditorValueChange={onEditorValueChange}
-      recentlySucceeded={recentlySucceeded}
-    />
+    <div className="bg-card flex flex-1 flex-col gap-1 overflow-hidden rounded-lg border px-3.5 py-2.5 font-mono">
+      {Array.from({ length: 20 }).map((_, i) => (
+        <div
+          key={i}
+          className="pointer-events-none flex w-full items-center gap-1 text-transparent select-none"
+        >
+          <span className="bg-foreground animate-skeleton flex-1 rounded-md leading-tight">N</span>
+          <span className="bg-muted-more-foreground animate-skeleton flex-2 rounded-md leading-tight">
+            V
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }
 
 type TVariableEditorProps = {
   variables: TVariableShallow[];
+  referencesDisabled: boolean;
   recentlySucceeded: boolean;
   onEditorValueChange: (s: string) => void;
   editorValue: string;
@@ -247,35 +242,33 @@ type TVariableEditorProps = {
 
 function VariableEditor({
   variables,
+  referencesDisabled,
   recentlySucceeded,
   editorValue,
   onEditorValueChange,
 }: TVariableEditorProps) {
-  const [hiddenValue, setHiddenValue] = useState(getEditorValue({ variables, hidden: true }));
+  const { tokens } = useVariableReferences();
+  const { language, icons } = useVariableReferenceLanguage(tokens, "env");
+  const hiddenValue = useMemo(() => getEditorValue({ variables, hidden: true }), [variables]);
+  // Values stay masked until the editor is focused
   const [isHidden, setIsHidden] = useState(true);
-
-  useEffect(() => {
-    if (variables) setHiddenValue(getEditorValue({ variables, hidden: true }));
-  }, [variables]);
 
   return (
     <div className="relative -mx-3 flex w-[calc(100%+1.5rem)] flex-1 flex-col overflow-hidden sm:mx-0 sm:w-full">
-      <ScrollArea
-        classNameViewport="[&>div]:group-data-[orientation=vertical]/root:flex-1"
-        className="bg-card flex flex-1 flex-col overflow-auto rounded-lg border font-mono"
-      >
-        <div className="flex w-full flex-1 flex-col">
-          <Editor
-            placeholder="VARIABLE_NAME=Value"
-            padding={{ left: 14, right: 14, top: 10, bottom: 10 }}
-            value={isHidden ? hiddenValue : editorValue}
-            onValueChange={onEditorValueChange}
-            className="flex-1"
-            onFocus={() => setIsHidden(false)}
-            highlight={(v) => highlight(v, Prism.languages.ini, "ini")}
-          />
-        </div>
-      </ScrollArea>
+      {!referencesDisabled && <IconCache icons={icons} />}
+      <Suspense fallback={<EditorSkeleton />}>
+        <TokenFieldLazy
+          value={isHidden ? hiddenValue : editorValue}
+          onChange={onEditorValueChange}
+          onFocus={() => setIsHidden(false)}
+          language={referencesDisabled ? undefined : language}
+          completionAdditions={referencesDisabled ? undefined : referenceCompletionAdditions}
+          multiline
+          placeholder="VARIABLE_NAME=Value"
+          className="bg-card min-h-0 flex-1 rounded-lg"
+          classNameEditor="h-full overflow-auto px-3.5 py-2.5 font-mono font-normal"
+        />
+      </Suspense>
       <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-xl">
         <div
           data-open={recentlySucceeded || undefined}
@@ -300,12 +293,18 @@ function VariableEditor({
 
 function getEditorValue({
   variables,
+  tokens,
   hidden,
 }: {
   variables: TVariableShallow[];
+  tokens?: Parameters<typeof readableTokenMap>[0];
   hidden?: boolean;
 }) {
+  const storedToReadable = readableTokenMap(tokens ?? []);
   return variables
-    .map((variable) => `${variable.name}=${hidden ? "••••••••••" : variable.value}`)
+    .map((variable) => {
+      if (hidden) return `${variable.name}=••••••••••`;
+      return `${variable.name}=${toReadableValue(variable.value, variable.references, storedToReadable)}`;
+    })
     .join("\n");
 }

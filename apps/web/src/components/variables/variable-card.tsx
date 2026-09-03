@@ -2,6 +2,7 @@
 
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
+import { IconCache } from "@/components/icons/icon-cache";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -14,21 +15,31 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { referenceMapFromTokens, type TVariableToken } from "@/components/variables/tokens";
+import { cn } from "@/components/ui/utils";
+import {
+  referenceMapForVariables,
+  splitByUnresolved,
+  toReadableValue,
+  toStoredValue,
+  type TLiteralPart,
+} from "@/components/variables/helpers";
+import { readableTokenForReference, readableTokenMap } from "@/components/variables/tokens";
+import { TEntityVariableTypeProps } from "@/components/variables/types";
+import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import {
   splitByReferences,
   type TReferencePart,
 } from "@/components/variables/variable-reference-parts";
-import { cn } from "@/components/ui/utils";
-import { getReferenceVariableReadableNames } from "@/components/variables/tokens";
-import { TEntityVariableTypeProps } from "@/components/variables/types";
+import {
+  useVariableReferenceLanguage,
+  VariableValueField,
+} from "@/components/variables/variables-form-field";
 import { useVariablesUtils } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   createOrUpdateVariables,
   deleteVariables,
-  TVariableReferenceShallow,
-  TVariableReferenceShallowSource,
+  TVariableReferenceInfo,
   TVariableShallow,
   VariableForCreateValueSchema,
 } from "@/lib/queries/variables";
@@ -53,10 +64,7 @@ import { z } from "zod";
 const hiddenString = "••••••••••";
 const tokenPrefix = "${";
 const tokenSuffix = "}";
-
-export type TVariableOrReferenceShallow =
-  | ({ variable_type: "regular" } & TVariableShallow)
-  | ({ variable_type: "reference" } & TVariableReferenceShallow);
+const unresolvedMessage = "Some references don't resolve and are used as literal text.";
 
 type TPlaceholderProps = {
   isPlaceholder: true;
@@ -65,7 +73,7 @@ type TPlaceholderProps = {
 };
 
 type TVariableProps = {
-  variable: TVariableOrReferenceShallow;
+  variable: TVariableShallow;
   variableTypeProps: TEntityVariableTypeProps;
   isPlaceholder?: never;
 };
@@ -81,6 +89,11 @@ type TProps = {
   Icon?: FC<{ className?: string }>;
 } & TVariableOrPlaceholderProps;
 
+type TValueParts = {
+  masked: TReferencePart<TVariableReferenceInfo>[];
+  resolved: TLiteralPart[];
+};
+
 export default function VariableCard({
   variable,
   variableTypeProps,
@@ -95,58 +108,26 @@ export default function VariableCard({
   const Element = asElement === "li" ? "li" : "div";
   const [isValueVisible, setIsValueVisible] = useState(false);
   const [isEditingVariable, setIsEditingVariable] = useState(false);
+  const { tokens } = useVariableReferences();
 
-  const variableValueParts: TReferencePart<TVariableToken<TVariableReferenceShallowSource>>[] =
-    useMemo(() => {
-      const plain = [{ value: hiddenString, from: 0, to: hiddenString.length, reference: null }];
-      if (isPlaceholder) return plain;
-      if (variable.variable_type !== "reference") return plain;
+  const isDynamic = !!variable && variable.references.length > 0;
+  const hasUnresolved = isDynamic && variable.references.some((r) => !r.resolved);
 
-      const sources = variable.sources;
-      const sourceMap = new Map<string, string>();
-
-      sources.forEach((source) => {
-        const key = source.key;
-        const { sourceName: _sourceName, readableKey: _readableKey } =
-          getReferenceVariableReadableNames({
-            key,
-            object: source,
-          });
-        const sourceName = _sourceName;
-        let readableKey = _readableKey;
-
-        if (source.type === "internal_endpoint") {
-          readableKey = source.key.replace(source.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
-        } else if (source.type === "external_endpoint") {
-          readableKey = `UNBIND_EXTERNAL_URL`;
-        }
-
-        sourceMap.set(
-          `${tokenPrefix}${source.source_kubernetes_name}.${source.key}${tokenSuffix}`,
-          `${tokenPrefix}${sourceName}.${readableKey}${tokenSuffix}`,
-        );
-      });
-
-      let textValue = variable.value;
-      sourceMap.forEach((readableKey, key) => {
-        textValue = textValue.replaceAll(key, readableKey);
-      });
-
-      const tokens: TVariableToken<TVariableReferenceShallowSource>[] = variable.sources.map(
-        (source) => ({
-          object: source,
-          value:
-            sourceMap.get(
-              `${tokenPrefix}${source.source_kubernetes_name}.${source.key}${tokenSuffix}`,
-            ) || "",
-        }),
-      );
-
-      return splitByReferences(textValue, referenceMapFromTokens(tokens));
-    }, [variable, isPlaceholder]);
-
-  const referenceError =
-    variable?.variable_type === "reference" && variable.error ? variable.error : null;
+  // Masked: references show as chips, text stays hidden. Visible: the rendered value.
+  const parts: TValueParts = useMemo(() => {
+    if (!variable || !isDynamic) return { masked: [], resolved: [] };
+    const storedToReadable = readableTokenMap(tokens ?? []);
+    const byReadable = new Map(
+      variable.references.map((r) => [readableTokenForReference(r, storedToReadable), r]),
+    );
+    return {
+      masked: splitByReferences(
+        toReadableValue(variable.value, variable.references, storedToReadable),
+        byReadable,
+      ),
+      resolved: splitByUnresolved(variable.resolved_value ?? variable.value, variable.references),
+    };
+  }, [variable, isDynamic, tokens]);
 
   const placeholderOrVariableProps: TVariableOrPlaceholderProps = useMemo(() => {
     if (isPlaceholder) {
@@ -163,9 +144,9 @@ export default function VariableCard({
       data-placeholder={isPlaceholder || undefined}
       data-value-visible={isValueVisible || undefined}
       data-not-editing={!isEditingVariable || undefined}
-      data-type={variable?.variable_type}
-      data-reference-error={referenceError || undefined}
-      className="data-reference-error:bg-destructive/4 group/card data-reference-error:border-destructive/12 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-0.75"
+      data-dynamic={isDynamic || undefined}
+      data-unresolved={hasUnresolved || undefined}
+      className="group/card data-unresolved:bg-warning/4 data-unresolved:border-warning/24 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-0.75"
     >
       {variable && (
         <NewEntityIndicator
@@ -174,10 +155,10 @@ export default function VariableCard({
       )}
       <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
         {Icon && <Icon className="text-foreground mr-2 size-3.5 shrink-0" />}
-        {!Icon && variable?.variable_type === "reference" && (
+        {!Icon && variable && isDynamic && (
           <Link2Icon className="text-process mr-2 size-3.5 shrink-0" />
         )}
-        {!Icon && variable?.variable_type === "regular" && (
+        {!Icon && variable && !isDynamic && (
           <KeyIcon className="text-foreground mr-2 size-3.5 shrink-0" />
         )}
         {isPlaceholder && (
@@ -191,7 +172,7 @@ export default function VariableCard({
         {(!variable || !isEditingVariable) && (
           <>
             <CopyButton
-              valueToCopy={variable?.value}
+              valueToCopy={variable?.resolved_value ?? variable?.value}
               isPlaceholder={isPlaceholder}
               disableCopy={disableCopy}
               classNameIcon="size-4"
@@ -203,65 +184,45 @@ export default function VariableCard({
               forceMinSize="medium"
               size="icon"
               className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
-              disabled={isPlaceholder || referenceError !== null}
+              disabled={isPlaceholder}
               fadeOnDisabled={false}
             >
               <div className="relative size-4">
-                {referenceError ? (
-                  <TriangleAlertIcon className="text-destructive size-full" />
-                ) : (
-                  <>
-                    <EyeIcon className="size-full group-data-visible/button:opacity-0" />
-                    <EyeOffIcon className="absolute top-0 left-0 size-full opacity-0 group-data-visible/button:opacity-100" />
-                    {isPlaceholder && (
-                      <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
-                    )}
-                  </>
+                <EyeIcon className="size-full group-data-visible/button:opacity-0" />
+                <EyeOffIcon className="absolute top-0 left-0 size-full opacity-0 group-data-visible/button:opacity-100" />
+                {isPlaceholder && (
+                  <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
                 )}
               </div>
             </Button>
+            {hasUnresolved && (
+              <TriangleAlertIcon
+                aria-label={unresolvedMessage}
+                className="text-warning mt-2.5 ml-1 size-4 shrink-0"
+              >
+                <title>{unresolvedMessage}</title>
+              </TriangleAlertIcon>
+            )}
             <div className="relative flex min-h-9 min-w-0 flex-1 items-center justify-start pl-2">
               <ScrollArea
                 className="max-h-[min(16rem,50vh)] w-full mask-[linear-gradient(to_bottom,transparent_0%,black_0.375rem,black_calc(100%-0.375rem),transparent_100%)]"
                 classNameViewport="py-1.5"
               >
                 <div className="flex w-full justify-start">
-                  <p className="group-data-placeholder/card:bg-foreground group-data-reference-error/card:text-destructive group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-                    {referenceError
-                      ? "The referenced value doesn't exist anymore. Consider deleting this."
-                      : isPlaceholder || !isValueVisible
-                        ? hiddenString
-                        : variable.variable_type === "reference"
-                          ? variableValueParts.map((part, index) => (
-                              <span
-                                data-token={part.reference !== null || undefined}
-                                key={index}
-                                className="data-token:bg-process/10 data-token:ring-process/20 data-token:text-process data-token:rounded-2px data-token:box-decoration-clone data-token:ring-1"
-                              >
-                                {part.reference !== null ? (
-                                  <>
-                                    <span className="text-process/50">
-                                      {part.value.slice(0, tokenPrefix.length)}
-                                    </span>
-                                    <span>
-                                      {part.value.slice(
-                                        tokenPrefix.length,
-                                        part.value.length - tokenSuffix.length,
-                                      )}
-                                    </span>
-                                    <span className="text-process/50">
-                                      {part.value.slice(
-                                        part.value.length - tokenSuffix.length,
-                                        part.value.length,
-                                      )}
-                                    </span>
-                                  </>
-                                ) : (
-                                  part.value
-                                )}
-                              </span>
-                            ))
-                          : variable.value}
+                  <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+                    {isPlaceholder || !variable ? (
+                      hiddenString
+                    ) : !isValueVisible ? (
+                      isDynamic ? (
+                        <MaskedValue parts={parts.masked} />
+                      ) : (
+                        hiddenString
+                      )
+                    ) : isDynamic ? (
+                      <ResolvedValue parts={parts.resolved} />
+                    ) : (
+                      variable.value
+                    )}
                   </p>
                 </div>
               </ScrollArea>
@@ -270,7 +231,6 @@ export default function VariableCard({
               {!hideThreeDotButton && (
                 <ConditionalDropdownButton
                   {...placeholderOrVariableProps}
-                  referenceError={referenceError}
                   disableDelete={disableDelete}
                   disableEdit={disableEdit}
                   setIsEditingVariable={setIsEditingVariable}
@@ -292,7 +252,6 @@ export default function VariableCard({
           {!hideThreeDotButton && (
             <ConditionalDropdownButton
               {...placeholderOrVariableProps}
-              referenceError={referenceError}
               disableDelete={disableDelete}
               disableEdit={disableEdit}
               setIsEditingVariable={setIsEditingVariable}
@@ -309,19 +268,52 @@ export function getNewEntityIdForVariable({ name, value }: { name: string; value
   return `${name}|${value}`;
 }
 
+function MaskedValue({ parts }: { parts: TReferencePart<TVariableReferenceInfo>[] }) {
+  return parts.map((part, index) =>
+    part.reference !== null ? (
+      <span
+        key={index}
+        data-unresolved={!part.reference.resolved || undefined}
+        className="bg-process/10 ring-process/20 text-process rounded-2px data-unresolved:bg-warning/10 data-unresolved:ring-warning/20 data-unresolved:text-warning box-decoration-clone ring-1"
+      >
+        <span className="opacity-50">{part.value.slice(0, tokenPrefix.length)}</span>
+        <span>{part.value.slice(tokenPrefix.length, part.value.length - tokenSuffix.length)}</span>
+        <span className="opacity-50">
+          {part.value.slice(part.value.length - tokenSuffix.length)}
+        </span>
+      </span>
+    ) : (
+      <span key={index}>{hiddenString}</span>
+    ),
+  );
+}
+
+function ResolvedValue({ parts }: { parts: TLiteralPart[] }) {
+  return parts.map((part, index) =>
+    part.unresolved ? (
+      <span
+        key={index}
+        className="bg-warning/10 ring-warning/20 text-warning rounded-2px box-decoration-clone ring-1"
+      >
+        {part.value}
+      </span>
+    ) : (
+      <span key={index}>{part.value}</span>
+    ),
+  );
+}
+
 function ConditionalDropdownButton({
   isPlaceholder,
   variable,
   variableTypeProps,
   disableEdit,
   disableDelete,
-  referenceError,
   setIsEditingVariable,
   className,
 }: TVariableOrPlaceholderProps & {
   disableDelete?: boolean;
   disableEdit?: boolean;
-  referenceError: string | null;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
   className?: string;
 }) {
@@ -336,26 +328,6 @@ function ConditionalDropdownButton({
       >
         <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
       </Button>
-    );
-  }
-
-  if (referenceError) {
-    return (
-      <DeleteTrigger
-        variable={variable}
-        variableTypeProps={variableTypeProps}
-        closeDropdown={() => setIsEditingVariable(false)}
-      >
-        <Button
-          aria-label="Delete"
-          fadeOnDisabled={false}
-          variant="ghost-destructive"
-          size="icon"
-          className={cn("text-destructive/75 group/button rounded-md", className)}
-        >
-          <Trash2Icon className="size-5 transition-transform" />
-        </Button>
-      </DeleteTrigger>
     );
   }
 
@@ -379,7 +351,7 @@ function ThreeDotButton({
   disableEdit,
   className,
 }: {
-  variable: TVariableOrReferenceShallow;
+  variable: TVariableShallow;
   variableTypeProps: TEntityVariableTypeProps;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
   disableDelete?: boolean;
@@ -485,40 +457,51 @@ function ThreeDotButton({
   );
 }
 
+// Edits in the readable form with the same reference editor the create form uses
 function EditVariableForm({
   variable,
   variableTypeProps,
   setIsEditingVariable,
 }: {
-  variable: TVariableOrReferenceShallow;
+  variable: TVariableShallow;
   variableTypeProps: TEntityVariableTypeProps;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { refetch } = useVariablesUtils({
     ...variableTypeProps,
   });
+  const { tokens } = useVariableReferences();
+  const referencesDisabled = variableTypeProps.type !== "service";
+  const { language, icons } = useVariableReferenceLanguage(tokens);
+
+  const [readableValue] = useState(() =>
+    toReadableValue(variable.value, variable.references, readableTokenMap(tokens ?? [])),
+  );
+  const referencesByValue = useMemo(
+    () => referenceMapForVariables(tokens ?? [], [variable]),
+    [tokens, variable],
+  );
 
   const { mutateAsync: upsertVariables, error } = useMutation({
     mutationFn: createOrUpdateVariables,
-    onSuccess: () => {},
   });
 
   const form = useAppForm({
     defaultValues: {
-      variableValue: variable.value,
+      variableValue: readableValue,
     },
     validators: {
       onChange: z.object({ variableValue: VariableForCreateValueSchema }),
     },
     onSubmit: async (d) => {
-      if (d.value.variableValue === variable.value) {
+      const stored = toStoredValue(d.value.variableValue, referencesByValue);
+      if (stored === variable.value) {
         setIsEditingVariable(false);
         return;
       }
       await upsertVariables({
         ...variableTypeProps,
-        variables: [{ name: variable.name, value: d.value.variableValue }],
-        variableReferences: [],
+        variables: [{ name: variable.name, value: stored }],
       });
       refetch();
       setIsEditingVariable(false);
@@ -527,6 +510,7 @@ function EditVariableForm({
 
   return (
     <div className="flex flex-1 flex-col gap-1">
+      {!referencesDisabled && <IconCache icons={icons} />}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -538,19 +522,12 @@ function EditVariableForm({
         <form.AppField
           name="variableValue"
           children={(field) => (
-            <field.TextField
-              field={field}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-              className="flex-1"
+            <VariableValueField
+              Field={field.TokenField}
+              subField={field}
+              language={language}
+              referencesDisabled={referencesDisabled}
               placeholder="abc123"
-              classNameInput="rounded-lg px-2.5 py-1.5 h-9 sm:rounded-md font-mono"
-              classNameInfo="pt-1 pb-0.5 text-xs"
-              autoCapitalize="off"
-              autoCorrect="off"
-              autoComplete="off"
-              spellCheck="false"
             />
           )}
         />
@@ -601,7 +578,7 @@ function DeleteTrigger({
   handle,
   children,
 }: {
-  variable: TVariableOrReferenceShallow;
+  variable: TVariableShallow;
   variableTypeProps: TEntityVariableTypeProps;
   closeDropdown?: () => void;
   handle?: TDialogHandle;
@@ -619,10 +596,7 @@ function DeleteTrigger({
   } = useMutation({
     mutationFn: deleteVariables,
     onSuccess: async () => {
-      optimisticRemoveVariables({
-        variables: variable.variable_type === "reference" ? [] : [variable],
-        variableReferences: variable.variable_type === "reference" ? [variable] : [],
-      });
+      optimisticRemoveVariables({ variables: [variable] });
       invalidateVariables();
       closeDropdown?.();
     },
@@ -650,8 +624,7 @@ function DeleteTrigger({
       onSubmit={async () => {
         await deleteVariable({
           ...variableTypeProps,
-          variables: variable.variable_type === "reference" ? [] : [{ name: variable.name }],
-          variableReferenceIds: variable.variable_type === "reference" ? [variable.id] : [],
+          variables: [{ name: variable.name }],
         });
       }}
     >

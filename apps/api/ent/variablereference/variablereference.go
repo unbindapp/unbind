@@ -29,6 +29,8 @@ const (
 	FieldValueTemplate = "value_template"
 	// FieldError holds the string denoting the error field in the database.
 	FieldError = "error"
+	// FieldMigratedAt holds the string denoting the migrated_at field in the database.
+	FieldMigratedAt = "migrated_at"
 	// EdgeService holds the string denoting the service edge name in mutations.
 	EdgeService = "service"
 	// Table holds the table name of the variablereference in the database.
@@ -52,6 +54,7 @@ var Columns = []string{
 	FieldSources,
 	FieldValueTemplate,
 	FieldError,
+	FieldMigratedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -111,6 +114,11 @@ func ByValueTemplate(opts ...sql.OrderTermOption) OrderOption {
 // ByError orders the results by the error field.
 func ByError(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldError, opts...).ToFunc()
+}
+
+// ByMigratedAt orders the results by the migrated_at field.
+func ByMigratedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMigratedAt, opts...).ToFunc()
 }
 
 // ByServiceField orders the results by service field.

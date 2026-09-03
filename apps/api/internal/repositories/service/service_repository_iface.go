@@ -47,4 +47,8 @@ type ServiceRepositoryInterface interface {
 	GetDatabaseStorageConfig(ctx context.Context, serviceID uuid.UUID) (*schema.DatabaseConfig, []schema.ServiceVolume, error)
 	// Get database config for a service
 	GetDatabaseConfig(ctx context.Context, serviceID uuid.UUID) (*schema.DatabaseConfig, error)
+	// GetByIDs loads services with their config and the environment, project and team they belong to
+	GetByIDs(ctx context.Context, serviceIDs []uuid.UUID) ([]*ent.Service, error)
+	// GetByScope lists every service under a team, project or environment, loaded for ad-hoc redeploys
+	GetByScope(ctx context.Context, scope schema.VariableReferenceSourceType, scopeID uuid.UUID) ([]*ent.Service, error)
 }

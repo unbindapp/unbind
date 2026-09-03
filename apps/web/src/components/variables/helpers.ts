@@ -1,9 +1,16 @@
 // Relative imports so this can run under `node --test`.
-import { referenceMapFromTokens, type TReferenceExtended, type TVariableToken } from "./tokens.ts";
+import {
+  readableTokenForReference,
+  readableTokenMap,
+  referenceMapFromTokens,
+  type TReferenceExtended,
+  type TVariableToken,
+} from "./tokens.ts";
 import { splitByReferences } from "./variable-reference-parts.ts";
 import type {
   TVariableForCreate,
-  TVariableReferenceForCreate,
+  TVariableReferenceInfo,
+  TVariableShallow,
 } from "../../lib/queries/variables.ts";
 
 export function unwrapQuotes(value: string) {
@@ -27,52 +34,89 @@ export function getVariablesFromRawText(text: string) {
   return pairs;
 }
 
-export function getVariablesPair({
-  variables,
-  tokens,
-}: {
-  variables: TVariableForCreate[];
-  tokens: readonly TVariableToken<TReferenceExtended>[];
-}) {
+/** Readable `${Source.KEY}` tokens become their stored template; unknown ones stay text. */
+export function toStoredValue<T extends { template: string }>(
+  value: string,
+  referencesByValue: ReadonlyMap<string, TVariableToken<T>>,
+) {
+  return splitByReferences(value, referencesByValue)
+    .map((part) => (part.reference !== null ? part.reference.object.template : part.value))
+    .join("");
+}
+
+export function toStoredVariables(
+  variables: readonly TVariableForCreate[],
+  tokens: readonly TVariableToken<TReferenceExtended>[],
+): TVariableForCreate[] {
   const referencesByValue = referenceMapFromTokens(tokens);
-  const variablesWithParts = variables.map((v) => ({
-    name: v.name,
-    parts: splitByReferences(v.value, referencesByValue),
-  }));
+  return variables.map((v) => ({ name: v.name, value: toStoredValue(v.value, referencesByValue) }));
+}
 
-  const variablesRegular: TVariableForCreate[] = variablesWithParts
-    .filter((v) => v.parts.every((p) => p.reference === null))
-    .map((v) => ({ name: v.name, value: v.parts.map((p) => p.value).join("") }));
+/** Stored templates become their readable form, using the API's reference list for the value. */
+export function toReadableValue(
+  value: string,
+  references: readonly TVariableReferenceInfo[],
+  storedToReadable: ReadonlyMap<string, string>,
+) {
+  let readable = value;
+  for (const reference of references) {
+    readable = readable.replaceAll(
+      reference.token,
+      readableTokenForReference(reference, storedToReadable),
+    );
+  }
+  return readable;
+}
 
-  const variableReferences: TVariableReferenceForCreate[] = variablesWithParts
-    .filter((v) => v.parts.some((p) => p.reference !== null))
-    .map((v) => {
-      // TODO: Filter to only unique sources
-      const sources: TVariableReferenceForCreate["sources"] = v.parts
-        .filter((p) => p.reference !== null)
-        .map((p) => {
-          const object = p.reference!.object;
-          return {
-            key: object.key,
-            type: object.type,
-            source_id: object.source_id,
-            source_kubernetes_name: object.source_kubernetes_name,
-            source_type: object.source_type,
-            source_name: object.source_name,
-            source_icon: object.source_icon,
-          };
-        });
+export type TLiteralPart = { value: string; unresolved: boolean };
 
-      return {
-        name: v.name,
-        value: v.parts
-          .map((p) => (p.reference !== null ? p.reference.object.template : p.value))
-          .join(""),
-        sources,
-      };
-    });
-  return {
-    variables: variablesRegular,
-    variableReferences,
-  };
+/** Splits a rendered value around the references that stayed literal, so they can be marked. */
+export function splitByUnresolved(
+  value: string,
+  references: readonly TVariableReferenceInfo[],
+): TLiteralPart[] {
+  const unresolved = references.filter((r) => !r.resolved).map((r) => r.token);
+  if (unresolved.length === 0) return [{ value, unresolved: false }];
+
+  const parts: TLiteralPart[] = [];
+  let rest = value;
+  while (rest.length > 0) {
+    let nextIndex = -1;
+    let nextToken = "";
+    for (const token of unresolved) {
+      const index = rest.indexOf(token);
+      if (index === -1 || (nextIndex !== -1 && index >= nextIndex)) continue;
+      nextIndex = index;
+      nextToken = token;
+    }
+    if (nextIndex === -1) {
+      parts.push({ value: rest, unresolved: false });
+      break;
+    }
+    if (nextIndex > 0) parts.push({ value: rest.slice(0, nextIndex), unresolved: false });
+    parts.push({ value: nextToken, unresolved: true });
+    rest = rest.slice(nextIndex + nextToken.length);
+  }
+  return parts;
+}
+
+/**
+ * Readable tokens to stored templates for saving edited values. References that
+ * are not in the available list (e.g. a source the user can no longer see) keep
+ * their stored form instead of turning into text.
+ */
+export function referenceMapForVariables(
+  tokens: readonly TVariableToken<TReferenceExtended>[],
+  variables: readonly Pick<TVariableShallow, "references">[],
+): Map<string, TVariableToken<{ template: string }>> {
+  const storedToReadable = readableTokenMap(tokens);
+  const map = new Map<string, TVariableToken<{ template: string }>>(referenceMapFromTokens(tokens));
+  for (const variable of variables) {
+    for (const reference of variable.references) {
+      const readable = readableTokenForReference(reference, storedToReadable);
+      if (readable === reference.token || map.has(readable)) continue;
+      map.set(readable, { value: readable, object: { template: reference.token } });
+    }
+  }
+  return map;
 }

@@ -641,21 +641,18 @@
     resize: none;
   }
 
-  .token.attr-name {
-    color: var(--process);
-  }
-
-  .token.attr-value {
-    color: var(--success);
-  }
-
-  .token.punctuation {
-    color: color-mix(in oklab, var(--foreground) 75%, transparent);
-  }
-
-  /* Token field syntax colors, kept in step with the Prism tokens above. */
+  /* Token field syntax colors. */
   .tok-key {
     color: var(--process);
+  }
+
+  /* NAME= in the raw variable editor */
+  .tok-env-name {
+    color: var(--process);
+  }
+
+  .tok-env-punct {
+    color: color-mix(in oklab, var(--foreground) 75%, transparent);
   }
 
   .tok-punct {

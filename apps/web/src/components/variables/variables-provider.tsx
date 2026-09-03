@@ -5,7 +5,6 @@ import {
   queryKeyVariables,
   variablesListQuery,
   type TCreateOrUpdateVariablesInput,
-  type TVariableReferenceShallow,
   type TVariableShallow,
   type TVariablesList,
 } from "@/lib/queries/variables";
@@ -84,13 +83,7 @@ export const useVariablesUtils = ({
   return {
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     refetch: () => queryClient.refetchQueries({ queryKey }),
-    optimisticRemove: ({
-      variables,
-      variableReferences,
-    }: {
-      variables: TVariableShallow[];
-      variableReferences: TVariableReferenceShallow[];
-    }) => {
+    optimisticRemove: ({ variables }: { variables: TVariableShallow[] }) => {
       queryClient.setQueryData<TVariablesList>(queryKey, (data) => {
         if (!data) return data;
         return {
@@ -101,18 +94,11 @@ export const useVariablesUtils = ({
             );
             return !shouldRemove;
           }),
-          variable_references: data.variable_references.filter((v1) => {
-            const shouldRemove = variableReferences.some((v2) => v1.id === v2.id);
-            return !shouldRemove;
-          }),
         };
       });
     },
     setVariables: (variables: TVariableShallow[]) => {
-      queryClient.setQueryData<TVariablesList>(queryKey, (old) => ({
-        variables,
-        variable_references: old?.variable_references || [],
-      }));
+      queryClient.setQueryData<TVariablesList>(queryKey, () => ({ variables }));
     },
   };
 };

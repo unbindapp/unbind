@@ -4,10 +4,11 @@ import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
 import { useVariables } from "@/components/variables/variables-provider";
 import { cn } from "@/components/ui/utils";
-import VariableCard, { TVariableOrReferenceShallow } from "@/components/variables/variable-card";
+import VariableCard from "@/components/variables/variable-card";
 import { HourglassIcon, KeyIcon, LoaderIcon } from "lucide-react";
-import { ReactNode, useMemo } from "react";
+import { ReactNode } from "react";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
+import { TVariableShallow } from "@/lib/queries/variables";
 import { z } from "zod";
 
 type TProps = {
@@ -45,16 +46,32 @@ const ALL_SPECIAL_DB_VARIABLES: string[] = Array.from(
   ]),
 );
 
+export function specialDbVariablesFor(databaseType: string): string[] {
+  if (databaseType === "redis") return SPECIAL_REDIS_VARIABLES_ENUM.options;
+  if (databaseType === "clickhouse") return SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
+  return SPECIAL_DB_VARIABLES_ENUM.options;
+}
+
 export function arrayHasAllSpecialDbVariables(arr: string[], database_type: string) {
-  let variables: string[] = SPECIAL_DB_VARIABLES_ENUM.options;
+  return specialDbVariablesFor(database_type).every((val) => arr.includes(val));
+}
 
-  if (database_type === "redis") {
-    variables = SPECIAL_REDIS_VARIABLES_ENUM.options;
-  } else if (database_type === "clickhouse") {
-    variables = SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
+function databaseTypeOf(variableTypeProps: TEntityVariableTypeProps) {
+  if (variableTypeProps.type !== "service" || variableTypeProps.service.type !== "database") {
+    return null;
   }
+  return variableTypeProps.service.database_type || "";
+}
 
-  return variables.every((val) => arr.includes(val));
+// Auto-generated database variables are written by the operator and can't be changed
+function isLockedVariable(variable: TVariableShallow, variableTypeProps: TEntityVariableTypeProps) {
+  const databaseType = databaseTypeOf(variableTypeProps);
+  if (databaseType === null) return false;
+  return specialDbVariablesFor(databaseType).includes(variable.name);
+}
+
+export function isDynamicVariable(variable: TVariableShallow) {
+  return variable.references.length > 0;
 }
 
 export default function VariablesList({ variableTypeProps }: TProps) {
@@ -62,21 +79,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
     list: { data, isPending, error },
   } = useVariables();
 
-  const variables: TVariableOrReferenceShallow[] | undefined = useMemo(
-    () =>
-      data
-        ? [
-            ...data.variable_references
-              .filter((v) => v.error !== null)
-              .map((v) => ({ variable_type: "reference", ...v }) as const),
-            ...data.variable_references
-              .filter((v) => v.error === null)
-              .map((v) => ({ variable_type: "reference", ...v }) as const),
-            ...data.variables.map((v) => ({ variable_type: "regular", ...v }) as const),
-          ]
-        : undefined,
-    [data],
-  );
+  const variables = data?.variables;
 
   if (!variables && !isPending && error) {
     return (
@@ -96,18 +99,13 @@ export default function VariablesList({ variableTypeProps }: TProps) {
     );
   }
 
-  const shouldHaveSpecialDbVariables =
-    variableTypeProps.type === "service" && variableTypeProps.service.type === "database";
-
-  const hasAllSpecialDbVariables =
-    variableTypeProps.type === "service" && variableTypeProps.service.type === "database"
-      ? arrayHasAllSpecialDbVariables(
-          variables.map((v) => v.name),
-          variableTypeProps.service.database_type || "",
-        )
-      : false;
-
-  const showSpecialDbVariablesSection = shouldHaveSpecialDbVariables && !hasAllSpecialDbVariables;
+  const databaseType = databaseTypeOf(variableTypeProps);
+  const showSpecialDbVariablesSection =
+    databaseType !== null &&
+    !arrayHasAllSpecialDbVariables(
+      variables.map((v) => v.name),
+      databaseType,
+    );
 
   if (variables.length === 0) {
     return (
@@ -136,81 +134,34 @@ export default function VariablesList({ variableTypeProps }: TProps) {
       )}
       {variables
         .toSorted((a, b) => variablesSort(a, b, variableTypeProps))
-        .map((variable) => (
-          <VariableCard
-            variable={variable}
-            disableDelete={shouldDeleteBeDisabled(variable, variableTypeProps)}
-            disableEdit={shouldEditBeDisabled(variable, variableTypeProps)}
-            disableCopy={variable.variable_type === "reference"}
-            variableTypeProps={variableTypeProps}
-            asElement="li"
-            key={`${variable.variable_type}:${variable.name}:${variable.value}`}
-          />
-        ))}
+        .map((variable) => {
+          const locked = isLockedVariable(variable, variableTypeProps);
+          return (
+            <VariableCard
+              variable={variable}
+              disableDelete={locked}
+              disableEdit={locked}
+              variableTypeProps={variableTypeProps}
+              asElement="li"
+              key={`${variable.name}:${variable.value}`}
+            />
+          );
+        })}
     </Wrapper>
   );
 }
 
-function shouldDeleteBeDisabled(
-  variable: TVariableOrReferenceShallow,
-  variableTypeProps: TEntityVariableTypeProps,
-) {
-  if (
-    variable.variable_type === "regular" &&
-    variableTypeProps.type === "service" &&
-    variableTypeProps.service.type === "database"
-  ) {
-    let variables: string[] = SPECIAL_DB_VARIABLES_ENUM.options;
-    if (variableTypeProps.service.database_type === "redis") {
-      variables = SPECIAL_REDIS_VARIABLES_ENUM.options;
-    } else if (variableTypeProps.service.database_type === "clickhouse") {
-      variables = SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
-    }
-
-    return variables.includes(variable.name);
-  }
-  return false;
-}
-
-function shouldEditBeDisabled(
-  variable: TVariableOrReferenceShallow,
-  variableTypeProps: TEntityVariableTypeProps,
-) {
-  if (variable.variable_type === "reference") {
-    return true;
-  }
-  if (
-    variable.variable_type === "regular" &&
-    variableTypeProps.type === "service" &&
-    variableTypeProps.service.type === "database"
-  ) {
-    let variables: string[] = SPECIAL_DB_VARIABLES_ENUM.options;
-    if (variableTypeProps.service.database_type === "redis") {
-      variables = SPECIAL_REDIS_VARIABLES_ENUM.options;
-    } else if (variableTypeProps.service.database_type === "clickhouse") {
-      variables = SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
-    }
-
-    return variables.includes(variable.name);
-  }
-  return false;
-}
-
 function variablesSort(
-  a: TVariableOrReferenceShallow,
-  b: TVariableOrReferenceShallow,
+  a: TVariableShallow,
+  b: TVariableShallow,
   variableTypeProps: TEntityVariableTypeProps,
 ) {
-  if (a.variable_type === "reference" && b.variable_type !== "reference") {
-    return -1;
-  }
-  if (a.variable_type !== "reference" && b.variable_type === "reference") {
-    return 1;
-  }
-  if (a.variable_type === "reference" && b.variable_type === "reference") {
-    return 0;
-  }
-  if (variableTypeProps.type === "service" && variableTypeProps.service.type === "database") {
+  const aDynamic = isDynamicVariable(a);
+  const bDynamic = isDynamicVariable(b);
+  if (aDynamic !== bDynamic) return aDynamic ? -1 : 1;
+  if (aDynamic) return 0;
+
+  if (databaseTypeOf(variableTypeProps) !== null) {
     const aIndex = ALL_SPECIAL_DB_VARIABLES.indexOf(a.name);
     const bIndex = ALL_SPECIAL_DB_VARIABLES.indexOf(b.name);
     if (aIndex !== -1 && bIndex !== -1) {
@@ -230,22 +181,11 @@ function SpecialDbVariablesSection({
   variables,
   variableTypeProps,
 }: {
-  variables: TVariableOrReferenceShallow[];
+  variables: TVariableShallow[];
   variableTypeProps: TEntityVariableTypeProps;
 }) {
-  const regularVariables = variables
-    .filter((v) => v.variable_type === "regular")
-    .map((v) => v.name);
-
-  let variablesForFilter: string[] = SPECIAL_DB_VARIABLES_ENUM.options;
-  if (variableTypeProps.type === "service" && variableTypeProps.service.database_type === "redis") {
-    variablesForFilter = SPECIAL_REDIS_VARIABLES_ENUM.options;
-  } else if (
-    variableTypeProps.type === "service" &&
-    variableTypeProps.service.database_type === "clickhouse"
-  ) {
-    variablesForFilter = SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
-  }
+  const existingNames = variables.map((v) => v.name);
+  const expected = specialDbVariablesFor(databaseTypeOf(variableTypeProps) ?? "");
 
   return (
     <>
@@ -255,8 +195,8 @@ function SpecialDbVariablesSection({
           Waiting for database variables to become available...
         </p>
       </div>
-      {variablesForFilter
-        .filter((v) => !regularVariables.includes(v))
+      {expected
+        .filter((v) => !existingNames.includes(v))
         .map((val) => (
           <VariableCard
             key={val}
@@ -268,8 +208,8 @@ function SpecialDbVariablesSection({
             variable={{
               type: "service",
               name: val,
-              variable_type: "regular",
               value: "Waiting...",
+              references: [],
             }}
             hideThreeDotButton
           />

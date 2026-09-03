@@ -2,11 +2,9 @@ import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { getGoClient } from "@/lib/server/client";
-import { VariableReferenceInputItemSchema } from "@/lib/server/client.gen";
 import type {
   AvailableVariableReference,
-  VariableReferenceInputItem,
-  VariableReferenceResponse,
+  VariableReferenceInfo,
   VariableReferenceSourceType,
   VariableResponseItem,
   VariablesResponseBody,
@@ -96,8 +94,8 @@ export type TCreateOrUpdateVariablesInput = {
   projectId?: string;
   environmentId?: string;
   serviceId?: string;
+  /** Values are in their stored form, with ${{source.KEY}} references */
   variables: { name: string; value: string }[];
-  variableReferences?: VariableReferenceInputItem[];
   type: VariableReferenceSourceType;
   behavior?: VariableUpdateBehavior;
 };
@@ -110,7 +108,6 @@ export async function createOrUpdateVariables(input: TCreateOrUpdateVariablesInp
     environment_id: input.environmentId,
     service_id: input.serviceId,
     variables: input.variables,
-    variable_references: input.variableReferences,
     type: input.type,
   });
   return { data: res.data };
@@ -122,7 +119,6 @@ export type TDeleteVariablesInput = {
   environmentId?: string;
   serviceId?: string;
   variables: { name: string }[];
-  variableReferenceIds: string[];
   type: VariableReferenceSourceType;
 };
 
@@ -133,7 +129,6 @@ export async function deleteVariables(input: TDeleteVariablesInput) {
     environment_id: input.environmentId,
     service_id: input.serviceId,
     variables: input.variables,
-    variable_reference_ids: input.variableReferenceIds,
     type: input.type,
   });
   return { data: res.data };
@@ -154,11 +149,6 @@ export const VariableForCreateSchema = z.object({
 
 export type TVariableForCreate = z.infer<typeof VariableForCreateSchema>;
 
-export const VariableReferenceForCreateSchema = VariableReferenceInputItemSchema;
-export type TVariableReferenceForCreate = z.infer<typeof VariableReferenceForCreateSchema>;
-
 export type TVariableShallow = VariableResponseItem;
-export type TVariableReferenceShallow = VariableReferenceResponse;
-export type TVariableReferenceShallowSource = TVariableReferenceShallow["sources"][number];
-
+export type TVariableReferenceInfo = VariableReferenceInfo;
 export type TAvailableVariableReference = AvailableVariableReference;

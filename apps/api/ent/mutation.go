@@ -21274,6 +21274,7 @@ type VariableReferenceMutation struct {
 	appendsources  []schema.VariableReferenceSource
 	value_template *string
 	error          *string
+	migrated_at    *time.Time
 	clearedFields  map[string]struct{}
 	service        *uuid.UUID
 	clearedservice bool
@@ -21666,6 +21667,55 @@ func (m *VariableReferenceMutation) ResetError() {
 	delete(m.clearedFields, variablereference.FieldError)
 }
 
+// SetMigratedAt sets the "migrated_at" field.
+func (m *VariableReferenceMutation) SetMigratedAt(t time.Time) {
+	m.migrated_at = &t
+}
+
+// MigratedAt returns the value of the "migrated_at" field in the mutation.
+func (m *VariableReferenceMutation) MigratedAt() (r time.Time, exists bool) {
+	v := m.migrated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMigratedAt returns the old "migrated_at" field's value of the VariableReference entity.
+// If the VariableReference object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *VariableReferenceMutation) OldMigratedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMigratedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMigratedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMigratedAt: %w", err)
+	}
+	return oldValue.MigratedAt, nil
+}
+
+// ClearMigratedAt clears the value of the "migrated_at" field.
+func (m *VariableReferenceMutation) ClearMigratedAt() {
+	m.migrated_at = nil
+	m.clearedFields[variablereference.FieldMigratedAt] = struct{}{}
+}
+
+// MigratedAtCleared returns if the "migrated_at" field was cleared in this mutation.
+func (m *VariableReferenceMutation) MigratedAtCleared() bool {
+	_, ok := m.clearedFields[variablereference.FieldMigratedAt]
+	return ok
+}
+
+// ResetMigratedAt resets all changes to the "migrated_at" field.
+func (m *VariableReferenceMutation) ResetMigratedAt() {
+	m.migrated_at = nil
+	delete(m.clearedFields, variablereference.FieldMigratedAt)
+}
+
 // SetServiceID sets the "service" edge to the Service entity by id.
 func (m *VariableReferenceMutation) SetServiceID(id uuid.UUID) {
 	m.service = &id
@@ -21740,7 +21790,7 @@ func (m *VariableReferenceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *VariableReferenceMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, variablereference.FieldCreatedAt)
 	}
@@ -21761,6 +21811,9 @@ func (m *VariableReferenceMutation) Fields() []string {
 	}
 	if m.error != nil {
 		fields = append(fields, variablereference.FieldError)
+	}
+	if m.migrated_at != nil {
+		fields = append(fields, variablereference.FieldMigratedAt)
 	}
 	return fields
 }
@@ -21784,6 +21837,8 @@ func (m *VariableReferenceMutation) Field(name string) (ent.Value, bool) {
 		return m.ValueTemplate()
 	case variablereference.FieldError:
 		return m.Error()
+	case variablereference.FieldMigratedAt:
+		return m.MigratedAt()
 	}
 	return nil, false
 }
@@ -21807,6 +21862,8 @@ func (m *VariableReferenceMutation) OldField(ctx context.Context, name string) (
 		return m.OldValueTemplate(ctx)
 	case variablereference.FieldError:
 		return m.OldError(ctx)
+	case variablereference.FieldMigratedAt:
+		return m.OldMigratedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown VariableReference field %s", name)
 }
@@ -21865,6 +21922,13 @@ func (m *VariableReferenceMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetError(v)
 		return nil
+	case variablereference.FieldMigratedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMigratedAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown VariableReference field %s", name)
 }
@@ -21898,6 +21962,9 @@ func (m *VariableReferenceMutation) ClearedFields() []string {
 	if m.FieldCleared(variablereference.FieldError) {
 		fields = append(fields, variablereference.FieldError)
 	}
+	if m.FieldCleared(variablereference.FieldMigratedAt) {
+		fields = append(fields, variablereference.FieldMigratedAt)
+	}
 	return fields
 }
 
@@ -21914,6 +21981,9 @@ func (m *VariableReferenceMutation) ClearField(name string) error {
 	switch name {
 	case variablereference.FieldError:
 		m.ClearError()
+		return nil
+	case variablereference.FieldMigratedAt:
+		m.ClearMigratedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown VariableReference nullable field %s", name)
@@ -21943,6 +22013,9 @@ func (m *VariableReferenceMutation) ResetField(name string) error {
 		return nil
 	case variablereference.FieldError:
 		m.ResetError()
+		return nil
+	case variablereference.FieldMigratedAt:
+		m.ResetMigratedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown VariableReference field %s", name)

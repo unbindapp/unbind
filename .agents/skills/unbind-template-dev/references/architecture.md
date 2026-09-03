@@ -63,9 +63,9 @@ Still in `deploy.go`, inside a transaction, per resolved service:
   builder, ports, hosts, `DatabaseConfig`, health check, security context, resources, init
   containers, variable mounts, volumes.
 - Create PVCs for volumes.
-- Resolve `VariableReferences` into DB `VariableReference` rows linking source → target
-  (`repositories/variables`). Host refs build the internal DNS value; MySQL gets the
-  `moco-` prefix.
+- Write `VariableReferences` into the target's secret as `${{service.<uuid>.KEY}}`
+  templates once every service has an ID. Host refs become
+  `${{service.<uuid>.UNBIND_INTERNAL_HOST}}`.
 
 ## 6. Deploy to Kubernetes
 
@@ -86,7 +86,7 @@ Still in `deploy.go`, inside a transaction, per resolved service:
 | Edit didn't apply | Bump `Version` (seed conflict). Restart API to re-seed. |
 | Generated value wrong/empty | `renderer.go` `resolveGeneratedVariables`; generator type + params. |
 | `${FOO}` shows up literally in container | StringReplace key mismatch; check the placeholder map in inputs-and-generators.md. |
-| Ref var empty in target | `SourceID`/`SourceName` typo; source var has no value; check `resolve_references.go`. |
+| Ref var shows up as literal `${{...}}` | `SourceID`/`SourceName` typo, or the source var has no value. The variables list marks unresolved references; check `render.go`. |
 | DB version rejected | `pkg/databases/` definition's allowed versions for that `DatabaseType`. |
 | InitDB didn't run / wrong creds | `InitDBReplacers` mapping; operator logs for the db service. |
 | Icon missing (ban symbol) | No `brand.tsx` entry for `Icon`. See frontend-and-icons.md. |
@@ -102,7 +102,7 @@ Still in `deploy.go`, inside a transaction, per resolved service:
 | Seed | `apps/api/internal/repositories/template/mutations.go` |
 | API handlers | `apps/api/internal/api/handlers/templates/` |
 | Deploy logic | `apps/api/internal/services/templates/deploy.go` |
-| Ref resolution | `apps/api/internal/services/variables/resolve_references.go` |
+| Ref rendering | `apps/api/internal/services/variables/render.go`, `apps/api/internal/vartemplate/` |
 | DB definitions | `apps/api/pkg/databases/` |
 | CRD build | `apps/api/pkg/builder/k8s/crd.go` |
 | CRD apply | `apps/api/internal/infrastructure/k8s/unbind_service_deploy.go` |

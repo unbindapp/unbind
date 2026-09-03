@@ -1,9 +1,9 @@
-import type { TAvailableVariableReference } from "@/lib/queries/variables";
+import type { TAvailableVariableReference, TVariableReferenceInfo } from "@/lib/queries/variables";
 
 /**
  * A reference the user can insert. `value` is the readable `${Source.KEY}` form
- * shown and typed; `object.template` holds the `${kubernetes_name.KEY}` form
- * that is actually stored.
+ * shown and typed; `object.template` holds the `${{service.<id>.KEY}}` form that
+ * is actually stored.
  */
 export type TVariableToken<T> = {
   value: string;
@@ -16,34 +16,29 @@ export type TReferenceExtended = TAvailableVariableReference & {
   key: string;
 };
 
-export function getReferenceVariableReadableNames({
+type TReferenceSource = Pick<TAvailableVariableReference, "source_type" | "source_name">;
+
+const scopeSourceNames: Record<string, string> = {
+  team: "Team",
+  project: "Project",
+  environment: "Environment",
+};
+
+export function readableSourceName(source: TReferenceSource) {
+  return scopeSourceNames[source.source_type] ?? source.source_name;
+}
+
+export function readableToken(sourceName: string, key: string) {
+  return `\${${sourceName}.${key}}`;
+}
+
+export function storedToken({
+  source_type,
+  source_id,
   key,
-  object,
-}: {
-  key: string;
-  object: Pick<TAvailableVariableReference, "source_name"> &
-    Pick<TAvailableVariableReference, "source_type"> &
-    Pick<TAvailableVariableReference, "type"> &
-    Pick<TAvailableVariableReference, "source_kubernetes_name">;
-}) {
-  let readableKey = key;
-
-  if (object.type === "internal_endpoint") {
-    readableKey = key.replace(object.source_kubernetes_name, `UNBIND_INTERNAL_URL`);
-  } else if (object.type === "external_endpoint") {
-    readableKey = `UNBIND_EXTERNAL_URL`;
-  }
-
-  let sourceName = object.source_name;
-
-  if (object.source_type === "team") sourceName = "Team";
-  else if (object.source_type === "project") sourceName = "Project";
-  else if (object.source_type === "environment") sourceName = "Environment";
-
-  return {
-    readableKey,
-    sourceName,
-  };
+}: Pick<TAvailableVariableReference, "source_type" | "source_id"> & { key: string }) {
+  if (source_type === "service") return `\${{service.${source_id}.${key}}}`;
+  return `\${{${source_type}.${key}}}`;
 }
 
 export function referenceMapFromTokens<T>(
@@ -54,46 +49,57 @@ export function referenceMapFromTokens<T>(
 
 /**
  * Builds the readable `${Source.KEY}` tokens offered in the dropdown, pairing
- * each with the `${kubernetes_name.KEY}` template that actually gets stored.
+ * each with the stored template. Sources that share a display name get a
+ * numeric suffix so the readable forms stay distinct.
  */
 export function buildReferenceTokens(
   variables: readonly TAvailableVariableReference[],
 ): TVariableToken<TReferenceExtended>[] {
-  const sourceNameMap = new Map<string, string[]>();
+  const sourceIdsByName = new Map<string, string[]>();
+  const sourceNameFor = (obj: TAvailableVariableReference) => {
+    const name = readableSourceName(obj);
+    const ids = sourceIdsByName.get(name) ?? [];
+    let index = ids.indexOf(obj.source_id);
+    if (index === -1) {
+      index = ids.length;
+      sourceIdsByName.set(name, [...ids, obj.source_id]);
+    }
+    return index === 0 ? name : `${name}(${index + 1})`;
+  };
+
   const tokens: TVariableToken<TReferenceExtended>[] = [];
-
   for (const obj of variables) {
-    obj.keys?.forEach((key, index) => {
-      const { sourceName, readableKey: baseKey } = getReferenceVariableReadableNames({
-        key,
-        object: obj,
-      });
-      let readableKey = baseKey;
-      const number = index + 1;
-
-      const existing = sourceNameMap.get(sourceName);
-      sourceNameMap.set(
-        sourceName,
-        existing ? [...existing, obj.source_kubernetes_name] : [obj.source_kubernetes_name],
-      );
-
-      const sourceNameIndex = sourceNameMap
-        .get(obj.source_name)
-        ?.indexOf(obj.source_kubernetes_name);
-      const sourceNameSuffix =
-        sourceNameIndex !== undefined && sourceNameIndex >= 1 ? `(${sourceNameIndex + 1})` : "";
-
-      if (obj.type === "internal_endpoint" || obj.type === "external_endpoint") {
-        if (number > 1) readableKey += `_${number}`;
-      }
-
+    const sourceName = sourceNameFor(obj);
+    for (const key of obj.keys ?? []) {
       tokens.push({
-        value: `\${${sourceName}${sourceNameSuffix}.${readableKey}}`,
+        value: readableToken(sourceName, key),
         brand: obj.source_icon,
-        object: { ...obj, template: `\${${obj.source_kubernetes_name}.${key}}`, key },
+        object: { ...obj, template: storedToken({ ...obj, key }), key },
       });
-    });
+    }
   }
-
   return tokens;
+}
+
+/** Stored template -> readable form, for showing values that came from the API */
+export function readableTokenMap(
+  tokens: readonly TVariableToken<TReferenceExtended>[],
+): Map<string, string> {
+  return new Map(tokens.map((token) => [token.object.template, token.value]));
+}
+
+/**
+ * Readable form of a reference found in a stored value. Falls back to the source
+ * name the API reports when the reference is not in the available list, and to
+ * the stored form when the source is unknown.
+ */
+export function readableTokenForReference(
+  reference: TVariableReferenceInfo,
+  storedToReadable: ReadonlyMap<string, string>,
+) {
+  const known = storedToReadable.get(reference.token);
+  if (known) return known;
+  const sourceName = readableSourceName(reference);
+  if (!sourceName) return reference.token;
+  return readableToken(sourceName, reference.key);
 }

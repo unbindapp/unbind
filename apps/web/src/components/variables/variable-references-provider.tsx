@@ -5,12 +5,19 @@ import {
   queryKeyVariables,
   type TAvailableVariableReferences,
 } from "@/lib/queries/variables";
+import {
+  buildReferenceTokens,
+  type TReferenceExtended,
+  type TVariableToken,
+} from "@/components/variables/tokens";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
 type TVariableReferencesContext = {
   list: UseQueryResult<TAvailableVariableReferences, Error>;
+  /** undefined while references are loading */
+  tokens: TVariableToken<TReferenceExtended>[] | undefined;
 } & TEntityVariableTypeProps;
 
 const VariableReferencesContext = createContext<TVariableReferencesContext | null>(null);
@@ -46,12 +53,18 @@ export const VariableReferencesProvider: React.FC<TProps> = ({
     refetchInterval,
   });
 
+  const tokens = useMemo(
+    () => (list.data ? buildReferenceTokens(list.data.variables) : undefined),
+    [list.data],
+  );
+
   const value: TVariableReferencesContext = useMemo(
     () => ({
       list,
+      tokens,
       ...typedProps,
     }),
-    [list, typedProps],
+    [list, tokens, typedProps],
   );
 
   return (

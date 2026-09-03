@@ -481,6 +481,74 @@ func (_c *ServiceRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.
 	return _c
 }
 
+// GetByIDs provides a mock function for the type ServiceRepositoryMock
+func (_mock *ServiceRepositoryMock) GetByIDs(ctx context.Context, serviceIDs []uuid.UUID) ([]*ent.Service, error) {
+	ret := _mock.Called(ctx, serviceIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByIDs")
+	}
+
+	var r0 []*ent.Service
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) ([]*ent.Service, error)); ok {
+		return returnFunc(ctx, serviceIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) []*ent.Service); ok {
+		r0 = returnFunc(ctx, serviceIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Service)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, serviceIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ServiceRepositoryMock_GetByIDs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByIDs'
+type ServiceRepositoryMock_GetByIDs_Call struct {
+	*mock.Call
+}
+
+// GetByIDs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceIDs []uuid.UUID
+func (_e *ServiceRepositoryMock_Expecter) GetByIDs(ctx any, serviceIDs any) *ServiceRepositoryMock_GetByIDs_Call {
+	return &ServiceRepositoryMock_GetByIDs_Call{Call: _e.mock.On("GetByIDs", ctx, serviceIDs)}
+}
+
+func (_c *ServiceRepositoryMock_GetByIDs_Call) Run(run func(ctx context.Context, serviceIDs []uuid.UUID)) *ServiceRepositoryMock_GetByIDs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetByIDs_Call) Return(services []*ent.Service, err error) *ServiceRepositoryMock_GetByIDs_Call {
+	_c.Call.Return(services, err)
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetByIDs_Call) RunAndReturn(run func(ctx context.Context, serviceIDs []uuid.UUID) ([]*ent.Service, error)) *ServiceRepositoryMock_GetByIDs_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByIDsAndEnvironment provides a mock function for the type ServiceRepositoryMock
 func (_mock *ServiceRepositoryMock) GetByIDsAndEnvironment(ctx context.Context, serviceIDs []uuid.UUID, environmentID uuid.UUID) ([]*ent.Service, error) {
 	ret := _mock.Called(ctx, serviceIDs, environmentID)
@@ -693,6 +761,80 @@ func (_c *ServiceRepositoryMock_GetByName_Call) Return(service *ent.Service, err
 }
 
 func (_c *ServiceRepositoryMock_GetByName_Call) RunAndReturn(run func(ctx context.Context, name string) (*ent.Service, error)) *ServiceRepositoryMock_GetByName_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetByScope provides a mock function for the type ServiceRepositoryMock
+func (_mock *ServiceRepositoryMock) GetByScope(ctx context.Context, scope schema.VariableReferenceSourceType, scopeID uuid.UUID) ([]*ent.Service, error) {
+	ret := _mock.Called(ctx, scope, scopeID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByScope")
+	}
+
+	var r0 []*ent.Service
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, schema.VariableReferenceSourceType, uuid.UUID) ([]*ent.Service, error)); ok {
+		return returnFunc(ctx, scope, scopeID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, schema.VariableReferenceSourceType, uuid.UUID) []*ent.Service); ok {
+		r0 = returnFunc(ctx, scope, scopeID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Service)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, schema.VariableReferenceSourceType, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, scope, scopeID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ServiceRepositoryMock_GetByScope_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByScope'
+type ServiceRepositoryMock_GetByScope_Call struct {
+	*mock.Call
+}
+
+// GetByScope is a helper method to define mock.On call
+//   - ctx context.Context
+//   - scope schema.VariableReferenceSourceType
+//   - scopeID uuid.UUID
+func (_e *ServiceRepositoryMock_Expecter) GetByScope(ctx any, scope any, scopeID any) *ServiceRepositoryMock_GetByScope_Call {
+	return &ServiceRepositoryMock_GetByScope_Call{Call: _e.mock.On("GetByScope", ctx, scope, scopeID)}
+}
+
+func (_c *ServiceRepositoryMock_GetByScope_Call) Run(run func(ctx context.Context, scope schema.VariableReferenceSourceType, scopeID uuid.UUID)) *ServiceRepositoryMock_GetByScope_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 schema.VariableReferenceSourceType
+		if args[1] != nil {
+			arg1 = args[1].(schema.VariableReferenceSourceType)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetByScope_Call) Return(services []*ent.Service, err error) *ServiceRepositoryMock_GetByScope_Call {
+	_c.Call.Return(services, err)
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetByScope_Call) RunAndReturn(run func(ctx context.Context, scope schema.VariableReferenceSourceType, scopeID uuid.UUID) ([]*ent.Service, error)) *ServiceRepositoryMock_GetByScope_Call {
 	_c.Call.Return(run)
 	return _c
 }

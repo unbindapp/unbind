@@ -20,6 +20,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/unbindapp/unbind-api/config"
 	entmigrate "github.com/unbindapp/unbind-api/ent/migrate"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/middleware"
 	"github.com/unbindapp/unbind-api/internal/api/router"
 	"github.com/unbindapp/unbind-api/internal/api/server"
@@ -143,6 +144,9 @@ func startAPI(cfg *config.Config) {
 	}
 
 	variableService := variables_service.NewVariablesService(repo, kubeClient)
+	if err := variableService.MigrateLegacyReferences(ctx); err != nil {
+		log.Errorf("Failed to migrate legacy variable references: %v", err)
+	}
 	webhooksService := webhooks_service.NewWebhooksService(repo)
 
 	deploymentController := deployctl.NewDeploymentController(ctx, cancel, cfg, kubeClient, redisClient, repo, githubClient, webhooksService, variableService)
@@ -351,7 +355,7 @@ func startAPI(cfg *config.Config) {
 					return
 				}
 				for sourceServiceID, keys := range changed {
-					serviceService.RedeployReferencingServices(ctx, sourceServiceID, keys)
+					serviceService.RedeployReferencingServices(ctx, schema.VariableReferenceSourceTypeService, sourceServiceID, keys)
 				}
 			},
 			ctx,

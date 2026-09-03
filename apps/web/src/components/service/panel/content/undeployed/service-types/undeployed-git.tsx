@@ -18,7 +18,7 @@ import { softValidateVariables } from "@/components/service/panel/content/undepl
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useSystem } from "@/components/system/system-provider";
 import { cn } from "@/components/ui/utils";
-import { getVariablesPair } from "@/components/variables/helpers";
+import { toStoredVariables } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { TCommandItem } from "@/lib/hooks/use-app-form";
@@ -110,10 +110,7 @@ export function UndeployedContentGit({
           return;
         }
 
-        const { variables, variableReferences } = getVariablesPair({
-          variables: validVariables,
-          tokens: tokensRef.current,
-        });
+        const variables = toStoredVariables(validVariables, tokensRef.current);
 
         const { data } = await createOrUpdateVariables({
           type: "service",
@@ -122,12 +119,8 @@ export function UndeployedContentGit({
           environmentId,
           serviceId,
           variables,
-          variableReferences,
         });
 
-        data.variable_references.forEach((v) =>
-          temporarilyAddNewEntity(getNewEntityIdForVariable({ name: v.name, value: v.value })),
-        );
         data.variables.forEach((v) =>
           temporarilyAddNewEntity(getNewEntityIdForVariable({ name: v.name, value: v.value })),
         );

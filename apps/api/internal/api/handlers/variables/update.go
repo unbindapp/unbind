@@ -12,7 +12,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-// Create new
 type UpsertVariablesInput struct {
 	server.BaseAuthInput
 	Body struct {
@@ -20,9 +19,8 @@ type UpsertVariablesInput struct {
 		Behavior  models.VariableUpdateBehavior `json:"behavior" default:"upsert" required:"true" doc:"The behavior of the update - upsert or overwrite"`
 		Variables []*struct {
 			Name  string `json:"name" required:"true"`
-			Value string `json:"value" required:"true"`
+			Value string `json:"value" required:"true" doc:"May contain ${{source.KEY}} references"`
 		} `json:"variables" required:"true"`
-		VariableReferences []*models.VariableReferenceInputItem `json:"variable_references" required:"false"`
 	}
 }
 
@@ -37,10 +35,9 @@ func (self *HandlerGroup) UpdateVariables(ctx context.Context, input *UpsertVari
 		variablesUpdateMap[variable.Name] = []byte(variable.Value)
 	}
 
-	variableMap, err := self.srv.VariablesService.UpdateVariables(
+	variableMap, needsRedeploy, err := self.srv.VariablesService.UpdateVariables(
 		ctx,
 		user.ID,
-		input.Body.VariableReferences,
 		input.Body.BaseVariablesJSONInput,
 		input.Body.Behavior,
 		variablesUpdateMap,
@@ -49,18 +46,8 @@ func (self *HandlerGroup) UpdateVariables(ctx context.Context, input *UpsertVari
 		return nil, oapi.MapError(err)
 	}
 
-	// If any references were updated, we need a new deployment
-	if input.Body.Type == schema.VariableReferenceSourceTypeService && len(input.Body.VariableReferences) > 0 {
-		service, err := self.srv.Repository.Service().GetByID(ctx, input.Body.ServiceID)
-		if err != nil {
-			log.Errorf("Error getting service: %v", err)
-			// Don't fail
-		} else {
-			_, err := self.srv.ServiceService.DeployAdhocServices(ctx, []*ent.Service{service})
-			if err != nil {
-				log.Errorf("Error deploying service: %v", err)
-			}
-		}
+	if needsRedeploy {
+		self.redeployService(ctx, input.Body.ServiceID)
 	}
 
 	// Re-deploy anything referencing these
@@ -69,12 +56,24 @@ func (self *HandlerGroup) UpdateVariables(ctx context.Context, input *UpsertVari
 		for i, variable := range input.Body.Variables {
 			keys[i] = variable.Name
 		}
-		self.srv.ServiceService.RedeployReferencingServices(ctx, variableSourceID(input.Body.BaseVariablesJSONInput), keys)
+		self.srv.ServiceService.RedeployReferencingServices(ctx, input.Body.Type, variableSourceID(input.Body.BaseVariablesJSONInput), keys)
 	}
 
 	resp := &VariablesResponse{}
 	resp.Body.Data = variableMap
 	return resp, nil
+}
+
+// Rendered values live in the deployment, so a change to them needs a new one
+func (self *HandlerGroup) redeployService(ctx context.Context, serviceID uuid.UUID) {
+	service, err := self.srv.Repository.Service().GetByID(ctx, serviceID)
+	if err != nil {
+		log.Errorf("Error getting service: %v", err)
+		return
+	}
+	if _, err := self.srv.ServiceService.DeployAdhocServices(ctx, []*ent.Service{service}); err != nil {
+		log.Errorf("Error deploying service: %v", err)
+	}
 }
 
 func variableSourceID(input models.BaseVariablesJSONInput) uuid.UUID {

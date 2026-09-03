@@ -113,6 +113,26 @@ func (_u *VariableReferenceUpdate) ClearError() *VariableReferenceUpdate {
 	return _u
 }
 
+// SetMigratedAt sets the "migrated_at" field.
+func (_u *VariableReferenceUpdate) SetMigratedAt(v time.Time) *VariableReferenceUpdate {
+	_u.mutation.SetMigratedAt(v)
+	return _u
+}
+
+// SetNillableMigratedAt sets the "migrated_at" field if the given value is not nil.
+func (_u *VariableReferenceUpdate) SetNillableMigratedAt(v *time.Time) *VariableReferenceUpdate {
+	if v != nil {
+		_u.SetMigratedAt(*v)
+	}
+	return _u
+}
+
+// ClearMigratedAt clears the value of the "migrated_at" field.
+func (_u *VariableReferenceUpdate) ClearMigratedAt() *VariableReferenceUpdate {
+	_u.mutation.ClearMigratedAt()
+	return _u
+}
+
 // SetServiceID sets the "service" edge to the Service entity by ID.
 func (_u *VariableReferenceUpdate) SetServiceID(id uuid.UUID) *VariableReferenceUpdate {
 	_u.mutation.SetServiceID(id)
@@ -219,6 +239,12 @@ func (_u *VariableReferenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 	}
 	if _u.mutation.ErrorCleared() {
 		_spec.ClearField(variablereference.FieldError, field.TypeString)
+	}
+	if value, ok := _u.mutation.MigratedAt(); ok {
+		_spec.SetField(variablereference.FieldMigratedAt, field.TypeTime, value)
+	}
+	if _u.mutation.MigratedAtCleared() {
+		_spec.ClearField(variablereference.FieldMigratedAt, field.TypeTime)
 	}
 	if _u.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -348,6 +374,26 @@ func (_u *VariableReferenceUpdateOne) SetNillableError(v *string) *VariableRefer
 // ClearError clears the value of the "error" field.
 func (_u *VariableReferenceUpdateOne) ClearError() *VariableReferenceUpdateOne {
 	_u.mutation.ClearError()
+	return _u
+}
+
+// SetMigratedAt sets the "migrated_at" field.
+func (_u *VariableReferenceUpdateOne) SetMigratedAt(v time.Time) *VariableReferenceUpdateOne {
+	_u.mutation.SetMigratedAt(v)
+	return _u
+}
+
+// SetNillableMigratedAt sets the "migrated_at" field if the given value is not nil.
+func (_u *VariableReferenceUpdateOne) SetNillableMigratedAt(v *time.Time) *VariableReferenceUpdateOne {
+	if v != nil {
+		_u.SetMigratedAt(*v)
+	}
+	return _u
+}
+
+// ClearMigratedAt clears the value of the "migrated_at" field.
+func (_u *VariableReferenceUpdateOne) ClearMigratedAt() *VariableReferenceUpdateOne {
+	_u.mutation.ClearMigratedAt()
 	return _u
 }
 
@@ -487,6 +533,12 @@ func (_u *VariableReferenceUpdateOne) sqlSave(ctx context.Context) (_node *Varia
 	}
 	if _u.mutation.ErrorCleared() {
 		_spec.ClearField(variablereference.FieldError, field.TypeString)
+	}
+	if value, ok := _u.mutation.MigratedAt(); ok {
+		_spec.SetField(variablereference.FieldMigratedAt, field.TypeTime, value)
+	}
+	if _u.mutation.MigratedAtCleared() {
+		_spec.ClearField(variablereference.FieldMigratedAt, field.TypeTime)
 	}
 	if _u.mutation.ServiceCleared() {
 		edge := &sqlgraph.EdgeSpec{

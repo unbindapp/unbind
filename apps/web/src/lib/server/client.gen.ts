@@ -845,8 +845,7 @@ export const DeleteVariablesInputBodySchema = z
     service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
     team_id: z.string(),
     type: VariableReferenceSourceTypeSchema, // The type of variable
-    variable_reference_ids: z.array(z.string()).optional(),
-    variables: z.array(VariableDeleteInputSchema).optional(),
+    variables: z.array(VariableDeleteInputSchema),
   })
   .strip();
 
@@ -1610,7 +1609,7 @@ export const InstanceTypeSchema = z.enum(['team', 'project', 'environment', 'ser
 export const ItemSchema = z
   .object({
     name: z.string(),
-    value: z.string(),
+    value: z.string(), // May contain ${{source.KEY}} references
   })
   .strip();
 
@@ -1935,18 +1934,6 @@ export const RemoveDeploymentInputBodySchema = z
 export const RemoveDeploymentOutputBodySchema = z
   .object({
     data: DeploymentResponseSchema,
-  })
-  .strip();
-
-export const ResolveAvailableVariableReferenceResponseBodySchema = z
-  .object({
-    data: z.string(),
-  })
-  .strip();
-
-export const ResolveVariableReferenceResponseBodySchema = z
-  .object({
-    data: z.string(),
   })
   .strip();
 
@@ -2406,26 +2393,6 @@ export const UpdateWebhookResponseBodySchema = z
 
 export const VariableUpdateBehaviorSchema = z.enum(['upsert', 'overwrite']);
 
-export const VariableReferenceSourceSchema = z
-  .object({
-    key: z.string(),
-    source_icon: z.string(),
-    source_id: z.string(),
-    source_kubernetes_name: z.string(),
-    source_name: z.string(),
-    source_type: VariableReferenceSourceTypeSchema,
-    type: VariableReferenceTypeSchema,
-  })
-  .strip();
-
-export const VariableReferenceInputItemSchema = z
-  .object({
-    name: z.string(), // The name of the target variable
-    sources: z.array(VariableReferenceSourceSchema), // The sources to reference in the template interpolation
-    value: z.string(), // The template for the value of the variable reference, e.g. 'https://${source_kubernetes_name.key}'
-  })
-  .strip();
-
 export const UpsertVariablesInputBodySchema = z
   .object({
     behavior: VariableUpdateBehaviorSchema, // The behavior of the update - upsert or overwrite
@@ -2434,7 +2401,6 @@ export const UpsertVariablesInputBodySchema = z
     service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
     team_id: z.string(),
     type: VariableReferenceSourceTypeSchema, // The type of variable
-    variable_references: z.array(VariableReferenceInputItemSchema).nullable().optional(),
     variables: z.array(ItemSchema).nullable(),
   })
   .strip();
@@ -2452,30 +2418,30 @@ export const UserCreateResponseBodySchema = z
   })
   .strip();
 
-export const VariableReferenceResponseSchema = z
+export const VariableReferenceInfoSchema = z
   .object({
-    created_at: z.string().datetime({ offset: true }),
-    error: z.string().nullable().optional(),
-    id: z.string(), // The ID of the variable reference
-    name: z.string(),
-    resolved_value: z.string().optional(), // The value the reference currently resolves to, null when resolution fails
-    sources: z.array(VariableReferenceSourceSchema),
-    target_service_id: z.string(),
-    value: z.string(),
+    key: z.string(),
+    resolved: z.boolean(), // False when the reference stays literal because its source or key does not exist
+    source_icon: z.string(),
+    source_id: z.string(), // Zero for team, project and environment references
+    source_name: z.string(),
+    source_type: VariableReferenceSourceTypeSchema,
+    token: z.string(), // The exact ${{...}} text in the value
   })
   .strip();
 
 export const VariableResponseItemSchema = z
   .object({
     name: z.string(),
+    references: z.array(VariableReferenceInfoSchema), // The references found in the value
+    resolved_value: z.string().optional(), // The value with references rendered, only present when the value contains references
     type: VariableReferenceSourceTypeSchema,
-    value: z.string(),
+    value: z.string(), // The stored value, which may contain ${{source.KEY}} references
   })
   .strip();
 
 export const VariableResponseSchema = z
   .object({
-    variable_references: z.array(VariableReferenceResponseSchema),
     variables: z.array(VariableResponseItemSchema),
   })
   .strip();
@@ -2755,12 +2721,6 @@ export type RegistryCacheStats = z.infer<typeof RegistryCacheStatsSchema>;
 export type RegistryCacheStatsResponseBody = z.infer<typeof RegistryCacheStatsResponseBodySchema>;
 export type RemoveDeploymentInputBody = z.infer<typeof RemoveDeploymentInputBodySchema>;
 export type RemoveDeploymentOutputBody = z.infer<typeof RemoveDeploymentOutputBodySchema>;
-export type ResolveAvailableVariableReferenceResponseBody = z.infer<
-  typeof ResolveAvailableVariableReferenceResponseBodySchema
->;
-export type ResolveVariableReferenceResponseBody = z.infer<
-  typeof ResolveVariableReferenceResponseBodySchema
->;
 export type ResponseError = z.infer<typeof ResponseErrorSchema>;
 export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
@@ -2822,12 +2782,10 @@ export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
 export type UpdateWebhookResponseBody = z.infer<typeof UpdateWebhookResponseBodySchema>;
 export type VariableUpdateBehavior = z.infer<typeof VariableUpdateBehaviorSchema>;
-export type VariableReferenceSource = z.infer<typeof VariableReferenceSourceSchema>;
-export type VariableReferenceInputItem = z.infer<typeof VariableReferenceInputItemSchema>;
 export type UpsertVariablesInputBody = z.infer<typeof UpsertVariablesInputBodySchema>;
 export type UserCreateInputBody = z.infer<typeof UserCreateInputBodySchema>;
 export type UserCreateResponseBody = z.infer<typeof UserCreateResponseBodySchema>;
-export type VariableReferenceResponse = z.infer<typeof VariableReferenceResponseSchema>;
+export type VariableReferenceInfo = z.infer<typeof VariableReferenceInfoSchema>;
 export type VariableResponseItem = z.infer<typeof VariableResponseItemSchema>;
 export type VariableResponse = z.infer<typeof VariableResponseSchema>;
 export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
@@ -3205,24 +3163,6 @@ export const list_available_referencesQuerySchema = z
     project_id: z.string(),
     environment_id: z.string(),
     service_id: z.string(),
-  })
-  .passthrough();
-
-export const read_available_variable_referenceQuerySchema = z
-  .object({
-    team_id: z.string().optional(),
-    type: VariableReferenceTypeSchema.optional(),
-    name: z.string().optional(),
-    source_type: VariableReferenceSourceTypeSchema.optional(),
-    source_id: z.string().optional(),
-    key: z.string().optional(),
-  })
-  .passthrough();
-
-export const read_variable_referenceQuerySchema = z
-  .object({
-    service_id: z.string(),
-    reference_id: z.string(),
   })
   .passthrough();
 
@@ -8246,122 +8186,20 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         }
       },
       references: {
-        available: Object.assign(
-          async (
-            params: z.infer<typeof list_available_referencesQuerySchema>,
-            fetchOptions?: RequestInit,
-          ): Promise<ReferenceableVariablesResponseBody> => {
-            try {
-              if (!apiUrl || typeof apiUrl !== 'string') {
-                throw new Error('API URL is undefined or not a string');
-              }
-              const url = new URL(
-                `${apiUrl}/variables/references/available`,
-                typeof window !== 'undefined' ? window.location.origin : undefined,
-              );
-              const validatedQuery = list_available_referencesQuerySchema.parse(params);
-              const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
-              queryKeys.forEach((key) => {
-                const value = validatedQuery[key as keyof typeof validatedQuery];
-                if (value !== undefined && value !== null) {
-                  url.searchParams.append(key, String(value));
-                }
-              });
-              const options: RequestInit = {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                ...fetchOptions,
-              };
-
-              const response = await fetchFn(url.toString(), options);
-              if (!response.ok) {
-                throw await parseApiError(response, url.toString());
-              }
-              const data = await response.json();
-              const { data: parsedData, error } =
-                ReferenceableVariablesResponseBodySchema.safeParse(data);
-              if (error) {
-                console.error('Response validation error:', error);
-                console.error('Response data:', data);
-                throw new Error(error.message);
-              }
-              return parsedData;
-            } catch (error) {
-              if (import.meta.env.DEV) {
-                console.error('Error in API request:', error);
-              }
-              throw error;
-            }
-          },
-          {
-            get: async (
-              params: z.infer<typeof read_available_variable_referenceQuerySchema>,
-              fetchOptions?: RequestInit,
-            ): Promise<ResolveAvailableVariableReferenceResponseBody> => {
-              try {
-                if (!apiUrl || typeof apiUrl !== 'string') {
-                  throw new Error('API URL is undefined or not a string');
-                }
-                const url = new URL(
-                  `${apiUrl}/variables/references/available/get`,
-                  typeof window !== 'undefined' ? window.location.origin : undefined,
-                );
-                const validatedQuery = read_available_variable_referenceQuerySchema.parse(params);
-                const queryKeys = ['team_id', 'type', 'name', 'source_type', 'source_id', 'key'];
-                queryKeys.forEach((key) => {
-                  const value = validatedQuery[key as keyof typeof validatedQuery];
-                  if (value !== undefined && value !== null) {
-                    url.searchParams.append(key, String(value));
-                  }
-                });
-                const options: RequestInit = {
-                  method: 'GET',
-                  credentials: 'include',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  ...fetchOptions,
-                };
-
-                const response = await fetchFn(url.toString(), options);
-                if (!response.ok) {
-                  throw await parseApiError(response, url.toString());
-                }
-                const data = await response.json();
-                const { data: parsedData, error } =
-                  ResolveAvailableVariableReferenceResponseBodySchema.safeParse(data);
-                if (error) {
-                  console.error('Response validation error:', error);
-                  console.error('Response data:', data);
-                  throw new Error(error.message);
-                }
-                return parsedData;
-              } catch (error) {
-                if (import.meta.env.DEV) {
-                  console.error('Error in API request:', error);
-                }
-                throw error;
-              }
-            },
-          },
-        ),
-        get: async (
-          params: z.infer<typeof read_variable_referenceQuerySchema>,
+        available: async (
+          params: z.infer<typeof list_available_referencesQuerySchema>,
           fetchOptions?: RequestInit,
-        ): Promise<ResolveVariableReferenceResponseBody> => {
+        ): Promise<ReferenceableVariablesResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
             const url = new URL(
-              `${apiUrl}/variables/references/get`,
+              `${apiUrl}/variables/references/available`,
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
-            const validatedQuery = read_variable_referenceQuerySchema.parse(params);
-            const queryKeys = ['service_id', 'reference_id'];
+            const validatedQuery = list_available_referencesQuerySchema.parse(params);
+            const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
             queryKeys.forEach((key) => {
               const value = validatedQuery[key as keyof typeof validatedQuery];
               if (value !== undefined && value !== null) {
@@ -8383,7 +8221,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             const data = await response.json();
             const { data: parsedData, error } =
-              ResolveVariableReferenceResponseBodySchema.safeParse(data);
+              ReferenceableVariablesResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);

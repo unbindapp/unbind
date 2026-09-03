@@ -1,92 +1,153 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { getVariablesPair } from "./helpers.ts";
-import type { TReferenceExtended, TVariableToken } from "./tokens.ts";
+import {
+  getVariablesFromRawText,
+  splitByUnresolved,
+  toReadableValue,
+  toStoredVariables,
+} from "./helpers.ts";
+import { buildReferenceTokens, readableTokenMap, storedToken } from "./tokens.ts";
+import type {
+  TAvailableVariableReference,
+  TVariableReferenceInfo,
+} from "../../lib/queries/variables.ts";
 
-function token(value: string, template: string, key: string): TVariableToken<TReferenceExtended> {
-  return {
-    value,
-    brand: "postgres",
-    object: {
-      template,
-      key,
-      type: "variable",
-      source_id: "src-1",
-      source_kubernetes_name: "pg-a1",
-      source_type: "service",
-      source_name: "Postgres",
-      source_icon: "postgres",
-      keys: [key],
-    } as unknown as TReferenceExtended,
-  };
+const pgId = "3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c";
+const redisId = "0c1d2e3f-4a5b-4c6d-8e9f-0a1b2c3d4e5f";
+const redisTwoId = "9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d";
+
+const available: TAvailableVariableReference[] = [
+  {
+    type: "variable",
+    source_type: "service",
+    source_id: pgId,
+    source_name: "Postgres",
+    source_icon: "postgres",
+    source_kubernetes_name: "pg-a1",
+    keys: ["DATABASE_URL", "DATABASE_HOST"],
+  },
+  {
+    type: "variable",
+    source_type: "team",
+    source_id: "team-id",
+    source_name: "My Team",
+    source_icon: "team",
+    source_kubernetes_name: "team",
+    keys: ["REGION"],
+  },
+  {
+    type: "internal_endpoint",
+    source_type: "service",
+    source_id: redisId,
+    source_name: "Redis",
+    source_icon: "redis",
+    source_kubernetes_name: "redis-a1",
+    keys: ["UNBIND_INTERNAL_HOST"],
+  },
+  {
+    type: "internal_endpoint",
+    source_type: "service",
+    source_id: redisTwoId,
+    source_name: "Redis",
+    source_icon: "redis",
+    source_kubernetes_name: "redis-b2",
+    keys: ["UNBIND_INTERNAL_HOST"],
+  },
+];
+
+const tokens = buildReferenceTokens(available);
+
+test("tokens pair the readable form with the stored template", () => {
+  const values = tokens.map((t) => [t.value, t.object.template]);
+  assert.deepEqual(values, [
+    ["${Postgres.DATABASE_URL}", `\${{service.${pgId}.DATABASE_URL}}`],
+    ["${Postgres.DATABASE_HOST}", `\${{service.${pgId}.DATABASE_HOST}}`],
+    ["${Team.REGION}", "${{team.REGION}}"],
+    ["${Redis.UNBIND_INTERNAL_HOST}", `\${{service.${redisId}.UNBIND_INTERNAL_HOST}}`],
+    ["${Redis(2).UNBIND_INTERNAL_HOST}", `\${{service.${redisTwoId}.UNBIND_INTERNAL_HOST}}`],
+  ]);
+});
+
+test("plain values are stored as typed", () => {
+  const variables = toStoredVariables([{ name: "PORT", value: "8080 ${not.known}" }], tokens);
+  assert.deepEqual(variables, [{ name: "PORT", value: "8080 ${not.known}" }]);
+});
+
+test("readable references become stored templates with surrounding text kept", () => {
+  const variables = toStoredVariables(
+    [{ name: "URL", value: "prefix ${Postgres.DATABASE_URL}/db ${Team.REGION}" }],
+    tokens,
+  );
+  assert.equal(
+    variables[0].value,
+    `prefix \${{service.${pgId}.DATABASE_URL}}/db \${{team.REGION}}`,
+  );
+});
+
+test("stored templates render back to the readable form", () => {
+  const value = `x=\${{service.${pgId}.DATABASE_URL}} y=\${{team.REGION}} z=\${{service.${redisTwoId}.UNBIND_INTERNAL_HOST}}`;
+  const references: TVariableReferenceInfo[] = [
+    reference(`\${{service.${pgId}.DATABASE_URL}}`, "service", pgId, "Postgres", "DATABASE_URL"),
+    reference("${{team.REGION}}", "team", "", "My Team", "REGION"),
+    reference(
+      `\${{service.${redisTwoId}.UNBIND_INTERNAL_HOST}}`,
+      "service",
+      redisTwoId,
+      "Redis",
+      "UNBIND_INTERNAL_HOST",
+    ),
+  ];
+  assert.equal(
+    toReadableValue(value, references, readableTokenMap(tokens)),
+    "x=${Postgres.DATABASE_URL} y=${Team.REGION} z=${Redis(2).UNBIND_INTERNAL_HOST}",
+  );
+});
+
+test("a reference outside the available list falls back to the API's source name", () => {
+  const token = storedToken({ source_type: "service", source_id: "gone-id", key: "KEY" });
+  const readable = toReadableValue(
+    token,
+    [reference(token, "service", "gone-id", "Old", "KEY")],
+    new Map(),
+  );
+  assert.equal(readable, "${Old.KEY}");
+
+  const unknown = toReadableValue(
+    token,
+    [reference(token, "service", "gone-id", "", "KEY")],
+    new Map(),
+  );
+  assert.equal(unknown, token);
+});
+
+test("unresolved references are split out of the rendered value", () => {
+  const token = storedToken({ source_type: "service", source_id: "gone-id", key: "KEY" });
+  const parts = splitByUnresolved(`a ${token} b ${token}`, [
+    { ...reference(token, "service", "gone-id", "", "KEY"), resolved: false },
+  ]);
+  assert.deepEqual(parts, [
+    { value: "a ", unresolved: false },
+    { value: token, unresolved: true },
+    { value: " b ", unresolved: false },
+    { value: token, unresolved: true },
+  ]);
+  assert.deepEqual(splitByUnresolved("plain", []), [{ value: "plain", unresolved: false }]);
+});
+
+test("raw text parses to name/value pairs", () => {
+  assert.deepEqual(getVariablesFromRawText('A=1\n\nB="x=y"\n'), [
+    { name: "A", value: "1" },
+    { name: "B", value: "x=y" },
+  ]);
+});
+
+function reference(
+  token: string,
+  source_type: TVariableReferenceInfo["source_type"],
+  source_id: string,
+  source_name: string,
+  key: string,
+): TVariableReferenceInfo {
+  return { token, source_type, source_id, source_name, source_icon: "", key, resolved: true };
 }
-
-const tokens = [token("${Postgres.DATABASE_URL}", "${pg-a1.DATABASE_URL}", "DATABASE_URL")];
-
-test("plain values stay regular variables", () => {
-  const { variables, variableReferences } = getVariablesPair({
-    variables: [{ name: "PORT", value: "8080" }],
-    tokens,
-  });
-  assert.deepEqual(variables, [{ name: "PORT", value: "8080" }]);
-  assert.deepEqual(variableReferences, []);
-});
-
-test("a referencing value becomes a reference with the stored template", () => {
-  const { variables, variableReferences } = getVariablesPair({
-    variables: [{ name: "URL", value: "${Postgres.DATABASE_URL}" }],
-    tokens,
-  });
-  assert.deepEqual(variables, []);
-  assert.equal(variableReferences.length, 1);
-  assert.equal(variableReferences[0].name, "URL");
-  assert.equal(variableReferences[0].value, "${pg-a1.DATABASE_URL}");
-  assert.equal(variableReferences[0].sources.length, 1);
-  assert.equal(variableReferences[0].sources[0].key, "DATABASE_URL");
-  assert.equal(variableReferences[0].sources[0].source_kubernetes_name, "pg-a1");
-});
-
-test("surrounding text is preserved around the template", () => {
-  const { variableReferences } = getVariablesPair({
-    variables: [{ name: "URL", value: "prefix ${Postgres.DATABASE_URL}/db" }],
-    tokens,
-  });
-  assert.equal(variableReferences[0].value, "prefix ${pg-a1.DATABASE_URL}/db");
-});
-
-test("an unknown reference stays a plain value", () => {
-  const { variables, variableReferences } = getVariablesPair({
-    variables: [{ name: "URL", value: "${Nope.MISSING}" }],
-    tokens,
-  });
-  assert.deepEqual(variables, [{ name: "URL", value: "${Nope.MISSING}" }]);
-  assert.deepEqual(variableReferences, []);
-});
-
-test("a bare dollar is not treated as a reference", () => {
-  const { variables, variableReferences } = getVariablesPair({
-    variables: [{ name: "PRICE", value: "$5 per month" }],
-    tokens,
-  });
-  assert.deepEqual(variables, [{ name: "PRICE", value: "$5 per month" }]);
-  assert.deepEqual(variableReferences, []);
-});
-
-test("regular and referencing variables are split apart", () => {
-  const { variables, variableReferences } = getVariablesPair({
-    variables: [
-      { name: "PORT", value: "8080" },
-      { name: "URL", value: "${Postgres.DATABASE_URL}" },
-    ],
-    tokens,
-  });
-  assert.deepEqual(
-    variables.map((v) => v.name),
-    ["PORT"],
-  );
-  assert.deepEqual(
-    variableReferences.map((v) => v.name),
-    ["URL"],
-  );
-});

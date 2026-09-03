@@ -13,6 +13,7 @@ export default function TokenFieldFallback({
   value,
   onChange,
   onBlur,
+  onFocus,
   placeholder,
   multiline,
   ariaLabel,
@@ -34,6 +35,7 @@ export default function TokenFieldFallback({
         value={value}
         onChange={(e) => onChange(multiline ? e.target.value : e.target.value.replace(/\n/g, " "))}
         onBlur={onBlur}
+        onFocus={onFocus}
         rows={1}
         disabled={disabled}
         aria-label={ariaLabel}

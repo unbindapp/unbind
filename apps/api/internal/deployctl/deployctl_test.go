@@ -14,6 +14,8 @@ import (
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
+	variables_service "github.com/unbindapp/unbind-api/internal/services/variables"
+	"github.com/unbindapp/unbind-api/internal/vartemplate"
 	k8s_mocks "github.com/unbindapp/unbind-api/mocks/infrastructure/k8s"
 	github_mocks "github.com/unbindapp/unbind-api/mocks/integrations/github"
 	repo_mocks "github.com/unbindapp/unbind-api/mocks/repositories"
@@ -100,7 +102,7 @@ func (suite *DeploymentControllerTestSuite) TestAreDependenciesReady_NoDependenc
 		DependsOnServiceIDs: []uuid.UUID{},
 	}
 
-	suite.variablesMock.EXPECT().ResolveAllReferences(mock.Anything, serviceID).Return(map[string]string{}, nil)
+	suite.variablesMock.EXPECT().RenderServiceVariables(mock.Anything, serviceID).Return(&variables_service.RenderResult{}, nil)
 
 	ready := suite.deploymentController.AreDependenciesReady(suite.ctx, req)
 	suite.Assert().True(ready)
@@ -113,7 +115,22 @@ func (suite *DeploymentControllerTestSuite) TestAreDependenciesReady_VariableRes
 		DependsOnServiceIDs: []uuid.UUID{},
 	}
 
-	suite.variablesMock.EXPECT().ResolveAllReferences(mock.Anything, serviceID).Return(nil, assert.AnError)
+	suite.variablesMock.EXPECT().RenderServiceVariables(mock.Anything, serviceID).Return(nil, assert.AnError)
+
+	ready := suite.deploymentController.AreDependenciesReady(suite.ctx, req)
+	suite.Assert().False(ready)
+}
+
+func (suite *DeploymentControllerTestSuite) TestAreDependenciesReady_UnresolvedReference() {
+	serviceID := uuid.New()
+	req := DeploymentJobRequest{
+		ServiceID:           serviceID,
+		DependsOnServiceIDs: []uuid.UUID{},
+	}
+
+	suite.variablesMock.EXPECT().RenderServiceVariables(mock.Anything, serviceID).Return(&variables_service.RenderResult{
+		Unresolved: map[string][]vartemplate.Token{"DATABASE_URL": {{Key: "DATABASE_URL"}}},
+	}, nil)
 
 	ready := suite.deploymentController.AreDependenciesReady(suite.ctx, req)
 	suite.Assert().False(ready)
@@ -127,7 +144,7 @@ func (suite *DeploymentControllerTestSuite) TestAreDependenciesReady_WithUnhealt
 		DependsOnServiceIDs: []uuid.UUID{depServiceID},
 	}
 
-	suite.variablesMock.EXPECT().ResolveAllReferences(mock.Anything, serviceID).Return(map[string]string{}, nil)
+	suite.variablesMock.EXPECT().RenderServiceVariables(mock.Anything, serviceID).Return(&variables_service.RenderResult{}, nil)
 
 	// Mock service repo method through the repo mock
 	serviceMock := service_mocks.NewServiceRepositoryMock(suite.T())
@@ -155,7 +172,7 @@ func (suite *DeploymentControllerTestSuite) TestAreDependenciesReady_WithHealthy
 		DependsOnServiceIDs: []uuid.UUID{depServiceID},
 	}
 
-	suite.variablesMock.EXPECT().ResolveAllReferences(mock.Anything, serviceID).Return(map[string]string{}, nil)
+	suite.variablesMock.EXPECT().RenderServiceVariables(mock.Anything, serviceID).Return(&variables_service.RenderResult{}, nil)
 
 	// Mock service repo method through the repo mock
 	serviceMock := service_mocks.NewServiceRepositoryMock(suite.T())

@@ -10,9 +10,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/deployment"
+	"github.com/unbindapp/unbind-api/ent/environment"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
@@ -545,4 +547,47 @@ func (self *ServiceRepository) GetDatabaseConfig(ctx context.Context, serviceID 
 	}
 
 	return svcConfig.DatabaseConfig, nil
+}
+
+// GetByIDs loads services with their config and the environment, project and team they belong to
+func (self *ServiceRepository) GetByIDs(ctx context.Context, serviceIDs []uuid.UUID) ([]*ent.Service, error) {
+	if len(serviceIDs) == 0 {
+		return nil, nil
+	}
+	return self.base.DB.Service.Query().
+		Where(service.IDIn(serviceIDs...)).
+		WithServiceConfig().
+		WithEnvironment(func(eq *ent.EnvironmentQuery) {
+			eq.WithProject(func(pq *ent.ProjectQuery) {
+				pq.WithTeam()
+			})
+		}).
+		All(ctx)
+}
+
+// GetByScope lists every service under a team, project or environment, loaded for ad-hoc redeploys
+func (self *ServiceRepository) GetByScope(ctx context.Context, scope schema.VariableReferenceSourceType, scopeID uuid.UUID) ([]*ent.Service, error) {
+	var predicate predicate.Service
+	switch scope {
+	case schema.VariableReferenceSourceTypeTeam:
+		predicate = service.HasEnvironmentWith(environment.HasProjectWith(project.TeamIDEQ(scopeID)))
+	case schema.VariableReferenceSourceTypeProject:
+		predicate = service.HasEnvironmentWith(environment.ProjectIDEQ(scopeID))
+	case schema.VariableReferenceSourceTypeEnvironment:
+		predicate = service.EnvironmentIDEQ(scopeID)
+	default:
+		return nil, fmt.Errorf("unsupported scope %q", scope)
+	}
+
+	return self.base.DB.Service.Query().
+		Where(predicate).
+		WithServiceConfig().
+		WithCurrentDeployment().
+		WithGithubInstallation().
+		WithEnvironment(func(eq *ent.EnvironmentQuery) {
+			eq.WithProject(func(pq *ent.ProjectQuery) {
+				pq.WithTeam()
+			})
+		}).
+		All(ctx)
 }

@@ -596,6 +596,7 @@ var (
 		{Name: "sources", Type: field.TypeJSON},
 		{Name: "value_template", Type: field.TypeString},
 		{Name: "error", Type: field.TypeString, Nullable: true},
+		{Name: "migrated_at", Type: field.TypeTime, Nullable: true},
 		{Name: "target_service_id", Type: field.TypeUUID},
 	}
 	// VariableReferencesTable holds the schema information for the "variable_references" table.
@@ -606,7 +607,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "variable_references_services_variable_references",
-				Columns:    []*schema.Column{VariableReferencesColumns[7]},
+				Columns:    []*schema.Column{VariableReferencesColumns[8]},
 				RefColumns: []*schema.Column{ServicesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -615,17 +616,17 @@ var (
 			{
 				Name:    "variablereference_target_service_id_target_name",
 				Unique:  true,
-				Columns: []*schema.Column{VariableReferencesColumns[7], VariableReferencesColumns[3]},
+				Columns: []*schema.Column{VariableReferencesColumns[8], VariableReferencesColumns[3]},
 			},
 			{
 				Name:    "variablereference_target_service_id",
 				Unique:  false,
-				Columns: []*schema.Column{VariableReferencesColumns[7]},
+				Columns: []*schema.Column{VariableReferencesColumns[8]},
 			},
 			{
 				Name:    "variablereference_target_service_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{VariableReferencesColumns[7], VariableReferencesColumns[1]},
+				Columns: []*schema.Column{VariableReferencesColumns[8], VariableReferencesColumns[1]},
 			},
 			{
 				Name:    "variablereference_created_at",

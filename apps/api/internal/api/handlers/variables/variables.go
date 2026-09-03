@@ -20,7 +20,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-variables",
 		Summary:     "List Variables",
-		Description: "List variables for a service, environment, project, or team.",
+		Description: "List variables for a service, environment, project, or team. Service variables include their rendered values.",
 		Path:        "/list",
 		Method:      http.MethodGet,
 	}, handlers.ListVariables)
@@ -28,7 +28,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-variables",
 		Summary:     "Create or Update Variables",
-		Description: "Upsert variables by key for a service, environment, project, or team. Existing keys are overwritten.",
+		Description: "Upsert variables by key for a service, environment, project, or team. Values may contain ${{service.<id>.KEY}}, ${{team.KEY}}, ${{project.KEY}} and ${{environment.KEY}} references.",
 		Path:        "/update",
 		Method:      http.MethodPost,
 	}, handlers.UpdateVariables)
@@ -42,26 +42,10 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	}, handlers.DeleteVariables)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "read-variable-reference",
-		Summary:     "Resolve Variable Reference",
-		Description: "Resolve the current value a variable reference points to.",
-		Path:        "/references/get",
-		Method:      http.MethodGet,
-	}, handlers.ResolveVariableReference)
-
-	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-available-references",
 		Summary:     "List Available Variable References",
-		Description: "List the values that can be referenced from a service's variables (e.g. other services' outputs).",
+		Description: "List the sources and keys a service's variables can reference.",
 		Path:        "/references/available",
 		Method:      http.MethodGet,
 	}, handlers.ListReferenceableVariables)
-
-	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "read-available-variable-reference",
-		Summary:     "Resolve Available Variable Reference",
-		Description: "Resolve a candidate reference's current value before wiring it into a variable.",
-		Path:        "/references/available/get",
-		Method:      http.MethodGet,
-	}, handlers.ResolveAvailableVariableReference)
 }

@@ -1,12 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { cn } from "@/components/ui/utils";
-import { getVariablesPair } from "@/components/variables/helpers";
-import {
-  buildReferenceTokens,
-  type TReferenceExtended,
-  type TVariableToken,
-} from "@/components/variables/tokens";
+import { toStoredVariables } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import {
@@ -15,11 +10,7 @@ import {
 } from "@/components/variables/variables-form-field";
 import { useVariables } from "@/components/variables/variables-provider";
 import { useAppFormWithPersistence } from "@/lib/hooks/use-app-form-with-persistence";
-import {
-  TVariableForCreate,
-  VariableForCreateSchema,
-  VariableReferenceForCreateSchema,
-} from "@/lib/queries/variables";
+import { TVariableForCreate, VariableForCreateSchema } from "@/lib/queries/variables";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "@/components/ui/toast";
@@ -55,15 +46,11 @@ export default function CreateVariablesForm({
   } = useVariables();
 
   const {
-    list: { data: variableReferencesData, error: variableReferencesError },
+    tokens,
+    list: { error: variableReferencesError },
   } = useVariableReferences();
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
-
-  const tokens: TVariableToken<TReferenceExtended>[] | undefined = useMemo(() => {
-    if (!variableReferencesData) return undefined;
-    return buildReferenceTokens(variableReferencesData.variables);
-  }, [variableReferencesData]);
 
   const referenceProps: TReferenceProps = useMemo(
     () => (tokensDisabled ? { tokens: [], disabled: true } : { tokens }),
@@ -101,15 +88,11 @@ export default function CreateVariablesForm({
         return;
       }
 
-      const { variables, variableReferences } = getVariablesPair({
-        variables: value.variables,
-        tokens,
-      });
+      const variables = toStoredVariables(value.variables, tokens);
 
       await createOrUpdateVariables({
         ...typedProps,
         variables,
-        variableReferences,
       });
 
       const result = await ResultAsync.fromPromise(
@@ -125,13 +108,8 @@ export default function CreateVariablesForm({
         });
       }
 
-      for (const i of value.variables) {
-        const id = getNewEntityIdForVariable({ name: i.name, value: i.value });
-        temporarilyAddNewEntity(id);
-      }
-      for (const i of variableReferences) {
-        const id = getNewEntityIdForVariable({ name: i.name, value: i.value });
-        temporarilyAddNewEntity(id);
+      for (const i of variables) {
+        temporarilyAddNewEntity(getNewEntityIdForVariable({ name: i.name, value: i.value }));
       }
 
       formApi.reset();
@@ -175,10 +153,3 @@ export default function CreateVariablesForm({
 }
 
 export type TCreateVariablesForm = z.infer<typeof CreateVariablesFormSchema>;
-
-export const CreateVariablesFormResultSchema = z.object({
-  variables: VariableForCreateSchema.array(),
-  variableReferences: VariableReferenceForCreateSchema.array(),
-});
-export type TCreateVariablesFormResult = z.infer<typeof CreateVariablesFormResultSchema>;
-export type TCreateVariablesFormOnBlur = (props: TCreateVariablesFormResult) => void;

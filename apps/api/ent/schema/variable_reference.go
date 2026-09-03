@@ -47,6 +47,7 @@ func (VariableReference) Fields() []ent.Field {
 		field.String("value_template").
 			Comment("Optional template for the value, e.g. 'Hello ${a.b} this is my variable ${c.d}'"),
 		field.String("error").Optional().Nillable().Comment("Error message if the variable reference could not be resolved"),
+		field.Time("migrated_at").Optional().Nillable().Comment("Set once the reference has been written into the service secret as a template"),
 	}
 }
 

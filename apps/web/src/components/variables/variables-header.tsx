@@ -28,7 +28,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
       return "10 Variables";
     }
 
-    const variableCount = variablesData.variables.length + variablesData.variable_references.length;
+    const variableCount = variablesData.variables.length;
 
     if (type === "team")
       return (

@@ -476,14 +476,14 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 
 	req.Environment["SERVICE_DEPLOYMENT_ID"] = job.ID.String()
 
-	// Resolve referenced environment
-	referencedEnv, err := self.variableService.ResolveAllReferences(ctx, req.ServiceID)
+	// Render referenced environment
+	rendered, err := self.variableService.RenderServiceVariables(ctx, req.ServiceID)
 	if err != nil {
 		return nil, self.failWithErr(ctx, "Error resolving environment variables", job.ID, err)
 	}
 
 	serializedReferences := make(map[string]string)
-	for k, v := range referencedEnv {
+	for k, v := range rendered.Env {
 		serializedReferences[k] = base64.StdEncoding.EncodeToString([]byte(v))
 	}
 
@@ -805,10 +805,9 @@ func (self *DeploymentController) processDependentJob(ctx context.Context, item 
 
 // AreDependenciesReady checks if all dependencies for a service are ready
 func (self *DeploymentController) AreDependenciesReady(ctx context.Context, req DeploymentJobRequest) bool {
-	// Try to resolve all references
-	_, err := self.variableService.ResolveAllReferences(ctx, req.ServiceID)
-	if err != nil {
-		// If we can't resolve references, dependencies aren't ready
+	// Every reference has to resolve before a dependent service can start
+	rendered, err := self.variableService.RenderServiceVariables(ctx, req.ServiceID)
+	if err != nil || !rendered.FullyResolved() {
 		return false
 	}
 

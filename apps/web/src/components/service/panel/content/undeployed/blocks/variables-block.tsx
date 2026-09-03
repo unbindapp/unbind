@@ -1,11 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import {
-  buildReferenceTokens,
-  type TReferenceExtended,
-  type TVariableToken,
-} from "@/components/variables/tokens";
+import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import {
   VariablesFormField,
@@ -29,7 +25,8 @@ const VariablesBlock = withForm({
   },
   render: function Render({ form, className, onTokensChanged }) {
     const {
-      list: { data: variableReferencesData, error: variableReferencesError },
+      tokens,
+      list: { error: variableReferencesError },
     } = useVariableReferences();
 
     const [isOpen, setIsOpen] = useState(false);
@@ -39,11 +36,6 @@ const VariablesBlock = withForm({
     useEffect(() => {
       if (variableErrors && variableErrors.length > 0) setIsOpen(true);
     }, [variableErrors]);
-
-    const tokens: TVariableToken<TReferenceExtended>[] | undefined = useMemo(() => {
-      if (!variableReferencesData) return undefined;
-      return buildReferenceTokens(variableReferencesData.variables);
-    }, [variableReferencesData]);
 
     useEffect(() => {
       onTokensChanged?.(tokens);

@@ -107,18 +107,20 @@ Used for config files as variables (Kong's `kong.yml`), connection strings, etc.
 ## Variable references
 
 `TemplateVariableReference` pulls a variable from another deployed service into this one.
-Resolved at deploy time in `internal/services/templates/deploy.go` and at runtime in
-`internal/services/variables/resolve_references.go`.
+At deploy time `internal/services/templates/deploy.go` writes it into the target's secret as
+a `${{service.<uuid>.KEY}}` template; `internal/services/variables/render.go` renders that
+template on every deployment. There is no separate reference store: the target's variable
+is a normal variable whose value happens to contain references.
 
 | Field | Effect |
 |-------|--------|
 | `SourceID` | Source service's `ID`. |
 | `SourceName` | Variable name on the source. Omit when `IsHost` and you just want the host. |
 | `TargetName` | Variable name created on this service. |
-| `IsHost` | Resolve to the source's internal k8s DNS host (adds the `moco-` prefix for MySQL, strips port for DBs). |
+| `IsHost` | Becomes `${{service.<id>.UNBIND_INTERNAL_HOST}}`: the source's internal k8s DNS host (MySQL gets the `moco-` prefix, Redis `-headless`, ClickHouse `clickhouse-`). |
 | `TemplateString` | Wrap the resolved value in a larger string. `${SOURCE_NAME}` = the referenced value; other `${...}` keys come from the StringReplace map (e.g. `${INPUT_X_VALUE}`). |
 | `AdditionalTemplateSources` | Extra source service IDs to pull variables from for the `TemplateString`. |
-| `ResolveAsNormalVariable` | Treat as a normal variable instead of a live reference. |
+| `ResolveAsNormalVariable` | With `IsHost`, bake the host into the secret as literal text instead of a template. Needed when the variable is mounted as a file, since mounts can't contain references. |
 
 ### Patterns (from real templates)
 

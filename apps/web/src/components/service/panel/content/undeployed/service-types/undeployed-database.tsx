@@ -24,7 +24,7 @@ import {
 import S3BucketsProvider, { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { CommandItem } from "@/components/ui/command";
 import { cn } from "@/components/ui/utils";
-import { getVariablesPair } from "@/components/variables/helpers";
+import { toStoredVariables } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { TCommandItem } from "@/lib/hooks/use-app-form";
 import {
@@ -131,10 +131,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
           return;
         }
 
-        const { variables, variableReferences } = getVariablesPair({
-          variables: validVariables,
-          tokens: tokensRef.current,
-        });
+        const variables = toStoredVariables(validVariables, tokensRef.current);
 
         const { data } = await createOrUpdateVariables({
           type: "service",
@@ -143,12 +140,8 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
           environmentId,
           serviceId,
           variables,
-          variableReferences,
         });
 
-        data.variable_references.forEach((v) =>
-          temporarilyAddNewEntity(getNewEntityIdForVariable({ name: v.name, value: v.value })),
-        );
         data.variables.forEach((v) =>
           temporarilyAddNewEntity(getNewEntityIdForVariable({ name: v.name, value: v.value })),
         );

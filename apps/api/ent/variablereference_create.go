@@ -92,6 +92,20 @@ func (_c *VariableReferenceCreate) SetNillableError(v *string) *VariableReferenc
 	return _c
 }
 
+// SetMigratedAt sets the "migrated_at" field.
+func (_c *VariableReferenceCreate) SetMigratedAt(v time.Time) *VariableReferenceCreate {
+	_c.mutation.SetMigratedAt(v)
+	return _c
+}
+
+// SetNillableMigratedAt sets the "migrated_at" field if the given value is not nil.
+func (_c *VariableReferenceCreate) SetNillableMigratedAt(v *time.Time) *VariableReferenceCreate {
+	if v != nil {
+		_c.SetMigratedAt(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *VariableReferenceCreate) SetID(v uuid.UUID) *VariableReferenceCreate {
 	_c.mutation.SetID(v)
@@ -249,6 +263,10 @@ func (_c *VariableReferenceCreate) createSpec() (*VariableReference, *sqlgraph.C
 		_spec.SetField(variablereference.FieldError, field.TypeString, value)
 		_node.Error = &value
 	}
+	if value, ok := _c.mutation.MigratedAt(); ok {
+		_spec.SetField(variablereference.FieldMigratedAt, field.TypeTime, value)
+		_node.MigratedAt = &value
+	}
 	if nodes := _c.mutation.ServiceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -396,6 +414,24 @@ func (u *VariableReferenceUpsert) ClearError() *VariableReferenceUpsert {
 	return u
 }
 
+// SetMigratedAt sets the "migrated_at" field.
+func (u *VariableReferenceUpsert) SetMigratedAt(v time.Time) *VariableReferenceUpsert {
+	u.Set(variablereference.FieldMigratedAt, v)
+	return u
+}
+
+// UpdateMigratedAt sets the "migrated_at" field to the value that was provided on create.
+func (u *VariableReferenceUpsert) UpdateMigratedAt() *VariableReferenceUpsert {
+	u.SetExcluded(variablereference.FieldMigratedAt)
+	return u
+}
+
+// ClearMigratedAt clears the value of the "migrated_at" field.
+func (u *VariableReferenceUpsert) ClearMigratedAt() *VariableReferenceUpsert {
+	u.SetNull(variablereference.FieldMigratedAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -535,6 +571,27 @@ func (u *VariableReferenceUpsertOne) UpdateError() *VariableReferenceUpsertOne {
 func (u *VariableReferenceUpsertOne) ClearError() *VariableReferenceUpsertOne {
 	return u.Update(func(s *VariableReferenceUpsert) {
 		s.ClearError()
+	})
+}
+
+// SetMigratedAt sets the "migrated_at" field.
+func (u *VariableReferenceUpsertOne) SetMigratedAt(v time.Time) *VariableReferenceUpsertOne {
+	return u.Update(func(s *VariableReferenceUpsert) {
+		s.SetMigratedAt(v)
+	})
+}
+
+// UpdateMigratedAt sets the "migrated_at" field to the value that was provided on create.
+func (u *VariableReferenceUpsertOne) UpdateMigratedAt() *VariableReferenceUpsertOne {
+	return u.Update(func(s *VariableReferenceUpsert) {
+		s.UpdateMigratedAt()
+	})
+}
+
+// ClearMigratedAt clears the value of the "migrated_at" field.
+func (u *VariableReferenceUpsertOne) ClearMigratedAt() *VariableReferenceUpsertOne {
+	return u.Update(func(s *VariableReferenceUpsert) {
+		s.ClearMigratedAt()
 	})
 }
 
@@ -844,6 +901,27 @@ func (u *VariableReferenceUpsertBulk) UpdateError() *VariableReferenceUpsertBulk
 func (u *VariableReferenceUpsertBulk) ClearError() *VariableReferenceUpsertBulk {
 	return u.Update(func(s *VariableReferenceUpsert) {
 		s.ClearError()
+	})
+}
+
+// SetMigratedAt sets the "migrated_at" field.
+func (u *VariableReferenceUpsertBulk) SetMigratedAt(v time.Time) *VariableReferenceUpsertBulk {
+	return u.Update(func(s *VariableReferenceUpsert) {
+		s.SetMigratedAt(v)
+	})
+}
+
+// UpdateMigratedAt sets the "migrated_at" field to the value that was provided on create.
+func (u *VariableReferenceUpsertBulk) UpdateMigratedAt() *VariableReferenceUpsertBulk {
+	return u.Update(func(s *VariableReferenceUpsert) {
+		s.UpdateMigratedAt()
+	})
+}
+
+// ClearMigratedAt clears the value of the "migrated_at" field.
+func (u *VariableReferenceUpsertBulk) ClearMigratedAt() *VariableReferenceUpsertBulk {
+	return u.Update(func(s *VariableReferenceUpsert) {
+		s.ClearMigratedAt()
 	})
 }
 

@@ -6,78 +6,30 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
-	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
-	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	"github.com/unbindapp/unbind-api/internal/vartemplate"
 )
 
-// Delete a secret by key
-func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error) {
-	if len(referenceIDs) > 0 && input.Type != schema.VariableReferenceSourceTypeService {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Reference IDs are only valid for service variables")
-	}
-
-	var permissionChecks []permissions_repo.PermissionCheck
-
-	switch input.Type {
-	case schema.VariableReferenceSourceTypeTeam:
-		permissionChecks = append(permissionChecks, permissions_repo.PermissionCheck{
-			Action:       schema.ActionEditor,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   input.TeamID,
-		})
-	case schema.VariableReferenceSourceTypeProject:
-		permissionChecks = append(permissionChecks, permissions_repo.PermissionCheck{
-			Action:       schema.ActionEditor,
-			ResourceType: schema.ResourceTypeProject,
-			ResourceID:   input.ProjectID,
-		})
-	case schema.VariableReferenceSourceTypeEnvironment:
-		permissionChecks = append(permissionChecks, permissions_repo.PermissionCheck{
-			Action:       schema.ActionEditor,
-			ResourceType: schema.ResourceTypeEnvironment,
-			ResourceID:   input.EnvironmentID,
-		})
-	case schema.VariableReferenceSourceTypeService:
-		permissionChecks = append(permissionChecks, permissions_repo.PermissionCheck{
-			Action:       schema.ActionEditor,
-			ResourceType: schema.ResourceTypeService,
-			ResourceID:   input.ServiceID,
-		})
-	default:
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid variable type")
-	}
-
-	if err := self.repo.Permissions().Check(
-		ctx,
-		userID,
-		permissionChecks,
-	); err != nil {
-		return nil, err
+// DeleteVariablesByKey removes variables. The returned bool is true when a rendered
+// value was removed, meaning the service needs a new deployment rather than a pod restart.
+func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput) (*models.VariableResponse, bool, error) {
+	if err := self.checkScopePermission(ctx, userID, schema.ActionEditor, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID); err != nil {
+		return nil, false, err
 	}
 
 	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	client := self.k8s.GetInternalClient()
+	isService := input.Type == schema.VariableReferenceSourceTypeService
 
+	needsRedeploy := false
 	secrets := make(map[string][]byte)
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		// Delete reference IDs
-		if input.Type == schema.VariableReferenceSourceTypeService {
-			deletedCount, err := self.repo.Variables().DeleteReferences(ctx, tx, input.ServiceID, referenceIDs)
-			if err != nil {
-				return err
-			}
-			if deletedCount != len(referenceIDs) {
-				return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid reference IDs")
-			}
-		}
-
 		secrets, err = self.k8s.GetSecretMap(ctx, secretName, team.Namespace, client)
 		if err != nil {
 			return err
@@ -85,95 +37,63 @@ func (self *VariablesService) DeleteVariablesByKey(ctx context.Context, userID u
 
 		var variableMounts []*schema.VariableMount
 		var variableMetadata map[string]schema.VariableMetadata
-		variableMountsNeedsUpdate := false
-		variableMetadataNeedsUpdate := false
+		mountsChanged := false
+		metadataChanged := false
 		if service != nil && service.Edges.ServiceConfig != nil {
 			variableMounts = service.Edges.ServiceConfig.VariableMounts
 			variableMetadata = service.Edges.ServiceConfig.VariableMetadata
 		}
 
-		for _, secretKey := range keys {
-			if input.Type == schema.VariableReferenceSourceTypeService {
-				if slices.Contains(service.Edges.ServiceConfig.ProtectedVariables, secretKey.Name) {
-					continue
-				}
+		for _, key := range keys {
+			if isService && slices.Contains(service.Edges.ServiceConfig.ProtectedVariables, key.Name) {
+				continue
 			}
 
-			// Delete variable mounts if they exist
-			indexToDelete := -1
-			for i, variableMount := range variableMounts {
-				if variableMount.Name == secretKey.Name {
-					indexToDelete = i
-					break
-				}
-			}
-			if indexToDelete != -1 {
-				variableMountsNeedsUpdate = true
-				variableMounts = append(variableMounts[:indexToDelete], variableMounts[indexToDelete+1:]...)
+			if index := slices.IndexFunc(variableMounts, func(mount *schema.VariableMount) bool { return mount.Name == key.Name }); index != -1 {
+				mountsChanged = true
+				variableMounts = slices.Delete(variableMounts, index, index+1)
 			}
 
-			if _, ok := variableMetadata[secretKey.Name]; ok {
-				delete(variableMetadata, secretKey.Name)
-				variableMetadataNeedsUpdate = true
+			if _, ok := variableMetadata[key.Name]; ok {
+				delete(variableMetadata, key.Name)
+				metadataChanged = true
 			}
-			delete(secrets, secretKey.Name)
+
+			if value, ok := secrets[key.Name]; ok && vartemplate.HasTokens(string(value)) {
+				needsRedeploy = true
+			}
+			delete(secrets, key.Name)
 		}
 
-		if variableMountsNeedsUpdate {
+		if mountsChanged {
 			if err := self.repo.Service().UpdateVariableMounts(ctx, tx, service.ID, variableMounts); err != nil {
 				return err
 			}
 		}
 
-		if variableMetadataNeedsUpdate {
+		if metadataChanged {
 			if err := self.repo.Service().UpdateVariableMetadata(ctx, tx, service.ID, variableMetadata); err != nil {
 				return err
 			}
 		}
 
 		_, err = self.k8s.UpdateSecret(ctx, secretName, team.Namespace, secrets, client)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return err
 	}); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
-	variableResponse := &models.VariableResponse{
-		Variables:          make([]*models.VariableResponseItem, len(secrets)),
-		VariableReferences: []*models.VariableReferenceResponse{},
-	}
-	i := 0
-	for k, v := range secrets {
-		variableResponse.Variables[i] = &models.VariableResponseItem{
-			Type:  input.Type,
-			Name:  k,
-			Value: string(v),
-		}
-		i++
-	}
-	models.SortVariableResponse(variableResponse.Variables)
-
-	// Add references if this is for a service
-	if input.Type == schema.VariableReferenceSourceTypeService {
-		references, err := self.repo.Variables().GetReferencesForService(ctx, input.ServiceID)
-		if err != nil {
-			return nil, err
-		}
-		variableResponse.VariableReferences = models.TransformVariableReferenceResponseEntities(references)
+	response, err := self.buildResponse(ctx, client, input.Type, service, secrets)
+	if err != nil {
+		return nil, false, err
 	}
 
-	// Perform a restart of pods...
-	// ! TODO - handle references
-	if input.Type == schema.VariableReferenceSourceTypeService {
-		err = self.k8s.RollingRestartPodsByLabel(ctx, team.Namespace, input.Type.KubernetesLabel(), service.ID.String(), client)
-		if err != nil {
+	if isService && !needsRedeploy {
+		if err := self.k8s.RollingRestartPodsByLabel(ctx, team.Namespace, input.Type.KubernetesLabel(), service.ID.String(), client); err != nil {
 			log.Error("Failed to restart pods", "err", err, "label", input.Type.KubernetesLabel(), "value", service.ID.String())
-			return nil, err
+			return nil, false, err
 		}
 	}
 
-	return variableResponse, nil
+	return response, needsRedeploy, nil
 }

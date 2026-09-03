@@ -3,11 +3,13 @@ import type { TTokenFieldHandle, TTokenFieldProps } from "@/components/ui/token-
 import BrandIcon from "@/components/icons/brand";
 import { IconCache, type TCachedIcon } from "@/components/icons/icon-cache";
 import { iconCompletionAddition } from "@/components/ui/token-field/icon-completion";
+import { getVariablesFromRawText } from "@/components/variables/helpers";
 import {
   createVariableReferenceLanguage,
   loadingReferencesIconKey,
   type TVariableReferenceData,
 } from "@/components/variables/variable-reference-language";
+import { createEnvVariablesLanguage } from "@/components/variables/variables-env-language";
 import { resolveReferenceInsertion } from "@/components/variables/variable-reference-completion";
 import { referenceLabelCompletionAddition } from "@/components/variables/variable-reference-label";
 import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
@@ -27,7 +29,50 @@ export type TReferenceProps = {
 
 export const variablesFormFieldDefaultVariables: TVariableForCreate[] = [{ name: "", value: "" }];
 
-const completionAdditions = [iconCompletionAddition, referenceLabelCompletionAddition];
+export const referenceCompletionAdditions = [
+  iconCompletionAddition,
+  referenceLabelCompletionAddition,
+];
+
+/**
+ * The CodeMirror language and completion icons for a field that takes
+ * references. The language is rebuilt when the reference list arrives so
+ * already-typed values re-colour.
+ */
+export function useVariableReferenceLanguage(
+  tokens: readonly TVariableToken<TReferenceExtended>[] | undefined,
+  variant: "value" | "env" = "value",
+) {
+  const dataRef = useRef<TVariableReferenceData<TReferenceExtended>>({ tokens: undefined });
+  dataRef.current = { tokens };
+  const language = useMemo(
+    () =>
+      variant === "env"
+        ? createEnvVariablesLanguage(() => dataRef.current)
+        : createVariableReferenceLanguage(() => dataRef.current),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [tokens, variant],
+  );
+
+  const icons: TCachedIcon[] = useMemo(() => {
+    const distinct = new Set<string>();
+    for (const token of tokens ?? []) {
+      if (token.brand) distinct.add(token.brand);
+    }
+    return [
+      {
+        key: loadingReferencesIconKey,
+        node: <LoaderIcon className="size-4 shrink-0 animate-spin" />,
+      },
+      ...[...distinct].map((brand) => ({
+        key: brand,
+        node: <BrandIcon color="brand" brand={brand} className="size-4.5 shrink-0" />,
+      })),
+    ];
+  }, [tokens]);
+
+  return { language, icons };
+}
 
 const props: { referenceProps: TReferenceProps } = { referenceProps: { tokens: [] } };
 
@@ -37,31 +82,7 @@ export const VariablesFormField = withForm({
   },
   props,
   render: function Render({ form, referenceProps }) {
-    const dataRef = useRef<TVariableReferenceData<TReferenceExtended>>({ tokens: undefined });
-    dataRef.current = { tokens: referenceProps.tokens };
-    // Rebuilt when the reference list arrives so already-typed values re-colour.
-    const language = useMemo(
-      () => createVariableReferenceLanguage(() => dataRef.current),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [referenceProps.tokens],
-    );
-
-    const icons: TCachedIcon[] = useMemo(() => {
-      const distinct = new Set<string>();
-      for (const token of referenceProps.tokens ?? []) {
-        if (token.brand) distinct.add(token.brand);
-      }
-      return [
-        {
-          key: loadingReferencesIconKey,
-          node: <LoaderIcon className="size-4 shrink-0 animate-spin" />,
-        },
-        ...[...distinct].map((brand) => ({
-          key: brand,
-          node: <BrandIcon color="brand" brand={brand} className="size-4.5 shrink-0" />,
-        })),
-      ];
-    }, [referenceProps.tokens]);
+    const { language, icons } = useVariableReferenceLanguage(referenceProps.tokens);
 
     const onPaste = useCallback(
       (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
@@ -206,9 +227,18 @@ type TValueFieldProps = {
   subField: AnyFieldApi;
   language: LanguageSupport;
   referencesDisabled?: boolean;
+  classNameEditor?: string;
+  placeholder?: string;
 };
 
-function VariableValueField({ Field, subField, language, referencesDisabled }: TValueFieldProps) {
+export function VariableValueField({
+  Field,
+  subField,
+  language,
+  referencesDisabled,
+  classNameEditor,
+  placeholder,
+}: TValueFieldProps) {
   const fieldRef = useRef<TTokenFieldHandle>(null);
 
   return (
@@ -220,7 +250,7 @@ function VariableValueField({ Field, subField, language, referencesDisabled }: T
       onBlur={subField.handleBlur}
       onChange={(value) => subField.handleChange(value)}
       language={referencesDisabled ? undefined : language}
-      completionAdditions={referencesDisabled ? undefined : completionAdditions}
+      completionAdditions={referencesDisabled ? undefined : referenceCompletionAdditions}
       anchorDropdownToField
       multiline
       trailing={
@@ -240,32 +270,11 @@ function VariableValueField({ Field, subField, language, referencesDisabled }: T
           </Button>
         )
       }
-      classNameEditor="font-mono max-h-35 overflow-auto"
+      classNameEditor={classNameEditor ?? "font-mono max-h-35 overflow-auto"}
       className="flex-1"
-      placeholder={referencesDisabled ? "Value" : "Value or ${Reference}"}
+      placeholder={placeholder ?? (referencesDisabled ? "Value" : "Value or ${Reference}")}
     />
   );
-}
-
-export function getVariablesFromRawText(text: string) {
-  const cleaned = text.trim();
-  const lines = cleaned ? cleaned.split("\n") : [];
-  const pairs = lines
-    .filter((line) => line.trim() !== "")
-    .map((line) => {
-      const [name, ...rest] = line.split("=");
-      const value = unwrapQuotes(rest.join("="));
-      return { name, value };
-    });
-  return pairs;
-}
-
-export function unwrapQuotes(value: string) {
-  let newValue = value;
-  if (newValue.startsWith('"') && newValue.endsWith('"')) {
-    newValue = newValue.slice(1, -1);
-  }
-  return newValue;
 }
 
 export type { TReferenceExtended };

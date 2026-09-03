@@ -3,7 +3,7 @@ import type { TVariableToken } from "@/components/variables/tokens";
 import type { TIconCompletion } from "@/components/ui/token-field/icon-completion";
 import type { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { LanguageSupport, LRLanguage, syntaxTree } from "@codemirror/language";
-import { RangeSetBuilder } from "@codemirror/state";
+import { RangeSetBuilder, type Extension } from "@codemirror/state";
 import {
   Decoration,
   ViewPlugin,
@@ -120,7 +120,10 @@ function completionAt<T>(
   };
 }
 
-export function createVariableReferenceLanguage<T>(getData: () => TVariableReferenceData<T>) {
+export function createVariableReferenceLanguage<T>(
+  getData: () => TVariableReferenceData<T>,
+  extensions: Extension[] = [],
+) {
   return new LanguageSupport(
     LRLanguage.define({
       name: "variable-reference",
@@ -129,6 +132,6 @@ export function createVariableReferenceLanguage<T>(getData: () => TVariableRefer
         autocomplete: (context: CompletionContext) => completionAt(context, getData()),
       },
     }),
-    resolvedReferenceHighlighter(getData),
+    [resolvedReferenceHighlighter(getData), ...extensions],
   );
 }

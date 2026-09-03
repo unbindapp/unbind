@@ -16,7 +16,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/deployctl"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
-	corev1 "k8s.io/api/core/v1"
 )
 
 // EnqueueFullBuildDeployments enqueues full deployment jobs for services that need a complete rebuild
@@ -149,7 +148,7 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 			return err
 		}
 
-		additionalEnv, err := self.variableService.ResolveAllReferences(ctx, service.ID)
+		rendered, err := self.variableService.RenderServiceVariables(ctx, service.ID)
 		if err != nil {
 			if _, err := self.repo.Deployment().MarkFailed(ctx, tx, newDeployment.ID, err.Error(), time.Now()); err != nil {
 				return err
@@ -157,17 +156,7 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 			// Commit so the failed deployment stays visible
 			return nil
 		}
-		envVars := make([]corev1.EnvVar, len(additionalEnv))
-		i := 0
-		for k, v := range additionalEnv {
-			envVars[i] = corev1.EnvVar{
-				Name:  k,
-				Value: v,
-			}
-			i++
-		}
-
-		crdToDeploy.Spec.EnvVars = envVars
+		crdToDeploy.Spec.EnvVars = rendered.EnvVars()
 
 		_, newService, err := self.k8s.DeployUnbindService(ctx, crdToDeploy)
 		if err != nil {
@@ -209,13 +198,13 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 	return newDeployment, nil
 }
 
-// RedeployReferencingServices redeploys services whose variable references point at any of
+// RedeployReferencingServices redeploys services whose variables reference any of
 // the given keys on the source, so changed values propagate into their environments
-func (self *ServiceService) RedeployReferencingServices(ctx context.Context, sourceID uuid.UUID, keys []string) {
+func (self *ServiceService) RedeployReferencingServices(ctx context.Context, sourceType schema.VariableReferenceSourceType, sourceID uuid.UUID, keys []string) {
 	if len(keys) == 0 {
 		return
 	}
-	services, err := self.repo.Variables().GetServicesReferencingID(ctx, sourceID, keys)
+	services, err := self.variableService.FindReferencingServices(ctx, sourceType, sourceID, keys)
 	if err != nil {
 		log.Errorf("failed to find services referencing %s: %v", sourceID, err)
 		return

@@ -6,20 +6,30 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
 // VariablesServiceInterface ...
 type VariablesServiceInterface interface {
-	// Delete a secret by key
-	DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error)
-	// Create secrets in bulk
-	UpdateVariables(ctx context.Context, userID uuid.UUID, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, error)
+	// DeleteVariablesByKey removes variables. The returned bool is true when a rendered
+	// value was removed, meaning the service needs a new deployment rather than a pod restart.
+	DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput) (*models.VariableResponse, bool, error)
+	// MigrateLegacyReferences writes rows of the old variable_references table into the
+	// target service's secret as ${{...}} templates. Rows are kept and marked so the
+	// step is idempotent and an older release can still read them.
+	MigrateLegacyReferences(ctx context.Context) error
+	// UpdateVariables writes variables in bulk. The returned bool is true when a rendered
+	// value changed, meaning the service needs a new deployment rather than a pod restart.
+	UpdateVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, bool, error)
 	GetVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error)
+	// GetAvailableVariableReferences lists the sources and keys a service's variables can reference
 	GetAvailableVariableReferences(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID, serviceID uuid.UUID) ([]models.AvailableVariableReference, error)
-	// Resolve a variable reference value for a key
-	ResolveAvailableReferenceValue(ctx context.Context, requesterUserID uuid.UUID, input *models.ResolveVariableReferenceInput) (string, error)
-	ResolveSingleReference(ctx context.Context, requesterUserID uuid.UUID, serviceID, referenceID uuid.UUID) (string, error)
-	// Resolve variable references into map[string]string
-	ResolveAllReferences(ctx context.Context, serviceID uuid.UUID) (map[string]string, error)
+	// RenderServiceVariables renders the references in a service's variables. Tokens
+	// that cannot be resolved are left as literal text and reported in Unresolved.
+	RenderServiceVariables(ctx context.Context, serviceID uuid.UUID) (*RenderResult, error)
+	// FindReferencingServices returns deployed services whose variables reference any of
+	// the given keys on the source
+	FindReferencingServices(ctx context.Context, sourceType schema.VariableReferenceSourceType, sourceID uuid.UUID, keys []string) ([]*ent.Service, error)
 }

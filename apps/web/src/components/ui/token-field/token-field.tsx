@@ -35,6 +35,7 @@ export type TTokenFieldProps = {
   language?: LanguageSupport;
   onSubmit?: () => void;
   onBlur?: () => void;
+  onFocus?: () => void;
   placeholder?: string;
   multiline?: boolean;
   /** Extra DOM injected into each completion option, e.g. an icon. */
@@ -74,6 +75,7 @@ export default function TokenField({
   language,
   onSubmit,
   onBlur,
+  onFocus,
   placeholder,
   multiline,
   completionAdditions,
@@ -100,6 +102,8 @@ export default function TokenField({
   onSubmitRef.current = onSubmit;
   const onBlurRef = useRef(onBlur);
   onBlurRef.current = onBlur;
+  const onFocusRef = useRef(onFocus);
+  onFocusRef.current = onFocus;
   // Static config, read once: reacting to it would rebuild the whole editor.
   const completionAdditionsRef = useRef(completionAdditions);
   const anchorDropdownToFieldRef = useRef(anchorDropdownToField);
@@ -199,6 +203,10 @@ export default function TokenField({
       EditorView.domEventHandlers({
         blur: () => {
           onBlurRef.current?.();
+          return false;
+        },
+        focus: () => {
+          onFocusRef.current?.();
           return false;
         },
       }),

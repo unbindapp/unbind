@@ -9,7 +9,10 @@ import (
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
+	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/models"
+	"github.com/unbindapp/unbind-api/internal/services/variables"
 )
 
 // NewVariablesServiceMock creates a new instance of VariablesServiceMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -40,31 +43,37 @@ func (_m *VariablesServiceMock) EXPECT() *VariablesServiceMock_Expecter {
 }
 
 // DeleteVariablesByKey provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error) {
-	ret := _mock.Called(ctx, userID, input, keys, referenceIDs)
+func (_mock *VariablesServiceMock) DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput) (*models.VariableResponse, bool, error) {
+	ret := _mock.Called(ctx, userID, input, keys)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteVariablesByKey")
 	}
 
 	var r0 *models.VariableResponse
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput, []uuid.UUID) (*models.VariableResponse, error)); ok {
-		return returnFunc(ctx, userID, input, keys, referenceIDs)
+	var r1 bool
+	var r2 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput) (*models.VariableResponse, bool, error)); ok {
+		return returnFunc(ctx, userID, input, keys)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput, []uuid.UUID) *models.VariableResponse); ok {
-		r0 = returnFunc(ctx, userID, input, keys, referenceIDs)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput) *models.VariableResponse); ok {
+		r0 = returnFunc(ctx, userID, input, keys)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.VariableResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput, []uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, userID, input, keys, referenceIDs)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput) bool); ok {
+		r1 = returnFunc(ctx, userID, input, keys)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(bool)
 	}
-	return r0, r1
+	if returnFunc, ok := ret.Get(2).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, []models.VariableDeleteInput) error); ok {
+		r2 = returnFunc(ctx, userID, input, keys)
+	} else {
+		r2 = ret.Error(2)
+	}
+	return r0, r1, r2
 }
 
 // VariablesServiceMock_DeleteVariablesByKey_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteVariablesByKey'
@@ -77,12 +86,11 @@ type VariablesServiceMock_DeleteVariablesByKey_Call struct {
 //   - userID uuid.UUID
 //   - input models.BaseVariablesJSONInput
 //   - keys []models.VariableDeleteInput
-//   - referenceIDs []uuid.UUID
-func (_e *VariablesServiceMock_Expecter) DeleteVariablesByKey(ctx any, userID any, input any, keys any, referenceIDs any) *VariablesServiceMock_DeleteVariablesByKey_Call {
-	return &VariablesServiceMock_DeleteVariablesByKey_Call{Call: _e.mock.On("DeleteVariablesByKey", ctx, userID, input, keys, referenceIDs)}
+func (_e *VariablesServiceMock_Expecter) DeleteVariablesByKey(ctx any, userID any, input any, keys any) *VariablesServiceMock_DeleteVariablesByKey_Call {
+	return &VariablesServiceMock_DeleteVariablesByKey_Call{Call: _e.mock.On("DeleteVariablesByKey", ctx, userID, input, keys)}
 }
 
-func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Run(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID)) *VariablesServiceMock_DeleteVariablesByKey_Call {
+func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Run(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput)) *VariablesServiceMock_DeleteVariablesByKey_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -100,27 +108,102 @@ func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Run(run func(ctx conte
 		if args[3] != nil {
 			arg3 = args[3].([]models.VariableDeleteInput)
 		}
-		var arg4 []uuid.UUID
-		if args[4] != nil {
-			arg4 = args[4].([]uuid.UUID)
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Return(variableResponse *models.VariableResponse, b bool, err error) *VariablesServiceMock_DeleteVariablesByKey_Call {
+	_c.Call.Return(variableResponse, b, err)
+	return _c
+}
+
+func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput) (*models.VariableResponse, bool, error)) *VariablesServiceMock_DeleteVariablesByKey_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindReferencingServices provides a mock function for the type VariablesServiceMock
+func (_mock *VariablesServiceMock) FindReferencingServices(ctx context.Context, sourceType schema.VariableReferenceSourceType, sourceID uuid.UUID, keys []string) ([]*ent.Service, error) {
+	ret := _mock.Called(ctx, sourceType, sourceID, keys)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindReferencingServices")
+	}
+
+	var r0 []*ent.Service
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, schema.VariableReferenceSourceType, uuid.UUID, []string) ([]*ent.Service, error)); ok {
+		return returnFunc(ctx, sourceType, sourceID, keys)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, schema.VariableReferenceSourceType, uuid.UUID, []string) []*ent.Service); ok {
+		r0 = returnFunc(ctx, sourceType, sourceID, keys)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Service)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, schema.VariableReferenceSourceType, uuid.UUID, []string) error); ok {
+		r1 = returnFunc(ctx, sourceType, sourceID, keys)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// VariablesServiceMock_FindReferencingServices_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindReferencingServices'
+type VariablesServiceMock_FindReferencingServices_Call struct {
+	*mock.Call
+}
+
+// FindReferencingServices is a helper method to define mock.On call
+//   - ctx context.Context
+//   - sourceType schema.VariableReferenceSourceType
+//   - sourceID uuid.UUID
+//   - keys []string
+func (_e *VariablesServiceMock_Expecter) FindReferencingServices(ctx any, sourceType any, sourceID any, keys any) *VariablesServiceMock_FindReferencingServices_Call {
+	return &VariablesServiceMock_FindReferencingServices_Call{Call: _e.mock.On("FindReferencingServices", ctx, sourceType, sourceID, keys)}
+}
+
+func (_c *VariablesServiceMock_FindReferencingServices_Call) Run(run func(ctx context.Context, sourceType schema.VariableReferenceSourceType, sourceID uuid.UUID, keys []string)) *VariablesServiceMock_FindReferencingServices_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 schema.VariableReferenceSourceType
+		if args[1] != nil {
+			arg1 = args[1].(schema.VariableReferenceSourceType)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 []string
+		if args[3] != nil {
+			arg3 = args[3].([]string)
 		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
-			arg4,
 		)
 	})
 	return _c
 }
 
-func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) Return(variableResponse *models.VariableResponse, err error) *VariablesServiceMock_DeleteVariablesByKey_Call {
-	_c.Call.Return(variableResponse, err)
+func (_c *VariablesServiceMock_FindReferencingServices_Call) Return(services []*ent.Service, err error) *VariablesServiceMock_FindReferencingServices_Call {
+	_c.Call.Return(services, err)
 	return _c
 }
 
-func (_c *VariablesServiceMock_DeleteVariablesByKey_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput, referenceIDs []uuid.UUID) (*models.VariableResponse, error)) *VariablesServiceMock_DeleteVariablesByKey_Call {
+func (_c *VariablesServiceMock_FindReferencingServices_Call) RunAndReturn(run func(ctx context.Context, sourceType schema.VariableReferenceSourceType, sourceID uuid.UUID, keys []string) ([]*ent.Service, error)) *VariablesServiceMock_FindReferencingServices_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -291,24 +374,75 @@ func (_c *VariablesServiceMock_GetVariables_Call) RunAndReturn(run func(ctx cont
 	return _c
 }
 
-// ResolveAllReferences provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) ResolveAllReferences(ctx context.Context, serviceID uuid.UUID) (map[string]string, error) {
+// MigrateLegacyReferences provides a mock function for the type VariablesServiceMock
+func (_mock *VariablesServiceMock) MigrateLegacyReferences(ctx context.Context) error {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MigrateLegacyReferences")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// VariablesServiceMock_MigrateLegacyReferences_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MigrateLegacyReferences'
+type VariablesServiceMock_MigrateLegacyReferences_Call struct {
+	*mock.Call
+}
+
+// MigrateLegacyReferences is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *VariablesServiceMock_Expecter) MigrateLegacyReferences(ctx any) *VariablesServiceMock_MigrateLegacyReferences_Call {
+	return &VariablesServiceMock_MigrateLegacyReferences_Call{Call: _e.mock.On("MigrateLegacyReferences", ctx)}
+}
+
+func (_c *VariablesServiceMock_MigrateLegacyReferences_Call) Run(run func(ctx context.Context)) *VariablesServiceMock_MigrateLegacyReferences_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *VariablesServiceMock_MigrateLegacyReferences_Call) Return(err error) *VariablesServiceMock_MigrateLegacyReferences_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *VariablesServiceMock_MigrateLegacyReferences_Call) RunAndReturn(run func(ctx context.Context) error) *VariablesServiceMock_MigrateLegacyReferences_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RenderServiceVariables provides a mock function for the type VariablesServiceMock
+func (_mock *VariablesServiceMock) RenderServiceVariables(ctx context.Context, serviceID uuid.UUID) (*variables_service.RenderResult, error) {
 	ret := _mock.Called(ctx, serviceID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for ResolveAllReferences")
+		panic("no return value specified for RenderServiceVariables")
 	}
 
-	var r0 map[string]string
+	var r0 *variables_service.RenderResult
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (map[string]string, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*variables_service.RenderResult, error)); ok {
 		return returnFunc(ctx, serviceID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) map[string]string); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *variables_service.RenderResult); ok {
 		r0 = returnFunc(ctx, serviceID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(map[string]string)
+			r0 = ret.Get(0).(*variables_service.RenderResult)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
@@ -319,19 +453,19 @@ func (_mock *VariablesServiceMock) ResolveAllReferences(ctx context.Context, ser
 	return r0, r1
 }
 
-// VariablesServiceMock_ResolveAllReferences_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveAllReferences'
-type VariablesServiceMock_ResolveAllReferences_Call struct {
+// VariablesServiceMock_RenderServiceVariables_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RenderServiceVariables'
+type VariablesServiceMock_RenderServiceVariables_Call struct {
 	*mock.Call
 }
 
-// ResolveAllReferences is a helper method to define mock.On call
+// RenderServiceVariables is a helper method to define mock.On call
 //   - ctx context.Context
 //   - serviceID uuid.UUID
-func (_e *VariablesServiceMock_Expecter) ResolveAllReferences(ctx any, serviceID any) *VariablesServiceMock_ResolveAllReferences_Call {
-	return &VariablesServiceMock_ResolveAllReferences_Call{Call: _e.mock.On("ResolveAllReferences", ctx, serviceID)}
+func (_e *VariablesServiceMock_Expecter) RenderServiceVariables(ctx any, serviceID any) *VariablesServiceMock_RenderServiceVariables_Call {
+	return &VariablesServiceMock_RenderServiceVariables_Call{Call: _e.mock.On("RenderServiceVariables", ctx, serviceID)}
 }
 
-func (_c *VariablesServiceMock_ResolveAllReferences_Call) Run(run func(ctx context.Context, serviceID uuid.UUID)) *VariablesServiceMock_ResolveAllReferences_Call {
+func (_c *VariablesServiceMock_RenderServiceVariables_Call) Run(run func(ctx context.Context, serviceID uuid.UUID)) *VariablesServiceMock_RenderServiceVariables_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -349,192 +483,48 @@ func (_c *VariablesServiceMock_ResolveAllReferences_Call) Run(run func(ctx conte
 	return _c
 }
 
-func (_c *VariablesServiceMock_ResolveAllReferences_Call) Return(stringToString map[string]string, err error) *VariablesServiceMock_ResolveAllReferences_Call {
-	_c.Call.Return(stringToString, err)
+func (_c *VariablesServiceMock_RenderServiceVariables_Call) Return(renderResult *variables_service.RenderResult, err error) *VariablesServiceMock_RenderServiceVariables_Call {
+	_c.Call.Return(renderResult, err)
 	return _c
 }
 
-func (_c *VariablesServiceMock_ResolveAllReferences_Call) RunAndReturn(run func(ctx context.Context, serviceID uuid.UUID) (map[string]string, error)) *VariablesServiceMock_ResolveAllReferences_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// ResolveAvailableReferenceValue provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) ResolveAvailableReferenceValue(ctx context.Context, requesterUserID uuid.UUID, input *models.ResolveVariableReferenceInput) (string, error) {
-	ret := _mock.Called(ctx, requesterUserID, input)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ResolveAvailableReferenceValue")
-	}
-
-	var r0 string
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *models.ResolveVariableReferenceInput) (string, error)); ok {
-		return returnFunc(ctx, requesterUserID, input)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *models.ResolveVariableReferenceInput) string); ok {
-		r0 = returnFunc(ctx, requesterUserID, input)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *models.ResolveVariableReferenceInput) error); ok {
-		r1 = returnFunc(ctx, requesterUserID, input)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// VariablesServiceMock_ResolveAvailableReferenceValue_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveAvailableReferenceValue'
-type VariablesServiceMock_ResolveAvailableReferenceValue_Call struct {
-	*mock.Call
-}
-
-// ResolveAvailableReferenceValue is a helper method to define mock.On call
-//   - ctx context.Context
-//   - requesterUserID uuid.UUID
-//   - input *models.ResolveVariableReferenceInput
-func (_e *VariablesServiceMock_Expecter) ResolveAvailableReferenceValue(ctx any, requesterUserID any, input any) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
-	return &VariablesServiceMock_ResolveAvailableReferenceValue_Call{Call: _e.mock.On("ResolveAvailableReferenceValue", ctx, requesterUserID, input)}
-}
-
-func (_c *VariablesServiceMock_ResolveAvailableReferenceValue_Call) Run(run func(ctx context.Context, requesterUserID uuid.UUID, input *models.ResolveVariableReferenceInput)) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		var arg2 *models.ResolveVariableReferenceInput
-		if args[2] != nil {
-			arg2 = args[2].(*models.ResolveVariableReferenceInput)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *VariablesServiceMock_ResolveAvailableReferenceValue_Call) Return(s string, err error) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
-	_c.Call.Return(s, err)
-	return _c
-}
-
-func (_c *VariablesServiceMock_ResolveAvailableReferenceValue_Call) RunAndReturn(run func(ctx context.Context, requesterUserID uuid.UUID, input *models.ResolveVariableReferenceInput) (string, error)) *VariablesServiceMock_ResolveAvailableReferenceValue_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// ResolveSingleReference provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) ResolveSingleReference(ctx context.Context, requesterUserID uuid.UUID, serviceID uuid.UUID, referenceID uuid.UUID) (string, error) {
-	ret := _mock.Called(ctx, requesterUserID, serviceID, referenceID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ResolveSingleReference")
-	}
-
-	var r0 string
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) (string, error)); ok {
-		return returnFunc(ctx, requesterUserID, serviceID, referenceID)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) string); ok {
-		r0 = returnFunc(ctx, requesterUserID, serviceID, referenceID)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, uuid.UUID, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, requesterUserID, serviceID, referenceID)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// VariablesServiceMock_ResolveSingleReference_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResolveSingleReference'
-type VariablesServiceMock_ResolveSingleReference_Call struct {
-	*mock.Call
-}
-
-// ResolveSingleReference is a helper method to define mock.On call
-//   - ctx context.Context
-//   - requesterUserID uuid.UUID
-//   - serviceID uuid.UUID
-//   - referenceID uuid.UUID
-func (_e *VariablesServiceMock_Expecter) ResolveSingleReference(ctx any, requesterUserID any, serviceID any, referenceID any) *VariablesServiceMock_ResolveSingleReference_Call {
-	return &VariablesServiceMock_ResolveSingleReference_Call{Call: _e.mock.On("ResolveSingleReference", ctx, requesterUserID, serviceID, referenceID)}
-}
-
-func (_c *VariablesServiceMock_ResolveSingleReference_Call) Run(run func(ctx context.Context, requesterUserID uuid.UUID, serviceID uuid.UUID, referenceID uuid.UUID)) *VariablesServiceMock_ResolveSingleReference_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		var arg2 uuid.UUID
-		if args[2] != nil {
-			arg2 = args[2].(uuid.UUID)
-		}
-		var arg3 uuid.UUID
-		if args[3] != nil {
-			arg3 = args[3].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-			arg3,
-		)
-	})
-	return _c
-}
-
-func (_c *VariablesServiceMock_ResolveSingleReference_Call) Return(s string, err error) *VariablesServiceMock_ResolveSingleReference_Call {
-	_c.Call.Return(s, err)
-	return _c
-}
-
-func (_c *VariablesServiceMock_ResolveSingleReference_Call) RunAndReturn(run func(ctx context.Context, requesterUserID uuid.UUID, serviceID uuid.UUID, referenceID uuid.UUID) (string, error)) *VariablesServiceMock_ResolveSingleReference_Call {
+func (_c *VariablesServiceMock_RenderServiceVariables_Call) RunAndReturn(run func(ctx context.Context, serviceID uuid.UUID) (*variables_service.RenderResult, error)) *VariablesServiceMock_RenderServiceVariables_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // UpdateVariables provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) UpdateVariables(ctx context.Context, userID uuid.UUID, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, error) {
-	ret := _mock.Called(ctx, userID, referenceInput, input, behavior, newVariables)
+func (_mock *VariablesServiceMock) UpdateVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, bool, error) {
+	ret := _mock.Called(ctx, userID, input, behavior, newVariables)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateVariables")
 	}
 
 	var r0 *models.VariableResponse
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []*models.VariableReferenceInputItem, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) (*models.VariableResponse, error)); ok {
-		return returnFunc(ctx, userID, referenceInput, input, behavior, newVariables)
+	var r1 bool
+	var r2 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) (*models.VariableResponse, bool, error)); ok {
+		return returnFunc(ctx, userID, input, behavior, newVariables)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, []*models.VariableReferenceInputItem, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) *models.VariableResponse); ok {
-		r0 = returnFunc(ctx, userID, referenceInput, input, behavior, newVariables)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) *models.VariableResponse); ok {
+		r0 = returnFunc(ctx, userID, input, behavior, newVariables)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.VariableResponse)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, []*models.VariableReferenceInputItem, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) error); ok {
-		r1 = returnFunc(ctx, userID, referenceInput, input, behavior, newVariables)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) bool); ok {
+		r1 = returnFunc(ctx, userID, input, behavior, newVariables)
 	} else {
-		r1 = ret.Error(1)
+		r1 = ret.Get(1).(bool)
 	}
-	return r0, r1
+	if returnFunc, ok := ret.Get(2).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte) error); ok {
+		r2 = returnFunc(ctx, userID, input, behavior, newVariables)
+	} else {
+		r2 = ret.Error(2)
+	}
+	return r0, r1, r2
 }
 
 // VariablesServiceMock_UpdateVariables_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateVariables'
@@ -545,15 +535,14 @@ type VariablesServiceMock_UpdateVariables_Call struct {
 // UpdateVariables is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userID uuid.UUID
-//   - referenceInput []*models.VariableReferenceInputItem
 //   - input models.BaseVariablesJSONInput
 //   - behavior models.VariableUpdateBehavior
 //   - newVariables map[string][]byte
-func (_e *VariablesServiceMock_Expecter) UpdateVariables(ctx any, userID any, referenceInput any, input any, behavior any, newVariables any) *VariablesServiceMock_UpdateVariables_Call {
-	return &VariablesServiceMock_UpdateVariables_Call{Call: _e.mock.On("UpdateVariables", ctx, userID, referenceInput, input, behavior, newVariables)}
+func (_e *VariablesServiceMock_Expecter) UpdateVariables(ctx any, userID any, input any, behavior any, newVariables any) *VariablesServiceMock_UpdateVariables_Call {
+	return &VariablesServiceMock_UpdateVariables_Call{Call: _e.mock.On("UpdateVariables", ctx, userID, input, behavior, newVariables)}
 }
 
-func (_c *VariablesServiceMock_UpdateVariables_Call) Run(run func(ctx context.Context, userID uuid.UUID, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte)) *VariablesServiceMock_UpdateVariables_Call {
+func (_c *VariablesServiceMock_UpdateVariables_Call) Run(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte)) *VariablesServiceMock_UpdateVariables_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -563,21 +552,17 @@ func (_c *VariablesServiceMock_UpdateVariables_Call) Run(run func(ctx context.Co
 		if args[1] != nil {
 			arg1 = args[1].(uuid.UUID)
 		}
-		var arg2 []*models.VariableReferenceInputItem
+		var arg2 models.BaseVariablesJSONInput
 		if args[2] != nil {
-			arg2 = args[2].([]*models.VariableReferenceInputItem)
+			arg2 = args[2].(models.BaseVariablesJSONInput)
 		}
-		var arg3 models.BaseVariablesJSONInput
+		var arg3 models.VariableUpdateBehavior
 		if args[3] != nil {
-			arg3 = args[3].(models.BaseVariablesJSONInput)
+			arg3 = args[3].(models.VariableUpdateBehavior)
 		}
-		var arg4 models.VariableUpdateBehavior
+		var arg4 map[string][]byte
 		if args[4] != nil {
-			arg4 = args[4].(models.VariableUpdateBehavior)
-		}
-		var arg5 map[string][]byte
-		if args[5] != nil {
-			arg5 = args[5].(map[string][]byte)
+			arg4 = args[4].(map[string][]byte)
 		}
 		run(
 			arg0,
@@ -585,18 +570,17 @@ func (_c *VariablesServiceMock_UpdateVariables_Call) Run(run func(ctx context.Co
 			arg2,
 			arg3,
 			arg4,
-			arg5,
 		)
 	})
 	return _c
 }
 
-func (_c *VariablesServiceMock_UpdateVariables_Call) Return(variableResponse *models.VariableResponse, err error) *VariablesServiceMock_UpdateVariables_Call {
-	_c.Call.Return(variableResponse, err)
+func (_c *VariablesServiceMock_UpdateVariables_Call) Return(variableResponse *models.VariableResponse, b bool, err error) *VariablesServiceMock_UpdateVariables_Call {
+	_c.Call.Return(variableResponse, b, err)
 	return _c
 }
 
-func (_c *VariablesServiceMock_UpdateVariables_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, referenceInput []*models.VariableReferenceInputItem, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, error)) *VariablesServiceMock_UpdateVariables_Call {
+func (_c *VariablesServiceMock_UpdateVariables_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, bool, error)) *VariablesServiceMock_UpdateVariables_Call {
 	_c.Call.Return(run)
 	return _c
 }

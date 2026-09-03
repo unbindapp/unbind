@@ -36,6 +36,8 @@ type VariableReference struct {
 	ValueTemplate string `json:"value_template,omitempty"`
 	// Error message if the variable reference could not be resolved
 	Error *string `json:"error,omitempty"`
+	// Set once the reference has been written into the service secret as a template
+	MigratedAt *time.Time `json:"migrated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the VariableReferenceQuery when eager-loading is set.
 	Edges        VariableReferenceEdges `json:"edges"`
@@ -71,7 +73,7 @@ func (*VariableReference) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case variablereference.FieldTargetName, variablereference.FieldValueTemplate, variablereference.FieldError:
 			values[i] = new(sql.NullString)
-		case variablereference.FieldCreatedAt, variablereference.FieldUpdatedAt:
+		case variablereference.FieldCreatedAt, variablereference.FieldUpdatedAt, variablereference.FieldMigratedAt:
 			values[i] = new(sql.NullTime)
 		case variablereference.FieldID, variablereference.FieldTargetServiceID:
 			values[i] = new(uuid.UUID)
@@ -141,6 +143,13 @@ func (_m *VariableReference) assignValues(columns []string, values []any) error 
 				_m.Error = new(string)
 				*_m.Error = value.String
 			}
+		case variablereference.FieldMigratedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field migrated_at", values[i])
+			} else if value.Valid {
+				_m.MigratedAt = new(time.Time)
+				*_m.MigratedAt = value.Time
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -203,6 +212,11 @@ func (_m *VariableReference) String() string {
 	if v := _m.Error; v != nil {
 		builder.WriteString("error=")
 		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.MigratedAt; v != nil {
+		builder.WriteString("migrated_at=")
+		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteByte(')')
 	return builder.String()

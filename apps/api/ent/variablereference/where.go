@@ -86,6 +86,11 @@ func Error(v string) predicate.VariableReference {
 	return predicate.VariableReference(sql.FieldEQ(FieldError, v))
 }
 
+// MigratedAt applies equality check predicate on the "migrated_at" field. It's identical to MigratedAtEQ.
+func MigratedAt(v time.Time) predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldEQ(FieldMigratedAt, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.VariableReference {
 	return predicate.VariableReference(sql.FieldEQ(FieldCreatedAt, v))
@@ -389,6 +394,56 @@ func ErrorEqualFold(v string) predicate.VariableReference {
 // ErrorContainsFold applies the ContainsFold predicate on the "error" field.
 func ErrorContainsFold(v string) predicate.VariableReference {
 	return predicate.VariableReference(sql.FieldContainsFold(FieldError, v))
+}
+
+// MigratedAtEQ applies the EQ predicate on the "migrated_at" field.
+func MigratedAtEQ(v time.Time) predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldEQ(FieldMigratedAt, v))
+}
+
+// MigratedAtNEQ applies the NEQ predicate on the "migrated_at" field.
+func MigratedAtNEQ(v time.Time) predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldNEQ(FieldMigratedAt, v))
+}
+
+// MigratedAtIn applies the In predicate on the "migrated_at" field.
+func MigratedAtIn(vs ...time.Time) predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldIn(FieldMigratedAt, vs...))
+}
+
+// MigratedAtNotIn applies the NotIn predicate on the "migrated_at" field.
+func MigratedAtNotIn(vs ...time.Time) predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldNotIn(FieldMigratedAt, vs...))
+}
+
+// MigratedAtGT applies the GT predicate on the "migrated_at" field.
+func MigratedAtGT(v time.Time) predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldGT(FieldMigratedAt, v))
+}
+
+// MigratedAtGTE applies the GTE predicate on the "migrated_at" field.
+func MigratedAtGTE(v time.Time) predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldGTE(FieldMigratedAt, v))
+}
+
+// MigratedAtLT applies the LT predicate on the "migrated_at" field.
+func MigratedAtLT(v time.Time) predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldLT(FieldMigratedAt, v))
+}
+
+// MigratedAtLTE applies the LTE predicate on the "migrated_at" field.
+func MigratedAtLTE(v time.Time) predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldLTE(FieldMigratedAt, v))
+}
+
+// MigratedAtIsNil applies the IsNil predicate on the "migrated_at" field.
+func MigratedAtIsNil() predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldIsNull(FieldMigratedAt))
+}
+
+// MigratedAtNotNil applies the NotNil predicate on the "migrated_at" field.
+func MigratedAtNotNil() predicate.VariableReference {
+	return predicate.VariableReference(sql.FieldNotNull(FieldMigratedAt))
 }
 
 // HasService applies the HasEdge predicate on the "service" edge.

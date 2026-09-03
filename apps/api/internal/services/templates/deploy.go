@@ -21,6 +21,7 @@ import (
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
+	"github.com/unbindapp/unbind-api/internal/vartemplate"
 	"github.com/unbindapp/unbind-api/pkg/databases"
 	"github.com/unbindapp/unbind-api/pkg/templates"
 	corev1 "k8s.io/api/core/v1"
@@ -333,15 +334,13 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				}
 			}
 
-			// Resolve any references that should be treated as local
+			// Host references that must stay literal, e.g. for mounted config files
 			for _, ref := range templateService.VariableReferences {
 				if ref.IsHost && ref.ResolveAsNormalVariable {
-					// See if we have a kubeNameMap for the source ID
 					sourceKubeName, ok := kubeNameMap[ref.SourceID]
 					if !ok {
 						return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("source service not found for local variable reference %s", ref.TargetName))
 					}
-					// Add the reference to the secret data
 					secretData[ref.TargetName] = []byte(utils.ServiceFQDN(sourceKubeName, project.Edges.Team.Namespace))
 				}
 			}
@@ -517,9 +516,9 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 			dbServiceMap[templateService.ID] = createService
 		}
 
-		// Resolve variable references
+		// Write references as templates now that every service has an ID
 		for _, templateService := range generatedTemplate.Services {
-			referenceInput := []*models.VariableReferenceInputItem{}
+			values := make(map[string][]byte)
 			for _, variableReference := range templateService.VariableReferences {
 				if variableReference.ResolveAsNormalVariable {
 					continue
@@ -527,99 +526,21 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				sourceService := dbServiceMap[variableReference.SourceID]
 				if sourceService == nil {
 					log.Error("failed to find service for variable reference", "serviceID", variableReference.SourceID, "template", templateService.Name)
-					return fmt.Errorf("failed to find service for variable reference: %w", err)
+					return fmt.Errorf("failed to find source service %s for variable reference %s", variableReference.SourceID, variableReference.TargetName)
 				}
-
-				// Deal with is_host first, not really a reference just resolved on the fly
-				if variableReference.IsHost {
-					// Determine the host key (it may not exist yet so we can't DNS lookup)
-					key := sourceService.KubernetesName
-
-					if sourceService.Type == schema.ServiceTypeDatabase && sourceService.Database != nil {
-						// Special DB cases
-						switch *sourceService.Database {
-						case "mysql":
-							// Moco primary instance
-							key = fmt.Sprintf("moco-%s-primary", key)
-						case "redis":
-							key = fmt.Sprintf("%s-headless", key)
-						case "clickhouse":
-							key = fmt.Sprintf("clickhouse-%s", key)
-						}
-					}
-
-					// Host Refs
-					referenceInput = append(referenceInput, &models.VariableReferenceInputItem{
-						Name: variableReference.TargetName,
-						Sources: []schema.VariableReferenceSource{
-							{
-								Type:                 schema.VariableReferenceTypeInternalEndpoint,
-								SourceName:           sourceService.Name,
-								SourceIcon:           sourceService.Edges.ServiceConfig.Icon,
-								SourceID:             sourceService.ID,
-								SourceType:           schema.VariableReferenceSourceTypeService,
-								SourceKubernetesName: sourceService.KubernetesName,
-								Key:                  key,
-							},
-						},
-						Value: fmt.Sprintf("${%s.%s}", sourceService.KubernetesName, key),
-					})
-
-					continue
-				}
-
-				// Standard variable references
-				value := fmt.Sprintf("${%s.%s}", sourceService.KubernetesName, variableReference.SourceName)
-				sources := []schema.VariableReferenceSource{
-					{
-						Type:                 schema.VariableReferenceTypeVariable,
-						SourceName:           sourceService.Name,
-						SourceIcon:           sourceService.Edges.ServiceConfig.Icon,
-						SourceID:             sourceService.ID,
-						SourceType:           schema.VariableReferenceSourceTypeService,
-						SourceKubernetesName: sourceService.KubernetesName,
-						Key:                  variableReference.SourceName,
-					},
-				}
-				if variableReference.TemplateString != "" {
-					// Replace the key with the right one
-					value = strings.ReplaceAll(variableReference.TemplateString, fmt.Sprintf("${%s}", variableReference.SourceName), fmt.Sprintf("${%s.%s}", sourceService.KubernetesName, variableReference.SourceName))
-					if len(variableReference.AdditionalTemplateSources) > 0 {
-						for _, additionalSource := range variableReference.AdditionalTemplateSources {
-							sources = append(sources, schema.VariableReferenceSource{
-								Type:                 schema.VariableReferenceTypeVariable,
-								SourceName:           sourceService.Name,
-								SourceIcon:           sourceService.Edges.ServiceConfig.Icon,
-								SourceID:             sourceService.ID,
-								SourceType:           schema.VariableReferenceSourceTypeService,
-								SourceKubernetesName: sourceService.KubernetesName,
-								Key:                  additionalSource,
-							})
-
-							value = strings.ReplaceAll(value, fmt.Sprintf("${%s}", additionalSource), fmt.Sprintf("${%s.%s}", sourceService.KubernetesName, additionalSource))
-						}
-					}
-				}
-				referenceInput = append(referenceInput, &models.VariableReferenceInputItem{
-					Name:    variableReference.TargetName,
-					Sources: sources,
-					Value:   value,
-				})
+				values[variableReference.TargetName] = []byte(templateReferenceValue(variableReference, sourceService.ID))
+			}
+			if len(values) == 0 {
+				continue
 			}
 
-			if len(referenceInput) > 0 {
-				targetService := dbServiceMap[templateService.ID]
-				if targetService == nil {
-					log.Error("failed to find service for variable reference", "targetID", templateService.ID)
-					return fmt.Errorf("failed to find service for variable reference: %w", err)
-				}
-				_, err := self.repo.Variables().UpdateReferences(ctx, tx, models.VariableUpdateBehaviorUpsert, targetService.ID, referenceInput)
-				if err != nil {
-					if ent.IsConstraintError(err) {
-						return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Variable reference already exists")
-					}
-					return err
-				}
+			targetService := dbServiceMap[templateService.ID]
+			if targetService == nil {
+				log.Error("failed to find service for variable reference", "targetID", templateService.ID)
+				return fmt.Errorf("failed to find target service %s for variable references", templateService.ID)
+			}
+			if _, err := self.k8s.UpsertSecretValues(ctx, targetService.KubernetesSecret, project.Edges.Team.Namespace, values, client); err != nil {
+				return fmt.Errorf("failed to write variable references: %w", err)
 			}
 		}
 
@@ -863,4 +784,20 @@ func (self *TemplatesService) generateWildcardHost(ctx context.Context, tx repos
 		Path:       "/",
 		TargetPort: port,
 	}, nil
+}
+
+// templateReferenceValue turns a template's reference into a ${{service.<id>.KEY}} template string
+func templateReferenceValue(reference schema.TemplateVariableReference, sourceID uuid.UUID) string {
+	if reference.IsHost {
+		return vartemplate.ServiceToken(sourceID, vartemplate.KeyInternalHost)
+	}
+	if reference.TemplateString == "" {
+		return vartemplate.ServiceToken(sourceID, reference.SourceName)
+	}
+
+	value := reference.TemplateString
+	for _, key := range append([]string{reference.SourceName}, reference.AdditionalTemplateSources...) {
+		value = strings.ReplaceAll(value, fmt.Sprintf("${%s}", key), vartemplate.ServiceToken(sourceID, key))
+	}
+	return value
 }

@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
@@ -29,14 +30,25 @@ func (u VariableUpdateBehavior) Schema(r huma.Registry) *huma.Schema {
 }
 
 type VariableResponse struct {
-	VariableReferences []*VariableReferenceResponse `json:"variable_references" nullable:"false"`
-	Variables          []*VariableResponseItem      `json:"variables" nullable:"false"`
+	Variables []*VariableResponseItem `json:"variables" nullable:"false"`
 }
 
 type VariableResponseItem struct {
-	Type  schema.VariableReferenceSourceType `json:"type"`
-	Name  string                             `json:"name"`
-	Value string                             `json:"value"`
+	Type          schema.VariableReferenceSourceType `json:"type"`
+	Name          string                             `json:"name"`
+	Value         string                             `json:"value" doc:"The stored value, which may contain ${{source.KEY}} references"`
+	ResolvedValue *string                            `json:"resolved_value,omitempty" doc:"The value with references rendered, only present when the value contains references"`
+	References    []VariableReferenceInfo            `json:"references" nullable:"false" doc:"The references found in the value"`
+}
+
+type VariableReferenceInfo struct {
+	Token      string                             `json:"token" doc:"The exact ${{...}} text in the value"`
+	SourceType schema.VariableReferenceSourceType `json:"source_type"`
+	SourceID   uuid.UUID                          `json:"source_id" format:"uuid" doc:"Zero for team, project and environment references"`
+	SourceName string                             `json:"source_name"`
+	SourceIcon string                             `json:"source_icon"`
+	Key        string                             `json:"key"`
+	Resolved   bool                               `json:"resolved" doc:"False when the reference stays literal because its source or key does not exist"`
 }
 
 type VariableDeleteInput struct {

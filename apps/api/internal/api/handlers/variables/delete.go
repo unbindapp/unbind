@@ -3,22 +3,16 @@ package variables_handler
 import (
 	"context"
 
-	"github.com/google/uuid"
-	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-// Delete variables
 type DeleteVariablesInput struct {
 	server.BaseAuthInput
 	Body struct {
 		models.BaseVariablesJSONInput
-		Variables            []models.VariableDeleteInput `json:"variables" required:"false" nullable:"false"`
-		VariableReferenceIDs []uuid.UUID                  `json:"variable_reference_ids" required:"false" nullable:"false"`
+		Variables []models.VariableDeleteInput `json:"variables" required:"true" nullable:"false"`
 	}
 }
 
@@ -28,29 +22,18 @@ func (self *HandlerGroup) DeleteVariables(ctx context.Context, input *DeleteVari
 		return nil, err
 	}
 
-	variableMap, err := self.srv.VariablesService.DeleteVariablesByKey(
+	variableMap, needsRedeploy, err := self.srv.VariablesService.DeleteVariablesByKey(
 		ctx,
 		user.ID,
 		input.Body.BaseVariablesJSONInput,
 		input.Body.Variables,
-		input.Body.VariableReferenceIDs,
 	)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
 
-	// If any references were updated, we need a new deployment
-	if input.Body.Type == schema.VariableReferenceSourceTypeService && len(input.Body.VariableReferenceIDs) > 0 {
-		service, err := self.srv.Repository.Service().GetByID(ctx, input.Body.ServiceID)
-		if err != nil {
-			log.Errorf("Error getting service: %v", err)
-			// Don't fail
-		} else {
-			_, err := self.srv.ServiceService.DeployAdhocServices(ctx, []*ent.Service{service})
-			if err != nil {
-				log.Errorf("Error deploying service: %v", err)
-			}
-		}
+	if needsRedeploy {
+		self.redeployService(ctx, input.Body.ServiceID)
 	}
 
 	// Re-deploy anything referencing the deleted variables so breakage surfaces instead of going stale
@@ -59,7 +42,7 @@ func (self *HandlerGroup) DeleteVariables(ctx context.Context, input *DeleteVari
 		for i, variable := range input.Body.Variables {
 			keys[i] = variable.Name
 		}
-		self.srv.ServiceService.RedeployReferencingServices(ctx, variableSourceID(input.Body.BaseVariablesJSONInput), keys)
+		self.srv.ServiceService.RedeployReferencingServices(ctx, input.Body.Type, variableSourceID(input.Body.BaseVariablesJSONInput), keys)
 	}
 
 	resp := &VariablesResponse{}

@@ -9,7 +9,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-// List all
 type ListReferenceableVariablesInput struct {
 	server.BaseAuthInput
 	TeamID        uuid.UUID `query:"team_id" required:"true"`
@@ -37,62 +36,5 @@ func (self *HandlerGroup) ListReferenceableVariables(ctx context.Context, input 
 
 	resp := &ReferenceableVariablesResponse{}
 	resp.Body.Data = references
-	return resp, nil
-}
-
-// Resolve
-type ResolveAvailableVariableReferenceInput struct {
-	server.BaseAuthInput
-	models.ResolveVariableReferenceInput
-}
-
-type ResolveAvailableVariableReferenceResponse struct {
-	Body struct {
-		Data string `json:"data"`
-	}
-}
-
-func (self *HandlerGroup) ResolveAvailableVariableReference(ctx context.Context, input *ResolveAvailableVariableReferenceInput) (*ResolveAvailableVariableReferenceResponse, error) {
-	user, _, err := self.srv.AuthenticatedUser(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	resolved, err := self.srv.VariablesService.ResolveAvailableReferenceValue(ctx, user.ID, &input.ResolveVariableReferenceInput)
-	if err != nil {
-		return nil, oapi.MapError(err)
-	}
-
-	resp := &ResolveAvailableVariableReferenceResponse{}
-	resp.Body.Data = resolved
-	return resp, nil
-}
-
-// Resolve
-type ResolveVariableReferenceInput struct {
-	server.BaseAuthInput
-	ServiceID   uuid.UUID `query:"service_id" required:"true"`
-	ReferenceID uuid.UUID `query:"reference_id" required:"true"`
-}
-
-type ResolveVariableReferenceResponse struct {
-	Body struct {
-		Data string `json:"data"`
-	}
-}
-
-func (self *HandlerGroup) ResolveVariableReference(ctx context.Context, input *ResolveVariableReferenceInput) (*ResolveVariableReferenceResponse, error) {
-	user, _, err := self.srv.AuthenticatedUser(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	resolved, err := self.srv.VariablesService.ResolveSingleReference(ctx, user.ID, input.ServiceID, input.ReferenceID)
-	if err != nil {
-		return nil, oapi.MapError(err)
-	}
-
-	resp := &ResolveVariableReferenceResponse{}
-	resp.Body.Data = resolved
 	return resp, nil
 }
