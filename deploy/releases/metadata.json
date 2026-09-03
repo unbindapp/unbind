@@ -258,5 +258,10 @@
     "version": "v0.1.51",
     "description": "Variable card missing reference improvements",
     "breaking": false
+  },
+  "v0.1.52": {
+    "version": "v0.1.52",
+    "description": "Ignore removed deployments during redeploy checks, and General settings title updates",
+    "breaking": false
   }
 }
