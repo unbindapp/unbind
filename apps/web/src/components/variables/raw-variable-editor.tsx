@@ -74,6 +74,26 @@ export default function RawVariableEditor({ children }: TProps) {
     defaultValue: false,
     ttl: 3000,
   });
+  const replayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // If the banner is already up, drop it briefly so it visibly plays again
+  const showSucceeded = () => {
+    if (replayTimeoutRef.current) clearTimeout(replayTimeoutRef.current);
+    setRecentlySucceeded((alreadyShowing) => {
+      if (!alreadyShowing) return true;
+      replayTimeoutRef.current = setTimeout(() => {
+        setRecentlySucceeded(true);
+        replayTimeoutRef.current = null;
+      }, 150);
+      return false;
+    });
+  };
+
+  useEffect(() => {
+    return () => {
+      if (replayTimeoutRef.current) clearTimeout(replayTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!variables) return;
@@ -121,7 +141,7 @@ export default function RawVariableEditor({ children }: TProps) {
         });
         return;
       }
-      setRecentlySucceeded(true);
+      showSucceeded();
     },
   });
 
@@ -160,7 +180,7 @@ export default function RawVariableEditor({ children }: TProps) {
       parsedVariables.length !== current.size ||
       parsedVariables.some((v) => current.get(v.name) !== v.value);
     if (!changed) {
-      setRecentlySucceeded(true);
+      showSucceeded();
       return;
     }
     replaceVariables(parsedVariables);
