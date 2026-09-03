@@ -245,7 +245,6 @@ export default function RawVariableEditor({ children }: TProps) {
           <Button
             disabled={isPending || variables === undefined}
             isPending={isPending}
-            fadeOnDisabled={false}
             onClick={save}
             className="group/button"
           >
