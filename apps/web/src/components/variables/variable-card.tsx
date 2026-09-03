@@ -478,6 +478,7 @@ function EditVariableForm({
               subField={field}
               language={language}
               referencesDisabled={referencesDisabled}
+              compact
               placeholder="abc123"
             />
           )}

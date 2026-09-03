@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/components/ui/utils";
 import type { TTokenFieldHandle, TTokenFieldProps } from "@/components/ui/token-field/token-field";
 import BrandIcon from "@/components/icons/brand";
 import { IconCache, type TCachedIcon } from "@/components/icons/icon-cache";
@@ -223,11 +224,18 @@ export const VariablesFormField = withForm({
 });
 
 type TValueFieldProps = {
-  Field: FC<TTokenFieldProps & { field: AnyFieldApi; dontCheckUntilSubmit?: boolean }>;
+  Field: FC<
+    TTokenFieldProps & {
+      field: AnyFieldApi;
+      dontCheckUntilSubmit?: boolean;
+      classNameInput?: string;
+    }
+  >;
   subField: AnyFieldApi;
   language: LanguageSupport;
   referencesDisabled?: boolean;
-  classNameEditor?: string;
+  /** Matches a 9-unit input for inline edits, growing only when the value wraps. */
+  compact?: boolean;
   placeholder?: string;
 };
 
@@ -236,7 +244,7 @@ export function VariableValueField({
   subField,
   language,
   referencesDisabled,
-  classNameEditor,
+  compact,
   placeholder,
 }: TValueFieldProps) {
   const fieldRef = useRef<TTokenFieldHandle>(null);
@@ -264,13 +272,17 @@ export function VariableValueField({
             // delay, which would land after this reopens it.
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => fieldRef.current?.insertAndComplete(resolveReferenceInsertion)}
-            className="text-muted-foreground focus:ring-primary mt-1 mr-1 mb-auto h-8 w-9 rounded-md"
+            className={cn(
+              "text-muted-foreground focus:ring-primary mb-auto rounded-md",
+              compact ? "mt-0.75 mr-0.75 h-7 w-8" : "mt-1 mr-1 h-8 w-9",
+            )}
           >
             <Link2Icon className="size-4" />
           </Button>
         )
       }
-      classNameEditor={classNameEditor ?? "font-mono max-h-35 overflow-auto"}
+      classNameInput={compact ? "min-h-9 rounded-lg text-sm sm:rounded-md" : undefined}
+      classNameEditor={cn("font-mono max-h-35 overflow-auto", compact && "px-2.5 py-1.5")}
       className="flex-1"
       placeholder={placeholder ?? (referencesDisabled ? "Value" : "Value or ${Reference}")}
     />

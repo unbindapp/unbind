@@ -26,7 +26,9 @@ export default function CopyButton({
       type="button"
       aria-label="Copy to clipboard"
       data-copied={isRecentlyCopied || undefined}
-      onClick={isPlaceholder || !valueToCopy ? () => null : () => copyToClipboard(valueToCopy)}
+      onClick={
+        isPlaceholder || valueToCopy === undefined ? () => null : () => copyToClipboard(valueToCopy)
+      }
       variant="ghost"
       forceMinSize="medium"
       size="icon"
