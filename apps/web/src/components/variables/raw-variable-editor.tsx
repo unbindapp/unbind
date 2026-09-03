@@ -115,6 +115,13 @@ export default function RawVariableEditor({ children }: TProps) {
         });
       }
 
+      // Saving the same set again is a no-op: no request, just the confirmation
+      const current = new Map(variables.map((v) => [v.name, v.value]));
+      const changed =
+        parsedVariables.length !== current.size ||
+        parsedVariables.some((v) => current.get(v.name) !== v.value);
+      if (!changed) return { changed };
+
       await createOrUpdateVariables({
         ...typedProps,
         behavior: "overwrite",
@@ -122,12 +129,18 @@ export default function RawVariableEditor({ children }: TProps) {
       });
 
       for (const i of parsedVariables) {
-        const id = getNewEntityIdForVariable({ name: i.name, value: i.value });
-        temporarilyAddNewEntity(id);
+        if (current.get(i.name) === i.value) continue;
+        temporarilyAddNewEntity(getNewEntityIdForVariable({ name: i.name, value: i.value }));
       }
+      return { changed };
     },
     mutationKey: ["replace-variables"],
-    onSuccess: async () => {
+    onSuccess: async (result) => {
+      if (!result) return;
+      if (!result.changed) {
+        setRecentlySucceeded(true);
+        return;
+      }
       const refetchRes = await ResultAsync.fromPromise(
         refetchVariables(),
         () => new Error("Failed to refetch variables"),
