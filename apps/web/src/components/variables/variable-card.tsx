@@ -41,6 +41,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import {
   CheckIcon,
+  CircleAlertIcon,
   EllipsisVerticalIcon,
   EyeIcon,
   EyeOffIcon,
@@ -49,14 +50,13 @@ import {
   LockIcon,
   PenIcon,
   Trash2Icon,
-  TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
 import { Dispatch, FC, ReactElement, useMemo, useState } from "react";
 import { z } from "zod";
 
 const hiddenString = "••••••••••";
-const unresolvedMessage = "Some references don't resolve and are used as literal text.";
+const unresolvedMessage = "Missing references. They are used as literal text.";
 
 type TPlaceholderProps = {
   isPlaceholder: true;
@@ -121,7 +121,7 @@ export default function VariableCard({
       data-not-editing={!isEditingVariable || undefined}
       data-dynamic={isDynamic || undefined}
       data-unresolved={hasUnresolved || undefined}
-      className="group/card data-unresolved:bg-warning/4 data-unresolved:border-warning/24 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-0.75"
+      className="group/card data-unresolved:border-warning/24 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-0.75"
     >
       {variable && (
         <NewEntityIndicator
@@ -133,7 +133,8 @@ export default function VariableCard({
         {!Icon && variable && (
           <KeyIcon
             data-dynamic={isDynamic || undefined}
-            className="text-foreground data-dynamic:text-process mr-2 size-3.5 shrink-0"
+            data-unresolved={hasUnresolved || undefined}
+            className="text-foreground data-dynamic:text-process data-dynamic:data-unresolved:text-warning data-unresolved:text-warning mr-2 size-3.5 shrink-0"
           />
         )}
         {isPlaceholder && (
@@ -170,14 +171,6 @@ export default function VariableCard({
                 )}
               </div>
             </Button>
-            {hasUnresolved && (
-              <TriangleAlertIcon
-                aria-label={unresolvedMessage}
-                className="text-warning mt-2.5 ml-1 size-4 shrink-0"
-              >
-                <title>{unresolvedMessage}</title>
-              </TriangleAlertIcon>
-            )}
             <div className="relative flex min-h-9 min-w-0 flex-1 items-center justify-start pl-2">
               <ScrollArea
                 className="max-h-[min(16rem,50vh)] w-full mask-[linear-gradient(to_bottom,transparent_0%,black_0.375rem,black_calc(100%-0.375rem),transparent_100%)]"
@@ -186,7 +179,21 @@ export default function VariableCard({
                 <div className="flex w-full justify-start">
                   <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                     {isPlaceholder || !variable || !isValueVisible ? (
-                      hiddenString
+                      <span>
+                        {hiddenString}
+                        {hasUnresolved && (
+                          <>
+                            <span className="px-[0.5ch]"> </span>
+                            <CircleAlertIcon
+                              aria-label={unresolvedMessage}
+                              className="text-warning mr-1.5 mb-0.5 inline-block size-3.5 shrink-0"
+                            >
+                              <title>{unresolvedMessage}</title>
+                            </CircleAlertIcon>
+                            <span className="text-warning">{unresolvedMessage}</span>
+                          </>
+                        )}
+                      </span>
                     ) : isDynamic ? (
                       <RenderedValue parts={renderedParts} />
                     ) : (
@@ -244,7 +251,7 @@ function RenderedValue({ parts }: { parts: TRenderedPart[] }) {
       <span
         key={index}
         data-unresolved={!part.reference.resolved || undefined}
-        className="text-process data-unresolved:text-warning"
+        className="text-process data-unresolved:text-foreground"
       >
         {part.value}
       </span>
