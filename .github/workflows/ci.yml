@@ -8,7 +8,7 @@ on:
 jobs:
   changes:
     name: Detect changes
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     outputs:
       api: ${{ steps.filter.outputs.api }}
       web: ${{ steps.filter.outputs.web }}
@@ -33,7 +33,7 @@ jobs:
     name: Go API
     needs: changes
     if: ${{ needs.changes.outputs.api == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     defaults:
       run:
         working-directory: ./apps/api
@@ -49,7 +49,7 @@ jobs:
     name: Web
     needs: changes
     if: ${{ needs.changes.outputs.web == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     defaults:
       run:
         working-directory: ./apps/web
@@ -70,7 +70,7 @@ jobs:
     name: Operator
     needs: changes
     if: ${{ needs.changes.outputs.operator == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     defaults:
       run:
         working-directory: ./apps/operator
@@ -94,7 +94,7 @@ jobs:
     name: Installer
     needs: changes
     if: ${{ needs.changes.outputs.installer == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     defaults:
       run:
         working-directory: ./apps/installer
