@@ -70,3 +70,9 @@ Admin account, created automatically on first start:
     password: unbind-dev
 
 Open http://localhost:5173, or call the API directly at http://localhost:8089 (docs at /docs). Mutating API calls need the session cookies plus `Origin: http://localhost:5173` and `X-CSRF-Token: <csrf_token cookie>`. Deployed services are reachable at `https://<kubernetes_name>.localhost` (self-signed, `curl -k`); port 80 is 404 by design.
+
+### Browser demos and UI verification
+
+Use a headless browser on this machine, never the editor's preview tab. That tab is a webview on the user's laptop: it cannot reach this machine's localhost, and its recordings get dropped. Do not expose the dev UI or API on a public address to work around it.
+
+Drive Chromium with Playwright, using `playwright-core` from `apps/web/node_modules`. The browser binary is in Playwright's cache (`~/.cache/ms-playwright/chromium-<revision>`), at the revision `apps/web/node_modules/playwright-core/browsers.json` expects. If it is missing, run `npx playwright install chromium` inside `apps/web`. Launch headless with `--no-sandbox`, viewport 1280x800, `recordVideo` for a video and `slowMo` of about 120ms so the recording is watchable. Log in with the admin account, do the flow like a user would, take screenshots at each step, and hand back the video path (webm; the bundled ffmpeg cannot produce mp4) plus the screenshots. Keep scripts and output outside the repo, for example in `~/<task>-demo/`.
