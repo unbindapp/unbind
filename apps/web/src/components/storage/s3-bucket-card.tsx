@@ -475,7 +475,7 @@ function DeleteTrigger({
   return (
     <DeleteEntityTrigger
       dialogTitle="Disconnect S3 Bucket"
-      dialogDescription="Are you sure you want to disconnectthis S3 bucket? This action cannot be undone. Services backing up to this bucket will have their backups disabled."
+      dialogDescription="This action cannot be undone. Services backing up to this bucket will have their backups disabled."
       deletingEntityName={s3Bucket.name}
       error={deleteS3BucketError}
       textToConfirm={`Disconnect ${s3Bucket.name}`}

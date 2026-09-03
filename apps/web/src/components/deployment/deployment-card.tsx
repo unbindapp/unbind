@@ -500,9 +500,8 @@ function RemoveTrigger({
       dialogTitle="Remove Deployment"
       dialogDescription={
         <>
-          {"Are you sure you want to remove this deployment? After removal, "}
-          <span className="text-foreground font-semibold">it will go offline</span>
-          {"."}
+          <span className="text-foreground font-semibold">The service will go offline</span> once
+          this deployment is removed.
         </>
       }
       deletingEntityName=""
