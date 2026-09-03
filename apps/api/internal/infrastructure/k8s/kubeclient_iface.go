@@ -80,6 +80,10 @@ type KubeClientInterface interface {
 	EnsurePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
 	// nil serviceID releases the claim
 	SetPersistentVolumeClaimService(ctx context.Context, namespace, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error
+	// ReleasePersistentVolumeClaimsForService clears the service label from every
+	// claim bound to the service. Runs before the service row is deleted so the
+	// claims never point at a missing service.
+	ReleasePersistentVolumeClaimsForService(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) error
 	// UpdatePersistentVolumeClaim updates an existing PersistentVolumeClaim with new parameters (size, name)
 	UpdatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, newSize *string, client kubernetes.Interface) (*models.PVCInfo, error)
 	GetPersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) (*models.PVCInfo, error)

@@ -7,6 +7,7 @@ import { templateInputValidator } from "@/components/templates/panel/input-valid
 import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
 import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
+import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { drawerAnimationMs } from "@/lib/constants";
@@ -102,6 +103,11 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     projectId: templateDraft.projectId,
     environmentId: templateDraft.environmentId,
   });
+  const { invalidate: invalidateVolumes } = useVolumesUtils({
+    teamId: templateDraft.teamId,
+    projectId: templateDraft.projectId,
+    environmentId: templateDraft.environmentId,
+  });
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
@@ -139,7 +145,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     onSuccess: async () => {
       removeFormDraft({ persistenceType: "session", persistenceKey });
       const res = await ResultAsync.fromPromise(
-        invalidateServices(),
+        Promise.all([invalidateServices(), invalidateVolumes()]),
         () => new Error("Failed to invalidate services"),
       );
       hideTemplateDraft(templateDraft.id);

@@ -216,6 +216,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 	client := self.k8s.GetInternalClient()
 
 	var secretNames []string
+	var pvcNames []string
 	var newServices []*ent.Service
 	dbServiceMap := make(map[string]*ent.Service)
 
@@ -390,6 +391,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					"unbind-team":        input.TeamID.String(),
 					"unbind-project":     input.ProjectID.String(),
 					"unbind-environment": input.EnvironmentID.String(),
+					"unbind-service":     createService.ID.String(),
 				}
 
 				pvcName, err := utils.GenerateSlug(volume.Name)
@@ -421,6 +423,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				if err != nil {
 					return err
 				}
+				pvcNames = append(pvcNames, pvc.ID)
 				pvc.Name = volume.Name
 
 				volumes = append(volumes, schema.ServiceVolume{
@@ -622,10 +625,15 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 
 		return nil
 	}); err != nil {
-		// Attempt to delete the created secrets
+		// Attempt to delete the created secrets and volumes
 		for _, secretName := range secretNames {
 			if err := self.k8s.DeleteSecret(ctx, secretName, project.Edges.Team.Namespace, client); err != nil {
 				log.Error("failed to delete secret", "secretName", secretName, "error", err)
+			}
+		}
+		for _, pvcName := range pvcNames {
+			if err := self.k8s.DeletePersistentVolumeClaim(ctx, project.Edges.Team.Namespace, pvcName, client); err != nil {
+				log.Error("failed to delete volume", "pvcName", pvcName, "error", err)
 			}
 		}
 

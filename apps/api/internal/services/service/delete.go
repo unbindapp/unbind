@@ -63,17 +63,18 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 			return err
 		}
 
+		// claims outlive the service; releasing makes them attachable right away
+		if err := self.k8s.ReleasePersistentVolumeClaimsForService(ctx, team.Namespace, service.ID, client); err != nil {
+			log.Error("Error releasing volumes from k8s", "svc", service.KubernetesName, "err", err)
+			return err
+		}
+
 		if err := self.repo.Service().Delete(ctx, tx, serviceID); err != nil {
 			return err
 		}
 		return nil
 	}); err != nil {
 		return err
-	}
-
-	// claims outlive the service; releasing makes them attachable right away
-	if err := self.releaseDatabaseVolumes(ctx, team.Namespace, service, client); err != nil {
-		log.Error("Error releasing database volumes", "svc", service.KubernetesName, "err", err)
 	}
 
 	// Trigger webhook

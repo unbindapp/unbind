@@ -62,6 +62,11 @@ func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, request
 					return err
 				}
 
+				if err := self.k8s.ReleasePersistentVolumeClaimsForService(ctx, namespace, service.ID, client); err != nil {
+					log.Error("Error releasing volumes from k8s", "svc", service.KubernetesName, "err", err)
+					return err
+				}
+
 				if err := self.repo.Service().Delete(ctx, tx, service.ID); err != nil {
 					return err
 				}

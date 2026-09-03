@@ -199,12 +199,3 @@ func (self *ServiceService) applyDatabaseStorageSize(ctx context.Context, servic
 	}
 	return nil
 }
-
-func (self *ServiceService) releaseDatabaseVolumes(ctx context.Context, namespace string, service *ent.Service, client kubernetes.Interface) error {
-	for _, claim := range dbvolumes.Claims(service) {
-		if err := self.k8s.SetPersistentVolumeClaimService(ctx, namespace, claim, nil, client); err != nil {
-			return err
-		}
-	}
-	return nil
-}

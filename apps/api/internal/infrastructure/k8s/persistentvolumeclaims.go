@@ -153,6 +153,31 @@ func (self *KubeClient) SetPersistentVolumeClaimService(ctx context.Context, nam
 	return nil
 }
 
+// ReleasePersistentVolumeClaimsForService clears the service label from every
+// claim bound to the service. Runs before the service row is deleted so the
+// claims never point at a missing service.
+func (self *KubeClient) ReleasePersistentVolumeClaimsForService(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) error {
+	if namespace == "" {
+		return fmt.Errorf("namespace cannot be empty")
+	}
+
+	pvcList, err := client.CoreV1().PersistentVolumeClaims(namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", serviceLabel, serviceID.String()),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to list PersistentVolumeClaims for service '%s': %w", serviceID, err)
+	}
+
+	for i := range pvcList.Items {
+		pvc := &pvcList.Items[i]
+		delete(pvc.Labels, serviceLabel)
+		if _, err := client.CoreV1().PersistentVolumeClaims(namespace).Update(ctx, pvc, metav1.UpdateOptions{}); err != nil {
+			return fmt.Errorf("failed to release PersistentVolumeClaim '%s': %w", pvc.Name, err)
+		}
+	}
+	return nil
+}
+
 // UpdatePersistentVolumeClaim updates an existing PersistentVolumeClaim with new parameters (size, name)
 func (self *KubeClient) UpdatePersistentVolumeClaim(
 	ctx context.Context,
@@ -209,6 +234,7 @@ func (self *KubeClient) UpdatePersistentVolumeClaim(
 // PVC. It returns the bound service ID and whether that service is a database.
 // A nil service ID means the PVC is unbound; parse failures are logged and
 // treated as unbound, while DB errors are returned for the caller to handle.
+// A label pointing at a service that does not exist yet still counts as bound.
 func (self *KubeClient) resolvePVCServiceBinding(ctx context.Context, pvcName string, pvcLabels map[string]string) (boundToServiceID *uuid.UUID, isDatabase bool, err error) {
 	serviceIDStr := pvcLabels[serviceLabel]
 	if serviceIDStr == "" {
@@ -233,7 +259,9 @@ func (self *KubeClient) resolvePVCServiceBinding(ctx context.Context, pvcName st
 		return nil, false, fmt.Errorf("failed to get service '%s': %w", serviceIDStr, err)
 	}
 	if service == nil {
-		return nil, false, nil
+		// The label is set before the service row commits and cleared before it is
+		// deleted, so a labeled claim without a service is still being created.
+		return &serviceID, false, nil
 	}
 	return &service.ID, service.Type == schema.ServiceTypeDatabase, nil
 }
