@@ -248,7 +248,9 @@ function VariableEditor({
   onEditorValueChange,
 }: TVariableEditorProps) {
   const { tokens } = useVariableReferences();
-  const { language, icons } = useVariableReferenceLanguage(tokens, "env");
+  // Scopes without references keep the NAME= highlighting; an empty token
+  // list means nothing gets chipped and the dropdown has nothing to offer.
+  const { language, icons } = useVariableReferenceLanguage(referencesDisabled ? [] : tokens, "env");
   const hiddenValue = useMemo(() => getEditorValue({ variables, hidden: true }), [variables]);
   // Values stay masked until the editor is focused
   const [isHidden, setIsHidden] = useState(true);
@@ -261,7 +263,7 @@ function VariableEditor({
           value={isHidden ? hiddenValue : editorValue}
           onChange={onEditorValueChange}
           onFocus={() => setIsHidden(false)}
-          language={referencesDisabled ? undefined : language}
+          language={language}
           completionAdditions={referencesDisabled ? undefined : referenceCompletionAdditions}
           multiline
           dropdownAtCaret
