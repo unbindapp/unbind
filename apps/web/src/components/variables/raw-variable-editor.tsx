@@ -254,7 +254,7 @@ function VariableEditor({
   const [isHidden, setIsHidden] = useState(true);
 
   return (
-    <div className="relative -mx-3 flex w-[calc(100%+1.5rem)] flex-1 flex-col overflow-hidden sm:mx-0 sm:w-full">
+    <div className="relative -mx-3 flex min-h-0 w-[calc(100%+1.5rem)] flex-1 flex-col sm:mx-0 sm:w-full">
       {!referencesDisabled && <IconCache icons={icons} />}
       <Suspense fallback={<EditorSkeleton />}>
         <TokenFieldLazy
@@ -264,9 +264,12 @@ function VariableEditor({
           language={referencesDisabled ? undefined : language}
           completionAdditions={referencesDisabled ? undefined : referenceCompletionAdditions}
           multiline
+          dropdownAtCaret
           placeholder="VARIABLE_NAME=Value"
-          className="bg-card min-h-0 flex-1 rounded-lg"
-          classNameEditor="h-full overflow-auto px-3.5 py-2.5 font-mono font-normal"
+          // The field clips its own content to the corners; the editor host is the
+          // scroll container, stretched to the field's height by the flex row.
+          className="bg-card min-h-0 flex-1 overflow-hidden rounded-lg"
+          classNameEditor="min-h-0 overflow-y-auto px-3.5 py-2.5 font-mono font-normal"
         />
       </Suspense>
       <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-xl">

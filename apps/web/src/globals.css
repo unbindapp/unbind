@@ -767,6 +767,8 @@
 /* CodeMirror injects its own tooltip styles unlayered, so these rules stay
    unlayered too and lean on the extra .token-field-tooltip class to win. */
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip {
+  /* Rendered into the body, so it has to clear dialogs (z-index 1000) too. */
+  z-index: 1100;
   background-color: var(--popover);
   color: var(--popover-foreground);
   border: 1px solid var(--border);

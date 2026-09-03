@@ -42,6 +42,12 @@ export type TTokenFieldProps = {
   completionAdditions?: TCompletionAddition[];
   /** Stretches the dropdown to the field's width on every viewport, not just phones. */
   anchorDropdownToField?: boolean;
+  /**
+   * Opens the dropdown right under the caret's line instead of clearing the
+   * whole field box. For tall editors, where clearing the box would push the
+   * dropdown to the bottom of the editor.
+   */
+  dropdownAtCaret?: boolean;
   ariaLabel?: string;
   ariaInvalid?: boolean;
   /** Softer than invalid: the field is usable but its value isn't being applied. */
@@ -80,6 +86,7 @@ export default function TokenField({
   multiline,
   completionAdditions,
   anchorDropdownToField,
+  dropdownAtCaret,
   ariaLabel,
   ariaInvalid,
   warning,
@@ -107,6 +114,7 @@ export default function TokenField({
   // Static config, read once: reacting to it would rebuild the whole editor.
   const completionAdditionsRef = useRef(completionAdditions);
   const anchorDropdownToFieldRef = useRef(anchorDropdownToField);
+  const dropdownAtCaretRef = useRef(dropdownAtCaret);
   // Tracks the value both sides agree on, so neither direction echoes the other.
   const syncedValueRef = useRef(value);
 
@@ -128,7 +136,9 @@ export default function TokenField({
     // expressed as margins so they hold whether the tooltip is positioned
     // fixed (desktop) or absolute (iOS).
     const view = viewRef.current;
-    const caret = view?.coordsAtPos(view.state.selection.main.head);
+    const caret = dropdownAtCaretRef.current
+      ? null
+      : view?.coordsAtPos(view.state.selection.main.head);
     style.setProperty(
       "--token-field-anchor-gap-below",
       `${Math.round(caret ? rect.bottom - caret.bottom + anchorGap : anchorGap)}px`,
