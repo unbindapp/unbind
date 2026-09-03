@@ -248,5 +248,10 @@
     "version": "v0.1.49",
     "description": "Release PVC bindings before service deletion, and deployment removal modal improvements",
     "breaking": false
+  },
+  "v0.1.50": {
+    "version": "v0.1.50",
+    "description": "Variable and raw editor improvements, rendered variable references during deployment, and database redeploys on backup bucket changes",
+    "breaking": false
   }
 }
