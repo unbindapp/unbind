@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/toast";
 import {
   getVariablesFromRawText,
   referenceMapForVariables,
@@ -33,7 +34,6 @@ import { useMutation } from "@tanstack/react-query";
 import { CheckCircleIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { lazy, ReactElement, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 const TokenFieldLazy = lazy(() => import("@/components/ui/token-field/token-field"));
@@ -216,6 +216,7 @@ export default function RawVariableEditor({ children }: TProps) {
           <Button
             disabled={isPending || variables === undefined}
             isPending={isPending}
+            fadeOnDisabled={false}
             onClick={() => replaceVariables()}
             className="group/button"
           >
@@ -288,22 +289,14 @@ function VariableEditor({
           classNameEditor="absolute inset-0 w-auto p-0 [--token-field-content-padding:0.625rem_0.875rem] font-mono font-normal"
         />
       </Suspense>
-      <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-xl">
+      <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-lg">
         <div
           data-open={recentlySucceeded || undefined}
-          className="group/badge bg-background/80 flex w-full translate-y-full items-end justify-end rounded-b-xl opacity-0 transition duration-200 data-open:translate-y-0 data-open:opacity-100"
+          className="group/badge bg-card text-success border-success/20 flex w-full translate-y-full items-center justify-start gap-2 overflow-hidden rounded-b-lg border px-4 py-2.5 font-medium opacity-0 transition data-open:translate-y-0 data-open:opacity-100"
         >
-          <div className="bg-success/20 border-success/20 flex w-full items-end justify-end rounded-b-xl border-t p-2 sm:p-3">
-            <div className="text-success-foreground bg-success flex max-w-full items-center gap-1.5 overflow-hidden rounded-md px-2.5 py-1 font-sans font-semibold">
-              <CheckCircleIcon
-                className="relative -ml-0.5 size-4.5 -rotate-90 transition delay-50 duration-300 group-data-open/badge:rotate-0"
-                strokeWidth={2.5}
-              />
-              <p className="relative min-w-0 shrink translate-x-full opacity-0 transition delay-50 duration-300 group-data-open/badge:translate-x-0 group-data-open/badge:opacity-100">
-                Updated
-              </p>
-            </div>
-          </div>
+          <div className="bg-success/10 absolute top-0 left-0 h-full w-full" />
+          <CheckCircleIcon className="relative -ml-0.5 size-4.5" strokeWidth={2.5} />
+          <p className="relative min-w-0 shrink">Variables updated</p>
         </div>
       </div>
     </div>
