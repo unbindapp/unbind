@@ -866,6 +866,40 @@ func (suite *ServiceQueriesSuite) TestNeedsDeployment() {
 		suite.Equal(NeedsDeployment, result)
 	})
 
+	suite.Run("NeedsDeployment Removed Current Deployment", func() {
+		removedDefinition := *suite.testDeployment.ResourceDefinition
+		removedDefinition.Spec.Config.Replicas = new(int32(0))
+		removed := suite.DB.Deployment.Create().
+			SetServiceID(suite.testService.ID).
+			SetStatus(schema.DeploymentStatusRemoved).
+			SetSource(schema.DeploymentSourceManual).
+			SetBuilder(schema.ServiceBuilderRailpack).
+			SetResourceDefinition(&removedDefinition).
+			SaveX(suite.Ctx)
+		suite.DB.Service.UpdateOneID(suite.testService.ID).
+			SetCurrentDeploymentID(removed.ID).
+			SaveX(suite.Ctx)
+
+		suite.DB.ServiceConfig.UpdateOneID(suite.testConfig.ID).
+			SetBuilder(schema.ServiceBuilderRailpack).
+			SetReplicas(3).
+			SetGitBranch("main").
+			ClearDatabaseConfig().
+			ClearVolumes().
+			SaveX(suite.Ctx)
+
+		service, err := suite.DB.Service.Query().
+			Where(entService.IDEQ(suite.testService.ID)).
+			WithServiceConfig().
+			WithCurrentDeployment().
+			Only(suite.Ctx)
+		suite.NoError(err)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, service)
+		suite.NoError(err)
+		suite.Equal(NoDeploymentNeeded, result)
+	})
+
 	suite.Run("NeedsDeployment No Changes", func() {
 		// Ensure the original deployment is set as current (this represents the deployed state)
 		suite.DB.Service.UpdateOneID(suite.testService.ID).
@@ -1204,4 +1238,25 @@ func (suite *ServiceQueriesSuite) TestNeedsDeploymentBackupConfig() {
 
 func TestServiceQueriesSuite(t *testing.T) {
 	suite.Run(t, new(ServiceQueriesSuite))
+}
+
+func TestHasActiveDeployment(t *testing.T) {
+	cases := []struct {
+		name     string
+		current  *ent.Deployment
+		expected bool
+	}{
+		{name: "no current deployment", current: nil, expected: false},
+		{name: "removed", current: &ent.Deployment{Status: schema.DeploymentStatusRemoved}, expected: false},
+		{name: "succeeded", current: &ent.Deployment{Status: schema.DeploymentStatusBuildSucceeded}, expected: true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			service := &ent.Service{}
+			service.Edges.CurrentDeployment = tc.current
+			if got := HasActiveDeployment(service); got != tc.expected {
+				t.Fatalf("expected %v, got %v", tc.expected, got)
+			}
+		})
+	}
 }

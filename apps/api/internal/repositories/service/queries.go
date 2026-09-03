@@ -307,8 +307,15 @@ const (
 	NoDeploymentNeeded      NeedsDeploymentResponse = "no_deployment_needed"
 )
 
+// HasActiveDeployment reports whether the service is currently deployed. A removed
+// deployment stays attached as the current one but nothing is running for it.
+func HasActiveDeployment(service *ent.Service) bool {
+	current := service.Edges.CurrentDeployment
+	return current != nil && current.Status != schema.DeploymentStatusRemoved
+}
+
 func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent.Service) (NeedsDeploymentResponse, error) {
-	if service.Edges.CurrentDeployment == nil || service.Edges.CurrentDeployment.ResourceDefinition == nil {
+	if !HasActiveDeployment(service) || service.Edges.CurrentDeployment.ResourceDefinition == nil {
 		return NoDeploymentNeeded, nil
 	}
 

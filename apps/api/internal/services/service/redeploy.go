@@ -95,8 +95,8 @@ func (self *ServiceService) DeployAdhocServices(ctx context.Context, services []
 
 // deployAdhocService handles the adhoc deployment of a single service
 func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent.Service) (*ent.Deployment, error) {
-	if service.Edges.CurrentDeployment == nil || service.Edges.ServiceConfig == nil {
-		// Never deployed, nothing to refresh - the first deployment resolves references itself
+	if !service_repo.HasActiveDeployment(service) || service.Edges.ServiceConfig == nil {
+		// Nothing is running, the next deployment resolves references itself
 		return nil, nil
 	}
 

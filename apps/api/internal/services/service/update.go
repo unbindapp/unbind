@@ -391,11 +391,14 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 	}
 
 	var deployments []*ent.Deployment
-	if forceBuild {
+	switch {
+	case !service_repo.HasActiveDeployment(service):
+		// Nothing is running, the next deployment picks up the new config
+	case forceBuild:
 		if err := self.EnqueueFullBuildDeployments(ctx, []*ent.Service{service}); err != nil {
 			return nil, fmt.Errorf("failed to enqueue build deployments: %w", err)
 		}
-	} else {
+	default:
 		deployments, err = self.RedeployServices(ctx, []*ent.Service{service})
 		if err != nil {
 			return nil, err

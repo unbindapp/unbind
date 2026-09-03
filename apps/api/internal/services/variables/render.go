@@ -15,6 +15,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	"github.com/unbindapp/unbind-api/internal/vartemplate"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -366,7 +367,7 @@ func (self *VariablesService) FindReferencingServices(ctx context.Context, sourc
 	client := self.k8s.GetInternalClient()
 	var referencing []*ent.Service
 	for _, candidate := range candidates {
-		if candidate.ID == sourceID || candidate.Edges.CurrentDeployment == nil {
+		if candidate.ID == sourceID || !service_repo.HasActiveDeployment(candidate) {
 			continue
 		}
 		values, err := self.k8s.GetSecretMap(ctx, candidate.KubernetesSecret, serviceNamespace(candidate), client)
