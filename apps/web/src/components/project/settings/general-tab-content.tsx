@@ -3,6 +3,7 @@
 import { useProject } from "@/components/project/project-provider";
 import { useProjects } from "@/components/project/projects-provider";
 import RenameCard from "@/components/settings/rename-card";
+import { cn } from "@/components/ui/utils";
 import {
   projectDescriptionMaxLength,
   projectNameMaxLength,
@@ -14,9 +15,10 @@ import { useMutation } from "@tanstack/react-query";
 type TProps = {
   projectId: string;
   teamId: string;
+  className?: string;
 };
 
-export default function GeneralTabContent({ teamId, projectId }: TProps) {
+export default function GeneralTabContent({ teamId, projectId, className }: TProps) {
   const {
     query: { data, refetch: refetchProject },
   } = useProject();
@@ -25,7 +27,7 @@ export default function GeneralTabContent({ teamId, projectId }: TProps) {
   const { mutateAsync: updateProject, error } = useMutation({ mutationFn: updateProjectFn });
 
   return (
-    <div className="flex w-full flex-col gap-3">
+    <div className={cn("flex w-full flex-col gap-3", className)}>
       <RenameCard
         type="project"
         onSubmit={async (value) => {

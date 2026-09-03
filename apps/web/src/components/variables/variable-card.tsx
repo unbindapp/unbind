@@ -121,7 +121,7 @@ export default function VariableCard({
       data-not-editing={!isEditingVariable || undefined}
       data-dynamic={isDynamic || undefined}
       data-unresolved={hasUnresolved || undefined}
-      className="group/card data-unresolved:border-warning/24 relative flex w-full flex-col rounded-xl border px-3 py-0.75 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-0.75"
+      className="group/card data-unresolved:border-warning/24 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
     >
       {variable && (
         <NewEntityIndicator
