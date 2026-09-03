@@ -29,12 +29,15 @@ import {
 import { useVariables } from "@/components/variables/variables-provider";
 import { defaultAnimationMs } from "@/lib/constants";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
-import { TVariableShallow, VariableForCreateSchema } from "@/lib/queries/variables";
+import {
+  TVariableForCreate,
+  TVariableShallow,
+  VariableForCreateSchema,
+} from "@/lib/queries/variables";
 import { useMutation } from "@tanstack/react-query";
 import { CheckCircleIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { lazy, ReactElement, Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { z } from "zod";
 
 const TokenFieldLazy = lazy(() => import("@/components/ui/token-field/token-field"));
 
@@ -84,63 +87,28 @@ export default function RawVariableEditor({ children }: TProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recentlySucceeded]);
 
+  const [parseError, setParseError] = useState<Error | null>(null);
+
   const {
     mutate: replaceVariables,
     isPending: replaceVariablesIsPending,
     error: replaceVariablesError,
   } = useMutation({
-    mutationFn: async () => {
-      if (!variables) return;
-      if (!tokens) {
-        toast.add({
-          type: "warning",
-          title: "Variable references unavailable",
-          description: "Variable references are not available yet, please try again later.",
-        });
-        return;
-      }
-
-      const referencesByValue = referenceMapForVariables(tokens, variables);
-      const parsedVariables: z.infer<typeof VariableForCreateSchema>[] = [];
-
-      for (const variable of getVariablesFromRawText(editorValue)) {
-        const res = VariableForCreateSchema.safeParse(variable);
-        if (!res.success) {
-          console.error("Invalid variable", res.error);
-          throw new Error(`Invalid variable "${variable.name}": ${res.error.errors[0].message}`);
-        }
-        parsedVariables.push({
-          name: res.data.name,
-          value: toStoredValue(res.data.value, referencesByValue),
-        });
-      }
-
-      // Saving the same set again is a no-op: no request, just the confirmation
-      const current = new Map(variables.map((v) => [v.name, v.value]));
-      const changed =
-        parsedVariables.length !== current.size ||
-        parsedVariables.some((v) => current.get(v.name) !== v.value);
-      if (!changed) return { changed };
-
+    mutationFn: async (parsedVariables: TVariableForCreate[]) => {
       await createOrUpdateVariables({
         ...typedProps,
         behavior: "overwrite",
         variables: parsedVariables,
       });
 
+      const current = new Map((variables ?? []).map((v) => [v.name, v.value]));
       for (const i of parsedVariables) {
         if (current.get(i.name) === i.value) continue;
         temporarilyAddNewEntity(getNewEntityIdForVariable({ name: i.name, value: i.value }));
       }
-      return { changed };
     },
     mutationKey: ["replace-variables"],
-    onSuccess: async (result) => {
-      if (!result) return;
-      if (!result.changed) {
-        setRecentlySucceeded(true);
-        return;
-      }
+    onSuccess: async () => {
       const refetchRes = await ResultAsync.fromPromise(
         refetchVariables(),
         () => new Error("Failed to refetch variables"),
@@ -157,8 +125,49 @@ export default function RawVariableEditor({ children }: TProps) {
     },
   });
 
+  // Parsing and the no-change check happen before the mutation so an
+  // unchanged save never enters the pending state or makes a request.
+  const save = () => {
+    if (!variables) return;
+    if (!tokens) {
+      toast.add({
+        type: "warning",
+        title: "Variable references unavailable",
+        description: "Variable references are not available yet, please try again later.",
+      });
+      return;
+    }
+
+    const referencesByValue = referenceMapForVariables(tokens, variables);
+    const parsedVariables: TVariableForCreate[] = [];
+    for (const variable of getVariablesFromRawText(editorValue)) {
+      const res = VariableForCreateSchema.safeParse(variable);
+      if (!res.success) {
+        setParseError(
+          new Error(`Invalid variable "${variable.name}": ${res.error.errors[0].message}`),
+        );
+        return;
+      }
+      parsedVariables.push({
+        name: res.data.name,
+        value: toStoredValue(res.data.value, referencesByValue),
+      });
+    }
+    setParseError(null);
+
+    const current = new Map(variables.map((v) => [v.name, v.value]));
+    const changed =
+      parsedVariables.length !== current.size ||
+      parsedVariables.some((v) => current.get(v.name) !== v.value);
+    if (!changed) {
+      setRecentlySucceeded(true);
+      return;
+    }
+    replaceVariables(parsedVariables);
+  };
+
   const isPending = variablesIsPending || replaceVariablesIsPending;
-  const error = variablesError || replaceVariablesError;
+  const error = variablesError || replaceVariablesError || parseError;
 
   return (
     <Dialog
@@ -217,7 +226,7 @@ export default function RawVariableEditor({ children }: TProps) {
             disabled={isPending || variables === undefined}
             isPending={isPending}
             fadeOnDisabled={false}
-            onClick={() => replaceVariables()}
+            onClick={save}
             className="group/button"
           >
             Save
