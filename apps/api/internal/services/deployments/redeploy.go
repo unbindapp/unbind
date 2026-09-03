@@ -14,6 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/deployctl"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
 	ubv1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -61,7 +62,7 @@ func (self *DeploymentService) redeployExistingImage(ctx context.Context, servic
 	}
 
 	// Create a CRD from the service configuration
-	newDeployment.ResourceDefinition, err = self.CreateCRDFromService(service)
+	newDeployment.ResourceDefinition, err = self.CreateCRDFromService(ctx, service)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +198,7 @@ func (self *DeploymentService) CreateRedeployment(ctx context.Context, requester
 }
 
 // CreateCRDFromService creates a CRD from the service configuration
-func (self *DeploymentService) CreateCRDFromService(service *ent.Service) (*ubv1.Service, error) {
+func (self *DeploymentService) CreateCRDFromService(ctx context.Context, service *ent.Service) (*ubv1.Service, error) {
 	crdToDeploy := &ubv1.Service{}
 
 	// For databsae fetch the crd from the current deployment
@@ -240,6 +241,13 @@ func (self *DeploymentService) CreateCRDFromService(service *ent.Service) (*ubv1
 	if service.Edges.ServiceConfig.Resources != nil {
 		crdToDeploy.Spec.Config.Resources = service.Edges.ServiceConfig.Resources.AsV1ResourceSpec()
 	}
+	if service.Type == schema.ServiceTypeDatabase {
+		backupConfig, err := self.s3BackupConfig(ctx, service.Edges.ServiceConfig)
+		if err != nil {
+			return nil, err
+		}
+		crdToDeploy.Spec.Config.Database.S3BackupConfig = backupConfig
+	}
 
 	// ! Prune hosts without a valid port
 	var prunedHosts []ubv1.HostSpec
@@ -251,4 +259,15 @@ func (self *DeploymentService) CreateCRDFromService(service *ent.Service) (*ubv1
 	crdToDeploy.Spec.Config.Hosts = prunedHosts
 
 	return crdToDeploy, nil
+}
+
+func (self *DeploymentService) s3BackupConfig(ctx context.Context, config *ent.ServiceConfig) (*ubv1.S3ConfigSpec, error) {
+	if config.S3BackupBucketID == nil {
+		return nil, nil
+	}
+	bucket, err := self.repo.S3Bucket().GetByID(ctx, *config.S3BackupBucketID)
+	if err != nil {
+		return nil, err
+	}
+	return s3bucket_repo.AsV1BackupConfig(bucket, config), nil
 }

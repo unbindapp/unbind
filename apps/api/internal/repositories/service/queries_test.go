@@ -1101,6 +1101,107 @@ func (suite *ServiceQueriesSuite) TestGetDatabaseConfig() {
 	})
 }
 
+func (suite *ServiceQueriesSuite) TestNeedsDeploymentBackupConfig() {
+	bucket := suite.DB.S3Bucket.Create().
+		SetName("backups").
+		SetEndpoint("https://s3.example.com").
+		SetRegion("us-east-1").
+		SetBucket("db-backups").
+		SetKubernetesSecret("backups-secret").
+		SetTeamID(suite.testTeam.ID).
+		SaveX(suite.Ctx)
+
+	deployedBackupConfig := &v1.S3ConfigSpec{
+		Bucket:               "db-backups",
+		Endpoint:             "https://s3.example.com",
+		Region:               "us-east-1",
+		SecretName:           "backups-secret",
+		BackupSchedule:       "5 5 * * *",
+		BackupRetentionCount: 3,
+	}
+
+	setCurrentDeployment := func(backupConfig *v1.S3ConfigSpec) {
+		resourceDefinition := suite.testDeployment.ResourceDefinition
+		resourceDefinition.Spec.Config.Database.S3BackupConfig = backupConfig
+		deployment := suite.DB.Deployment.Create().
+			SetServiceID(suite.testService.ID).
+			SetStatus(schema.DeploymentStatusBuildSucceeded).
+			SetSource(schema.DeploymentSourceManual).
+			SetBuilder(schema.ServiceBuilderRailpack).
+			SetResourceDefinition(resourceDefinition).
+			SaveX(suite.Ctx)
+		suite.DB.Service.UpdateOneID(suite.testService.ID).
+			SetCurrentDeploymentID(deployment.ID).
+			SaveX(suite.Ctx)
+	}
+
+	resetConfig := func() *ent.ServiceConfigUpdateOne {
+		return suite.DB.ServiceConfig.UpdateOneID(suite.testConfig.ID).
+			SetBuilder(schema.ServiceBuilderRailpack).
+			SetReplicas(1).
+			SetGitBranch("main").
+			SetBackupSchedule("5 5 * * *").
+			SetBackupRetentionCount(3).
+			ClearDatabaseConfig().
+			ClearVolumes()
+	}
+
+	loadService := func() *ent.Service {
+		service, err := suite.DB.Service.Query().
+			Where(entService.IDEQ(suite.testService.ID)).
+			WithServiceConfig().
+			WithCurrentDeployment().
+			Only(suite.Ctx)
+		suite.NoError(err)
+		return service
+	}
+
+	suite.Run("Bucket Assigned", func() {
+		setCurrentDeployment(nil)
+		resetConfig().SetS3BackupBucketID(bucket.ID).SaveX(suite.Ctx)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService())
+		suite.NoError(err)
+		suite.Equal(NeedsDeployment, result)
+	})
+
+	suite.Run("Bucket Unchanged", func() {
+		setCurrentDeployment(deployedBackupConfig)
+		resetConfig().SetS3BackupBucketID(bucket.ID).SaveX(suite.Ctx)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService())
+		suite.NoError(err)
+		suite.Equal(NoDeploymentNeeded, result)
+	})
+
+	suite.Run("Schedule Changed", func() {
+		setCurrentDeployment(deployedBackupConfig)
+		resetConfig().SetS3BackupBucketID(bucket.ID).SetBackupSchedule("0 3 * * *").SaveX(suite.Ctx)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService())
+		suite.NoError(err)
+		suite.Equal(NeedsDeployment, result)
+	})
+
+	suite.Run("Retention Changed", func() {
+		setCurrentDeployment(deployedBackupConfig)
+		resetConfig().SetS3BackupBucketID(bucket.ID).SetBackupRetentionCount(7).SaveX(suite.Ctx)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService())
+		suite.NoError(err)
+		suite.Equal(NeedsDeployment, result)
+	})
+
+	suite.Run("Bucket Cleared", func() {
+		setCurrentDeployment(deployedBackupConfig)
+		resetConfig().ClearS3BackupBucketID().SaveX(suite.Ctx)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService())
+		suite.NoError(err)
+		suite.Equal(NeedsDeployment, result)
+	})
+}
+
 func TestServiceQueriesSuite(t *testing.T) {
 	suite.Run(t, new(ServiceQueriesSuite))
 }

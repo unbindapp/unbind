@@ -104,7 +104,7 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 		return nil, err
 	}
 
-	crdToDeploy, err := self.deploymentService.CreateCRDFromService(service)
+	crdToDeploy, err := self.deploymentService.CreateCRDFromService(ctx, service)
 	if err != nil {
 		return nil, err
 	}

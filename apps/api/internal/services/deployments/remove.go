@@ -46,7 +46,7 @@ func (self *DeploymentService) RemoveActiveDeployment(ctx context.Context, reque
 		return nil, err
 	}
 
-	crd, err := self.CreateCRDFromService(service)
+	crd, err := self.CreateCRDFromService(ctx, service)
 	if err != nil {
 		return nil, err
 	}

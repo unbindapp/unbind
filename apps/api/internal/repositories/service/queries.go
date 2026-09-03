@@ -23,6 +23,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 )
 
@@ -344,6 +345,9 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 				HealthCheck:    service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.HealthCheck,
 				VariableMounts: service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.VariableMounts,
 				Resources:      service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Resources,
+				Database: v1.DatabaseSpec{
+					S3BackupConfig: service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Database.S3BackupConfig,
+				},
 			},
 		},
 	}
@@ -366,6 +370,10 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	if service.Edges.ServiceConfig.Resources != nil {
 		resources = service.Edges.ServiceConfig.Resources.AsV1ResourceSpec()
 	}
+	s3BackupConfig, err := self.s3BackupConfig(ctx, service.Edges.ServiceConfig)
+	if err != nil {
+		return NoDeploymentNeeded, err
+	}
 	newCrd := &v1.Service{
 		Spec: v1.ServiceSpec{
 			Builder: string(service.Edges.ServiceConfig.Builder),
@@ -380,6 +388,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 				HealthCheck:    healthCheck,
 				VariableMounts: variableMounts,
 				Resources:      resources,
+				Database:       v1.DatabaseSpec{S3BackupConfig: s3BackupConfig},
 			},
 		},
 	}
@@ -400,6 +409,17 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	}
 
 	return NoDeploymentNeeded, nil
+}
+
+func (self *ServiceRepository) s3BackupConfig(ctx context.Context, config *ent.ServiceConfig) (*v1.S3ConfigSpec, error) {
+	if config.S3BackupBucketID == nil {
+		return nil, nil
+	}
+	bucket, err := self.base.DB.S3Bucket.Get(ctx, *config.S3BackupBucketID)
+	if err != nil {
+		return nil, err
+	}
+	return s3bucket_repo.AsV1BackupConfig(bucket, config), nil
 }
 
 // See if volume is in use
