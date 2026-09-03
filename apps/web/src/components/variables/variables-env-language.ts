@@ -13,7 +13,7 @@ import {
 
 const envName = Decoration.mark({ class: "tok-env-name" });
 const envPunctuation = Decoration.mark({ class: "tok-env-punct" });
-const namePattern = /^([A-Za-z_][A-Za-z0-9_.-]*)(=)/;
+const namePattern = /^([-._A-Za-z0-9]+)(=)/;
 
 // Marks the NAME= prefix of every line; references inside the value are
 // decorated by the shared reference language.
