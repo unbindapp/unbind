@@ -50,14 +50,16 @@ export const tokenFieldTheme = EditorView.theme({
 // .cm-content, so the padding moves onto it and the editor is stretched to the
 // host, letting the whole bordered area place the cursor. The scrollbar comes
 // back since the editor, not the host, scrolls.
+// Selectors carry an extra class so these win over tokenFieldTheme's rules of
+// the same shape.
 export const tokenFieldFillTheme = EditorView.theme({
-  "&": { height: "100%" },
-  ".cm-scroller": {
+  "&.cm-editor": { height: "100%" },
+  "&.cm-editor .cm-scroller": {
     overflow: "auto",
     scrollbarWidth: "thin",
   },
-  ".cm-scroller::-webkit-scrollbar": { display: "initial" },
-  ".cm-content": {
+  "&.cm-editor .cm-scroller::-webkit-scrollbar": { display: "initial" },
+  "&.cm-editor .cm-content": {
     minHeight: "100%",
     padding: "var(--token-field-content-padding, 0)",
   },

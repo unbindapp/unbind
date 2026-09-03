@@ -300,28 +300,9 @@ export default function TokenField({
       data-warning={warning || undefined}
       aria-invalid={ariaInvalid || undefined}
       className={cn(tokenFieldWrapperClassName, className)}
-      // CodeMirror only takes clicks on its content node. A click on the box
-      // around it, e.g. the empty area below the last line, still engages the
-      // editor at the nearest position.
-      onMouseDown={(e) => {
-        const view = viewRef.current;
-        if (!view || disabled || !(e.target instanceof Node)) return;
-        if (view.contentDOM.contains(e.target)) return;
-        if (wrapperRef.current?.querySelector("[data-token-field-trailing]")?.contains(e.target)) {
-          return;
-        }
-        e.preventDefault();
-        const pos = view.posAtCoords({ x: e.clientX, y: e.clientY }, false);
-        view.dispatch({ selection: { anchor: pos } });
-        view.focus();
-      }}
     >
       <div ref={hostRef} className={cn(tokenFieldEditorClassName, classNameEditor)} />
-      {trailing && (
-        <div data-token-field-trailing className="contents">
-          {trailing}
-        </div>
-      )}
+      {trailing}
     </div>
   );
 }
