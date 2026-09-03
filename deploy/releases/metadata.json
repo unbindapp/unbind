@@ -253,5 +253,10 @@
     "version": "v0.1.50",
     "description": "Variable and raw editor improvements, rendered variable references during deployment, and database redeploys on backup bucket changes",
     "breaking": false
+  },
+  "v0.1.51": {
+    "version": "v0.1.51",
+    "description": "Variable card missing reference improvements",
+    "breaking": false
   }
 }
