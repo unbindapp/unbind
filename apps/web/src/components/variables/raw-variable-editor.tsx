@@ -272,7 +272,7 @@ function VariableEditor({
           // The host is pinned to the field's box so CodeMirror has a definite
           // height to fill: the editor spans the whole bordered area and scrolls.
           className="bg-card relative min-h-0 flex-1 overflow-hidden rounded-lg"
-          classNameEditor="absolute inset-0 p-0 [--token-field-content-padding:0.625rem_0.875rem] font-mono font-normal"
+          classNameEditor="absolute inset-0 w-auto p-0 [--token-field-content-padding:0.625rem_0.875rem] font-mono font-normal"
         />
       </Suspense>
       <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-xl">

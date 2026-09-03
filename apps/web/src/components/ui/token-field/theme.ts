@@ -62,6 +62,7 @@ export const tokenFieldFillTheme = EditorView.theme({
   "&.cm-editor .cm-content": {
     minHeight: "100%",
     padding: "var(--token-field-content-padding, 0)",
+    cursor: "text",
   },
 });
 
