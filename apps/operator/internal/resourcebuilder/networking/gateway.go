@@ -246,7 +246,7 @@ func envoyAffinityPolicy(in RouteInput) *unstructured.Unstructured {
 			"type": "ConsistentHash",
 			"consistentHash": map[string]any{
 				"type":   "Cookie",
-				"cookie": map[string]any{"name": fmt.Sprintf("%s-session", svc.Name), "ttl": "172800s"},
+				"cookie": map[string]any{"name": fmt.Sprintf("%s-session", svc.Name), "ttl": "48h"},
 			},
 		},
 	}

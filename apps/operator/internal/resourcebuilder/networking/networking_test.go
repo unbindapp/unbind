@@ -1,6 +1,7 @@
 package networking
 
 import (
+	"regexp"
 	"testing"
 
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
@@ -185,6 +186,15 @@ func TestGatewayRoutes(t *testing.T) {
 		t.Errorf("hostname = %q, want example.com", got)
 	}
 
+	policy := findKind(objs, "BackendTrafficPolicy")
+	if policy == nil {
+		t.Fatalf("expected a BackendTrafficPolicy object, got %#v", objs)
+	}
+	ttl, _, _ := unstructured.NestedString(policy.Object, "spec", "loadBalancer", "consistentHash", "cookie", "ttl")
+	if !gatewayDurationPattern.MatchString(ttl) {
+		t.Errorf("cookie ttl = %q, must match the Gateway API duration pattern %s", ttl, gatewayDurationPattern)
+	}
+
 	// Without envoy controller, no policy object is emitted (gateway + route + cert).
 	objs, _ = New(ProviderGateway, Config{GatewayClassName: "unbind", ClusterIssuer: "x"}).BuildRoutes(RouteInput{Service: svc})
 	if len(objs) != 3 {
@@ -192,10 +202,17 @@ func TestGatewayRoutes(t *testing.T) {
 	}
 }
 
+// gatewayDurationPattern is the Gateway API duration format Envoy Gateway CRDs validate against.
+var gatewayDurationPattern = regexp.MustCompile(`^([0-9]{1,5}(h|m|s|ms)){1,4}$`)
+
 // findCertificate returns the cert-manager Certificate among built objects, if any.
 func findCertificate(objs []client.Object) *unstructured.Unstructured {
+	return findKind(objs, "Certificate")
+}
+
+func findKind(objs []client.Object, kind string) *unstructured.Unstructured {
 	for _, o := range objs {
-		if u, ok := o.(*unstructured.Unstructured); ok && u.GetKind() == "Certificate" {
+		if u, ok := o.(*unstructured.Unstructured); ok && u.GetKind() == kind {
 			return u
 		}
 	}
