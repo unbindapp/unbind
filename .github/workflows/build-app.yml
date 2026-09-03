@@ -23,7 +23,7 @@ permissions:
 jobs:
   setup_env:
     name: ⚙️ Setup environment
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Add SHORT_SHA env property
         run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
@@ -43,10 +43,10 @@ jobs:
       matrix:
         include:
           - platform: linux/amd64
-            runs-on: ubuntu-24.04
+            runs-on: blacksmith-4vcpu-ubuntu-2404
             arch: amd64
           - platform: linux/arm64
-            runs-on: ubuntu-24.04-arm
+            runs-on: blacksmith-4vcpu-ubuntu-2404-arm
             arch: arm64
     runs-on: ${{ matrix.runs-on }}
     env:
@@ -95,7 +95,7 @@ jobs:
 
   create_manifest:
     name: 📦 Create Multi-Arch Manifest
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [setup_env, build]
     env:
       GITHUB_RUN_ID: ${{ github.run_id }}
@@ -124,7 +124,7 @@ jobs:
 
   deploy_prod:
     name: 🚀 Deploy App (PROD)
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs:
       - setup_env
       - create_manifest
