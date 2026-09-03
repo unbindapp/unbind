@@ -238,5 +238,10 @@
     "version": "v0.1.47",
     "description": "Log search styling for quotes, operators, and negated terms, and log line padding improvements",
     "breaking": false
+  },
+  "v0.1.48": {
+    "version": "v0.1.48",
+    "description": "Gateway API duration format for session affinity TTL, and local dev environment tooling",
+    "breaking": false
   }
 }
