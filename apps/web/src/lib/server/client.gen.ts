@@ -2422,6 +2422,7 @@ export const VariableReferenceInfoSchema = z
   .object({
     key: z.string(),
     resolved: z.boolean(), // False when the reference stays literal because its source or key does not exist
+    resolved_value: z.string().optional(),
     source_icon: z.string(),
     source_id: z.string(), // Zero for team, project and environment references
     source_name: z.string(),

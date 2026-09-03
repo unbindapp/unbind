@@ -18,18 +18,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import {
   referenceMapForVariables,
-  splitByUnresolved,
+  splitByStoredReferences,
   toReadableValue,
   toStoredValue,
-  type TLiteralPart,
+  type TRenderedPart,
 } from "@/components/variables/helpers";
-import { readableTokenForReference, readableTokenMap } from "@/components/variables/tokens";
+import { readableTokenMap } from "@/components/variables/tokens";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
-import {
-  splitByReferences,
-  type TReferencePart,
-} from "@/components/variables/variable-reference-parts";
 import {
   useVariableReferenceLanguage,
   VariableValueField,
@@ -39,7 +35,6 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   createOrUpdateVariables,
   deleteVariables,
-  TVariableReferenceInfo,
   TVariableShallow,
   VariableForCreateValueSchema,
 } from "@/lib/queries/variables";
@@ -51,7 +46,6 @@ import {
   EyeOffIcon,
   InfoIcon,
   KeyIcon,
-  Link2Icon,
   LockIcon,
   PenIcon,
   Trash2Icon,
@@ -62,8 +56,6 @@ import { Dispatch, FC, ReactElement, useMemo, useState } from "react";
 import { z } from "zod";
 
 const hiddenString = "••••••••••";
-const tokenPrefix = "${";
-const tokenSuffix = "}";
 const unresolvedMessage = "Some references don't resolve and are used as literal text.";
 
 type TPlaceholderProps = {
@@ -89,11 +81,6 @@ type TProps = {
   Icon?: FC<{ className?: string }>;
 } & TVariableOrPlaceholderProps;
 
-type TValueParts = {
-  masked: TReferencePart<TVariableReferenceInfo>[];
-  resolved: TLiteralPart[];
-};
-
 export default function VariableCard({
   variable,
   variableTypeProps,
@@ -108,26 +95,14 @@ export default function VariableCard({
   const Element = asElement === "li" ? "li" : "div";
   const [isValueVisible, setIsValueVisible] = useState(false);
   const [isEditingVariable, setIsEditingVariable] = useState(false);
-  const { tokens } = useVariableReferences();
-
   const isDynamic = !!variable && variable.references.length > 0;
   const hasUnresolved = isDynamic && variable.references.some((r) => !r.resolved);
 
-  // Masked: references show as chips, text stays hidden. Visible: the rendered value.
-  const parts: TValueParts = useMemo(() => {
-    if (!variable || !isDynamic) return { masked: [], resolved: [] };
-    const storedToReadable = readableTokenMap(tokens ?? []);
-    const byReadable = new Map(
-      variable.references.map((r) => [readableTokenForReference(r, storedToReadable), r]),
-    );
-    return {
-      masked: splitByReferences(
-        toReadableValue(variable.value, variable.references, storedToReadable),
-        byReadable,
-      ),
-      resolved: splitByUnresolved(variable.resolved_value ?? variable.value, variable.references),
-    };
-  }, [variable, isDynamic, tokens]);
+  const renderedParts: TRenderedPart[] = useMemo(
+    () =>
+      variable && isDynamic ? splitByStoredReferences(variable.value, variable.references) : [],
+    [variable, isDynamic],
+  );
 
   const placeholderOrVariableProps: TVariableOrPlaceholderProps = useMemo(() => {
     if (isPlaceholder) {
@@ -155,11 +130,11 @@ export default function VariableCard({
       )}
       <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
         {Icon && <Icon className="text-foreground mr-2 size-3.5 shrink-0" />}
-        {!Icon && variable && isDynamic && (
-          <Link2Icon className="text-process mr-2 size-3.5 shrink-0" />
-        )}
-        {!Icon && variable && !isDynamic && (
-          <KeyIcon className="text-foreground mr-2 size-3.5 shrink-0" />
+        {!Icon && variable && (
+          <KeyIcon
+            data-dynamic={isDynamic || undefined}
+            className="text-foreground data-dynamic:text-process mr-2 size-3.5 shrink-0"
+          />
         )}
         {isPlaceholder && (
           <div className="bg-foreground animate-skeleton mr-2 size-3.5 shrink-0 rounded-full" />
@@ -210,16 +185,10 @@ export default function VariableCard({
               >
                 <div className="flex w-full justify-start">
                   <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-                    {isPlaceholder || !variable ? (
+                    {isPlaceholder || !variable || !isValueVisible ? (
                       hiddenString
-                    ) : !isValueVisible ? (
-                      isDynamic ? (
-                        <MaskedValue parts={parts.masked} />
-                      ) : (
-                        hiddenString
-                      )
                     ) : isDynamic ? (
-                      <ResolvedValue parts={parts.resolved} />
+                      <RenderedValue parts={renderedParts} />
                     ) : (
                       variable.value
                     )}
@@ -268,32 +237,14 @@ export function getNewEntityIdForVariable({ name, value }: { name: string; value
   return `${name}|${value}`;
 }
 
-function MaskedValue({ parts }: { parts: TReferencePart<TVariableReferenceInfo>[] }) {
+// Reference segments are colored so what came from where stays visible in the rendered text
+function RenderedValue({ parts }: { parts: TRenderedPart[] }) {
   return parts.map((part, index) =>
     part.reference !== null ? (
       <span
         key={index}
         data-unresolved={!part.reference.resolved || undefined}
-        className="bg-process/10 ring-process/20 text-process rounded-2px data-unresolved:bg-warning/10 data-unresolved:ring-warning/20 data-unresolved:text-warning box-decoration-clone ring-1"
-      >
-        <span className="opacity-50">{part.value.slice(0, tokenPrefix.length)}</span>
-        <span>{part.value.slice(tokenPrefix.length, part.value.length - tokenSuffix.length)}</span>
-        <span className="opacity-50">
-          {part.value.slice(part.value.length - tokenSuffix.length)}
-        </span>
-      </span>
-    ) : (
-      <span key={index}>{hiddenString}</span>
-    ),
-  );
-}
-
-function ResolvedValue({ parts }: { parts: TLiteralPart[] }) {
-  return parts.map((part, index) =>
-    part.unresolved ? (
-      <span
-        key={index}
-        className="bg-warning/10 ring-warning/20 text-warning rounded-2px box-decoration-clone ring-1"
+        className="text-process data-unresolved:text-warning"
       >
         {part.value}
       </span>

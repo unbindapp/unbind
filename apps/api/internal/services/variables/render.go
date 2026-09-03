@@ -277,7 +277,10 @@ func (rc *renderContext) referenceInfos(value string) []models.VariableReference
 			SourceID:   token.SourceID,
 			Key:        token.Key,
 		}
-		_, info.Resolved = rc.resolve(token)
+		if value, ok := rc.resolve(token); ok {
+			info.Resolved = true
+			info.ResolvedValue = &value
+		}
 
 		if token.SourceType != schema.VariableReferenceSourceTypeService {
 			info.SourceName = rc.scopeNames[token.SourceType]

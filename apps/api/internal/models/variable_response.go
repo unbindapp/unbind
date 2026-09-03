@@ -49,6 +49,8 @@ type VariableReferenceInfo struct {
 	SourceIcon string                             `json:"source_icon"`
 	Key        string                             `json:"key"`
 	Resolved   bool                               `json:"resolved" doc:"False when the reference stays literal because its source or key does not exist"`
+	// The value this reference renders to, absent when it does not resolve
+	ResolvedValue *string `json:"resolved_value,omitempty"`
 }
 
 type VariableDeleteInput struct {

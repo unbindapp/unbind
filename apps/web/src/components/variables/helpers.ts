@@ -68,34 +68,37 @@ export function toReadableValue(
   return readable;
 }
 
-export type TLiteralPart = { value: string; unresolved: boolean };
+export type TRenderedPart = { value: string; reference: TVariableReferenceInfo | null };
 
-/** Splits a rendered value around the references that stayed literal, so they can be marked. */
-export function splitByUnresolved(
+/**
+ * Splits a stored value into text and reference parts, with each reference
+ * carrying what it rendered to. An unresolved reference keeps its stored token.
+ */
+export function splitByStoredReferences(
   value: string,
   references: readonly TVariableReferenceInfo[],
-): TLiteralPart[] {
-  const unresolved = references.filter((r) => !r.resolved).map((r) => r.token);
-  if (unresolved.length === 0) return [{ value, unresolved: false }];
+): TRenderedPart[] {
+  if (references.length === 0) return [{ value, reference: null }];
 
-  const parts: TLiteralPart[] = [];
+  const parts: TRenderedPart[] = [];
   let rest = value;
   while (rest.length > 0) {
-    let nextIndex = -1;
-    let nextToken = "";
-    for (const token of unresolved) {
-      const index = rest.indexOf(token);
-      if (index === -1 || (nextIndex !== -1 && index >= nextIndex)) continue;
-      nextIndex = index;
-      nextToken = token;
+    let next: { index: number; reference: TVariableReferenceInfo } | null = null;
+    for (const reference of references) {
+      const index = rest.indexOf(reference.token);
+      if (index === -1 || (next && index >= next.index)) continue;
+      next = { index, reference };
     }
-    if (nextIndex === -1) {
-      parts.push({ value: rest, unresolved: false });
+    if (!next) {
+      parts.push({ value: rest, reference: null });
       break;
     }
-    if (nextIndex > 0) parts.push({ value: rest.slice(0, nextIndex), unresolved: false });
-    parts.push({ value: nextToken, unresolved: true });
-    rest = rest.slice(nextIndex + nextToken.length);
+    if (next.index > 0) parts.push({ value: rest.slice(0, next.index), reference: null });
+    parts.push({
+      value: next.reference.resolved_value ?? next.reference.token,
+      reference: next.reference,
+    });
+    rest = rest.slice(next.index + next.reference.token.length);
   }
   return parts;
 }

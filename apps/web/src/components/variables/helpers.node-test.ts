@@ -3,7 +3,7 @@ import { test } from "node:test";
 
 import {
   getVariablesFromRawText,
-  splitByUnresolved,
+  splitByStoredReferences,
   toReadableValue,
   toStoredVariables,
 } from "./helpers.ts";
@@ -121,18 +121,23 @@ test("a reference outside the available list falls back to the API's source name
   assert.equal(unknown, token);
 });
 
-test("unresolved references are split out of the rendered value", () => {
-  const token = storedToken({ source_type: "service", source_id: "gone-id", key: "KEY" });
-  const parts = splitByUnresolved(`a ${token} b ${token}`, [
-    { ...reference(token, "service", "gone-id", "", "KEY"), resolved: false },
-  ]);
+test("a stored value splits into text and rendered reference parts", () => {
+  const known = storedToken({ source_type: "service", source_id: pgId, key: "DATABASE_URL" });
+  const gone = storedToken({ source_type: "service", source_id: "gone-id", key: "KEY" });
+  const resolved = {
+    ...reference(known, "service", pgId, "Postgres", "DATABASE_URL"),
+    resolved_value: "postgres://db",
+  };
+  const unresolved = { ...reference(gone, "service", "gone-id", "", "KEY"), resolved: false };
+
+  const parts = splitByStoredReferences(`a ${known} b ${gone}`, [resolved, unresolved]);
   assert.deepEqual(parts, [
-    { value: "a ", unresolved: false },
-    { value: token, unresolved: true },
-    { value: " b ", unresolved: false },
-    { value: token, unresolved: true },
+    { value: "a ", reference: null },
+    { value: "postgres://db", reference: resolved },
+    { value: " b ", reference: null },
+    { value: gone, reference: unresolved },
   ]);
-  assert.deepEqual(splitByUnresolved("plain", []), [{ value: "plain", unresolved: false }]);
+  assert.deepEqual(splitByStoredReferences("plain", []), [{ value: "plain", reference: null }]);
 });
 
 test("raw text parses to name/value pairs", () => {

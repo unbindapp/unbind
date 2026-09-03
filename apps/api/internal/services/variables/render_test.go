@@ -114,13 +114,14 @@ func (suite *RenderSuite) TestRender_ServiceAndScopeReferences() {
 	dsn := result.Variables["DSN"]
 	suite.Len(dsn.References, 1)
 	suite.Equal(models.VariableReferenceInfo{
-		Token:      vartemplate.ServiceToken(db.ID, "DATABASE_URL"),
-		SourceType: schema.VariableReferenceSourceTypeService,
-		SourceID:   db.ID,
-		SourceName: "postgres",
-		SourceIcon: "postgres-icon",
-		Key:        "DATABASE_URL",
-		Resolved:   true,
+		Token:         vartemplate.ServiceToken(db.ID, "DATABASE_URL"),
+		SourceType:    schema.VariableReferenceSourceTypeService,
+		SourceID:      db.ID,
+		SourceName:    "postgres",
+		SourceIcon:    "postgres-icon",
+		Key:           "DATABASE_URL",
+		Resolved:      true,
+		ResolvedValue: utils.ToPtr("postgres://db"),
 	}, dsn.References[0])
 
 	where := result.Variables["WHERE"]

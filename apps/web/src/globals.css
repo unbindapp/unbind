@@ -646,9 +646,9 @@
     color: var(--process);
   }
 
-  /* NAME= in the raw variable editor */
+  /* NAME= in the raw variable editor, kept apart from the process-colored references */
   .tok-env-name {
-    color: var(--process);
+    color: var(--success);
   }
 
   .tok-env-punct {
