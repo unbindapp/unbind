@@ -2,7 +2,11 @@ import {
   tokenFieldAutocomplete,
   type TCompletionAddition,
 } from "@/components/ui/token-field/autocomplete";
-import { tokenFieldHighlightStyle, tokenFieldTheme } from "@/components/ui/token-field/theme";
+import {
+  tokenFieldFillTheme,
+  tokenFieldHighlightStyle,
+  tokenFieldTheme,
+} from "@/components/ui/token-field/theme";
 import {
   tokenFieldEditorClassName,
   tokenFieldWrapperClassName,
@@ -48,6 +52,12 @@ export type TTokenFieldProps = {
    * dropdown to the bottom of the editor.
    */
   dropdownAtCaret?: boolean;
+  /**
+   * Stretches the editor to the host so clicks anywhere in it place the cursor.
+   * Padding then belongs on the content, set through --token-field-content-padding
+   * on classNameEditor instead of padding classes.
+   */
+  fill?: boolean;
   ariaLabel?: string;
   ariaInvalid?: boolean;
   /** Softer than invalid: the field is usable but its value isn't being applied. */
@@ -87,6 +97,7 @@ export default function TokenField({
   completionAdditions,
   anchorDropdownToField,
   dropdownAtCaret,
+  fill,
   ariaLabel,
   ariaInvalid,
   warning,
@@ -203,6 +214,7 @@ export default function TokenField({
       // body escapes every clipping ancestor.
       tooltips({ parent: document.body }),
       tokenFieldTheme,
+      ...(fill ? [tokenFieldFillTheme] : []),
       EditorView.contentAttributes.of({
         spellcheck: "false",
         autocorrect: "off",
@@ -253,7 +265,7 @@ export default function TokenField({
     };
     // The editor is created once; live updates flow through the effects below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multiline, placeholder, ariaLabel]);
+  }, [multiline, placeholder, ariaLabel, fill]);
 
   useEffect(() => {
     const view = viewRef.current;
@@ -288,9 +300,28 @@ export default function TokenField({
       data-warning={warning || undefined}
       aria-invalid={ariaInvalid || undefined}
       className={cn(tokenFieldWrapperClassName, className)}
+      // CodeMirror only takes clicks on its content node. A click on the box
+      // around it, e.g. the empty area below the last line, still engages the
+      // editor at the nearest position.
+      onMouseDown={(e) => {
+        const view = viewRef.current;
+        if (!view || disabled || !(e.target instanceof Node)) return;
+        if (view.contentDOM.contains(e.target)) return;
+        if (wrapperRef.current?.querySelector("[data-token-field-trailing]")?.contains(e.target)) {
+          return;
+        }
+        e.preventDefault();
+        const pos = view.posAtCoords({ x: e.clientX, y: e.clientY }, false);
+        view.dispatch({ selection: { anchor: pos } });
+        view.focus();
+      }}
     >
       <div ref={hostRef} className={cn(tokenFieldEditorClassName, classNameEditor)} />
-      {trailing}
+      {trailing && (
+        <div data-token-field-trailing className="contents">
+          {trailing}
+        </div>
+      )}
     </div>
   );
 }

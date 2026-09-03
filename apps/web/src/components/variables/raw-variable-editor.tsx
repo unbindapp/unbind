@@ -217,7 +217,7 @@ export default function RawVariableEditor({ children }: TProps) {
 function EditorSkeleton() {
   return (
     <div className="bg-card flex flex-1 flex-col gap-1 overflow-hidden rounded-lg border px-3.5 py-2.5 font-mono">
-      {Array.from({ length: 20 }).map((_, i) => (
+      {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
           className="pointer-events-none flex w-full items-center gap-1 text-transparent select-none"
@@ -268,10 +268,11 @@ function VariableEditor({
           multiline
           dropdownAtCaret
           placeholder="VARIABLE_NAME=Value"
-          // The field clips its own content to the corners; the editor host is the
-          // scroll container, stretched to the field's height by the flex row.
+          fill
+          // The field clips its own content to the corners; the editor is
+          // stretched to the field's height by the flex row and scrolls itself.
           className="bg-card min-h-0 flex-1 overflow-hidden rounded-lg"
-          classNameEditor="min-h-0 overflow-y-auto px-3.5 py-2.5 font-mono font-normal"
+          classNameEditor="min-h-0 p-0 [--token-field-content-padding:0.625rem_0.875rem] font-mono font-normal"
         />
       </Suspense>
       <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-xl">

@@ -46,6 +46,23 @@ export const tokenFieldTheme = EditorView.theme({
 // Classes are defined in globals.css so the colors sit next to the Prism token
 // rules the raw variable editor already uses. tok-key and tok-punct aren't here
 // because they're applied by the languages' own decorations, not by a tag.
+// For editors that fill their host: CodeMirror only takes clicks on
+// .cm-content, so the padding moves onto it and the editor is stretched to the
+// host, letting the whole bordered area place the cursor. The scrollbar comes
+// back since the editor, not the host, scrolls.
+export const tokenFieldFillTheme = EditorView.theme({
+  "&": { height: "100%" },
+  ".cm-scroller": {
+    overflow: "auto",
+    scrollbarWidth: "thin",
+  },
+  ".cm-scroller::-webkit-scrollbar": { display: "initial" },
+  ".cm-content": {
+    minHeight: "100%",
+    padding: "var(--token-field-content-padding, 0)",
+  },
+});
+
 export const tokenFieldHighlightStyle = HighlightStyle.define([
   { tag: t.logicOperator, class: "tok-operator" },
   { tag: t.operator, class: "tok-negation" },
