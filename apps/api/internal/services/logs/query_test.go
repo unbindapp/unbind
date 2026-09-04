@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/loki"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
@@ -89,5 +90,65 @@ func TestCursorFromOldest(t *testing.T) {
 
 	t.Run("empty events", func(t *testing.T) {
 		assert.Empty(t, cursorFromOldest(nil, loki.LokiDirectionBackward, true))
+	})
+}
+
+func TestResolveQueryWindow(t *testing.T) {
+	end := time.Date(2026, 9, 4, 12, 0, 0, 0, time.UTC)
+	backward := loki.LokiDirectionBackward
+
+	t.Run("start after end rejected", func(t *testing.T) {
+		_, _, err := resolveQueryWindow(&models.LogQueryInput{Start: end.Add(time.Hour), End: end}, backward, nil)
+		require.Error(t, err)
+		assert.ErrorIs(t, err, errdefs.ErrInvalidInput)
+	})
+
+	t.Run("start equal to end allowed", func(t *testing.T) {
+		start, gotEnd, err := resolveQueryWindow(&models.LogQueryInput{Start: end, End: end}, backward, nil)
+		require.NoError(t, err)
+		assert.Equal(t, end, start)
+		assert.Equal(t, end, gotEnd)
+	})
+
+	t.Run("bound pushing start past end rejected", func(t *testing.T) {
+		bound := end.Add(time.Hour)
+		_, _, err := resolveQueryWindow(&models.LogQueryInput{End: end}, backward, &bound)
+		assert.ErrorIs(t, err, errdefs.ErrInvalidInput)
+	})
+
+	t.Run("cursor before start rejected", func(t *testing.T) {
+		cursor := strconv.FormatInt(end.UnixNano(), 10)
+		_, _, err := resolveQueryWindow(&models.LogQueryInput{Start: end.Add(time.Minute), Cursor: cursor}, backward, nil)
+		assert.ErrorIs(t, err, errdefs.ErrInvalidInput)
+	})
+
+	t.Run("cursor replaces end and since resolves against it", func(t *testing.T) {
+		cursor := strconv.FormatInt(end.UnixNano(), 10)
+		start, gotEnd, err := resolveQueryWindow(&models.LogQueryInput{Since: "1h", Cursor: cursor}, backward, nil)
+		require.NoError(t, err)
+		assert.True(t, end.Equal(gotEnd))
+		assert.True(t, end.Add(-time.Hour).Equal(start))
+	})
+
+	t.Run("cursor rejected for forward direction", func(t *testing.T) {
+		_, _, err := resolveQueryWindow(&models.LogQueryInput{Cursor: "1"}, loki.LokiDirectionForward, nil)
+		assert.ErrorIs(t, err, errdefs.ErrInvalidInput)
+	})
+
+	t.Run("invalid cursor rejected", func(t *testing.T) {
+		_, _, err := resolveQueryWindow(&models.LogQueryInput{Cursor: "abc"}, backward, nil)
+		assert.ErrorIs(t, err, errdefs.ErrInvalidInput)
+	})
+
+	t.Run("invalid since rejected", func(t *testing.T) {
+		_, _, err := resolveQueryWindow(&models.LogQueryInput{Since: "soon"}, backward, nil)
+		assert.ErrorIs(t, err, errdefs.ErrInvalidInput)
+	})
+
+	t.Run("open window passes through", func(t *testing.T) {
+		start, gotEnd, err := resolveQueryWindow(&models.LogQueryInput{}, backward, nil)
+		require.NoError(t, err)
+		assert.True(t, start.IsZero())
+		assert.True(t, gotEnd.IsZero())
 	})
 }

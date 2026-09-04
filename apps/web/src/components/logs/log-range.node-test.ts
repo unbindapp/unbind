@@ -8,6 +8,7 @@ import {
   defaultLogRange,
   encodeRange,
   encodeRangeToken,
+  isEmptyLogWindow,
   resolveLogRange,
   type TLogRange,
 } from "./log-range.ts";
@@ -116,6 +117,43 @@ describe("resolveLogRange within bounds", () => {
       start: new Date(boundsStart).toISOString(),
       end: new Date(boundsEnd).toISOString(),
     });
+  });
+
+  it("leaves a from past the bounded end alone so the window comes out empty", () => {
+    const late = boundsEnd + HOUR;
+    const window = resolveLogRange({ from: late }, { start: boundsStart, end: boundsEnd });
+    assert.deepEqual(window, {
+      start: new Date(late).toISOString(),
+      end: new Date(boundsEnd).toISOString(),
+    });
+    assert.equal(isEmptyLogWindow(window), true);
+  });
+
+  it("an until before the bounded start comes out empty", () => {
+    const window = resolveLogRange({ until: boundsStart - HOUR }, { start: boundsStart });
+    assert.equal(isEmptyLogWindow(window), true);
+  });
+});
+
+describe("isEmptyLogWindow", () => {
+  it("is false for a live window", () => {
+    assert.equal(isEmptyLogWindow({ start: new Date(from).toISOString(), end: null }), false);
+  });
+
+  it("is false while the end is after the start", () => {
+    assert.equal(
+      isEmptyLogWindow({
+        start: new Date(from).toISOString(),
+        end: new Date(from + 1).toISOString(),
+      }),
+      false,
+    );
+  });
+
+  it("is true when the end is at or before the start", () => {
+    const start = new Date(from).toISOString();
+    assert.equal(isEmptyLogWindow({ start, end: start }), true);
+    assert.equal(isEmptyLogWindow({ start, end: new Date(from - HOUR).toISOString() }), true);
   });
 });
 

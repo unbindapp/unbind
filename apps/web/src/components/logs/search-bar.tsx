@@ -455,7 +455,7 @@ function toDatetimeLocal(ms: number | undefined): string {
 
 function CustomRangeInputs({ className }: { className?: string }) {
   const { range, setRange } = useLogFilters();
-  const { mode } = useLogs();
+  const { mode, bounds } = useLogs();
 
   const [fromValue, setFromValue] = useState(toDatetimeLocal(range.from));
   const [untilValue, setUntilValue] = useState(toDatetimeLocal(range.until));
@@ -483,6 +483,14 @@ function CustomRangeInputs({ className }: { className?: string }) {
     if (untilMs !== undefined && !Number.isFinite(untilMs)) return;
     if (fromMs !== undefined && untilMs !== undefined && untilMs <= fromMs) {
       setError("Until must be after from.");
+      return;
+    }
+    if (fromMs !== undefined && bounds.end !== undefined && fromMs >= bounds.end) {
+      setError("From must be before the logs ended.");
+      return;
+    }
+    if (untilMs !== undefined && bounds.start !== undefined && untilMs <= bounds.start) {
+      setError("Until must be after the logs started.");
       return;
     }
 

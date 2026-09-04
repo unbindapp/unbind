@@ -1,7 +1,7 @@
 "use client";
 
 import { useLogFilters } from "@/components/logs/log-filters-provider";
-import { resolveLogRange } from "@/components/logs/log-range";
+import { isEmptyLogWindow, resolveLogRange, type TLogBounds } from "@/components/logs/log-range";
 import { logSearchScopes } from "@/components/logs/log-search-scope";
 import { buildLogStreamUrl } from "@/components/logs/log-stream-url";
 import { latestLogTimestamp, logLineKey } from "@/components/logs/log-utils";
@@ -150,6 +150,8 @@ type TLogsContext = {
   olderError: string | null;
   fetchOlder: () => void;
   searchError: string | null;
+  /** Outer limits of the logs on view, when they are known to have started or ended. */
+  bounds: TLogBounds;
   setEvictionPaused: (paused: boolean) => void;
 };
 
@@ -243,8 +245,6 @@ export const LogsProvider: React.FC<TProps> = ({
     return [...merged].sort();
   }, [serviceIds, parsedSearch.serviceNames, serviceTokens]);
 
-  const searchError = parsedSearch.error;
-
   // A @range token still sitting in the text (not yet folded into the params)
   // counts like the other merged filters; an explicit param wins.
   const effectiveRange = rangeIsSet ? range : (parsedSearch.range ?? range);
@@ -257,19 +257,27 @@ export const LogsProvider: React.FC<TProps> = ({
       ? { from: httpDefaultStartTimestamp }
       : effectiveRange;
 
+  const bounds = useMemo<TLogBounds>(
+    () => ({ start: httpDefaultStartTimestamp, end: httpDefaultEndTimestamp }),
+    [httpDefaultStartTimestamp, httpDefaultEndTimestamp],
+  );
+
   // Anchor the window when the range changes, not on every render.
   const rangeKey = JSON.stringify(windowRange);
   const timeWindow = useMemo(
-    () =>
-      resolveLogRange(windowRange, {
-        start: httpDefaultStartTimestamp,
-        end: httpDefaultEndTimestamp,
-      }),
+    () => resolveLogRange(windowRange, bounds),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rangeKey, httpDefaultStartTimestamp, httpDefaultEndTimestamp],
+    [rangeKey, bounds],
   );
 
   const isLive = timeWindow.end === null;
+
+  // An explicit range can fall entirely outside the bounds; that window is
+  // empty by definition, so it is never requested.
+  const rangeError = isEmptyLogWindow(timeWindow)
+    ? "The time range falls outside these logs"
+    : null;
+  const searchError = parsedSearch.error ?? rangeError;
 
   const queryInput = useMemo(
     () => ({
@@ -432,6 +440,7 @@ export const LogsProvider: React.FC<TProps> = ({
       olderError,
       fetchOlder,
       searchError,
+      bounds,
       setEvictionPaused,
     }),
     [
@@ -448,6 +457,7 @@ export const LogsProvider: React.FC<TProps> = ({
       olderError,
       fetchOlder,
       searchError,
+      bounds,
       setEvictionPaused,
     ],
   );

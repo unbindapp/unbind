@@ -46,6 +46,12 @@ export function resolveLogRange(
   };
 }
 
+/** A window whose end is not after its start holds nothing, so there is nothing to ask for. */
+export function isEmptyLogWindow(window: { start: string; end: string | null }): boolean {
+  if (window.end === null) return false;
+  return new Date(window.start).getTime() >= new Date(window.end).getTime();
+}
+
 function isPreset(value: string): value is TLogRangePreset {
   return (logRangePresets as readonly string[]).includes(value);
 }
