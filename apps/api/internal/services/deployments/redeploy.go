@@ -241,6 +241,9 @@ func (self *DeploymentService) CreateCRDFromService(ctx context.Context, service
 	if service.Edges.ServiceConfig.Resources != nil {
 		crdToDeploy.Spec.Config.Resources = service.Edges.ServiceConfig.Resources.AsV1ResourceSpec()
 	}
+	if service.Type == schema.ServiceTypeDockerimage && service.Edges.ServiceConfig.Image != "" {
+		crdToDeploy.Spec.Config.Image = service.Edges.ServiceConfig.Image
+	}
 	if service.Type == schema.ServiceTypeDatabase {
 		backupConfig, err := self.s3BackupConfig(ctx, service.Edges.ServiceConfig)
 		if err != nil {

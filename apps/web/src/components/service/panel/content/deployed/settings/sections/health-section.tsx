@@ -7,9 +7,13 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import useUpdateService, {
-  TUpdateServiceInputSimple,
-} from "@/components/service/use-update-service";
+import type { TServiceChangeField } from "@/components/changes/types";
+import {
+  stagedNumber,
+  stagedString,
+  useResetFormOnStagedChange,
+  useServiceChanges,
+} from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
@@ -60,104 +64,116 @@ export default function HealthSection({ service }: TProps) {
   return <ErrorWithWrapper message="Unsupported service type" />;
 }
 
+// The API resets a threshold to its default when it gets a value below 1
+const defaultApiValue = -1;
+
+type TThresholdField = Extract<
+  TServiceChangeField,
+  | "healthCheckIntervalSeconds"
+  | "healthCheckFailureThreshold"
+  | "startupCheckIntervalSeconds"
+  | "startupCheckFailureThreshold"
+>;
+
+const thresholdFields: Record<
+  TThresholdField,
+  { label: string; title: string; unit: string; placeholder: string }
+> = {
+  startupCheckIntervalSeconds: {
+    label: "Startup check interval",
+    title: "Try every",
+    unit: "seconds",
+    placeholder: "3",
+  },
+  startupCheckFailureThreshold: {
+    label: "Startup check failures",
+    title: "Restart after",
+    unit: "errors",
+    placeholder: "30",
+  },
+  healthCheckIntervalSeconds: {
+    label: "Health check interval",
+    title: "Check every",
+    unit: "seconds",
+    placeholder: "10",
+  },
+  healthCheckFailureThreshold: {
+    label: "Health check failures",
+    title: "Restart after",
+    unit: "errors",
+    placeholder: "3",
+  },
+};
+
+const detailFields: TServiceChangeField[] = [
+  "healthCheckEndpoint",
+  "healthCheckEndpointPort",
+  "healthCheckCommand",
+  "healthCheckIntervalSeconds",
+  "healthCheckFailureThreshold",
+  "startupCheckIntervalSeconds",
+  "startupCheckFailureThreshold",
+];
+
+function thresholdToInput(value: number) {
+  return value === defaultApiValue ? "" : value.toString();
+}
+
+function thresholdToApi(value: string) {
+  return value === "" ? defaultApiValue : Number(value);
+}
+
 function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
-  const healthCheckTypeFromService = service.config.health_check?.type || "none";
-
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+  const { staged, stage, unstage } = useServiceChanges(service);
 
-  const {
-    mutateAsync: updateService,
-    isPending: isPendingUpdate,
-    error: errorUpdate,
-    reset: resetUpdate,
-  } = useUpdateService({
-    onSuccess: async () => {
-      form.reset();
-    },
-    idToHighlight: sectionHighlightId,
-  });
+  const healthCheck = service.config.health_check;
+  const serverType: THealthCheckType = healthCheck?.type || "none";
+  const serverEndpoint = healthCheck?.path || "";
+  const serverPort = healthCheck?.port ?? service.config.ports?.[0]?.port ?? defaultApiValue;
+  const serverCommand = healthCheck?.command || "";
+  const serverThresholds: Record<TThresholdField, number> = {
+    healthCheckIntervalSeconds: healthCheck?.health_period_seconds ?? defaultApiValue,
+    healthCheckFailureThreshold: healthCheck?.health_failure_threshold ?? defaultApiValue,
+    startupCheckIntervalSeconds: healthCheck?.startup_period_seconds ?? defaultApiValue,
+    startupCheckFailureThreshold: healthCheck?.startup_failure_threshold ?? defaultApiValue,
+  };
 
   const form = useAppForm({
     defaultValues: {
-      healthCheckType: healthCheckTypeFromService,
-      healthCheckEndpoint: service.config.health_check?.path || "",
-      healthCheckEndpointPort: service.config.ports?.[0]?.port?.toString() || "",
-      healthCheckCommand: service.config.health_check?.command || "",
-      healthCheckIntervalSeconds:
-        service.config.health_check?.health_period_seconds?.toString() || "",
-      healthCheckFailureThreshold:
-        service.config.health_check?.health_failure_threshold?.toString() || "",
-      startupCheckIntervalSeconds:
-        service.config.health_check?.startup_period_seconds?.toString() || "",
-      startupCheckFailureThreshold:
-        service.config.health_check?.startup_failure_threshold?.toString() || "",
-    },
-    onSubmit: async ({ formApi, value }) => {
-      let hasChanged = false;
-      const changes: TUpdateServiceInputSimple = {};
-
-      if (formApi.getFieldMeta("healthCheckType")?.isDefaultValue === false) {
-        changes.healthCheckType = value.healthCheckType;
-        hasChanged = true;
-      }
-      if (
-        formApi.getFieldMeta("healthCheckEndpoint")?.isDefaultValue === false &&
-        changes.healthCheckType === "http"
-      ) {
-        changes.healthCheckEndpoint = value.healthCheckEndpoint;
-        hasChanged = true;
-      }
-      if (
-        formApi.getFieldMeta("healthCheckEndpointPort")?.isDefaultValue === false &&
-        changes.healthCheckType === "http"
-      ) {
-        changes.healthCheckEndpointPort =
-          value.healthCheckEndpointPort === ""
-            ? undefined
-            : parseInt(value.healthCheckEndpointPort);
-        hasChanged = true;
-      }
-      if (
-        formApi.getFieldMeta("healthCheckCommand")?.isDefaultValue === false &&
-        changes.healthCheckType === "exec"
-      ) {
-        changes.healthCheckCommand = value.healthCheckCommand;
-        hasChanged = true;
-      }
-      if (formApi.getFieldMeta("healthCheckIntervalSeconds")?.isDefaultValue === false) {
-        changes.healthCheckIntervalSeconds =
-          value.healthCheckIntervalSeconds === "" ? -1 : Number(value.healthCheckIntervalSeconds);
-        changes.healthCheckType = value.healthCheckType;
-        hasChanged = true;
-      }
-      if (formApi.getFieldMeta("healthCheckFailureThreshold")?.isDefaultValue === false) {
-        changes.healthCheckFailureThreshold =
-          value.healthCheckFailureThreshold === "" ? -1 : Number(value.healthCheckFailureThreshold);
-        changes.healthCheckType = value.healthCheckType;
-        hasChanged = true;
-      }
-      if (formApi.getFieldMeta("startupCheckIntervalSeconds")?.isDefaultValue === false) {
-        changes.startupCheckIntervalSeconds =
-          value.startupCheckIntervalSeconds === "" ? -1 : Number(value.startupCheckIntervalSeconds);
-        changes.healthCheckType = value.healthCheckType;
-        hasChanged = true;
-      }
-      if (formApi.getFieldMeta("startupCheckFailureThreshold")?.isDefaultValue === false) {
-        changes.startupCheckFailureThreshold =
-          value.startupCheckIntervalSeconds === ""
-            ? -1
-            : Number(value.startupCheckFailureThreshold);
-        changes.healthCheckType = value.healthCheckType;
-        hasChanged = true;
-      }
-
-      if (hasChanged) {
-        await updateService(changes);
-      } else {
-        form.reset();
-      }
+      healthCheckType: stagedString(staged.healthCheckType, serverType) as THealthCheckType,
+      healthCheckEndpoint: stagedString(staged.healthCheckEndpoint, serverEndpoint),
+      healthCheckEndpointPort: thresholdToInput(
+        stagedNumber(staged.healthCheckEndpointPort, serverPort),
+      ),
+      healthCheckCommand: stagedString(staged.healthCheckCommand, serverCommand),
+      healthCheckIntervalSeconds: thresholdToInput(
+        stagedNumber(
+          staged.healthCheckIntervalSeconds,
+          serverThresholds.healthCheckIntervalSeconds,
+        ),
+      ),
+      healthCheckFailureThreshold: thresholdToInput(
+        stagedNumber(
+          staged.healthCheckFailureThreshold,
+          serverThresholds.healthCheckFailureThreshold,
+        ),
+      ),
+      startupCheckIntervalSeconds: thresholdToInput(
+        stagedNumber(
+          staged.startupCheckIntervalSeconds,
+          serverThresholds.startupCheckIntervalSeconds,
+        ),
+      ),
+      startupCheckFailureThreshold: thresholdToInput(
+        stagedNumber(
+          staged.startupCheckFailureThreshold,
+          serverThresholds.startupCheckFailureThreshold,
+        ),
+      ),
     },
   });
+  useResetFormOnStagedChange(form, staged, ["healthCheckType", ...detailFields]);
 
   const portItems = useMemo(() => {
     return service.config.ports?.map((port) => ({
@@ -175,79 +191,69 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       }));
   }, [portItems]);
 
-  const changeCount = useStore(form.store, (s) => {
-    const meta = s.fieldMeta;
-    const values = s.values;
-    let count = 0;
-    if (values.healthCheckType === "exec") {
-      if (meta.healthCheckCommand?.isDefaultValue === false) {
-        count++;
-      }
-    }
-    if (values.healthCheckType === "http") {
-      if (meta.healthCheckEndpoint?.isDefaultValue === false) {
-        count++;
-      }
-      if (meta.healthCheckEndpointPort?.isDefaultValue === false) count++;
-    }
-    if (meta.healthCheckType?.isDefaultValue === false) count++;
-    if (values.healthCheckType !== "none") {
-      if (meta.healthCheckFailureThreshold?.isDefaultValue === false) count++;
-      if (meta.healthCheckIntervalSeconds?.isDefaultValue === false) count++;
-      if (meta.startupCheckIntervalSeconds?.isDefaultValue === false) count++;
-      if (meta.startupCheckFailureThreshold?.isDefaultValue === false) count++;
-    }
-    return count;
-  });
-
   const healthCheckType = useStore(form.store, (s) => s.values.healthCheckType);
 
-  const hasChanges = useStore(form.store, (s) => {
-    const meta = s.fieldMeta;
-    const values = s.values;
+  const stageThreshold = (field: TThresholdField, value: string) =>
+    stage({
+      field,
+      label: thresholdFields[field].label,
+      value: thresholdToApi(value),
+      previous: serverThresholds[field],
+      format: (v) => (v === defaultApiValue ? "Default" : `${v} ${thresholdFields[field].unit}`),
+    });
 
-    if (meta.healthCheckType?.isDefaultValue === true) return false;
-    if (values.healthCheckType === "exec") {
-      if (meta.healthCheckCommand?.isDefaultValue === false) return true;
-    }
-    if (values.healthCheckType === "http") {
-      if (meta.healthCheckEndpoint?.isDefaultValue === false) return true;
-      if (meta.healthCheckEndpointPort?.isDefaultValue === false) return true;
-    }
-    if (values.healthCheckType !== "none") {
-      if (meta.healthCheckIntervalSeconds?.isDefaultValue === false) return true;
-      if (meta.healthCheckFailureThreshold?.isDefaultValue === false) return true;
-      if (meta.startupCheckIntervalSeconds?.isDefaultValue === false) return true;
-      if (meta.startupCheckFailureThreshold?.isDefaultValue === false) return true;
-    }
-    return false;
-  });
+  const thresholdInput = (field: TThresholdField) => (
+    <form.AppField
+      name={field}
+      validators={{
+        onChange: ({ value }) => validatePositiveInteger(value),
+      }}
+      children={(fieldApi) => (
+        <MiniSection
+          title={thresholdFields[field].title}
+          unit={thresholdFields[field].unit}
+          hasChanges={staged[field] !== undefined}
+        >
+          <fieldApi.TextField
+            field={fieldApi}
+            value={fieldApi.state.value}
+            onBlur={() => {
+              fieldApi.handleBlur();
+              if (fieldApi.state.meta.errors.length > 0) return;
+              stageThreshold(field, fieldApi.state.value);
+            }}
+            onChange={(e) => {
+              fieldApi.handleChange(e.target.value);
+            }}
+            placeholder={thresholdFields[field].placeholder}
+            autoCapitalize="off"
+            autoCorrect="off"
+            autoComplete="off"
+            spellCheck="false"
+            inputMode="numeric"
+            className="min-w-0 flex-1"
+            classNameInput="rounded-r-none"
+          />
+        </MiniSection>
+      )}
+    />
+  );
 
   return (
-    <SettingsSection
-      asElement="form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit(e);
-      }}
-      title="Health"
-      id="health"
-      Icon={HeartIcon}
-      changeCount={changeCount}
-      onClickResetChanges={() => {
-        form.reset();
-        resetUpdate();
-      }}
-      SubmitButton={form.SubmitButton}
-      isPending={isPendingUpdate}
-      error={errorUpdate?.message}
-      entityId={sectionHighlightId}
-    >
+    <SettingsSection title="Health" id="health" Icon={HeartIcon} entityId={sectionHighlightId}>
       <Block>
         <BlockItem className="w-full md:w-full">
           <BlockItemHeader type="column">
-            <BlockItemTitle hasChanges={hasChanges}>Health Check Type</BlockItemTitle>
+            <BlockItemTitle
+              hasChanges={
+                staged.healthCheckType !== undefined ||
+                staged.healthCheckEndpoint !== undefined ||
+                staged.healthCheckEndpointPort !== undefined ||
+                staged.healthCheckCommand !== undefined
+              }
+            >
+              Health Check Type
+            </BlockItemTitle>
             <BlockItemDescription>
               The type of health check to decide if a deployment is healthy.
             </BlockItemDescription>
@@ -260,7 +266,19 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
-                  onChange={(v) => field.handleChange(v as THealthCheckType)}
+                  onChange={(v) => {
+                    const type = v as THealthCheckType;
+                    field.handleChange(type);
+                    stage({
+                      field: "healthCheckType",
+                      label: "Health check type",
+                      value: type,
+                      previous: serverType,
+                      format: healthCheckTypeToName,
+                    });
+                    // Turning checks off makes the other health settings meaningless
+                    if (type === "none") unstage(detailFields);
+                  }}
                   items={healthCheckItems}
                   ItemIcon={({ className, value }) => (
                     <HealthCheckIcon className={cn(className, "size-4.5")} type={value} />
@@ -306,7 +324,16 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       classNameInput="rounded-t-none border-t-0 pr-27"
                       field={field}
                       value={field.state.value}
-                      onBlur={field.handleBlur}
+                      onBlur={() => {
+                        field.handleBlur();
+                        if (field.state.meta.errors.length > 0) return;
+                        stage({
+                          field: "healthCheckEndpoint",
+                          label: "Health check endpoint",
+                          value: field.state.value,
+                          previous: serverEndpoint,
+                        });
+                      }}
                       onChange={(e) => {
                         field.handleChange(e.target.value);
                       }}
@@ -325,7 +352,15 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       dontCheckUntilSubmit
                       field={field}
                       value={field.state.value}
-                      onChange={(v) => field.handleChange(v)}
+                      onChange={(v) => {
+                        field.handleChange(v);
+                        stage({
+                          field: "healthCheckEndpointPort",
+                          label: "Health check port",
+                          value: parseInt(v),
+                          previous: serverPort,
+                        });
+                      }}
                       items={portItems}
                       isPending={false}
                       error={undefined}
@@ -369,7 +404,16 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                     classNameInput="rounded-t-none border-t-0"
                     field={field}
                     value={field.state.value}
-                    onBlur={field.handleBlur}
+                    onBlur={() => {
+                      field.handleBlur();
+                      if (field.state.meta.errors.length > 0) return;
+                      stage({
+                        field: "healthCheckCommand",
+                        label: "Health check command",
+                        value: field.state.value,
+                        previous: serverCommand,
+                      });
+                    }}
                     onChange={(e) => {
                       field.handleChange(e.target.value);
                     }}
@@ -396,66 +440,8 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
             </BlockItemHeader>
             <BlockItemContent>
               <div className="flex w-full gap-3 pt-0.5">
-                <form.AppField
-                  name="startupCheckIntervalSeconds"
-                  validators={{
-                    onChange: ({ value }) => validateInterval(value),
-                  }}
-                  children={(field) => (
-                    <MiniSection
-                      title="Try every"
-                      unit="seconds"
-                      hasChanges={field.state.meta.isDefaultValue === false}
-                    >
-                      <field.TextField
-                        field={field}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="3"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                        inputMode="numeric"
-                        className="min-w-0 flex-1"
-                        classNameInput="rounded-r-none"
-                      />
-                    </MiniSection>
-                  )}
-                />
-                <form.AppField
-                  name="startupCheckFailureThreshold"
-                  validators={{
-                    onChange: ({ value }) => validateFailureThreshold(value),
-                  }}
-                  children={(field) => (
-                    <MiniSection
-                      title="Restart after"
-                      unit="errors"
-                      hasChanges={field.state.meta.isDefaultValue === false}
-                    >
-                      <field.TextField
-                        field={field}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="30"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                        inputMode="numeric"
-                        className="min-w-0 flex-1"
-                        classNameInput="rounded-r-none"
-                      />
-                    </MiniSection>
-                  )}
-                />
+                {thresholdInput("startupCheckIntervalSeconds")}
+                {thresholdInput("startupCheckFailureThreshold")}
               </div>
             </BlockItemContent>
           </BlockItem>
@@ -472,66 +458,8 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
             </BlockItemHeader>
             <BlockItemContent>
               <div className="flex w-full gap-3 pt-0.5">
-                <form.AppField
-                  name="healthCheckIntervalSeconds"
-                  validators={{
-                    onChange: ({ value }) => validateInterval(value),
-                  }}
-                  children={(field) => (
-                    <MiniSection
-                      title="Check every"
-                      unit="seconds"
-                      hasChanges={field.state.meta.isDefaultValue === false}
-                    >
-                      <field.TextField
-                        field={field}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="10"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                        inputMode="numeric"
-                        className="min-w-0 flex-1"
-                        classNameInput="rounded-r-none"
-                      />
-                    </MiniSection>
-                  )}
-                />
-                <form.AppField
-                  name="healthCheckFailureThreshold"
-                  validators={{
-                    onChange: ({ value }) => validateFailureThreshold(value),
-                  }}
-                  children={(field) => (
-                    <MiniSection
-                      title="Restart after"
-                      unit="errors"
-                      hasChanges={field.state.meta.isDefaultValue === false}
-                    >
-                      <field.TextField
-                        field={field}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => {
-                          field.handleChange(e.target.value);
-                        }}
-                        placeholder="3"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        autoComplete="off"
-                        spellCheck="false"
-                        inputMode="numeric"
-                        className="min-w-0 flex-1"
-                        classNameInput="rounded-r-none"
-                      />
-                    </MiniSection>
-                  )}
-                />
+                {thresholdInput("healthCheckIntervalSeconds")}
+                {thresholdInput("healthCheckFailureThreshold")}
               </div>
             </BlockItemContent>
           </BlockItem>
@@ -554,9 +482,7 @@ function MiniSection({
 }) {
   return (
     <div data-changed={hasChanges || undefined} className="group/div flex flex-1 flex-col gap-2">
-      <p className="group-data-changed/div:text-process px-1.5 leading-tight font-medium">
-        {title}
-      </p>
+      <p className="group-data-changed/div:text-change px-1.5 leading-tight font-medium">{title}</p>
       <div className="flex w-full items-start">
         {children}
         <div className="bg-input text-muted-foreground flex h-10.5 min-w-0 shrink items-center justify-end rounded-r-lg border border-l-0 px-2.5 text-right text-sm leading-tight font-medium">
@@ -619,20 +545,7 @@ function validateHealthCheckCommand(value: string) {
   return undefined;
 }
 
-function validateInterval(value: string) {
-  if (value === undefined || value === "") {
-    return undefined;
-  }
-  const num = Number(value);
-  if (isNaN(num) || num <= 0 || !Number.isInteger(num)) {
-    return {
-      message: "Must be a positive integer.",
-    };
-  }
-  return undefined;
-}
-
-function validateFailureThreshold(value: string) {
+function validatePositiveInteger(value: string) {
   if (value === undefined || value === "") {
     return undefined;
   }

@@ -8,7 +8,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
@@ -24,74 +23,21 @@ func (self *VariablesService) UpdateVariables(
 	behavior models.VariableUpdateBehavior,
 	newVariables map[string][]byte,
 ) (*models.VariableResponse, bool, error) {
-	if err := self.checkScopePermission(ctx, userID, schema.ActionEditor, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID); err != nil {
-		return nil, false, err
-	}
-
-	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
+	write, err := self.PrepareVariableWrite(ctx, userID, input, behavior, newVariables, nil)
 	if err != nil {
 		return nil, false, err
 	}
 
-	client := self.k8s.GetInternalClient()
-
-	existing, err := self.k8s.GetSecretMap(ctx, secretName, team.Namespace, client)
+	response, err := self.ApplyVariableWrite(ctx, write)
 	if err != nil {
 		return nil, false, err
 	}
 
-	isService := input.Type == schema.VariableReferenceSourceTypeService
-	if isService {
-		if err := self.validateReferences(ctx, userID, service, newVariables); err != nil {
-			return nil, false, err
-		}
-		if behavior == models.VariableUpdateBehaviorOverwrite {
-			for _, protectedVariable := range service.Edges.ServiceConfig.ProtectedVariables {
-				if _, ok := newVariables[protectedVariable]; !ok {
-					newVariables[protectedVariable] = existing[protectedVariable]
-				}
-			}
-		}
-	}
-	needsRedeploy := isService && renderedValuesChange(existing, newVariables, behavior)
-
-	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		if behavior != models.VariableUpdateBehaviorOverwrite {
-			_, err := self.k8s.UpsertSecretValues(ctx, secretName, team.Namespace, newVariables, client)
-			return err
-		}
-
-		if isService && service.Edges.ServiceConfig != nil {
-			if err := self.pruneVariableConfig(ctx, tx, service, newVariables); err != nil {
-				return err
-			}
-		}
-
-		_, err := self.k8s.OverwriteSecretValues(ctx, secretName, team.Namespace, newVariables, client)
-		return err
-	}); err != nil {
+	if err := self.RestartForWrite(ctx, write); err != nil {
 		return nil, false, err
 	}
 
-	secrets, err := self.k8s.GetSecretMap(ctx, secretName, team.Namespace, client)
-	if err != nil {
-		return nil, false, err
-	}
-
-	response, err := self.buildResponse(ctx, client, input.Type, service, secrets)
-	if err != nil {
-		return nil, false, err
-	}
-
-	// Values the pod reads straight from the secret only need a restart to pick up
-	if isService && !needsRedeploy {
-		if err := self.k8s.RollingRestartPodsByLabel(ctx, team.Namespace, input.Type.KubernetesLabel(), service.ID.String(), client); err != nil {
-			log.Error("Failed to restart pods", "err", err, "label", input.Type.KubernetesLabel(), "value", service.ID.String())
-			return nil, false, err
-		}
-	}
-
-	return response, needsRedeploy, nil
+	return response, write.NeedsRedeploy, nil
 }
 
 // Drop mounts and metadata for variables that an overwrite removes
@@ -127,25 +73,6 @@ func (self *VariablesService) pruneVariableConfig(ctx context.Context, tx reposi
 	}
 
 	return nil
-}
-
-// renderedValuesChange reports whether the write touches a variable that is rendered
-// into the deployment instead of read from the secret
-func renderedValuesChange(existing, newVariables map[string][]byte, behavior models.VariableUpdateBehavior) bool {
-	for name, value := range newVariables {
-		if vartemplate.HasTokens(string(value)) || vartemplate.HasTokens(string(existing[name])) {
-			return true
-		}
-	}
-	if behavior != models.VariableUpdateBehaviorOverwrite {
-		return false
-	}
-	for name, value := range existing {
-		if _, kept := newVariables[name]; !kept && vartemplate.HasTokens(string(value)) {
-			return true
-		}
-	}
-	return false
 }
 
 // validateReferences checks that every referenced source exists in the same project

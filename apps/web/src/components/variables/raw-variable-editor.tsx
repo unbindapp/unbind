@@ -34,9 +34,7 @@ import {
   TVariableShallow,
   VariableForCreateSchema,
 } from "@/lib/queries/variables";
-import { useMutation } from "@tanstack/react-query";
 import { CheckCircleIcon } from "lucide-react";
-import { ResultAsync } from "neverthrow";
 import { lazy, ReactElement, Suspense, useEffect, useMemo, useRef, useState } from "react";
 
 const TokenFieldLazy = lazy(() => import("@/components/ui/token-field/token-field"));
@@ -47,18 +45,19 @@ type TProps = {
 
 export default function RawVariableEditor({ children }: TProps) {
   const {
-    list: {
-      data: variablesData,
-      error: variablesError,
-      isPending: variablesIsPending,
-      refetch: refetchVariables,
-    },
-    createOrUpdate: { mutateAsync: createOrUpdateVariables },
+    list: { data: variablesData, error: variablesError, isPending: variablesIsPending },
+    variables: mergedVariables,
+    stage,
     ...typedProps
   } = useVariables();
   const { tokens } = useVariableReferences();
 
-  const variables = variablesData?.variables;
+  // The editor shows the staged state, saving diffs against what the server has
+  const variables = useMemo(
+    () => mergedVariables?.filter((v) => v.staged !== "deleted"),
+    [mergedVariables],
+  );
+  const serverVariables = variablesData?.variables;
   const editorText = useMemo(
     () => (variables ? getEditorValue({ variables, tokens }) : ""),
     [variables, tokens],
@@ -109,46 +108,10 @@ export default function RawVariableEditor({ children }: TProps) {
 
   const [parseError, setParseError] = useState<Error | null>(null);
 
-  const {
-    mutate: replaceVariables,
-    isPending: replaceVariablesIsPending,
-    error: replaceVariablesError,
-  } = useMutation({
-    mutationFn: async (parsedVariables: TVariableForCreate[]) => {
-      await createOrUpdateVariables({
-        ...typedProps,
-        behavior: "overwrite",
-        variables: parsedVariables,
-      });
-
-      const current = new Map((variables ?? []).map((v) => [v.name, v.value]));
-      for (const i of parsedVariables) {
-        if (current.get(i.name) === i.value) continue;
-        temporarilyAddNewEntity(getNewEntityIdForVariable({ name: i.name, value: i.value }));
-      }
-    },
-    mutationKey: ["replace-variables"],
-    onSuccess: async () => {
-      const refetchRes = await ResultAsync.fromPromise(
-        refetchVariables(),
-        () => new Error("Failed to refetch variables"),
-      );
-      if (refetchRes.isErr()) {
-        toast.add({
-          type: "error",
-          title: "Failed to refetch variables",
-          description: refetchRes.error.message,
-        });
-        return;
-      }
-      showSucceeded();
-    },
-  });
-
-  // Parsing and the no-change check happen before the mutation so an
-  // unchanged save never enters the pending state or makes a request.
+  // Parsing and the no-change check happen before staging so an unchanged save
+  // never touches the store.
   const save = () => {
-    if (!variables) return;
+    if (!variables || !serverVariables) return;
     if (!tokens) {
       toast.add({
         type: "warning",
@@ -183,11 +146,21 @@ export default function RawVariableEditor({ children }: TProps) {
       showSucceeded();
       return;
     }
-    replaceVariables(parsedVariables);
+
+    // Everything the text no longer mentions gets removed, so the editor stays a full picture
+    const parsedByName = new Map(parsedVariables.map((v) => [v.name, v.value]));
+    const names = new Set([...variables.map((v) => v.name), ...parsedByName.keys()]);
+    stage([...names].map((name) => ({ name, value: parsedByName.get(name) ?? null })));
+
+    for (const i of parsedVariables) {
+      if (current.get(i.name) === i.value) continue;
+      temporarilyAddNewEntity(getNewEntityIdForVariable({ name: i.name, value: i.value }));
+    }
+    showSucceeded();
   };
 
-  const isPending = variablesIsPending || replaceVariablesIsPending;
-  const error = variablesError || replaceVariablesError || parseError;
+  const isPending = variablesIsPending;
+  const error = variablesError || parseError;
 
   return (
     <Dialog
@@ -324,7 +297,7 @@ function VariableEditor({
         >
           <div className="bg-success/10 absolute top-0 left-0 h-full w-full" />
           <CheckCircleIcon className="relative -ml-0.5 size-4.5" strokeWidth={2.5} />
-          <p className="relative min-w-0 shrink">Variables updated</p>
+          <p className="relative min-w-0 shrink">Variables staged</p>
         </div>
       </div>
     </div>

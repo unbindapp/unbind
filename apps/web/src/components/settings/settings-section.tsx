@@ -50,12 +50,12 @@ export function SettingsSection({
   return (
     <Wrapper
       data-changed={(changeCount !== undefined && changeCount > 0) || undefined}
-      className={cn("group/wrapper data-changed:border-process/25 scroll-mt-4", className)}
+      className={cn("group/wrapper data-changed:border-change/25 scroll-mt-4", className)}
       {...rest}
     >
       <div
         className={cn(
-          "text-muted-foreground group-data-changed/wrapper:text-process bg-card group-data-changed/wrapper:border-process/20 group-data-changed/wrapper:bg-process/8 relative flex w-full items-start justify-between gap-4 border-b px-3.5 sm:px-4",
+          "text-muted-foreground group-data-changed/wrapper:text-change bg-card group-data-changed/wrapper:border-change/20 group-data-changed/wrapper:bg-change/8 relative flex w-full items-start justify-between gap-4 border-b px-3.5 sm:px-4",
           classNameHeader,
         )}
       >
@@ -66,26 +66,6 @@ export function SettingsSection({
             {title}
           </h3>
         </div>
-        {/* {changeCount !== undefined && changeCount > 0 && (
-          <div className="-mr-2.25 flex shrink-0 items-center justify-end gap-1.25 py-1.25 sm:-mr-2.75">
-            <ResetTrigger changeCount={changeCount} onClickResetChanges={onClickResetChanges}>
-              <Button
-                type="button"
-                className="text-foreground has-hover:hover:text-foreground active:text-foreground"
-                aria-label="Reset changes"
-                variant="outline-process"
-                size="icon"
-              >
-                <RotateCcwIcon className="size-4.5" />
-              </Button>
-            </ResetTrigger>
-            <SubmitTriggerElement>
-              <SubmitButtonElement aria-label="Apply changes" variant="outline-process" size="icon">
-                <CheckIcon className="size-5" />
-              </SubmitButtonElement>
-            </SubmitTriggerElement>
-          </div>
-        )} */}
       </div>
       <div
         className={cn(
@@ -96,7 +76,7 @@ export function SettingsSection({
         {children}
       </div>
       {changeCount !== undefined && changeCount > 0 && (
-        <div className="border-process/20 bg-process/8 flex w-full flex-col border-t p-1.5">
+        <div className="border-change/20 bg-change/8 flex w-full flex-col border-t p-1.5">
           {error && (
             <div className="w-full p-1.5">
               <ErrorLine message={error} className="border-destructive/20 border" />
@@ -109,7 +89,7 @@ export function SettingsSection({
                   className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
                   type="button"
                   aria-label="Reset changes"
-                  variant="outline-process"
+                  variant="outline-change"
                 >
                   Cancel
                 </Button>
@@ -117,7 +97,7 @@ export function SettingsSection({
             </div>
             <div className="w-1/2 p-1.5">
               <SubmitTriggerElement>
-                <SubmitButtonElement isPending={isPending} className="w-full" variant="process">
+                <SubmitButtonElement isPending={isPending} className="w-full" variant="change">
                   Apply ({changeCount})
                 </SubmitButtonElement>
               </SubmitTriggerElement>

@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	entService "github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
@@ -132,6 +133,67 @@ func (suite *CreateCRDFromServiceSuite) TestBucketCleared() {
 	crd, err := suite.deploymentService.CreateCRDFromService(suite.Ctx, suite.deployedService(deployed))
 	suite.NoError(err)
 	suite.Nil(crd.Spec.Config.Database.S3BackupConfig)
+}
+
+func (suite *CreateCRDFromServiceSuite) TestImageServiceUsesConfiguredImage() {
+	service := suite.DB.Service.Create().
+		SetType(schema.ServiceTypeDockerimage).
+		SetKubernetesName("nginx").
+		SetName("Nginx").
+		SetEnvironmentID(suite.service.EnvironmentID).
+		SetKubernetesSecret("nginx-secret").
+		SaveX(suite.Ctx)
+	suite.DB.ServiceConfig.Create().
+		SetServiceID(service.ID).
+		SetBuilder(schema.ServiceBuilderDocker).
+		SetIcon("docker").
+		SetReplicas(1).
+		SetImage("nginx:1.27").
+		SaveX(suite.Ctx)
+	deployment := suite.DB.Deployment.Create().
+		SetServiceID(service.ID).
+		SetStatus(schema.DeploymentStatusBuildSucceeded).
+		SetSource(schema.DeploymentSourceManual).
+		SetBuilder(schema.ServiceBuilderDocker).
+		SetImage("nginx:1.25").
+		SetResourceDefinition(&v1.Service{
+			Spec: v1.ServiceSpec{
+				Builder: "docker",
+				Config:  v1.ServiceConfigSpec{Image: "nginx:1.25", Replicas: utils.ToPtr[int32](1)},
+			},
+		}).
+		SaveX(suite.Ctx)
+	suite.DB.Service.UpdateOneID(service.ID).SetCurrentDeploymentID(deployment.ID).SaveX(suite.Ctx)
+
+	loaded, err := suite.DB.Service.Query().
+		Where(entService.IDEQ(service.ID)).
+		WithServiceConfig().
+		WithCurrentDeployment().
+		Only(suite.Ctx)
+	suite.NoError(err)
+
+	crd, err := suite.deploymentService.CreateCRDFromService(suite.Ctx, loaded)
+	suite.NoError(err)
+	suite.Equal("nginx:1.27", crd.Spec.Config.Image)
+}
+
+func TestConfiguredImageChanged(t *testing.T) {
+	image := func(service *ent.Service, configured, deployed string) bool {
+		service.Edges.ServiceConfig = &ent.ServiceConfig{Image: configured}
+		return configuredImageChanged(service, &ent.Deployment{Image: utils.ToPtr(deployed)})
+	}
+	if !image(&ent.Service{Type: schema.ServiceTypeDockerimage}, "nginx:1.27", "nginx:1.25") {
+		t.Fatal("expected a changed image on an image service to be reported")
+	}
+	if image(&ent.Service{Type: schema.ServiceTypeDockerimage}, "nginx:1.25", "nginx:1.25") {
+		t.Fatal("expected an unchanged image to not be reported")
+	}
+	if image(&ent.Service{Type: schema.ServiceTypeGithub}, "", "registry/app:sha") {
+		t.Fatal("expected built services to be ignored")
+	}
+	if configuredImageChanged(&ent.Service{Type: schema.ServiceTypeDockerimage, Edges: ent.ServiceEdges{ServiceConfig: &ent.ServiceConfig{Image: "nginx:1.27"}}}, nil) {
+		t.Fatal("expected a missing deployment to not be reported")
+	}
 }
 
 func TestCreateCRDFromServiceSuite(t *testing.T) {

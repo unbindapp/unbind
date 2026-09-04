@@ -10,16 +10,18 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import useUpdateService, {
-  TUpdateServiceInputSimple,
-} from "@/components/service/use-update-service";
+import type { TServiceChangeField } from "@/components/changes/types";
+import {
+  stagedString,
+  useResetFormOnStagedChange,
+  useServiceChanges,
+} from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TGitSectionProps } from "@/components/settings/types";
 import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { GitServiceBuilderEnum, TGitServiceBuilder, TServiceShallow } from "@/lib/queries/services";
-import { useStore } from "@tanstack/react-form";
 import { PlusIcon, WrenchIcon } from "lucide-react";
 import { useMemo, useRef } from "react";
 
@@ -54,130 +56,181 @@ export default function BuildSection({ service }: TProps) {
   return <ErrorWithWrapper message="Unsupported service type" />;
 }
 
+type TCommandField = Extract<
+  TServiceChangeField,
+  | "railpackBuilderInstallCommand"
+  | "railpackBuilderBuildCommand"
+  | "dockerBuilderDockerfilePath"
+  | "dockerBuilderBuildContext"
+  | "startCommand"
+>;
+
+const commandFields: Record<
+  TCommandField,
+  { title: string; description: string; toggleText: string; placeholder: string }
+> = {
+  railpackBuilderInstallCommand: {
+    title: "Install Command",
+    description: "The command for installing the dependencies for the service.",
+    toggleText: "Custom install command",
+    placeholder: "npm install --force",
+  },
+  railpackBuilderBuildCommand: {
+    title: "Build Command",
+    description: "The command for building the service.",
+    toggleText: "Custom build command",
+    placeholder: "npm run build",
+  },
+  dockerBuilderDockerfilePath: {
+    title: "Dockerfile Path",
+    description: "The path to the Dockerfile in your repository.",
+    toggleText: "Custom Dockerfile path",
+    placeholder: "./Dockerfile",
+  },
+  dockerBuilderBuildContext: {
+    title: "Build Context",
+    description: "The directory that serves as the build context for Docker.",
+    toggleText: "Custom build context",
+    placeholder: "./",
+  },
+  startCommand: {
+    title: "Start Command",
+    description: "The command to run to start the new deployment.",
+    toggleText: "Custom start command",
+    placeholder: "npm run start",
+  },
+};
+
 function GitSection({ service }: TGitSectionProps) {
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+  const { staged, stage } = useServiceChanges(service);
 
-  const {
-    mutateAsync: updateService,
-    isPending: isPendingUpdate,
-    error: errorUpdate,
-    reset: resetUpdate,
-  } = useUpdateService({
-    onSuccess: async () => {
-      form.reset();
-    },
-    idToHighlight: sectionHighlightId,
-  });
+  const serverValues: Record<TCommandField, string> = {
+    railpackBuilderInstallCommand: service.config.railpack_builder_install_command || "",
+    railpackBuilderBuildCommand: service.config.railpack_builder_build_command || "",
+    dockerBuilderDockerfilePath: service.config.docker_builder_dockerfile_path || "",
+    dockerBuilderBuildContext: service.config.docker_builder_build_context || "",
+    startCommand: service.config.run_command || "",
+  };
 
   const form = useAppForm({
     defaultValues: {
-      builder: service.config.builder,
-      railpackBuilderInstallCommand: service.config.railpack_builder_install_command || "",
-      railpackBuilderBuildCommand: service.config.railpack_builder_build_command || "",
-      dockerBuilderDockerfilePath: service.config.docker_builder_dockerfile_path || "",
-      dockerBuilderBuildContext: service.config.docker_builder_build_context || "",
-      startCommand: service.config.run_command || "",
-    },
-    onSubmit: async ({ formApi, value }) => {
-      let hasChanged = false;
-      const changes: TUpdateServiceInputSimple = {};
-
-      if (formApi.getFieldMeta("builder")?.isDefaultValue === false) {
-        changes.builder = value.builder as TGitServiceBuilder;
-        hasChanged = true;
-      }
-      if (
-        value.builder === "railpack" &&
-        formApi.getFieldMeta("railpackBuilderInstallCommand")?.isDefaultValue === false
-      ) {
-        changes.railpackBuilderInstallCommand = value.railpackBuilderInstallCommand;
-        hasChanged = true;
-      }
-      if (
-        value.builder === "railpack" &&
-        formApi.getFieldMeta("railpackBuilderBuildCommand")?.isDefaultValue === false
-      ) {
-        changes.railpackBuilderBuildCommand = value.railpackBuilderBuildCommand;
-        hasChanged = true;
-      }
-      if (
-        value.builder === "docker" &&
-        formApi.getFieldMeta("dockerBuilderDockerfilePath")?.isDefaultValue === false
-      ) {
-        changes.dockerBuilderDockerfilePath = value.dockerBuilderDockerfilePath;
-        hasChanged = true;
-      }
-      if (
-        value.builder === "docker" &&
-        formApi.getFieldMeta("dockerBuilderBuildContext")?.isDefaultValue === false
-      ) {
-        changes.dockerBuilderBuildContext = value.dockerBuilderBuildContext;
-        hasChanged = true;
-      }
-      if (formApi.getFieldMeta("startCommand")?.isDefaultValue === false) {
-        changes.startCommand = value.startCommand;
-        hasChanged = true;
-      }
-
-      if (hasChanged) {
-        await updateService(changes);
-      } else {
-        form.reset();
-      }
+      builder: stagedString(staged.builder, service.config.builder) as TGitServiceBuilder,
+      railpackBuilderInstallCommand: stagedString(
+        staged.railpackBuilderInstallCommand,
+        serverValues.railpackBuilderInstallCommand,
+      ),
+      railpackBuilderBuildCommand: stagedString(
+        staged.railpackBuilderBuildCommand,
+        serverValues.railpackBuilderBuildCommand,
+      ),
+      dockerBuilderDockerfilePath: stagedString(
+        staged.dockerBuilderDockerfilePath,
+        serverValues.dockerBuilderDockerfilePath,
+      ),
+      dockerBuilderBuildContext: stagedString(
+        staged.dockerBuilderBuildContext,
+        serverValues.dockerBuilderBuildContext,
+      ),
+      startCommand: stagedString(staged.startCommand, serverValues.startCommand),
     },
   });
+  useResetFormOnStagedChange(form, staged, [
+    "builder",
+    "railpackBuilderInstallCommand",
+    "railpackBuilderBuildCommand",
+    "dockerBuilderDockerfilePath",
+    "dockerBuilderBuildContext",
+    "startCommand",
+  ]);
 
-  const changeCount = useStore(form.store, (s) => {
-    let count = 0;
-    if (s.values.builder === "railpack") {
-      if (s.fieldMeta.railpackBuilderInstallCommand?.isDefaultValue === false) count++;
-      if (s.fieldMeta.railpackBuilderBuildCommand?.isDefaultValue === false) count++;
-    }
-    if (s.values.builder === "docker") {
-      if (s.fieldMeta.dockerBuilderDockerfilePath?.isDefaultValue === false) count++;
-      if (s.fieldMeta.dockerBuilderBuildContext?.isDefaultValue === false) count++;
-    }
-    if (s.fieldMeta.builder?.isDefaultValue === false) count++;
-    if (s.fieldMeta.startCommand?.isDefaultValue === false) count++;
-    return count;
-  });
+  const inputRefs = {
+    railpackBuilderInstallCommand: useRef<HTMLInputElement>(null),
+    railpackBuilderBuildCommand: useRef<HTMLInputElement>(null),
+    dockerBuilderDockerfilePath: useRef<HTMLInputElement>(null),
+    dockerBuilderBuildContext: useRef<HTMLInputElement>(null),
+    startCommand: useRef<HTMLInputElement>(null),
+  };
 
-  const installCommandInputRef = useRef<HTMLInputElement>(null);
-  const buildCommandInputRef = useRef<HTMLInputElement>(null);
-  const dockerBuilderPathInputRef = useRef<HTMLInputElement>(null);
-  const dockerBuilderContextInputRef = useRef<HTMLInputElement>(null);
-  const startCommandInputRef = useRef<HTMLInputElement>(null);
+  const stageCommand = (field: TCommandField, value: string) =>
+    stage({
+      field,
+      label: commandFields[field].title,
+      value,
+      previous: serverValues[field],
+      format: (v) => v || "Default",
+    });
+
+  const commandBlock = (field: TCommandField) => (
+    <Block>
+      <form.AppField
+        name={field}
+        children={(fieldApi) => (
+          <BlockItem className="group/item w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle hasChanges={staged[field] !== undefined}>
+                {commandFields[field].title}
+              </BlockItemTitle>
+              <BlockItemDescription>{commandFields[field].description}</BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <Toggleable
+                toggledInitial={serverValues[field] !== "" || fieldApi.state.value !== ""}
+              >
+                <Untoggled>
+                  {({ toggle }) => (
+                    <BlockItemButtonLike
+                      asElement="button"
+                      Icon={({ className }) => <PlusIcon className={className} />}
+                      text={commandFields[field].toggleText}
+                      onClick={() => {
+                        toggle(true);
+                        setTimeout(() => {
+                          inputRefs[field].current?.focus();
+                        });
+                      }}
+                    />
+                  )}
+                </Untoggled>
+                <Toggled>
+                  {() => (
+                    <fieldApi.TextField
+                      ref={inputRefs[field]}
+                      field={fieldApi}
+                      value={fieldApi.state.value}
+                      onBlur={() => {
+                        fieldApi.handleBlur();
+                        if (fieldApi.state.meta.errors.length > 0) return;
+                        stageCommand(field, fieldApi.state.value);
+                      }}
+                      onChange={(e) => {
+                        fieldApi.handleChange(e.target.value);
+                      }}
+                      placeholder={commandFields[field].placeholder}
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      autoComplete="off"
+                      spellCheck="false"
+                    />
+                  )}
+                </Toggled>
+              </Toggleable>
+            </BlockItemContent>
+          </BlockItem>
+        )}
+      />
+    </Block>
+  );
 
   return (
-    <SettingsSection
-      asElement="form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit(e);
-      }}
-      onClickResetChanges={() => {
-        form.reset();
-        resetUpdate();
-      }}
-      title="Build"
-      id="build"
-      Icon={WrenchIcon}
-      changeCount={changeCount}
-      SubmitButton={form.SubmitButton}
-      isPending={isPendingUpdate}
-      error={errorUpdate?.message}
-      entityId={sectionHighlightId}
-    >
+    <SettingsSection title="Build" id="build" Icon={WrenchIcon} entityId={sectionHighlightId}>
       <Block>
         <form.AppField
           name="builder"
           children={(field) => (
             <BlockItem className="group/item w-full md:w-full">
               <BlockItemHeader type="column">
-                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                  Builder
-                </BlockItemTitle>
+                <BlockItemTitle hasChanges={staged.builder !== undefined}>Builder</BlockItemTitle>
                 <BlockItemDescription>
                   The builder for building the service to be deployed.
                 </BlockItemDescription>
@@ -187,7 +240,16 @@ function GitSection({ service }: TGitSectionProps) {
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
-                  onChange={(v) => field.handleChange(v as TGitServiceBuilder)}
+                  onChange={(v) => {
+                    field.handleChange(v as TGitServiceBuilder);
+                    stage({
+                      field: "builder",
+                      label: "Builder",
+                      value: v as TGitServiceBuilder,
+                      previous: service.config.builder,
+                      format: builderEnumToName,
+                    });
+                  }}
                   items={GitServiceBuilderEnum.options.map((o) => ({
                     label: builderEnumToName(o),
                     value: o,
@@ -222,318 +284,15 @@ function GitSection({ service }: TGitSectionProps) {
       </Block>
       <form.Subscribe
         selector={(s) => ({ builder: s.values.builder })}
-        children={({ builder }) => {
-          return (
-            <>
-              {/* Railpack builder build command */}
-              {builder === "railpack" && (
-                <Block>
-                  <form.AppField
-                    name="railpackBuilderInstallCommand"
-                    children={(field) => (
-                      <BlockItem className="group/item w-full md:w-full">
-                        <BlockItemHeader type="column">
-                          <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                            Install Command
-                          </BlockItemTitle>
-                          <BlockItemDescription>
-                            The command for installing the dependencies for the service.
-                          </BlockItemDescription>
-                        </BlockItemHeader>
-                        <BlockItemContent>
-                          <Toggleable
-                            toggledInitial={
-                              service.config.railpack_builder_install_command !== undefined ||
-                              field.state.value !== ""
-                            }
-                          >
-                            <Untoggled>
-                              {({ toggle }) => (
-                                <BlockItemButtonLike
-                                  asElement="button"
-                                  Icon={({ className }) => <PlusIcon className={className} />}
-                                  text="Custom install command"
-                                  onClick={() => {
-                                    toggle(true);
-                                    setTimeout(() => {
-                                      installCommandInputRef.current?.focus();
-                                    });
-                                  }}
-                                />
-                              )}
-                            </Untoggled>
-                            <Toggled>
-                              {() => (
-                                <field.TextField
-                                  ref={installCommandInputRef}
-                                  field={field}
-                                  value={field.state.value}
-                                  onBlur={field.handleBlur}
-                                  onChange={(e) => {
-                                    field.handleChange(e.target.value);
-                                  }}
-                                  placeholder="npm install --force"
-                                  autoCapitalize="off"
-                                  autoCorrect="off"
-                                  autoComplete="off"
-                                  spellCheck="false"
-                                />
-                              )}
-                            </Toggled>
-                          </Toggleable>
-                        </BlockItemContent>
-                      </BlockItem>
-                    )}
-                  />
-                </Block>
-              )}
-              {/* Railpack builder build command */}
-              {builder === "railpack" && (
-                <Block>
-                  <form.AppField
-                    name="railpackBuilderBuildCommand"
-                    children={(field) => (
-                      <BlockItem className="group/item w-full md:w-full">
-                        <BlockItemHeader type="column">
-                          <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                            Build Command
-                          </BlockItemTitle>
-                          <BlockItemDescription>
-                            The command for building the service.
-                          </BlockItemDescription>
-                        </BlockItemHeader>
-                        <BlockItemContent>
-                          <Toggleable
-                            toggledInitial={
-                              service.config.railpack_builder_build_command !== undefined ||
-                              field.state.value !== ""
-                            }
-                          >
-                            <Untoggled>
-                              {({ toggle }) => (
-                                <BlockItemButtonLike
-                                  asElement="button"
-                                  Icon={({ className }) => <PlusIcon className={className} />}
-                                  text="Custom build command"
-                                  onClick={() => {
-                                    toggle(true);
-                                    setTimeout(() => {
-                                      buildCommandInputRef.current?.focus();
-                                    });
-                                  }}
-                                />
-                              )}
-                            </Untoggled>
-                            <Toggled>
-                              {() => (
-                                <field.TextField
-                                  ref={buildCommandInputRef}
-                                  field={field}
-                                  value={field.state.value}
-                                  onBlur={field.handleBlur}
-                                  onChange={(e) => {
-                                    field.handleChange(e.target.value);
-                                  }}
-                                  placeholder="npm run build"
-                                  autoCapitalize="off"
-                                  autoCorrect="off"
-                                  autoComplete="off"
-                                  spellCheck="false"
-                                />
-                              )}
-                            </Toggled>
-                          </Toggleable>
-                        </BlockItemContent>
-                      </BlockItem>
-                    )}
-                  />
-                </Block>
-              )}
-              {/* Docker builder Dockerfile path */}
-              {builder === "docker" && (
-                <Block>
-                  <form.AppField
-                    name="dockerBuilderDockerfilePath"
-                    children={(field) => (
-                      <BlockItem className="group/item w-full md:w-full">
-                        <BlockItemHeader type="column">
-                          <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                            Dockerfile Path
-                          </BlockItemTitle>
-                          <BlockItemDescription>
-                            The path to the Dockerfile in your repository.
-                          </BlockItemDescription>
-                        </BlockItemHeader>
-                        <BlockItemContent>
-                          <Toggleable
-                            toggledInitial={
-                              service.config.docker_builder_dockerfile_path !== undefined ||
-                              field.state.value !== ""
-                            }
-                          >
-                            <Untoggled>
-                              {({ toggle }) => (
-                                <BlockItemButtonLike
-                                  asElement="button"
-                                  Icon={({ className }) => <PlusIcon className={className} />}
-                                  text="Custom Dockerfile path"
-                                  onClick={() => {
-                                    toggle(true);
-                                    setTimeout(() => {
-                                      dockerBuilderPathInputRef.current?.focus();
-                                    });
-                                  }}
-                                />
-                              )}
-                            </Untoggled>
-                            <Toggled>
-                              {() => (
-                                <field.TextField
-                                  ref={dockerBuilderPathInputRef}
-                                  field={field}
-                                  value={field.state.value}
-                                  onBlur={field.handleBlur}
-                                  onChange={(e) => {
-                                    field.handleChange(e.target.value);
-                                  }}
-                                  placeholder="./Dockerfile"
-                                  autoCapitalize="off"
-                                  autoCorrect="off"
-                                  autoComplete="off"
-                                  spellCheck="false"
-                                />
-                              )}
-                            </Toggled>
-                          </Toggleable>
-                        </BlockItemContent>
-                      </BlockItem>
-                    )}
-                  />
-                </Block>
-              )}
-              {/* Docker builder build context */}
-              {builder === "docker" && (
-                <Block>
-                  <form.AppField
-                    name="dockerBuilderBuildContext"
-                    children={(field) => (
-                      <BlockItem className="group/item w-full md:w-full">
-                        <BlockItemHeader type="column">
-                          <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                            Build Context
-                          </BlockItemTitle>
-                          <BlockItemDescription>
-                            The directory that serves as the build context for Docker.
-                          </BlockItemDescription>
-                        </BlockItemHeader>
-                        <BlockItemContent>
-                          <Toggleable
-                            toggledInitial={
-                              service.config.docker_builder_build_context !== undefined ||
-                              field.state.value !== ""
-                            }
-                          >
-                            <Untoggled>
-                              {({ toggle }) => (
-                                <BlockItemButtonLike
-                                  asElement="button"
-                                  Icon={({ className }) => <PlusIcon className={className} />}
-                                  text="Custom build context"
-                                  onClick={() => {
-                                    toggle(true);
-                                    setTimeout(() => {
-                                      dockerBuilderContextInputRef.current?.focus();
-                                    });
-                                  }}
-                                />
-                              )}
-                            </Untoggled>
-                            <Toggled>
-                              {() => (
-                                <field.TextField
-                                  ref={dockerBuilderContextInputRef}
-                                  field={field}
-                                  value={field.state.value}
-                                  onBlur={field.handleBlur}
-                                  onChange={(e) => {
-                                    field.handleChange(e.target.value);
-                                  }}
-                                  placeholder="./"
-                                  autoCapitalize="off"
-                                  autoCorrect="off"
-                                  autoComplete="off"
-                                  spellCheck="false"
-                                />
-                              )}
-                            </Toggled>
-                          </Toggleable>
-                        </BlockItemContent>
-                      </BlockItem>
-                    )}
-                  />
-                </Block>
-              )}
-              <Block>
-                <form.AppField
-                  name="startCommand"
-                  children={(field) => (
-                    <BlockItem className="group/item w-full md:w-full">
-                      <BlockItemHeader type="column">
-                        <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                          Start Command
-                        </BlockItemTitle>
-                        <BlockItemDescription>
-                          The command to run to start the new deployment.
-                        </BlockItemDescription>
-                      </BlockItemHeader>
-                      <BlockItemContent>
-                        <Toggleable
-                          toggledInitial={
-                            service.config.run_command !== undefined || field.state.value !== ""
-                          }
-                        >
-                          <Untoggled>
-                            {({ toggle }) => (
-                              <BlockItemButtonLike
-                                asElement="button"
-                                Icon={({ className }) => <PlusIcon className={className} />}
-                                text="Custom start command"
-                                onClick={() => {
-                                  toggle(true);
-                                  setTimeout(() => {
-                                    startCommandInputRef.current?.focus();
-                                  });
-                                }}
-                              />
-                            )}
-                          </Untoggled>
-                          <Toggled>
-                            {() => (
-                              <field.TextField
-                                ref={startCommandInputRef}
-                                field={field}
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => {
-                                  field.handleChange(e.target.value);
-                                }}
-                                placeholder="npm run start"
-                                autoCapitalize="off"
-                                autoCorrect="off"
-                                autoComplete="off"
-                                spellCheck="false"
-                              />
-                            )}
-                          </Toggled>
-                        </Toggleable>
-                      </BlockItemContent>
-                    </BlockItem>
-                  )}
-                />
-              </Block>
-            </>
-          );
-        }}
+        children={({ builder }) => (
+          <>
+            {builder === "railpack" && commandBlock("railpackBuilderInstallCommand")}
+            {builder === "railpack" && commandBlock("railpackBuilderBuildCommand")}
+            {builder === "docker" && commandBlock("dockerBuilderDockerfilePath")}
+            {builder === "docker" && commandBlock("dockerBuilderBuildContext")}
+            {commandBlock("startCommand")}
+          </>
+        )}
       />
     </SettingsSection>
   );

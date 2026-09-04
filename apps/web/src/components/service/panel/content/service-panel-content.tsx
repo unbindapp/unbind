@@ -115,7 +115,7 @@ const tabs: TServicePanelTab[] = [
     value: "variables",
     Page: Variables,
     Provider: ({ children, ...rest }: TServicePageProviderProps) => (
-      <VariablesProvider type="service" {...rest}>
+      <VariablesProvider type="service" scopeName={rest.service.name} {...rest}>
         <VariableReferencesProvider type="service" {...rest}>
           <VariablesTabWrapper {...rest}>{children}</VariablesTabWrapper>
         </VariableReferencesProvider>

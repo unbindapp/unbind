@@ -12,7 +12,8 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
   const [isOpen, setIsOpen] = useState(false);
   const {
     type,
-    list: { data: variablesData, isPending, error },
+    list: { isPending, error },
+    variables,
   } = useVariables();
 
   const title = useMemo(() => {
@@ -28,7 +29,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
       return "10 Variables";
     }
 
-    const variableCount = variablesData.variables.length;
+    const variableCount = (variables ?? []).filter((v) => v.staged !== "deleted").length;
 
     if (type === "team")
       return (
@@ -49,7 +50,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
         Variables <span className="text-muted-foreground font-normal">({variableCount})</span>
       </>
     );
-  }, [variablesData, isPending, error, type]);
+  }, [variables, isPending, error, type]);
 
   return (
     <div

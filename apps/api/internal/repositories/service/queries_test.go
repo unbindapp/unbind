@@ -936,6 +936,91 @@ func (suite *ServiceQueriesSuite) TestNeedsDeployment() {
 		suite.NoError(err)
 		suite.Equal(NoDeploymentNeeded, result)
 	})
+
+	loadService := func(serviceID uuid.UUID) *ent.Service {
+		service, err := suite.DB.Service.Query().
+			Where(entService.IDEQ(serviceID)).
+			WithServiceConfig().
+			WithCurrentDeployment().
+			Only(suite.Ctx)
+		suite.NoError(err)
+		return service
+	}
+
+	suite.Run("NeedsDeployment Build Command Changed", func() {
+		suite.DB.Service.UpdateOneID(suite.testService.ID).
+			SetCurrentDeploymentID(suite.testDeployment.ID).
+			SaveX(suite.Ctx)
+		suite.DB.ServiceConfig.UpdateOneID(suite.testConfig.ID).
+			SetBuilder(schema.ServiceBuilderRailpack).
+			SetReplicas(1).
+			SetGitBranch("main").
+			ClearDatabaseConfig().
+			ClearVolumes().
+			SetRailpackBuilderBuildCommand("npm run build").
+			SaveX(suite.Ctx)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService(suite.testService.ID))
+		suite.NoError(err)
+		suite.Equal(NeedsBuildAndDeployment, result)
+	})
+
+	suite.Run("NeedsDeployment Build Command Matches Deployment", func() {
+		suite.DB.Deployment.UpdateOneID(suite.testDeployment.ID).
+			SetRailpackBuilderBuildCommand("npm run build").
+			SaveX(suite.Ctx)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService(suite.testService.ID))
+		suite.NoError(err)
+		suite.Equal(NoDeploymentNeeded, result)
+	})
+
+	suite.Run("NeedsDeployment Image Changed", func() {
+		service := suite.DB.Service.Create().
+			SetType(schema.ServiceTypeDockerimage).
+			SetKubernetesName("nginx").
+			SetName("Nginx").
+			SetEnvironmentID(suite.testEnvironment.ID).
+			SetKubernetesSecret("nginx-secret").
+			SaveX(suite.Ctx)
+		config := suite.DB.ServiceConfig.Create().
+			SetServiceID(service.ID).
+			SetBuilder(schema.ServiceBuilderDocker).
+			SetIcon("docker").
+			SetReplicas(1).
+			SetImage("nginx:1.27").
+			SetPorts([]schema.PortSpec{{Port: 80, Protocol: utils.ToPtr(schema.ProtocolTCP)}}).
+			SetHosts([]schema.HostSpec{{Host: "nginx.example.com", TargetPort: new(int32(80))}}).
+			SaveX(suite.Ctx)
+		deployment := suite.DB.Deployment.Create().
+			SetServiceID(service.ID).
+			SetStatus(schema.DeploymentStatusBuildSucceeded).
+			SetSource(schema.DeploymentSourceManual).
+			SetBuilder(schema.ServiceBuilderDocker).
+			SetImage("nginx:1.25").
+			SetResourceDefinition(&v1.Service{
+				Spec: v1.ServiceSpec{
+					Builder: "docker",
+					Config: v1.ServiceConfigSpec{
+						Image:    "nginx:1.25",
+						Hosts:    []v1.HostSpec{{Host: "nginx.example.com", Port: new(int32(80))}},
+						Replicas: utils.ToPtr[int32](1),
+						Ports:    []v1.PortSpec{{Port: 80, Protocol: utils.ToPtr(corev1.ProtocolTCP)}},
+					},
+				},
+			}).
+			SaveX(suite.Ctx)
+		suite.DB.Service.UpdateOneID(service.ID).SetCurrentDeploymentID(deployment.ID).SaveX(suite.Ctx)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService(service.ID))
+		suite.NoError(err)
+		suite.Equal(NeedsDeployment, result)
+
+		suite.DB.ServiceConfig.UpdateOneID(config.ID).SetImage("nginx:1.25").SaveX(suite.Ctx)
+		result, err = suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService(service.ID))
+		suite.NoError(err)
+		suite.Equal(NoDeploymentNeeded, result)
+	})
 }
 
 func (suite *ServiceQueriesSuite) TestIsVolumeInUse() {

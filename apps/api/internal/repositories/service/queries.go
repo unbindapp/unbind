@@ -410,6 +410,17 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 		return NeedsBuildAndDeployment, nil
 	}
 
+	// Build settings live on the deployment row, not in the resource definition
+	if buildSettingsChanged(service.Edges.ServiceConfig, service.Edges.CurrentDeployment) {
+		return NeedsBuildAndDeployment, nil
+	}
+
+	// Only image services carry their image in config, built services get theirs from the build
+	if service.Type == schema.ServiceTypeDockerimage {
+		existingCrd.Spec.Config.Image = service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Image
+		newCrd.Spec.Config.Image = service.Edges.ServiceConfig.Image
+	}
+
 	// Just update the custom resource
 	if !reflect.DeepEqual(existingCrd, newCrd) {
 		return NeedsDeployment, nil
@@ -617,4 +628,18 @@ func (self *ServiceRepository) GetByScope(ctx context.Context, scope schema.Vari
 			})
 		}).
 		All(ctx)
+}
+
+func buildSettingsChanged(config *ent.ServiceConfig, deployment *ent.Deployment) bool {
+	return derefString(config.RailpackBuilderInstallCommand) != derefString(deployment.RailpackBuilderInstallCommand) ||
+		derefString(config.RailpackBuilderBuildCommand) != derefString(deployment.RailpackBuilderBuildCommand) ||
+		derefString(config.DockerBuilderDockerfilePath) != derefString(deployment.DockerBuilderDockerfilePath) ||
+		derefString(config.DockerBuilderBuildContext) != derefString(deployment.DockerBuilderBuildContext)
+}
+
+func derefString(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }

@@ -9,6 +9,7 @@ import { HourglassIcon, KeyIcon, LoaderIcon } from "lucide-react";
 import { ReactNode } from "react";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { TVariableShallow } from "@/lib/queries/variables";
+import type { TVariableWithStaged } from "@/components/variables/variables-provider";
 import { z } from "zod";
 
 type TProps = {
@@ -55,7 +56,10 @@ function databaseTypeOf(variableTypeProps: TEntityVariableTypeProps) {
 }
 
 // Auto-generated database variables are written by the operator and can't be changed
-function isLockedVariable(variable: TVariableShallow, variableTypeProps: TEntityVariableTypeProps) {
+function isLockedVariable(
+  variable: TVariableWithStaged,
+  variableTypeProps: TEntityVariableTypeProps,
+) {
   const databaseType = databaseTypeOf(variableTypeProps);
   if (databaseType === null) return false;
   return specialDbVariablesFor(databaseType).includes(variable.name);
@@ -63,10 +67,9 @@ function isLockedVariable(variable: TVariableShallow, variableTypeProps: TEntity
 
 export default function VariablesList({ variableTypeProps }: TProps) {
   const {
-    list: { data, isPending, error },
+    list: { isPending, error },
+    variables,
   } = useVariables();
-
-  const variables = data?.variables;
 
   if (!variables && !isPending && error) {
     return (
@@ -128,7 +131,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
             disableEdit={locked}
             variableTypeProps={variableTypeProps}
             asElement="li"
-            key={`${variable.name}:${variable.value}`}
+            key={`${variable.name}:${variable.value}:${variable.staged ?? ""}`}
           />
         );
       })}

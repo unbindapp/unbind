@@ -24,6 +24,7 @@ const buttonVariants = cva(
           "bg-success text-success-foreground has-hover:hover:bg-success/85 active:bg-success/85",
         process:
           "bg-process text-process-foreground has-hover:hover:bg-process/85 active:bg-process/85",
+        change: "bg-change text-change-foreground has-hover:hover:bg-change/85 active:bg-change/85",
         outline:
           "border border-border bg-background has-hover:hover:bg-border active:bg-border has-hover:hover:text-foreground active:text-foreground",
         "outline-muted":
@@ -32,6 +33,8 @@ const buttonVariants = cva(
           "border border-foreground bg-background has-hover:hover:bg-foreground/8 active:bg-foreground/8 has-hover:hover:text-foreground active:text-foreground",
         "outline-process":
           "border text-process border-process/25 bg-background has-hover:hover:bg-process/8 active:bg-process/8 has-hover:hover:text-process active:text-process",
+        "outline-change":
+          "border text-change border-change/25 bg-background has-hover:hover:bg-change/8 active:bg-change/8 has-hover:hover:text-change active:text-change",
         "warning-outline":
           "border border-warning/20 bg-background has-hover:hover:bg-warning/8 active:bg-warning/8 has-hover:hover:border-warning/0 active:border-warning/0 text-warning has-hover:hover:text-warning active:text-warning",
         secondary:
@@ -44,6 +47,8 @@ const buttonVariants = cva(
           "text-warning has-hover:hover:bg-warning/12 has-hover:hover:text-warning active:bg-warning/12 active:text-warning",
         "ghost-process":
           "text-process has-hover:hover:bg-process/12 has-hover:hover:text-process active:bg-process/12 active:text-process",
+        "ghost-change":
+          "text-change has-hover:hover:bg-change/12 has-hover:hover:text-change active:bg-change/12 active:text-change",
         "ghost-foreground":
           "text-foreground has-hover:hover:bg-foreground/8 has-hover:hover:text-foreground active:bg-foreground/8 active:text-foreground",
         card: "bg-card text-foreground has-hover:hover:bg-card-hover active:bg-card-hover",

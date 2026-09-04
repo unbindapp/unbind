@@ -37,10 +37,13 @@ function Drawer({
   }, [props.open]);
 
   const handleOpenChange: DrawerPrimitive.Root.Props["onOpenChange"] = (open, eventDetails) => {
-    // A click on a toast is interacting with the toast, not dismissing the drawer
+    // A click on a toast or the staged changes bar is not dismissing the drawer
     if (!open && eventDetails.reason === "outside-press") {
       const target = eventDetails.event.target;
-      if (target instanceof Element && target.closest('[data-slot="toast"]')) {
+      if (
+        target instanceof Element &&
+        target.closest('[data-slot="toast"], [data-staged-changes-bar]')
+      ) {
         eventDetails.cancel();
         return;
       }

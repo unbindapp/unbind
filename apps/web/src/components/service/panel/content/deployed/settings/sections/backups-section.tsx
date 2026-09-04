@@ -7,10 +7,12 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import {
+  stagedString,
+  useResetFormOnStagedChange,
+  useServiceChanges,
+} from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { useService } from "@/components/service/service-provider";
-import useUpdateService, {
-  TUpdateServiceInputSimple,
-} from "@/components/service/use-update-service";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TDatabaseSectionProps } from "@/components/settings/types";
@@ -25,13 +27,15 @@ import { CommandItem } from "@/components/ui/command";
 import { cn } from "@/components/ui/utils";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/lib/queries/services";
-import { useStore } from "@tanstack/react-form";
 import { CylinderIcon, DatabaseBackupIcon, OctagonXIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
 type TProps = {
   service: TServiceShallow;
 };
+
+// The API clears the bucket when it gets the nil UUID
+const noBucketId = "00000000-0000-0000-0000-000000000000";
 
 export default function BackupsSection({ service }: TProps) {
   const { teamId } = useService();
@@ -59,43 +63,20 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
   const {
     query: { data: dataS3Buckets, isPending: isPendingS3Buckets, error: errorS3Buckets },
   } = useS3Buckets();
+  const { teamId } = useService();
 
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+  const { staged, stage } = useServiceChanges(service);
 
-  const {
-    mutateAsync: updateService,
-    isPending: isPendingUpdate,
-    error: errorUpdate,
-    reset: resetUpdate,
-    teamId,
-  } = useUpdateService({
-    onSuccess: async () => {
-      form.reset();
-    },
-    idToHighlight: sectionHighlightId,
-  });
+  const serverBucketId = service.config.s3_backup_bucket_id ?? noBucketId;
+  const stagedBucketId = stagedString(staged.s3BackupBucketId, serverBucketId);
 
   const form = useAppForm({
     defaultValues: {
-      s3BucketId: service.config.s3_backup_bucket_id ?? "",
-    },
-    onSubmit: async ({ formApi, value }) => {
-      let hasChanged = false;
-      const changes: TUpdateServiceInputSimple = {};
-
-      if (formApi.getFieldMeta("s3BucketId")?.isDefaultValue === false) {
-        changes.s3BackupBucketId =
-          value.s3BucketId === "" ? "00000000-0000-0000-0000-000000000000" : value.s3BucketId;
-        hasChanged = true;
-      }
-
-      if (hasChanged) {
-        await updateService(changes);
-      } else {
-        form.reset();
-      }
+      s3BucketId: stagedBucketId === noBucketId ? "" : stagedBucketId,
     },
   });
+  useResetFormOnStagedChange(form, staged, ["s3BackupBucketId"]);
 
   const s3BucketItems = useMemo(() => {
     const items: TCommandItem[] | undefined = dataS3Buckets?.buckets.map((s3Bucket) => ({
@@ -106,11 +87,22 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
     return items;
   }, [dataS3Buckets]);
 
-  const changeCount = useStore(form.store, (s) => {
-    let count = 0;
-    if (s.fieldMeta.s3BucketId?.isDefaultValue === false) count++;
-    return count;
-  });
+  const bucketName = useCallback(
+    (id: string) => {
+      if (id === noBucketId) return "Disabled";
+      return dataS3Buckets?.buckets.find((bucket) => bucket.id === id)?.name ?? id;
+    },
+    [dataS3Buckets],
+  );
+
+  const stageBucket = (id: string) =>
+    stage({
+      field: "s3BackupBucketId",
+      label: "Backup bucket",
+      value: id === "" ? noBucketId : id,
+      previous: serverBucketId,
+      format: bucketName,
+    });
 
   const hasNoBuckets = dataS3Buckets ? dataS3Buckets.buckets.length === 0 : false;
 
@@ -123,24 +115,10 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
 
   return (
     <SettingsSection
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit(e);
-      }}
-      asElement="form"
       title="Backups"
       id="backups"
       Icon={DatabaseBackupIcon}
-      changeCount={changeCount}
-      onClickResetChanges={() => {
-        form.reset();
-        resetUpdate();
-      }}
       classNameContent="gap-5"
-      SubmitButton={form.SubmitButton}
-      isPending={isPendingUpdate}
-      error={errorUpdate?.message}
       entityId={sectionHighlightId}
     >
       <Block>
@@ -149,7 +127,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
           children={(field) => (
             <BlockItem className="w-full md:w-full">
               <BlockItemHeader type="column">
-                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
+                <BlockItemTitle hasChanges={staged.s3BackupBucketId !== undefined}>
                   Backup Bucket
                 </BlockItemTitle>
                 <BlockItemDescription>
@@ -161,7 +139,10 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
-                  onChange={(v) => field.handleChange(v)}
+                  onChange={(v) => {
+                    field.handleChange(v);
+                    stageBucket(v);
+                  }}
                   items={s3BucketItems}
                   isPending={isPendingS3Buckets}
                   error={errorS3Buckets?.message}
@@ -178,6 +159,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                       <CommandItem
                         onSelect={() => {
                           field.handleChange("");
+                          stageBucket("");
                           setIsOpen(false);
                         }}
                         className="group/item text-warning data-[selected=true]:bg-warning/10 data-[selected=true]:text-warning px-3 font-medium"

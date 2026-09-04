@@ -14,6 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 
 	auth_handler "github.com/unbindapp/unbind-api/internal/api/handlers/auth"
+	changes_handler "github.com/unbindapp/unbind-api/internal/api/handlers/changes"
 	deployments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/deployments"
 	docker_handler "github.com/unbindapp/unbind-api/internal/api/handlers/docker"
 	environments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/environments"
@@ -157,6 +158,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/service_groups", "Service Groups", true, servicegroups_handler.RegisterHandlers)
 	register("/services", "Services", true, service_handler.RegisterHandlers)
 	register("/variables", "Variables", true, variables_handler.RegisterHandlers)
+	register("/changes", "Changes", true, changes_handler.RegisterHandlers)
 	register("/logs", "Logs", true, logs_handler.RegisterHandlers)
 	register("/deployments", "Deployments", true, deployments_handler.RegisterHandlers)
 	register("/metrics", "Metrics", true, metrics_handler.RegisterHandlers)

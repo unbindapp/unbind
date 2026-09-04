@@ -1,3 +1,4 @@
+import { useChangesPlan, useServiceHasStagedChanges } from "@/components/changes/changes-provider";
 import OnlineIcon from "@/components/icons/online";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useNow } from "@/components/providers/now-provider";
@@ -74,6 +75,14 @@ export default function ServiceCard({
 
   const queryClient = useQueryClient();
   const volumes = service?.config.volumes;
+  const hasStagedChanges = useServiceHasStagedChanges(service?.id ?? "");
+  const { affectedByService } = useChangesPlan();
+  const affectedAction = service ? affectedByService.get(service.id)?.action : undefined;
+  const changeLabel = hasStagedChanges
+    ? "Changes"
+    : affectedAction && affectedAction !== "none"
+      ? "Will redeploy"
+      : null;
   const buttonIntentProps = useIntent({
     onIntent: () => {
       if (isPlaceholder) return;
@@ -93,6 +102,7 @@ export default function ServiceCard({
 
   const cardClassName = cn(
     "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold",
+    changeLabel !== null && "border-change/40",
     classNameCard,
     volumes && volumes.length > 0 && "rounded-b-none border-b-0",
   );
@@ -109,6 +119,11 @@ export default function ServiceCard({
         <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
           {!isPlaceholder ? service.name : "Loading"}
         </h3>
+        {changeLabel !== null && (
+          <p className="bg-change/12 text-change -my-1 ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-xs font-semibold">
+            {changeLabel}
+          </p>
+        )}
       </div>
       <div className="flex w-full flex-1 flex-col justify-end">
         <div className="-mx-0.5 flex w-[calc(100%+0.25rem)] items-center justify-between">

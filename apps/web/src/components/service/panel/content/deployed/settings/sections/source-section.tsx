@@ -9,9 +9,11 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import useUpdateService, {
-  TUpdateServiceInputSimple,
-} from "@/components/service/use-update-service";
+import {
+  stagedString,
+  useResetFormOnStagedChange,
+  useServiceChanges,
+} from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import {
@@ -26,7 +28,6 @@ import { TServiceShallow } from "@/lib/queries/services";
 import { dockerTagsQuery } from "@/lib/queries/docker";
 import { gitRepositoryQuery } from "@/lib/queries/git";
 import { useQuery } from "@tanstack/react-query";
-import { useStore } from "@tanstack/react-form";
 import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
@@ -87,19 +88,7 @@ export default function SourceSection({ service }: TProps) {
 }
 
 function GitSection({ owner, repo, branch, installationId, service }: TGitSectionProps) {
-  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
-
-  const {
-    mutateAsync: updateService,
-    isPending: isPendingUpdate,
-    error: errorUpdate,
-    reset: resetUpdate,
-  } = useUpdateService({
-    onSuccess: async () => {
-      form.reset();
-    },
-    idToHighlight: sectionHighlightId,
-  });
+  const { staged, stage } = useServiceChanges(service);
 
   const {
     data: dataRepository,
@@ -109,24 +98,10 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
 
   const form = useAppForm({
     defaultValues: {
-      branch,
-    },
-    onSubmit: async ({ value, formApi }) => {
-      let hasChanged = false;
-      const changes: TUpdateServiceInputSimple = {};
-
-      if (formApi.getFieldMeta("branch")?.isDefaultValue === false) {
-        hasChanged = true;
-        changes.gitBranch = value.branch;
-      }
-
-      if (hasChanged) {
-        await updateService(changes);
-      } else {
-        form.reset();
-      }
+      branch: stagedString(staged.gitBranch, branch),
     },
   });
+  useResetFormOnStagedChange(form, staged, ["gitBranch"]);
 
   const branchItems: TCommandItem[] | undefined = useMemo(() => {
     const items: TCommandItem[] | undefined = dataRepository?.repository.branches?.map((b) => ({
@@ -143,32 +118,12 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       } as const)
     : ({ asElement: "div" } as const);
 
-  const changeCount = useStore(form.store, (s) => {
-    let count = 0;
-    if (s.fieldMeta.branch?.isDefaultValue === false) count++;
-    return count;
-  });
-
   return (
     <SettingsSection
-      asElement="form"
       title="Source"
       id="source"
       entityId={`source-${service.id}`}
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit(e);
-      }}
-      SubmitButton={form.SubmitButton}
-      error={errorUpdate?.message}
-      isPending={isPendingUpdate}
       Icon={CodeIcon}
-      changeCount={changeCount}
-      onClickResetChanges={() => {
-        form.reset();
-        resetUpdate();
-      }}
       classNameContent="gap-5"
     >
       <Block>
@@ -193,16 +148,17 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
           children={(field) => (
             <BlockItem className="w-full md:w-full">
               <BlockItemHeader>
-                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                  Branch
-                </BlockItemTitle>
+                <BlockItemTitle hasChanges={staged.gitBranch !== undefined}>Branch</BlockItemTitle>
               </BlockItemHeader>
               <BlockItemContent>
                 <field.AsyncAndSearchableSelect
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
-                  onChange={(v) => field.handleChange(v)}
+                  onChange={(v) => {
+                    field.handleChange(v);
+                    stage({ field: "gitBranch", label: "Branch", value: v, previous: branch });
+                  }}
                   items={branchItems}
                   isPending={isPendingRepository}
                   error={errorRepository?.message}
@@ -236,41 +192,17 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
   const [search] = useDebounce(commandInputValue, defaultDebounceMs);
+  const { staged, stage } = useServiceChanges(service);
 
-  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
-
-  const {
-    mutateAsync: updateService,
-    isPending: isPendingUpdate,
-    error: errorUpdate,
-    reset: resetUpdate,
-  } = useUpdateService({
-    onSuccess: async () => {
-      form.reset();
-    },
-    idToHighlight: sectionHighlightId,
-  });
+  const serverImage = `${image}:${tag}`;
+  const stagedImage = stagedString(staged.image, serverImage);
 
   const form = useAppForm({
     defaultValues: {
-      tag,
-    },
-    onSubmit: async ({ formApi, value }) => {
-      let hasChanged = false;
-      const changes: TUpdateServiceInputSimple = {};
-
-      if (formApi.getFieldMeta("tag")?.isDefaultValue === false) {
-        hasChanged = true;
-        changes.image = `${image}:${value.tag}`;
-      }
-
-      if (hasChanged) {
-        await updateService(changes);
-      } else {
-        form.reset();
-      }
+      tag: stagedImage.split(":")[1] ?? tag,
     },
   });
+  useResetFormOnStagedChange(form, staged, ["image"]);
 
   const {
     data: dataTags,
@@ -292,32 +224,12 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     return items;
   }, [dataTags]);
 
-  const changeCount = useStore(form.store, (s) => {
-    let count = 0;
-    if (s.fieldMeta.tag?.isDefaultValue === false) count++;
-    return count;
-  });
-
   return (
     <SettingsSection
-      asElement="form"
       title="Source"
       id="source"
       entityId={`source-${service.id}`}
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit(e);
-      }}
-      SubmitButton={form.SubmitButton}
-      isPending={isPendingUpdate}
-      error={errorUpdate?.message}
       Icon={CodeIcon}
-      changeCount={changeCount}
-      onClickResetChanges={() => {
-        form.reset();
-        resetUpdate();
-      }}
       classNameContent="gap-5"
     >
       <Block>
@@ -346,14 +258,22 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
           children={(field) => (
             <BlockItem className="w-full md:w-full">
               <BlockItemHeader>
-                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>Tag</BlockItemTitle>
+                <BlockItemTitle hasChanges={staged.image !== undefined}>Tag</BlockItemTitle>
               </BlockItemHeader>
               <BlockItemContent>
                 <field.AsyncAndSearchableSelect
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
-                  onChange={(v) => field.handleChange(v)}
+                  onChange={(v) => {
+                    field.handleChange(v);
+                    stage({
+                      field: "image",
+                      label: "Image",
+                      value: `${image}:${v}`,
+                      previous: serverImage,
+                    });
+                  }}
                   items={tagItems}
                   isPending={isPendingTags}
                   error={errorTags?.message}

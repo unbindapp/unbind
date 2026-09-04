@@ -1,3 +1,4 @@
+import StagedChangesBar from "@/components/changes/staged-changes-bar";
 import NotFoundTemplate from "@/components/navigation/not-found-template";
 import Providers from "@/components/providers/providers";
 import { Toaster } from "@/components/ui/toast";
@@ -69,6 +70,7 @@ function RootComponent() {
   return (
     <Providers>
       <Outlet />
+      <StagedChangesBar />
       <Toaster />
       {/*    {import.meta.env.DEV && <TanStackRouterDevtools position="bottom-right" />} */}
     </Providers>

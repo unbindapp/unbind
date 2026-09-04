@@ -1,11 +1,206 @@
 import { z } from 'zod';
 
+export const AffectedServiceSchema = z
+  .object({
+    action: z.enum(['build', 'redeploy', 'restart', 'none']),
+    deployment_id: z.string().optional(), // The deployment created for the service, when one was created immediately
+    name: z.string(),
+    reasons: z.array(z.string()), // Why the service is affected: its config, its own variables, or variables it references
+    service_id: z.string(),
+  })
+  .strip();
+
+export const ProtocolSchema = z.enum(['TCP', 'UDP', 'SCTP']);
+
+export const PortSpecSchema = z
+  .object({
+    is_nodeport: z.boolean().optional(),
+    node_port: z.number().optional(),
+    port: z.number(),
+    protocol: ProtocolSchema.optional(),
+  })
+  .strip();
+
+export const VariableMountSchema = z
+  .object({
+    name: z.string(), // Name of the variable to mount
+    path: z.string(), // Path to mount the variable (e.g. /etc/secret)
+  })
+  .strip();
+
+export const ServiceVolumeSchema = z
+  .object({
+    id: z.string(), // ID of the volume, pvc name in kubernetes
+    mount_path: z.string(), // Path to mount the volume (e.g. /mnt/data)
+  })
+  .strip();
+
+export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
+
+export const DatabaseConfigSchema = z
+  .object({
+    defaultDatabaseName: z.string().optional(),
+    initdb: z.string().optional(),
+    storage: z.string().optional(),
+    version: z.string().optional(),
+    walLevel: z.string().optional(),
+  })
+  .strip();
+
+export const HealthCheckTypeSchema = z.enum(['http', 'exec', 'none']);
+
+export const HealthCheckSchema = z
+  .object({
+    command: z.string().optional(), // Command for exec health checks
+    health_failure_threshold: z.number().optional(), // Failure threshold for health probes
+    health_period_seconds: z.number().optional(), // How often to perform the health probe
+    health_timeout_seconds: z.number().optional(), // How long to wait before marking the health probe as failed
+    path: z.string().optional(), // Path for http health checks
+    port: z.number().optional(), // Port for http health checks
+    startup_failure_threshold: z.number().optional(), // Failure threshold for startup probes
+    startup_period_seconds: z.number().optional(), // How often to perform the startup probe
+    startup_timeout_seconds: z.number().optional(), // How long to wait before marking the startup probe as failed
+    type: HealthCheckTypeSchema.optional(),
+  })
+  .strip();
+
+export const InitContainerSchema = z
+  .object({
+    command: z.string(), // Command to run in the init container
+    image: z.string(), // Image of the init container
+  })
+  .strip();
+
+export const HostSpecSchema = z
+  .object({
+    description: z.string().optional(),
+    display_name: z.string().optional(), // Human label from the template input, e.g. Cloud Domain
+    host: z.string(),
+    path: z.string(),
+    prev_host: z.string().optional(), // Previous host for the service, used for upserting key
+    protocol: z.string().optional(), // Application protocol for the domain: http (default) or grpc
+    target_port: z.number().optional(),
+    template_input_id: z.string().optional(),
+  })
+  .strip();
+
+export const ResourcesSchema = z
+  .object({
+    cpu_limits_millicores: z.number().optional(),
+    cpu_requests_millicores: z.number().optional(),
+    memory_limits_megabytes: z.number().optional(),
+    memory_requests_megabytes: z.number().optional(),
+  })
+  .strip();
+
+export const UpdateServiceInputSchema = z
+  .object({
+    add_ports: z.array(PortSpecSchema).nullable().optional(), // Additional ports to add, will not remove existing ports
+    add_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Additional variable mounts to add, will not remove existing mounts
+    add_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Additional volumes to add, will not remove existing volumes
+    auto_deploy: z.boolean().optional(),
+    backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
+    backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
+    builder: ServiceBuilderSchema.optional(),
+    database_config: DatabaseConfigSchema.optional(),
+    description: z.string().nullable().optional(),
+    docker_builder_build_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
+    docker_builder_dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
+    environment_id: z.string(),
+    git_branch: z.string().optional(),
+    git_tag: z.string().optional(), // Tag to build from, supports glob patterns
+    health_check: HealthCheckSchema.optional(),
+    image: z.string().optional(),
+    init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
+    is_public: z.boolean().optional(),
+    name: z.string().nullable().optional(),
+    overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
+    overwrite_ports: z.array(PortSpecSchema).nullable().optional(),
+    overwrite_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
+    overwrite_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to attach to the service
+    project_id: z.string(),
+    protected_variables: z.array(z.string()).optional(), // List of protected variables
+    railpack_builder_build_command: z.string().optional(),
+    railpack_builder_install_command: z.string().optional(),
+    remove_hosts: z.array(HostSpecSchema).nullable().optional(), // Hosts to remove
+    remove_ports: z.array(PortSpecSchema).nullable().optional(), // Ports to remove
+    remove_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Variable mounts to remove
+    remove_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to remove from the service
+    replicas: z.number().optional(),
+    resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
+    run_command: z.string().optional(),
+    s3_backup_bucket_id: z.string().optional(),
+    service_id: z.string(),
+    team_id: z.string(),
+    upsert_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
+  })
+  .strip();
+
 export const VariableReferenceSourceTypeSchema = z.enum([
   'team',
   'project',
   'environment',
   'service',
 ]);
+
+export const VariableUpsertInputSchema = z
+  .object({
+    name: z.string(),
+    value: z.string(), // May contain ${{source.KEY}} references
+  })
+  .strip();
+
+export const ChangeSetVariablesSchema = z
+  .object({
+    deletes: z.array(z.string()).nullable().optional(), // Variables to remove
+    environment_id: z.string().optional(), // If present without service_id, mutate environment variables - requires project_id
+    project_id: z.string().optional(), // If present without environment_id, mutate team variables
+    service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
+    team_id: z.string(),
+    type: VariableReferenceSourceTypeSchema, // The type of variable
+    upserts: z.array(VariableUpsertInputSchema).nullable().optional(), // Variables to create or update
+  })
+  .strip();
+
+export const ApplyChangesInputSchema = z
+  .object({
+    dry_run: z.boolean().optional(), // Validate the changes and report the affected services without applying anything
+    services: z.array(UpdateServiceInputSchema).nullable().optional(), // Config changes, one entry per service
+    variables: z.array(ChangeSetVariablesSchema).nullable().optional(), // Variable changes grouped by scope
+  })
+  .strip();
+
+export const BaseVariablesJSONInputSchema = z
+  .object({
+    environment_id: z.string().optional(), // If present without service_id, mutate environment variables - requires project_id
+    project_id: z.string().optional(), // If present without environment_id, mutate team variables
+    service_id: z.string().optional(), // If present, mutate service variables - requires project_id and environment_id
+    team_id: z.string(),
+    type: VariableReferenceSourceTypeSchema, // The type of variable
+  })
+  .strip();
+
+export const ChangeFailureSchema = z
+  .object({
+    message: z.string(),
+    service_id: z.string().optional(), // Set when a service config change failed
+    variables: BaseVariablesJSONInputSchema.optional(), // Set when a variable change failed
+  })
+  .strip();
+
+export const ApplyChangesResponseSchema = z
+  .object({
+    affected: z.array(AffectedServiceSchema),
+    dry_run: z.boolean(),
+    failures: z.array(ChangeFailureSchema),
+  })
+  .strip();
+
+export const ApplyChangesResponseBodySchema = z
+  .object({
+    data: ApplyChangesResponseSchema,
+  })
+  .strip();
 
 export const VariableReferenceTypeSchema = z.enum([
   'variable',
@@ -50,8 +245,6 @@ export const CancelDeploymentInputBodySchema = z
     team_id: z.string(),
   })
   .strip();
-
-export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
 
 export const GitCommitterSchema = z
   .object({
@@ -418,88 +611,7 @@ export const CreateServiceGroupResponseBodySchema = z
   })
   .strip();
 
-export const DatabaseConfigSchema = z
-  .object({
-    defaultDatabaseName: z.string().optional(),
-    initdb: z.string().optional(),
-    storage: z.string().optional(),
-    version: z.string().optional(),
-    walLevel: z.string().optional(),
-  })
-  .strip();
-
-export const HealthCheckTypeSchema = z.enum(['http', 'exec', 'none']);
-
-export const HealthCheckSchema = z
-  .object({
-    command: z.string().optional(), // Command for exec health checks
-    health_failure_threshold: z.number().optional(), // Failure threshold for health probes
-    health_period_seconds: z.number().optional(), // How often to perform the health probe
-    health_timeout_seconds: z.number().optional(), // How long to wait before marking the health probe as failed
-    path: z.string().optional(), // Path for http health checks
-    port: z.number().optional(), // Port for http health checks
-    startup_failure_threshold: z.number().optional(), // Failure threshold for startup probes
-    startup_period_seconds: z.number().optional(), // How often to perform the startup probe
-    startup_timeout_seconds: z.number().optional(), // How long to wait before marking the startup probe as failed
-    type: HealthCheckTypeSchema.optional(),
-  })
-  .strip();
-
-export const HostSpecSchema = z
-  .object({
-    description: z.string().optional(),
-    display_name: z.string().optional(), // Human label from the template input, e.g. Cloud Domain
-    host: z.string(),
-    path: z.string(),
-    prev_host: z.string().optional(), // Previous host for the service, used for upserting key
-    protocol: z.string().optional(), // Application protocol for the domain: http (default) or grpc
-    target_port: z.number().optional(),
-    template_input_id: z.string().optional(),
-  })
-  .strip();
-
-export const InitContainerSchema = z
-  .object({
-    command: z.string(), // Command to run in the init container
-    image: z.string(), // Image of the init container
-  })
-  .strip();
-
-export const ProtocolSchema = z.enum(['TCP', 'UDP', 'SCTP']);
-
-export const PortSpecSchema = z
-  .object({
-    is_nodeport: z.boolean().optional(),
-    node_port: z.number().optional(),
-    port: z.number(),
-    protocol: ProtocolSchema.optional(),
-  })
-  .strip();
-
-export const ResourcesSchema = z
-  .object({
-    cpu_limits_millicores: z.number().optional(),
-    cpu_requests_millicores: z.number().optional(),
-    memory_limits_megabytes: z.number().optional(),
-    memory_requests_megabytes: z.number().optional(),
-  })
-  .strip();
-
 export const ServiceTypeSchema = z.enum(['github', 'docker-image', 'database']);
-
-export const VariableMountSchema = z
-  .object({
-    name: z.string(), // Name of the variable to mount
-    path: z.string(), // Path to mount the variable (e.g. /etc/secret)
-  })
-  .strip();
-
-export const ServiceVolumeSchema = z
-  .object({
-    id: z.string(), // ID of the volume, pvc name in kubernetes
-    mount_path: z.string(), // Path to mount the volume (e.g. /mnt/data)
-  })
-  .strip();
 
 export const CreateServiceInputSchema = z
   .object({
@@ -2314,49 +2426,6 @@ export const UpdateServiceGroupTemplateInputsResponseBodySchema = z
   })
   .strip();
 
-export const UpdateServiceInputSchema = z
-  .object({
-    add_ports: z.array(PortSpecSchema).nullable().optional(), // Additional ports to add, will not remove existing ports
-    add_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Additional variable mounts to add, will not remove existing mounts
-    add_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Additional volumes to add, will not remove existing volumes
-    auto_deploy: z.boolean().optional(),
-    backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
-    backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
-    builder: ServiceBuilderSchema.optional(),
-    database_config: DatabaseConfigSchema.optional(),
-    description: z.string().nullable().optional(),
-    docker_builder_build_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
-    docker_builder_dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
-    environment_id: z.string(),
-    git_branch: z.string().optional(),
-    git_tag: z.string().optional(), // Tag to build from, supports glob patterns
-    health_check: HealthCheckSchema.optional(),
-    image: z.string().optional(),
-    init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
-    is_public: z.boolean().optional(),
-    name: z.string().nullable().optional(),
-    overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
-    overwrite_ports: z.array(PortSpecSchema).nullable().optional(),
-    overwrite_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
-    overwrite_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to attach to the service
-    project_id: z.string(),
-    protected_variables: z.array(z.string()).optional(), // List of protected variables
-    railpack_builder_build_command: z.string().optional(),
-    railpack_builder_install_command: z.string().optional(),
-    remove_hosts: z.array(HostSpecSchema).nullable().optional(), // Hosts to remove
-    remove_ports: z.array(PortSpecSchema).nullable().optional(), // Ports to remove
-    remove_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Variable mounts to remove
-    remove_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to remove from the service
-    replicas: z.number().optional(),
-    resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
-    run_command: z.string().optional(),
-    s3_backup_bucket_id: z.string().optional(),
-    service_id: z.string(),
-    team_id: z.string(),
-    upsert_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
-  })
-  .strip();
-
 export const UpdateStatusResponseBodySchema = z
   .object({
     available_versions: z.array(AvailableVersionSchema),
@@ -2473,13 +2542,32 @@ export const WebhookUpdateInputSchema = z
   })
   .strip();
 
+export type AffectedService = z.infer<typeof AffectedServiceSchema>;
+export type Protocol = z.infer<typeof ProtocolSchema>;
+export type PortSpec = z.infer<typeof PortSpecSchema>;
+export type VariableMount = z.infer<typeof VariableMountSchema>;
+export type ServiceVolume = z.infer<typeof ServiceVolumeSchema>;
+export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
+export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
+export type HealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
+export type HealthCheck = z.infer<typeof HealthCheckSchema>;
+export type InitContainer = z.infer<typeof InitContainerSchema>;
+export type HostSpec = z.infer<typeof HostSpecSchema>;
+export type Resources = z.infer<typeof ResourcesSchema>;
+export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSourceTypeSchema>;
+export type VariableUpsertInput = z.infer<typeof VariableUpsertInputSchema>;
+export type ChangeSetVariables = z.infer<typeof ChangeSetVariablesSchema>;
+export type ApplyChangesInput = z.infer<typeof ApplyChangesInputSchema>;
+export type BaseVariablesJSONInput = z.infer<typeof BaseVariablesJSONInputSchema>;
+export type ChangeFailure = z.infer<typeof ChangeFailureSchema>;
+export type ApplyChangesResponse = z.infer<typeof ApplyChangesResponseSchema>;
+export type ApplyChangesResponseBody = z.infer<typeof ApplyChangesResponseBodySchema>;
 export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
 export type AvailableVersion = z.infer<typeof AvailableVersionSchema>;
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
 export type CancelDeploymentInputBody = z.infer<typeof CancelDeploymentInputBodySchema>;
-export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
 export type GitCommitter = z.infer<typeof GitCommitterSchema>;
 export type EventType = z.infer<typeof EventTypeSchema>;
 export type EventRecord = z.infer<typeof EventRecordSchema>;
@@ -2518,17 +2606,7 @@ export type CreateS3BucketOutputBody = z.infer<typeof CreateS3BucketOutputBodySc
 export type CreateServiceGroupInput = z.infer<typeof CreateServiceGroupInputSchema>;
 export type ServiceGroupResponse = z.infer<typeof ServiceGroupResponseSchema>;
 export type CreateServiceGroupResponseBody = z.infer<typeof CreateServiceGroupResponseBodySchema>;
-export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
-export type HealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
-export type HealthCheck = z.infer<typeof HealthCheckSchema>;
-export type HostSpec = z.infer<typeof HostSpecSchema>;
-export type InitContainer = z.infer<typeof InitContainerSchema>;
-export type Protocol = z.infer<typeof ProtocolSchema>;
-export type PortSpec = z.infer<typeof PortSpecSchema>;
-export type Resources = z.infer<typeof ResourcesSchema>;
 export type ServiceType = z.infer<typeof ServiceTypeSchema>;
-export type VariableMount = z.infer<typeof VariableMountSchema>;
-export type ServiceVolume = z.infer<typeof ServiceVolumeSchema>;
 export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
 export type SecurityContext = z.infer<typeof SecurityContextSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
@@ -2777,7 +2855,6 @@ export type UpdateServiceGroupTemplateInputsInput = z.infer<
 export type UpdateServiceGroupTemplateInputsResponseBody = z.infer<
   typeof UpdateServiceGroupTemplateInputsResponseBodySchema
 >;
-export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type UpdateStatusResponseBody = z.infer<typeof UpdateStatusResponseBodySchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
@@ -3363,6 +3440,50 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = LogoutResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+    },
+    changes: {
+      apply: async (
+        params: ApplyChangesInput,
+        fetchOptions?: RequestInit,
+      ): Promise<ApplyChangesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/changes/apply`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = ApplyChangesInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ApplyChangesResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

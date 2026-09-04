@@ -201,12 +201,19 @@ func (suite *RenderSuite) TestRender_EndpointKeys() {
 func (suite *RenderSuite) TestRenderedValuesChange() {
 	token := vartemplate.ScopeToken(schema.VariableReferenceSourceTypeTeam, "A")
 	existing := map[string][]byte{"PLAIN": []byte("1"), "REF": []byte(token)}
+	change := func(upserts map[string][]byte, deletes []string, overwrite bool) bool {
+		final := finalValues(existing, upserts, deletes, overwrite)
+		return renderedValuesChange(existing, final, changedKeys(existing, final))
+	}
 
-	suite.False(renderedValuesChange(existing, map[string][]byte{"PLAIN": []byte("2")}, models.VariableUpdateBehaviorUpsert))
-	suite.True(renderedValuesChange(existing, map[string][]byte{"NEW": []byte(token)}, models.VariableUpdateBehaviorUpsert))
-	suite.True(renderedValuesChange(existing, map[string][]byte{"REF": []byte("now plain")}, models.VariableUpdateBehaviorUpsert))
-	suite.False(renderedValuesChange(existing, map[string][]byte{"PLAIN": []byte("1")}, models.VariableUpdateBehaviorUpsert))
-	suite.True(renderedValuesChange(existing, map[string][]byte{"PLAIN": []byte("1")}, models.VariableUpdateBehaviorOverwrite))
+	suite.False(change(map[string][]byte{"PLAIN": []byte("2")}, nil, false))
+	suite.True(change(map[string][]byte{"NEW": []byte(token)}, nil, false))
+	suite.True(change(map[string][]byte{"REF": []byte("now plain")}, nil, false))
+	suite.False(change(map[string][]byte{"PLAIN": []byte("1")}, nil, false))
+	suite.False(change(map[string][]byte{"REF": []byte(token)}, nil, false))
+	suite.True(change(map[string][]byte{"PLAIN": []byte("1")}, nil, true))
+	suite.True(change(nil, []string{"REF"}, false))
+	suite.False(change(nil, []string{"PLAIN"}, false))
 }
 
 func (suite *RenderSuite) TestValidateReferences() {

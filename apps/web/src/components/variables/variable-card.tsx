@@ -4,9 +4,7 @@ import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import { IconCache } from "@/components/icons/icon-cache";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
-import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
-import { createDialogHandle, DialogTrigger, TDialogHandle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,15 +28,9 @@ import {
   useVariableReferenceLanguage,
   VariableValueField,
 } from "@/components/variables/variables-form-field";
-import { useVariablesUtils } from "@/components/variables/variables-provider";
+import { useVariables, type TVariableWithStaged } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import {
-  createOrUpdateVariables,
-  deleteVariables,
-  TVariableShallow,
-  VariableForCreateValueSchema,
-} from "@/lib/queries/variables";
-import { useMutation } from "@tanstack/react-query";
+import { VariableForCreateValueSchema } from "@/lib/queries/variables";
 import {
   CheckIcon,
   CircleAlertIcon,
@@ -50,9 +42,10 @@ import {
   LockIcon,
   PenIcon,
   Trash2Icon,
+  Undo2Icon,
   XIcon,
 } from "lucide-react";
-import { Dispatch, FC, ReactElement, useMemo, useState } from "react";
+import { Dispatch, FC, useMemo, useState } from "react";
 import { z } from "zod";
 
 const hiddenString = "••••••••••";
@@ -65,7 +58,7 @@ type TPlaceholderProps = {
 };
 
 type TVariableProps = {
-  variable: TVariableShallow;
+  variable: TVariableWithStaged;
   variableTypeProps: TEntityVariableTypeProps;
   isPlaceholder?: never;
 };
@@ -97,6 +90,7 @@ export default function VariableCard({
   const [isEditingVariable, setIsEditingVariable] = useState(false);
   const isDynamic = !!variable && variable.references.length > 0;
   const hasUnresolved = isDynamic && variable.references.some((r) => !r.resolved);
+  const isStagedDelete = variable?.staged === "deleted";
 
   const renderedParts: TRenderedPart[] = useMemo(
     () =>
@@ -121,7 +115,8 @@ export default function VariableCard({
       data-not-editing={!isEditingVariable || undefined}
       data-dynamic={isDynamic || undefined}
       data-unresolved={hasUnresolved || undefined}
-      className="group/card data-unresolved:border-warning/24 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
+      data-staged={variable?.staged}
+      className="group/card data-unresolved:border-warning/24 data-staged:border-change/40 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
     >
       {variable && (
         <NewEntityIndicator
@@ -134,13 +129,17 @@ export default function VariableCard({
           <KeyIcon
             data-dynamic={isDynamic || undefined}
             data-unresolved={hasUnresolved || undefined}
-            className="text-foreground data-dynamic:text-process data-dynamic:data-unresolved:text-warning data-unresolved:text-warning mr-2 size-3.5 shrink-0"
+            data-staged={variable.staged}
+            className="text-foreground data-dynamic:text-process data-dynamic:data-unresolved:text-warning data-unresolved:text-warning data-staged:text-change mr-2 size-3.5 shrink-0"
           />
         )}
         {isPlaceholder && (
           <div className="bg-foreground animate-skeleton mr-2 size-3.5 shrink-0 rounded-full" />
         )}
-        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-normal text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+        <p
+          data-staged={variable?.staged}
+          className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-normal text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent data-[staged=deleted]:line-through"
+        >
           {isPlaceholder ? "Loading key" : variable.name}
         </p>
       </div>
@@ -203,12 +202,15 @@ export default function VariableCard({
                 </div>
               </ScrollArea>
             </div>
+            {variable?.staged && (
+              <StagedChip staged={variable.staged} className="mr-1 hidden self-center sm:flex" />
+            )}
             <div className="hidden sm:flex">
               {!hideThreeDotButton && (
                 <ConditionalDropdownButton
                   {...placeholderOrVariableProps}
                   disableDelete={disableDelete}
-                  disableEdit={disableEdit}
+                  disableEdit={disableEdit || isStagedDelete}
                   setIsEditingVariable={setIsEditingVariable}
                 />
               )}
@@ -224,12 +226,13 @@ export default function VariableCard({
         )}
       </div>
       {(!isEditingVariable || !variable) && (
-        <div className="absolute top-0.75 right-0.75 sm:hidden">
+        <div className="absolute top-0.75 right-0.75 flex items-center gap-1 sm:hidden">
+          {variable?.staged && <StagedChip staged={variable.staged} />}
           {!hideThreeDotButton && (
             <ConditionalDropdownButton
               {...placeholderOrVariableProps}
               disableDelete={disableDelete}
-              disableEdit={disableEdit}
+              disableEdit={disableEdit || isStagedDelete}
               setIsEditingVariable={setIsEditingVariable}
               className="rounded-lg"
             />
@@ -242,6 +245,32 @@ export default function VariableCard({
 
 export function getNewEntityIdForVariable({ name, value }: { name: string; value: string }) {
   return `${name}|${value}`;
+}
+
+const stagedLabels: Record<NonNullable<TVariableWithStaged["staged"]>, string> = {
+  new: "New",
+  updated: "Changed",
+  deleted: "Removed",
+};
+
+function StagedChip({
+  staged,
+  className,
+}: {
+  staged: NonNullable<TVariableWithStaged["staged"]>;
+  className?: string;
+}) {
+  return (
+    <p
+      data-staged={staged}
+      className={cn(
+        "bg-change/12 text-change data-[staged=deleted]:bg-destructive/12 data-[staged=deleted]:text-destructive flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-xs font-semibold",
+        className,
+      )}
+    >
+      {stagedLabels[staged]}
+    </p>
+  );
 }
 
 // Reference segments are colored so what came from where stays visible in the rendered text
@@ -264,7 +293,6 @@ function RenderedValue({ parts }: { parts: TRenderedPart[] }) {
 function ConditionalDropdownButton({
   isPlaceholder,
   variable,
-  variableTypeProps,
   disableEdit,
   disableDelete,
   setIsEditingVariable,
@@ -292,7 +320,6 @@ function ConditionalDropdownButton({
   return (
     <ThreeDotButton
       variable={variable}
-      variableTypeProps={variableTypeProps}
       setIsEditingVariable={setIsEditingVariable}
       className={className}
       disableEdit={disableEdit}
@@ -303,115 +330,107 @@ function ConditionalDropdownButton({
 
 function ThreeDotButton({
   variable,
-  variableTypeProps,
   setIsEditingVariable,
   disableDelete,
   disableEdit,
   className,
 }: {
-  variable: TVariableShallow;
-  variableTypeProps: TEntityVariableTypeProps;
+  variable: TVariableWithStaged;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
   disableDelete?: boolean;
   disableEdit?: boolean;
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [deleteHandle] = useState(() => createDialogHandle());
-  const isLocked = disableDelete === true && disableEdit === true;
+  const { stage, discardStaged } = useVariables();
+  const isLocked = disableDelete === true && disableEdit === true && !variable.staged;
+  const isStagedDelete = variable.staged === "deleted";
 
   return (
-    <>
-      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              data-open={isOpen || undefined}
-              fadeOnDisabled={false}
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
-                className,
-              )}
-            >
-              {isLocked ? (
-                <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
-                  <LockIcon className="size-full transition-opacity group-data-open/button:opacity-0" />
-                  <XIcon
-                    strokeWidth={2.25}
-                    className="absolute top-0 left-0 size-full opacity-0 transition-opacity group-data-open/button:opacity-100"
-                  />
-                </div>
-              ) : (
-                <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
-              )}
-            </Button>
-          }
-        />
-        <DropdownMenuContent
-          data-locked={isLocked || undefined}
-          className="z-50 w-40 data-locked:w-68"
-          sideOffset={-1}
-          data-open={isOpen || undefined}
-          align="end"
-          keepMounted
-        >
-          <ScrollArea>
-            <DropdownMenuGroup>
-              {isLocked && (
-                <div className="text-muted-foreground flex w-full items-start justify-start gap-1.5 px-3 py-1.75 text-sm">
-                  <InfoIcon className="-ml-1 size-4 shrink-0" />
-                  <p className="-mt-0.5 min-w-0 shrink">
-                    {"This variable is auto-generated. It can't be edited or deleted."}
-                  </p>
-                </div>
-              )}
-              {!isLocked && (
-                <DropdownMenuItem
-                  disabled={disableEdit}
-                  onClick={() => setIsEditingVariable((o) => !o)}
-                >
-                  {!disableEdit ? (
-                    <PenIcon className="-ml-0.5 size-5" />
-                  ) : (
-                    <LockIcon className="-ml-0.5 size-5" />
-                  )}
-                  <p className="min-w-0 shrink leading-tight">Edit</p>
-                </DropdownMenuItem>
-              )}
-              {!isLocked && (
-                /* The dialog lives outside the menu; nested inside the open modal menu it would be inert */
-                <DialogTrigger
-                  nativeButton={false}
-                  handle={deleteHandle}
-                  render={
-                    <DropdownMenuItem
-                      disabled={disableDelete}
-                      className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
-                    >
-                      {!disableDelete ? (
-                        <Trash2Icon className="-ml-0.5 size-5" />
-                      ) : (
-                        <LockIcon className="-ml-0.5 size-5" />
-                      )}
-                      <p className="min-w-0 shrink leading-tight">Delete</p>
-                    </DropdownMenuItem>
-                  }
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            data-open={isOpen || undefined}
+            fadeOnDisabled={false}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+              className,
+            )}
+          >
+            {isLocked ? (
+              <div className="relative size-5 transition-transform group-data-open/button:rotate-90">
+                <LockIcon className="size-full transition-opacity group-data-open/button:opacity-0" />
+                <XIcon
+                  strokeWidth={2.25}
+                  className="absolute top-0 left-0 size-full opacity-0 transition-opacity group-data-open/button:opacity-100"
                 />
-              )}
-            </DropdownMenuGroup>
-          </ScrollArea>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {!isLocked && (
-        <DeleteTrigger
-          variable={variable}
-          variableTypeProps={variableTypeProps}
-          handle={deleteHandle}
-        />
-      )}
-    </>
+              </div>
+            ) : (
+              <EllipsisVerticalIcon className="size-6 transition-transform group-data-open/button:rotate-90" />
+            )}
+          </Button>
+        }
+      />
+      <DropdownMenuContent
+        data-locked={isLocked || undefined}
+        className="z-50 w-44 data-locked:w-68"
+        sideOffset={-1}
+        data-open={isOpen || undefined}
+        align="end"
+        keepMounted
+      >
+        <ScrollArea>
+          <DropdownMenuGroup>
+            {isLocked && (
+              <div className="text-muted-foreground flex w-full items-start justify-start gap-1.5 px-3 py-1.75 text-sm">
+                <InfoIcon className="-ml-1 size-4 shrink-0" />
+                <p className="-mt-0.5 min-w-0 shrink">
+                  {"This variable is auto-generated. It can't be edited or deleted."}
+                </p>
+              </div>
+            )}
+            {variable.staged && (
+              <DropdownMenuItem onClick={() => discardStaged([variable.name])}>
+                <Undo2Icon className="-ml-0.5 size-5" />
+                <p className="min-w-0 shrink leading-tight">
+                  {isStagedDelete ? "Restore" : "Discard change"}
+                </p>
+              </DropdownMenuItem>
+            )}
+            {!isLocked && !isStagedDelete && (
+              <DropdownMenuItem
+                disabled={disableEdit}
+                onClick={() => setIsEditingVariable((o) => !o)}
+              >
+                {!disableEdit ? (
+                  <PenIcon className="-ml-0.5 size-5" />
+                ) : (
+                  <LockIcon className="-ml-0.5 size-5" />
+                )}
+                <p className="min-w-0 shrink leading-tight">Edit</p>
+              </DropdownMenuItem>
+            )}
+            {!isLocked && !isStagedDelete && (
+              <DropdownMenuItem
+                disabled={disableDelete}
+                onClick={() => stage([{ name: variable.name, value: null }])}
+                className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+              >
+                {!disableDelete ? (
+                  <Trash2Icon className="-ml-0.5 size-5" />
+                ) : (
+                  <LockIcon className="-ml-0.5 size-5" />
+                )}
+                <p className="min-w-0 shrink leading-tight">Delete</p>
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuGroup>
+        </ScrollArea>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -421,13 +440,11 @@ function EditVariableForm({
   variableTypeProps,
   setIsEditingVariable,
 }: {
-  variable: TVariableShallow;
+  variable: TVariableWithStaged;
   variableTypeProps: TEntityVariableTypeProps;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const { refetch } = useVariablesUtils({
-    ...variableTypeProps,
-  });
+  const { stage } = useVariables();
   const { tokens } = useVariableReferences();
   const referencesDisabled = variableTypeProps.type !== "service";
   const { language, icons } = useVariableReferenceLanguage(tokens);
@@ -440,9 +457,7 @@ function EditVariableForm({
     [tokens, variable],
   );
 
-  const { mutateAsync: upsertVariables, error } = useMutation({
-    mutationFn: createOrUpdateVariables,
-  });
+  const [error, setError] = useState<Error | null>(null);
 
   const form = useAppForm({
     defaultValues: {
@@ -453,15 +468,12 @@ function EditVariableForm({
     },
     onSubmit: async (d) => {
       const stored = toStoredValue(d.value.variableValue, referencesByValue);
-      if (stored === variable.value) {
-        setIsEditingVariable(false);
+      try {
+        stage([{ name: variable.name, value: stored }]);
+      } catch (e) {
+        setError(e instanceof Error ? e : new Error("Failed to stage the change"));
         return;
       }
-      await upsertVariables({
-        ...variableTypeProps,
-        variables: [{ name: variable.name, value: stored }],
-      });
-      refetch();
       setIsEditingVariable(false);
     },
   });
@@ -527,67 +539,5 @@ function EditVariableForm({
         />
       )}
     </div>
-  );
-}
-
-function DeleteTrigger({
-  variable,
-  variableTypeProps,
-  closeDropdown,
-  handle,
-  children,
-}: {
-  variable: TVariableShallow;
-  variableTypeProps: TEntityVariableTypeProps;
-  closeDropdown?: () => void;
-  handle?: TDialogHandle;
-  children?: ReactElement;
-}) {
-  const { invalidate: invalidateVariables, optimisticRemove: optimisticRemoveVariables } =
-    useVariablesUtils({
-      ...variableTypeProps,
-    });
-
-  const {
-    mutateAsync: deleteVariable,
-    error,
-    reset,
-  } = useMutation({
-    mutationFn: deleteVariables,
-    onSuccess: async () => {
-      optimisticRemoveVariables({ variables: [variable] });
-      invalidateVariables();
-      closeDropdown?.();
-    },
-  });
-
-  return (
-    <DeleteEntityTrigger
-      dialogTitle="Delete Variable"
-      dialogDescription="Are you sure you want to delete this variable? This action cannot be undone."
-      deletingEntityName={variable.name}
-      disableConfirmationInput
-      EntityNameBadge={() => (
-        <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] rounded-md border px-1.5 font-mono font-semibold">
-          {variable.name}
-        </p>
-      )}
-      handle={handle}
-      onDialogClose={() => {
-        reset();
-      }}
-      onDialogCloseImmediate={() => {
-        closeDropdown?.();
-      }}
-      error={error}
-      onSubmit={async () => {
-        await deleteVariable({
-          ...variableTypeProps,
-          variables: [{ name: variable.name }],
-        });
-      }}
-    >
-      {children}
-    </DeleteEntityTrigger>
   );
 }

@@ -32,4 +32,12 @@ type VariablesServiceInterface interface {
 	// FindReferencingServices returns deployed services whose variables reference any of
 	// the given keys on the source
 	FindReferencingServices(ctx context.Context, sourceType schema.VariableReferenceSourceType, sourceID uuid.UUID, keys []string) ([]*ent.Service, error)
+	// PrepareVariableWrite validates a write without touching anything. Apply it with
+	// ApplyVariableWrite and restart pods with RestartForWrite.
+	PrepareVariableWrite(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, upserts map[string][]byte, deletes []string) (*VariableWrite, error)
+	// ApplyVariableWrite persists a prepared write and returns the resulting variables
+	ApplyVariableWrite(ctx context.Context, write *VariableWrite) (*models.VariableResponse, error)
+	// RestartForWrite restarts pods that read changed values straight from the secret.
+	// Rendered values need a new deployment instead, which the caller handles.
+	RestartForWrite(ctx context.Context, write *VariableWrite) error
 }

@@ -76,7 +76,7 @@ export function BlockItemTitle({
     <h3
       className={cn(
         "min-w-0 shrink leading-tight font-semibold",
-        hasChanges && "text-process",
+        hasChanges && "text-change",
         className,
       )}
     >

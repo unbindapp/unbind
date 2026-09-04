@@ -35,7 +35,7 @@ func (self *DeploymentService) CreateManualDeployment(ctx context.Context, reque
 		currentDeployment := service.Edges.CurrentDeployment
 		matchesRequestedSha := input.GitSha == nil ||
 			(currentDeployment != nil && currentDeployment.CommitSha != nil && *currentDeployment.CommitSha == *input.GitSha)
-		if matchesRequestedSha && self.canRedeployWithoutBuild(ctx, service, currentDeployment) {
+		if matchesRequestedSha && !configuredImageChanged(service, currentDeployment) && self.canRedeployWithoutBuild(ctx, service, currentDeployment) {
 			return self.redeployExistingImage(ctx, service, currentDeployment)
 		}
 	}
@@ -99,4 +99,13 @@ func (self *DeploymentService) CreateManualDeployment(ctx context.Context, reque
 	}
 
 	return models.TransformDeploymentEntity(job), nil
+}
+
+// configuredImageChanged reports whether an image service points at a different image
+// than the one it is running, in which case the old image can't simply be redeployed
+func configuredImageChanged(service *ent.Service, deployment *ent.Deployment) bool {
+	if service.Type != schema.ServiceTypeDockerimage || deployment == nil || deployment.Image == nil {
+		return false
+	}
+	return service.Edges.ServiceConfig.Image != "" && service.Edges.ServiceConfig.Image != *deployment.Image
 }

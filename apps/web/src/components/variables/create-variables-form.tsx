@@ -11,7 +11,6 @@ import {
 import { useVariables } from "@/components/variables/variables-provider";
 import { useAppFormWithPersistence } from "@/lib/hooks/use-app-form-with-persistence";
 import { TVariableForCreate, VariableForCreateSchema } from "@/lib/queries/variables";
-import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 import { z } from "zod";
@@ -39,11 +38,7 @@ export default function CreateVariablesForm({
   tokensDisabled,
   isOpen: isOpenProp,
 }: TProps) {
-  const {
-    list: { refetch: refetchVariables },
-    createOrUpdate: { mutateAsync: createOrUpdateVariables, error: createOrUpdateVariablesError },
-    ...typedProps
-  } = useVariables();
+  const { stage, ...typedProps } = useVariables();
 
   const {
     tokens,
@@ -89,24 +84,7 @@ export default function CreateVariablesForm({
       }
 
       const variables = toStoredVariables(value.variables, tokens);
-
-      await createOrUpdateVariables({
-        ...typedProps,
-        variables,
-      });
-
-      const result = await ResultAsync.fromPromise(
-        refetchVariables(),
-        () => new Error("Failed to refetch variables"),
-      );
-
-      if (result.isErr()) {
-        toast.add({
-          type: "error",
-          title: "Failed to refetch",
-          description: "Failed to refetch variables after creation, please refresh the page.",
-        });
-      }
+      stage(variables);
 
       for (const i of variables) {
         temporarilyAddNewEntity(getNewEntityIdForVariable({ name: i.name, value: i.value }));
@@ -134,15 +112,12 @@ export default function CreateVariablesForm({
       >
         <VariablesFormField form={form} referenceProps={referenceProps} />
         <div className="bg-card flex w-full flex-col gap-3 rounded-b-xl border-t p-2 md:mt-3.5 md:p-2.5">
-          {createOrUpdateVariablesError && (
-            <ErrorLine message={createOrUpdateVariablesError.message} />
-          )}
           {variableReferencesError && <ErrorLine message={variableReferencesError.message} />}
           <div className="flex w-full flex-row items-center justify-end">
             <form.Subscribe
               selector={(state) => ({ isSubmitting: state.isSubmitting })}
               children={({ isSubmitting }) => (
-                <form.SubmitButton isPending={isSubmitting}>Save</form.SubmitButton>
+                <form.SubmitButton isPending={isSubmitting}>Add</form.SubmitButton>
               )}
             />
           </div>

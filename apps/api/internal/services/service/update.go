@@ -35,8 +35,44 @@ func databasePortsWithNodePort(ports []schema.PortSpec, nodePort *int32) []schem
 	return out
 }
 
-// UpdateService updates a service and its configuration
+// serviceUpdate is a validated update, ready to apply
+type serviceUpdate struct {
+	input   *models.UpdateServiceInput
+	service *ent.Service
+}
+
+// UpdateService updates a service and its configuration, rolling it out when needed
 func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID uuid.UUID, input *models.UpdateServiceInput) (*models.ServiceResponse, error) {
+	update, err := self.prepareServiceUpdate(ctx, requesterUserID, input)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := self.applyServiceUpdate(ctx, update); err != nil {
+		return nil, err
+	}
+
+	results, err := self.rollout(ctx, touchedServices{input.ServiceID: {config: true}})
+	if err != nil {
+		return nil, err
+	}
+
+	service := results[input.ServiceID].service
+	newDeployment := results[input.ServiceID].deployment
+	if newDeployment != nil {
+		if newDeployment.Status == schema.DeploymentStatusBuildSucceeded {
+			service.Edges.CurrentDeployment = newDeployment
+		}
+		service.Edges.Deployments = []*ent.Deployment{newDeployment}
+	}
+
+	go self.notifyServiceUpdated(requesterUserID, input, service, newDeployment)
+
+	return self.updatedServiceResponse(ctx, requesterUserID, service)
+}
+
+// prepareServiceUpdate runs every check that does not touch anything
+func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterUserID uuid.UUID, input *models.UpdateServiceInput) (*serviceUpdate, error) {
 	if input.GitTag != nil && !utils.IsValidGlobPattern(*input.GitTag) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid git tag")
 	}
@@ -142,10 +178,6 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 
 	client := self.k8s.GetInternalClient()
 
-	if err := self.applyDatabaseStorageSize(ctx, service, input.DatabaseConfig, client); err != nil {
-		return nil, err
-	}
-
 	// Check if PVC is in use by a service
 	for _, volume := range input.OverwriteVolumes {
 		err = self.validatePVC(ctx, input.TeamID, input.ProjectID, input.EnvironmentID, volume.ID, service.Edges.Environment.Edges.Project.Edges.Team.Namespace, client)
@@ -169,20 +201,19 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		}
 	}
 
-	// Force build if certain things change
-	forceBuild := false
-	if input.RailpackBuilderInstallCommand != nil {
-		if service.Edges.ServiceConfig.RailpackBuilderInstallCommand == nil || (*input.RailpackBuilderInstallCommand != *service.Edges.ServiceConfig.RailpackBuilderInstallCommand) {
-			forceBuild = true
-		}
-	}
-	if input.RailpackBuilderBuildCommand != nil {
-		if service.Edges.ServiceConfig.RailpackBuilderBuildCommand == nil || (*input.RailpackBuilderBuildCommand != *service.Edges.ServiceConfig.RailpackBuilderBuildCommand) {
-			forceBuild = true
-		}
+	return &serviceUpdate{input: input, service: service}, nil
+}
+
+// applyServiceUpdate persists a prepared update without rolling it out
+func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serviceUpdate) error {
+	input, service := update.input, update.service
+	client := self.k8s.GetInternalClient()
+
+	if err := self.applyDatabaseStorageSize(ctx, service, input.DatabaseConfig, client); err != nil {
+		return err
 	}
 
-	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+	return self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		if err := self.repo.Service().Update(ctx, tx, input.ServiceID, input.Name, input.Description); err != nil {
 			return fmt.Errorf("failed to update service: %w", err)
 		}
@@ -380,51 +411,17 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		}
 
 		return nil
-	}); err != nil {
-		return nil, err
-	}
+	})
+}
 
-	// Re-fetch the service
-	service, err = self.repo.Service().GetByID(ctx, input.ServiceID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to re-fetch service: %w", err)
-	}
-
-	var deployments []*ent.Deployment
-	switch {
-	case !service_repo.HasActiveDeployment(service):
-		// Nothing is running, the next deployment picks up the new config
-	case forceBuild:
-		if err := self.EnqueueFullBuildDeployments(ctx, []*ent.Service{service}); err != nil {
-			return nil, fmt.Errorf("failed to enqueue build deployments: %w", err)
-		}
-	default:
-		deployments, err = self.RedeployServices(ctx, []*ent.Service{service})
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// Update service deployment
-	var newDeployment *ent.Deployment
-	if len(deployments) > 0 {
-		newDeployment = deployments[0]
-		if newDeployment.Status == schema.DeploymentStatusBuildSucceeded {
-			service.Edges.CurrentDeployment = newDeployment
-		}
-		service.Edges.Deployments = []*ent.Deployment{
-			newDeployment,
-		}
-	}
-
-	// Trigger webhook
-	go func() {
+func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, input *models.UpdateServiceInput, updated *ent.Service, newDeployment *ent.Deployment) {
+	{
 		event := schema.WebhookEventServiceUpdated
 		level := webhooks_service.WebhookLevelInfo
 
-		service, err := self.repo.Service().GetByID(context.Background(), service.ID)
+		service, err := self.repo.Service().GetByID(context.Background(), updated.ID)
 		if err != nil {
-			log.Errorf("Failed to get service %s: %v", service.ID.String(), err)
+			log.Errorf("Failed to get service %s: %v", updated.ID.String(), err)
 			return
 		}
 
@@ -534,13 +531,12 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
 			log.Errorf("Failed to trigger webhook %s: %v", event, err)
 		}
-	}()
+	}
+}
 
-	namespace := service.Edges.Environment.Edges.Project.Edges.Team.Namespace
-	teamID := service.Edges.Environment.Edges.Project.Edges.Team.ID
-	volumeMap, err := self.GetVolumesForServices(ctx, namespace, teamID, []*ent.Service{
-		service,
-	})
+func (self *ServiceService) updatedServiceResponse(ctx context.Context, requesterUserID uuid.UUID, service *ent.Service) (*models.ServiceResponse, error) {
+	team := service.Edges.Environment.Edges.Project.Edges.Team
+	volumeMap, err := self.GetVolumesForServices(ctx, team.Namespace, team.ID, []*ent.Service{service})
 	if err != nil {
 		return nil, err
 	}
@@ -551,7 +547,7 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 	}
 
 	resp := models.TransformServiceEntity(service)
-	resp.Permissions = permSet.ServiceActions(input.TeamID, input.ProjectID, input.EnvironmentID, service.ID)
+	resp.Permissions = permSet.ServiceActions(team.ID, service.Edges.Environment.ProjectID, service.EnvironmentID, service.ID)
 
 	if volume, ok := volumeMap[service.ID]; ok {
 		resp.Config.Volumes = volume

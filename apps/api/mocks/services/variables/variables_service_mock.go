@@ -42,6 +42,74 @@ func (_m *VariablesServiceMock) EXPECT() *VariablesServiceMock_Expecter {
 	return &VariablesServiceMock_Expecter{mock: &_m.Mock}
 }
 
+// ApplyVariableWrite provides a mock function for the type VariablesServiceMock
+func (_mock *VariablesServiceMock) ApplyVariableWrite(ctx context.Context, write *variables_service.VariableWrite) (*models.VariableResponse, error) {
+	ret := _mock.Called(ctx, write)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ApplyVariableWrite")
+	}
+
+	var r0 *models.VariableResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *variables_service.VariableWrite) (*models.VariableResponse, error)); ok {
+		return returnFunc(ctx, write)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *variables_service.VariableWrite) *models.VariableResponse); ok {
+		r0 = returnFunc(ctx, write)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.VariableResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *variables_service.VariableWrite) error); ok {
+		r1 = returnFunc(ctx, write)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// VariablesServiceMock_ApplyVariableWrite_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ApplyVariableWrite'
+type VariablesServiceMock_ApplyVariableWrite_Call struct {
+	*mock.Call
+}
+
+// ApplyVariableWrite is a helper method to define mock.On call
+//   - ctx context.Context
+//   - write *variables_service.VariableWrite
+func (_e *VariablesServiceMock_Expecter) ApplyVariableWrite(ctx any, write any) *VariablesServiceMock_ApplyVariableWrite_Call {
+	return &VariablesServiceMock_ApplyVariableWrite_Call{Call: _e.mock.On("ApplyVariableWrite", ctx, write)}
+}
+
+func (_c *VariablesServiceMock_ApplyVariableWrite_Call) Run(run func(ctx context.Context, write *variables_service.VariableWrite)) *VariablesServiceMock_ApplyVariableWrite_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *variables_service.VariableWrite
+		if args[1] != nil {
+			arg1 = args[1].(*variables_service.VariableWrite)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *VariablesServiceMock_ApplyVariableWrite_Call) Return(variableResponse *models.VariableResponse, err error) *VariablesServiceMock_ApplyVariableWrite_Call {
+	_c.Call.Return(variableResponse, err)
+	return _c
+}
+
+func (_c *VariablesServiceMock_ApplyVariableWrite_Call) RunAndReturn(run func(ctx context.Context, write *variables_service.VariableWrite) (*models.VariableResponse, error)) *VariablesServiceMock_ApplyVariableWrite_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteVariablesByKey provides a mock function for the type VariablesServiceMock
 func (_mock *VariablesServiceMock) DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput) (*models.VariableResponse, bool, error) {
 	ret := _mock.Called(ctx, userID, input, keys)
@@ -425,6 +493,98 @@ func (_c *VariablesServiceMock_MigrateLegacyReferences_Call) RunAndReturn(run fu
 	return _c
 }
 
+// PrepareVariableWrite provides a mock function for the type VariablesServiceMock
+func (_mock *VariablesServiceMock) PrepareVariableWrite(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, upserts map[string][]byte, deletes []string) (*variables_service.VariableWrite, error) {
+	ret := _mock.Called(ctx, userID, input, behavior, upserts, deletes)
+
+	if len(ret) == 0 {
+		panic("no return value specified for PrepareVariableWrite")
+	}
+
+	var r0 *variables_service.VariableWrite
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte, []string) (*variables_service.VariableWrite, error)); ok {
+		return returnFunc(ctx, userID, input, behavior, upserts, deletes)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte, []string) *variables_service.VariableWrite); ok {
+		r0 = returnFunc(ctx, userID, input, behavior, upserts, deletes)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*variables_service.VariableWrite)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, models.BaseVariablesJSONInput, models.VariableUpdateBehavior, map[string][]byte, []string) error); ok {
+		r1 = returnFunc(ctx, userID, input, behavior, upserts, deletes)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// VariablesServiceMock_PrepareVariableWrite_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'PrepareVariableWrite'
+type VariablesServiceMock_PrepareVariableWrite_Call struct {
+	*mock.Call
+}
+
+// PrepareVariableWrite is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - input models.BaseVariablesJSONInput
+//   - behavior models.VariableUpdateBehavior
+//   - upserts map[string][]byte
+//   - deletes []string
+func (_e *VariablesServiceMock_Expecter) PrepareVariableWrite(ctx any, userID any, input any, behavior any, upserts any, deletes any) *VariablesServiceMock_PrepareVariableWrite_Call {
+	return &VariablesServiceMock_PrepareVariableWrite_Call{Call: _e.mock.On("PrepareVariableWrite", ctx, userID, input, behavior, upserts, deletes)}
+}
+
+func (_c *VariablesServiceMock_PrepareVariableWrite_Call) Run(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, upserts map[string][]byte, deletes []string)) *VariablesServiceMock_PrepareVariableWrite_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 models.BaseVariablesJSONInput
+		if args[2] != nil {
+			arg2 = args[2].(models.BaseVariablesJSONInput)
+		}
+		var arg3 models.VariableUpdateBehavior
+		if args[3] != nil {
+			arg3 = args[3].(models.VariableUpdateBehavior)
+		}
+		var arg4 map[string][]byte
+		if args[4] != nil {
+			arg4 = args[4].(map[string][]byte)
+		}
+		var arg5 []string
+		if args[5] != nil {
+			arg5 = args[5].([]string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+		)
+	})
+	return _c
+}
+
+func (_c *VariablesServiceMock_PrepareVariableWrite_Call) Return(variableWrite *variables_service.VariableWrite, err error) *VariablesServiceMock_PrepareVariableWrite_Call {
+	_c.Call.Return(variableWrite, err)
+	return _c
+}
+
+func (_c *VariablesServiceMock_PrepareVariableWrite_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, upserts map[string][]byte, deletes []string) (*variables_service.VariableWrite, error)) *VariablesServiceMock_PrepareVariableWrite_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RenderServiceVariables provides a mock function for the type VariablesServiceMock
 func (_mock *VariablesServiceMock) RenderServiceVariables(ctx context.Context, serviceID uuid.UUID) (*variables_service.RenderResult, error) {
 	ret := _mock.Called(ctx, serviceID)
@@ -489,6 +649,63 @@ func (_c *VariablesServiceMock_RenderServiceVariables_Call) Return(renderResult 
 }
 
 func (_c *VariablesServiceMock_RenderServiceVariables_Call) RunAndReturn(run func(ctx context.Context, serviceID uuid.UUID) (*variables_service.RenderResult, error)) *VariablesServiceMock_RenderServiceVariables_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RestartForWrite provides a mock function for the type VariablesServiceMock
+func (_mock *VariablesServiceMock) RestartForWrite(ctx context.Context, write *variables_service.VariableWrite) error {
+	ret := _mock.Called(ctx, write)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RestartForWrite")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *variables_service.VariableWrite) error); ok {
+		r0 = returnFunc(ctx, write)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// VariablesServiceMock_RestartForWrite_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RestartForWrite'
+type VariablesServiceMock_RestartForWrite_Call struct {
+	*mock.Call
+}
+
+// RestartForWrite is a helper method to define mock.On call
+//   - ctx context.Context
+//   - write *variables_service.VariableWrite
+func (_e *VariablesServiceMock_Expecter) RestartForWrite(ctx any, write any) *VariablesServiceMock_RestartForWrite_Call {
+	return &VariablesServiceMock_RestartForWrite_Call{Call: _e.mock.On("RestartForWrite", ctx, write)}
+}
+
+func (_c *VariablesServiceMock_RestartForWrite_Call) Run(run func(ctx context.Context, write *variables_service.VariableWrite)) *VariablesServiceMock_RestartForWrite_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *variables_service.VariableWrite
+		if args[1] != nil {
+			arg1 = args[1].(*variables_service.VariableWrite)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *VariablesServiceMock_RestartForWrite_Call) Return(err error) *VariablesServiceMock_RestartForWrite_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *VariablesServiceMock_RestartForWrite_Call) RunAndReturn(run func(ctx context.Context, write *variables_service.VariableWrite) error) *VariablesServiceMock_RestartForWrite_Call {
 	_c.Call.Return(run)
 	return _c
 }
