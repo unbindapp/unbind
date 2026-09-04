@@ -174,7 +174,21 @@ export function mergeStagedVariables(
       staged: "new",
     });
   }
-  return merged;
+  // Staged variables come first so they are easy to spot, newest staged at the top
+  const stagedOrder = new Map(
+    [...staged.values()].map((change) => [change.name, change.createdAt]),
+  );
+  return merged
+    .map((variable, index) => ({ variable, index }))
+    .sort((a, b) => {
+      const aStaged = stagedOrder.get(a.variable.name);
+      const bStaged = stagedOrder.get(b.variable.name);
+      if (aStaged !== undefined && bStaged !== undefined) return bStaged - aStaged;
+      if (aStaged !== undefined) return -1;
+      if (bStaged !== undefined) return 1;
+      return a.index - b.index;
+    })
+    .map(({ variable }) => variable);
 }
 
 // Staged values are not rendered by the server, so their references only carry the

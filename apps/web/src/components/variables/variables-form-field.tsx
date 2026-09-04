@@ -281,8 +281,13 @@ export function VariableValueField({
           </Button>
         )
       }
-      classNameInput={compact ? "min-h-9 rounded-lg text-sm sm:rounded-md" : undefined}
-      classNameEditor={cn("font-mono max-h-35 overflow-auto", compact && "px-2.5 py-1.5")}
+      classNameInput={
+        compact ? "min-h-9 rounded-lg text-sm pointer-coarse:text-base sm:rounded-md" : undefined
+      }
+      classNameEditor={cn(
+        "font-mono max-h-35 overflow-auto",
+        compact && "px-2.5 py-1.5 pointer-coarse:py-1.25",
+      )}
       className="flex-1"
       placeholder={placeholder ?? (referencesDisabled ? "Value" : "Value or ${Reference}")}
     />

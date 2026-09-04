@@ -741,6 +741,17 @@
   }
 }
 
+/* iOS zooms the page into any focused field smaller than 16px. Unlayered so it
+   beats text-* utilities. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+  textarea,
+  select,
+  [contenteditable="true"] {
+    font-size: max(1rem, 1em);
+  }
+}
+
 @layer base {
   button,
   [role="button"] {

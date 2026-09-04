@@ -258,15 +258,11 @@ function StagedChip({
   className?: string;
 }) {
   return (
-    <p
-      data-staged={staged}
-      className={cn(
-        "bg-change/12 text-change flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-xs font-semibold",
-        className,
-      )}
-    >
-      {stagedLabels[staged]}
-    </p>
+    <div className={cn("bg-background shrink-0 rounded-sm", className)}>
+      <p className="text-change dark:bg-change/12 dark:border-change/16 bg-change/14 border-change/18 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+        {stagedLabels[staged]}
+      </p>
+    </div>
   );
 }
 

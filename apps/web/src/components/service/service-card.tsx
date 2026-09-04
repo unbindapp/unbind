@@ -111,19 +111,23 @@ export default function ServiceCard({
   const cardContent = (
     <>
       {service && <NewEntityIndicator id={service.id} />}
-      <div className="flex w-full items-center justify-start gap-2">
-        {!isPlaceholder ? (
-          <ServiceIcon service={service} className="-ml-1 size-5" />
-        ) : (
-          <div className="animate-skeleton bg-foreground -ml-1 size-5 rounded-full" />
-        )}
-        <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
-          {!isPlaceholder ? service.name : "Loading"}
-        </h3>
+      <div className="flex w-full items-center justify-between gap-4">
+        <div className="flex min-w-0 shrink items-center justify-start gap-2">
+          {!isPlaceholder ? (
+            <ServiceIcon service={service} className="-ml-1 size-5" />
+          ) : (
+            <div className="animate-skeleton bg-foreground -ml-1 size-5 rounded-full" />
+          )}
+          <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+            {!isPlaceholder ? service.name : "Loading"}
+          </h3>
+        </div>
         {changeLabel !== null && (
-          <p className="bg-change/12 text-change -my-1 ml-auto shrink-0 rounded-md px-1.5 py-0.5 text-xs font-semibold">
-            {changeLabel}
-          </p>
+          <div className="bg-background -mr-1.5 max-w-1/2 shrink-0 rounded-sm">
+            <p className="text-change dark:bg-change/12 dark:border-change/16 bg-change/14 border-change/18 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+              {changeLabel}
+            </p>
+          </div>
         )}
       </div>
       <div className="flex w-full flex-1 flex-col justify-end">

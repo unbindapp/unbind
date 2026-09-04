@@ -154,9 +154,7 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
               Discard {count} {count === 1 ? "Change" : "Changes"}
             </DialogTitle>
             <DialogDescription>
-              {count === 1
-                ? "The staged change will be thrown away. Nothing has been deployed."
-                : `All ${count} staged changes will be thrown away. Nothing has been deployed.`}
+              All staged changes will be thrown away. Nothing will be deployed.
             </DialogDescription>
           </DialogHeader>
           <div className="flex w-full flex-wrap items-center justify-end gap-2">
