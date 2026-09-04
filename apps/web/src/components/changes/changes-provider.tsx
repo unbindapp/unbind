@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  ChangesPlanContext,
+  ChangesStoreContext,
+  type TChangesPlanContext,
+  type TChangesStoreContext,
+} from "@/components/changes/changes-context";
 import { createChangesStore, type TChangesStore } from "@/components/changes/changes-store";
 import { buildApplyChangesPayload, idsToKeepAfterFailures } from "@/components/changes/payload";
 import {
@@ -15,31 +21,10 @@ import { toast } from "@/components/ui/toast";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { applyChanges, type TApplyChangesResult } from "@/lib/queries/changes";
 import type { AffectedService } from "@/lib/server/client.gen";
-import {
-  keepPreviousData,
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type UseMutationResult,
-  type UseQueryResult,
-} from "@tanstack/react-query";
-import { createContext, ReactNode, useContext, useMemo, useRef, useState } from "react";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ReactNode, useContext, useMemo, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useStore } from "zustand";
-
-type TChangesStoreContext = ReturnType<typeof createChangesStore>;
-
-const ChangesStoreContext = createContext<TChangesStoreContext | undefined>(undefined);
-
-type TChangesPlanContext = {
-  count: number;
-  plan: UseQueryResult<TApplyChangesResult, Error>;
-  affectedByService: Map<string, AffectedService>;
-  deploy: UseMutationResult<TApplyChangesResult, Error, void>;
-  lastResult: TApplyChangesResult | null;
-};
-
-const ChangesPlanContext = createContext<TChangesPlanContext | undefined>(undefined);
 
 export function ChangesProvider({ children }: { children: ReactNode }) {
   const storeRef = useRef<TChangesStoreContext | null>(null);
