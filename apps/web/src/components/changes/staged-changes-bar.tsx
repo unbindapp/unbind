@@ -23,14 +23,47 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EllipsisVerticalIcon, PencilLineIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const exitDurationMs = 500;
+
+// Keeps the bar mounted through its exit transition and starts the enter
+// transition from the hidden state, like the toasts do
+function useBarPresence(hasChanges: boolean) {
+  const [isMounted, setIsMounted] = useState(hasChanges);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (hasChanges) {
+      setIsMounted(true);
+      let inner: number;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => setIsOpen(true));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        cancelAnimationFrame(inner);
+      };
+    }
+    setIsOpen(false);
+    const timeout = setTimeout(() => setIsMounted(false), exitDurationMs);
+    return () => clearTimeout(timeout);
+  }, [hasChanges]);
+
+  return { isMounted, isOpen };
+}
 
 export default function StagedChangesBar() {
   const count = useChangeCount();
   const { deploy, plan } = useChangesPlan();
+  const { isMounted, isOpen } = useBarPresence(count > 0);
+  // The count stays readable while the bar slides out
+  const lastCount = useRef(count);
+  if (count > 0) lastCount.current = count;
 
-  if (count === 0) return null;
+  if (!isMounted) return null;
 
+  const shownCount = lastCount.current;
   const hasError = deploy.error !== null || plan.error !== null;
 
   return (
@@ -38,11 +71,12 @@ export default function StagedChangesBar() {
     <div
       aria-live="polite"
       data-staged-changes-bar=""
-      className="pointer-events-none fixed inset-x-3 bottom-[calc(var(--navbar-height,0px)+0.75rem)] z-900 flex justify-center sm:inset-x-auto sm:top-[calc(var(--navbar-height,0px)+1rem)] sm:bottom-auto sm:left-4 sm:justify-start"
+      className="pointer-events-none fixed inset-x-2 bottom-[calc(var(--navbar-height,0px)+0.5rem)] z-900 flex justify-center sm:inset-x-auto sm:top-[calc(var(--navbar-height,0px)+0.5rem)] sm:bottom-auto sm:left-2 sm:justify-start"
     >
       <div
         data-error={hasError || undefined}
-        className="bg-card border-change/30 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full max-w-md items-center gap-1 rounded-xl border p-1.5 shadow-lg sm:w-auto"
+        data-closed={!isOpen || undefined}
+        className="bg-card border-change/30 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-1 rounded-xl border p-1.5 shadow-lg transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform data-closed:pointer-events-none data-closed:translate-y-[150%] data-closed:opacity-0 sm:w-auto sm:data-closed:-translate-y-[150%]"
       >
         <div className="flex min-w-0 flex-1 items-center gap-2 pr-1 pl-2">
           {hasError ? (
@@ -51,7 +85,7 @@ export default function StagedChangesBar() {
             <PencilLineIcon className="text-change size-4.5 shrink-0" />
           )}
           <p className="min-w-0 shrink text-sm leading-tight font-semibold whitespace-nowrap">
-            {count} {count === 1 ? "change" : "changes"}
+            {shownCount} {shownCount === 1 ? "change" : "changes"}
           </p>
         </div>
         <ChangesDetailsDialog>
