@@ -37,15 +37,6 @@ export const SPECIAL_CLICKHOUSE_VARIABLES_ENUM = z.enum([
   "DATABASE_HTTP_PORT",
 ]);
 
-const ALL_SPECIAL_DB_VARIABLES: string[] = Array.from(
-  new Set([
-    ...SHARED_SPECIAL_DB_VARIABLES.options,
-    ...SPECIAL_DB_VARIABLES_ENUM.options,
-    ...SPECIAL_REDIS_VARIABLES_ENUM.options,
-    ...SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options,
-  ]),
-);
-
 export function specialDbVariablesFor(databaseType: string): string[] {
   if (databaseType === "redis") return SPECIAL_REDIS_VARIABLES_ENUM.options;
   if (databaseType === "clickhouse") return SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
@@ -68,10 +59,6 @@ function isLockedVariable(variable: TVariableShallow, variableTypeProps: TEntity
   const databaseType = databaseTypeOf(variableTypeProps);
   if (databaseType === null) return false;
   return specialDbVariablesFor(databaseType).includes(variable.name);
-}
-
-export function isDynamicVariable(variable: TVariableShallow) {
-  return variable.references.length > 0;
 }
 
 export default function VariablesList({ variableTypeProps }: TProps) {
@@ -132,45 +119,21 @@ export default function VariablesList({ variableTypeProps }: TProps) {
           <div className="bg-process/32 h-px w-full rounded-full" />
         </div>
       )}
-      {variables
-        .toSorted((a, b) => variablesSort(a, b, variableTypeProps))
-        .map((variable) => {
-          const locked = isLockedVariable(variable, variableTypeProps);
-          return (
-            <VariableCard
-              variable={variable}
-              disableDelete={locked}
-              disableEdit={locked}
-              variableTypeProps={variableTypeProps}
-              asElement="li"
-              key={`${variable.name}:${variable.value}`}
-            />
-          );
-        })}
+      {variables.map((variable) => {
+        const locked = isLockedVariable(variable, variableTypeProps);
+        return (
+          <VariableCard
+            variable={variable}
+            disableDelete={locked}
+            disableEdit={locked}
+            variableTypeProps={variableTypeProps}
+            asElement="li"
+            key={`${variable.name}:${variable.value}`}
+          />
+        );
+      })}
     </Wrapper>
   );
-}
-
-function variablesSort(
-  a: TVariableShallow,
-  b: TVariableShallow,
-  variableTypeProps: TEntityVariableTypeProps,
-) {
-  const aDynamic = isDynamicVariable(a);
-  const bDynamic = isDynamicVariable(b);
-  if (aDynamic !== bDynamic) return aDynamic ? -1 : 1;
-  if (aDynamic) return 0;
-
-  if (databaseTypeOf(variableTypeProps) !== null) {
-    const aIndex = ALL_SPECIAL_DB_VARIABLES.indexOf(a.name);
-    const bIndex = ALL_SPECIAL_DB_VARIABLES.indexOf(b.name);
-    if (aIndex !== -1 && bIndex !== -1) {
-      return aIndex - bIndex;
-    }
-    if (aIndex !== -1) return -1;
-    if (bIndex !== -1) return 1;
-  }
-  return 0;
 }
 
 function Wrapper({ className, children }: { className?: string; children: ReactNode }) {
