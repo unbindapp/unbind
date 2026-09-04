@@ -178,10 +178,11 @@ export default function VariableCard({
                         {hiddenString}
                         {hasUnresolved && (
                           <>
-                            <span className="px-[0.5ch]"> </span>
+                            <span className="hidden px-[0.5ch] lg:inline"> </span>
+                            <br className="lg:hidden" />
                             <CircleAlertIcon
                               aria-label={unresolvedMessage}
-                              className="text-warning mr-1.5 mb-0.5 inline-block size-3.5 shrink-0"
+                              className="text-warning mr-1.5 mb-0.5 inline-block size-3.25 shrink-0"
                             >
                               <title>{unresolvedMessage}</title>
                             </CircleAlertIcon>
