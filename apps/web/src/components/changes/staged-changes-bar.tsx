@@ -71,12 +71,12 @@ export default function StagedChangesBar() {
     <div
       aria-live="polite"
       data-staged-changes-bar=""
-      className="pointer-events-none fixed inset-x-2 bottom-[calc(var(--navbar-height,0px)+0.5rem)] z-900 flex justify-center sm:inset-x-auto sm:top-[calc(var(--navbar-height,0px)+0.5rem)] sm:bottom-auto sm:left-2 sm:justify-start"
+      className="pointer-events-none fixed inset-x-2 bottom-[calc(var(--navbar-height,0px)+var(--bar-gap))] z-900 flex justify-center [--bar-gap:0.5rem] sm:inset-x-auto sm:top-[calc(var(--navbar-height,0px)+var(--bar-gap))] sm:bottom-auto sm:left-2 sm:justify-start"
     >
       <div
         data-error={hasError || undefined}
         data-closed={!isOpen || undefined}
-        className="bg-card border-change/30 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-1 rounded-xl border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-closed:translate-y-[150%] sm:w-auto sm:data-closed:-translate-y-[150%]"
+        className="bg-card border-change/30 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-1 rounded-xl border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-closed:[transform:translateY(calc(100%+var(--navbar-height,0px)+var(--bar-gap)+1rem))] sm:w-auto sm:data-closed:[transform:translateY(calc(-100%-var(--navbar-height,0px)-var(--bar-gap)-1rem))]"
       >
         <div className="flex min-w-0 flex-1 items-center gap-2 pr-1 pl-2">
           {hasError ? (

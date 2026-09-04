@@ -338,6 +338,8 @@ function ThreeDotButton({
   const { stage, discardStaged } = useVariables();
   const isLocked = disableDelete === true && disableEdit === true && !variable.staged;
   const isStagedDelete = variable.staged === "deleted";
+  // A variable that only exists in the stage has nothing on the server to delete
+  const canDelete = !isLocked && !isStagedDelete && variable.staged !== "new";
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -406,7 +408,7 @@ function ThreeDotButton({
                 <p className="min-w-0 shrink leading-tight">Edit</p>
               </DropdownMenuItem>
             )}
-            {!isLocked && !isStagedDelete && (
+            {canDelete && (
               <DropdownMenuItem
                 disabled={disableDelete}
                 onClick={() => stage([{ name: variable.name, value: null }])}
