@@ -79,7 +79,7 @@ export default function ChangesDetailsDialog({ children }: { children: ReactElem
         <DialogHeader>
           <div className="flex w-full items-start justify-between gap-3">
             <DialogTitle>
-              {count} {count === 1 ? "change" : "changes"}
+              {count} {count === 1 ? "Change" : "Changes"}
             </DialogTitle>
             <Button
               type="button"
@@ -89,7 +89,7 @@ export default function ChangesDetailsDialog({ children }: { children: ReactElem
               onClick={() => setShowValues((v) => !v)}
             >
               {showValues ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
-              {showValues ? "Hide values" : "Show values"}
+              {showValues ? "Hide Values" : "Show Values"}
             </Button>
           </div>
           <DialogDescription>
@@ -217,11 +217,11 @@ function ChangeRow({
           {row.previous === null ? (
             <span className="text-change font-semibold">New</span>
           ) : (
-            <span className="min-w-0 line-through">{mask(row.previous)}</span>
+            <span className="min-w-0">{mask(row.previous)}</span>
           )}
           <ArrowRightIcon className="size-3 shrink-0" />
           {row.value === null ? (
-            <span className="text-destructive font-semibold">Removed</span>
+            <span className="text-change font-semibold">Will Remove</span>
           ) : (
             <span className="text-foreground min-w-0 whitespace-pre-wrap">{mask(row.value)}</span>
           )}
@@ -231,7 +231,7 @@ function ChangeRow({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label="Discard change"
+        aria-label="Discard"
         className="text-muted-more-foreground -my-1 -mr-1 size-7 shrink-0 rounded-md"
         onClick={onDiscard}
       >
@@ -253,7 +253,7 @@ function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFet
     <div className="flex w-full flex-col gap-1.5 px-1">
       <div className="flex w-full items-center gap-2">
         <p className="text-muted-foreground text-sm leading-tight font-semibold">
-          Services that will roll out
+          Services That Will Roll Out
         </p>
         {isFetching && <LoaderIcon className="text-muted-foreground size-3.5 animate-spin" />}
       </div>

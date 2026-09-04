@@ -85,7 +85,7 @@ export default function StagedChangesBar() {
             <PencilLineIcon className="text-change size-4.5 shrink-0" />
           )}
           <p className="min-w-0 shrink text-sm leading-tight font-semibold whitespace-nowrap">
-            {shownCount} {shownCount === 1 ? "change" : "changes"}
+            {shownCount} {shownCount === 1 ? "Change" : "Changes"}
           </p>
         </div>
         <ChangesDetailsDialog>
@@ -140,7 +140,7 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
               render={
                 <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
                   <Trash2Icon className="-ml-0.5 size-5" />
-                  <p className="min-w-0 shrink leading-tight">Discard all</p>
+                  <p className="min-w-0 shrink leading-tight">Discard All</p>
                 </DropdownMenuItem>
               }
             />
@@ -150,7 +150,9 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
       <Dialog handle={discardHandle}>
         <DialogContent hideXButton classNameInnerWrapper="w-112 max-w-full">
           <DialogHeader>
-            <DialogTitle className="text-destructive">Discard changes</DialogTitle>
+            <DialogTitle className="text-destructive">
+              Discard {count} {count === 1 ? "Change" : "Changes"}
+            </DialogTitle>
             <DialogDescription>
               {count === 1
                 ? "The staged change will be thrown away. Nothing has been deployed."

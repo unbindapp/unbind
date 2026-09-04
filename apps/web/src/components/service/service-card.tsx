@@ -1,4 +1,4 @@
-import { useChangesPlan, useServiceHasStagedChanges } from "@/components/changes/changes-provider";
+import { useChangesPlan, useServiceChangeCount } from "@/components/changes/changes-provider";
 import OnlineIcon from "@/components/icons/online";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useNow } from "@/components/providers/now-provider";
@@ -75,14 +75,15 @@ export default function ServiceCard({
 
   const queryClient = useQueryClient();
   const volumes = service?.config.volumes;
-  const hasStagedChanges = useServiceHasStagedChanges(service?.id ?? "");
+  const changeCount = useServiceChangeCount(service?.id ?? "");
   const { affectedByService } = useChangesPlan();
   const affectedAction = service ? affectedByService.get(service.id)?.action : undefined;
-  const changeLabel = hasStagedChanges
-    ? "Changes"
-    : affectedAction && affectedAction !== "none"
-      ? "Will redeploy"
-      : null;
+  const changeLabel =
+    changeCount > 0
+      ? `${changeCount} ${changeCount === 1 ? "Change" : "Changes"}`
+      : affectedAction && affectedAction !== "none"
+        ? "Will Redeploy"
+        : null;
   const buttonIntentProps = useIntent({
     onIntent: () => {
       if (isPlaceholder) return;

@@ -45,8 +45,8 @@ type TProps = {
 } & Omit<TEntityVariableTypeProps, "service">;
 
 const defaultScopeNames: Record<TEntityVariableTypeProps["type"], string> = {
-  team: "Team variables",
-  project: "Project variables",
+  team: "Team Variables",
+  project: "Project Variables",
   service: "Service",
 };
 

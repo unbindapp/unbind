@@ -1,8 +1,6 @@
 import ErrorLine from "@/components/error-line";
-import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { cn } from "@/components/ui/utils";
 import { toStoredVariables } from "@/components/variables/helpers";
-import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import {
   VariablesFormField,
@@ -45,8 +43,6 @@ export default function CreateVariablesForm({
     list: { error: variableReferencesError },
   } = useVariableReferences();
 
-  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
-
   const referenceProps: TReferenceProps = useMemo(
     () => (tokensDisabled ? { tokens: [], disabled: true } : { tokens }),
     [tokensDisabled, tokens],
@@ -85,10 +81,6 @@ export default function CreateVariablesForm({
 
       const variables = toStoredVariables(value.variables, tokens);
       stage(variables);
-
-      for (const i of variables) {
-        temporarilyAddNewEntity(getNewEntityIdForVariable({ name: i.name, value: i.value }));
-      }
 
       formApi.reset();
       afterSuccessfulSubmit?.(variables);

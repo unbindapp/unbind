@@ -10,7 +10,9 @@ import {
   type TStagedVariableChange,
   type TVariableScope,
 } from "@/components/changes/types";
+import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { toast } from "@/components/ui/toast";
+import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { applyChanges, type TApplyChangesResult } from "@/lib/queries/changes";
 import type { AffectedService } from "@/lib/server/client.gen";
 import {
@@ -94,11 +96,11 @@ export function useStagedServiceChanges(serviceId: string) {
   }, [services, serviceId]);
 }
 
-export function useServiceHasStagedChanges(serviceId: string) {
+export function useServiceChangeCount(serviceId: string) {
   return useChangesStore(
     (s) =>
-      Object.values(s.services).some((c) => c.serviceId === serviceId) ||
-      Object.values(s.variables).some((c) => c.scope.serviceId === serviceId),
+      Object.values(s.services).filter((c) => c.serviceId === serviceId).length +
+      Object.values(s.variables).filter((c) => c.scope.serviceId === serviceId).length,
   );
 }
 
@@ -111,6 +113,7 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
   const discardAll = useChangesStore((s) => s.discardAll);
   const keepOnly = useChangesStore((s) => s.keepOnly);
   const queryClient = useQueryClient();
+  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
   const [lastResult, setLastResult] = useState<TApplyChangesResult | null>(null);
 
   const count = countChanges({ variables, services });
@@ -139,10 +142,19 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: async (result) => {
       setLastResult(result);
+      const state = store.getState();
+      const kept = idsToKeepAfterFailures(state, result.failures);
+      // Variables that landed light up in the list once it refetches
+      for (const change of Object.values(state.variables)) {
+        if (kept.has(change.id) || change.value === null) continue;
+        temporarilyAddNewEntity(
+          getNewEntityIdForVariable({ name: change.name, value: change.value }),
+        );
+      }
       if (result.failures.length === 0) {
         discardAll();
       } else {
-        keepOnly(idsToKeepAfterFailures(store.getState(), result.failures));
+        keepOnly(kept);
       }
       await queryClient.invalidateQueries();
       if (result.failures.length > 0) return;

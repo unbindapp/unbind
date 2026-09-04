@@ -1,7 +1,6 @@
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import { IconCache } from "@/components/icons/icon-cache";
-import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +19,6 @@ import {
   toStoredValue,
 } from "@/components/variables/helpers";
 import { readableTokenMap } from "@/components/variables/tokens";
-import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import {
   referenceCompletionAdditions,
@@ -63,8 +61,6 @@ export default function RawVariableEditor({ children }: TProps) {
     [variables, tokens],
   );
   const [editorValue, setEditorValue] = useState(editorText);
-
-  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
   const [open, setOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -151,11 +147,6 @@ export default function RawVariableEditor({ children }: TProps) {
     const parsedByName = new Map(parsedVariables.map((v) => [v.name, v.value]));
     const names = new Set([...variables.map((v) => v.name), ...parsedByName.keys()]);
     stage([...names].map((name) => ({ name, value: parsedByName.get(name) ?? null })));
-
-    for (const i of parsedVariables) {
-      if (current.get(i.name) === i.value) continue;
-      temporarilyAddNewEntity(getNewEntityIdForVariable({ name: i.name, value: i.value }));
-    }
     showSucceeded();
   };
 

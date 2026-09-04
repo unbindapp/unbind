@@ -129,17 +129,13 @@ export default function VariableCard({
           <KeyIcon
             data-dynamic={isDynamic || undefined}
             data-unresolved={hasUnresolved || undefined}
-            data-staged={variable.staged}
-            className="text-foreground data-dynamic:text-process data-dynamic:data-unresolved:text-warning data-unresolved:text-warning data-staged:text-change mr-2 size-3.5 shrink-0"
+            className="text-foreground data-dynamic:text-process data-dynamic:data-unresolved:text-warning data-unresolved:text-warning mr-2 size-3.5 shrink-0"
           />
         )}
         {isPlaceholder && (
           <div className="bg-foreground animate-skeleton mr-2 size-3.5 shrink-0 rounded-full" />
         )}
-        <p
-          data-staged={variable?.staged}
-          className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-normal text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent data-[staged=deleted]:line-through"
-        >
+        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-normal text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {isPlaceholder ? "Loading key" : variable.name}
         </p>
       </div>
@@ -250,7 +246,7 @@ export function getNewEntityIdForVariable({ name, value }: { name: string; value
 const stagedLabels: Record<NonNullable<TVariableWithStaged["staged"]>, string> = {
   new: "New",
   updated: "Changed",
-  deleted: "Removed",
+  deleted: "Will Remove",
 };
 
 function StagedChip({
@@ -264,7 +260,7 @@ function StagedChip({
     <p
       data-staged={staged}
       className={cn(
-        "bg-change/12 text-change data-[staged=deleted]:bg-destructive/12 data-[staged=deleted]:text-destructive flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-xs font-semibold",
+        "bg-change/12 text-change flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-xs font-semibold",
         className,
       )}
     >
@@ -396,7 +392,7 @@ function ThreeDotButton({
               <DropdownMenuItem onClick={() => discardStaged([variable.name])}>
                 <Undo2Icon className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">
-                  {isStagedDelete ? "Restore" : "Discard change"}
+                  {isStagedDelete ? "Restore" : "Discard"}
                 </p>
               </DropdownMenuItem>
             )}
