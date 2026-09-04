@@ -76,7 +76,7 @@ export default function StagedChangesBar() {
       <div
         data-error={hasError || undefined}
         data-closed={!isOpen || undefined}
-        className="bg-card border-change/30 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-1 rounded-xl border p-1.5 shadow-lg transition-[transform,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform data-closed:pointer-events-none data-closed:translate-y-[150%] data-closed:opacity-0 sm:w-auto sm:data-closed:-translate-y-[150%]"
+        className="bg-card border-change/30 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-1 rounded-xl border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-closed:translate-y-[150%] sm:w-auto sm:data-closed:-translate-y-[150%]"
       >
         <div className="flex min-w-0 flex-1 items-center gap-2 pr-1 pl-2">
           {hasError ? (
