@@ -221,7 +221,7 @@ function ChangeRow({
           )}
           <ArrowRightIcon className="size-3 shrink-0" />
           {row.value === null ? (
-            <span className="text-change font-semibold">Will Remove</span>
+            <span className="text-change font-semibold">Removed</span>
           ) : (
             <span className="text-foreground min-w-0 whitespace-pre-wrap">{mask(row.value)}</span>
           )}

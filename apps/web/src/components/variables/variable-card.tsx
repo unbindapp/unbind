@@ -247,7 +247,7 @@ export function getNewEntityIdForVariable({ name, value }: { name: string; value
 const stagedLabels: Record<NonNullable<TVariableWithStaged["staged"]>, string> = {
   new: "New",
   updated: "Changed",
-  deleted: "Will Remove",
+  deleted: "Removed",
 };
 
 function StagedChip({
