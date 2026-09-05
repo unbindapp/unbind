@@ -21,6 +21,8 @@ type TProps = {
   classNameHeader?: string;
   classNameContent?: string;
   changeCount?: number;
+  // Tints the section without the apply footer, for sections that stage their edits
+  hasChanges?: boolean;
   SubmitTrigger?: FC<{ children: ReactElement }>;
   onClickResetChanges?: () => void;
 } & TWrapperProps &
@@ -34,6 +36,7 @@ export function SettingsSection({
   classNameHeader,
   classNameContent,
   changeCount,
+  hasChanges,
   className,
   onClickResetChanges,
   SubmitButton,
@@ -46,10 +49,11 @@ export function SettingsSection({
   const SubmitButtonElement = SubmitButton || Button;
   const SubmitTriggerElement =
     SubmitTrigger || (({ children }: { children: ReactElement }) => children);
+  const isChanged = hasChanges ?? (changeCount !== undefined && changeCount > 0);
 
   return (
     <Wrapper
-      data-changed={(changeCount !== undefined && changeCount > 0) || undefined}
+      data-changed={isChanged || undefined}
       className={cn("group/wrapper data-changed:border-change/16 scroll-mt-4", className)}
       {...rest}
     >

@@ -223,7 +223,20 @@ function GitSection({ service }: TGitSectionProps) {
   );
 
   return (
-    <SettingsSection title="Build" id="build" Icon={WrenchIcon} entityId={sectionHighlightId}>
+    <SettingsSection
+      title="Build"
+      id="build"
+      Icon={WrenchIcon}
+      entityId={sectionHighlightId}
+      hasChanges={
+        staged.builder !== undefined ||
+        staged.railpackBuilderInstallCommand !== undefined ||
+        staged.railpackBuilderBuildCommand !== undefined ||
+        staged.dockerBuilderDockerfilePath !== undefined ||
+        staged.dockerBuilderBuildContext !== undefined ||
+        staged.startCommand !== undefined
+      }
+    >
       <Block>
         <form.AppField
           name="builder"

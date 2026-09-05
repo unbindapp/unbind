@@ -114,7 +114,17 @@ function Section({ service }: { service: TServiceShallow }) {
   ]);
 
   return (
-    <SettingsSection title="Deploy" id="deploy" Icon={RocketIcon} entityId={sectionHighlightId}>
+    <SettingsSection
+      title="Deploy"
+      id="deploy"
+      Icon={RocketIcon}
+      entityId={sectionHighlightId}
+      hasChanges={
+        staged.instanceCount !== undefined ||
+        staged.cpuLimitMillicores !== undefined ||
+        staged.memoryLimitMb !== undefined
+      }
+    >
       {hasInstances && (
         <Block>
           <form.AppField

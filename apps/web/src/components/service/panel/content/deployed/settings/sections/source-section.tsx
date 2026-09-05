@@ -125,6 +125,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       entityId={`source-${service.id}`}
       Icon={CodeIcon}
       classNameContent="gap-5"
+      hasChanges={staged.gitBranch !== undefined}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -231,6 +232,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
       entityId={`source-${service.id}`}
       Icon={CodeIcon}
       classNameContent="gap-5"
+      hasChanges={staged.image !== undefined}
     >
       <Block>
         <BlockItem className="w-full md:w-full">

@@ -120,6 +120,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       Icon={DatabaseBackupIcon}
       classNameContent="gap-5"
       entityId={sectionHighlightId}
+      hasChanges={staged.s3BackupBucketId !== undefined}
     >
       <Block>
         <form.AppField

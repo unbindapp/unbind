@@ -240,7 +240,16 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
   );
 
   return (
-    <SettingsSection title="Health" id="health" Icon={HeartIcon} entityId={sectionHighlightId}>
+    <SettingsSection
+      title="Health"
+      id="health"
+      Icon={HeartIcon}
+      entityId={sectionHighlightId}
+      hasChanges={
+        staged.healthCheckType !== undefined ||
+        detailFields.some((field) => staged[field] !== undefined)
+      }
+    >
       <Block>
         <BlockItem className="w-full md:w-full">
           <BlockItemHeader type="column">
