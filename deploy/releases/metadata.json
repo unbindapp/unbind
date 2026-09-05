@@ -263,5 +263,10 @@
     "version": "v0.1.52",
     "description": "Ignore removed deployments during redeploy checks, and General settings title updates",
     "breaking": false
+  },
+  "v0.1.53": {
+    "version": "v0.1.53",
+    "description": "Staged changes with coordinated service rollouts, endpoint change tracking, and responsive toast positioning",
+    "breaking": false
   }
 }
