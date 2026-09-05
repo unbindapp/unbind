@@ -58,6 +58,9 @@
   --navbar-height: 0px;
   --safe-screen-height: calc(100svh - var(--safe-area-inset-bottom));
   --safe-screen-height-keyboard: calc(var(--safe-screen-height) - var(--keyboard-inset-height));
+  --changes-bar-gap: 0.5rem;
+  --changes-bar-inset-bottom: calc(var(--navbar-height) + var(--changes-bar-gap));
+  --changes-bar-inset-top: calc(var(--navbar-height) + var(--changes-bar-gap));
 
   --dialog-top-padding: 1.5rem;
   --dialog-bottom-padding: 1.5rem;
@@ -307,6 +310,12 @@
 
   --opacity-barrier: 75%;
   --opacity-shadow: 60%;
+}
+
+/* An open drawer covers the navbar, so the changes bar only keeps its gap */
+:root:has([data-slot="drawer-content"]:not([data-ending-style])) {
+  --changes-bar-inset-bottom: calc(var(--safe-area-inset-bottom) + var(--changes-bar-gap));
+  --changes-bar-inset-top: var(--changes-bar-gap);
 }
 
 :root {
