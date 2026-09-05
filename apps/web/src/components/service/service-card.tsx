@@ -189,6 +189,7 @@ export default function ServiceCard({
               volume={volume}
               className={cn(
                 classNameVolume,
+                changeLabel !== null && "border-change/40",
                 index !== 0 && "-mt-px",
                 index === volumes.length - 1 && (classNameVolumeLast || "rounded-b-xl"),
               )}
