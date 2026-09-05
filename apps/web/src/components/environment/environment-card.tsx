@@ -486,19 +486,19 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
         }
       }}
     >
-      <DialogTrigger render={<li className="relative w-full p-1 sm:w-1/2" />} nativeButton={false}>
-        <div className="group/item relative flex w-full items-center justify-start">
-          <Button
-            variant="outline"
-            className="text-muted-foreground flex w-full flex-row items-center justify-start px-4 py-3 font-medium"
-          >
-            <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
-            <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
-              New Environment
-            </p>
-          </Button>
-        </div>
-      </DialogTrigger>
+      <li className="relative w-full p-1 sm:w-1/2">
+        <DialogTrigger
+          render={
+            <Button
+              variant="outline"
+              className="text-muted-foreground flex w-full flex-row items-center justify-start px-4 py-3 font-medium"
+            >
+              <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
+              <p className="min-w-0 shrink truncate leading-tight">New Environment</p>
+            </Button>
+          }
+        />
+      </li>
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Create Environment</DialogTitle>
