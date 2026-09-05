@@ -189,7 +189,7 @@ export default function VariableCard({
                       >
                         <title>{unresolvedMessage}</title>
                       </CircleAlertIcon>
-                      <span className="text-warning">{unresolvedMessage}</span>
+                      <span className="text-warning font-medium">{unresolvedMessage}</span>
                     </p>
                   )}
                 </div>
