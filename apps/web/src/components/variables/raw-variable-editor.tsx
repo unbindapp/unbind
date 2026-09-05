@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toast";
+import TokenField from "@/components/ui/token-field/token-field";
 import {
   getVariablesFromRawText,
   referenceMapForVariables,
@@ -33,9 +34,7 @@ import {
   VariableForCreateSchema,
 } from "@/lib/queries/variables";
 import { CheckCircleIcon } from "lucide-react";
-import { lazy, ReactElement, Suspense, useEffect, useMemo, useRef, useState } from "react";
-
-const TokenFieldLazy = lazy(() => import("@/components/ui/token-field/token-field"));
+import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
 
 type TProps = {
   children: ReactElement;
@@ -264,23 +263,19 @@ function VariableEditor({
   return (
     <div className="relative -mx-3 flex min-h-0 w-[calc(100%+1.5rem)] flex-1 flex-col sm:mx-0 sm:w-full">
       {!referencesDisabled && <IconCache icons={icons} />}
-      <Suspense fallback={<EditorSkeleton />}>
-        <TokenFieldLazy
-          value={isHidden ? hiddenValue : editorValue}
-          onChange={onEditorValueChange}
-          onFocus={() => setIsHidden(false)}
-          language={language}
-          completionAdditions={referencesDisabled ? undefined : referenceCompletionAdditions}
-          multiline
-          dropdownAtCaret
-          placeholder="VARIABLE_NAME=Value"
-          fill
-          // The host is pinned to the field's box so CodeMirror has a definite
-          // height to fill: the editor spans the whole bordered area and scrolls.
-          className="bg-card relative min-h-0 flex-1 overflow-hidden rounded-lg"
-          classNameEditor="absolute inset-0 w-auto p-0 [--token-field-content-padding:0.625rem_0.875rem] font-mono font-normal"
-        />
-      </Suspense>
+      <TokenField
+        value={isHidden ? hiddenValue : editorValue}
+        onChange={onEditorValueChange}
+        onFocus={() => setIsHidden(false)}
+        language={language}
+        completionAdditions={referencesDisabled ? undefined : referenceCompletionAdditions}
+        multiline
+        dropdownAtCaret
+        placeholder="VARIABLE_NAME=Value"
+        // Pinned to the field's box so the editor fills the dialog's flex space and scrolls
+        className="bg-card relative min-h-0 flex-1 overflow-hidden rounded-lg"
+        classNameEditor="absolute inset-0 w-auto [--token-field-content-padding:0.625rem_0.875rem] font-mono font-normal"
+      />
       <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-lg">
         <div
           data-open={recentlySucceeded || undefined}

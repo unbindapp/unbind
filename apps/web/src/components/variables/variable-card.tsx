@@ -484,7 +484,6 @@ function EditVariableForm({
           name="variableValue"
           children={(field) => (
             <VariableValueField
-              Field={field.TokenField}
               subField={field}
               language={language}
               referencesDisabled={referencesDisabled}

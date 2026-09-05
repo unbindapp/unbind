@@ -3,14 +3,11 @@ import {
   type TCompletionAddition,
 } from "@/components/ui/token-field/autocomplete";
 import {
-  tokenFieldFillTheme,
   tokenFieldHighlightStyle,
+  tokenFieldMultilineTheme,
+  tokenFieldSingleLineTheme,
   tokenFieldTheme,
 } from "@/components/ui/token-field/theme";
-import {
-  tokenFieldEditorClassName,
-  tokenFieldWrapperClassName,
-} from "@/components/ui/token-field/styles";
 import { cn } from "@/components/ui/utils";
 import { history, historyKeymap, standardKeymap } from "@codemirror/commands";
 import { type LanguageSupport, syntaxHighlighting } from "@codemirror/language";
@@ -52,12 +49,6 @@ export type TTokenFieldProps = {
    * dropdown to the bottom of the editor.
    */
   dropdownAtCaret?: boolean;
-  /**
-   * Stretches the editor to the host so clicks anywhere in it place the cursor.
-   * Padding then belongs on the content, set through --token-field-content-padding
-   * on classNameEditor instead of padding classes.
-   */
-  fill?: boolean;
   ariaLabel?: string;
   ariaInvalid?: boolean;
   /** Softer than invalid: the field is usable but its value isn't being applied. */
@@ -66,9 +57,17 @@ export type TTokenFieldProps = {
   /** Rendered inside the field box, after the editor. */
   trailing?: ReactNode;
   className?: string;
+  /** Padding is set through --token-field-content-padding, not padding classes. */
   classNameEditor?: string;
   ref?: Ref<TTokenFieldHandle>;
 };
+
+const wrapperClassName =
+  "bg-input focus-within:ring-primary/50 aria-invalid:ring-destructive/60 focus-within:aria-invalid:ring-destructive/60 data-warning:ring-warning/60 focus-within:data-warning:ring-warning/60 flex w-full cursor-text rounded-lg border text-left transition-colors focus-within:ring-1 data-disabled:cursor-not-allowed data-disabled:opacity-50";
+
+// The leading has to clear a chip's fill, which is the font's ascent-to-descent
+// band rather than the text height; tighter and the field clips the top of it.
+const editorClassName = "w-0 min-w-0 flex-1 leading-normal font-medium";
 
 // Matches the sideOffset our Popover and DropdownMenu use.
 const anchorGap = 4;
@@ -97,7 +96,6 @@ export default function TokenField({
   completionAdditions,
   anchorDropdownToField,
   dropdownAtCaret,
-  fill,
   ariaLabel,
   ariaInvalid,
   warning,
@@ -214,7 +212,18 @@ export default function TokenField({
       // body escapes every clipping ancestor.
       tooltips({ parent: document.body }),
       tokenFieldTheme,
-      ...(fill ? [tokenFieldFillTheme] : []),
+      multiline ? tokenFieldMultilineTheme : tokenFieldSingleLineTheme,
+      // The padding is on the scrolled content, so without this the caret
+      // scrolls into view under the padding and anything overlaying it.
+      EditorView.scrollMargins.of((view) => {
+        const style = getComputedStyle(view.contentDOM);
+        return {
+          left: parseFloat(style.paddingLeft),
+          right: parseFloat(style.paddingRight),
+          top: parseFloat(style.paddingTop),
+          bottom: parseFloat(style.paddingBottom),
+        };
+      }),
       EditorView.contentAttributes.of({
         spellcheck: "false",
         autocorrect: "off",
@@ -265,7 +274,7 @@ export default function TokenField({
     };
     // The editor is created once; live updates flow through the effects below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [multiline, placeholder, ariaLabel, fill]);
+  }, [multiline, placeholder, ariaLabel]);
 
   useEffect(() => {
     const view = viewRef.current;
@@ -299,9 +308,9 @@ export default function TokenField({
       data-disabled={disabled || undefined}
       data-warning={warning || undefined}
       aria-invalid={ariaInvalid || undefined}
-      className={cn(tokenFieldWrapperClassName, className)}
+      className={cn(wrapperClassName, className)}
     >
-      <div ref={hostRef} className={cn(tokenFieldEditorClassName, classNameEditor)} />
+      <div ref={hostRef} className={cn(editorClassName, classNameEditor)} />
       {trailing}
     </div>
   );

@@ -26,8 +26,6 @@ import { Input, InputProps } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider, SliderProps } from "@/components/ui/slider";
-import TokenFieldFallback from "@/components/ui/token-field/token-field-fallback";
-import type { TTokenFieldProps } from "@/components/ui/token-field/token-field";
 import { cn } from "@/components/ui/utils";
 import { appLocale } from "@/lib/constants";
 import {
@@ -41,17 +39,7 @@ import {
   useStore,
 } from "@tanstack/react-form";
 import { CheckIcon, RotateCcwIcon } from "lucide-react";
-import {
-  FC,
-  lazy,
-  ReactElement,
-  Suspense,
-  useCallback,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { FC, ReactElement, useCallback, useId, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 
 const { fieldContext, formContext } = createFormHookContexts();
@@ -73,7 +61,7 @@ function scrollToFirstInvalidField(formDomId: string) {
   });
 }
 
-function useFieldError(field: AnyFieldApi, dontCheckUntilSubmit?: boolean) {
+export function useFieldError(field: AnyFieldApi, dontCheckUntilSubmit?: boolean) {
   const submissionAttempts = useStore(field.form.store, (state) => state.submissionAttempts);
   const isFormSubmitted = submissionAttempts > 0;
   const hasError =
@@ -84,7 +72,7 @@ function useFieldError(field: AnyFieldApi, dontCheckUntilSubmit?: boolean) {
   return { hasError, formDomId: formDomIds.get(field.form.store) };
 }
 
-type TFieldProps = {
+export type TFieldProps = {
   field: AnyFieldApi;
   hideError?: boolean;
   dontCheckUntilSubmit?: boolean;
@@ -146,48 +134,6 @@ function InputWithInfo({
         </Button>
       )}
       {!hideError && hasError ? (
-        <ErrorLine
-          className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
-          message={field.state.meta.errors[0].message}
-        />
-      ) : null}
-    </div>
-  );
-}
-
-const TokenFieldLazy = lazy(() => import("@/components/ui/token-field/token-field"));
-
-function TokenField(props: TTokenFieldProps) {
-  return (
-    <Suspense fallback={<TokenFieldFallback {...props} />}>
-      <TokenFieldLazy {...props} />
-    </Suspense>
-  );
-}
-
-function TokenFieldWithInfo({
-  className,
-  hideError,
-  field,
-  classNameInput,
-  classNameInfo,
-  dontCheckUntilSubmit,
-  ...rest
-}: TTokenFieldProps & TFieldProps) {
-  const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
-
-  if (hideError) {
-    return <TokenField {...rest} className={cn("w-full", className, classNameInput)} />;
-  }
-
-  return (
-    <div
-      data-form-id={formDomId}
-      data-invalid={hasError || undefined}
-      className={cn("flex flex-col", className)}
-    >
-      <TokenField {...rest} className={cn("w-full", classNameInput)} />
-      {hasError ? (
         <ErrorLine
           className={cn("bg-transparent py-1.5 pl-1.5", classNameInfo)}
           message={field.state.meta.errors[0].message}
@@ -854,7 +800,6 @@ const { useAppForm: useAppFormBase, withForm } = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
     AsyncInputWithItems,
-    TokenField: TokenFieldWithInfo,
     DomainInput,
     StorageSizeInput,
     AsyncAndSearchableSelect,

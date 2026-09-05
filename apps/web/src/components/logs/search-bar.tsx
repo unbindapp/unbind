@@ -198,11 +198,11 @@ function SearchBar({
           }}
           className="relative flex flex-1 items-stretch"
         >
-          <div className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2">
+          <div className="text-muted-foreground bg-input pointer-events-none absolute inset-y-px left-px z-1 flex w-8.25 items-center rounded-l-[7px] pl-2.75">
             {isPendingLogs ? (
-              <LoaderIcon className="size-full animate-spin" />
+              <LoaderIcon className="size-4 animate-spin" />
             ) : (
-              <SearchIcon className="size-full" />
+              <SearchIcon className="size-4" />
             )}
           </div>
           <IconCache icons={icons} />
@@ -224,7 +224,7 @@ function SearchBar({
             ariaLabel="Search logs"
             warning={searchError ? true : undefined}
             className="flex-1"
-            classNameEditor="py-1.75 pr-31 pl-8.5"
+            classNameEditor="[--token-field-content-padding:0.4375rem_7.75rem_0.4375rem_2.125rem]"
             placeholder={scope.placeholder}
           />
           <div className="absolute top-0 right-0 flex h-full justify-end">
@@ -233,7 +233,7 @@ function SearchBar({
               disabled={inputValue === "" || inputValue === undefined}
               onClick={onClearInput}
               variant="ghost"
-              className="text-muted-more-foreground relative z-0 h-full w-10 translate-x-10 rounded-none transition data-has-value:translate-x-0"
+              className="text-muted-more-foreground data-has-value:bg-input relative z-0 h-full w-10 translate-x-10 rounded-none transition data-has-value:translate-x-0 data-has-value:border-t data-has-value:border-b"
             >
               <XIcon className="size-4.5" />
             </Button>

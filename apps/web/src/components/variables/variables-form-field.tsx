@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import type { TTokenFieldHandle, TTokenFieldProps } from "@/components/ui/token-field/token-field";
+import type { TTokenFieldHandle } from "@/components/ui/token-field/token-field";
+import TokenFieldWithInfo from "@/components/ui/token-field/token-field-with-info";
 import BrandIcon from "@/components/icons/brand";
 import { IconCache, type TCachedIcon } from "@/components/icons/icon-cache";
 import { iconCompletionAddition } from "@/components/ui/token-field/icon-completion";
@@ -19,7 +20,7 @@ import type { LanguageSupport } from "@codemirror/language";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { TVariableForCreate } from "@/lib/queries/variables";
 import { InfoIcon, Link2Icon, LoaderIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import { useCallback, useMemo, useRef, type FC } from "react";
+import { useCallback, useMemo, useRef } from "react";
 
 export type TReferenceProps = {
   /** undefined while references are loading */
@@ -162,7 +163,6 @@ export const VariablesFormField = withForm({
                       <form.AppField key={`variables[${i}].value`} name={`variables[${i}].value`}>
                         {(subField) => (
                           <VariableValueField
-                            Field={field.TokenField}
                             subField={subField}
                             language={language}
                             referencesDisabled={referenceProps.disabled}
@@ -224,13 +224,6 @@ export const VariablesFormField = withForm({
 });
 
 type TValueFieldProps = {
-  Field: FC<
-    TTokenFieldProps & {
-      field: AnyFieldApi;
-      dontCheckUntilSubmit?: boolean;
-      classNameInput?: string;
-    }
-  >;
   subField: AnyFieldApi;
   language: LanguageSupport;
   referencesDisabled?: boolean;
@@ -240,7 +233,6 @@ type TValueFieldProps = {
 };
 
 export function VariableValueField({
-  Field,
   subField,
   language,
   referencesDisabled,
@@ -250,7 +242,7 @@ export function VariableValueField({
   const fieldRef = useRef<TTokenFieldHandle>(null);
 
   return (
-    <Field
+    <TokenFieldWithInfo
       dontCheckUntilSubmit
       ref={fieldRef}
       field={subField}
@@ -285,8 +277,9 @@ export function VariableValueField({
         compact ? "min-h-9 rounded-lg text-sm pointer-coarse:text-base sm:rounded-md" : undefined
       }
       classNameEditor={cn(
-        "font-mono max-h-35 overflow-auto",
-        compact && "px-2.5 py-1.5 pointer-coarse:py-1.25",
+        "font-mono [&_.cm-scroller]:max-h-35",
+        compact &&
+          "[--token-field-content-padding:0.375rem_0.625rem] pointer-coarse:[--token-field-content-padding:0.3125rem_0.625rem]",
       )}
       className="flex-1"
       placeholder={placeholder ?? (referencesDisabled ? "Value" : "Value or ${Reference}")}
