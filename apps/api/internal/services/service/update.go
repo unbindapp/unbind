@@ -48,11 +48,14 @@ func (self *ServiceService) UpdateService(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	if err := self.applyServiceUpdate(ctx, update); err != nil {
+	updated, err := self.applyServiceUpdate(ctx, update)
+	if err != nil {
 		return nil, err
 	}
 
-	results, err := self.rollout(ctx, touchedServices{input.ServiceID: {config: true}})
+	touched := touchedServices{}
+	self.touchServiceConfig(ctx, touched, updated, update.service.Edges.ServiceConfig, updated.Edges.ServiceConfig)
+	results, err := self.rollout(ctx, touched)
 	if err != nil {
 		return nil, err
 	}
@@ -204,16 +207,17 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 	return &serviceUpdate{input: input, service: service}, nil
 }
 
-// applyServiceUpdate persists a prepared update without rolling it out
-func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serviceUpdate) error {
+// applyServiceUpdate persists a prepared update without rolling it out and returns
+// the service as stored
+func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serviceUpdate) (*ent.Service, error) {
 	input, service := update.input, update.service
 	client := self.k8s.GetInternalClient()
 
 	if err := self.applyDatabaseStorageSize(ctx, service, input.DatabaseConfig, client); err != nil {
-		return err
+		return nil, err
 	}
 
-	return self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		if err := self.repo.Service().Update(ctx, tx, input.ServiceID, input.Name, input.Description); err != nil {
 			return fmt.Errorf("failed to update service: %w", err)
 		}
@@ -411,7 +415,11 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 		}
 
 		return nil
-	})
+	}); err != nil {
+		return nil, err
+	}
+
+	return self.repo.Service().GetByID(ctx, service.ID)
 }
 
 func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, input *models.UpdateServiceInput, updated *ent.Service, newDeployment *ent.Deployment) {

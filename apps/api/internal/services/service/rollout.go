@@ -74,18 +74,45 @@ func (self *ServiceService) touchVariableWrite(ctx context.Context, touched touc
 		touch.rendered = touch.rendered || write.NeedsRedeploy
 	}
 
-	referencing, err := self.variableService.FindReferencingServices(ctx, write.Input.Type, write.SourceID(), write.ChangedKeys)
+	self.touchReferences(ctx, touched, write.Input.Type, write.SourceID(), write.ChangedKeys)
+}
+
+// touchServiceConfig records an updated service and every deployed service whose
+// endpoint references to it render differently with the new config
+func (self *ServiceService) touchServiceConfig(ctx context.Context, touched touchedServices, service *ent.Service, before, after *ent.ServiceConfig) {
+	touch := touched.get(service.ID)
+	touch.config = true
+	touch.service = service
+
+	keys := variables_service.ChangedEndpointKeys(service.Type, before, after)
+	self.touchReferences(ctx, touched, schema.VariableReferenceSourceTypeService, service.ID, keys)
+}
+
+// touchReferences records every deployed service referencing one of the changed keys
+func (self *ServiceService) touchReferences(ctx context.Context, touched touchedServices, sourceType schema.VariableReferenceSourceType, sourceID uuid.UUID, keys []string) {
+	if len(keys) == 0 {
+		return
+	}
+	referencing, err := self.variableService.FindReferencingServices(ctx, sourceType, sourceID, keys)
 	if err != nil {
-		log.Errorf("failed to find services referencing %s: %v", write.SourceID(), err)
+		log.Errorf("failed to find services referencing %s: %v", sourceID, err)
 		return
 	}
 	for _, service := range referencing {
 		touch := touched.get(service.ID)
-		touch.references = append(touch.references, write.ChangedKeys...)
+		touch.references = append(touch.references, keys...)
 		if touch.service == nil {
 			touch.service = service
 		}
 	}
+}
+
+// projectConfig guesses the ports and hosts an update would leave on the config
+func projectConfig(config *ent.ServiceConfig, input *models.UpdateServiceInput) *ent.ServiceConfig {
+	projected := *config
+	projected.Ports = service_repo.MergePorts(config.Ports, input.OverwritePorts, input.AddPorts, input.RemovePorts)
+	projected.Hosts = service_repo.MergeHosts(config.Hosts, input.OverwriteHosts, input.UpsertHosts, input.RemoveHosts)
+	return &projected
 }
 
 // resolveChangeAction picks the single rollout a touched service needs

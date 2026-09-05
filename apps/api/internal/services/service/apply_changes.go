@@ -58,12 +58,13 @@ func (self *ServiceService) ApplyChanges(ctx context.Context, requesterUserID uu
 	failures := []models.ChangeFailure{}
 	applied := make([]*serviceUpdate, 0, len(updates))
 	for _, update := range updates {
-		if err := self.applyServiceUpdate(ctx, update); err != nil {
+		updated, err := self.applyServiceUpdate(ctx, update)
+		if err != nil {
 			log.Errorf("failed to apply changes to service %s: %v", update.service.ID, err)
 			failures = append(failures, models.ChangeFailure{ServiceID: &update.service.ID, Message: failureMessage(err)})
 			continue
 		}
-		touched.get(update.service.ID).config = true
+		self.touchServiceConfig(ctx, touched, updated, update.service.Edges.ServiceConfig, updated.Edges.ServiceConfig)
 		applied = append(applied, update)
 	}
 	for _, write := range writes {
@@ -107,10 +108,9 @@ func (self *ServiceService) planChanges(ctx context.Context, updates []*serviceU
 	touched := touchedServices{}
 	estimates := make(map[uuid.UUID]service_repo.NeedsDeploymentResponse, len(updates))
 	for _, update := range updates {
-		touch := touched.get(update.service.ID)
-		touch.config = true
-		touch.service = update.service
-		estimates[update.service.ID] = estimateConfigChange(update.service.Edges.ServiceConfig, update.input)
+		config := update.service.Edges.ServiceConfig
+		self.touchServiceConfig(ctx, touched, update.service, config, projectConfig(config, update.input))
+		estimates[update.service.ID] = estimateConfigChange(config, update.input)
 	}
 	for _, write := range writes {
 		self.touchVariableWrite(ctx, touched, write)

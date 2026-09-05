@@ -314,23 +314,31 @@ func serviceIcon(service *ent.Service) string {
 }
 
 func externalHosts(service *ent.Service) []schema.HostSpec {
-	if service.Edges.ServiceConfig == nil {
+	return configHosts(service.Edges.ServiceConfig)
+}
+
+func configHosts(config *ent.ServiceConfig) []schema.HostSpec {
+	if config == nil {
 		return nil
 	}
-	return service.Edges.ServiceConfig.Hosts
+	return config.Hosts
+}
+
+func internalPortsFromConfig(service *ent.Service) []int32 {
+	return configInternalPorts(service.Type, service.Edges.ServiceConfig)
 }
 
 // Internal TCP ports, in config order. Node ports are external-only except for databases.
-func internalPortsFromConfig(service *ent.Service) []int32 {
-	if service.Edges.ServiceConfig == nil {
+func configInternalPorts(serviceType schema.ServiceType, config *ent.ServiceConfig) []int32 {
+	if config == nil {
 		return nil
 	}
 	var ports []int32
-	for _, port := range service.Edges.ServiceConfig.Ports {
+	for _, port := range config.Ports {
 		if port.Protocol != nil && *port.Protocol == schema.ProtocolUDP {
 			continue
 		}
-		if port.IsNodePort && service.Type != schema.ServiceTypeDatabase {
+		if port.IsNodePort && serviceType != schema.ServiceTypeDatabase {
 			continue
 		}
 		ports = append(ports, port.Port)

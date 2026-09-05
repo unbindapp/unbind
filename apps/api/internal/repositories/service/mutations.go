@@ -462,92 +462,21 @@ func (self *ServiceRepository) UpdateConfig(
 		}
 	}
 
-	if len(input.OverwritePorts) > 0 {
-		upd.SetPorts(input.OverwritePorts)
-	} else if len(input.AddPorts) > 0 || len(input.RemovePorts) > 0 {
-		ports := existingConfig.Ports
-
-		// Create a map of ports to remove for efficient lookup
-		toRemove := make(map[int32]bool)
-		// Add all AddPorts and RemovePorts to the removal map to prevent duplicates
-		for _, addPort := range input.AddPorts {
-			toRemove[addPort.Port] = true
-		}
-		for _, removePort := range input.RemovePorts {
-			toRemove[removePort.Port] = true
-		}
-		// Filter existing ports, removing any that match AddPorts or RemovePorts
-		var filteredPorts []schema.PortSpec
-		for _, port := range ports {
-			if !toRemove[port.Port] {
-				filteredPorts = append(filteredPorts, port)
-			}
-		}
-		// Append all AddPorts to the filtered list
-		filteredPorts = append(filteredPorts, input.AddPorts...)
-		if len(filteredPorts) == 0 {
+	if len(input.OverwritePorts) > 0 || len(input.AddPorts) > 0 || len(input.RemovePorts) > 0 {
+		ports := MergePorts(existingConfig.Ports, input.OverwritePorts, input.AddPorts, input.RemovePorts)
+		if len(ports) == 0 {
 			upd.ClearPorts()
 		} else {
-			upd.SetPorts(filteredPorts)
+			upd.SetPorts(ports)
 		}
 	}
 
-	if len(input.OverwriteHosts) > 0 {
-		upd.SetHosts(input.OverwriteHosts)
-	} else if len(input.UpsertHosts) > 0 || len(input.RemoveHosts) > 0 {
-		hosts := existingConfig.Hosts
-
-		existingByHost := make(map[string]schema.HostSpec, len(hosts))
-		for _, host := range hosts {
-			existingByHost[host.Host] = host
-		}
-
-		// Create a map of hosts to remove for efficient lookup
-		toRemove := make(map[string]bool)
-
-		// Add all UpsertHosts and RemoveHosts to the removal map to prevent duplicates
-		for _, upsertHost := range input.UpsertHosts {
-			if upsertHost.PrevHost != nil {
-				toRemove[*upsertHost.PrevHost] = true
-				continue
-			}
-			toRemove[upsertHost.Host] = true
-		}
-		for _, removeHost := range input.RemoveHosts {
-			toRemove[removeHost.Host] = true
-		}
-
-		// Filter existing hosts, removing any that match AddHosts or RemoveHosts
-		var filteredHosts []schema.HostSpec
-		for _, host := range hosts {
-			if !toRemove[host.Host] {
-				filteredHosts = append(filteredHosts, host)
-			}
-		}
-
-		for _, upsertHost := range input.UpsertHosts {
-			matchKey := upsertHost.Host
-			if upsertHost.PrevHost != nil {
-				matchKey = *upsertHost.PrevHost
-			}
-			if prev, ok := existingByHost[matchKey]; ok {
-				if upsertHost.TemplateInputID == nil {
-					upsertHost.TemplateInputID = prev.TemplateInputID
-				}
-				if upsertHost.DisplayName == nil {
-					upsertHost.DisplayName = prev.DisplayName
-				}
-				if upsertHost.Description == nil {
-					upsertHost.Description = prev.Description
-				}
-			}
-			filteredHosts = append(filteredHosts, upsertHost)
-		}
-
-		if len(filteredHosts) == 0 {
+	if len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0 || len(input.RemoveHosts) > 0 {
+		hosts := MergeHosts(existingConfig.Hosts, input.OverwriteHosts, input.UpsertHosts, input.RemoveHosts)
+		if len(hosts) == 0 {
 			upd.ClearHosts()
 		} else {
-			upd.SetHosts(filteredHosts)
+			upd.SetHosts(hosts)
 		}
 	}
 
@@ -669,4 +598,87 @@ func (self *ServiceRepository) UpdateDatabaseStorageSize(
 		return nil, err
 	}
 	return updatedCfg.DatabaseConfig, nil
+}
+
+// MergePorts applies an update's port inputs to the existing ports. Overwrite wins,
+// otherwise added ports replace existing ones with the same number and removed ports drop out.
+func MergePorts(existing, overwrite, add, remove []schema.PortSpec) []schema.PortSpec {
+	if len(overwrite) > 0 {
+		return overwrite
+	}
+	if len(add) == 0 && len(remove) == 0 {
+		return existing
+	}
+
+	toRemove := make(map[int32]bool, len(add)+len(remove))
+	for _, port := range add {
+		toRemove[port.Port] = true
+	}
+	for _, port := range remove {
+		toRemove[port.Port] = true
+	}
+
+	var merged []schema.PortSpec
+	for _, port := range existing {
+		if !toRemove[port.Port] {
+			merged = append(merged, port)
+		}
+	}
+	return append(merged, add...)
+}
+
+// MergeHosts applies an update's host inputs to the existing hosts. Overwrite wins,
+// otherwise upserts replace the host they name (or their previous host) keeping its
+// template metadata, and removed hosts drop out.
+func MergeHosts(existing, overwrite, upsert, remove []schema.HostSpec) []schema.HostSpec {
+	if len(overwrite) > 0 {
+		return overwrite
+	}
+	if len(upsert) == 0 && len(remove) == 0 {
+		return existing
+	}
+
+	existingByHost := make(map[string]schema.HostSpec, len(existing))
+	for _, host := range existing {
+		existingByHost[host.Host] = host
+	}
+
+	toRemove := make(map[string]bool, len(upsert)+len(remove))
+	for _, host := range upsert {
+		if host.PrevHost != nil {
+			toRemove[*host.PrevHost] = true
+			continue
+		}
+		toRemove[host.Host] = true
+	}
+	for _, host := range remove {
+		toRemove[host.Host] = true
+	}
+
+	var merged []schema.HostSpec
+	for _, host := range existing {
+		if !toRemove[host.Host] {
+			merged = append(merged, host)
+		}
+	}
+
+	for _, host := range upsert {
+		matchKey := host.Host
+		if host.PrevHost != nil {
+			matchKey = *host.PrevHost
+		}
+		if prev, ok := existingByHost[matchKey]; ok {
+			if host.TemplateInputID == nil {
+				host.TemplateInputID = prev.TemplateInputID
+			}
+			if host.DisplayName == nil {
+				host.DisplayName = prev.DisplayName
+			}
+			if host.Description == nil {
+				host.Description = prev.Description
+			}
+		}
+		merged = append(merged, host)
+	}
+	return merged
 }

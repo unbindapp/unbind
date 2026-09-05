@@ -82,3 +82,25 @@ func TestServiceTouchReasons(t *testing.T) {
 		(&serviceTouch{config: true, variables: true, references: []string{"KEY"}}).reasons(),
 	)
 }
+
+func TestProjectConfig(t *testing.T) {
+	config := &ent.ServiceConfig{
+		Replicas: 2,
+		Ports:    []schema.PortSpec{{Port: 3000}, {Port: 4000}},
+		Hosts:    []schema.HostSpec{{Host: "a.com", TargetPort: utils.ToPtr[int32](3000)}},
+	}
+
+	projected := projectConfig(config, &models.UpdateServiceInput{
+		RemovePorts: []schema.PortSpec{{Port: 3000}},
+		AddPorts:    []schema.PortSpec{{Port: 5000}},
+		UpsertHosts: []schema.HostSpec{{Host: "b.com", PrevHost: utils.ToPtr("a.com")}},
+	})
+	assert.Equal(t, []schema.PortSpec{{Port: 4000}, {Port: 5000}}, projected.Ports)
+	assert.Equal(t, []schema.HostSpec{{Host: "b.com", PrevHost: utils.ToPtr("a.com")}}, projected.Hosts)
+	assert.Equal(t, int32(2), projected.Replicas)
+
+	untouched := projectConfig(config, &models.UpdateServiceInput{Replicas: utils.ToPtr[int32](3)})
+	assert.Equal(t, config.Ports, untouched.Ports)
+	assert.Equal(t, config.Hosts, untouched.Hosts)
+	assert.Equal(t, []schema.PortSpec{{Port: 3000}, {Port: 4000}}, config.Ports)
+}
