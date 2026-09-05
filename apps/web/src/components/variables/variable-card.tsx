@@ -171,7 +171,7 @@ export default function VariableCard({
                 className="max-h-[min(16rem,50vh)] w-full mask-[linear-gradient(to_bottom,transparent_0%,black_0.375rem,black_calc(100%-0.375rem),transparent_100%)]"
                 classNameViewport="py-1.5"
               >
-                <div className="flex w-full flex-col justify-start gap-1 lg:flex-row lg:items-center lg:gap-1.5">
+                <div className="flex w-full flex-col items-start justify-start gap-1.5 lg:flex-row lg:items-center lg:gap-2">
                   <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                     {isPlaceholder || !variable || !isValueVisible ? (
                       hiddenString
@@ -182,7 +182,7 @@ export default function VariableCard({
                     )}
                   </p>
                   {!isValueVisible && hasUnresolved && (
-                    <p className="min-w-0 shrink text-sm">
+                    <p className="min-w-0 shrink pr-2 pb-1 text-sm leading-snug lg:pb-0">
                       <CircleAlertIcon
                         aria-label={unresolvedMessage}
                         className="text-warning mr-1.5 mb-0.5 inline-block size-3.25 shrink-0"
