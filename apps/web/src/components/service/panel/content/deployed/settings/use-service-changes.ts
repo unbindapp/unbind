@@ -1,9 +1,12 @@
-import { useChangesStore, useStagedServiceChanges } from "@/components/changes/changes-provider";
+import {
+  useStagedChangesStore,
+  useStagedServiceChanges,
+} from "@/components/staged-changes/staged-changes-provider";
 import {
   serviceChangeId,
   type TServiceChangeField,
   type TStagedServiceChange,
-} from "@/components/changes/types";
+} from "@/components/staged-changes/types";
 import { useService } from "@/components/service/service-provider";
 import { TServiceShallow } from "@/lib/queries/services";
 import { useCallback, useEffect, useRef } from "react";
@@ -23,8 +26,8 @@ type TStageInput<T extends string | number> = {
 export function useServiceChanges(service: TServiceShallow) {
   const { teamId, projectId, environmentId } = useService();
   const staged = useStagedServiceChanges(service.id);
-  const stageService = useChangesStore((s) => s.stageService);
-  const discard = useChangesStore((s) => s.discard);
+  const stageService = useStagedChangesStore((s) => s.stageService);
+  const discard = useStagedChangesStore((s) => s.discard);
 
   const stage = useCallback(
     <T extends string | number>({ field, label, value, previous, format }: TStageInput<T>) => {

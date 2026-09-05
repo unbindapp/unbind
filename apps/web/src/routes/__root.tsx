@@ -1,4 +1,4 @@
-import StagedChangesBar from "@/components/changes/staged-changes-bar";
+import StagedChangesBar from "@/components/staged-changes/staged-changes-bar";
 import NotFoundTemplate from "@/components/navigation/not-found-template";
 import Providers from "@/components/providers/providers";
 import { Toaster } from "@/components/ui/toast";

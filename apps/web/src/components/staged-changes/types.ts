@@ -68,12 +68,12 @@ export const StagedServiceChangeSchema = z.object({
 
 export type TStagedServiceChange = z.infer<typeof StagedServiceChangeSchema>;
 
-export const ChangesStateSchema = z.object({
+export const StagedChangesStateSchema = z.object({
   variables: z.record(z.string(), StagedVariableChangeSchema),
   services: z.record(z.string(), StagedServiceChangeSchema),
 });
 
-export type TChangesState = z.infer<typeof ChangesStateSchema>;
+export type TStagedChangesState = z.infer<typeof StagedChangesStateSchema>;
 
 export function variableScopeKey(scope: TVariableScope) {
   return [
@@ -93,6 +93,6 @@ export function serviceChangeId(serviceId: string, field: TServiceChangeField) {
   return `service:${serviceId}:${field}`;
 }
 
-export function countChanges(state: TChangesState) {
+export function countChanges(state: TStagedChangesState) {
   return Object.keys(state.variables).length + Object.keys(state.services).length;
 }

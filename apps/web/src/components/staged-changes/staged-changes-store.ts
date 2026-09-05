@@ -1,11 +1,11 @@
 import {
-  ChangesStateSchema,
+  StagedChangesStateSchema,
   serviceChangeId,
   variableChangeId,
-  type TChangesState,
+  type TStagedChangesState,
   type TStagedServiceChange,
   type TStagedVariableChange,
-} from "@/components/changes/types";
+} from "@/components/staged-changes/types";
 import { createJSONZodStorage } from "@/lib/create-json-zod-storage";
 import { persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
@@ -17,7 +17,7 @@ export type TStageServiceInput = Omit<TStagedServiceChange, "id" | "createdAt"> 
   isDefault: boolean;
 };
 
-export type TChangesActions = {
+export type TStagedChangesActions = {
   stageVariables: (changes: TStageVariableInput[]) => void;
   stageService: (change: TStageServiceInput) => void;
   discard: (ids: string[]) => void;
@@ -26,17 +26,17 @@ export type TChangesActions = {
   keepOnly: (ids: Set<string>) => void;
 };
 
-export type TChangesStore = TChangesState & TChangesActions;
+export type TStagedChangesStore = TStagedChangesState & TStagedChangesActions;
 
-const defaultInitState: TChangesState = {
+const defaultInitState: TStagedChangesState = {
   variables: {},
   services: {},
 };
 
 const version = 0.001;
 
-export const createChangesStore = (initState: TChangesState = defaultInitState) => {
-  return createStore<TChangesStore>()(
+export const createStagedChangesStore = (initState: TStagedChangesState = defaultInitState) => {
+  return createStore<TStagedChangesStore>()(
     persist(
       (set) => ({
         ...initState,
@@ -101,13 +101,13 @@ export const createChangesStore = (initState: TChangesState = defaultInitState) 
           })),
       }),
       {
-        name: "changes_store",
+        name: "staged_changes_store",
         version,
         partialize: (state) => ({ variables: state.variables, services: state.services }),
-        migrate: (state): TChangesState => {
-          const { error, data } = ChangesStateSchema.safeParse(state);
+        migrate: (state): TStagedChangesState => {
+          const { error, data } = StagedChangesStateSchema.safeParse(state);
           if (error) {
-            console.log("Error on migration, falling back to empty ChangesStore:", error);
+            console.log("Error on migration, falling back to empty StagedChangesStore:", error);
             return initState;
           }
           return data;
@@ -115,7 +115,7 @@ export const createChangesStore = (initState: TChangesState = defaultInitState) 
         // Tab-scoped on purpose: values are secrets and must not outlive the tab
         storage: createJSONZodStorage({
           getStorage: () => sessionStorage,
-          schema: ChangesStateSchema,
+          schema: StagedChangesStateSchema,
           fallback: initState,
           version,
         }),

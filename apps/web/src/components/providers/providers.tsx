@@ -1,4 +1,4 @@
-import { ChangesProvider } from "@/components/changes/changes-provider";
+import { StagedChangesProvider } from "@/components/staged-changes/staged-changes-provider";
 import AppConfigProvider from "@/components/providers/app-config-provider";
 import DeviceSizeProvider from "@/components/providers/device-size-provider";
 import DeviceTypeProvider from "@/components/providers/device-type-provider";
@@ -25,9 +25,9 @@ export default function Providers({ children }: Readonly<{ children: React.React
                 <MainStoreProvider>
                   <TemplateDraftStoreProvider>
                     <PendingEntityStoreProvider>
-                      <ChangesProvider>
+                      <StagedChangesProvider>
                         <UpdateStatusProvider>{children}</UpdateStatusProvider>
-                      </ChangesProvider>
+                      </StagedChangesProvider>
                     </PendingEntityStoreProvider>
                   </TemplateDraftStoreProvider>
                 </MainStoreProvider>

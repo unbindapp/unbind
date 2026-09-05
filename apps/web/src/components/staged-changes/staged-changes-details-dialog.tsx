@@ -1,10 +1,13 @@
-import { useChangesPlan, useChangesStore } from "@/components/changes/changes-provider";
+import {
+  useStagedChangesPlan,
+  useStagedChangesStore,
+} from "@/components/staged-changes/staged-changes-provider";
 import {
   variableScopeKey,
-  type TChangesState,
+  type TStagedChangesState,
   type TStagedServiceChange,
   type TStagedVariableChange,
-} from "@/components/changes/types";
+} from "@/components/staged-changes/types";
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,13 +54,13 @@ type TChangeGroup = {
   createdAt: number;
 };
 
-export default function ChangesDetailsDialog({ children }: { children: ReactElement }) {
+export default function StagedChangesDetailsDialog({ children }: { children: ReactElement }) {
   const [open, setOpen] = useState(false);
   const [showValues, setShowValues] = useState(false);
-  const variables = useChangesStore((s) => s.variables);
-  const services = useChangesStore((s) => s.services);
-  const discard = useChangesStore((s) => s.discard);
-  const { plan, deploy, lastResult, count } = useChangesPlan();
+  const variables = useStagedChangesStore((s) => s.variables);
+  const services = useStagedChangesStore((s) => s.services);
+  const discard = useStagedChangesStore((s) => s.discard);
+  const { plan, deploy, lastResult, count } = useStagedChangesPlan();
 
   const groups = useMemo(() => groupChanges({ variables, services }), [variables, services]);
   const failures = lastResult?.failures ?? [];
@@ -302,7 +305,7 @@ function failureForGroup(group: TChangeGroup, failures: ChangeFailure[]) {
 }
 
 // Changes of a service and of its own variables share a group, other scopes get their own
-function groupChanges(state: TChangesState): TChangeGroup[] {
+function groupChanges(state: TStagedChangesState): TChangeGroup[] {
   const groups = new Map<string, TChangeGroup>();
   const upsert = (key: string, title: string, serviceId: string | undefined, row: TChangeRow) => {
     let group = groups.get(key);

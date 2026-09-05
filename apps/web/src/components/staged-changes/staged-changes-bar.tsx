@@ -1,9 +1,9 @@
-import ChangesDetailsDialog from "@/components/changes/changes-details-dialog";
+import StagedChangesDetailsDialog from "@/components/staged-changes/staged-changes-details-dialog";
 import {
-  useChangeCount,
-  useChangesPlan,
-  useChangesStore,
-} from "@/components/changes/changes-provider";
+  useStagedChangeCount,
+  useStagedChangesPlan,
+  useStagedChangesStore,
+} from "@/components/staged-changes/staged-changes-provider";
 import { Button } from "@/components/ui/button";
 import {
   createDialogHandle,
@@ -54,8 +54,8 @@ function useBarPresence(hasChanges: boolean) {
 }
 
 export default function StagedChangesBar() {
-  const count = useChangeCount();
-  const { deploy, plan } = useChangesPlan();
+  const count = useStagedChangeCount();
+  const { deploy, plan } = useStagedChangesPlan();
   const { isMounted, isOpen } = useBarPresence(count > 0);
   // The count stays readable while the bar slides out
   const lastCount = useRef(count);
@@ -67,11 +67,13 @@ export default function StagedChangesBar() {
   const hasError = deploy.error !== null || plan.error !== null;
 
   return (
-    // aria-live keeps the bar interactive while a modal drawer is open, the same way toasts stay usable
+    // aria-live keeps the bar interactive while a modal drawer is open, the same way toasts stay usable.
+    // The wrapper keeps catching presses while the bar slides out or jumps, so a press that misses
+    // the bar never reaches the drawer overlay behind it and closes the drawer.
     <div
       aria-live="polite"
       data-staged-changes-bar=""
-      className="pointer-events-none fixed inset-x-2 bottom-(--changes-bar-inset-bottom) z-900 flex justify-center [transition:top_500ms_cubic-bezier(0.22,1,0.36,1),bottom_500ms_cubic-bezier(0.22,1,0.36,1)] sm:inset-x-auto sm:top-(--changes-bar-inset-top) sm:bottom-auto sm:left-2 sm:justify-start"
+      className="fixed inset-x-2 bottom-(--changes-bar-inset-bottom) z-900 flex justify-center sm:inset-x-auto sm:top-(--changes-bar-inset-top) sm:bottom-auto sm:left-2 sm:justify-start"
     >
       <div
         data-error={hasError || undefined}
@@ -85,7 +87,7 @@ export default function StagedChangesBar() {
           </p>
         </div>
         <div className="relative flex items-center justify-end gap-1">
-          <ChangesDetailsDialog>
+          <StagedChangesDetailsDialog>
             <Button
               variant="ghost-change"
               size="sm"
@@ -93,7 +95,7 @@ export default function StagedChangesBar() {
             >
               Details
             </Button>
-          </ChangesDetailsDialog>
+          </StagedChangesDetailsDialog>
           <Button
             variant="change"
             size="sm"
@@ -113,8 +115,8 @@ export default function StagedChangesBar() {
 function DiscardMenu({ disabled }: { disabled?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const [discardHandle] = useState(() => createDialogHandle());
-  const discardAll = useChangesStore((s) => s.discardAll);
-  const count = useChangeCount();
+  const discardAll = useStagedChangesStore((s) => s.discardAll);
+  const count = useStagedChangeCount();
 
   return (
     <>

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer";
 
+import { pressStartedInExemptElement } from "@/components/ui/press-origin";
 import { cn } from "@/components/ui/utils";
 
 type TDrawerDirection = "bottom" | "right";
@@ -37,13 +38,9 @@ function Drawer({
   }, [props.open]);
 
   const handleOpenChange: DrawerPrimitive.Root.Props["onOpenChange"] = (open, eventDetails) => {
-    // A click on a toast or the staged changes bar is not dismissing the drawer
+    // A press on a toast or the staged changes bar is not dismissing the drawer
     if (!open && eventDetails.reason === "outside-press") {
-      const target = eventDetails.event.target;
-      if (
-        target instanceof Element &&
-        target.closest('[data-slot="toast"], [data-staged-changes-bar]')
-      ) {
+      if (pressStartedInExemptElement(eventDetails.event)) {
         eventDetails.cancel();
         return;
       }

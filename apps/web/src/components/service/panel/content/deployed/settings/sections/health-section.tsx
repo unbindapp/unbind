@@ -7,7 +7,7 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import type { TServiceChangeField } from "@/components/changes/types";
+import type { TServiceChangeField } from "@/components/staged-changes/types";
 import {
   stagedNumber,
   stagedString,

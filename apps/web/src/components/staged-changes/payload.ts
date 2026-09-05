@@ -1,7 +1,7 @@
 // Relative imports so this can run under `node --test`.
 import {
   variableScopeKey,
-  type TChangesState,
+  type TStagedChangesState,
   type TStagedServiceChange,
   type TStagedVariableChange,
 } from "./types.ts";
@@ -20,7 +20,7 @@ export type TApplyChangesPayload = {
   services: UpdateServiceInput[];
 };
 
-export function buildApplyChangesPayload(state: TChangesState): TApplyChangesPayload {
+export function buildApplyChangesPayload(state: TStagedChangesState): TApplyChangesPayload {
   return {
     variables: variableChangeSets(Object.values(state.variables)),
     services: serviceUpdates(Object.values(state.services)),
@@ -76,7 +76,7 @@ function sortByCreation<T extends { createdAt: number }>(changes: T[]) {
 }
 
 // A failed deploy keeps the changes it could not apply; everything else was persisted
-export function idsToKeepAfterFailures(state: TChangesState, failures: ChangeFailure[]) {
+export function idsToKeepAfterFailures(state: TStagedChangesState, failures: ChangeFailure[]) {
   const failedServices = new Set<string>();
   const failedScopes = new Set<string>();
   for (const failure of failures) {

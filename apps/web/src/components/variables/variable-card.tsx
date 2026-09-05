@@ -49,7 +49,7 @@ import { Dispatch, FC, useMemo, useState } from "react";
 import { z } from "zod";
 
 const hiddenString = "••••••••••";
-const unresolvedMessage = "Missing references. They are used as literal text.";
+const unresolvedMessage = "Unresolved references are kept as literal text.";
 
 type TPlaceholderProps = {
   isPlaceholder: true;

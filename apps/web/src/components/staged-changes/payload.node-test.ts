@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { buildApplyChangesPayload, idsToKeepAfterFailures } from "./payload.ts";
-import type { TChangesState, TStagedServiceChange, TStagedVariableChange } from "./types.ts";
+import type { TStagedChangesState, TStagedServiceChange, TStagedVariableChange } from "./types.ts";
 
 const ids = {
   teamId: "team",
@@ -51,7 +51,7 @@ function service(
 function state(
   variables: TStagedVariableChange[] = [],
   services: TStagedServiceChange[] = [],
-): TChangesState {
+): TStagedChangesState {
   return {
     variables: Object.fromEntries(variables.map((v) => [v.id, v])),
     services: Object.fromEntries(services.map((s) => [s.id, s])),

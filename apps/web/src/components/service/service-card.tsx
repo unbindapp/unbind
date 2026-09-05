@@ -1,4 +1,7 @@
-import { useChangesPlan, useServiceChangeCount } from "@/components/changes/changes-provider";
+import {
+  useStagedChangesPlan,
+  useServiceChangeCount,
+} from "@/components/staged-changes/staged-changes-provider";
 import OnlineIcon from "@/components/icons/online";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useNow } from "@/components/providers/now-provider";
@@ -76,7 +79,7 @@ export default function ServiceCard({
   const queryClient = useQueryClient();
   const volumes = service?.config.volumes;
   const changeCount = useServiceChangeCount(service?.id ?? "");
-  const { affectedByService } = useChangesPlan();
+  const { affectedByService } = useStagedChangesPlan();
   const affectedAction = service ? affectedByService.get(service.id)?.action : undefined;
   const changeLabel =
     changeCount > 0

@@ -1,4 +1,5 @@
 import * as React from "react";
+import { pressStartedInExemptElement } from "@/components/ui/press-origin";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 
 import { cn } from "@/components/ui/utils";
@@ -10,10 +11,9 @@ export type TDialogHandle = DialogPrimitive.Handle<unknown>;
 
 function Dialog({ onOpenChange, ...props }: DialogPrimitive.Root.Props) {
   const handleOpenChange: DialogPrimitive.Root.Props["onOpenChange"] = (open, eventDetails) => {
-    // A click on a toast is interacting with the toast, not dismissing the dialog
+    // A press on a toast or the staged changes bar is not dismissing the dialog
     if (!open && eventDetails.reason === "outside-press") {
-      const target = eventDetails.event.target;
-      if (target instanceof Element && target.closest('[data-slot="toast"]')) {
+      if (pressStartedInExemptElement(eventDetails.event)) {
         eventDetails.cancel();
         return;
       }

@@ -1,13 +1,19 @@
 "use client";
 
 import {
-  ChangesPlanContext,
-  ChangesStoreContext,
-  type TChangesPlanContext,
-  type TChangesStoreContext,
-} from "@/components/changes/changes-context";
-import { createChangesStore, type TChangesStore } from "@/components/changes/changes-store";
-import { buildApplyChangesPayload, idsToKeepAfterFailures } from "@/components/changes/payload";
+  StagedChangesPlanContext,
+  StagedChangesStoreContext,
+  type TStagedChangesPlanContext,
+  type TStagedChangesStoreContext,
+} from "@/components/staged-changes/staged-changes-context";
+import {
+  createStagedChangesStore,
+  type TStagedChangesStore,
+} from "@/components/staged-changes/staged-changes-store";
+import {
+  buildApplyChangesPayload,
+  idsToKeepAfterFailures,
+} from "@/components/staged-changes/payload";
 import {
   countChanges,
   variableScopeKey,
@@ -15,7 +21,7 @@ import {
   type TStagedServiceChange,
   type TStagedVariableChange,
   type TVariableScope,
-} from "@/components/changes/types";
+} from "@/components/staged-changes/types";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { toast } from "@/components/ui/toast";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
@@ -26,37 +32,37 @@ import { ReactNode, useContext, useMemo, useRef, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useStore } from "zustand";
 
-export function ChangesProvider({ children }: { children: ReactNode }) {
-  const storeRef = useRef<TChangesStoreContext | null>(null);
+export function StagedChangesProvider({ children }: { children: ReactNode }) {
+  const storeRef = useRef<TStagedChangesStoreContext | null>(null);
   if (storeRef.current === null) {
-    storeRef.current = createChangesStore();
+    storeRef.current = createStagedChangesStore();
   }
 
   return (
-    <ChangesStoreContext.Provider value={storeRef.current}>
+    <StagedChangesStoreContext.Provider value={storeRef.current}>
       <ChangesPlanProvider>{children}</ChangesPlanProvider>
-    </ChangesStoreContext.Provider>
+    </StagedChangesStoreContext.Provider>
   );
 }
 
 function useChangesStoreContext() {
-  const context = useContext(ChangesStoreContext);
+  const context = useContext(StagedChangesStoreContext);
   if (!context) {
-    throw new Error("useChangesStore must be used within ChangesProvider");
+    throw new Error("useStagedChangesStore must be used within StagedChangesProvider");
   }
   return context;
 }
 
-export function useChangesStore<T>(selector: (store: TChangesStore) => T): T {
+export function useStagedChangesStore<T>(selector: (store: TStagedChangesStore) => T): T {
   return useStore(useChangesStoreContext(), selector);
 }
 
-export function useChangeCount() {
-  return useChangesStore((s) => countChanges(s));
+export function useStagedChangeCount() {
+  return useStagedChangesStore((s) => countChanges(s));
 }
 
 export function useStagedVariables(scope: TVariableScope | null) {
-  const variables = useChangesStore((s) => s.variables);
+  const variables = useStagedChangesStore((s) => s.variables);
   const key = scope ? variableScopeKey(scope) : null;
   return useMemo(() => {
     const byName = new Map<string, TStagedVariableChange>();
@@ -70,7 +76,7 @@ export function useStagedVariables(scope: TVariableScope | null) {
 }
 
 export function useStagedServiceChanges(serviceId: string) {
-  const services = useChangesStore((s) => s.services);
+  const services = useStagedChangesStore((s) => s.services);
   return useMemo(() => {
     const byField: Partial<Record<TServiceChangeField, TStagedServiceChange>> = {};
     for (const change of Object.values(services)) {
@@ -82,7 +88,7 @@ export function useStagedServiceChanges(serviceId: string) {
 }
 
 export function useServiceChangeCount(serviceId: string) {
-  return useChangesStore(
+  return useStagedChangesStore(
     (s) =>
       Object.values(s.services).filter((c) => c.serviceId === serviceId).length +
       Object.values(s.variables).filter((c) => c.scope.serviceId === serviceId).length,
@@ -93,10 +99,10 @@ export function useServiceChangeCount(serviceId: string) {
 // services that would roll out, including ones only affected through references
 function ChangesPlanProvider({ children }: { children: ReactNode }) {
   const store = useChangesStoreContext();
-  const variables = useChangesStore((s) => s.variables);
-  const services = useChangesStore((s) => s.services);
-  const discardAll = useChangesStore((s) => s.discardAll);
-  const keepOnly = useChangesStore((s) => s.keepOnly);
+  const variables = useStagedChangesStore((s) => s.variables);
+  const services = useStagedChangesStore((s) => s.services);
+  const discardAll = useStagedChangesStore((s) => s.discardAll);
+  const keepOnly = useStagedChangesStore((s) => s.keepOnly);
   const queryClient = useQueryClient();
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
   const [lastResult, setLastResult] = useState<TApplyChangesResult | null>(null);
@@ -164,18 +170,20 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
     return map;
   }, [plan.data, count]);
 
-  const value = useMemo<TChangesPlanContext>(
+  const value = useMemo<TStagedChangesPlanContext>(
     () => ({ count, plan, affectedByService, deploy, lastResult }),
     [count, plan, affectedByService, deploy, lastResult],
   );
 
-  return <ChangesPlanContext.Provider value={value}>{children}</ChangesPlanContext.Provider>;
+  return (
+    <StagedChangesPlanContext.Provider value={value}>{children}</StagedChangesPlanContext.Provider>
+  );
 }
 
-export function useChangesPlan() {
-  const context = useContext(ChangesPlanContext);
+export function useStagedChangesPlan() {
+  const context = useContext(StagedChangesPlanContext);
   if (!context) {
-    throw new Error("useChangesPlan must be used within ChangesProvider");
+    throw new Error("useStagedChangesPlan must be used within StagedChangesProvider");
   }
   return context;
 }

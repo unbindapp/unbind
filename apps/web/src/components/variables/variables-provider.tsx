@@ -1,7 +1,10 @@
 "use client";
 
-import { useChangesStore, useStagedVariables } from "@/components/changes/changes-provider";
-import type { TStagedVariableChange, TVariableScope } from "@/components/changes/types";
+import {
+  useStagedChangesStore,
+  useStagedVariables,
+} from "@/components/staged-changes/staged-changes-provider";
+import type { TStagedVariableChange, TVariableScope } from "@/components/staged-changes/types";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import {
   queryKeyVariables,
@@ -82,8 +85,8 @@ export const VariablesProvider: React.FC<TProps> = ({
   const resolvedScopeName = scopeName ?? defaultScopeNames[typedProps.type];
 
   const staged = useStagedVariables(scope);
-  const stageVariables = useChangesStore((s) => s.stageVariables);
-  const discard = useChangesStore((s) => s.discard);
+  const stageVariables = useStagedChangesStore((s) => s.stageVariables);
+  const discard = useStagedChangesStore((s) => s.discard);
 
   const serverVariables = list.data?.variables;
   const variables = useMemo(
