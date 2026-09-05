@@ -85,11 +85,15 @@ export default function ChangesDetailsDialog({ children }: { children: ReactElem
               type="button"
               variant="ghost"
               size="sm"
-              className="text-muted-foreground -my-1 -mr-2.5 shrink-0"
+              className="text-muted-foreground -my-1 -mr-2.5 max-w-1/2 min-w-0 shrink px-2.5"
               onClick={() => setShowValues((v) => !v)}
             >
-              {showValues ? <EyeOffIcon className="size-4" /> : <EyeIcon className="size-4" />}
-              {showValues ? "Hide Values" : "Show Values"}
+              {showValues ? (
+                <EyeOffIcon className="-ml-px size-4 shrink-0" />
+              ) : (
+                <EyeIcon className="-ml-px size-4 shrink-0" />
+              )}
+              <span className="min-w-0 shrink truncate">{showValues ? "Hide" : "Show"} </span>
             </Button>
           </div>
           <DialogDescription>

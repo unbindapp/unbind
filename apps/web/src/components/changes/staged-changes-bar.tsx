@@ -1,9 +1,9 @@
+import ChangesDetailsDialog from "@/components/changes/changes-details-dialog";
 import {
   useChangeCount,
   useChangesPlan,
   useChangesStore,
 } from "@/components/changes/changes-provider";
-import ChangesDetailsDialog from "@/components/changes/changes-details-dialog";
 import { Button } from "@/components/ui/button";
 import {
   createDialogHandle,
@@ -22,7 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVerticalIcon, PencilLineIcon, Trash2Icon, TriangleAlertIcon } from "lucide-react";
+import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const exitDurationMs = 500;
@@ -76,32 +76,35 @@ export default function StagedChangesBar() {
       <div
         data-error={hasError || undefined}
         data-closed={!isOpen || undefined}
-        className="bg-card border-change/30 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-1 rounded-xl border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-closed:[transform:translateY(calc(100%+var(--navbar-height,0px)+var(--bar-gap)+1rem))] sm:w-auto sm:data-closed:[transform:translateY(calc(-100%-var(--navbar-height,0px)-var(--bar-gap)-1rem))]"
+        className="bg-card border-change/30 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-4 overflow-hidden rounded-xl border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-closed:[transform:translateY(calc(100%+var(--navbar-height,0px)+var(--bar-gap)+1rem))] sm:w-auto sm:data-closed:[transform:translateY(calc(-100%-var(--navbar-height,0px)-var(--bar-gap)-1rem))]"
       >
-        <div className="flex min-w-0 flex-1 items-center gap-2 pr-1 pl-2">
-          {hasError ? (
-            <TriangleAlertIcon className="text-destructive size-4.5 shrink-0" />
-          ) : (
-            <PencilLineIcon className="text-change size-4.5 shrink-0" />
-          )}
-          <p className="min-w-0 shrink text-sm leading-tight font-semibold whitespace-nowrap">
-            {shownCount} {shownCount === 1 ? "Change" : "Changes"}
+        <div className="bg-change/8 absolute top-0 left-0 h-full w-full" />
+        <div className="relative flex min-w-0 flex-1 items-center gap-2 overflow-hidden pr-1 pl-2">
+          <p className="text-change min-w-0 shrink truncate text-sm leading-tight font-semibold">
+            Apply {shownCount} {shownCount === 1 ? "change" : "changes"}
           </p>
         </div>
-        <ChangesDetailsDialog>
-          <Button variant="ghost" size="sm" className="text-muted-foreground">
-            Details
+        <div className="relative flex items-center justify-end gap-1">
+          <ChangesDetailsDialog>
+            <Button
+              variant="ghost-change"
+              size="sm"
+              className="text-foreground has-hover:hover:text-foreground active:text-foreground py-1.75"
+            >
+              Details
+            </Button>
+          </ChangesDetailsDialog>
+          <Button
+            variant="change"
+            size="sm"
+            isPending={deploy.isPending}
+            onClick={() => deploy.mutate()}
+            className="py-1.75"
+          >
+            Deploy
           </Button>
-        </ChangesDetailsDialog>
-        <Button
-          variant="change"
-          size="sm"
-          isPending={deploy.isPending}
-          onClick={() => deploy.mutate()}
-        >
-          Deploy
-        </Button>
-        <DiscardMenu disabled={deploy.isPending} />
+          <DiscardMenu disabled={deploy.isPending} />
+        </div>
       </div>
     </div>
   );
@@ -122,10 +125,10 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
               data-open={isOpen || undefined}
               disabled={disabled}
               fadeOnDisabled={false}
-              variant="ghost"
+              variant="ghost-change"
               size="icon"
               aria-label="More options"
-              className="text-muted-more-foreground group/button rounded-md"
+              className="text-muted-more-foreground group/button has-hover:hover:text-foreground active:text-foreground size-8.5 rounded-md"
             >
               <EllipsisVerticalIcon className="size-5 transition-transform group-data-open/button:rotate-90" />
             </Button>
