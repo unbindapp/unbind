@@ -73,7 +73,7 @@ export default function StagedChangesBar() {
     <div
       aria-live="polite"
       data-staged-changes-bar=""
-      className="fixed inset-x-2 bottom-(--changes-bar-inset-bottom) z-900 flex justify-center sm:inset-x-auto sm:top-(--changes-bar-inset-top) sm:bottom-auto sm:left-2 sm:justify-start"
+      className="pointer-events-none fixed inset-x-2 bottom-(--changes-bar-inset-bottom) z-900 flex justify-center [transition:top_500ms_cubic-bezier(0.22,1,0.36,1),bottom_500ms_cubic-bezier(0.22,1,0.36,1)] sm:inset-x-auto sm:top-(--changes-bar-inset-top) sm:bottom-auto sm:left-2 sm:justify-start"
     >
       <div
         data-error={hasError || undefined}
