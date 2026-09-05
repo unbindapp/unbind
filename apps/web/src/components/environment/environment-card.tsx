@@ -87,11 +87,11 @@ export default function EnvironmentCard({
         <LinkButton
           disabled={isPlaceholder}
           fadeOnDisabled={false}
-          variant="outline-muted"
+          variant="outline"
           to={"."}
           search={(prev) => ({ ...prev, environment: environment?.id })}
           onClick={onClick}
-          className="has-hover:group-hover/item:bg-card flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
+          className="flex w-full flex-row items-center justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
         >
           {environment && <NewEntityIndicator id={environment.id} />}
           {isSelected && (
