@@ -383,14 +383,6 @@ function ThreeDotButton({
                 </p>
               </div>
             )}
-            {variable.staged && (
-              <DropdownMenuItem onClick={() => discardStaged([variable.name])}>
-                <Undo2Icon className="-ml-0.5 size-5" />
-                <p className="min-w-0 shrink leading-tight">
-                  {isStagedDelete ? "Restore" : "Discard"}
-                </p>
-              </DropdownMenuItem>
-            )}
             {!isLocked && !isStagedDelete && (
               <DropdownMenuItem
                 disabled={disableEdit}
@@ -402,6 +394,14 @@ function ThreeDotButton({
                   <LockIcon className="-ml-0.5 size-5" />
                 )}
                 <p className="min-w-0 shrink leading-tight">Edit</p>
+              </DropdownMenuItem>
+            )}
+            {variable.staged && (
+              <DropdownMenuItem onClick={() => discardStaged([variable.name])}>
+                <Undo2Icon className="-ml-0.5 size-5" />
+                <p className="min-w-0 shrink leading-tight">
+                  {isStagedDelete ? "Restore" : "Discard"}
+                </p>
               </DropdownMenuItem>
             )}
             {canDelete && (
