@@ -184,7 +184,7 @@ function Button({
   });
 }
 
-type TLinkButtonBaseProps = Omit<React.ComponentPropsWithoutRef<"a">, "color"> &
+export type TLinkButtonBaseProps = Omit<React.ComponentPropsWithoutRef<"a">, "color"> &
   VariantProps<typeof buttonVariants>;
 
 const LinkButtonBase = React.forwardRef<HTMLAnchorElement, TLinkButtonBaseProps>(

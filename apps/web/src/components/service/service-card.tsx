@@ -105,14 +105,14 @@ export default function ServiceCard({
   });
 
   const cardClassName = cn(
-    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold",
-    changeLabel !== null && "border-change/40",
+    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold data-changed:border-change/24",
     classNameCard,
     volumes && volumes.length > 0 && "rounded-b-none border-b-0",
   );
 
   const cardContent = (
     <>
+      {changeLabel !== null && <div className="bg-change/4 absolute top-0 left-0 size-full" />}
       {service && <NewEntityIndicator id={service.id} />}
       <div className="flex w-full items-center justify-between gap-4">
         <div className="flex min-w-0 shrink items-center justify-start gap-2">
@@ -127,7 +127,7 @@ export default function ServiceCard({
         </div>
         {changeLabel !== null && (
           <div className="bg-background -mr-1.5 max-w-1/2 shrink-0 rounded-sm">
-            <p className="text-change dark:bg-change/12 dark:border-change/16 bg-change/14 border-change/18 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+            <p className="text-change bg-change/12 border-change/12 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
               {changeLabel}
             </p>
           </div>
@@ -155,6 +155,7 @@ export default function ServiceCard({
     <li
       data-placeholder={isPlaceholder || undefined}
       data-deleting={isDeleting || undefined}
+      data-changed={changeLabel !== null || undefined}
       className={cn(
         "group/item data-deleting:animate-skeleton-smooth-weaker flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity)",
         className,
@@ -167,6 +168,7 @@ export default function ServiceCard({
           </Button>
         ) : (
           <LinkButton
+            data-changed={changeLabel !== null || undefined}
             variant="card"
             from="/$team_id/project/$project_id"
             to="."
@@ -189,7 +191,7 @@ export default function ServiceCard({
               volume={volume}
               className={cn(
                 classNameVolume,
-                changeLabel !== null && "border-change/40",
+                index === volumes.length - 1 && "group-data-changed/item:border-change/24",
                 index !== 0 && "-mt-px",
                 index === volumes.length - 1 && (classNameVolumeLast || "rounded-b-xl"),
               )}

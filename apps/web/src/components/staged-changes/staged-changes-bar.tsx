@@ -78,9 +78,9 @@ export default function StagedChangesBar() {
       <div
         data-error={hasError || undefined}
         data-closed={!isOpen || undefined}
-        className="bg-card border-change/30 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-4 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-closed:[transform:translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] sm:w-auto sm:data-closed:[transform:translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))]"
+        className="bg-card border-change/24 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-4 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] sm:w-auto sm:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))]"
       >
-        <div className="bg-change/8 absolute top-0 left-0 h-full w-full" />
+        <div className="bg-change/6 absolute top-0 left-0 h-full w-full" />
         <div className="relative flex min-w-0 flex-1 items-center gap-2 overflow-hidden pr-1 pl-2">
           <p className="text-change min-w-0 shrink truncate text-sm leading-tight font-semibold">
             Apply {shownCount} {shownCount === 1 ? "change" : "changes"}

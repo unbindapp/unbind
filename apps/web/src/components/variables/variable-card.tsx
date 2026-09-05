@@ -116,7 +116,7 @@ export default function VariableCard({
       data-dynamic={isDynamic || undefined}
       data-unresolved={hasUnresolved || undefined}
       data-staged={variable?.staged}
-      className="group/card data-unresolved:border-warning/24 data-staged:border-change/40 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
+      className="group/card data-staged:bg-change/6 data-unresolved:border-warning/28 data-staged:border-change/18 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
     >
       {variable && (
         <NewEntityIndicator
@@ -255,7 +255,7 @@ function StagedChip({
 }) {
   return (
     <div className={cn("bg-background shrink-0 rounded-sm", className)}>
-      <p className="text-change dark:bg-change/12 dark:border-change/16 bg-change/14 border-change/18 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+      <p className="text-change bg-change/12 border-change/12 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
         {stagedLabels[staged]}
       </p>
     </div>
