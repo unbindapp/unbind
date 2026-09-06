@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import { CheckIcon, CopyIcon, MinusIcon } from "lucide-react";
@@ -10,6 +10,7 @@ type TProps = {
   isPlaceholder?: boolean;
   className?: string;
   classNameIcon?: string;
+  variant?: TButtonVariants["variant"];
 };
 
 export default function CopyButton({
@@ -19,6 +20,7 @@ export default function CopyButton({
   isPlaceholder,
   className,
   classNameIcon,
+  variant,
 }: TProps) {
   const { copyToClipboard, isRecentlyCopied } = useCopyToClipboard();
   return (
@@ -29,7 +31,7 @@ export default function CopyButton({
       onClick={
         isPlaceholder || valueToCopy === undefined ? () => null : () => copyToClipboard(valueToCopy)
       }
-      variant="ghost"
+      variant={variant || "ghost"}
       forceMinSize="medium"
       size="icon"
       className={cn(

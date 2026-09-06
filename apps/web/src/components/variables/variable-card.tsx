@@ -4,7 +4,7 @@ import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import { IconCache } from "@/components/icons/icon-cache";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
-import { Button } from "@/components/ui/button";
+import { Button, TButtonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -129,7 +129,7 @@ export default function VariableCard({
           <KeyIcon
             data-dynamic={isDynamic || undefined}
             data-unresolved={hasUnresolved || undefined}
-            className="text-foreground data-dynamic:text-process data-dynamic:data-unresolved:text-warning data-unresolved:text-warning mr-2 size-3.5 shrink-0"
+            className="text-foreground data-dynamic:text-process mr-2 size-3.5 shrink-0"
           />
         )}
         {isPlaceholder && (
@@ -147,11 +147,12 @@ export default function VariableCard({
               isPlaceholder={isPlaceholder}
               disableCopy={disableCopy}
               classNameIcon="size-4"
+              variant={variable?.staged ? "ghost-change-foreground" : "ghost"}
             />
             <Button
               data-visible={isValueVisible || undefined}
               onClick={() => setIsValueVisible((prev) => !prev)}
-              variant="ghost"
+              variant={variable?.staged ? "ghost-change-foreground" : "ghost"}
               forceMinSize="medium"
               size="icon"
               className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
@@ -203,6 +204,7 @@ export default function VariableCard({
                 <ConditionalDropdownButton
                   {...placeholderOrVariableProps}
                   disableDelete={disableDelete}
+                  variant={variable?.staged ? "ghost-change-foreground" : "ghost"}
                   disableEdit={disableEdit || isStagedDelete}
                   setIsEditingVariable={setIsEditingVariable}
                 />
@@ -228,6 +230,7 @@ export default function VariableCard({
               disableEdit={disableEdit || isStagedDelete}
               setIsEditingVariable={setIsEditingVariable}
               className="rounded-lg"
+              variant={variable?.staged ? "ghost-change-foreground" : "ghost"}
             />
           )}
         </div>
@@ -286,11 +289,13 @@ function ConditionalDropdownButton({
   disableDelete,
   setIsEditingVariable,
   className,
+  variant,
 }: TVariableOrPlaceholderProps & {
   disableDelete?: boolean;
   disableEdit?: boolean;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
   className?: string;
+  variant?: TButtonVariants["variant"];
 }) {
   if (isPlaceholder) {
     return (
@@ -313,6 +318,7 @@ function ConditionalDropdownButton({
       className={className}
       disableEdit={disableEdit}
       disableDelete={disableDelete}
+      variant={variant || "ghost"}
     />
   );
 }
@@ -323,12 +329,14 @@ function ThreeDotButton({
   disableDelete,
   disableEdit,
   className,
+  variant,
 }: {
   variable: TVariableWithStaged;
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
   disableDelete?: boolean;
   disableEdit?: boolean;
   className?: string;
+  variant?: TButtonVariants["variant"];
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const { stage, discardStaged } = useVariables();
@@ -344,7 +352,7 @@ function ThreeDotButton({
           <Button
             data-open={isOpen || undefined}
             fadeOnDisabled={false}
-            variant="ghost"
+            variant={variant || "ghost"}
             size="icon"
             className={cn(
               "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
