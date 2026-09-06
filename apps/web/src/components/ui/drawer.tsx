@@ -3,6 +3,8 @@ import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer";
 
 import { pressStartedInExemptElement } from "@/components/ui/press-origin";
 import { cn } from "@/components/ui/utils";
+import { useStore } from "zustand";
+import { createStore } from "zustand/vanilla";
 
 type TDrawerDirection = "bottom" | "right";
 
@@ -20,6 +22,13 @@ const useDrawerContext = () => {
   return context;
 };
 
+// Counts open drawers so elements above them can react, like the staged changes bar avoiding the sheet
+const openDrawerStore = createStore<{ count: number }>(() => ({ count: 0 }));
+
+export function useIsAnyDrawerOpen() {
+  return useStore(openDrawerStore, (s) => s.count > 0);
+}
+
 function Drawer({
   direction = "bottom",
   onOpenChange,
@@ -28,6 +37,12 @@ function Drawer({
   direction?: TDrawerDirection;
 }) {
   const [hideHandle, setHideHandle] = React.useState(false);
+
+  React.useLayoutEffect(() => {
+    if (!props.open) return;
+    openDrawerStore.setState((s) => ({ count: s.count + 1 }));
+    return () => openDrawerStore.setState((s) => ({ count: s.count - 1 }));
+  }, [props.open]);
 
   React.useEffect(() => {
     if (!props.open) {

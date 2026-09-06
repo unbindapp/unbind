@@ -60,7 +60,7 @@
   --safe-screen-height-keyboard: calc(var(--safe-screen-height) - var(--keyboard-inset-height));
   --changes-bar-gap: 0.5rem;
   --changes-bar-inset-bottom: calc(var(--navbar-height) + var(--changes-bar-gap));
-  --changes-bar-inset-top: calc(var(--navbar-height) + var(--changes-bar-gap));
+  --changes-bar-inset-top: var(--changes-bar-gap);
 
   --dialog-top-padding: 1.5rem;
   --dialog-bottom-padding: 1.5rem;
@@ -310,6 +310,14 @@
 
   --opacity-barrier: 75%;
   --opacity-shadow: 60%;
+}
+
+/* From sm up the navbar sits at the top instead of the bottom */
+@media (width >= 40rem) {
+  :root {
+    --changes-bar-inset-bottom: calc(var(--safe-area-inset-bottom) + var(--changes-bar-gap));
+    --changes-bar-inset-top: calc(var(--navbar-height) + var(--changes-bar-gap));
+  }
 }
 
 /* An open drawer covers the navbar, so the changes bar only keeps its gap */

@@ -1,3 +1,4 @@
+import { BarSlotSchema, type TBarSlot } from "@/components/staged-changes/bar-position";
 import { createJSONZodStorage } from "@/lib/create-json-zod-storage";
 import { z } from "zod";
 import { persist } from "zustand/middleware";
@@ -14,12 +15,15 @@ const NewlyCreatedEntitySchema = z.object({
 const MainStoreSchema = z.object({
   lastDismissedVersion: z.string().nullable(),
   newlyCreatedEntities: z.record(z.string(), NewlyCreatedEntitySchema),
+  // null means the device default: top left on desktop, bottom on phones
+  stagedChangesBarSlot: BarSlotSchema.nullable().default(null),
 });
 
 export type TState = z.infer<typeof MainStoreSchema>;
 
 export type TActions = {
   setLastDismissedVersion: (version: string) => Promise<void>;
+  setStagedChangesBarSlot: (slot: TBarSlot) => void;
   addNewlyCreatedEntity: (entityId: string, expiresAtTimestamp: number) => Promise<void>;
   removeNewlyCreatedEntityWithDelay: (entityId: string, delayMs: number) => Promise<void>;
   removeOldNewlyCreatedEntities: () => Promise<void>;
@@ -31,6 +35,7 @@ export type TMainStore = TState & TActions;
 const defaultInitState: TState = {
   lastDismissedVersion: null,
   newlyCreatedEntities: {},
+  stagedChangesBarSlot: null,
 };
 
 const version = 0.001;
@@ -46,6 +51,7 @@ export const createMainStore = (initState: TState = defaultInitState) => {
             lastDismissedVersion: lastDismissedVersion,
           }));
         },
+        setStagedChangesBarSlot: (stagedChangesBarSlot) => set({ stagedChangesBarSlot }),
         addNewlyCreatedEntity: async (entityId, expiresAtTimestamp) => {
           set((state) => {
             const updatedEntities = { ...state.newlyCreatedEntities };

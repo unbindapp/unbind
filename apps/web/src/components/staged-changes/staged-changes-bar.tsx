@@ -1,3 +1,15 @@
+import { useIsAnyDrawerOpen } from "@/components/ui/drawer";
+import { useDeviceSize } from "@/components/providers/device-size-provider";
+import {
+  availableBarSlots,
+  barSlotEdge,
+  barSlotPosition,
+  clampToTrack,
+  nearestBarSlot,
+  projectPoint,
+  resolveBarSlot,
+  type TSize,
+} from "@/components/staged-changes/bar-position";
 import StagedChangesDetailsDialog from "@/components/staged-changes/staged-changes-details-dialog";
 import {
   useStagedChangeCount,
@@ -22,10 +34,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useMainStore } from "@/components/stores/main/main-store-provider";
+import { EllipsisVerticalIcon, GripVerticalIcon, Trash2Icon } from "lucide-react";
+import {
+  animate,
+  motion,
+  useDragControls,
+  useMotionValue,
+  useReducedMotion,
+  type PanInfo,
+} from "motion/react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const exitDurationMs = 500;
+// Critically damped with a 0.4s response, the spring Apple's picture in picture lands with
+const landingSpring = { type: "spring", stiffness: 250, damping: 32 } as const;
+const emptySize: TSize = { width: 0, height: 0 };
 
 // Keeps the bar mounted through its exit transition and starts the enter
 // transition from the hidden state, like the toasts do
@@ -53,10 +77,135 @@ function useBarPresence(hasChanges: boolean) {
   return { isMounted, isOpen };
 }
 
+function useElementSize(ref: React.RefObject<HTMLElement | null>, enabled: boolean) {
+  const [size, setSize] = useState<TSize>(emptySize);
+
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!enabled || !element) return;
+    const measure = () => setSize({ width: element.offsetWidth, height: element.offsetHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref, enabled]);
+
+  return size;
+}
+
+// The bar lives in a track that spans the space between the insets, so a slot is an offset
+// inside the track and the track resizing is how the bar learns that an inset changed
+function useBarSlots(isMounted: boolean) {
+  const { isExtraSmall } = useDeviceSize();
+  const isDrawerOpen = useIsAnyDrawerOpen();
+  const preferredSlot = useMainStore((s) => s.stagedChangesBarSlot);
+  const setPreferredSlot = useMainStore((s) => s.setStagedChangesBarSlot);
+  const reducedMotion = useReducedMotion();
+
+  const trackRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const track = useElementSize(trackRef, isMounted);
+  const bar = useElementSize(barRef, isMounted);
+  const isMeasured = track.width > 0 && bar.width > 0;
+
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const dragControls = useDragControls();
+  const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
+  const settledTargetRef = useRef<string | null>(null);
+  const lastViewportRef = useRef<string | null>(null);
+
+  const slots = availableBarSlots({ isExtraSmall, isDrawerOpen });
+  const defaultSlot = isExtraSmall ? "bottom-left" : "top-left";
+  const slot = resolveBarSlot(preferredSlot ?? defaultSlot, slots, track, bar);
+  const position = barSlotPosition(slot, track, bar);
+  // Pixel constraints on purpose: a ref would make Motion re-scale the bar's position
+  // whenever the track or the bar resizes, cutting off the landing spring
+  const dragConstraints = {
+    left: 0,
+    top: 0,
+    right: Math.max(0, track.width - bar.width),
+    bottom: Math.max(0, track.height - bar.height),
+  };
+
+  useLayoutEffect(() => {
+    if (!isMeasured || isDraggingRef.current) return;
+    const target = `${position.x},${position.y}`;
+    if (settledTargetRef.current === target) return;
+    settledTargetRef.current = target;
+
+    const viewport = `${window.innerWidth}x${window.innerHeight}`;
+    const viewportChanged = lastViewportRef.current !== viewport;
+    lastViewportRef.current = viewport;
+    if (viewportChanged || reducedMotion) {
+      x.jump(position.x);
+      y.jump(position.y);
+      return;
+    }
+    animate(x, position.x, landingSpring);
+    animate(y, position.y, landingSpring);
+  }, [isMeasured, position.x, position.y, reducedMotion, x, y]);
+
+  const onDragStart = () => {
+    isDraggingRef.current = true;
+    setIsDragging(true);
+  };
+
+  const onDragEnd = (_: unknown, info: PanInfo) => {
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    if (!isMeasured) return;
+    const projected = clampToTrack(
+      projectPoint({ x: x.get(), y: y.get() }, info.velocity),
+      track,
+      bar,
+    );
+    const landing = nearestBarSlot(projected, slots, track, bar);
+    const target = barSlotPosition(landing, track, bar);
+    settledTargetRef.current = `${target.x},${target.y}`;
+    setPreferredSlot(landing);
+    if (reducedMotion) {
+      x.jump(target.x);
+      y.jump(target.y);
+      return;
+    }
+    animate(x, target.x, { ...landingSpring, velocity: info.velocity.x });
+    animate(y, target.y, { ...landingSpring, velocity: info.velocity.y });
+  };
+
+  return {
+    trackRef,
+    barRef,
+    x,
+    y,
+    edge: barSlotEdge(slot),
+    dragAxis: isExtraSmall ? ("y" as const) : true,
+    dragConstraints,
+    dragControls,
+    isDragging,
+    onDragStart,
+    onDragEnd,
+  };
+}
+
 export default function StagedChangesBar() {
   const count = useStagedChangeCount();
   const { deploy, plan } = useStagedChangesPlan();
   const { isMounted, isOpen } = useBarPresence(count > 0);
+  const {
+    trackRef,
+    barRef,
+    x,
+    y,
+    edge,
+    dragAxis,
+    dragConstraints,
+    dragControls,
+    isDragging,
+    onDragStart,
+    onDragEnd,
+  } = useBarSlots(isMounted);
   // The count stays readable while the bar slides out
   const lastCount = useRef(count);
   if (count > 0) lastCount.current = count;
@@ -68,46 +217,67 @@ export default function StagedChangesBar() {
 
   return (
     // aria-live keeps the bar interactive while a modal drawer is open, the same way toasts stay usable.
-    // The wrapper keeps catching presses while the bar slides out or jumps, so a press that misses
+    // The track keeps catching presses while the bar slides out or jumps, so a press that misses
     // the bar never reaches the drawer overlay behind it and closes the drawer.
     <div
+      ref={trackRef}
       aria-live="polite"
       data-slot="staged-changes-bar"
-      className="pointer-events-none fixed inset-x-2 bottom-(--changes-bar-inset-bottom) z-900 flex justify-center [transition:top_500ms_cubic-bezier(0.22,1,0.36,1),bottom_500ms_cubic-bezier(0.22,1,0.36,1)] sm:inset-x-auto sm:top-(--changes-bar-inset-top) sm:bottom-auto sm:left-2 sm:justify-start"
+      className="pointer-events-none fixed inset-x-2 top-(--changes-bar-inset-top) bottom-(--changes-bar-inset-bottom) z-900"
     >
-      <div
-        data-error={hasError || undefined}
-        data-closed={!isOpen || undefined}
-        className="bg-card border-change/24 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 pointer-events-auto flex w-full items-center gap-4 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] sm:w-auto sm:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))]"
+      <motion.div
+        ref={barRef}
+        drag={dragAxis}
+        dragListener={false}
+        dragControls={dragControls}
+        dragConstraints={dragConstraints}
+        dragElastic={0.15}
+        dragMomentum={false}
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        style={{ x, y }}
+        data-dragging={isDragging || undefined}
+        className="pointer-events-auto absolute top-0 left-0 w-full data-dragging:cursor-grabbing sm:w-auto"
       >
-        <div className="bg-change/6 absolute top-0 left-0 h-full w-full" />
-        <div className="relative flex min-w-0 flex-1 items-center gap-2 overflow-hidden pr-1 pl-2">
-          <p className="text-change min-w-0 shrink truncate text-sm leading-tight font-semibold">
-            Apply {shownCount} {shownCount === 1 ? "change" : "changes"}
-          </p>
-        </div>
-        <div className="relative flex items-center justify-end gap-1">
-          <StagedChangesDetailsDialog>
-            <Button
-              variant="ghost-change"
-              size="sm"
-              className="text-foreground has-hover:hover:text-foreground active:text-foreground py-1.75"
-            >
-              Details
-            </Button>
-          </StagedChangesDetailsDialog>
-          <Button
-            variant="change"
-            size="sm"
-            isPending={deploy.isPending}
-            onClick={() => deploy.mutate()}
-            className="py-1.75"
+        <div
+          data-error={hasError || undefined}
+          data-closed={!isOpen || undefined}
+          data-edge={edge}
+          className="bg-card border-change/24 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 flex w-full items-center gap-4 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))]"
+        >
+          <div className="bg-change/6 absolute top-0 left-0 h-full w-full" />
+          <div
+            onPointerDown={(event) => dragControls.start(event)}
+            className="relative flex min-w-0 flex-1 cursor-grab touch-none items-center gap-1.5 self-stretch overflow-hidden pr-1 pl-1 select-none"
           >
-            Deploy
-          </Button>
-          <DiscardMenu disabled={deploy.isPending} />
+            <GripVerticalIcon className="text-change/60 -ml-0.5 size-4.5 shrink-0" />
+            <p className="text-change min-w-0 shrink truncate text-sm leading-tight font-semibold">
+              Apply {shownCount} {shownCount === 1 ? "change" : "changes"}
+            </p>
+          </div>
+          <div className="relative flex items-center justify-end gap-1">
+            <StagedChangesDetailsDialog>
+              <Button
+                variant="ghost-change"
+                size="sm"
+                className="text-foreground has-hover:hover:text-foreground active:text-foreground py-1.75"
+              >
+                Details
+              </Button>
+            </StagedChangesDetailsDialog>
+            <Button
+              variant="change"
+              size="sm"
+              isPending={deploy.isPending}
+              onClick={() => deploy.mutate()}
+              className="py-1.75"
+            >
+              Deploy
+            </Button>
+            <DiscardMenu disabled={deploy.isPending} />
+          </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
