@@ -9,6 +9,7 @@ import {
   projectPoint,
   resolveBarSlot,
   type TBarLayout,
+  type TPoint,
   type TSize,
 } from "@/components/staged-changes/bar-position";
 import StagedChangesDetailsDialog from "@/components/staged-changes/staged-changes-details-dialog";
@@ -37,20 +38,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { EllipsisVerticalIcon, GripVerticalIcon, Trash2Icon } from "lucide-react";
-import {
-  animate,
-  motion,
-  useDragControls,
-  useMotionValue,
-  useReducedMotion,
-  type PanInfo,
-} from "motion/react";
+import { animate, motion, useMotionValue, useReducedMotion, type PanInfo } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 const exitDurationMs = 500;
 // Critically damped with a 0.4s response, the spring Apple's picture in picture lands with
 const landingSpring = { type: "spring", stiffness: 250, damping: 32 } as const;
 const emptySize: TSize = { width: 0, height: 0 };
+// How far past the bounds the bar follows the pointer
+const overdragFactor = 0.15;
+
+function rubberBand(value: number, min: number, max: number) {
+  if (value < min) return min + (value - min) * overdragFactor;
+  if (value > max) return max + (value - max) * overdragFactor;
+  return value;
+}
 
 // Keeps the bar mounted through its exit transition and starts the enter
 // transition from the hidden state, like the toasts do
@@ -94,8 +96,8 @@ function useElementSize(ref: React.RefObject<HTMLElement | null>, enabled: boole
   return size;
 }
 
-// The bar lives in a track that spans the space between the insets, so a slot is an offset
-// inside the track and the track resizing is how the bar learns that an inset changed
+// The bar is moved with pan handlers rather than Motion's drag prop: a draggable element is
+// re-measured on every layout animation in the tree, which briefly resets its transform
 function useBarSlots(isMounted: boolean) {
   const { isExtraSmall } = useDeviceSize();
   const preferredSlot = useMainStore((s) => s.stagedChangesBarSlot);
@@ -104,10 +106,10 @@ function useBarSlots(isMounted: boolean) {
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const dragControls = useDragControls();
   // Held from pointer down until release, so the closed hand shows before any movement
   const [isHeld, setIsHeld] = useState(false);
   const isDraggingRef = useRef(false);
+  const panOriginRef = useRef<TPoint | null>(null);
   const settledTargetRef = useRef<string | null>(null);
   const lastViewportRef = useRef<string | null>(null);
 
@@ -132,9 +134,6 @@ function useBarSlots(isMounted: boolean) {
   const defaultSlot = isExtraSmall ? "bottom-left" : "top-left";
   const slot = resolveBarSlot(preferredSlot ?? defaultSlot, slots, layout);
   const position = barSlotPosition(slot, layout);
-  // Pixel constraints on purpose: a ref would make Motion re-scale the bar's position
-  // whenever the track or the bar resizes, cutting off the landing spring
-  const dragConstraints = barBounds(layout);
 
   useLayoutEffect(() => {
     if (!isMeasured || isDraggingRef.current) return;
@@ -168,14 +167,25 @@ function useBarSlots(isMounted: boolean) {
   const onHandlePointerDown = (event: React.PointerEvent) => {
     if (event.button !== 0) return;
     setIsHeld(true);
-    dragControls.start(event);
   };
 
-  const onDragStart = () => {
+  const onPanStart = () => {
+    x.stop();
+    y.stop();
+    panOriginRef.current = { x: x.get(), y: y.get() };
     isDraggingRef.current = true;
   };
 
-  const onDragEnd = (_: unknown, info: PanInfo) => {
+  const onPan = (_: unknown, info: PanInfo) => {
+    const origin = panOriginRef.current;
+    if (!origin) return;
+    const bounds = barBounds(layout);
+    x.set(rubberBand(origin.x + info.offset.x, bounds.left, bounds.right));
+    y.set(rubberBand(origin.y + info.offset.y, bounds.top, bounds.bottom));
+  };
+
+  const onPanEnd = (_: unknown, info: PanInfo) => {
+    panOriginRef.current = null;
     isDraggingRef.current = false;
     if (!isMeasured) return;
     const projected = clampToBounds(
@@ -203,12 +213,11 @@ function useBarSlots(isMounted: boolean) {
     x,
     y,
     edge: barSlotEdge(slot),
-    dragConstraints,
-    dragControls,
     isHeld,
     onHandlePointerDown,
-    onDragStart,
-    onDragEnd,
+    onPanStart,
+    onPan,
+    onPanEnd,
   };
 }
 
@@ -224,12 +233,11 @@ export default function StagedChangesBar() {
     x,
     y,
     edge,
-    dragConstraints,
-    dragControls,
     isHeld,
     onHandlePointerDown,
-    onDragStart,
-    onDragEnd,
+    onPanStart,
+    onPan,
+    onPanEnd,
   } = useBarSlots(isMounted);
   // The count stays readable while the bar slides out
   const lastCount = useRef(count);
@@ -262,14 +270,6 @@ export default function StagedChangesBar() {
       />
       <motion.div
         ref={barRef}
-        drag
-        dragListener={false}
-        dragControls={dragControls}
-        dragConstraints={dragConstraints}
-        dragElastic={0.15}
-        dragMomentum={false}
-        onDragStart={onDragStart}
-        onDragEnd={onDragEnd}
         style={{ x, y }}
         className="pointer-events-auto absolute top-0 left-0 w-full sm:w-auto"
       >
@@ -281,15 +281,18 @@ export default function StagedChangesBar() {
           className="bg-card border-change/24 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 flex w-full items-center gap-4 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),scale_150ms_ease-out] data-closed:pointer-events-none data-held:scale-96 data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))]"
         >
           <div className="bg-change/6 absolute top-0 left-0 h-full w-full" />
-          <div
+          <motion.div
             onPointerDown={onHandlePointerDown}
+            onPanStart={onPanStart}
+            onPan={onPan}
+            onPanEnd={onPanEnd}
             className="relative flex min-w-0 flex-1 cursor-grab touch-none items-center gap-1.5 self-stretch overflow-hidden pr-1 pl-1 select-none"
           >
             <GripVerticalIcon className="text-muted-foreground -ml-0.5 size-4.5 shrink-0" />
             <p className="text-change min-w-0 shrink truncate text-sm leading-tight font-semibold">
               Apply {shownCount} {shownCount === 1 ? "change" : "changes"}
             </p>
-          </div>
+          </motion.div>
           <div className="relative flex items-center justify-end gap-1">
             <StagedChangesDetailsDialog>
               <Button
