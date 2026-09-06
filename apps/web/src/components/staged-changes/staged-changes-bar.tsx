@@ -285,7 +285,7 @@ export default function StagedChangesBar() {
             onPointerDown={onHandlePointerDown}
             className="relative flex min-w-0 flex-1 cursor-grab touch-none items-center gap-1.5 self-stretch overflow-hidden pr-1 pl-1 select-none"
           >
-            <GripVerticalIcon className="text-change/60 -ml-0.5 size-4.5 shrink-0" />
+            <GripVerticalIcon className="text-muted-foreground -ml-0.5 size-4.5 shrink-0" />
             <p className="text-change min-w-0 shrink truncate text-sm leading-tight font-semibold">
               Apply {shownCount} {shownCount === 1 ? "change" : "changes"}
             </p>
@@ -335,7 +335,7 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
               variant="ghost-change"
               size="icon"
               aria-label="More options"
-              className="text-muted-more-foreground group/button has-hover:hover:text-foreground active:text-foreground size-8.5 rounded-md"
+              className="text-muted-foreground group/button has-hover:hover:text-foreground active:text-foreground size-8.5 rounded-md"
             >
               <EllipsisVerticalIcon className="size-5 transition-transform group-data-open/button:rotate-90" />
             </Button>
