@@ -105,7 +105,7 @@ export default function ServiceCard({
   });
 
   const cardClassName = cn(
-    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold data-changed:border-change/24",
+    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold data-staged:border-change/24",
     classNameCard,
     volumes && volumes.length > 0 && "rounded-b-none border-b-0",
   );
@@ -155,7 +155,7 @@ export default function ServiceCard({
     <li
       data-placeholder={isPlaceholder || undefined}
       data-deleting={isDeleting || undefined}
-      data-changed={changeLabel !== null || undefined}
+      data-staged={changeLabel !== null || undefined}
       className={cn(
         "group/item data-deleting:animate-skeleton-smooth-weaker flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity)",
         className,
@@ -168,7 +168,7 @@ export default function ServiceCard({
           </Button>
         ) : (
           <LinkButton
-            data-changed={changeLabel !== null || undefined}
+            data-staged={changeLabel !== null || undefined}
             variant="card"
             from="/$team_id/project/$project_id"
             to="."
@@ -191,7 +191,7 @@ export default function ServiceCard({
               volume={volume}
               className={cn(
                 classNameVolume,
-                index === volumes.length - 1 && "group-data-changed/item:border-change/24",
+                index === volumes.length - 1 && "group-data-staged/item:border-change/24",
                 index !== 0 && "-mt-px",
                 index === volumes.length - 1 && (classNameVolumeLast || "rounded-b-xl"),
               )}

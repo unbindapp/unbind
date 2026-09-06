@@ -1,5 +1,5 @@
 // Elements that sit above open drawers and dialogs and must not dismiss them when pressed
-const exemptSelector = '[data-slot="toast"], [data-staged-changes-bar]';
+const exemptSelector = '[data-slot="toast"], [data-slot="staged-changes-bar"]';
 
 let lastPointerDownTarget: EventTarget | null = null;
 

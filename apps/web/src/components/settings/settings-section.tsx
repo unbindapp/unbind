@@ -53,13 +53,13 @@ export function SettingsSection({
 
   return (
     <Wrapper
-      data-changed={isChanged || undefined}
-      className={cn("group/wrapper data-changed:border-change/16 scroll-mt-4", className)}
+      data-staged={isChanged || undefined}
+      className={cn("group/wrapper data-staged:border-change/16 scroll-mt-4", className)}
       {...rest}
     >
       <div
         className={cn(
-          "text-muted-foreground group-data-changed/wrapper:text-change bg-card group-data-changed/wrapper:border-change/10 group-data-changed/wrapper:bg-change/6 relative flex w-full items-start justify-between gap-4 border-b px-3.5 sm:px-4",
+          "text-muted-foreground group-data-staged/wrapper:text-change bg-card group-data-staged/wrapper:border-change/10 group-data-staged/wrapper:bg-change/6 relative flex w-full items-start justify-between gap-4 border-b px-3.5 sm:px-4",
           classNameHeader,
         )}
       >
