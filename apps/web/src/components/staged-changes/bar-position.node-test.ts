@@ -3,16 +3,21 @@ import { test } from "node:test";
 
 import {
   availableBarSlots,
+  barBounds,
   barSlotPosition,
-  clampToTrack,
+  clampToBounds,
   nearestBarSlot,
   project,
   projectPoint,
   resolveBarSlot,
+  type TBarLayout,
 } from "./bar-position.ts";
 
-const track = { width: 1000, height: 600 };
-const bar = { width: 300, height: 50 };
+const layout: TBarLayout = {
+  track: { width: 1000, height: 600 },
+  bar: { width: 300, height: 50 },
+  insets: { top: 50, bottom: 10 },
+};
 const allSlots = availableBarSlots({ isExtraSmall: false });
 const phoneSlots = availableBarSlots({ isExtraSmall: true });
 
@@ -28,59 +33,62 @@ test("phones get top and bottom, larger screens get all four corners", () => {
   assert.equal(allSlots.length, 4);
 });
 
-test("slot positions sit the bar flush inside the track", () => {
-  assert.deepEqual(barSlotPosition("top-left", track, bar), { x: 0, y: 0 });
-  assert.deepEqual(barSlotPosition("top-right", track, bar), { x: 700, y: 0 });
-  assert.deepEqual(barSlotPosition("bottom-left", track, bar), { x: 0, y: 550 });
-  assert.deepEqual(barSlotPosition("bottom-right", track, bar), { x: 700, y: 550 });
+test("bounds keep the bar inside the track minus the insets", () => {
+  assert.deepEqual(barBounds(layout), { left: 0, top: 50, right: 700, bottom: 540 });
 });
 
-test("slot positions never go negative when the bar outgrows the track", () => {
-  assert.deepEqual(barSlotPosition("bottom-right", { width: 200, height: 40 }, bar), {
-    x: 0,
-    y: 0,
-  });
+test("slot positions sit the bar flush against the insets", () => {
+  assert.deepEqual(barSlotPosition("top-left", layout), { x: 0, y: 50 });
+  assert.deepEqual(barSlotPosition("top-right", layout), { x: 700, y: 50 });
+  assert.deepEqual(barSlotPosition("bottom-left", layout), { x: 0, y: 540 });
+  assert.deepEqual(barSlotPosition("bottom-right", layout), { x: 700, y: 540 });
+});
+
+test("bounds never invert when the bar outgrows the track", () => {
+  const tiny: TBarLayout = { ...layout, track: { width: 200, height: 40 } };
+  assert.deepEqual(barBounds(tiny), { left: 0, top: 50, right: 0, bottom: 50 });
 });
 
 test("a slow drop lands on the nearest slot to the release point", () => {
-  const released = { x: 100, y: 500 };
-  const projected = projectPoint(released, { x: 0, y: 0 });
-  assert.equal(nearestBarSlot(projected, allSlots, track, bar), "bottom-left");
+  const projected = projectPoint({ x: 100, y: 500 }, { x: 0, y: 0 });
+  assert.equal(nearestBarSlot(projected, allSlots, layout), "bottom-left");
 });
 
 test("a flick lands where the bar is going, not where it was released", () => {
-  const released = { x: 100, y: 500 };
-  const projected = projectPoint(released, { x: 1600, y: -1400 });
-  assert.equal(nearestBarSlot(projected, allSlots, track, bar), "top-right");
+  const projected = projectPoint({ x: 100, y: 500 }, { x: 1600, y: -1400 });
+  assert.equal(nearestBarSlot(projected, allSlots, layout), "top-right");
 });
 
 test("a flick toward a slot that is not offered lands on the closest one that is", () => {
   const withoutTopRight = allSlots.filter((slot) => slot !== "top-right");
   const projected = projectPoint({ x: 100, y: 500 }, { x: 1600, y: -1400 });
-  assert.equal(nearestBarSlot(projected, withoutTopRight, track, bar), "bottom-right");
+  assert.equal(nearestBarSlot(projected, withoutTopRight, layout), "bottom-right");
 });
 
-test("clampToTrack keeps the projection inside the track", () => {
-  assert.deepEqual(clampToTrack({ x: -50, y: 2000 }, track, bar), { x: 0, y: 550 });
-  assert.deepEqual(clampToTrack({ x: 300, y: 100 }, track, bar), { x: 300, y: 100 });
+test("clampToBounds keeps the projection inside the bounds", () => {
+  assert.deepEqual(clampToBounds({ x: -50, y: 2000 }, layout), { x: 0, y: 540 });
+  assert.deepEqual(clampToBounds({ x: 300, y: 100 }, layout), { x: 300, y: 100 });
+  assert.deepEqual(clampToBounds({ x: 300, y: 0 }, layout), { x: 300, y: 50 });
 });
 
 test("clamping keeps a hard vertical flick in its own column", () => {
   const withoutTopRight = allSlots.filter((slot) => slot !== "top-right");
-  const projected = projectPoint({ x: 700, y: 550 }, { x: 0, y: -5000 });
-  assert.equal(nearestBarSlot(projected, withoutTopRight, track, bar), "top-left");
-  const clamped = clampToTrack(projected, track, bar);
-  assert.equal(nearestBarSlot(clamped, withoutTopRight, track, bar), "bottom-right");
+  const projected = projectPoint({ x: 700, y: 540 }, { x: 0, y: -5000 });
+  assert.equal(nearestBarSlot(projected, withoutTopRight, layout), "top-left");
+  const clamped = clampToBounds(projected, layout);
+  assert.equal(nearestBarSlot(clamped, withoutTopRight, layout), "bottom-right");
 });
 
 test("resolveBarSlot keeps the preference when it is available", () => {
-  assert.equal(resolveBarSlot("top-right", allSlots, track, bar), "top-right");
+  assert.equal(resolveBarSlot("top-right", allSlots, layout), "top-right");
 });
 
 test("resolveBarSlot falls back to the closest available slot", () => {
-  const phone = phoneSlots;
-  const phoneTrack = { width: 360, height: 700 };
-  const phoneBar = { width: 360, height: 50 };
-  assert.equal(resolveBarSlot("top-right", phone, phoneTrack, phoneBar), "top-left");
-  assert.equal(resolveBarSlot("bottom-right", phone, phoneTrack, phoneBar), "bottom-left");
+  const phone: TBarLayout = {
+    track: { width: 360, height: 700 },
+    bar: { width: 360, height: 50 },
+    insets: { top: 8, bottom: 100 },
+  };
+  assert.equal(resolveBarSlot("top-right", phoneSlots, phone), "top-left");
+  assert.equal(resolveBarSlot("bottom-right", phoneSlots, phone), "bottom-left");
 });

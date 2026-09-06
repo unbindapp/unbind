@@ -1,13 +1,14 @@
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import {
   availableBarSlots,
+  barBounds,
   barSlotEdge,
   barSlotPosition,
-  clampToTrack,
+  clampToBounds,
   nearestBarSlot,
   projectPoint,
   resolveBarSlot,
-  type TPoint,
+  type TBarLayout,
   type TSize,
 } from "@/components/staged-changes/bar-position";
 import StagedChangesDetailsDialog from "@/components/staged-changes/staged-changes-details-dialog";
@@ -110,54 +111,35 @@ function useBarSlots(isMounted: boolean) {
   const settledTargetRef = useRef<string | null>(null);
   const lastViewportRef = useRef<string | null>(null);
 
+  // The track is static and spans the viewport. The insets are measured off sentinel elements
+  // so an inset change only moves the slot targets, never the bar itself
   const trackRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
-  const [track, setTrack] = useState<TSize>(emptySize);
-  const trackOriginRef = useRef<TPoint | null>(null);
+  const topInsetRef = useRef<HTMLDivElement>(null);
+  const bottomInsetRef = useRef<HTMLDivElement>(null);
+  const track = useElementSize(trackRef, isMounted);
   const bar = useElementSize(barRef, isMounted);
+  const topInset = useElementSize(topInsetRef, isMounted);
+  const bottomInset = useElementSize(bottomInsetRef, isMounted);
+  const layout: TBarLayout = {
+    track,
+    bar,
+    insets: { top: topInset.height, bottom: bottomInset.height },
+  };
   const isMeasured = track.width > 0 && bar.width > 0;
-
-  // When an inset moves the track's edge, the bar keeps its place on screen and then
-  // springs to the slot, instead of jumping along with the edge
-  useLayoutEffect(() => {
-    const element = trackRef.current;
-    if (!isMounted || !element) return;
-    const measure = () => {
-      const rect = element.getBoundingClientRect();
-      const origin = trackOriginRef.current;
-      trackOriginRef.current = { x: rect.left, y: rect.top };
-      if (origin && !isDraggingRef.current) {
-        x.jump(x.get() + origin.x - rect.left);
-        y.jump(y.get() + origin.y - rect.top);
-      }
-      setTrack({ width: element.offsetWidth, height: element.offsetHeight });
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [isMounted, x, y]);
 
   const slots = availableBarSlots({ isExtraSmall });
   const defaultSlot = isExtraSmall ? "bottom-left" : "top-left";
-  const slot = resolveBarSlot(preferredSlot ?? defaultSlot, slots, track, bar);
-  const position = barSlotPosition(slot, track, bar);
+  const slot = resolveBarSlot(preferredSlot ?? defaultSlot, slots, layout);
+  const position = barSlotPosition(slot, layout);
   // Pixel constraints on purpose: a ref would make Motion re-scale the bar's position
   // whenever the track or the bar resizes, cutting off the landing spring
-  const dragConstraints = {
-    left: 0,
-    top: 0,
-    right: Math.max(0, track.width - bar.width),
-    bottom: Math.max(0, track.height - bar.height),
-  };
+  const dragConstraints = barBounds(layout);
 
-  // Runs on every track measurement, not only on target changes, because a shifted
-  // track edge leaves the bar off its slot even when the slot's coordinates are the same
   useLayoutEffect(() => {
     if (!isMeasured || isDraggingRef.current) return;
     const target = `${position.x},${position.y}`;
-    const isOffTarget = x.get() !== position.x || y.get() !== position.y;
-    if (settledTargetRef.current === target && !isOffTarget) return;
+    if (settledTargetRef.current === target) return;
     settledTargetRef.current = target;
 
     const viewport = `${window.innerWidth}x${window.innerHeight}`;
@@ -170,7 +152,7 @@ function useBarSlots(isMounted: boolean) {
     }
     animate(x, position.x, landingSpring);
     animate(y, position.y, landingSpring);
-  }, [isMeasured, position.x, position.y, track, reducedMotion, x, y]);
+  }, [isMeasured, position.x, position.y, reducedMotion, x, y]);
 
   useEffect(() => {
     if (!isHeld) return;
@@ -196,13 +178,12 @@ function useBarSlots(isMounted: boolean) {
   const onDragEnd = (_: unknown, info: PanInfo) => {
     isDraggingRef.current = false;
     if (!isMeasured) return;
-    const projected = clampToTrack(
+    const projected = clampToBounds(
       projectPoint({ x: x.get(), y: y.get() }, info.velocity),
-      track,
-      bar,
+      layout,
     );
-    const landing = nearestBarSlot(projected, slots, track, bar);
-    const target = barSlotPosition(landing, track, bar);
+    const landing = nearestBarSlot(projected, slots, layout);
+    const target = barSlotPosition(landing, layout);
     settledTargetRef.current = `${target.x},${target.y}`;
     setPreferredSlot(landing);
     if (reducedMotion) {
@@ -217,6 +198,8 @@ function useBarSlots(isMounted: boolean) {
   return {
     trackRef,
     barRef,
+    topInsetRef,
+    bottomInsetRef,
     x,
     y,
     edge: barSlotEdge(slot),
@@ -236,6 +219,8 @@ export default function StagedChangesBar() {
   const {
     trackRef,
     barRef,
+    topInsetRef,
+    bottomInsetRef,
     x,
     y,
     edge,
@@ -263,8 +248,18 @@ export default function StagedChangesBar() {
       ref={trackRef}
       aria-live="polite"
       data-slot="staged-changes-bar"
-      className="pointer-events-none fixed inset-x-2 top-(--changes-bar-inset-top) bottom-(--changes-bar-inset-bottom) z-900"
+      className="pointer-events-none fixed inset-x-2 inset-y-0 z-900"
     >
+      <div
+        ref={topInsetRef}
+        aria-hidden
+        className="absolute top-0 h-(--changes-bar-inset-top) w-0"
+      />
+      <div
+        ref={bottomInsetRef}
+        aria-hidden
+        className="absolute bottom-0 h-(--changes-bar-inset-bottom) w-0"
+      />
       <motion.div
         ref={barRef}
         drag
