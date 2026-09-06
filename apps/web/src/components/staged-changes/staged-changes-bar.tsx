@@ -278,14 +278,14 @@ export default function StagedChangesBar() {
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         style={{ x, y }}
-        data-held={isHeld || undefined}
         className="pointer-events-auto absolute top-0 left-0 w-full sm:w-auto"
       >
         <div
           data-error={hasError || undefined}
           data-closed={!isOpen || undefined}
           data-edge={edge}
-          className="bg-card border-change/24 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 flex w-full items-center gap-4 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1)] data-closed:pointer-events-none data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))]"
+          data-held={isHeld || undefined}
+          className="bg-card border-change/24 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 flex w-full items-center gap-4 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),scale_150ms_ease-out] data-closed:pointer-events-none data-held:scale-95 data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))]"
         >
           <div className="bg-change/6 absolute top-0 left-0 h-full w-full" />
           <div
