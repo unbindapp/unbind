@@ -237,7 +237,7 @@ export default function StagedChangesBar() {
         onDragEnd={onDragEnd}
         style={{ x, y }}
         data-dragging={isDragging || undefined}
-        className="pointer-events-auto absolute top-0 left-0 w-full data-dragging:cursor-grabbing sm:w-auto"
+        className="pointer-events-auto absolute top-0 left-0 w-full sm:w-auto"
       >
         <div
           data-error={hasError || undefined}

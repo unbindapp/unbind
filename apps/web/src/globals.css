@@ -320,6 +320,12 @@
   }
 }
 
+/* While the changes bar is being dragged, the pointer keeps grabbing wherever it goes */
+:root:has([data-slot="staged-changes-bar"] [data-dragging]) * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
 /* An open drawer covers the navbar, so the changes bar only keeps its gap */
 :root:has([data-slot="drawer-content"]:not([data-ending-style])) {
   --changes-bar-inset-bottom: calc(var(--safe-area-inset-bottom) + var(--changes-bar-gap));
