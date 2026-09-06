@@ -320,8 +320,8 @@
   }
 }
 
-/* While the changes bar is being dragged, the pointer keeps grabbing wherever it goes */
-:root:has([data-slot="staged-changes-bar"] [data-dragging]) * {
+/* While the changes bar is held, the closed hand shows wherever the pointer goes */
+:root:has([data-slot="staged-changes-bar"] [data-held]) * {
   cursor: grabbing !important;
   user-select: none !important;
 }

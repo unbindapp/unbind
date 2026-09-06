@@ -8,6 +8,7 @@ import {
   nearestBarSlot,
   projectPoint,
   resolveBarSlot,
+  type TPoint,
   type TSize,
 } from "@/components/staged-changes/bar-position";
 import StagedChangesDetailsDialog from "@/components/staged-changes/staged-changes-details-dialog";
@@ -102,19 +103,42 @@ function useBarSlots(isMounted: boolean) {
   const setPreferredSlot = useMainStore((s) => s.setStagedChangesBarSlot);
   const reducedMotion = useReducedMotion();
 
-  const trackRef = useRef<HTMLDivElement>(null);
-  const barRef = useRef<HTMLDivElement>(null);
-  const track = useElementSize(trackRef, isMounted);
-  const bar = useElementSize(barRef, isMounted);
-  const isMeasured = track.width > 0 && bar.width > 0;
-
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const dragControls = useDragControls();
-  const [isDragging, setIsDragging] = useState(false);
+  // Held from pointer down until release, so the closed hand shows before any movement
+  const [isHeld, setIsHeld] = useState(false);
   const isDraggingRef = useRef(false);
   const settledTargetRef = useRef<string | null>(null);
   const lastViewportRef = useRef<string | null>(null);
+
+  const trackRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const [track, setTrack] = useState<TSize>(emptySize);
+  const trackOriginRef = useRef<TPoint | null>(null);
+  const bar = useElementSize(barRef, isMounted);
+  const isMeasured = track.width > 0 && bar.width > 0;
+
+  // When an inset moves the track's edge, the bar keeps its place on screen and then
+  // springs to the slot, instead of jumping along with the edge
+  useLayoutEffect(() => {
+    const element = trackRef.current;
+    if (!isMounted || !element) return;
+    const measure = () => {
+      const rect = element.getBoundingClientRect();
+      const origin = trackOriginRef.current;
+      trackOriginRef.current = { x: rect.left, y: rect.top };
+      if (origin && !isDraggingRef.current) {
+        x.jump(x.get() + origin.x - rect.left);
+        y.jump(y.get() + origin.y - rect.top);
+      }
+      setTrack({ width: element.offsetWidth, height: element.offsetHeight });
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [isMounted, x, y]);
 
   const slots = availableBarSlots({ isExtraSmall, isDrawerOpen });
   const defaultSlot = isExtraSmall ? "bottom-left" : "top-left";
@@ -129,10 +153,13 @@ function useBarSlots(isMounted: boolean) {
     bottom: Math.max(0, track.height - bar.height),
   };
 
+  // Runs on every track measurement, not only on target changes, because a shifted
+  // track edge leaves the bar off its slot even when the slot's coordinates are the same
   useLayoutEffect(() => {
     if (!isMeasured || isDraggingRef.current) return;
     const target = `${position.x},${position.y}`;
-    if (settledTargetRef.current === target) return;
+    const isOffTarget = x.get() !== position.x || y.get() !== position.y;
+    if (settledTargetRef.current === target && !isOffTarget) return;
     settledTargetRef.current = target;
 
     const viewport = `${window.innerWidth}x${window.innerHeight}`;
@@ -145,16 +172,31 @@ function useBarSlots(isMounted: boolean) {
     }
     animate(x, position.x, landingSpring);
     animate(y, position.y, landingSpring);
-  }, [isMeasured, position.x, position.y, reducedMotion, x, y]);
+  }, [isMeasured, position.x, position.y, track, reducedMotion, x, y]);
+
+  useEffect(() => {
+    if (!isHeld) return;
+    const release = () => setIsHeld(false);
+    window.addEventListener("pointerup", release);
+    window.addEventListener("pointercancel", release);
+    return () => {
+      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointercancel", release);
+    };
+  }, [isHeld]);
+
+  const onHandlePointerDown = (event: React.PointerEvent) => {
+    if (event.button !== 0) return;
+    setIsHeld(true);
+    dragControls.start(event);
+  };
 
   const onDragStart = () => {
     isDraggingRef.current = true;
-    setIsDragging(true);
   };
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     isDraggingRef.current = false;
-    setIsDragging(false);
     if (!isMeasured) return;
     const projected = clampToTrack(
       projectPoint({ x: x.get(), y: y.get() }, info.velocity),
@@ -180,10 +222,10 @@ function useBarSlots(isMounted: boolean) {
     x,
     y,
     edge: barSlotEdge(slot),
-    dragAxis: isExtraSmall ? ("y" as const) : true,
     dragConstraints,
     dragControls,
-    isDragging,
+    isHeld,
+    onHandlePointerDown,
     onDragStart,
     onDragEnd,
   };
@@ -199,10 +241,10 @@ export default function StagedChangesBar() {
     x,
     y,
     edge,
-    dragAxis,
     dragConstraints,
     dragControls,
-    isDragging,
+    isHeld,
+    onHandlePointerDown,
     onDragStart,
     onDragEnd,
   } = useBarSlots(isMounted);
@@ -227,7 +269,7 @@ export default function StagedChangesBar() {
     >
       <motion.div
         ref={barRef}
-        drag={dragAxis}
+        drag
         dragListener={false}
         dragControls={dragControls}
         dragConstraints={dragConstraints}
@@ -236,7 +278,7 @@ export default function StagedChangesBar() {
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         style={{ x, y }}
-        data-dragging={isDragging || undefined}
+        data-held={isHeld || undefined}
         className="pointer-events-auto absolute top-0 left-0 w-full sm:w-auto"
       >
         <div
@@ -247,7 +289,7 @@ export default function StagedChangesBar() {
         >
           <div className="bg-change/6 absolute top-0 left-0 h-full w-full" />
           <div
-            onPointerDown={(event) => dragControls.start(event)}
+            onPointerDown={onHandlePointerDown}
             className="relative flex min-w-0 flex-1 cursor-grab touch-none items-center gap-1.5 self-stretch overflow-hidden pr-1 pl-1 select-none"
           >
             <GripVerticalIcon className="text-change/60 -ml-0.5 size-4.5 shrink-0" />
