@@ -1,4 +1,3 @@
-import { useIsAnyDrawerOpen } from "@/components/ui/drawer";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import {
   availableBarSlots,
@@ -98,7 +97,6 @@ function useElementSize(ref: React.RefObject<HTMLElement | null>, enabled: boole
 // inside the track and the track resizing is how the bar learns that an inset changed
 function useBarSlots(isMounted: boolean) {
   const { isExtraSmall } = useDeviceSize();
-  const isDrawerOpen = useIsAnyDrawerOpen();
   const preferredSlot = useMainStore((s) => s.stagedChangesBarSlot);
   const setPreferredSlot = useMainStore((s) => s.setStagedChangesBarSlot);
   const reducedMotion = useReducedMotion();
@@ -140,7 +138,7 @@ function useBarSlots(isMounted: boolean) {
     return () => observer.disconnect();
   }, [isMounted, x, y]);
 
-  const slots = availableBarSlots({ isExtraSmall, isDrawerOpen });
+  const slots = availableBarSlots({ isExtraSmall });
   const defaultSlot = isExtraSmall ? "bottom-left" : "top-left";
   const slot = resolveBarSlot(preferredSlot ?? defaultSlot, slots, track, bar);
   const position = barSlotPosition(slot, track, bar);

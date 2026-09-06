@@ -13,7 +13,8 @@ import {
 
 const track = { width: 1000, height: 600 };
 const bar = { width: 300, height: 50 };
-const allSlots = availableBarSlots({ isExtraSmall: false, isDrawerOpen: false });
+const allSlots = availableBarSlots({ isExtraSmall: false });
+const phoneSlots = availableBarSlots({ isExtraSmall: true });
 
 test("project scales with velocity and keeps its sign", () => {
   assert.equal(project(0), 0);
@@ -22,20 +23,8 @@ test("project scales with velocity and keeps its sign", () => {
   assert.ok(project(1000, 0.99) < project(1000));
 });
 
-test("available slots depend on device size and open drawers", () => {
-  assert.deepEqual(availableBarSlots({ isExtraSmall: true, isDrawerOpen: false }), [
-    "top-left",
-    "bottom-left",
-  ]);
-  assert.deepEqual(availableBarSlots({ isExtraSmall: true, isDrawerOpen: true }), [
-    "top-left",
-    "bottom-left",
-  ]);
-  assert.deepEqual(availableBarSlots({ isExtraSmall: false, isDrawerOpen: true }), [
-    "top-left",
-    "bottom-left",
-    "bottom-right",
-  ]);
+test("phones get top and bottom, larger screens get all four corners", () => {
+  assert.deepEqual(phoneSlots, ["top-left", "bottom-left"]);
   assert.equal(allSlots.length, 4);
 });
 
@@ -65,10 +54,10 @@ test("a flick lands where the bar is going, not where it was released", () => {
   assert.equal(nearestBarSlot(projected, allSlots, track, bar), "top-right");
 });
 
-test("a flick toward a blocked slot lands on the closest available one", () => {
-  const withDrawer = availableBarSlots({ isExtraSmall: false, isDrawerOpen: true });
+test("a flick toward a slot that is not offered lands on the closest one that is", () => {
+  const withoutTopRight = allSlots.filter((slot) => slot !== "top-right");
   const projected = projectPoint({ x: 100, y: 500 }, { x: 1600, y: -1400 });
-  assert.equal(nearestBarSlot(projected, withDrawer, track, bar), "bottom-right");
+  assert.equal(nearestBarSlot(projected, withoutTopRight, track, bar), "bottom-right");
 });
 
 test("clampToTrack keeps the projection inside the track", () => {
@@ -76,12 +65,12 @@ test("clampToTrack keeps the projection inside the track", () => {
   assert.deepEqual(clampToTrack({ x: 300, y: 100 }, track, bar), { x: 300, y: 100 });
 });
 
-test("a hard flick straight up from bottom right stays right when top right is blocked", () => {
-  const withDrawer = availableBarSlots({ isExtraSmall: false, isDrawerOpen: true });
+test("clamping keeps a hard vertical flick in its own column", () => {
+  const withoutTopRight = allSlots.filter((slot) => slot !== "top-right");
   const projected = projectPoint({ x: 700, y: 550 }, { x: 0, y: -5000 });
-  assert.equal(nearestBarSlot(projected, withDrawer, track, bar), "top-left");
+  assert.equal(nearestBarSlot(projected, withoutTopRight, track, bar), "top-left");
   const clamped = clampToTrack(projected, track, bar);
-  assert.equal(nearestBarSlot(clamped, withDrawer, track, bar), "bottom-right");
+  assert.equal(nearestBarSlot(clamped, withoutTopRight, track, bar), "bottom-right");
 });
 
 test("resolveBarSlot keeps the preference when it is available", () => {
@@ -89,10 +78,7 @@ test("resolveBarSlot keeps the preference when it is available", () => {
 });
 
 test("resolveBarSlot falls back to the closest available slot", () => {
-  const withDrawer = availableBarSlots({ isExtraSmall: false, isDrawerOpen: true });
-  assert.equal(resolveBarSlot("top-right", withDrawer, track, bar), "bottom-right");
-
-  const phone = availableBarSlots({ isExtraSmall: true, isDrawerOpen: false });
+  const phone = phoneSlots;
   const phoneTrack = { width: 360, height: 700 };
   const phoneBar = { width: 360, height: 50 };
   assert.equal(resolveBarSlot("top-right", phone, phoneTrack, phoneBar), "top-left");

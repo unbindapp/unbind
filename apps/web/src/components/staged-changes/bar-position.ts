@@ -26,15 +26,8 @@ export function clampToTrack(point: TPoint, track: TSize, bar: TSize): TPoint {
   };
 }
 
-export function availableBarSlots({
-  isExtraSmall,
-  isDrawerOpen,
-}: {
-  isExtraSmall: boolean;
-  isDrawerOpen: boolean;
-}): TBarSlot[] {
+export function availableBarSlots({ isExtraSmall }: { isExtraSmall: boolean }): TBarSlot[] {
   if (isExtraSmall) return ["top-left", "bottom-left"];
-  if (isDrawerOpen) return ["top-left", "bottom-left", "bottom-right"];
   return ["top-left", "top-right", "bottom-left", "bottom-right"];
 }
 
