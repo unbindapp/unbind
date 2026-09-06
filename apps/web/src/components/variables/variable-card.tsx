@@ -116,7 +116,7 @@ export default function VariableCard({
       data-dynamic={isDynamic || undefined}
       data-unresolved={hasUnresolved || undefined}
       data-staged={variable?.staged}
-      className="group/card data-staged:bg-change/6 data-unresolved:border-warning/28 data-staged:border-change/18 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
+      className="group/card data-staged:bg-change/6 data-unresolved:bg-warning/6 data-unresolved:border-warning/18 data-staged:border-change/18 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
     >
       {variable && (
         <NewEntityIndicator
@@ -147,12 +147,24 @@ export default function VariableCard({
               isPlaceholder={isPlaceholder}
               disableCopy={disableCopy}
               classNameIcon="size-4"
-              variant={variable?.staged ? "ghost-change-foreground" : "ghost"}
+              variant={
+                variable?.staged
+                  ? "ghost-change-foreground"
+                  : hasUnresolved
+                    ? "ghost-warning-foreground"
+                    : "ghost"
+              }
             />
             <Button
               data-visible={isValueVisible || undefined}
               onClick={() => setIsValueVisible((prev) => !prev)}
-              variant={variable?.staged ? "ghost-change-foreground" : "ghost"}
+              variant={
+                variable?.staged
+                  ? "ghost-change-foreground"
+                  : hasUnresolved
+                    ? "ghost-warning-foreground"
+                    : "ghost"
+              }
               forceMinSize="medium"
               size="icon"
               className="text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent sm:rounded-md"
@@ -204,7 +216,13 @@ export default function VariableCard({
                 <ConditionalDropdownButton
                   {...placeholderOrVariableProps}
                   disableDelete={disableDelete}
-                  variant={variable?.staged ? "ghost-change-foreground" : "ghost"}
+                  variant={
+                    variable?.staged
+                      ? "ghost-change-foreground"
+                      : hasUnresolved
+                        ? "ghost-warning-foreground"
+                        : "ghost"
+                  }
                   disableEdit={disableEdit || isStagedDelete}
                   setIsEditingVariable={setIsEditingVariable}
                 />
@@ -230,7 +248,13 @@ export default function VariableCard({
               disableEdit={disableEdit || isStagedDelete}
               setIsEditingVariable={setIsEditingVariable}
               className="rounded-lg"
-              variant={variable?.staged ? "ghost-change-foreground" : "ghost"}
+              variant={
+                variable?.staged
+                  ? "ghost-change-foreground"
+                  : hasUnresolved
+                    ? "ghost-warning-foreground"
+                    : "ghost"
+              }
             />
           )}
         </div>
@@ -486,7 +510,7 @@ function EditVariableForm({
           e.stopPropagation();
           form.handleSubmit(e);
         }}
-        className="bg-background flex flex-1 items-start justify-start gap-1 rounded-lg"
+        className="flex flex-1 items-start justify-start gap-1 rounded-lg"
       >
         <form.AppField
           name="variableValue"

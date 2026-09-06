@@ -44,15 +44,15 @@ const buttonVariants = cva(
         "ghost-destructive":
           "text-destructive has-hover:hover:bg-destructive/12 has-hover:hover:text-destructive active:bg-destructive/12 active:text-destructive",
         "ghost-warning":
-          "text-warning has-hover:hover:bg-warning/12 has-hover:hover:text-warning active:bg-warning/12 active:text-warning",
+          "text-warning has-hover:hover:bg-warning/10 has-hover:hover:text-warning active:bg-warning/10 active:text-warning",
         "ghost-warning-foreground":
-          "text-foreground has-hover:hover:bg-warning/12 has-hover:hover:text-foreground active:bg-warning/12 active:text-foreground",
+          "text-foreground has-hover:hover:bg-warning/10 has-hover:hover:text-foreground active:bg-warning/10 active:text-foreground",
         "ghost-process":
           "text-process has-hover:hover:bg-process/12 has-hover:hover:text-process active:bg-process/12 active:text-process",
         "ghost-change":
-          "text-change has-hover:hover:bg-change/12 has-hover:hover:text-change active:bg-change/12 active:text-change",
+          "text-change has-hover:hover:bg-change/10 has-hover:hover:text-change active:bg-change/10 active:text-change",
         "ghost-change-foreground":
-          "text-foreground has-hover:hover:bg-change/12 has-hover:hover:text-foreground active:bg-change/12 active:text-foreground",
+          "text-foreground has-hover:hover:bg-change/10 has-hover:hover:text-foreground active:bg-change/10 active:text-foreground",
         "ghost-foreground":
           "text-foreground has-hover:hover:bg-foreground/8 has-hover:hover:text-foreground active:bg-foreground/8 active:text-foreground",
         card: "bg-card text-foreground has-hover:hover:bg-card-hover active:bg-card-hover",
