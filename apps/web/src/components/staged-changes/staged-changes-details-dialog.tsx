@@ -1,3 +1,4 @@
+import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import {
@@ -10,7 +11,6 @@ import {
   type TStagedServiceChange,
   type TStagedVariableChange,
 } from "@/components/staged-changes/types";
-import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,9 +34,9 @@ import {
   EyeOffIcon,
   KeyIcon,
   LoaderIcon,
+  PenIcon,
   PlusIcon,
   SettingsIcon,
-  PenIcon,
   Trash2Icon,
   XIcon,
 } from "lucide-react";
@@ -146,13 +146,26 @@ function DetailsBody({
 
   return (
     <div className={cn("flex min-h-0 w-full flex-1 flex-col", className)}>
-      <div className="flex w-full items-center border-b px-4 py-3.5 sm:px-5">
+      <div className="flex w-full items-center gap-2 border-b px-5 py-3.5 sm:px-5">
         <Title className="min-w-0 pr-0 pb-0.5 text-xl leading-tight font-semibold">
           Deploy {count} {count === 1 ? "change" : "changes"}
         </Title>
+        <Button
+          type="button"
+          variant="ghost"
+          className="text-muted-foreground -my-2 -mr-3 ml-auto min-w-0 shrink px-3"
+          onClick={onToggleValues}
+        >
+          {showValues ? (
+            <EyeOffIcon className="-ml-0.5 size-4 shrink-0" />
+          ) : (
+            <EyeIcon className="-ml-0.5 size-4 shrink-0" />
+          )}
+          <span className="min-w-0 shrink truncate">{showValues ? "Hide" : "Show"}</span>
+        </Button>
       </div>
       <ScrollArea className="min-h-0 w-full flex-1">
-        <div className="flex w-full flex-col gap-4 px-4 pt-4 pb-10 sm:px-5">
+        <div className="flex w-full flex-col gap-6 px-3 pt-4 pb-10 sm:px-5 sm:pb-8">
           {deploy.error && <ErrorLine message={deploy.error.message} withIcon />}
           {plan.error && <ErrorLine message={plan.error.message} withIcon />}
           <AffectedServices plan={plan.data?.affected ?? []} isFetching={plan.isFetching} />
@@ -170,25 +183,9 @@ function DetailsBody({
           </ol>
         </div>
       </ScrollArea>
-      <div className="flex w-full items-center justify-end gap-2 border-t px-3.5 py-3 sm:p-3">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="text-muted-foreground mr-auto min-w-0 shrink px-3"
-          onClick={onToggleValues}
-        >
-          {showValues ? (
-            <EyeOffIcon className="-ml-0.5 size-3.5 shrink-0" />
-          ) : (
-            <EyeIcon className="-ml-0.5 size-3.5 shrink-0" />
-          )}
-          <span className="min-w-0 shrink truncate">
-            {showValues ? "Hide Secrets" : "Show Secrets"}
-          </span>
-        </Button>
+      <div className="flex w-full items-center justify-end gap-2 border-t px-3.5 py-3 sm:p-3.5">
         <Close
-          className="text-muted-foreground"
+          className="text-muted-foreground flex-1 px-3 sm:flex-initial sm:px-5"
           render={
             <Button type="button" variant="ghost" className="shrink-0">
               Close
@@ -197,12 +194,12 @@ function DetailsBody({
         />
         <Button
           variant="change"
-          className="shrink-0"
+          className="flex-1 px-3 sm:flex-initial sm:px-5"
           isPending={deploy.isPending}
           disabled={count === 0}
           onClick={() => deploy.mutate(undefined, { onSuccess: onDeployed })}
         >
-          Deploy
+          Deploy Changes
         </Button>
       </div>
     </div>
@@ -252,7 +249,7 @@ function ChangeGroupCard({
           <ErrorLine message={failure.message} withIcon />
         </div>
       )}
-      <div className="flex w-full flex-col gap-3 p-2 sm:gap-2">
+      <div className="flex w-full flex-col gap-3 px-2 py-3 sm:gap-3 sm:px-3">
         <div
           className={cn(
             rowGrid,
@@ -264,7 +261,7 @@ function ChangeGroupCard({
           <p>New Value</p>
           <div className="w-7" />
         </div>
-        <ol className="flex w-full flex-col gap-3 sm:gap-1.5">
+        <ol className="flex w-full flex-col gap-5 sm:gap-2">
           {group.rows.map((row) => (
             <ChangeRow
               key={row.id}
@@ -317,7 +314,7 @@ function ChangeRow({
 
   return (
     <li className={cn(rowGrid, "items-start px-1")}>
-      <div className={cn("flex min-w-0 items-start gap-1.5 py-1.5", actionClassNames[action])}>
+      <div className={cn("flex min-w-0 items-start gap-1.5", actionClassNames[action])}>
         <ActionIcon className="mt-px size-4 shrink-0" />
         <div className="flex min-w-0 shrink flex-col gap-0.5">
           <p
@@ -344,7 +341,7 @@ function ChangeRow({
       >
         <XIcon className="size-4" />
       </Button>
-      <div className="col-span-2 grid grid-cols-2 gap-2 sm:contents">
+      <div className="col-span-2 grid grid-cols-2 gap-2">
         <ValueCell action={action} value={row.previous === null ? null : mask(row.previous)} />
         <ValueCell action={action} value={row.value === null ? null : mask(row.value)} isNew />
       </div>
@@ -364,7 +361,7 @@ function ValueCell({
   return (
     <div
       data-action={isNew ? action : undefined}
-      className="bg-foreground/4 data-[action=add]:bg-success/10 data-[action=edit]:bg-process/10 data-[action=remove]:bg-destructive/10 min-h-8 min-w-0 rounded-md px-2.5 py-2.75 font-mono text-sm leading-tight wrap-anywhere whitespace-pre-wrap"
+      className="bg-foreground/4 data-[action=add]:bg-success/10 data-[action=edit]:bg-process/10 data-[action=remove]:bg-destructive/10 min-h-8 min-w-0 rounded-md px-2.5 py-2.25 font-mono text-sm leading-tight wrap-anywhere whitespace-pre-wrap"
     >
       {value || " "}
     </div>
@@ -380,9 +377,9 @@ const actionLabels: Record<AffectedService["action"], string> = {
 
 function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFetching: boolean }) {
   return (
-    <div className="flex w-full flex-col gap-1.5">
+    <div className="flex w-full flex-col gap-2">
       <div className="flex w-full items-center gap-2">
-        <p className="text-muted-foreground px-1 leading-tight font-semibold">Affected Services</p>
+        <p className="px-1 leading-tight font-semibold">Affected Services</p>
         {isFetching && <LoaderIcon className="text-muted-foreground size-3.5 animate-spin" />}
       </div>
       {plan.length === 0 && !isFetching && (
