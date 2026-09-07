@@ -411,8 +411,9 @@ function LogList({
           className="min-h-0 w-full flex-1 overflow-y-auto font-mono [overflow-anchor:none]"
         >
           {/* The width cap lives inside the scroller so the scrollbar stays at the
-              container edge and the fade spans the full width. */}
-          <div className="w-full group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
+              container edge and the fade spans the full width. Bottom padding on
+              the last row instead would resize it on every append. */}
+          <div className="w-full pb-[calc(1rem+var(--safe-area-inset-bottom))] group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))] group-data-[container=page]/wrapper:pb-4 sm:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] sm:group-data-[container=page]/wrapper:pb-6">
             <div ref={indicatorRef} className="w-full">
               {hasMoreOlder ? (
                 <OlderLogsIndicator
@@ -667,7 +668,6 @@ function VirtualRows({
         <LogLine
           type={type}
           data-container={containerType}
-          data-last={item.index === lines.length - 1 || undefined}
           classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
           logLine={line}
           isExpanded={expandedKeys.has(line.key)}
@@ -693,15 +693,13 @@ function PlaceholderList({
   containerType: TContainerType;
 }) {
   return (
-    <div className="min-h-0 w-full flex-1 overflow-hidden font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
+    <div className="min-h-0 w-full flex-1 overflow-hidden pt-3 font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
       {placeholderArray.map((_, index) => (
         <LogLine
           isPlaceholder
           type={type}
           key={index}
           data-container={containerType}
-          data-first={index === 0 || undefined}
-          data-last={index === placeholderArray.length - 1 || undefined}
           classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
         />
       ))}

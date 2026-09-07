@@ -76,7 +76,7 @@ export default function LogLine({
       data-expanded={isExpanded || undefined}
       data-highlighted={isHighlighted || undefined}
       className={cn(
-        `group/line flex w-full flex-col items-stretch py-px font-mono text-xs data-first:pt-3 data-last:pb-[calc(1rem+var(--safe-area-inset-bottom))] data-[container=page]:data-last:pb-4 sm:data-last:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] sm:data-[container=page]:data-last:pb-6`,
+        "group/line flex w-full flex-col items-stretch py-px font-mono text-xs",
         className,
       )}
       data-placeholder={isPlaceholder || undefined}
