@@ -46,6 +46,7 @@ const (
 type AffectedService struct {
 	ServiceID    uuid.UUID      `json:"service_id" format:"uuid"`
 	Name         string         `json:"name"`
+	Icon         string         `json:"icon"`
 	Action       ChangeAction   `json:"action" enum:"build,redeploy,restart,none"`
 	Reasons      []ChangeReason `json:"reasons" nullable:"false" doc:"Why the service is affected: its config, its own variables, or variables it references"`
 	DeploymentID *uuid.UUID     `json:"deployment_id,omitempty" format:"uuid" doc:"The deployment created for the service, when one was created immediately"`

@@ -115,7 +115,12 @@ const tabs: TServicePanelTab[] = [
     value: "variables",
     Page: Variables,
     Provider: ({ children, ...rest }: TServicePageProviderProps) => (
-      <VariablesProvider type="service" scopeName={rest.service.name} {...rest}>
+      <VariablesProvider
+        type="service"
+        scopeName={rest.service.name}
+        scopeIcon={rest.service.config.icon}
+        {...rest}
+      >
         <VariableReferencesProvider type="service" {...rest}>
           <VariablesTabWrapper {...rest}>{children}</VariablesTabWrapper>
         </VariableReferencesProvider>
@@ -166,6 +171,7 @@ export default function ServicePanelContent({ service, className }: TProps) {
           environmentId={environmentId}
           serviceId={service.id}
           type="service"
+          scopeIcon={service.config.icon}
         >
           <ServicePanelContentUndeployed className={className} service={service} />
         </VariablesProvider>

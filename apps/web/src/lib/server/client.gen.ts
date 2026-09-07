@@ -4,6 +4,7 @@ export const AffectedServiceSchema = z
   .object({
     action: z.enum(['build', 'redeploy', 'restart', 'none']),
     deployment_id: z.string().optional(), // The deployment created for the service, when one was created immediately
+    icon: z.string(),
     name: z.string(),
     reasons: z.array(z.string()), // Why the service is affected: its config, its own variables, or variables it references
     service_id: z.string(),

@@ -189,6 +189,9 @@ func (self *rolloutResult) affected(touch *serviceTouch) models.AffectedService 
 		Action:    self.action,
 		Reasons:   touch.reasons(),
 	}
+	if self.service.Edges.ServiceConfig != nil {
+		affected.Icon = self.service.Edges.ServiceConfig.Icon
+	}
 	if self.deployment != nil {
 		affected.DeploymentID = &self.deployment.ID
 	}

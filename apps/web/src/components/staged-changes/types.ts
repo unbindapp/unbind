@@ -16,6 +16,7 @@ export const StagedVariableChangeSchema = z.object({
   id: z.string(),
   scope: VariableScopeSchema,
   scopeName: z.string(),
+  scopeIcon: z.string().optional(),
   name: z.string(),
   // null removes the variable
   value: z.string().nullable(),
@@ -58,6 +59,7 @@ export const StagedServiceChangeSchema = z.object({
   environmentId: z.string(),
   serviceId: z.string(),
   serviceName: z.string(),
+  serviceIcon: z.string().optional(),
   field: ServiceChangeFieldSchema,
   value: z.union([z.string(), z.number()]),
   label: z.string(),

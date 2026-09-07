@@ -38,6 +38,7 @@ export function useServiceChanges(service: TServiceShallow) {
         environmentId,
         serviceId: service.id,
         serviceName: service.name,
+        serviceIcon: service.config.icon,
         field,
         label,
         value,
@@ -46,7 +47,7 @@ export function useServiceChanges(service: TServiceShallow) {
         isDefault: value === previous,
       });
     },
-    [stageService, teamId, projectId, environmentId, service.id, service.name],
+    [stageService, teamId, projectId, environmentId, service.id, service.name, service.config.icon],
   );
 
   const unstage = useCallback(

@@ -44,6 +44,7 @@ type TProps = {
   initialData?: TVariablesList;
   refetchInterval?: number;
   scopeName?: string;
+  scopeIcon?: string;
   children: ReactNode;
 } & Omit<TEntityVariableTypeProps, "service">;
 
@@ -57,6 +58,7 @@ export const VariablesProvider: React.FC<TProps> = ({
   initialData,
   refetchInterval,
   scopeName,
+  scopeIcon,
   children,
   ...typedProps
 }) => {
@@ -101,13 +103,14 @@ export const VariablesProvider: React.FC<TProps> = ({
         changes.map((change) => ({
           scope,
           scopeName: resolvedScopeName,
+          scopeIcon,
           name: change.name,
           value: change.value,
           previous: serverByName.get(change.name) ?? null,
         })),
       );
     },
-    [serverVariables, stageVariables, scope, resolvedScopeName],
+    [serverVariables, stageVariables, scope, resolvedScopeName, scopeIcon],
   );
 
   const discardStaged = useCallback(
