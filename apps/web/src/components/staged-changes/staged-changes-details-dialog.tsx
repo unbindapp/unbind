@@ -114,7 +114,7 @@ export default function StagedChangesDetailsDialog({
       <DialogContent
         hideXButton
         className="max-h-[calc(var(--safe-screen-height)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))] gap-0 p-0"
-        classNameInnerWrapper="w-192 max-w-full min-h-0 gap-0"
+        classNameInnerWrapper="w-208 max-w-full min-h-0 gap-0"
       >
         <DetailsBody
           {...bodyProps}
@@ -157,31 +157,15 @@ function DetailsBody({
   return (
     <div className={cn("flex min-h-0 w-full flex-1 flex-col", className)}>
       <div className="flex w-full flex-col gap-1.5 border-b px-4 pt-3.5 pb-3 sm:px-5">
-        <div className="flex w-full items-start justify-between gap-3">
-          <Title className="min-w-0 shrink pr-0 text-xl leading-tight font-semibold">
-            {count} {count === 1 ? "Change" : "Changes"}
-          </Title>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground -my-1 -mr-2.5 max-w-1/2 min-w-0 shrink px-2.5"
-            onClick={onToggleValues}
-          >
-            {showValues ? (
-              <EyeOffIcon className="-ml-px size-4 shrink-0" />
-            ) : (
-              <EyeIcon className="-ml-px size-4 shrink-0" />
-            )}
-            <span className="min-w-0 shrink truncate">{showValues ? "Hide" : "Show"}</span>
-          </Button>
-        </div>
+        <Title className="min-w-0 pr-0 text-xl leading-tight font-semibold">
+          {count} {count === 1 ? "Change" : "Changes"}
+        </Title>
         <Description className="text-muted-foreground text-left text-sm">
           Staged changes are deployed together.
         </Description>
       </div>
       <ScrollArea className="min-h-0 w-full flex-1">
-        <div className="flex w-full flex-col gap-4 px-4 py-4 sm:px-5">
+        <div className="flex w-full flex-col gap-4 px-4 pt-4 pb-8 sm:px-5">
           {deploy.error && <ErrorLine message={deploy.error.message} withIcon />}
           {plan.error && <ErrorLine message={plan.error.message} withIcon />}
           <ol className="flex w-full flex-col gap-3">
@@ -199,17 +183,33 @@ function DetailsBody({
           <AffectedServices plan={plan.data?.affected ?? []} isFetching={plan.isFetching} />
         </div>
       </ScrollArea>
-      <div className="flex w-full flex-wrap items-center justify-end gap-2 border-t px-4 py-3 sm:px-5">
+      <div className="flex w-full items-center justify-end gap-2 border-t px-4 py-3 sm:px-5">
+        <Button
+          type="button"
+          variant="ghost"
+          className="text-muted-foreground mr-auto min-w-0 shrink px-3"
+          onClick={onToggleValues}
+        >
+          {showValues ? (
+            <EyeOffIcon className="-ml-0.5 size-4.5 shrink-0" />
+          ) : (
+            <EyeIcon className="-ml-0.5 size-4.5 shrink-0" />
+          )}
+          <span className="min-w-0 shrink truncate">
+            {showValues ? "Hide Secrets" : "Show Secrets"}
+          </span>
+        </Button>
         <Close
           className="text-muted-foreground"
           render={
-            <Button type="button" variant="ghost">
+            <Button type="button" variant="ghost" className="shrink-0">
               Close
             </Button>
           }
         />
         <Button
           variant="change"
+          className="shrink-0"
           isPending={deploy.isPending}
           disabled={count === 0}
           onClick={() => deploy.mutate(undefined, { onSuccess: onDeployed })}
@@ -331,7 +331,6 @@ function ChangeRow({
     <li className={cn(rowGrid, "items-start px-1")}>
       <div className={cn("flex min-w-0 items-center gap-1.5 py-1.5", actionClassNames[action])}>
         <ActionIcon className="size-4 shrink-0" />
-        <KindIcon className="size-4 shrink-0" />
         <p
           className={cn(
             "min-w-0 shrink truncate text-sm leading-tight font-medium",
@@ -340,9 +339,10 @@ function ChangeRow({
         >
           {row.label}
         </p>
-        <p className="text-muted-foreground shrink-0 text-xs leading-tight">
-          {kindLabels[row.kind]}
-        </p>
+        <div className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs leading-tight">
+          <KindIcon className="size-3.5 shrink-0" />
+          <p>{kindLabels[row.kind]}</p>
+        </div>
       </div>
       <Button
         type="button"
@@ -407,12 +407,15 @@ function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFet
           {plan.map((affected) => (
             <li
               key={affected.service_id}
-              data-action={affected.action}
-              className="bg-foreground/6 text-muted-foreground data-[action=build]:bg-change/12 data-[action=build]:text-change data-[action=redeploy]:bg-change/12 data-[action=redeploy]:text-change data-[action=restart]:bg-wait/12 data-[action=restart]:text-wait flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 text-sm font-medium"
+              className="flex min-w-0 items-center rounded-md border text-sm font-medium"
             >
-              <BrandIcon brand={affected.icon} color="brand" className="size-4 shrink-0" />
-              <span className="min-w-0 truncate">{affected.name}</span>
-              <span className="shrink-0 opacity-70">{actionLabels[affected.action]}</span>
+              <div className="flex min-w-0 items-center gap-1.5 border-r px-2 py-1">
+                <BrandIcon brand={affected.icon} color="brand" className="size-4 shrink-0" />
+                <span className="min-w-0 truncate">{affected.name}</span>
+              </div>
+              <span className="text-muted-foreground shrink-0 px-2 py-1">
+                {actionLabels[affected.action]}
+              </span>
             </li>
           ))}
         </ul>

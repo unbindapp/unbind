@@ -228,7 +228,8 @@ export default function StagedChangesBar() {
   const { isMounted, isOpen } = useBarPresence(count > 0);
   // The details drawer covers the bottom of the screen where the bar sits
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const isHidden = !isOpen || (isExtraSmall && isDetailsOpen);
+  const isBehindDrawer = isExtraSmall && isDetailsOpen;
+  const isHidden = !isOpen || isBehindDrawer;
   const {
     trackRef,
     barRef,
@@ -275,7 +276,8 @@ export default function StagedChangesBar() {
       <motion.div
         ref={barRef}
         style={{ x, y }}
-        className="pointer-events-auto absolute top-0 left-0 w-full sm:w-auto"
+        data-behind-drawer={isBehindDrawer || undefined}
+        className="pointer-events-auto absolute top-0 left-0 w-full data-behind-drawer:pointer-events-none sm:w-auto"
       >
         <div
           data-error={hasError || undefined}
