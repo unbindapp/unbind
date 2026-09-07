@@ -164,7 +164,7 @@ function DetailsBody({
           <span className="min-w-0 shrink truncate">{showValues ? "Hide" : "Show"}</span>
         </Button>
       </div>
-      <ScrollArea className="min-h-0 w-full flex-1">
+      <ScrollArea className="min-h-0 w-full flex-1 mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
         <div className="flex w-full flex-col gap-6 px-3 pt-4 pb-10 sm:px-5 sm:pb-8">
           {deploy.error && <ErrorLine message={deploy.error.message} withIcon />}
           {plan.error && <ErrorLine message={plan.error.message} withIcon />}
