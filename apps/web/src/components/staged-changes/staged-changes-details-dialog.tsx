@@ -153,13 +153,13 @@ function DetailsBody({
         <Button
           type="button"
           variant="ghost"
-          className="text-muted-foreground -my-2 -mr-3 ml-auto min-w-0 shrink px-3"
+          className="text-muted-foreground -my-2 -mr-3 ml-auto min-w-0 shrink px-3.5"
           onClick={onToggleValues}
         >
           {showValues ? (
-            <EyeOffIcon className="-ml-0.5 size-4 shrink-0" />
+            <EyeOffIcon className="-ml-px size-4 shrink-0" />
           ) : (
-            <EyeIcon className="-ml-0.5 size-4 shrink-0" />
+            <EyeIcon className="-ml-px size-4 shrink-0" />
           )}
           <span className="min-w-0 shrink truncate">{showValues ? "Hide" : "Show"}</span>
         </Button>
@@ -261,7 +261,7 @@ function ChangeGroupCard({
           <p>New Value</p>
           <div className="w-7" />
         </div>
-        <ol className="flex w-full flex-col gap-5 sm:gap-2">
+        <ol className="flex w-full flex-col gap-4 sm:gap-2">
           {group.rows.map((row) => (
             <ChangeRow
               key={row.id}
