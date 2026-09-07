@@ -147,14 +147,15 @@ function DetailsBody({
   return (
     <div className={cn("flex min-h-0 w-full flex-1 flex-col", className)}>
       <div className="flex w-full items-center border-b px-4 py-3.5 sm:px-5">
-        <Title className="min-w-0 pr-0 text-xl leading-tight font-semibold">
+        <Title className="min-w-0 pr-0 pb-0.5 text-xl leading-tight font-semibold">
           Deploy {count} {count === 1 ? "change" : "changes"}
         </Title>
       </div>
       <ScrollArea className="min-h-0 w-full flex-1">
-        <div className="flex w-full flex-col gap-4 px-4 pt-4 pb-8 sm:px-5">
+        <div className="flex w-full flex-col gap-4 px-4 pt-4 pb-10 sm:px-5">
           {deploy.error && <ErrorLine message={deploy.error.message} withIcon />}
           {plan.error && <ErrorLine message={plan.error.message} withIcon />}
+          <AffectedServices plan={plan.data?.affected ?? []} isFetching={plan.isFetching} />
           <ol className="flex w-full flex-col gap-3">
             {groups.map((group) => (
               <ChangeGroupCard
@@ -167,20 +168,20 @@ function DetailsBody({
               />
             ))}
           </ol>
-          <AffectedServices plan={plan.data?.affected ?? []} isFetching={plan.isFetching} />
         </div>
       </ScrollArea>
-      <div className="flex w-full items-center justify-end gap-2 border-t px-4 py-3 sm:px-5">
+      <div className="flex w-full items-center justify-end gap-2 border-t px-3.5 py-3 sm:p-3">
         <Button
           type="button"
           variant="ghost"
+          size="sm"
           className="text-muted-foreground mr-auto min-w-0 shrink px-3"
           onClick={onToggleValues}
         >
           {showValues ? (
-            <EyeOffIcon className="-ml-0.5 size-4.5 shrink-0" />
+            <EyeOffIcon className="-ml-0.5 size-3.5 shrink-0" />
           ) : (
-            <EyeIcon className="-ml-0.5 size-4.5 shrink-0" />
+            <EyeIcon className="-ml-0.5 size-3.5 shrink-0" />
           )}
           <span className="min-w-0 shrink truncate">
             {showValues ? "Hide Secrets" : "Show Secrets"}
@@ -231,15 +232,15 @@ function ChangeGroupCard({
           <BrandIcon brand={group.icon} color="brand" className="size-5 shrink-0" />
           <p className="min-w-0 shrink truncate leading-tight font-semibold">{group.title}</p>
         </div>
-        <div className="flex min-w-0 shrink items-center gap-2">
+        <div className="flex min-w-0 shrink items-center gap-4">
           <p className="text-muted-foreground min-w-0 shrink truncate text-sm leading-tight">
             {countsLabel(group.rows)}
           </p>
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="text-muted-foreground shrink-0"
+            className="text-muted-foreground shrink-0 px-3"
             onClick={onDiscardGroup}
           >
             Discard
@@ -316,19 +317,21 @@ function ChangeRow({
 
   return (
     <li className={cn(rowGrid, "items-start px-1")}>
-      <div className={cn("flex min-w-0 items-center gap-1.5 py-1.5", actionClassNames[action])}>
-        <ActionIcon className="size-4 shrink-0" />
-        <p
-          className={cn(
-            "min-w-0 shrink truncate text-sm leading-tight font-medium",
-            row.isSecret && "font-mono",
-          )}
-        >
-          {row.label}
-        </p>
-        <div className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs leading-tight">
-          <KindIcon className="size-3.5 shrink-0" />
-          <p>{kindLabels[row.kind]}</p>
+      <div className={cn("flex min-w-0 items-start gap-1.5 py-1.5", actionClassNames[action])}>
+        <ActionIcon className="mt-px size-4 shrink-0" />
+        <div className="flex min-w-0 shrink flex-col gap-0.5">
+          <p
+            className={cn(
+              "min-w-0 shrink truncate text-sm leading-tight font-medium",
+              row.isSecret && "font-mono",
+            )}
+          >
+            {row.label}
+          </p>
+          <div className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs leading-tight">
+            <KindIcon className="size-3 shrink-0" />
+            <p>{kindLabels[row.kind]}</p>
+          </div>
         </div>
       </div>
       <Button
@@ -336,7 +339,7 @@ function ChangeRow({
         variant="ghost"
         size="icon"
         aria-label="Discard"
-        className="text-muted-more-foreground size-7 shrink-0 rounded-md sm:order-last"
+        className="text-muted-more-foreground h-10 w-8 shrink-0 rounded-md sm:order-last"
         onClick={onDiscard}
       >
         <XIcon className="size-4" />
@@ -361,9 +364,9 @@ function ValueCell({
   return (
     <div
       data-action={isNew ? action : undefined}
-      className="bg-foreground/4 data-[action=add]:bg-success/10 data-[action=edit]:bg-process/10 data-[action=remove]:bg-destructive/10 min-h-8 min-w-0 rounded-md px-2.5 py-1.5 font-mono text-sm leading-tight wrap-anywhere whitespace-pre-wrap"
+      className="bg-foreground/4 data-[action=add]:bg-success/10 data-[action=edit]:bg-process/10 data-[action=remove]:bg-destructive/10 min-h-8 min-w-0 rounded-md px-2.5 py-2.75 font-mono text-sm leading-tight wrap-anywhere whitespace-pre-wrap"
     >
-      {value}
+      {value || " "}
     </div>
   );
 }
@@ -377,11 +380,9 @@ const actionLabels: Record<AffectedService["action"], string> = {
 
 function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFetching: boolean }) {
   return (
-    <div className="flex w-full flex-col gap-1.5 px-1">
+    <div className="flex w-full flex-col gap-1.5">
       <div className="flex w-full items-center gap-2">
-        <p className="text-muted-foreground text-sm leading-tight font-semibold">
-          Affected Services
-        </p>
+        <p className="text-muted-foreground px-1 leading-tight font-semibold">Affected Services</p>
         {isFetching && <LoaderIcon className="text-muted-foreground size-3.5 animate-spin" />}
       </div>
       {plan.length === 0 && !isFetching && (
@@ -396,11 +397,15 @@ function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFet
               key={affected.service_id}
               className="flex min-w-0 items-center rounded-md border text-sm font-medium"
             >
-              <div className="flex min-w-0 items-center gap-1.5 border-r px-2 py-1">
-                <BrandIcon brand={affected.icon} color="brand" className="size-4 shrink-0" />
+              <div className="flex min-w-0 items-center gap-1.5 border-r px-2.5 py-1">
+                <BrandIcon
+                  brand={affected.icon}
+                  color="brand"
+                  className="-ml-0.5 size-4 shrink-0"
+                />
                 <span className="min-w-0 truncate">{affected.name}</span>
               </div>
-              <span className="text-muted-foreground shrink-0 px-2 py-1">
+              <span className="text-muted-foreground shrink-0 px-2.5 py-1">
                 {actionLabels[affected.action]}
               </span>
             </li>
