@@ -16,7 +16,6 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -24,7 +23,6 @@ import {
   Drawer,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
@@ -99,7 +97,6 @@ export default function StagedChangesDetailsDialog({
           <DetailsBody
             {...bodyProps}
             Title={DrawerTitle}
-            Description={DrawerDescription}
             Close={DrawerClose}
             className="pb-(--safe-area-inset-bottom)"
           />
@@ -116,12 +113,7 @@ export default function StagedChangesDetailsDialog({
         className="max-h-[calc(var(--safe-screen-height)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))] gap-0 p-0"
         classNameInnerWrapper="w-208 max-w-full min-h-0 gap-0"
       >
-        <DetailsBody
-          {...bodyProps}
-          Title={DialogTitle}
-          Description={DialogDescription}
-          Close={DialogClose}
-        />
+        <DetailsBody {...bodyProps} Title={DialogTitle} Close={DialogClose} />
       </DialogContent>
     </Dialog>
   );
@@ -133,7 +125,6 @@ type TDetailsBodyProps = {
   onDeployed: () => void;
   className?: string;
   Title: FC<{ className?: string; children: ReactNode }>;
-  Description: FC<{ className?: string; children: ReactNode }>;
   Close: FC<{ className?: string; render: ReactElement }>;
 };
 
@@ -143,7 +134,6 @@ function DetailsBody({
   onDeployed,
   className,
   Title,
-  Description,
   Close,
 }: TDetailsBodyProps) {
   const variables = useStagedChangesStore((s) => s.variables);
@@ -156,13 +146,10 @@ function DetailsBody({
 
   return (
     <div className={cn("flex min-h-0 w-full flex-1 flex-col", className)}>
-      <div className="flex w-full flex-col gap-1.5 border-b px-4 pt-3.5 pb-3 sm:px-5">
+      <div className="flex w-full items-center border-b px-4 py-3.5 sm:px-5">
         <Title className="min-w-0 pr-0 text-xl leading-tight font-semibold">
-          {count} {count === 1 ? "Change" : "Changes"}
+          Deploy {count} {count === 1 ? "change" : "changes"}
         </Title>
-        <Description className="text-muted-foreground text-left text-sm">
-          Staged changes are deployed together.
-        </Description>
       </div>
       <ScrollArea className="min-h-0 w-full flex-1">
         <div className="flex w-full flex-col gap-4 px-4 pt-4 pb-8 sm:px-5">
