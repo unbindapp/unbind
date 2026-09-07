@@ -220,12 +220,12 @@ export default function DomainPortCard({
       <div
         data-editing={isEditing || undefined}
         data-has-dns={showDnsStatus || undefined}
-        className="data-editing:border-process/25 group/field flex w-full flex-col overflow-hidden rounded-lg border"
+        className="data-editing:border-change/16 group/field flex w-full flex-col overflow-hidden rounded-lg border"
       >
         <BlockItemButtonLike
           asElement="div"
           classNameText="whitespace-normal"
-          className="group-data-editing/field:bg-process/8 group-data-editing/field:text-process group-data-has-dns/field:ring-border z-1 border-none group-data-editing/field:rounded-b-none group-data-has-dns/field:ring-1"
+          className="group-data-editing/field:bg-change/6 group-data-editing/field:text-change group-data-has-dns/field:ring-border z-1 border-none group-data-editing/field:rounded-b-none group-data-has-dns/field:ring-1"
           text={getNetworkingDisplayUrl({
             host: domain,
             port: mode === "public" ? "" : port?.toString(),
@@ -236,7 +236,7 @@ export default function DomainPortCard({
               <div className="flex w-full flex-col">
                 <div
                   className={cn(
-                    "text-muted-foreground group-data-editing/field:text-process/85 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
+                    "text-muted-foreground group-data-editing/field:text-change/75 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
                     className,
                   )}
                 >
@@ -271,7 +271,7 @@ export default function DomainPortCard({
               e.stopPropagation();
               form.handleSubmit(e);
             }}
-            className="border-process/25 flex w-full flex-col border-t"
+            className="border-change/16 flex w-full flex-col border-t"
           >
             <div className="flex w-full flex-col gap-4 px-3 pt-3 pb-3.25 sm:px-4.5 sm:pt-3.75 sm:pb-4.75">
               <Block>
@@ -455,7 +455,7 @@ export default function DomainPortCard({
                 )}
               </div>
             </div>
-            <div className="bg-process/8 border-process/20 mt-1 flex w-full flex-col border-t p-1.5">
+            <div className="bg-change/6 border-change/16 mt-1 flex w-full flex-col border-t p-1.5">
               {errorUpdate && (
                 <div className="w-full p-1.5">
                   <ErrorLine
@@ -473,7 +473,7 @@ export default function DomainPortCard({
                     <div className="w-1/2 p-1.5">
                       <Button
                         type="button"
-                        variant="outline-process"
+                        variant="outline-change"
                         className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
                         onClick={() => {
                           form.reset();
@@ -486,7 +486,7 @@ export default function DomainPortCard({
                     <div className="w-1/2 p-1.5">
                       <form.SubmitButton
                         isPending={isSubmitting || isPendingUpdate}
-                        variant="process"
+                        variant="change"
                         className="w-full"
                       >
                         Apply{changeCount >= 1 ? ` (${changeCount})` : ""}
