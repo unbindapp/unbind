@@ -1,5 +1,5 @@
 import { cn } from "@/components/ui/utils";
-import { FolderIcon, LayoutGridIcon, ServerIcon, UsersIcon, WebhookIcon } from "lucide-react";
+import { BoxIcon, FolderIcon, LayoutGridIcon, UsersIcon, WebhookIcon } from "lucide-react";
 import { ComponentProps, useId } from "react";
 
 type TProps = ComponentProps<"svg"> & {
@@ -1486,5 +1486,5 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     return <LayoutGridIcon className={cn(defaultClassName, className)} {...rest} />;
   }
 
-  return <ServerIcon className={cn(defaultClassName, className)} {...rest} />;
+  return <BoxIcon className={cn(defaultClassName, className)} {...rest} />;
 }
