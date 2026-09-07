@@ -268,5 +268,10 @@
     "version": "v0.1.53",
     "description": "Staged changes with coordinated service rollouts, endpoint change tracking, and responsive toast positioning",
     "breaking": false
+  },
+  "v0.1.54": {
+    "version": "v0.1.54",
+    "description": "Draggable staged changes bar, variable card staged state improvements, and log list padding fixes",
+    "breaking": false
   }
 }
