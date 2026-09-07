@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
-import { EllipsisVerticalIcon, GripVerticalIcon, Trash2Icon } from "lucide-react";
+import { EllipsisVerticalIcon, GripVerticalIcon, Undo2Icon } from "lucide-react";
 import { animate, motion, useMotionValue, useReducedMotion, type PanInfo } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -352,7 +352,7 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
               handle={discardHandle}
               render={
                 <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
-                  <Trash2Icon className="-ml-0.5 size-5" />
+                  <Undo2Icon className="-ml-0.5 size-5" />
                   <p className="min-w-0 shrink leading-tight">Discard All</p>
                 </DropdownMenuItem>
               }
