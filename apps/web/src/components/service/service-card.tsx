@@ -105,7 +105,7 @@ export default function ServiceCard({
   });
 
   const cardClassName = cn(
-    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold data-staged:border-change/24",
+    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border overflow-hidden px-5 py-3.5 text-left font-semibold data-staged:border-change/24",
     classNameCard,
     volumes && volumes.length > 0 && "rounded-b-none border-b-0",
   );
@@ -114,7 +114,7 @@ export default function ServiceCard({
     <>
       {changeLabel !== null && <div className="bg-change/4 absolute top-0 left-0 size-full" />}
       {service && <NewEntityIndicator id={service.id} />}
-      <div className="flex w-full items-center justify-between gap-4">
+      <div className="relative flex w-full items-center justify-between gap-4">
         <div className="flex min-w-0 shrink items-center justify-start gap-2">
           {!isPlaceholder ? (
             <ServiceIcon service={service} className="-ml-1 size-5" />
@@ -133,7 +133,7 @@ export default function ServiceCard({
           </div>
         )}
       </div>
-      <div className="flex w-full flex-1 flex-col justify-end">
+      <div className="relative flex w-full flex-1 flex-col justify-end">
         <div className="-mx-0.5 flex w-[calc(100%+0.25rem)] items-center justify-between">
           {!isPlaceholder ? (
             <ServiceInfoLine
