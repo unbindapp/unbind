@@ -393,7 +393,7 @@ function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFet
     <div className="flex w-full flex-col gap-1.5 px-1">
       <div className="flex w-full items-center gap-2">
         <p className="text-muted-foreground text-sm leading-tight font-semibold">
-          Services That Will Roll Out
+          Affected Services
         </p>
         {isFetching && <LoaderIcon className="text-muted-foreground size-3.5 animate-spin" />}
       </div>
