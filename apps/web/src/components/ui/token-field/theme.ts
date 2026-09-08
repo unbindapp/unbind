@@ -12,6 +12,8 @@ export const tokenFieldTheme = EditorView.theme({
     color: "inherit",
     fontSize: "inherit",
     fontFamily: "inherit",
+    // A value is read character by character, "==" must not merge into one glyph
+    fontVariantLigatures: "none",
   },
   "&.cm-focused": { outline: "none" },
   ".cm-scroller": {

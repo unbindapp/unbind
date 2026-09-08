@@ -3,6 +3,7 @@ import ErrorLine from "@/components/error-line";
 import { IconCache } from "@/components/icons/icon-cache";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
 import { useStagedChangesStore } from "@/components/staged-changes/staged-changes-provider";
+import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -61,6 +62,7 @@ export default function RawVariableEditor({ children }: TProps) {
   const { tokens } = useVariableReferences();
   const { isExtraSmall } = useDeviceSize();
   const setBarPinnedEdge = useStagedChangesStore((s) => s.setBarPinnedEdge);
+  const setBarSlot = useMainStore((s) => s.setStagedChangesBarSlot);
 
   // The editor shows the staged state, saving diffs against what the server has
   const variables = useMemo(
@@ -76,13 +78,20 @@ export default function RawVariableEditor({ children }: TProps) {
 
   const [open, setOpen] = useState(false);
   const isDrawerOpen = open && isExtraSmall;
+  // Values stay masked until the editor is focused. Lives here so a switch
+  // between the drawer and the dialog keeps it.
+  const [isHidden, setIsHidden] = useState(true);
 
-  // The drawer leaves the top of the screen to the staged changes bar
+  // The drawer leaves the top of the screen to the staged changes bar, and
+  // hands the bar back to its device default (the bottom on phones) on close
   useEffect(() => {
     if (!isDrawerOpen) return;
     setBarPinnedEdge("top");
-    return () => setBarPinnedEdge(null);
-  }, [isDrawerOpen, setBarPinnedEdge]);
+    return () => {
+      setBarPinnedEdge(null);
+      setBarSlot(null);
+    };
+  }, [isDrawerOpen, setBarPinnedEdge, setBarSlot]);
 
   const [recentlySucceeded, setRecentlySucceeded] = useTemporaryValue({
     defaultValue: false,
@@ -175,6 +184,7 @@ export default function RawVariableEditor({ children }: TProps) {
     if (!o) return;
     setEditorValue(editorText);
     setParseError(null);
+    setIsHidden(true);
   };
 
   const bodyProps = {
@@ -183,6 +193,8 @@ export default function RawVariableEditor({ children }: TProps) {
     recentlySucceeded,
     editorValue,
     onEditorValueChange: setEditorValue,
+    isHidden,
+    onReveal: () => setIsHidden(false),
     error: variablesError || parseError,
     isPending: variablesIsPending,
     onSave: save,
@@ -230,6 +242,8 @@ type TEditorBodyProps = {
   recentlySucceeded: boolean;
   editorValue: string;
   onEditorValueChange: (s: string) => void;
+  isHidden: boolean;
+  onReveal: () => void;
   error: Error | null;
   isPending: boolean;
   onSave: () => void;
@@ -245,6 +259,8 @@ function EditorBody({
   recentlySucceeded,
   editorValue,
   onEditorValueChange,
+  isHidden,
+  onReveal,
   error,
   isPending,
   onSave,
@@ -295,6 +311,8 @@ function EditorBody({
           recentlySucceeded={recentlySucceeded}
           editorValue={editorValue}
           onEditorValueChange={onEditorValueChange}
+          isHidden={isHidden}
+          onReveal={onReveal}
         />
       ) : (
         <EditorSkeleton variant={variant} />
@@ -360,6 +378,8 @@ type TVariableEditorProps = {
   recentlySucceeded: boolean;
   onEditorValueChange: (s: string) => void;
   editorValue: string;
+  isHidden: boolean;
+  onReveal: () => void;
 };
 
 function VariableEditor({
@@ -369,14 +389,14 @@ function VariableEditor({
   recentlySucceeded,
   editorValue,
   onEditorValueChange,
+  isHidden,
+  onReveal,
 }: TVariableEditorProps) {
   const { tokens } = useVariableReferences();
   // Scopes without references keep the NAME= highlighting; an empty token
   // list means nothing gets chipped and the dropdown has nothing to offer.
   const { language, icons } = useVariableReferenceLanguage(referencesDisabled ? [] : tokens, "env");
   const hiddenValue = useMemo(() => getEditorValue({ variables, hidden: true }), [variables]);
-  // Values stay masked until the editor is focused
-  const [isHidden, setIsHidden] = useState(true);
   const isDrawer = variant === "drawer";
 
   return (
@@ -385,7 +405,7 @@ function VariableEditor({
       <TokenField
         value={isHidden ? hiddenValue : editorValue}
         onChange={onEditorValueChange}
-        onFocus={() => setIsHidden(false)}
+        onFocus={onReveal}
         language={language}
         completionAdditions={referencesDisabled ? undefined : referenceCompletionAdditions}
         multiline

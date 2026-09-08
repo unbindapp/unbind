@@ -23,7 +23,7 @@ export type TState = z.infer<typeof MainStoreSchema>;
 
 export type TActions = {
   setLastDismissedVersion: (version: string) => Promise<void>;
-  setStagedChangesBarSlot: (slot: TBarSlot) => void;
+  setStagedChangesBarSlot: (slot: TBarSlot | null) => void;
   addNewlyCreatedEntity: (entityId: string, expiresAtTimestamp: number) => Promise<void>;
   removeNewlyCreatedEntityWithDelay: (entityId: string, delayMs: number) => Promise<void>;
   removeOldNewlyCreatedEntities: () => Promise<void>;

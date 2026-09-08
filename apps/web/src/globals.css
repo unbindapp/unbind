@@ -683,7 +683,7 @@
   }
 
   .tok-env-punct {
-    color: color-mix(in oklab, var(--foreground) 75%, transparent);
+    color: var(--muted-more-foreground);
   }
 
   .tok-punct {
