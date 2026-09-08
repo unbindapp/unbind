@@ -33,6 +33,7 @@ import {
   EyeIcon,
   EyeOffIcon,
   KeyIcon,
+  LoaderIcon,
   PenIcon,
   PlusIcon,
   SettingsIcon,
@@ -185,7 +186,11 @@ function DetailsBody({
         <div className="flex w-full flex-col gap-6 px-3 pt-4 pb-10 sm:px-5 sm:pb-8">
           {deploy.error && <ErrorLine message={deploy.error.message} withIcon />}
           {plan.error && <ErrorLine message={plan.error.message} withIcon />}
-          <AffectedServices plan={plan.data?.affected ?? []} isFetching={plan.isFetching} />
+          <AffectedServices
+            plan={plan.data?.affected ?? []}
+            isRefetching={plan.isRefetching}
+            isPending={plan.isPending}
+          />
           <ol className="flex w-full flex-col gap-3">
             {groups.map((group) => (
               <ChangeGroupCard
@@ -426,16 +431,24 @@ const actionLabels: Record<AffectedService["action"], string> = {
   none: "No rollout",
 };
 
-function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFetching: boolean }) {
+function AffectedServices({
+  plan,
+  isRefetching,
+  isPending,
+}: {
+  plan: AffectedService[];
+  isRefetching: boolean;
+  isPending: boolean;
+}) {
   return (
-    <div
-      data-fetching={isFetching || undefined}
-      className="group/section flex w-full flex-col gap-2"
-    >
-      <div className="flex w-full items-center gap-2">
-        <p className="px-1 leading-tight font-semibold">Affected Services</p>
-      </div>
-      {plan.length === 0 && !isFetching && (
+    <div className="group/section flex w-full flex-col gap-2">
+      <p className="min-w-0 shrink px-1 leading-tight font-semibold">
+        <span className="pr-[0.75ch]">Affected Services</span>
+        {!isPending && isRefetching && (
+          <LoaderIcon className="text-muted-foreground inline-flex size-3.5 shrink-0 animate-spin" />
+        )}
+      </p>
+      {!isPending && isRefetching === false && plan.length === 0 && (
         <p className="text-muted-foreground text-sm leading-tight">
           No running service is affected.
         </p>
@@ -447,7 +460,7 @@ function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFet
           ))}
         </ul>
       )}
-      {isFetching && (
+      {isPending && (
         <ul className="flex w-full flex-wrap gap-1.5">
           <AffectedServiceChip isPlaceholder={true} />
         </ul>
