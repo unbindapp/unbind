@@ -170,7 +170,7 @@ export default function RawVariableEditor({ children }: TProps) {
         hideXButton
         avoidKeyboard
         className="h-[calc(var(--safe-screen-height-keyboard)-var(--dialog-top-padding)-var(--dialog-bottom-padding))] max-h-200 min-h-72 sm:h-[calc(var(--safe-screen-height-keyboard)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))]"
-        classNameInnerWrapper="w-200 max-w-full h-full"
+        classNameInnerWrapper="w-216 max-w-full h-full"
       >
         <DialogHeader className="sm:px-1">
           <DialogTitle>Raw Editor</DialogTitle>
