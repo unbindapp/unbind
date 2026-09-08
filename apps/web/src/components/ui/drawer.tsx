@@ -102,54 +102,63 @@ function DrawerContent({
   children,
   hasHandle = false,
   transparentOverlay,
+  keyboardAware = true,
   ...props
 }: DrawerPrimitive.Popup.Props & {
   hasHandle?: boolean;
   transparentOverlay?: boolean;
+  /**
+   * Base UI's keyboard handling scrolls and refocuses whatever is focused, which fights
+   * a code editor that scrolls itself. Off, the sheet only pads for the keyboard.
+   */
+  keyboardAware?: boolean;
 }) {
   const { hideHandle, direction } = useDrawerContext();
 
-  return (
-    <DrawerPrimitive.VirtualKeyboardProvider>
-      <DrawerPortal>
-        <DrawerOverlay transparent={transparentOverlay} />
-        <DrawerPrimitive.Viewport data-slot="drawer-viewport" className="fixed inset-0 z-50">
-          <DrawerPrimitive.Popup
-            data-slot="drawer-content"
-            className={cn(
-              "bg-background ring-border absolute z-50 flex flex-col ring-1 focus:outline-hidden focus-visible:outline-hidden",
-              "pb-(--drawer-keyboard-inset,0px)",
-              cn("transition-transform", drawerEase),
-              "data-ending-style:duration-[calc(var(--drawer-swipe-strength,1)*500ms)]",
-              direction === "bottom" &&
-                cn(
-                  "inset-x-0 bottom-0 mt-24 h-auto rounded-t-2xl data-ending-style:translate-y-full data-starting-style:translate-y-full",
-                  // Fills the gap revealed below the sheet when it's overdragged upward
-                  "after:absolute after:inset-x-0 after:top-full after:h-[50vh] after:bg-inherit",
-                ),
-              direction === "right" &&
-                "top-0 right-0 h-full rounded-l-2xl data-ending-style:translate-x-full data-starting-style:translate-x-full",
-              className,
-            )}
-            {...props}
+  const content = (
+    <DrawerPortal>
+      <DrawerOverlay transparent={transparentOverlay} />
+      <DrawerPrimitive.Viewport data-slot="drawer-viewport" className="fixed inset-0 z-50">
+        <DrawerPrimitive.Popup
+          data-slot="drawer-content"
+          className={cn(
+            "bg-background ring-border absolute z-50 flex flex-col ring-1 focus:outline-hidden focus-visible:outline-hidden",
+            keyboardAware ? "pb-(--drawer-keyboard-inset,0px)" : "pb-(--keyboard-inset-height)",
+            cn("transition-transform", drawerEase),
+            "data-ending-style:duration-[calc(var(--drawer-swipe-strength,1)*500ms)]",
+            direction === "bottom" &&
+              cn(
+                "inset-x-0 bottom-0 mt-24 h-auto rounded-t-2xl data-ending-style:translate-y-full data-starting-style:translate-y-full",
+                // Fills the gap revealed below the sheet when it's overdragged upward
+                "after:absolute after:inset-x-0 after:top-full after:h-[50vh] after:bg-inherit",
+              ),
+            direction === "right" &&
+              "top-0 right-0 h-full rounded-l-2xl data-ending-style:translate-x-full data-starting-style:translate-x-full",
+            className,
+          )}
+          {...props}
+        >
+          {hasHandle && (
+            <div
+              aria-hidden
+              data-hide-handle={hideHandle || undefined}
+              className="bg-muted-more-foreground absolute top-0 left-1/2 h-1.5 w-[calc(min(33.3%,5rem))] -translate-x-1/2 -translate-y-3.5 rounded-full transition duration-100 data-hide-handle:translate-y-1.5"
+            />
+          )}
+          <DrawerPrimitive.Content
+            data-slot="drawer-content-inner"
+            className="flex min-h-0 w-full flex-1 flex-col"
           >
-            {hasHandle && (
-              <div
-                aria-hidden
-                data-hide-handle={hideHandle || undefined}
-                className="bg-muted-more-foreground absolute top-0 left-1/2 h-1.5 w-[calc(min(33.3%,5rem))] -translate-x-1/2 -translate-y-3.5 rounded-full transition duration-100 data-hide-handle:translate-y-1.5"
-              />
-            )}
-            <DrawerPrimitive.Content
-              data-slot="drawer-content-inner"
-              className="flex min-h-0 w-full flex-1 flex-col"
-            >
-              {children}
-            </DrawerPrimitive.Content>
-          </DrawerPrimitive.Popup>
-        </DrawerPrimitive.Viewport>
-      </DrawerPortal>
-    </DrawerPrimitive.VirtualKeyboardProvider>
+            {children}
+          </DrawerPrimitive.Content>
+        </DrawerPrimitive.Popup>
+      </DrawerPrimitive.Viewport>
+    </DrawerPortal>
+  );
+
+  if (!keyboardAware) return content;
+  return (
+    <DrawerPrimitive.VirtualKeyboardProvider>{content}</DrawerPrimitive.VirtualKeyboardProvider>
   );
 }
 

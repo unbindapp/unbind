@@ -206,6 +206,7 @@ export default function RawVariableEditor({ children }: TProps) {
         <DrawerTrigger render={children} />
         <DrawerContent
           hasHandle
+          keyboardAware={false}
           className="h-[calc(100%-var(--changes-bar-inset-top)-var(--changes-bar-height)-1.3rem)]"
         >
           <EditorBody
