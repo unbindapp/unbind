@@ -493,11 +493,11 @@ function VariableEditor({
         <div
           data-open={recentlySucceeded || undefined}
           className={cn(
-            "group/badge bg-card text-success border-success/6-10 flex w-full translate-y-full items-center justify-start gap-2 overflow-hidden border px-4 py-2.5 font-medium opacity-0 transition data-open:translate-y-0 data-open:opacity-100",
+            "group/badge bg-card text-change border-change/6-10 flex w-full translate-y-full items-center justify-start gap-2 overflow-hidden border px-4 py-2.5 font-medium opacity-0 transition data-open:translate-y-0 data-open:opacity-100",
             isDrawer ? "border-x-0 border-b-0 px-5" : "rounded-b-lg",
           )}
         >
-          <div className="bg-success/3-10 absolute top-0 left-0 h-full w-full" />
+          <div className="bg-change/3-10 absolute top-0 left-0 h-full w-full" />
           <CheckCircleIcon className="relative -ml-0.5 size-4.5" strokeWidth={2.5} />
           <p className="relative min-w-0 shrink">Variables staged</p>
         </div>
