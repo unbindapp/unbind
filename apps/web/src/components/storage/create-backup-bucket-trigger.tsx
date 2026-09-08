@@ -63,7 +63,7 @@ export function S3BucketLabel({ name, bucket }: { name: string; bucket: string }
   return (
     <>
       <span className="pr-2">{name}</span>
-      <span className="bg-foreground/6 border-foreground/6 -my-1 rounded-sm border px-1.25 font-mono text-sm font-normal">
+      <span className="bg-foreground/2-10 border-foreground/2-10 -my-1 rounded-sm border px-1.25 font-mono text-sm font-normal">
         {bucket}
       </span>
     </>

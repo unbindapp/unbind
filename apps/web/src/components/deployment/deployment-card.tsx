@@ -107,7 +107,7 @@ export default function DeploymentCard({
     (deployment?.status === "build-pending" || deployment?.status === "build-queued");
 
   const cardClassName =
-    "has-hover:group-hover/card:bg-border/50 has-hover:group-hover/card:group-data-[color=destructive]/card:bg-destructive/8 has-hover:group-hover/card:group-data-[color=process]/card:bg-process/8 has-hover:group-hover/card:group-data-[color=success]/card:bg-success/8 has-hover:group-hover/card:group-data-[color=wait]/card:bg-wait/8 has-hover:hover:bg-border/50 has-hover:hover:group-data-[color=destructive]/card:bg-destructive/8 has-hover:hover:group-data-[color=process]/card:bg-process/8 has-hover:hover:group-data-[color=success]/card:bg-success/8 has-hover:hover:group-data-[color=wait]/card:bg-wait/8 focus-within:bg-border/50 focus-within:group-data-[color=success]/card:bg-success/8 focus-within:group-data-[color=destructive]/card:bg-destructive/8 focus-within:group-data-[color=process]/card:bg-process/8 focus-within:group-data-[color=wait]/card:bg-wait/8 focus-visible:bg-border/50 focus-visible:group-data-[color=process]/card:bg-process/8 focus-visible:group-data-[color=destructive]/card:bg-destructive/8 focus-visible:hover:group-data-[color=success]/card:bg-success/8 focus-visible:hover:group-data-[color=wait]/card:bg-wait/8 group-data-[color=destructive]/card:bg-destructive/4 group-data-[color=process]/card:bg-process/4 group-data-[color=success]/card:bg-success/4 group-data-[color=wait]/card:bg-wait/4 active:bg-border/50 active:group-data-[color=destructive]/card:bg-destructive/8 active:group-data-[color=process]/card:bg-process/8 active:group-data-[color=success]/card:bg-success/8 active:group-data-[color=wait]/card:bg-wait/8 group-data-[color=destructive]/card:border-destructive/12 group-data-[color=process]/card:border-process/12 group-data-[color=success]/card:border-success/12 group-data-[color=wait]/card:border-wait/12 focus-visible:ring-offset-background focus-visible:ring-primary/50 flex min-w-0 flex-1 flex-col rounded-xl border px-3.5 py-3 text-left focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:flex-row sm:items-center sm:py-3.5 sm:pr-13 sm:pl-4";
+    "has-hover:group-hover/card:bg-border/8-10 has-hover:group-hover/card:group-data-[color=destructive]/card:bg-destructive/3-10 has-hover:group-hover/card:group-data-[color=process]/card:bg-process/3-10 has-hover:group-hover/card:group-data-[color=success]/card:bg-success/3-10 has-hover:group-hover/card:group-data-[color=wait]/card:bg-wait/3-10 has-hover:hover:bg-border/8-10 has-hover:hover:group-data-[color=destructive]/card:bg-destructive/3-10 has-hover:hover:group-data-[color=process]/card:bg-process/3-10 has-hover:hover:group-data-[color=success]/card:bg-success/3-10 has-hover:hover:group-data-[color=wait]/card:bg-wait/3-10 focus-within:bg-border/8-10 focus-within:group-data-[color=success]/card:bg-success/3-10 focus-within:group-data-[color=destructive]/card:bg-destructive/3-10 focus-within:group-data-[color=process]/card:bg-process/3-10 focus-within:group-data-[color=wait]/card:bg-wait/3-10 focus-visible:bg-border/8-10 focus-visible:group-data-[color=process]/card:bg-process/3-10 focus-visible:group-data-[color=destructive]/card:bg-destructive/3-10 focus-visible:hover:group-data-[color=success]/card:bg-success/3-10 focus-visible:hover:group-data-[color=wait]/card:bg-wait/3-10 group-data-[color=destructive]/card:bg-destructive/1-10 group-data-[color=process]/card:bg-process/1-10 group-data-[color=success]/card:bg-success/1-10 group-data-[color=wait]/card:bg-wait/1-10 active:bg-border/8-10 active:group-data-[color=destructive]/card:bg-destructive/3-10 active:group-data-[color=process]/card:bg-process/3-10 active:group-data-[color=success]/card:bg-success/3-10 active:group-data-[color=wait]/card:bg-wait/3-10 group-data-[color=destructive]/card:border-destructive/4-10 group-data-[color=process]/card:border-process/4-10 group-data-[color=success]/card:border-success/4-10 group-data-[color=wait]/card:border-wait/4-10 focus-visible:ring-offset-background focus-visible:ring-primary/8-10 flex min-w-0 flex-1 flex-col rounded-xl border px-3.5 py-3 text-left focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:flex-row sm:items-center sm:py-3.5 sm:pr-13 sm:pl-4";
 
   const cardContent = (
     <>
@@ -220,7 +220,7 @@ function ThreeDotButton({
               data-open={isOpen || undefined}
               size="icon"
               variant="ghost"
-              className="text-muted-more-foreground group/button active:bg-foreground/6 has-hover:hover:bg-foreground/6 focus-visible:bg-foreground/6"
+              className="text-muted-more-foreground group/button active:bg-foreground/2-10 has-hover:hover:bg-foreground/2-10 focus-visible:bg-foreground/2-10"
             >
               <EllipsisVerticalIcon className="size-6 transition group-data-open/button:rotate-90" />
             </Button>
@@ -275,7 +275,7 @@ function ThreeDotButton({
                   nativeButton={false}
                   handle={abortHandle}
                   render={
-                    <DropdownMenuItem className="active:bg-warning/12 data-highlighted:bg-warning/12 data-highlighted:text-warning">
+                    <DropdownMenuItem className="active:bg-warning/4-10 data-highlighted:bg-warning/4-10 data-highlighted:text-warning">
                       <OctagonXIcon className="-ml-0.5 size-5" />
                       <p className="min-w-0 shrink leading-tight">Abort</p>
                     </DropdownMenuItem>
@@ -287,7 +287,7 @@ function ThreeDotButton({
                   nativeButton={false}
                   handle={removeHandle}
                   render={
-                    <DropdownMenuItem className="text-destructive active:bg-destructive/12 data-highlighted:bg-destructive/12 data-highlighted:text-destructive">
+                    <DropdownMenuItem className="text-destructive active:bg-destructive/4-10 data-highlighted:bg-destructive/4-10 data-highlighted:text-destructive">
                       <Trash2Icon className="-ml-0.5 size-5" />
                       <p className="min-w-0 shrink leading-tight">Remove</p>
                     </DropdownMenuItem>

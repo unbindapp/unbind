@@ -101,7 +101,7 @@ export function DomainStatusCard({
       data-pending={(!data && isPending) || undefined}
       data-error={(!data && !isPending && error) || undefined}
       className={cn(
-        "group/card data-configured:bg-success/6 data-configured:border-success/12 z-0 flex w-full flex-col items-start justify-start rounded-lg border text-sm select-text",
+        "group/card data-configured:bg-success/2-10 data-configured:border-success/4-10 z-0 flex w-full flex-col items-start justify-start rounded-lg border text-sm select-text",
         className,
       )}
     >

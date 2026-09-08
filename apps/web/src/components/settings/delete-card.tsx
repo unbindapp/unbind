@@ -32,7 +32,7 @@ export default function DeleteCard({
   return (
     <div
       className={cn(
-        "text-destructive border-destructive/20 flex w-full flex-col items-start justify-start gap-4 rounded-xl border px-4 py-4 md:max-w-xl",
+        "text-destructive border-destructive/6-10 flex w-full flex-col items-start justify-start gap-4 rounded-xl border px-4 py-4 md:max-w-xl",
         className,
       )}
     >

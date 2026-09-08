@@ -28,7 +28,7 @@ export default function BuildLogs({ deployment }: TProps) {
               <h3 className="shrink leading-tight font-semibold">Failed before the build stage</h3>
             </div>
             <ErrorLine
-              className="border-destructive/8 text-muted-foreground bg-destructive/6 border"
+              className="border-destructive/3-10 text-muted-foreground bg-destructive/2-10 border"
               message={deployment.error}
             ></ErrorLine>
           </div>

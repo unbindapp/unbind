@@ -220,7 +220,7 @@ function S3BucketDialogInnerContent({ s3Bucket }: { s3Bucket: TS3BucketShallow }
     <>
       <div
         data-status={connectionStatus}
-        className="group/status bg-foreground/6 border-foreground/6 data-[status=pending]:border-warning/8 data-[status=pending]:bg-warning/8 data-[status=connected]:bg-success/8 data-[status=connected]:border-success/8 data-[status=error]:bg-destructive/8 data-[status=error]:border-destructive/8 flex w-full items-center justify-start gap-2 border-t border-b px-5 py-2 text-sm leading-tight font-medium"
+        className="group/status bg-foreground/2-10 border-foreground/2-10 data-[status=pending]:border-warning/3-10 data-[status=pending]:bg-warning/3-10 data-[status=connected]:bg-success/3-10 data-[status=connected]:border-success/3-10 data-[status=error]:bg-destructive/3-10 data-[status=error]:border-destructive/3-10 flex w-full items-center justify-start gap-2 border-t border-b px-5 py-2 text-sm leading-tight font-medium"
       >
         <div className="bg-foreground group-data-[status=connected]/status:bg-success group-data-[status=error]/status:bg-destructive group-data-[status=pending]/status:bg-warning size-2 shrink-0 rounded-full group-data-[status=pending]/status:animate-ping" />
         <p className="group-data-[status=connected]/status:text-success group-data-[status=error]/status:text-destructive group-data-[status=pending]/status:text-warning min-w-0 shrink leading-tight">
@@ -340,7 +340,7 @@ function ThreeDotButton({
                 nativeButton={false}
                 handle={deleteHandle}
                 render={
-                  <DropdownMenuItem className="text-destructive active:bg-destructive/12 data-highlighted:bg-destructive/12 data-highlighted:text-destructive">
+                  <DropdownMenuItem className="text-destructive active:bg-destructive/4-10 data-highlighted:bg-destructive/4-10 data-highlighted:text-destructive">
                     <Trash2Icon className="-ml-0.5 size-5" />
                     <p className="min-w-0 shrink leading-tight">Delete</p>
                   </DropdownMenuItem>

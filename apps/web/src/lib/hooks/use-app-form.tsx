@@ -564,7 +564,7 @@ function AsyncInputWithItems({
                 variant="outline"
                 forceMinSize={false}
                 data-placeholder={value ? undefined : true}
-                className="bg-input focus-visible:ring-primary/50 has-hover:hover:bg-input has-hover:hover:data-placeholder:text-muted-foreground/75 data-placeholder:text-muted-foreground/75 cursor-text justify-start px-3 text-left font-medium focus-visible:ring-1 focus-visible:ring-offset-0"
+                className="bg-input focus-visible:ring-primary/8-10 has-hover:hover:bg-input has-hover:hover:data-placeholder:text-muted-foreground/9-10 data-placeholder:text-muted-foreground/9-10 cursor-text justify-start px-3 text-left font-medium focus-visible:ring-1 focus-visible:ring-offset-0"
               >
                 {value || placeholder}
               </Button>
@@ -590,7 +590,7 @@ function AsyncInputWithItems({
                     scrollAreaRef.current?.scrollTo({ top: 0 });
                   });
                 }}
-                className="bg-input focus-visible:ring-primary/50 placeholder:text-muted-foreground/75 rounded-lg border px-3 py-2.5 font-medium focus-visible:ring-1"
+                className="bg-input focus-visible:ring-primary/8-10 placeholder:text-muted-foreground/9-10 rounded-lg border px-3 py-2.5 font-medium focus-visible:ring-1"
                 classNameWrapper="border-none"
                 hideIcon
               />

@@ -241,7 +241,7 @@ export default function AddDomainPortCard({
                       </Block>
                     )}
                     {mode === "private" && (
-                      <div className="text-success bg-success/8 mt-2 flex justify-start gap-1.5 rounded-md px-3 py-2 text-sm">
+                      <div className="text-success bg-success/3-10 mt-2 flex justify-start gap-1.5 rounded-md px-3 py-2 text-sm">
                         <GlobeLockIcon className="mt-0.5 -ml-0.5 size-3.5 shrink-0" />
                         <p className="min-w-0 shrink leading-tight">
                           The private domain will be generated based on the port.
@@ -292,7 +292,7 @@ export default function AddDomainPortCard({
                                     return (
                                       <div
                                         className={cn(
-                                          "text-success bg-success/8 border-success/12 py-0.375 -my-0.5 flex min-w-0 shrink items-center gap-1.5 rounded-full border px-1.75 text-sm leading-tight",
+                                          "text-success bg-success/3-10 border-success/4-10 py-0.375 -my-0.5 flex min-w-0 shrink items-center gap-1.5 rounded-full border px-1.75 text-sm leading-tight",
                                           className,
                                         )}
                                       >
@@ -366,7 +366,7 @@ export default function AddDomainPortCard({
                     <div className="w-full p-1.5">
                       <ErrorLine
                         message={errorUpdate.message}
-                        className="border-destructive/20 border"
+                        className="border-destructive/6-10 border"
                       />
                     </div>
                   )}

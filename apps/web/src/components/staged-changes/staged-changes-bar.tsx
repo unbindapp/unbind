@@ -288,9 +288,9 @@ export default function StagedChangesBar() {
           data-closed={isHidden || undefined}
           data-edge={edge}
           data-held={isHeld || undefined}
-          className="bg-card group/wrapper border-change/24 shadow-shadow-color/shadow-opacity data-error:border-destructive/24 flex h-(--changes-bar-height) w-full items-center gap-2 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),scale_150ms_ease-out] data-closed:pointer-events-none data-held:scale-96 data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))] sm:min-w-92"
+          className="bg-card group/wrapper border-change/7-10 shadow-shadow-color/shadow-opacity data-error:border-destructive/7-10 flex h-(--changes-bar-height) w-full items-center gap-2 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),scale_150ms_ease-out] data-closed:pointer-events-none data-held:scale-96 data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))] sm:min-w-92"
         >
-          <div className="bg-change/6 group-data-error/wrapper:bg-destructive/6 absolute top-0 left-0 h-full w-full" />
+          <div className="bg-change/2-10 group-data-error/wrapper:bg-destructive/2-10 absolute top-0 left-0 h-full w-full" />
           <motion.div
             onPointerDown={onHandlePointerDown}
             onPanStart={onPanStart}
@@ -361,7 +361,7 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
               nativeButton={false}
               handle={discardHandle}
               render={
-                <DropdownMenuItem className="text-destructive active:bg-destructive/12 data-highlighted:bg-destructive/12 data-highlighted:text-destructive">
+                <DropdownMenuItem className="text-destructive active:bg-destructive/4-10 data-highlighted:bg-destructive/4-10 data-highlighted:text-destructive">
                   <Undo2Icon className="-ml-0.5 size-5" />
                   <p className="min-w-0 shrink leading-tight">Discard All</p>
                 </DropdownMenuItem>

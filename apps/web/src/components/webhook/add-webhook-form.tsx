@@ -224,7 +224,7 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
                   <BrandIcon
                     data-placeholder={url ? undefined : true}
                     color="brand"
-                    className="data-placeholder:text-foreground/50 pointer-events-none absolute top-2.75 left-2.75 size-5"
+                    className="data-placeholder:text-foreground/8-10 pointer-events-none absolute top-2.75 left-2.75 size-5"
                     brand={getWebhookIcon(url)}
                   />
                 )}

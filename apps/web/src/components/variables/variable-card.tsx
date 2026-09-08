@@ -116,7 +116,7 @@ export default function VariableCard({
       data-dynamic={isDynamic || undefined}
       data-unresolved={hasUnresolved || undefined}
       data-staged={variable?.staged}
-      className="group/card data-staged:bg-change/6 data-unresolved:bg-warning/6 data-unresolved:border-warning/16 data-staged:border-change/16 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
+      className="group/card data-staged:bg-change/2-10 data-unresolved:bg-warning/2-10 data-unresolved:border-warning/5-10 data-staged:border-change/5-10 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
     >
       {variable && (
         <NewEntityIndicator
@@ -282,7 +282,7 @@ function StagedChip({
 }) {
   return (
     <div className={cn("bg-background shrink-0 rounded-sm", className)}>
-      <p className="text-change bg-change/12 border-change/12 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+      <p className="text-change bg-change/4-10 border-change/4-10 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
         {stagedLabels[staged]}
       </p>
     </div>
@@ -440,7 +440,7 @@ function ThreeDotButton({
               <DropdownMenuItem
                 disabled={disableDelete}
                 onClick={() => stage([{ name: variable.name, value: null }])}
-                className="text-destructive active:bg-destructive/12 data-highlighted:bg-destructive/12 data-highlighted:text-destructive"
+                className="text-destructive active:bg-destructive/4-10 data-highlighted:bg-destructive/4-10 data-highlighted:text-destructive"
               >
                 {!disableDelete ? (
                   <Trash2Icon className="-ml-0.5 size-5" />

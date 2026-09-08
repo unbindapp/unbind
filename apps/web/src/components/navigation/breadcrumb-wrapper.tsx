@@ -20,7 +20,7 @@ export function BreadcrumbSeparator({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "text-foreground/16 flex min-h-5.5 w-3 shrink-0 items-center justify-center self-stretch overflow-hidden sm:w-4",
+        "text-foreground/5-10 flex min-h-5.5 w-3 shrink-0 items-center justify-center self-stretch overflow-hidden sm:w-4",
         className,
       )}
     >

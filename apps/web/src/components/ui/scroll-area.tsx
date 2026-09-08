@@ -30,7 +30,7 @@ function ScrollArea({
         data-slot="scroll-area-viewport"
         ref={viewportRef}
         className={cn(
-          "focus:outline-primary/50 flex w-full flex-1 rounded-[inherit] focus:outline-1",
+          "focus:outline-primary/8-10 flex w-full flex-1 rounded-[inherit] focus:outline-1",
           orientation === "vertical" && "flex-col",
           classNameViewport,
         )}
@@ -54,7 +54,7 @@ function ScrollBar({
       data-slot="scroll-area-scrollbar"
       orientation={orientation}
       className={cn(
-        "group/scrollbar active:before:bg-muted-foreground/24 has-hover:hover:before:bg-muted-foreground/24 flex touch-none transition-[padding,background-color] select-none before:transition-colors",
+        "group/scrollbar active:before:bg-muted-foreground/7-10 has-hover:hover:before:bg-muted-foreground/7-10 flex touch-none transition-[padding,background-color] select-none before:transition-colors",
         orientation === "vertical" &&
           "h-full w-4 border-l border-l-transparent p-px pl-[calc(1rem-2px-5px)] before:absolute before:top-0 before:right-0 before:h-full before:w-2.75 active:pl-[calc(1rem-2px-9px)] has-hover:hover:pl-[calc(1rem-2px-9px)]",
         orientation === "horizontal" &&

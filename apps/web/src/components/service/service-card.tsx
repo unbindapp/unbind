@@ -105,14 +105,14 @@ export default function ServiceCard({
   });
 
   const cardClassName = cn(
-    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border overflow-hidden px-5 py-3.5 text-left font-semibold data-staged:border-change/24",
+    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border overflow-hidden px-5 py-3.5 text-left font-semibold data-staged:border-change/7-10",
     classNameCard,
     volumes && volumes.length > 0 && "rounded-b-none border-b-0",
   );
 
   const cardContent = (
     <>
-      {changeLabel !== null && <div className="bg-change/4 absolute top-0 left-0 size-full" />}
+      {changeLabel !== null && <div className="bg-change/1-10 absolute top-0 left-0 size-full" />}
       {service && <NewEntityIndicator id={service.id} />}
       <div className="relative flex w-full items-center justify-between gap-4">
         <div className="flex min-w-0 shrink items-center justify-start gap-2">
@@ -127,7 +127,7 @@ export default function ServiceCard({
         </div>
         {changeLabel !== null && (
           <div className="bg-background -mr-1.5 max-w-1/2 shrink-0 rounded-sm">
-            <p className="text-change bg-change/12 border-change/12 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+            <p className="text-change bg-change/4-10 border-change/4-10 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
               {changeLabel}
             </p>
           </div>
@@ -191,7 +191,7 @@ export default function ServiceCard({
               volume={volume}
               className={cn(
                 classNameVolume,
-                index === volumes.length - 1 && "group-data-staged/item:border-change/24",
+                index === volumes.length - 1 && "group-data-staged/item:border-change/7-10",
                 index !== 0 && "-mt-px",
                 index === volumes.length - 1 && (classNameVolumeLast || "rounded-b-xl"),
               )}

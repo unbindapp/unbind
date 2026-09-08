@@ -48,7 +48,7 @@ export default function VolumeLine({ volume, className }: TProps) {
               style={{
                 transform: `scaleX(${Math.ceil(usagePercentage)}%)`,
               }}
-              className="bg-foreground/6 group-data-[usage=high]/line:bg-warning/8 group-data-[usage=critical]/line:bg-destructive/8 h-full w-full origin-left"
+              className="bg-foreground/2-10 group-data-[usage=high]/line:bg-warning/3-10 group-data-[usage=critical]/line:bg-destructive/3-10 h-full w-full origin-left"
             />
           </div>
         )}

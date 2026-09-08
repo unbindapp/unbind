@@ -209,7 +209,7 @@ function Logs({
       {error && logs && logs.length > 0 && (
         <div className="w-full shrink-0 pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
           <div className="w-full px-2 sm:px-2.5">
-            <ErrorLine className="border-destructive/8 border py-1.25" message={error.message} />
+            <ErrorLine className="border-destructive/3-10 border py-1.25" message={error.message} />
           </div>
         </div>
       )}
@@ -217,7 +217,7 @@ function Logs({
         <div className="w-full shrink-0 pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
           <div className="w-full px-2 sm:px-2.5">
             <ErrorLine
-              className="border-destructive/8 border py-1.25"
+              className="border-destructive/3-10 border py-1.25"
               message={streamErrorMessage}
             />
           </div>
@@ -757,7 +757,7 @@ function OlderLogsIndicator({
       <div className="flex w-full flex-col items-start gap-2 px-2 pt-4 pb-2.5 font-sans sm:px-2.5">
         <ErrorLine
           withIcon
-          className="border-destructive/8 border py-1.25"
+          className="border-destructive/3-10 border py-1.25"
           message={`Couldn't load older logs. ${error}`}
         />
         <Button size="sm" variant="outline" onClick={onRetry}>

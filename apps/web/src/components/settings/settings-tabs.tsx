@@ -58,7 +58,7 @@ export default function SettingsTabs({ tabs }: TProps) {
               className="text-muted-foreground data-active:text-foreground group/button shrink-0 justify-start gap-1.5 rounded-lg px-3 py-4.25 text-left text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent sm:py-4 md:w-full md:gap-2.5 md:px-4 md:py-4 md:text-base"
             >
               <div className="absolute top-0 left-0 h-full w-full py-1.5 md:py-0.5">
-                <div className="has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-offset-background group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1 group-focus-visible/button:ring-offset-2" />
+                <div className="has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-offset-background group-focus-visible/button:ring-primary/8-10 h-full w-full rounded-lg group-focus-visible/button:ring-1 group-focus-visible/button:ring-offset-2" />
               </div>
               {isActive(tab, activeTabPath) && (
                 <TabIndicator

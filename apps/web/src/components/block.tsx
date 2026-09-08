@@ -184,7 +184,7 @@ export function BlockItemContentHighlightable({
       data-highlight={isHighlighted || undefined}
       id={id}
       className={cn(
-        "data-highlight:shadow-block-card-highlight-active shadow-block-card-highlight-idle shadow-success/75 transition-shadow duration-300",
+        "data-highlight:shadow-block-card-highlight-active shadow-block-card-highlight-idle shadow-success/9-10 transition-shadow duration-300",
         className,
       )}
     >

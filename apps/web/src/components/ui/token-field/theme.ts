@@ -36,11 +36,11 @@ export const tokenFieldTheme = EditorView.theme({
   ".cm-line:has(.cm-placeholder) .cm-widgetBuffer": { display: "none" },
   ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--foreground)" },
   ".cm-placeholder": {
-    color: "color-mix(in oklab, var(--muted-foreground) 75%, transparent)",
+    color: "color-mix(in oklab, var(--muted-foreground) var(--opacity-9-10), transparent)",
     fontWeight: "500",
   },
   "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
-    backgroundColor: "color-mix(in oklab, var(--top-loader) 50%, transparent)",
+    backgroundColor: "color-mix(in oklab, var(--top-loader) var(--opacity-8-10), transparent)",
   },
 });
 

@@ -410,7 +410,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
             return (
               <form.SubmitButton
                 data-pending-custom={isPending || undefined}
-                className="group/button data-pending-custom:bg-foreground/50 w-full"
+                className="group/button data-pending-custom:bg-foreground/8-10 w-full"
                 disabled={isPending}
                 fadeOnDisabled={false}
               >

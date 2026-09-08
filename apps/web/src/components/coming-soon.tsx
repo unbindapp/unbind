@@ -11,7 +11,7 @@ export function ComingSoonChip({ className, classNameParagraph }: TPropsChip) {
     <div className={cn("bg-background max-w-full rounded-full text-xs leading-tight", className)}>
       <p
         className={cn(
-          "bg-warning/12 text-warning border-warning/12 text flex max-w-full items-center gap-1 truncate rounded-full border px-1.5 py-px",
+          "bg-warning/4-10 text-warning border-warning/4-10 text flex max-w-full items-center gap-1 truncate rounded-full border px-1.5 py-px",
           classNameParagraph,
         )}
       >
@@ -28,7 +28,7 @@ type TPropsCard = {
 export function ComingSoonCard({ className }: TPropsCard) {
   return (
     <div className={cn("flex w-full flex-col rounded-xl", className)}>
-      <div className="bg-warning/6 border-warning/12 flex w-full flex-col gap-1 rounded-xl border px-4 py-2.5">
+      <div className="bg-warning/2-10 border-warning/4-10 flex w-full flex-col gap-1 rounded-xl border px-4 py-2.5">
         <div className="text-warning flex w-full items-center gap-1.5">
           <RocketIcon className="-ml-px size-4 shrink-0" />
           <p className="flex min-w-0 shrink items-center gap-1 leading-tight font-semibold">

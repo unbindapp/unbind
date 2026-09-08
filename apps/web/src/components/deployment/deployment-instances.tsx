@@ -26,7 +26,7 @@ export default function DeploymentInstances({ isPending: isPendingProp, classNam
         <ErrorLine
           message={error.message}
           className={cn(
-            "border-destructive/8 w-auto min-w-0 shrink rounded-md border px-2 py-1 text-xs leading-tight",
+            "border-destructive/3-10 w-auto min-w-0 shrink rounded-md border px-2 py-1 text-xs leading-tight",
             className,
           )}
           classNameMessage="truncate whitespace-nowrap"
@@ -41,12 +41,12 @@ export default function DeploymentInstances({ isPending: isPendingProp, classNam
   if (isPending || isPendingProp) {
     return (
       <div className={cn("flex w-full flex-wrap gap-1.5", className)}>
-        <div className="bg-background border-muted-foreground/16 relative z-0 flex overflow-hidden rounded-md border">
+        <div className="bg-background border-muted-foreground/5-10 relative z-0 flex overflow-hidden rounded-md border">
           <IconWrapper>
             <div className="bg-muted-foreground animate-skeleton size-3.5 rounded-full" />
           </IconWrapper>
-          <div className="bg-muted-foreground/16 w-px self-stretch" />
-          <IconWrapper className="bg-muted-foreground/6">
+          <div className="bg-muted-foreground/5-10 w-px self-stretch" />
+          <IconWrapper className="bg-muted-foreground/2-10">
             <div className="bg-muted-foreground animate-skeleton size-3.5 rounded-full" />
           </IconWrapper>
         </div>
@@ -73,13 +73,13 @@ function Instance({ instance }: { instance: TInstanceFromHealth }) {
   return (
     <div
       data-status={instance?.status}
-      className="bg-background data-[status=waiting]:border-warning/20 data-[status=starting]:border-process/20 data-[status=not_ready]:border-process/20 data-[status=running]:border-success/20 data-[status=crashing]:border-destructive/20 group/div relative z-0 flex overflow-hidden rounded-md border"
+      className="bg-background data-[status=waiting]:border-warning/6-10 data-[status=starting]:border-process/6-10 data-[status=not_ready]:border-process/6-10 data-[status=running]:border-success/6-10 data-[status=crashing]:border-destructive/6-10 group/div relative z-0 flex overflow-hidden rounded-md border"
     >
       <IconWrapper>
         <ServerIcon className="text-muted-foreground size-3.5" />
       </IconWrapper>
-      <div className="bg-border group-data-[status=waiting]/div:bg-warning/20 group-data-[status=starting]/div:bg-process/20 group-data-[status=not_ready]/div:bg-process/20 group-data-[status=running]/div:bg-success/20 group-data-[status=crashing]/div:bg-destructive/20 w-px self-stretch" />
-      <IconWrapper className="group-data-[status=waiting]/div:bg-warning/8 group-data-[status=starting]/div:bg-process/8 group-data-[status=not_ready]/div:bg-process/8 group-data-[status=running]/div:bg-success/8 group-data-[status=crashing]/div:bg-destructive/8">
+      <div className="bg-border group-data-[status=waiting]/div:bg-warning/6-10 group-data-[status=starting]/div:bg-process/6-10 group-data-[status=not_ready]/div:bg-process/6-10 group-data-[status=running]/div:bg-success/6-10 group-data-[status=crashing]/div:bg-destructive/6-10 w-px self-stretch" />
+      <IconWrapper className="group-data-[status=waiting]/div:bg-warning/3-10 group-data-[status=starting]/div:bg-process/3-10 group-data-[status=not_ready]/div:bg-process/3-10 group-data-[status=running]/div:bg-success/3-10 group-data-[status=crashing]/div:bg-destructive/3-10">
         <div className="size-3.5 shrink-0">
           <Indicator instance={instance} />
         </div>

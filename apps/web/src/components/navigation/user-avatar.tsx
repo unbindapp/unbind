@@ -266,7 +266,7 @@ function NewVersionCard({
     <div className={cn("w-full", className)}>
       <div
         className={cn(
-          "border-success/8 bg-success/8 flex w-full flex-col gap-3 rounded-lg border px-2 py-2",
+          "border-success/3-10 bg-success/3-10 flex w-full flex-col gap-3 rounded-lg border px-2 py-2",
           classNameInner,
         )}
       >

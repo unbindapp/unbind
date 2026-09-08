@@ -10,62 +10,67 @@ export const minButtonSizeEnforcerClassName =
   "before:w-full before:h-full before:min-w-[44px] before:min-h-[44px] before:z-[-1] before:bg-transparent before:absolute before:-translate-y-1/2 before:top-1/2 before:-translate-x-1/2 before:left-1/2";
 
 const buttonVariants = cva(
-  "relative group/button focus-visible:z-[1] text-center leading-tight max-w-full select-none z-0 touch-manipulation gap-1.5 rounded-lg font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/50 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 data-pending:[&>*:not([data-slot=button-spinner])]:opacity-0",
+  "relative group/button focus-visible:z-[1] text-center leading-tight max-w-full select-none z-0 touch-manipulation gap-1.5 rounded-lg font-bold focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/8-10 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 data-pending:[&>*:not([data-slot=button-spinner])]:opacity-0",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground has-hover:hover:bg-primary/85 active:bg-primary/85",
+          "bg-primary text-primary-foreground has-hover:hover:bg-primary/10-10 active:bg-primary/10-10",
         destructive:
-          "bg-destructive text-destructive-foreground has-hover:hover:bg-destructive/85 active:bg-destructive/85",
+          "bg-destructive text-destructive-foreground has-hover:hover:bg-destructive/10-10 active:bg-destructive/10-10",
         warning:
-          "bg-warning text-warning-foreground has-hover:hover:bg-warning/85 active:bg-warning/85",
+          "bg-warning text-warning-foreground has-hover:hover:bg-warning/10-10 active:bg-warning/10-10",
         success:
-          "bg-success text-success-foreground has-hover:hover:bg-success/85 active:bg-success/85",
+          "bg-success text-success-foreground has-hover:hover:bg-success/10-10 active:bg-success/10-10",
         process:
-          "bg-process text-process-foreground has-hover:hover:bg-process/85 active:bg-process/85",
-        change: "bg-change text-change-foreground has-hover:hover:bg-change/85 active:bg-change/85",
+          "bg-process text-process-foreground has-hover:hover:bg-process/10-10 active:bg-process/10-10",
+        change:
+          "bg-change text-change-foreground has-hover:hover:bg-change/10-10 active:bg-change/10-10",
         outline:
           "border border-border bg-background has-hover:hover:bg-border active:bg-border has-hover:hover:text-foreground active:text-foreground",
         "outline-muted":
           "border border-border bg-background has-hover:hover:bg-card active:bg-card has-hover:hover:text-foreground active:text-foreground",
         "outline-foreground":
-          "border border-foreground bg-background has-hover:hover:bg-foreground/8 active:bg-foreground/8 has-hover:hover:text-foreground active:text-foreground",
+          "border border-foreground bg-background has-hover:hover:bg-foreground/3-10 active:bg-foreground/3-10 has-hover:hover:text-foreground active:text-foreground",
         "outline-process":
-          "border text-process border-process/20 bg-background has-hover:hover:bg-process/8 active:bg-process/8 has-hover:hover:text-process active:text-process",
+          "border text-process border-process/6-10 bg-background has-hover:hover:bg-process/3-10 active:bg-process/3-10 has-hover:hover:text-process active:text-process",
         "outline-change":
-          "border text-change border-change/20 bg-background has-hover:hover:bg-change/8 active:bg-change/8 has-hover:hover:text-change active:text-change",
+          "border text-change border-change/6-10 bg-background has-hover:hover:bg-change/3-10 active:bg-change/3-10 has-hover:hover:text-change active:text-change",
         "warning-outline":
-          "border border-warning/20 bg-background has-hover:hover:bg-warning/8 active:bg-warning/8 has-hover:hover:border-warning/0 active:border-warning/0 text-warning has-hover:hover:text-warning active:text-warning",
+          "border border-warning/6-10 bg-background has-hover:hover:bg-warning/3-10 active:bg-warning/3-10 has-hover:hover:border-warning/0 active:border-warning/0 text-warning has-hover:hover:text-warning active:text-warning",
         secondary:
-          "bg-secondary text-secondary-foreground has-hover:hover:bg-secondary/85 active:bg-secondary/85",
+          "bg-secondary text-secondary-foreground has-hover:hover:bg-secondary/10-10 active:bg-secondary/10-10",
         ghost:
           "has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground",
         "ghost-destructive":
-          "text-destructive has-hover:hover:bg-destructive/12 has-hover:hover:text-destructive active:bg-destructive/12 active:text-destructive",
+          "text-destructive has-hover:hover:bg-destructive/4-10 has-hover:hover:text-destructive active:bg-destructive/4-10 active:text-destructive",
         "ghost-warning":
-          "text-warning has-hover:hover:bg-warning/12 has-hover:hover:text-warning active:bg-warning/12 active:text-warning",
+          "text-warning has-hover:hover:bg-warning/4-10 has-hover:hover:text-warning active:bg-warning/4-10 active:text-warning",
         "ghost-warning-foreground":
-          "text-foreground has-hover:hover:bg-warning/12 has-hover:hover:text-foreground active:bg-warning/12 active:text-foreground",
+          "text-foreground has-hover:hover:bg-warning/4-10 has-hover:hover:text-foreground active:bg-warning/4-10 active:text-foreground",
         "ghost-process":
-          "text-process has-hover:hover:bg-process/12 has-hover:hover:text-process active:bg-process/12 active:text-process",
+          "text-process has-hover:hover:bg-process/4-10 has-hover:hover:text-process active:bg-process/4-10 active:text-process",
         "ghost-change":
-          "text-change has-hover:hover:bg-change/12 has-hover:hover:text-change active:bg-change/12 active:text-change",
+          "text-change has-hover:hover:bg-change/4-10 has-hover:hover:text-change active:bg-change/4-10 active:text-change",
         "ghost-change-foreground":
-          "text-foreground has-hover:hover:bg-change/12 has-hover:hover:text-foreground active:bg-change/12 active:text-foreground",
+          "text-foreground has-hover:hover:bg-change/4-10 has-hover:hover:text-foreground active:bg-change/4-10 active:text-foreground",
         "ghost-foreground":
-          "text-foreground has-hover:hover:bg-foreground/8 has-hover:hover:text-foreground active:bg-foreground/8 active:text-foreground",
+          "text-foreground has-hover:hover:bg-foreground/3-10 has-hover:hover:text-foreground active:bg-foreground/3-10 active:text-foreground",
         card: "bg-card text-foreground has-hover:hover:bg-card-hover active:bg-card-hover",
         link: "text-primary underline-offset-4 has-hover:hover:underline active:underline",
-        google: "bg-google text-google-foreground has-hover:hover:bg-google/85 active:bg-google/85",
+        google:
+          "bg-google text-google-foreground has-hover:hover:bg-google/10-10 active:bg-google/10-10",
         discord:
-          "bg-discord text-discord-foreground has-hover:hover:bg-discord/85 active:bg-discord/85",
-        github: "bg-github text-github-foreground has-hover:hover:bg-github/85 active:bg-github/85",
-        gitlab: "bg-gitlab text-gitlab-foreground has-hover:hover:bg-gitlab/85 active:bg-gitlab/85",
+          "bg-discord text-discord-foreground has-hover:hover:bg-discord/10-10 active:bg-discord/10-10",
+        github:
+          "bg-github text-github-foreground has-hover:hover:bg-github/10-10 active:bg-github/10-10",
+        gitlab:
+          "bg-gitlab text-gitlab-foreground has-hover:hover:bg-gitlab/10-10 active:bg-gitlab/10-10",
         ethereum:
-          "bg-ethereum text-ethereum-foreground has-hover:hover:bg-ethereum/85 active:bg-ethereum/85",
-        x: "bg-x text-x-foreground has-hover:hover:bg-x/85 active:bg-x/85",
-        email: "bg-email text-email-foreground has-hover:hover:bg-email/85 active:bg-email/85",
+          "bg-ethereum text-ethereum-foreground has-hover:hover:bg-ethereum/10-10 active:bg-ethereum/10-10",
+        x: "bg-x text-x-foreground has-hover:hover:bg-x/10-10 active:bg-x/10-10",
+        email:
+          "bg-email text-email-foreground has-hover:hover:bg-email/10-10 active:bg-email/10-10",
       },
       size: {
         default: "px-5 py-2.5",

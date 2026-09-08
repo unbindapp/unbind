@@ -249,7 +249,7 @@ function SearchBar({
       </div>
       {searchError && (
         <div className="w-full py-1.5">
-          <p className="text-warning bg-warning/8 max-w-full rounded-sm px-2.5 py-1 text-xs leading-tight font-medium">
+          <p className="text-warning bg-warning/3-10 max-w-full rounded-sm px-2.5 py-1 text-xs leading-tight font-medium">
             {searchError}
           </p>
         </div>
@@ -375,7 +375,7 @@ function FilterButton({ className }: { className?: string }) {
             closeOnClick={false}
             onClick={() => resetFilters()}
             className={cn(
-              "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/12 data-not-default:active:bg-warning/12",
+              "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/4-10 data-not-default:active:bg-warning/4-10",
               dropdownItemClassName,
             )}
           >
@@ -668,7 +668,7 @@ function SettingsButton({
                 resetPreferences();
               }}
               className={cn(
-                "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/12 data-not-default:active:bg-warning/12",
+                "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/4-10 data-not-default:active:bg-warning/4-10",
                 dropdownItemClassName,
               )}
             >

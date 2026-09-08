@@ -68,7 +68,7 @@ export default function UsageSection({ volume }: TProps) {
                   ? { transform: `scaleX(${Math.ceil(usagePercentage)}%)` }
                   : undefined
               }
-              className="data-has-usage:bg-foreground/8 data-has-usage:group-data-[usage=high]/section:bg-warning/8 data-has-usage:group-data-[usage=critical]/section:bg-destructive/8 h-full w-full origin-left"
+              className="data-has-usage:bg-foreground/3-10 data-has-usage:group-data-[usage=high]/section:bg-warning/3-10 data-has-usage:group-data-[usage=critical]/section:bg-destructive/3-10 h-full w-full origin-left"
             />
           </div>
           <div className="data-has-usage:text-foreground group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive group-data-error/section:text-destructive relative flex max-w-full min-w-0 items-center gap-1.5">

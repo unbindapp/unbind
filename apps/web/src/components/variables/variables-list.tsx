@@ -119,7 +119,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
       )}
       {showSpecialDbVariablesSection && variables.length > 0 && (
         <div className="w-full px-0.5 py-1.5">
-          <div className="bg-process/24 h-px w-full rounded-full" />
+          <div className="bg-process/7-10 h-px w-full rounded-full" />
         </div>
       )}
       {variables.map((variable) => {
@@ -155,7 +155,7 @@ function SpecialDbVariablesSection({
 
   return (
     <>
-      <div className="bg-process/8 border-process/8 text-process flex w-full items-start gap-2 rounded-lg border px-3 py-2.5">
+      <div className="bg-process/3-10 border-process/3-10 text-process flex w-full items-start gap-2 rounded-lg border px-3 py-2.5">
         <LoaderIcon className="mt-0.5 -ml-0.5 size-4 animate-spin" />
         <p className="min-w-0 shrink leading-tight font-medium">
           Waiting for database variables to become available...

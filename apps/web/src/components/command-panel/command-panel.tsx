@@ -582,8 +582,8 @@ function Item({
       fadeOnDisabled={item.disabled === true ? "default" : fadeOnDisabled}
     >
       {isItemPending && (
-        <div className="bg-background border-top-loader/24 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg border">
-          <div className="from-top-loader/0 via-top-loader/24 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-linear-to-r" />
+        <div className="bg-background border-top-loader/7-10 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg border">
+          <div className="from-top-loader/0 via-top-loader/7-10 to-top-loader/0 animate-ping-pong absolute top-1/2 left-1/2 aspect-square w-full origin-center -translate-1/2 bg-linear-to-r" />
         </div>
       )}
       <div className="relative flex min-w-0 flex-1 items-center justify-start gap-2.5 group-data-has-description/item:items-start">

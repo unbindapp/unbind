@@ -13,7 +13,7 @@ export default function Settings({ volume }: TProps) {
   return (
     <TabWrapper className="gap-6">
       {volume.is_deleting && (
-        <BannerWrapper className="bg-destructive/8 border-destructive/8 text-destructive">
+        <BannerWrapper className="bg-destructive/3-10 border-destructive/3-10 text-destructive">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">
             Deleting the volume. It will disappear once the deletion is complete.
@@ -21,13 +21,13 @@ export default function Settings({ volume }: TProps) {
         </BannerWrapper>
       )}
       {volume.is_attaching && (
-        <BannerWrapper className="bg-process/8 border-process/8 text-process">
+        <BannerWrapper className="bg-process/3-10 border-process/3-10 text-process">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">Attaching the volume to the service.</p>
         </BannerWrapper>
       )}
       {volume.is_detaching && (
-        <BannerWrapper className="bg-warning/8 border-warning/8 text-warning">
+        <BannerWrapper className="bg-warning/3-10 border-warning/3-10 text-warning">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">
             Detaching the volume. It can be reattached once this is complete.

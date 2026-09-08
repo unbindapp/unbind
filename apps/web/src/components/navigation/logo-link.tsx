@@ -22,7 +22,7 @@ export default function LogoLink() {
             : { to: "/" })}
         >
           <div className="pointer-events-none absolute top-0 left-0 h-full w-full p-1">
-            <div className="has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
+            <div className="has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/8-10 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
           </div>
           <Logo className="relative size-6" />
         </LinkButton>

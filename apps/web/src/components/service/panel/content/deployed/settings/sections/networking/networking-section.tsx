@@ -88,7 +88,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                 {!endpointsData && !isPendingEndpoints && errorEndpoints && (
                   <ErrorLine
                     message={errorEndpoints.message}
-                    className="border-destructive/16 rounded-lg border py-2.5"
+                    className="border-destructive/5-10 rounded-lg border py-2.5"
                   />
                 )}
                 {!endpointsData && isPendingEndpoints && (
@@ -133,7 +133,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
               {!endpointsData && !isPendingEndpoints && errorEndpoints && (
                 <ErrorLine
                   message={errorEndpoints.message}
-                  className="border-destructive/16 rounded-lg border py-2.5"
+                  className="border-destructive/5-10 rounded-lg border py-2.5"
                 />
               )}
               {!endpointsData && isPendingEndpoints && (

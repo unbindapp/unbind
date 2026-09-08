@@ -322,7 +322,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                               field.handleChange("");
                               setIsOpen(false);
                             }}
-                            className="group/item text-warning data-[selected=true]:bg-warning/12 data-[selected=true]:text-warning px-3 font-medium"
+                            className="group/item text-warning data-[selected=true]:bg-warning/4-10 data-[selected=true]:text-warning px-3 font-medium"
                           >
                             <OctagonXIcon className="size-4" />
                             <p className="min-w-0 shrink leading-tight">Disable backups</p>

@@ -43,7 +43,7 @@ export default function TemplateDraftCard({
           replace={true}
           resetScroll={false}
           className={cn(
-            "bg-process/6 has-hover:hover:bg-process/12 active:bg-process/12 border-process/20 flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border border-dashed bg-[radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_6%,transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px] px-5 py-3.5 text-left font-semibold",
+            "bg-process/2-10 has-hover:hover:bg-process/4-10 active:bg-process/4-10 border-process/6-10 flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border border-dashed bg-[radial-gradient(color-mix(in_oklab,var(--process)_var(--opacity-2-10),transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--process)_var(--opacity-2-10),transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px] px-5 py-3.5 text-left font-semibold",
             classNameCard,
           )}
         >
@@ -55,7 +55,7 @@ export default function TemplateDraftCard({
               </h3>
             </div>
             <div className="bg-background -mr-1.5 max-w-1/2 shrink-0 rounded-sm">
-              <p className="text-process bg-process/12 border-process/16 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+              <p className="text-process bg-process/4-10 border-process/5-10 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
                 Template
               </p>
             </div>

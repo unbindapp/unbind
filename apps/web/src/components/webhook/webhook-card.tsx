@@ -136,7 +136,7 @@ function ThreeDotButton({
                 nativeButton={false}
                 handle={deleteHandle}
                 render={
-                  <DropdownMenuItem className="text-destructive active:bg-destructive/12 data-highlighted:bg-destructive/12 data-highlighted:text-destructive">
+                  <DropdownMenuItem className="text-destructive active:bg-destructive/4-10 data-highlighted:bg-destructive/4-10 data-highlighted:text-destructive">
                     <Trash2Icon className="-ml-0.5 size-5" />
                     <p className="min-w-0 shrink leading-tight">Delete</p>
                   </DropdownMenuItem>
@@ -190,7 +190,7 @@ function DeleteTrigger({
       dialogDescription="Are you sure you want to delete this webhook? This action cannot be undone."
       disableConfirmationInput
       EntityNameBadge={() => (
-        <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md border px-1.5 py-px text-sm font-medium">
+        <p className="bg-foreground/2-10 border-foreground/2-10 -ml-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md border px-1.5 py-px text-sm font-medium">
           {webhook.url}
         </p>
       )}

@@ -13,7 +13,7 @@ export default function ErrorLine({ message, withIcon, className, classNameMessa
   return (
     <div
       className={cn(
-        "bg-destructive/8 text-destructive flex w-full items-center justify-start gap-1.5 rounded-md px-3 py-2 text-sm font-medium",
+        "bg-destructive/3-10 text-destructive flex w-full items-center justify-start gap-1.5 rounded-md px-3 py-2 text-sm font-medium",
         className,
       )}
     >

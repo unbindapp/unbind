@@ -190,6 +190,17 @@
   --opacity-barrier: 70%;
   --opacity-shadow: 6%;
   --opacity-shadow-stronger: 12%;
+
+  --opacity-1-10: 4%;
+  --opacity-2-10: 6%;
+  --opacity-3-10: 8%;
+  --opacity-4-10: 12%;
+  --opacity-5-10: 16%;
+  --opacity-6-10: 20%;
+  --opacity-7-10: 24%;
+  --opacity-8-10: 50%;
+  --opacity-9-10: 75%;
+  --opacity-10-10: 85%;
 }
 
 .dark {
@@ -375,6 +386,16 @@
 
   --opacity-barrier: var(--opacity-barrier);
   --opacity-shadow-opacity: var(--opacity-shadow);
+  --opacity-1-10: var(--opacity-1-10);
+  --opacity-2-10: var(--opacity-2-10);
+  --opacity-3-10: var(--opacity-3-10);
+  --opacity-4-10: var(--opacity-4-10);
+  --opacity-5-10: var(--opacity-5-10);
+  --opacity-6-10: var(--opacity-6-10);
+  --opacity-7-10: var(--opacity-7-10);
+  --opacity-8-10: var(--opacity-8-10);
+  --opacity-9-10: var(--opacity-9-10);
+  --opacity-10-10: var(--opacity-10-10);
 
   @keyframes skeleton {
     0% {
@@ -660,7 +681,7 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--top-loader) 50%, transparent);
+    background: color-mix(in oklab, var(--top-loader) var(--opacity-8-10), transparent);
     color: color-mix(in oklab, var(--foreground) 100%, transparent);
   }
 
@@ -692,7 +713,7 @@
   }
 
   .tok-punct {
-    color: color-mix(in oklab, var(--process) 50%, transparent);
+    color: color-mix(in oklab, var(--process) var(--opacity-8-10), transparent);
   }
 
   /* Only the quotes are colored, so the phrase itself reads as plain text.
@@ -725,8 +746,9 @@
     --tok-chip: var(--foreground);
     border-radius: var(--radius-sm);
     padding: 0 0.25rem;
-    background-color: color-mix(in oklab, var(--tok-chip) 8%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tok-chip) 8%, transparent);
+    background-color: color-mix(in oklab, var(--tok-chip) var(--opacity-3-10), transparent);
+    box-shadow: inset 0 0 0 1px
+      color-mix(in oklab, var(--tok-chip) var(--opacity-3-10), transparent);
     /* a chip split across lines gets a full fill and ring on each */
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone;
@@ -763,10 +785,11 @@
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
   input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 100px color-mix(in oklab, var(--success) 12%, var(--background)) inset !important;
+    -webkit-box-shadow: 0 0 0 100px
+      color-mix(in oklab, var(--success) var(--opacity-4-10), var(--background)) inset !important;
     -webkit-text-fill-color: var(--success) !important;
     transition: background-color 5000s ease-in-out 0s;
-    border-color: color-mix(in oklab, var(--success) 24%, var(--background));
+    border-color: color-mix(in oklab, var(--success) var(--opacity-7-10), var(--background));
   }
 }
 

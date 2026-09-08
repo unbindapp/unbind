@@ -68,7 +68,7 @@ export default function DeleteButton({
   return (
     <DeleteEntityTrigger
       EntityNameBadge={() => (
-        <p className="bg-foreground/6 border-foreground/6 -ml-0.5 max-w-[calc(100%+0.25rem)] rounded-md border px-1.5 font-mono font-semibold">
+        <p className="bg-foreground/2-10 border-foreground/2-10 -ml-0.5 max-w-[calc(100%+0.25rem)] rounded-md border px-1.5 font-mono font-semibold">
           {getNetworkingDisplayUrl({
             host: domain,
             port: mode === "public" ? "" : port.toString(),

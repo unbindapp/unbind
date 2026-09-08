@@ -86,7 +86,7 @@ export default function ProjectTabs({
             />
           )}
           <div className="pointer-events-none absolute top-0 left-0 h-full w-full py-1.5">
-            <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/50 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
+            <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/8-10 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
           </div>
           <p className="relative truncate py-0.5 leading-none">{tab.title}</p>
         </LinkButton>
