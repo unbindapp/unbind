@@ -311,7 +311,7 @@
   --barrier: hsl(120 10% 4%);
 
   --opacity-barrier: 75%;
-  --opacity-shadow: 60%;
+  --opacity-shadow: 50%;
 }
 
 /* From sm up the navbar sits at the top instead of the bottom */
