@@ -321,7 +321,7 @@ function EditorBody({
             <DialogDescription className="min-w-0 shrink">
               Add, edit, or remove variables.
             </DialogDescription>
-            <div className="-my-2.5 -mr-1.5 flex shrink-0 items-center gap-1">
+            <div className="-my-2.5 -mr-1.5 flex shrink-0 items-center">
               <ToggleValuesButton
                 isHidden={isHidden}
                 onClick={onToggleHidden}
