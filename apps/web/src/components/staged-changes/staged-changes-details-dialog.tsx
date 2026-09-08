@@ -112,7 +112,7 @@ export default function StagedChangesDetailsDialog({
       <DialogContent
         hideXButton
         className="max-h-[calc(var(--safe-screen-height)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))] gap-0 p-0"
-        classNameInnerWrapper="w-208 max-w-full min-h-0 gap-0"
+        classNameInnerWrapper="w-216 max-w-full min-h-0 gap-0"
       >
         <DetailsBody {...bodyProps} variant="dialog" Title={DialogTitle} Close={DialogClose} />
       </DialogContent>
@@ -152,12 +152,12 @@ function DetailsBody({
     <div className={cn("flex min-h-0 w-full flex-1 flex-col", className)}>
       {isDrawer ? (
         <div className="flex w-full flex-col items-center gap-3 border-b px-5 py-3.5">
-          <div className="flex w-full items-center gap-2">
-            <DetailsTitle Title={Title} />
+          <div className="flex w-full items-center gap-6">
+            <DetailsTitle Title={Title} count={count} />
             <div className="-my-2 -mr-3 ml-auto flex shrink-0 items-center gap-1">
               <ToggleValuesButton
                 className="-ml-2.5 px-3.5 py-2 text-sm"
-                classNameIcon="-ml-px size-4"
+                classNameIcon="-ml-0.5 size-4"
                 onToggleValues={onToggleValues}
                 showValues={showValues}
               />
@@ -173,11 +173,11 @@ function DetailsBody({
           </div>
         </div>
       ) : (
-        <div className="flex w-full items-center gap-2 border-b px-5 py-3.5">
-          <DetailsTitle Title={Title} />
+        <div className="flex w-full items-center gap-6 border-b px-5 py-3.5">
+          <DetailsTitle Title={Title} count={count} className="pr-0" />
           <ToggleValuesButton
             onToggleValues={onToggleValues}
-            className="-mr-3 ml-auto"
+            className="-mr-3.5 ml-auto"
             showValues={showValues}
           />
         </div>
@@ -249,17 +249,34 @@ function ToggleValuesButton({
       onClick={onToggleValues}
     >
       {showValues ? (
-        <EyeOffIcon className={cn("-ml-px size-5 shrink-0", classNameIcon)} />
+        <EyeOffIcon className={cn("-ml-0.5 size-5 shrink-0", classNameIcon)} />
       ) : (
-        <EyeIcon className={cn("-ml-px size-5 shrink-0", classNameIcon)} />
+        <EyeIcon className={cn("-ml-0.5 size-5 shrink-0", classNameIcon)} />
       )}
       <span className="min-w-0 shrink truncate">{showValues ? "Hide" : "Show"}</span>
     </Button>
   );
 }
 
-function DetailsTitle({ Title }: { Title: FC<{ className?: string; children: ReactNode }> }) {
-  return <Title className="min-w-0 pr-0 pb-0.5 text-xl leading-tight font-semibold">Deploy</Title>;
+function DetailsTitle({
+  Title,
+  count,
+  className,
+}: {
+  count: number;
+  Title: FC<{ className?: string; children: ReactNode }>;
+  className?: string;
+}) {
+  return (
+    <Title
+      className={cn(
+        "min-w-0 flex-1 truncate text-xl leading-tight font-semibold wrap-break-word",
+        className,
+      )}
+    >
+      {count} {count === 1 ? "Change" : "Changes"}
+    </Title>
+  );
 }
 
 const rowGrid =
