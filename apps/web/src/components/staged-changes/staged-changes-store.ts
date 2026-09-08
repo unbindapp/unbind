@@ -71,12 +71,20 @@ export const createStagedChangesStore = (initState: TStagedChangesState = defaul
         stageService: ({ isDefault, ...change }) =>
           set((state) => {
             const id = serviceChangeId(change.serviceId, change.field);
+            const existing = state.services[id];
+            if (isDefault && !existing) return state;
+            if (
+              existing?.value === change.value &&
+              existing.displayPrevious === change.displayPrevious
+            ) {
+              return state;
+            }
             const services = { ...state.services };
             if (isDefault) {
               delete services[id];
               return { services };
             }
-            services[id] = { ...change, id, createdAt: services[id]?.createdAt ?? Date.now() };
+            services[id] = { ...change, id, createdAt: existing?.createdAt ?? Date.now() };
             return { services };
           }),
         discard: (ids) =>

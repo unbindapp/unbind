@@ -71,12 +71,9 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
   const serverBucketId = service.config.s3_backup_bucket_id ?? noBucketId;
   const stagedBucketId = stagedString(staged.s3BackupBucketId, serverBucketId);
 
-  const form = useAppForm({
-    defaultValues: {
-      s3BucketId: stagedBucketId === noBucketId ? "" : stagedBucketId,
-    },
-  });
-  useResetFormOnStagedChange(form, staged, ["s3BackupBucketId"]);
+  const defaultValues = { s3BucketId: stagedBucketId === noBucketId ? "" : stagedBucketId };
+  const form = useAppForm({ defaultValues });
+  useResetFormOnStagedChange(form, defaultValues, staged, ["s3BackupBucketId"]);
 
   const s3BucketItems = useMemo(() => {
     const items: TCommandItem[] | undefined = dataS3Buckets?.buckets.map((s3Bucket) => ({

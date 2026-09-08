@@ -94,20 +94,19 @@ function Section({ service }: { service: TServiceShallow }) {
   const serverCpu = service.config.resources?.cpu_limits_millicores || unlimitedApiValue;
   const serverMemory = service.config.resources?.memory_limits_megabytes || unlimitedApiValue;
 
-  const form = useAppForm({
-    defaultValues: {
-      instanceCount: stagedNumber(staged.instanceCount, serverInstanceCount),
-      cpuLimitMillicores: toSlider(
-        stagedNumber(staged.cpuLimitMillicores, serverCpu),
-        cpuLimits.unlimited,
-      ),
-      memoryLimitMb: toSlider(
-        stagedNumber(staged.memoryLimitMb, serverMemory),
-        memoryLimits.unlimited,
-      ),
-    },
-  });
-  useResetFormOnStagedChange(form, staged, [
+  const defaultValues = {
+    instanceCount: stagedNumber(staged.instanceCount, serverInstanceCount),
+    cpuLimitMillicores: toSlider(
+      stagedNumber(staged.cpuLimitMillicores, serverCpu),
+      cpuLimits.unlimited,
+    ),
+    memoryLimitMb: toSlider(
+      stagedNumber(staged.memoryLimitMb, serverMemory),
+      memoryLimits.unlimited,
+    ),
+  };
+  const form = useAppForm({ defaultValues });
+  useResetFormOnStagedChange(form, defaultValues, staged, [
     "instanceCount",
     "cpuLimitMillicores",
     "memoryLimitMb",

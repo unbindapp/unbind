@@ -96,12 +96,9 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     error: errorRepository,
   } = useQuery(gitRepositoryQuery({ installationId, owner, repoName: repo }));
 
-  const form = useAppForm({
-    defaultValues: {
-      branch: stagedString(staged.gitBranch, branch),
-    },
-  });
-  useResetFormOnStagedChange(form, staged, ["gitBranch"]);
+  const defaultValues = { branch: stagedString(staged.gitBranch, branch) };
+  const form = useAppForm({ defaultValues });
+  useResetFormOnStagedChange(form, defaultValues, staged, ["gitBranch"]);
 
   const branchItems: TCommandItem[] | undefined = useMemo(() => {
     const items: TCommandItem[] | undefined = dataRepository?.repository.branches?.map((b) => ({
@@ -198,12 +195,9 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
   const serverImage = `${image}:${tag}`;
   const stagedImage = stagedString(staged.image, serverImage);
 
-  const form = useAppForm({
-    defaultValues: {
-      tag: stagedImage.split(":")[1] ?? tag,
-    },
-  });
-  useResetFormOnStagedChange(form, staged, ["image"]);
+  const defaultValues = { tag: stagedImage.split(":")[1] ?? tag };
+  const form = useAppForm({ defaultValues });
+  useResetFormOnStagedChange(form, defaultValues, staged, ["image"]);
 
   const {
     data: dataTags,

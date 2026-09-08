@@ -113,29 +113,28 @@ function GitSection({ service }: TGitSectionProps) {
     startCommand: service.config.run_command || "",
   };
 
-  const form = useAppForm({
-    defaultValues: {
-      builder: stagedString(staged.builder, service.config.builder) as TGitServiceBuilder,
-      railpackBuilderInstallCommand: stagedString(
-        staged.railpackBuilderInstallCommand,
-        serverValues.railpackBuilderInstallCommand,
-      ),
-      railpackBuilderBuildCommand: stagedString(
-        staged.railpackBuilderBuildCommand,
-        serverValues.railpackBuilderBuildCommand,
-      ),
-      dockerBuilderDockerfilePath: stagedString(
-        staged.dockerBuilderDockerfilePath,
-        serverValues.dockerBuilderDockerfilePath,
-      ),
-      dockerBuilderBuildContext: stagedString(
-        staged.dockerBuilderBuildContext,
-        serverValues.dockerBuilderBuildContext,
-      ),
-      startCommand: stagedString(staged.startCommand, serverValues.startCommand),
-    },
-  });
-  useResetFormOnStagedChange(form, staged, [
+  const defaultValues = {
+    builder: stagedString(staged.builder, service.config.builder) as TGitServiceBuilder,
+    railpackBuilderInstallCommand: stagedString(
+      staged.railpackBuilderInstallCommand,
+      serverValues.railpackBuilderInstallCommand,
+    ),
+    railpackBuilderBuildCommand: stagedString(
+      staged.railpackBuilderBuildCommand,
+      serverValues.railpackBuilderBuildCommand,
+    ),
+    dockerBuilderDockerfilePath: stagedString(
+      staged.dockerBuilderDockerfilePath,
+      serverValues.dockerBuilderDockerfilePath,
+    ),
+    dockerBuilderBuildContext: stagedString(
+      staged.dockerBuilderBuildContext,
+      serverValues.dockerBuilderBuildContext,
+    ),
+    startCommand: stagedString(staged.startCommand, serverValues.startCommand),
+  };
+  const form = useAppForm({ defaultValues });
+  useResetFormOnStagedChange(form, defaultValues, staged, [
     "builder",
     "railpackBuilderInstallCommand",
     "railpackBuilderBuildCommand",
@@ -198,13 +197,10 @@ function GitSection({ service }: TGitSectionProps) {
                       ref={inputRefs[field]}
                       field={fieldApi}
                       value={fieldApi.state.value}
-                      onBlur={() => {
-                        fieldApi.handleBlur();
-                        if (fieldApi.state.meta.errors.length > 0) return;
-                        stageCommand(field, fieldApi.state.value);
-                      }}
+                      onBlur={fieldApi.handleBlur}
                       onChange={(e) => {
                         fieldApi.handleChange(e.target.value);
+                        stageCommand(field, e.target.value);
                       }}
                       placeholder={commandFields[field].placeholder}
                       autoCapitalize="off"

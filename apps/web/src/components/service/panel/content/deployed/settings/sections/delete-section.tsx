@@ -19,11 +19,7 @@ export default function DeleteSection({ service, className }: Props) {
 
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
 
-  const {
-    mutateAsync: deleteService,
-    error,
-    reset,
-  } = useDeleteService({ onSuccess: closePanel });
+  const { mutateAsync: deleteService, error, reset } = useDeleteService({ onSuccess: closePanel });
 
   const hasVolumes = service.config.volumes.length > 0;
 

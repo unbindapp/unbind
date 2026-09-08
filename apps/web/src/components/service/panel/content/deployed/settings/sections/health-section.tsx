@@ -139,41 +139,37 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
     startupCheckFailureThreshold: healthCheck?.startup_failure_threshold ?? defaultApiValue,
   };
 
-  const form = useAppForm({
-    defaultValues: {
-      healthCheckType: stagedString(staged.healthCheckType, serverType) as THealthCheckType,
-      healthCheckEndpoint: stagedString(staged.healthCheckEndpoint, serverEndpoint),
-      healthCheckEndpointPort: thresholdToInput(
-        stagedNumber(staged.healthCheckEndpointPort, serverPort),
+  const defaultValues = {
+    healthCheckType: stagedString(staged.healthCheckType, serverType) as THealthCheckType,
+    healthCheckEndpoint: stagedString(staged.healthCheckEndpoint, serverEndpoint),
+    healthCheckEndpointPort: thresholdToInput(
+      stagedNumber(staged.healthCheckEndpointPort, serverPort),
+    ),
+    healthCheckCommand: stagedString(staged.healthCheckCommand, serverCommand),
+    healthCheckIntervalSeconds: thresholdToInput(
+      stagedNumber(staged.healthCheckIntervalSeconds, serverThresholds.healthCheckIntervalSeconds),
+    ),
+    healthCheckFailureThreshold: thresholdToInput(
+      stagedNumber(
+        staged.healthCheckFailureThreshold,
+        serverThresholds.healthCheckFailureThreshold,
       ),
-      healthCheckCommand: stagedString(staged.healthCheckCommand, serverCommand),
-      healthCheckIntervalSeconds: thresholdToInput(
-        stagedNumber(
-          staged.healthCheckIntervalSeconds,
-          serverThresholds.healthCheckIntervalSeconds,
-        ),
+    ),
+    startupCheckIntervalSeconds: thresholdToInput(
+      stagedNumber(
+        staged.startupCheckIntervalSeconds,
+        serverThresholds.startupCheckIntervalSeconds,
       ),
-      healthCheckFailureThreshold: thresholdToInput(
-        stagedNumber(
-          staged.healthCheckFailureThreshold,
-          serverThresholds.healthCheckFailureThreshold,
-        ),
+    ),
+    startupCheckFailureThreshold: thresholdToInput(
+      stagedNumber(
+        staged.startupCheckFailureThreshold,
+        serverThresholds.startupCheckFailureThreshold,
       ),
-      startupCheckIntervalSeconds: thresholdToInput(
-        stagedNumber(
-          staged.startupCheckIntervalSeconds,
-          serverThresholds.startupCheckIntervalSeconds,
-        ),
-      ),
-      startupCheckFailureThreshold: thresholdToInput(
-        stagedNumber(
-          staged.startupCheckFailureThreshold,
-          serverThresholds.startupCheckFailureThreshold,
-        ),
-      ),
-    },
-  });
-  useResetFormOnStagedChange(form, staged, ["healthCheckType", ...detailFields]);
+    ),
+  };
+  const form = useAppForm({ defaultValues });
+  useResetFormOnStagedChange(form, defaultValues, staged, ["healthCheckType", ...detailFields]);
 
   const portItems = useMemo(() => {
     return service.config.ports?.map((port) => ({
@@ -217,13 +213,11 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
           <fieldApi.TextField
             field={fieldApi}
             value={fieldApi.state.value}
-            onBlur={() => {
-              fieldApi.handleBlur();
-              if (fieldApi.state.meta.errors.length > 0) return;
-              stageThreshold(field, fieldApi.state.value);
-            }}
+            onBlur={fieldApi.handleBlur}
             onChange={(e) => {
               fieldApi.handleChange(e.target.value);
+              if (fieldApi.state.meta.errors.length > 0) return;
+              stageThreshold(field, e.target.value);
             }}
             placeholder={thresholdFields[field].placeholder}
             autoCapitalize="off"
@@ -333,18 +327,16 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       classNameInput="rounded-t-none border-t-0 pr-27"
                       field={field}
                       value={field.state.value}
-                      onBlur={() => {
-                        field.handleBlur();
+                      onBlur={field.handleBlur}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
                         if (field.state.meta.errors.length > 0) return;
                         stage({
                           field: "healthCheckEndpoint",
                           label: "Health check endpoint",
-                          value: field.state.value,
+                          value: e.target.value,
                           previous: serverEndpoint,
                         });
-                      }}
-                      onChange={(e) => {
-                        field.handleChange(e.target.value);
                       }}
                       placeholder="/health"
                       autoCapitalize="off"
@@ -413,18 +405,16 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                     classNameInput="rounded-t-none border-t-0"
                     field={field}
                     value={field.state.value}
-                    onBlur={() => {
-                      field.handleBlur();
+                    onBlur={field.handleBlur}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value);
                       if (field.state.meta.errors.length > 0) return;
                       stage({
                         field: "healthCheckCommand",
                         label: "Health check command",
-                        value: field.state.value,
+                        value: e.target.value,
                         previous: serverCommand,
                       });
-                    }}
-                    onChange={(e) => {
-                      field.handleChange(e.target.value);
                     }}
                     placeholder="test -f /app/ready.txt"
                     autoCapitalize="off"

@@ -59,10 +59,14 @@ export function useServiceChanges(service: TServiceShallow) {
   return { staged, stage, unstage };
 }
 
+type TFormValues = Record<string, string | number>;
+
 // Form defaults come from the staged values, so a discard elsewhere has to reset the
-// form for the fields to show the server value again
-export function useResetFormOnStagedChange(
-  form: { reset: () => void },
+// form for the fields to show the server value again. Edits staged by this form
+// already match the defaults and are left alone
+export function useResetFormOnStagedChange<T extends TFormValues>(
+  form: { reset: () => void; state: { values: T } },
+  defaultValues: T,
   staged: TStagedFields,
   fields: TServiceChangeField[],
 ) {
@@ -74,9 +78,14 @@ export function useResetFormOnStagedChange(
       isFirstRender.current = false;
       return;
     }
+    if (matchesDefaults(form.state.values, defaultValues)) return;
     form.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
+}
+
+function matchesDefaults<T extends TFormValues>(values: T, defaults: T) {
+  return Object.keys(defaults).every((field) => values[field] === defaults[field]);
 }
 
 export function stagedNumber(change: TStagedServiceChange | undefined, fallback: number) {
