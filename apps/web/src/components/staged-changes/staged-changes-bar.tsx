@@ -254,7 +254,6 @@ export default function StagedChangesBar() {
 
   const shownCount = lastCount.current;
   const hasError = deploy.error !== null || plan.error !== null;
-
   return (
     // aria-live keeps the bar interactive while a modal drawer is open, the same way toasts stay usable.
     // The track keeps catching presses while the bar slides out or jumps, so a press that misses
@@ -286,9 +285,9 @@ export default function StagedChangesBar() {
           data-closed={isHidden || undefined}
           data-edge={edge}
           data-held={isHeld || undefined}
-          className="bg-card border-change/24 shadow-shadow-color/shadow-opacity data-error:border-destructive/30 flex h-(--changes-bar-height) w-full items-center gap-2 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),scale_150ms_ease-out] data-closed:pointer-events-none data-held:scale-96 data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))] sm:min-w-92"
+          className="bg-card group/wrapper border-change/24 shadow-shadow-color/shadow-opacity data-error:border-destructive/24 flex h-(--changes-bar-height) w-full items-center gap-2 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),scale_150ms_ease-out] data-closed:pointer-events-none data-held:scale-96 data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))] sm:min-w-92"
         >
-          <div className="bg-change/6 absolute top-0 left-0 h-full w-full" />
+          <div className="bg-change/6 group-data-error/wrapper:bg-destructive/6 absolute top-0 left-0 h-full w-full" />
           <motion.div
             onPointerDown={onHandlePointerDown}
             onPanStart={onPanStart}
