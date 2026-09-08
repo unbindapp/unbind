@@ -44,6 +44,24 @@ func releasesFor(tags ...string) []*github.RepositoryRelease {
 	return releases
 }
 
+func releaseWithBody(tag, body string) *github.RepositoryRelease {
+	return &github.RepositoryRelease{TagName: new(tag), Body: new(body)}
+}
+
+const releaseBodyV002 = `## 🚀 Unbind v0.0.2
+
+### 📦 Container Images
+
+| Component | Image |
+|-----------|-------|
+| App | ` + "`ghcr.io/unbindapp/unbind:v0.0.2`" + ` |
+
+### 📝 What's Changed
+
+- web: Fix button colors (9f6f0242)
+- api: Add /system endpoints (4975f5d0)
+`
+
 type ReleaseTestSuite struct {
 	suite.Suite
 	manager  *Manager
@@ -55,25 +73,25 @@ func (s *ReleaseTestSuite) SetupTest() {
 	// Create test metadata
 	s.metadata = VersionMetadataMap{
 		"v0.0.1": {
-			Version:     "v0.0.1",
-			Description: "Initial release",
-			Breaking:    false,
+			Version:  "v0.0.1",
+			Summary:  "Initial release",
+			Breaking: false,
 		},
 		"v0.0.2": {
-			Version:     "v0.0.2",
-			Description: "Feature update",
-			Breaking:    false,
+			Version:  "v0.0.2",
+			Summary:  "Feature update",
+			Breaking: false,
 		},
 		"v0.0.3": {
-			Version:     "v0.0.3",
-			Description: "Bug fix",
-			Breaking:    false,
+			Version:  "v0.0.3",
+			Summary:  "Bug fix",
+			Breaking: false,
 		},
 		"v0.1.0": {
-			Version:     "v0.1.0",
-			Description: "Major update",
-			Breaking:    true,
-			DependsOn:   []string{"v0.0.3"},
+			Version:   "v0.1.0",
+			Summary:   "Major update",
+			Breaking:  true,
+			DependsOn: []string{"v0.0.3"},
 		},
 	}
 
@@ -90,7 +108,12 @@ func (s *ReleaseTestSuite) SetupTest() {
 
 	mockClient := &mockGitHubClient{
 		listReleasesFunc: func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
-			return releasesFor("v0.0.1", "v0.0.2", "v0.0.3", "v0.1.0"), nil, nil
+			return []*github.RepositoryRelease{
+				releaseWithBody("v0.0.1", ""),
+				releaseWithBody("v0.0.2", releaseBodyV002),
+				releaseWithBody("v0.0.3", "## v0.0.3\n\nNo change list here."),
+				releaseWithBody("v0.1.0", "### What's Changed\n\n- Breaking change\n"),
+			}, nil, nil
 		},
 	}
 
@@ -193,6 +216,78 @@ func (s *ReleaseTestSuite) TestAvailableUpdates() {
 				versions = append(versions, update.Version)
 			}
 			s.Equal(tt.expected, versions, "Expected updates for version %s to be %v, got %v", tt.currentVersion, tt.expected, versions)
+		})
+	}
+}
+
+func (s *ReleaseTestSuite) TestAvailableUpdates_Changes() {
+	updates, err := s.manager.AvailableUpdates(context.Background(), "v0.0.1")
+	s.NoError(err)
+	s.Require().Len(updates, 2)
+
+	s.Equal("Feature update", updates[0].Summary)
+	s.Equal([]Change{
+		{
+			Message:   "web: Fix button colors",
+			CommitSHA: "9f6f0242",
+			CommitURL: "https://github.com/unbindapp/unbind/commit/9f6f0242",
+		},
+		{
+			Message:   "api: Add /system endpoints",
+			CommitSHA: "4975f5d0",
+			CommitURL: "https://github.com/unbindapp/unbind/commit/4975f5d0",
+		},
+	}, updates[0].Changes)
+
+	s.Equal("Bug fix", updates[1].Summary)
+	s.Empty(updates[1].Changes)
+}
+
+func (s *ReleaseTestSuite) TestParseChanges() {
+	m := NewManager(&mockGitHubClient{}, "someone/fork")
+	tests := []struct {
+		name     string
+		body     string
+		expected []Change
+	}{
+		{
+			name:     "empty body",
+			body:     "",
+			expected: []Change{},
+		},
+		{
+			name:     "no changes heading",
+			body:     "## Release\n\n- not a change\n",
+			expected: []Change{},
+		},
+		{
+			name: "changes with and without sha",
+			body: "### 📝 What's Changed\n\n- web: Fix thing (abcdef1)\n- api: No hash here\n-\n",
+			expected: []Change{
+				{Message: "web: Fix thing", CommitSHA: "abcdef1", CommitURL: "https://github.com/someone/fork/commit/abcdef1"},
+				{Message: "api: No hash here"},
+			},
+		},
+		{
+			name: "stops at the next heading",
+			body: "### What's Changed\n- first (1234567)\n### Other\n- ignored (7654321)\n",
+			expected: []Change{
+				{Message: "first", CommitSHA: "1234567", CommitURL: "https://github.com/someone/fork/commit/1234567"},
+			},
+		},
+		{
+			name: "parenthesised text that is not a sha stays in the message",
+			body: "### What's Changed\n- Handle (edge) cases (not-a-sha)\n- Fix (v2)\n",
+			expected: []Change{
+				{Message: "Handle (edge) cases (not-a-sha)"},
+				{Message: "Fix (v2)"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		s.Run(tt.name, func() {
+			s.Equal(tt.expected, m.parseChanges(tt.body))
 		})
 	}
 }

@@ -68,10 +68,10 @@ func (self *HandlerGroup) CheckPermissions(ctx context.Context, requesterUserID 
 }
 
 type AvailableVersion struct {
-	Version      string `json:"version"`
-	URL          string `json:"url"`
-	Description  string `json:"description,omitempty"`
-	ReleaseNotes string `json:"release_notes,omitempty"`
+	Version string           `json:"version"`
+	URL     string           `json:"url"`
+	Summary string           `json:"summary"`
+	Changes []release.Change `json:"changes" nullable:"false"`
 }
 
 // * Apply update
@@ -196,11 +196,15 @@ func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.Bas
 	}
 	// The update manager already returns newer-than-current versions, oldest first.
 	for _, update := range allUpdates {
+		changes := update.Changes
+		if changes == nil {
+			changes = []release.Change{}
+		}
 		resp.Body.AvailableVersions = append(resp.Body.AvailableVersions, AvailableVersion{
-			Version:      update.Version,
-			URL:          self.srv.UpdateManager.ReleaseURL(update.Version),
-			Description:  update.Description,
-			ReleaseNotes: update.ReleaseNotes,
+			Version: update.Version,
+			URL:     self.srv.UpdateManager.ReleaseURL(update.Version),
+			Summary: update.Summary,
+			Changes: changes,
 		})
 	}
 	resp.Body.HasUpdateAvailable = len(resp.Body.AvailableVersions) > 0

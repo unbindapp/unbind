@@ -127,8 +127,8 @@ func (suite *UpdaterTestSuite) TestNewWithReleaseManager() {
 func (suite *UpdaterTestSuite) TestCheckForUpdates_Success() {
 	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
 	expectedUpdates := []release.VersionMetadata{
-		{Version: "v1.1.0", Description: "first"},
-		{Version: "v1.2.0", ReleaseNotes: "notes"},
+		{Version: "v1.1.0", Summary: "first"},
+		{Version: "v1.2.0", Summary: "second"},
 	}
 	suite.mockReleaseManager.On("AvailableUpdates", suite.ctx, "v1.0.0").Return(expectedUpdates, nil)
 

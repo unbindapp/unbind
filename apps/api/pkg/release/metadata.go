@@ -8,12 +8,19 @@ import (
 	"net/http"
 )
 
+type Change struct {
+	Message   string `json:"message"`
+	CommitSHA string `json:"commit_sha,omitempty"`
+	CommitURL string `json:"commit_url,omitempty"`
+}
+
 type VersionMetadata struct {
-	Version      string   `json:"version"`
-	DependsOn    []string `json:"depends_on,omitempty"`
-	Breaking     bool     `json:"breaking,omitempty"`
-	Description  string   `json:"description,omitempty"`
-	ReleaseNotes string   `json:"release_notes,omitempty"`
+	Version   string   `json:"version"`
+	DependsOn []string `json:"depends_on,omitempty"`
+	Breaking  bool     `json:"breaking,omitempty"`
+	Summary   string   `json:"summary,omitempty"`
+	// Changes is parsed from the GitHub release body, never from metadata.json.
+	Changes []Change `json:"changes,omitempty"`
 }
 
 type VersionMetadataMap map[string]VersionMetadata

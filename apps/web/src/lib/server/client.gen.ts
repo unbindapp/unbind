@@ -221,10 +221,18 @@ export const AvailableVariableReferenceSchema = z
   })
   .strip();
 
+export const ChangeSchema = z
+  .object({
+    commit_sha: z.string().optional(),
+    commit_url: z.string().optional(),
+    message: z.string(),
+  })
+  .strip();
+
 export const AvailableVersionSchema = z
   .object({
-    description: z.string().optional(),
-    release_notes: z.string().optional(),
+    changes: z.array(ChangeSchema),
+    summary: z.string(),
     url: z.string(),
     version: z.string(),
   })
@@ -2566,6 +2574,7 @@ export type ApplyChangesResponse = z.infer<typeof ApplyChangesResponseSchema>;
 export type ApplyChangesResponseBody = z.infer<typeof ApplyChangesResponseBodySchema>;
 export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
+export type Change = z.infer<typeof ChangeSchema>;
 export type AvailableVersion = z.infer<typeof AvailableVersionSchema>;
 export type BuildkitSettings = z.infer<typeof BuildkitSettingsSchema>;
 export type CancelDeploymentInputBody = z.infer<typeof CancelDeploymentInputBodySchema>;

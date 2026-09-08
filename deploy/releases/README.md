@@ -7,8 +7,10 @@ This directory is what a running Unbind reads to discover and apply in-app updat
 2. `metadata.json` on `master` has an entry for that tag.
 
 `release.yml` adds the entry to `master` itself when it is missing (`breaking: false`; the
-description is the annotated tag message, or `Release <tag>` for lightweight tags). Only
-breaking releases need the entry written by hand before tagging, so `depends_on` is set.
+summary is the annotated tag message). Every release needs a summary: tag with
+`git tag -a <tag> -m "Short summary"`, or write the entry by hand before tagging. A lightweight
+tag without a hand-written entry fails the release. Breaking releases must be written by hand
+before tagging, so `depends_on` is set.
 
 ## metadata.json
 
@@ -16,13 +18,12 @@ breaking releases need the entry written by hand before tagging, so `depends_on`
 {
   "v0.1.1": {
     "version": "v0.1.1",
-    "description": "Short summary, shown on the update page",
-    "release_notes": "Optional longer notes, also shown on the update page",
+    "summary": "Short summary, shown on the update page",
     "breaking": false
   },
   "v0.2.0": {
     "version": "v0.2.0",
-    "description": "Requires a v0.1.x install",
+    "summary": "Requires a v0.1.x install",
     "breaking": true,
     "depends_on": ["v0.1.1"]
   }
@@ -32,8 +33,9 @@ breaking releases need the entry written by hand before tagging, so `depends_on`
 - `breaking: true` without `depends_on` hides the version from every install.
 - `depends_on` lists the versions an install must be on to jump to this one; the updater
   walks intermediate versions in order (`GetUpdatePath`).
-- `description` and `release_notes` are shown on the `/update` page for the latest
-  available version.
+- `summary` is shown on the `/update` page for every available version. The list of changes
+  under it is not stored here; the API parses it from the "What's Changed" section that
+  `release.yml` writes into the GitHub Release body.
 
 ## Per-version manifests (optional)
 

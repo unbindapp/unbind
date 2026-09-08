@@ -22,26 +22,26 @@ func (s *MetadataTestSuite) SetupTest() {
 	// Create test metadata
 	s.metadata = VersionMetadataMap{
 		"v0.1.0": {
-			Version:     "v0.1.0",
-			Description: "Initial release",
-			Breaking:    false,
+			Version:  "v0.1.0",
+			Summary:  "Initial release",
+			Breaking: false,
 		},
 		"v0.2.0": {
-			Version:     "v0.2.0",
-			Description: "Feature update",
-			Breaking:    false,
+			Version:  "v0.2.0",
+			Summary:  "Feature update",
+			Breaking: false,
 		},
 		"v0.3.0": {
-			Version:     "v0.3.0",
-			Description: "Database schema update",
-			Breaking:    true,
-			DependsOn:   []string{"v0.2.0"},
+			Version:   "v0.3.0",
+			Summary:   "Database schema update",
+			Breaking:  true,
+			DependsOn: []string{"v0.2.0"},
 		},
 		"v0.4.0": {
-			Version:     "v0.4.0",
-			Description: "Major feature update",
-			Breaking:    true,
-			DependsOn:   []string{"v0.3.0"},
+			Version:   "v0.4.0",
+			Summary:   "Major feature update",
+			Breaking:  true,
+			DependsOn: []string{"v0.3.0"},
 		},
 	}
 

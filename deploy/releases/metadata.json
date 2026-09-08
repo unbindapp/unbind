@@ -1,282 +1,282 @@
 {
   "v0.1.0": {
     "version": "v0.1.0",
-    "description": "First release of the monorepo architecture: single app image (SPA + API), Envoy Gateway networking, installer and charts shipped from this repo.",
+    "summary": "First release of the monorepo architecture: single app image (SPA + API), Envoy Gateway networking, installer and charts shipped from this repo.",
     "breaking": false
   },
   "v0.1.1": {
     "version": "v0.1.1",
-    "description": "Release 0.1.1",
+    "summary": "Release 0.1.1",
     "breaking": false
   },
   "v0.1.2": {
     "version": "v0.1.2",
-    "description": "Release 0.1.2",
+    "summary": "Release 0.1.2",
     "breaking": false
   },
   "v0.1.3": {
     "version": "v0.1.3",
-    "description": "Standardized API error responses, builder settings fixes, and update page improvements",
+    "summary": "Standardized API error responses, builder settings fixes, and update page improvements",
     "breaking": false
   },
   "v0.1.4": {
     "version": "v0.1.4",
-    "description": "Volume usage fixes, PVC size rounding, and Redis chart PVC labeling",
+    "summary": "Volume usage fixes, PVC size rounding, and Redis chart PVC labeling",
     "breaking": false
   },
   "v0.1.5": {
     "version": "v0.1.5",
-    "description": "Deterministic builder image tags and build caches",
+    "summary": "Deterministic builder image tags and build caches",
     "breaking": false
   },
   "v0.1.6": {
     "version": "v0.1.6",
-    "description": "Database deploy settings, resolved variable references, and volume usage polish",
+    "summary": "Database deploy settings, resolved variable references, and volume usage polish",
     "breaking": false
   },
   "v0.1.7": {
     "version": "v0.1.7",
-    "description": "Dangling volume reattachment, storage size normalization, and safer volume expansion",
+    "summary": "Dangling volume reattachment, storage size normalization, and safer volume expansion",
     "breaking": false
   },
   "v0.1.8": {
     "version": "v0.1.8",
-    "description": "Volume renaming, active deployment removal, and operator status tracking",
+    "summary": "Volume renaming, active deployment removal, and operator status tracking",
     "breaking": false
   },
   "v0.1.9": {
     "version": "v0.1.9",
-    "description": "Release 0.1.9",
+    "summary": "Release 0.1.9",
     "breaking": false
   },
   "v0.1.10": {
     "version": "v0.1.10",
-    "description": "Release 0.1.10",
+    "summary": "Release 0.1.10",
     "breaking": false
   },
   "v0.1.11": {
     "version": "v0.1.11",
-    "description": "Volume detaching state, muted UI colors, and lowercase default environment name",
+    "summary": "Volume detaching state, muted UI colors, and lowercase default environment name",
     "breaking": false
   },
   "v0.1.12": {
     "version": "v0.1.12",
-    "description": "Preserved button children with slot composition",
+    "summary": "Preserved button children with slot composition",
     "breaking": false
   },
   "v0.1.13": {
     "version": "v0.1.13",
-    "description": "Button pending state fix and shorter volume panel explanations",
+    "summary": "Button pending state fix and shorter volume panel explanations",
     "breaking": false
   },
   "v0.1.14": {
     "version": "v0.1.14",
-    "description": "Deployment abort support, deploy state fixes, and volume card layout improvements",
+    "summary": "Deployment abort support, deploy state fixes, and volume card layout improvements",
     "breaking": false
   },
   "v0.1.15": {
     "version": "v0.1.15",
-    "description": "Skip-build-cache redeploys, PVC and volume handling improvements, and deploy dialog polish",
+    "summary": "Skip-build-cache redeploys, PVC and volume handling improvements, and deploy dialog polish",
     "breaking": false
   },
   "v0.1.16": {
     "version": "v0.1.16",
-    "description": "Fix the startup crash introduced in v0.1.15 (missing ent runtime registration)",
+    "summary": "Fix the startup crash introduced in v0.1.15 (missing ent runtime registration)",
     "breaking": false
   },
   "v0.1.17": {
     "version": "v0.1.17",
-    "description": "ANSI log rendering, safer update resume, post-build service metadata refresh, and light theme polish",
+    "summary": "ANSI log rendering, safer update resume, post-build service metadata refresh, and light theme polish",
     "breaking": false
   },
   "v0.1.18": {
     "version": "v0.1.18",
-    "description": "Smart redeploy and cache bypass options, PVC permission error mapping, and UI polish",
+    "summary": "Smart redeploy and cache bypass options, PVC permission error mapping, and UI polish",
     "breaking": false
   },
   "v0.1.19": {
     "version": "v0.1.19",
-    "description": "More reliable platform updates with failure recovery, and persistent volume management permissions",
+    "summary": "More reliable platform updates with failure recovery, and persistent volume management permissions",
     "breaking": false
   },
   "v0.1.20": {
     "version": "v0.1.20",
-    "description": "Release v0.1.20",
+    "summary": "Release v0.1.20",
     "breaking": false
   },
   "v0.1.21": {
     "version": "v0.1.21",
-    "description": "Release 0.1.21",
+    "summary": "Release 0.1.21",
     "breaking": false
   },
   "v0.1.22": {
     "version": "v0.1.22",
-    "description": "Development tooling: pre-commit TypeScript checks for web",
+    "summary": "Development tooling: pre-commit TypeScript checks for web",
     "breaking": false
   },
   "v0.1.23": {
     "version": "v0.1.23",
-    "description": "New toast system, merged update status endpoints, database TCP endpoint reporting, and dialog fixes",
+    "summary": "New toast system, merged update status endpoints, database TCP endpoint reporting, and dialog fixes",
     "breaking": false
   },
   "v0.1.24": {
     "version": "v0.1.24",
-    "description": "Drawer swipe fixes, service endpoint and health prefetching, and stale update notification fix",
+    "summary": "Drawer swipe fixes, service endpoint and health prefetching, and stale update notification fix",
     "breaking": false
   },
   "v0.1.25": {
     "version": "v0.1.25",
-    "description": "Volume expansion limited by available storage, and chart tooltip background fix",
+    "summary": "Volume expansion limited by available storage, and chart tooltip background fix",
     "breaking": false
   },
   "v0.1.26": {
     "version": "v0.1.26",
-    "description": "Release 0.1.26",
+    "summary": "Release 0.1.26",
     "breaking": false
   },
   "v0.1.27": {
     "version": "v0.1.27",
-    "description": "Log search, filtering, and pagination, log viewer UI improvements, and toast improvements",
+    "summary": "Log search, filtering, and pagination, log viewer UI improvements, and toast improvements",
     "breaking": false
   },
   "v0.1.28": {
     "version": "v0.1.28",
-    "description": "Log viewer scrolling, filtering and error improvements, and variable reference propagation fixes",
+    "summary": "Log viewer scrolling, filtering and error improvements, and variable reference propagation fixes",
     "breaking": false
   },
   "v0.1.29": {
     "version": "v0.1.29",
-    "description": "Log search autocomplete, anchored log time ranges, and variable reference refinements",
+    "summary": "Log search autocomplete, anchored log time ranges, and variable reference refinements",
     "breaking": false
   },
   "v0.1.30": {
     "version": "v0.1.30",
-    "description": "Log virtualization and scrolling improvements, Loki-side log level filtering, and standardized log limits",
+    "summary": "Log virtualization and scrolling improvements, Loki-side log level filtering, and standardized log limits",
     "breaking": false
   },
   "v0.1.31": {
     "version": "v0.1.31",
-    "description": "Log search attribute chips and completions, live log stream resume fixes, and a pending screen for route transitions",
+    "summary": "Log search attribute chips and completions, live log stream resume fixes, and a pending screen for route transitions",
     "breaking": false
   },
   "v0.1.32": {
     "version": "v0.1.32",
-    "description": "Variable reference completion styling and loading polish, and log prepend indicator fixes",
+    "summary": "Variable reference completion styling and loading polish, and log prepend indicator fixes",
     "breaking": false
   },
   "v0.1.33": {
     "version": "v0.1.33",
-    "description": "Log line context highlighting, log search and filter syncing, and update toast refinements",
+    "summary": "Log line context highlighting, log search and filter syncing, and update toast refinements",
     "breaking": false
   },
   "v0.1.34": {
     "version": "v0.1.34",
-    "description": "Increased log query limit to 2000",
+    "summary": "Increased log query limit to 2000",
     "breaking": false
   },
   "v0.1.35": {
     "version": "v0.1.35",
-    "description": "Log viewer loading state and skeleton animation improvements",
+    "summary": "Log viewer loading state and skeleton animation improvements",
     "breaking": false
   },
   "v0.1.36": {
     "version": "v0.1.36",
-    "description": "Log highlight centering after loading older pages, and popover color tweaks",
+    "summary": "Log highlight centering after loading older pages, and popover color tweaks",
     "breaking": false
   },
   "v0.1.37": {
     "version": "v0.1.37",
-    "description": "Auth form validation and stronger passwords, persisted form drafts, deterministic generated domains, and private installation repositories",
+    "summary": "Auth form validation and stronger passwords, persisted form drafts, deterministic generated domains, and private installation repositories",
     "breaking": false
   },
   "v0.1.38": {
     "version": "v0.1.38",
-    "description": "Database deployment status fixes, action dialogs rendered outside dropdown menus, and brand icon updates",
+    "summary": "Database deployment status fixes, action dialogs rendered outside dropdown menus, and brand icon updates",
     "breaking": false
   },
   "v0.1.39": {
     "version": "v0.1.39",
-    "description": "Gluetun VPN proxy template, template naming improvements, and GitHub repository listing fixes",
+    "summary": "Gluetun VPN proxy template, template naming improvements, and GitHub repository listing fixes",
     "breaking": false
   },
   "v0.1.40": {
     "version": "v0.1.40",
-    "description": "Style improvements for copy buttons, breadcrumbs, and service URLs",
+    "summary": "Style improvements for copy buttons, breadcrumbs, and service URLs",
     "breaking": false
   },
   "v0.1.41": {
     "version": "v0.1.41",
-    "description": "Gluetun proxy password hashing, and button, dropdown, and brand icon style tweaks",
+    "summary": "Gluetun proxy password hashing, and button, dropdown, and brand icon style tweaks",
     "breaking": false
   },
   "v0.1.42": {
     "version": "v0.1.42",
-    "description": "Gluetun proxy service URL fix and pending screen tweaks",
+    "summary": "Gluetun proxy service URL fix and pending screen tweaks",
     "breaking": false
   },
   "v0.1.43": {
     "version": "v0.1.43",
-    "description": "Service icon improvements and five icon slots on service group cards",
+    "summary": "Service icon improvements and five icon slots on service group cards",
     "breaking": false
   },
   "v0.1.44": {
     "version": "v0.1.44",
-    "description": "Service and volume panels open through links, nested trigger fixes, and service URL animation tweaks",
+    "summary": "Service and volume panels open through links, nested trigger fixes, and service URL animation tweaks",
     "breaking": false
   },
   "v0.1.45": {
     "version": "v0.1.45",
-    "description": "FQDN internal service hostnames, registry cleanup and image expiry fixes, domain DNS status, and entity card state improvements",
+    "summary": "FQDN internal service hostnames, registry cleanup and image expiry fixes, domain DNS status, and entity card state improvements",
     "breaking": false
   },
   "v0.1.46": {
     "version": "v0.1.46",
-    "description": "S3 sources renamed to backup buckets, deployment log lifecycle bounds, and node disk pressure cleanup fixes",
+    "summary": "S3 sources renamed to backup buckets, deployment log lifecycle bounds, and node disk pressure cleanup fixes",
     "breaking": false
   },
   "v0.1.47": {
     "version": "v0.1.47",
-    "description": "Log search styling for quotes, operators, and negated terms, and log line padding improvements",
+    "summary": "Log search styling for quotes, operators, and negated terms, and log line padding improvements",
     "breaking": false
   },
   "v0.1.48": {
     "version": "v0.1.48",
-    "description": "Gateway API duration format for session affinity TTL, and local dev environment tooling",
+    "summary": "Gateway API duration format for session affinity TTL, and local dev environment tooling",
     "breaking": false
   },
   "v0.1.49": {
     "version": "v0.1.49",
-    "description": "Release PVC bindings before service deletion, and deployment removal modal improvements",
+    "summary": "Release PVC bindings before service deletion, and deployment removal modal improvements",
     "breaking": false
   },
   "v0.1.50": {
     "version": "v0.1.50",
-    "description": "Variable and raw editor improvements, rendered variable references during deployment, and database redeploys on backup bucket changes",
+    "summary": "Variable and raw editor improvements, rendered variable references during deployment, and database redeploys on backup bucket changes",
     "breaking": false
   },
   "v0.1.51": {
     "version": "v0.1.51",
-    "description": "Variable card missing reference improvements",
+    "summary": "Variable card missing reference improvements",
     "breaking": false
   },
   "v0.1.52": {
     "version": "v0.1.52",
-    "description": "Ignore removed deployments during redeploy checks, and General settings title updates",
+    "summary": "Ignore removed deployments during redeploy checks, and General settings title updates",
     "breaking": false
   },
   "v0.1.53": {
     "version": "v0.1.53",
-    "description": "Staged changes with coordinated service rollouts, endpoint change tracking, and responsive toast positioning",
+    "summary": "Staged changes with coordinated service rollouts, endpoint change tracking, and responsive toast positioning",
     "breaking": false
   },
   "v0.1.54": {
     "version": "v0.1.54",
-    "description": "Draggable staged changes bar, variable card staged state improvements, and log list padding fixes",
+    "summary": "Draggable staged changes bar, variable card staged state improvements, and log list padding fixes",
     "breaking": false
   },
   "v0.1.55": {
     "version": "v0.1.55",
-    "description": "Staged changes details dialog and deploy flow improvements, and service card overflow fix",
+    "summary": "Staged changes details dialog and deploy flow improvements, and service card overflow fix",
     "breaking": false
   }
 }

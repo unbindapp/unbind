@@ -85,8 +85,9 @@ func (self *Manager) ReleaseURL(version string) string {
 	return fmt.Sprintf("https://github.com/%s/%s/releases#release-%s", self.owner, self.repo, normalized)
 }
 
-func (self *Manager) publishedReleaseTags(ctx context.Context) (map[string]bool, error) {
-	published := make(map[string]bool)
+// publishedReleases returns the body of every published release keyed by tag.
+func (self *Manager) publishedReleases(ctx context.Context) (map[string]string, error) {
+	published := make(map[string]string)
 	opts := &github.ListOptions{PerPage: 100}
 	for {
 		releases, resp, err := self.client.Repositories().ListReleases(ctx, self.owner, self.repo, opts)
@@ -95,7 +96,7 @@ func (self *Manager) publishedReleaseTags(ctx context.Context) (map[string]bool,
 		}
 		for _, release := range releases {
 			if tag := release.GetTagName(); tag != "" {
-				published[tag] = true
+				published[tag] = release.GetBody()
 			}
 		}
 		if resp == nil || resp.NextPage == 0 {
@@ -105,9 +106,57 @@ func (self *Manager) publishedReleaseTags(ctx context.Context) (map[string]bool,
 	}
 }
 
-// releasedVersions returns, in ascending semver order, every version that has both a published GitHub release and a metadata entry.
+const changesHeading = "what's changed"
+
+// parseChanges reads the "What's Changed" list that release.yml writes into every release body.
+func (self *Manager) parseChanges(body string) []Change {
+	changes := []Change{}
+	inSection := false
+	for _, line := range strings.Split(body, "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "#") {
+			inSection = strings.Contains(strings.ToLower(line), changesHeading)
+			continue
+		}
+		if !inSection || !strings.HasPrefix(line, "- ") {
+			continue
+		}
+		change := Change{Message: strings.TrimSpace(strings.TrimPrefix(line, "- "))}
+		if change.Message == "" {
+			continue
+		}
+		if sha, ok := trailingSHA(change.Message); ok {
+			change.Message = strings.TrimSpace(change.Message[:len(change.Message)-len(sha)-2])
+			change.CommitSHA = sha
+			change.CommitURL = fmt.Sprintf("https://github.com/%s/%s/commit/%s", self.owner, self.repo, sha)
+		}
+		changes = append(changes, change)
+	}
+	return changes
+}
+
+// trailingSHA extracts the hash from a "message (abc1234)" changelog line.
+func trailingSHA(message string) (string, bool) {
+	if !strings.HasSuffix(message, ")") {
+		return "", false
+	}
+	start := strings.LastIndex(message, "(")
+	if start == -1 {
+		return "", false
+	}
+	sha := message[start+1 : len(message)-1]
+	if len(sha) < 7 || len(sha) > 40 {
+		return "", false
+	}
+	if strings.Trim(sha, "0123456789abcdef") != "" {
+		return "", false
+	}
+	return sha, true
+}
+
+// releasedVersions returns, in ascending semver order, every version that has both a published GitHub release and a metadata entry, with its changes filled in from the release body.
 func (self *Manager) releasedVersions(ctx context.Context) ([]string, VersionMetadataMap, error) {
-	published, err := self.publishedReleaseTags(ctx)
+	published, err := self.publishedReleases(ctx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -118,13 +167,17 @@ func (self *Manager) releasedVersions(ctx context.Context) ([]string, VersionMet
 	}
 
 	versions := make([]string, 0, len(published))
-	for tag := range published {
+	for tag, body := range published {
 		if !semver.IsValid(tag) {
 			continue
 		}
-		if _, ok := metadata[tag]; !ok {
+		meta, ok := metadata[tag]
+		if !ok {
 			continue
 		}
+		meta.Version = tag
+		meta.Changes = self.parseChanges(body)
+		metadata[tag] = meta
 		versions = append(versions, tag)
 	}
 	semver.Sort(versions)
@@ -159,9 +212,7 @@ func (self *Manager) AvailableUpdates(ctx context.Context, currentVersion string
 		if !canUpdateTo(metadata[version], currentVersion) {
 			continue
 		}
-		meta := metadata[version]
-		meta.Version = version
-		updates = append(updates, meta)
+		updates = append(updates, metadata[version])
 	}
 
 	return updates, nil

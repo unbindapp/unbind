@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.v.outputs.version }}
+      summary: ${{ steps.summary.outputs.summary }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -51,16 +52,28 @@ jobs:
           echo "$CHANGED" | while read -r f; do echo "::error::  $f"; done
           echo "::error::Existing installs only receive release manifests. Ship the change under deploy/releases/$VERSION/, or add an empty kustomization.yaml there to acknowledge it is fresh-install-only."
           exit 1
-      - name: Ensure a metadata entry for this version on master
+      - name: Require an annotated tag with a summary
+        id: summary
         env:
           VERSION: ${{ steps.v.outputs.version }}
         run: |
-          FILE=deploy/releases/metadata.json
           git fetch --no-tags origin "refs/tags/${VERSION}:refs/tags/${VERSION}"
-          DESCRIPTION="Release $VERSION"
-          if [ "$(git cat-file -t "$VERSION")" = "tag" ]; then
-            DESCRIPTION=$(git tag -l --format='%(contents:subject)' "$VERSION")
+          FILE=deploy/releases/metadata.json
+          SUMMARY=$(jq -r --arg v "$VERSION" '.[$v].summary // ""' "$FILE")
+          if [ -z "$SUMMARY" ] && [ "$(git cat-file -t "$VERSION")" = "tag" ]; then
+            SUMMARY=$(git tag -l --format='%(contents:subject)' "$VERSION")
           fi
+          if [ -z "$SUMMARY" ]; then
+            echo "::error::$VERSION has no summary. Tag with a message (git tag -a $VERSION -m \"Short summary\") or add a summary to $FILE before tagging."
+            exit 1
+          fi
+          echo "summary=$SUMMARY" >> "$GITHUB_OUTPUT"
+      - name: Ensure a metadata entry for this version on master
+        env:
+          VERSION: ${{ steps.v.outputs.version }}
+          SUMMARY: ${{ steps.summary.outputs.summary }}
+        run: |
+          FILE=deploy/releases/metadata.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for attempt in 1 2 3; do
@@ -70,8 +83,8 @@ jobs:
               echo "$FILE already has an entry for $VERSION"
               exit 0
             fi
-            jq --arg v "$VERSION" --arg d "$DESCRIPTION" \
-              '. + {($v): {version: $v, description: $d, breaking: false}}' "$FILE" > "$FILE.tmp"
+            jq --arg v "$VERSION" --arg s "$SUMMARY" \
+              '. + {($v): {version: $v, summary: $s, breaking: false}}' "$FILE" > "$FILE.tmp"
             mv "$FILE.tmp" "$FILE"
             git add "$FILE"
             git commit -m "releases: add metadata entry for $VERSION"
@@ -213,6 +226,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       VERSION: ${{ needs.version.outputs.version }}
+      SUMMARY: ${{ needs.version.outputs.summary }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -232,9 +246,12 @@ jobs:
           else
             CHANGELOG=$(git log --oneline --pretty=format:"- %s (%h)" "$PREVIOUS_TAG"..HEAD)
           fi
+          CHANGELOG=$(echo "$CHANGELOG" | grep -v '^- releases: add metadata entry for ' || true)
           {
             echo "body<<EOF"
             echo "## 🚀 Unbind ${VERSION}"
+            echo ""
+            echo "${SUMMARY}"
             echo ""
             echo "### 📦 Container Images"
             echo ""

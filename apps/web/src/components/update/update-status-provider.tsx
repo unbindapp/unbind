@@ -4,6 +4,7 @@ import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { LinkButton } from "@/components/ui/button";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { queryKeySystem, updateStatusQuery, type TUpdateStatus } from "@/lib/queries/system";
+import type { Change } from "@/lib/server/client.gen";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { useLocation } from "@tanstack/react-router";
 import { GiftIcon } from "lucide-react";
@@ -31,16 +32,16 @@ type TNewVersion =
       hasUnseenUpdate: boolean;
       latestVersion: string;
       latestVersionUrl: string;
-      latestVersionDescription: string | null;
-      latestVersionReleaseNotes: string | null;
+      latestVersionSummary: string | null;
+      latestVersionChanges: Change[];
     }
   | {
       hasUpdateAvailable: false;
       hasUnseenUpdate: false;
       latestVersion: null;
       latestVersionUrl: null;
-      latestVersionDescription: null;
-      latestVersionReleaseNotes: null;
+      latestVersionSummary: null;
+      latestVersionChanges: [];
     };
 
 // Server responses can momentarily list versions the deployment already runs (e.g. a
@@ -74,11 +75,12 @@ export const useUpdateStatus = (): TUpdateStatusQuery & TNewVersion => {
   const currentVersion = query.data?.data.current_version;
   const newerVersions =
     currentVersion !== undefined
-      ? query.data?.data.available_versions.filter((v) => isNewerVersion(v.version, currentVersion))
-      : undefined;
+      ? (query.data?.data.available_versions.filter((v) =>
+          isNewerVersion(v.version, currentVersion),
+        ) ?? [])
+      : [];
 
-  const latest =
-    newerVersions && newerVersions.length > 0 ? newerVersions[newerVersions.length - 1] : null;
+  const latest = newerVersions.length > 0 ? newerVersions[newerVersions.length - 1] : null;
 
   if (!latest) {
     return {
@@ -87,8 +89,8 @@ export const useUpdateStatus = (): TUpdateStatusQuery & TNewVersion => {
       hasUnseenUpdate: false,
       latestVersion: null,
       latestVersionUrl: null,
-      latestVersionDescription: null,
-      latestVersionReleaseNotes: null,
+      latestVersionSummary: null,
+      latestVersionChanges: [],
     } as TUpdateStatusQuery & TNewVersion;
   }
 
@@ -98,8 +100,8 @@ export const useUpdateStatus = (): TUpdateStatusQuery & TNewVersion => {
     hasUnseenUpdate: latest.version !== lastDismissedVersion,
     latestVersion: latest.version,
     latestVersionUrl: latest.url,
-    latestVersionDescription: latest.description ?? null,
-    latestVersionReleaseNotes: latest.release_notes ?? null,
+    latestVersionSummary: latest.summary || null,
+    latestVersionChanges: latest.changes,
   } as TUpdateStatusQuery & TNewVersion;
 };
 
