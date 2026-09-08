@@ -96,6 +96,7 @@ export default function StagedChangesDetailsDialog({
         <DrawerContent hasHandle className="max-h-[calc(100%-1.3rem)]">
           <DetailsBody
             {...bodyProps}
+            variant="drawer"
             Title={DrawerTitle}
             Close={DrawerClose}
             className="pb-(--safe-area-inset-bottom)"
@@ -113,13 +114,14 @@ export default function StagedChangesDetailsDialog({
         className="max-h-[calc(var(--safe-screen-height)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))] gap-0 p-0"
         classNameInnerWrapper="w-208 max-w-full min-h-0 gap-0"
       >
-        <DetailsBody {...bodyProps} Title={DialogTitle} Close={DialogClose} />
+        <DetailsBody {...bodyProps} variant="dialog" Title={DialogTitle} Close={DialogClose} />
       </DialogContent>
     </Dialog>
   );
 }
 
 type TDetailsBodyProps = {
+  variant: "drawer" | "dialog";
   showValues: boolean;
   onToggleValues: () => void;
   onDeployed: () => void;
@@ -129,6 +131,7 @@ type TDetailsBodyProps = {
 };
 
 function DetailsBody({
+  variant,
   showValues,
   onToggleValues,
   onDeployed,
@@ -143,27 +146,57 @@ function DetailsBody({
 
   const groups = useMemo(() => groupChanges({ variables, services }), [variables, services]);
   const failures = lastResult?.failures ?? [];
+  const isDrawer = variant === "drawer";
+
+  const title = (
+    <Title className="min-w-0 pr-0 pb-0.5 text-xl leading-tight font-semibold">
+      Deploy {count} {count === 1 ? "change" : "changes"}
+    </Title>
+  );
+  const toggleValuesButton = (
+    <Button
+      type="button"
+      variant="ghost"
+      className={cn(
+        "text-muted-foreground -my-2 min-w-0 shrink px-3.5",
+        isDrawer ? "-ml-3.5" : "-mr-3 ml-auto",
+      )}
+      onClick={onToggleValues}
+    >
+      {showValues ? (
+        <EyeOffIcon className="-ml-px size-4 shrink-0" />
+      ) : (
+        <EyeIcon className="-ml-px size-4 shrink-0" />
+      )}
+      <span className="min-w-0 shrink truncate">
+        {showValues ? "Hide Secrets" : "Show Secrets"}
+      </span>
+    </Button>
+  );
 
   return (
     <div className={cn("flex min-h-0 w-full flex-1 flex-col", className)}>
-      <div className="flex w-full items-center gap-2 border-b px-5 py-3.5 sm:px-5">
-        <Title className="min-w-0 pr-0 pb-0.5 text-xl leading-tight font-semibold">
-          Deploy {count} {count === 1 ? "change" : "changes"}
-        </Title>
-        <Button
-          type="button"
-          variant="ghost"
-          className="text-muted-foreground -my-2 -mr-3 ml-auto min-w-0 shrink px-3.5"
-          onClick={onToggleValues}
-        >
-          {showValues ? (
-            <EyeOffIcon className="-ml-px size-4 shrink-0" />
-          ) : (
-            <EyeIcon className="-ml-px size-4 shrink-0" />
-          )}
-          <span className="min-w-0 shrink truncate">{showValues ? "Hide" : "Show"}</span>
-        </Button>
-      </div>
+      {isDrawer ? (
+        <div className="flex w-full flex-col items-start gap-3 border-b px-5 py-3.5">
+          <div className="flex w-full items-center gap-2">
+            {title}
+            <Close
+              className="text-muted-more-foreground -my-2 -mr-3 ml-auto shrink-0 rounded-lg"
+              render={
+                <Button type="button" size="icon" variant="ghost">
+                  <XIcon className="size-5" />
+                </Button>
+              }
+            />
+          </div>
+          {toggleValuesButton}
+        </div>
+      ) : (
+        <div className="flex w-full items-center gap-2 border-b px-5 py-3.5">
+          {title}
+          {toggleValuesButton}
+        </div>
+      )}
       <ScrollArea className="min-h-0 w-full flex-1 mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
         <div className="flex w-full flex-col gap-6 px-3 pt-4 pb-10 sm:px-5 sm:pb-8">
           {deploy.error && <ErrorLine message={deploy.error.message} withIcon />}
@@ -183,18 +216,20 @@ function DetailsBody({
           </ol>
         </div>
       </ScrollArea>
-      <div className="flex w-full items-center justify-end gap-2 border-t px-3.5 py-3 sm:p-3.5">
-        <Close
-          className="text-muted-foreground flex-1 px-3 sm:flex-initial sm:px-5"
-          render={
-            <Button type="button" variant="ghost" className="shrink-0">
-              Close
-            </Button>
-          }
-        />
+      <div className="flex w-full items-center justify-end gap-2 border-t p-3.5">
+        {!isDrawer && (
+          <Close
+            className="text-muted-foreground shrink-0"
+            render={
+              <Button type="button" variant="ghost">
+                Close
+              </Button>
+            }
+          />
+        )}
         <Button
           variant="change"
-          className="flex-1 px-3 sm:flex-initial sm:px-5"
+          className={cn(isDrawer && "w-full")}
           isPending={deploy.isPending}
           disabled={count === 0}
           onClick={() => deploy.mutate(undefined, { onSuccess: onDeployed })}
