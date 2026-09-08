@@ -1532,7 +1532,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Type:       schema.ServiceTypeDockerimage,
 				Builder:    schema.ServiceBuilderDocker,
 				Image:      new("minio/minio:RELEASE.2025-09-07T16-13-09Z"),
-				RunCommand: new("bash -c '/usr/bin/mc alias set supabase-minio http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} 2>/dev/null || true && /usr/bin/mc mb --ignore-existing supabase-minio/stub 2>/dev/null || true && exec minio server /data --console-address \":9001\"'"),
+				RunCommand: new("bash -c '/usr/bin/mc alias set supabase-minio http://localhost:9000 \"${MINIO_ROOT_USER}\" \"${MINIO_ROOT_PASSWORD}\" 2>/dev/null || true && /usr/bin/mc mb --ignore-existing supabase-minio/stub 2>/dev/null || true && exec minio server /data --console-address \":9001\"'"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
 					CPULimitsMillicores:   300,

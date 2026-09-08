@@ -92,7 +92,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				value = *defInput.Default
 			} else if defInput.Type == schema.InputTypeGeneratedPassword {
 				// Generate a password
-				pwd, err := utils.GenerateSecurePassword(32, true)
+				pwd, err := utils.GenerateSecurePassword(32)
 				if err != nil {
 					return nil, err
 				}

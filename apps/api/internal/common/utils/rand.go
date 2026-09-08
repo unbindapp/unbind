@@ -9,15 +9,12 @@ import (
 	"strings"
 )
 
-// GenerateSecurePassword creates a password with the required constraints
-func GenerateSecurePassword(length int, simple bool) (string, error) {
+// GenerateSecurePassword creates an alphanumeric password, safe to embed in URLs, DSNs and shell commands as-is
+func GenerateSecurePassword(length int) (string, error) {
 	const lowercase = "abcdefghijklmnopqrstuvwxyz"
 	const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	const numbers = "0123456789"
-	const specialChars = "!@#$%^&*()_+-=[]{}|;:,.<>?"
-
 	const alphanumeric = lowercase + uppercase + numbers
-	const allChars = alphanumeric + specialChars
 
 	if length < 3 {
 		return "", fmt.Errorf("password length must be at least 3")
@@ -25,7 +22,6 @@ func GenerateSecurePassword(length int, simple bool) (string, error) {
 
 	password := make([]byte, length)
 
-	// First character must be a letter
 	letters := lowercase + uppercase
 	letterIndex, err := randInt(int64(len(letters)))
 	if err != nil {
@@ -33,101 +29,26 @@ func GenerateSecurePassword(length int, simple bool) (string, error) {
 	}
 	password[0] = letters[letterIndex]
 
-	if !simple {
-		// Make sure at least one special character is included
-		specialIndex, err := randInt(int64(len(specialChars)))
+	upperIndex, err := randInt(int64(len(uppercase)))
+	if err != nil {
+		return "", err
+	}
+	upperPos, err := randInt(int64(length - 1))
+	if err != nil {
+		return "", err
+	}
+	upperPos += 1
+	password[upperPos] = uppercase[upperIndex]
+
+	for i := range password {
+		if i == 0 || int64(i) == upperPos {
+			continue
+		}
+		index, err := randInt(int64(len(alphanumeric)))
 		if err != nil {
 			return "", err
 		}
-
-		// Choose a random position for special char (not the first)
-		specialPos, err := randInt(int64(length - 1))
-		if err != nil {
-			return "", err
-		}
-		// Add 1 to avoid position 0
-		specialPos += 1
-		password[specialPos] = specialChars[specialIndex]
-
-		// Make sure at least one uppercase letter is included
-		upperIndex, err := randInt(int64(len(uppercase)))
-		if err != nil {
-			return "", err
-		}
-
-		// Find a position for uppercase that isn't already taken
-		var upperPos int64
-		for attempts := range 10 { // Limit attempts to avoid infinite loop
-			pos, err := randInt(int64(length - 1))
-			if err != nil {
-				return "", err
-			}
-			// Add 1 to avoid position 0
-			pos += 1
-
-			// Check if this position is already used for special char
-			if pos != specialPos {
-				upperPos = pos
-				break
-			}
-
-			// If we've tried several times and failed, just use a deterministic position
-			if attempts == 9 {
-				// Find the first available position that's not the special char position
-				for i := 1; i < length; i++ {
-					if int64(i) != specialPos {
-						upperPos = int64(i)
-						break
-					}
-				}
-			}
-		}
-
-		password[upperPos] = uppercase[upperIndex]
-
-		// Fill the rest with random characters
-		for i := range password {
-			// Skip positions that are already set
-			if i == 0 || int64(i) == specialPos || int64(i) == upperPos {
-				continue
-			}
-
-			index, err := randInt(int64(len(allChars)))
-			if err != nil {
-				return "", err
-			}
-			password[i] = allChars[index]
-		}
-	} else {
-		// For simple passwords, just use alphanumeric characters
-		// Make sure at least one uppercase letter is included
-		upperIndex, err := randInt(int64(len(uppercase)))
-		if err != nil {
-			return "", err
-		}
-
-		// Choose a random position for uppercase (not the first)
-		upperPos, err := randInt(int64(length - 1))
-		if err != nil {
-			return "", err
-		}
-		// Add 1 to avoid position 0
-		upperPos += 1
-		password[upperPos] = uppercase[upperIndex]
-
-		// Fill the rest with random alphanumeric characters
-		for i := range password {
-			// Skip positions that are already set
-			if i == 0 || int64(i) == upperPos {
-				continue
-			}
-
-			index, err := randInt(int64(len(alphanumeric)))
-			if err != nil {
-				return "", err
-			}
-			password[i] = alphanumeric[index]
-		}
+		password[i] = alphanumeric[index]
 	}
 
 	return string(password), nil
@@ -158,7 +79,7 @@ func generateSecurePasswordWithRand(length int, reader io.Reader) (string, error
 	// Override rand.Reader for this function call
 	rand.Reader = reader
 
-	return GenerateSecurePassword(length, false)
+	return GenerateSecurePassword(length)
 }
 
 func GenerateRandomSimpleID(length int) (string, error) {

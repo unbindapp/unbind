@@ -131,161 +131,41 @@ func TestGenerateSlugUniqueness(t *testing.T) {
 }
 
 func TestGenerateSecurePassword(t *testing.T) {
-	// Test complex passwords (with special characters)
-	t.Run("complex passwords", func(t *testing.T) {
-		for range 100 { // Run multiple times to ensure consistency
-			length := 12
-			password, err := GenerateSecurePassword(length, false)
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
-			if len(password) != length {
-				t.Errorf("expected password length %d, got %d", length, len(password))
-			}
+	alphanumeric := regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9]*$`)
 
-			// Verify password requirements
-			hasUpper := false
-			hasSpecial := false
-			hasAlphaNumeric := false
-			firstIsLetter := false
-
-			for i, c := range password {
-				char := string(c)
-
-				if strings.ContainsAny(char, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-					hasUpper = true
-				}
-
-				if strings.ContainsAny(char, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") {
-					hasAlphaNumeric = true
-				}
-
-				if strings.ContainsAny(char, "!@#$%^&*()_+-=[]{}|;:,.<>?") {
-					hasSpecial = true
-				}
-
-				// Check if first character is a letter
-				if i == 0 && strings.ContainsAny(char, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-					firstIsLetter = true
-				}
-			}
-
-			if !hasUpper {
-				t.Error("password missing uppercase letter")
-			}
-			if !hasSpecial {
-				t.Error("password missing special character")
-			}
-			if !hasAlphaNumeric {
-				t.Error("password missing alphanumeric character")
-			}
-			if !firstIsLetter {
-				t.Error("first character is not a letter")
-			}
-		}
-	})
-
-	// Test simple passwords (alphanumeric only)
-	t.Run("simple passwords", func(t *testing.T) {
-		for range 100 { // Run multiple times to ensure consistency
-			length := 12
-			password, err := GenerateSecurePassword(length, true)
-			if err != nil {
-				t.Errorf("unexpected error: %v", err)
-			}
-			if len(password) != length {
-				t.Errorf("expected password length %d, got %d", length, len(password))
-			}
-
-			// Verify password requirements
-			hasUpper := false
-			hasAlphaNumeric := false
-			firstIsLetter := false
-			hasSpecial := false
-
-			for i, c := range password {
-				char := string(c)
-
-				if strings.ContainsAny(char, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-					hasUpper = true
-				}
-
-				if strings.ContainsAny(char, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") {
-					hasAlphaNumeric = true
-				}
-
-				if strings.ContainsAny(char, "!@#$%^&*()_+-=[]{}|;:,.<>?") {
-					hasSpecial = true
-				}
-
-				// Check if first character is a letter
-				if i == 0 && strings.ContainsAny(char, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") {
-					firstIsLetter = true
-				}
-			}
-
-			if !hasUpper {
-				t.Error("password missing uppercase letter")
-			}
-			if !hasAlphaNumeric {
-				t.Error("password missing alphanumeric character")
-			}
-			if !firstIsLetter {
-				t.Error("first character is not a letter")
-			}
-			if hasSpecial {
-				t.Error("simple password should not contain special characters")
-			}
+	t.Run("alphanumeric with uppercase", func(t *testing.T) {
+		for range 100 {
+			password, err := GenerateSecurePassword(32)
+			require.NoError(t, err)
+			assert.Len(t, password, 32)
+			assert.Regexp(t, alphanumeric, password)
+			assert.NotEqual(t, strings.ToLower(password), password, "password missing uppercase letter")
 		}
 	})
 
 	t.Run("random source never duplicates", func(t *testing.T) {
 		results := make(map[string]bool)
 		for range 100 {
-			password, err := GenerateSecurePassword(12, false)
-			assert.NoError(t, err)
+			password, err := GenerateSecurePassword(12)
+			require.NoError(t, err)
 			assert.NotContains(t, results, password)
 			results[password] = true
 		}
 	})
 
-	// Test with a mocked random source for deterministic testing
 	t.Run("mocked random source", func(t *testing.T) {
-		// Create a deterministic random source for testing
 		mockRand := &mockRandReader{
-			values: []byte{
-				5,                              // First alphanumeric (index into alphanumeric)
-				10,                             // Special char index
-				2,                              // Special position (will be +1 to avoid first position)
-				7,                              // Uppercase index
-				4,                              // Uppercase position (will try this, may need to find another)
-				20, 30, 40, 50, 60, 70, 80, 90, // Values for remaining positions
-			},
+			values: []byte{5, 7, 4, 20, 30, 40, 50, 60, 70, 80, 90},
 		}
 
 		password, err := generateSecurePasswordWithRand(8, mockRand)
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
-		}
-
-		if len(password) != 8 {
-			t.Errorf("expected password length 8, got %d", len(password))
-		}
-
-		assert.Equal(t, "fuE_OHY8", password)
+		require.NoError(t, err)
+		assert.Equal(t, "fuEOYH8g", password)
 	})
 
-	// Test error cases
-	t.Run("error cases", func(t *testing.T) {
-		// Test too short password
-		_, err := GenerateSecurePassword(2, false)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "password length must be at least 3")
-
-		// Test too short password with simple mode
-		_, err = GenerateSecurePassword(2, true)
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "password length must be at least 3")
+	t.Run("too short", func(t *testing.T) {
+		_, err := GenerateSecurePassword(2)
+		assert.ErrorContains(t, err, "password length must be at least 3")
 	})
 }
 

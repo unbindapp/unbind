@@ -204,7 +204,8 @@ Variables: []schema.TemplateVariable{
 }
 ```
 
-Generator types: `Email`, `Password` (32 chars), `PasswordBcrypt` (emits `<NAME>` as the hash
+Generator types: `Email`, `Password` (32 alphanumeric chars, safe to embed in URLs, DSNs and
+shell commands), `PasswordBcrypt` (emits `<NAME>` as the hash
 plus `<NAME-minus-_HASH>_PLAINTEXT`), `Input` (echoes an input value, supports `AddPrefix`),
 `JWT` (emits three vars via `JWTParams`), `StringReplace` (deferred templating — see below).
 

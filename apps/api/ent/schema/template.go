@@ -260,7 +260,7 @@ func (self *ValueGenerator) Generate(inputs map[string]string) (*GenerateRespons
 			GeneratedValue: self.AddPrefix + fmt.Sprintf("admin@%s", domain),
 		}, nil
 	case GeneratorTypePassword:
-		pwd, err := utils.GenerateSecurePassword(32, false)
+		pwd, err := utils.GenerateSecurePassword(32)
 		if err != nil {
 			return nil, err
 		}
@@ -278,7 +278,7 @@ func (self *ValueGenerator) Generate(inputs map[string]string) (*GenerateRespons
 			GeneratedValue: self.AddPrefix + pwd,
 		}, nil
 	case GeneratorTypePasswordBcrypt:
-		pwd, err := utils.GenerateSecurePassword(32, false)
+		pwd, err := utils.GenerateSecurePassword(32)
 		if err != nil {
 			return nil, err
 		}

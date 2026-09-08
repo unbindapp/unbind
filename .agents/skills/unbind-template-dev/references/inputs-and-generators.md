@@ -55,7 +55,7 @@ hidden `InputTypeGeneratedPassword` input and references it everywhere as
 | Type | Const | Produces |
 |------|-------|----------|
 | Email | `GeneratorTypeEmail` | `admin@<BaseDomain>`. `BaseDomain` is auto-set to the install's external UI URL. |
-| Password | `GeneratorTypePassword` | Random 32-char string. Optional `HashType` (`sha256`/`sha512`). |
+| Password | `GeneratorTypePassword` | Random 32-char alphanumeric string, safe to embed in URLs, DSNs and shell commands as-is. Optional `HashType` (`sha256`/`sha512`) when the consumer needs a hex key or a longer secret. |
 | Bcrypt | `GeneratorTypePasswordBcrypt` | Bcrypt hash in `<NAME>`; **also injects `<NAME w/o _HASH>_PLAINTEXT`** with the raw value. Name your var `FOO_HASH` to get `FOO_PLAINTEXT` free. |
 | Input | `GeneratorTypeInput` | Echoes input `InputID`. Supports `AddPrefix` (e.g. `"https://"`). |
 | JWT | `GeneratorTypeJWT` | Needs `JWTParams`. Emits three vars (secret + anon token + service token), each valid 10y. |
