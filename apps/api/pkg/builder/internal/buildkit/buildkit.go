@@ -231,11 +231,11 @@ func BuildWithBuildkitClient(cfg *config.Config, appDir string, opts BuildWithBu
 
 		log.Infof("Building image for %s with BuildKit %s", platforms.Format(buildPlatform), info.BuildkitVersion.Version)
 
-		llbState, image, err := rpBuildkit.ConvertPlanToLLB(opts.RailpackBuildPlan, rpBuildkit.ConvertPlanOptions{
+		llbState, image, err := railpackPlanToLLB(opts.RailpackBuildPlan, rpBuildkit.ConvertPlanOptions{
 			BuildPlatform: buildPlatform,
 			SecretsHash:   opts.SecretsHash,
 			CacheKey:      opts.CacheKey,
-		})
+		}, cfg.DisableBuildCache)
 		if err != nil {
 			return fmt.Errorf("error converting plan to LLB: %w", err)
 		}
@@ -310,6 +310,17 @@ func BuildWithBuildkitClient(cfg *config.Config, appDir string, opts BuildWithBu
 
 	log.Infof("image name: %s", imageName)
 	return nil
+}
+
+// IgnoreCache on the ops only re-runs them, the persistent cache mounts (pnpm store etc.) keep their
+// contents. Railpack only reads this env var to leave them out.
+func railpackPlanToLLB(buildPlan *plan.BuildPlan, opts rpBuildkit.ConvertPlanOptions, disableCache bool) (*llb.State, *rpBuildkit.Image, error) {
+	if disableCache {
+		if err := os.Setenv("RAILPACK_DISABLE_CACHES", "*"); err != nil {
+			return nil, nil, fmt.Errorf("error disabling railpack caches: %w", err)
+		}
+	}
+	return rpBuildkit.ConvertPlanToLLB(buildPlan, opts)
 }
 
 func getImageName(appDir string) string {
