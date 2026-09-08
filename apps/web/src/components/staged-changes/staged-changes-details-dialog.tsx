@@ -148,53 +148,38 @@ function DetailsBody({
   const failures = lastResult?.failures ?? [];
   const isDrawer = variant === "drawer";
 
-  const title = (
-    <Title className="min-w-0 pr-0 pb-0.5 text-xl leading-tight font-semibold">
-      Deploy {count} {count === 1 ? "change" : "changes"}
-    </Title>
-  );
-  const toggleValuesButton = (
-    <Button
-      type="button"
-      variant="ghost"
-      className={cn(
-        "text-muted-foreground -my-2 min-w-0 shrink px-3.5",
-        isDrawer ? "-ml-3.5" : "-mr-3 ml-auto",
-      )}
-      onClick={onToggleValues}
-    >
-      {showValues ? (
-        <EyeOffIcon className="-ml-px size-4 shrink-0" />
-      ) : (
-        <EyeIcon className="-ml-px size-4 shrink-0" />
-      )}
-      <span className="min-w-0 shrink truncate">
-        {showValues ? "Hide Secrets" : "Show Secrets"}
-      </span>
-    </Button>
-  );
-
   return (
     <div className={cn("flex min-h-0 w-full flex-1 flex-col", className)}>
       {isDrawer ? (
-        <div className="flex w-full flex-col items-start gap-3 border-b px-5 py-3.5">
+        <div className="flex w-full flex-col items-center gap-3 border-b px-5 py-3.5">
           <div className="flex w-full items-center gap-2">
-            {title}
-            <Close
-              className="text-muted-more-foreground -my-2 -mr-3 ml-auto shrink-0 rounded-lg"
-              render={
-                <Button type="button" size="icon" variant="ghost">
-                  <XIcon className="size-5" />
-                </Button>
-              }
-            />
+            <DetailsTitle Title={Title} />
+            <div className="-my-2 -mr-3 ml-auto flex shrink-0 items-center gap-1">
+              <ToggleValuesButton
+                className="-ml-2.5 px-3 py-2 text-sm"
+                classNameIcon="-ml-px size-4"
+                onToggleValues={onToggleValues}
+                showValues={showValues}
+              />
+              <Close
+                className="text-muted-more-foreground rounded-lg"
+                render={
+                  <Button type="button" size="icon" variant="ghost">
+                    <XIcon className="size-5" />
+                  </Button>
+                }
+              />
+            </div>
           </div>
-          {toggleValuesButton}
         </div>
       ) : (
         <div className="flex w-full items-center gap-2 border-b px-5 py-3.5">
-          {title}
-          {toggleValuesButton}
+          <DetailsTitle Title={Title} />
+          <ToggleValuesButton
+            onToggleValues={onToggleValues}
+            className="-mr-3 ml-auto"
+            showValues={showValues}
+          />
         </div>
       )}
       <ScrollArea className="min-h-0 w-full flex-1 mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
@@ -234,11 +219,43 @@ function DetailsBody({
           disabled={count === 0}
           onClick={() => deploy.mutate(undefined, { onSuccess: onDeployed })}
         >
-          Deploy Changes
+          Deploy {count} {count === 1 ? "Change" : "Changes"}
         </Button>
       </div>
     </div>
   );
+}
+
+function ToggleValuesButton({
+  showValues,
+  onToggleValues,
+  className,
+  classNameIcon,
+}: {
+  showValues: boolean;
+  onToggleValues: () => void;
+  className?: string;
+  classNameIcon?: string;
+}) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      className={cn("text-muted-foreground -my-2 min-w-0 shrink px-3.5", className)}
+      onClick={onToggleValues}
+    >
+      {showValues ? (
+        <EyeOffIcon className={cn("-ml-px size-5 shrink-0", classNameIcon)} />
+      ) : (
+        <EyeIcon className={cn("-ml-px size-5 shrink-0", classNameIcon)} />
+      )}
+      <span className="min-w-0 shrink truncate">{showValues ? "Hide" : "Show"}</span>
+    </Button>
+  );
+}
+
+function DetailsTitle({ Title }: { Title: FC<{ className?: string; children: ReactNode }> }) {
+  return <Title className="min-w-0 pr-0 pb-0.5 text-xl leading-tight font-semibold">Deploy</Title>;
 }
 
 const rowGrid =
@@ -427,7 +444,7 @@ function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFet
           {plan.map((affected) => (
             <li
               key={affected.service_id}
-              className="flex min-w-0 items-center rounded-md border text-sm font-medium"
+              className="flex min-w-0 items-center overflow-hidden rounded-md border text-sm font-medium"
             >
               <div className="flex min-w-0 items-center gap-1.5 border-r px-2.5 py-1">
                 <BrandIcon
@@ -437,7 +454,7 @@ function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFet
                 />
                 <span className="min-w-0 truncate">{affected.name}</span>
               </div>
-              <span className="text-muted-foreground shrink-0 px-2.5 py-1">
+              <span className="text-muted-foreground bg-card shrink-0 px-2.5 py-1">
                 {actionLabels[affected.action]}
               </span>
             </li>
