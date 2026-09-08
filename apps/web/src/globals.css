@@ -189,6 +189,7 @@
 
   --opacity-barrier: 70%;
   --opacity-shadow: 6%;
+  --opacity-shadow-stronger: 12%;
 }
 
 .dark {
@@ -762,7 +763,7 @@
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
   input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 100px color-mix(in oklab, var(--success) 10%, var(--background)) inset !important;
+    -webkit-box-shadow: 0 0 0 100px color-mix(in oklab, var(--success) 12%, var(--background)) inset !important;
     -webkit-text-fill-color: var(--success) !important;
     transition: background-color 5000s ease-in-out 0s;
     border-color: color-mix(in oklab, var(--success) 24%, var(--background));
@@ -819,7 +820,8 @@
   color: var(--popover-foreground);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 10px 15px -3px color-mix(in oklab, var(--shadow-color) 10%, transparent);
+  box-shadow: 0 10px 15px -3px
+    color-mix(in oklab, var(--shadow-color) var(--opacity-shadow), transparent);
   overflow: hidden;
 
   /* On phones the caret-anchored popup reads badly, so it lines up with the
