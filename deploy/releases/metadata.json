@@ -273,5 +273,10 @@
     "version": "v0.1.54",
     "description": "Draggable staged changes bar, variable card staged state improvements, and log list padding fixes",
     "breaking": false
+  },
+  "v0.1.55": {
+    "version": "v0.1.55",
+    "description": "Staged changes details dialog and deploy flow improvements, and service card overflow fix",
+    "breaking": false
   }
 }
