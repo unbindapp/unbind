@@ -28,7 +28,7 @@ export default function DeleteSection({ service, className }: Props) {
       entityId={sectionHighlightId}
       id="danger"
       className="border-destructive/20"
-      classNameHeader="text-destructive bg-destructive/8 border-destructive/15"
+      classNameHeader="text-destructive bg-destructive/8 border-destructive/12"
       title="Delete Service"
       Icon={Trash2Icon}
     >

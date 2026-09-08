@@ -45,7 +45,7 @@ export default function DeleteSection({ volume, className }: TProps) {
       <SettingsSection
         entityId={sectionHighlightId}
         className="border-destructive/20"
-        classNameHeader="text-destructive bg-destructive/8 border-destructive/15"
+        classNameHeader="text-destructive bg-destructive/8 border-destructive/12"
         title="Delete Volume"
         id="danger"
         Icon={Trash2Icon}

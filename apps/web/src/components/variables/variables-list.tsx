@@ -119,7 +119,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
       )}
       {showSpecialDbVariablesSection && variables.length > 0 && (
         <div className="w-full px-0.5 py-1.5">
-          <div className="bg-process/32 h-px w-full rounded-full" />
+          <div className="bg-process/24 h-px w-full rounded-full" />
         </div>
       )}
       {variables.map((variable) => {

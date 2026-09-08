@@ -110,7 +110,7 @@ export default function LogLine({
         )}
       >
         <div className="flex shrink-0 self-stretch py-1 pr-1.5">
-          <div className="bg-muted-more-foreground/50 group-data-[level=warning]/line:bg-warning group-data-[level=error]/line:bg-destructive group-data-[level=debug]/line:bg-muted-more-foreground/30 w-0.75 self-stretch rounded-full" />
+          <div className="bg-muted-more-foreground/50 group-data-[level=warning]/line:bg-warning group-data-[level=error]/line:bg-destructive group-data-[level=debug]/line:bg-muted-more-foreground/24 w-0.75 self-stretch rounded-full" />
         </div>
         <div className="flex min-w-0 flex-1 mask-[linear-gradient(to_left,transparent,black_1rem)]">
           <ConditionalScrollArea>

@@ -32,9 +32,9 @@ const buttonVariants = cva(
         "outline-foreground":
           "border border-foreground bg-background has-hover:hover:bg-foreground/8 active:bg-foreground/8 has-hover:hover:text-foreground active:text-foreground",
         "outline-process":
-          "border text-process border-process/25 bg-background has-hover:hover:bg-process/8 active:bg-process/8 has-hover:hover:text-process active:text-process",
+          "border text-process border-process/20 bg-background has-hover:hover:bg-process/8 active:bg-process/8 has-hover:hover:text-process active:text-process",
         "outline-change":
-          "border text-change border-change/25 bg-background has-hover:hover:bg-change/8 active:bg-change/8 has-hover:hover:text-change active:text-change",
+          "border text-change border-change/20 bg-background has-hover:hover:bg-change/8 active:bg-change/8 has-hover:hover:text-change active:text-change",
         "warning-outline":
           "border border-warning/20 bg-background has-hover:hover:bg-warning/8 active:bg-warning/8 has-hover:hover:border-warning/0 active:border-warning/0 text-warning has-hover:hover:text-warning active:text-warning",
         secondary:
