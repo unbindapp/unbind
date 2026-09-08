@@ -136,15 +136,18 @@ function useBarSlots(isMounted: boolean) {
   const slot = resolveBarSlot(preferredSlot ?? defaultSlot, slots, layout);
   const position = barSlotPosition(slot, layout);
 
+  // The viewport is tracked on every resize, not only the ones that move the bar. Otherwise a
+  // resize that leaves the slot in place goes unrecorded and the next move wrongly jumps
   useLayoutEffect(() => {
-    if (!isMeasured || isDraggingRef.current) return;
+    if (!isMeasured) return;
+    const viewport = `${window.innerWidth}x${window.innerHeight}`;
+    const viewportChanged = lastViewportRef.current !== viewport;
+    lastViewportRef.current = viewport;
+    if (isDraggingRef.current) return;
     const target = `${position.x},${position.y}`;
     if (settledTargetRef.current === target) return;
     settledTargetRef.current = target;
 
-    const viewport = `${window.innerWidth}x${window.innerHeight}`;
-    const viewportChanged = lastViewportRef.current !== viewport;
-    lastViewportRef.current = viewport;
     if (viewportChanged || reducedMotion) {
       x.jump(position.x);
       y.jump(position.y);
@@ -152,7 +155,7 @@ function useBarSlots(isMounted: boolean) {
     }
     animate(x, position.x, landingSpring);
     animate(y, position.y, landingSpring);
-  }, [isMeasured, position.x, position.y, reducedMotion, x, y]);
+  }, [isMeasured, track.width, track.height, position.x, position.y, reducedMotion, x, y]);
 
   useEffect(() => {
     if (!isHeld) return;
