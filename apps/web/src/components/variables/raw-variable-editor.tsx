@@ -394,17 +394,10 @@ function VariableEditor({
         // Pinned to the field's box so the editor fills the flex space and scrolls
         className={cn(
           "relative min-h-0 flex-1 overflow-hidden",
-          isDrawer
-            ? "bg-background rounded-none border-0 focus-within:ring-0"
-            : "bg-card rounded-lg",
+          isDrawer ? "bg-card rounded-none border-0 focus-within:ring-0" : "bg-card rounded-lg",
         )}
         // The drawer's editor runs edge to edge, so its padding is the content's own
-        classNameEditor={cn(
-          "absolute inset-0 w-auto font-mono font-normal",
-          isDrawer
-            ? "[--token-field-content-padding:1rem_1.25rem]"
-            : "[--token-field-content-padding:0.625rem_0.875rem]",
-        )}
+        classNameEditor="absolute inset-0 w-auto font-mono font-normal [--token-field-content-padding:0.625rem_0.875rem]"
       />
       <div
         className={cn(
