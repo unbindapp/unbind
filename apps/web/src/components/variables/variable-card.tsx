@@ -116,7 +116,7 @@ export default function VariableCard({
       data-dynamic={isDynamic || undefined}
       data-unresolved={hasUnresolved || undefined}
       data-staged={variable?.staged}
-      className="group/card data-staged:bg-change/6 data-unresolved:bg-warning/6 data-unresolved:border-warning/18 data-staged:border-change/18 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
+      className="group/card data-staged:bg-change/6 data-unresolved:bg-warning/6 data-unresolved:border-warning/16 data-staged:border-change/16 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
     >
       {variable && (
         <NewEntityIndicator
