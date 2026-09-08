@@ -275,7 +275,7 @@ function ThreeDotButton({
                   nativeButton={false}
                   handle={abortHandle}
                   render={
-                    <DropdownMenuItem className="active:bg-warning/10 data-highlighted:bg-warning/10 data-highlighted:text-warning">
+                    <DropdownMenuItem className="active:bg-warning/12 data-highlighted:bg-warning/12 data-highlighted:text-warning">
                       <OctagonXIcon className="-ml-0.5 size-5" />
                       <p className="min-w-0 shrink leading-tight">Abort</p>
                     </DropdownMenuItem>
@@ -287,7 +287,7 @@ function ThreeDotButton({
                   nativeButton={false}
                   handle={removeHandle}
                   render={
-                    <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
+                    <DropdownMenuItem className="text-destructive active:bg-destructive/12 data-highlighted:bg-destructive/12 data-highlighted:text-destructive">
                       <Trash2Icon className="-ml-0.5 size-5" />
                       <p className="min-w-0 shrink leading-tight">Remove</p>
                     </DropdownMenuItem>

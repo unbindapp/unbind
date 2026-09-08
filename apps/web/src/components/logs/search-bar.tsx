@@ -375,7 +375,7 @@ function FilterButton({ className }: { className?: string }) {
             closeOnClick={false}
             onClick={() => resetFilters()}
             className={cn(
-              "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/10 data-not-default:active:bg-warning/10",
+              "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/12 data-not-default:active:bg-warning/12",
               dropdownItemClassName,
             )}
           >
@@ -668,7 +668,7 @@ function SettingsButton({
                 resetPreferences();
               }}
               className={cn(
-                "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/10 data-not-default:active:bg-warning/10",
+                "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/12 data-not-default:active:bg-warning/12",
                 dropdownItemClassName,
               )}
             >

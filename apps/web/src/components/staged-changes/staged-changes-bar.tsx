@@ -358,7 +358,7 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
               nativeButton={false}
               handle={discardHandle}
               render={
-                <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
+                <DropdownMenuItem className="text-destructive active:bg-destructive/12 data-highlighted:bg-destructive/12 data-highlighted:text-destructive">
                   <Undo2Icon className="-ml-0.5 size-5" />
                   <p className="min-w-0 shrink leading-tight">Discard All</p>
                 </DropdownMenuItem>

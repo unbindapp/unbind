@@ -440,7 +440,7 @@ function ThreeDotButton({
               <DropdownMenuItem
                 disabled={disableDelete}
                 onClick={() => stage([{ name: variable.name, value: null }])}
-                className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive"
+                className="text-destructive active:bg-destructive/12 data-highlighted:bg-destructive/12 data-highlighted:text-destructive"
               >
                 {!disableDelete ? (
                   <Trash2Icon className="-ml-0.5 size-5" />

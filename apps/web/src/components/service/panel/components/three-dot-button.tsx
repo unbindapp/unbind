@@ -69,7 +69,7 @@ export default function ThreeDotButton({ service, className }: TProps) {
                 nativeButton={false}
                 handle={deleteHandle}
                 render={
-                  <DropdownMenuItem className="text-destructive active:bg-destructive/10 data-highlighted:bg-destructive/10 data-highlighted:text-destructive">
+                  <DropdownMenuItem className="text-destructive active:bg-destructive/12 data-highlighted:bg-destructive/12 data-highlighted:text-destructive">
                     <Trash2Icon className="-ml-0.5 size-5" />
                     <p className="min-w-0 shrink leading-tight">Delete</p>
                   </DropdownMenuItem>

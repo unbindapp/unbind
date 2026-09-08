@@ -106,7 +106,7 @@ const DomainPortBlock = withForm({
                 return (
                   <div
                     data-detected={detectedPort !== undefined || undefined}
-                    className="bg-warning/10 text-warning border-warning/10 data-detected:text-success data-detected:bg-success/10 data-detected:border-success/10 -my-1 ml-auto flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-2 py-0.5"
+                    className="bg-warning/12 text-warning border-warning/12 data-detected:text-success data-detected:bg-success/12 data-detected:border-success/12 -my-1 ml-auto flex min-w-0 shrink items-center justify-start gap-1.5 rounded-full border px-2 py-0.5"
                   >
                     {detectedPort !== undefined ? (
                       <CheckCircleIcon className="-ml-0.75 size-3.5 shrink-0" />

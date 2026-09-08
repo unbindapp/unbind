@@ -435,7 +435,7 @@ function ValueCell({
   return (
     <div
       data-action={isNew ? action : undefined}
-      className="bg-foreground/4 data-[action=add]:bg-success/10 data-[action=edit]:bg-process/10 data-[action=remove]:bg-destructive/10 min-h-8 min-w-0 rounded-md px-2.5 py-2.25 font-mono text-sm leading-tight wrap-anywhere whitespace-pre-wrap"
+      className="bg-foreground/4 data-[action=add]:bg-success/12 data-[action=edit]:bg-process/12 data-[action=remove]:bg-destructive/12 min-h-8 min-w-0 rounded-md px-2.5 py-2.25 font-mono text-sm leading-tight wrap-anywhere whitespace-pre-wrap"
     >
       {value || " "}
     </div>

@@ -497,7 +497,7 @@ function VariableEditor({
             isDrawer ? "border-x-0 border-b-0 px-5" : "rounded-b-lg",
           )}
         >
-          <div className="bg-success/10 absolute top-0 left-0 h-full w-full" />
+          <div className="bg-success/8 absolute top-0 left-0 h-full w-full" />
           <CheckCircleIcon className="relative -ml-0.5 size-4.5" strokeWidth={2.5} />
           <p className="relative min-w-0 shrink">Variables staged</p>
         </div>
