@@ -35,8 +35,16 @@ function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
-const dialogOverlayVariants = cva("bg-barrier/barrier fixed inset-0 z-[1000]", {
+// The staged changes bar sits at z-900. A dialog that edits what the bar deploys
+// stays below it so the bar remains usable, like it is above drawers.
+const dialogLayerVariants = {
+  default: "z-[1000]",
+  "below-changes-bar": "z-[899]",
+};
+
+const dialogOverlayVariants = cva("bg-barrier/barrier fixed inset-0", {
   variants: {
+    layer: dialogLayerVariants,
     animate: {
       default:
         "data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 duration-200 data-closed:duration-200 data-open:duration-200",
@@ -44,6 +52,7 @@ const dialogOverlayVariants = cva("bg-barrier/barrier fixed inset-0 z-[1000]", {
     },
   },
   defaultVariants: {
+    layer: "default",
     animate: "default",
   },
 });
@@ -53,28 +62,31 @@ type TDialogOverlayVariants = VariantProps<typeof dialogOverlayVariants>;
 function DialogOverlay({
   className,
   animate,
+  layer,
   ...props
 }: DialogPrimitive.Backdrop.Props & TDialogOverlayVariants) {
   return (
     <DialogPrimitive.Backdrop
       forceRender
       data-slot="dialog-overlay"
-      className={cn(dialogOverlayVariants({ animate, className }))}
+      className={cn(dialogOverlayVariants({ animate, layer, className }))}
       {...props}
     />
   );
 }
 
 const dialogViewportVariants = cva(
-  "fixed inset-0 z-[1000] flex w-full justify-center overflow-auto px-2 pt-[var(--dialog-top-padding)] sm:pt-[var(--dialog-top-padding-sm)]",
+  "fixed inset-0 flex w-full justify-center overflow-auto px-2 pt-[var(--dialog-top-padding)] sm:pt-[var(--dialog-top-padding-sm)]",
   {
     variants: {
+      layer: dialogLayerVariants,
       avoidKeyboard: {
         true: "pb-[calc(var(--dialog-bottom-padding)+var(--keyboard-inset-height))] sm:pb-[calc(var(--dialog-bottom-padding-sm)+var(--keyboard-inset-height))]",
         false: "pb-[var(--dialog-bottom-padding)] sm:pb-[var(--dialog-bottom-padding-sm)]",
       },
     },
     defaultVariants: {
+      layer: "default",
       avoidKeyboard: false,
     },
   },
@@ -112,19 +124,21 @@ function DialogContent({
   children,
   hideXButton,
   avoidKeyboard,
+  layer,
   ...props
 }: DialogPrimitive.Popup.Props &
   TDialogContentVariants & {
     classNameInnerWrapper?: string;
     hideXButton?: boolean;
     avoidKeyboard?: boolean;
+    layer?: keyof typeof dialogLayerVariants;
   }) {
   return (
     <DialogPortal>
-      <DialogOverlay animate={animate} />
+      <DialogOverlay animate={animate} layer={layer} />
       <DialogPrimitive.Viewport
         data-slot="dialog-viewport"
-        className={cn(dialogViewportVariants({ avoidKeyboard }))}
+        className={cn(dialogViewportVariants({ avoidKeyboard, layer }))}
       >
         <DialogPrimitive.Popup
           data-slot="dialog-content"

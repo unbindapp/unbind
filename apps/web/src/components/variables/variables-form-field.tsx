@@ -9,9 +9,11 @@ import { getVariablesFromRawText } from "@/components/variables/helpers";
 import {
   createVariableReferenceLanguage,
   loadingReferencesIconKey,
-  type TVariableReferenceData,
 } from "@/components/variables/variable-reference-language";
-import { createEnvVariablesLanguage } from "@/components/variables/variables-env-language";
+import {
+  createEnvVariablesLanguage,
+  type TEnvVariablesData,
+} from "@/components/variables/variables-env-language";
 import { resolveReferenceInsertion } from "@/components/variables/variable-reference-completion";
 import { referenceLabelCompletionAddition } from "@/components/variables/variable-reference-label";
 import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
@@ -41,19 +43,25 @@ export const referenceCompletionAdditions = [
  * references. The language is rebuilt when the reference list arrives so
  * already-typed values re-colour.
  */
+const noStagedNames: ReadonlySet<string> = new Set();
+
 export function useVariableReferenceLanguage(
   tokens: readonly TVariableToken<TReferenceExtended>[] | undefined,
   variant: "value" | "env" = "value",
+  stagedNames: ReadonlySet<string> = noStagedNames,
 ) {
-  const dataRef = useRef<TVariableReferenceData<TReferenceExtended>>({ tokens: undefined });
-  dataRef.current = { tokens };
+  const dataRef = useRef<TEnvVariablesData<TReferenceExtended>>({
+    tokens: undefined,
+    stagedNames,
+  });
+  dataRef.current = { tokens, stagedNames };
   const language = useMemo(
     () =>
       variant === "env"
         ? createEnvVariablesLanguage(() => dataRef.current)
         : createVariableReferenceLanguage(() => dataRef.current),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [tokens, variant],
+    [tokens, variant, stagedNames],
   );
 
   const icons: TCachedIcon[] = useMemo(() => {

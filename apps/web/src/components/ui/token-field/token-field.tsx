@@ -21,6 +21,7 @@ export type TTokenFieldInsertion = { from: number; to: number; insert: string };
 
 export type TTokenFieldHandle = {
   focus: () => void;
+  blur: () => void;
   /**
    * Writes what the resolver picks for the cursor and opens the dropdown, for
    * trigger buttons. The write is what leaves the field in a state the
@@ -162,6 +163,7 @@ export default function TokenField({
     ref,
     () => ({
       focus: () => viewRef.current?.focus(),
+      blur: () => viewRef.current?.contentDOM.blur(),
       insertAndComplete: (resolve) => {
         const view = viewRef.current;
         if (!view) return;

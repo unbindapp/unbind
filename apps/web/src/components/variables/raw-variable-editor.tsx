@@ -22,7 +22,7 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { toast } from "@/components/ui/toast";
-import TokenField from "@/components/ui/token-field/token-field";
+import TokenField, { type TTokenFieldHandle } from "@/components/ui/token-field/token-field";
 import { cn } from "@/components/ui/utils";
 import {
   getVariablesFromRawText,
@@ -36,15 +36,24 @@ import {
   referenceCompletionAdditions,
   useVariableReferenceLanguage,
 } from "@/components/variables/variables-form-field";
-import { useVariables } from "@/components/variables/variables-provider";
+import { useVariables, type TVariableWithStaged } from "@/components/variables/variables-provider";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
 import {
   TVariableForCreate,
   TVariableShallow,
   VariableForCreateSchema,
 } from "@/lib/queries/variables";
-import { CheckCircleIcon, XIcon } from "lucide-react";
-import { FC, ReactElement, ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { CheckCircleIcon, EyeIcon, EyeOffIcon, XIcon } from "lucide-react";
+import {
+  FC,
+  ReactElement,
+  ReactNode,
+  RefObject,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 type TProps = {
   children: ReactElement;
@@ -81,6 +90,13 @@ export default function RawVariableEditor({ children }: TProps) {
   // Values stay masked until the editor is focused. Lives here so a switch
   // between the drawer and the dialog keeps it.
   const [isHidden, setIsHidden] = useState(true);
+  const editorRef = useRef<TTokenFieldHandle>(null);
+
+  // Focus reveals, so hiding also takes the caret out of the editor
+  const toggleHidden = () => {
+    if (!isHidden) editorRef.current?.blur();
+    setIsHidden(!isHidden);
+  };
 
   // The drawer leaves the top of the screen to the staged changes bar, and
   // hands the bar back to its device default (the bottom on phones) on close
@@ -195,6 +211,8 @@ export default function RawVariableEditor({ children }: TProps) {
     onEditorValueChange: setEditorValue,
     isHidden,
     onReveal: () => setIsHidden(false),
+    onToggleHidden: toggleHidden,
+    editorRef,
     error: variablesError || parseError,
     isPending: variablesIsPending,
     onSave: save,
@@ -227,6 +245,7 @@ export default function RawVariableEditor({ children }: TProps) {
       <DialogContent
         hideXButton
         avoidKeyboard
+        layer="below-changes-bar"
         className="h-[calc(var(--safe-screen-height-keyboard)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))] max-h-200 min-h-72"
         classNameInnerWrapper="w-216 max-w-full h-full"
       >
@@ -238,13 +257,15 @@ export default function RawVariableEditor({ children }: TProps) {
 
 type TEditorBodyProps = {
   variant: TEditorVariant;
-  variables: TVariableShallow[] | undefined;
+  variables: TVariableWithStaged[] | undefined;
   referencesDisabled: boolean;
   recentlySucceeded: boolean;
   editorValue: string;
   onEditorValueChange: (s: string) => void;
   isHidden: boolean;
   onReveal: () => void;
+  onToggleHidden: () => void;
+  editorRef: RefObject<TTokenFieldHandle | null>;
   error: Error | null;
   isPending: boolean;
   onSave: () => void;
@@ -262,6 +283,8 @@ function EditorBody({
   onEditorValueChange,
   isHidden,
   onReveal,
+  onToggleHidden,
+  editorRef,
   error,
   isPending,
   onSave,
@@ -279,6 +302,7 @@ function EditorBody({
             Raw Editor
           </Title>
           <div className="-my-2 -mr-3 ml-auto flex shrink-0 items-center gap-1">
+            <ToggleValuesButton isHidden={isHidden} onClick={onToggleHidden} />
             <CopyButton valueToCopy={editorValue} className="rounded-lg" />
             <Close
               className="text-muted-more-foreground rounded-lg"
@@ -297,10 +321,14 @@ function EditorBody({
             <DialogDescription className="min-w-0 shrink">
               Add, edit, or remove variables.
             </DialogDescription>
-            <CopyButton
-              valueToCopy={editorValue}
-              className="text-muted-foreground -my-2.5 -mr-1.5 rounded-lg"
-            />
+            <div className="-my-2.5 -mr-1.5 flex shrink-0 items-center gap-1">
+              <ToggleValuesButton
+                isHidden={isHidden}
+                onClick={onToggleHidden}
+                className="text-muted-foreground"
+              />
+              <CopyButton valueToCopy={editorValue} className="text-muted-foreground rounded-lg" />
+            </div>
           </div>
         </DialogHeader>
       )}
@@ -314,6 +342,7 @@ function EditorBody({
           onEditorValueChange={onEditorValueChange}
           isHidden={isHidden}
           onReveal={onReveal}
+          editorRef={editorRef}
         />
       ) : (
         <EditorSkeleton variant={variant} />
@@ -349,6 +378,30 @@ function EditorBody({
   );
 }
 
+function ToggleValuesButton({
+  isHidden,
+  onClick,
+  className,
+}: {
+  isHidden: boolean;
+  onClick: () => void;
+  className?: string;
+}) {
+  return (
+    <Button
+      type="button"
+      aria-label={isHidden ? "Show values" : "Hide values"}
+      onClick={onClick}
+      variant="ghost"
+      forceMinSize="medium"
+      size="icon"
+      className={cn("text-muted-more-foreground rounded-lg sm:rounded-md", className)}
+    >
+      {isHidden ? <EyeIcon className="size-4.5" /> : <EyeOffIcon className="size-4.5" />}
+    </Button>
+  );
+}
+
 function EditorSkeleton({ variant }: { variant: TEditorVariant }) {
   return (
     <div
@@ -374,13 +427,14 @@ function EditorSkeleton({ variant }: { variant: TEditorVariant }) {
 
 type TVariableEditorProps = {
   variant: TEditorVariant;
-  variables: TVariableShallow[];
+  variables: TVariableWithStaged[];
   referencesDisabled: boolean;
   recentlySucceeded: boolean;
   onEditorValueChange: (s: string) => void;
   editorValue: string;
   isHidden: boolean;
   onReveal: () => void;
+  editorRef: RefObject<TTokenFieldHandle | null>;
 };
 
 function VariableEditor({
@@ -392,11 +446,20 @@ function VariableEditor({
   onEditorValueChange,
   isHidden,
   onReveal,
+  editorRef,
 }: TVariableEditorProps) {
   const { tokens } = useVariableReferences();
   // Scopes without references keep the NAME= highlighting; an empty token
   // list means nothing gets chipped and the dropdown has nothing to offer.
-  const { language, icons } = useVariableReferenceLanguage(referencesDisabled ? [] : tokens, "env");
+  const stagedNames = useMemo(
+    () => new Set(variables.filter((v) => v.staged).map((v) => v.name)),
+    [variables],
+  );
+  const { language, icons } = useVariableReferenceLanguage(
+    referencesDisabled ? [] : tokens,
+    "env",
+    stagedNames,
+  );
   const hiddenValue = useMemo(() => getEditorValue({ variables, hidden: true }), [variables]);
   const isDrawer = variant === "drawer";
 
@@ -404,6 +467,7 @@ function VariableEditor({
     <div className="relative flex min-h-0 w-full flex-1 flex-col">
       {!referencesDisabled && <IconCache icons={icons} />}
       <TokenField
+        ref={editorRef}
         value={isHidden ? hiddenValue : editorValue}
         onChange={onEditorValueChange}
         onFocus={onReveal}

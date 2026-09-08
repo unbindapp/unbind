@@ -682,6 +682,10 @@
     color: var(--success);
   }
 
+  .tok-env-name-staged {
+    color: var(--change);
+  }
+
   .tok-env-punct {
     color: var(--muted-more-foreground);
   }
