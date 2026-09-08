@@ -33,7 +33,6 @@ import {
   EyeIcon,
   EyeOffIcon,
   KeyIcon,
-  LoaderIcon,
   PenIcon,
   PlusIcon,
   SettingsIcon,
@@ -156,7 +155,7 @@ function DetailsBody({
             <DetailsTitle Title={Title} />
             <div className="-my-2 -mr-3 ml-auto flex shrink-0 items-center gap-1">
               <ToggleValuesButton
-                className="-ml-2.5 px-3 py-2 text-sm"
+                className="-ml-2.5 px-3.5 py-2 text-sm"
                 classNameIcon="-ml-px size-4"
                 onToggleValues={onToggleValues}
                 showValues={showValues}
@@ -429,10 +428,12 @@ const actionLabels: Record<AffectedService["action"], string> = {
 
 function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFetching: boolean }) {
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div
+      data-fetching={isFetching || undefined}
+      className="group/section flex w-full flex-col gap-2"
+    >
       <div className="flex w-full items-center gap-2">
         <p className="px-1 leading-tight font-semibold">Affected Services</p>
-        {isFetching && <LoaderIcon className="text-muted-foreground size-3.5 animate-spin" />}
       </div>
       {plan.length === 0 && !isFetching && (
         <p className="text-muted-foreground text-sm leading-tight">
@@ -442,26 +443,45 @@ function AffectedServices({ plan, isFetching }: { plan: AffectedService[]; isFet
       {plan.length > 0 && (
         <ul className="flex w-full flex-wrap gap-1.5">
           {plan.map((affected) => (
-            <li
-              key={affected.service_id}
-              className="flex min-w-0 items-center overflow-hidden rounded-md border text-sm font-medium"
-            >
-              <div className="flex min-w-0 items-center gap-1.5 border-r px-2.5 py-1">
-                <BrandIcon
-                  brand={affected.icon}
-                  color="brand"
-                  className="-ml-0.5 size-4 shrink-0"
-                />
-                <span className="min-w-0 truncate">{affected.name}</span>
-              </div>
-              <span className="text-muted-foreground bg-card shrink-0 px-2.5 py-1">
-                {actionLabels[affected.action]}
-              </span>
-            </li>
+            <AffectedServiceChip key={affected.service_id} affected={affected} />
           ))}
         </ul>
       )}
+      {isFetching && (
+        <ul className="flex w-full flex-wrap gap-1.5">
+          <AffectedServiceChip isPlaceholder={true} />
+        </ul>
+      )}
     </div>
+  );
+}
+
+type TAffectedServiceChipProps =
+  { affected: AffectedService; isPlaceholder?: never } | { isPlaceholder: true; affected?: never };
+
+function AffectedServiceChip({ affected, isPlaceholder }: TAffectedServiceChipProps) {
+  return (
+    <li
+      data-placeholder={isPlaceholder || undefined}
+      key={isPlaceholder ? "placeholder" : affected.service_id}
+      className="group/chip flex min-w-0 items-center overflow-hidden rounded-md border text-sm font-medium"
+    >
+      <div className="flex min-w-0 items-center gap-1.5 border-r px-2.5 py-1.5">
+        <BrandIcon
+          brand={isPlaceholder ? "default" : affected.icon}
+          color="brand"
+          className="group-data-placeholder/chip:animate-skeleton group-data-placeholder/chip:bg-muted-foreground -ml-0.5 size-4 shrink-0 group-data-placeholder/chip:rounded-full group-data-placeholder/chip:text-transparent"
+        />
+        <span className="group-data-placeholder/chip:animate-skeleton group-data-placeholder/chip:bg-muted-foreground min-w-0 truncate leading-tight group-data-placeholder/chip:rounded group-data-placeholder/chip:text-transparent">
+          {isPlaceholder ? "Service" : affected.name}
+        </span>
+      </div>
+      <div className="bg-card flex min-w-0 shrink px-2.5 py-1.5">
+        <span className="group-data-placeholder/chip:animate-skeleton group-data-placeholder/chip:bg-muted-more-foreground text-muted-foreground min-w-0 shrink leading-tight group-data-placeholder/chip:rounded group-data-placeholder/chip:text-transparent">
+          {isPlaceholder ? "Redeploy" : actionLabels[affected.action]}
+        </span>
+      </div>
+    </li>
   );
 }
 
