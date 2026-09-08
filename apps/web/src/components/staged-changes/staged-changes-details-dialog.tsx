@@ -208,7 +208,7 @@ function DetailsBody({
       <div className="flex w-full items-center justify-end gap-2 border-t p-3.5">
         {!isDrawer && (
           <Close
-            className="text-muted-foreground shrink-0"
+            className="text-muted-foreground shrink-0 px-4.5"
             render={
               <Button type="button" variant="ghost">
                 Close
@@ -218,7 +218,8 @@ function DetailsBody({
         )}
         <Button
           variant="change"
-          className={cn(isDrawer && "w-full")}
+          data-drawer={isDrawer || undefined}
+          className="px-4.5 data-drawer:w-full"
           isPending={deploy.isPending}
           disabled={count === 0}
           onClick={() => deploy.mutate(undefined, { onSuccess: onDeployed })}
