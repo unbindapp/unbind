@@ -1,3 +1,4 @@
+import type { TBarEdge } from "@/components/staged-changes/bar-position";
 import {
   StagedChangesStateSchema,
   serviceChangeId,
@@ -17,7 +18,13 @@ export type TStageServiceInput = Omit<TStagedServiceChange, "id" | "createdAt"> 
   isDefault: boolean;
 };
 
+// Not persisted: set by a drawer while it's open, so the bar keeps out of its way
+export type TStagedChangesBarState = {
+  barPinnedEdge: TBarEdge | null;
+};
+
 export type TStagedChangesActions = {
+  setBarPinnedEdge: (edge: TBarEdge | null) => void;
   stageVariables: (changes: TStageVariableInput[]) => void;
   stageService: (change: TStageServiceInput) => void;
   discard: (ids: string[]) => void;
@@ -26,7 +33,9 @@ export type TStagedChangesActions = {
   keepOnly: (ids: Set<string>) => void;
 };
 
-export type TStagedChangesStore = TStagedChangesState & TStagedChangesActions;
+export type TStagedChangesStore = TStagedChangesState &
+  TStagedChangesBarState &
+  TStagedChangesActions;
 
 const defaultInitState: TStagedChangesState = {
   variables: {},
@@ -40,6 +49,8 @@ export const createStagedChangesStore = (initState: TStagedChangesState = defaul
     persist(
       (set) => ({
         ...initState,
+        barPinnedEdge: null,
+        setBarPinnedEdge: (barPinnedEdge) => set({ barPinnedEdge }),
         stageVariables: (changes) =>
           set((state) => {
             const variables = { ...state.variables };

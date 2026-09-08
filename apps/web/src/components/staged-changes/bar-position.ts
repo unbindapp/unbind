@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const BarSlotSchema = z.enum(["top-left", "top-right", "bottom-left", "bottom-right"]);
 export type TBarSlot = z.infer<typeof BarSlotSchema>;
+export type TBarEdge = "top" | "bottom";
 
 export type TPoint = { x: number; y: number };
 export type TSize = { width: number; height: number };
@@ -45,13 +46,23 @@ export function clampToBounds(point: TPoint, layout: TBarLayout): TPoint {
   };
 }
 
-export function availableBarSlots({ isExtraSmall }: { isExtraSmall: boolean }): TBarSlot[] {
-  if (isExtraSmall) return ["top-left", "bottom-left"];
-  return ["top-left", "top-right", "bottom-left", "bottom-right"];
+export function barSlotEdge(slot: TBarSlot): TBarEdge {
+  return slot === "bottom-left" || slot === "bottom-right" ? "bottom" : "top";
 }
 
-export function barSlotEdge(slot: TBarSlot): "top" | "bottom" {
-  return slot === "bottom-left" || slot === "bottom-right" ? "bottom" : "top";
+// A pinned edge keeps the bar clear of a drawer that needs the other one
+export function availableBarSlots({
+  isExtraSmall,
+  pinnedEdge,
+}: {
+  isExtraSmall: boolean;
+  pinnedEdge?: TBarEdge | null;
+}): TBarSlot[] {
+  const slots: TBarSlot[] = isExtraSmall
+    ? ["top-left", "bottom-left"]
+    : ["top-left", "top-right", "bottom-left", "bottom-right"];
+  if (!pinnedEdge) return slots;
+  return slots.filter((slot) => barSlotEdge(slot) === pinnedEdge);
 }
 
 export function barSlotPosition(slot: TBarSlot, layout: TBarLayout): TPoint {

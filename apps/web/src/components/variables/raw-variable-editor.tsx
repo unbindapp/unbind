@@ -1,6 +1,8 @@
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import { IconCache } from "@/components/icons/icon-cache";
+import { useDeviceSize } from "@/components/providers/device-size-provider";
+import { useStagedChangesStore } from "@/components/staged-changes/staged-changes-provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,8 +13,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { toast } from "@/components/ui/toast";
 import TokenField from "@/components/ui/token-field/token-field";
+import { cn } from "@/components/ui/utils";
 import {
   getVariablesFromRawText,
   referenceMapForVariables,
@@ -26,19 +36,20 @@ import {
   useVariableReferenceLanguage,
 } from "@/components/variables/variables-form-field";
 import { useVariables } from "@/components/variables/variables-provider";
-import { defaultAnimationMs } from "@/lib/constants";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
 import {
   TVariableForCreate,
   TVariableShallow,
   VariableForCreateSchema,
 } from "@/lib/queries/variables";
-import { CheckCircleIcon } from "lucide-react";
-import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
+import { CheckCircleIcon, XIcon } from "lucide-react";
+import { FC, ReactElement, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 type TProps = {
   children: ReactElement;
 };
+
+type TEditorVariant = "drawer" | "dialog";
 
 export default function RawVariableEditor({ children }: TProps) {
   const {
@@ -48,6 +59,8 @@ export default function RawVariableEditor({ children }: TProps) {
     ...typedProps
   } = useVariables();
   const { tokens } = useVariableReferences();
+  const { isExtraSmall } = useDeviceSize();
+  const setBarPinnedEdge = useStagedChangesStore((s) => s.setBarPinnedEdge);
 
   // The editor shows the staged state, saving diffs against what the server has
   const variables = useMemo(
@@ -62,7 +75,14 @@ export default function RawVariableEditor({ children }: TProps) {
   const [editorValue, setEditorValue] = useState(editorText);
 
   const [open, setOpen] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isDrawerOpen = open && isExtraSmall;
+
+  // The drawer leaves the top of the screen to the staged changes bar
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+    setBarPinnedEdge("top");
+    return () => setBarPinnedEdge(null);
+  }, [isDrawerOpen, setBarPinnedEdge]);
 
   const [recentlySucceeded, setRecentlySucceeded] = useTemporaryValue({
     defaultValue: false,
@@ -149,55 +169,146 @@ export default function RawVariableEditor({ children }: TProps) {
     showSucceeded();
   };
 
-  const isPending = variablesIsPending;
-  const error = variablesError || parseError;
+  // Edits left behind on close are dropped the next time the editor opens
+  const onOpenChange = (o: boolean) => {
+    setOpen(o);
+    if (!o) return;
+    setEditorValue(editorText);
+    setParseError(null);
+  };
+
+  const bodyProps = {
+    variables,
+    referencesDisabled: typedProps.type !== "service",
+    recentlySucceeded,
+    editorValue,
+    onEditorValueChange: setEditorValue,
+    error: variablesError || parseError,
+    isPending: variablesIsPending,
+    onSave: save,
+  };
+
+  if (isExtraSmall) {
+    return (
+      <Drawer open={open} onOpenChange={onOpenChange} direction="bottom">
+        <DrawerTrigger render={children} />
+        <DrawerContent
+          hasHandle
+          className="h-[calc(100%-var(--changes-bar-inset-top)-var(--changes-bar-height)-1.3rem)]"
+        >
+          <EditorBody
+            {...bodyProps}
+            variant="drawer"
+            Title={DrawerTitle}
+            Close={DrawerClose}
+            className="pb-(--safe-area-inset-bottom)"
+          />
+        </DrawerContent>
+      </Drawer>
+    );
+  }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(o) => {
-        setOpen(o);
-        if (!o) {
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => {
-            setEditorValue(editorText);
-          }, defaultAnimationMs);
-        }
-      }}
-    >
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger render={children} />
       <DialogContent
         hideXButton
         avoidKeyboard
-        className="h-[calc(var(--safe-screen-height-keyboard)-var(--dialog-top-padding)-var(--dialog-bottom-padding))] max-h-200 min-h-72 sm:h-[calc(var(--safe-screen-height-keyboard)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))]"
+        className="h-[calc(var(--safe-screen-height-keyboard)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))] max-h-200 min-h-72"
         classNameInnerWrapper="w-216 max-w-full h-full"
       >
-        <DialogHeader className="sm:px-1">
-          <DialogTitle>Raw Editor</DialogTitle>
+        <EditorBody {...bodyProps} variant="dialog" Title={DialogTitle} Close={DialogClose} />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+type TEditorBodyProps = {
+  variant: TEditorVariant;
+  variables: TVariableShallow[] | undefined;
+  referencesDisabled: boolean;
+  recentlySucceeded: boolean;
+  editorValue: string;
+  onEditorValueChange: (s: string) => void;
+  error: Error | null;
+  isPending: boolean;
+  onSave: () => void;
+  className?: string;
+  Title: FC<{ className?: string; children: ReactNode }>;
+  Close: FC<{ className?: string; render: ReactElement }>;
+};
+
+function EditorBody({
+  variant,
+  variables,
+  referencesDisabled,
+  recentlySucceeded,
+  editorValue,
+  onEditorValueChange,
+  error,
+  isPending,
+  onSave,
+  className,
+  Title,
+  Close,
+}: TEditorBodyProps) {
+  const isDrawer = variant === "drawer";
+
+  return (
+    <div className={cn("flex min-h-0 w-full flex-1 flex-col", !isDrawer && "gap-4", className)}>
+      {isDrawer ? (
+        <div className="flex w-full items-center gap-6 border-b px-5 py-3.5">
+          <Title className="min-w-0 flex-1 truncate text-xl leading-tight font-semibold">
+            Raw Editor
+          </Title>
+          <div className="-my-2 -mr-3 ml-auto flex shrink-0 items-center gap-1">
+            <CopyButton valueToCopy={editorValue} className="rounded-lg" />
+            <Close
+              className="text-muted-more-foreground rounded-lg"
+              render={
+                <Button type="button" size="icon" variant="ghost" aria-label="Close">
+                  <XIcon className="size-5" />
+                </Button>
+              }
+            />
+          </div>
+        </div>
+      ) : (
+        <DialogHeader className="px-1">
+          <Title>Raw Editor</Title>
           <div className="flex w-full items-end justify-between gap-2">
             <DialogDescription className="min-w-0 shrink">
               Add, edit, or remove variables.
             </DialogDescription>
             <CopyButton
               valueToCopy={editorValue}
-              className="text-muted-foreground -my-2.5 -mr-3.5 rounded-lg sm:-mr-1.5"
+              className="text-muted-foreground -my-2.5 -mr-1.5 rounded-lg"
             />
           </div>
         </DialogHeader>
-        {variables ? (
-          <VariableEditor
-            variables={variables}
-            referencesDisabled={typedProps.type !== "service"}
-            recentlySucceeded={recentlySucceeded}
-            editorValue={editorValue}
-            onEditorValueChange={setEditorValue}
-          />
-        ) : (
-          <EditorSkeleton />
+      )}
+      {variables ? (
+        <VariableEditor
+          variant={variant}
+          variables={variables}
+          referencesDisabled={referencesDisabled}
+          recentlySucceeded={recentlySucceeded}
+          editorValue={editorValue}
+          onEditorValueChange={onEditorValueChange}
+        />
+      ) : (
+        <EditorSkeleton variant={variant} />
+      )}
+      {error && !isDrawer && <ErrorLine message={error.message} />}
+      <div
+        className={cn(
+          "flex w-full flex-wrap items-center justify-end gap-2",
+          isDrawer && "flex-col items-stretch gap-3.5 border-t p-3.5",
         )}
-        {error && <ErrorLine message={error.message} />}
-        <div className="flex w-full flex-wrap items-center justify-end gap-2">
-          <DialogClose
+      >
+        {error && isDrawer && <ErrorLine message={error.message} />}
+        {!isDrawer && (
+          <Close
             className="text-muted-foreground"
             render={
               <Button type="button" variant="ghost">
@@ -205,23 +316,28 @@ export default function RawVariableEditor({ children }: TProps) {
               </Button>
             }
           />
-          <Button
-            disabled={isPending || variables === undefined}
-            isPending={isPending}
-            onClick={save}
-            className="group/button"
-          >
-            Save
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+        )}
+        <Button
+          disabled={isPending || variables === undefined}
+          isPending={isPending}
+          onClick={onSave}
+          className={cn("group/button", isDrawer && "w-full")}
+        >
+          Save
+        </Button>
+      </div>
+    </div>
   );
 }
 
-function EditorSkeleton() {
+function EditorSkeleton({ variant }: { variant: TEditorVariant }) {
   return (
-    <div className="bg-card flex flex-1 flex-col gap-1 overflow-hidden rounded-lg border px-3.5 py-2.5 font-mono">
+    <div
+      className={cn(
+        "flex flex-1 flex-col gap-1 overflow-hidden font-mono",
+        variant === "drawer" ? "px-5 py-4" : "bg-card rounded-lg border px-3.5 py-2.5",
+      )}
+    >
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
@@ -238,6 +354,7 @@ function EditorSkeleton() {
 }
 
 type TVariableEditorProps = {
+  variant: TEditorVariant;
   variables: TVariableShallow[];
   referencesDisabled: boolean;
   recentlySucceeded: boolean;
@@ -246,6 +363,7 @@ type TVariableEditorProps = {
 };
 
 function VariableEditor({
+  variant,
   variables,
   referencesDisabled,
   recentlySucceeded,
@@ -259,9 +377,10 @@ function VariableEditor({
   const hiddenValue = useMemo(() => getEditorValue({ variables, hidden: true }), [variables]);
   // Values stay masked until the editor is focused
   const [isHidden, setIsHidden] = useState(true);
+  const isDrawer = variant === "drawer";
 
   return (
-    <div className="relative -mx-3 flex min-h-0 w-[calc(100%+1.5rem)] flex-1 flex-col sm:mx-0 sm:w-full">
+    <div className="relative flex min-h-0 w-full flex-1 flex-col">
       {!referencesDisabled && <IconCache icons={icons} />}
       <TokenField
         value={isHidden ? hiddenValue : editorValue}
@@ -272,14 +391,33 @@ function VariableEditor({
         multiline
         dropdownAtCaret
         placeholder="VARIABLE_NAME=Value"
-        // Pinned to the field's box so the editor fills the dialog's flex space and scrolls
-        className="bg-card relative min-h-0 flex-1 overflow-hidden rounded-lg"
-        classNameEditor="absolute inset-0 w-auto [--token-field-content-padding:0.625rem_0.875rem] font-mono font-normal"
+        // Pinned to the field's box so the editor fills the flex space and scrolls
+        className={cn(
+          "relative min-h-0 flex-1 overflow-hidden",
+          isDrawer
+            ? "bg-background rounded-none border-0 focus-within:ring-0"
+            : "bg-card rounded-lg",
+        )}
+        // The drawer's editor runs edge to edge, so its padding is the content's own
+        classNameEditor={cn(
+          "absolute inset-0 w-auto font-mono font-normal",
+          isDrawer
+            ? "[--token-field-content-padding:1rem_1.25rem]"
+            : "[--token-field-content-padding:0.625rem_0.875rem]",
+        )}
       />
-      <div className="pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden rounded-b-lg">
+      <div
+        className={cn(
+          "pointer-events-none absolute right-0 bottom-0 z-10 flex w-full overflow-hidden",
+          !isDrawer && "rounded-b-lg",
+        )}
+      >
         <div
           data-open={recentlySucceeded || undefined}
-          className="group/badge bg-card text-success border-success/20 flex w-full translate-y-full items-center justify-start gap-2 overflow-hidden rounded-b-lg border px-4 py-2.5 font-medium opacity-0 transition data-open:translate-y-0 data-open:opacity-100"
+          className={cn(
+            "group/badge bg-card text-success border-success/20 flex w-full translate-y-full items-center justify-start gap-2 overflow-hidden border px-4 py-2.5 font-medium opacity-0 transition data-open:translate-y-0 data-open:opacity-100",
+            isDrawer ? "border-x-0 border-b-0 px-5" : "rounded-b-lg",
+          )}
         >
           <div className="bg-success/10 absolute top-0 left-0 h-full w-full" />
           <CheckCircleIcon className="relative -ml-0.5 size-4.5" strokeWidth={2.5} />

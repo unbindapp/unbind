@@ -33,6 +33,20 @@ test("phones get top and bottom, larger screens get all four corners", () => {
   assert.equal(allSlots.length, 4);
 });
 
+test("a pinned edge leaves only that edge's slots, on phones and larger screens", () => {
+  assert.deepEqual(availableBarSlots({ isExtraSmall: true, pinnedEdge: "top" }), ["top-left"]);
+  assert.deepEqual(availableBarSlots({ isExtraSmall: false, pinnedEdge: "bottom" }), [
+    "bottom-left",
+    "bottom-right",
+  ]);
+  assert.deepEqual(availableBarSlots({ isExtraSmall: true, pinnedEdge: null }), phoneSlots);
+});
+
+test("a preferred bottom slot resolves to the top when the bar is pinned there", () => {
+  const pinned = availableBarSlots({ isExtraSmall: true, pinnedEdge: "top" });
+  assert.equal(resolveBarSlot("bottom-left", pinned, layout), "top-left");
+});
+
 test("bounds keep the bar inside the track minus the insets", () => {
   assert.deepEqual(barBounds(layout), { left: 0, top: 50, right: 700, bottom: 540 });
 });
