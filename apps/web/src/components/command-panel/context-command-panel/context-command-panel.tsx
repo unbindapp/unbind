@@ -13,8 +13,8 @@ import useContextCommandPanelData from "@/components/command-panel/context-comma
 import { CommandPanelStoreProvider } from "@/components/command-panel/store/command-panel-store-provider";
 import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { ReactElement, useMemo } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 import { z } from "zod";
 
 export const TriggerTypeEnum = z.enum(["layout", "button", "list"]);
@@ -55,15 +55,14 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
     }
   };
 
-  useHotkeys(
-    "mod+k",
+  useHotkey(
+    "Mod+K",
     () => {
       setPanelId(thisPanelId);
     },
     {
       enabled: context.contextType === "team" || context.contextType === "project",
-      enableOnContentEditable: true,
-      enableOnFormTags: true,
+      conflictBehavior: "allow",
     },
   );
 

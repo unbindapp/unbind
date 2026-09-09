@@ -46,7 +46,6 @@
     "p-retry": "^6.2.1",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "react-hotkeys-hook": "^4.6.1",
     "react-scan": "^0.2.4",
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.2",

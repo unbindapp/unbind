@@ -35,7 +35,6 @@ import { defaultDebounceMs } from "@/lib/constants";
 import { useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import { ReactElement, FC, RefObject, useCallback, useEffect, useMemo, useRef } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
 
 type TProps = {
   open: boolean;
@@ -213,46 +212,6 @@ function CommandPanel({
       inputRef.current?.focus();
     }
   }, [currentPage]);
-
-  useHotkeys(
-    "arrowleft",
-    (e) => {
-      if (inputRef.current?.value) return;
-      goToParentPage(e);
-    },
-    {
-      enableOnContentEditable: true,
-      enableOnFormTags: true,
-    },
-  );
-
-  useHotkeys(
-    "arrowright",
-    () => {
-      if (inputRef.current?.value) return;
-      const item =
-        items?.find((i) => i.id === value || i.title === value) ||
-        currentPage.itemsPinned?.find((i) => i.id === value || i.title === value);
-      if (!item?.subpage) return;
-      setCurrentPageId(item.subpage.id);
-      setPrevItemId(item.id);
-    },
-    {
-      enableOnContentEditable: true,
-      enableOnFormTags: true,
-    },
-  );
-
-  useHotkeys(
-    "esc",
-    (e) => {
-      goToParentPage(e);
-    },
-    {
-      enableOnContentEditable: true,
-      enableOnFormTags: true,
-    },
-  );
 
   useEffect(() => {
     if (isTouchscreen) return;
