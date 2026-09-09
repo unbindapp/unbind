@@ -19,6 +19,7 @@ import {
   stagedNumber,
   stagedString,
   useResetFormOnStagedChange,
+  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { useService } from "@/components/service/service-provider";
@@ -89,11 +90,14 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
   const { teamId } = useService();
 
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
-  const { staged, stage, unstage } = useServiceChanges(service);
-
   const serverBucketId = service.config.s3_backup_bucket_id ?? noBucketId;
   const serverSchedule = service.config.backup_schedule;
   const serverRetention = service.config.backup_retention_count;
+  const { staged, stage, unstage } = useServiceChanges(service, {
+    s3BackupBucketId: serverBucketId,
+    backupSchedule: serverSchedule,
+    backupRetentionCount: serverRetention,
+  });
   const stagedBucketId = stagedString(staged.s3BackupBucketId, serverBucketId);
   const stagedSchedule = stagedString(staged.backupSchedule, serverSchedule);
   const stagedRetention = stagedNumber(staged.backupRetentionCount, serverRetention);
@@ -174,6 +178,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       classNameContent="gap-5"
       entityId={sectionHighlightId}
       hasChanges={backupFields.some((field) => staged[field] !== undefined)}
+      isApplying={hasApplying(staged, backupFields)}
     >
       <Block>
         <form.AppField

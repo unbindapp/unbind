@@ -53,6 +53,21 @@ function canAttachVolume(service: TServiceShallow) {
   return service.type !== "database" && service.config.volumes.length === 0;
 }
 
+function getEmptyText({
+  isPending,
+  hasServices,
+  hasEligibleServices,
+}: {
+  isPending: boolean;
+  hasServices: boolean;
+  hasEligibleServices: boolean;
+}) {
+  if (isPending) return "Loading services...";
+  if (!hasServices) return "No services to attach to";
+  if (!hasEligibleServices) return "All services already have a volume";
+  return undefined;
+}
+
 function getDefaultCapacityGb(minimumStorageGb: number | undefined) {
   return Math.max(1, minimumStorageGb ?? 1);
 }
@@ -88,6 +103,7 @@ function useVolumeItem({ context }: TProps) {
     () => servicesData?.services.filter(canAttachVolume) ?? [],
     [servicesData],
   );
+  const hasServices = (servicesData?.services.length ?? 0) > 0;
 
   const minimumStorageGb = systemData?.data.storage.minimum_storage_gb;
 
@@ -204,15 +220,15 @@ function useVolumeItem({ context }: TProps) {
         title: "Attach to Service",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Select a service...",
-        commandEmptyText: isPendingServices
-          ? "Loading services..."
-          : eligibleServices.length === 0
-            ? "No service can take a volume"
-            : undefined,
+        commandEmptyText: getEmptyText({
+          isPending: isPendingServices,
+          hasServices,
+          hasEligibleServices: eligibleServices.length > 0,
+        }),
         items: serviceItems,
       },
     }),
-    [serviceItems, isPendingServices, eligibleServices.length],
+    [serviceItems, isPendingServices, hasServices, eligibleServices.length],
   );
 
   const value = useMemo(

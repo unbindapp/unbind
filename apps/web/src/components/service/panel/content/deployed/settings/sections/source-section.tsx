@@ -12,6 +12,7 @@ import {
 import {
   stagedString,
   useResetFormOnStagedChange,
+  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
@@ -88,7 +89,7 @@ export default function SourceSection({ service }: TProps) {
 }
 
 function GitSection({ owner, repo, branch, installationId, service }: TGitSectionProps) {
-  const { staged, stage } = useServiceChanges(service);
+  const { staged, stage } = useServiceChanges(service, { gitBranch: branch });
 
   const {
     data: dataRepository,
@@ -123,6 +124,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       Icon={CodeIcon}
       classNameContent="gap-5"
       hasChanges={staged.gitBranch !== undefined}
+      isApplying={hasApplying(staged, ["gitBranch"])}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -190,9 +192,8 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
   const [search] = useDebounceValue(commandInputValue, defaultDebounceMs);
-  const { staged, stage } = useServiceChanges(service);
-
   const serverImage = `${image}:${tag}`;
+  const { staged, stage } = useServiceChanges(service, { image: serverImage });
   const stagedImage = stagedString(staged.image, serverImage);
 
   const defaultValues = { tag: stagedImage.split(":")[1] ?? tag };
@@ -227,6 +228,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
       Icon={CodeIcon}
       classNameContent="gap-5"
       hasChanges={staged.image !== undefined}
+      isApplying={hasApplying(staged, ["image"])}
     >
       <Block>
         <BlockItem className="w-full md:w-full">

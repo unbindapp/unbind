@@ -14,6 +14,7 @@ import type { TServiceChangeField } from "@/components/staged-changes/types";
 import {
   stagedString,
   useResetFormOnStagedChange,
+  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
@@ -101,10 +102,17 @@ const commandFields: Record<
   },
 };
 
+const buildFields: TServiceChangeField[] = [
+  "builder",
+  "railpackBuilderInstallCommand",
+  "railpackBuilderBuildCommand",
+  "dockerBuilderDockerfilePath",
+  "dockerBuilderBuildContext",
+  "startCommand",
+];
+
 function GitSection({ service }: TGitSectionProps) {
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
-  const { staged, stage } = useServiceChanges(service);
-
   const serverValues: Record<TCommandField, string> = {
     railpackBuilderInstallCommand: service.config.railpack_builder_install_command || "",
     railpackBuilderBuildCommand: service.config.railpack_builder_build_command || "",
@@ -112,6 +120,10 @@ function GitSection({ service }: TGitSectionProps) {
     dockerBuilderBuildContext: service.config.docker_builder_build_context || "",
     startCommand: service.config.run_command || "",
   };
+  const { staged, stage } = useServiceChanges(service, {
+    builder: service.config.builder,
+    ...serverValues,
+  });
 
   const defaultValues = {
     builder: stagedString(staged.builder, service.config.builder) as TGitServiceBuilder,
@@ -134,14 +146,7 @@ function GitSection({ service }: TGitSectionProps) {
     startCommand: stagedString(staged.startCommand, serverValues.startCommand),
   };
   const form = useAppForm({ defaultValues });
-  useResetFormOnStagedChange(form, defaultValues, staged, [
-    "builder",
-    "railpackBuilderInstallCommand",
-    "railpackBuilderBuildCommand",
-    "dockerBuilderDockerfilePath",
-    "dockerBuilderBuildContext",
-    "startCommand",
-  ]);
+  useResetFormOnStagedChange(form, defaultValues, staged, buildFields);
 
   const inputRefs = {
     railpackBuilderInstallCommand: useRef<HTMLInputElement>(null),
@@ -224,14 +229,8 @@ function GitSection({ service }: TGitSectionProps) {
       id="build"
       Icon={WrenchIcon}
       entityId={sectionHighlightId}
-      hasChanges={
-        staged.builder !== undefined ||
-        staged.railpackBuilderInstallCommand !== undefined ||
-        staged.railpackBuilderBuildCommand !== undefined ||
-        staged.dockerBuilderDockerfilePath !== undefined ||
-        staged.dockerBuilderBuildContext !== undefined ||
-        staged.startCommand !== undefined
-      }
+      hasChanges={buildFields.some((field) => staged[field] !== undefined)}
+      isApplying={hasApplying(staged, buildFields)}
     >
       <Block>
         <form.AppField

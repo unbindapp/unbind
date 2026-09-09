@@ -79,6 +79,8 @@ export const StagedChangesStateSchema = z.object({
 
 export type TStagedChangesState = z.infer<typeof StagedChangesStateSchema>;
 
+export type TStagedValue = TStagedVariableChange["value"] | TStagedServiceChange["value"];
+
 export function variableScopeKey(scope: TVariableScope) {
   return [
     scope.type,

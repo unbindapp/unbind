@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/components/ui/utils";
+import { LoaderIcon } from "lucide-react";
 import { ReactElement, FC, HTMLAttributes, ReactNode } from "react";
 
 type TProps = {
@@ -23,6 +24,8 @@ type TProps = {
   changeCount?: number;
   // Tints the section without the apply footer, for sections that stage their edits
   hasChanges?: boolean;
+  // Locks the section while its staged edits are being deployed
+  isApplying?: boolean;
   SubmitTrigger?: FC<{ children: ReactElement }>;
   onClickResetChanges?: () => void;
 } & TWrapperProps &
@@ -37,6 +40,7 @@ export function SettingsSection({
   classNameContent,
   changeCount,
   hasChanges,
+  isApplying,
   className,
   onClickResetChanges,
   SubmitButton,
@@ -54,7 +58,11 @@ export function SettingsSection({
   return (
     <Wrapper
       data-staged={isChanged || undefined}
-      className={cn("group/wrapper data-staged:border-change/5-10 scroll-mt-4", className)}
+      data-applying={isApplying || undefined}
+      className={cn(
+        "group/wrapper data-staged:border-change/5-10 scroll-mt-4 data-applying:pointer-events-none",
+        className,
+      )}
       {...rest}
     >
       <div
@@ -70,10 +78,11 @@ export function SettingsSection({
             {title}
           </h3>
         </div>
+        {isApplying && <LoaderIcon className="my-3.25 size-4.5 shrink-0 animate-spin" />}
       </div>
       <div
         className={cn(
-          "flex w-full flex-col gap-6 px-3 pt-3 pb-3.25 sm:px-4.5 sm:pt-3.75 sm:pb-4.75",
+          "group-data-applying/wrapper:animate-skeleton-smooth-weaker flex w-full flex-col gap-6 px-3 pt-3 pb-3.25 transition-opacity duration-(--skeleton-smooth-lead-in) group-data-applying/wrapper:opacity-(--skeleton-smooth-weaker-opacity) sm:px-4.5 sm:pt-3.75 sm:pb-4.75",
           classNameContent,
         )}
       >

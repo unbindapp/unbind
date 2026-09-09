@@ -1,6 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
+import type { TApplyingValues } from "@/components/staged-changes/reconcile";
 import {
   useStagedChangesPlan,
   useStagedChangesStore,
@@ -54,6 +55,7 @@ type TChangeRow = {
   previous: string | null;
   value: string | null;
   isSecret: boolean;
+  isApplying: boolean;
   createdAt: number;
 };
 
@@ -141,10 +143,14 @@ function DetailsBody({
 }: TDetailsBodyProps) {
   const variables = useStagedChangesStore((s) => s.variables);
   const services = useStagedChangesStore((s) => s.services);
+  const applying = useStagedChangesStore((s) => s.applying);
   const discard = useStagedChangesStore((s) => s.discard);
   const { plan, deploy, lastResult, count } = useStagedChangesPlan();
 
-  const groups = useMemo(() => groupChanges({ variables, services }), [variables, services]);
+  const groups = useMemo(
+    () => groupChanges({ variables, services }, applying),
+    [variables, services, applying],
+  );
   const failures = lastResult?.failures ?? [];
   const isDrawer = variant === "drawer";
 
@@ -296,6 +302,7 @@ function ChangeGroupCard({
   onDiscardRow: (id: string) => void;
   onDiscardGroup: () => void;
 }) {
+  const isApplying = group.rows.some((row) => row.isApplying);
   return (
     <li className="flex w-full flex-col overflow-hidden rounded-lg border">
       <div className="bg-card flex w-full items-center justify-between gap-2 border-b py-1 pr-1 pl-3">
@@ -312,6 +319,7 @@ function ChangeGroupCard({
             variant="outline"
             size="sm"
             className="text-muted-foreground shrink-0 px-3"
+            disabled={isApplying}
             onClick={onDiscardGroup}
           >
             Discard
@@ -405,16 +413,22 @@ function ChangeRow({
           </div>
         </div>
       </div>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        aria-label="Discard"
-        className="text-muted-more-foreground h-10 w-8 shrink-0 rounded-md sm:order-last"
-        onClick={onDiscard}
-      >
-        <XIcon className="size-4" />
-      </Button>
+      {row.isApplying ? (
+        <div className="text-muted-more-foreground flex h-10 w-8 shrink-0 items-center justify-center sm:order-last">
+          <LoaderIcon className="size-4 animate-spin" />
+        </div>
+      ) : (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label="Discard"
+          className="text-muted-more-foreground h-10 w-8 shrink-0 rounded-md sm:order-last"
+          onClick={onDiscard}
+        >
+          <XIcon className="size-4" />
+        </Button>
+      )}
       <div className="col-span-2 grid grid-cols-2 gap-2">
         <ValueCell action={action} value={row.previous === null ? null : mask(row.previous)} />
         <ValueCell action={action} value={row.value === null ? null : mask(row.value)} isNew />
@@ -548,7 +562,7 @@ function failureForGroup(group: TChangeGroup, failures: ChangeFailure[]) {
 }
 
 // Changes of a service and of its own variables share a group, other scopes get their own
-function groupChanges(state: TStagedChangesState): TChangeGroup[] {
+function groupChanges(state: TStagedChangesState, applying: TApplyingValues): TChangeGroup[] {
   const groups = new Map<string, TChangeGroup>();
   const upsert = (
     key: string,
@@ -572,13 +586,19 @@ function groupChanges(state: TStagedChangesState): TChangeGroup[] {
       change.serviceName,
       change.serviceIcon ?? "",
       change.serviceId,
-      serviceRow(change),
+      serviceRow(change, change.id in applying),
     );
   }
   for (const change of Object.values(state.variables)) {
     const key = change.scope.serviceId ?? variableScopeKey(change.scope);
     const icon = change.scope.serviceId ? (change.scopeIcon ?? "") : change.scope.type;
-    upsert(key, change.scopeName, icon, change.scope.serviceId, variableRow(change));
+    upsert(
+      key,
+      change.scopeName,
+      icon,
+      change.scope.serviceId,
+      variableRow(change, change.id in applying),
+    );
   }
 
   const list = [...groups.values()];
@@ -586,7 +606,7 @@ function groupChanges(state: TStagedChangesState): TChangeGroup[] {
   return list.sort((a, b) => a.createdAt - b.createdAt);
 }
 
-function serviceRow(change: TStagedServiceChange): TChangeRow {
+function serviceRow(change: TStagedServiceChange, isApplying: boolean): TChangeRow {
   return {
     id: change.id,
     label: change.label,
@@ -594,11 +614,12 @@ function serviceRow(change: TStagedServiceChange): TChangeRow {
     previous: change.displayPrevious,
     value: change.displayValue,
     isSecret: false,
+    isApplying,
     createdAt: change.createdAt,
   };
 }
 
-function variableRow(change: TStagedVariableChange): TChangeRow {
+function variableRow(change: TStagedVariableChange, isApplying: boolean): TChangeRow {
   return {
     id: change.id,
     label: change.name,
@@ -606,6 +627,7 @@ function variableRow(change: TStagedVariableChange): TChangeRow {
     previous: change.previous,
     value: change.value,
     isSecret: true,
+    isApplying,
     createdAt: change.createdAt,
   };
 }

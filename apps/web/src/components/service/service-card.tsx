@@ -1,5 +1,6 @@
 import {
   useStagedChangesPlan,
+  useIsServiceApplying,
   useServiceChangeCount,
 } from "@/components/staged-changes/staged-changes-provider";
 import OnlineIcon from "@/components/icons/online";
@@ -79,10 +80,12 @@ export default function ServiceCard({
   const queryClient = useQueryClient();
   const volumes = service?.config.volumes;
   const changeCount = useServiceChangeCount(service?.id ?? "");
+  const isApplying = useIsServiceApplying(service?.id ?? "");
   const { affectedByService } = useStagedChangesPlan();
   const affectedAction = service ? affectedByService.get(service.id)?.action : undefined;
-  const changeLabel =
-    changeCount > 0
+  const changeLabel = isApplying
+    ? "Applying"
+    : changeCount > 0
       ? `${changeCount} ${changeCount === 1 ? "Change" : "Changes"}`
       : affectedAction && affectedAction !== "none"
         ? "Will Redeploy"
@@ -126,8 +129,9 @@ export default function ServiceCard({
         </div>
         {changeLabel !== null && (
           <div className="bg-background -mr-1.5 max-w-1/2 shrink-0 rounded-sm">
-            <p className="text-change bg-change/4-10 border-change/4-10 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
-              {changeLabel}
+            <p className="text-change bg-change/4-10 border-change/4-10 flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+              {isApplying && <LoaderIcon className="size-3 shrink-0 animate-spin" />}
+              <span className="truncate">{changeLabel}</span>
             </p>
           </div>
         )}

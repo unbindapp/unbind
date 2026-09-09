@@ -1,10 +1,12 @@
 "use client";
 
+import { variableChangesMatchingServer } from "@/components/staged-changes/reconcile";
 import {
   useStagedChangesStore,
   useStagedVariables,
+  type TStagedVariable,
 } from "@/components/staged-changes/staged-changes-provider";
-import type { TStagedVariableChange, TVariableScope } from "@/components/staged-changes/types";
+import type { TVariableScope } from "@/components/staged-changes/types";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import {
   queryKeyVariables,
@@ -14,7 +16,7 @@ import {
   type TVariablesList,
 } from "@/lib/queries/variables";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
-import { createContext, ReactNode, useCallback, useContext, useMemo } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
 
 export type TStagedState = "new" | "updated" | "deleted";
 
@@ -22,6 +24,8 @@ export type TVariableWithStaged = TVariableShallow & {
   staged?: TStagedState;
   // The value the server has while an update is staged
   stagedPrevious?: string;
+  // The change is being deployed and the row waits for the refetch
+  isApplying?: boolean;
 };
 
 type TStageInput = { name: string; value: string | null };
@@ -32,7 +36,7 @@ type TVariablesContext = {
   variables: TVariableWithStaged[] | undefined;
   scope: TVariableScope;
   scopeName: string;
-  staged: Map<string, TStagedVariableChange>;
+  staged: Map<string, TStagedVariable>;
   // Stages values against what the server has, so re-staging the server value clears the change
   stage: (changes: TStageInput[]) => void;
   discardStaged: (names: string[]) => void;
@@ -96,6 +100,15 @@ export const VariablesProvider: React.FC<TProps> = ({
     [serverVariables, staged],
   );
 
+  // Changes the server already has, from a deploy that landed or another session, leave the stage
+  useEffect(() => {
+    if (!serverVariables) return;
+    const serverByName = new Map(serverVariables.map((v) => [v.name, v.value]));
+    const ids = variableChangesMatchingServer(staged.values(), serverByName);
+    if (ids.length === 0) return;
+    discard(ids);
+  }, [serverVariables, staged, discard]);
+
   const stage = useCallback(
     (changes: TStageInput[]) => {
       const serverByName = new Map((serverVariables ?? []).map((v) => [v.name, v.value]));
@@ -153,12 +166,14 @@ export default VariablesProvider;
 
 export function mergeStagedVariables(
   variables: TVariableShallow[],
-  staged: Map<string, TStagedVariableChange>,
+  staged: Map<string, TStagedVariable>,
 ): TVariableWithStaged[] {
   const merged: TVariableWithStaged[] = variables.map((variable) => {
     const change = staged.get(variable.name);
     if (!change) return variable;
-    if (change.value === null) return { ...variable, staged: "deleted" };
+    if (change.value === null) {
+      return { ...variable, staged: "deleted", isApplying: change.isApplying };
+    }
     return {
       ...variable,
       value: change.value,
@@ -166,6 +181,7 @@ export function mergeStagedVariables(
       references: referencesInStoredValue(change.value),
       staged: "updated",
       stagedPrevious: variable.value,
+      isApplying: change.isApplying,
     };
   });
 
@@ -178,6 +194,7 @@ export function mergeStagedVariables(
       value: change.value,
       references: referencesInStoredValue(change.value),
       staged: "new",
+      isApplying: change.isApplying,
     });
   }
   // Staged variables come first so they are easy to spot, newest staged at the top

@@ -1,4 +1,5 @@
 import type { TBarEdge } from "@/components/staged-changes/bar-position";
+import { dropSettledChanges, type TApplyingValues } from "@/components/staged-changes/reconcile";
 import {
   StagedChangesStateSchema,
   serviceChangeId,
@@ -18,23 +19,27 @@ export type TStageServiceInput = Omit<TStagedServiceChange, "id" | "createdAt"> 
   isDefault: boolean;
 };
 
-// Not persisted: set by a drawer while it's open, so the bar keeps out of its way
-export type TStagedChangesBarState = {
+// Not persisted: the bar edge is set by a drawer while it's open, so the bar keeps out of
+// its way. The applying values are the deploy in flight; a reload must not resurrect it
+export type TStagedChangesTransientState = {
   barPinnedEdge: TBarEdge | null;
+  applying: TApplyingValues;
 };
 
 export type TStagedChangesActions = {
   setBarPinnedEdge: (edge: TBarEdge | null) => void;
+  beginApplying: () => void;
+  // Settled changes were applied by the server and leave the stage
+  endApplying: (settled: Set<string>) => void;
   stageVariables: (changes: TStageVariableInput[]) => void;
   stageService: (change: TStageServiceInput) => void;
   discard: (ids: string[]) => void;
   discardService: (serviceId: string) => void;
   discardAll: () => void;
-  keepOnly: (ids: Set<string>) => void;
 };
 
 export type TStagedChangesStore = TStagedChangesState &
-  TStagedChangesBarState &
+  TStagedChangesTransientState &
   TStagedChangesActions;
 
 const defaultInitState: TStagedChangesState = {
@@ -50,7 +55,18 @@ export const createStagedChangesStore = (initState: TStagedChangesState = defaul
       (set) => ({
         ...initState,
         barPinnedEdge: null,
+        applying: {},
         setBarPinnedEdge: (barPinnedEdge) => set({ barPinnedEdge }),
+        beginApplying: () =>
+          set((state) => ({
+            applying: Object.fromEntries(
+              [...Object.values(state.variables), ...Object.values(state.services)].map(
+                (change) => [change.id, change.value],
+              ),
+            ),
+          })),
+        endApplying: (settled) =>
+          set((state) => ({ ...dropSettledChanges(state, state.applying, settled), applying: {} })),
         stageVariables: (changes) =>
           set((state) => {
             const variables = { ...state.variables };
@@ -109,15 +125,6 @@ export const createStagedChangesStore = (initState: TStagedChangesState = defaul
             ),
           })),
         discardAll: () => set({ variables: {}, services: {} }),
-        keepOnly: (ids) =>
-          set((state) => ({
-            variables: Object.fromEntries(
-              Object.entries(state.variables).filter(([id]) => ids.has(id)),
-            ),
-            services: Object.fromEntries(
-              Object.entries(state.services).filter(([id]) => ids.has(id)),
-            ),
-          })),
       }),
       {
         name: "staged_changes_store",

@@ -1,6 +1,8 @@
+import { serviceChangesMatchingServer } from "@/components/staged-changes/reconcile";
 import {
   useStagedChangesStore,
   useStagedServiceChanges,
+  type TStagedServiceField,
 } from "@/components/staged-changes/staged-changes-provider";
 import {
   serviceChangeId,
@@ -11,7 +13,8 @@ import { useService } from "@/components/service/service-provider";
 import { TServiceShallow } from "@/lib/queries/services";
 import { useCallback, useEffect, useRef } from "react";
 
-export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceChange>>;
+export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceField>>;
+export type TServerValues = Partial<Record<TServiceChangeField, string | number>>;
 
 type TStageInput<T extends string | number> = {
   field: TServiceChangeField;
@@ -23,11 +26,18 @@ type TStageInput<T extends string | number> = {
 
 // Settings sections stage edits against the server value instead of saving them.
 // Staging the server value again clears the change.
-export function useServiceChanges(service: TServiceShallow) {
+export function useServiceChanges(service: TServiceShallow, serverValues: TServerValues) {
   const { teamId, projectId, environmentId } = useService();
   const staged = useStagedServiceChanges(service.id);
   const stageService = useStagedChangesStore((s) => s.stageService);
   const discard = useStagedChangesStore((s) => s.discard);
+
+  // Changes the server already has, from a deploy that landed or another session, leave the stage
+  const settledKey = serviceChangesMatchingServer(staged, serverValues).join(",");
+  useEffect(() => {
+    if (!settledKey) return;
+    discard(settledKey.split(","));
+  }, [settledKey, discard]);
 
   const stage = useCallback(
     <T extends string | number>({ field, label, value, previous, format }: TStageInput<T>) => {
@@ -82,6 +92,10 @@ export function useResetFormOnStagedChange<T extends TFormValues>(
     form.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
+}
+
+export function hasApplying(staged: TStagedFields, fields: TServiceChangeField[]) {
+  return fields.some((field) => staged[field]?.isApplying === true);
 }
 
 function matchesDefaults<T extends TFormValues>(values: T, defaults: T) {

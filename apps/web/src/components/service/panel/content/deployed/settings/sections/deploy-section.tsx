@@ -11,8 +11,10 @@ import { shouldDeploySectionHaveInstances } from "@/components/service/panel/con
 import {
   stagedNumber,
   useResetFormOnStagedChange,
+  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
+import type { TServiceChangeField } from "@/components/staged-changes/types";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
@@ -85,14 +87,23 @@ function toApi(sliderValue: number, unlimited: number) {
   return sliderValue === unlimited ? unlimitedApiValue : sliderValue;
 }
 
+const deployFields: TServiceChangeField[] = [
+  "instanceCount",
+  "cpuLimitMillicores",
+  "memoryLimitMb",
+];
+
 function Section({ service }: { service: TServiceShallow }) {
   const hasInstances = shouldDeploySectionHaveInstances(service);
   const sectionHighlightId = useMemo(() => getDeploySectionId(service), [service]);
-  const { staged, stage } = useServiceChanges(service);
-
   const serverInstanceCount = service.config.replicas;
   const serverCpu = service.config.resources?.cpu_limits_millicores || unlimitedApiValue;
   const serverMemory = service.config.resources?.memory_limits_megabytes || unlimitedApiValue;
+  const { staged, stage } = useServiceChanges(service, {
+    instanceCount: serverInstanceCount,
+    cpuLimitMillicores: serverCpu,
+    memoryLimitMb: serverMemory,
+  });
 
   const defaultValues = {
     instanceCount: stagedNumber(staged.instanceCount, serverInstanceCount),
@@ -106,11 +117,7 @@ function Section({ service }: { service: TServiceShallow }) {
     ),
   };
   const form = useAppForm({ defaultValues });
-  useResetFormOnStagedChange(form, defaultValues, staged, [
-    "instanceCount",
-    "cpuLimitMillicores",
-    "memoryLimitMb",
-  ]);
+  useResetFormOnStagedChange(form, defaultValues, staged, deployFields);
 
   return (
     <SettingsSection
@@ -118,11 +125,8 @@ function Section({ service }: { service: TServiceShallow }) {
       id="deploy"
       Icon={RocketIcon}
       entityId={sectionHighlightId}
-      hasChanges={
-        staged.instanceCount !== undefined ||
-        staged.cpuLimitMillicores !== undefined ||
-        staged.memoryLimitMb !== undefined
-      }
+      hasChanges={deployFields.some((field) => staged[field] !== undefined)}
+      isApplying={hasApplying(staged, deployFields)}
     >
       {hasInstances && (
         <Block>

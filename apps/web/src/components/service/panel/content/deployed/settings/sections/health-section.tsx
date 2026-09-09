@@ -12,6 +12,7 @@ import {
   stagedNumber,
   stagedString,
   useResetFormOnStagedChange,
+  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
@@ -127,8 +128,6 @@ function thresholdToApi(value: string) {
 
 function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
-  const { staged, stage, unstage } = useServiceChanges(service);
-
   const healthCheck = service.config.health_check;
   const serverType: THealthCheckType = healthCheck?.type || "none";
   const serverEndpoint = healthCheck?.path || "";
@@ -140,6 +139,13 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
     startupCheckIntervalSeconds: healthCheck?.startup_period_seconds ?? defaultApiValue,
     startupCheckFailureThreshold: healthCheck?.startup_failure_threshold ?? defaultApiValue,
   };
+  const { staged, stage, unstage } = useServiceChanges(service, {
+    healthCheckType: serverType,
+    healthCheckEndpoint: serverEndpoint,
+    healthCheckEndpointPort: serverPort,
+    healthCheckCommand: serverCommand,
+    ...serverThresholds,
+  });
 
   const defaultValues = {
     healthCheckType: stagedString(staged.healthCheckType, serverType) as THealthCheckType,
@@ -245,6 +251,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
         staged.healthCheckType !== undefined ||
         detailFields.some((field) => staged[field] !== undefined)
       }
+      isApplying={hasApplying(staged, ["healthCheckType", ...detailFields])}
     >
       <Block>
         <BlockItem className="w-full md:w-full">

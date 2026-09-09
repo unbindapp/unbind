@@ -14,6 +14,7 @@ import {
 } from "@/components/staged-changes/bar-position";
 import StagedChangesDetailsDialog from "@/components/staged-changes/staged-changes-details-dialog";
 import {
+  useIsApplying,
   useStagedChangeCount,
   useStagedChangesPlan,
   useStagedChangesStore,
@@ -228,6 +229,7 @@ function useBarSlots(isMounted: boolean) {
 
 export default function StagedChangesBar() {
   const count = useStagedChangeCount();
+  const isApplying = useIsApplying();
   const { deploy, plan } = useStagedChangesPlan();
   const { isExtraSmall } = useDeviceSize();
   const { isMounted, isOpen } = useBarPresence(count > 0);
@@ -300,7 +302,8 @@ export default function StagedChangesBar() {
           >
             <GripVerticalIcon className="text-muted-foreground -ml-0.5 size-4.5 shrink-0" />
             <p className="text-change min-w-0 shrink truncate text-sm leading-tight font-semibold">
-              Apply {shownCount} {shownCount === 1 ? "change" : "changes"}
+              {isApplying ? "Applying" : "Apply"} {shownCount}{" "}
+              {shownCount === 1 ? "change" : "changes"}
             </p>
           </motion.div>
           <div className="relative flex items-center justify-end gap-1">

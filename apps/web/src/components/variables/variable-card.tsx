@@ -39,6 +39,7 @@ import {
   EyeOffIcon,
   InfoIcon,
   KeyIcon,
+  LoaderIcon,
   LockIcon,
   PenIcon,
   Trash2Icon,
@@ -91,6 +92,7 @@ export default function VariableCard({
   const isDynamic = !!variable && variable.references.length > 0;
   const hasUnresolved = isDynamic && variable.references.some((r) => !r.resolved);
   const isStagedDelete = variable?.staged === "deleted";
+  const isApplying = variable?.isApplying === true;
 
   const renderedParts: TRenderedPart[] = useMemo(
     () =>
@@ -116,7 +118,8 @@ export default function VariableCard({
       data-dynamic={isDynamic || undefined}
       data-unresolved={hasUnresolved || undefined}
       data-staged={variable?.staged}
-      className="group/card data-staged:bg-change/2-10 data-unresolved:bg-warning/2-10 data-unresolved:border-warning/5-10 data-staged:border-change/5-10 relative flex w-full flex-col rounded-xl border px-3 py-1 data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
+      data-applying={isApplying || undefined}
+      className="group/card data-staged:bg-change/2-10 data-unresolved:bg-warning/2-10 data-unresolved:border-warning/5-10 data-staged:border-change/5-10 data-applying:animate-skeleton-smooth-weaker relative flex w-full flex-col rounded-xl border px-3 py-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-applying:pointer-events-none data-applying:opacity-(--skeleton-smooth-weaker-opacity) data-placeholder:text-transparent data-[staged=deleted]:opacity-60 sm:flex-row sm:items-start sm:rounded-lg sm:pr-1"
     >
       {variable && (
         <NewEntityIndicator
@@ -209,7 +212,11 @@ export default function VariableCard({
               </ScrollArea>
             </div>
             {variable?.staged && (
-              <StagedChip staged={variable.staged} className="mr-1 hidden self-center sm:flex" />
+              <StagedChip
+                staged={variable.staged}
+                isApplying={isApplying}
+                className="mr-1 hidden self-center sm:flex"
+              />
             )}
             <div className="hidden sm:flex">
               {!hideThreeDotButton && (
@@ -240,7 +247,7 @@ export default function VariableCard({
       </div>
       {(!isEditingVariable || !variable) && (
         <div className="absolute top-0.75 right-0.75 flex items-center gap-1 sm:hidden">
-          {variable?.staged && <StagedChip staged={variable.staged} />}
+          {variable?.staged && <StagedChip staged={variable.staged} isApplying={isApplying} />}
           {!hideThreeDotButton && (
             <ConditionalDropdownButton
               {...placeholderOrVariableProps}
@@ -275,15 +282,18 @@ const stagedLabels: Record<NonNullable<TVariableWithStaged["staged"]>, string> =
 
 function StagedChip({
   staged,
+  isApplying,
   className,
 }: {
   staged: NonNullable<TVariableWithStaged["staged"]>;
+  isApplying: boolean;
   className?: string;
 }) {
   return (
     <div className={cn("bg-background shrink-0 rounded-sm", className)}>
-      <p className="text-change bg-change/4-10 border-change/4-10 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
-        {stagedLabels[staged]}
+      <p className="text-change bg-change/4-10 border-change/4-10 flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+        {isApplying && <LoaderIcon className="size-3 shrink-0 animate-spin" />}
+        <span className="truncate">{isApplying ? "Applying" : stagedLabels[staged]}</span>
       </p>
     </div>
   );
