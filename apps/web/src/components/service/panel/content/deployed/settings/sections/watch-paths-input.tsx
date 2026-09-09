@@ -117,8 +117,8 @@ export default function WatchPathsInput({ service, value, onChange, className }:
         {value.length > 0 && (
           <ComboboxChips>
             {value.map((pattern) => (
-              <ComboboxChip key={pattern} aria-label={pattern}>
-                <span className="min-w-0 truncate px-3 py-2 font-mono text-sm leading-tight font-medium">
+              <ComboboxChip key={pattern} aria-label={pattern} className="bg-input">
+                <span className="min-w-0 truncate px-2.5 py-1.5 font-mono text-sm leading-tight font-medium">
                   {pattern}
                 </span>
                 <ComboboxChipRemove aria-label={`Remove ${pattern}`}>
@@ -163,7 +163,7 @@ export default function WatchPathsInput({ service, value, onChange, className }:
                       {item.add.map((pattern) => (
                         <span
                           key={pattern}
-                          className="bg-card border-foreground/2-10 -my-1 max-w-full min-w-0 rounded-sm border px-1.25 font-mono text-sm font-normal break-all"
+                          className="bg-foreground/2-10 border-foreground/2-10 -my-1 max-w-full min-w-0 rounded-sm border px-1.25 font-mono text-sm font-normal break-all"
                         >
                           {pattern}
                         </span>
