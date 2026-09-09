@@ -15,15 +15,11 @@ import {
 } from "@/components/ui/drawer";
 import { getVolumeDisplayName } from "@/components/volume/helpers";
 import VolumePanelContent from "@/components/volume/panel/volume-panel-content";
+import { volumeDescriptionMaxLength, volumeNameMaxLength } from "@/components/volume/limits";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { TVolumeShallow } from "@/lib/queries/services";
-import {
-  renameVolume as renameVolumeFn,
-  volumeDescriptionMaxLength,
-  volumeNameMaxLength,
-  VolumeRenameSchema,
-} from "@/lib/queries/storage";
+import { renameVolume as renameVolumeFn, VolumeRenameSchema } from "@/lib/queries/storage";
 import { useMutation } from "@tanstack/react-query";
 import { HardDriveIcon, PenIcon, XIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";

@@ -12,6 +12,7 @@ import {
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { toast } from "@/components/ui/toast";
+import { getDefaultVolumeName } from "@/components/volume/default-volume-name";
 import { getMountPathError } from "@/components/volume/mount-path";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
@@ -117,7 +118,7 @@ function useVolumeItem({ context }: TProps) {
         teamId: context.teamId,
         projectId,
         environmentId,
-        name: service.name,
+        name: getDefaultVolumeName(service.name),
         capacityGb: getDefaultCapacityGb(minimumStorageGb),
         serviceId: service.id,
         mountPath,

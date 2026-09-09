@@ -1,6 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
+import {
+  volumeDescriptionMaxLength,
+  volumeNameMaxLength,
+  volumeNameMinLength,
+} from "@/components/volume/limits";
 import { getGoClient } from "@/lib/server/client";
 import { PvcScopeSchema } from "@/lib/server/client.gen";
 import type { PvcScope, S3BucketResponse } from "@/lib/server/client.gen";
@@ -226,10 +231,6 @@ export const EditS3BucketFormSchema = z.object({
 export type TS3BucketFormValues = z.infer<typeof CreateS3BucketFormSchema>;
 
 export type TVolumeType = z.infer<typeof PvcScopeSchema>;
-
-export const volumeNameMinLength = 2;
-export const volumeNameMaxLength = 32;
-export const volumeDescriptionMaxLength = 128;
 
 export const VolumeRenameSchema = z.object({
   name: z
