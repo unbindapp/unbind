@@ -122,7 +122,6 @@ func Ensure(ctx context.Context, kube k8s.KubeClientInterface, service *ent.Serv
 			ctx,
 			namespace,
 			claim,
-			service.Name,
 			labels,
 			storage,
 			[]corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},

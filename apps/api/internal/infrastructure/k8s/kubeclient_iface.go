@@ -75,9 +75,9 @@ type KubeClientInterface interface {
 	// Longhorn only prunes a removed snapshot behind the volume head during a purge, and nothing else triggers one
 	PurgeRemovedLonghornSnapshots(ctx context.Context) error
 	// CreatePersistentVolumeClaim creates a new PersistentVolumeClaim in the specified namespace.
-	CreatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
+	CreatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
 	// never resizes an existing claim; UpdatePersistentVolumeClaim owns that
-	EnsurePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
+	EnsurePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, labels map[string]string, storageRequest string, accessModes []corev1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)
 	// nil serviceID releases the claim
 	SetPersistentVolumeClaimService(ctx context.Context, namespace, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error
 	// ReleasePersistentVolumeClaimsForService clears the service label from every

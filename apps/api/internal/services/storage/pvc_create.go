@@ -68,7 +68,6 @@ func (self *StorageService) CreatePVC(ctx context.Context, requesterUserID uuid.
 	createdPvc, err := self.k8s.CreatePersistentVolumeClaim(ctx,
 		team.Namespace,
 		kubernetesName,
-		input.Name,
 		labels,
 		sizeStr,
 		[]v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},

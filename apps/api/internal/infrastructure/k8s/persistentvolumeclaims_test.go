@@ -7,13 +7,18 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	mocks_repositories "github.com/unbindapp/unbind-api/mocks/repositories"
+	mocks_service_repo "github.com/unbindapp/unbind-api/mocks/repository/service"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/client-go/kubernetes/fake"
 	k8stesting "k8s.io/client-go/testing"
 )
@@ -102,6 +107,34 @@ func TestCreatePersistentVolumeClaim(t *testing.T) {
 				assert.Error(t, err)
 			}
 		})
+	}
+}
+
+// the fake clientset skips label validation, so the check is explicit
+func TestCreatePersistentVolumeClaimOnlyWritesCallerLabels(t *testing.T) {
+	ctx := context.Background()
+	serviceID := mustParseUUID(t, "11111111-2222-3333-4444-555555555555")
+	client := fake.NewSimpleClientset()
+
+	repo := mocks_repositories.NewRepositoriesMock(t)
+	serviceRepo := mocks_service_repo.NewServiceRepositoryMock(t)
+	serviceRepo.EXPECT().GetByID(mock.Anything, serviceID).Return(nil, &ent.NotFoundError{})
+	repo.EXPECT().Service().Return(serviceRepo)
+	kube := &KubeClient{clientset: client, repo: repo}
+
+	labels := map[string]string{
+		teamLabel:    "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+		serviceLabel: serviceID.String(),
+	}
+	info, err := kube.CreatePersistentVolumeClaim(ctx, rebindNamespace, "pgdata-my-pg-0", labels, "1Gi", []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce}, nil, client)
+	require.NoError(t, err)
+	require.NotNil(t, info)
+
+	created, err := client.CoreV1().PersistentVolumeClaims(rebindNamespace).Get(ctx, "pgdata-my-pg-0", metav1.GetOptions{})
+	require.NoError(t, err)
+	assert.Equal(t, labels, created.Labels)
+	for key, value := range created.Labels {
+		assert.Empty(t, validation.IsValidLabelValue(value), "label %s", key)
 	}
 }
 

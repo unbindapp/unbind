@@ -28,7 +28,6 @@ const (
 	projectLabel     = "unbind-project"
 	environmentLabel = "unbind-environment"
 	serviceLabel     = "unbind-service"
-	displayNameLabel = "pvc-display-name"
 )
 
 // CreatePersistentVolumeClaim creates a new PersistentVolumeClaim in the specified namespace.
@@ -36,7 +35,6 @@ func (self *KubeClient) CreatePersistentVolumeClaim(
 	ctx context.Context,
 	namespace string,
 	pvcName string,
-	displayName string,
 	labels map[string]string,
 	storageRequest string,
 	accessModes []corev1.PersistentVolumeAccessMode,
@@ -61,17 +59,11 @@ func (self *KubeClient) CreatePersistentVolumeClaim(
 		return nil, fmt.Errorf("failed to parse storageRequest '%s': %w", storageRequest, err)
 	}
 
-	pvcLabels := maps.Clone(labels)
-	if pvcLabels == nil {
-		pvcLabels = map[string]string{}
-	}
-	pvcLabels[displayNameLabel] = displayName
-
 	pvc := &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      pvcName,
 			Namespace: namespace,
-			Labels:    pvcLabels,
+			Labels:    maps.Clone(labels),
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
 			AccessModes: accessModes,
@@ -101,7 +93,6 @@ func (self *KubeClient) EnsurePersistentVolumeClaim(
 	ctx context.Context,
 	namespace string,
 	pvcName string,
-	displayName string,
 	labels map[string]string,
 	storageRequest string,
 	accessModes []corev1.PersistentVolumeAccessMode,
@@ -116,7 +107,7 @@ func (self *KubeClient) EnsurePersistentVolumeClaim(
 		return nil, fmt.Errorf("failed to get PersistentVolumeClaim '%s' in namespace '%s': %w", pvcName, namespace, err)
 	}
 
-	return self.CreatePersistentVolumeClaim(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	return self.CreatePersistentVolumeClaim(ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)
 }
 
 // nil serviceID releases the claim

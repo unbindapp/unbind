@@ -412,7 +412,6 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				pvc, err := self.k8s.CreatePersistentVolumeClaim(ctx,
 					project.Edges.Team.Namespace,
 					pvcName,
-					volume.Name,
 					labels,
 					volume.CapacityGB,
 					[]corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},

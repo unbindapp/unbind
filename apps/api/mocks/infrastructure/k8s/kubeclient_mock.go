@@ -24,10 +24,19 @@ func NewKubeClientMock(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *KubeClientMock {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &KubeClientMock{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -672,8 +681,8 @@ func (_c *KubeClientMock_CreateNamespace_Call) RunAndReturn(run func(ctx context
 }
 
 // CreatePersistentVolumeClaim provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) CreatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error) {
-	ret := _mock.Called(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+func (_mock *KubeClientMock) CreatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error) {
+	ret := _mock.Called(ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreatePersistentVolumeClaim")
@@ -681,18 +690,18 @@ func (_mock *KubeClientMock) CreatePersistentVolumeClaim(ctx context.Context, na
 
 	var r0 *models.PVCInfo
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) (*models.PVCInfo, error)); ok {
-		return returnFunc(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) (*models.PVCInfo, error)); ok {
+		return returnFunc(ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) *models.PVCInfo); ok {
-		r0 = returnFunc(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) *models.PVCInfo); ok {
+		r0 = returnFunc(ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.PVCInfo)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) error); ok {
-		r1 = returnFunc(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) error); ok {
+		r1 = returnFunc(ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -708,17 +717,16 @@ type KubeClientMock_CreatePersistentVolumeClaim_Call struct {
 //   - ctx context.Context
 //   - namespace string
 //   - pvcName string
-//   - displayName string
 //   - labels map[string]string
 //   - storageRequest string
 //   - accessModes []v1.PersistentVolumeAccessMode
 //   - storageClassName *string
 //   - client kubernetes.Interface
-func (_e *KubeClientMock_Expecter) CreatePersistentVolumeClaim(ctx any, namespace any, pvcName any, displayName any, labels any, storageRequest any, accessModes any, storageClassName any, client any) *KubeClientMock_CreatePersistentVolumeClaim_Call {
-	return &KubeClientMock_CreatePersistentVolumeClaim_Call{Call: _e.mock.On("CreatePersistentVolumeClaim", ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)}
+func (_e *KubeClientMock_Expecter) CreatePersistentVolumeClaim(ctx any, namespace any, pvcName any, labels any, storageRequest any, accessModes any, storageClassName any, client any) *KubeClientMock_CreatePersistentVolumeClaim_Call {
+	return &KubeClientMock_CreatePersistentVolumeClaim_Call{Call: _e.mock.On("CreatePersistentVolumeClaim", ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)}
 }
 
-func (_c *KubeClientMock_CreatePersistentVolumeClaim_Call) Run(run func(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface)) *KubeClientMock_CreatePersistentVolumeClaim_Call {
+func (_c *KubeClientMock_CreatePersistentVolumeClaim_Call) Run(run func(ctx context.Context, namespace string, pvcName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface)) *KubeClientMock_CreatePersistentVolumeClaim_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -732,29 +740,25 @@ func (_c *KubeClientMock_CreatePersistentVolumeClaim_Call) Run(run func(ctx cont
 		if args[2] != nil {
 			arg2 = args[2].(string)
 		}
-		var arg3 string
+		var arg3 map[string]string
 		if args[3] != nil {
-			arg3 = args[3].(string)
+			arg3 = args[3].(map[string]string)
 		}
-		var arg4 map[string]string
+		var arg4 string
 		if args[4] != nil {
-			arg4 = args[4].(map[string]string)
+			arg4 = args[4].(string)
 		}
-		var arg5 string
+		var arg5 []v1.PersistentVolumeAccessMode
 		if args[5] != nil {
-			arg5 = args[5].(string)
+			arg5 = args[5].([]v1.PersistentVolumeAccessMode)
 		}
-		var arg6 []v1.PersistentVolumeAccessMode
+		var arg6 *string
 		if args[6] != nil {
-			arg6 = args[6].([]v1.PersistentVolumeAccessMode)
+			arg6 = args[6].(*string)
 		}
-		var arg7 *string
+		var arg7 kubernetes.Interface
 		if args[7] != nil {
-			arg7 = args[7].(*string)
-		}
-		var arg8 kubernetes.Interface
-		if args[8] != nil {
-			arg8 = args[8].(kubernetes.Interface)
+			arg7 = args[7].(kubernetes.Interface)
 		}
 		run(
 			arg0,
@@ -765,7 +769,6 @@ func (_c *KubeClientMock_CreatePersistentVolumeClaim_Call) Run(run func(ctx cont
 			arg5,
 			arg6,
 			arg7,
-			arg8,
 		)
 	})
 	return _c
@@ -776,7 +779,7 @@ func (_c *KubeClientMock_CreatePersistentVolumeClaim_Call) Return(pVCInfo *model
 	return _c
 }
 
-func (_c *KubeClientMock_CreatePersistentVolumeClaim_Call) RunAndReturn(run func(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)) *KubeClientMock_CreatePersistentVolumeClaim_Call {
+func (_c *KubeClientMock_CreatePersistentVolumeClaim_Call) RunAndReturn(run func(ctx context.Context, namespace string, pvcName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)) *KubeClientMock_CreatePersistentVolumeClaim_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1469,8 +1472,8 @@ func (_c *KubeClientMock_DiscoverEndpointsByLabels_Call) RunAndReturn(run func(c
 }
 
 // EnsurePersistentVolumeClaim provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) EnsurePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error) {
-	ret := _mock.Called(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+func (_mock *KubeClientMock) EnsurePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error) {
+	ret := _mock.Called(ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)
 
 	if len(ret) == 0 {
 		panic("no return value specified for EnsurePersistentVolumeClaim")
@@ -1478,18 +1481,18 @@ func (_mock *KubeClientMock) EnsurePersistentVolumeClaim(ctx context.Context, na
 
 	var r0 *models.PVCInfo
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) (*models.PVCInfo, error)); ok {
-		return returnFunc(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) (*models.PVCInfo, error)); ok {
+		return returnFunc(ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) *models.PVCInfo); ok {
-		r0 = returnFunc(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) *models.PVCInfo); ok {
+		r0 = returnFunc(ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.PVCInfo)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) error); ok {
-		r1 = returnFunc(ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, map[string]string, string, []v1.PersistentVolumeAccessMode, *string, kubernetes.Interface) error); ok {
+		r1 = returnFunc(ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1505,17 +1508,16 @@ type KubeClientMock_EnsurePersistentVolumeClaim_Call struct {
 //   - ctx context.Context
 //   - namespace string
 //   - pvcName string
-//   - displayName string
 //   - labels map[string]string
 //   - storageRequest string
 //   - accessModes []v1.PersistentVolumeAccessMode
 //   - storageClassName *string
 //   - client kubernetes.Interface
-func (_e *KubeClientMock_Expecter) EnsurePersistentVolumeClaim(ctx any, namespace any, pvcName any, displayName any, labels any, storageRequest any, accessModes any, storageClassName any, client any) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
-	return &KubeClientMock_EnsurePersistentVolumeClaim_Call{Call: _e.mock.On("EnsurePersistentVolumeClaim", ctx, namespace, pvcName, displayName, labels, storageRequest, accessModes, storageClassName, client)}
+func (_e *KubeClientMock_Expecter) EnsurePersistentVolumeClaim(ctx any, namespace any, pvcName any, labels any, storageRequest any, accessModes any, storageClassName any, client any) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
+	return &KubeClientMock_EnsurePersistentVolumeClaim_Call{Call: _e.mock.On("EnsurePersistentVolumeClaim", ctx, namespace, pvcName, labels, storageRequest, accessModes, storageClassName, client)}
 }
 
-func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) Run(run func(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface)) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
+func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) Run(run func(ctx context.Context, namespace string, pvcName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface)) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -1529,29 +1531,25 @@ func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) Run(run func(ctx cont
 		if args[2] != nil {
 			arg2 = args[2].(string)
 		}
-		var arg3 string
+		var arg3 map[string]string
 		if args[3] != nil {
-			arg3 = args[3].(string)
+			arg3 = args[3].(map[string]string)
 		}
-		var arg4 map[string]string
+		var arg4 string
 		if args[4] != nil {
-			arg4 = args[4].(map[string]string)
+			arg4 = args[4].(string)
 		}
-		var arg5 string
+		var arg5 []v1.PersistentVolumeAccessMode
 		if args[5] != nil {
-			arg5 = args[5].(string)
+			arg5 = args[5].([]v1.PersistentVolumeAccessMode)
 		}
-		var arg6 []v1.PersistentVolumeAccessMode
+		var arg6 *string
 		if args[6] != nil {
-			arg6 = args[6].([]v1.PersistentVolumeAccessMode)
+			arg6 = args[6].(*string)
 		}
-		var arg7 *string
+		var arg7 kubernetes.Interface
 		if args[7] != nil {
-			arg7 = args[7].(*string)
-		}
-		var arg8 kubernetes.Interface
-		if args[8] != nil {
-			arg8 = args[8].(kubernetes.Interface)
+			arg7 = args[7].(kubernetes.Interface)
 		}
 		run(
 			arg0,
@@ -1562,7 +1560,6 @@ func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) Run(run func(ctx cont
 			arg5,
 			arg6,
 			arg7,
-			arg8,
 		)
 	})
 	return _c
@@ -1573,7 +1570,7 @@ func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) Return(pVCInfo *model
 	return _c
 }
 
-func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) RunAndReturn(run func(ctx context.Context, namespace string, pvcName string, displayName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
+func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) RunAndReturn(run func(ctx context.Context, namespace string, pvcName string, labels map[string]string, storageRequest string, accessModes []v1.PersistentVolumeAccessMode, storageClassName *string, client kubernetes.Interface) (*models.PVCInfo, error)) *KubeClientMock_EnsurePersistentVolumeClaim_Call {
 	_c.Call.Return(run)
 	return _c
 }
