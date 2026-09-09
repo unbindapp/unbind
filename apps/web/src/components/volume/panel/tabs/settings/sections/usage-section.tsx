@@ -2,7 +2,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { getVolumeUsageLevel, percentageFormatter } from "@/components/volume/helpers";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { ChartNoAxesColumnIcon, HourglassIcon } from "lucide-react";
+import { ChartNoAxesColumnIcon, ClockIcon, HourglassIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -18,16 +18,9 @@ export default function UsageSection({ volume }: TProps) {
       : undefined;
 
   const isUnattached = !volume.mounted_on_service_id;
+  const hasNoUsage = isUnattached || volume.mount_status === "awaiting_deployment";
 
-  const usageInfo = volume.is_attaching
-    ? "Attaching"
-    : volume.is_pending_resize
-      ? "Expanding"
-      : usagePercentage !== undefined
-        ? `${percentageFormatter(usagePercentage)}%`
-        : isUnattached
-          ? "Unknown"
-          : "Measuring";
+  const usageInfo = getUsageInfo(volume, usagePercentage, isUnattached);
 
   const usageLevel = getVolumeUsageLevel(usagePercentage);
 
@@ -48,7 +41,7 @@ export default function UsageSection({ volume }: TProps) {
               </span>
             ) : (
               <span className="text-foreground font-semibold">
-                {isUnattached ? "Unknown" : "Calculating"}
+                {hasNoUsage ? "Unknown" : "Calculating"}
               </span>
             )}
           </p>
@@ -72,9 +65,7 @@ export default function UsageSection({ volume }: TProps) {
             />
           </div>
           <div className="data-has-usage:text-foreground group-data-[usage=high]/section:text-warning group-data-[usage=critical]/section:text-destructive group-data-error/section:text-destructive relative flex max-w-full min-w-0 items-center gap-1.5">
-            {usagePercentage === undefined && !isUnattached && (
-              <HourglassIcon className="animate-hourglass size-3.5 shrink-0" />
-            )}
+            {usagePercentage === undefined && !isUnattached && getUsageIcon(volume)}
             <p
               data-has-usage={usagePercentage !== undefined || undefined}
               className="min-w-0 truncate leading-tight font-semibold"
@@ -97,4 +88,23 @@ export default function UsageSection({ volume }: TProps) {
 
 function getEntityId(volume: TVolumeShallow): string {
   return `usage_${volume.id}`;
+}
+
+function getUsageInfo(
+  volume: TVolumeShallow,
+  usagePercentage: number | undefined,
+  isUnattached: boolean,
+) {
+  if (volume.mount_status === "awaiting_deployment") return "Awaiting deployment";
+  if (volume.mount_status === "attaching") return "Attaching";
+  if (volume.is_pending_resize) return "Expanding";
+  if (usagePercentage !== undefined) return `${percentageFormatter(usagePercentage)}%`;
+  if (isUnattached) return "Unknown";
+  return "Measuring";
+}
+
+function getUsageIcon(volume: TVolumeShallow) {
+  if (volume.mount_status === "awaiting_deployment")
+    return <ClockIcon className="size-3.5 shrink-0" />;
+  return <HourglassIcon className="animate-hourglass size-3.5 shrink-0" />;
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -220,49 +221,40 @@ func (self *KubeClient) UpdatePersistentVolumeClaim(
 }
 
 // GetPersistentVolumeClaim retrieves a specific PersistentVolumeClaim by its name and namespace.
-// resolvePVCServiceBinding resolves which service (if any) a PVC belongs to via
-// its service-id label, falling back to a DB lookup of services referencing the
-// PVC. It returns the bound service ID and whether that service is a database.
-// A nil service ID means the PVC is unbound; parse failures are logged and
-// treated as unbound, while DB errors are returned for the caller to handle.
-// A label pointing at a service that does not exist yet still counts as bound.
-func (self *KubeClient) resolvePVCServiceBinding(ctx context.Context, pvcName string, pvcLabels map[string]string) (boundToServiceID *uuid.UUID, isDatabase bool, err error) {
+// resolvePVCServiceBinding finds the service that owns a PVC through its label or
+// the service configs. The service is nil when the label points at a row that has
+// not committed yet, which still counts as bound.
+func (self *KubeClient) resolvePVCServiceBinding(ctx context.Context, pvcName string, pvcLabels map[string]string) (boundToServiceID *uuid.UUID, service *ent.Service, err error) {
 	serviceIDStr := pvcLabels[serviceLabel]
 	if serviceIDStr == "" {
 		services, err := self.repo.Service().GetServicesUsingPVC(ctx, pvcName)
 		if err != nil {
-			return nil, false, fmt.Errorf("failed to get services using PVC '%s': %w", pvcName, err)
+			return nil, nil, fmt.Errorf("failed to get services using PVC '%s': %w", pvcName, err)
 		}
 		if len(services) == 0 {
-			return nil, false, nil
+			return nil, nil, nil
 		}
-		return &services[0].ID, services[0].Type == schema.ServiceTypeDatabase, nil
+		serviceIDStr = services[0].ID.String()
 	}
 
 	serviceID, err := uuid.Parse(serviceIDStr)
 	if err != nil {
 		log.Errorf("invalid service ID in PVC label '%s': %v", pvcName, err)
-		return nil, false, nil
+		return nil, nil, nil
 	}
 
-	service, err := self.repo.Service().GetByID(ctx, serviceID)
+	service, err = self.repo.Service().GetByID(ctx, serviceID)
 	if err != nil && !ent.IsNotFound(err) {
-		return nil, false, fmt.Errorf("failed to get service '%s': %w", serviceIDStr, err)
+		return nil, nil, fmt.Errorf("failed to get service '%s': %w", serviceIDStr, err)
 	}
-	if service == nil {
-		// The label is set before the service row commits and cleared before it is
-		// deleted, so a labeled claim without a service is still being created.
-		return &serviceID, false, nil
-	}
-	return &service.ID, service.Type == schema.ServiceTypeDatabase, nil
+	return &serviceID, service, nil
 }
 
 // pvcBinding describes which service owns a PVC and the lifecycle state of its mounts.
 type pvcBinding struct {
 	ServiceID   *uuid.UUID
 	IsDatabase  bool
-	IsAttaching bool
-	IsDetaching bool
+	MountStatus models.PVCMountStatus
 	InUseByPods bool
 }
 
@@ -272,7 +264,7 @@ type pvcBinding struct {
 // physically live, so a volume whose service was deleted reports as detaching
 // while its old pods terminate instead of appearing mounted.
 func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName string, pvcLabels map[string]string, pods []corev1.Pod) (*pvcBinding, error) {
-	serviceID, isDatabase, err := self.resolvePVCServiceBinding(ctx, pvcName, pvcLabels)
+	serviceID, service, err := self.resolvePVCServiceBinding(ctx, pvcName, pvcLabels)
 	if err != nil {
 		return nil, err
 	}
@@ -285,13 +277,13 @@ func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName string, p
 			if err != nil {
 				continue
 			}
-			service, err := self.repo.Service().GetByID(ctx, podServiceID)
+			podService, err := self.repo.Service().GetByID(ctx, podServiceID)
 			if err != nil && !ent.IsNotFound(err) {
 				return nil, fmt.Errorf("failed to get service '%s': %w", podServiceID, err)
 			}
-			if service != nil {
-				serviceID = &service.ID
-				isDatabase = service.Type == schema.ServiceTypeDatabase
+			if podService != nil {
+				serviceID = &podService.ID
+				service = podService
 				break
 			}
 		}
@@ -299,11 +291,36 @@ func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName string, p
 
 	return &pvcBinding{
 		ServiceID:   serviceID,
-		IsDatabase:  isDatabase,
-		IsAttaching: serviceID != nil && !anyPodRunning(pods),
-		IsDetaching: serviceID == nil && len(blockingPods) > 0,
+		IsDatabase:  service != nil && service.Type == schema.ServiceTypeDatabase,
+		MountStatus: resolveMountStatus(serviceID, service, pods, blockingPods),
 		InUseByPods: len(blockingPods) > 0,
 	}, nil
+}
+
+func resolveMountStatus(serviceID *uuid.UUID, service *ent.Service, pods, blockingPods []corev1.Pod) models.PVCMountStatus {
+	if serviceID == nil {
+		if len(blockingPods) > 0 {
+			return models.PVCMountStatusDetaching
+		}
+		return models.PVCMountStatusUnattached
+	}
+	if anyPodRunning(pods) {
+		return models.PVCMountStatusMounted
+	}
+	if service == nil {
+		return models.PVCMountStatusAttaching
+	}
+	if !service_repo.HasActiveDeployment(service) {
+		return models.PVCMountStatusAwaitingDeployment
+	}
+	if isScaledToZero(service) && len(blockingPods) == 0 {
+		return models.PVCMountStatusAwaitingDeployment
+	}
+	return models.PVCMountStatusAttaching
+}
+
+func isScaledToZero(service *ent.Service) bool {
+	return service.Edges.ServiceConfig != nil && service.Edges.ServiceConfig.Replicas == 0
 }
 
 // mountBlockingPods filters out pods that have finished (Succeeded or Failed) —
@@ -412,8 +429,7 @@ func (self *KubeClient) buildPVCInfo(ctx context.Context, pvc *corev1.Persistent
 		IsDatabase:         binding.IsDatabase,
 		IsAvailable:        canDelete,
 		IsDeleting:         isDeleting,
-		IsAttaching:        binding.IsAttaching,
-		IsDetaching:        binding.IsDetaching,
+		MountStatus:        binding.MountStatus,
 		CanDelete:          canDelete,
 		CreatedAt:          pvc.CreationTimestamp.Time,
 	}, nil

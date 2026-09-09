@@ -27,10 +27,35 @@ type PVCInfo struct {
 	IsAvailable        bool                       `json:"is_available"`
 	IsPendingResize    bool                       `json:"is_pending_resize"`
 	IsDeleting         bool                       `json:"is_deleting"`
-	IsAttaching        bool                       `json:"is_attaching"`
-	IsDetaching        bool                       `json:"is_detaching"`
+	MountStatus        PVCMountStatus             `json:"mount_status"`
 	CanDelete          bool                       `json:"can_delete"`
 	CreatedAt          time.Time                  `json:"created_at"`
+}
+
+type PVCMountStatus string
+
+const (
+	PVCMountStatusUnattached         PVCMountStatus = "unattached"
+	PVCMountStatusAwaitingDeployment PVCMountStatus = "awaiting_deployment"
+	PVCMountStatusAttaching          PVCMountStatus = "attaching"
+	PVCMountStatusMounted            PVCMountStatus = "mounted"
+	PVCMountStatusDetaching          PVCMountStatus = "detaching"
+)
+
+func (u PVCMountStatus) Schema(r huma.Registry) *huma.Schema {
+	if r.Map()["PVCMountStatus"] == nil {
+		schemaRef := r.Schema(reflect.TypeOf(""), true, "PVCMountStatus")
+		schemaRef.Title = "PVCMountStatus"
+		schemaRef.Enum = append(schemaRef.Enum, []any{
+			string(PVCMountStatusUnattached),
+			string(PVCMountStatusAwaitingDeployment),
+			string(PVCMountStatusAttaching),
+			string(PVCMountStatusMounted),
+			string(PVCMountStatusDetaching),
+		}...)
+		r.Map()["PVCMountStatus"] = schemaRef
+	}
+	return &huma.Schema{Ref: "#/components/schemas/PVCMountStatus"}
 }
 
 // Enum for PVC status

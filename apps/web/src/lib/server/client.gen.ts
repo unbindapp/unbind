@@ -483,6 +483,14 @@ export const CreatePVCInputSchema = z
   })
   .strip();
 
+export const PVCMountStatusSchema = z.enum([
+  'unattached',
+  'awaiting_deployment',
+  'attaching',
+  'mounted',
+  'detaching',
+]);
+
 export const PersistentVolumeClaimPhaseSchema = z.enum(['Pending', 'Bound', 'Lost']);
 
 export const PVCInfoSchema = z
@@ -493,13 +501,12 @@ export const PVCInfoSchema = z
     description: z.string().optional(),
     environment_id: z.string().optional(),
     id: z.string(),
-    is_attaching: z.boolean(),
     is_available: z.boolean(),
     is_database: z.boolean(),
     is_deleting: z.boolean(),
-    is_detaching: z.boolean(),
     is_pending_resize: z.boolean(),
     mount_path: z.string().optional(),
+    mount_status: PVCMountStatusSchema,
     mounted_on_service_id: z.string().optional(),
     name: z.string(),
     project_id: z.string().optional(),
@@ -2604,6 +2611,7 @@ export type GroupResponse = z.infer<typeof GroupResponseSchema>;
 export type CreateGroupResponseBody = z.infer<typeof CreateGroupResponseBodySchema>;
 export type PvcScope = z.infer<typeof PvcScopeSchema>;
 export type CreatePVCInput = z.infer<typeof CreatePVCInputSchema>;
+export type PVCMountStatus = z.infer<typeof PVCMountStatusSchema>;
 export type PersistentVolumeClaimPhase = z.infer<typeof PersistentVolumeClaimPhaseSchema>;
 export type PVCInfo = z.infer<typeof PVCInfoSchema>;
 export type CreatePVCResponseBody = z.infer<typeof CreatePVCResponseBodySchema>;

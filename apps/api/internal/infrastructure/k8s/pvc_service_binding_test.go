@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/internal/models"
 	mocks_repositories "github.com/unbindapp/unbind-api/mocks/repositories"
 	mocks_service_repo "github.com/unbindapp/unbind-api/mocks/repository/service"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,8 +37,7 @@ func TestLabeledClaimWithoutServiceIsStillBound(t *testing.T) {
 	require.NotNil(t, info)
 	require.NotNil(t, info.MountedOnServiceID)
 	assert.Equal(t, serviceID, *info.MountedOnServiceID)
-	assert.True(t, info.IsAttaching)
-	assert.False(t, info.IsDetaching)
+	assert.Equal(t, models.PVCMountStatusAttaching, info.MountStatus)
 	assert.False(t, info.IsAvailable)
 	assert.False(t, info.CanDelete)
 }

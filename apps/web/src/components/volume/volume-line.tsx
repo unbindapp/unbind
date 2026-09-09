@@ -9,7 +9,7 @@ import { volumePanelVolumeIdKey } from "@/components/volume/panel/constants";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { TVolumeUsageLevel } from "@/components/volume/types";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { HardDriveIcon, HourglassIcon } from "lucide-react";
+import { ClockIcon, HardDriveIcon, HourglassIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -26,6 +26,8 @@ export default function VolumeLine({ volume, className }: TProps) {
   const usageLevel: TVolumeUsageLevel = useMemo(() => {
     return getVolumeUsageLevel(usagePercentage);
   }, [usagePercentage]);
+
+  const status = getLineStatus(volume, usagePercentage);
 
   return (
     <VolumePanel volume={volume}>
@@ -58,19 +60,9 @@ export default function VolumeLine({ volume, className }: TProps) {
               data-truncate={usagePercentage === undefined || undefined}
               className="group/line flex min-w-0 shrink items-center gap-1.5"
             >
-              {volume.is_attaching || volume.is_pending_resize || usagePercentage === undefined ? (
-                <HourglassIcon className="animate-hourglass size-3 min-w-0 shrink-0" />
-              ) : (
-                <HardDriveIcon className="size-3.5 min-w-0 shrink-0" />
-              )}
+              {status.icon}
               <p className="group-data-truncate/line:min-w-0 group-data-truncate/line:shrink group-data-truncate/line:truncate">
-                {volume.is_attaching
-                  ? "Attaching"
-                  : volume.is_pending_resize
-                    ? "Expanding"
-                    : usagePercentage !== undefined
-                      ? `${percentageFormatter(usagePercentage)}%`
-                      : "Measuring"}
+                {status.text}
               </p>
             </div>
             <p className="max-w-[40%] min-w-0 shrink truncate text-right">
@@ -81,4 +73,21 @@ export default function VolumeLine({ volume, className }: TProps) {
       </LinkButton>
     </VolumePanel>
   );
+}
+
+function getLineStatus(volume: TVolumeShallow, usagePercentage: number | undefined) {
+  const hourglass = <HourglassIcon className="animate-hourglass size-3 min-w-0 shrink-0" />;
+  if (volume.mount_status === "awaiting_deployment") {
+    return {
+      icon: <ClockIcon className="size-3.5 min-w-0 shrink-0" />,
+      text: "Awaiting deployment",
+    };
+  }
+  if (volume.mount_status === "attaching") return { icon: hourglass, text: "Attaching" };
+  if (volume.is_pending_resize) return { icon: hourglass, text: "Expanding" };
+  if (usagePercentage === undefined) return { icon: hourglass, text: "Measuring" };
+  return {
+    icon: <HardDriveIcon className="size-3.5 min-w-0 shrink-0" />,
+    text: `${percentageFormatter(usagePercentage)}%`,
+  };
 }

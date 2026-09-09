@@ -164,7 +164,7 @@ function AttachSection({ volume }: TProps) {
       error={errorAttach?.message}
     >
       <p className="text-muted-foreground w-full px-1.5">
-        {volume.is_detaching
+        {volume.mount_status === "detaching"
           ? "This volume is detaching from its previous service. It can be attached to a service once detaching is complete."
           : "This volume is not attached to a service. Attach it to a service in this environment to start using it."}
       </p>
@@ -205,7 +205,7 @@ function AttachSection({ volume }: TProps) {
                       open={isOpen}
                       onBlur={field.handleBlur}
                       isPending={isPendingServices}
-                      disabled={volume.is_deleting || volume.is_detaching}
+                      disabled={volume.is_deleting || volume.mount_status === "detaching"}
                     />
                   )}
                 </field.AsyncAndSearchableSelect>
@@ -236,7 +236,7 @@ function AttachSection({ volume }: TProps) {
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="/data"
                   className="w-full"
-                  disabled={volume.is_deleting || volume.is_detaching}
+                  disabled={volume.is_deleting || volume.mount_status === "detaching"}
                 />
               </BlockItemContent>
             </BlockItem>
@@ -280,7 +280,8 @@ function AttachedSection({ volume }: TProps) {
             </span>
           ) : attachedService ? (
             <span>
-              This volume is {volume.is_attaching ? "being attached to" : "attached to"}{" "}
+              This volume is{" "}
+              {volume.mount_status === "attaching" ? "being attached to" : "attached to"}{" "}
               <span className="text-foreground bg-foreground/2-10 border-foreground/2-10 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
                 {attachedService.name}
               </span>{" "}

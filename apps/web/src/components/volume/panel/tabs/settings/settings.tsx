@@ -5,7 +5,7 @@ import DeleteSection from "@/components/volume/panel/tabs/settings/sections/dele
 import ExpandSection from "@/components/volume/panel/tabs/settings/sections/expand-section";
 import UsageSection from "@/components/volume/panel/tabs/settings/sections/usage-section";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { HourglassIcon } from "lucide-react";
+import { ClockIcon, HourglassIcon } from "lucide-react";
 
 type TProps = { volume: TVolumeShallow };
 
@@ -20,13 +20,21 @@ export default function Settings({ volume }: TProps) {
           </p>
         </BannerWrapper>
       )}
-      {volume.is_attaching && (
+      {volume.mount_status === "awaiting_deployment" && (
+        <BannerWrapper className="bg-process/3-10 border-process/3-10 text-process">
+          <ClockIcon className="mt-0.5 -ml-0.5 size-4 shrink-0" />
+          <p className="min-w-0 shrink leading-tight">
+            Waiting. The volume will mount when the service is deployed.
+          </p>
+        </BannerWrapper>
+      )}
+      {volume.mount_status === "attaching" && (
         <BannerWrapper className="bg-process/3-10 border-process/3-10 text-process">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">Attaching the volume to the service.</p>
         </BannerWrapper>
       )}
-      {volume.is_detaching && (
+      {volume.mount_status === "detaching" && (
         <BannerWrapper className="bg-warning/3-10 border-warning/3-10 text-warning">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">

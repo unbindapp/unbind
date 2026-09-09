@@ -23,7 +23,7 @@ export default function VolumeCard({ volume, className }: TProps) {
         icon: <LoaderIcon className="text-destructive size-3.5 shrink-0 animate-spin" />,
         text: "Deleting",
       };
-    if (volume.is_detaching)
+    if (volume.mount_status === "detaching")
       return {
         icon: <LoaderIcon className="text-warning size-3.5 shrink-0 animate-spin" />,
         text: "Detaching",
@@ -38,11 +38,11 @@ export default function VolumeCard({ volume, className }: TProps) {
       icon: null,
       text: "Not attached",
     };
-  }, [isDeleting, volume.is_detaching, volume.is_pending_resize]);
+  }, [isDeleting, volume.mount_status, volume.is_pending_resize]);
 
   return (
     <li
-      data-detaching={volume.is_detaching || undefined}
+      data-detaching={volume.mount_status === "detaching" || undefined}
       data-deleting={isDeleting || undefined}
       data-pending-resize={volume.is_pending_resize || undefined}
       className={cn(
