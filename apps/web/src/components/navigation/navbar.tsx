@@ -1,6 +1,8 @@
+import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import { BreadcrumbSeparator } from "@/components/navigation/breadcrumb-wrapper";
 import LogoLink from "@/components/navigation/logo-link";
 import NavbarScrollArea from "@/components/navigation/navbar-scroll-area";
+import NavbarSearchButton from "@/components/navigation/navbar-search-button";
 import UserAvatarOrSignIn from "@/components/navigation/user-avatar-or-sign-in";
 import { hasChildRole, withChildRole } from "@/components/ui/child-role";
 import { cn } from "@/components/ui/utils";
@@ -13,7 +15,13 @@ const NAVBAR_ROLE = {
   tabsSm: "navbar.tabs-sm",
 } as const;
 
-export function Navbar({ children, className }: { className?: string; children?: ReactNode }) {
+type TProps = {
+  contextType: Extract<TContextCommandPanelContext["contextType"], "team" | "project">;
+  className?: string;
+  children?: ReactNode;
+};
+
+export function Navbar({ contextType, children, className }: TProps) {
   const ref = useRef<HTMLElement>(null);
 
   // Published so content can offset itself past the bar, which sits at the bottom
@@ -69,7 +77,8 @@ export function Navbar({ children, className }: { className?: string; children?:
             <NavbarScrollArea className="hidden shrink-0 lg:flex">{tabsLg}</NavbarScrollArea>
           )}
         </div>
-        <div className="flex shrink-0 items-center justify-end">
+        <div className="flex shrink-0 items-center justify-end gap-2">
+          <NavbarSearchButton contextType={contextType} />
           <UserAvatarOrSignIn />
         </div>
       </div>

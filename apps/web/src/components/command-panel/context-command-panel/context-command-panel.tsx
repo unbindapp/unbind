@@ -3,8 +3,9 @@
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
 import { CommandPanelItemsProvider } from "@/components/command-panel/command-panel-items-provier";
 import {
-  contextCommandPanelId,
   contextCommandPanelRootPage,
+  getContextCommandPanelId,
+  TTriggerType,
 } from "@/components/command-panel/constants";
 import ContextCommandPanelItemsProvider, {
   useContextCommandPanelItems,
@@ -15,10 +16,6 @@ import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { ReactElement, useMemo } from "react";
-import { z } from "zod";
-
-export const TriggerTypeEnum = z.enum(["layout", "button", "list"]);
-type TTriggerType = z.infer<typeof TriggerTypeEnum>;
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -44,7 +41,7 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
   const { rootPage, currentPage, setCurrentPageId, goToParentPage } =
     useContextCommandPanelData(context);
 
-  const thisPanelId = `${contextCommandPanelId}_${context.contextType}_${triggerType}`;
+  const thisPanelId = getContextCommandPanelId(context.contextType, triggerType);
 
   const open = panelId === thisPanelId;
   const setOpen = (open: boolean) => {

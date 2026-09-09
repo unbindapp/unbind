@@ -8,12 +8,11 @@ import { useCallback, useMemo, useRef } from "react";
 // and project areas, so root is their only common ancestor.
 const routeApi = getRouteApi("__root__");
 
-export default function useCommandPanel({ defaultPageId }: { defaultPageId: string }) {
+// Opening a panel is just a search param change, so triggers outside the
+// command panel store (like the navbar search button) can use this on its own
+export function useSetCommandPanelId() {
   const navigate = useNavigate();
-  const search = routeApi.useSearch();
-  const panelId = search[commandPanelKey] ?? null;
-  const panelPageId = search[commandPanelPageKey] ?? defaultPageId;
-  const setPanelId = useCallback(
+  return useCallback(
     (value: string | null) =>
       navigate({
         to: ".",
@@ -22,6 +21,14 @@ export default function useCommandPanel({ defaultPageId }: { defaultPageId: stri
       }),
     [navigate],
   );
+}
+
+export default function useCommandPanel({ defaultPageId }: { defaultPageId: string }) {
+  const navigate = useNavigate();
+  const search = routeApi.useSearch();
+  const panelId = search[commandPanelKey] ?? null;
+  const panelPageId = search[commandPanelPageKey] ?? defaultPageId;
+  const setPanelId = useSetCommandPanelId();
   const setPanelPageId = useCallback(
     (value: string | null) =>
       navigate({

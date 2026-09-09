@@ -14,7 +14,7 @@ type TProps = {
 
 export default function ProjectNavbar({ className }: TProps) {
   return (
-    <Navbar className={className}>
+    <Navbar contextType="project" className={className}>
       <NavbarBreadcrumb>
         <ProjectBreadcrumb />
       </NavbarBreadcrumb>

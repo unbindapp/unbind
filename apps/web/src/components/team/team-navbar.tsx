@@ -10,7 +10,7 @@ import TeamTabs from "@/components/team/team-tabs";
 
 export default function TeamNavbar() {
   return (
-    <Navbar>
+    <Navbar contextType="team">
       <NavbarBreadcrumb>
         <TeamBreadcrumb />
       </NavbarBreadcrumb>
