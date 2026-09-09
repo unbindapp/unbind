@@ -20,7 +20,7 @@ import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { servicesListQuery, TServiceShallow } from "@/lib/queries/services";
 import { createVolume as createVolumeFn } from "@/lib/queries/storage";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { BoxIcon, FolderClosedIcon, HardDriveIcon, TriangleAlertIcon } from "lucide-react";
+import { FolderClosedIcon, HardDriveIcon, TriangleAlertIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 
@@ -215,7 +215,7 @@ function useVolumeItem({ context }: TProps) {
       id: mainPageId,
       title: "Volume",
       keywords: ["storage", "persistent", "disk", "pvc", "mount"],
-      Icon: BoxIcon,
+      Icon: HardDriveIcon,
       subpage: {
         id: servicesPageId,
         title: "Attach to Service",
