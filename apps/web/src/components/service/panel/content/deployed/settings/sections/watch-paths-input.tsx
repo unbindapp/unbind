@@ -10,43 +10,45 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { gitWatchPathSuggestionsQuery } from "@/lib/queries/git";
+import { TServiceShallow } from "@/lib/queries/services";
 import { splitWatchPaths } from "@/lib/watch-paths";
+import { useQuery } from "@tanstack/react-query";
 import { FolderSearchIcon, PlusIcon, XIcon } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 const maxVisibleSuggestions = 100;
-const placeholderArray = Array.from({ length: 8 }, (_, index) => index);
+const placeholderArray = Array.from({ length: 10 }, (_, index) => index);
 
 type TProps = {
+  service: TServiceShallow;
   value: string[];
   onChange: (value: string[]) => void;
-  suggestions: string[] | undefined;
-  isPending: boolean;
-  error: string | undefined;
-  isTruncated: boolean;
-  onOpen: () => void;
   className?: string;
 };
 
-export default function WatchPathsInput({
-  value,
-  onChange,
-  suggestions,
-  isPending,
-  error,
-  isTruncated,
-  onOpen,
-  className,
-}: TProps) {
+export default function WatchPathsInput({ service, value, onChange, className }: TProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const typed = inputValue.trim();
+  const typed = splitWatchPaths(inputValue);
+
+  const { data, isPending, error } = useQuery({
+    ...gitWatchPathSuggestionsQuery({
+      installationId: service.github_installation_id ?? 0,
+      owner: service.git_repository_owner ?? "",
+      repoName: service.git_repository ?? "",
+      ref: service.config.git_branch ?? "",
+    }),
+    enabled: hasOpened,
+  });
+  const suggestions = data?.suggestions;
 
   const visibleSuggestions = useMemo(() => {
     if (!suggestions) return undefined;
-    const query = typed.toLowerCase();
+    const query = inputValue.trim().toLowerCase();
     const visible: string[] = [];
     for (const suggestion of suggestions) {
       if (value.includes(suggestion)) continue;
@@ -55,11 +57,12 @@ export default function WatchPathsInput({
       if (visible.length >= maxVisibleSuggestions) break;
     }
     return visible;
-  }, [suggestions, value, typed]);
+  }, [suggestions, value, inputValue]);
 
-  const add = (raw: string) => {
+  const add = (patterns: string[]) => {
     inputRef.current?.focus();
-    const added = splitWatchPaths(raw).filter((pattern) => !value.includes(pattern));
+    setInputValue("");
+    const added = patterns.filter((pattern) => !value.includes(pattern));
     if (added.length === 0) return;
     onChange([...value, ...added]);
   };
@@ -67,9 +70,8 @@ export default function WatchPathsInput({
   const remove = (pattern: string) => onChange(value.filter((p) => p !== pattern));
 
   const commitTyped = () => {
-    if (!typed) return;
+    if (typed.length === 0) return;
     add(typed);
-    setInputValue("");
   };
 
   return (
@@ -104,7 +106,7 @@ export default function WatchPathsInput({
         onOpenChange={(open) => {
           setIsOpen(open);
           if (open) {
-            onOpen();
+            setHasOpened(true);
             return;
           }
           commitTyped();
@@ -136,7 +138,6 @@ export default function WatchPathsInput({
             <div className="flex w-full flex-col gap-1">
               <CommandInput
                 ref={inputRef}
-                showSpinner={isPending}
                 placeholder="Add pattern, e.g. apps/web/**"
                 value={inputValue}
                 onValueChange={(v) => {
@@ -153,19 +154,27 @@ export default function WatchPathsInput({
                 <ScrollArea viewportRef={scrollAreaRef} className="flex flex-1 flex-col">
                   <CommandList>
                     <CommandGroup>
-                      {typed && (
+                      {typed.length > 0 && (
                         <CommandItem
-                          value={`add:${typed}`}
+                          value={`add:${inputValue}`}
                           onSelect={commitTyped}
                           className="group/item px-3"
                         >
                           <PlusIcon className="-ml-0.5 size-4.5 shrink-0" />
-                          <p className="min-w-0 shrink leading-tight">
-                            Add <span className="font-mono">{typed}</span>
+                          <p className="flex min-w-0 flex-wrap items-center gap-1.5 leading-tight">
+                            <span>Add</span>
+                            {typed.map((pattern) => (
+                              <span
+                                key={pattern}
+                                className="bg-foreground/2-10 border-foreground/2-10 -my-1 rounded-sm border px-1.25 font-mono text-sm font-normal"
+                              >
+                                {pattern}
+                              </span>
+                            ))}
                           </p>
                         </CommandItem>
                       )}
-                      {!visibleSuggestions &&
+                      {!suggestions &&
                         isPending &&
                         placeholderArray.map((_, index) => (
                           <CommandItem disabled key={index}>
@@ -174,20 +183,22 @@ export default function WatchPathsInput({
                             </p>
                           </CommandItem>
                         ))}
-                      {!visibleSuggestions && !isPending && error && (
-                        <ErrorCard className="rounded-md" message={error} />
+                      {!suggestions && !isPending && error && (
+                        <ErrorCard className="rounded-md" message={error.message} />
                       )}
-                      {visibleSuggestions && visibleSuggestions.length === 0 && !typed && (
-                        <div className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
-                          <FolderSearchIcon className="size-4.5 shrink-0" />
-                          <p className="min-w-0 shrink">No suggestions</p>
-                        </div>
-                      )}
+                      {visibleSuggestions &&
+                        visibleSuggestions.length === 0 &&
+                        typed.length === 0 && (
+                          <div className="text-muted-foreground flex items-center justify-start gap-2 px-2.5 py-2.5 leading-tight">
+                            <FolderSearchIcon className="size-4.5 shrink-0" />
+                            <p className="min-w-0 shrink">No suggestions</p>
+                          </div>
+                        )}
                       {visibleSuggestions?.map((suggestion) => (
                         <CommandItem
                           key={suggestion}
                           value={suggestion}
-                          onSelect={() => add(suggestion)}
+                          onSelect={() => add([suggestion])}
                           className="group/item px-3"
                         >
                           <p className="min-w-0 shrink font-mono leading-tight">{suggestion}</p>
@@ -201,7 +212,7 @@ export default function WatchPathsInput({
           </PopoverContent>
         </Command>
       </Popover>
-      {isTruncated && (
+      {data?.truncated && (
         <p className="text-muted-foreground px-1 text-sm leading-tight">
           The repository is too large to list every path, suggestions are incomplete.
         </p>

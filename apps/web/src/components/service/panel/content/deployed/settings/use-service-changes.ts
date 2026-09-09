@@ -80,7 +80,12 @@ export function useResetFormOnStagedChange<T extends TFormValues>(
   staged: TStagedFields,
   fields: TServiceChangeField[],
 ) {
-  const key = fields.map((field) => `${field}=${staged[field]?.value ?? ""}`).join("|");
+  const key = fields
+    .map((field) => {
+      const change = staged[field];
+      return change ? `${field}=${change.value}` : field;
+    })
+    .join("|");
   const isFirstRender = useRef(true);
 
   useEffect(() => {

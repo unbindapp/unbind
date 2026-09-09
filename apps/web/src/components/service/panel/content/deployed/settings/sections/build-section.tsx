@@ -18,11 +18,13 @@ import {
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import WatchPathsInput from "@/components/service/panel/content/deployed/settings/sections/watch-paths-input";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TGitSectionProps } from "@/components/settings/types";
 import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { GitServiceBuilderEnum, TGitServiceBuilder, TServiceShallow } from "@/lib/queries/services";
+import { formatWatchPaths, joinWatchPaths, splitWatchPaths } from "@/lib/watch-paths";
 import { PlusIcon, WrenchIcon } from "lucide-react";
 import { useMemo, useRef } from "react";
 
@@ -109,6 +111,7 @@ const buildFields: TServiceChangeField[] = [
   "dockerBuilderDockerfilePath",
   "dockerBuilderBuildContext",
   "startCommand",
+  "watchPaths",
 ];
 
 function GitSection({ service }: TGitSectionProps) {
@@ -120,9 +123,11 @@ function GitSection({ service }: TGitSectionProps) {
     dockerBuilderBuildContext: service.config.docker_builder_build_context || "",
     startCommand: service.config.run_command || "",
   };
+  const serverWatchPaths = joinWatchPaths(service.config.watch_paths);
   const { staged, stage } = useServiceChanges(service, {
     builder: service.config.builder,
     ...serverValues,
+    watchPaths: serverWatchPaths,
   });
 
   const defaultValues = {
@@ -144,6 +149,7 @@ function GitSection({ service }: TGitSectionProps) {
       serverValues.dockerBuilderBuildContext,
     ),
     startCommand: stagedString(staged.startCommand, serverValues.startCommand),
+    watchPaths: stagedString(staged.watchPaths, serverWatchPaths),
   };
   const form = useAppForm({ defaultValues });
   useResetFormOnStagedChange(form, defaultValues, staged, buildFields);
@@ -302,6 +308,40 @@ function GitSection({ service }: TGitSectionProps) {
           </>
         )}
       />
+      <Block>
+        <form.AppField
+          name="watchPaths"
+          children={(field) => (
+            <BlockItem className="group/item w-full md:w-full">
+              <BlockItemHeader type="column">
+                <BlockItemTitle hasChanges={staged.watchPaths !== undefined}>
+                  Watch Paths
+                </BlockItemTitle>
+                <BlockItemDescription>
+                  Gitignore-style patterns. Leave empty to deploy on every push.
+                </BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <WatchPathsInput
+                  service={service}
+                  value={splitWatchPaths(field.state.value)}
+                  onChange={(patterns) => {
+                    const joined = joinWatchPaths(patterns);
+                    field.handleChange(joined);
+                    stage({
+                      field: "watchPaths",
+                      label: "Watch paths",
+                      value: joined,
+                      previous: serverWatchPaths,
+                      format: formatWatchPaths,
+                    });
+                  }}
+                />
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
+      </Block>
     </SettingsSection>
   );
 }
