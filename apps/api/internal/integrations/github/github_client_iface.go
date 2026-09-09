@@ -32,4 +32,8 @@ type GithubClientInterface interface {
 	// Get branch head summary - sha, message, author
 	// GetCommitSummary - get summary for a specific commit or branch head
 	GetCommitSummary(ctx context.Context, installation *ent.GithubInstallation, owner, repo string, branchOrSHA string, isCommitSHA bool) (commitSHA, commitMessage string, committer *schema.GitCommitter, err error)
+	// GetRepositoryFiles lists every file path at a branch or tag, truncated when GitHub caps the tree
+	GetRepositoryFiles(ctx context.Context, installation *ent.GithubInstallation, owner, repo, ref string) (files []string, truncated bool, err error)
+	// GetChangedFiles lists the files that differ between two commits, GitHub caps the comparison at 300 files
+	GetChangedFiles(ctx context.Context, installation *ent.GithubInstallation, owner, repo, base, head string) ([]string, error)
 }

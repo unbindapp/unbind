@@ -38,6 +38,7 @@ export const ServiceChangeFieldSchema = z.enum([
   "dockerBuilderBuildContext",
   "startCommand",
   "gitBranch",
+  "watchPaths",
   "image",
   "s3BackupBucketId",
   "backupSchedule",

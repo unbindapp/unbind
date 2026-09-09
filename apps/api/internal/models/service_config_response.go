@@ -10,6 +10,7 @@ import (
 type ServiceConfigResponse struct {
 	GitBranch                     *string               `json:"git_branch,omitempty"`
 	GitTag                        *string               `json:"git_tag,omitempty"`
+	WatchPaths                    []string              `json:"watch_paths" nullable:"false"`
 	Builder                       schema.ServiceBuilder `json:"builder"`
 	Icon                          string                `json:"icon"`
 	Hosts                         []schema.HostSpec     `json:"hosts" nullable:"false"`
@@ -51,6 +52,7 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 		response = &ServiceConfigResponse{
 			GitBranch:                     entity.GitBranch,
 			GitTag:                        entity.GitTag,
+			WatchPaths:                    entity.WatchPaths,
 			Builder:                       entity.Builder,
 			Icon:                          entity.Icon,
 			Hosts:                         entity.Hosts,
@@ -74,6 +76,9 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 			Resources:                     entity.Resources,
 			DockerBuilderDockerfilePath:   entity.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     entity.DockerBuilderBuildContext,
+		}
+		if response.WatchPaths == nil {
+			response.WatchPaths = []string{}
 		}
 		if response.ProtectedVariables == nil {
 			response.ProtectedVariables = []string{}

@@ -46,6 +46,8 @@ type ServiceConfig struct {
 	GitBranch *string `json:"git_branch,omitempty"`
 	// Tag to build from, supports glob patterns
 	GitTag *string `json:"git_tag,omitempty"`
+	// Gitignore-style patterns, a push deploys only when a changed file matches. Empty deploys on every push
+	WatchPaths []string `json:"watch_paths,omitempty"`
 	// External domains and paths for the service
 	Hosts []schema.HostSpec `json:"hosts,omitempty"`
 	// Container ports to expose
@@ -136,7 +138,7 @@ func (*ServiceConfig) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case serviceconfig.FieldS3BackupBucketID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case serviceconfig.FieldHosts, serviceconfig.FieldPorts, serviceconfig.FieldDatabaseConfig, serviceconfig.FieldVolumes, serviceconfig.FieldSecurityContext, serviceconfig.FieldHealthCheck, serviceconfig.FieldVariableMounts, serviceconfig.FieldProtectedVariables, serviceconfig.FieldVariableMetadata, serviceconfig.FieldInitContainers, serviceconfig.FieldResources:
+		case serviceconfig.FieldWatchPaths, serviceconfig.FieldHosts, serviceconfig.FieldPorts, serviceconfig.FieldDatabaseConfig, serviceconfig.FieldVolumes, serviceconfig.FieldSecurityContext, serviceconfig.FieldHealthCheck, serviceconfig.FieldVariableMounts, serviceconfig.FieldProtectedVariables, serviceconfig.FieldVariableMetadata, serviceconfig.FieldInitContainers, serviceconfig.FieldResources:
 			values[i] = new([]byte)
 		case serviceconfig.FieldAutoDeploy, serviceconfig.FieldIsPublic:
 			values[i] = new(sql.NullBool)
@@ -240,6 +242,14 @@ func (_m *ServiceConfig) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.GitTag = new(string)
 				*_m.GitTag = value.String
+			}
+		case serviceconfig.FieldWatchPaths:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field watch_paths", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.WatchPaths); err != nil {
+					return fmt.Errorf("unmarshal field watch_paths: %w", err)
+				}
 			}
 		case serviceconfig.FieldHosts:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -490,6 +500,9 @@ func (_m *ServiceConfig) String() string {
 		builder.WriteString("git_tag=")
 		builder.WriteString(*v)
 	}
+	builder.WriteString(", ")
+	builder.WriteString("watch_paths=")
+	builder.WriteString(fmt.Sprintf("%v", _m.WatchPaths))
 	builder.WriteString(", ")
 	builder.WriteString("hosts=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Hosts))

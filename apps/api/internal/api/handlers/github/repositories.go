@@ -8,6 +8,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
+	"github.com/unbindapp/unbind-api/internal/watchpaths"
 )
 
 type GithubRepositoryListResponse struct {
@@ -82,5 +83,49 @@ func (self *HandlerGroup) HandleGetGithubRepositoryDetail(ctx context.Context, i
 
 	resp := &GithubRepositoryDetailResponse{}
 	resp.Body.Data = repoDetail
+	return resp, nil
+}
+
+// GET watch path suggestions derived from a repository's file tree
+type GithubWatchPathSuggestionsInput struct {
+	server.BaseAuthInput
+	InstallationID int64  `query:"installation_id" required:"true"`
+	Owner          string `query:"owner" required:"true"`
+	RepoName       string `query:"repo_name" required:"true"`
+	Ref            string `query:"ref" required:"true" doc:"Branch or tag to read the file tree from"`
+}
+
+type GithubWatchPathSuggestions struct {
+	Suggestions []string `json:"suggestions" nullable:"false"`
+	Truncated   bool     `json:"truncated" doc:"GitHub capped the file tree, so some paths are missing"`
+}
+
+type GithubWatchPathSuggestionsResponse struct {
+	Body struct {
+		Data *GithubWatchPathSuggestions `json:"data"`
+	}
+}
+
+func (self *HandlerGroup) HandleGetGithubWatchPathSuggestions(ctx context.Context, input *GithubWatchPathSuggestionsInput) (*GithubWatchPathSuggestionsResponse, error) {
+	installation, err := self.srv.Repository.Github().GetInstallationByID(ctx, input.InstallationID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return nil, huma.Error404NotFound("GitHub installation not found")
+		}
+		log.Error("Error getting github installation", "err", err, "installationID", input.InstallationID)
+		return nil, huma.Error500InternalServerError("Failed to get github installation")
+	}
+
+	files, truncated, err := self.srv.GithubClient.GetRepositoryFiles(ctx, installation, input.Owner, input.RepoName, input.Ref)
+	if err != nil {
+		log.Error("Error getting repository files", "err", err, "owner", input.Owner, "repo", input.RepoName, "ref", input.Ref)
+		return nil, huma.Error500InternalServerError("Failed to get repository files")
+	}
+
+	resp := &GithubWatchPathSuggestionsResponse{}
+	resp.Body.Data = &GithubWatchPathSuggestions{
+		Suggestions: watchpaths.Suggestions(files),
+		Truncated:   truncated,
+	}
 	return resp, nil
 }

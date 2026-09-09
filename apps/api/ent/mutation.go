@@ -14031,6 +14031,8 @@ type ServiceConfigMutation struct {
 	railpack_framework               *enum.Framework
 	git_branch                       *string
 	git_tag                          *string
+	watch_paths                      *[]string
+	appendwatch_paths                []string
 	hosts                            *[]schema.HostSpec
 	appendhosts                      []schema.HostSpec
 	ports                            *[]schema.PortSpec
@@ -14646,6 +14648,71 @@ func (m *ServiceConfigMutation) GitTagCleared() bool {
 func (m *ServiceConfigMutation) ResetGitTag() {
 	m.git_tag = nil
 	delete(m.clearedFields, serviceconfig.FieldGitTag)
+}
+
+// SetWatchPaths sets the "watch_paths" field.
+func (m *ServiceConfigMutation) SetWatchPaths(s []string) {
+	m.watch_paths = &s
+	m.appendwatch_paths = nil
+}
+
+// WatchPaths returns the value of the "watch_paths" field in the mutation.
+func (m *ServiceConfigMutation) WatchPaths() (r []string, exists bool) {
+	v := m.watch_paths
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWatchPaths returns the old "watch_paths" field's value of the ServiceConfig entity.
+// If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceConfigMutation) OldWatchPaths(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWatchPaths is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWatchPaths requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWatchPaths: %w", err)
+	}
+	return oldValue.WatchPaths, nil
+}
+
+// AppendWatchPaths adds s to the "watch_paths" field.
+func (m *ServiceConfigMutation) AppendWatchPaths(s []string) {
+	m.appendwatch_paths = append(m.appendwatch_paths, s...)
+}
+
+// AppendedWatchPaths returns the list of values that were appended to the "watch_paths" field in this mutation.
+func (m *ServiceConfigMutation) AppendedWatchPaths() ([]string, bool) {
+	if len(m.appendwatch_paths) == 0 {
+		return nil, false
+	}
+	return m.appendwatch_paths, true
+}
+
+// ClearWatchPaths clears the value of the "watch_paths" field.
+func (m *ServiceConfigMutation) ClearWatchPaths() {
+	m.watch_paths = nil
+	m.appendwatch_paths = nil
+	m.clearedFields[serviceconfig.FieldWatchPaths] = struct{}{}
+}
+
+// WatchPathsCleared returns if the "watch_paths" field was cleared in this mutation.
+func (m *ServiceConfigMutation) WatchPathsCleared() bool {
+	_, ok := m.clearedFields[serviceconfig.FieldWatchPaths]
+	return ok
+}
+
+// ResetWatchPaths resets all changes to the "watch_paths" field.
+func (m *ServiceConfigMutation) ResetWatchPaths() {
+	m.watch_paths = nil
+	m.appendwatch_paths = nil
+	delete(m.clearedFields, serviceconfig.FieldWatchPaths)
 }
 
 // SetHosts sets the "hosts" field.
@@ -15885,7 +15952,7 @@ func (m *ServiceConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceConfigMutation) Fields() []string {
-	fields := make([]string, 0, 33)
+	fields := make([]string, 0, 34)
 	if m.created_at != nil {
 		fields = append(fields, serviceconfig.FieldCreatedAt)
 	}
@@ -15918,6 +15985,9 @@ func (m *ServiceConfigMutation) Fields() []string {
 	}
 	if m.git_tag != nil {
 		fields = append(fields, serviceconfig.FieldGitTag)
+	}
+	if m.watch_paths != nil {
+		fields = append(fields, serviceconfig.FieldWatchPaths)
 	}
 	if m.hosts != nil {
 		fields = append(fields, serviceconfig.FieldHosts)
@@ -16015,6 +16085,8 @@ func (m *ServiceConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.GitBranch()
 	case serviceconfig.FieldGitTag:
 		return m.GitTag()
+	case serviceconfig.FieldWatchPaths:
+		return m.WatchPaths()
 	case serviceconfig.FieldHosts:
 		return m.Hosts()
 	case serviceconfig.FieldPorts:
@@ -16090,6 +16162,8 @@ func (m *ServiceConfigMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldGitBranch(ctx)
 	case serviceconfig.FieldGitTag:
 		return m.OldGitTag(ctx)
+	case serviceconfig.FieldWatchPaths:
+		return m.OldWatchPaths(ctx)
 	case serviceconfig.FieldHosts:
 		return m.OldHosts(ctx)
 	case serviceconfig.FieldPorts:
@@ -16219,6 +16293,13 @@ func (m *ServiceConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetGitTag(v)
+		return nil
+	case serviceconfig.FieldWatchPaths:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWatchPaths(v)
 		return nil
 	case serviceconfig.FieldHosts:
 		v, ok := value.([]schema.HostSpec)
@@ -16449,6 +16530,9 @@ func (m *ServiceConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(serviceconfig.FieldGitTag) {
 		fields = append(fields, serviceconfig.FieldGitTag)
 	}
+	if m.FieldCleared(serviceconfig.FieldWatchPaths) {
+		fields = append(fields, serviceconfig.FieldWatchPaths)
+	}
 	if m.FieldCleared(serviceconfig.FieldHosts) {
 		fields = append(fields, serviceconfig.FieldHosts)
 	}
@@ -16531,6 +16615,9 @@ func (m *ServiceConfigMutation) ClearField(name string) error {
 		return nil
 	case serviceconfig.FieldGitTag:
 		m.ClearGitTag()
+		return nil
+	case serviceconfig.FieldWatchPaths:
+		m.ClearWatchPaths()
 		return nil
 	case serviceconfig.FieldHosts:
 		m.ClearHosts()
@@ -16623,6 +16710,9 @@ func (m *ServiceConfigMutation) ResetField(name string) error {
 		return nil
 	case serviceconfig.FieldGitTag:
 		m.ResetGitTag()
+		return nil
+	case serviceconfig.FieldWatchPaths:
+		m.ResetWatchPaths()
 		return nil
 	case serviceconfig.FieldHosts:
 		m.ResetHosts()

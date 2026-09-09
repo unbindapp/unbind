@@ -40,6 +40,8 @@ const (
 	FieldGitBranch = "git_branch"
 	// FieldGitTag holds the string denoting the git_tag field in the database.
 	FieldGitTag = "git_tag"
+	// FieldWatchPaths holds the string denoting the watch_paths field in the database.
+	FieldWatchPaths = "watch_paths"
 	// FieldHosts holds the string denoting the hosts field in the database.
 	FieldHosts = "hosts"
 	// FieldPorts holds the string denoting the ports field in the database.
@@ -120,6 +122,7 @@ var Columns = []string{
 	FieldRailpackFramework,
 	FieldGitBranch,
 	FieldGitTag,
+	FieldWatchPaths,
 	FieldHosts,
 	FieldPorts,
 	FieldReplicas,

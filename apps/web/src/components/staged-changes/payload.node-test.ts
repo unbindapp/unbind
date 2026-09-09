@@ -137,3 +137,13 @@ test("keeps only the changes that failed to apply", () => {
   assert.deepEqual([...keep].sort(), ["service:web:gitBranch", "variable:team::T"]);
   assert.equal(idsToKeepAfterFailures(current, []).size, 0);
 });
+
+test("splits staged watch paths into a list", () => {
+  const payload = buildApplyChangesPayload(
+    state([], [service("watchPaths", "apps/api/**\n!apps/api/**/*.md")]),
+  );
+  assert.deepEqual(payload.services[0].watch_paths, ["apps/api/**", "!apps/api/**/*.md"]);
+
+  const cleared = buildApplyChangesPayload(state([], [service("watchPaths", "")]));
+  assert.deepEqual(cleared.services[0].watch_paths, []);
+});

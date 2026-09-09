@@ -134,6 +134,7 @@ export const UpdateServiceInputSchema = z
     service_id: z.string(),
     team_id: z.string(),
     upsert_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
+    watch_paths: z.array(z.string()).optional(), // Gitignore-style patterns, a push deploys only when a changed file matches. Empty deploys on every push
   })
   .strip();
 
@@ -701,6 +702,7 @@ export const ServiceConfigResponseSchema = z
     security_context: SecurityContextSchema.optional(),
     variable_mounts: z.array(VariableMountSchema),
     volumes: z.array(PVCInfoSchema),
+    watch_paths: z.array(z.string()),
   })
   .strip();
 
@@ -1660,6 +1662,19 @@ export const GithubRepositoryDetailResponseBodySchema = z
 export const GithubRepositoryListResponseBodySchema = z
   .object({
     data: z.array(GithubRepositorySchema),
+  })
+  .strip();
+
+export const GithubWatchPathSuggestionsSchema = z
+  .object({
+    suggestions: z.array(z.string()),
+    truncated: z.boolean(), // GitHub capped the file tree, so some paths are missing
+  })
+  .strip();
+
+export const GithubWatchPathSuggestionsResponseBodySchema = z
+  .object({
+    data: GithubWatchPathSuggestionsSchema,
   })
   .strip();
 
@@ -2757,6 +2772,10 @@ export type GithubRepositoryDetailResponseBody = z.infer<
 export type GithubRepositoryListResponseBody = z.infer<
   typeof GithubRepositoryListResponseBodySchema
 >;
+export type GithubWatchPathSuggestions = z.infer<typeof GithubWatchPathSuggestionsSchema>;
+export type GithubWatchPathSuggestionsResponseBody = z.infer<
+  typeof GithubWatchPathSuggestionsResponseBodySchema
+>;
 export type ResourceType = z.infer<typeof ResourceTypeSchema>;
 export type GrantGroupPermissionInputBody = z.infer<typeof GrantGroupPermissionInputBodySchema>;
 export type ResourceSelector = z.infer<typeof ResourceSelectorSchema>;
@@ -2964,6 +2983,15 @@ export const repo_detailQuerySchema = z
     installation_id: z.number(),
     owner: z.string(),
     repo_name: z.string(),
+  })
+  .passthrough();
+
+export const repo_watch_path_suggestionsQuerySchema = z
+  .object({
+    installation_id: z.number(),
+    owner: z.string(),
+    repo_name: z.string(),
+    ref: z.string(), // Branch or tag to read the file tree from
   })
   .passthrough();
 
@@ -4389,6 +4417,55 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               const data = await response.json();
               const { data: parsedData, error } =
                 GithubRepositoryDetailResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          watchPaths: async (
+            params: z.infer<typeof repo_watch_path_suggestionsQuerySchema>,
+            fetchOptions?: RequestInit,
+          ): Promise<GithubWatchPathSuggestionsResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/github/repositories/watch-paths`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+              const validatedQuery = repo_watch_path_suggestionsQuerySchema.parse(params);
+              const queryKeys = ['installation_id', 'owner', 'repo_name', 'ref'];
+              queryKeys.forEach((key) => {
+                const value = validatedQuery[key as keyof typeof validatedQuery];
+                if (value !== undefined && value !== null) {
+                  url.searchParams.append(key, String(value));
+                }
+              });
+              const options: RequestInit = {
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                GithubWatchPathSuggestionsResponseBodySchema.safeParse(data);
               if (error) {
                 console.error('Response validation error:', error);
                 console.error('Response data:', data);

@@ -39,6 +39,7 @@ func (ServiceConfig) Fields() []ent.Field {
 		// Branch to build from (git)
 		field.String("git_branch").Optional().Nillable().Comment("Branch to build from"),
 		field.String("git_tag").Optional().Nillable().Comment("Tag to build from, supports glob patterns"),
+		field.Strings("watch_paths").Optional().Comment("Gitignore-style patterns, a push deploys only when a changed file matches. Empty deploys on every push"),
 		// Generic CRD configuration
 		field.JSON("hosts", []HostSpec{}).Optional().Comment("External domains and paths for the service"),
 		field.JSON("ports", []PortSpec{}).Optional().Comment("Container ports to expose"),

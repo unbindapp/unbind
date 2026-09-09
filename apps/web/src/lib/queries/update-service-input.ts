@@ -9,6 +9,7 @@ import {
   ServiceVolumeSchema,
   type UpdateServiceInput,
 } from "../server/client.gen.ts";
+import { splitWatchPaths } from "../watch-paths.ts";
 
 export const serviceNameMinLength = 2;
 export const serviceNameMaxLength = 32;
@@ -35,6 +36,8 @@ export const UpdateServiceInputSchema = z
     name: ServiceNameSchema.optional(),
     description: ServiceDescriptionSchema.optional(),
     gitBranch: z.string().optional(),
+    // Newline-separated patterns, see splitWatchPaths
+    watchPaths: z.string().optional(),
     image: z.string().optional(),
     isPublic: z.boolean().optional(),
     overwritePorts: PortSpecSchema.array().optional(),
@@ -81,6 +84,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     name,
     description,
     gitBranch,
+    watchPaths,
     image,
     isPublic,
     overwritePorts,
@@ -160,6 +164,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     name,
     description,
     git_branch: gitBranch,
+    watch_paths: watchPaths === undefined ? undefined : splitWatchPaths(watchPaths),
     image,
     is_public: isPublic,
     overwrite_ports: overwritePorts,

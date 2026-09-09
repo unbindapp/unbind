@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
+	"github.com/unbindapp/unbind-api/internal/watchpaths"
 )
 
 // Connect the new github app to our instance, via manifest code exchange
@@ -337,10 +339,18 @@ func (self *HandlerGroup) HandleGithubWebhook(ctx context.Context, input *Github
 			tagName = &tag
 		}
 
+		changedFiles, changedFilesKnown := self.pushChangedFiles(ctx, installation, e, tagName == nil && anyWatchesPaths(servicesToBuild))
+
 		// Trigger builds for each service
 		for _, service := range servicesToBuild {
-			if !service.Edges.ServiceConfig.AutoDeploy {
+			config := service.Edges.ServiceConfig
+			if !config.AutoDeploy {
 				// Skip services that don't have auto-deploy enabled
+				continue
+			}
+
+			if tagName == nil && changedFilesKnown && !watchpaths.ShouldDeploy(config.WatchPaths, changedFiles) {
+				log.Info("Skipping build, no changed file matches watch paths", "repo", repoName, "serviceID", service.ID)
 				continue
 			}
 
@@ -375,4 +385,38 @@ func (self *HandlerGroup) HandleGithubWebhook(ctx context.Context, input *Github
 	}
 
 	return &GithubWebhookOutput{}, nil
+}
+
+// GitHub stops listing commits in the push payload past this many
+const pushPayloadCommitCap = 2048
+
+func anyWatchesPaths(services []*ent.Service) bool {
+	return slices.ContainsFunc(services, func(service *ent.Service) bool {
+		config := service.Edges.ServiceConfig
+		return config.AutoDeploy && len(config.WatchPaths) > 0
+	})
+}
+
+// pushChangedFiles collects the files a push touched, known is false when they cannot be determined so the push deploys
+func (self *HandlerGroup) pushChangedFiles(ctx context.Context, installation *ent.GithubInstallation, e *github.PushEvent, needed bool) (files []string, known bool) {
+	if !needed || e.GetCreated() || e.GetDeleted() || e.GetForced() {
+		return nil, false
+	}
+
+	commits := e.GetCommits()
+	if len(commits) < pushPayloadCommitCap {
+		for _, commit := range commits {
+			files = append(files, commit.Added...)
+			files = append(files, commit.Modified...)
+			files = append(files, commit.Removed...)
+		}
+		return files, true
+	}
+
+	files, err := self.srv.GithubClient.GetChangedFiles(ctx, installation, e.Repo.GetOwner().GetLogin(), e.Repo.GetName(), e.GetBefore(), e.GetAfter())
+	if err != nil {
+		log.Warn("Error getting changed files for push, deploying anyway", "err", err, "repo", e.Repo.GetName())
+		return nil, false
+	}
+	return files, true
 }

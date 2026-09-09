@@ -460,3 +460,69 @@ func (self *GithubClient) GetCommitSummary(ctx context.Context, installation *en
 
 	return commitSHA, commitMessage, committer, nil
 }
+
+// GetRepositoryFiles lists every file path at a branch or tag, truncated when GitHub caps the tree
+func (self *GithubClient) GetRepositoryFiles(ctx context.Context, installation *ent.GithubInstallation, owner, repo, ref string) (files []string, truncated bool, err error) {
+	if installation == nil || installation.Edges.GithubApp == nil {
+		return nil, false, fmt.Errorf("invalid installation: missing app edge or nil")
+	}
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	authenticatedClient, err := self.GetAuthenticatedClient(timeoutCtx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey)
+	if err != nil {
+		return nil, false, fmt.Errorf("error getting authenticated client for %s: %v", installation.AccountLogin, err)
+	}
+	defer authenticatedClient.Client().CloseIdleConnections()
+
+	// Branch names may contain slashes, which the trees endpoint cannot take in its path
+	branch, _, err := authenticatedClient.Repositories.GetBranch(timeoutCtx, owner, repo, ref, 3)
+	if err != nil {
+		return nil, false, fmt.Errorf("error getting branch %s for repository %s/%s: %v", ref, owner, repo, err)
+	}
+
+	tree, _, err := authenticatedClient.Git.GetTree(timeoutCtx, owner, repo, branch.GetCommit().GetSHA(), true)
+	if err != nil {
+		return nil, false, fmt.Errorf("error getting tree of %s for repository %s/%s: %v", ref, owner, repo, err)
+	}
+
+	files = make([]string, 0, len(tree.Entries))
+	for _, entry := range tree.Entries {
+		if entry.GetType() != "blob" {
+			continue
+		}
+		files = append(files, entry.GetPath())
+	}
+	return files, tree.GetTruncated(), nil
+}
+
+// GetChangedFiles lists the files that differ between two commits, GitHub caps the comparison at 300 files
+func (self *GithubClient) GetChangedFiles(ctx context.Context, installation *ent.GithubInstallation, owner, repo, base, head string) ([]string, error) {
+	if installation == nil || installation.Edges.GithubApp == nil {
+		return nil, fmt.Errorf("invalid installation: missing app edge or nil")
+	}
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	authenticatedClient, err := self.GetAuthenticatedClient(timeoutCtx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey)
+	if err != nil {
+		return nil, fmt.Errorf("error getting authenticated client for %s: %v", installation.AccountLogin, err)
+	}
+	defer authenticatedClient.Client().CloseIdleConnections()
+
+	comparison, _, err := authenticatedClient.Repositories.CompareCommits(timeoutCtx, owner, repo, base, head, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error comparing %s...%s for repository %s/%s: %v", base, head, owner, repo, err)
+	}
+
+	files := make([]string, 0, len(comparison.Files))
+	for _, file := range comparison.Files {
+		files = append(files, file.GetFilename())
+		if previous := file.GetPreviousFilename(); previous != "" {
+			files = append(files, previous)
+		}
+	}
+	return files, nil
+}

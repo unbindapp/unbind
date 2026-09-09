@@ -20,10 +20,19 @@ func NewGithubClientMock(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *GithubClientMock {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &GithubClientMock{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -375,6 +384,98 @@ func (_c *GithubClientMock_GetAuthenticatedClient_Call) RunAndReturn(run func(ct
 	return _c
 }
 
+// GetChangedFiles provides a mock function for the type GithubClientMock
+func (_mock *GithubClientMock) GetChangedFiles(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string, base string, head string) ([]string, error) {
+	ret := _mock.Called(ctx, installation, owner, repo, base, head)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetChangedFiles")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation, string, string, string, string) ([]string, error)); ok {
+		return returnFunc(ctx, installation, owner, repo, base, head)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation, string, string, string, string) []string); ok {
+		r0 = returnFunc(ctx, installation, owner, repo, base, head)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.GithubInstallation, string, string, string, string) error); ok {
+		r1 = returnFunc(ctx, installation, owner, repo, base, head)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubClientMock_GetChangedFiles_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetChangedFiles'
+type GithubClientMock_GetChangedFiles_Call struct {
+	*mock.Call
+}
+
+// GetChangedFiles is a helper method to define mock.On call
+//   - ctx context.Context
+//   - installation *ent.GithubInstallation
+//   - owner string
+//   - repo string
+//   - base string
+//   - head string
+func (_e *GithubClientMock_Expecter) GetChangedFiles(ctx any, installation any, owner any, repo any, base any, head any) *GithubClientMock_GetChangedFiles_Call {
+	return &GithubClientMock_GetChangedFiles_Call{Call: _e.mock.On("GetChangedFiles", ctx, installation, owner, repo, base, head)}
+}
+
+func (_c *GithubClientMock_GetChangedFiles_Call) Run(run func(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string, base string, head string)) *GithubClientMock_GetChangedFiles_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *ent.GithubInstallation
+		if args[1] != nil {
+			arg1 = args[1].(*ent.GithubInstallation)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		var arg4 string
+		if args[4] != nil {
+			arg4 = args[4].(string)
+		}
+		var arg5 string
+		if args[5] != nil {
+			arg5 = args[5].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubClientMock_GetChangedFiles_Call) Return(strings []string, err error) *GithubClientMock_GetChangedFiles_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *GithubClientMock_GetChangedFiles_Call) RunAndReturn(run func(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string, base string, head string) ([]string, error)) *GithubClientMock_GetChangedFiles_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetCommitSummary provides a mock function for the type GithubClientMock
 func (_mock *GithubClientMock) GetCommitSummary(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string, branchOrSHA string, isCommitSHA bool) (string, string, *schema.GitCommitter, error) {
 	ret := _mock.Called(ctx, installation, owner, repo, branchOrSHA, isCommitSHA)
@@ -633,6 +734,98 @@ func (_c *GithubClientMock_GetRepositoryDetail_Call) Return(githubRepositoryDeta
 }
 
 func (_c *GithubClientMock_GetRepositoryDetail_Call) RunAndReturn(run func(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string) (*github.GithubRepositoryDetail, error)) *GithubClientMock_GetRepositoryDetail_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetRepositoryFiles provides a mock function for the type GithubClientMock
+func (_mock *GithubClientMock) GetRepositoryFiles(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string, ref string) ([]string, bool, error) {
+	ret := _mock.Called(ctx, installation, owner, repo, ref)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRepositoryFiles")
+	}
+
+	var r0 []string
+	var r1 bool
+	var r2 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation, string, string, string) ([]string, bool, error)); ok {
+		return returnFunc(ctx, installation, owner, repo, ref)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation, string, string, string) []string); ok {
+		r0 = returnFunc(ctx, installation, owner, repo, ref)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.GithubInstallation, string, string, string) bool); ok {
+		r1 = returnFunc(ctx, installation, owner, repo, ref)
+	} else {
+		r1 = ret.Get(1).(bool)
+	}
+	if returnFunc, ok := ret.Get(2).(func(context.Context, *ent.GithubInstallation, string, string, string) error); ok {
+		r2 = returnFunc(ctx, installation, owner, repo, ref)
+	} else {
+		r2 = ret.Error(2)
+	}
+	return r0, r1, r2
+}
+
+// GithubClientMock_GetRepositoryFiles_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetRepositoryFiles'
+type GithubClientMock_GetRepositoryFiles_Call struct {
+	*mock.Call
+}
+
+// GetRepositoryFiles is a helper method to define mock.On call
+//   - ctx context.Context
+//   - installation *ent.GithubInstallation
+//   - owner string
+//   - repo string
+//   - ref string
+func (_e *GithubClientMock_Expecter) GetRepositoryFiles(ctx any, installation any, owner any, repo any, ref any) *GithubClientMock_GetRepositoryFiles_Call {
+	return &GithubClientMock_GetRepositoryFiles_Call{Call: _e.mock.On("GetRepositoryFiles", ctx, installation, owner, repo, ref)}
+}
+
+func (_c *GithubClientMock_GetRepositoryFiles_Call) Run(run func(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string, ref string)) *GithubClientMock_GetRepositoryFiles_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *ent.GithubInstallation
+		if args[1] != nil {
+			arg1 = args[1].(*ent.GithubInstallation)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		var arg4 string
+		if args[4] != nil {
+			arg4 = args[4].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubClientMock_GetRepositoryFiles_Call) Return(files []string, truncated bool, err error) *GithubClientMock_GetRepositoryFiles_Call {
+	_c.Call.Return(files, truncated, err)
+	return _c
+}
+
+func (_c *GithubClientMock_GetRepositoryFiles_Call) RunAndReturn(run func(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string, ref string) ([]string, bool, error)) *GithubClientMock_GetRepositoryFiles_Call {
 	_c.Call.Return(run)
 	return _c
 }

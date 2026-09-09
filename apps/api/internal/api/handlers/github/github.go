@@ -64,4 +64,12 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/repositories/info",
 		Method:      http.MethodGet,
 	}, handlers.HandleGetGithubRepositoryDetail, oapi.OpenWorld)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "repo-watch-path-suggestions",
+		Summary:     "Watch Path Suggestions",
+		Description: "Suggest watch path patterns from a repository's file tree.",
+		Path:        "/repositories/watch-paths",
+		Method:      http.MethodGet,
+	}, handlers.HandleGetGithubWatchPathSuggestions, oapi.OpenWorld)
 }

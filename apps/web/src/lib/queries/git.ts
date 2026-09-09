@@ -10,6 +10,20 @@ export const queryKeyGit = {
   app: (input: { uuid: string }) => ["git", "app", input.uuid] as const,
   repository: (input: { installationId: number; owner: string; repoName: string }) =>
     ["git", "repository", input.installationId, input.owner, input.repoName] as const,
+  watchPathSuggestions: (input: {
+    installationId: number;
+    owner: string;
+    repoName: string;
+    ref: string;
+  }) =>
+    [
+      "git",
+      "watch-path-suggestions",
+      input.installationId,
+      input.owner,
+      input.repoName,
+      input.ref,
+    ] as const,
 };
 
 export const gitRepositoriesQuery = () =>
@@ -44,5 +58,24 @@ export const gitRepositoryQuery = (input: {
         owner: input.owner,
       });
       return { repository: res.data };
+    },
+  });
+
+export const gitWatchPathSuggestionsQuery = (input: {
+  installationId: number;
+  owner: string;
+  repoName: string;
+  ref: string;
+}) =>
+  queryOptions({
+    queryKey: queryKeyGit.watchPathSuggestions(input),
+    queryFn: async () => {
+      const res = await getGoClient().github.repositories.watchPaths({
+        installation_id: input.installationId,
+        repo_name: input.repoName,
+        owner: input.owner,
+        ref: input.ref,
+      });
+      return res.data;
     },
   });

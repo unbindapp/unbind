@@ -8,8 +8,10 @@ import {
   BlockItemTitle,
 } from "@/components/block";
 import { shouldDeploySectionHaveInstances } from "@/components/service/panel/content/deployed/settings/helpers";
+import WatchPathsInput from "@/components/service/panel/content/deployed/settings/sections/watch-paths-input";
 import {
   stagedNumber,
+  stagedString,
   useResetFormOnStagedChange,
   hasApplying,
   useServiceChanges,
@@ -19,9 +21,12 @@ import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
+import { gitWatchPathSuggestionsQuery } from "@/lib/queries/git";
 import { TServiceShallow } from "@/lib/queries/services";
+import { formatWatchPaths, joinWatchPaths, splitWatchPaths } from "@/lib/watch-paths";
+import { useQuery } from "@tanstack/react-query";
 import { RocketIcon } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -91,6 +96,7 @@ const deployFields: TServiceChangeField[] = [
   "instanceCount",
   "cpuLimitMillicores",
   "memoryLimitMb",
+  "watchPaths",
 ];
 
 function Section({ service }: { service: TServiceShallow }) {
@@ -99,10 +105,12 @@ function Section({ service }: { service: TServiceShallow }) {
   const serverInstanceCount = service.config.replicas;
   const serverCpu = service.config.resources?.cpu_limits_millicores || unlimitedApiValue;
   const serverMemory = service.config.resources?.memory_limits_megabytes || unlimitedApiValue;
+  const serverWatchPaths = joinWatchPaths(service.config.watch_paths);
   const { staged, stage } = useServiceChanges(service, {
     instanceCount: serverInstanceCount,
     cpuLimitMillicores: serverCpu,
     memoryLimitMb: serverMemory,
+    watchPaths: serverWatchPaths,
   });
 
   const defaultValues = {
@@ -115,6 +123,7 @@ function Section({ service }: { service: TServiceShallow }) {
       stagedNumber(staged.memoryLimitMb, serverMemory),
       memoryLimits.unlimited,
     ),
+    watchPaths: stagedString(staged.watchPaths, serverWatchPaths),
   };
   const form = useAppForm({ defaultValues });
   useResetFormOnStagedChange(form, defaultValues, staged, deployFields);
@@ -270,7 +279,78 @@ function Section({ service }: { service: TServiceShallow }) {
           </BlockItemContent>
         </BlockItem>
       </Block>
+      {service.type === "github" && (
+        <Block>
+          <form.AppField
+            name="watchPaths"
+            children={(field) => (
+              <BlockItem className="w-full md:w-full">
+                <BlockItemHeader type="column">
+                  <BlockItemTitle hasChanges={staged.watchPaths !== undefined}>
+                    Watch Paths
+                  </BlockItemTitle>
+                  <BlockItemDescription>
+                    Gitignore-style patterns. A push only deploys when a changed file matches one of
+                    them. Start a pattern with ! to exclude matches. Leave empty to deploy on every
+                    push.
+                  </BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <WatchPathsField
+                    service={service}
+                    value={splitWatchPaths(field.state.value)}
+                    onChange={(patterns) => {
+                      const joined = joinWatchPaths(patterns);
+                      field.handleChange(joined);
+                      stage({
+                        field: "watchPaths",
+                        label: "Watch paths",
+                        value: joined,
+                        previous: serverWatchPaths,
+                        format: formatWatchPaths,
+                      });
+                    }}
+                  />
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
+        </Block>
+      )}
     </SettingsSection>
+  );
+}
+
+function WatchPathsField({
+  service,
+  value,
+  onChange,
+}: {
+  service: TServiceShallow;
+  value: string[];
+  onChange: (value: string[]) => void;
+}) {
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const { data, isPending, error } = useQuery({
+    ...gitWatchPathSuggestionsQuery({
+      installationId: service.github_installation_id ?? 0,
+      owner: service.git_repository_owner ?? "",
+      repoName: service.git_repository ?? "",
+      ref: service.config.git_branch ?? "",
+    }),
+    enabled: shouldLoad,
+  });
+
+  return (
+    <WatchPathsInput
+      value={value}
+      onChange={onChange}
+      suggestions={data?.suggestions}
+      isPending={isPending}
+      error={error?.message}
+      isTruncated={data?.truncated === true}
+      onOpen={() => setShouldLoad(true)}
+    />
   );
 }
 

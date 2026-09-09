@@ -203,6 +203,24 @@ func (_u *ServiceConfigUpdate) ClearGitTag() *ServiceConfigUpdate {
 	return _u
 }
 
+// SetWatchPaths sets the "watch_paths" field.
+func (_u *ServiceConfigUpdate) SetWatchPaths(v []string) *ServiceConfigUpdate {
+	_u.mutation.SetWatchPaths(v)
+	return _u
+}
+
+// AppendWatchPaths appends value to the "watch_paths" field.
+func (_u *ServiceConfigUpdate) AppendWatchPaths(v []string) *ServiceConfigUpdate {
+	_u.mutation.AppendWatchPaths(v)
+	return _u
+}
+
+// ClearWatchPaths clears the value of the "watch_paths" field.
+func (_u *ServiceConfigUpdate) ClearWatchPaths() *ServiceConfigUpdate {
+	_u.mutation.ClearWatchPaths()
+	return _u
+}
+
 // SetHosts sets the "hosts" field.
 func (_u *ServiceConfigUpdate) SetHosts(v []schema.HostSpec) *ServiceConfigUpdate {
 	_u.mutation.SetHosts(v)
@@ -729,6 +747,17 @@ func (_u *ServiceConfigUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	if _u.mutation.GitTagCleared() {
 		_spec.ClearField(serviceconfig.FieldGitTag, field.TypeString)
 	}
+	if value, ok := _u.mutation.WatchPaths(); ok {
+		_spec.SetField(serviceconfig.FieldWatchPaths, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedWatchPaths(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, serviceconfig.FieldWatchPaths, value)
+		})
+	}
+	if _u.mutation.WatchPathsCleared() {
+		_spec.ClearField(serviceconfig.FieldWatchPaths, field.TypeJSON)
+	}
 	if value, ok := _u.mutation.Hosts(); ok {
 		_spec.SetField(serviceconfig.FieldHosts, field.TypeJSON, value)
 	}
@@ -1121,6 +1150,24 @@ func (_u *ServiceConfigUpdateOne) SetNillableGitTag(v *string) *ServiceConfigUpd
 // ClearGitTag clears the value of the "git_tag" field.
 func (_u *ServiceConfigUpdateOne) ClearGitTag() *ServiceConfigUpdateOne {
 	_u.mutation.ClearGitTag()
+	return _u
+}
+
+// SetWatchPaths sets the "watch_paths" field.
+func (_u *ServiceConfigUpdateOne) SetWatchPaths(v []string) *ServiceConfigUpdateOne {
+	_u.mutation.SetWatchPaths(v)
+	return _u
+}
+
+// AppendWatchPaths appends value to the "watch_paths" field.
+func (_u *ServiceConfigUpdateOne) AppendWatchPaths(v []string) *ServiceConfigUpdateOne {
+	_u.mutation.AppendWatchPaths(v)
+	return _u
+}
+
+// ClearWatchPaths clears the value of the "watch_paths" field.
+func (_u *ServiceConfigUpdateOne) ClearWatchPaths() *ServiceConfigUpdateOne {
+	_u.mutation.ClearWatchPaths()
 	return _u
 }
 
@@ -1679,6 +1726,17 @@ func (_u *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceCo
 	}
 	if _u.mutation.GitTagCleared() {
 		_spec.ClearField(serviceconfig.FieldGitTag, field.TypeString)
+	}
+	if value, ok := _u.mutation.WatchPaths(); ok {
+		_spec.SetField(serviceconfig.FieldWatchPaths, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedWatchPaths(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, serviceconfig.FieldWatchPaths, value)
+		})
+	}
+	if _u.mutation.WatchPathsCleared() {
+		_spec.ClearField(serviceconfig.FieldWatchPaths, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.Hosts(); ok {
 		_spec.SetField(serviceconfig.FieldHosts, field.TypeJSON, value)

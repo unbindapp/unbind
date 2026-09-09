@@ -68,6 +68,7 @@ type UpdateServiceInput struct {
 	// Configuration
 	GitBranch                     *string                `json:"git_branch,omitempty" required:"false"`
 	GitTag                        *string                `json:"git_tag,omitempty" required:"false" doc:"Tag to build from, supports glob patterns"`
+	WatchPaths                    *[]string              `json:"watch_paths,omitempty" required:"false" doc:"Gitignore-style patterns, a push deploys only when a changed file matches. Empty deploys on every push"`
 	Builder                       *schema.ServiceBuilder `json:"builder,omitempty" required:"false"`
 	OverwriteHosts                []schema.HostSpec      `json:"overwrite_hosts,omitempty" required:"false"`
 	UpsertHosts                   []schema.HostSpec      `json:"upsert_hosts,omitempty" required:"false" doc:"Additional hosts to add, will not remove existing hosts"`

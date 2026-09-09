@@ -397,23 +397,23 @@ func init() {
 	// serviceconfig.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	serviceconfig.UpdateDefaultUpdatedAt = serviceconfigDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// serviceconfigDescReplicas is the schema descriptor for replicas field.
-	serviceconfigDescReplicas := serviceconfigFields[11].Descriptor()
+	serviceconfigDescReplicas := serviceconfigFields[12].Descriptor()
 	// serviceconfig.DefaultReplicas holds the default value on creation for the replicas field.
 	serviceconfig.DefaultReplicas = serviceconfigDescReplicas.Default.(int32)
 	// serviceconfigDescAutoDeploy is the schema descriptor for auto_deploy field.
-	serviceconfigDescAutoDeploy := serviceconfigFields[12].Descriptor()
+	serviceconfigDescAutoDeploy := serviceconfigFields[13].Descriptor()
 	// serviceconfig.DefaultAutoDeploy holds the default value on creation for the auto_deploy field.
 	serviceconfig.DefaultAutoDeploy = serviceconfigDescAutoDeploy.Default.(bool)
 	// serviceconfigDescIsPublic is the schema descriptor for is_public field.
-	serviceconfigDescIsPublic := serviceconfigFields[16].Descriptor()
+	serviceconfigDescIsPublic := serviceconfigFields[17].Descriptor()
 	// serviceconfig.DefaultIsPublic holds the default value on creation for the is_public field.
 	serviceconfig.DefaultIsPublic = serviceconfigDescIsPublic.Default.(bool)
 	// serviceconfigDescBackupSchedule is the schema descriptor for backup_schedule field.
-	serviceconfigDescBackupSchedule := serviceconfigFields[21].Descriptor()
+	serviceconfigDescBackupSchedule := serviceconfigFields[22].Descriptor()
 	// serviceconfig.DefaultBackupSchedule holds the default value on creation for the backup_schedule field.
 	serviceconfig.DefaultBackupSchedule = serviceconfigDescBackupSchedule.Default.(string)
 	// serviceconfigDescBackupRetentionCount is the schema descriptor for backup_retention_count field.
-	serviceconfigDescBackupRetentionCount := serviceconfigFields[22].Descriptor()
+	serviceconfigDescBackupRetentionCount := serviceconfigFields[23].Descriptor()
 	// serviceconfig.DefaultBackupRetentionCount holds the default value on creation for the backup_retention_count field.
 	serviceconfig.DefaultBackupRetentionCount = serviceconfigDescBackupRetentionCount.Default.(int)
 	// serviceconfigDescID is the schema descriptor for id field.

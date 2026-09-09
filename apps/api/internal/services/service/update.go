@@ -16,6 +16,7 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
+	"github.com/unbindapp/unbind-api/internal/watchpaths"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -80,6 +81,14 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid git tag")
 	}
 
+	if input.WatchPaths != nil {
+		cleaned, err := watchpaths.Clean(*input.WatchPaths)
+		if err != nil {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+		}
+		input.WatchPaths = &cleaned
+	}
+
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to admin service
 		{
@@ -104,6 +113,10 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service not found")
 		}
 		return nil, err
+	}
+
+	if input.WatchPaths != nil && service.Type != schema.ServiceTypeGithub {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Watch paths only apply to git services")
 	}
 
 	if input.Builder != nil && (service.Type == schema.ServiceTypeDockerimage || service.Type == schema.ServiceTypeDatabase) {
@@ -380,6 +393,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			Builder:                       input.Builder,
 			GitBranch:                     input.GitBranch,
 			GitTag:                        input.GitTag,
+			WatchPaths:                    input.WatchPaths,
 			AddPorts:                      input.AddPorts,
 			RemovePorts:                   input.RemovePorts,
 			OverwritePorts:                input.OverwritePorts,

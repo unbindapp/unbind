@@ -728,6 +728,16 @@ func GitTagContainsFold(v string) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldContainsFold(FieldGitTag, v))
 }
 
+// WatchPathsIsNil applies the IsNil predicate on the "watch_paths" field.
+func WatchPathsIsNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIsNull(FieldWatchPaths))
+}
+
+// WatchPathsNotNil applies the NotNil predicate on the "watch_paths" field.
+func WatchPathsNotNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotNull(FieldWatchPaths))
+}
+
 // HostsIsNil applies the IsNil predicate on the "hosts" field.
 func HostsIsNil() predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldIsNull(FieldHosts))

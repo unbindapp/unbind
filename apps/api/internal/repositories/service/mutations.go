@@ -68,6 +68,7 @@ type MutateConfigInput struct {
 	Framework                     *enum.Framework
 	GitBranch                     *string
 	GitTag                        *string
+	WatchPaths                    *[]string
 	Icon                          *string
 	OverwritePorts                []schema.PortSpec
 	AddPorts                      []schema.PortSpec
@@ -342,6 +343,14 @@ func (self *ServiceRepository) UpdateConfig(
 			upd.ClearGitTag()
 		} else {
 			upd.SetGitTag(*input.GitTag)
+		}
+	}
+
+	if input.WatchPaths != nil {
+		if len(*input.WatchPaths) == 0 {
+			upd.ClearWatchPaths()
+		} else {
+			upd.SetWatchPaths(*input.WatchPaths)
 		}
 	}
 

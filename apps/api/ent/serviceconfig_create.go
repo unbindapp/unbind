@@ -158,6 +158,12 @@ func (_c *ServiceConfigCreate) SetNillableGitTag(v *string) *ServiceConfigCreate
 	return _c
 }
 
+// SetWatchPaths sets the "watch_paths" field.
+func (_c *ServiceConfigCreate) SetWatchPaths(v []string) *ServiceConfigCreate {
+	_c.mutation.SetWatchPaths(v)
+	return _c
+}
+
 // SetHosts sets the "hosts" field.
 func (_c *ServiceConfigCreate) SetHosts(v []schema.HostSpec) *ServiceConfigCreate {
 	_c.mutation.SetHosts(v)
@@ -602,6 +608,10 @@ func (_c *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSpe
 		_spec.SetField(serviceconfig.FieldGitTag, field.TypeString, value)
 		_node.GitTag = &value
 	}
+	if value, ok := _c.mutation.WatchPaths(); ok {
+		_spec.SetField(serviceconfig.FieldWatchPaths, field.TypeJSON, value)
+		_node.WatchPaths = value
+	}
 	if value, ok := _c.mutation.Hosts(); ok {
 		_spec.SetField(serviceconfig.FieldHosts, field.TypeJSON, value)
 		_node.Hosts = value
@@ -925,6 +935,24 @@ func (u *ServiceConfigUpsert) UpdateGitTag() *ServiceConfigUpsert {
 // ClearGitTag clears the value of the "git_tag" field.
 func (u *ServiceConfigUpsert) ClearGitTag() *ServiceConfigUpsert {
 	u.SetNull(serviceconfig.FieldGitTag)
+	return u
+}
+
+// SetWatchPaths sets the "watch_paths" field.
+func (u *ServiceConfigUpsert) SetWatchPaths(v []string) *ServiceConfigUpsert {
+	u.Set(serviceconfig.FieldWatchPaths, v)
+	return u
+}
+
+// UpdateWatchPaths sets the "watch_paths" field to the value that was provided on create.
+func (u *ServiceConfigUpsert) UpdateWatchPaths() *ServiceConfigUpsert {
+	u.SetExcluded(serviceconfig.FieldWatchPaths)
+	return u
+}
+
+// ClearWatchPaths clears the value of the "watch_paths" field.
+func (u *ServiceConfigUpsert) ClearWatchPaths() *ServiceConfigUpsert {
+	u.SetNull(serviceconfig.FieldWatchPaths)
 	return u
 }
 
@@ -1536,6 +1564,27 @@ func (u *ServiceConfigUpsertOne) UpdateGitTag() *ServiceConfigUpsertOne {
 func (u *ServiceConfigUpsertOne) ClearGitTag() *ServiceConfigUpsertOne {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.ClearGitTag()
+	})
+}
+
+// SetWatchPaths sets the "watch_paths" field.
+func (u *ServiceConfigUpsertOne) SetWatchPaths(v []string) *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetWatchPaths(v)
+	})
+}
+
+// UpdateWatchPaths sets the "watch_paths" field to the value that was provided on create.
+func (u *ServiceConfigUpsertOne) UpdateWatchPaths() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateWatchPaths()
+	})
+}
+
+// ClearWatchPaths clears the value of the "watch_paths" field.
+func (u *ServiceConfigUpsertOne) ClearWatchPaths() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearWatchPaths()
 	})
 }
 
@@ -2377,6 +2426,27 @@ func (u *ServiceConfigUpsertBulk) UpdateGitTag() *ServiceConfigUpsertBulk {
 func (u *ServiceConfigUpsertBulk) ClearGitTag() *ServiceConfigUpsertBulk {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.ClearGitTag()
+	})
+}
+
+// SetWatchPaths sets the "watch_paths" field.
+func (u *ServiceConfigUpsertBulk) SetWatchPaths(v []string) *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetWatchPaths(v)
+	})
+}
+
+// UpdateWatchPaths sets the "watch_paths" field to the value that was provided on create.
+func (u *ServiceConfigUpsertBulk) UpdateWatchPaths() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateWatchPaths()
+	})
+}
+
+// ClearWatchPaths clears the value of the "watch_paths" field.
+func (u *ServiceConfigUpsertBulk) ClearWatchPaths() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearWatchPaths()
 	})
 }
 

@@ -444,6 +444,7 @@ var (
 		{Name: "railpack_framework", Type: field.TypeEnum, Nullable: true, Enums: []string{"next", "nuxt", "astro", "vite", "cra", "angular", "remix", "tanstack-start", "react-router", "bun", "expo", "static", "sveltekit", "svelte", "solid", "hono", "express", "django", "flask", "fastapi", "fasthtml", "gin", "spring-boot", "laravel", "rails", "rocket", "unknown"}},
 		{Name: "git_branch", Type: field.TypeString, Nullable: true},
 		{Name: "git_tag", Type: field.TypeString, Nullable: true},
+		{Name: "watch_paths", Type: field.TypeJSON, Nullable: true},
 		{Name: "hosts", Type: field.TypeJSON, Nullable: true},
 		{Name: "ports", Type: field.TypeJSON, Nullable: true},
 		{Name: "replicas", Type: field.TypeInt32, Default: 1},
@@ -476,13 +477,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "service_configs_s3_buckets_service_backup_configs",
-				Columns:    []*schema.Column{ServiceConfigsColumns[32]},
+				Columns:    []*schema.Column{ServiceConfigsColumns[33]},
 				RefColumns: []*schema.Column{S3BucketsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "service_configs_services_service_config",
-				Columns:    []*schema.Column{ServiceConfigsColumns[33]},
+				Columns:    []*schema.Column{ServiceConfigsColumns[34]},
 				RefColumns: []*schema.Column{ServicesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
