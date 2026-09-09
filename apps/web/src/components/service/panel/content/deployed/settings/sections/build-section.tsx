@@ -237,7 +237,7 @@ function GitSection({ service }: TGitSectionProps) {
       entityId={sectionHighlightId}
       hasChanges={buildFields.some((field) => staged[field] !== undefined)}
       isApplying={hasApplying(staged, buildFields)}
-      onRevert={() => unstage(buildFields)}
+      onDiscard={() => unstage(buildFields)}
     >
       <Block>
         <form.AppField

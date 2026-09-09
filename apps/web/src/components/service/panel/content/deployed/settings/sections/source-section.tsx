@@ -125,7 +125,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       classNameContent="gap-5"
       hasChanges={staged.gitBranch !== undefined}
       isApplying={hasApplying(staged, ["gitBranch"])}
-      onRevert={() => unstage(["gitBranch"])}
+      onDiscard={() => unstage(["gitBranch"])}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -230,7 +230,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
       classNameContent="gap-5"
       hasChanges={staged.image !== undefined}
       isApplying={hasApplying(staged, ["image"])}
-      onRevert={() => unstage(["image"])}
+      onDiscard={() => unstage(["image"])}
     >
       <Block>
         <BlockItem className="w-full md:w-full">

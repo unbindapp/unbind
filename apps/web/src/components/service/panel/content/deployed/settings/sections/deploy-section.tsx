@@ -127,7 +127,7 @@ function Section({ service }: { service: TServiceShallow }) {
       entityId={sectionHighlightId}
       hasChanges={deployFields.some((field) => staged[field] !== undefined)}
       isApplying={hasApplying(staged, deployFields)}
-      onRevert={() => unstage(deployFields)}
+      onDiscard={() => unstage(deployFields)}
     >
       {hasInstances && (
         <Block>

@@ -26,8 +26,8 @@ type TProps = {
   hasChanges?: boolean;
   // Locks the section while its staged edits are being deployed
   isApplying?: boolean;
-  // Discards the section's staged edits, from a "Revert" button on the title row
-  onRevert?: () => void;
+  // Discards the section's staged edits, from a "Discard" button on the title row
+  onDiscard?: () => void;
   SubmitTrigger?: FC<{ children: ReactElement }>;
   onClickResetChanges?: () => void;
 } & TWrapperProps &
@@ -43,7 +43,7 @@ export function SettingsSection({
   changeCount,
   hasChanges,
   isApplying,
-  onRevert,
+  onDiscard,
   className,
   onClickResetChanges,
   SubmitButton,
@@ -70,28 +70,33 @@ export function SettingsSection({
     >
       <div
         className={cn(
-          "text-muted-foreground group-data-staged/wrapper:text-change bg-card group-data-staged/wrapper:border-change/4-10 group-data-staged/wrapper:bg-change/2-10 relative flex w-full items-start justify-between gap-4 border-b px-3.5 sm:px-4",
+          "text-muted-foreground group-data-staged/wrapper:text-change bg-card group-data-staged/wrapper:border-change/4-10 group-data-staged/wrapper:bg-change/2-10 relative flex w-full items-start gap-4 border-b px-3.5 sm:px-4",
           classNameHeader,
         )}
       >
         {entityId && <NewEntityIndicator id={entityId} />}
         <div className="flex min-w-0 shrink items-center gap-2.5 py-3">
           <Icon className="size-5 shrink-0" />
-          <h3 className={cn("min-w-0 shrink text-lg leading-tight font-medium", classNameTitleDiv)}>
+          <h3
+            className={cn(
+              "min-w-0 flex-1 text-lg leading-tight font-medium wrap-break-word",
+              classNameTitleDiv,
+            )}
+          >
             {title}
           </h3>
+          {isApplying && <LoaderIcon className="my-auto size-4.5 shrink-0 animate-spin" />}
         </div>
-        {isApplying && <LoaderIcon className="my-3.25 size-4.5 shrink-0 animate-spin" />}
-        {!isApplying && isChanged && onRevert && (
-          <ResetTrigger onClickResetChanges={onRevert}>
+        {!isApplying && isChanged && onDiscard && (
+          <ResetTrigger onClickResetChanges={onDiscard}>
             <Button
               type="button"
-              variant="ghost-change"
+              variant="outline-change"
               size="sm"
-              className="my-1.75 -mr-2 shrink-0 gap-1.5 px-2.5"
+              className="my-auto -mr-2.5 ml-auto min-w-0 shrink gap-1.5 px-2.5 py-1.5"
             >
               <Undo2Icon className="-ml-0.5 size-4.5" />
-              Revert
+              <span className="min-w-0 shrink wrap-break-word">Discard</span>
             </Button>
           </ResetTrigger>
         )}
@@ -191,9 +196,9 @@ function ResetTrigger({
       <DialogContent hideXButton className="w-lg max-w-full">
         <DialogHeader>
           <DialogTitle>
-            {changeCount === undefined ? "Revert Changes" : `Revert Changes: ${changeCount}`}
+            {changeCount === undefined ? "Discard Changes" : `Discard Changes: ${changeCount}`}
           </DialogTitle>
-          <DialogDescription>Are you sure you want to revert the changes?</DialogDescription>
+          <DialogDescription>Are you sure you want to discard the changes?</DialogDescription>
         </DialogHeader>
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
           <DialogClose

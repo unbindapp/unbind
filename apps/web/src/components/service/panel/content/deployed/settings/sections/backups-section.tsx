@@ -179,7 +179,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       entityId={sectionHighlightId}
       hasChanges={backupFields.some((field) => staged[field] !== undefined)}
       isApplying={hasApplying(staged, backupFields)}
-      onRevert={() => unstage(backupFields)}
+      onDiscard={() => unstage(backupFields)}
     >
       <Block>
         <form.AppField

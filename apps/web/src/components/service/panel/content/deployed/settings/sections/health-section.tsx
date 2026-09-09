@@ -250,7 +250,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       entityId={sectionHighlightId}
       hasChanges={healthFields.some((field) => staged[field] !== undefined)}
       isApplying={hasApplying(staged, healthFields)}
-      onRevert={() => unstage(healthFields)}
+      onDiscard={() => unstage(healthFields)}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
