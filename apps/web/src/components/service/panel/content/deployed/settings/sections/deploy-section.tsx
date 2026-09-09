@@ -99,7 +99,7 @@ function Section({ service }: { service: TServiceShallow }) {
   const serverInstanceCount = service.config.replicas;
   const serverCpu = service.config.resources?.cpu_limits_millicores || unlimitedApiValue;
   const serverMemory = service.config.resources?.memory_limits_megabytes || unlimitedApiValue;
-  const { staged, stage } = useServiceChanges(service, {
+  const { staged, stage, unstage } = useServiceChanges(service, {
     instanceCount: serverInstanceCount,
     cpuLimitMillicores: serverCpu,
     memoryLimitMb: serverMemory,
@@ -127,6 +127,7 @@ function Section({ service }: { service: TServiceShallow }) {
       entityId={sectionHighlightId}
       hasChanges={deployFields.some((field) => staged[field] !== undefined)}
       isApplying={hasApplying(staged, deployFields)}
+      onRevert={() => unstage(deployFields)}
     >
       {hasInstances && (
         <Block>

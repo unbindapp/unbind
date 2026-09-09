@@ -89,7 +89,7 @@ export default function SourceSection({ service }: TProps) {
 }
 
 function GitSection({ owner, repo, branch, installationId, service }: TGitSectionProps) {
-  const { staged, stage } = useServiceChanges(service, { gitBranch: branch });
+  const { staged, stage, unstage } = useServiceChanges(service, { gitBranch: branch });
 
   const {
     data: dataRepository,
@@ -125,6 +125,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       classNameContent="gap-5"
       hasChanges={staged.gitBranch !== undefined}
       isApplying={hasApplying(staged, ["gitBranch"])}
+      onRevert={() => unstage(["gitBranch"])}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
@@ -193,7 +194,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
   const imageIsNonDockerHub = isNonDockerHubImage(image);
   const [search] = useDebounceValue(commandInputValue, defaultDebounceMs);
   const serverImage = `${image}:${tag}`;
-  const { staged, stage } = useServiceChanges(service, { image: serverImage });
+  const { staged, stage, unstage } = useServiceChanges(service, { image: serverImage });
   const stagedImage = stagedString(staged.image, serverImage);
 
   const defaultValues = { tag: stagedImage.split(":")[1] ?? tag };
@@ -229,6 +230,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
       classNameContent="gap-5"
       hasChanges={staged.image !== undefined}
       isApplying={hasApplying(staged, ["image"])}
+      onRevert={() => unstage(["image"])}
     >
       <Block>
         <BlockItem className="w-full md:w-full">

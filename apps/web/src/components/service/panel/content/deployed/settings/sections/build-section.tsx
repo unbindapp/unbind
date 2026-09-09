@@ -124,7 +124,7 @@ function GitSection({ service }: TGitSectionProps) {
     startCommand: service.config.run_command || "",
   };
   const serverWatchPaths = joinWatchPaths(service.config.watch_paths);
-  const { staged, stage } = useServiceChanges(service, {
+  const { staged, stage, unstage } = useServiceChanges(service, {
     builder: service.config.builder,
     ...serverValues,
     watchPaths: serverWatchPaths,
@@ -237,6 +237,7 @@ function GitSection({ service }: TGitSectionProps) {
       entityId={sectionHighlightId}
       hasChanges={buildFields.some((field) => staged[field] !== undefined)}
       isApplying={hasApplying(staged, buildFields)}
+      onRevert={() => unstage(buildFields)}
     >
       <Block>
         <form.AppField

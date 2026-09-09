@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/components/ui/utils";
-import { LoaderIcon } from "lucide-react";
+import { LoaderIcon, Undo2Icon } from "lucide-react";
 import { ReactElement, FC, HTMLAttributes, ReactNode } from "react";
 
 type TProps = {
@@ -26,6 +26,8 @@ type TProps = {
   hasChanges?: boolean;
   // Locks the section while its staged edits are being deployed
   isApplying?: boolean;
+  // Discards the section's staged edits, from a "Revert" button on the title row
+  onRevert?: () => void;
   SubmitTrigger?: FC<{ children: ReactElement }>;
   onClickResetChanges?: () => void;
 } & TWrapperProps &
@@ -41,6 +43,7 @@ export function SettingsSection({
   changeCount,
   hasChanges,
   isApplying,
+  onRevert,
   className,
   onClickResetChanges,
   SubmitButton,
@@ -79,6 +82,19 @@ export function SettingsSection({
           </h3>
         </div>
         {isApplying && <LoaderIcon className="my-3.25 size-4.5 shrink-0 animate-spin" />}
+        {!isApplying && isChanged && onRevert && (
+          <ResetTrigger onClickResetChanges={onRevert}>
+            <Button
+              type="button"
+              variant="ghost-change"
+              size="sm"
+              className="my-1.75 -mr-2 shrink-0 gap-1.5 px-2.5"
+            >
+              <Undo2Icon className="-ml-0.5 size-4.5" />
+              Revert
+            </Button>
+          </ResetTrigger>
+        )}
       </div>
       <div
         className={cn(
@@ -165,7 +181,7 @@ function ResetTrigger({
   onClickResetChanges,
   children,
 }: {
-  changeCount: number;
+  changeCount?: number;
   onClickResetChanges?: () => void;
   children: ReactElement;
 }) {
@@ -174,7 +190,9 @@ function ResetTrigger({
       <DialogTrigger render={children} />
       <DialogContent hideXButton className="w-lg max-w-full">
         <DialogHeader>
-          <DialogTitle>Revert Changes: {changeCount}</DialogTitle>
+          <DialogTitle>
+            {changeCount === undefined ? "Revert Changes" : `Revert Changes: ${changeCount}`}
+          </DialogTitle>
           <DialogDescription>Are you sure you want to revert the changes?</DialogDescription>
         </DialogHeader>
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
@@ -186,7 +204,7 @@ function ResetTrigger({
               </Button>
             }
           />
-          <Button onClick={onClickResetChanges}>Confirm</Button>
+          <DialogClose render={<Button onClick={onClickResetChanges}>Confirm</Button>} />
         </div>
       </DialogContent>
     </Dialog>

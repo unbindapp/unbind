@@ -117,6 +117,7 @@ const detailFields: TServiceChangeField[] = [
   "startupCheckIntervalSeconds",
   "startupCheckFailureThreshold",
 ];
+const healthFields: TServiceChangeField[] = ["healthCheckType", ...detailFields];
 
 function thresholdToInput(value: number) {
   return value === defaultApiValue ? "" : value.toString();
@@ -247,11 +248,9 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       id="health"
       Icon={HeartIcon}
       entityId={sectionHighlightId}
-      hasChanges={
-        staged.healthCheckType !== undefined ||
-        detailFields.some((field) => staged[field] !== undefined)
-      }
-      isApplying={hasApplying(staged, ["healthCheckType", ...detailFields])}
+      hasChanges={healthFields.some((field) => staged[field] !== undefined)}
+      isApplying={hasApplying(staged, healthFields)}
+      onRevert={() => unstage(healthFields)}
     >
       <Block>
         <BlockItem className="w-full md:w-full">
