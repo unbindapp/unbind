@@ -84,6 +84,9 @@ function UpdateSectionInner({
     latestVersionChanges,
   } = useUpdateStatus();
   const { refetch: refetchUpdateStatus } = useUpdateStatusUtils();
+  const setLastUpdatedAndDismissedVersion = useMainStore(
+    (s) => s.setLastUpdatedAndDismissedVersion,
+  );
   const updateStatus = updateStatusData?.data;
 
   const [updatePhase, setUpdatePhase] = useState<TUpdatePhases>(() => {
@@ -131,7 +134,15 @@ function UpdateSectionInner({
 
     setUpdatePhase("succeeded");
     setIsWatchingUpdate(false);
-  }, [updatePhase, updateStatus, targetVersion, setIsWatchingUpdate]);
+    // The person who ran the update saw the changelog already; skip the updated toast.
+    setLastUpdatedAndDismissedVersion(targetVersion);
+  }, [
+    updatePhase,
+    updateStatus,
+    targetVersion,
+    setIsWatchingUpdate,
+    setLastUpdatedAndDismissedVersion,
+  ]);
 
   // The timestamp guard skips failed snapshots fetched before a retry started.
   useEffect(() => {

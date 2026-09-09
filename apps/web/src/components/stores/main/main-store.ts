@@ -14,6 +14,7 @@ const NewlyCreatedEntitySchema = z.object({
 
 const MainStoreSchema = z.object({
   lastDismissedVersion: z.string().nullable(),
+  lastUpdatedAndDismissedVersion: z.string().nullable().default(null),
   newlyCreatedEntities: z.record(z.string(), NewlyCreatedEntitySchema),
   // null means the device default: top left on desktop, bottom on phones
   stagedChangesBarSlot: BarSlotSchema.nullable().default(null),
@@ -23,6 +24,7 @@ export type TState = z.infer<typeof MainStoreSchema>;
 
 export type TActions = {
   setLastDismissedVersion: (version: string) => Promise<void>;
+  setLastUpdatedAndDismissedVersion: (version: string) => void;
   setStagedChangesBarSlot: (slot: TBarSlot | null) => void;
   addNewlyCreatedEntity: (entityId: string, expiresAtTimestamp: number) => Promise<void>;
   removeNewlyCreatedEntityWithDelay: (entityId: string, delayMs: number) => Promise<void>;
@@ -34,6 +36,7 @@ export type TMainStore = TState & TActions;
 
 const defaultInitState: TState = {
   lastDismissedVersion: null,
+  lastUpdatedAndDismissedVersion: null,
   newlyCreatedEntities: {},
   stagedChangesBarSlot: null,
 };
@@ -51,6 +54,8 @@ export const createMainStore = (initState: TState = defaultInitState) => {
             lastDismissedVersion: lastDismissedVersion,
           }));
         },
+        setLastUpdatedAndDismissedVersion: (lastUpdatedAndDismissedVersion) =>
+          set({ lastUpdatedAndDismissedVersion }),
         setStagedChangesBarSlot: (stagedChangesBarSlot) => set({ stagedChangesBarSlot }),
         addNewlyCreatedEntity: async (entityId, expiresAtTimestamp) => {
           set((state) => {

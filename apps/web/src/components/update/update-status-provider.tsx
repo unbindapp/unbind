@@ -1,13 +1,14 @@
 "use client";
 
+import BrandIcon from "@/components/icons/brand";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
-import { LinkButton } from "@/components/ui/button";
+import { Button, LinkButton } from "@/components/ui/button";
 import { useMounted } from "@/lib/hooks/use-mounted";
 import { queryKeySystem, updateStatusQuery, type TUpdateStatus } from "@/lib/queries/system";
 import type { Change } from "@/lib/server/client.gen";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { useLocation } from "@tanstack/react-router";
-import { GiftIcon } from "lucide-react";
+import { CircleCheckBigIcon, ExternalLinkIcon, GiftIcon, RefreshCwIcon } from "lucide-react";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
 import { toast } from "@/components/ui/toast";
 
@@ -121,6 +122,8 @@ export const useUpdateStatusUtils = () => {
 export default UpdateStatusProvider;
 
 export function UpdateToastProvider({ children }: { children: ReactNode }) {
+  useUpdatedToast();
+
   const setLastDismissedVersion = useMainStore((state) => state.setLastDismissedVersion);
 
   const { hasUnseenUpdate, latestVersion } = useUpdateStatus();
@@ -167,4 +170,77 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
   }, [hasUnseenUpdate, latestVersion, mounted]);
 
   return children;
+}
+
+const bundleVersion = import.meta.env.VITE_APP_VERSION ?? "development";
+const updatedToastId = "updated_toast";
+
+// Shown once per browser after the instance moves to a new version. A tab that still
+// runs the bundle of the old version gets a Reload action instead of the changelog;
+// the changelog toast then follows on the fresh bundle.
+function useUpdatedToast() {
+  const lastUpdatedAndDismissedVersion = useMainStore((s) => s.lastUpdatedAndDismissedVersion);
+  const setLastUpdatedAndDismissedVersion = useMainStore(
+    (s) => s.setLastUpdatedAndDismissedVersion,
+  );
+  const { data } = useUpdateStatus();
+  const mounted = useMounted();
+  const shownRef = useRef(false);
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (shownRef.current) return;
+    const status = data?.data;
+    if (!status || status.in_progress) return;
+
+    const { current_version: currentVersion, current_version_url: currentVersionUrl } = status;
+    if (lastUpdatedAndDismissedVersion === null) {
+      setLastUpdatedAndDismissedVersion(currentVersion);
+      return;
+    }
+    if (lastUpdatedAndDismissedVersion === currentVersion) return;
+
+    const isBundleStale = bundleVersion !== currentVersion;
+
+    toast.add({
+      type: "success",
+      id: updatedToastId,
+      title: `Updated to ${currentVersion}`,
+      description: "Unbind has been updated to a new version.",
+      data: {
+        icon: <CircleCheckBigIcon className="size-full" />,
+        action: isBundleStale ? (
+          <Button size="sm" onClick={() => window.location.reload()}>
+            <RefreshCwIcon className="-ml-1.5 size-4" />
+            <p className="min-w-0 shrink">Reload</p>
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            className="group"
+            onClick={() => {
+              toast.close(updatedToastId);
+              setLastUpdatedAndDismissedVersion(currentVersion);
+            }}
+            render={<a href={currentVersionUrl} target="_blank" rel="noopener noreferrer" />}
+          >
+            <div className="relative -ml-1.5 size-4 shrink-0 transition-[rotate,opacity] group-active:rotate-45 has-hover:group-hover:rotate-45">
+              <BrandIcon
+                brand="github"
+                color="monochrome"
+                className="size-full group-active:opacity-0 has-hover:group-hover:opacity-0"
+              />
+              <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active:opacity-100 has-hover:group-hover:opacity-100" />
+            </div>
+            <p className="min-w-0 shrink">Changelog</p>
+          </Button>
+        ),
+      },
+      onClose: () => {
+        setLastUpdatedAndDismissedVersion(currentVersion);
+      },
+    });
+
+    shownRef.current = true;
+  }, [mounted, data, lastUpdatedAndDismissedVersion, setLastUpdatedAndDismissedVersion]);
 }

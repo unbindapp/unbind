@@ -32,6 +32,8 @@ runs:
     - name: Build SPA
       shell: bash
       working-directory: ./apps/web
+      env:
+        VITE_APP_VERSION: ${{ inputs.version }}
       run: |
         npm ci
         npm run build
