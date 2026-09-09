@@ -1,3 +1,5 @@
+import BrandIcon from "@/components/icons/brand";
+import { IconCache, type TCachedIcon } from "@/components/icons/icon-cache";
 import {
   logLevels,
   logTypeCapabilities,
@@ -8,24 +10,21 @@ import {
   logRangePresets,
   type TLogRangePreset,
 } from "@/components/logs/log-range";
-import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider";
 import {
   createLogSearchLanguage,
   levelIconKey,
   type TLogSearchData,
 } from "@/components/logs/log-search-language";
 import { logSearchScopes } from "@/components/logs/log-search-scope";
-import { useLogs } from "@/components/logs/logs-provider";
+import { useLogViewDropdown } from "@/components/logs/log-view-dropdown-provider";
 import {
   logViewPreferenceKeys,
   logViewPreferences,
   useLogViewPreferences,
 } from "@/components/logs/log-view-preferences-provider";
-import { buildServiceTokens, toServiceToken } from "@/components/logs/service-tokens";
-import BrandIcon from "@/components/icons/brand";
-import { IconCache, type TCachedIcon } from "@/components/icons/icon-cache";
-import { iconCompletionAddition } from "@/components/ui/token-field/icon-completion";
 import type { TBufferedLogLine } from "@/components/logs/logs-provider";
+import { useLogs } from "@/components/logs/logs-provider";
+import { buildServiceTokens, toServiceToken } from "@/components/logs/service-tokens";
 import ServiceIcon from "@/components/service/service-icon";
 import { useServices } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
@@ -43,12 +42,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { iconCompletionAddition } from "@/components/ui/token-field/icon-completion";
 import TokenField, { type TTokenFieldHandle } from "@/components/ui/token-field/token-field";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
+import useDebouncedCallback from "@/lib/hooks/use-debounced-callback";
 import { TLogLevel, TLogType } from "@/lib/queries/logs";
 import { format } from "date-fns";
 import {
+  BoxIcon,
   BugIcon,
   CircleAlertIcon,
   DownloadIcon,
@@ -57,13 +59,11 @@ import {
   LoaderIcon,
   RotateCcwIcon,
   SearchIcon,
-  ServerIcon,
   SettingsIcon,
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react";
 import { memo, useEffect, useMemo, useRef, useState, type FC } from "react";
-import useDebouncedCallback from "@/lib/hooks/use-debounced-callback";
 
 type TProps = {
   isPendingLogs: boolean;
@@ -420,7 +420,7 @@ function ServicesFilterGroup({
             disabled
             className={cn("text-muted-foreground px-2.5", filterCheckboxItemClassName)}
           >
-            <ServerIcon className="size-4" />
+            <BoxIcon className="size-4" />
             <p className="min-w-0 shrink font-normal">No services yet</p>
           </DropdownMenuItem>
         )}

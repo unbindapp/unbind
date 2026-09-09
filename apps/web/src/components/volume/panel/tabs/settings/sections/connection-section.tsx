@@ -11,17 +11,17 @@ import ErrorLine from "@/components/error-line";
 import { useServices, useServicesUtils } from "@/components/service/services-provider";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
-import { updateService, TVolumeShallow } from "@/lib/queries/services";
+import { TVolumeShallow, updateService } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { FolderClosedIcon, ServerIcon, UnplugIcon } from "lucide-react";
+import { BoxIcon, FolderClosedIcon, UnplugIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
-import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 type TProps = {
@@ -161,7 +161,7 @@ function AttachSection({ volume }: TProps) {
                   error={errorServices?.message}
                   commandInputPlaceholder="Search services..."
                   CommandEmptyText="No services found"
-                  CommandEmptyIcon={ServerIcon}
+                  CommandEmptyIcon={BoxIcon}
                 >
                   {({ isOpen }) => (
                     <BlockItemButtonLike
@@ -170,7 +170,7 @@ function AttachSection({ volume }: TProps) {
                         serviceItems?.find((item) => item.value === field.state.value)?.label ||
                         "Select a service"
                       }
-                      Icon={({ className }) => <ServerIcon className={cn(className, "size-4.5")} />}
+                      Icon={({ className }) => <BoxIcon className={cn(className, "size-4.5")} />}
                       variant="outline"
                       open={isOpen}
                       onBlur={field.handleBlur}
