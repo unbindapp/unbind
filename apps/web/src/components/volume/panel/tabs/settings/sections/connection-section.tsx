@@ -8,11 +8,17 @@ import {
   BlockItemTitle,
 } from "@/components/block";
 import ErrorLine from "@/components/error-line";
+import {
+  getDuplicateServiceNames,
+  getServicePublicHost,
+  ServicePickerItem,
+} from "@/components/service/service-picker";
 import { useServices, useServicesUtils } from "@/components/service/services-provider";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
+import { MountPathSchema } from "@/components/volume/mount-path";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
@@ -21,7 +27,7 @@ import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { BoxIcon, FolderClosedIcon, UnplugIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -52,12 +58,35 @@ function AttachSection({ volume }: TProps) {
 
   // Volumes can't be attached to database services — the database operator
   // manages its own storage.
+  const attachableServices = useMemo(
+    () => servicesData?.services.filter((service) => service.type !== "database"),
+    [servicesData],
+  );
+
   const serviceItems: TCommandItem[] | undefined = useMemo(
     () =>
-      servicesData?.services
-        .filter((service) => service.type !== "database")
-        .map((service) => ({ value: service.id, label: service.name })),
-    [servicesData],
+      attachableServices?.map((service) => ({
+        value: service.id,
+        label: service.name,
+        keywords: [service.name, getServicePublicHost(service) ?? ""],
+      })),
+    [attachableServices],
+  );
+
+  const ServiceItemElement = useCallback(
+    ({ item, className }: { item: TCommandItem; className?: string }) => {
+      const service = attachableServices?.find((s) => s.id === item.value);
+      if (!service) return <p className={cn("min-w-0 leading-tight", className)}>{item.label}</p>;
+      const duplicateNames = getDuplicateServiceNames(attachableServices ?? []);
+      return (
+        <ServicePickerItem
+          service={service}
+          showDescription={duplicateNames.has(service.name)}
+          className={className}
+        />
+      );
+    },
+    [attachableServices],
   );
 
   const {
@@ -94,7 +123,7 @@ function AttachSection({ volume }: TProps) {
       onChange: z
         .object({
           serviceId: z.string().min(1, "Select a service."),
-          mountPath: z.string().startsWith("/", "Mount path must be an absolute path."),
+          mountPath: MountPathSchema,
         })
         .strip(),
     },
@@ -162,6 +191,7 @@ function AttachSection({ volume }: TProps) {
                   commandInputPlaceholder="Search services..."
                   CommandEmptyText="No services found"
                   CommandEmptyIcon={BoxIcon}
+                  CommandItemElement={ServiceItemElement}
                 >
                   {({ isOpen }) => (
                     <BlockItemButtonLike

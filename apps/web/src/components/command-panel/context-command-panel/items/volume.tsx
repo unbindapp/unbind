@@ -5,6 +5,10 @@ import TitleChip from "@/components/command-panel/title-chip";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useProject } from "@/components/project/project-provider";
 import ServiceIcon from "@/components/service/service-icon";
+import {
+  getDuplicateServiceNames,
+  ServicePickerDescription,
+} from "@/components/service/service-picker";
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { toast } from "@/components/ui/toast";
@@ -12,7 +16,6 @@ import { getMountPathError } from "@/components/volume/mount-path";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { servicesListQuery, TServiceShallow } from "@/lib/queries/services";
 import { createVolume as createVolumeFn } from "@/lib/queries/storage";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -52,23 +55,6 @@ function canAttachVolume(service: TServiceShallow) {
 
 function getDefaultCapacityGb(minimumStorageGb: number | undefined) {
   return Math.max(1, minimumStorageGb ?? 1);
-}
-
-function getDuplicateNames(services: TServiceShallow[]) {
-  const counts = new Map<string, number>();
-  for (const service of services) {
-    counts.set(service.name, (counts.get(service.name) ?? 0) + 1);
-  }
-  return new Set([...counts].filter(([, count]) => count > 1).map(([name]) => name));
-}
-
-function CreatedAt({ createdAt }: { createdAt: string }) {
-  const { str } = useTimeDifference({ timestamp: new Date(createdAt).getTime() });
-  return (
-    <p className="text-muted-foreground min-w-0 shrink text-sm leading-tight font-normal">
-      Created {str}
-    </p>
-  );
 }
 
 function useVolumeItem({ context }: TProps) {
@@ -147,7 +133,7 @@ function useVolumeItem({ context }: TProps) {
   });
 
   const serviceItems: TCommandPanelItem[] = useMemo(() => {
-    const duplicateNames = getDuplicateNames(eligibleServices);
+    const duplicateNames = getDuplicateServiceNames(eligibleServices);
     return eligibleServices.map((service) => {
       const pageId = mountPathPageId(service.id);
       const mountItemId = `${pageId}_mount`;
@@ -156,7 +142,7 @@ function useVolumeItem({ context }: TProps) {
         title: service.name,
         keywords: [],
         description: duplicateNames.has(service.name)
-          ? () => <CreatedAt createdAt={service.created_at} />
+          ? () => <ServicePickerDescription service={service} />
           : undefined,
         Icon: ({ className }) => <ServiceIcon service={service} className={className} />,
         subpage: {

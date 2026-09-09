@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 const invalidMountPathChars = ["<", ">", ":", '"', "|", "?", "*"];
 
 // Mirrors the API's unix path check so bad paths are explained before the request
@@ -9,3 +11,9 @@ export function getMountPathError(path: string): string | null {
   if (invalidChar) return `Path can't contain ${invalidChar}`;
   return null;
 }
+
+export const MountPathSchema = z.string().superRefine((path, ctx) => {
+  const error = getMountPathError(path);
+  if (!error) return;
+  ctx.addIssue({ code: "custom", message: error });
+});

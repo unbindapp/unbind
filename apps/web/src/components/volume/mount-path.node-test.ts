@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { getMountPathError } from "./mount-path.ts";
+import { getMountPathError, MountPathSchema } from "./mount-path.ts";
 
 test("accepts absolute unix paths", () => {
   for (const path of ["/", "/data", "/var/lib/app", "/a-b_c.d"]) {
@@ -26,4 +26,11 @@ test("explains relative, windows and malformed paths", () => {
   for (const [path, error] of cases) {
     assert.equal(getMountPathError(path), error, path);
   }
+});
+
+test("schema reports the same message", () => {
+  assert.equal(MountPathSchema.safeParse("/data").success, true);
+  const result = MountPathSchema.safeParse("data");
+  assert.equal(result.success, false);
+  assert.equal(result.error?.issues[0]?.message, 'Path should start with "/"');
 });
