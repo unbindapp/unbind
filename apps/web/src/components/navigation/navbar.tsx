@@ -82,7 +82,7 @@ export function Navbar({ commandPanelContext, children, className }: TProps) {
             <NavbarScrollArea className="hidden shrink-0 lg:flex">{tabsLg}</NavbarScrollArea>
           )}
         </div>
-        <div className="flex shrink-0 items-center justify-end gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-2.5">
           <NavbarSearchButton context={commandPanelContext} />
           <UserAvatarOrSignIn />
         </div>
