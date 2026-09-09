@@ -125,7 +125,7 @@ export default function WatchPathsInput({ service, value, onChange, className }:
                 data-placeholder
                 className="bg-input focus-visible:ring-primary/8-10 has-hover:hover:bg-input has-hover:hover:data-placeholder:text-muted-foreground/9-10 data-placeholder:text-muted-foreground/9-10 cursor-text justify-start px-3 text-left font-medium focus-visible:ring-1 focus-visible:ring-offset-0"
               >
-                Add pattern, e.g. apps/web/**
+                Add pattern, e.g. /apps/web/**
               </Button>
             }
           />
@@ -138,7 +138,7 @@ export default function WatchPathsInput({ service, value, onChange, className }:
             <div className="flex w-full flex-col gap-1">
               <CommandInput
                 ref={inputRef}
-                placeholder="Add pattern, e.g. apps/web/**"
+                placeholder="Add pattern, e.g. /apps/web/**"
                 value={inputValue}
                 onValueChange={(v) => {
                   setInputValue(v);
@@ -166,7 +166,7 @@ export default function WatchPathsInput({ service, value, onChange, className }:
                             {typed.map((pattern) => (
                               <span
                                 key={pattern}
-                                className="bg-foreground/2-10 border-foreground/2-10 -my-1 rounded-sm border px-1.25 font-mono text-sm font-normal"
+                                className="bg-foreground/2-10 border-foreground/2-10 -my-1 max-w-full min-w-0 rounded-sm border px-1.25 font-mono text-sm font-normal break-all"
                               >
                                 {pattern}
                               </span>
