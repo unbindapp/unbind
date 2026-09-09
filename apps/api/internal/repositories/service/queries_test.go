@@ -867,6 +867,41 @@ func (suite *ServiceQueriesSuite) TestNeedsDeployment() {
 		suite.Equal(NeedsDeployment, result)
 	})
 
+	suite.Run("NeedsDeployment Database Config Changed", func() {
+		suite.DB.Service.UpdateOneID(suite.testService.ID).
+			SetCurrentDeploymentID(suite.testDeployment.ID).
+			SaveX(suite.Ctx)
+		suite.DB.ServiceConfig.UpdateOneID(suite.testConfig.ID).
+			SetBuilder(schema.ServiceBuilderRailpack).
+			SetReplicas(1).
+			SetGitBranch("main").
+			SetDatabaseConfig(&schema.DatabaseConfig{StorageSize: "1Gi"}).
+			ClearVolumes().
+			SaveX(suite.Ctx)
+
+		load := func() *ent.Service {
+			service, err := suite.DB.Service.Query().
+				Where(entService.IDEQ(suite.testService.ID)).
+				WithServiceConfig().
+				WithCurrentDeployment().
+				Only(suite.Ctx)
+			suite.NoError(err)
+			return service
+		}
+
+		// Storage is frozen in the CR, so it alone never redeploys
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, load())
+		suite.NoError(err)
+		suite.Equal(NoDeploymentNeeded, result)
+
+		suite.DB.ServiceConfig.UpdateOneID(suite.testConfig.ID).
+			SetDatabaseConfig(&schema.DatabaseConfig{StorageSize: "1Gi", WalLevel: schema.WalLevelLogical}).
+			SaveX(suite.Ctx)
+		result, err = suite.serviceRepo.NeedsDeployment(suite.Ctx, load())
+		suite.NoError(err)
+		suite.Equal(NeedsDeployment, result)
+	})
+
 	suite.Run("NeedsDeployment Removed Current Deployment", func() {
 		removedDefinition := *suite.testDeployment.ResourceDefinition
 		removedDefinition.Spec.Config.Replicas = new(int32(0))

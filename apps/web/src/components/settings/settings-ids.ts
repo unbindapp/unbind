@@ -35,6 +35,11 @@ export const settingsIds = {
     startupCheck: "health_startup-check",
     healthCheck: "health_health-check",
   },
+  database: {
+    walLevel: "database_wal-level",
+    replication: "database_replication",
+    slotWalKeepSize: "database_slot-wal-keep-size",
+  },
 } as const;
 
 export const volumeSettingsIds = {

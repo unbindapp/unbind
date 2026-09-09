@@ -70,6 +70,14 @@ spec:
                             type: string
                           initdb:
                             type: string
+                          maxReplicationSlots:
+                            description: PostgreSQL only, 0 leaves the definition
+                              default
+                            type: integer
+                          maxSlotWalKeepSizeMb:
+                            type: integer
+                          maxWalSenders:
+                            type: integer
                           storage:
                             anyOf:
                             - type: integer

@@ -22,6 +22,9 @@ spec:
     version: {{ .Parameters.version | default "18" | quote }}
     parameters:
       wal_level: {{ .Parameters.walLevel | default "replica" | quote }}
+      max_replication_slots: {{ .Parameters.maxReplicationSlots | default 10 | int | quote }}
+      max_wal_senders: {{ .Parameters.maxWalSenders | default 10 | int | quote }}
+      max_slot_wal_keep_size: {{ if gt (.Parameters.maxSlotWalKeepSizeMb | default 0 | int) 0 }}{{ printf "%dMB" (.Parameters.maxSlotWalKeepSizeMb | int) | quote }}{{ else }}"-1"{{ end }}
       shared_buffers: {{ .Parameters.postgresql.sharedBuffers | default "128MB" | quote }}
       effective_cache_size: {{ .Parameters.postgresql.effectiveCacheSize | default "512MB" | quote }}
       work_mem: {{ .Parameters.postgresql.workMem | default "4MB" | quote }}

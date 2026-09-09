@@ -156,6 +156,7 @@ func estimateConfigChange(config *ent.ServiceConfig, input *models.UpdateService
 		len(input.OverwriteVariableMounts)+len(input.AddVariableMounts)+len(input.RemoveVariableMounts) > 0 ||
 		input.HealthCheck != nil ||
 		input.Resources != nil ||
+		input.DatabaseConfig != nil ||
 		input.S3BackupBucketID != nil ||
 		input.BackupSchedule != nil ||
 		input.BackupRetentionCount != nil {

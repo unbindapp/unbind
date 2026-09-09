@@ -211,6 +211,10 @@ type DatabaseConfigSpec struct {
 	DefaultDatabaseName string             `json:"defaultDatabaseName,omitempty"`
 	InitDB              string             `json:"initdb,omitempty"`
 	WalLevel            string             `json:"walLevel,omitempty"`
+	// PostgreSQL only, 0 leaves the definition default
+	MaxReplicationSlots  int `json:"maxReplicationSlots,omitempty"`
+	MaxWalSenders        int `json:"maxWalSenders,omitempty"`
+	MaxSlotWalKeepSizeMB int `json:"maxSlotWalKeepSizeMb,omitempty"`
 }
 
 func (self *DatabaseConfigSpec) AsMap() map[string]any {
@@ -229,6 +233,15 @@ func (self *DatabaseConfigSpec) AsMap() map[string]any {
 	}
 	if self.WalLevel != "" {
 		res["walLevel"] = self.WalLevel
+	}
+	if self.MaxReplicationSlots > 0 {
+		res["maxReplicationSlots"] = self.MaxReplicationSlots
+	}
+	if self.MaxWalSenders > 0 {
+		res["maxWalSenders"] = self.MaxWalSenders
+	}
+	if self.MaxSlotWalKeepSizeMB > 0 {
+		res["maxSlotWalKeepSizeMb"] = self.MaxSlotWalKeepSizeMB
 	}
 	return res
 }

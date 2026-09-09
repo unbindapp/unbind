@@ -23,3 +23,7 @@ export function shouldServiceSettingsHaveBackupsSection(service: TServiceShallow
 export function shouldServiceSettingsHaveBuildSection(service: TServiceShallow) {
   return service.type === "github";
 }
+
+export function shouldServiceSettingsHaveDatabaseSection(service: TServiceShallow) {
+  return service.type === "database" && service.database_type === "postgres";
+}

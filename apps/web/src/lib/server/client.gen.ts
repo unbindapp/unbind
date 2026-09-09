@@ -38,13 +38,18 @@ export const ServiceVolumeSchema = z
 
 export const ServiceBuilderSchema = z.enum(['railpack', 'docker', 'database']);
 
+export const WalLevelSchema = z.enum(['replica', 'logical']);
+
 export const DatabaseConfigSchema = z
   .object({
     defaultDatabaseName: z.string().optional(),
     initdb: z.string().optional(),
+    maxReplicationSlots: z.number().optional(),
+    maxSlotWalKeepSizeMb: z.number().optional(),
+    maxWalSenders: z.number().optional(),
     storage: z.string().optional(),
     version: z.string().optional(),
-    walLevel: z.string().optional(),
+    walLevel: WalLevelSchema.optional(),
   })
   .strip();
 
@@ -668,6 +673,18 @@ export const CreateServiceInputSchema = z
   })
   .strip();
 
+export const DatabaseConfigResponseSchema = z
+  .object({
+    default_database_name: z.string().optional(),
+    max_replication_slots: z.number(),
+    max_slot_wal_keep_size_mb: z.number(),
+    max_wal_senders: z.number(),
+    storage: z.string().optional(),
+    version: z.string().optional(),
+    wal_level: WalLevelSchema.optional(),
+  })
+  .strip();
+
 export const SecurityContextSchema = z
   .object({
     capabilities: CapabilitiesSchema.optional(),
@@ -681,6 +698,7 @@ export const ServiceConfigResponseSchema = z
     backup_retention_count: z.number(),
     backup_schedule: z.string(),
     builder: ServiceBuilderSchema,
+    database_config: DatabaseConfigResponseSchema.optional(),
     docker_builder_build_context: z.string().optional(),
     docker_builder_dockerfile_path: z.string().optional(),
     git_branch: z.string().optional(),
@@ -2581,6 +2599,7 @@ export type PortSpec = z.infer<typeof PortSpecSchema>;
 export type VariableMount = z.infer<typeof VariableMountSchema>;
 export type ServiceVolume = z.infer<typeof ServiceVolumeSchema>;
 export type ServiceBuilder = z.infer<typeof ServiceBuilderSchema>;
+export type WalLevel = z.infer<typeof WalLevelSchema>;
 export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
 export type HealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
 export type HealthCheck = z.infer<typeof HealthCheckSchema>;
@@ -2643,6 +2662,7 @@ export type ServiceGroupResponse = z.infer<typeof ServiceGroupResponseSchema>;
 export type CreateServiceGroupResponseBody = z.infer<typeof CreateServiceGroupResponseBodySchema>;
 export type ServiceType = z.infer<typeof ServiceTypeSchema>;
 export type CreateServiceInput = z.infer<typeof CreateServiceInputSchema>;
+export type DatabaseConfigResponse = z.infer<typeof DatabaseConfigResponseSchema>;
 export type SecurityContext = z.infer<typeof SecurityContextSchema>;
 export type ServiceConfigResponse = z.infer<typeof ServiceConfigResponseSchema>;
 export type TemplateResourceRecommendations = z.infer<typeof TemplateResourceRecommendationsSchema>;

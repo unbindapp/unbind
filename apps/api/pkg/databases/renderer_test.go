@@ -2023,3 +2023,46 @@ func TestDefinitionsRenderLimitsOnlyWhenProvided(t *testing.T) {
 		})
 	}
 }
+
+func TestPostgresRendersReplicationParameters(t *testing.T) {
+	provider := NewDatabaseProvider()
+	renderer := NewDatabaseRenderer()
+	def, err := provider.FetchDatabaseDefinition(context.Background(), "", "postgres")
+	require.NoError(t, err)
+
+	render := func(t *testing.T, params map[string]any) string {
+		params["common"] = map[string]any{
+			"namespace": "default",
+			"storage":   "1Gi",
+			"replicas":  int32(1),
+		}
+		result, err := renderer.Render(def, &RenderContext{
+			Name:       "test-postgres",
+			Namespace:  "default",
+			Parameters: params,
+		})
+		require.NoError(t, err)
+		return result
+	}
+
+	t.Run("defaults", func(t *testing.T) {
+		result := render(t, map[string]any{})
+		assert.Contains(t, result, `wal_level: "replica"`)
+		assert.Contains(t, result, `max_replication_slots: "10"`)
+		assert.Contains(t, result, `max_wal_senders: "10"`)
+		assert.Contains(t, result, `max_slot_wal_keep_size: "-1"`)
+	})
+
+	t.Run("configured", func(t *testing.T) {
+		result := render(t, map[string]any{
+			"walLevel":             "logical",
+			"maxReplicationSlots":  20,
+			"maxWalSenders":        30,
+			"maxSlotWalKeepSizeMb": 2048,
+		})
+		assert.Contains(t, result, `wal_level: "logical"`)
+		assert.Contains(t, result, `max_replication_slots: "20"`)
+		assert.Contains(t, result, `max_wal_senders: "30"`)
+		assert.Contains(t, result, `max_slot_wal_keep_size: "2048MB"`)
+	})
+}

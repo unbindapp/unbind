@@ -119,6 +119,26 @@ test("merges service field changes into one update per service", () => {
   assert.equal(web.replicas, undefined);
 });
 
+test("nests database settings into database_config", () => {
+  const payload = buildApplyChangesPayload(
+    state(
+      [],
+      [
+        service("walLevel", "logical"),
+        service("maxReplicationSlots", 20),
+        service("maxSlotWalKeepSizeMb", 0),
+      ],
+    ),
+  );
+
+  assert.equal(payload.services.length, 1);
+  assert.deepEqual(payload.services[0].database_config, {
+    walLevel: "logical",
+    maxReplicationSlots: 20,
+    maxSlotWalKeepSizeMb: 0,
+  });
+});
+
 test("keeps only the changes that failed to apply", () => {
   const current = state(
     [

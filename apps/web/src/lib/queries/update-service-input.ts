@@ -7,6 +7,7 @@ import {
   PortSpecSchema,
   ServiceBuilderSchema,
   ServiceVolumeSchema,
+  WalLevelSchema,
   type UpdateServiceInput,
 } from "../server/client.gen.ts";
 import { splitWatchPaths } from "../watch-paths.ts";
@@ -69,6 +70,10 @@ export const UpdateServiceInputSchema = z
     healthCheckFailureThreshold: z.number().int().optional(),
     startupCheckIntervalSeconds: z.number().int().optional(),
     startupCheckFailureThreshold: z.number().int().optional(),
+    walLevel: WalLevelSchema.optional(),
+    maxReplicationSlots: z.number().int().min(0).optional(),
+    maxWalSenders: z.number().int().min(0).optional(),
+    maxSlotWalKeepSizeMb: z.number().int().min(0).optional(),
   })
   .strip();
 
@@ -110,6 +115,10 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     healthCheckFailureThreshold,
     startupCheckIntervalSeconds,
     startupCheckFailureThreshold,
+    walLevel,
+    maxReplicationSlots,
+    maxWalSenders,
+    maxSlotWalKeepSizeMb,
     upsertHosts,
     removeHosts,
     addPorts,
@@ -156,6 +165,23 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
       healthCheck.startup_failure_threshold = startupCheckFailureThreshold;
   }
 
+  const hasDatabaseSettings = [
+    walLevel,
+    maxReplicationSlots,
+    maxWalSenders,
+    maxSlotWalKeepSizeMb,
+  ].some((value) => value !== undefined);
+  const databaseConfigInput: UpdateServiceInput["database_config"] | undefined = hasDatabaseSettings
+    ? { ...databaseConfig }
+    : databaseConfig;
+  if (walLevel !== undefined && databaseConfigInput) databaseConfigInput.walLevel = walLevel;
+  if (maxReplicationSlots !== undefined && databaseConfigInput)
+    databaseConfigInput.maxReplicationSlots = maxReplicationSlots;
+  if (maxWalSenders !== undefined && databaseConfigInput)
+    databaseConfigInput.maxWalSenders = maxWalSenders;
+  if (maxSlotWalKeepSizeMb !== undefined && databaseConfigInput)
+    databaseConfigInput.maxSlotWalKeepSizeMb = maxSlotWalKeepSizeMb;
+
   return {
     team_id: teamId,
     project_id: projectId,
@@ -169,7 +195,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     is_public: isPublic,
     overwrite_ports: overwritePorts,
     overwrite_hosts: overwriteHosts,
-    database_config: databaseConfig,
+    database_config: databaseConfigInput,
     s3_backup_bucket_id: s3BackupBucketId,
     backup_schedule: backupSchedule,
     backup_retention_count: backupRetentionCount,

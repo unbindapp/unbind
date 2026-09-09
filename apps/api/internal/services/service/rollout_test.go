@@ -65,6 +65,7 @@ func TestEstimateConfigChange(t *testing.T) {
 		{"ports", models.UpdateServiceInput{RemovePorts: []schema.PortSpec{{Port: 3000}}}, service_repo.NeedsDeployment},
 		{"resources", models.UpdateServiceInput{Resources: &schema.Resources{}}, service_repo.NeedsDeployment},
 		{"health check", models.UpdateServiceInput{HealthCheck: &schema.HealthCheck{}}, service_repo.NeedsDeployment},
+		{"database config", models.UpdateServiceInput{DatabaseConfig: &schema.DatabaseConfig{WalLevel: schema.WalLevelLogical}}, service_repo.NeedsDeployment},
 		{"build and deploy changes prefer build", models.UpdateServiceInput{Replicas: utils.ToPtr[int32](3), GitBranch: utils.ToPtr("develop")}, service_repo.NeedsBuildAndDeployment},
 	}
 	for _, tt := range tests {

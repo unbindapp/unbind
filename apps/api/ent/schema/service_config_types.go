@@ -395,12 +395,74 @@ func (self *SecurityContext) AsV1SecurityContext() *corev1.SecurityContext {
 	return secCtx
 }
 
+type WalLevel string
+
+const (
+	WalLevelReplica WalLevel = "replica"
+	WalLevelLogical WalLevel = "logical"
+)
+
+// Register enum in OpenAPI specification
+// https://github.com/danielgtaylor/huma/issues/621
+func (u WalLevel) Schema(r huma.Registry) *huma.Schema {
+	if r.Map()["WalLevel"] == nil {
+		schemaRef := r.Schema(reflect.TypeOf(""), true, "WalLevel")
+		schemaRef.Title = "WalLevel"
+		schemaRef.Enum = append(schemaRef.Enum, []any{
+			string(WalLevelReplica),
+			string(WalLevelLogical),
+		}...)
+		r.Map()["WalLevel"] = schemaRef
+	}
+	return &huma.Schema{Ref: "#/components/schemas/WalLevel"}
+}
+
 type DatabaseConfig struct {
 	Version             string `json:"version,omitempty" required:"false" description:"Version of the database"`
 	StorageSize         string `json:"storage,omitempty" required:"false" description:"Storage size for the database"`
 	DefaultDatabaseName string `json:"defaultDatabaseName,omitempty" required:"false" description:"Default database name"`
 	InitDB              string `json:"initdb,omitempty" required:"false" description:"SQL commands to run to initialize the database"`
-	WalLevel            string `json:"walLevel,omitempty" required:"false" description:"PostgreSQL WAL level"`
+	// PostgreSQL only. On update, unset fields keep their stored value
+	WalLevel             WalLevel `json:"walLevel,omitempty" required:"false" description:"PostgreSQL wal_level"`
+	MaxReplicationSlots  *int     `json:"maxReplicationSlots,omitempty" required:"false" minimum:"0" maximum:"1000" description:"PostgreSQL max_replication_slots, 0 uses the default"`
+	MaxWalSenders        *int     `json:"maxWalSenders,omitempty" required:"false" minimum:"0" maximum:"1000" description:"PostgreSQL max_wal_senders, 0 uses the default"`
+	MaxSlotWalKeepSizeMB *int     `json:"maxSlotWalKeepSizeMb,omitempty" required:"false" minimum:"0" description:"PostgreSQL max_slot_wal_keep_size in megabytes, 0 is unlimited"`
+}
+
+// Update requests carry only the fields they change
+func MergeDatabaseConfig(existing, patch *DatabaseConfig) *DatabaseConfig {
+	if patch == nil {
+		return existing
+	}
+	merged := DatabaseConfig{}
+	if existing != nil {
+		merged = *existing
+	}
+	if patch.Version != "" {
+		merged.Version = patch.Version
+	}
+	if patch.StorageSize != "" {
+		merged.StorageSize = patch.StorageSize
+	}
+	if patch.DefaultDatabaseName != "" {
+		merged.DefaultDatabaseName = patch.DefaultDatabaseName
+	}
+	if patch.InitDB != "" {
+		merged.InitDB = patch.InitDB
+	}
+	if patch.WalLevel != "" {
+		merged.WalLevel = patch.WalLevel
+	}
+	if patch.MaxReplicationSlots != nil {
+		merged.MaxReplicationSlots = patch.MaxReplicationSlots
+	}
+	if patch.MaxWalSenders != nil {
+		merged.MaxWalSenders = patch.MaxWalSenders
+	}
+	if patch.MaxSlotWalKeepSizeMB != nil {
+		merged.MaxSlotWalKeepSizeMB = patch.MaxSlotWalKeepSizeMB
+	}
+	return &merged
 }
 
 func (self *DatabaseConfig) AsV1DatabaseConfig() (*v1.DatabaseConfigSpec, error) {
@@ -408,10 +470,13 @@ func (self *DatabaseConfig) AsV1DatabaseConfig() (*v1.DatabaseConfigSpec, error)
 		return nil, nil
 	}
 	dbConfig := &v1.DatabaseConfigSpec{
-		Version:             self.Version,
-		DefaultDatabaseName: self.DefaultDatabaseName,
-		InitDB:              self.InitDB,
-		WalLevel:            self.WalLevel,
+		Version:              self.Version,
+		DefaultDatabaseName:  self.DefaultDatabaseName,
+		InitDB:               self.InitDB,
+		WalLevel:             string(self.WalLevel),
+		MaxReplicationSlots:  intOrZero(self.MaxReplicationSlots),
+		MaxWalSenders:        intOrZero(self.MaxWalSenders),
+		MaxSlotWalKeepSizeMB: intOrZero(self.MaxSlotWalKeepSizeMB),
 	}
 	if self.StorageSize != "" {
 		qty, err := utils.ParseStorageQuantity(self.StorageSize)
@@ -421,6 +486,13 @@ func (self *DatabaseConfig) AsV1DatabaseConfig() (*v1.DatabaseConfigSpec, error)
 		dbConfig.StorageSize = &qty
 	}
 	return dbConfig, nil
+}
+
+func intOrZero(value *int) int {
+	if value == nil {
+		return 0
+	}
+	return *value
 }
 
 //* Enums

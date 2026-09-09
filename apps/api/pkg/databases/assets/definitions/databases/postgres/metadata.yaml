@@ -50,7 +50,19 @@ schema:
       type: "string"
       description: "PostgreSQL WAL level"
       default: "replica"
-      enum: ["minimal", "replica", "logical"]
+      enum: ["replica", "logical"]
+    maxReplicationSlots:
+      type: "integer"
+      description: "PostgreSQL max_replication_slots"
+      default: 10
+    maxWalSenders:
+      type: "integer"
+      description: "PostgreSQL max_wal_senders"
+      default: 10
+    maxSlotWalKeepSizeMb:
+      type: "integer"
+      description: "PostgreSQL max_slot_wal_keep_size in megabytes, 0 is unlimited"
+      default: 0
     postgresql:
       type: "object"
       description: "PostgreSQL configuration parameters"

@@ -43,6 +43,41 @@ type ServiceConfigResponse struct {
 	InitContainers []*schema.InitContainer `json:"init_containers" nullable:"false"`
 	// Resources
 	Resources *schema.Resources `json:"resources,omitempty"`
+	// Database
+	DatabaseConfig *DatabaseConfigResponse `json:"database_config,omitempty"`
+}
+
+// The init script stays out, templates substitute generated passwords into it
+type DatabaseConfigResponse struct {
+	Version              string          `json:"version,omitempty"`
+	StorageSize          string          `json:"storage,omitempty"`
+	DefaultDatabaseName  string          `json:"default_database_name,omitempty"`
+	WalLevel             schema.WalLevel `json:"wal_level,omitempty"`
+	MaxReplicationSlots  int             `json:"max_replication_slots"`
+	MaxWalSenders        int             `json:"max_wal_senders"`
+	MaxSlotWalKeepSizeMB int             `json:"max_slot_wal_keep_size_mb"`
+}
+
+func transformDatabaseConfig(config *schema.DatabaseConfig) *DatabaseConfigResponse {
+	if config == nil {
+		return nil
+	}
+	return &DatabaseConfigResponse{
+		Version:              config.Version,
+		StorageSize:          config.StorageSize,
+		DefaultDatabaseName:  config.DefaultDatabaseName,
+		WalLevel:             config.WalLevel,
+		MaxReplicationSlots:  intOrZero(config.MaxReplicationSlots),
+		MaxWalSenders:        intOrZero(config.MaxWalSenders),
+		MaxSlotWalKeepSizeMB: intOrZero(config.MaxSlotWalKeepSizeMB),
+	}
+}
+
+func intOrZero(value *int) int {
+	if value == nil {
+		return 0
+	}
+	return *value
 }
 
 // TransformServiceConfigEntity transforms an ent.ServiceConfig entity into a ServiceConfigResponse
@@ -76,6 +111,7 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 			Resources:                     entity.Resources,
 			DockerBuilderDockerfilePath:   entity.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     entity.DockerBuilderBuildContext,
+			DatabaseConfig:                transformDatabaseConfig(entity.DatabaseConfig),
 		}
 		if response.WatchPaths == nil {
 			response.WatchPaths = []string{}

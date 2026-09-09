@@ -423,7 +423,31 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 		return NeedsDeployment, nil
 	}
 
+	newDatabaseConfig, err := service.Edges.ServiceConfig.DatabaseConfig.AsV1DatabaseConfig()
+	if err != nil {
+		return NoDeploymentNeeded, err
+	}
+	if !reflect.DeepEqual(
+		renderedDatabaseConfig(service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Database.Config),
+		renderedDatabaseConfig(newDatabaseConfig),
+	) {
+		return NeedsDeployment, nil
+	}
+
 	return NoDeploymentNeeded, nil
+}
+
+// Storage is frozen in the CR and resized on the claims directly, the rest renders into the database
+func renderedDatabaseConfig(config *v1.DatabaseConfigSpec) map[string]any {
+	if config == nil {
+		return nil
+	}
+	rendered := config.AsMap()
+	delete(rendered, "storage")
+	if len(rendered) == 0 {
+		return nil
+	}
+	return rendered
 }
 
 func (self *ServiceRepository) s3BackupConfig(ctx context.Context, config *ent.ServiceConfig) (*v1.S3ConfigSpec, error) {

@@ -51,6 +51,10 @@ export const ServiceChangeFieldSchema = z.enum([
   "healthCheckFailureThreshold",
   "startupCheckIntervalSeconds",
   "startupCheckFailureThreshold",
+  "walLevel",
+  "maxReplicationSlots",
+  "maxWalSenders",
+  "maxSlotWalKeepSizeMb",
 ]);
 
 export type TServiceChangeField = z.infer<typeof ServiceChangeFieldSchema>;

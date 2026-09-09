@@ -194,6 +194,7 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 				}
 			}
 		}
+		input.DatabaseConfig = schema.MergeDatabaseConfig(service.Edges.ServiceConfig.DatabaseConfig, input.DatabaseConfig)
 	}
 
 	client := self.k8s.GetInternalClient()
