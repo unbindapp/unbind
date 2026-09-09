@@ -1,6 +1,7 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
+import BrandIcon from "@/components/icons/brand";
 import { useNow } from "@/components/providers/now-provider";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import {
@@ -10,11 +11,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button, LinkButton } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import UpdateStatusProvider, {
   useUpdateStatus,
   useUpdateStatusUtils,
 } from "@/components/update/update-status-provider";
-import { toast } from "@/components/ui/toast";
 import { applyUpdate as applyUpdateFn } from "@/lib/queries/system";
 import type { Change } from "@/lib/server/client.gen";
 import { useMutation } from "@tanstack/react-query";
@@ -304,44 +305,52 @@ function Changelog({
     <Accordion className="bg-card overflow-hidden rounded-lg border">
       <AccordionItem value="changes">
         <AccordionTrigger>
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <p className="leading-tight font-bold">Changelog</p>
-            {summary && (
-              <p className="text-muted-foreground min-w-0 text-sm leading-tight">{summary}</p>
-            )}
+          <div className="flex min-w-0 flex-1 flex-col gap-1.5 overflow-hidden sm:px-0.75 sm:py-1">
+            <div className="flex items-center gap-1.5">
+              <FileTextIcon className="size-4.5 shrink-0" />
+              <p className="min-w-0 shrink leading-tight font-bold wrap-break-word">Changelog</p>
+            </div>
+            {summary && <p className="text-muted-foreground min-w-0 text-sm">{summary}</p>}
           </div>
         </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-3">
+        <AccordionContent className="flex flex-col gap-3 border-t pt-3.5 pb-4">
           {releaseUrl && (
             <Button
               className="group w-full"
+              variant="outline"
               render={<a href={releaseUrl} target="_blank" rel="noopener noreferrer" />}
             >
               <div className="relative size-4.5 shrink-0 transition-[rotate,opacity] group-active:rotate-45 has-hover:group-hover:rotate-45">
-                <FileTextIcon className="size-full group-active:opacity-0 has-hover:group-hover:opacity-0" />
+                <BrandIcon
+                  brand="github"
+                  color="monochrome"
+                  className="size-full group-active:opacity-0 has-hover:group-hover:opacity-0"
+                />
                 <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active:opacity-100 has-hover:group-hover:opacity-100" />
               </div>
               <p className="min-w-0 shrink">View on GitHub</p>
             </Button>
           )}
           {changes.length === 0 ? (
-            <p className="text-muted-foreground text-sm">No change list for this release.</p>
+            <p className="text-muted-foreground text-sm sm:px-1">
+              There is no changelog for this release.
+            </p>
           ) : (
-            <ul className="flex w-full flex-col gap-2 sm:gap-1.5">
+            <ul className="flex w-full min-w-0 flex-col gap-3 sm:px-1">
               {changes.map((change, i) => (
                 <li
                   key={`${change.commit_sha ?? ""}-${i}`}
-                  className="flex w-full items-start gap-2 text-sm leading-snug"
+                  className="flex w-full min-w-0 items-start gap-2 text-sm"
                 >
-                  <span className="bg-muted-foreground mt-2 size-1.5 shrink-0 rounded-full" />
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2">
-                    <p className="min-w-0 flex-1">{change.message}</p>
+                  <span className="bg-muted-more-foreground mt-2 size-1 shrink-0 rounded-full" />
+                  <div className="min-w-0 flex-1 shrink flex-col gap-0.5">
+                    <p className="min-w-0 shrink">{change.message}</p>
                     {change.commit_sha && change.commit_url && (
                       <a
                         href={change.commit_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-muted-foreground shrink-0 font-mono text-xs active:underline has-hover:hover:underline"
+                        className="text-muted-more-foreground has-hover:hover:text-muted-foreground active:text-muted-foreground min-w-0 shrink font-mono text-xs wrap-break-word active:underline has-hover:hover:underline"
                       >
                         {change.commit_sha.slice(0, 7)}
                       </a>
