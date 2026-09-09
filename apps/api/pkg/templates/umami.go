@@ -55,7 +55,6 @@ func umamiTemplate() *schema.TemplateDefinition {
 				Image:     new("ghcr.io/umami-software/umami:3.3.1"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{

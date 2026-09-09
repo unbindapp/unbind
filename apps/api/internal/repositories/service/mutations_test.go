@@ -736,7 +736,6 @@ func (suite *ServiceMutationsSuite) TestUpdateConfig() {
 		err := suite.serviceRepo.UpdateConfig(suite.Ctx, nil, input)
 		suite.NoError(err)
 
-		// Verify the update
 		updated, err := suite.DB.ServiceConfig.Query().
 			Where(serviceconfig.ServiceID(suite.testService.ID)).
 			Only(suite.Ctx)
@@ -748,24 +747,59 @@ func (suite *ServiceMutationsSuite) TestUpdateConfig() {
 		suite.Equal(int64(512), updated.Resources.MemoryRequestsMegabytes)
 	})
 
-	suite.Run("UpdateConfig Clear Resources", func() {
-		// First set resources
-		resources := &schema.Resources{
-			CPULimitsMillicores:     0,
-			CPURequestsMillicores:   0,
-			MemoryLimitsMegabytes:   0,
-			MemoryRequestsMegabytes: 0,
-		}
-
+	suite.Run("UpdateConfig Resources zero keeps existing fields", func() {
 		input := &MutateConfigInput{
 			ServiceID: suite.testService.ID,
-			Resources: resources,
+			Resources: &schema.Resources{MemoryLimitsMegabytes: 4096},
 		}
 
 		err := suite.serviceRepo.UpdateConfig(suite.Ctx, nil, input)
 		suite.NoError(err)
 
-		// Verify resources are cleared
+		updated, err := suite.DB.ServiceConfig.Query().
+			Where(serviceconfig.ServiceID(suite.testService.ID)).
+			Only(suite.Ctx)
+		suite.NoError(err)
+		suite.Equal(int64(2000), updated.Resources.CPULimitsMillicores)
+		suite.Equal(int64(1000), updated.Resources.CPURequestsMillicores)
+		suite.Equal(int64(4096), updated.Resources.MemoryLimitsMegabytes)
+		suite.Equal(int64(512), updated.Resources.MemoryRequestsMegabytes)
+	})
+
+	suite.Run("UpdateConfig Resources negative clears one field", func() {
+		input := &MutateConfigInput{
+			ServiceID: suite.testService.ID,
+			Resources: &schema.Resources{CPULimitsMillicores: -1},
+		}
+
+		err := suite.serviceRepo.UpdateConfig(suite.Ctx, nil, input)
+		suite.NoError(err)
+
+		updated, err := suite.DB.ServiceConfig.Query().
+			Where(serviceconfig.ServiceID(suite.testService.ID)).
+			Only(suite.Ctx)
+		suite.NoError(err)
+		suite.NotNil(updated.Resources)
+		suite.Equal(int64(0), updated.Resources.CPULimitsMillicores)
+		suite.Equal(int64(1000), updated.Resources.CPURequestsMillicores)
+		suite.Equal(int64(4096), updated.Resources.MemoryLimitsMegabytes)
+		suite.Equal(int64(512), updated.Resources.MemoryRequestsMegabytes)
+	})
+
+	suite.Run("UpdateConfig Clear Resources", func() {
+		input := &MutateConfigInput{
+			ServiceID: suite.testService.ID,
+			Resources: &schema.Resources{
+				CPULimitsMillicores:     -1,
+				CPURequestsMillicores:   -1,
+				MemoryLimitsMegabytes:   -1,
+				MemoryRequestsMegabytes: -1,
+			},
+		}
+
+		err := suite.serviceRepo.UpdateConfig(suite.Ctx, nil, input)
+		suite.NoError(err)
+
 		updated, err := suite.DB.ServiceConfig.Query().
 			Where(serviceconfig.ServiceID(suite.testService.ID)).
 			Only(suite.Ctx)

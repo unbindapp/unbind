@@ -49,7 +49,6 @@ func pocketBaseTemplate() *schema.TemplateDefinition {
 				Image:    new("ghcr.io/unbindapp/pocketbase:v0.39.4"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{

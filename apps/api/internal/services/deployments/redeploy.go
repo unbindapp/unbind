@@ -238,9 +238,7 @@ func (self *DeploymentService) CreateCRDFromService(ctx context.Context, service
 	crdToDeploy.Spec.Config.RunCommand = service.Edges.ServiceConfig.RunCommand
 	crdToDeploy.Spec.Config.Public = service.Edges.ServiceConfig.IsPublic
 	crdToDeploy.Spec.Config.Volumes = schema.AsV1Volumes(service.Edges.ServiceConfig.Volumes)
-	if service.Edges.ServiceConfig.Resources != nil {
-		crdToDeploy.Spec.Config.Resources = service.Edges.ServiceConfig.Resources.AsV1ResourceSpec()
-	}
+	crdToDeploy.Spec.Config.Resources = schema.ResolveResources(service.Edges.ServiceConfig.Resources)
 	if service.Type == schema.ServiceTypeDockerimage && service.Edges.ServiceConfig.Image != "" {
 		crdToDeploy.Spec.Config.Image = service.Edges.ServiceConfig.Image
 	}

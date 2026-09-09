@@ -70,7 +70,6 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				RunCommand: new("flowise start"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
-					CPULimitsMillicores:   500,
 				},
 				Ports: []schema.PortSpec{
 					{

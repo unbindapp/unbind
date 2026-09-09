@@ -111,10 +111,10 @@ func (rb *ResourceBuilder) applyDbCommonConfig(dbConfig map[string]any, storage 
 			limits["cpu"] = fmt.Sprintf("%dm", res.CPULimitsMillicores)
 		}
 		if res.MemoryRequestsMegabytes > 0 {
-			requests["memory"] = fmt.Sprintf("%dMi", res.MemoryRequestsMegabytes)
+			requests["memory"] = fmt.Sprintf("%dM", res.MemoryRequestsMegabytes)
 		}
 		if res.MemoryLimitsMegabytes > 0 {
-			limits["memory"] = fmt.Sprintf("%dMi", res.MemoryLimitsMegabytes)
+			limits["memory"] = fmt.Sprintf("%dM", res.MemoryLimitsMegabytes)
 		}
 		commonMap["resources"] = resourcesMap
 	}

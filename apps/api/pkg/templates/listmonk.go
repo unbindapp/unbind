@@ -70,7 +70,6 @@ func listmonkTemplate() *schema.TemplateDefinition {
 				RunCommand: new("./listmonk --install --idempotent --yes && ./listmonk --upgrade --yes && ./listmonk"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{

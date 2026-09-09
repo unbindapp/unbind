@@ -69,7 +69,6 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{

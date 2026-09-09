@@ -114,9 +114,17 @@ spec:
             requests:
               cpu:    {{ $common.resources.requests.cpu    | default "10m"   | quote }}
               memory: {{ $common.resources.requests.memory | default "10Mi"  | quote }}
+{{- with $common.resources.limits }}
+{{- if or .cpu .memory }}
             limits:
-              cpu:    {{ $common.resources.limits.cpu      | default "500m"  | quote }}
-              memory: {{ $common.resources.limits.memory   | default "512Mi" | quote }}
+{{- if .cpu }}
+              cpu:    {{ .cpu | quote }}
+{{- end }}
+{{- if .memory }}
+              memory: {{ .memory | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{- if .Parameters.environment }}
           env:
 {{- range $k, $v := .Parameters.environment }}
@@ -132,18 +140,34 @@ spec:
           requests:
             cpu: {{ $common.resources.requests.cpu | default "10m" | quote }}
             memory: {{ $common.resources.requests.memory | default "32Mi" | quote }}
+{{- with $common.resources.limits }}
+{{- if or .cpu .memory }}
           limits:
-            cpu: {{ $common.resources.limits.cpu | default "50m" | quote }}
-            memory: {{ $common.resources.limits.memory | default "64Mi" | quote }}
+{{- if .cpu }}
+            cpu: {{ .cpu | quote }}
+{{- end }}
+{{- if .memory }}
+            memory: {{ .memory | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
       # moco-init (only runs once at first boot, but still needs to schedule)
       - name: moco-init
         resources:
           requests:
             cpu: {{ $common.resources.requests.cpu | default "20m" | quote }}
             memory: {{ $common.resources.requests.memory | default "64Mi" | quote }}
+{{- with $common.resources.limits }}
+{{- if or .cpu .memory }}
           limits:
-            cpu: {{ $common.resources.limits.cpu | default "40m" | quote }}
-            memory: {{ $common.resources.limits.memory | default "128Mi" | quote }}
+{{- if .cpu }}
+            cpu: {{ .cpu | quote }}
+{{- end }}
+{{- if .memory }}
+            memory: {{ .memory | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
   volumeClaimTemplates:
     - metadata:
         name: mysql-data

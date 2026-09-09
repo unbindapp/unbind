@@ -49,7 +49,6 @@ func appsmithTemplate() *schema.TemplateDefinition {
 				Image:    new("appsmith/appsmith-ee:v2.3.1"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{

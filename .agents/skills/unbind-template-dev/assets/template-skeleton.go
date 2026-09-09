@@ -76,8 +76,7 @@ func myAppTemplate() *schema.TemplateDefinition {
 				Image:     utils.ToPtr("ghcr.io/org/myapp:v1.0.0"), // pin the tag
 				InputIDs:  []string{"input_domain", "input_storage_size"},
 				Resources: &schema.Resources{
-					CPURequestsMillicores: 20,
-					CPULimitsMillicores:   400,
+					CPURequestsMillicores: 20, // requests only; users choose limits
 				},
 				Ports: []schema.PortSpec{
 					{

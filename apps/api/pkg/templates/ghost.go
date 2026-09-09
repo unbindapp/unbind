@@ -55,7 +55,6 @@ func ghostTemplate() *schema.TemplateDefinition {
 				Image:     new("ghost:6.60.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{

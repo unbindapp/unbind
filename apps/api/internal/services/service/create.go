@@ -24,20 +24,19 @@ import (
 	"github.com/unbindapp/unbind-api/pkg/databases"
 )
 
-// Also set default resources for database services
-var defaultDatabaseResources = &schema.Resources{
-	CPURequestsMillicores:   50,
-	CPULimitsMillicores:     500,
-	MemoryRequestsMegabytes: 128,
-	MemoryLimitsMegabytes:   1548,
-}
-
 // CreateService creates a new service and its configuration
 func (self *ServiceService) CreateService(ctx context.Context, requesterUserID uuid.UUID, input *models.CreateServiceInput) (*models.ServiceResponse, error) {
 	var err error
 	var dbDefinition *databases.Definition
 	var dbVersion *string
 	var protectedVariables *[]string
+
+	if input.Resources.HasNegative() {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Resource values must be positive")
+	}
+	if err := input.Resources.Validate(); err != nil {
+		return nil, err
+	}
 
 	switch input.Type {
 	case schema.ServiceTypeGithub:
@@ -93,8 +92,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 
 		if input.Resources == nil {
-			// Set to our default
-			input.Resources = defaultDatabaseResources
+			input.Resources = schema.DefaultDatabaseResources()
 		}
 
 		if input.DatabaseConfig != nil {

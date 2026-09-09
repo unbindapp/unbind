@@ -42,11 +42,9 @@ properties:
         properties:
           cpu:
             type: "string"
-            description: "CPU limit"
-            default: "500m"
+            description: "CPU limit, unlimited when empty"
           memory:
             type: "string"
-            description: "Memory limit"
-            default: "1024Mi"
+            description: "Memory limit, unlimited when empty"
 required:
   - replicas

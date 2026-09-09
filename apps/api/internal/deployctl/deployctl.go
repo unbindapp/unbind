@@ -192,14 +192,11 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 		env["SERVICE_INIT_CONTAINERS"] = base64.StdEncoding.EncodeToString(marshalled)
 	}
 
-	// Resources
-	if service.Edges.ServiceConfig.Resources != nil {
-		marshalled, err := json.Marshal(service.Edges.ServiceConfig.Resources.AsV1ResourceSpec())
-		if err != nil {
-			return nil, err
-		}
-		env["SERVICE_RESOURCES"] = base64.StdEncoding.EncodeToString(marshalled)
+	marshalledResources, err := json.Marshal(schema.ResolveResources(service.Edges.ServiceConfig.Resources))
+	if err != nil {
+		return nil, err
 	}
+	env["SERVICE_RESOURCES"] = base64.StdEncoding.EncodeToString(marshalledResources)
 
 	if err := self.populateDatabaseEnv(ctx, env, service); err != nil {
 		return nil, err

@@ -75,7 +75,6 @@ func plausibleTemplate() *schema.TemplateDefinition {
 				Image:      new("ghcr.io/plausible/community-edition:v3.2.1"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
-					CPULimitsMillicores:   500,
 				},
 				Ports: []schema.PortSpec{
 					{

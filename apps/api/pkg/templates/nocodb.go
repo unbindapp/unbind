@@ -70,7 +70,6 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{

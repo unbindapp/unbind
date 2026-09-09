@@ -89,6 +89,10 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		input.WatchPaths = &cleaned
 	}
 
+	if err := input.Resources.Validate(); err != nil {
+		return nil, err
+	}
+
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to admin service
 		{

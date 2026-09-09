@@ -136,9 +136,17 @@ spec:
                 requests:
                   cpu: {{ .Parameters.common.resources.requests.cpu | default "50m" }}
                   memory: {{ .Parameters.common.resources.requests.memory | default "256Mi" }}
+{{- with .Parameters.common.resources.limits }}
+{{- if or .cpu .memory }}
                 limits:
-                  cpu: {{ .Parameters.common.resources.limits.cpu | default "500m" }}
-                  memory: {{ .Parameters.common.resources.limits.memory | default "1Gi" }}
+{{- if .cpu }}
+                  cpu: {{ .cpu }}
+{{- end }}
+{{- if .memory }}
+                  memory: {{ .memory }}
+{{- end }}
+{{- end }}
+{{- end }}
               {{- if .Parameters.environment }}
               env:
                 {{- range $k, $v := .Parameters.environment }}

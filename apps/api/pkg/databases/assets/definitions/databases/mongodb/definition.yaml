@@ -53,9 +53,17 @@ resources:
   requests:
     cpu: {{ .Parameters.common.resources.requests.cpu | default "100m" | quote }}
     memory: {{ .Parameters.common.resources.requests.memory | default "128Mi" | quote }}
+{{- with .Parameters.common.resources.limits }}
+{{- if or .cpu .memory }}
   limits:
-    cpu: {{ .Parameters.common.resources.limits.cpu | default "500m" | quote }}
-    memory: {{ .Parameters.common.resources.limits.memory | default "256Mi" | quote }}
+{{- if .cpu }}
+    cpu: {{ .cpu | quote }}
+{{- end }}
+{{- if .memory }}
+    memory: {{ .memory | quote }}
+{{- end }}
+{{- end }}
+{{- end }}
 
 # MongoDB 8.x won't start on Linux kernel >=6.19 (SERVER-121912: a TCMalloc/rseq
 # ABI conflict). Enabling glibc's rseq sidesteps it; harmless on older kernels.

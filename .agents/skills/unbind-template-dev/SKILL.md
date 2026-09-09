@@ -110,8 +110,7 @@ Two service shapes. Full field reference: [references/schema-reference.md](refer
 	InputIDs: []string{"input_domain", "input_storage_size"},
 	Ports:    []schema.PortSpec{{Port: 8080, Protocol: utils.ToPtr(schema.ProtocolTCP)}},
 	Resources: &schema.Resources{
-		CPURequestsMillicores: 20,
-		CPULimitsMillicores:   400,
+		CPURequestsMillicores: 20, // requests only; users choose limits
 	},
 	HealthCheck: &schema.HealthCheck{
 		Type: utils.ToPtr(schema.HealthCheckTypeHTTP),

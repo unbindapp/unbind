@@ -66,7 +66,6 @@ func wireGuardTemplate() *schema.TemplateDefinition {
 				Image:    new("ghcr.io/wg-easy/wg-easy:15.4.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
-					CPULimitsMillicores:   250,
 				},
 				Ports: []schema.PortSpec{
 					{

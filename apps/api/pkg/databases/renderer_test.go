@@ -1974,3 +1974,52 @@ func TestCloudPiratesImageTagIsString(t *testing.T) {
 		})
 	}
 }
+
+func TestDefinitionsRenderLimitsOnlyWhenProvided(t *testing.T) {
+	provider := NewDatabaseProvider()
+	renderer := NewDatabaseRenderer()
+
+	render := func(t *testing.T, dbType string, limits map[string]string) string {
+		def, err := provider.FetchDatabaseDefinition(context.Background(), "", dbType)
+		require.NoError(t, err)
+
+		result, err := renderer.Render(def, &RenderContext{
+			Name:      "test-" + dbType,
+			Namespace: "default",
+			Parameters: map[string]any{
+				"existingSecretName": "test-secret",
+				"secretName":         "test-secret",
+				"secretKey":          "password",
+				"common": map[string]any{
+					"namespace": "default",
+					"storage":   "1Gi",
+					"replicas":  int32(1),
+					"resources": map[string]any{
+						"requests": map[string]string{"cpu": "50m", "memory": "128M"},
+						"limits":   limits,
+					},
+				},
+			},
+		})
+		require.NoError(t, err)
+		return result
+	}
+
+	for _, dbType := range []string{"postgres", "redis", "mongodb", "mysql", "clickhouse"} {
+		t.Run(dbType, func(t *testing.T) {
+			unlimited := render(t, dbType, map[string]string{})
+			assert.Regexp(t, `cpu:\s+"?50m"?`, unlimited, "requests must still render")
+			assert.NotContains(t, unlimited, "limits:", "no limits may be rendered when none are given")
+
+			limited := render(t, dbType, map[string]string{"cpu": "1000m", "memory": "2048M"})
+			assert.Contains(t, limited, "limits:")
+			assert.Regexp(t, `cpu:\s+"?1000m"?`, limited)
+			assert.Regexp(t, `memory:\s+"?2048M"?`, limited)
+
+			cpuOnly := render(t, dbType, map[string]string{"cpu": "1000m"})
+			assert.Contains(t, cpuOnly, "limits:")
+			assert.Regexp(t, `cpu:\s+"?1000m"?`, cpuOnly)
+			assert.NotContains(t, cpuOnly, "2048M")
+		})
+	}
+}

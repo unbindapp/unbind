@@ -137,9 +137,10 @@ input); the resolver fills `CapacityGB`.
 
 ## Resources
 
-`CPURequestsMillicores int64` (1000 = 1 core, defaults 50 if ≤0),
-`CPULimitsMillicores int64`, `MemoryRequestsMegabytes int64` (default 64 if ≤0),
-`MemoryLimitsMegabytes int64`.
+`CPURequestsMillicores int64` (1000 = 1 core, floor 50), `MemoryRequestsMegabytes int64`
+(floor 64). Templates set requests only, never `CPULimitsMillicores` or
+`MemoryLimitsMegabytes`: services are unlimited until the user sets a limit, and the
+deployed request is then derived from that limit with the stored request as a floor.
 
 ## Enums
 

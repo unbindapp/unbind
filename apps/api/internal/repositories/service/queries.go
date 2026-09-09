@@ -373,10 +373,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	if len(service.Edges.ServiceConfig.VariableMounts) > 0 {
 		variableMounts = schema.AsV1VariableMounts(service.Edges.ServiceConfig.VariableMounts)
 	}
-	var resources *v1.ResourceSpec
-	if service.Edges.ServiceConfig.Resources != nil {
-		resources = service.Edges.ServiceConfig.Resources.AsV1ResourceSpec()
-	}
+	resources := schema.ResolveResources(service.Edges.ServiceConfig.Resources)
 	s3BackupConfig, err := self.s3BackupConfig(ctx, service.Edges.ServiceConfig)
 	if err != nil {
 		return NoDeploymentNeeded, err

@@ -385,6 +385,12 @@ releases:
           requests:
             cpu: 10m
             memory: 50Mi
+        configPostgresPodResources:
+          # Unbind decides limits; empty disables the operator's injected defaults and minimums
+          default_cpu_limit: ""
+          default_memory_limit: ""
+          min_cpu_limit: ""
+          min_memory_limit: ""
         configKubernetes:
           enable_persistent_volume_claim_deletion: false
           # unbind-deployment is intentionally excluded: the operator never updates CR

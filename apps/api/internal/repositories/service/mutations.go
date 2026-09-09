@@ -223,34 +223,35 @@ func (self *ServiceRepository) Update(
 		Exec(ctx)
 }
 
-// applyResourceUpdate clears resource limits when the input is fully zeroed,
-// otherwise backfills any unset (<1) field from the existing config before saving.
+// applyResourceUpdate merges per field: negative clears, zero keeps, positive sets.
 func applyResourceUpdate(upd *ent.ServiceConfigUpdateOne, res, existing *schema.Resources) {
 	if res == nil {
 		return
 	}
-	if res.CPULimitsMillicores < 1 &&
-		res.CPURequestsMillicores < 1 &&
-		res.MemoryRequestsMegabytes < 1 &&
-		res.MemoryLimitsMegabytes < 1 {
+	if existing == nil {
+		existing = &schema.Resources{}
+	}
+	merged := &schema.Resources{
+		CPURequestsMillicores:   mergeResourceField(res.CPURequestsMillicores, existing.CPURequestsMillicores),
+		CPULimitsMillicores:     mergeResourceField(res.CPULimitsMillicores, existing.CPULimitsMillicores),
+		MemoryRequestsMegabytes: mergeResourceField(res.MemoryRequestsMegabytes, existing.MemoryRequestsMegabytes),
+		MemoryLimitsMegabytes:   mergeResourceField(res.MemoryLimitsMegabytes, existing.MemoryLimitsMegabytes),
+	}
+	if *merged == (schema.Resources{}) {
 		upd.ClearResources()
 		return
 	}
-	if existing != nil {
-		if res.CPULimitsMillicores < 1 {
-			res.CPULimitsMillicores = existing.CPULimitsMillicores
-		}
-		if res.CPURequestsMillicores < 1 {
-			res.CPURequestsMillicores = existing.CPURequestsMillicores
-		}
-		if res.MemoryRequestsMegabytes < 1 {
-			res.MemoryRequestsMegabytes = existing.MemoryRequestsMegabytes
-		}
-		if res.MemoryLimitsMegabytes < 1 {
-			res.MemoryLimitsMegabytes = existing.MemoryLimitsMegabytes
-		}
+	upd.SetResources(merged)
+}
+
+func mergeResourceField(update, existing int64) int64 {
+	if update < 0 {
+		return 0
 	}
-	upd.SetResources(res)
+	if update == 0 {
+		return existing
+	}
+	return update
 }
 
 func (self *ServiceRepository) UpdateConfig(

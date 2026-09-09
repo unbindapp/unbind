@@ -160,37 +160,76 @@ func AsV1Volumes(volumes []ServiceVolume) []v1.VolumeSpec {
 }
 
 // * Resources
-// Resources defines the resource requirements/limits for a container
+// Resources holds what the user or a template stored. Requests act as floors; the
+// deployed request is derived from the limit by ResolveResources.
 type Resources struct {
-	// CPU requests and limits
-	CPURequestsMillicores int64 `json:"cpu_requests_millicores,omitempty"`
-	CPULimitsMillicores   int64 `json:"cpu_limits_millicores,omitempty"`
-	// Memory requests and limits
-	MemoryRequestsMegabytes int64 `json:"memory_requests_megabytes,omitempty"`
-	MemoryLimitsMegabytes   int64 `json:"memory_limits_megabytes,omitempty"`
+	CPURequestsMillicores   int64 `json:"cpu_requests_millicores,omitempty" minimum:"-1"`
+	CPULimitsMillicores     int64 `json:"cpu_limits_millicores,omitempty" minimum:"-1"`
+	MemoryRequestsMegabytes int64 `json:"memory_requests_megabytes,omitempty" minimum:"-1"`
+	MemoryLimitsMegabytes   int64 `json:"memory_limits_megabytes,omitempty" minimum:"-1"`
 }
 
-func (self *Resources) AsV1ResourceSpec() *v1.ResourceSpec {
-	resourceSpec := &v1.ResourceSpec{}
-	if self.CPURequestsMillicores > 0 {
-		resourceSpec.CPURequestsMillicores = self.CPURequestsMillicores
-	} else {
-		// Default to 50m if not set
-		resourceSpec.CPURequestsMillicores = 50
+const (
+	requestShareOfLimitPercent  int64 = 5
+	cpuRequestFloorMillicores   int64 = 50
+	cpuRequestCapMillicores     int64 = 500
+	memoryRequestFloorMegabytes int64 = 64
+	memoryRequestCapMegabytes   int64 = 1024
+)
+
+func DefaultDatabaseResources() *Resources {
+	return &Resources{
+		CPURequestsMillicores:   50,
+		CPULimitsMillicores:     1000,
+		MemoryRequestsMegabytes: 128,
+		MemoryLimitsMegabytes:   2048,
 	}
-	if self.CPULimitsMillicores > 0 {
-		resourceSpec.CPULimitsMillicores = self.CPULimitsMillicores
+}
+
+func (self *Resources) HasNegative() bool {
+	if self == nil {
+		return false
 	}
-	if self.MemoryRequestsMegabytes > 0 {
-		resourceSpec.MemoryRequestsMegabytes = self.MemoryRequestsMegabytes
-	} else {
-		// Default to 64Mi if not set
-		resourceSpec.MemoryRequestsMegabytes = 64
+	return self.CPURequestsMillicores < 0 || self.CPULimitsMillicores < 0 ||
+		self.MemoryRequestsMegabytes < 0 || self.MemoryLimitsMegabytes < 0
+}
+
+// Validate rejects a stored request above its limit; -1 means "clear" on update.
+func (self *Resources) Validate() error {
+	if self == nil {
+		return nil
 	}
-	if self.MemoryLimitsMegabytes > 0 {
-		resourceSpec.MemoryLimitsMegabytes = self.MemoryLimitsMegabytes
+	if self.CPURequestsMillicores > 0 && self.CPULimitsMillicores > 0 && self.CPURequestsMillicores > self.CPULimitsMillicores {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "CPU request cannot exceed the CPU limit")
 	}
-	return resourceSpec
+	if self.MemoryRequestsMegabytes > 0 && self.MemoryLimitsMegabytes > 0 && self.MemoryRequestsMegabytes > self.MemoryLimitsMegabytes {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Memory request cannot exceed the memory limit")
+	}
+	return nil
+}
+
+// ResolveResources builds the spec the operator deploys. Every service gets a
+// request: a share of the limit clamped to a floor and a cap, never below the
+// stored request and never above the limit. Without a limit the floor applies.
+func ResolveResources(res *Resources) *v1.ResourceSpec {
+	if res == nil {
+		res = &Resources{}
+	}
+	return &v1.ResourceSpec{
+		CPURequestsMillicores:   deriveRequest(res.CPURequestsMillicores, res.CPULimitsMillicores, cpuRequestFloorMillicores, cpuRequestCapMillicores),
+		CPULimitsMillicores:     max(res.CPULimitsMillicores, 0),
+		MemoryRequestsMegabytes: deriveRequest(res.MemoryRequestsMegabytes, res.MemoryLimitsMegabytes, memoryRequestFloorMegabytes, memoryRequestCapMegabytes),
+		MemoryLimitsMegabytes:   max(res.MemoryLimitsMegabytes, 0),
+	}
+}
+
+func deriveRequest(stored, limit, floor, ceiling int64) int64 {
+	stored = max(stored, 0)
+	if limit <= 0 {
+		return max(stored, floor)
+	}
+	derived := min(max(limit*requestShareOfLimitPercent/100, floor), ceiling)
+	return min(max(derived, stored), limit)
 }
 
 // * Health check compatible with unbind-operator

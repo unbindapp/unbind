@@ -1349,7 +1349,6 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{
@@ -1454,7 +1453,6 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				DependsOn: []string{"service_postgresql", "service_minio"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{
@@ -1535,7 +1533,6 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				RunCommand: new("bash -c '/usr/bin/mc alias set supabase-minio http://localhost:9000 \"${MINIO_ROOT_USER}\" \"${MINIO_ROOT_PASSWORD}\" 2>/dev/null || true && /usr/bin/mc mb --ignore-existing supabase-minio/stub 2>/dev/null || true && exec minio server /data --console-address \":9001\"'"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
-					CPULimitsMillicores:   300,
 				},
 				Ports: []schema.PortSpec{
 					{
@@ -1579,7 +1576,6 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
-					CPULimitsMillicores:   400,
 				},
 				VariableReferences: []schema.TemplateVariableReference{
 					{
@@ -1629,7 +1625,6 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
-					CPULimitsMillicores:   300,
 				},
 				Ports: []schema.PortSpec{
 					{
@@ -1701,7 +1696,6 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
-					CPULimitsMillicores:   300,
 				},
 				Ports: []schema.PortSpec{
 					{
@@ -1750,7 +1744,6 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{
@@ -1935,7 +1928,6 @@ serve(async () => {
 				InputIDs: []string{"input_domain"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
-					CPULimitsMillicores:   400,
 				},
 				Ports: []schema.PortSpec{
 					{

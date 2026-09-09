@@ -68,9 +68,7 @@ func gluetunTemplate() *schema.TemplateDefinition {
 				Image: new("qmcgaw/gluetun:v3.41.3"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores:   50,
-					CPULimitsMillicores:     1000,
 					MemoryRequestsMegabytes: 50,
-					MemoryLimitsMegabytes:   2000,
 				},
 				Ports: []schema.PortSpec{
 					{

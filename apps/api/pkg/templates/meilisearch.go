@@ -50,7 +50,6 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 				Image:    new("getmeili/meilisearch:v1.53.1"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
-					CPULimitsMillicores:   300,
 				},
 				Ports: []schema.PortSpec{
 					{

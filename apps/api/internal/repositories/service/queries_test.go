@@ -164,7 +164,8 @@ func (suite *ServiceQueriesSuite) SetupTest() {
 					Ports: []v1.PortSpec{
 						{Port: 3000, Protocol: utils.ToPtr(corev1.ProtocolTCP)},
 					},
-					Public: false,
+					Public:    false,
+					Resources: schema.ResolveResources(nil),
 				},
 			},
 		}).
@@ -1002,10 +1003,11 @@ func (suite *ServiceQueriesSuite) TestNeedsDeployment() {
 				Spec: v1.ServiceSpec{
 					Builder: "docker",
 					Config: v1.ServiceConfigSpec{
-						Image:    "nginx:1.25",
-						Hosts:    []v1.HostSpec{{Host: "nginx.example.com", Port: new(int32(80))}},
-						Replicas: utils.ToPtr[int32](1),
-						Ports:    []v1.PortSpec{{Port: 80, Protocol: utils.ToPtr(corev1.ProtocolTCP)}},
+						Image:     "nginx:1.25",
+						Hosts:     []v1.HostSpec{{Host: "nginx.example.com", Port: new(int32(80))}},
+						Replicas:  utils.ToPtr[int32](1),
+						Ports:     []v1.PortSpec{{Port: 80, Protocol: utils.ToPtr(corev1.ProtocolTCP)}},
+						Resources: schema.ResolveResources(nil),
 					},
 				},
 			}).

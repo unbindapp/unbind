@@ -94,9 +94,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Image:       new("ghcr.io/get-convex/convex-backend@sha256:1f2044e3eac463ac78973b136c0baf72d4ada602611d853d6f99f280e29e0a98"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores:   50,
-					CPULimitsMillicores:     1000,
 					MemoryRequestsMegabytes: 256,
-					MemoryLimitsMegabytes:   2048,
 				},
 				Ports: []schema.PortSpec{
 					{
@@ -203,9 +201,7 @@ func convexTemplate() *schema.TemplateDefinition {
 				Image:       new("ghcr.io/get-convex/convex-dashboard@sha256:284a2638e0c1a4ec0c2327d8219776f3a426ca5824b81686ae4d9454dc0ce8ed"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores:   20,
-					CPULimitsMillicores:     400,
 					MemoryRequestsMegabytes: 128,
-					MemoryLimitsMegabytes:   512,
 				},
 				Ports: []schema.PortSpec{
 					{
