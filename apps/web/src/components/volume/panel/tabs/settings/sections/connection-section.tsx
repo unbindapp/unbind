@@ -1,3 +1,4 @@
+import { volumeSettingsIds } from "@/components/settings/settings-ids";
 import {
   Block,
   BlockItem,
@@ -172,7 +173,7 @@ function AttachSection({ volume }: TProps) {
         <form.AppField
           name="serviceId"
           children={(field) => (
-            <BlockItem className="w-full md:w-full">
+            <BlockItem id={volumeSettingsIds.connection.service} className="w-full md:w-full">
               <BlockItemHeader type="column">
                 <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
                   Service
@@ -218,7 +219,7 @@ function AttachSection({ volume }: TProps) {
         <form.AppField
           name="mountPath"
           children={(field) => (
-            <BlockItem className="w-full md:w-full">
+            <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
               <BlockItemHeader type="column">
                 <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
                   Mount Path

@@ -1,3 +1,4 @@
+import { settingsIds } from "@/components/settings/settings-ids";
 import {
   Block,
   BlockItem,
@@ -253,7 +254,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       onDiscard={() => unstage(healthFields)}
     >
       <Block>
-        <BlockItem className="w-full md:w-full">
+        <BlockItem id={settingsIds.health.type} className="w-full md:w-full">
           <BlockItemHeader type="column">
             <BlockItemTitle
               hasChanges={
@@ -438,7 +439,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       </Block>
       {healthCheckType !== "none" && (
         <Block>
-          <BlockItem className="group/item w-full md:w-full">
+          <BlockItem id={settingsIds.health.startupCheck} className="group/item w-full md:w-full">
             <BlockItemHeader type="column">
               <BlockItemTitle>Startup Check</BlockItemTitle>
               <BlockItemDescription>
@@ -456,7 +457,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
       )}
       {healthCheckType !== "none" && (
         <Block>
-          <BlockItem className="group/item w-full md:w-full">
+          <BlockItem id={settingsIds.health.healthCheck} className="group/item w-full md:w-full">
             <BlockItemHeader type="column">
               <BlockItemTitle>Health Check</BlockItemTitle>
               <BlockItemDescription>

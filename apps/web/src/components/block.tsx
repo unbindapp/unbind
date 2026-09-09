@@ -106,7 +106,10 @@ export function BlockItem({
   const Header = childrenArray.find((child) => hasChildRole(child, BLOCK_ROLE.header));
   const Content = childrenArray.find((child) => hasChildRole(child, BLOCK_ROLE.content));
   return (
-    <div className={cn("flex w-full flex-col gap-1 px-2 md:w-1/2 md:px-2.5", className)} {...rest}>
+    <div
+      className={cn("flex w-full scroll-mt-4 flex-col gap-1 px-2 md:w-1/2 md:px-2.5", className)}
+      {...rest}
+    >
       {Header}
       {Content}
     </div>
@@ -182,7 +185,6 @@ export function BlockItemContentHighlightable({
   return (
     <div
       data-highlight={isHighlighted || undefined}
-      id={id}
       className={cn(
         "data-highlight:shadow-block-card-highlight-active shadow-block-card-highlight-idle shadow-success/9-10 transition-shadow duration-300",
         className,

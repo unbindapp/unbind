@@ -1,3 +1,4 @@
+import { settingsIds } from "@/components/settings/settings-ids";
 import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
 import BrandIcon from "@/components/icons/brand";
 import { cn } from "@/components/ui/utils";
@@ -70,34 +71,39 @@ type TCommandField = Extract<
 
 const commandFields: Record<
   TCommandField,
-  { title: string; description: string; toggleText: string; placeholder: string }
+  { id: string; title: string; description: string; toggleText: string; placeholder: string }
 > = {
   railpackBuilderInstallCommand: {
     title: "Install Command",
+    id: settingsIds.build.installCommand,
     description: "The command for installing the dependencies for the service.",
     toggleText: "Custom install command",
     placeholder: "npm install --force",
   },
   railpackBuilderBuildCommand: {
     title: "Build Command",
+    id: settingsIds.build.buildCommand,
     description: "The command for building the service.",
     toggleText: "Custom build command",
     placeholder: "npm run build",
   },
   dockerBuilderDockerfilePath: {
     title: "Dockerfile Path",
+    id: settingsIds.build.dockerfilePath,
     description: "The path to the Dockerfile in your repository.",
     toggleText: "Custom Dockerfile path",
     placeholder: "./Dockerfile",
   },
   dockerBuilderBuildContext: {
     title: "Build Context",
+    id: settingsIds.build.buildContext,
     description: "The directory that serves as the build context for Docker.",
     toggleText: "Custom build context",
     placeholder: "./",
   },
   startCommand: {
     title: "Start Command",
+    id: settingsIds.build.startCommand,
     description: "The command to run to start the new deployment.",
     toggleText: "Custom start command",
     placeholder: "npm run start",
@@ -176,7 +182,7 @@ function GitSection({ service }: TGitSectionProps) {
       <form.AppField
         name={field}
         children={(fieldApi) => (
-          <BlockItem className="group/item w-full md:w-full">
+          <BlockItem id={commandFields[field].id} className="group/item w-full md:w-full">
             <BlockItemHeader type="column">
               <BlockItemTitle hasChanges={staged[field] !== undefined}>
                 {commandFields[field].title}
@@ -243,7 +249,7 @@ function GitSection({ service }: TGitSectionProps) {
         <form.AppField
           name="builder"
           children={(field) => (
-            <BlockItem className="group/item w-full md:w-full">
+            <BlockItem id={settingsIds.build.builder} className="group/item w-full md:w-full">
               <BlockItemHeader type="column">
                 <BlockItemTitle hasChanges={staged.builder !== undefined}>Builder</BlockItemTitle>
                 <BlockItemDescription>
@@ -313,7 +319,7 @@ function GitSection({ service }: TGitSectionProps) {
         <form.AppField
           name="watchPaths"
           children={(field) => (
-            <BlockItem className="group/item w-full md:w-full">
+            <BlockItem id={settingsIds.build.watchPaths} className="group/item w-full md:w-full">
               <BlockItemHeader type="column">
                 <BlockItemTitle hasChanges={staged.watchPaths !== undefined}>
                   Watch Paths

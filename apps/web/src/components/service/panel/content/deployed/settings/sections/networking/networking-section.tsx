@@ -1,3 +1,4 @@
+import { settingsIds } from "@/components/settings/settings-ids";
 import ErrorLine from "@/components/error-line";
 import AddDomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/add-domain-port-card";
 import DomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-port-card";
@@ -76,7 +77,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     >
       {service.type !== "database" && (
         <Block>
-          <BlockItem className="w-full md:w-full">
+          <BlockItem id={settingsIds.networking.public} className="w-full md:w-full">
             <BlockItemHeader type="column">
               <BlockItemTitle>Public Networking</BlockItemTitle>
               <BlockItemDescription>
@@ -121,7 +122,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
         </Block>
       )}
       <Block>
-        <BlockItem className="w-full md:w-full">
+        <BlockItem id={settingsIds.networking.private} className="w-full md:w-full">
           <BlockItemHeader type="column">
             <BlockItemTitle>Private Networking</BlockItemTitle>
             <BlockItemDescription>

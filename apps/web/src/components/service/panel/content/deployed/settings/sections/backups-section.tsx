@@ -1,3 +1,4 @@
+import { settingsIds } from "@/components/settings/settings-ids";
 import {
   Block,
   BlockItem,
@@ -185,7 +186,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
         <form.AppField
           name="s3BucketId"
           children={(field) => (
-            <BlockItem className="w-full md:w-full">
+            <BlockItem id={settingsIds.backups.bucket} className="w-full md:w-full">
               <BlockItemHeader type="column">
                 <BlockItemTitle hasChanges={staged.s3BackupBucketId !== undefined}>
                   Backup Bucket
@@ -262,7 +263,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       </Block>
       {backupsEnabled && (
         <Block>
-          <BlockItem className="w-full md:w-full">
+          <BlockItem id={settingsIds.backups.schedule} className="w-full md:w-full">
             <BlockItemHeader type="column">
               <BlockItemTitle hasChanges={staged.backupSchedule !== undefined}>
                 Backup Schedule
@@ -343,7 +344,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       )}
       {backupsEnabled && (
         <Block>
-          <BlockItem className="w-full md:w-full">
+          <BlockItem id={settingsIds.backups.retention} className="w-full md:w-full">
             <BlockItemHeader type="column">
               <BlockItemTitle hasChanges={staged.backupRetentionCount !== undefined}>
                 Backup Retention

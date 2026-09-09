@@ -1,3 +1,4 @@
+import { settingsIds } from "@/components/settings/settings-ids";
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import { isNonDockerHubImage } from "@/components/command-panel/context-command-panel/items/docker-image";
 import BrandIcon from "@/components/icons/brand";
@@ -128,7 +129,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       onDiscard={() => unstage(["gitBranch"])}
     >
       <Block>
-        <BlockItem className="w-full md:w-full">
+        <BlockItem id={settingsIds.source.repository} className="w-full md:w-full">
           <BlockItemHeader>
             <BlockItemTitle>Repository</BlockItemTitle>
           </BlockItemHeader>
@@ -147,7 +148,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
         <form.AppField
           name="branch"
           children={(field) => (
-            <BlockItem className="w-full md:w-full">
+            <BlockItem id={settingsIds.source.branch} className="w-full md:w-full">
               <BlockItemHeader>
                 <BlockItemTitle hasChanges={staged.gitBranch !== undefined}>Branch</BlockItemTitle>
               </BlockItemHeader>
@@ -233,7 +234,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
       onDiscard={() => unstage(["image"])}
     >
       <Block>
-        <BlockItem className="w-full md:w-full">
+        <BlockItem id={settingsIds.source.image} className="w-full md:w-full">
           <BlockItemHeader>
             <BlockItemTitle>Image</BlockItemTitle>
           </BlockItemHeader>
@@ -256,7 +257,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
         <form.AppField
           name="tag"
           children={(field) => (
-            <BlockItem className="w-full md:w-full">
+            <BlockItem id={settingsIds.source.tag} className="w-full md:w-full">
               <BlockItemHeader>
                 <BlockItemTitle hasChanges={staged.image !== undefined}>Tag</BlockItemTitle>
               </BlockItemHeader>
@@ -320,7 +321,7 @@ function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
     >
       <Block>
         {/* Database */}
-        <BlockItem className="w-full md:w-full">
+        <BlockItem id={settingsIds.source.database} className="w-full md:w-full">
           <BlockItemHeader>
             <BlockItemTitle>Database</BlockItemTitle>
           </BlockItemHeader>
@@ -337,7 +338,7 @@ function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
       </Block>
       <Block>
         {/* Version */}
-        <BlockItem className="w-full md:w-full">
+        <BlockItem id={settingsIds.source.version} className="w-full md:w-full">
           <BlockItemHeader>
             <BlockItemTitle>Version</BlockItemTitle>
           </BlockItemHeader>

@@ -1,3 +1,4 @@
+import { settingsIds } from "@/components/settings/settings-ids";
 import {
   Block,
   BlockItem,
@@ -26,8 +27,6 @@ import { useMemo } from "react";
 type TProps = {
   service: TServiceShallow;
 };
-
-export const deploySectionInstanceSliderId = getDeploySectionEntityId("instance_slider");
 
 export default function DeploySection({ service }: TProps) {
   if (service.type === "github") {
@@ -134,7 +133,7 @@ function Section({ service }: { service: TServiceShallow }) {
           <form.AppField
             name="instanceCount"
             children={(field) => (
-              <BlockItem className="group/item w-full md:w-full">
+              <BlockItem id={settingsIds.deploy.replicas} className="group/item w-full md:w-full">
                 <BlockItemHeader type="column">
                   <BlockItemTitle hasChanges={staged.instanceCount !== undefined}>
                     Replicas
@@ -144,7 +143,7 @@ function Section({ service }: { service: TServiceShallow }) {
                   </BlockItemDescription>
                 </BlockItemHeader>
                 <BlockItemContentHighlightable
-                  id={deploySectionInstanceSliderId}
+                  id={settingsIds.deploy.replicas}
                   className="flex w-full flex-col rounded-lg border pb-1.5"
                 >
                   <ValueTitle
@@ -181,7 +180,7 @@ function Section({ service }: { service: TServiceShallow }) {
         </Block>
       )}
       <Block>
-        <BlockItem className="w-full md:w-full">
+        <BlockItem id={settingsIds.deploy.resourceLimits} className="w-full md:w-full">
           <BlockItemHeader type="column">
             <BlockItemTitle
               hasChanges={
@@ -313,8 +312,4 @@ function ValueTitle({
 
 function getDeploySectionId(service: TServiceShallow): string {
   return `deploy_${service.id}`;
-}
-
-function getDeploySectionEntityId(entity: string): string {
-  return `deploy_${entity}`;
 }

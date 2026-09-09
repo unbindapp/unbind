@@ -20,7 +20,7 @@ import { useMemo } from "react";
 import { useInstanceHealth } from "@/components/instances/instance-health-provider";
 import { useMutation } from "@tanstack/react-query";
 import { Button, LinkButton } from "@/components/ui/button";
-import { deploySectionInstanceSliderId } from "@/components/service/panel/content/deployed/settings/sections/deploy-section";
+import { settingsIds } from "@/components/settings/settings-ids";
 import { shouldDeploySectionHaveInstances } from "@/components/service/panel/content/deployed/settings/helpers";
 
 export default function Deployments({ service }: { service: TServiceShallow }) {
@@ -214,12 +214,12 @@ function InstancesButton() {
   return (
     <LinkButton
       to="/$team_id/project/$project_id"
-      hash="deploy"
+      hash={settingsIds.deploy.replicas}
       params={{ team_id: teamId, project_id: projectId }}
       search={(prev) => ({
         ...prev,
         service_tab: "settings",
-        highlight_id: deploySectionInstanceSliderId,
+        highlight_id: settingsIds.deploy.replicas,
       })}
       data-pending={isPending || undefined}
       data-error={isHardError || undefined}
