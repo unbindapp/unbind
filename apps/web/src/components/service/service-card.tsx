@@ -105,14 +105,13 @@ export default function ServiceCard({
   });
 
   const cardClassName = cn(
-    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border overflow-hidden px-5 py-3.5 text-left font-semibold data-staged:border-change/7-10",
+    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border overflow-hidden px-5 py-3.5 text-left font-semibold data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:has-hover:hover:bg-change/4-10 data-staged:active:bg-change/4-10",
     classNameCard,
     volumes && volumes.length > 0 && "rounded-b-none border-b-0",
   );
 
   const cardContent = (
     <>
-      {changeLabel !== null && <div className="bg-change/1-10 absolute top-0 left-0 size-full" />}
       {service && <NewEntityIndicator id={service.id} />}
       <div className="relative flex w-full items-center justify-between gap-4">
         <div className="flex min-w-0 shrink items-center justify-start gap-2">
