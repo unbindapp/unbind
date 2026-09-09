@@ -1,20 +1,22 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
+import TitleChip from "@/components/command-panel/title-chip";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useProject } from "@/components/project/project-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { toast } from "@/components/ui/toast";
-import { isValidMountPath } from "@/components/volume/mount-path";
+import { getMountPathError } from "@/components/volume/mount-path";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
+import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { servicesListQuery, TServiceShallow } from "@/lib/queries/services";
 import { createVolume as createVolumeFn } from "@/lib/queries/storage";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { BoxIcon, FolderClosedIcon, HardDriveIcon } from "lucide-react";
+import { BoxIcon, FolderClosedIcon, HardDriveIcon, TriangleAlertIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo } from "react";
 
@@ -50,6 +52,23 @@ function canAttachVolume(service: TServiceShallow) {
 
 function getDefaultCapacityGb(minimumStorageGb: number | undefined) {
   return Math.max(1, minimumStorageGb ?? 1);
+}
+
+function getDuplicateNames(services: TServiceShallow[]) {
+  const counts = new Map<string, number>();
+  for (const service of services) {
+    counts.set(service.name, (counts.get(service.name) ?? 0) + 1);
+  }
+  return new Set([...counts].filter(([, count]) => count > 1).map(([name]) => name));
+}
+
+function CreatedAt({ createdAt }: { createdAt: string }) {
+  const { str } = useTimeDifference({ timestamp: new Date(createdAt).getTime() });
+  return (
+    <p className="text-muted-foreground min-w-0 shrink text-sm leading-tight font-normal">
+      Created {str}
+    </p>
+  );
 }
 
 function useVolumeItem({ context }: TProps) {
@@ -127,48 +146,66 @@ function useVolumeItem({ context }: TProps) {
     },
   });
 
-  const serviceItems: TCommandPanelItem[] = useMemo(
-    () =>
-      eligibleServices.map((service) => {
-        const pageId = mountPathPageId(service.id);
-        const mountItemId = `${pageId}_mount`;
-        return {
-          id: `${servicesPageId}_${service.id}`,
-          title: service.name,
-          keywords: [service.name],
-          Icon: ({ className }) => <ServiceIcon service={service} className={className} />,
-          subpage: {
-            id: pageId,
-            title: `Mount on ${service.name}`,
-            parentPageId: servicesPageId,
-            inputPlaceholder: defaultMountPath,
-            InputIcon: FolderClosedIcon,
-            disableCommandFilter: true,
-            setSearchDebounceMs: 50,
-            commandEmptyText: "Enter a mount path above",
-            getItems: ({ search }) => {
-              const mountPath = search || defaultMountPath;
+  const serviceItems: TCommandPanelItem[] = useMemo(() => {
+    const duplicateNames = getDuplicateNames(eligibleServices);
+    return eligibleServices.map((service) => {
+      const pageId = mountPathPageId(service.id);
+      const mountItemId = `${pageId}_mount`;
+      return {
+        id: `${servicesPageId}_${service.id}`,
+        title: service.name,
+        keywords: [],
+        description: duplicateNames.has(service.name)
+          ? () => <CreatedAt createdAt={service.created_at} />
+          : undefined,
+        Icon: ({ className }) => <ServiceIcon service={service} className={className} />,
+        subpage: {
+          id: pageId,
+          title: `Mount on ${service.name}`,
+          parentPageId: servicesPageId,
+          inputPlaceholder: defaultMountPath,
+          InputIcon: FolderClosedIcon,
+          disableCommandFilter: true,
+          setSearchDebounceMs: 50,
+          commandEmptyText: "Enter a mount path above",
+          getItems: ({ search }) => {
+            const mountPath = search || defaultMountPath;
+            const error = getMountPathError(mountPath);
+            if (error) {
               return [
                 {
                   id: mountItemId,
-                  title: `Mount at "${mountPath}"`,
-                  description: search ? undefined : "Default path, type to change it",
+                  title: error,
                   keywords: [],
-                  Icon: HardDriveIcon,
-                  disabled: !isValidMountPath(mountPath),
-                  onSelect: async ({ isPendingId }) => {
-                    if (isPendingId !== null) return;
-                    setIsPendingId(mountItemId);
-                    await createVolume({ service, mountPath });
-                  },
+                  Icon: TriangleAlertIcon,
+                  disabled: true,
                 },
               ];
-            },
+            }
+            return [
+              {
+                id: mountItemId,
+                title: `Mount at ${mountPath}`,
+                Title: () => (
+                  <>
+                    Mount at <TitleChip>{mountPath}</TitleChip>
+                  </>
+                ),
+                description: search ? undefined : "Default path, type to change it",
+                keywords: [],
+                Icon: HardDriveIcon,
+                onSelect: async ({ isPendingId }) => {
+                  if (isPendingId !== null) return;
+                  setIsPendingId(mountItemId);
+                  await createVolume({ service, mountPath });
+                },
+              },
+            ];
           },
-        };
-      }),
-    [eligibleServices, createVolume, setIsPendingId],
-  );
+        },
+      };
+    });
+  }, [eligibleServices, createVolume, setIsPendingId]);
 
   const item: TCommandPanelItem = useMemo(
     () => ({

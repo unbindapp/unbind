@@ -32,7 +32,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
-import { useCommandState } from "cmdk";
+import { defaultFilter, useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
 import { ReactElement, FC, RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 
@@ -57,6 +57,10 @@ const defaultCommandVariantOptionsDrawer: TCommandVariants = {
 const defaultDialogContentVariantOptions: TDialogContentVariants = {
   variant: "styleless",
 };
+
+// Items are keyed by id so same-titled items stay distinct, matching uses title + keywords
+const filterByKeywords: Parameters<typeof Command>[0]["filter"] = (_value, search, keywords) =>
+  defaultFilter(keywords?.join(" ") ?? "", search);
 
 export function CommandPanelTrigger({
   rootPage,
@@ -222,7 +226,7 @@ function CommandPanel({
       const firstItem = scrollAreaRef.current?.querySelector("[cmdk-item]");
       const firstItemValue = firstItem?.getAttribute("data-value");
 
-      const valueToSelect = prevItem?.title || firstItemValue;
+      const valueToSelect = prevItem?.id || firstItemValue;
 
       if (prevItem) setPrevItemId(null);
       if (valueToSelect) setValue(valueToSelect);
@@ -236,7 +240,7 @@ function CommandPanel({
       filter={
         isPending || isError || currentPage.usesSearchAsync || currentPage.disableCommandFilter
           ? () => 1
-          : undefined
+          : filterByKeywords
       }
       value={value}
       onValueChange={setValue}
@@ -489,7 +493,7 @@ function Item({
   currentPageId: string;
 }) {
   const highlightedValue = useCommandState((s) => s.value);
-  const isHighlighted = highlightedValue === item.title;
+  const isHighlighted = highlightedValue === item.id;
 
   useEffect(() => {
     if (isHighlighted) item.onHighlight?.();
@@ -510,12 +514,7 @@ function Item({
     item.onSelect?.({ isPendingId, setCurrentPageId });
   }, [item, setCurrentPageId, clearInputValue, currentPageId, setPrevItemId, isPendingId]);
 
-  const isItemPending =
-    isPendingId === null
-      ? false
-      : item.id !== undefined
-        ? isPendingId === item.id
-        : isPendingId === item.title;
+  const isItemPending = isPendingId !== null && isPendingId === item.id;
 
   const Icon = useMemo(() => {
     if (isItemPending) {
@@ -533,8 +532,8 @@ function Item({
       data-placeholder={isPlaceholder || undefined}
       data-pending={isItemPending || undefined}
       data-has-description={item.description || undefined}
-      value={item.title}
-      keywords={item.keywords}
+      value={item.id}
+      keywords={[item.title, ...item.keywords]}
       className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-has-description:py-2.75 data-placeholder:text-transparent"
       onSelect={onSelect}
       disabled={disabled || item.disabled}
@@ -550,7 +549,7 @@ function Item({
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <div className="flex w-full justify-start">
             <p className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/item:rounded-md">
-              {item.title}
+              {item.Title ? <item.Title /> : item.title}
               {item.titleSuffix && (
                 <span className="text-muted-foreground">{item.titleSuffix}</span>
               )}

@@ -44,6 +44,8 @@ export type TCommandPanelItem = {
   title: string;
   description?: string | FC<{ className?: string }>;
   titleSuffix?: string;
+  // Rich rendering of the title, `title` stays the value used for matching and highlighting
+  Title?: FC;
   Icon: FC<{ className?: string }>;
   ChipComponent?: FC<{ className?: string }>;
   subpage?: TCommandPanelPage;
