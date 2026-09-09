@@ -46,8 +46,8 @@ The Kubernetes operator. Translates Unbind CRDs into native Kubernetes resources
 Commit messages start with the part of the system they touched, followed by a short explanation of the work:
 web: Fixed button colors
 api: Added new /system endpoints
-api | web: Service creation flow improvements
-api | operator| web: Volume mount process improvements
+web | api: Service creation flow improvements
+web | api | operator: Volume mount process improvements
 
 The title should be concise. Description should explain the work in more detail (only if required) while still being concise. Use simple language, do not try to sound smart.
 
