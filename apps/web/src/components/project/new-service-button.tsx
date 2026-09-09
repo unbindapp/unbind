@@ -25,15 +25,14 @@ export default function NewServiceButton({ className }: TProps) {
 
   return (
     <ContextCommandPanel
-      title="Create New Service"
-      description="Create a new service on Unbind"
+      title="Add Service"
+      description="Add a service on Unbind"
       triggerType="button"
       context={context}
     >
       <Button className={cn("bg-card rounded-lg py-2", className)} size="sm" variant="outline">
         <PlusIcon className="-ml-1.5 size-5" />
-        <p className="min-w-0 shrink sm:hidden">New</p>
-        <p className="hidden min-w-0 shrink sm:block">New Service</p>
+        <p className="min-w-0 shrink">Add</p>
       </Button>
     </ContextCommandPanel>
   );

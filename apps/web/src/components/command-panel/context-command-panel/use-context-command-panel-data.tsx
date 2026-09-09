@@ -37,7 +37,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
         context.contextType === "new-project"
           ? "New Project"
           : context.contextType === "new-service"
-            ? "New service"
+            ? "Add Service"
             : "Commands",
       parentPageId: null,
       inputPlaceholder: "Search commands...",
