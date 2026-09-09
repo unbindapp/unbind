@@ -291,15 +291,18 @@ export function BlockItemButtonLike({
             />
           )
         )}
-        <div className="flex w-full min-w-0 shrink flex-col items-start gap-1 overflow-hidden">
-          <p
-            className={cn(
-              "group-data-pending/button:bg-foreground max-w-full min-w-0 truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
-              classNameText,
-            )}
-          >
-            {text}
-          </p>
+        <div className="flex w-full min-w-0 shrink flex-col items-start gap-1">
+          <div className="flex w-full flex-row">
+            <p
+              className={cn(
+                "group-data-pending/button:bg-foreground max-w-full min-w-0 truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
+                classNameText,
+              )}
+            >
+              {text}
+            </p>
+            {!isPending && SuffixComponent && <SuffixComponent className="ml-auto" />}
+          </div>
           {typeof Description === "function" ? (
             <Description />
           ) : (
@@ -311,7 +314,7 @@ export function BlockItemButtonLike({
           )}
         </div>
       </div>
-      {!isPending && SuffixComponent && <SuffixComponent className="ml-auto" />}
+
       {open !== undefined && !hideChevron && !isPending && (
         <ChevronDownIcon
           className={cn(
