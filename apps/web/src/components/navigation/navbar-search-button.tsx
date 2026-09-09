@@ -33,12 +33,11 @@ export default function NavbarSearchButton({ context, className }: TProps) {
       <Button
         type="button"
         aria-label="Search"
-        variant="outline-muted"
+        variant="outline"
+        data-extra-small={isExtraSmall || undefined}
         size="sm"
-        focusVariant="input-like"
         className={cn(
-          "text-muted-foreground bg-input has-hover:hover:text-muted-foreground active:text-muted-foreground gap-1.5 rounded-full py-1.25 font-medium",
-          isExtraSmall ? "size-8 px-0" : "w-40 justify-start pr-1.25 pl-2.5 lg:w-48",
+          "text-muted-foreground bg-input w-38 justify-start gap-1.5 rounded-full py-1 pr-1 pl-2.25 font-medium data-extra-small:size-7.5 data-extra-small:justify-center data-extra-small:px-0",
           className,
         )}
       >
@@ -46,7 +45,9 @@ export default function NavbarSearchButton({ context, className }: TProps) {
         {!isExtraSmall && (
           <>
             <p className="min-w-0 flex-1 text-left leading-tight">Search</p>
-            <KeyboardShortcut classNameChip="rounded-full px-2">{shortcut}</KeyboardShortcut>
+            <KeyboardShortcut classNameChip="rounded-full px-2 text-muted-foreground">
+              {shortcut}
+            </KeyboardShortcut>
           </>
         )}
       </Button>
