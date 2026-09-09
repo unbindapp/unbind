@@ -233,8 +233,11 @@ export default function StagedChangesBar() {
   const { deploy, plan } = useStagedChangesPlan();
   const { isExtraSmall } = useDeviceSize();
   const { isMounted, isOpen } = useBarPresence(count > 0);
-  // The details drawer covers the bottom of the screen where the bar sits
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  // The last change leaving the stage closes the details at once, so the bar can never
+  // stay hidden behind a drawer that is gone
+  if (isDetailsOpen && count === 0) setIsDetailsOpen(false);
+  // The details drawer covers the bottom of the screen where the bar sits
   const isBehindDrawer = isExtraSmall && isDetailsOpen;
   const isHidden = !isOpen || isBehindDrawer;
   const {
@@ -255,7 +258,11 @@ export default function StagedChangesBar() {
   const lastCount = useRef(count);
   if (count > 0) lastCount.current = count;
 
-  if (!isMounted) return null;
+  // The details outlive the bar so they finish closing after it has gone
+  const details = (
+    <StagedChangesDetailsDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen} />
+  );
+  if (!isMounted) return details;
 
   const shownCount = lastCount.current;
   const hasError = deploy.error !== null || plan.error !== null;
@@ -269,6 +276,7 @@ export default function StagedChangesBar() {
       data-slot="staged-changes-bar"
       className="pointer-events-none fixed inset-x-2 inset-y-0 z-900"
     >
+      {details}
       <div
         ref={topInsetRef}
         aria-hidden
@@ -312,15 +320,14 @@ export default function StagedChangesBar() {
             </p>
           </motion.div>
           <div className="relative flex items-center justify-end gap-1">
-            <StagedChangesDetailsDialog onOpenChange={setIsDetailsOpen}>
-              <Button
-                variant="ghost-change"
-                size="sm"
-                className="text-foreground has-hover:hover:text-foreground active:text-foreground py-1.75"
-              >
-                Details
-              </Button>
-            </StagedChangesDetailsDialog>
+            <Button
+              variant="ghost-change"
+              size="sm"
+              onClick={() => setIsDetailsOpen(true)}
+              className="text-foreground has-hover:hover:text-foreground active:text-foreground py-1.75"
+            >
+              Details
+            </Button>
             <Button
               variant="change"
               size="sm"

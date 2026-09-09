@@ -13,20 +13,8 @@ import {
   type TStagedVariableChange,
 } from "@/components/staged-changes/types";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import type { AffectedService, ChangeFailure } from "@/lib/server/client.gen";
@@ -69,21 +57,21 @@ type TChangeGroup = {
 };
 
 export default function StagedChangesDetailsDialog({
-  children,
-  onOpenChange: onOpenChangeProp,
+  open,
+  onOpenChange,
 }: {
-  children: ReactElement;
-  onOpenChange?: (open: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
   const [showValues, setShowValues] = useState(false);
   const { isExtraSmall } = useDeviceSize();
 
-  const onOpenChange = (o: boolean) => {
-    setOpen(o);
-    onOpenChangeProp?.(o);
-    if (!o) setShowValues(false);
-  };
+  // Values hide again on every close, including one forced by the last change leaving the stage
+  const [wasOpen, setWasOpen] = useState(open);
+  if (wasOpen !== open) {
+    setWasOpen(open);
+    if (!open) setShowValues(false);
+  }
 
   const bodyProps = {
     showValues,
@@ -94,7 +82,6 @@ export default function StagedChangesDetailsDialog({
   if (isExtraSmall) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange} direction="bottom">
-        <DrawerTrigger render={children} />
         <DrawerContent hasHandle className="max-h-[calc(100%-1.3rem)]">
           <DetailsBody
             {...bodyProps}
@@ -110,7 +97,6 @@ export default function StagedChangesDetailsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger render={children} />
       <DialogContent
         hideXButton
         className="max-h-[calc(var(--safe-screen-height)-var(--dialog-top-padding-sm)-var(--dialog-bottom-padding-sm))] gap-0 p-0"
