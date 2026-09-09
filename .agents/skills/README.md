@@ -11,6 +11,7 @@ activation, and supporting files on demand.
 | Skill | Description |
 |-------|-------------|
 | [unbind-template-dev](unbind-template-dev/) | Author one-click app templates for Unbind — services, inputs, generated secrets, variable references, the deploy flow, and the icon registry. |
+| [unbind-create-release](unbind-create-release/) | Cut a tagged release — pre-flight checks, three summary options for approval, annotated tag, workflow watch, and verification of the GitHub Release and metadata entry. |
 
 ## Installation
 
