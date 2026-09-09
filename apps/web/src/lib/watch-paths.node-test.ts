@@ -19,7 +19,7 @@ test("join and split round-trip", () => {
 });
 
 test("formats for the staged changes bar", () => {
-  assert.equal(formatWatchPaths(""), "Every push");
+  assert.equal(formatWatchPaths(""), "");
   assert.equal(
     formatWatchPaths(joinWatchPaths(["apps/**", "!apps/**/*.md"])),
     "apps/**, !apps/**/*.md",

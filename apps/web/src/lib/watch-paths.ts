@@ -16,7 +16,5 @@ export function joinWatchPaths(patterns: string[]): string {
 }
 
 export function formatWatchPaths(value: string): string {
-  const patterns = splitWatchPaths(value);
-  if (patterns.length === 0) return "Every push";
-  return patterns.join(", ");
+  return splitWatchPaths(value).join(", ");
 }
