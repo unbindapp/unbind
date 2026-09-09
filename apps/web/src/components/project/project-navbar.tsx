@@ -1,20 +1,29 @@
 import {
   Navbar,
+  TNavbarCommandPanelContext,
   NavbarBreadcrumb,
   NavbarTabsLg,
   NavbarTabsSm,
   NavbarTabsMd,
 } from "@/components/navigation/navbar";
 import ProjectBreadcrumb from "@/components/project/project-breadcrumb";
+import { useProject } from "@/components/project/project-provider";
 import ProjectTabs from "@/components/project/project-tabs";
+import { useMemo } from "react";
 
 type TProps = {
   className?: string;
 };
 
 export default function ProjectNavbar({ className }: TProps) {
+  const { teamId, projectId } = useProject();
+  const commandPanelContext: TNavbarCommandPanelContext = useMemo(
+    () => ({ contextType: "project", teamId, projectId }),
+    [teamId, projectId],
+  );
+
   return (
-    <Navbar contextType="project" className={className}>
+    <Navbar commandPanelContext={commandPanelContext} className={className}>
       <NavbarBreadcrumb>
         <ProjectBreadcrumb />
       </NavbarBreadcrumb>

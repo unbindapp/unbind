@@ -1,5 +1,5 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
-import { TriggerTypeEnum } from "@/components/command-panel/constants";
+import { TriggerTypeEnum } from "@/components/command-panel/context-command-panel/context-command-panel";
 import { getContextCommandPaneItemsQueryKey } from "@/components/command-panel/context-command-panel/context-command-panel-items-provider";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";

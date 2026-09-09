@@ -15,13 +15,18 @@ const NAVBAR_ROLE = {
   tabsSm: "navbar.tabs-sm",
 } as const;
 
+export type TNavbarCommandPanelContext = Extract<
+  TContextCommandPanelContext,
+  { contextType: "team" | "project" }
+>;
+
 type TProps = {
-  contextType: Extract<TContextCommandPanelContext["contextType"], "team" | "project">;
+  commandPanelContext: TNavbarCommandPanelContext;
   className?: string;
   children?: ReactNode;
 };
 
-export function Navbar({ contextType, children, className }: TProps) {
+export function Navbar({ commandPanelContext, children, className }: TProps) {
   const ref = useRef<HTMLElement>(null);
 
   // Published so content can offset itself past the bar, which sits at the bottom
@@ -78,7 +83,7 @@ export function Navbar({ contextType, children, className }: TProps) {
           )}
         </div>
         <div className="flex shrink-0 items-center justify-end gap-2">
-          <NavbarSearchButton contextType={contextType} />
+          <NavbarSearchButton context={commandPanelContext} />
           <UserAvatarOrSignIn />
         </div>
       </div>

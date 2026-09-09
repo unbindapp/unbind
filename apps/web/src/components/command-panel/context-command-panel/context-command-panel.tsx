@@ -3,9 +3,8 @@
 import { CommandPanelTrigger } from "@/components/command-panel/command-panel";
 import { CommandPanelItemsProvider } from "@/components/command-panel/command-panel-items-provier";
 import {
+  contextCommandPanelId,
   contextCommandPanelRootPage,
-  getContextCommandPanelId,
-  TTriggerType,
 } from "@/components/command-panel/constants";
 import ContextCommandPanelItemsProvider, {
   useContextCommandPanelItems,
@@ -16,6 +15,10 @@ import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { ReactElement, useMemo } from "react";
+import { z } from "zod";
+
+export const TriggerTypeEnum = z.enum(["layout", "button", "list"]);
+type TTriggerType = z.infer<typeof TriggerTypeEnum>;
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -41,7 +44,7 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
   const { rootPage, currentPage, setCurrentPageId, goToParentPage } =
     useContextCommandPanelData(context);
 
-  const thisPanelId = getContextCommandPanelId(context.contextType, triggerType);
+  const thisPanelId = `${contextCommandPanelId}_${context.contextType}_${triggerType}`;
 
   const open = panelId === thisPanelId;
   const setOpen = (open: boolean) => {
@@ -58,19 +61,19 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
       setPanelId(thisPanelId);
     },
     {
-      enabled: context.contextType === "team" || context.contextType === "project",
+      enabled:
+        triggerType === "layout" &&
+        (context.contextType === "team" || context.contextType === "project"),
       conflictBehavior: "allow",
     },
   );
 
+  // Opened by keyboard shortcut there is no trigger to animate from
   const dialogContentVariantOptions: Parameters<
     typeof CommandPanelTrigger
   >["0"]["dialogContentVariantOptions"] = useMemo(
-    () => ({
-      animate:
-        context.contextType === "team" || context.contextType === "project" ? false : "default",
-    }),
-    [context.contextType],
+    () => ({ animate: triggerType === "layout" ? false : "default" }),
+    [triggerType],
   );
 
   return (

@@ -1,16 +1,25 @@
 import {
   Navbar,
+  TNavbarCommandPanelContext,
   NavbarBreadcrumb,
   NavbarTabsLg,
   NavbarTabsMd,
   NavbarTabsSm,
 } from "@/components/navigation/navbar";
 import TeamBreadcrumb from "@/components/team/team-breadcrumb";
+import { useTeam } from "@/components/team/team-provider";
 import TeamTabs from "@/components/team/team-tabs";
+import { useMemo } from "react";
 
 export default function TeamNavbar() {
+  const { teamId } = useTeam();
+  const commandPanelContext: TNavbarCommandPanelContext = useMemo(
+    () => ({ contextType: "team", teamId }),
+    [teamId],
+  );
+
   return (
-    <Navbar contextType="team">
+    <Navbar commandPanelContext={commandPanelContext}>
       <NavbarBreadcrumb>
         <TeamBreadcrumb />
       </NavbarBreadcrumb>
