@@ -278,5 +278,10 @@
     "version": "v0.1.55",
     "summary": "Staged changes details dialog and deploy flow improvements, and service card overflow fix",
     "breaking": false
+  },
+  "v0.1.56": {
+    "version": "v0.1.56",
+    "summary": "Release summaries on the update page, raw variable editor improvements, URL-safe passwords, and Railpack cache mounts disabled without build cache.",
+    "breaking": false
   }
 }
