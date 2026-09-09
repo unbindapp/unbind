@@ -111,7 +111,7 @@ export default function DeploymentCard({
 
   const cardContent = (
     <>
-      <div className="flex shrink-0 flex-col items-start justify-start pr-8 sm:w-34 sm:pr-3">
+      <div className="flex flex-col items-start justify-start pr-8 sm:w-34 sm:pr-3">
         <DeploymentStatusChip deployment={deployment} isPlaceholder={isPlaceholder} />
       </div>
       <div className="mt-2 flex shrink-0 flex-col items-start justify-center sm:mt-0">

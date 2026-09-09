@@ -43,12 +43,12 @@ export default function DeploymentStatusChip({
       data-placeholder={isPlaceholder || undefined}
       data-color={getDeploymentStatusChipColor({ deployment, isPlaceholder })}
       className={cn(
-        "bg-foreground/3-10 text-muted-foreground data-[color=wait]:bg-wait/4-10 data-[color=destructive]:bg-destructive/4-10 data-[color=destructive]:text-destructive data-[color=wait]:text-wait data-[color=process]:bg-process/4-10 data-[color=process]:text-process data-[color=success]:bg-success/4-10 data-[color=success]:text-success data-placeholder:bg-muted-more-foreground data-placeholder:animate-skeleton flex min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium data-placeholder:text-transparent",
+        "bg-foreground/3-10 text-muted-foreground data-[color=wait]:bg-wait/4-10 data-[color=destructive]:bg-destructive/4-10 data-[color=destructive]:text-destructive data-[color=wait]:text-wait data-[color=process]:bg-process/4-10 data-[color=process]:text-process data-[color=success]:bg-success/4-10 data-[color=success]:text-success data-placeholder:bg-muted-more-foreground data-placeholder:animate-skeleton flex max-w-full min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium data-placeholder:text-transparent",
         className,
       )}
     >
       <Icon className={cn("-ml-px size-3.5 shrink-0", iconClassName)} />
-      <p className="min-w-0 shrink leading-tight">{statusText}</p>
+      <p className="min-w-0 shrink leading-tight wrap-break-word">{statusText}</p>
     </div>
   );
 }
