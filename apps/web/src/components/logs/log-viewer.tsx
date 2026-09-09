@@ -36,7 +36,6 @@ import {
   SearchIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import useThrottledCallback from "@/lib/hooks/use-throttled-callback";
 
 type TContainerType = "page" | "sheet";
 
@@ -71,10 +70,7 @@ export default function LogViewer({
   error,
 }: TProps) {
   const typeAndIds:
-    | TEnvironmentLogsProps
-    | TServiceLogsProps
-    | TDeploymentLogsProps
-    | TDeploymentBuildLogsProps =
+    TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps | TDeploymentBuildLogsProps =
     type === "service"
       ? { type: "service", environmentId: environmentId, serviceId }
       : type === "deployment"
@@ -395,12 +391,11 @@ function LogList({
     }
   }, [hasMoreOlder, isFetchingOlder, olderError, fetchOlder, setEvictionPaused]);
 
-  const throttledSyncScrollState = useThrottledCallback(syncScrollState, 50);
-
-  // Growing the list moves the bottom without emitting a scroll event
+  // followOnAppend only scrolls when already at the end, so an append while
+  // parked at the bottom with auto-follow off moves the bottom without a scroll event
   useEffect(() => {
-    throttledSyncScrollState();
-  }, [lines.length, throttledSyncScrollState]);
+    syncScrollState();
+  }, [lines.length, syncScrollState]);
 
   return (
     <div
@@ -410,7 +405,7 @@ function LogList({
       <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
         <div
           ref={scrollRef}
-          onScroll={throttledSyncScrollState}
+          onScroll={syncScrollState}
           className="min-h-0 w-full flex-1 overflow-y-auto font-mono [overflow-anchor:none]"
         >
           {/* The width cap lives inside the scroller so the scrollbar stays at the
