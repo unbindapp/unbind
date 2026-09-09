@@ -283,5 +283,10 @@
     "version": "v0.1.56",
     "summary": "Release summaries on the update page, raw variable editor improvements, URL-safe passwords, and Railpack cache mounts disabled without build cache.",
     "breaking": false
+  },
+  "v0.1.57": {
+    "version": "v0.1.57",
+    "summary": "PostgreSQL replication settings, GitHub watch path deployments, database backup scheduling and retention, optional resource limits, and service volume attachment improvements.",
+    "breaking": false
   }
 }
