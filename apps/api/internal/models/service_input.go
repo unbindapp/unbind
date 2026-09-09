@@ -23,7 +23,7 @@ type CreateServiceInput struct {
 	Builder                       schema.ServiceBuilder `required:"true" doc:"Builder of the service - docker, nixpacks, railpack" json:"builder"`
 	Hosts                         []schema.HostSpec     `json:"hosts,omitempty"`
 	Ports                         []schema.PortSpec     `json:"ports,omitempty"`
-	Replicas                      *int32                `minimum:"0" maximum:"10" json:"replicas,omitempty"`
+	Replicas                      *int32                `minimum:"1" maximum:"10" json:"replicas,omitempty"`
 	AutoDeploy                    *bool                 `json:"auto_deploy,omitempty"`
 	RailpackBuilderInstallCommand *string               `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string               `json:"railpack_builder_build_command,omitempty"`
@@ -75,7 +75,7 @@ type UpdateServiceInput struct {
 	AddPorts                      []schema.PortSpec      `json:"add_ports,omitempty" required:"false" doc:"Additional ports to add, will not remove existing ports"`
 	RemovePorts                   []schema.PortSpec      `json:"remove_ports,omitempty" required:"false" doc:"Ports to remove"`
 	OverwritePorts                []schema.PortSpec      `json:"overwrite_ports,omitempty" required:"false"`
-	Replicas                      *int32                 `json:"replicas,omitempty" required:"false"`
+	Replicas                      *int32                 `json:"replicas,omitempty" required:"false" minimum:"1" maximum:"10"`
 	AutoDeploy                    *bool                  `json:"auto_deploy,omitempty" required:"false"`
 	RailpackBuilderInstallCommand *string                `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string                `json:"railpack_builder_build_command,omitempty"`

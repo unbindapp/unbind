@@ -313,14 +313,7 @@ func resolveMountStatus(serviceID *uuid.UUID, service *ent.Service, pods, blocki
 	if !service_repo.HasActiveDeployment(service) {
 		return models.PVCMountStatusAwaitingDeployment
 	}
-	if isScaledToZero(service) && len(blockingPods) == 0 {
-		return models.PVCMountStatusAwaitingDeployment
-	}
 	return models.PVCMountStatusAttaching
-}
-
-func isScaledToZero(service *ent.Service) bool {
-	return service.Edges.ServiceConfig != nil && service.Edges.ServiceConfig.Replicas == 0
 }
 
 // mountBlockingPods filters out pods that have finished (Succeeded or Failed) —

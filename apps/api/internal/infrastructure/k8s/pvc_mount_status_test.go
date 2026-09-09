@@ -15,9 +15,8 @@ func podInPhase(phase corev1.PodPhase) corev1.Pod {
 	return corev1.Pod{Status: corev1.PodStatus{Phase: phase}}
 }
 
-func serviceWith(replicas int32, deploymentStatus *schema.DeploymentStatus) *ent.Service {
+func serviceWith(deploymentStatus *schema.DeploymentStatus) *ent.Service {
 	service := &ent.Service{}
-	service.Edges.ServiceConfig = &ent.ServiceConfig{Replicas: replicas}
 	if deploymentStatus != nil {
 		service.Edges.CurrentDeployment = &ent.Deployment{Status: *deploymentStatus}
 	}
@@ -41,14 +40,12 @@ func TestResolveMountStatus(t *testing.T) {
 	}{
 		{"unbound with no pods", nil, nil, nil, models.PVCMountStatusUnattached},
 		{"unbound with old pods still terminating", nil, nil, terminating, models.PVCMountStatusDetaching},
-		{"bound with a running pod", &serviceID, serviceWith(1, &succeeded), running, models.PVCMountStatusMounted},
+		{"bound with a running pod", &serviceID, serviceWith(&succeeded), running, models.PVCMountStatusMounted},
 		{"bound before the service row commits", &serviceID, nil, nil, models.PVCMountStatusAttaching},
-		{"bound to a service never deployed", &serviceID, serviceWith(1, nil), nil, models.PVCMountStatusAwaitingDeployment},
-		{"bound to a service whose deployment was removed", &serviceID, serviceWith(1, &removed), nil, models.PVCMountStatusAwaitingDeployment},
-		{"bound to a service scaled to zero", &serviceID, serviceWith(0, &succeeded), nil, models.PVCMountStatusAwaitingDeployment},
-		{"scaled to zero while pods still terminate", &serviceID, serviceWith(0, &succeeded), pending, models.PVCMountStatusAttaching},
-		{"bound with pods pending", &serviceID, serviceWith(1, &succeeded), pending, models.PVCMountStatusAttaching},
-		{"bound with no pods yet", &serviceID, serviceWith(1, &succeeded), nil, models.PVCMountStatusAttaching},
+		{"bound to a service never deployed", &serviceID, serviceWith(nil), nil, models.PVCMountStatusAwaitingDeployment},
+		{"bound to a service whose deployment was removed", &serviceID, serviceWith(&removed), nil, models.PVCMountStatusAwaitingDeployment},
+		{"bound with pods pending", &serviceID, serviceWith(&succeeded), pending, models.PVCMountStatusAttaching},
+		{"bound with no pods yet", &serviceID, serviceWith(&succeeded), nil, models.PVCMountStatusAttaching},
 	}
 
 	for _, tt := range tests {
