@@ -6,6 +6,7 @@ import useGoToItem from "@/components/command-panel/context-command-panel/items/
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
 import usePreferencesItem from "@/components/command-panel/context-command-panel/items/preferences";
 import { useTemplateItemHook } from "@/components/command-panel/context-command-panel/items/template";
+import { useVolumeItemHook } from "@/components/command-panel/context-command-panel/items/volume";
 import { findCommandPanelPage } from "@/components/command-panel/helpers";
 import { TCommandPanelPage, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
@@ -20,10 +21,12 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const useDockerImageItem = useDockerImageItemHook({ context });
   const useDatabaseItem = useDatabaseItemHook({ context });
   const useTemplateItem = useTemplateItemHook({ context });
+  const useVolumeItem = useVolumeItemHook({ context });
 
   const { item: gitItem } = useGitItem({ context });
   const { item: dockerImageItem } = useDockerImageItem({ context });
   const { item: databaseItem } = useDatabaseItem({ context });
+  const { item: volumeItem } = useVolumeItem({ context });
 
   const { item: templateItem } = useTemplateItem();
   const { item: goToItem } = useGoToItem({ context });
@@ -49,6 +52,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
         ...(databaseItem ? [databaseItem] : []),
         ...(templateItem ? [templateItem] : []),
         ...(dockerImageItem ? [dockerImageItem] : []),
+        ...(volumeItem ? [volumeItem] : []),
         ...(preferencesItem ? [preferencesItem] : []),
         ...(goToItem ? [goToItem] : []),
       ],
@@ -59,7 +63,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
       dockerImageItem,
       databaseItem,
       templateItem,
-      dockerImageItem,
+      volumeItem,
       goToItem,
       preferencesItem,
       context,

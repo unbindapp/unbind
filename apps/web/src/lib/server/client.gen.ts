@@ -474,8 +474,10 @@ export const CreatePVCInputSchema = z
     capacity_gb: z.number(),
     description: z.string().optional(),
     environment_id: z.string().optional(),
+    mount_path: z.string().optional(), // Path to mount the volume at on the service, requires service_id
     name: z.string(),
     project_id: z.string().optional(),
+    service_id: z.string().optional(), // Service to attach the volume to, requires mount_path
     team_id: z.string(),
     type: PvcScopeSchema,
   })

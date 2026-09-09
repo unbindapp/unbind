@@ -133,6 +133,29 @@ export const volumesListQuery = (input: {
     },
   });
 
+// Passing serviceId and mountPath attaches the volume in the same request
+export async function createVolume(input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  name: string;
+  capacityGb: number;
+  serviceId?: string;
+  mountPath?: string;
+}) {
+  const res = await getGoClient().storage.pvc.create({
+    type: "environment",
+    team_id: input.teamId,
+    project_id: input.projectId,
+    environment_id: input.environmentId,
+    name: input.name,
+    capacity_gb: input.capacityGb,
+    service_id: input.serviceId,
+    mount_path: input.mountPath,
+  });
+  return { volume: res.data };
+}
+
 export async function deleteVolume(input: TVolumeRef) {
   const res = await getGoClient().storage.pvc.delete({
     id: input.id,
