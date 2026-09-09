@@ -142,3 +142,51 @@ func TestEmbeddedMongoDBDefinitionPodLabelsExcludeDeployment(t *testing.T) {
 	assert.Equal(t, "svc-1", release.Spec.Values.PodLabels["unbind-service"])
 	assert.NotContains(t, release.Spec.Values.PodLabels, "unbind-deployment")
 }
+
+func renderMySQLWithS3(t *testing.T, s3 map[string]any) string {
+	t.Helper()
+	provider := NewDatabaseProvider()
+
+	def, err := provider.FetchDatabaseDefinition(context.Background(), "", "mysql")
+	require.NoError(t, err)
+	require.NotNil(t, def)
+
+	result, err := NewDatabaseRenderer().Render(def, &RenderContext{
+		Name:      "mysql-test",
+		Namespace: "unbind-user",
+		TeamID:    "team-1",
+		Parameters: map[string]any{
+			"secretName": "db-secret",
+			"secretKey":  "DATABASE_PASSWORD",
+			"s3":         s3,
+		},
+		Definition: *def,
+	})
+	require.NoError(t, err)
+	return result
+}
+
+func TestEmbeddedMySQLDefinitionPrunesBackupsToRetention(t *testing.T) {
+	result := renderMySQLWithS3(t, map[string]any{
+		"enabled":         true,
+		"bucket":          "backups",
+		"endpoint":        "https://s3.example.com",
+		"region":          "us-east-1",
+		"secretName":      "s3-secret",
+		"backupSchedule":  "0 */6 * * *",
+		"backupRetention": 5,
+	})
+
+	assert.Contains(t, result, "kind: BackupPolicy")
+	assert.Contains(t, result, "name: mysql-test-backup-prune")
+	assert.Contains(t, result, `schedule: "0 */6 * * *"`)
+	assert.Contains(t, result, "RETENTION=5")
+	assert.Contains(t, result, "s3://backups/moco/unbind-user/mysql-test/")
+}
+
+func TestEmbeddedMySQLDefinitionSkipsBackupObjectsWithoutS3(t *testing.T) {
+	result := renderMySQLWithS3(t, map[string]any{"enabled": false})
+
+	assert.NotContains(t, result, "kind: BackupPolicy")
+	assert.NotContains(t, result, "kind: CronJob")
+}

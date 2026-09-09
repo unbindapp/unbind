@@ -15,7 +15,9 @@ import {
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import { MiniSection } from "@/components/settings/mini-section";
 import { SettingsSection } from "@/components/settings/settings-section";
+import { validatePositiveInteger } from "@/components/service/backups/backup-config";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { HealthCheckTypeSchema } from "@/lib/server/client.gen";
@@ -29,7 +31,7 @@ import {
   HeartIcon,
   TerminalSquareIcon,
 } from "lucide-react";
-import { ReactNode, useMemo } from "react";
+import { useMemo } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -468,30 +470,6 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
   );
 }
 
-function MiniSection({
-  title,
-  unit,
-  hasChanges,
-  children,
-}: {
-  title: string;
-  unit: string;
-  hasChanges?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div data-staged={hasChanges || undefined} className="group/div flex flex-1 flex-col gap-2">
-      <p className="group-data-staged/div:text-change px-1.5 leading-tight font-medium">{title}</p>
-      <div className="flex w-full items-start">
-        {children}
-        <div className="bg-input text-muted-foreground flex h-10.5 min-w-0 shrink items-center justify-end rounded-r-lg border border-l-0 px-2.5 text-right text-sm leading-tight font-medium">
-          <p className="min-w-0 shrink">{unit}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function HealthCheckIcon({
   type,
   className,
@@ -539,19 +517,6 @@ function validateHealthCheckCommand(value: string) {
   if (typeof value !== "string") {
     return {
       message: "Command must be a string.",
-    };
-  }
-  return undefined;
-}
-
-function validatePositiveInteger(value: string) {
-  if (value === undefined || value === "") {
-    return undefined;
-  }
-  const num = Number(value);
-  if (isNaN(num) || num <= 0 || !Number.isInteger(num)) {
-    return {
-      message: "Must be a positive integer.",
     };
   }
   return undefined;

@@ -38,7 +38,7 @@ type CreateServiceInput struct {
 	DatabaseConfig       *schema.DatabaseConfig `json:"database_config,omitempty"`
 	S3BackupBucketID     *uuid.UUID             `json:"s3_backup_bucket_id,omitempty" format:"uuid"`
 	BackupSchedule       *string                `json:"backup_schedule,omitempty" required:"false" doc:"Cron expression for the backup schedule, e.g. '0 0 * * *'"`
-	BackupRetentionCount *int                   `json:"backup_retention,omitempty" required:"false" doc:"Number of base backups to retain, e.g. 3"`
+	BackupRetentionCount *int                   `json:"backup_retention_count,omitempty" required:"false" minimum:"1" doc:"Number of base backups to retain, e.g. 3"`
 
 	// PVC
 	Volumes []schema.ServiceVolume `json:"volumes,omitempty" required:"false" doc:"Volumes to mount in the service"`
@@ -89,7 +89,7 @@ type UpdateServiceInput struct {
 	DatabaseConfig       *schema.DatabaseConfig `json:"database_config,omitempty"`
 	S3BackupBucketID     *uuid.UUID             `json:"s3_backup_bucket_id,omitempty" format:"uuid"`
 	BackupSchedule       *string                `json:"backup_schedule,omitempty" required:"false" doc:"Cron expression for the backup schedule, e.g. '0 0 * * *'"`
-	BackupRetentionCount *int                   `json:"backup_retention,omitempty" required:"false" doc:"Number of base backups to retain, e.g. 3"`
+	BackupRetentionCount *int                   `json:"backup_retention_count,omitempty" required:"false" minimum:"1" doc:"Number of base backups to retain, e.g. 3"`
 
 	// Volumes
 	OverwriteVolumes []schema.ServiceVolume `json:"overwrite_volumes,omitempty" required:"false" doc:"Volumes to attach to the service"`

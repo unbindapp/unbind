@@ -229,6 +229,70 @@ spec:
       usePathStyle: true
     workVolume:
       emptyDir: {}
+---
+# MOCO's BackupPolicy has no retention, so old backups are pruned separately
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Name }}-backup-prune
+  namespace: {{ .Namespace }}
+  labels:
+    unbind/usd-type: {{ .Definition.Type | quote }}
+    unbind/usd-version: {{ .Definition.Version | quote }}
+    unbind/usd-category: databases
+{{- range $k, $v := $labels }}
+    {{ $k }}: {{ $v | quote }}
+{{- end }}
+spec:
+  schedule: {{ $s3.backupSchedule | default "5 5 * * *" | quote }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 300
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: prune
+              image: amazon/aws-cli:2.27.63
+              env:
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $s3.secretName }}
+                      key:  {{ $s3.accessKey | default "access_key_id" }}
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ $s3.secretName }}
+                      key:  {{ $s3.secretKey | default "secret_key" }}
+                - name: AWS_DEFAULT_REGION
+                  value: {{ $s3.region | quote }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  BACKUP_PATH="s3://{{ $s3.bucket }}/moco/{{ .Namespace }}/{{ .Name }}/"
+                  RETENTION={{ $s3.backupRetention | default 3 }}
+
+                  BACKUP_DIRS=$(aws s3 ls "$BACKUP_PATH" --endpoint-url={{ $s3.endpoint | quote }} \
+                    | grep -Eo '[0-9]{8}-[0-9]{6}/' \
+                    | sort)
+                  BACKUP_COUNT=$(echo "$BACKUP_DIRS" | grep -c . || true)
+
+                  if [ "$BACKUP_COUNT" -le "$RETENTION" ]; then
+                    echo "Have $BACKUP_COUNT backups, retention is $RETENTION. Nothing to delete."
+                    exit 0
+                  fi
+
+                  TO_DELETE=$((BACKUP_COUNT - RETENTION))
+                  echo "$BACKUP_DIRS" | head -n "$TO_DELETE" | while read -r dir; do
+                    echo "Deleting old backup: $dir"
+                    aws s3 rm "$BACKUP_PATH$dir" --recursive --endpoint-url={{ $s3.endpoint | quote }}
+                  done
+                  echo "Deleted $TO_DELETE old backups, keeping $RETENTION latest backups."
 {{- end }}
 ---
 apiVersion: batch/v1

@@ -8,15 +8,29 @@ import (
 	"os"
 	"slices"
 
+	mocov1beta2 "github.com/cybozu-go/moco/api/v1beta2"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
+
+// Backup objects are only rendered while a bucket is configured, so disabling
+// backups has to delete the ones an earlier reconcile created.
+var backupObjectGVKs = []schema.GroupVersionKind{
+	batchv1.SchemeGroupVersion.WithKind("CronJob"),
+	mocov1beta2.GroupVersion.WithKind("BackupPolicy"),
+}
 
 // reconcileDatabase handles Service resources of type "database": it installs the
 // dependent operator when required, provisions any managed credential secrets, then
@@ -52,6 +66,51 @@ func (r *ServiceReconciler) reconcileDatabase(ctx context.Context, rb resourcebu
 		return err
 	}
 
+	return r.cleanupStaleBackupObjects(ctx, &service, runtimeObjects)
+}
+
+// cleanupStaleBackupObjects deletes backup objects controlled by the service that
+// are no longer part of the rendered set. Kinds whose CRD is not installed are skipped.
+func (r *ServiceReconciler) cleanupStaleBackupObjects(ctx context.Context, service *v1.Service, desired []runtime.Object) error {
+	desiredKeys := make(map[string]bool, len(desired))
+	for _, obj := range desired {
+		clientObj, ok := obj.(client.Object)
+		if !ok {
+			continue
+		}
+		key, err := r.objectKey(clientObj)
+		if err != nil {
+			return err
+		}
+		desiredKeys[key] = true
+	}
+
+	logger := log.FromContext(ctx)
+	for _, gvk := range backupObjectGVKs {
+		list := &unstructured.UnstructuredList{}
+		list.SetGroupVersionKind(gvk.GroupVersion().WithKind(gvk.Kind + "List"))
+		if err := r.List(ctx, list, client.InNamespace(service.Namespace)); err != nil {
+			if meta.IsNoMatchError(err) || errors.IsNotFound(err) {
+				continue
+			}
+			return fmt.Errorf("listing %s: %w", gvk.Kind, err)
+		}
+
+		for i := range list.Items {
+			item := &list.Items[i]
+			owner := metav1.GetControllerOf(item)
+			if owner == nil || owner.UID != service.UID {
+				continue
+			}
+			if desiredKeys[gvk.String()+"/"+item.GetName()] {
+				continue
+			}
+			logger.Info("Deleting stale backup object", "kind", gvk.Kind, "name", item.GetName())
+			if err := r.Delete(ctx, item); client.IgnoreNotFound(err) != nil {
+				return fmt.Errorf("deleting %s %s: %w", gvk.Kind, item.GetName(), err)
+			}
+		}
+	}
 	return nil
 }
 

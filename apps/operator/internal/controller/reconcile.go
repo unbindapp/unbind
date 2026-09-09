@@ -50,9 +50,9 @@ func setRenderHash(obj metav1.Object, hash string) {
 	obj.SetAnnotations(annotations)
 }
 
-// routeKey is a stable GVK+name identifier for a routing object, matched against
+// objectKey is a stable GVK+name identifier for an owned object, matched against
 // the keys produced while listing existing objects during garbage collection.
-func (r *ServiceReconciler) routeKey(obj client.Object) (string, error) {
+func (r *ServiceReconciler) objectKey(obj client.Object) (string, error) {
 	gvk := obj.GetObjectKind().GroupVersionKind()
 	if gvk.Empty() {
 		var err error

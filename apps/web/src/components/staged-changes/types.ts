@@ -40,6 +40,8 @@ export const ServiceChangeFieldSchema = z.enum([
   "gitBranch",
   "image",
   "s3BackupBucketId",
+  "backupSchedule",
+  "backupRetentionCount",
   "healthCheckType",
   "healthCheckEndpoint",
   "healthCheckEndpointPort",

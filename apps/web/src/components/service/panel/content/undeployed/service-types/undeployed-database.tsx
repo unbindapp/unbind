@@ -14,6 +14,13 @@ import DeployButtonSection from "@/components/service/panel/content/undeployed/d
 import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
+import {
+  backupSchedulePresets,
+  customScheduleValue,
+  validateBackupRetentionCount,
+  validateCronExpression,
+} from "@/components/service/backups/backup-config";
+import { MiniSection } from "@/components/settings/mini-section";
 import { useService } from "@/components/service/service-provider";
 import {
   AddBackupBucketTrigger,
@@ -33,9 +40,10 @@ import {
 } from "@/lib/hooks/use-app-form-with-persistence";
 import { TVariableForCreate } from "@/lib/queries/variables";
 import { databaseQuery } from "@/lib/queries/services";
+import { useStore } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
-import { CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
+import { CalendarClockIcon, CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useCallback, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
@@ -50,7 +58,18 @@ const DraftSchema = z.object({
   version: z.string(),
   variables: z.array(z.object({ name: z.string(), value: z.string() })),
   s3BucketId: z.string(),
+  backupSchedulePreset: z.string(),
+  backupScheduleCustom: z.string(),
+  backupRetentionCount: z.string(),
 });
+
+const defaultBackupSchedule = "5 5 * * *";
+const defaultBackupRetentionCount = "3";
+
+const scheduleItems: TCommandItem[] = [
+  ...backupSchedulePresets,
+  { value: customScheduleValue, label: "Custom" },
+];
 
 export function UndeployedContentDatabase(props: TProps) {
   const { teamId } = useService();
@@ -147,7 +166,16 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
         );
       }
 
-      const s3Props = formValues.s3BucketId ? { s3BackupBucketId: formValues.s3BucketId } : {};
+      const s3Props = formValues.s3BucketId
+        ? {
+            s3BackupBucketId: formValues.s3BucketId,
+            backupSchedule:
+              formValues.backupSchedulePreset === customScheduleValue
+                ? formValues.backupScheduleCustom
+                : formValues.backupSchedulePreset,
+            backupRetentionCount: Number(formValues.backupRetentionCount),
+          }
+        : {};
 
       await updateService({
         teamId,
@@ -193,6 +221,9 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
       version: version,
       variables: [{ name: "", value: "" }] as TVariableForCreate[],
       s3BucketId: "",
+      backupSchedulePreset: defaultBackupSchedule,
+      backupScheduleCustom: defaultBackupSchedule,
+      backupRetentionCount: defaultBackupRetentionCount,
     },
     validators: {
       onChange: ({ value }) => {
@@ -224,6 +255,9 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     ),
     [teamId],
   );
+
+  const s3BucketId = useStore(form.store, (s) => s.values.s3BucketId);
+  const schedulePreset = useStore(form.store, (s) => s.values.backupSchedulePreset);
 
   return (
     <WrapperForm
@@ -358,6 +392,107 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                 />
               </BlockItemContent>
             </BlockItem>
+            {s3BucketId && (
+              <BlockItem>
+                <BlockItemHeader>
+                  <BlockItemTitle>Schedule</BlockItemTitle>
+                </BlockItemHeader>
+                <BlockItemContent className="gap-0">
+                  <form.AppField
+                    name="backupSchedulePreset"
+                    children={(field) => (
+                      <field.AsyncDropdownMenu
+                        dontCheckUntilSubmit
+                        field={field}
+                        value={field.state.value}
+                        onChange={(v) => {
+                          field.handleChange(v);
+                          if (v === customScheduleValue) return;
+                          form.setFieldValue("backupScheduleCustom", v);
+                        }}
+                        items={scheduleItems}
+                        isPending={false}
+                        error={undefined}
+                      >
+                        {({ isOpen }) => (
+                          <BlockItemButtonLike
+                            asElement="button"
+                            data-custom={field.state.value === customScheduleValue || undefined}
+                            className="data-custom:rounded-b-none data-custom:border-b-0"
+                            text={scheduleLabel(field.state.value)}
+                            Icon={({ className }) => (
+                              <CalendarClockIcon className={cn(className, "size-4.5")} />
+                            )}
+                            variant="outline"
+                            open={isOpen}
+                            onBlur={field.handleBlur}
+                          />
+                        )}
+                      </field.AsyncDropdownMenu>
+                    )}
+                  />
+                  {schedulePreset === customScheduleValue && (
+                    <>
+                      <div className="bg-border -mt-1 h-px w-full" />
+                      <form.AppField
+                        name="backupScheduleCustom"
+                        validators={{
+                          onChange: ({ value }) => validateCronExpression(value),
+                        }}
+                        children={(field) => (
+                          <field.TextField
+                            className="-mt-1"
+                            classNameInput="rounded-t-none border-t-0 font-mono"
+                            field={field}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            placeholder={defaultBackupSchedule}
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            autoComplete="off"
+                            spellCheck="false"
+                          />
+                        )}
+                      />
+                    </>
+                  )}
+                </BlockItemContent>
+              </BlockItem>
+            )}
+            {s3BucketId && (
+              <BlockItem>
+                <BlockItemHeader>
+                  <BlockItemTitle>Retention</BlockItemTitle>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <form.AppField
+                    name="backupRetentionCount"
+                    validators={{
+                      onChange: ({ value }) => validateBackupRetentionCount(value),
+                    }}
+                    children={(field) => (
+                      <MiniSection unit="backups">
+                        <field.TextField
+                          field={field}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          placeholder={defaultBackupRetentionCount}
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          autoComplete="off"
+                          spellCheck="false"
+                          inputMode="numeric"
+                          className="min-w-0 flex-1"
+                          classNameInput="rounded-r-none"
+                        />
+                      </MiniSection>
+                    )}
+                  />
+                </BlockItemContent>
+              </BlockItem>
+            )}
           </Block>
         )}
         {/* @ts-expect-error: This type is completely fine. The form here encapculates the variable only form but it doesn't work for some reason */}
@@ -373,8 +508,15 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
   );
 }
 
+function scheduleLabel(value: string) {
+  return scheduleItems.find((item) => item.value === value)?.label ?? value;
+}
+
 type TFormValues = {
   version: string;
   variables: TVariableForCreate[];
   s3BucketId: string;
+  backupSchedulePreset: string;
+  backupScheduleCustom: string;
+  backupRetentionCount: string;
 };

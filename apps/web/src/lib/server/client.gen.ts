@@ -100,7 +100,7 @@ export const UpdateServiceInputSchema = z
     add_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Additional variable mounts to add, will not remove existing mounts
     add_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Additional volumes to add, will not remove existing volumes
     auto_deploy: z.boolean().optional(),
-    backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
+    backup_retention_count: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
     builder: ServiceBuilderSchema.optional(),
     database_config: DatabaseConfigSchema.optional(),
@@ -625,7 +625,7 @@ export const ServiceTypeSchema = z.enum(['github', 'docker-image', 'database']);
 export const CreateServiceInputSchema = z
   .object({
     auto_deploy: z.boolean().optional(),
-    backup_retention: z.number().optional(), // Number of base backups to retain, e.g. 3
+    backup_retention_count: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
     builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
     database_config: DatabaseConfigSchema.optional(),

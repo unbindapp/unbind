@@ -100,6 +100,8 @@ test("merges service field changes into one update per service", () => {
         service("healthCheckType", "http"),
         service("healthCheckEndpoint", "/health"),
         service("gitBranch", "develop", { serviceId: "web" }),
+        service("backupSchedule", "0 */6 * * *", { serviceId: "web" }),
+        service("backupRetentionCount", 5, { serviceId: "web" }),
       ],
     ),
   );
@@ -112,6 +114,8 @@ test("merges service field changes into one update per service", () => {
   assert.deepEqual(api.health_check, { type: "http", path: "/health" });
   assert.equal(web.service_id, "web");
   assert.equal(web.git_branch, "develop");
+  assert.equal(web.backup_schedule, "0 */6 * * *");
+  assert.equal(web.backup_retention_count, 5);
   assert.equal(web.replicas, undefined);
 });
 

@@ -158,7 +158,7 @@ func (r *ServiceReconciler) reconcileRoutes(ctx context.Context, rb resourcebuil
 
 	desiredKeys := make(map[string]bool, len(desired))
 	for _, obj := range desired {
-		key, keyErr := r.routeKey(obj)
+		key, keyErr := r.objectKey(obj)
 		if keyErr != nil {
 			return keyErr
 		}
