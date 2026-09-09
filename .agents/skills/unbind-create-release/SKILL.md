@@ -1,10 +1,10 @@
 ---
 name: unbind-create-release
 description: >
-  Cut a tagged Unbind release. Checks the repo state, works out the next version, drafts
+  Create a tagged Unbind release. Checks the repo state, works out the next version, drafts
   three one-sentence summary options for the user to pick from, and only after approval
   creates the annotated tag, pushes it, watches the release workflow, and verifies the
-  GitHub release and metadata entry. Use when asked to create, cut, tag, or publish a
+  GitHub release and metadata entry. Use when asked to create, tag, or publish a
   release, or "do it once more" / "again" after a previous release in the same session.
 compatibility: Designed for Claude Code (or similar products)
 metadata:
@@ -27,7 +27,7 @@ page and is the first line of the GitHub Release body. A release without a summa
 
 **Never tag before the user has approved a summary.** Show three options first, always.
 
-## 1. Pre-flight
+## 1. Checks before proposing anything
 
 Run all of this before proposing anything. Replace `<last>` with the newest tag.
 
@@ -35,7 +35,7 @@ Run all of this before proposing anything. Replace `<last>` with the newest tag.
 git fetch origin -q
 git status -sb                                   # must be clean; "behind N" is fine, pull later
 git tag --sort=-v:refname | head -1              # <last>
-git log --oneline <last>..origin/master          # what ships
+git log --oneline <last>..origin/master          # what goes into the release
 git diff --name-only <last> origin/master -- 'deploy/charts/charts/*/templates/**' \
   | grep -iE '(rbac|role|sa|serviceaccount)[^/]*\.yaml$' || echo "no RBAC changes"
 git ls-tree -d origin/master deploy/releases/ | tail -3   # staged per-version manifests
@@ -60,7 +60,7 @@ Things to surface to the user instead of working around:
   `breaking: false`. A breaking release needs a hand-written entry with `depends_on`
   before tagging. See `deploy/releases/README.md`. Point it out; do not write it unasked.
 - **An existing `metadata.json` entry** for the next version. Its `summary` wins over the
-  tag subject. Show it; the options below are then moot unless the user changes the entry.
+  tag subject. Show it; the options below do not apply unless the user changes the entry.
 
 ## 2. Propose three summaries
 
@@ -69,7 +69,7 @@ Read the commit list and group it by feature, not by commit. Ignore the bot comm
 they are the only changes.
 
 Write **three** candidate summaries and show them to the user with a short overview of
-what ships (commit count, the main themes, the version, and any pre-flight notes). Rules
+what goes into the release (commit count, the main themes, the version, and anything the checks found). Rules
 for each summary:
 
 - One sentence. Ends with a `.`.
