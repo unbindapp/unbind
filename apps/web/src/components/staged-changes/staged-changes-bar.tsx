@@ -38,7 +38,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
-import { EllipsisVerticalIcon, GripVerticalIcon, Undo2Icon } from "lucide-react";
+import { EllipsisVerticalIcon, GripVerticalIcon, LoaderIcon, Undo2Icon } from "lucide-react";
 import { animate, motion, useMotionValue, useReducedMotion, type PanInfo } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -300,10 +300,15 @@ export default function StagedChangesBar() {
             onPanEnd={onPanEnd}
             className="relative flex min-w-0 flex-1 cursor-grab touch-none items-center gap-1.5 self-stretch overflow-hidden pr-1 pl-1 select-none"
           >
-            <GripVerticalIcon className="text-muted-foreground -ml-0.5 size-4.5 shrink-0" />
+            <div className="text-muted-foreground -ml-0.5 size-4.5 shrink-0">
+              {isApplying ? (
+                <LoaderIcon className="text-change size-full animate-spin" />
+              ) : (
+                <GripVerticalIcon className="size-full" />
+              )}
+            </div>
             <p className="text-change min-w-0 shrink truncate text-sm leading-tight font-semibold">
-              {isApplying ? "Applying" : "Apply"} {shownCount}{" "}
-              {shownCount === 1 ? "change" : "changes"}
+              Apply {shownCount} {shownCount === 1 ? "change" : "changes"}
             </p>
           </motion.div>
           <div className="relative flex items-center justify-end gap-1">
