@@ -29,7 +29,7 @@ import { applyChanges, type TApplyChangesResult } from "@/lib/queries/changes";
 import type { AffectedService } from "@/lib/server/client.gen";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ReactNode, useContext, useMemo, useRef, useState } from "react";
-import { useDebounce } from "use-debounce";
+import { useDebounceValue } from "usehooks-ts";
 import { useStore } from "zustand";
 
 export function StagedChangesProvider({ children }: { children: ReactNode }) {
@@ -112,7 +112,7 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
     () => buildApplyChangesPayload({ variables, services }),
     [variables, services],
   );
-  const [debouncedPayload] = useDebounce(payload, 500);
+  const [debouncedPayload] = useDebounceValue(payload, 500);
 
   const debouncedCount = debouncedPayload.variables.length + debouncedPayload.services.length;
 

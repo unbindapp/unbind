@@ -36,7 +36,7 @@ import {
   SearchIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useThrottledCallback } from "use-debounce";
+import useThrottledCallback from "@/lib/hooks/use-throttled-callback";
 
 type TContainerType = "page" | "sheet";
 
@@ -71,7 +71,10 @@ export default function LogViewer({
   error,
 }: TProps) {
   const typeAndIds:
-    TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps | TDeploymentBuildLogsProps =
+    | TEnvironmentLogsProps
+    | TServiceLogsProps
+    | TDeploymentLogsProps
+    | TDeploymentBuildLogsProps =
     type === "service"
       ? { type: "service", environmentId: environmentId, serviceId }
       : type === "deployment"

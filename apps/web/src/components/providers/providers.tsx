@@ -10,32 +10,29 @@ import { TemplateDraftStoreProvider } from "@/components/templates/template-draf
 import UpdateStatusProvider from "@/components/update/update-status-provider";
 import { getConfig } from "@/lib/config";
 import useKeyboardInsetHeight from "@/lib/hooks/use-keyboard-inset-height";
-import { Provider as JotaiProvider } from "jotai";
 import React from "react";
 
 export default function Providers({ children }: Readonly<{ children: React.ReactNode }>) {
   useKeyboardInsetHeight();
   return (
     <AppConfigProvider apiUrl={getConfig().apiUrl}>
-      <JotaiProvider>
-        <ThemeProvider>
-          <DeviceTypeProvider>
-            <DeviceSizeProvider>
-              <NowProvider>
-                <MainStoreProvider>
-                  <TemplateDraftStoreProvider>
-                    <PendingEntityStoreProvider>
-                      <StagedChangesProvider>
-                        <UpdateStatusProvider>{children}</UpdateStatusProvider>
-                      </StagedChangesProvider>
-                    </PendingEntityStoreProvider>
-                  </TemplateDraftStoreProvider>
-                </MainStoreProvider>
-              </NowProvider>
-            </DeviceSizeProvider>
-          </DeviceTypeProvider>
-        </ThemeProvider>
-      </JotaiProvider>
+      <ThemeProvider>
+        <DeviceTypeProvider>
+          <DeviceSizeProvider>
+            <NowProvider>
+              <MainStoreProvider>
+                <TemplateDraftStoreProvider>
+                  <PendingEntityStoreProvider>
+                    <StagedChangesProvider>
+                      <UpdateStatusProvider>{children}</UpdateStatusProvider>
+                    </StagedChangesProvider>
+                  </PendingEntityStoreProvider>
+                </TemplateDraftStoreProvider>
+              </MainStoreProvider>
+            </NowProvider>
+          </DeviceSizeProvider>
+        </DeviceTypeProvider>
+      </ThemeProvider>
     </AppConfigProvider>
   );
 }

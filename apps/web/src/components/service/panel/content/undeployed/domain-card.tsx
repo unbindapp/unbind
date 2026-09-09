@@ -9,7 +9,7 @@ import { DNSStatus } from "@/lib/server/client.gen";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircleIcon, HourglassIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useDebounce } from "use-debounce";
+import { useDebounceValue } from "usehooks-ts";
 
 type TDomainStatusCardProps = {
   domain: string;
@@ -37,7 +37,7 @@ export function DomainCard({
   const [isValidDebouncedDomain, setIsValidDebouncedDomain] = useState(false);
   const [isValidDomain, setIsValidDomain] = useState(false);
 
-  const [debouncedDomain] = useDebounce(domain, defaultDebounceMs);
+  const [debouncedDomain] = useDebounceValue(domain, defaultDebounceMs);
 
   const isValid = isValidDebouncedDomain && isValidDomain;
   const isSaved = savedStatus !== undefined && domain === savedStatus.domain;

@@ -63,7 +63,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { memo, useEffect, useMemo, useRef, useState, type FC } from "react";
-import { useDebouncedCallback } from "use-debounce";
+import useDebouncedCallback from "@/lib/hooks/use-debounced-callback";
 
 type TProps = {
   isPendingLogs: boolean;

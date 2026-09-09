@@ -35,7 +35,7 @@ import { PackageIcon, TagIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo, useState } from "react";
 import { toast } from "@/components/ui/toast";
-import { useDebounce } from "use-debounce";
+import { useDebounceValue } from "usehooks-ts";
 import { z } from "zod";
 
 type TProps = {
@@ -77,7 +77,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
 
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
-  const [search] = useDebounce(commandInputValue, defaultDebounceMs);
+  const [search] = useDebounceValue(commandInputValue, defaultDebounceMs);
 
   const {
     data: dataTags,

@@ -30,7 +30,7 @@ import { gitRepositoryQuery } from "@/lib/queries/git";
 import { useQuery } from "@tanstack/react-query";
 import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { useDebounce } from "use-debounce";
+import { useDebounceValue } from "usehooks-ts";
 
 type TProps = {
   service: TServiceShallow;
@@ -189,7 +189,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
 function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
-  const [search] = useDebounce(commandInputValue, defaultDebounceMs);
+  const [search] = useDebounceValue(commandInputValue, defaultDebounceMs);
   const { staged, stage } = useServiceChanges(service);
 
   const serverImage = `${image}:${tag}`;
