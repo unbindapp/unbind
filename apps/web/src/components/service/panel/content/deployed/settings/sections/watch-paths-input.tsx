@@ -166,7 +166,7 @@ export default function WatchPathsInput({ service, value, onChange, className }:
                             {typed.map((pattern) => (
                               <span
                                 key={pattern}
-                                className="bg-foreground/2-10 border-foreground/2-10 -my-1 max-w-full min-w-0 rounded-sm border px-1.25 font-mono text-sm font-normal break-all"
+                                className="bg-card border-foreground/2-10 -my-1 max-w-full min-w-0 rounded-sm border px-1.25 font-mono text-sm font-normal break-all"
                               >
                                 {pattern}
                               </span>
