@@ -288,5 +288,10 @@
     "version": "v0.1.57",
     "summary": "PostgreSQL replication settings, GitHub watch path deployments, database backup scheduling and retention, optional resource limits, and service volume attachment improvements.",
     "breaking": false
+  },
+  "v0.1.58": {
+    "version": "v0.1.58",
+    "summary": "Staged changes dialog fix, volume icon update, and navbar spacing improvements.",
+    "breaking": false
   }
 }
