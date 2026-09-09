@@ -95,7 +95,7 @@ extraObjects:
         {{ $key }}: {{ $value | quote }}
         {{- end }}
     spec:
-      schedule: {{ .Parameters.s3.backupSchedule | default "5 5 * * *" | quote }}
+      schedule: {{ .Parameters.s3.backupSchedule | default "0 0 * * *" | quote }}
       concurrencyPolicy: Forbid
       jobTemplate:
         spec:

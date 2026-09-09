@@ -1,4 +1,4 @@
-h1:E7hOLw9wHHfvyjUAky051a8yxCY/Bny7wgmh+SiSqF8=
+h1:Y4iHyhzRmyaMCJvMbS/prIEdV2cs0pldFQVH5s6GgnE=
 20250519010757_initial_migration.sql h1:94lMwKemoNX/ichD+2Vzb7GmOHXVj4qVTfeBInQAe0g=
 20250519163449_add_init_containers.sql h1:7bt+zCbtmlYr1QDztgka0R5wUxdjD7XYUkrhL9GYYIQ=
 20250521202532_non_nillable_kubernetes_secret.sql h1:eDpMWyeBXh5cG4poavaUMeYs5QXddFBBIyYlxc+nq64=
@@ -19,3 +19,4 @@ h1:E7hOLw9wHHfvyjUAky051a8yxCY/Bny7wgmh+SiSqF8=
 20260821010046_registry_insecure.sql h1:VmnKiOjQORRDUIccALFSwuws3jTEMOpo0GiI0lmIgdY=
 20260902182002_s3_buckets.sql h1:klgckeXjBb8B3hddpifItUruXr7Ac4N/kv6Sp9FaMH8=
 20260903120000_variable_reference_migrated_at.sql h1:ffngMccc61w1kGz70Hkjmas3INnjlxZQHcwyUhLS3jk=
+20260909141500_backup_schedule_midnight.sql h1:6vXOeAF6NdO1GzClJsXV/GfNk6RXd+8e1UsXqiLW9Sg=

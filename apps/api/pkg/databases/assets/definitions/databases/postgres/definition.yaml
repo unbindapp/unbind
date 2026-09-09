@@ -116,7 +116,7 @@ spec:
     - name: BACKUP_NUM_TO_RETAIN
       value: {{ .Parameters.s3.backupRetention | default 2 | quote }}
     - name: BACKUP_SCHEDULE
-      value: {{ .Parameters.s3.backupSchedule  | default "5 5 * * *" }}
+      value: {{ .Parameters.s3.backupSchedule  | default "0 0 * * *" }}
     {{- end }}
 
     # restore-only block

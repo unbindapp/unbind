@@ -53,7 +53,7 @@ func (ServiceConfig) Fields() []ent.Field {
 		field.String("definition_version").Optional().Nillable().Comment("Version of the database custom resource definition"),
 		field.JSON("database_config", &DatabaseConfig{}).Optional().Comment("Database configuration for the service"),
 		field.UUID("s3_backup_bucket_id", uuid.UUID{}).Optional().Nillable().Comment("S3 bucket to backup to"),
-		field.String("backup_schedule").Default("5 5 * * *").Comment("Cron expression for the backup schedule"),
+		field.String("backup_schedule").Default("0 0 * * *").Comment("Cron expression for the backup schedule"),
 		field.Int("backup_retention_count").Default(3).Comment("Number of base backups to retain"),
 		// Volume
 		field.JSON("volumes", []ServiceVolume{}).Optional().Comment("Volumes to mount in the service"),

@@ -455,7 +455,7 @@ var (
 		{Name: "image", Type: field.TypeString, Nullable: true},
 		{Name: "definition_version", Type: field.TypeString, Nullable: true},
 		{Name: "database_config", Type: field.TypeJSON, Nullable: true},
-		{Name: "backup_schedule", Type: field.TypeString, Default: "5 5 * * *"},
+		{Name: "backup_schedule", Type: field.TypeString, Default: "0 0 * * *"},
 		{Name: "backup_retention_count", Type: field.TypeInt, Default: 3},
 		{Name: "volumes", Type: field.TypeJSON, Nullable: true},
 		{Name: "security_context", Type: field.TypeJSON, Nullable: true},

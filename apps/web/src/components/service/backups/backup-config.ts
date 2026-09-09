@@ -4,8 +4,8 @@ export const backupSchedulePresets = [
   { value: "0 * * * *", label: "Every hour" },
   { value: "0 */6 * * *", label: "Every 6 hours" },
   { value: "0 */12 * * *", label: "Every 12 hours" },
-  { value: "5 5 * * *", label: "Daily" },
-  { value: "5 5 * * 0", label: "Weekly" },
+  { value: "0 0 * * *", label: "Daily" },
+  { value: "0 0 * * 0", label: "Weekly" },
 ];
 
 export function scheduleToPreset(cron: string) {

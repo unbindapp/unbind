@@ -259,9 +259,9 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
           <BlockItem className="w-full md:w-full">
             <BlockItemHeader type="column">
               <BlockItemTitle hasChanges={staged.backupSchedule !== undefined}>
-                Schedule
+                Backup Schedule
               </BlockItemTitle>
-              <BlockItemDescription>How often a backup is taken, in UTC.</BlockItemDescription>
+              <BlockItemDescription>How often the database is backed up.</BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent className="gap-0">
               <form.AppField
@@ -321,7 +321,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                           if (field.state.meta.errors.length > 0) return;
                           stageSchedule(e.target.value);
                         }}
-                        placeholder="5 5 * * *"
+                        placeholder="0 0 * * *"
                         autoCapitalize="off"
                         autoCorrect="off"
                         autoComplete="off"
@@ -340,10 +340,10 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
           <BlockItem className="w-full md:w-full">
             <BlockItemHeader type="column">
               <BlockItemTitle hasChanges={staged.backupRetentionCount !== undefined}>
-                Retention
+                Backup Retention
               </BlockItemTitle>
               <BlockItemDescription>
-                Older backups are deleted once this many exist.
+                How many backups to keep. Older backups are deleted.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>

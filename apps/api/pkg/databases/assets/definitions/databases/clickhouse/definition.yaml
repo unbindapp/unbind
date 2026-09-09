@@ -287,7 +287,7 @@ metadata:
     {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
-  schedule: "{{ .Parameters.s3.backupSchedule | default "0 2 * * *" }}"
+  schedule: "{{ .Parameters.s3.backupSchedule | default "0 0 * * *" }}"
   concurrencyPolicy: "Forbid"
   ttlSecondsAfterFinished: 300  # 5 minutes timeout
   jobTemplate:

@@ -63,7 +63,7 @@ const DraftSchema = z.object({
   backupRetentionCount: z.string(),
 });
 
-const defaultBackupSchedule = "5 5 * * *";
+const defaultBackupSchedule = "0 0 * * *";
 const defaultBackupRetentionCount = "3";
 
 const scheduleItems: TCommandItem[] = [
@@ -395,7 +395,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
             {s3BucketId && (
               <BlockItem>
                 <BlockItemHeader>
-                  <BlockItemTitle>Schedule</BlockItemTitle>
+                  <BlockItemTitle>Backup Schedule</BlockItemTitle>
                 </BlockItemHeader>
                 <BlockItemContent className="gap-0">
                   <form.AppField
@@ -461,9 +461,9 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
               </BlockItem>
             )}
             {s3BucketId && (
-              <BlockItem>
+              <BlockItem className="md:mt-6">
                 <BlockItemHeader>
-                  <BlockItemTitle>Retention</BlockItemTitle>
+                  <BlockItemTitle>Backup Retention</BlockItemTitle>
                 </BlockItemHeader>
                 <BlockItemContent>
                   <form.AppField

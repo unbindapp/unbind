@@ -35,7 +35,7 @@ properties:
   backupSchedule:
     type: "string"
     description: "Cron schedule for backups"
-    default: "5 5 * * *"
+    default: "0 0 * * *"
   backupPrefix:
     type: "string"
     description: "Optional prefix for backup files"

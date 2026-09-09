@@ -12,7 +12,7 @@ import {
 
 test("accepts valid cron expressions", () => {
   for (const cron of [
-    "5 5 * * *",
+    "0 0 * * *",
     "0 */6 * * *",
     "0 0 1,15 * *",
     "30 2-4 * * 1-5",
@@ -43,9 +43,9 @@ test("rejects invalid cron expressions", () => {
 });
 
 test("maps schedules to presets", () => {
-  assert.equal(scheduleToPreset("5 5 * * *"), "5 5 * * *");
+  assert.equal(scheduleToPreset("0 0 * * *"), "0 0 * * *");
   assert.equal(scheduleToPreset("0 3 * * *"), customScheduleValue);
-  assert.equal(formatBackupSchedule("5 5 * * *"), "Daily");
+  assert.equal(formatBackupSchedule("0 0 * * *"), "Daily");
   assert.equal(formatBackupSchedule("0 3 * * *"), "Custom (0 3 * * *)");
 });
 

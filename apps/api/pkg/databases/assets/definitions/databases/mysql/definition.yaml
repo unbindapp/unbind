@@ -208,7 +208,7 @@ metadata:
 {{- end }}
 
 spec:
-  schedule: {{ $s3.backupSchedule | default "5 5 * * *" | quote }}
+  schedule: {{ $s3.backupSchedule | default "0 0 * * *" | quote }}
   jobConfig:
     serviceAccountName: default
     env:
@@ -244,7 +244,7 @@ metadata:
     {{ $k }}: {{ $v | quote }}
 {{- end }}
 spec:
-  schedule: {{ $s3.backupSchedule | default "5 5 * * *" | quote }}
+  schedule: {{ $s3.backupSchedule | default "0 0 * * *" | quote }}
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
