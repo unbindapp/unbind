@@ -53,16 +53,16 @@ const numberFields: Record<
   { label: string; title?: string; unit: string; placeholder: string; unset: string; max?: number }
 > = {
   maxReplicationSlots: {
-    label: "Replication slots",
-    title: "Replication slots",
+    label: "Replication Slots",
+    title: "Replication Slots",
     unit: "slots",
     placeholder: "10",
     unset: "Default",
     max: 1000,
   },
   maxWalSenders: {
-    label: "WAL senders",
-    title: "WAL senders",
+    label: "WAL Senders",
+    title: "WAL Senders",
     unit: "senders",
     placeholder: "10",
     unset: "Default",
@@ -185,8 +185,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
           <BlockItemHeader type="column">
             <BlockItemTitle hasChanges={staged.walLevel !== undefined}>WAL Level</BlockItemTitle>
             <BlockItemDescription>
-              Logical lets CDC tools and other databases subscribe to changes. Changing it restarts
-              the database.
+              The level of detail kept in the write-ahead log (WAL).
             </BlockItemDescription>
           </BlockItemHeader>
           <BlockItemContent>
@@ -250,8 +249,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
                 Replication
               </BlockItemTitle>
               <BlockItemDescription>
-                Each subscriber and streaming replica uses one slot and one sender. Empty uses the
-                PostgreSQL default of 10.
+                Each subscriber and streaming replica uses one slot and one sender.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>
@@ -271,8 +269,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
                 Slot WAL Keep Size
               </BlockItemTitle>
               <BlockItemDescription>
-                Caps the WAL kept for lagging replication slots so a stale subscriber can&apos;t
-                fill the volume. Empty keeps it unlimited.
+                Caps the WAL kept for lagging replication slots.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>{numberInput("maxSlotWalKeepSizeMb")}</BlockItemContent>
