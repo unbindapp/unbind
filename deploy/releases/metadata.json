@@ -298,5 +298,10 @@
     "version": "v0.1.59",
     "summary": "Navbar search button improvements, wider spacing between search and the user avatar, and a padding fix in the staged changes details dialog.",
     "breaking": false
+  },
+  "v0.1.60": {
+    "version": "v0.1.60",
+    "summary": "Service settings search, staged changes highlighted on individual settings controls, and a container icon for environments.",
+    "breaking": false
   }
 }
