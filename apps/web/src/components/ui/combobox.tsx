@@ -9,7 +9,7 @@ function ComboboxInput({ className, ...props }: ComboboxPrimitive.Input.Props) {
   return (
     <ComboboxPrimitive.Input
       className={cn(
-        "bg-input placeholder:text-muted-foreground/9-10 focus-visible:ring-primary/8-10 flex w-full rounded-lg border px-3 py-2.5 leading-tight font-medium placeholder:font-medium focus-visible:ring-1 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
+        "bg-input placeholder:text-muted-foreground focus-visible:ring-primary/8-10 flex w-full rounded-lg border px-3 py-2.5 leading-tight font-medium placeholder:font-medium focus-visible:ring-1 focus-visible:outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       {...props}
@@ -114,7 +114,7 @@ function ComboboxChipRemove({ className, ...props }: ComboboxPrimitive.ChipRemov
   return (
     <ComboboxPrimitive.ChipRemove
       className={cn(
-        "text-muted-foreground has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground focus-visible:ring-primary/8-10 group-data-staged/chip:text-change/9-10 group-data-staged/chip:border-change/4-10 group-data-staged/chip:has-hover:hover:bg-change/3-10 group-data-staged/chip:has-hover:hover:text-change group-data-staged/chip:active:bg-change/3-10 group-data-staged/chip:active:text-change flex shrink-0 items-center border-l px-2 focus-visible:ring-1 focus-visible:outline-hidden",
+        "text-muted-foreground has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground focus-visible:ring-primary/8-10 group-data-staged/chip:text-change/8-10 group-data-staged/chip:border-change/4-10 group-data-staged/chip:has-hover:hover:bg-change/3-10 group-data-staged/chip:has-hover:hover:text-change group-data-staged/chip:active:bg-change/3-10 group-data-staged/chip:active:text-change flex shrink-0 items-center border-l px-2 focus-visible:ring-1 focus-visible:outline-hidden",
         className,
       )}
       {...props}

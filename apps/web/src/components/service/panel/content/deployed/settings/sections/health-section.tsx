@@ -323,7 +323,9 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   </field.AsyncDropdownMenu>
                 )}
               />
-              {healthCheckType !== "none" && <div className="bg-border -mt-1 h-px w-full" />}
+              {healthCheckType !== "none" && (
+                <div className="bg-border group-data-staged/wrapper:bg-change/5-10 -mt-1 h-px w-full" />
+              )}
               {healthCheckType === "http" && portItems && (
                 <div className="relative -mt-1 w-full">
                   <form.AppField

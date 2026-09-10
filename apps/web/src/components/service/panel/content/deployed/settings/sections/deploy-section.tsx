@@ -245,7 +245,12 @@ function Section({ service }: { service: TServiceShallow }) {
                     </div>
                   )}
                 />
-                <div className="bg-border h-px w-full" />
+                <div
+                  data-staged={
+                    staged.memoryLimitMb !== undefined || staged.cpuLimitMillicores || undefined
+                  }
+                  className="bg-border data-staged:bg-change/4-10 h-px w-full"
+                />
                 <form.AppField
                   name="memoryLimitMb"
                   children={(field) => (

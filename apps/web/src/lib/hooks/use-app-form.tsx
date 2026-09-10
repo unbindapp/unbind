@@ -186,18 +186,21 @@ function DomainInput({
           className={cn("pointer-events-none absolute top-3 left-3.5 z-11 size-4.5", classNameIcon)}
         />
       )}
-      <Input
-        ref={ref}
-        {...rest}
-        aria-invalid={hasError || undefined}
-        data-show-reset={showReset || undefined}
-        data-show-generated={showCardType === "auto-generated" || undefined}
-        className={cn(
-          "relative z-10 w-full data-show-generated:pr-22 data-show-reset:pr-11",
-          Icon && "pl-10",
-          classNameInput,
-        )}
-      />
+      <div className="relative z-10 max-w-full">
+        <div className="bg-background absolute top-0 left-0 h-full w-full rounded-lg" />
+        <Input
+          ref={ref}
+          {...rest}
+          aria-invalid={hasError || undefined}
+          data-show-reset={showReset || undefined}
+          data-show-generated={showCardType === "auto-generated" || undefined}
+          className={cn(
+            "relative z-10 w-full data-show-generated:pr-22 data-show-reset:pr-11",
+            Icon && "pl-10",
+            classNameInput,
+          )}
+        />
+      </div>
       {!rest.disabled && showReset && (
         <Button
           variant="ghost"

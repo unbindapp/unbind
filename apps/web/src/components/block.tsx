@@ -312,7 +312,7 @@ export function BlockItemButtonLike({
       {open !== undefined && !hideChevron && !isPending && (
         <ChevronDownIcon
           className={cn(
-            "text-muted-foreground group-data-staged/button:text-change/9-10 -mr-0.75 size-5 transition group-data-open/button:rotate-180",
+            "text-muted-foreground group-data-staged/button:text-change/8-10 -mr-0.75 size-5 transition group-data-open/button:rotate-180",
             classNameChevron,
           )}
         />
