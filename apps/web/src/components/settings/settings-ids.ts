@@ -48,9 +48,3 @@ export const volumeSettingsIds = {
     mountPath: "connection_mount-path",
   },
 } as const;
-
-export function scrollToSettingsItem(id: string) {
-  requestAnimationFrame(() => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
-}

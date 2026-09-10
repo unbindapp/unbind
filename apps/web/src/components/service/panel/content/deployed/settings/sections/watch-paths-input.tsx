@@ -1,5 +1,4 @@
 import ErrorCard from "@/components/error-card";
-import { scrollToSettingsItem, settingsIds } from "@/components/settings/settings-ids";
 import {
   Combobox,
   ComboboxChip,
@@ -83,7 +82,6 @@ export default function WatchPathsInput({
     const added = patterns.filter((pattern) => !value.includes(pattern));
     setInputValue("");
     if (added.length > 0) onChange([...value, ...added]);
-    scrollToSettingsItem(settingsIds.build.watchPaths);
   };
 
   return (
@@ -113,10 +111,7 @@ export default function WatchPathsInput({
           return;
         }
         if (!open && details.reason === "escape-key") setInputValue("");
-        if (open) {
-          setHasOpened(true);
-          scrollToSettingsItem(settingsIds.build.watchPaths);
-        }
+        if (open) setHasOpened(true);
         setIsOpen(open);
       }}
       autoHighlight
@@ -148,7 +143,7 @@ export default function WatchPathsInput({
           className="data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:placeholder:text-change/8-10"
         />
       </div>
-      <ComboboxContent className="h-68">
+      <ComboboxContent className="h-68" collisionAvoidance={{ side: "none" }}>
         {!suggestions && isPending && (
           <div className="flex flex-col p-1">
             {placeholderArray.map((_, index) => (
