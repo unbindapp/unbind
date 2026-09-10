@@ -4,7 +4,7 @@ import { cn } from "@/components/ui/utils";
 import { cva, VariantProps } from "class-variance-authority";
 
 const inputVariants = cva(
-  "flex px-3 font-medium placeholder:font-medium py-2.5 has-hover:hover:ring-1 has-hover:hover:ring-primary/6-10 data-staged:has-hover:hover:ring-change/7-10 data-staged:has-hover:hover:focus-visible:ring-change/8-10 data-staged:focus-visible:ring-change/8-10 has-hover:hover:focus-visible:ring-primary/8-10 leading-tight w-full rounded-lg border bg-input file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/9-10 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/8-10 disabled:cursor-not-allowed data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:placeholder:text-change/8-10",
+  "flex px-3 font-medium placeholder:font-medium py-2.5 disabled:has-hover:hover:ring-0 has-hover:hover:ring-1 has-hover:hover:ring-primary/6-10 data-staged:has-hover:hover:ring-change/7-10 data-staged:has-hover:hover:focus-visible:ring-change/8-10 data-staged:focus-visible:ring-change/8-10 has-hover:hover:focus-visible:ring-primary/8-10 leading-tight w-full rounded-lg border bg-input file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/9-10 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/8-10 disabled:cursor-not-allowed data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:placeholder:text-change/8-10",
   {
     variants: {
       variant: {
