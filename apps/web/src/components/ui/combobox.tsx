@@ -102,7 +102,7 @@ function ComboboxChip({ className, ...props }: ComboboxPrimitive.Chip.Props) {
   return (
     <ComboboxPrimitive.Chip
       className={cn(
-        "group/chip bg-background data-highlighted:ring-primary/8-10 data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/4-10 flex max-w-full min-w-0 items-stretch overflow-hidden rounded-lg border data-highlighted:ring-1",
+        "group/chip bg-background data-highlighted:ring-primary/8-10 data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/5-10 flex max-w-full min-w-0 items-stretch overflow-hidden rounded-lg border data-highlighted:ring-1",
         className,
       )}
       {...props}
@@ -114,7 +114,7 @@ function ComboboxChipRemove({ className, ...props }: ComboboxPrimitive.ChipRemov
   return (
     <ComboboxPrimitive.ChipRemove
       className={cn(
-        "text-muted-foreground has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground focus-visible:ring-primary/8-10 group-data-staged/chip:text-change/8-10 group-data-staged/chip:border-change/4-10 group-data-staged/chip:has-hover:hover:bg-change/3-10 group-data-staged/chip:has-hover:hover:text-change group-data-staged/chip:active:bg-change/3-10 group-data-staged/chip:active:text-change flex shrink-0 items-center border-l px-2 focus-visible:ring-1 focus-visible:outline-hidden",
+        "text-muted-foreground has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground focus-visible:ring-primary/8-10 group-data-staged/chip:text-change/8-10 group-data-staged/chip:border-change/5-10 group-data-staged/chip:has-hover:hover:bg-change/3-10 group-data-staged/chip:has-hover:hover:text-change group-data-staged/chip:active:bg-change/3-10 group-data-staged/chip:active:text-change flex shrink-0 items-center border-l px-2 focus-visible:ring-1 focus-visible:outline-hidden",
         className,
       )}
       {...props}

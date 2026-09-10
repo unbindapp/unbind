@@ -320,7 +320,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
               />
               {schedulePreset === customScheduleValue && (
                 <>
-                  <div className="bg-border -mt-1 h-px w-full" />
+                  <div className="bg-border group-data-staged/wrapper:bg-change/5-10 -mt-1 h-px w-full" />
                   <form.AppField
                     name="backupScheduleCustom"
                     validators={{

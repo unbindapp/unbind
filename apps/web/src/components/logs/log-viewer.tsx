@@ -18,7 +18,7 @@ import LogsProvider, {
   useLogs,
 } from "@/components/logs/logs-provider";
 import { matchesLogLineRef, nearestLogLineIndex } from "@/components/logs/log-utils";
-import SearchBar from "@/components/logs/search-bar";
+import LogSearchBar from "@/components/logs/log-search-bar";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/service/services-provider";
@@ -189,7 +189,7 @@ function Logs({
     >
       <div className="relative flex w-full shrink-0 items-stretch group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
         <div className="relative w-full">
-          <SearchBar
+          <LogSearchBar
             logType={type}
             isPendingLogs={isPendingAny}
             searchError={searchError}

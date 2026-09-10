@@ -145,7 +145,7 @@ export default function WatchPathsInput({
         <ComboboxInput
           placeholder={placeholder}
           data-staged={hasRemovedPatterns || undefined}
-          className="data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/4-10 data-staged:placeholder:text-change/8-10"
+          className="data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:placeholder:text-change/8-10"
         />
       </div>
       <ComboboxContent className="h-68">

@@ -70,7 +70,7 @@ export function SettingsSection({
     >
       <div
         className={cn(
-          "text-muted-foreground group-data-staged/wrapper:text-change bg-card group-data-staged/wrapper:border-change/4-10 group-data-staged/wrapper:bg-change/2-10 relative flex w-full items-start gap-4 border-b px-3.5 sm:px-4",
+          "text-muted-foreground group-data-staged/wrapper:text-change bg-card group-data-staged/wrapper:border-change/5-10 group-data-staged/wrapper:bg-change/2-10 relative flex w-full items-start gap-4 border-b px-3.5 sm:px-4",
           classNameHeader,
         )}
       >
@@ -110,7 +110,7 @@ export function SettingsSection({
         {children}
       </div>
       {changeCount !== undefined && changeCount > 0 && (
-        <div className="border-change/4-10 bg-change/2-10 flex w-full flex-col border-t p-1.5">
+        <div className="border-change/5-10 bg-change/2-10 flex w-full flex-col border-t p-1.5">
           {error && (
             <div className="w-full p-1.5">
               <ErrorLine message={error} className="border-destructive/6-10 border" />

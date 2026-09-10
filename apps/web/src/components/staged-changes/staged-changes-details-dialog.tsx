@@ -273,7 +273,7 @@ function DetailsTitle({
 }
 
 const rowGrid =
-  "grid w-full grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-1.5 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-x-3";
+  "grid w-full grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-1.5 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]";
 
 function ChangeGroupCard({
   group,
@@ -329,7 +329,7 @@ function ChangeGroupCard({
           <p>New Value</p>
           <div className="w-7" />
         </div>
-        <ol className="flex w-full flex-col gap-4 sm:gap-2">
+        <ol className="flex w-full flex-col gap-5 sm:gap-3">
           {group.rows.map((row) => (
             <ChangeRow
               key={row.id}
@@ -400,7 +400,7 @@ function ChangeRow({
         </div>
       </div>
       {row.isApplying ? (
-        <div className="text-muted-more-foreground flex h-10 w-8 shrink-0 items-center justify-center sm:order-last">
+        <div className="text-muted-more-foreground flex size-9 shrink-0 items-center justify-center sm:order-last">
           <LoaderIcon className="size-4 animate-spin" />
         </div>
       ) : (
@@ -409,7 +409,7 @@ function ChangeRow({
           variant="ghost"
           size="icon"
           aria-label="Discard"
-          className="text-muted-more-foreground h-10 w-8 shrink-0 rounded-md sm:order-last"
+          className="text-muted-more-foreground size-9 shrink-0 rounded-md sm:order-last"
           onClick={onDiscard}
         >
           <XIcon className="size-4" />

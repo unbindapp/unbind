@@ -152,7 +152,7 @@ function Section({ service }: { service: TServiceShallow }) {
                   id={settingsIds.deploy.replicas}
                   className={cn(
                     "flex w-full flex-col overflow-hidden rounded-lg border pb-1.5",
-                    staged.instanceCount !== undefined && "border-change/4-10 bg-change/2-10",
+                    staged.instanceCount !== undefined && "border-change/5-10 bg-change/2-10",
                   )}
                 >
                   <ValueTitle
@@ -203,7 +203,7 @@ function Section({ service }: { service: TServiceShallow }) {
                 className={cn(
                   "flex w-full flex-col overflow-hidden rounded-lg border",
                   (staged.cpuLimitMillicores !== undefined || staged.memoryLimitMb !== undefined) &&
-                    "border-change/4-10",
+                    "border-change/5-10",
                 )}
               >
                 <form.AppField
@@ -249,7 +249,7 @@ function Section({ service }: { service: TServiceShallow }) {
                   data-staged={
                     staged.memoryLimitMb !== undefined || staged.cpuLimitMillicores || undefined
                   }
-                  className="bg-border data-staged:bg-change/4-10 h-px w-full"
+                  className="bg-border data-staged:bg-change/5-10 h-px w-full"
                 />
                 <form.AppField
                   name="memoryLimitMb"

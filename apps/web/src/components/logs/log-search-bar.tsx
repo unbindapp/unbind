@@ -99,7 +99,7 @@ const levelLabels: Record<TLogLevel, string> = {
   error: "Error",
 };
 
-function SearchBar({
+function LogSearchBar({
   isPendingLogs,
   logType,
   searchError,
@@ -682,4 +682,4 @@ function SettingsButton({
   );
 }
 
-export default memo(SearchBar);
+export default memo(LogSearchBar);
