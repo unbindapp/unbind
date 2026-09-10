@@ -23,6 +23,7 @@ import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/lib/queries/services";
 import { RocketIcon } from "lucide-react";
+import { useStore } from "@tanstack/react-form";
 import { useMemo } from "react";
 
 type TProps = {
@@ -121,6 +122,12 @@ function Section({ service }: { service: TServiceShallow }) {
   };
   const form = useAppForm({ defaultValues });
   useResetFormOnStagedChange(form, defaultValues, staged, deployFields);
+  const values = useStore(form.store, (s) => s.values);
+  const changed = {
+    instanceCount: values.instanceCount !== serverInstanceCount,
+    cpuLimitMillicores: values.cpuLimitMillicores !== toSlider(serverCpu, cpuLimits.unlimited),
+    memoryLimitMb: values.memoryLimitMb !== toSlider(serverMemory, memoryLimits.unlimited),
+  };
 
   const showReplicas = hasInstances && isItemVisible(settingsIds.deploy.replicas);
   const showResourceLimits = isItemVisible(settingsIds.deploy.resourceLimits);
@@ -132,7 +139,7 @@ function Section({ service }: { service: TServiceShallow }) {
       id="deploy"
       Icon={RocketIcon}
       entityId={sectionHighlightId}
-      hasChanges={deployFields.some((field) => staged[field] !== undefined)}
+      hasChanges={Object.values(changed).some(Boolean)}
       isApplying={hasApplying(staged, deployFields)}
       onDiscard={() => unstage(deployFields)}
     >
@@ -152,13 +159,13 @@ function Section({ service }: { service: TServiceShallow }) {
                   id={settingsIds.deploy.replicas}
                   className={cn(
                     "flex w-full flex-col overflow-hidden rounded-lg border pb-1.5",
-                    staged.instanceCount !== undefined && "border-change/5-10 bg-change/2-10",
+                    changed.instanceCount && "border-change/5-10 bg-change/2-10",
                   )}
                 >
                   <ValueTitle
                     title="Replicas"
                     value={field.state.value ? field.state.value.toString() : "1"}
-                    hasChanges={staged.instanceCount !== undefined}
+                    hasChanges={changed.instanceCount}
                   />
                   <field.StorageSizeInput
                     field={field}
@@ -170,7 +177,7 @@ function Section({ service }: { service: TServiceShallow }) {
                     hideMinMax
                     defaultValue={[serverInstanceCount]}
                     value={field.state.value ? [field.state.value] : undefined}
-                    hasChanges={staged.instanceCount !== undefined}
+                    hasChanges={changed.instanceCount}
                     onValueChange={(value) => {
                       field.handleChange(value[0]);
                     }}
@@ -202,21 +209,20 @@ function Section({ service }: { service: TServiceShallow }) {
               <div
                 className={cn(
                   "flex w-full flex-col overflow-hidden rounded-lg border",
-                  (staged.cpuLimitMillicores !== undefined || staged.memoryLimitMb !== undefined) &&
-                    "border-change/5-10",
+                  (changed.cpuLimitMillicores || changed.memoryLimitMb) && "border-change/5-10",
                 )}
               >
                 <form.AppField
                   name="cpuLimitMillicores"
                   children={(field) => (
                     <div
-                      data-staged={staged.cpuLimitMillicores !== undefined || undefined}
+                      data-staged={changed.cpuLimitMillicores || undefined}
                       className="data-staged:bg-change/2-10 flex w-full flex-col pb-1.5"
                     >
                       <ValueTitle
                         title="vCPU"
                         value={cpuFormatter(field.state.value)}
-                        hasChanges={staged.cpuLimitMillicores !== undefined}
+                        hasChanges={changed.cpuLimitMillicores}
                       />
                       <field.StorageSizeInput
                         field={field}
@@ -228,7 +234,7 @@ function Section({ service }: { service: TServiceShallow }) {
                         hideMinMax
                         defaultValue={[toSlider(serverCpu, cpuLimits.unlimited)]}
                         value={field.state.value ? [field.state.value] : undefined}
-                        hasChanges={staged.cpuLimitMillicores !== undefined}
+                        hasChanges={changed.cpuLimitMillicores}
                         onValueChange={(value) => {
                           field.handleChange(value[0]);
                         }}
@@ -246,22 +252,20 @@ function Section({ service }: { service: TServiceShallow }) {
                   )}
                 />
                 <div
-                  data-staged={
-                    staged.memoryLimitMb !== undefined || staged.cpuLimitMillicores || undefined
-                  }
+                  data-staged={changed.memoryLimitMb || changed.cpuLimitMillicores || undefined}
                   className="bg-border data-staged:bg-change/5-10 h-px w-full"
                 />
                 <form.AppField
                   name="memoryLimitMb"
                   children={(field) => (
                     <div
-                      data-staged={staged.memoryLimitMb !== undefined || undefined}
+                      data-staged={changed.memoryLimitMb || undefined}
                       className="data-staged:bg-change/2-10 flex w-full flex-col pb-1.5"
                     >
                       <ValueTitle
                         title="Memory"
                         value={memoryFormatter(field.state.value)}
-                        hasChanges={staged.memoryLimitMb !== undefined}
+                        hasChanges={changed.memoryLimitMb}
                       />
                       <field.StorageSizeInput
                         field={field}
@@ -273,7 +277,7 @@ function Section({ service }: { service: TServiceShallow }) {
                         hideMinMax
                         defaultValue={[toSlider(serverMemory, memoryLimits.unlimited)]}
                         value={field.state.value ? [field.state.value] : undefined}
-                        hasChanges={staged.memoryLimitMb !== undefined}
+                        hasChanges={changed.memoryLimitMb}
                         onValueChange={(value) => {
                           field.handleChange(value[0]);
                         }}
