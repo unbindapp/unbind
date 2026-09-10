@@ -10,25 +10,30 @@ const TOGGLEABLE_ROLE = {
 export function Toggleable({
   children,
   toggledInitial = false,
+  toggled: controlledToggled,
+  onToggle,
 }: {
   children: ReactNode;
   toggledInitial?: boolean;
+  toggled?: boolean;
+  onToggle?: (toggled: boolean) => void;
 }) {
-  const [toggled, setToggled] = useState(toggledInitial);
+  const [internalToggled, setInternalToggled] = useState(toggledInitial);
+  const toggled = controlledToggled ?? internalToggled;
 
   const childrenArray = Children.toArray(children);
 
-  const toggle = (toggled?: boolean) => {
-    setToggled((current) => (toggled !== undefined ? toggled : !current));
+  const toggle = (next?: boolean) => {
+    const value = next ?? !toggled;
+    if (controlledToggled === undefined) setInternalToggled(value);
+    onToggle?.(value);
   };
 
   const UntoggledChild = childrenArray.find((child) =>
     hasChildRole(child, TOGGLEABLE_ROLE.untoggled),
   );
 
-  const ToggledChild = childrenArray.find((child) =>
-    hasChildRole(child, TOGGLEABLE_ROLE.toggled),
-  );
+  const ToggledChild = childrenArray.find((child) => hasChildRole(child, TOGGLEABLE_ROLE.toggled));
 
   if (!toggled && UntoggledChild && isValidElement(UntoggledChild)) {
     // TODO - Fix these types later

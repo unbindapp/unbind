@@ -79,6 +79,7 @@ export function useResetFormOnStagedChange<T extends TFormValues>(
   defaultValues: T,
   staged: TStagedFields,
   fields: TServiceChangeField[],
+  onReset?: () => void,
 ) {
   const key = fields
     .map((field) => {
@@ -95,6 +96,7 @@ export function useResetFormOnStagedChange<T extends TFormValues>(
     }
     if (matchesDefaults(form.state.values, defaultValues)) return;
     form.reset();
+    onReset?.();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 }

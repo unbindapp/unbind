@@ -29,7 +29,7 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { GitServiceBuilderEnum, TGitServiceBuilder, TServiceShallow } from "@/lib/queries/services";
 import { formatWatchPaths, joinWatchPaths, splitWatchPaths } from "@/lib/watch-paths";
 import { PlusIcon, WrenchIcon } from "lucide-react";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
 type TProps = {
   service: TServiceShallow;
@@ -163,7 +163,10 @@ function GitSection({ service }: TGitSectionProps) {
     watchPaths: stagedString(staged.watchPaths, serverWatchPaths),
   };
   const form = useAppForm({ defaultValues });
-  useResetFormOnStagedChange(form, defaultValues, staged, buildFields);
+  const [openFields, setOpenFields] = useState<TCommandField[]>([]);
+  const closeField = (field: TCommandField) =>
+    setOpenFields((fields) => fields.filter((f) => f !== field));
+  useResetFormOnStagedChange(form, defaultValues, staged, buildFields, () => setOpenFields([]));
 
   const inputRefs = {
     railpackBuilderInstallCommand: useRef<HTMLInputElement>(null),
@@ -211,7 +214,18 @@ function GitSection({ service }: TGitSectionProps) {
             </BlockItemHeader>
             <BlockItemContent>
               <Toggleable
-                toggledInitial={serverValues[field] !== "" || fieldApi.state.value !== ""}
+                toggled={
+                  serverValues[field] !== "" ||
+                  fieldApi.state.value !== "" ||
+                  openFields.includes(field)
+                }
+                onToggle={(toggled) => {
+                  if (toggled) {
+                    setOpenFields((fields) => [...fields, field]);
+                    return;
+                  }
+                  closeField(field);
+                }}
               >
                 <Untoggled>
                   {({ toggle }) => (
@@ -234,7 +248,10 @@ function GitSection({ service }: TGitSectionProps) {
                       ref={inputRefs[field]}
                       field={fieldApi}
                       value={fieldApi.state.value}
-                      onBlur={fieldApi.handleBlur}
+                      onBlur={() => {
+                        fieldApi.handleBlur();
+                        if (fieldApi.state.value === "") closeField(field);
+                      }}
                       onChange={(e) => {
                         fieldApi.handleChange(e.target.value);
                         stageCommand(field, e.target.value);
