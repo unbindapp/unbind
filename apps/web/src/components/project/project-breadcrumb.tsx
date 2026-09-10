@@ -8,7 +8,10 @@ import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { useProjects, useProjectsUtils } from "@/components/project/projects-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { createProject as createProjectFn } from "@/lib/queries/projects";
+import {
+  createProject as createProjectFn,
+  getProjectDefaultEnvironmentId,
+} from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 import { errAsync, ResultAsync } from "neverthrow";
 import { useLocation, useRouter } from "@tanstack/react-router";
@@ -59,12 +62,8 @@ export default function ProjectBreadcrumb({ className }: TProps) {
   const resolveDefaultEnvironmentId = useCallback(
     (projectId: string) => {
       const project = projectsData?.projects.find((p) => p.id === projectId);
-      const environments = project?.environments;
-      if (!environments || environments.length < 1) return null;
-      const environment = project.default_environment_id
-        ? environments.find((e) => e.id === project.default_environment_id)
-        : environments[0];
-      return environment?.id ?? null;
+      if (!project) return null;
+      return getProjectDefaultEnvironmentId(project);
     },
     [projectsData],
   );

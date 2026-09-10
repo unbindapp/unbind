@@ -5,7 +5,12 @@ import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger
 import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { deleteMutationKeys, useIsDeleting } from "@/lib/hooks/use-is-deleting";
-import { deleteProject as deleteProjectFn, type TProjectShallow } from "@/lib/queries/projects";
+import {
+  deleteProject as deleteProjectFn,
+  getProjectLinkProps,
+  type TProjectLinkProps,
+  type TProjectShallow,
+} from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { LoaderIcon } from "lucide-react";
@@ -22,14 +27,6 @@ const maxIconSlots = 5;
 export default function ProjectCard({ project, isPlaceholder, className }: TProps) {
   const isDeleting = useIsDeleting(deleteMutationKeys.project(project?.id ?? ""));
   const environments = !isPlaceholder ? project.environments : [];
-  const defaultEnvironment = !isPlaceholder
-    ? environments.length >= 1
-      ? project.default_environment_id
-        ? environments.find((e) => e.id === project.default_environment_id)
-        : project.environments[0]
-      : null
-    : undefined;
-
   const serviceCount = !isPlaceholder ? project.service_count : 1;
   const serviceIcons = !isPlaceholder ? project.service_icons : [];
   const hasIconOverflow = serviceIcons !== undefined && serviceIcons.length > maxIconSlots;
@@ -39,15 +36,7 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
 
   // undefined = placeholder (no navigation), null = real project missing a
   // default environment (delete trigger instead), object = typed navigation.
-  const linkProps = isPlaceholder
-    ? undefined
-    : !defaultEnvironment
-      ? null
-      : ({
-          to: "/$team_id/project/$project_id",
-          params: { team_id: project.team_id, project_id: project.id },
-          search: { environment: defaultEnvironment.id },
-        } as const);
+  const linkProps = isPlaceholder ? undefined : getProjectLinkProps(project);
 
   return (
     <li
@@ -113,12 +102,6 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
   );
 }
 
-type TCardLinkProps = {
-  to: "/$team_id/project/$project_id";
-  params: { team_id: string; project_id: string };
-  search: { environment: string };
-};
-
 function ConditionalButton({
   linkProps,
   variant,
@@ -127,7 +110,7 @@ function ConditionalButton({
   className,
   children,
 }: {
-  linkProps: TCardLinkProps | null | undefined;
+  linkProps: TProjectLinkProps | null | undefined;
   variant: TButtonVariants["variant"];
   project?: TProjectShallow;
   isDeleting: boolean;

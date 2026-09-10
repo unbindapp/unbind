@@ -2,7 +2,21 @@ import { contextCommandPanelRootPage } from "@/components/command-panel/constant
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
+import ServiceIcon from "@/components/service/service-icon";
+import {
+  getDuplicateServiceNames,
+  ServicePickerDescription,
+} from "@/components/service/service-picker";
+import { getServiceLinkProps, usePrefetchService } from "@/components/service/use-prefetch-service";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
+import {
+  getProjectDefaultEnvironmentId,
+  getProjectLinkProps,
+  projectQuery,
+  projectsListQuery,
+} from "@/lib/queries/projects";
+import { servicesListQuery } from "@/lib/queries/services";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArchiveIcon,
   ContainerIcon,
@@ -169,6 +183,105 @@ export default function useGoToItem({ context }: TProps) {
 
   const goToKeywords = useMemo(() => ["go to", "navigate to", "jump to"], []);
 
+  const isTeamContext = context.contextType === "team";
+  const isProjectContext = context.contextType === "project";
+
+  const { data: projectsData } = useQuery({
+    ...projectsListQuery({ teamId: context.teamId }),
+    enabled: isTeamContext,
+  });
+
+  const { data: projectData } = useQuery({
+    ...projectQuery({ teamId: context.teamId, projectId: context.projectId ?? "" }),
+    enabled: isProjectContext,
+  });
+  const servicesEnvironmentId =
+    environmentId ??
+    (projectData ? getProjectDefaultEnvironmentId(projectData.project) : null) ??
+    "";
+  const { data: servicesData } = useQuery({
+    ...servicesListQuery({
+      teamId: context.teamId,
+      projectId: context.projectId ?? "",
+      environmentId: servicesEnvironmentId,
+    }),
+    enabled: isProjectContext && servicesEnvironmentId !== "",
+  });
+
+  const prefetchService = usePrefetchService();
+
+  const projectItems: TCommandPanelItem[] = useMemo(() => {
+    if (!isTeamContext || !projectsData) return [];
+    return projectsData.projects.map((project) => {
+      const id = `${subpageId}_project_${project.id}`;
+      const linkProps = getProjectLinkProps(project);
+      return {
+        id,
+        title: project.name,
+        titleSuffix: " (Project)",
+        Icon: FolderIcon,
+        keywords: ["project", ...goToKeywords],
+        disabled: linkProps === null,
+        onHighlight: () => {
+          if (linkProps) void router.preloadRoute(linkProps);
+        },
+        onSelect: () => {
+          if (!linkProps) return;
+          navigateTo({
+            run: () => router.navigate(linkProps),
+            isPendingId: id,
+            error: `Failed to navigate to ${project.name}`,
+          });
+        },
+      };
+    });
+  }, [isTeamContext, projectsData, goToKeywords, navigateTo, router]);
+
+  const serviceItems: TCommandPanelItem[] = useMemo(() => {
+    if (!isProjectContext || !servicesData || !servicesEnvironmentId) return [];
+    const duplicateNames = getDuplicateServiceNames(servicesData.services);
+    return servicesData.services.map((service) => {
+      const id = `${subpageId}_service_${service.id}`;
+      const input = {
+        teamId: context.teamId,
+        projectId: context.projectId,
+        environmentId: servicesEnvironmentId,
+        serviceId: service.id,
+      };
+      const linkProps = getServiceLinkProps(input);
+      return {
+        id,
+        title: service.name,
+        titleSuffix: " (Service)",
+        Icon: ({ className }) => <ServiceIcon service={service} className={className} />,
+        description: duplicateNames.has(service.name)
+          ? () => <ServicePickerDescription service={service} />
+          : undefined,
+        keywords: ["service", service.type, ...goToKeywords],
+        onHighlight: () => {
+          prefetchService(input);
+          void router.preloadRoute(linkProps);
+        },
+        onSelect: () => {
+          navigateTo({
+            run: () => router.navigate(linkProps),
+            isPendingId: id,
+            error: `Failed to navigate to ${service.name}`,
+          });
+        },
+      };
+    });
+  }, [
+    isProjectContext,
+    servicesData,
+    servicesEnvironmentId,
+    context,
+    goToKeywords,
+    prefetchService,
+    navigateTo,
+    router,
+  ]);
+
   const settingsTitle = useMemo(() => {
     return context.contextType === "project" || context.contextType === "new-service"
       ? "Project Settings"
@@ -270,6 +383,7 @@ export default function useGoToItem({ context }: TProps) {
                   },
                   keywords: ["metrics", "usage", "system", "project", ...goToKeywords],
                 },
+                ...serviceItems,
               ] as TCommandPanelItem[])
             : context.contextType === "team"
               ? [
@@ -294,6 +408,7 @@ export default function useGoToItem({ context }: TProps) {
                     },
                     keywords: ["projects", "home page", "team", ...goToKeywords],
                   },
+                  ...projectItems,
                 ]
               : []),
           {
@@ -464,6 +579,8 @@ export default function useGoToItem({ context }: TProps) {
     environmentId,
     navigateTo,
     router,
+    projectItems,
+    serviceItems,
   ]);
 
   const value = useMemo(

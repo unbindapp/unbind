@@ -73,6 +73,32 @@ export async function deleteProject(input: { teamId: string; projectId: string }
 
 export type TProjectShallow = ProjectResponse;
 
+export function getProjectDefaultEnvironmentId(project: TProjectShallow) {
+  const environments = project.environments;
+  if (environments.length < 1) return null;
+  const environment = project.default_environment_id
+    ? environments.find((e) => e.id === project.default_environment_id)
+    : environments[0];
+  return environment?.id ?? null;
+}
+
+export type TProjectLinkProps = {
+  to: "/$team_id/project/$project_id";
+  params: { team_id: string; project_id: string };
+  search: { environment: string };
+};
+
+// Null when the project has no environment to land on
+export function getProjectLinkProps(project: TProjectShallow): TProjectLinkProps | null {
+  const environment = getProjectDefaultEnvironmentId(project);
+  if (!environment) return null;
+  return {
+    to: "/$team_id/project/$project_id",
+    params: { team_id: project.team_id, project_id: project.id },
+    search: { environment },
+  };
+}
+
 export const projectNameMinLength = 2;
 export const projectNameMaxLength = 32;
 export const projectDescriptionMaxLength = 128;

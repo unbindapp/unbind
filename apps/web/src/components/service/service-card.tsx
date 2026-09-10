@@ -9,6 +9,7 @@ import { useNow } from "@/components/providers/now-provider";
 import { servicePanelServiceIdKey } from "@/components/service/panel/constants";
 import ServicePanel from "@/components/service/panel/service-panel";
 import ServiceIcon from "@/components/service/service-icon";
+import { usePrefetchService } from "@/components/service/use-prefetch-service";
 import { Button, LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import VolumeLine from "@/components/volume/volume-line";
@@ -16,15 +17,7 @@ import { sourceToTitle } from "@/lib/constants";
 import { useIntent } from "@/lib/hooks/use-intent";
 import { deleteMutationKeys, useIsDeleting } from "@/lib/hooks/use-is-deleting";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
-import { deploymentsListQuery } from "@/lib/queries/deployments";
-import { replicaHealthQuery } from "@/lib/queries/replicas";
-import {
-  serviceEndpointsQuery,
-  serviceQuery,
-  TService,
-  TServiceShallow,
-} from "@/lib/queries/services";
-import { useQueryClient } from "@tanstack/react-query";
+import { TService, TServiceShallow } from "@/lib/queries/services";
 import {
   HourglassIcon,
   LoaderIcon,
@@ -77,7 +70,7 @@ export default function ServiceCard({
     ? ({ isPlaceholder: true } as const)
     : { teamId, projectId, environmentId, service };
 
-  const queryClient = useQueryClient();
+  const prefetchService = usePrefetchService();
   const volumes = service?.config.volumes;
   const changeCount = useServiceChangeCount(service?.id ?? "");
   const isApplying = useIsServiceApplying(service?.id ?? "");
@@ -93,16 +86,7 @@ export default function ServiceCard({
   const buttonIntentProps = useIntent({
     onIntent: () => {
       if (isPlaceholder) return;
-      const input = {
-        teamId,
-        projectId,
-        environmentId,
-        serviceId: service.id,
-      };
-      queryClient.prefetchQuery(deploymentsListQuery(input));
-      queryClient.prefetchQuery(serviceQuery(input));
-      queryClient.prefetchQuery(serviceEndpointsQuery(input));
-      queryClient.prefetchQuery(replicaHealthQuery(input));
+      prefetchService({ teamId, projectId, environmentId, serviceId: service.id });
     },
     enabled: !isPlaceholder && !isDeleting,
   });
