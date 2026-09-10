@@ -28,12 +28,14 @@ export default function Settings({ service }: { service: TServiceShallow }) {
   return (
     <SettingsSearchProvider>
       <div className="flex min-h-0 w-full flex-1 flex-col">
-        <div className="relative z-10 w-full shrink-0 px-2.5 pt-3 sm:px-5.5 sm:pt-6">
-          <SettingsSearchBar className="md:max-w-[calc(var(--container-xl)+0.5rem)]" />
+        <div className="px-3 pt-3 sm:px-6 sm:pt-4">
+          <div className="relative z-10 w-full md:max-w-xl">
+            <SettingsSearchBar />
+          </div>
         </div>
-        <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
+        <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_1rem,black_calc(100%-1rem),transparent)]">
           <ScrollArea classNameViewport="pb-(--safe-area-inset-bottom)">
-            <TabWrapper className="gap-6 pt-3 sm:pt-4">
+            <TabWrapper className="gap-6 pt-4 sm:pt-4">
               <SourceSection service={service} />
               <NetworkingSection service={service} />
               {shouldServiceSettingsHaveBackupsSection(service) && (
@@ -64,7 +66,12 @@ function NoMatchesCard() {
   const { query } = useSettingsSearch();
   return (
     <NoItemsCard Icon={SearchIcon} className="hidden only:flex md:max-w-xl">
-      {`No settings match "${query.trim()}"`}
+      <p className="w-full min-w-0 shrink">
+        No settings match{" "}
+        <span className="bg-foreground/3-10 border-foreground/3-10 rounded-md border px-1.25">
+          {query.trim()}
+        </span>
+      </p>
     </NoItemsCard>
   );
 }

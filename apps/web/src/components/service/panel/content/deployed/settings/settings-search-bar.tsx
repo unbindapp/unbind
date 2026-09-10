@@ -36,9 +36,9 @@ export default function SettingsSearchBar({ className }: { className?: string })
         autoCorrect="off"
         autoComplete="off"
         spellCheck={false}
-        className="pr-10 pl-8.5"
+        className="pr-11.5 pl-8.5"
       />
-      <div className="pointer-events-none absolute inset-y-px right-px flex w-10 overflow-hidden rounded-r-[7px]">
+      <div className="pointer-events-none absolute top-0 right-0 flex h-full w-11 items-center justify-end overflow-hidden pr-0.75">
         <Button
           type="button"
           aria-label="Clear search"
@@ -46,7 +46,8 @@ export default function SettingsSearchBar({ className }: { className?: string })
           disabled={!hasValue}
           onClick={clear}
           variant="ghost"
-          className="text-muted-more-foreground pointer-events-auto h-full w-full translate-x-full rounded-none transition data-has-value:translate-x-0"
+          size="icon"
+          className="text-muted-more-foreground pointer-events-auto size-9 translate-x-full rounded-md transition data-has-value:translate-x-0"
         >
           <XIcon className="size-4.5" />
         </Button>
