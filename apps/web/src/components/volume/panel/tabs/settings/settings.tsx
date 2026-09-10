@@ -24,7 +24,7 @@ export default function Settings({ volume }: TProps) {
         <BannerWrapper className="bg-process/3-10 border-process/3-10 text-process">
           <ClockIcon className="mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">
-            Waiting. The volume will mount when the service is deployed.
+            Waiting for the service to deploy before mounting this volume.
           </p>
         </BannerWrapper>
       )}

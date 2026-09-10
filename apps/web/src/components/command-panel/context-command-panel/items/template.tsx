@@ -12,6 +12,7 @@ import { BlocksIcon } from "lucide-react";
 import { useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 import { v4 as uuidv4 } from "uuid";
+import { cn } from "@/components/ui/utils";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -105,7 +106,11 @@ function useTemplateItem() {
           openTemplateDraftPanel(id);
         },
         Icon: ({ className }: { className?: string }) => (
-          <BrandIcon brand={template.icon} color="brand" className={className} />
+          <BrandIcon
+            brand={template.icon}
+            color="brand"
+            className={cn("mt-px self-start", className)}
+          />
         ),
       };
       return item;
