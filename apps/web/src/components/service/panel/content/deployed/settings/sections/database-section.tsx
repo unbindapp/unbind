@@ -1,3 +1,4 @@
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
   Block,
   BlockItem,
@@ -33,6 +34,8 @@ type TProps = {
 };
 
 export default function DatabaseSection({ service }: TProps) {
+  const { isSectionVisible } = useSettingsSectionSearch("database");
+  if (!isSectionVisible) return null;
   if (service.type !== "database" || service.database_type !== "postgres") {
     return <ErrorWithWrapper message="Unsupported service type" />;
   }
@@ -124,6 +127,11 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
   useResetFormOnStagedChange(form, defaultValues, staged, databaseFields);
 
   const walLevel = useStore(form.store, (s) => s.values.walLevel);
+  const { isItemVisible } = useSettingsSectionSearch("database");
+  const showWalLevel = isItemVisible(settingsIds.database.walLevel);
+  const showReplication = walLevel === "logical" && isItemVisible(settingsIds.database.replication);
+  const showSlotWalKeepSize =
+    walLevel === "logical" && isItemVisible(settingsIds.database.slotWalKeepSize);
 
   const stageNumber = (field: TNumberField, value: string) =>
     stage({
@@ -170,6 +178,8 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
     />
   );
 
+  if (!showWalLevel && !showReplication && !showSlotWalKeepSize) return null;
+
   return (
     <SettingsSection
       title="Database"
@@ -180,64 +190,66 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
       isApplying={hasApplying(staged, databaseFields)}
       onDiscard={() => unstage(databaseFields)}
     >
-      <Block>
-        <BlockItem id={settingsIds.database.walLevel} className="w-full md:w-full">
-          <BlockItemHeader type="column">
-            <BlockItemTitle hasChanges={staged.walLevel !== undefined}>WAL Level</BlockItemTitle>
-            <BlockItemDescription>
-              The level of detail kept in the write-ahead log (WAL).
-            </BlockItemDescription>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <form.AppField
-              name="walLevel"
-              children={(field) => (
-                <field.AsyncDropdownMenu
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onChange={(v) => {
-                    const level = v as WalLevel;
-                    field.handleChange(level);
-                    stage({
-                      field: "walLevel",
-                      label: "WAL level",
-                      value: level,
-                      previous: serverWalLevel,
-                      format: walLevelToName,
-                    });
-                    // Slots, senders and the keep size only matter with logical subscribers
-                    if (level !== "logical") unstage(numberFieldNames);
-                  }}
-                  items={walLevelItems}
-                  ItemIcon={({ className, value }) => (
-                    <WalLevelIcon className={cn(className, "size-4.5")} level={value} />
-                  )}
-                  isPending={false}
-                  error={undefined}
-                >
-                  {({ isOpen }) => (
-                    <BlockItemButtonLike
-                      asElement="button"
-                      text={walLevelToName(field.state.value)}
-                      Icon={({ className }) => (
-                        <WalLevelIcon
-                          level={field.state.value}
-                          className={cn(className, "size-4.5")}
-                        />
-                      )}
-                      variant="outline"
-                      open={isOpen}
-                      onBlur={field.handleBlur}
-                    />
-                  )}
-                </field.AsyncDropdownMenu>
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
-      {walLevel === "logical" && (
+      {showWalLevel && (
+        <Block>
+          <BlockItem id={settingsIds.database.walLevel} className="w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle hasChanges={staged.walLevel !== undefined}>WAL Level</BlockItemTitle>
+              <BlockItemDescription>
+                The level of detail kept in the write-ahead log (WAL).
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <form.AppField
+                name="walLevel"
+                children={(field) => (
+                  <field.AsyncDropdownMenu
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onChange={(v) => {
+                      const level = v as WalLevel;
+                      field.handleChange(level);
+                      stage({
+                        field: "walLevel",
+                        label: "WAL level",
+                        value: level,
+                        previous: serverWalLevel,
+                        format: walLevelToName,
+                      });
+                      // Slots, senders and the keep size only matter with logical subscribers
+                      if (level !== "logical") unstage(numberFieldNames);
+                    }}
+                    items={walLevelItems}
+                    ItemIcon={({ className, value }) => (
+                      <WalLevelIcon className={cn(className, "size-4.5")} level={value} />
+                    )}
+                    isPending={false}
+                    error={undefined}
+                  >
+                    {({ isOpen }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        text={walLevelToName(field.state.value)}
+                        Icon={({ className }) => (
+                          <WalLevelIcon
+                            level={field.state.value}
+                            className={cn(className, "size-4.5")}
+                          />
+                        )}
+                        variant="outline"
+                        open={isOpen}
+                        onBlur={field.handleBlur}
+                      />
+                    )}
+                  </field.AsyncDropdownMenu>
+                )}
+              />
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
+      {showReplication && (
         <Block>
           <BlockItem id={settingsIds.database.replication} className="group/item w-full md:w-full">
             <BlockItemHeader type="column">
@@ -261,7 +273,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
           </BlockItem>
         </Block>
       )}
-      {walLevel === "logical" && (
+      {showSlotWalKeepSize && (
         <Block>
           <BlockItem id={settingsIds.database.slotWalKeepSize} className="w-full md:w-full">
             <BlockItemHeader type="column">

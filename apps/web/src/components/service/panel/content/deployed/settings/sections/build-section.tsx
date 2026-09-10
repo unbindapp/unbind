@@ -1,3 +1,5 @@
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
+import { useStore } from "@tanstack/react-form";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
 import BrandIcon from "@/components/icons/brand";
@@ -34,6 +36,8 @@ type TProps = {
 };
 
 export default function BuildSection({ service }: TProps) {
+  const { isSectionVisible } = useSettingsSectionSearch("build");
+  if (!isSectionVisible) return null;
   if (service.type === "github") {
     if (
       !service.git_repository_owner ||
@@ -121,6 +125,7 @@ const buildFields: TServiceChangeField[] = [
 ];
 
 function GitSection({ service }: TGitSectionProps) {
+  const { isItemVisible } = useSettingsSectionSearch("build");
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
   const serverValues: Record<TCommandField, string> = {
     railpackBuilderInstallCommand: service.config.railpack_builder_install_command || "",
@@ -168,6 +173,23 @@ function GitSection({ service }: TGitSectionProps) {
     startCommand: useRef<HTMLInputElement>(null),
   };
 
+  const builder = useStore(form.store, (s) => s.values.builder);
+  const builderCommandFields: TCommandField[] = [
+    ...(builder === "railpack"
+      ? (["railpackBuilderInstallCommand", "railpackBuilderBuildCommand"] as const)
+      : []),
+    ...(builder === "docker"
+      ? (["dockerBuilderDockerfilePath", "dockerBuilderBuildContext"] as const)
+      : []),
+    "startCommand",
+  ];
+  const visibleCommandFields = builderCommandFields.filter((field) =>
+    isItemVisible(commandFields[field].id),
+  );
+  const showBuilder = isItemVisible(settingsIds.build.builder);
+  const showWatchPaths = isItemVisible(settingsIds.build.watchPaths);
+  if (!showBuilder && visibleCommandFields.length === 0 && !showWatchPaths) return null;
+
   const stageCommand = (field: TCommandField, value: string) =>
     stage({
       field,
@@ -178,7 +200,7 @@ function GitSection({ service }: TGitSectionProps) {
     });
 
   const commandBlock = (field: TCommandField) => (
-    <Block>
+    <Block key={field}>
       <form.AppField
         name={field}
         children={(fieldApi) => (
@@ -245,110 +267,107 @@ function GitSection({ service }: TGitSectionProps) {
       isApplying={hasApplying(staged, buildFields)}
       onDiscard={() => unstage(buildFields)}
     >
-      <Block>
-        <form.AppField
-          name="builder"
-          children={(field) => (
-            <BlockItem id={settingsIds.build.builder} className="group/item w-full md:w-full">
-              <BlockItemHeader type="column">
-                <BlockItemTitle hasChanges={staged.builder !== undefined}>Builder</BlockItemTitle>
-                <BlockItemDescription>
-                  The builder for building the service to be deployed.
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <field.AsyncDropdownMenu
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onChange={(v) => {
-                    field.handleChange(v as TGitServiceBuilder);
-                    stage({
-                      field: "builder",
-                      label: "Builder",
-                      value: v as TGitServiceBuilder,
-                      previous: service.config.builder,
-                      format: builderEnumToName,
-                    });
-                  }}
-                  items={GitServiceBuilderEnum.options.map((o) => ({
-                    label: builderEnumToName(o),
-                    value: o,
-                  }))}
-                  ItemIcon={({ className, value }) => (
-                    <BrandIcon brand={value} className={cn(className, "size-4.5")} color="brand" />
-                  )}
-                  isPending={false}
-                  error={undefined}
-                >
-                  {({ isOpen }) => (
-                    <BlockItemButtonLike
-                      asElement="button"
-                      text={builderEnumToName(field.state.value)}
-                      Icon={({ className }) => (
-                        <BrandIcon
-                          brand={field.state.value}
-                          className={cn(className, "size-4.5")}
-                          color="brand"
-                        />
-                      )}
-                      variant="outline"
-                      open={isOpen}
-                      onBlur={field.handleBlur}
-                    />
-                  )}
-                </field.AsyncDropdownMenu>
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
-      </Block>
-      <form.Subscribe
-        selector={(s) => ({ builder: s.values.builder })}
-        children={({ builder }) => (
-          <>
-            {builder === "railpack" && commandBlock("railpackBuilderInstallCommand")}
-            {builder === "railpack" && commandBlock("railpackBuilderBuildCommand")}
-            {builder === "docker" && commandBlock("dockerBuilderDockerfilePath")}
-            {builder === "docker" && commandBlock("dockerBuilderBuildContext")}
-            {commandBlock("startCommand")}
-          </>
-        )}
-      />
-      <Block>
-        <form.AppField
-          name="watchPaths"
-          children={(field) => (
-            <BlockItem id={settingsIds.build.watchPaths} className="group/item w-full md:w-full">
-              <BlockItemHeader type="column">
-                <BlockItemTitle hasChanges={staged.watchPaths !== undefined}>
-                  Watch Paths
-                </BlockItemTitle>
-                <BlockItemDescription>
-                  Gitignore-style patterns. Leave empty to deploy on every push.
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <WatchPathsInput
-                  service={service}
-                  value={splitWatchPaths(field.state.value)}
-                  onChange={(patterns) => {
-                    const joined = joinWatchPaths(patterns);
-                    field.handleChange(joined);
-                    stage({
-                      field: "watchPaths",
-                      label: "Watch paths",
-                      value: joined,
-                      previous: serverWatchPaths,
-                      format: formatWatchPaths,
-                    });
-                  }}
-                />
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
-      </Block>
+      {showBuilder && (
+        <Block>
+          <form.AppField
+            name="builder"
+            children={(field) => (
+              <BlockItem id={settingsIds.build.builder} className="group/item w-full md:w-full">
+                <BlockItemHeader type="column">
+                  <BlockItemTitle hasChanges={staged.builder !== undefined}>Builder</BlockItemTitle>
+                  <BlockItemDescription>
+                    The builder for building the service to be deployed.
+                  </BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <field.AsyncDropdownMenu
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onChange={(v) => {
+                      field.handleChange(v as TGitServiceBuilder);
+                      stage({
+                        field: "builder",
+                        label: "Builder",
+                        value: v as TGitServiceBuilder,
+                        previous: service.config.builder,
+                        format: builderEnumToName,
+                      });
+                    }}
+                    items={GitServiceBuilderEnum.options.map((o) => ({
+                      label: builderEnumToName(o),
+                      value: o,
+                    }))}
+                    ItemIcon={({ className, value }) => (
+                      <BrandIcon
+                        brand={value}
+                        className={cn(className, "size-4.5")}
+                        color="brand"
+                      />
+                    )}
+                    isPending={false}
+                    error={undefined}
+                  >
+                    {({ isOpen }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        text={builderEnumToName(field.state.value)}
+                        Icon={({ className }) => (
+                          <BrandIcon
+                            brand={field.state.value}
+                            className={cn(className, "size-4.5")}
+                            color="brand"
+                          />
+                        )}
+                        variant="outline"
+                        open={isOpen}
+                        onBlur={field.handleBlur}
+                      />
+                    )}
+                  </field.AsyncDropdownMenu>
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
+        </Block>
+      )}
+      {visibleCommandFields.map(commandBlock)}
+      {showWatchPaths && (
+        <Block>
+          <form.AppField
+            name="watchPaths"
+            children={(field) => (
+              <BlockItem id={settingsIds.build.watchPaths} className="group/item w-full md:w-full">
+                <BlockItemHeader type="column">
+                  <BlockItemTitle hasChanges={staged.watchPaths !== undefined}>
+                    Watch Paths
+                  </BlockItemTitle>
+                  <BlockItemDescription>
+                    Gitignore-style patterns. Leave empty to deploy on every push.
+                  </BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <WatchPathsInput
+                    service={service}
+                    value={splitWatchPaths(field.state.value)}
+                    onChange={(patterns) => {
+                      const joined = joinWatchPaths(patterns);
+                      field.handleChange(joined);
+                      stage({
+                        field: "watchPaths",
+                        label: "Watch paths",
+                        value: joined,
+                        previous: serverWatchPaths,
+                        format: formatWatchPaths,
+                      });
+                    }}
+                  />
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
+        </Block>
+      )}
     </SettingsSection>
   );
 }

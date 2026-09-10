@@ -1,5 +1,6 @@
 "use client";
 
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import useDeleteService from "@/components/service/use-delete-service";
 import DeleteCard from "@/components/settings/delete-card";
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export default function DeleteSection({ service, className }: Props) {
+  const { isSectionVisible } = useSettingsSectionSearch("danger");
   const { closePanel } = useServicePanel();
 
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
@@ -22,6 +24,8 @@ export default function DeleteSection({ service, className }: Props) {
   const { mutateAsync: deleteService, error, reset } = useDeleteService({ onSuccess: closePanel });
 
   const hasVolumes = service.config.volumes.length > 0;
+
+  if (!isSectionVisible) return null;
 
   return (
     <SettingsSection

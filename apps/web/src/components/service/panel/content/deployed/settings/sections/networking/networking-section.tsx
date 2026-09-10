@@ -1,3 +1,4 @@
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import { settingsIds } from "@/components/settings/settings-ids";
 import ErrorLine from "@/components/error-line";
 import AddDomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/add-domain-port-card";
@@ -25,6 +26,8 @@ type TProps = {
 };
 
 export default function NetworkingSection({ service }: TProps) {
+  const { isSectionVisible } = useSettingsSectionSearch("networking");
+  if (!isSectionVisible) return null;
   if (service.type === "github") {
     if (
       !service.git_repository_owner ||
@@ -66,7 +69,12 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     query: { data: endpointsData, isPending: isPendingEndpoints, error: errorEndpoints },
   } = useServiceEndpoints();
 
+  const { isItemVisible } = useSettingsSectionSearch("networking");
   const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
+
+  const showPublic = service.type !== "database" && isItemVisible(settingsIds.networking.public);
+  const showPrivate = isItemVisible(settingsIds.networking.private);
+  if (!showPublic && !showPrivate) return null;
 
   return (
     <SettingsSection
@@ -75,7 +83,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
       Icon={NetworkIcon}
       entityId={sectionHighlightId}
     >
-      {service.type !== "database" && (
+      {showPublic && (
         <Block>
           <BlockItem id={settingsIds.networking.public} className="w-full md:w-full">
             <BlockItemHeader type="column">
@@ -121,55 +129,57 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
           </BlockItem>
         </Block>
       )}
-      <Block>
-        <BlockItem id={settingsIds.networking.private} className="w-full md:w-full">
-          <BlockItemHeader type="column">
-            <BlockItemTitle>Private Networking</BlockItemTitle>
-            <BlockItemDescription>
-              {"Communicate with the service from within the Unbind's network."}
-            </BlockItemDescription>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <div className="flex w-full flex-col gap-2">
-              {!endpointsData && !isPendingEndpoints && errorEndpoints && (
-                <ErrorLine
-                  message={errorEndpoints.message}
-                  className="border-destructive/5-10 rounded-lg border py-2.5"
-                />
-              )}
-              {!endpointsData && isPendingEndpoints && (
-                <BlockItemButtonLike
-                  isPending={true}
-                  key="loading"
-                  asElement="div"
-                  text="loading.unbind:3000"
-                  Icon={({ className }: { className?: string }) => (
-                    <GlobeLockIcon className={cn(className, "size-4.5")} />
-                  )}
-                />
-              )}
-              {endpointsData?.endpoints.internal?.flatMap((endpoint) =>
-                endpoint.ports.map((portObject) => (
-                  <DomainPortCard
-                    mode="private"
-                    key={`${endpoint.dns}:${portObject.port}`}
-                    domain={endpoint.dns}
-                    port={portObject.port}
-                    service={service}
+      {showPrivate && (
+        <Block>
+          <BlockItem id={settingsIds.networking.private} className="w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle>Private Networking</BlockItemTitle>
+              <BlockItemDescription>
+                {"Communicate with the service from within the Unbind's network."}
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <div className="flex w-full flex-col gap-2">
+                {!endpointsData && !isPendingEndpoints && errorEndpoints && (
+                  <ErrorLine
+                    message={errorEndpoints.message}
+                    className="border-destructive/5-10 rounded-lg border py-2.5"
                   />
-                )),
-              )}
-              {service.type !== "database" && (
-                <AddDomainPortCard
-                  service={service}
-                  isPending={isPendingEndpoints}
-                  mode="private"
-                />
-              )}
-            </div>
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
+                )}
+                {!endpointsData && isPendingEndpoints && (
+                  <BlockItemButtonLike
+                    isPending={true}
+                    key="loading"
+                    asElement="div"
+                    text="loading.unbind:3000"
+                    Icon={({ className }: { className?: string }) => (
+                      <GlobeLockIcon className={cn(className, "size-4.5")} />
+                    )}
+                  />
+                )}
+                {endpointsData?.endpoints.internal?.flatMap((endpoint) =>
+                  endpoint.ports.map((portObject) => (
+                    <DomainPortCard
+                      mode="private"
+                      key={`${endpoint.dns}:${portObject.port}`}
+                      domain={endpoint.dns}
+                      port={portObject.port}
+                      service={service}
+                    />
+                  )),
+                )}
+                {service.type !== "database" && (
+                  <AddDomainPortCard
+                    service={service}
+                    isPending={isPendingEndpoints}
+                    mode="private"
+                  />
+                )}
+              </div>
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
     </SettingsSection>
   );
 }

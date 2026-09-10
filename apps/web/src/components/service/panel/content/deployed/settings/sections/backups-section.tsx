@@ -1,3 +1,4 @@
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import { settingsIds } from "@/components/settings/settings-ids";
 import {
   Block,
@@ -63,7 +64,10 @@ const backupFields: TServiceChangeField[] = [
 ];
 
 export default function BackupsSection({ service }: TProps) {
+  const { isSectionVisible } = useSettingsSectionSearch("backups");
   const { teamId } = useService();
+
+  if (!isSectionVisible) return null;
 
   if (service.type === "database") {
     if (!service.database_type || !service.database_version) {
@@ -85,6 +89,7 @@ export default function BackupsSection({ service }: TProps) {
 }
 
 function DatabaseSection({ service }: TDatabaseSectionProps) {
+  const { isItemVisible } = useSettingsSectionSearch("backups");
   const {
     query: { data: dataS3Buckets, isPending: isPendingS3Buckets, error: errorS3Buckets },
   } = useS3Buckets();
@@ -114,6 +119,9 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
 
   const schedulePreset = useStore(form.store, (s) => s.values.backupSchedulePreset);
   const backupsEnabled = stagedBucketId !== noBucketId;
+  const showBucket = isItemVisible(settingsIds.backups.bucket);
+  const showSchedule = backupsEnabled && isItemVisible(settingsIds.backups.schedule);
+  const showRetention = backupsEnabled && isItemVisible(settingsIds.backups.retention);
 
   const s3BucketItems = useMemo(() => {
     const items: TCommandItem[] | undefined = dataS3Buckets?.buckets.map((s3Bucket) => ({
@@ -171,6 +179,8 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
     [teamId],
   );
 
+  if (!showBucket && !showSchedule && !showRetention) return null;
+
   return (
     <SettingsSection
       title="Backups"
@@ -182,86 +192,88 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
       isApplying={hasApplying(staged, backupFields)}
       onDiscard={() => unstage(backupFields)}
     >
-      <Block>
-        <form.AppField
-          name="s3BucketId"
-          children={(field) => (
-            <BlockItem id={settingsIds.backups.bucket} className="w-full md:w-full">
-              <BlockItemHeader type="column">
-                <BlockItemTitle hasChanges={staged.s3BackupBucketId !== undefined}>
-                  Backup Bucket
-                </BlockItemTitle>
-                <BlockItemDescription>
-                  S3-compatible bucket to store the database backups.
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <field.AsyncAndSearchableSelect
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onChange={(v) => {
-                    field.handleChange(v);
-                    stageBucket(v);
-                  }}
-                  items={s3BucketItems}
-                  isPending={isPendingS3Buckets}
-                  error={errorS3Buckets?.message}
-                  commandInputPlaceholder="Search buckets..."
-                  CommandEmptyText="No buckets found"
-                  CommandEmptyIcon={CylinderIcon}
-                  CommandItemElement={S3BucketCommandItemElement}
-                  TriggerWrapper={hasNoBuckets ? AddBackupBucketTriggerMemoized : undefined}
-                  CommandItemsPinned={({ setIsOpen, commandValue }) => {
-                    if (commandValue === "" || hasNoBuckets) {
-                      return null;
-                    }
-                    return (
-                      <CommandItem
-                        onSelect={() => {
-                          field.handleChange("");
-                          stageBucket("");
-                          setIsOpen(false);
-                        }}
-                        className="group/item text-warning data-[selected=true]:bg-warning/4-10 data-[selected=true]:text-warning px-3 font-medium"
-                      >
-                        <OctagonXIcon className="size-4" />
-                        <p className="min-w-0 shrink leading-tight">Disable backups</p>
-                      </CommandItem>
-                    );
-                  }}
-                >
-                  {({ isOpen }) => {
-                    const selected = dataS3Buckets?.buckets.find(
-                      (s3Bucket) => s3Bucket.id === field.state.value,
-                    );
-                    return (
-                      <BlockItemButtonLike
-                        asElement="button"
-                        text={
-                          selected ? (
-                            <S3BucketLabel name={selected.name} bucket={selected.bucket} />
-                          ) : (
-                            "Select a bucket"
-                          )
-                        }
-                        Icon={({ className }) => (
-                          <CylinderIcon className={cn(className, "size-4.5")} />
-                        )}
-                        variant="outline"
-                        open={isOpen}
-                        onBlur={field.handleBlur}
-                        isPending={isPendingS3Buckets}
-                      />
-                    );
-                  }}
-                </field.AsyncAndSearchableSelect>
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
-      </Block>
-      {backupsEnabled && (
+      {showBucket && (
+        <Block>
+          <form.AppField
+            name="s3BucketId"
+            children={(field) => (
+              <BlockItem id={settingsIds.backups.bucket} className="w-full md:w-full">
+                <BlockItemHeader type="column">
+                  <BlockItemTitle hasChanges={staged.s3BackupBucketId !== undefined}>
+                    Backup Bucket
+                  </BlockItemTitle>
+                  <BlockItemDescription>
+                    S3-compatible bucket to store the database backups.
+                  </BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <field.AsyncAndSearchableSelect
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onChange={(v) => {
+                      field.handleChange(v);
+                      stageBucket(v);
+                    }}
+                    items={s3BucketItems}
+                    isPending={isPendingS3Buckets}
+                    error={errorS3Buckets?.message}
+                    commandInputPlaceholder="Search buckets..."
+                    CommandEmptyText="No buckets found"
+                    CommandEmptyIcon={CylinderIcon}
+                    CommandItemElement={S3BucketCommandItemElement}
+                    TriggerWrapper={hasNoBuckets ? AddBackupBucketTriggerMemoized : undefined}
+                    CommandItemsPinned={({ setIsOpen, commandValue }) => {
+                      if (commandValue === "" || hasNoBuckets) {
+                        return null;
+                      }
+                      return (
+                        <CommandItem
+                          onSelect={() => {
+                            field.handleChange("");
+                            stageBucket("");
+                            setIsOpen(false);
+                          }}
+                          className="group/item text-warning data-[selected=true]:bg-warning/4-10 data-[selected=true]:text-warning px-3 font-medium"
+                        >
+                          <OctagonXIcon className="size-4" />
+                          <p className="min-w-0 shrink leading-tight">Disable backups</p>
+                        </CommandItem>
+                      );
+                    }}
+                  >
+                    {({ isOpen }) => {
+                      const selected = dataS3Buckets?.buckets.find(
+                        (s3Bucket) => s3Bucket.id === field.state.value,
+                      );
+                      return (
+                        <BlockItemButtonLike
+                          asElement="button"
+                          text={
+                            selected ? (
+                              <S3BucketLabel name={selected.name} bucket={selected.bucket} />
+                            ) : (
+                              "Select a bucket"
+                            )
+                          }
+                          Icon={({ className }) => (
+                            <CylinderIcon className={cn(className, "size-4.5")} />
+                          )}
+                          variant="outline"
+                          open={isOpen}
+                          onBlur={field.handleBlur}
+                          isPending={isPendingS3Buckets}
+                        />
+                      );
+                    }}
+                  </field.AsyncAndSearchableSelect>
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
+        </Block>
+      )}
+      {showSchedule && (
         <Block>
           <BlockItem id={settingsIds.backups.schedule} className="w-full md:w-full">
             <BlockItemHeader type="column">
@@ -342,7 +354,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
           </BlockItem>
         </Block>
       )}
-      {backupsEnabled && (
+      {showRetention && (
         <Block>
           <BlockItem id={settingsIds.backups.retention} className="w-full md:w-full">
             <BlockItemHeader type="column">

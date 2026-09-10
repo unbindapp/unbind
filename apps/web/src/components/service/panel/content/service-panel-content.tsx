@@ -149,7 +149,13 @@ const tabs: TServicePanelTab[] = [
       );
     },
   },
-  { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
+  {
+    title: "Settings",
+    value: "settings",
+    Page: Settings,
+    Provider: EmptyProvider,
+    noScrollArea: true,
+  },
 ];
 
 type TProps = {

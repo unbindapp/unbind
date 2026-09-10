@@ -1,3 +1,4 @@
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import { settingsIds } from "@/components/settings/settings-ids";
 import {
   Block,
@@ -29,6 +30,8 @@ type TProps = {
 };
 
 export default function DeploySection({ service }: TProps) {
+  const { isSectionVisible } = useSettingsSectionSearch("deploy");
+  if (!isSectionVisible) return null;
   if (service.type === "github") {
     if (
       !service.git_repository_owner ||
@@ -93,6 +96,7 @@ const deployFields: TServiceChangeField[] = [
 ];
 
 function Section({ service }: { service: TServiceShallow }) {
+  const { isItemVisible } = useSettingsSectionSearch("deploy");
   const hasInstances = shouldDeploySectionHaveInstances(service);
   const sectionHighlightId = useMemo(() => getDeploySectionId(service), [service]);
   const serverInstanceCount = service.config.replicas;
@@ -118,6 +122,10 @@ function Section({ service }: { service: TServiceShallow }) {
   const form = useAppForm({ defaultValues });
   useResetFormOnStagedChange(form, defaultValues, staged, deployFields);
 
+  const showReplicas = hasInstances && isItemVisible(settingsIds.deploy.replicas);
+  const showResourceLimits = isItemVisible(settingsIds.deploy.resourceLimits);
+  if (!showReplicas && !showResourceLimits) return null;
+
   return (
     <SettingsSection
       title="Deploy"
@@ -128,7 +136,7 @@ function Section({ service }: { service: TServiceShallow }) {
       isApplying={hasApplying(staged, deployFields)}
       onDiscard={() => unstage(deployFields)}
     >
-      {hasInstances && (
+      {showReplicas && (
         <Block>
           <form.AppField
             name="instanceCount"
@@ -179,97 +187,99 @@ function Section({ service }: { service: TServiceShallow }) {
           />
         </Block>
       )}
-      <Block>
-        <BlockItem id={settingsIds.deploy.resourceLimits} className="w-full md:w-full">
-          <BlockItemHeader type="column">
-            <BlockItemTitle
-              hasChanges={
-                staged.cpuLimitMillicores !== undefined || staged.memoryLimitMb !== undefined
-              }
-            >
-              Resource Limits
-            </BlockItemTitle>
-            <BlockItemDescription>
-              The maximum vCPU and memory to allocate for each instance.
-            </BlockItemDescription>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <div className="flex w-full flex-col rounded-lg border">
-              <form.AppField
-                name="cpuLimitMillicores"
-                children={(field) => (
-                  <div className="flex w-full flex-col pb-1.5">
-                    <ValueTitle
-                      title="vCPU"
-                      value={cpuFormatter(field.state.value)}
-                      hasChanges={staged.cpuLimitMillicores !== undefined}
-                    />
-                    <field.StorageSizeInput
-                      field={field}
-                      className="w-full px-3.5 py-3"
-                      onBlur={field.handleBlur}
-                      min={cpuLimits.min}
-                      max={cpuLimits.unlimited}
-                      step={cpuLimits.step}
-                      hideMinMax
-                      defaultValue={[toSlider(serverCpu, cpuLimits.unlimited)]}
-                      value={field.state.value ? [field.state.value] : undefined}
-                      onValueChange={(value) => {
-                        field.handleChange(value[0]);
-                      }}
-                      onValueCommitted={(value) => {
-                        stage({
-                          field: "cpuLimitMillicores",
-                          label: "vCPU limit",
-                          value: toApi(value[0], cpuLimits.unlimited),
-                          previous: serverCpu,
-                          format: (v) => cpuFormatter(toSlider(v, cpuLimits.unlimited)),
-                        });
-                      }}
-                    />
-                  </div>
-                )}
-              />
-              <div className="bg-border h-px w-full" />
-              <form.AppField
-                name="memoryLimitMb"
-                children={(field) => (
-                  <div className="flex w-full flex-col pb-1.5">
-                    <ValueTitle
-                      title="Memory"
-                      value={memoryFormatter(field.state.value)}
-                      hasChanges={staged.memoryLimitMb !== undefined}
-                    />
-                    <field.StorageSizeInput
-                      field={field}
-                      className="w-full px-3.5 py-3"
-                      onBlur={field.handleBlur}
-                      min={memoryLimits.min}
-                      max={memoryLimits.unlimited}
-                      step={memoryLimits.step}
-                      hideMinMax
-                      defaultValue={[toSlider(serverMemory, memoryLimits.unlimited)]}
-                      value={field.state.value ? [field.state.value] : undefined}
-                      onValueChange={(value) => {
-                        field.handleChange(value[0]);
-                      }}
-                      onValueCommitted={(value) => {
-                        stage({
-                          field: "memoryLimitMb",
-                          label: "Memory limit",
-                          value: toApi(value[0], memoryLimits.unlimited),
-                          previous: serverMemory,
-                          format: (v) => memoryFormatter(toSlider(v, memoryLimits.unlimited)),
-                        });
-                      }}
-                    />
-                  </div>
-                )}
-              />
-            </div>
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
+      {showResourceLimits && (
+        <Block>
+          <BlockItem id={settingsIds.deploy.resourceLimits} className="w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle
+                hasChanges={
+                  staged.cpuLimitMillicores !== undefined || staged.memoryLimitMb !== undefined
+                }
+              >
+                Resource Limits
+              </BlockItemTitle>
+              <BlockItemDescription>
+                The maximum vCPU and memory to allocate for each instance.
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <div className="flex w-full flex-col rounded-lg border">
+                <form.AppField
+                  name="cpuLimitMillicores"
+                  children={(field) => (
+                    <div className="flex w-full flex-col pb-1.5">
+                      <ValueTitle
+                        title="vCPU"
+                        value={cpuFormatter(field.state.value)}
+                        hasChanges={staged.cpuLimitMillicores !== undefined}
+                      />
+                      <field.StorageSizeInput
+                        field={field}
+                        className="w-full px-3.5 py-3"
+                        onBlur={field.handleBlur}
+                        min={cpuLimits.min}
+                        max={cpuLimits.unlimited}
+                        step={cpuLimits.step}
+                        hideMinMax
+                        defaultValue={[toSlider(serverCpu, cpuLimits.unlimited)]}
+                        value={field.state.value ? [field.state.value] : undefined}
+                        onValueChange={(value) => {
+                          field.handleChange(value[0]);
+                        }}
+                        onValueCommitted={(value) => {
+                          stage({
+                            field: "cpuLimitMillicores",
+                            label: "vCPU limit",
+                            value: toApi(value[0], cpuLimits.unlimited),
+                            previous: serverCpu,
+                            format: (v) => cpuFormatter(toSlider(v, cpuLimits.unlimited)),
+                          });
+                        }}
+                      />
+                    </div>
+                  )}
+                />
+                <div className="bg-border h-px w-full" />
+                <form.AppField
+                  name="memoryLimitMb"
+                  children={(field) => (
+                    <div className="flex w-full flex-col pb-1.5">
+                      <ValueTitle
+                        title="Memory"
+                        value={memoryFormatter(field.state.value)}
+                        hasChanges={staged.memoryLimitMb !== undefined}
+                      />
+                      <field.StorageSizeInput
+                        field={field}
+                        className="w-full px-3.5 py-3"
+                        onBlur={field.handleBlur}
+                        min={memoryLimits.min}
+                        max={memoryLimits.unlimited}
+                        step={memoryLimits.step}
+                        hideMinMax
+                        defaultValue={[toSlider(serverMemory, memoryLimits.unlimited)]}
+                        value={field.state.value ? [field.state.value] : undefined}
+                        onValueChange={(value) => {
+                          field.handleChange(value[0]);
+                        }}
+                        onValueCommitted={(value) => {
+                          stage({
+                            field: "memoryLimitMb",
+                            label: "Memory limit",
+                            value: toApi(value[0], memoryLimits.unlimited),
+                            previous: serverMemory,
+                            format: (v) => memoryFormatter(toSlider(v, memoryLimits.unlimited)),
+                          });
+                        }}
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
     </SettingsSection>
   );
 }

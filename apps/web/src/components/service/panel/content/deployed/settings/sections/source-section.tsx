@@ -1,3 +1,4 @@
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import { isNonDockerHubImage } from "@/components/command-panel/context-command-panel/items/docker-image";
@@ -39,6 +40,8 @@ type TProps = {
 };
 
 export default function SourceSection({ service }: TProps) {
+  const { isSectionVisible } = useSettingsSectionSearch("source");
+  if (!isSectionVisible) return null;
   if (service.type === "github") {
     if (
       !service.git_repository_owner ||
@@ -90,6 +93,7 @@ export default function SourceSection({ service }: TProps) {
 }
 
 function GitSection({ owner, repo, branch, installationId, service }: TGitSectionProps) {
+  const { isItemVisible } = useSettingsSectionSearch("source");
   const { staged, stage, unstage } = useServiceChanges(service, { gitBranch: branch });
 
   const {
@@ -110,6 +114,10 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     return items;
   }, [dataRepository]);
 
+  const showRepository = isItemVisible(settingsIds.source.repository);
+  const showBranch = isItemVisible(settingsIds.source.branch);
+  if (!showRepository && !showBranch) return null;
+
   const repositoryBlockProps = dataRepository?.repository.htmlUrl
     ? ({
         asElement: "LinkButton",
@@ -128,69 +136,76 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       isApplying={hasApplying(staged, ["gitBranch"])}
       onDiscard={() => unstage(["gitBranch"])}
     >
-      <Block>
-        <BlockItem id={settingsIds.source.repository} className="w-full md:w-full">
-          <BlockItemHeader>
-            <BlockItemTitle>Repository</BlockItemTitle>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <BlockItemButtonLike
-              {...repositoryBlockProps}
-              text={`${owner}/${repo}`}
-              Icon={({ className }) => (
-                <BrandIcon brand="github" color="brand" className={cn(className, "size-4.5")} />
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
-      <Block>
-        <form.AppField
-          name="branch"
-          children={(field) => (
-            <BlockItem id={settingsIds.source.branch} className="w-full md:w-full">
-              <BlockItemHeader>
-                <BlockItemTitle hasChanges={staged.gitBranch !== undefined}>Branch</BlockItemTitle>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <field.AsyncAndSearchableSelect
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onChange={(v) => {
-                    field.handleChange(v);
-                    stage({ field: "gitBranch", label: "Branch", value: v, previous: branch });
-                  }}
-                  items={branchItems}
-                  isPending={isPendingRepository}
-                  error={errorRepository?.message}
-                  commandInputPlaceholder="Search branches..."
-                  CommandEmptyText="No branches found"
-                  CommandEmptyIcon={GitBranchIcon}
-                >
-                  {({ isOpen }) => (
-                    <BlockItemButtonLike
-                      asElement="button"
-                      text={field.state.value}
-                      Icon={({ className }) => (
-                        <GitBranchIcon className={cn(className, "size-4.5")} />
-                      )}
-                      variant="outline"
-                      open={isOpen}
-                      onBlur={field.handleBlur}
-                    />
-                  )}
-                </field.AsyncAndSearchableSelect>
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
-      </Block>
+      {showRepository && (
+        <Block>
+          <BlockItem id={settingsIds.source.repository} className="w-full md:w-full">
+            <BlockItemHeader>
+              <BlockItemTitle>Repository</BlockItemTitle>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <BlockItemButtonLike
+                {...repositoryBlockProps}
+                text={`${owner}/${repo}`}
+                Icon={({ className }) => (
+                  <BrandIcon brand="github" color="brand" className={cn(className, "size-4.5")} />
+                )}
+              />
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
+      {showBranch && (
+        <Block>
+          <form.AppField
+            name="branch"
+            children={(field) => (
+              <BlockItem id={settingsIds.source.branch} className="w-full md:w-full">
+                <BlockItemHeader>
+                  <BlockItemTitle hasChanges={staged.gitBranch !== undefined}>
+                    Branch
+                  </BlockItemTitle>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <field.AsyncAndSearchableSelect
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onChange={(v) => {
+                      field.handleChange(v);
+                      stage({ field: "gitBranch", label: "Branch", value: v, previous: branch });
+                    }}
+                    items={branchItems}
+                    isPending={isPendingRepository}
+                    error={errorRepository?.message}
+                    commandInputPlaceholder="Search branches..."
+                    CommandEmptyText="No branches found"
+                    CommandEmptyIcon={GitBranchIcon}
+                  >
+                    {({ isOpen }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        text={field.state.value}
+                        Icon={({ className }) => (
+                          <GitBranchIcon className={cn(className, "size-4.5")} />
+                        )}
+                        variant="outline"
+                        open={isOpen}
+                        onBlur={field.handleBlur}
+                      />
+                    )}
+                  </field.AsyncAndSearchableSelect>
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
+        </Block>
+      )}
     </SettingsSection>
   );
 }
 
 function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
+  const { isItemVisible } = useSettingsSectionSearch("source");
   const [commandInputValue, setCommandInputValue] = useState("");
   const imageIsNonDockerHub = isNonDockerHubImage(image);
   const [search] = useDebounceValue(commandInputValue, defaultDebounceMs);
@@ -222,6 +237,10 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     return items;
   }, [dataTags]);
 
+  const showImage = isItemVisible(settingsIds.source.image);
+  const showTag = isItemVisible(settingsIds.source.tag);
+  if (!showImage && !showTag) return null;
+
   return (
     <SettingsSection
       title="Source"
@@ -233,83 +252,94 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
       isApplying={hasApplying(staged, ["image"])}
       onDiscard={() => unstage(["image"])}
     >
-      <Block>
-        <BlockItem id={settingsIds.source.image} className="w-full md:w-full">
-          <BlockItemHeader>
-            <BlockItemTitle>Image</BlockItemTitle>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <BlockItemButtonLike
-              asElement="LinkButton"
-              href={imageIsNonDockerHub ? `https://${image}` : `https://hub.docker.com/r/${image}`}
-              text={image}
-              Icon={({ className }) => {
-                if (imageIsNonDockerHub) {
-                  return <PackageIcon className={className} />;
+      {showImage && (
+        <Block>
+          <BlockItem id={settingsIds.source.image} className="w-full md:w-full">
+            <BlockItemHeader>
+              <BlockItemTitle>Image</BlockItemTitle>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <BlockItemButtonLike
+                asElement="LinkButton"
+                href={
+                  imageIsNonDockerHub ? `https://${image}` : `https://hub.docker.com/r/${image}`
                 }
-                return <BrandIcon brand="docker" color="brand" className={className} />;
-              }}
-            />
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
-      <Block>
-        <form.AppField
-          name="tag"
-          children={(field) => (
-            <BlockItem id={settingsIds.source.tag} className="w-full md:w-full">
-              <BlockItemHeader>
-                <BlockItemTitle hasChanges={staged.image !== undefined}>Tag</BlockItemTitle>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <field.AsyncAndSearchableSelect
-                  dontCheckUntilSubmit
-                  field={field}
-                  value={field.state.value}
-                  onChange={(v) => {
-                    field.handleChange(v);
-                    stage({
-                      field: "image",
-                      label: "Image",
-                      value: `${image}:${v}`,
-                      previous: serverImage,
-                    });
-                  }}
-                  items={tagItems}
-                  isPending={isPendingTags}
-                  error={errorTags?.message}
-                  commandInputPlaceholder="Search tags..."
-                  CommandEmptyText="No tags found"
-                  CommandEmptyIcon={TagIcon}
-                  commandShouldntFilter={true}
-                  commandInputValue={commandInputValue}
-                  commandInputValueOnChange={(v) => setCommandInputValue(v)}
-                >
-                  {({ isOpen }) => (
-                    <BlockItemButtonLike
-                      asElement="button"
-                      text={field.state.value}
-                      Icon={({ className }) => <TagIcon className={cn(className, "size-4.5")} />}
-                      variant="outline"
-                      open={isOpen}
-                      onBlur={field.handleBlur}
-                      disabled={imageIsNonDockerHub}
-                      hideChevron={imageIsNonDockerHub}
-                      fadeOnDisabled={false}
-                    />
-                  )}
-                </field.AsyncAndSearchableSelect>
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
-      </Block>
+                text={image}
+                Icon={({ className }) => {
+                  if (imageIsNonDockerHub) {
+                    return <PackageIcon className={className} />;
+                  }
+                  return <BrandIcon brand="docker" color="brand" className={className} />;
+                }}
+              />
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
+      {showTag && (
+        <Block>
+          <form.AppField
+            name="tag"
+            children={(field) => (
+              <BlockItem id={settingsIds.source.tag} className="w-full md:w-full">
+                <BlockItemHeader>
+                  <BlockItemTitle hasChanges={staged.image !== undefined}>Tag</BlockItemTitle>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <field.AsyncAndSearchableSelect
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onChange={(v) => {
+                      field.handleChange(v);
+                      stage({
+                        field: "image",
+                        label: "Image",
+                        value: `${image}:${v}`,
+                        previous: serverImage,
+                      });
+                    }}
+                    items={tagItems}
+                    isPending={isPendingTags}
+                    error={errorTags?.message}
+                    commandInputPlaceholder="Search tags..."
+                    CommandEmptyText="No tags found"
+                    CommandEmptyIcon={TagIcon}
+                    commandShouldntFilter={true}
+                    commandInputValue={commandInputValue}
+                    commandInputValueOnChange={(v) => setCommandInputValue(v)}
+                  >
+                    {({ isOpen }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        text={field.state.value}
+                        Icon={({ className }) => <TagIcon className={cn(className, "size-4.5")} />}
+                        variant="outline"
+                        open={isOpen}
+                        onBlur={field.handleBlur}
+                        disabled={imageIsNonDockerHub}
+                        hideChevron={imageIsNonDockerHub}
+                        fadeOnDisabled={false}
+                      />
+                    )}
+                  </field.AsyncAndSearchableSelect>
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
+        </Block>
+      )}
     </SettingsSection>
   );
 }
 
 function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
+  const { isItemVisible } = useSettingsSectionSearch("source");
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+
+  const showDatabase = isItemVisible(settingsIds.source.database);
+  const showVersion = isItemVisible(settingsIds.source.version);
+  if (!showDatabase && !showVersion) return null;
 
   return (
     <SettingsSection
@@ -319,38 +349,42 @@ function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
       Icon={CodeIcon}
       classNameContent="gap-5"
     >
-      <Block>
-        {/* Database */}
-        <BlockItem id={settingsIds.source.database} className="w-full md:w-full">
-          <BlockItemHeader>
-            <BlockItemTitle>Database</BlockItemTitle>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <BlockItemButtonLike
-              asElement="div"
-              text={databaseTypeToName(type)}
-              Icon={({ className }) => (
-                <BrandIcon brand={type} color="brand" className={cn(className, "size-4.5")} />
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
-      <Block>
-        {/* Version */}
-        <BlockItem id={settingsIds.source.version} className="w-full md:w-full">
-          <BlockItemHeader>
-            <BlockItemTitle>Version</BlockItemTitle>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <BlockItemButtonLike
-              asElement="div"
-              text={version}
-              Icon={({ className }) => <MilestoneIcon className={cn(className, "size-4.5")} />}
-            />
-          </BlockItemContent>
-        </BlockItem>
-      </Block>
+      {showDatabase && (
+        <Block>
+          {/* Database */}
+          <BlockItem id={settingsIds.source.database} className="w-full md:w-full">
+            <BlockItemHeader>
+              <BlockItemTitle>Database</BlockItemTitle>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <BlockItemButtonLike
+                asElement="div"
+                text={databaseTypeToName(type)}
+                Icon={({ className }) => (
+                  <BrandIcon brand={type} color="brand" className={cn(className, "size-4.5")} />
+                )}
+              />
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
+      {showVersion && (
+        <Block>
+          {/* Version */}
+          <BlockItem id={settingsIds.source.version} className="w-full md:w-full">
+            <BlockItemHeader>
+              <BlockItemTitle>Version</BlockItemTitle>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <BlockItemButtonLike
+                asElement="div"
+                text={version}
+                Icon={({ className }) => <MilestoneIcon className={cn(className, "size-4.5")} />}
+              />
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
     </SettingsSection>
   );
 }
