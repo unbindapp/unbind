@@ -37,7 +37,7 @@ export default function NavbarSearchButton({ context, className }: TProps) {
         data-extra-small={isExtraSmall || undefined}
         size="sm"
         className={cn(
-          "text-muted-foreground bg-input w-38 justify-start gap-1.5 rounded-full py-1 pr-1 pl-2.25 font-medium data-extra-small:size-7.5 data-extra-small:justify-center data-extra-small:px-0",
+          "text-muted-foreground bg-input w-38 justify-start gap-1.5 rounded-full py-1 pr-1 pl-2 font-medium data-extra-small:size-7.5 data-extra-small:justify-center data-extra-small:px-0 sm:rounded-lg",
           className,
         )}
       >
@@ -45,7 +45,7 @@ export default function NavbarSearchButton({ context, className }: TProps) {
         {!isExtraSmall && (
           <>
             <p className="min-w-0 flex-1 text-left leading-tight">Search</p>
-            <KeyboardShortcut classNameChip="rounded-full px-2 text-muted-foreground">
+            <KeyboardShortcut classNameChip="rounded-sm px-1.5 text-muted-foreground">
               {shortcut}
             </KeyboardShortcut>
           </>
