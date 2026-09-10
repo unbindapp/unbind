@@ -350,6 +350,10 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
   const [discardHandle] = useState(() => createDialogHandle());
   const discardAll = useStagedChangesStore((s) => s.discardAll);
   const count = useStagedChangeCount();
+  // The menu item that opened the dialog is gone by the time it closes. Cancel goes back to
+  // the menu button; a discard takes the bar away with it, so focus is not moved anywhere
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const isConfirmedRef = useRef(false);
 
   return (
     <>
@@ -357,6 +361,7 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
         <DropdownMenuTrigger
           render={
             <Button
+              ref={triggerRef}
               data-open={isOpen || undefined}
               disabled={disabled}
               fadeOnDisabled={false}
@@ -385,8 +390,17 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog handle={discardHandle}>
-        <DialogContent hideXButton classNameInnerWrapper="w-112 max-w-full">
+      <Dialog
+        handle={discardHandle}
+        onOpenChange={(open) => {
+          if (open) isConfirmedRef.current = false;
+        }}
+      >
+        <DialogContent
+          hideXButton
+          classNameInnerWrapper="w-112 max-w-full"
+          finalFocus={() => (isConfirmedRef.current ? false : triggerRef.current)}
+        >
           <DialogHeader>
             <DialogTitle className="text-destructive">
               Discard {count} {count === 1 ? "Change" : "Changes"}
@@ -407,6 +421,7 @@ function DiscardMenu({ disabled }: { disabled?: boolean }) {
             <Button
               variant="destructive"
               onClick={() => {
+                isConfirmedRef.current = true;
                 discardAll();
                 discardHandle.close();
               }}

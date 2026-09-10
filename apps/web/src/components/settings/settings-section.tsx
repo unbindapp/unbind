@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/components/ui/utils";
 import { LoaderIcon, Undo2Icon } from "lucide-react";
-import { ReactElement, FC, HTMLAttributes, ReactNode } from "react";
+import { ReactElement, FC, HTMLAttributes, ReactNode, RefObject, useRef } from "react";
 
 type TProps = {
   title: string;
@@ -57,6 +57,8 @@ export function SettingsSection({
   const SubmitTriggerElement =
     SubmitTrigger || (({ children }: { children: ReactElement }) => children);
   const isChanged = hasChanges ?? (changeCount !== undefined && changeCount > 0);
+  // A confirmed reset unmounts the button that opened the dialog, so focus lands here instead
+  const headerRef = useRef<HTMLDivElement>(null);
 
   return (
     <Wrapper
@@ -69,8 +71,10 @@ export function SettingsSection({
       {...rest}
     >
       <div
+        ref={headerRef}
+        tabIndex={-1}
         className={cn(
-          "text-muted-foreground group-data-staged/wrapper:text-change bg-card group-data-staged/wrapper:border-change/5-10 group-data-staged/wrapper:bg-change/2-10 relative flex w-full items-start gap-4 border-b px-3.5 sm:px-4",
+          "text-muted-foreground group-data-staged/wrapper:text-change bg-card group-data-staged/wrapper:border-change/5-10 group-data-staged/wrapper:bg-change/2-10 relative flex w-full items-start gap-4 border-b px-3.5 outline-none sm:px-4",
           classNameHeader,
         )}
       >
@@ -88,7 +92,7 @@ export function SettingsSection({
           {isApplying && <LoaderIcon className="my-auto size-4.5 shrink-0 animate-spin" />}
         </div>
         {!isApplying && isChanged && onDiscard && (
-          <ResetTrigger onClickResetChanges={onDiscard}>
+          <ResetTrigger onClickResetChanges={onDiscard} finalFocusRef={headerRef}>
             <Button
               type="button"
               variant="outline-change"
@@ -118,7 +122,11 @@ export function SettingsSection({
           )}
           <div className="flex w-full">
             <div className="w-1/2 p-1.5">
-              <ResetTrigger changeCount={changeCount} onClickResetChanges={onClickResetChanges}>
+              <ResetTrigger
+                changeCount={changeCount}
+                onClickResetChanges={onClickResetChanges}
+                finalFocusRef={headerRef}
+              >
                 <Button
                   className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
                   type="button"
@@ -184,16 +192,27 @@ function Wrapper(props: TWrapperProps) {
 function ResetTrigger({
   changeCount,
   onClickResetChanges,
+  finalFocusRef,
   children,
 }: {
   changeCount?: number;
   onClickResetChanges?: () => void;
+  finalFocusRef: RefObject<HTMLElement | null>;
   children: ReactElement;
 }) {
+  const isConfirmedRef = useRef(false);
   return (
-    <Dialog>
+    <Dialog
+      onOpenChange={(open) => {
+        if (open) isConfirmedRef.current = false;
+      }}
+    >
       <DialogTrigger render={children} />
-      <DialogContent hideXButton className="w-lg max-w-full">
+      <DialogContent
+        hideXButton
+        className="w-lg max-w-full"
+        finalFocus={() => (isConfirmedRef.current ? finalFocusRef.current : true)}
+      >
         <DialogHeader>
           <DialogTitle>
             {changeCount === undefined ? "Discard Changes" : `Discard Changes: ${changeCount}`}
@@ -209,7 +228,18 @@ function ResetTrigger({
               </Button>
             }
           />
-          <DialogClose render={<Button onClick={onClickResetChanges}>Confirm</Button>} />
+          <DialogClose
+            render={
+              <Button
+                onClick={() => {
+                  isConfirmedRef.current = true;
+                  onClickResetChanges?.();
+                }}
+              >
+                Confirm
+              </Button>
+            }
+          />
         </div>
       </DialogContent>
     </Dialog>
