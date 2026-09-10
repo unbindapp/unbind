@@ -40,6 +40,7 @@ The Kubernetes operator. Translates Unbind CRDs into native Kubernetes resources
 - Do not insert yourself into our code, commits or PRs in any way. Our codebase is not your ad space.
 - After you make code changes, run precommit and fix any lint issues that arise from it.
 - If you are asked to work on a Linear issue and Linear is availabe in the environment, mark the issue as "In Progress".
+- If you are asked to work on code, always pull the latest changes before starting.
 
 ## Commit Messages
 
