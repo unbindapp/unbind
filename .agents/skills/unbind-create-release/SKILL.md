@@ -3,16 +3,17 @@ name: unbind-create-release
 description: >
   Create a tagged Unbind release. Checks the repo state, works out the next version, drafts
   three one-sentence summary options for the user to pick from, and only after approval
-  creates the annotated tag, pushes it, watches the release workflow, and verifies the
-  GitHub release and metadata entry. Use when asked to create, tag, or publish a
-  release, or "do it once more" / "again" after a previous release in the same session.
+  creates the annotated tag, pushes it, arms a background monitor on the release workflow,
+  and verifies the GitHub release and metadata entry once it finishes. Use when asked to
+  create, tag, or publish a release, or "do it once more" / "again" after a previous release
+  in the same session.
 compatibility: Designed for Claude Code (or similar products)
 metadata:
   author: Unbind
-  version: "1.0"
+  version: "1.1"
   domain: release-management
   framework: Unbind
-allowed-tools: Bash
+allowed-tools: Bash, AskUserQuestion, Monitor
 ---
 
 # Unbind Release
@@ -26,6 +27,9 @@ The tag subject becomes the release **summary**. It is shown on every install's 
 page and is the first line of the GitHub Release body. A release without a summary fails.
 
 **Never tag before the user has approved a summary.** Show three options first, always.
+
+Every question to the user in this skill goes through `AskUserQuestion`, never plain
+text. The user gets an option card with an automatic "Other" entry for free text.
 
 ## 1. Checks before proposing anything
 
@@ -55,7 +59,8 @@ Things to surface to the user instead of working around:
 
 - **Uncommitted changes** in the working tree. They will not be in the release. Say so,
   do not commit them, and continue with what is committed.
-- **Nothing new** since the last tag. Ask whether they still want an empty release.
+- **Nothing new** since the last tag. Ask with `AskUserQuestion` whether they still want an
+  empty release ("Release anyway" / "Stop").
 - **A breaking change.** `metadata.json` entries written by the workflow are always
   `breaking: false`. A breaking release needs a hand-written entry with `depends_on`
   before tagging. See `deploy/releases/README.md`. Point it out; do not write it unasked.
@@ -68,9 +73,7 @@ Read the commit list and group it by feature, not by commit. Ignore the bot comm
 (`releases: add metadata entry for ...`), lockfile bumps, and repo housekeeping unless
 they are the only changes.
 
-Write **three** candidate summaries and show them to the user with a short overview of
-what goes into the release (commit count, the main themes, the version, and anything the checks found). Rules
-for each summary:
+Write **three** candidate summaries. Rules for each:
 
 - One sentence. Ends with a `.`.
 - Comma-separated list of the main changes, most important first, `and` before the last.
@@ -88,8 +91,21 @@ Example of the expected shape:
 > scheduling and retention, optional resource limits, and service volume attachment
 > improvements.
 
-Then stop and wait. The user picks one, edits one, or writes their own. Do not tag until
-they say to go ahead.
+First print a short overview in plain text: the version, commit count, the main themes,
+and anything the checks found. Then present the three summaries with **one**
+`AskUserQuestion` call:
+
+- `header`: `Summary`
+- `question`: `Which summary should <next> use?`
+- Three options. `label` is a two or three word handle (`Fuller`, `Shorter`, `UI first`),
+  `description` is the full summary sentence, verbatim. Recommend one by listing it first
+  with `(Recommended)` in its label.
+- `multiSelect: false`. Do not add your own "write my own" option; the card already has
+  "Other".
+
+The chosen option's description, or the user's free text from "Other", is the approved
+summary. If the user edits a summary in their answer, use their edit as is. Do not tag
+until the answer is in.
 
 ## 3. Tag and push
 
@@ -98,20 +114,52 @@ git pull -q origin master                        # only if status showed "behind
 git log --oneline -1                             # must be the origin/master tip
 git tag -a <next> -m "<approved summary>"
 git push origin <next>
-sleep 10 && gh run list --workflow=release.yml --limit 1
+sleep 10
+gh run list --workflow=release.yml --branch <next> --limit 1 \
+  --json databaseId,status,url --jq '.[0]'       # <run-id>
 ```
 
 Use the approved text verbatim, including the trailing `.`. Never use a lightweight tag.
+If no run shows up after two tries ten seconds apart, check `gh run list --workflow=release.yml --limit 3`
+and stop if the tag push did not trigger anything.
 
-## 4. Watch and verify
+## 4. Arm a monitor, then end the turn
 
-The workflow takes about five minutes. Watch it in the background and keep the run id:
+The workflow takes about five minutes. **Do not block on it.** Do not run `gh run watch`
+or `sleep` in the foreground. Arm a `Monitor` that polls the run and emits one line when
+it reaches a terminal state, then end your turn so the session is in monitoring mode:
 
-```bash
-gh run watch <run-id> --exit-status --interval 30
+```
+Monitor({
+  description: "release.yml run <run-id> for <next>",
+  timeout_ms: 1800000,
+  persistent: false,
+  command: `
+    while true; do
+      out=$(gh run view <run-id> --json status,conclusion \
+        --jq '"\(.status) \(.conclusion)"' 2>/dev/null) || { sleep 30; continue; }
+      case "$out" in
+        completed*) echo "release.yml run <run-id> for <next>: $out"; exit 0 ;;
+      esac
+      sleep 30
+    done
+  `,
+})
 ```
 
-When it finishes, verify all of this and report it:
+The loop prints on every conclusion (`success`, `failure`, `cancelled`, `timed_out`), not
+only success, and exits after the first terminal state. The transient `gh` failure path
+keeps polling instead of killing the monitor.
+
+After arming it, tell the user in one or two sentences that `<next>` is tagged and pushed,
+give the run URL, and say you will verify when the workflow finishes. Then stop. Do not
+poll, do not schedule wake-ups, do not re-check on your own; the monitor event brings you
+back.
+
+## 5. Verify when the monitor fires
+
+The monitor notification is not a user message. When it arrives, verify all of this and
+report it:
 
 ```bash
 gh release view <next> --json name,isDraft,isPrerelease,assets,body \
@@ -126,21 +174,22 @@ Expected: not a draft, not a prerelease, four installer assets
 body, and a `releases: add metadata entry for <next>` commit on `origin/master` with the
 same summary and `breaking: false`.
 
-If the watcher was interrupted (session restart), check `gh run list` before doing
-anything else; the release usually finished fine.
+If the monitor timed out or the session restarted before it fired, check `gh run list`
+before doing anything else; the release usually finished fine. Re-arm the monitor only if
+the run is still in progress.
 
-## 5. Report
+## 6. Report
 
 State plainly: the version, that it is published, what was verified, and that local
 `master` is now one bot commit behind `origin` (a `git pull` fixes it). If anything failed,
-paste the failing step's output and stop. Do not retry a failed tag push with a different
-version on your own.
+paste the failing step's output (`gh run view <run-id> --log-failed`) and stop. Do not
+retry a failed tag push with a different version on your own.
 
 ## If the workflow fails
 
 - **"has no summary"**: the tag was lightweight or the message was empty. Delete the
-  tag locally and on origin, re-tag with `-a -m`, push again. Ask first; deleting a remote
-  tag is visible to everyone.
+  tag locally and on origin, re-tag with `-a -m`, push again. Ask first with
+  `AskUserQuestion`; deleting a remote tag is visible to everyone.
 - **RBAC guard**: chart RBAC changed with no `deploy/releases/<next>/`. Tell the user;
   someone needs to stage manifests (or an empty `kustomization.yaml`) on `master` and the
   release must be re-tagged after that commit.
