@@ -206,9 +206,7 @@ function GitSection({ service }: TGitSectionProps) {
         children={(fieldApi) => (
           <BlockItem id={commandFields[field].id} className="group/item w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle hasChanges={staged[field] !== undefined}>
-                {commandFields[field].title}
-              </BlockItemTitle>
+              <BlockItemTitle>{commandFields[field].title}</BlockItemTitle>
               <BlockItemDescription>{commandFields[field].description}</BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>
@@ -246,6 +244,7 @@ function GitSection({ service }: TGitSectionProps) {
                       autoCorrect="off"
                       autoComplete="off"
                       spellCheck="false"
+                      hasChanges={staged[field] !== undefined}
                     />
                   )}
                 </Toggled>
@@ -274,7 +273,7 @@ function GitSection({ service }: TGitSectionProps) {
             children={(field) => (
               <BlockItem id={settingsIds.build.builder} className="group/item w-full md:w-full">
                 <BlockItemHeader type="column">
-                  <BlockItemTitle hasChanges={staged.builder !== undefined}>Builder</BlockItemTitle>
+                  <BlockItemTitle>Builder</BlockItemTitle>
                   <BlockItemDescription>
                     The builder for building the service to be deployed.
                   </BlockItemDescription>
@@ -322,6 +321,7 @@ function GitSection({ service }: TGitSectionProps) {
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
+                        hasChanges={staged.builder !== undefined}
                       />
                     )}
                   </field.AsyncDropdownMenu>
@@ -339,9 +339,7 @@ function GitSection({ service }: TGitSectionProps) {
             children={(field) => (
               <BlockItem id={settingsIds.build.watchPaths} className="group/item w-full md:w-full">
                 <BlockItemHeader type="column">
-                  <BlockItemTitle hasChanges={staged.watchPaths !== undefined}>
-                    Watch Paths
-                  </BlockItemTitle>
+                  <BlockItemTitle>Watch Paths</BlockItemTitle>
                   <BlockItemDescription>
                     Gitignore-style patterns. Leave empty to deploy on every push.
                   </BlockItemDescription>
@@ -350,6 +348,7 @@ function GitSection({ service }: TGitSectionProps) {
                   <WatchPathsInput
                     service={service}
                     value={splitWatchPaths(field.state.value)}
+                    serverValue={service.config.watch_paths}
                     onChange={(patterns) => {
                       const joined = joinWatchPaths(patterns);
                       field.handleChange(joined);

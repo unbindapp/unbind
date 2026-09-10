@@ -246,6 +246,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
             inputMode="numeric"
             className="min-w-0 flex-1"
             classNameInput="rounded-r-none"
+            hasChanges={staged[field] !== undefined}
           />
         </MiniSection>
       )}
@@ -268,16 +269,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
         <Block>
           <BlockItem id={settingsIds.health.type} className="w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle
-                hasChanges={
-                  staged.healthCheckType !== undefined ||
-                  staged.healthCheckEndpoint !== undefined ||
-                  staged.healthCheckEndpointPort !== undefined ||
-                  staged.healthCheckCommand !== undefined
-                }
-              >
-                Health Check Type
-              </BlockItemTitle>
+              <BlockItemTitle>Health Check Type</BlockItemTitle>
               <BlockItemDescription>
                 The type of health check to decide if a deployment is healthy.
               </BlockItemDescription>
@@ -325,6 +317,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
+                        hasChanges={staged.healthCheckType !== undefined}
                       />
                     )}
                   </field.AsyncDropdownMenu>
@@ -364,6 +357,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                         autoCorrect="off"
                         autoComplete="off"
                         spellCheck="false"
+                        hasChanges={staged.healthCheckEndpoint !== undefined}
                       />
                     )}
                   />
@@ -402,6 +396,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                             open={isOpen}
                             onBlur={field.handleBlur}
                             classNameChevron="size-4"
+                            hasChanges={staged.healthCheckEndpointPort !== undefined}
                           />
                         )}
                       </field.AsyncDropdownMenu>
@@ -442,6 +437,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       autoCorrect="off"
                       autoComplete="off"
                       spellCheck="false"
+                      hasChanges={staged.healthCheckCommand !== undefined}
                     />
                   )}
                 />

@@ -175,9 +175,7 @@ function AttachSection({ volume }: TProps) {
           children={(field) => (
             <BlockItem id={volumeSettingsIds.connection.service} className="w-full md:w-full">
               <BlockItemHeader type="column">
-                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                  Service
-                </BlockItemTitle>
+                <BlockItemTitle>Service</BlockItemTitle>
                 <BlockItemDescription>The service to attach this volume to.</BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
@@ -207,6 +205,7 @@ function AttachSection({ volume }: TProps) {
                       onBlur={field.handleBlur}
                       isPending={isPendingServices}
                       disabled={volume.is_deleting || volume.mount_status === "detaching"}
+                      hasChanges={!field.state.meta.isDefaultValue}
                     />
                   )}
                 </field.AsyncAndSearchableSelect>
@@ -221,9 +220,7 @@ function AttachSection({ volume }: TProps) {
           children={(field) => (
             <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
               <BlockItemHeader type="column">
-                <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                  Mount Path
-                </BlockItemTitle>
+                <BlockItemTitle>Mount Path</BlockItemTitle>
                 <BlockItemDescription>
                   The path to mount the volume at (e.g. /data).
                 </BlockItemDescription>
@@ -238,6 +235,7 @@ function AttachSection({ volume }: TProps) {
                   placeholder="/data"
                   className="w-full"
                   disabled={volume.is_deleting || volume.mount_status === "detaching"}
+                  hasChanges={!field.state.meta.isDefaultValue}
                 />
               </BlockItemContent>
             </BlockItem>

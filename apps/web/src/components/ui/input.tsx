@@ -4,7 +4,7 @@ import { cn } from "@/components/ui/utils";
 import { cva, VariantProps } from "class-variance-authority";
 
 const inputVariants = cva(
-  "flex px-3 font-medium placeholder:font-medium py-2.5 leading-tight w-full rounded-lg border bg-input file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/9-10 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/8-10 disabled:cursor-not-allowed",
+  "flex px-3 font-medium placeholder:font-medium py-2.5 leading-tight w-full rounded-lg border bg-input file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/9-10 focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/8-10 disabled:cursor-not-allowed data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/4-10 data-staged:placeholder:text-change/8-10",
   {
     variants: {
       variant: {
@@ -29,6 +29,7 @@ export type InputProps = React.ComponentPropsWithRef<"input"> &
     classNameIcon?: string;
     showUndo?: boolean;
     onUndo?: () => void;
+    hasChanges?: boolean;
   };
 
 type InputLayout =
@@ -49,6 +50,7 @@ function Input({
   layout,
   type,
   Icon,
+  hasChanges,
   ...props
 }: InputProps) {
   if (layout === "label-included") {
@@ -56,6 +58,7 @@ function Input({
       <div className={cn("relative", className)}>
         <input
           type={type}
+          data-staged={hasChanges || undefined}
           className={cn(
             inputVariants({
               variant,
@@ -78,6 +81,7 @@ function Input({
   return (
     <input
       type={type}
+      data-staged={hasChanges || undefined}
       className={cn(
         inputVariants({
           variant,

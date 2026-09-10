@@ -199,9 +199,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
             children={(field) => (
               <BlockItem id={settingsIds.backups.bucket} className="w-full md:w-full">
                 <BlockItemHeader type="column">
-                  <BlockItemTitle hasChanges={staged.s3BackupBucketId !== undefined}>
-                    Backup Bucket
-                  </BlockItemTitle>
+                  <BlockItemTitle>Backup Bucket</BlockItemTitle>
                   <BlockItemDescription>
                     S3-compatible bucket to store the database backups.
                   </BlockItemDescription>
@@ -263,6 +261,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                           open={isOpen}
                           onBlur={field.handleBlur}
                           isPending={isPendingS3Buckets}
+                          hasChanges={staged.s3BackupBucketId !== undefined}
                         />
                       );
                     }}
@@ -277,9 +276,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
         <Block>
           <BlockItem id={settingsIds.backups.schedule} className="w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle hasChanges={staged.backupSchedule !== undefined}>
-                Backup Schedule
-              </BlockItemTitle>
+              <BlockItemTitle>Backup Schedule</BlockItemTitle>
               <BlockItemDescription>How often the database is backed up.</BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent className="gap-0">
@@ -315,6 +312,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
+                        hasChanges={staged.backupSchedule !== undefined}
                       />
                     )}
                   </field.AsyncDropdownMenu>
@@ -345,6 +343,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                         autoCorrect="off"
                         autoComplete="off"
                         spellCheck="false"
+                        hasChanges={staged.backupSchedule !== undefined}
                       />
                     )}
                   />
@@ -358,9 +357,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
         <Block>
           <BlockItem id={settingsIds.backups.retention} className="w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle hasChanges={staged.backupRetentionCount !== undefined}>
-                Backup Retention
-              </BlockItemTitle>
+              <BlockItemTitle>Backup Retention</BlockItemTitle>
               <BlockItemDescription>
                 How many backups to keep. Older backups are deleted.
               </BlockItemDescription>
@@ -393,6 +390,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                       inputMode="numeric"
                       className="min-w-0 flex-1"
                       classNameInput="rounded-r-none"
+                      hasChanges={staged.backupRetentionCount !== undefined}
                     />
                   </MiniSection>
                 )}

@@ -64,24 +64,14 @@ export function BlockItemHeader({
 withChildRole(BlockItemHeader, BLOCK_ROLE.header);
 
 export function BlockItemTitle({
-  hasChanges,
   className,
   children,
 }: {
-  hasChanges?: boolean;
   className?: string;
   children: ReactNode;
 }) {
   return (
-    <h3
-      className={cn(
-        "min-w-0 shrink leading-tight font-semibold",
-        hasChanges && "text-change",
-        className,
-      )}
-    >
-      {children}
-    </h3>
+    <h3 className={cn("min-w-0 shrink leading-tight font-semibold", className)}>{children}</h3>
   );
 }
 
@@ -202,6 +192,7 @@ type TBlockItemButtonLikeProps = {
   description?: string | FC<{ className?: string }>;
   isPending?: boolean;
   isEditing?: boolean;
+  hasChanges?: boolean;
   open?: boolean;
   hideChevron?: boolean;
   href?: string;
@@ -240,6 +231,7 @@ export function BlockItemButtonLike({
   href,
   SuffixComponent,
   isEditing,
+  hasChanges,
   ...props
 }: TBlockItemButtonLikeProps) {
   const isLink = asElement === "LinkButton" && !!href;
@@ -251,11 +243,13 @@ export function BlockItemButtonLike({
       data-open={open || undefined}
       data-pending={isPending || undefined}
       data-editing={isEditing || undefined}
+      data-staged={hasChanges || undefined}
       className={cn(
         // External anchors apply the button styling here since a plain <a> can't
         // take the `variant` prop.
         isLink && buttonVariants({ variant: "outline" }),
         "group/button bg-input flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left data-pending:text-transparent",
+        "data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/4-10 data-staged:has-hover:hover:bg-change/3-10 data-staged:has-hover:hover:text-change data-staged:active:bg-change/3-10 data-staged:active:text-change",
         className,
       )}
       {...(isLink ? { href, target: "_blank", rel: "noopener noreferrer" } : {})}
@@ -307,7 +301,7 @@ export function BlockItemButtonLike({
             <Description />
           ) : (
             Description && (
-              <p className="text-muted-foreground group-data-pending/button:bg-muted-foreground min-w-0 shrink text-sm leading-tight group-data-pending/button:rounded-md">
+              <p className="text-muted-foreground group-data-pending/button:bg-muted-foreground group-data-staged/button:text-change/9-10 min-w-0 shrink text-sm leading-tight group-data-pending/button:rounded-md">
                 {Description}
               </p>
             )
@@ -318,7 +312,7 @@ export function BlockItemButtonLike({
       {open !== undefined && !hideChevron && !isPending && (
         <ChevronDownIcon
           className={cn(
-            "text-muted-foreground -mr-0.75 size-5 transition group-data-open/button:rotate-180",
+            "text-muted-foreground group-data-staged/button:text-change/9-10 -mr-0.75 size-5 transition group-data-open/button:rotate-180",
             classNameChevron,
           )}
         />

@@ -161,9 +161,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
             children={(field) => (
               <BlockItem id={settingsIds.source.branch} className="w-full md:w-full">
                 <BlockItemHeader>
-                  <BlockItemTitle hasChanges={staged.gitBranch !== undefined}>
-                    Branch
-                  </BlockItemTitle>
+                  <BlockItemTitle>Branch</BlockItemTitle>
                 </BlockItemHeader>
                 <BlockItemContent>
                   <field.AsyncAndSearchableSelect
@@ -191,6 +189,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
+                        hasChanges={staged.gitBranch !== undefined}
                       />
                     )}
                   </field.AsyncAndSearchableSelect>
@@ -283,7 +282,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
             children={(field) => (
               <BlockItem id={settingsIds.source.tag} className="w-full md:w-full">
                 <BlockItemHeader>
-                  <BlockItemTitle hasChanges={staged.image !== undefined}>Tag</BlockItemTitle>
+                  <BlockItemTitle>Tag</BlockItemTitle>
                 </BlockItemHeader>
                 <BlockItemContent>
                   <field.AsyncAndSearchableSelect
@@ -320,6 +319,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                         disabled={imageIsNonDockerHub}
                         hideChevron={imageIsNonDockerHub}
                         fadeOnDisabled={false}
+                        hasChanges={staged.image !== undefined}
                       />
                     )}
                   </field.AsyncAndSearchableSelect>

@@ -172,6 +172,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
             inputMode="numeric"
             className="min-w-0 flex-1"
             classNameInput="rounded-r-none"
+            hasChanges={staged[field] !== undefined}
           />
         </MiniSection>
       )}
@@ -194,7 +195,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
         <Block>
           <BlockItem id={settingsIds.database.walLevel} className="w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle hasChanges={staged.walLevel !== undefined}>WAL Level</BlockItemTitle>
+              <BlockItemTitle>WAL Level</BlockItemTitle>
               <BlockItemDescription>
                 The level of detail kept in the write-ahead log (WAL).
               </BlockItemDescription>
@@ -240,6 +241,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
+                        hasChanges={staged.walLevel !== undefined}
                       />
                     )}
                   </field.AsyncDropdownMenu>
@@ -253,13 +255,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
         <Block>
           <BlockItem id={settingsIds.database.replication} className="group/item w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle
-                hasChanges={
-                  staged.maxReplicationSlots !== undefined || staged.maxWalSenders !== undefined
-                }
-              >
-                Replication
-              </BlockItemTitle>
+              <BlockItemTitle>Replication</BlockItemTitle>
               <BlockItemDescription>
                 Each subscriber and streaming replica uses one slot and one sender.
               </BlockItemDescription>
@@ -277,9 +273,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
         <Block>
           <BlockItem id={settingsIds.database.slotWalKeepSize} className="w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle hasChanges={staged.maxSlotWalKeepSizeMb !== undefined}>
-                Slot WAL Keep Size
-              </BlockItemTitle>
+              <BlockItemTitle>Slot WAL Keep Size</BlockItemTitle>
               <BlockItemDescription>
                 Caps the WAL kept for lagging replication slots.
               </BlockItemDescription>

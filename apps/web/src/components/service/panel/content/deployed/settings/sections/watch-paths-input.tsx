@@ -33,11 +33,18 @@ function isAddItem(item: TItem): item is TAddItem {
 type TProps = {
   service: TServiceShallow;
   value: string[];
+  serverValue: string[];
   onChange: (value: string[]) => void;
   className?: string;
 };
 
-export default function WatchPathsInput({ service, value, onChange, className }: TProps) {
+export default function WatchPathsInput({
+  service,
+  value,
+  serverValue,
+  onChange,
+  className,
+}: TProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasOpened, setHasOpened] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -69,6 +76,8 @@ export default function WatchPathsInput({ service, value, onChange, className }:
     }
     return list;
   }, [suggestions, value, inputValue, typed]);
+
+  const hasRemovedPatterns = serverValue.some((pattern) => !value.includes(pattern));
 
   const add = (patterns: string[]) => {
     const added = patterns.filter((pattern) => !value.includes(pattern));
@@ -117,7 +126,12 @@ export default function WatchPathsInput({ service, value, onChange, className }:
         {value.length > 0 && (
           <ComboboxChips>
             {value.map((pattern) => (
-              <ComboboxChip key={pattern} aria-label={pattern} className="bg-input">
+              <ComboboxChip
+                key={pattern}
+                aria-label={pattern}
+                data-staged={!serverValue.includes(pattern) || undefined}
+                className="bg-input"
+              >
                 <span className="min-w-0 truncate px-2.5 py-1.5 font-mono text-sm leading-tight font-medium">
                   {pattern}
                 </span>
@@ -128,7 +142,11 @@ export default function WatchPathsInput({ service, value, onChange, className }:
             ))}
           </ComboboxChips>
         )}
-        <ComboboxInput placeholder={placeholder} />
+        <ComboboxInput
+          placeholder={placeholder}
+          data-staged={hasRemovedPatterns || undefined}
+          className="data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/4-10 data-staged:placeholder:text-change/8-10"
+        />
       </div>
       <ComboboxContent className="h-68">
         {!suggestions && isPending && (

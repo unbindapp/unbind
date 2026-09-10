@@ -143,16 +143,17 @@ function Section({ service }: { service: TServiceShallow }) {
             children={(field) => (
               <BlockItem id={settingsIds.deploy.replicas} className="group/item w-full md:w-full">
                 <BlockItemHeader type="column">
-                  <BlockItemTitle hasChanges={staged.instanceCount !== undefined}>
-                    Replicas
-                  </BlockItemTitle>
+                  <BlockItemTitle>Replicas</BlockItemTitle>
                   <BlockItemDescription>
                     The number of replicas/instances to run for this service.
                   </BlockItemDescription>
                 </BlockItemHeader>
                 <BlockItemContentHighlightable
                   id={settingsIds.deploy.replicas}
-                  className="flex w-full flex-col rounded-lg border pb-1.5"
+                  className={cn(
+                    "flex w-full flex-col overflow-hidden rounded-lg border pb-1.5",
+                    staged.instanceCount !== undefined && "border-change/4-10 bg-change/2-10",
+                  )}
                 >
                   <ValueTitle
                     title="Replicas"
@@ -169,6 +170,7 @@ function Section({ service }: { service: TServiceShallow }) {
                     hideMinMax
                     defaultValue={[serverInstanceCount]}
                     value={field.state.value ? [field.state.value] : undefined}
+                    hasChanges={staged.instanceCount !== undefined}
                     onValueChange={(value) => {
                       field.handleChange(value[0]);
                     }}
@@ -191,23 +193,26 @@ function Section({ service }: { service: TServiceShallow }) {
         <Block>
           <BlockItem id={settingsIds.deploy.resourceLimits} className="w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle
-                hasChanges={
-                  staged.cpuLimitMillicores !== undefined || staged.memoryLimitMb !== undefined
-                }
-              >
-                Resource Limits
-              </BlockItemTitle>
+              <BlockItemTitle>Resource Limits</BlockItemTitle>
               <BlockItemDescription>
                 The maximum vCPU and memory to allocate for each instance.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>
-              <div className="flex w-full flex-col rounded-lg border">
+              <div
+                className={cn(
+                  "flex w-full flex-col overflow-hidden rounded-lg border",
+                  (staged.cpuLimitMillicores !== undefined || staged.memoryLimitMb !== undefined) &&
+                    "border-change/4-10",
+                )}
+              >
                 <form.AppField
                   name="cpuLimitMillicores"
                   children={(field) => (
-                    <div className="flex w-full flex-col pb-1.5">
+                    <div
+                      data-staged={staged.cpuLimitMillicores !== undefined || undefined}
+                      className="data-staged:bg-change/2-10 flex w-full flex-col pb-1.5"
+                    >
                       <ValueTitle
                         title="vCPU"
                         value={cpuFormatter(field.state.value)}
@@ -223,6 +228,7 @@ function Section({ service }: { service: TServiceShallow }) {
                         hideMinMax
                         defaultValue={[toSlider(serverCpu, cpuLimits.unlimited)]}
                         value={field.state.value ? [field.state.value] : undefined}
+                        hasChanges={staged.cpuLimitMillicores !== undefined}
                         onValueChange={(value) => {
                           field.handleChange(value[0]);
                         }}
@@ -243,7 +249,10 @@ function Section({ service }: { service: TServiceShallow }) {
                 <form.AppField
                   name="memoryLimitMb"
                   children={(field) => (
-                    <div className="flex w-full flex-col pb-1.5">
+                    <div
+                      data-staged={staged.memoryLimitMb !== undefined || undefined}
+                      className="data-staged:bg-change/2-10 flex w-full flex-col pb-1.5"
+                    >
                       <ValueTitle
                         title="Memory"
                         value={memoryFormatter(field.state.value)}
@@ -259,6 +268,7 @@ function Section({ service }: { service: TServiceShallow }) {
                         hideMinMax
                         defaultValue={[toSlider(serverMemory, memoryLimits.unlimited)]}
                         value={field.state.value ? [field.state.value] : undefined}
+                        hasChanges={staged.memoryLimitMb !== undefined}
                         onValueChange={(value) => {
                           field.handleChange(value[0]);
                         }}
@@ -310,12 +320,14 @@ function ValueTitle({
     <p
       data-staged={hasChanges || undefined}
       className={cn(
-        "text-muted-foreground data-staged:text-change w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium",
+        "group/title text-muted-foreground data-staged:text-change/9-10 w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium",
         className,
       )}
     >
       <span className="pr-[0.6ch]">{title}:</span>
-      <span className="text-foreground font-mono font-bold">{value}</span>
+      <span className="text-foreground group-data-staged/title:text-change font-mono font-bold">
+        {value}
+      </span>
     </p>
   );
 }

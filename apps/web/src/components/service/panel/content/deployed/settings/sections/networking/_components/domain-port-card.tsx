@@ -284,9 +284,7 @@ export default function DomainPortCard({
                   {(field) => (
                     <BlockItem className="w-full md:w-full">
                       <BlockItemHeader type="column">
-                        <BlockItemTitle hasChanges={!field.state.meta.isDefaultValue}>
-                          Domain
-                        </BlockItemTitle>
+                        <BlockItemTitle>Domain</BlockItemTitle>
                       </BlockItemHeader>
                       <BlockItemContent>
                         <field.DomainInput
@@ -302,6 +300,7 @@ export default function DomainPortCard({
                           autoComplete="off"
                           spellCheck="false"
                           savedStatus={savedStatus}
+                          hasChanges={!field.state.meta.isDefaultValue}
                         />
                       </BlockItemContent>
                     </BlockItem>
@@ -333,6 +332,7 @@ export default function DomainPortCard({
                               autoComplete="off"
                               spellCheck="false"
                               inputMode="numeric"
+                              hasChanges={!field.state.meta.isDefaultValue}
                             />
                           </BlockItemContent>
                         </BlockItem>
@@ -408,6 +408,7 @@ export default function DomainPortCard({
                                   variant="outline"
                                   open={isOpen}
                                   onBlur={field.handleBlur}
+                                  hasChanges={!field.state.meta.isDefaultValue}
                                 />
                               )}
                             </field.AsyncDropdownMenu>
@@ -445,6 +446,7 @@ export default function DomainPortCard({
                                 autoComplete="off"
                                 spellCheck="false"
                                 inputMode="numeric"
+                                hasChanges={!field.state.meta.isDefaultValue}
                               />
                             </>
                           )}
