@@ -14,18 +14,13 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default:
-          "bg-primary text-primary-foreground has-hover:hover:bg-primary/10-10 active:bg-primary/10-10",
+        default: "bg-primary text-primary-foreground has-hover:hover:bg-primary active:bg-primary",
         destructive:
-          "bg-destructive text-destructive-foreground has-hover:hover:bg-destructive/10-10 active:bg-destructive/10-10",
-        warning:
-          "bg-warning text-warning-foreground has-hover:hover:bg-warning/10-10 active:bg-warning/10-10",
-        success:
-          "bg-success text-success-foreground has-hover:hover:bg-success/10-10 active:bg-success/10-10",
-        process:
-          "bg-process text-process-foreground has-hover:hover:bg-process/10-10 active:bg-process/10-10",
-        change:
-          "bg-change text-change-foreground has-hover:hover:bg-change/10-10 active:bg-change/10-10",
+          "bg-destructive text-destructive-foreground has-hover:hover:bg-destructive active:bg-destructive",
+        warning: "bg-warning text-warning-foreground has-hover:hover:bg-warning active:bg-warning",
+        success: "bg-success text-success-foreground has-hover:hover:bg-success active:bg-success",
+        process: "bg-process text-process-foreground has-hover:hover:bg-process active:bg-process",
+        change: "bg-change text-change-foreground has-hover:hover:bg-change active:bg-change",
         outline:
           "border border-border bg-background has-hover:hover:bg-border active:bg-border has-hover:hover:text-foreground active:text-foreground",
         "outline-muted":
@@ -39,7 +34,7 @@ const buttonVariants = cva(
         "warning-outline":
           "border border-warning/6-10 bg-background has-hover:hover:bg-warning/3-10 active:bg-warning/3-10 has-hover:hover:border-warning/0 active:border-warning/0 text-warning has-hover:hover:text-warning active:text-warning",
         secondary:
-          "bg-secondary text-secondary-foreground has-hover:hover:bg-secondary/10-10 active:bg-secondary/10-10",
+          "bg-secondary text-secondary-foreground has-hover:hover:bg-secondary active:bg-secondary",
         ghost:
           "has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground",
         "ghost-destructive":
@@ -58,19 +53,14 @@ const buttonVariants = cva(
           "text-foreground has-hover:hover:bg-foreground/3-10 has-hover:hover:text-foreground active:bg-foreground/3-10 active:text-foreground",
         card: "bg-card text-foreground has-hover:hover:bg-card-hover active:bg-card-hover",
         link: "text-primary underline-offset-4 has-hover:hover:underline active:underline",
-        google:
-          "bg-google text-google-foreground has-hover:hover:bg-google/10-10 active:bg-google/10-10",
-        discord:
-          "bg-discord text-discord-foreground has-hover:hover:bg-discord/10-10 active:bg-discord/10-10",
-        github:
-          "bg-github text-github-foreground has-hover:hover:bg-github/10-10 active:bg-github/10-10",
-        gitlab:
-          "bg-gitlab text-gitlab-foreground has-hover:hover:bg-gitlab/10-10 active:bg-gitlab/10-10",
+        google: "bg-google text-google-foreground has-hover:hover:bg-google active:bg-google",
+        discord: "bg-discord text-discord-foreground has-hover:hover:bg-discord active:bg-discord",
+        github: "bg-github text-github-foreground has-hover:hover:bg-github active:bg-github",
+        gitlab: "bg-gitlab text-gitlab-foreground has-hover:hover:bg-gitlab active:bg-gitlab",
         ethereum:
-          "bg-ethereum text-ethereum-foreground has-hover:hover:bg-ethereum/10-10 active:bg-ethereum/10-10",
-        x: "bg-x text-x-foreground has-hover:hover:bg-x/10-10 active:bg-x/10-10",
-        email:
-          "bg-email text-email-foreground has-hover:hover:bg-email/10-10 active:bg-email/10-10",
+          "bg-ethereum text-ethereum-foreground has-hover:hover:bg-ethereum active:bg-ethereum",
+        x: "bg-x text-x-foreground has-hover:hover:bg-x active:bg-x",
+        email: "bg-email text-email-foreground has-hover:hover:bg-email active:bg-email",
       },
       size: {
         default: "px-5 py-2.5",

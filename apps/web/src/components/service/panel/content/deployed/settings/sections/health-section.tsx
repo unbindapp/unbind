@@ -324,7 +324,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                 )}
               />
               {healthCheckType !== "none" && (
-                <div className="bg-border group-data-staged/wrapper:bg-change/5-10 -mt-1 h-px w-full" />
+                <div className="bg-border group-data-staged/wrapper:bg-change/6-10 -mt-1 h-px w-full" />
               )}
               {healthCheckType === "http" && portItems && (
                 <div className="relative -mt-1 w-full">
