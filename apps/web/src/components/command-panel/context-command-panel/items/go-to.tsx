@@ -5,7 +5,7 @@ import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
   ArchiveIcon,
-  BoxIcon,
+  ContainerIcon,
   ChartColumnIcon,
   CornerDownRightIcon,
   CpuIcon,
@@ -336,7 +336,7 @@ export default function useGoToItem({ context }: TProps) {
                   onHighlight: () => {
                     prefetchSettings("/environments");
                   },
-                  Icon: BoxIcon,
+                  Icon: ContainerIcon,
                   keywords: [
                     "environments",
                     "production",

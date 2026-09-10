@@ -1,7 +1,7 @@
 import { cn } from "@/components/ui/utils";
 import {
   ArchiveIcon,
-  BoxIcon,
+  ContainerIcon,
   KeyIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
@@ -11,13 +11,7 @@ import {
 import { ComponentProps } from "react";
 
 export type TSettingsTabVariant =
-  | "general"
-  | "environments"
-  | "variables"
-  | "members"
-  | "webhooks"
-  | "danger-zone"
-  | "storage";
+  "general" | "environments" | "variables" | "members" | "webhooks" | "danger-zone" | "storage";
 
 export default function SettingsTabIcon({
   variant,
@@ -25,7 +19,7 @@ export default function SettingsTabIcon({
   ...rest
 }: { variant: TSettingsTabVariant } & ComponentProps<"svg">) {
   if (variant === "environments") {
-    return <BoxIcon className={cn("size-5 shrink-0", className)} {...rest} />;
+    return <ContainerIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
   if (variant === "variables") {
