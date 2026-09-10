@@ -303,5 +303,10 @@
     "version": "v0.1.60",
     "summary": "Service settings search, staged changes highlighted on individual settings controls, and a container icon for environments.",
     "breaking": false
+  },
+  "v0.1.61": {
+    "version": "v0.1.61",
+    "summary": "Build command fields stay open while editing, watch paths picker improvements, and border color tweaks for hover and staged states.",
+    "breaking": false
   }
 }
