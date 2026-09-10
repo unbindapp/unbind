@@ -293,5 +293,10 @@
     "version": "v0.1.58",
     "summary": "Staged changes dialog fix, volume icon update, and navbar spacing improvements.",
     "breaking": false
+  },
+  "v0.1.59": {
+    "version": "v0.1.59",
+    "summary": "Navbar search button improvements, wider spacing between search and the user avatar, and a padding fix in the staged changes details dialog.",
+    "breaking": false
   }
 }
