@@ -467,7 +467,7 @@ function AffectedServices({
         )}
       </p>
       {!isPending && isRefetching === false && plan.length === 0 && (
-        <p className="text-muted-foreground text-sm leading-tight">
+        <p className="text-muted-foreground px-1 text-sm leading-tight">
           No running service is affected.
         </p>
       )}
