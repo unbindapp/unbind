@@ -2,14 +2,14 @@ import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/lib/server/client";
 import type {
-  GetInstanceHealthResponseBody,
-  ListInstancesResponseBody,
+  GetReplicaHealthResponseBody,
+  ListReplicasResponseBody,
 } from "@/lib/server/client.gen";
 
-export const queryKeyInstances = {
+export const queryKeyReplicas = {
   list: (input: { teamId: string; projectId: string; environmentId: string; serviceId: string }) =>
     [
-      "instances",
+      "replicas",
       "list",
       input.teamId,
       input.projectId,
@@ -23,7 +23,7 @@ export const queryKeyInstances = {
     serviceId: string;
   }) =>
     [
-      "instances",
+      "replicas",
       "health",
       input.teamId,
       input.projectId,
@@ -32,16 +32,16 @@ export const queryKeyInstances = {
     ] as const,
 };
 
-export const instancesListQuery = (input: {
+export const replicasListQuery = (input: {
   teamId: string;
   projectId: string;
   environmentId: string;
   serviceId: string;
 }) =>
   queryOptions({
-    queryKey: queryKeyInstances.list(input),
-    queryFn: async (): Promise<TInstancesList> => {
-      const res = await getGoClient().instances.list({
+    queryKey: queryKeyReplicas.list(input),
+    queryFn: async (): Promise<TReplicasList> => {
+      const res = await getGoClient().replicas.list({
         type: "service",
         team_id: input.teamId,
         project_id: input.projectId,
@@ -52,16 +52,16 @@ export const instancesListQuery = (input: {
     },
   });
 
-export const instanceHealthQuery = (input: {
+export const replicaHealthQuery = (input: {
   teamId: string;
   projectId: string;
   environmentId: string;
   serviceId: string;
 }) =>
   queryOptions({
-    queryKey: queryKeyInstances.health(input),
-    queryFn: async (): Promise<TInstanceHealth> => {
-      const res = await getGoClient().instances.health({
+    queryKey: queryKeyReplicas.health(input),
+    queryFn: async (): Promise<TReplicaHealth> => {
+      const res = await getGoClient().replicas.health({
         type: "service",
         team_id: input.teamId,
         project_id: input.projectId,
@@ -72,13 +72,13 @@ export const instanceHealthQuery = (input: {
     },
   });
 
-export async function restartInstances(input: {
+export async function restartReplicas(input: {
   teamId: string;
   projectId: string;
   environmentId: string;
   serviceId: string;
 }) {
-  const res = await getGoClient().instances.restart({
+  const res = await getGoClient().replicas.restart({
     team_id: input.teamId,
     project_id: input.projectId,
     environment_id: input.environmentId,
@@ -89,6 +89,6 @@ export async function restartInstances(input: {
 
 // ---- Types ----
 
-export type TInstancesList = { data: ListInstancesResponseBody["data"] };
-export type TInstanceHealth = { data: GetInstanceHealthResponseBody["data"] };
-export type TInstanceFromHealth = GetInstanceHealthResponseBody["data"]["instances"][number];
+export type TReplicasList = { data: ListReplicasResponseBody["data"] };
+export type TReplicaHealth = { data: GetReplicaHealthResponseBody["data"] };
+export type TReplicaFromHealth = GetReplicaHealthResponseBody["data"]["replicas"][number];

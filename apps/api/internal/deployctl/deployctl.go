@@ -834,7 +834,7 @@ func (self *DeploymentController) AreDependenciesReady(ctx context.Context, req 
 			return false
 		}
 
-		if status.Health != k8s.InstanceHealthActive {
+		if status.Health != k8s.ReplicaHealthActive {
 			return false
 		}
 	}

@@ -14,8 +14,8 @@ type DeploymentResponse struct {
 	Status                        schema.DeploymentStatus `json:"status"`
 	StatusMessage                 string                  `json:"status_message,omitempty" required:"false"`
 	CrashingReasons               []string                `json:"crashing_reasons" nullable:"false"`
-	InstanceEvents                []EventRecord           `json:"instance_events" nullable:"false"`
-	InstanceRestarts              int32                   `json:"instance_restarts"`
+	ReplicaEvents                 []EventRecord           `json:"replica_events" nullable:"false"`
+	ReplicaRestarts               int32                   `json:"replica_restarts"`
 	JobName                       string                  `json:"job_name"`
 	Error                         string                  `json:"error,omitempty"`
 	Attempts                      int                     `json:"attempts"`
@@ -59,7 +59,7 @@ func TransformDeploymentEntity(entity *ent.Deployment) *DeploymentResponse {
 			CompletedAt:                   entity.CompletedAt,
 			UpdatedAt:                     entity.UpdatedAt,
 			CrashingReasons:               []string{},
-			InstanceEvents:                []EventRecord{},
+			ReplicaEvents:                 []EventRecord{},
 			Builder:                       entity.Builder,
 			RailpackBuilderInstallCommand: entity.RailpackBuilderInstallCommand,
 			RailpackBuilderBuildCommand:   entity.RailpackBuilderBuildCommand,

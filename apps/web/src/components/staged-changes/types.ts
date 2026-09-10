@@ -28,7 +28,7 @@ export const StagedVariableChangeSchema = z.object({
 export type TStagedVariableChange = z.infer<typeof StagedVariableChangeSchema>;
 
 export const ServiceChangeFieldSchema = z.enum([
-  "instanceCount",
+  "replicaCount",
   "cpuLimitMillicores",
   "memoryLimitMb",
   "builder",

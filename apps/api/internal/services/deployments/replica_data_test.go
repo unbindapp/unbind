@@ -20,10 +20,10 @@ import (
 
 func podStatus(deploymentID uuid.UUID, state k8s.ContainerState, ready, crashing bool) k8s.PodContainerStatus {
 	return k8s.PodContainerStatus{
-		KubernetesName:       "pod",
-		DeploymentID:         deploymentID,
-		HasCrashingInstances: crashing,
-		Instances: []k8s.InstanceStatus{
+		KubernetesName:        "pod",
+		DeploymentID:          deploymentID,
+		HasCrashingContainers: crashing,
+		Containers: []k8s.ContainerStatus{
 			{
 				KubernetesName: "container",
 				Ready:          ready,
@@ -37,7 +37,7 @@ func podStatus(deploymentID uuid.UUID, state k8s.ContainerState, ready, crashing
 	}
 }
 
-func TestCalculateInstanceData(t *testing.T) {
+func TestCalculateReplicaData(t *testing.T) {
 	currentID := uuid.New()
 	staleID := uuid.New()
 	now := time.Now()
@@ -165,10 +165,10 @@ func TestCalculateInstanceData(t *testing.T) {
 	svc := &DeploymentService{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := svc.calculateInstanceData(tt.statuses, tt.expectedReplicas, tt.deployment, tt.isDatabase)
+			result := svc.calculateReplicaData(tt.statuses, tt.expectedReplicas, tt.deployment, tt.isDatabase)
 
 			assert.Equal(t, tt.expectedStatus, result.Status)
-			assert.Len(t, result.InstanceEvents, tt.expectedEvents)
+			assert.Len(t, result.ReplicaEvents, tt.expectedEvents)
 			if tt.expectReason {
 				assert.NotEmpty(t, result.CrashingReasons)
 			}
@@ -267,7 +267,7 @@ func TestApplyDatabaseCRStatus(t *testing.T) {
 			}
 
 			svc := &DeploymentService{k8s: k8sMock}
-			data := &ServiceInstanceData{Status: tt.initialStatus}
+			data := &ServiceReplicaData{Status: tt.initialStatus}
 			svc.applyDatabaseCRStatus(ctx, tt.service, namespace, data)
 
 			assert.Equal(t, tt.expectedStatus, data.Status)

@@ -103,7 +103,7 @@ type KubeClientInterface interface {
 	// GetPodContainerStatusByLabelsWithOptions efficiently fetches pod status with configurable options
 	// Container state events are always inferred (lightweight and reliable)
 	GetPodContainerStatusByLabelsWithOptions(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface, options PodStatusOptions) ([]PodContainerStatus, error)
-	GetExpectedInstances(ctx context.Context, namespace string, podName string, client kubernetes.Interface) (int, error)
+	GetExpectedReplicas(ctx context.Context, namespace string, podName string, client kubernetes.Interface) (int, error)
 	GetSimpleHealthStatus(ctx context.Context, namespace string, labels map[string]string, expectedReplicas *int, client kubernetes.Interface) (*SimpleHealthStatus, error)
 	// GetPodsByLabels returns pods matching the provided labels in a namespace
 	GetPodsByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) (*corev1.PodList, error)

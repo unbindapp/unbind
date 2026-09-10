@@ -6,9 +6,9 @@ export function shouldServiceSettingsHaveDeploySection(service: TServiceShallow)
   );
 }
 
-// Databases don't get an instance count: for them replicas changes the cluster
+// Databases do not get a replica count: for them replicas changes the cluster
 // topology (Postgres numberOfInstances, Redis standalone/replication, etc.).
-export function shouldDeploySectionHaveInstances(service: TServiceShallow) {
+export function shouldDeploySectionHaveReplicas(service: TServiceShallow) {
   return service.type === "github" || service.type === "docker-image";
 }
 

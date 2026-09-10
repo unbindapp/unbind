@@ -1,4 +1,4 @@
-package instance_service
+package replica_service
 
 import (
 	"context"
@@ -14,22 +14,22 @@ import (
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 )
 
-// Integrate instance (pods) management with internal permissions and kubernetes RBAC
-type InstanceService struct {
+// Integrate replica (pod) management with internal permissions and kubernetes RBAC
+type ReplicaService struct {
 	cfg  *config.Config
 	repo repositories.RepositoriesInterface
 	k8s  k8s.KubeClientInterface
 }
 
-func NewInstanceService(cfg *config.Config, repo repositories.RepositoriesInterface, k8s k8s.KubeClientInterface) *InstanceService {
-	return &InstanceService{
+func NewReplicaService(cfg *config.Config, repo repositories.RepositoriesInterface, k8s k8s.KubeClientInterface) *ReplicaService {
+	return &ReplicaService{
 		cfg:  cfg,
 		repo: repo,
 		k8s:  k8s,
 	}
 }
 
-func (self *InstanceService) validatePermissionsAndParseInputs(ctx context.Context, requesterUserID uuid.UUID, instanceType models.InstanceType, teamID, projectID, environmentID, serviceID uuid.UUID) (*ent.Team, *ent.Project, *ent.Environment, *ent.Service, error) {
+func (self *ReplicaService) validatePermissionsAndParseInputs(ctx context.Context, requesterUserID uuid.UUID, replicaType models.ReplicaType, teamID, projectID, environmentID, serviceID uuid.UUID) (*ent.Team, *ent.Project, *ent.Environment, *ent.Service, error) {
 	permissionChecks := []permissions_repo.PermissionCheck{
 		//Can read team, project, environmnent, or service depending on inputs
 		{
@@ -67,9 +67,9 @@ func (self *InstanceService) validatePermissionsAndParseInputs(ctx context.Conte
 	}
 
 	var project *ent.Project
-	if instanceType == models.InstanceTypeProject ||
-		instanceType == models.InstanceTypeEnvironment ||
-		instanceType == models.InstanceTypeService {
+	if replicaType == models.ReplicaTypeProject ||
+		replicaType == models.ReplicaTypeEnvironment ||
+		replicaType == models.ReplicaTypeService {
 		project, err = self.repo.Project().GetByID(ctx, projectID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -83,8 +83,8 @@ func (self *InstanceService) validatePermissionsAndParseInputs(ctx context.Conte
 	}
 
 	var environment *ent.Environment
-	if instanceType == models.InstanceTypeEnvironment ||
-		instanceType == models.InstanceTypeService {
+	if replicaType == models.ReplicaTypeEnvironment ||
+		replicaType == models.ReplicaTypeService {
 		environment, err = self.repo.Environment().GetByID(ctx, environmentID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -98,7 +98,7 @@ func (self *InstanceService) validatePermissionsAndParseInputs(ctx context.Conte
 	}
 
 	var service *ent.Service
-	if instanceType == models.InstanceTypeService {
+	if replicaType == models.ReplicaTypeService {
 		service, err = self.repo.Service().GetByID(ctx, serviceID)
 		if err != nil {
 			if ent.IsNotFound(err) {

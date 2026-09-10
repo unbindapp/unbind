@@ -20,10 +20,10 @@ import (
 	environments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/environments"
 	github_handler "github.com/unbindapp/unbind-api/internal/api/handlers/github"
 	groups_handler "github.com/unbindapp/unbind-api/internal/api/handlers/groups"
-	instances_handler "github.com/unbindapp/unbind-api/internal/api/handlers/instances"
 	logs_handler "github.com/unbindapp/unbind-api/internal/api/handlers/logs"
 	metrics_handler "github.com/unbindapp/unbind-api/internal/api/handlers/metrics"
 	projects_handler "github.com/unbindapp/unbind-api/internal/api/handlers/projects"
+	replicas_handler "github.com/unbindapp/unbind-api/internal/api/handlers/replicas"
 	service_handler "github.com/unbindapp/unbind-api/internal/api/handlers/service"
 	servicegroups_handler "github.com/unbindapp/unbind-api/internal/api/handlers/service_groups"
 	setup_handler "github.com/unbindapp/unbind-api/internal/api/handlers/setup"
@@ -163,7 +163,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/deployments", "Deployments", true, deployments_handler.RegisterHandlers)
 	register("/metrics", "Metrics", true, metrics_handler.RegisterHandlers)
 	register("/unbindwebhooks", "Unbind Webhooks", true, unbindwebhooks_handler.RegisterHandlers)
-	register("/instances", "Instances", true, instances_handler.RegisterHandlers)
+	register("/replicas", "Replicas", true, replicas_handler.RegisterHandlers)
 	register("/storage", "Storage", true, storage_handler.RegisterHandlers)
 	register("/templates", "Templates", true, template_handler.RegisterHandlers)
 	register("/docker", "Docker", true, docker_handler.RegisterHandlers)

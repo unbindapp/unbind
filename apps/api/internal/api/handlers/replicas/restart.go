@@ -1,4 +1,4 @@
-package instances_handler
+package replicas_handler
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/server"
 )
 
-// Restart instance
-type RestartInstancesInput struct {
+// Restart replicas
+type RestartReplicasInput struct {
 	server.BaseAuthInput
 	Body struct {
 		ServiceID     uuid.UUID `json:"service_id" required:"true"`
@@ -29,8 +29,8 @@ type RestartServicesResponse struct {
 	}
 }
 
-// RestartInstances handles PUT /instances/restart
-func (self *HandlerGroup) RestartInstances(ctx context.Context, input *RestartInstancesInput) (*RestartServicesResponse, error) {
+// RestartReplicas handles PUT /replicas/restart
+func (self *HandlerGroup) RestartReplicas(ctx context.Context, input *RestartReplicasInput) (*RestartServicesResponse, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err

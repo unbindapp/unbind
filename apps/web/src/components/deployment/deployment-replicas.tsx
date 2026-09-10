@@ -1,7 +1,7 @@
 import ErrorLine from "@/components/error-line";
-import { useInstanceHealth } from "@/components/instances/instance-health-provider";
+import { useReplicaHealth } from "@/components/replicas/replica-health-provider";
 import { cn } from "@/components/ui/utils";
-import { TInstanceFromHealth } from "@/lib/queries/instances";
+import { TReplicaFromHealth } from "@/lib/queries/replicas";
 import {
   CircleHelpIcon,
   CircleSlashIcon,
@@ -17,8 +17,8 @@ type TProps = {
   isPending?: boolean;
 };
 
-export default function DeploymentInstances({ isPending: isPendingProp, className }: TProps) {
-  const { data, isPending, error } = useInstanceHealth();
+export default function DeploymentReplicas({ isPending: isPendingProp, className }: TProps) {
+  const { data, isPending, error } = useReplicaHealth();
 
   if (!data && !isPending && error) {
     return (
@@ -54,25 +54,25 @@ export default function DeploymentInstances({ isPending: isPendingProp, classNam
     );
   }
 
-  if (data.data.instances.length === 0) return null;
+  if (data.data.replicas.length === 0) return null;
 
-  const orderedInstances = data.data.instances.toSorted((a, b) => {
+  const orderedReplicas = data.data.replicas.toSorted((a, b) => {
     return statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
   });
 
   return (
     <div className={cn("flex w-full flex-wrap gap-1.5", className)}>
-      {orderedInstances.map((instance, i) => (
-        <Instance key={i} instance={instance} />
+      {orderedReplicas.map((replica, i) => (
+        <Replica key={i} replica={replica} />
       ))}
     </div>
   );
 }
 
-function Instance({ instance }: { instance: TInstanceFromHealth }) {
+function Replica({ replica }: { replica: TReplicaFromHealth }) {
   return (
     <div
-      data-status={instance?.status}
+      data-status={replica?.status}
       className="bg-background data-[status=waiting]:border-warning/6-10 data-[status=starting]:border-process/6-10 data-[status=not_ready]:border-process/6-10 data-[status=running]:border-success/6-10 data-[status=crashing]:border-destructive/6-10 group/div relative z-0 flex overflow-hidden rounded-md border"
     >
       <IconWrapper>
@@ -81,7 +81,7 @@ function Instance({ instance }: { instance: TInstanceFromHealth }) {
       <div className="bg-border group-data-[status=waiting]/div:bg-warning/6-10 group-data-[status=starting]/div:bg-process/6-10 group-data-[status=not_ready]/div:bg-process/6-10 group-data-[status=running]/div:bg-success/6-10 group-data-[status=crashing]/div:bg-destructive/6-10 w-px self-stretch" />
       <IconWrapper className="group-data-[status=waiting]/div:bg-warning/3-10 group-data-[status=starting]/div:bg-process/3-10 group-data-[status=not_ready]/div:bg-process/3-10 group-data-[status=running]/div:bg-success/3-10 group-data-[status=crashing]/div:bg-destructive/3-10">
         <div className="size-3.5 shrink-0">
-          <Indicator instance={instance} />
+          <Indicator replica={replica} />
         </div>
       </IconWrapper>
     </div>
@@ -92,34 +92,34 @@ function IconWrapper({ className, children }: { className?: string; children: Re
   return <div className={cn("p-1.25", className)}>{children}</div>;
 }
 
-function Indicator({ instance }: { instance: TInstanceFromHealth }) {
-  if (instance.status === "waiting") {
+function Indicator({ replica }: { replica: TReplicaFromHealth }) {
+  if (replica.status === "waiting") {
     return <HourglassIcon className="text-warning animate-hourglass size-full" />;
   }
-  if (instance.status === "starting" || instance.status === "not_ready") {
+  if (replica.status === "starting" || replica.status === "not_ready") {
     return <LoaderIcon className="text-process size-full animate-spin" />;
   }
-  if (instance.status === "running") {
+  if (replica.status === "running") {
     return <HeartIcon className="text-success size-full" />;
   }
-  if (instance.status === "crashing") {
+  if (replica.status === "crashing") {
     return <TriangleAlertIcon className="text-destructive size-full" />;
   }
-  if (instance.status === "image_pull_error") {
+  if (replica.status === "image_pull_error") {
     return <TriangleAlertIcon className="text-destructive size-full" />;
   }
-  if (instance.status === "terminating") {
+  if (replica.status === "terminating") {
     return (
       <CircleSlashIcon className="text-muted-foreground size-full animate-spin duration-2000" />
     );
   }
-  if (instance.status === "terminated") {
+  if (replica.status === "terminated") {
     return <CircleSlashIcon className="text-muted-foreground size-full" />;
   }
   return <CircleHelpIcon className="text-muted-foreground size-full" />;
 }
 
-const statusOrder: TInstanceFromHealth["status"][] = [
+const statusOrder: TReplicaFromHealth["status"][] = [
   "crashing",
   "image_pull_error",
   "running",

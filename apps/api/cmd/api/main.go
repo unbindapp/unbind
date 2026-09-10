@@ -42,10 +42,10 @@ import (
 	deployments_service "github.com/unbindapp/unbind-api/internal/services/deployments"
 	environment_service "github.com/unbindapp/unbind-api/internal/services/environment"
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
-	instance_service "github.com/unbindapp/unbind-api/internal/services/instances"
 	logs_service "github.com/unbindapp/unbind-api/internal/services/logs"
 	metric_service "github.com/unbindapp/unbind-api/internal/services/metrics"
 	project_service "github.com/unbindapp/unbind-api/internal/services/project"
+	replica_service "github.com/unbindapp/unbind-api/internal/services/replicas"
 	service_service "github.com/unbindapp/unbind-api/internal/services/service"
 	servicegroup_service "github.com/unbindapp/unbind-api/internal/services/service_group"
 	storage_service "github.com/unbindapp/unbind-api/internal/services/storage"
@@ -168,7 +168,7 @@ func startAPI(cfg *config.Config) {
 	systemService := system_service.NewSystemService(cfg, repo, buildkitSettings, registryTester, registryCacheManager, kubeClient)
 	systemService.ReconcileRegistryCache(ctx, k8s.AppImageRepository+":"+Version)
 	metricsService := metric_service.NewMetricService(promClient, repo, kubeClient)
-	instanceService := instance_service.NewInstanceService(cfg, repo, kubeClient)
+	replicaService := replica_service.NewReplicaService(cfg, repo, kubeClient)
 	storageService := storage_service.NewStorageService(cfg, repo, kubeClient, promClient, serviceService)
 	templateService := templates_service.NewTemplatesService(cfg, repo, kubeClient, dbProvider, deploymentController)
 	serviceGroupService := servicegroup_service.NewServiceGroupService(cfg, repo, kubeClient, deploymentController, serviceService, storageService)
@@ -207,7 +207,7 @@ func startAPI(cfg *config.Config) {
 		SystemService:        systemService,
 		MetricsService:       metricsService,
 		WebhooksService:      webhooksService,
-		InstanceService:      instanceService,
+		ReplicaService:       replicaService,
 		VariablesService:     variableService,
 		StorageService:       storageService,
 		TemplateService:      templateService,

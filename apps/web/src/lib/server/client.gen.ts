@@ -322,12 +322,12 @@ export const DeploymentResponseSchema = z
     git_branch: z.string().optional(),
     id: z.string(),
     image: z.string().optional(),
-    instance_events: z.array(EventRecordSchema),
-    instance_restarts: z.number(),
     job_name: z.string(),
     queued_at: z.string().datetime({ offset: true }).optional(),
     railpack_builder_build_command: z.string().optional(),
     railpack_builder_install_command: z.string().optional(),
+    replica_events: z.array(EventRecordSchema),
+    replica_restarts: z.number(),
     run_command: z.string().optional(),
     service_id: z.string(),
     started_at: z.string().datetime({ offset: true }).optional(),
@@ -374,6 +374,23 @@ export const ContainerStateSchema = z.enum([
   'image_pull_error',
   'starting',
 ]);
+
+export const ContainerStatusSchema = z
+  .object({
+    crash_loop_reason: z.string().optional(),
+    events: z.array(EventRecordSchema).optional(),
+    is_crashing: z.boolean(),
+    kubernetes_name: z.string(),
+    last_exit_code: z.number().optional(),
+    last_termination: z.string().optional(),
+    pod_created_at: z.string().datetime({ offset: true }).optional(),
+    ready: z.boolean(),
+    restart_count: z.number(),
+    state: ContainerStateSchema,
+    state_message: z.string().optional(),
+    state_reason: z.string().optional(),
+  })
+  .strip();
 
 export const ConvexAdminKeyParamsSchema = z
   .object({
@@ -1175,32 +1192,6 @@ export const GetGroupResponseBodySchema = z
   })
   .strip();
 
-export const InstanceHealthSchema = z.enum(['pending', 'crashing', 'active', 'terminating']);
-
-export const SimpleInstanceStatusSchema = z
-  .object({
-    events: z.array(EventRecordSchema).optional(),
-    kubernetes_name: z.string(),
-    pod_created_at: z.string().datetime({ offset: true }).optional(),
-    restart_count: z.number(),
-    status: ContainerStateSchema,
-  })
-  .strip();
-
-export const SimpleHealthStatusSchema = z
-  .object({
-    expected_instances: z.number(),
-    health: InstanceHealthSchema,
-    instances: z.array(SimpleInstanceStatusSchema),
-  })
-  .strip();
-
-export const GetInstanceHealthResponseBodySchema = z
-  .object({
-    data: SimpleHealthStatusSchema,
-  })
-  .strip();
-
 export const MetricsTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
 export const MetricDetailSchema = z
@@ -1273,6 +1264,32 @@ export const GetProjectResponseBodySchema = z
 export const GetRegistryResponseBodySchema = z
   .object({
     data: RegistryResponseSchema,
+  })
+  .strip();
+
+export const ReplicaHealthSchema = z.enum(['pending', 'crashing', 'active', 'terminating']);
+
+export const ReplicaStatusSchema = z
+  .object({
+    events: z.array(EventRecordSchema).optional(),
+    kubernetes_name: z.string(),
+    pod_created_at: z.string().datetime({ offset: true }).optional(),
+    restart_count: z.number(),
+    status: ContainerStateSchema,
+  })
+  .strip();
+
+export const SimpleHealthStatusSchema = z
+  .object({
+    expected_replicas: z.number(),
+    health: ReplicaHealthSchema,
+    replicas: z.array(ReplicaStatusSchema),
+  })
+  .strip();
+
+export const GetReplicaHealthResponseBodySchema = z
+  .object({
+    data: SimpleHealthStatusSchema,
   })
   .strip();
 
@@ -1750,25 +1767,6 @@ export const GroupMemberResponseBodySchema = z
   })
   .strip();
 
-export const InstanceStatusSchema = z
-  .object({
-    crash_loop_reason: z.string().optional(),
-    events: z.array(EventRecordSchema).optional(),
-    is_crashing: z.boolean(),
-    kubernetes_name: z.string(),
-    last_exit_code: z.number().optional(),
-    last_termination: z.string().optional(),
-    pod_created_at: z.string().datetime({ offset: true }).optional(),
-    ready: z.boolean(),
-    restart_count: z.number(),
-    state: ContainerStateSchema,
-    state_message: z.string().optional(),
-    state_reason: z.string().optional(),
-  })
-  .strip();
-
-export const InstanceTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
-
 export const ItemSchema = z
   .object({
     name: z.string(),
@@ -1843,34 +1841,6 @@ export const ListGroupsResponseBodySchema = z
   })
   .strip();
 
-export const PodPhaseSchema = z.enum(['pending', 'running', 'succeeded', 'failed', 'unknown']);
-
-export const PodContainerStatusSchema = z
-  .object({
-    created_at: z.string().datetime({ offset: true }).optional(),
-    deployment_id: z.string(),
-    environment_id: z.string(),
-    has_crashing_instances: z.boolean(),
-    instance_dependencies: z.array(InstanceStatusSchema),
-    instances: z.array(InstanceStatusSchema),
-    is_terminating: z.boolean(),
-    kubernetes_name: z.string(),
-    namespace: z.string(),
-    phase: PodPhaseSchema,
-    pod_ip: z.string().optional(),
-    project_id: z.string(),
-    service_id: z.string(),
-    start_time: z.string().optional(),
-    team_id: z.string(),
-  })
-  .strip();
-
-export const ListInstancesResponseBodySchema = z
-  .object({
-    data: z.array(PodContainerStatusSchema),
-  })
-  .strip();
-
 export const ListPVCResponseBodySchema = z
   .object({
     data: z.array(PVCInfoSchema),
@@ -1886,6 +1856,34 @@ export const ListProjectResponseBodySchema = z
 export const ListRegistriesResponseBodySchema = z
   .object({
     data: z.array(RegistryResponseSchema),
+  })
+  .strip();
+
+export const PodPhaseSchema = z.enum(['pending', 'running', 'succeeded', 'failed', 'unknown']);
+
+export const PodContainerStatusSchema = z
+  .object({
+    containers: z.array(ContainerStatusSchema),
+    created_at: z.string().datetime({ offset: true }).optional(),
+    deployment_id: z.string(),
+    environment_id: z.string(),
+    has_crashing_containers: z.boolean(),
+    init_containers: z.array(ContainerStatusSchema),
+    is_terminating: z.boolean(),
+    kubernetes_name: z.string(),
+    namespace: z.string(),
+    phase: PodPhaseSchema,
+    pod_ip: z.string().optional(),
+    project_id: z.string(),
+    service_id: z.string(),
+    start_time: z.string().optional(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const ListReplicasResponseBodySchema = z
+  .object({
+    data: z.array(PodContainerStatusSchema),
   })
   .strip();
 
@@ -2100,6 +2098,8 @@ export const RemoveDeploymentOutputBodySchema = z
   })
   .strip();
 
+export const ReplicaTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
+
 export const ResponseErrorSchema = z
   .object({
     details: z.array(z.string()).nullable().optional(), // Optional actionable details, e.g. which field failed validation
@@ -2119,7 +2119,7 @@ export const ResponseErrorSchema = z
   })
   .strip();
 
-export const RestartInstancesInputBodySchema = z
+export const RestartReplicasInputBodySchema = z
   .object({
     environment_id: z.string(),
     project_id: z.string(),
@@ -2632,6 +2632,7 @@ export type CertManagerCondition = z.infer<typeof CertManagerConditionSchema>;
 export type CollisionOutput = z.infer<typeof CollisionOutputSchema>;
 export type CheckUniqueDomainOutputBody = z.infer<typeof CheckUniqueDomainOutputBodySchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
+export type ContainerStatus = z.infer<typeof ContainerStatusSchema>;
 export type ConvexAdminKeyParams = z.infer<typeof ConvexAdminKeyParamsSchema>;
 export type Cookie = z.infer<typeof CookieSchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
@@ -2725,10 +2726,6 @@ export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySche
 export type GetDeploymentResponseBody = z.infer<typeof GetDeploymentResponseBodySchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
 export type GetGroupResponseBody = z.infer<typeof GetGroupResponseBodySchema>;
-export type InstanceHealth = z.infer<typeof InstanceHealthSchema>;
-export type SimpleInstanceStatus = z.infer<typeof SimpleInstanceStatusSchema>;
-export type SimpleHealthStatus = z.infer<typeof SimpleHealthStatusSchema>;
-export type GetInstanceHealthResponseBody = z.infer<typeof GetInstanceHealthResponseBodySchema>;
 export type MetricsType = z.infer<typeof MetricsTypeSchema>;
 export type MetricDetail = z.infer<typeof MetricDetailSchema>;
 export type MetricsMapEntry = z.infer<typeof MetricsMapEntrySchema>;
@@ -2740,6 +2737,10 @@ export type GetNodeMetricsResponseBody = z.infer<typeof GetNodeMetricsResponseBo
 export type GetPVCResponseBody = z.infer<typeof GetPVCResponseBodySchema>;
 export type GetProjectResponseBody = z.infer<typeof GetProjectResponseBodySchema>;
 export type GetRegistryResponseBody = z.infer<typeof GetRegistryResponseBodySchema>;
+export type ReplicaHealth = z.infer<typeof ReplicaHealthSchema>;
+export type ReplicaStatus = z.infer<typeof ReplicaStatusSchema>;
+export type SimpleHealthStatus = z.infer<typeof SimpleHealthStatusSchema>;
+export type GetReplicaHealthResponseBody = z.infer<typeof GetReplicaHealthResponseBodySchema>;
 export type GetS3BucketByIDOutputBody = z.infer<typeof GetS3BucketByIDOutputBodySchema>;
 export type ServiceGroupHostInfo = z.infer<typeof ServiceGroupHostInfoSchema>;
 export type ServiceGroupVariableInfo = z.infer<typeof ServiceGroupVariableInfoSchema>;
@@ -2806,8 +2807,6 @@ export type GrantGroupPermissionResponseBody = z.infer<
 export type GroupMemberInputBody = z.infer<typeof GroupMemberInputBodySchema>;
 export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
 export type GroupMemberResponseBody = z.infer<typeof GroupMemberResponseBodySchema>;
-export type InstanceStatus = z.infer<typeof InstanceStatusSchema>;
-export type InstanceType = z.infer<typeof InstanceTypeSchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type ListDatabasesResponseBody = z.infer<typeof ListDatabasesResponseBodySchema>;
 export type PaginationResponseMetadata = z.infer<typeof PaginationResponseMetadataSchema>;
@@ -2821,12 +2820,12 @@ export type ListGroupPermissionsResponseBody = z.infer<
   typeof ListGroupPermissionsResponseBodySchema
 >;
 export type ListGroupsResponseBody = z.infer<typeof ListGroupsResponseBodySchema>;
-export type PodPhase = z.infer<typeof PodPhaseSchema>;
-export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
-export type ListInstancesResponseBody = z.infer<typeof ListInstancesResponseBodySchema>;
 export type ListPVCResponseBody = z.infer<typeof ListPVCResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListRegistriesResponseBody = z.infer<typeof ListRegistriesResponseBodySchema>;
+export type PodPhase = z.infer<typeof PodPhaseSchema>;
+export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
+export type ListReplicasResponseBody = z.infer<typeof ListReplicasResponseBodySchema>;
 export type ListS3BucketsOutputBody = z.infer<typeof ListS3BucketsOutputBodySchema>;
 export type ListServiceGroupResponseBody = z.infer<typeof ListServiceGroupResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
@@ -2859,8 +2858,9 @@ export type RegistryCacheStats = z.infer<typeof RegistryCacheStatsSchema>;
 export type RegistryCacheStatsResponseBody = z.infer<typeof RegistryCacheStatsResponseBodySchema>;
 export type RemoveDeploymentInputBody = z.infer<typeof RemoveDeploymentInputBodySchema>;
 export type RemoveDeploymentOutputBody = z.infer<typeof RemoveDeploymentOutputBodySchema>;
+export type ReplicaType = z.infer<typeof ReplicaTypeSchema>;
 export type ResponseError = z.infer<typeof ResponseErrorSchema>;
-export type RestartInstancesInputBody = z.infer<typeof RestartInstancesInputBodySchema>;
+export type RestartReplicasInputBody = z.infer<typeof RestartReplicasInputBodySchema>;
 export type Restarted = z.infer<typeof RestartedSchema>;
 export type RestartServicesResponseBody = z.infer<typeof RestartServicesResponseBodySchema>;
 export type RevokeGroupPermissionInputBody = z.infer<typeof RevokeGroupPermissionInputBodySchema>;
@@ -3033,25 +3033,6 @@ export const list_group_permissionsQuerySchema = z
   })
   .passthrough();
 
-export const get_instance_healthQuerySchema = z
-  .object({
-    team_id: z.string(),
-    project_id: z.string(),
-    environment_id: z.string(),
-    service_id: z.string(),
-  })
-  .passthrough();
-
-export const list_instancesQuerySchema = z
-  .object({
-    type: InstanceTypeSchema,
-    team_id: z.string(),
-    project_id: z.string().optional(),
-    environment_id: z.string().optional(),
-    service_id: z.string().optional(),
-  })
-  .passthrough();
-
 export const query_logsQuerySchema = z
   .object({
     type: LogTypeSchema,
@@ -3133,6 +3114,25 @@ export const list_projectsQuerySchema = z
     sort_by: SortByFieldSchema.optional(),
     sort_order: SortOrderSchema.optional(),
     team_id: z.string(),
+  })
+  .passthrough();
+
+export const get_replica_healthQuerySchema = z
+  .object({
+    team_id: z.string(),
+    project_id: z.string(),
+    environment_id: z.string(),
+    service_id: z.string(),
+  })
+  .passthrough();
+
+export const list_replicasQuerySchema = z
+  .object({
+    type: ReplicaTypeSchema,
+    team_id: z.string(),
+    project_id: z.string().optional(),
+    environment_id: z.string().optional(),
+    service_id: z.string().optional(),
   })
   .passthrough();
 
@@ -4994,146 +4994,6 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         }
       },
     },
-    instances: {
-      health: async (
-        params: z.infer<typeof get_instance_healthQuerySchema>,
-        fetchOptions?: RequestInit,
-      ): Promise<GetInstanceHealthResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/instances/health`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-          const validatedQuery = get_instance_healthQuerySchema.parse(params);
-          const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
-          queryKeys.forEach((key) => {
-            const value = validatedQuery[key as keyof typeof validatedQuery];
-            if (value !== undefined && value !== null) {
-              url.searchParams.append(key, String(value));
-            }
-          });
-          const options: RequestInit = {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = GetInstanceHealthResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
-      list: async (
-        params: z.infer<typeof list_instancesQuerySchema>,
-        fetchOptions?: RequestInit,
-      ): Promise<ListInstancesResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/instances/list`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-          const validatedQuery = list_instancesQuerySchema.parse(params);
-          const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'service_id'];
-          queryKeys.forEach((key) => {
-            const value = validatedQuery[key as keyof typeof validatedQuery];
-            if (value !== undefined && value !== null) {
-              url.searchParams.append(key, String(value));
-            }
-          });
-          const options: RequestInit = {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = ListInstancesResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
-      restart: async (
-        params: RestartInstancesInputBody,
-        fetchOptions?: RequestInit,
-      ): Promise<RestartServicesResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/instances/restart`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-
-          const options: RequestInit = {
-            method: 'PUT',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-          const validatedBody = RestartInstancesInputBodySchema.parse(params);
-          options.body = JSON.stringify(validatedBody);
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = RestartServicesResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
-    },
     logs: {
       query: async (
         params: z.infer<typeof query_logsQuerySchema>,
@@ -5619,6 +5479,146 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateProjectResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+    },
+    replicas: {
+      health: async (
+        params: z.infer<typeof get_replica_healthQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetReplicaHealthResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/replicas/health`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = get_replica_healthQuerySchema.parse(params);
+          const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = GetReplicaHealthResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_replicasQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListReplicasResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/replicas/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = list_replicasQuerySchema.parse(params);
+          const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'service_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListReplicasResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      restart: async (
+        params: RestartReplicasInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<RestartServicesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/replicas/restart`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = RestartReplicasInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = RestartServicesResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

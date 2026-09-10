@@ -95,7 +95,7 @@ test("merges service field changes into one update per service", () => {
     state(
       [],
       [
-        service("instanceCount", 3),
+        service("replicaCount", 3),
         service("cpuLimitMillicores", -1),
         service("healthCheckType", "http"),
         service("healthCheckEndpoint", "/health"),
@@ -146,7 +146,7 @@ test("keeps only the changes that failed to apply", () => {
       variable("T", "2", { scope: { type: "team", teamId: "team" } }),
       variable("P", "3", { scope: { type: "project", teamId: "team", projectId: "project" } }),
     ],
-    [service("instanceCount", 3), service("gitBranch", "develop", { serviceId: "web" })],
+    [service("replicaCount", 3), service("gitBranch", "develop", { serviceId: "web" })],
   );
 
   const keep = idsToKeepAfterFailures(current, [

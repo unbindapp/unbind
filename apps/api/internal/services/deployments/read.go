@@ -42,9 +42,9 @@ func (self *DeploymentService) GetDeploymentsForService(ctx context.Context, req
 
 	resp := models.TransformDeploymentEntities(deployments)
 
-	currentDeployment, err := self.AttachInstanceDataToCurrent(ctx, resp, service)
+	currentDeployment, err := self.AttachReplicaDataToCurrent(ctx, resp, service)
 	if err != nil {
-		log.Error("Error attaching instance data to current deployment", "err", err, "service_id", service.ID)
+		log.Error("Error attaching replica data to current deployment", "err", err, "service_id", service.ID)
 		return nil, nil, nil, err
 	}
 
@@ -82,8 +82,8 @@ func (self *DeploymentService) GetDeploymentByID(ctx context.Context, requesterU
 	}
 
 	if service.CurrentDeploymentID != nil && *service.CurrentDeploymentID == deployment.ID {
-		// If this is the current deployment, attach instance data
-		return self.AttachInstanceDataToCurrent(ctx, []*models.DeploymentResponse{models.TransformDeploymentEntity(deployment)}, service)
+		// If this is the current deployment, attach replica data
+		return self.AttachReplicaDataToCurrent(ctx, []*models.DeploymentResponse{models.TransformDeploymentEntity(deployment)}, service)
 	}
 
 	transformed := models.TransformDeploymentEntity(deployment)
@@ -95,8 +95,8 @@ func (self *DeploymentService) GetDeploymentByID(ctx context.Context, requesterU
 	return transformed, nil
 }
 
-// Attach instance data
-func (self *DeploymentService) AttachInstanceDataToCurrent(ctx context.Context, deployments []*models.DeploymentResponse, service *ent.Service) (*models.DeploymentResponse, error) {
+// Attach replica data
+func (self *DeploymentService) AttachReplicaDataToCurrent(ctx context.Context, deployments []*models.DeploymentResponse, service *ent.Service) (*models.DeploymentResponse, error) {
 	if service.Edges.CurrentDeployment == nil {
 		return nil, nil
 	}
@@ -119,19 +119,19 @@ func (self *DeploymentService) AttachInstanceDataToCurrent(ctx context.Context, 
 		return targetDeployment, err
 	}
 
-	// Use the standard utility to calculate instance data with inferred events
-	instanceData := self.calculateInstanceData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment, service.Type == schema.ServiceTypeDatabase)
-	self.applyDatabaseCRStatus(ctx, service, namespace, instanceData)
+	// Use the standard utility to calculate replica data with inferred events
+	replicaData := self.calculateReplicaData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment, service.Type == schema.ServiceTypeDatabase)
+	self.applyDatabaseCRStatus(ctx, service, namespace, replicaData)
 
 	// Attach data to deployment responses using the shared utility
-	self.AttachInstanceDataToDeploymentResponses(deployments, instanceData, service.Edges.CurrentDeployment.ID)
+	self.AttachReplicaDataToDeploymentResponses(deployments, replicaData, service.Edges.CurrentDeployment.ID)
 
 	// Update the target deployment with the calculated data
-	targetDeployment.Status = instanceData.Status
-	targetDeployment.StatusMessage = instanceData.StatusMessage
-	targetDeployment.InstanceEvents = instanceData.InstanceEvents
-	targetDeployment.CrashingReasons = instanceData.CrashingReasons
-	targetDeployment.InstanceRestarts = instanceData.Restarts
+	targetDeployment.Status = replicaData.Status
+	targetDeployment.StatusMessage = replicaData.StatusMessage
+	targetDeployment.ReplicaEvents = replicaData.ReplicaEvents
+	targetDeployment.CrashingReasons = replicaData.CrashingReasons
+	targetDeployment.ReplicaRestarts = replicaData.Restarts
 
 	return targetDeployment, nil
 }

@@ -1,4 +1,4 @@
-import DeploymentInstances from "@/components/deployment/deployment-instances";
+import DeploymentReplicas from "@/components/deployment/deployment-replicas";
 import DeploymentStatusChip, {
   getDeploymentStatusChipColor,
 } from "@/components/deployment/deployment-status-chip";
@@ -45,7 +45,7 @@ import {
   removeDeployment as removeDeploymentFn,
   type TDeploymentShallow,
 } from "@/lib/queries/deployments";
-import { restartInstances } from "@/lib/queries/instances";
+import { restartReplicas } from "@/lib/queries/replicas";
 import { TServiceShallow } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -70,14 +70,14 @@ type TProps = HTMLAttributes<HTMLDivElement> &
         currentDeployment: TDeploymentShallow | undefined;
         isPlaceholder?: never;
         withCurrentTag?: boolean;
-        showInstances?: boolean;
+        showReplicas?: boolean;
       }
     | {
         deployment?: never;
         currentDeployment?: never;
         isPlaceholder: true;
         withCurrentTag?: never;
-        showInstances?: boolean;
+        showReplicas?: boolean;
       }
   ) & { service: TServiceShallow };
 
@@ -86,7 +86,7 @@ export default function DeploymentCard({
   currentDeployment,
   service,
   isPlaceholder,
-  showInstances,
+  showReplicas,
   ...rest
 }: TProps) {
   const { title, titleNotFound } = getTitle({ deployment, service, isPlaceholder });
@@ -102,8 +102,8 @@ export default function DeploymentCard({
       deployment.status === "active" ||
       deployment.status === "removed";
 
-  const temporarilyHideInstances =
-    showInstances &&
+  const temporarilyHideReplicas =
+    showReplicas &&
     (deployment?.status === "build-pending" || deployment?.status === "build-queued");
 
   const cardClassName =
@@ -137,8 +137,8 @@ export default function DeploymentCard({
             <DeploymentInfo deployment={deployment} service={service} />
           )}
         </div>
-        {!temporarilyHideInstances && showInstances && (
-          <DeploymentInstances isPending={isPlaceholder} />
+        {!temporarilyHideReplicas && showReplicas && (
+          <DeploymentReplicas isPending={isPlaceholder} />
         )}
       </div>
     </>
@@ -341,7 +341,7 @@ function RestartTrigger({ handle }: { handle: TDialogHandle }) {
     error,
     reset,
   } = useMutation({
-    mutationFn: restartInstances,
+    mutationFn: restartReplicas,
     onSuccess: async () => {
       const result = await ResultAsync.fromPromise(
         Promise.all([refetchServices(), refetchService(), refetchDeployments()]),

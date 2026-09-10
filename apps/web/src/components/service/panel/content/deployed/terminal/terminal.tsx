@@ -1,6 +1,6 @@
 import { BlockItemButtonLike } from "@/components/block";
 import ErrorCard from "@/components/error-card";
-import { useInstances } from "@/components/instances/instances-provider";
+import { useReplicas } from "@/components/replicas/replicas-provider";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
 import PodTerminal, {
@@ -28,7 +28,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 export default function Terminal() {
   const { teamId, projectId, environmentId, serviceId } = useService();
 
-  const { data, isPending, error } = useInstances();
+  const { data, isPending, error } = useReplicas();
 
   const [selectedPod, setSelectedPod] = useState<string | null>(null);
   const [selectedContainer, setSelectedContainer] = useState<string | null>(null);
@@ -74,7 +74,7 @@ export default function Terminal() {
       if (match) return match;
     }
     // 3. first ready pod, else first pod
-    return data.data.find((p) => p.instances.some((i) => i.ready)) ?? data.data[0];
+    return data.data.find((p) => p.containers.some((i) => i.ready)) ?? data.data[0];
   }, [data, selectedPod]);
 
   // Cache the resolved pod for the pin above. This only writes a ref — it never gates rendering,
@@ -85,7 +85,7 @@ export default function Terminal() {
 
   const containers = useMemo(() => {
     if (!activePod) return undefined;
-    return activePod.instances.map((i) => i.kubernetes_name);
+    return activePod.containers.map((i) => i.kubernetes_name);
   }, [activePod]);
 
   const activeContainer = useMemo(() => {
@@ -105,7 +105,7 @@ export default function Terminal() {
   if (data && (!activePod || !activeContainer)) {
     return (
       <TabWrapper>
-        <NoItemsCard Icon={TerminalIcon}>No instance running</NoItemsCard>
+        <NoItemsCard Icon={TerminalIcon}>No replica running</NoItemsCard>
       </TabWrapper>
     );
   }
@@ -131,7 +131,7 @@ export default function Terminal() {
                   ? []
                   : data.data.map((p, i) => ({
                       value: p.kubernetes_name,
-                      label: `Instance ${i + 1}`,
+                      label: `Replica ${i + 1}`,
                     }))
               }
               value={isPending || !activePod ? "" : activePod.kubernetes_name}
@@ -145,8 +145,8 @@ export default function Terminal() {
                   isPending={isPending}
                   text={
                     isPending || !activePod
-                      ? `Instance 1`
-                      : `Instance ${data.data.findIndex((p) => p.kubernetes_name === activePod.kubernetes_name) + 1}`
+                      ? `Replica 1`
+                      : `Replica ${data.data.findIndex((p) => p.kubernetes_name === activePod.kubernetes_name) + 1}`
                   }
                   Icon={({ className }) => <ServerIcon className={className} />}
                   variant="outline"

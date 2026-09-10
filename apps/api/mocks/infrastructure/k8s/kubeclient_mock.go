@@ -1816,12 +1816,12 @@ func (_c *KubeClientMock_GetAllSecrets_Call) RunAndReturn(run func(ctx context.C
 	return _c
 }
 
-// GetExpectedInstances provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) GetExpectedInstances(ctx context.Context, namespace string, podName string, client kubernetes.Interface) (int, error) {
+// GetExpectedReplicas provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) GetExpectedReplicas(ctx context.Context, namespace string, podName string, client kubernetes.Interface) (int, error) {
 	ret := _mock.Called(ctx, namespace, podName, client)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetExpectedInstances")
+		panic("no return value specified for GetExpectedReplicas")
 	}
 
 	var r0 int
@@ -1842,21 +1842,21 @@ func (_mock *KubeClientMock) GetExpectedInstances(ctx context.Context, namespace
 	return r0, r1
 }
 
-// KubeClientMock_GetExpectedInstances_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetExpectedInstances'
-type KubeClientMock_GetExpectedInstances_Call struct {
+// KubeClientMock_GetExpectedReplicas_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetExpectedReplicas'
+type KubeClientMock_GetExpectedReplicas_Call struct {
 	*mock.Call
 }
 
-// GetExpectedInstances is a helper method to define mock.On call
+// GetExpectedReplicas is a helper method to define mock.On call
 //   - ctx context.Context
 //   - namespace string
 //   - podName string
 //   - client kubernetes.Interface
-func (_e *KubeClientMock_Expecter) GetExpectedInstances(ctx any, namespace any, podName any, client any) *KubeClientMock_GetExpectedInstances_Call {
-	return &KubeClientMock_GetExpectedInstances_Call{Call: _e.mock.On("GetExpectedInstances", ctx, namespace, podName, client)}
+func (_e *KubeClientMock_Expecter) GetExpectedReplicas(ctx any, namespace any, podName any, client any) *KubeClientMock_GetExpectedReplicas_Call {
+	return &KubeClientMock_GetExpectedReplicas_Call{Call: _e.mock.On("GetExpectedReplicas", ctx, namespace, podName, client)}
 }
 
-func (_c *KubeClientMock_GetExpectedInstances_Call) Run(run func(ctx context.Context, namespace string, podName string, client kubernetes.Interface)) *KubeClientMock_GetExpectedInstances_Call {
+func (_c *KubeClientMock_GetExpectedReplicas_Call) Run(run func(ctx context.Context, namespace string, podName string, client kubernetes.Interface)) *KubeClientMock_GetExpectedReplicas_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -1884,12 +1884,12 @@ func (_c *KubeClientMock_GetExpectedInstances_Call) Run(run func(ctx context.Con
 	return _c
 }
 
-func (_c *KubeClientMock_GetExpectedInstances_Call) Return(n int, err error) *KubeClientMock_GetExpectedInstances_Call {
+func (_c *KubeClientMock_GetExpectedReplicas_Call) Return(n int, err error) *KubeClientMock_GetExpectedReplicas_Call {
 	_c.Call.Return(n, err)
 	return _c
 }
 
-func (_c *KubeClientMock_GetExpectedInstances_Call) RunAndReturn(run func(ctx context.Context, namespace string, podName string, client kubernetes.Interface) (int, error)) *KubeClientMock_GetExpectedInstances_Call {
+func (_c *KubeClientMock_GetExpectedReplicas_Call) RunAndReturn(run func(ctx context.Context, namespace string, podName string, client kubernetes.Interface) (int, error)) *KubeClientMock_GetExpectedReplicas_Call {
 	_c.Call.Return(run)
 	return _c
 }

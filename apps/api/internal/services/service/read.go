@@ -64,14 +64,14 @@ func (self *ServiceService) GetServicesInEnvironment(ctx context.Context, reques
 		}
 	}
 
-	// Attach instance data efficiently for all services in the environment
+	// Attach replica data efficiently for all services in the environment
 	if len(services) > 0 {
-		instanceDataMap, err := self.deploymentService.AttachInstanceDataToServices(ctx, services, project.Edges.Team.Namespace)
+		replicaDataMap, err := self.deploymentService.AttachReplicaDataToServices(ctx, services, project.Edges.Team.Namespace)
 		if err != nil {
-			log.Error("Error attaching instance data to services", "err", err, "environment_id", environmentID)
+			log.Error("Error attaching replica data to services", "err", err, "environment_id", environmentID)
 			return nil, err
 		}
-		self.deploymentService.AttachInstanceDataToServiceResponses(resp, instanceDataMap)
+		self.deploymentService.AttachReplicaDataToServiceResponses(resp, replicaDataMap)
 	}
 
 	return resp, nil
@@ -125,14 +125,14 @@ func (self *ServiceService) GetServiceByID(ctx context.Context, requesterUserID 
 		resp.Config.Volumes = volumes
 	}
 
-	// Attach instance data for this single service
+	// Attach replica data for this single service
 	if service.Edges.CurrentDeployment != nil {
-		instanceDataMap, err := self.deploymentService.AttachInstanceDataToServices(ctx, []*ent.Service{service}, project.Edges.Team.Namespace)
+		replicaDataMap, err := self.deploymentService.AttachReplicaDataToServices(ctx, []*ent.Service{service}, project.Edges.Team.Namespace)
 		if err != nil {
-			log.Error("Error attaching instance data to service", "err", err, "service_id", serviceID)
+			log.Error("Error attaching replica data to service", "err", err, "service_id", serviceID)
 			return nil, err
 		}
-		self.deploymentService.AttachInstanceDataToServiceResponse(resp, instanceDataMap)
+		self.deploymentService.AttachReplicaDataToServiceResponse(resp, replicaDataMap)
 	}
 
 	return resp, nil

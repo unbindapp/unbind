@@ -19,10 +19,10 @@ import (
 	deployments_service "github.com/unbindapp/unbind-api/internal/services/deployments"
 	environment_service "github.com/unbindapp/unbind-api/internal/services/environment"
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
-	instance_service "github.com/unbindapp/unbind-api/internal/services/instances"
 	logs_service "github.com/unbindapp/unbind-api/internal/services/logs"
 	metric_service "github.com/unbindapp/unbind-api/internal/services/metrics"
 	project_service "github.com/unbindapp/unbind-api/internal/services/project"
+	replica_service "github.com/unbindapp/unbind-api/internal/services/replicas"
 	service_service "github.com/unbindapp/unbind-api/internal/services/service"
 	servicegroup_service "github.com/unbindapp/unbind-api/internal/services/service_group"
 	storage_service "github.com/unbindapp/unbind-api/internal/services/storage"
@@ -79,7 +79,7 @@ type Server struct {
 	SystemService       *system_service.SystemService
 	MetricsService      *metric_service.MetricsService
 	WebhooksService     *webhooks_service.WebhooksService
-	InstanceService     *instance_service.InstanceService
+	ReplicaService      *replica_service.ReplicaService
 	VariablesService    *variables_service.VariablesService
 	StorageService      *storage_service.StorageService
 	TemplateService     *template_service.TemplatesService

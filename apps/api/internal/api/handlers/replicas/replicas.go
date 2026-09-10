@@ -1,4 +1,4 @@
-package instances_handler
+package replicas_handler
 
 import (
 	"net/http"
@@ -18,26 +18,26 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	}
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "list-instances",
-		Summary:     "List Instances (Pods)",
-		Description: "List the running instances (pods) for a service, environment, project, or team, with health status.",
+		OperationID: "list-replicas",
+		Summary:     "List Replicas (Pods)",
+		Description: "List the running replicas (pods) for a service, environment, project, or team, with health status.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListInstances)
+	}, handlers.ListReplicas)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "get-instance-health",
-		Summary:     "Get Instance Health",
-		Description: "Get the aggregated health/status of a service's instances.",
+		OperationID: "get-replica-health",
+		Summary:     "Get Replica Health",
+		Description: "Get the aggregated health/status of a service's replicas.",
 		Path:        "/health",
 		Method:      http.MethodGet,
-	}, handlers.GetInstanceHealth)
+	}, handlers.GetReplicaHealth)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
-		OperationID: "restart-instances",
-		Summary:     "Restart Instances (Pods)",
-		Description: "Roll all of a service's instances (pods). Causes a brief disruption while pods restart.",
+		OperationID: "restart-replicas",
+		Summary:     "Restart Replicas (Pods)",
+		Description: "Roll all of a service's replicas (pods). Causes a brief disruption while pods restart.",
 		Path:        "/restart",
 		Method:      http.MethodPut,
-	}, handlers.RestartInstances)
+	}, handlers.RestartReplicas)
 }

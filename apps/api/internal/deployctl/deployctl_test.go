@@ -158,7 +158,7 @@ func (suite *DeploymentControllerTestSuite) TestAreDependenciesReady_WithUnhealt
 		map[string]string{"unbind-service": depServiceID.String()},
 		mock.Anything,
 		mock.Anything,
-	).Return(&k8s.SimpleHealthStatus{Health: k8s.InstanceHealthCrashing}, nil)
+	).Return(&k8s.SimpleHealthStatus{Health: k8s.ReplicaHealthCrashing}, nil)
 
 	ready := suite.deploymentController.AreDependenciesReady(suite.ctx, req)
 	suite.Assert().False(ready)
@@ -186,7 +186,7 @@ func (suite *DeploymentControllerTestSuite) TestAreDependenciesReady_WithHealthy
 		map[string]string{"unbind-service": depServiceID.String()},
 		mock.Anything,
 		mock.Anything,
-	).Return(&k8s.SimpleHealthStatus{Health: k8s.InstanceHealthActive}, nil)
+	).Return(&k8s.SimpleHealthStatus{Health: k8s.ReplicaHealthActive}, nil)
 
 	ready := suite.deploymentController.AreDependenciesReady(suite.ctx, req)
 	suite.Assert().True(ready)

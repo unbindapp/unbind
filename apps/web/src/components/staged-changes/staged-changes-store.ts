@@ -47,7 +47,7 @@ const defaultInitState: TStagedChangesState = {
   services: {},
 };
 
-const version = 0.001;
+const version = 0.002;
 
 export const createStagedChangesStore = (initState: TStagedChangesState = defaultInitState) => {
   return createStore<TStagedChangesStore>()(

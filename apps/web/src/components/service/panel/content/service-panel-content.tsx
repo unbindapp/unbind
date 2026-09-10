@@ -1,10 +1,10 @@
 "use client";
 
 import DeploymentsProvider from "@/components/deployment/deployments-provider";
-import InstanceHealthProvider, {
-  useInstanceHealth,
-} from "@/components/instances/instance-health-provider";
-import InstancesProvider from "@/components/instances/instances-provider";
+import ReplicaHealthProvider, {
+  useReplicaHealth,
+} from "@/components/replicas/replica-health-provider";
+import ReplicasProvider from "@/components/replicas/replicas-provider";
 import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider, {
   getAgeBasedDefaultIntervalEnum,
@@ -31,7 +31,7 @@ import VariablesProvider, {
   useVariablesUtils,
 } from "@/components/variables/variables-provider";
 import { deploymentsListQuery } from "@/lib/queries/deployments";
-import { instancesListQuery } from "@/lib/queries/instances";
+import { replicasListQuery } from "@/lib/queries/replicas";
 import { metricsListQuery } from "@/lib/queries/metrics";
 import { TServiceShallow } from "@/lib/queries/services";
 import { availableVariableReferencesQuery, variablesListQuery } from "@/lib/queries/variables";
@@ -140,13 +140,11 @@ const tabs: TServicePanelTab[] = [
     value: "terminal",
     Page: Terminal,
     Provider: ({ children, ...rest }: TServicePageProviderProps) => (
-      <InstancesProvider {...rest}>{children}</InstancesProvider>
+      <ReplicasProvider {...rest}>{children}</ReplicasProvider>
     ),
     noScrollArea: true,
     onIntent: ({ queryClient, teamId, projectId, environmentId, serviceId }) => {
-      queryClient.prefetchQuery(
-        instancesListQuery({ teamId, projectId, environmentId, serviceId }),
-      );
+      queryClient.prefetchQuery(replicasListQuery({ teamId, projectId, environmentId, serviceId }));
     },
   },
   {
@@ -186,19 +184,19 @@ export default function ServicePanelContent({ service, className }: TProps) {
   }
 
   return (
-    <InstanceHealthProvider
+    <ReplicaHealthProvider
       teamId={teamId}
       projectId={projectId}
       environmentId={environmentId}
       serviceId={service.id}
     >
       <ServicePanelContentDeployed tabs={tabs} service={service} currentTab={currentTab} />
-    </InstanceHealthProvider>
+    </ReplicaHealthProvider>
   );
 }
 
 function VariablesTabWrapper({ children, ...props }: { children: ReactNode } & TServiceProps) {
-  const { data: instancesHealthData } = useInstanceHealth();
+  const { data: replicaHealthData } = useReplicaHealth();
   const { invalidate: invalidateVariableReferences } = useVariableReferenceUtils({
     type: "service",
     ...props,
@@ -209,7 +207,7 @@ function VariablesTabWrapper({ children, ...props }: { children: ReactNode } & T
   } = useVariables();
 
   useEffect(() => {
-    if (!instancesHealthData) return;
+    if (!replicaHealthData) return;
     if (props.service.type !== "database") return;
 
     const variableNames = variablesData?.variables.map((v) => v.name) || [];
@@ -223,7 +221,7 @@ function VariablesTabWrapper({ children, ...props }: { children: ReactNode } & T
     invalidateVariableReferences();
     invalidateVariables();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [instancesHealthData]);
+  }, [replicaHealthData]);
 
   return children;
 }

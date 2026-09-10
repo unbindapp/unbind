@@ -72,16 +72,16 @@ func (suite *K8sTestSuite) TestContainerStateConstants() {
 	}
 }
 
-func (suite *K8sTestSuite) TestInstanceHealthConstants() {
+func (suite *K8sTestSuite) TestReplicaHealthConstants() {
 	tests := []struct {
 		name          string
-		health        InstanceHealth
+		health        ReplicaHealth
 		expectedValue string
 	}{
-		{"Pending", InstanceHealthPending, "pending"},
-		{"Crashing", InstanceHealthCrashing, "crashing"},
-		{"Active", InstanceHealthActive, "active"},
-		{"Terminating", InstanceHealthTerminating, "terminating"},
+		{"Pending", ReplicaHealthPending, "pending"},
+		{"Crashing", ReplicaHealthCrashing, "crashing"},
+		{"Active", ReplicaHealthActive, "active"},
+		{"Terminating", ReplicaHealthTerminating, "terminating"},
 	}
 
 	for _, tt := range tests {
@@ -643,9 +643,9 @@ func (suite *K8sTestSuite) TestExtractContainerStatus() {
 	}
 }
 
-func (suite *K8sTestSuite) TestInstanceStatusCreation() {
-	// Test InstanceStatus struct creation and field validation
-	status := InstanceStatus{
+func (suite *K8sTestSuite) TestContainerStatusCreation() {
+	// Test ContainerStatus struct creation and field validation
+	status := ContainerStatus{
 		KubernetesName:  "test-container",
 		Ready:           true,
 		RestartCount:    5,
@@ -675,20 +675,20 @@ func (suite *K8sTestSuite) TestInstanceStatusCreation() {
 func (suite *K8sTestSuite) TestPodContainerStatusCreation() {
 	// Test PodContainerStatus struct creation and field validation
 	status := PodContainerStatus{
-		KubernetesName:       "test-pod",
-		Namespace:            "default",
-		Phase:                PodRunning,
-		PodIP:                "10.0.0.1",
-		StartTime:            "2023-01-01T00:00:00Z",
-		CreatedAt:            time.Now(),
-		HasCrashingInstances: false,
-		IsTerminating:        false,
-		Instances:            []InstanceStatus{},
-		InstanceDependencies: []InstanceStatus{},
-		TeamID:               suite.teamID,
-		ProjectID:            suite.projectID,
-		EnvironmentID:        suite.environmentID,
-		ServiceID:            suite.serviceID,
+		KubernetesName:        "test-pod",
+		Namespace:             "default",
+		Phase:                 PodRunning,
+		PodIP:                 "10.0.0.1",
+		StartTime:             "2023-01-01T00:00:00Z",
+		CreatedAt:             time.Now(),
+		HasCrashingContainers: false,
+		IsTerminating:         false,
+		Containers:            []ContainerStatus{},
+		InitContainers:        []ContainerStatus{},
+		TeamID:                suite.teamID,
+		ProjectID:             suite.projectID,
+		EnvironmentID:         suite.environmentID,
+		ServiceID:             suite.serviceID,
 	}
 
 	suite.Equal("test-pod", status.KubernetesName)
@@ -696,33 +696,33 @@ func (suite *K8sTestSuite) TestPodContainerStatusCreation() {
 	suite.Equal(PodRunning, status.Phase)
 	suite.Equal("10.0.0.1", status.PodIP)
 	suite.Equal("2023-01-01T00:00:00Z", status.StartTime)
-	suite.False(status.HasCrashingInstances)
+	suite.False(status.HasCrashingContainers)
 	suite.False(status.IsTerminating)
 	suite.Equal(suite.teamID, status.TeamID)
 	suite.Equal(suite.projectID, status.ProjectID)
 	suite.Equal(suite.environmentID, status.EnvironmentID)
 	suite.Equal(suite.serviceID, status.ServiceID)
-	suite.NotNil(status.Instances)
-	suite.NotNil(status.InstanceDependencies)
+	suite.NotNil(status.Containers)
+	suite.NotNil(status.InitContainers)
 }
 
 func (suite *K8sTestSuite) TestSimpleHealthStatusCreation() {
 	// Test SimpleHealthStatus struct creation and field validation
 	status := SimpleHealthStatus{
-		Health:            InstanceHealthActive,
-		ExpectedInstances: 3,
-		Instances:         []SimpleInstanceStatus{},
+		Health:           ReplicaHealthActive,
+		ExpectedReplicas: 3,
+		Replicas:         []ReplicaStatus{},
 	}
 
-	suite.Equal(InstanceHealthActive, status.Health)
-	suite.Equal(3, status.ExpectedInstances)
-	suite.NotNil(status.Instances)
-	suite.Empty(status.Instances)
+	suite.Equal(ReplicaHealthActive, status.Health)
+	suite.Equal(3, status.ExpectedReplicas)
+	suite.NotNil(status.Replicas)
+	suite.Empty(status.Replicas)
 }
 
-func (suite *K8sTestSuite) TestSimpleInstanceStatusCreation() {
-	// Test SimpleInstanceStatus struct creation and field validation
-	status := SimpleInstanceStatus{
+func (suite *K8sTestSuite) TestReplicaStatusCreation() {
+	// Test ReplicaStatus struct creation and field validation
+	status := ReplicaStatus{
 		KubernetesName: "simple-container",
 		Status:         ContainerStateRunning,
 		RestartCount:   2,
@@ -805,10 +805,10 @@ func (suite *K8sTestSuite) TestGetPodContainerStatusByLabelsWithFakeClient() {
 	suite.Equal(suite.environmentID, pod1.EnvironmentID)
 	suite.Equal(suite.serviceID, pod1.ServiceID)
 	suite.False(pod1.IsTerminating)
-	suite.False(pod1.HasCrashingInstances)
-	suite.Len(pod1.Instances, 1)
+	suite.False(pod1.HasCrashingContainers)
+	suite.Len(pod1.Containers, 1)
 
-	container1 := pod1.Instances[0]
+	container1 := pod1.Containers[0]
 	suite.Equal("app-container", container1.KubernetesName)
 	suite.True(container1.Ready)
 	suite.Equal(int32(0), container1.RestartCount)
@@ -880,16 +880,16 @@ func (suite *K8sTestSuite) TestGetSimpleHealthStatusWithFakeClient() {
 	suite.NoError(err)
 	suite.NotNil(healthStatus)
 
-	suite.Equal(2, healthStatus.ExpectedInstances)
-	suite.Len(healthStatus.Instances, 2)
-	suite.Equal(InstanceHealthCrashing, healthStatus.Health)
+	suite.Equal(2, healthStatus.ExpectedReplicas)
+	suite.Len(healthStatus.Replicas, 2)
+	suite.Equal(ReplicaHealthCrashing, healthStatus.Health)
 
 	var healthyFound, crashingFound bool
-	for _, instance := range healthStatus.Instances {
-		if instance.KubernetesName == "healthy-pod" && instance.Status == ContainerStateRunning {
+	for _, replica := range healthStatus.Replicas {
+		if replica.KubernetesName == "healthy-pod" && replica.Status == ContainerStateRunning {
 			healthyFound = true
 		}
-		if instance.KubernetesName == "crashing-pod" && instance.Status == ContainerStateCrashing {
+		if replica.KubernetesName == "crashing-pod" && replica.Status == ContainerStateCrashing {
 			crashingFound = true
 		}
 	}
@@ -1023,20 +1023,20 @@ func (suite *K8sTestSuite) TestGetSimpleHealthStatusWithMultiContainerPod() {
 	suite.NoError(err)
 	suite.NotNil(healthStatus)
 
-	// Should return 1 instance (pod-level grouping) instead of 4 (2 main + 2 init containers)
-	suite.Equal(1, healthStatus.ExpectedInstances)
-	suite.Len(healthStatus.Instances, 1)
-	suite.Equal(InstanceHealthActive, healthStatus.Health) // Both main containers are healthy
+	// Should return 1 replica (pod-level grouping) instead of 4 (2 main + 2 init containers)
+	suite.Equal(1, healthStatus.ExpectedReplicas)
+	suite.Len(healthStatus.Replicas, 1)
+	suite.Equal(ReplicaHealthActive, healthStatus.Health) // Both main containers are healthy
 
-	// Verify the single pod-level instance
-	podInstance := healthStatus.Instances[0]
-	suite.Equal("mysql-pod-0", podInstance.KubernetesName) // Pod name, not container name
-	suite.Equal(ContainerStateRunning, podInstance.Status) // Pod is running (all main containers healthy)
-	suite.Equal(int32(0), podInstance.RestartCount)        // No restarts
+	// Verify the single replica
+	replica := healthStatus.Replicas[0]
+	suite.Equal("mysql-pod-0", replica.KubernetesName) // Pod name, not container name
+	suite.Equal(ContainerStateRunning, replica.Status) // Pod is running (all main containers healthy)
+	suite.Equal(int32(0), replica.RestartCount)        // No restarts
 
 	// Events should include events from both main containers but not from terminated init containers
 	// (The exact number depends on how many events each container generates, but it should be > 0)
-	suite.NotEmpty(podInstance.Events)
+	suite.NotEmpty(replica.Events)
 }
 
 func (suite *K8sTestSuite) TestGetSimpleHealthStatusWithFailingInitContainer() {
@@ -1085,15 +1085,15 @@ func (suite *K8sTestSuite) TestGetSimpleHealthStatusWithFailingInitContainer() {
 	suite.NotNil(healthStatus)
 
 	// Should show as crashing due to failing init container
-	suite.Equal(1, healthStatus.ExpectedInstances)
-	suite.Len(healthStatus.Instances, 1)
-	suite.Equal(InstanceHealthCrashing, healthStatus.Health)
+	suite.Equal(1, healthStatus.ExpectedReplicas)
+	suite.Len(healthStatus.Replicas, 1)
+	suite.Equal(ReplicaHealthCrashing, healthStatus.Health)
 
-	// Verify the pod-level instance shows crashing state
-	podInstance := healthStatus.Instances[0]
-	suite.Equal("pod-with-failing-init", podInstance.KubernetesName)
-	suite.Equal(ContainerStateCrashing, podInstance.Status) // Pod is crashing due to init container
-	suite.Equal(int32(3), podInstance.RestartCount)         // Restart count from failing init container
+	// Verify the replica shows crashing state
+	replica := healthStatus.Replicas[0]
+	suite.Equal("pod-with-failing-init", replica.KubernetesName)
+	suite.Equal(ContainerStateCrashing, replica.Status) // Pod is crashing due to init container
+	suite.Equal(int32(3), replica.RestartCount)         // Restart count from failing init container
 }
 
 // TestK8sTestSuite runs the entire test suite

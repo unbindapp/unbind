@@ -52,7 +52,7 @@ function state(
 test("dropSettledChanges removes settled changes that still hold the deployed value", () => {
   const a = variable("A", "1");
   const b = variable("B", "2");
-  const replicas = service("instanceCount", 3);
+  const replicas = service("replicaCount", 3);
   const current = state([a, b], [replicas]);
   const applying = { [a.id]: "1", [b.id]: "2", [replicas.id]: 3 };
 
@@ -106,13 +106,13 @@ test("variableChangesMatchingServer reports deletes of variables the server no l
 });
 
 test("serviceChangesMatchingServer reports fields equal to the server value", () => {
-  const replicas = service("instanceCount", 3);
+  const replicas = service("replicaCount", 3);
   const cpu = service("cpuLimitMillicores", 500);
   const branch = service("gitBranch", "main");
 
   const result = serviceChangesMatchingServer(
-    { instanceCount: replicas, cpuLimitMillicores: cpu, gitBranch: branch },
-    { instanceCount: 3, cpuLimitMillicores: 250 },
+    { replicaCount: replicas, cpuLimitMillicores: cpu, gitBranch: branch },
+    { replicaCount: 3, cpuLimitMillicores: 250 },
   );
 
   assert.deepEqual(result, [replicas.id]);

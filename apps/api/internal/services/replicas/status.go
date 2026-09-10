@@ -1,4 +1,4 @@
-package instance_service
+package replica_service
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 // Get kubernetes container statuses for a service
-func (self *InstanceService) GetInstanceStatuses(ctx context.Context, requesterUserID uuid.UUID, input *models.InstanceStatusInput) ([]k8s.PodContainerStatus, error) {
+func (self *ReplicaService) GetReplicaStatuses(ctx context.Context, requesterUserID uuid.UUID, input *models.ReplicaStatusInput) ([]k8s.PodContainerStatus, error) {
 	team, project, environment, service, err := self.validatePermissionsAndParseInputs(ctx, requesterUserID, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return nil, err
@@ -19,16 +19,16 @@ func (self *InstanceService) GetInstanceStatuses(ctx context.Context, requesterU
 
 	labels := make(map[string]string)
 	switch input.Type {
-	case models.InstanceTypeService:
+	case models.ReplicaTypeService:
 		labels["unbind-service"] = service.ID.String()
-	case models.InstanceTypeEnvironment:
+	case models.ReplicaTypeEnvironment:
 		labels["unbind-environment"] = environment.ID.String()
-	case models.InstanceTypeProject:
+	case models.ReplicaTypeProject:
 		labels["unbind-project"] = project.ID.String()
-	case models.InstanceTypeTeam:
+	case models.ReplicaTypeTeam:
 		labels["unbind-team"] = team.ID.String()
 	default:
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid instance type")
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid replica type")
 	}
 
 	client := self.k8s.GetInternalClient()
@@ -42,8 +42,8 @@ func (self *InstanceService) GetInstanceStatuses(ctx context.Context, requesterU
 }
 
 // Get kubernetes container statuses for a service, simplified response
-func (self *InstanceService) GetInstanceHealth(ctx context.Context, requesterUserID uuid.UUID, input *models.InstanceHealthInput) (*k8s.SimpleHealthStatus, error) {
-	team, _, _, service, err := self.validatePermissionsAndParseInputs(ctx, requesterUserID, models.InstanceTypeService, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
+func (self *ReplicaService) GetReplicaHealth(ctx context.Context, requesterUserID uuid.UUID, input *models.ReplicaHealthInput) (*k8s.SimpleHealthStatus, error) {
+	team, _, _, service, err := self.validatePermissionsAndParseInputs(ctx, requesterUserID, models.ReplicaTypeService, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return nil, err
 	}

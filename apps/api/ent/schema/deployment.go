@@ -25,7 +25,7 @@ const (
 	DeploymentStatusBuildSucceeded DeploymentStatus = "build-succeeded"
 	DeploymentStatusBuildCancelled DeploymentStatus = "build-cancelled"
 	DeploymentStatusBuildFailed    DeploymentStatus = "build-failed"
-	// * POD/Instance related
+	// * Pod/replica related
 	DeploymentStatusActive      DeploymentStatus = "active"       // Running and healthy
 	DeploymentStatusLaunching   DeploymentStatus = "launching"    // Waiting for resources or other conditions
 	DeploymentStatusLaunchError DeploymentStatus = "launch-error" // Failed to launch due to an error

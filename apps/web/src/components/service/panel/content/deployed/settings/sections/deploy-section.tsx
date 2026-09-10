@@ -9,7 +9,7 @@ import {
   BlockItemContentHighlightable,
   BlockItemTitle,
 } from "@/components/block";
-import { shouldDeploySectionHaveInstances } from "@/components/service/panel/content/deployed/settings/helpers";
+import { shouldDeploySectionHaveReplicas } from "@/components/service/panel/content/deployed/settings/helpers";
 import {
   stagedNumber,
   useResetFormOnStagedChange,
@@ -90,27 +90,23 @@ function toApi(sliderValue: number, unlimited: number) {
   return sliderValue === unlimited ? unlimitedApiValue : sliderValue;
 }
 
-const deployFields: TServiceChangeField[] = [
-  "instanceCount",
-  "cpuLimitMillicores",
-  "memoryLimitMb",
-];
+const deployFields: TServiceChangeField[] = ["replicaCount", "cpuLimitMillicores", "memoryLimitMb"];
 
 function Section({ service }: { service: TServiceShallow }) {
   const { isItemVisible } = useSettingsSectionSearch("deploy");
-  const hasInstances = shouldDeploySectionHaveInstances(service);
+  const hasReplicas = shouldDeploySectionHaveReplicas(service);
   const sectionHighlightId = useMemo(() => getDeploySectionId(service), [service]);
-  const serverInstanceCount = service.config.replicas;
+  const serverReplicaCount = service.config.replicas;
   const serverCpu = service.config.resources?.cpu_limits_millicores || unlimitedApiValue;
   const serverMemory = service.config.resources?.memory_limits_megabytes || unlimitedApiValue;
   const { staged, stage, unstage } = useServiceChanges(service, {
-    instanceCount: serverInstanceCount,
+    replicaCount: serverReplicaCount,
     cpuLimitMillicores: serverCpu,
     memoryLimitMb: serverMemory,
   });
 
   const defaultValues = {
-    instanceCount: stagedNumber(staged.instanceCount, serverInstanceCount),
+    replicaCount: stagedNumber(staged.replicaCount, serverReplicaCount),
     cpuLimitMillicores: toSlider(
       stagedNumber(staged.cpuLimitMillicores, serverCpu),
       cpuLimits.unlimited,
@@ -124,12 +120,12 @@ function Section({ service }: { service: TServiceShallow }) {
   useResetFormOnStagedChange(form, defaultValues, staged, deployFields);
   const values = useStore(form.store, (s) => s.values);
   const changed = {
-    instanceCount: values.instanceCount !== serverInstanceCount,
+    replicaCount: values.replicaCount !== serverReplicaCount,
     cpuLimitMillicores: values.cpuLimitMillicores !== toSlider(serverCpu, cpuLimits.unlimited),
     memoryLimitMb: values.memoryLimitMb !== toSlider(serverMemory, memoryLimits.unlimited),
   };
 
-  const showReplicas = hasInstances && isItemVisible(settingsIds.deploy.replicas);
+  const showReplicas = hasReplicas && isItemVisible(settingsIds.deploy.replicas);
   const showResourceLimits = isItemVisible(settingsIds.deploy.resourceLimits);
   if (!showReplicas && !showResourceLimits) return null;
 
@@ -146,26 +142,26 @@ function Section({ service }: { service: TServiceShallow }) {
       {showReplicas && (
         <Block>
           <form.AppField
-            name="instanceCount"
+            name="replicaCount"
             children={(field) => (
               <BlockItem id={settingsIds.deploy.replicas} className="group/item w-full md:w-full">
                 <BlockItemHeader type="column">
                   <BlockItemTitle>Replicas</BlockItemTitle>
                   <BlockItemDescription>
-                    The number of replicas/instances to run for this service.
+                    The number of replicas to run for this service.
                   </BlockItemDescription>
                 </BlockItemHeader>
                 <BlockItemContentHighlightable
                   id={settingsIds.deploy.replicas}
                   className={cn(
                     "flex w-full flex-col overflow-hidden rounded-lg border pb-1.5",
-                    changed.instanceCount && "border-change/5-10 bg-change/2-10",
+                    changed.replicaCount && "border-change/5-10 bg-change/2-10",
                   )}
                 >
                   <ValueTitle
                     title="Replicas"
                     value={field.state.value ? field.state.value.toString() : "1"}
-                    hasChanges={changed.instanceCount}
+                    hasChanges={changed.replicaCount}
                   />
                   <field.StorageSizeInput
                     field={field}
@@ -175,18 +171,18 @@ function Section({ service }: { service: TServiceShallow }) {
                     max={10}
                     step={1}
                     hideMinMax
-                    defaultValue={[serverInstanceCount]}
+                    defaultValue={[serverReplicaCount]}
                     value={field.state.value ? [field.state.value] : undefined}
-                    hasChanges={changed.instanceCount}
+                    hasChanges={changed.replicaCount}
                     onValueChange={(value) => {
                       field.handleChange(value[0]);
                     }}
                     onValueCommitted={(value) => {
                       stage({
-                        field: "instanceCount",
+                        field: "replicaCount",
                         label: "Replicas",
                         value: value[0] || 1,
-                        previous: serverInstanceCount,
+                        previous: serverReplicaCount,
                       });
                     }}
                   />
@@ -202,7 +198,7 @@ function Section({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Resource Limits</BlockItemTitle>
               <BlockItemDescription>
-                The maximum vCPU and memory to allocate for each instance.
+                The maximum vCPU and memory to allocate for each replica.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>

@@ -17,11 +17,11 @@ import {
 import { TServiceShallow } from "@/lib/queries/services";
 import { HistoryIcon, PowerIcon, RocketIcon, ServerIcon } from "lucide-react";
 import { useMemo } from "react";
-import { useInstanceHealth } from "@/components/instances/instance-health-provider";
+import { useReplicaHealth } from "@/components/replicas/replica-health-provider";
 import { useMutation } from "@tanstack/react-query";
 import { Button, LinkButton } from "@/components/ui/button";
 import { settingsIds } from "@/components/settings/settings-ids";
-import { shouldDeploySectionHaveInstances } from "@/components/service/panel/content/deployed/settings/helpers";
+import { shouldDeploySectionHaveReplicas } from "@/components/service/panel/content/deployed/settings/helpers";
 
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
@@ -75,7 +75,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         deployments={deploymentsData?.deployments || null}
         isPending={isPendingDeployments}
       >
-        {shouldDeploySectionHaveInstances(service) && <InfoRow />}
+        {shouldDeploySectionHaveReplicas(service) && <InfoRow />}
         <DeploymentPanel service={service} />
         {hasData && showNoActiveDeploymentCard && (
           <div className="w-full pb-3">
@@ -89,10 +89,10 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
                 service={service}
                 deployment={currentOrLastDeployment}
                 currentDeployment={deploymentsData?.current_deployment}
-                showInstances={true}
+                showReplicas={true}
               />
             ) : (
-              <DeploymentCard showInstances={true} isPlaceholder={true} service={service} />
+              <DeploymentCard showReplicas={true} isPlaceholder={true} service={service} />
             )}
           </div>
         )}
@@ -191,14 +191,14 @@ function NoActiveDeploymentCard() {
 function InfoRow() {
   return (
     <div className="flex w-full items-center sm:-mt-2">
-      <InstancesButton />
+      <ReplicasButton />
     </div>
   );
 }
 
-function InstancesButton() {
+function ReplicasButton() {
   const { teamId, projectId } = useService();
-  const { data, isPending, isError } = useInstanceHealth();
+  const { data, isPending, isError } = useReplicaHealth();
 
   const isHardError = !data && isError;
 
@@ -207,8 +207,8 @@ function InstancesButton() {
     if (isHardError) {
       return "Error";
     }
-    const instanceCount = data.data.instances.length;
-    return `${instanceCount} Replica${instanceCount !== 1 ? "s" : ""}`;
+    const replicaCount = data.data.replicas.length;
+    return `${replicaCount} Replica${replicaCount !== 1 ? "s" : ""}`;
   }, [data, isPending, isHardError]);
 
   return (

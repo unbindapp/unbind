@@ -172,13 +172,13 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
       {
         id: settingsIds.deploy.replicas,
         title: "Replicas",
-        description: "The number of replicas/instances to run for this service.",
+        description: "The number of replicas to run for this service.",
         keywords: ["instances", "scale", "count", "horizontal", "pods"],
       },
       {
         id: settingsIds.deploy.resourceLimits,
         title: "Resource Limits",
-        description: "The maximum vCPU and memory to allocate for each instance.",
+        description: "The maximum vCPU and memory to allocate for each replica.",
         keywords: ["cpu", "vcpu", "memory", "ram", "limits", "resources", "size"],
       },
     ],
@@ -197,13 +197,13 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
       {
         id: settingsIds.health.startupCheck,
         title: "Startup Check",
-        description: "Instances are activated after one successful check.",
+        description: "Replicas are activated after one successful check.",
         keywords: ["startup", "readiness", "probe", "interval", "threshold", "retries"],
       },
       {
         id: settingsIds.health.healthCheck,
         title: "Health Check",
-        description: "Monitor active instances and restart them if they are unhealthy.",
+        description: "Monitor active replicas and restart them if they are unhealthy.",
         keywords: ["liveness", "probe", "interval", "threshold", "retries", "restart"],
       },
     ],

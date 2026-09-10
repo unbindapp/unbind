@@ -17,7 +17,7 @@ import { useIntent } from "@/lib/hooks/use-intent";
 import { deleteMutationKeys, useIsDeleting } from "@/lib/hooks/use-is-deleting";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { deploymentsListQuery } from "@/lib/queries/deployments";
-import { instanceHealthQuery } from "@/lib/queries/instances";
+import { replicaHealthQuery } from "@/lib/queries/replicas";
 import {
   serviceEndpointsQuery,
   serviceQuery,
@@ -102,7 +102,7 @@ export default function ServiceCard({
       queryClient.prefetchQuery(deploymentsListQuery(input));
       queryClient.prefetchQuery(serviceQuery(input));
       queryClient.prefetchQuery(serviceEndpointsQuery(input));
-      queryClient.prefetchQuery(instanceHealthQuery(input));
+      queryClient.prefetchQuery(replicaHealthQuery(input));
     },
     enabled: !isPlaceholder && !isDeleting,
   });

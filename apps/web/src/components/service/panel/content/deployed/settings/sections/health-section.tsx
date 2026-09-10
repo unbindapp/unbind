@@ -454,7 +454,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Startup Check</BlockItemTitle>
               <BlockItemDescription>
-                Instances are activated after one successful check.
+                Replicas are activated after one successful check.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>
@@ -472,7 +472,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Health Check</BlockItemTitle>
               <BlockItemDescription>
-                Monitor active instances and restart them if they are unhealthy.
+                Monitor active replicas and restart them if they are unhealthy.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>

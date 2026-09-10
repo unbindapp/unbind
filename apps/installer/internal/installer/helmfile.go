@@ -16,7 +16,7 @@ import (
 var unbindInstallationFacts = []string{
 	"You can configure webhooks for Discord, Slack, and more for various events - such as when a deployment is complete.",
 	"Unbind leverages \"Railpack\" to automatically build your application, without needing to write any scripts or Dockerfiles.",
-	"When you scale a service, traffic is automatically load balanced across all instances.",
+	"When you scale a service, traffic is automatically load balanced across all replicas.",
 	"New deployments for services are \"rolled out\" one at a time resulting in zero or minimal downtime.",
 	"Unbind is MIT licensed and all source code is available on GitHub.",
 	"You can add more servers to your cluster at any time, using `unbind add-node` - this will increase the compute capacity of your cluster.",
