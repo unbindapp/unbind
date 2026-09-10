@@ -35,7 +35,7 @@ export default function Settings({ service }: { service: TServiceShallow }) {
         </div>
         <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_1rem,black_calc(100%-1rem),transparent)]">
           <ScrollArea classNameViewport="pb-(--safe-area-inset-bottom)">
-            <TabWrapper className="gap-6 pt-4 sm:pt-4">
+            <TabWrapper className="gap-6 pt-4 sm:pt-5">
               <SourceSection service={service} />
               <NetworkingSection service={service} />
               {shouldServiceSettingsHaveBackupsSection(service) && (
