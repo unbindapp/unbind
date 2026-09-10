@@ -64,7 +64,7 @@ export type TTokenFieldProps = {
 };
 
 const wrapperClassName =
-  "bg-input focus-within:ring-primary/8-10 aria-invalid:ring-destructive/8-10 focus-within:aria-invalid:ring-destructive/8-10 data-warning:ring-warning/8-10 focus-within:data-warning:ring-warning/8-10 flex w-full cursor-text rounded-lg border text-left transition-colors focus-within:ring-1 data-disabled:cursor-not-allowed data-disabled:opacity-50";
+  "bg-input focus-within:ring-primary/8-10 aria-invalid:ring-destructive/8-10 has-hover:hover:ring-1 focus-within:has-hover:hover:ring-1 has-hover:hover:ring-primary/6-10 focus-within:has-hover:hover:ring-primary/8-10 focus-within:aria-invalid:ring-destructive/8-10 data-warning:ring-warning/8-10 focus-within:data-warning:ring-warning/8-10 flex w-full cursor-text rounded-lg border text-left transition-colors focus-within:ring-1 data-disabled:cursor-not-allowed data-disabled:opacity-50";
 
 // The leading has to clear a chip's fill, which is the font's ascent-to-descent
 // band rather than the text height; tighter and the field clips the top of it.
