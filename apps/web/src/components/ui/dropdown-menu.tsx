@@ -268,7 +268,7 @@ function DropdownMenuRadioButton({
       variant="outline"
       render={<DropdownMenuRadioItem hideIndicator value={value} />}
       className={cn(
-        "data-checked:border-foreground text-muted-foreground data-checked:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-semibold",
+        "data-checked:border-foreground/selected-border data-checked:data-highlighted:border-foreground/selected-border data-checked:bg-foreground/2-10 text-muted-foreground data-checked:text-foreground data-checked:data-highlighted:bg-foreground/4-10 data-checked:data-highlighted:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-medium",
         className,
       )}
       {...props}

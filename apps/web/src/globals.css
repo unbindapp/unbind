@@ -200,6 +200,7 @@
   --opacity-8-10: 50%;
   --opacity-9-10: 75%;
   --opacity-10-10: 85%;
+  --opacity-selected-border: 85%;
 }
 
 .dark {
@@ -333,6 +334,7 @@
   --opacity-8-10: 50%;
   --opacity-9-10: 75%;
   --opacity-10-10: 85%;
+  --opacity-selected-border: 16%;
 }
 
 /* From sm up the navbar sits at the top instead of the bottom */
@@ -406,6 +408,7 @@
   --opacity-8-10: var(--opacity-8-10);
   --opacity-9-10: var(--opacity-9-10);
   --opacity-10-10: var(--opacity-10-10);
+  --opacity-selected-border: var(--opacity-selected-border);
 
   @keyframes skeleton {
     0% {
