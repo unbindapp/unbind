@@ -12,8 +12,8 @@ func gluetunTemplate() *schema.TemplateDefinition {
 		DisplayRank: uint(115000),
 		Icon:        "gluetun",
 		Keywords:    []string{"gluetun", "vpn", "proxy", "http proxy", "wireguard", "mullvad", "nordvpn", "protonvpn"},
-		Description: "VPN client with a built-in HTTP proxy for routing other services' traffic.",
-		Version:     2,
+		Description: "VPN client with a built-in HTTP proxy.",
+		Version:     3,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumCPUs:  1,
 			MinimumRAMGB: 0.25,
