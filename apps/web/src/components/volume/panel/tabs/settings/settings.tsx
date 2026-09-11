@@ -1,5 +1,5 @@
+import Banner from "@/components/banner";
 import TabWrapper from "@/components/navigation/tab-wrapper";
-import { cn } from "@/components/ui/utils";
 import ConnectionSection from "@/components/volume/panel/tabs/settings/sections/connection-section";
 import DeleteSection from "@/components/volume/panel/tabs/settings/sections/delete-section";
 import ExpandSection from "@/components/volume/panel/tabs/settings/sections/expand-section";
@@ -13,52 +13,39 @@ export default function Settings({ volume }: TProps) {
   return (
     <TabWrapper className="gap-6">
       {volume.is_deleting && (
-        <BannerWrapper className="bg-destructive/3-10 border-destructive/3-10 text-destructive">
+        <Banner className="bg-destructive/3-10 border-destructive/3-10 text-destructive">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">
             Deleting the volume. It will disappear once the deletion is complete.
           </p>
-        </BannerWrapper>
+        </Banner>
       )}
       {volume.mount_status === "awaiting_deployment" && (
-        <BannerWrapper className="bg-process/3-10 border-process/3-10 text-process">
+        <Banner className="bg-process/3-10 border-process/3-10 text-process">
           <ClockIcon className="mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">
             Waiting for the service to deploy before mounting this volume.
           </p>
-        </BannerWrapper>
+        </Banner>
       )}
       {volume.mount_status === "attaching" && (
-        <BannerWrapper className="bg-process/3-10 border-process/3-10 text-process">
+        <Banner className="bg-process/3-10 border-process/3-10 text-process">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">Attaching the volume to the service.</p>
-        </BannerWrapper>
+        </Banner>
       )}
       {volume.mount_status === "detaching" && (
-        <BannerWrapper className="bg-warning/3-10 border-warning/3-10 text-warning">
+        <Banner className="bg-warning/3-10 border-warning/3-10 text-warning">
           <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
           <p className="min-w-0 shrink leading-tight">
             Detaching the volume. It can be reattached once this is complete.
           </p>
-        </BannerWrapper>
+        </Banner>
       )}
       <UsageSection volume={volume} />
       <ExpandSection volume={volume} />
       <ConnectionSection volume={volume} />
       <DeleteSection volume={volume} />
     </TabWrapper>
-  );
-}
-
-function BannerWrapper({ children, className }: { children: React.ReactNode; className: string }) {
-  return (
-    <div
-      className={cn(
-        "flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 md:max-w-xl",
-        className,
-      )}
-    >
-      {children}
-    </div>
   );
 }

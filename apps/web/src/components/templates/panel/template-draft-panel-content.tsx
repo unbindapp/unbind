@@ -5,6 +5,7 @@ import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-
 import { useSystem } from "@/components/system/system-provider";
 import { templateInputValidator } from "@/components/templates/panel/input-validator";
 import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
+import TemplateHeadroomBanner from "@/components/templates/panel/template-headroom-banner";
 import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
@@ -243,6 +244,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
       <ScrollArea classNameViewport="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-5 sm:p-6">
           {errorDeployTemplate && <ErrorLine message={errorDeployTemplate.message} />}
+          <TemplateHeadroomBanner template={templateDraft.template} />
           {/* Inputs */}
           <div className="-mx-1 flex w-[calc(100%+0.5rem)] flex-col">
             <div className="-my-4 flex w-full flex-col">
