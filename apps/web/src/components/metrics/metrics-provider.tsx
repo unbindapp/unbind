@@ -13,19 +13,27 @@ const MetricsContext = createContext<TMetricsContext | null>(null);
 type TBaseProps = {
   children: ReactNode;
   teamId: string;
-  projectId: string;
-  environmentId: string;
   type: TLogType;
 };
 
 type TProps = TBaseProps &
   (
     | {
+        type: "team";
+        projectId?: never;
+        environmentId?: never;
+        serviceId?: never;
+      }
+    | {
         type: "environment";
+        projectId: string;
+        environmentId: string;
         serviceId?: never;
       }
     | {
         type: "service";
+        projectId: string;
+        environmentId: string;
         serviceId: string;
       }
   );

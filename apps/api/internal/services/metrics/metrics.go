@@ -2,6 +2,7 @@ package metric_service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -30,31 +31,12 @@ func NewMetricService(promClient *prometheus.PrometheusClient, repo repositories
 }
 
 func (self *MetricsService) validatePermissionsAndParseInputs(ctx context.Context, requesterUserID uuid.UUID, input *models.MetricsQueryInput) (*ent.Team, *ent.Project, *ent.Environment, *ent.Service, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		//Can read team, project, environmnent, or service depending on inputs
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   input.TeamID,
-		},
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeProject,
-			ResourceID:   input.ProjectID,
-		},
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeEnvironment,
-			ResourceID:   input.EnvironmentID,
-		},
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeService,
-			ResourceID:   input.ServiceID,
-		},
+	permissionCheck, err := permissionCheckForType(input)
+	if err != nil {
+		return nil, nil, nil, nil, err
 	}
 
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+	if err := self.repo.Permissions().Check(ctx, requesterUserID, []permissions_repo.PermissionCheck{permissionCheck}); err != nil {
 		return nil, nil, nil, nil, errdefs.MaskAsNotFound(err, "Resource not found")
 	}
 
@@ -114,4 +96,32 @@ func (self *MetricsService) validatePermissionsAndParseInputs(ctx context.Contex
 	}
 
 	return team, project, environment, service, nil
+}
+
+// Parent permissions flow down through the hierarchy, so only the requested level is checked.
+func permissionCheckForType(input *models.MetricsQueryInput) (permissions_repo.PermissionCheck, error) {
+	check := permissions_repo.PermissionCheck{Action: schema.ActionViewer}
+
+	switch input.Type {
+	case models.MetricsTypeTeam:
+		check.ResourceType = schema.ResourceTypeTeam
+		check.ResourceID = input.TeamID
+	case models.MetricsTypeProject:
+		check.ResourceType = schema.ResourceTypeProject
+		check.ResourceID = input.ProjectID
+	case models.MetricsTypeEnvironment:
+		check.ResourceType = schema.ResourceTypeEnvironment
+		check.ResourceID = input.EnvironmentID
+	case models.MetricsTypeService:
+		check.ResourceType = schema.ResourceTypeService
+		check.ResourceID = input.ServiceID
+	default:
+		return check, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid metrics type")
+	}
+
+	if check.ResourceID == uuid.Nil {
+		return check, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("%s_id is required for type %s", input.Type, input.Type))
+	}
+
+	return check, nil
 }

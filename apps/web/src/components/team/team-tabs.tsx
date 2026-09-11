@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 
 type TTab = {
   title: string;
-  to: "/$team_id" | "/$team_id/settings";
+  to: "/$team_id" | "/$team_id/metrics" | "/$team_id/settings";
   // Resolved pathname used only for active-tab matching (navigation uses `to`).
   matchPath: string;
   strictMatch?: boolean;
@@ -31,6 +31,7 @@ export default function TeamTabs({
     const baseTabUrl = `/${teamId}`;
     const t: TTab[] = [
       { title: "Projects", to: "/$team_id", matchPath: baseTabUrl, strictMatch: true },
+      { title: "Metrics", to: "/$team_id/metrics", matchPath: `${baseTabUrl}/metrics` },
       { title: "Settings", to: "/$team_id/settings", matchPath: `${baseTabUrl}/settings` },
     ];
     return t;

@@ -1,10 +1,8 @@
 "use client";
 
 import { TMetricsIntervalEnum } from "@/lib/queries/metrics";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { createContext, useCallback, useContext, useMemo } from "react";
-
-const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TInterval = {
   value: TMetricsIntervalEnum;
@@ -69,8 +67,7 @@ export function resolveMetricsIntervalEnum(params: {
   searchParamValue: string | null;
   ageBasedDefault: TMetricsIntervalEnum | undefined;
 }): TMetricsIntervalEnum {
-  const candidate =
-    params.searchParamValue ?? params.ageBasedDefault ?? metricsIntervalEnumDefault;
+  const candidate = params.searchParamValue ?? params.ageBasedDefault ?? metricsIntervalEnumDefault;
   return intervals.find((i) => i.value === candidate)?.value ?? metricsIntervalEnumDefault;
 }
 
@@ -89,7 +86,10 @@ type TProps = {
 
 export const MetricsStateProvider: React.FC<TProps> = ({ children, defaultIntervalEnum }) => {
   const navigate = useNavigate();
-  const intervalParam = routeApi.useSearch({ select: (s) => s[metricsIntervalSearchParamKey] });
+  const intervalParam = useSearch({
+    strict: false,
+    select: (s) => s[metricsIntervalSearchParamKey],
+  });
   const interval = intervalParam ?? defaultIntervalEnum ?? metricsIntervalEnumDefault;
 
   const setInterval = useCallback(

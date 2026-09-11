@@ -409,6 +409,30 @@ export default function useGoToItem({ context }: TProps) {
                     },
                     keywords: ["projects", "home page", "team", ...goToKeywords],
                   },
+                  {
+                    id: `${subpageId}_metrics`,
+                    title: "Metrics",
+                    titleSuffix: ` | Team`,
+                    Icon: ChartColumnIcon,
+                    onSelect: async () => {
+                      navigateTo({
+                        run: () =>
+                          router.navigate({
+                            to: "/$team_id/metrics",
+                            params: { team_id: context.teamId },
+                          }),
+                        isPendingId: `${subpageId}_metrics`,
+                        error: "Failed to navigate to metrics",
+                      });
+                    },
+                    onHighlight: () => {
+                      void router.preloadRoute({
+                        to: "/$team_id/metrics",
+                        params: { team_id: context.teamId },
+                      });
+                    },
+                    keywords: ["metrics", "usage", "system", "team", ...goToKeywords],
+                  },
                   ...projectItems,
                 ]
               : []),
