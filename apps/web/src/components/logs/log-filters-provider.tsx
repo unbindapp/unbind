@@ -1,5 +1,6 @@
 "use client";
 
+import { logSearchParamKeys } from "@/components/logs/constants";
 import { buildSearchText, extractSearchFilters } from "@/components/logs/log-filter-search";
 import { decodeRange, encodeRange, type TLogRange } from "@/components/logs/log-range";
 import { logSearchScopes } from "@/components/logs/log-search-scope";
@@ -36,56 +37,6 @@ function decodeList(value: string | undefined): string[] {
   return value.split(",").filter(Boolean);
 }
 
-// Each log scope gets its own URL namespace so the page, service panel, and
-// deployment/build tabs never share or clobber each other's filters.
-const paramKeys: Record<
-  TLogType,
-  { [K in "q" | "levels" | "services" | "range" | "highlight"]: string }
-> = {
-  team: {
-    q: "tq",
-    levels: "tlevels",
-    services: "tservices",
-    range: "trange",
-    highlight: "thighlight_log",
-  },
-  project: {
-    q: "q",
-    levels: "levels",
-    services: "services",
-    range: "range",
-    highlight: "highlight_log",
-  },
-  environment: {
-    q: "q",
-    levels: "levels",
-    services: "services",
-    range: "range",
-    highlight: "highlight_log",
-  },
-  service: {
-    q: "sq",
-    levels: "slevels",
-    services: "sservices",
-    range: "srange",
-    highlight: "shighlight_log",
-  },
-  deployment: {
-    q: "dq",
-    levels: "dlevels",
-    services: "dservices",
-    range: "drange",
-    highlight: "dhighlight_log",
-  },
-  build: {
-    q: "bq",
-    levels: "blevels",
-    services: "bservices",
-    range: "brange",
-    highlight: "bhighlight_log",
-  },
-};
-
 type TLogFiltersContext = {
   /** The free-text part of the search (the `q` param), tokens already extracted. */
   search: string;
@@ -118,7 +69,7 @@ type TProps = {
 
 export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
   const { services: servicesEnabled } = logTypeCapabilities[logType];
-  const keys = paramKeys[logType];
+  const keys = logSearchParamKeys[logType];
   const { attributeKeys } = logSearchScopes[logType];
   const navigate = useNavigate();
 
