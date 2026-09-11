@@ -18,6 +18,8 @@ type StorageResponse struct {
 }
 
 type SystemMeta struct {
+	Version                string                                 `json:"version" nullable:"false"`
+	VersionURL             string                                 `json:"version_url" nullable:"false"`
 	ExternalIPV6           string                                 `json:"external_ipv6" nullable:"false"`
 	ExternalIPV4           string                                 `json:"external_ipv4" nullable:"false"`
 	Storage                *k8s.StorageMetadata                   `json:"storage" nullable:"false"`
@@ -50,6 +52,8 @@ func (self *HandlerGroup) GetSystemInformation(ctx context.Context, input *serve
 	}
 
 	meta := &SystemMeta{
+		Version:                self.srv.UpdateManager.CurrentVersion,
+		VersionURL:             self.srv.UpdateManager.ReleaseURL(self.srv.UpdateManager.CurrentVersion),
 		ExternalIPV6:           ips.IPv6,
 		ExternalIPV4:           ips.IPv4,
 		Storage:                storageMetadata,

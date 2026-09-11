@@ -16,11 +16,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
 import { useUpdateStatus } from "@/components/update/update-status-provider";
-import { meQuery } from "@/lib/queries/me";
+import { isSystemAdmin, meQuery } from "@/lib/queries/me";
+import { systemQuery } from "@/lib/queries/system";
 import { getGoClient } from "@/lib/server/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLocation, useRouter } from "@tanstack/react-router";
-import { ExternalLink, GiftIcon, GitBranchIcon, LoaderIcon, LogOutIcon } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useRouter } from "@tanstack/react-router";
+import {
+  ExternalLink,
+  GiftIcon,
+  GitBranchIcon,
+  LoaderIcon,
+  LogOutIcon,
+  ServerCogIcon,
+} from "lucide-react";
 import { useState } from "react";
 
 type TProps = { email: string; className?: string };
@@ -37,15 +45,14 @@ export default function UserAvatar({ email, className }: TProps) {
   });
   const [open, setOpen] = useState(false);
 
+  const { data: me } = useQuery(meQuery);
+  const isAdmin = isSystemAdmin(me);
   const {
-    data: updatesData,
-    isPending: isPendingUpdatesResult,
-    isError: isErrorUpdatesResult,
-    hasUpdateAvailable,
-    hasUnseenUpdate,
-    latestVersion,
-  } = useUpdateStatus();
-  const locationHref = useLocation({ select: (l) => l.href });
+    data: systemData,
+    isPending: isPendingSystem,
+    isError: isErrorSystem,
+  } = useQuery(systemQuery());
+  const { hasUpdateAvailable, hasUnseenUpdate, latestVersion } = useUpdateStatus();
 
   return (
     <DropdownOrDrawer
@@ -96,9 +103,19 @@ export default function UserAvatar({ email, className }: TProps) {
             <NewVersionCard
               className="pt-0 pb-1.5"
               version={latestVersion}
-              fromHref={locationHref}
               onUpdateClicked={() => setOpen(false)}
             />
+          )}
+          {isAdmin && (
+            <LinkButton
+              to="/system"
+              onClick={() => setOpen(false)}
+              variant="ghost"
+              className="w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-3.5 text-left font-medium"
+            >
+              <ServerCogIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+              <p className="min-w-0 shrink leading-tight">System</p>
+            </LinkButton>
           )}
           <ThemeButton variant="drawer-item" />
           <Button
@@ -121,33 +138,31 @@ export default function UserAvatar({ email, className }: TProps) {
           </Button>
         </div>
         <div
-          data-pending={isPendingUpdatesResult || undefined}
-          data-error={
-            (!updatesData && !isPendingUpdatesResult && isErrorUpdatesResult) || undefined
-          }
+          data-pending={isPendingSystem || undefined}
+          data-error={(!systemData && !isPendingSystem && isErrorSystem) || undefined}
           className="group/version bg-background absolute bottom-(--safe-area-inset-bottom) z-10 flex w-full border-t"
         >
-          {updatesData ? (
+          {systemData ? (
             <a
               target="_blank"
               rel="noopener noreferrer"
-              href={updatesData.data.current_version_url}
+              href={systemData.data.version_url}
               className="group/version hover:bg-border active:bg-border flex w-full items-center justify-start gap-1.25 px-4.25 py-3"
             >
               <GitBranchOrExternalLinkIcon />
               <p className="text-muted-foreground group-hover/version:text-foreground group-active/version:text-foreground min-w-0 shrink text-center text-sm leading-tight">
-                Version: <span className="font-semibold">{updatesData.data.current_version}</span>
+                Version: <span className="font-semibold">{systemData.data.version}</span>
               </p>
             </a>
           ) : (
             <div className="flex w-full items-center justify-start gap-1.25 px-4.25 py-3">
-              {!isPendingUpdatesResult && (
+              {!isPendingSystem && (
                 <GitBranchIcon className="text-muted-foreground -ml-px size-3.75 shrink-0" />
               )}
               <p className="group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
                 Version:{" "}
                 <span className="group-data-error/version:text-destructive font-semibold">
-                  {isPendingUpdatesResult ? "1234567" : "Error"}
+                  {isPendingSystem ? "1234567" : "Error"}
                 </span>
               </p>
             </div>
@@ -170,9 +185,16 @@ export default function UserAvatar({ email, className }: TProps) {
               tabbable={false}
               className="px-0.5 pt-0.5 pb-1.5"
               version={latestVersion}
-              fromHref={locationHref}
               onUpdateClicked={() => setOpen(false)}
             />
+          )}
+          {isAdmin && (
+            <DropdownMenuItem className="p-0" render={<Link to="/system" />}>
+              <div className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight">
+                <ServerCogIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+                <p className="min-w-0 shrink leading-tight">System</p>
+              </div>
+            </DropdownMenuItem>
           )}
           <ThemeButton variant="dropdown-menu-item" />
           <DropdownMenuItem
@@ -191,36 +213,31 @@ export default function UserAvatar({ email, className }: TProps) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {updatesData ? (
+          {systemData ? (
             <DropdownMenuItem
               className="group/version flex w-full cursor-pointer items-center gap-1.5 px-3 py-2 text-left leading-tight"
               render={
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={updatesData.data.current_version_url}
-                >
+                <a target="_blank" rel="noopener noreferrer" href={systemData.data.version_url}>
                   <GitBranchOrExternalLinkIcon />
                   <p className="group-hover/version:text-foreground group-active/version:text-foreground text-muted-foreground min-w-0 shrink text-center text-sm leading-tight">
-                    Version:{" "}
-                    <span className="font-semibold">{updatesData.data.current_version}</span>
+                    Version: <span className="font-semibold">{systemData.data.version}</span>
                   </p>
                 </a>
               }
             />
           ) : (
             <div
-              data-pending={isPendingUpdatesResult || undefined}
-              data-error={(!isPendingUpdatesResult && isErrorUpdatesResult) || undefined}
+              data-pending={isPendingSystem || undefined}
+              data-error={(!isPendingSystem && isErrorSystem) || undefined}
               className="group/version flex w-full items-center gap-1.5 px-3 py-2 text-left leading-tight"
             >
-              {!isPendingUpdatesResult && (
+              {!isPendingSystem && (
                 <GitBranchIcon className="text-muted-foreground -ml-px size-3.75 shrink-0" />
               )}
               <p className="group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
                 Version:{" "}
                 <span className="group-data-error/version:text-destructive font-semibold">
-                  {isPendingUpdatesResult ? "1234567" : "Error"}
+                  {isPendingSystem ? "1234567" : "Error"}
                 </span>
               </p>
             </div>
@@ -247,14 +264,12 @@ function GitBranchOrExternalLinkIcon({ className }: { className?: string }) {
 
 function NewVersionCard({
   version,
-  fromHref,
   onUpdateClicked,
   className,
   classNameInner,
   tabbable = true,
 }: {
   version: string;
-  fromHref: string;
   onUpdateClicked: () => void;
   className?: string;
   classNameInner?: string;
@@ -286,8 +301,7 @@ function NewVersionCard({
         </div>
         <LinkButton
           onClick={onUpdateClicked}
-          to="/update"
-          search={{ from: fromHref }}
+          to="/system/update"
           size="sm"
           className="rounded-sm"
           variant="success"

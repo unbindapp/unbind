@@ -10,7 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button, LinkButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import UpdateStatusProvider, {
   useUpdateStatus,
@@ -20,7 +20,6 @@ import { applyUpdate as applyUpdateFn } from "@/lib/queries/system";
 import type { Change } from "@/lib/server/client.gen";
 import { useMutation } from "@tanstack/react-query";
 import {
-  ArrowLeftIcon,
   CircleArrowUpIcon,
   CircleCheckBigIcon,
   CircleXIcon,
@@ -37,8 +36,6 @@ type TProps = {
   latestVersion: string;
   latestVersionUrl: string | null;
   currentVersion: string;
-  /** Internal path to return to via Go Back; validated by the /update route's `from` search param. */
-  backTo: string;
 };
 
 export default function UpdateAvailableSection(props: TProps) {
@@ -72,7 +69,6 @@ function UpdateSectionInner({
   latestVersion,
   latestVersionUrl,
   currentVersion,
-  backTo,
   setIsWatchingUpdate,
 }: TPropsInner) {
   const now = useNow();
@@ -221,12 +217,6 @@ function UpdateSectionInner({
         {updatePhase === "idle" && (
           <div className="flex w-full flex-wrap items-center justify-center">
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-              <LinkButton to={backTo} variant="outline" className="text-muted-foreground w-full">
-                <ArrowLeftIcon className="size-4.5 shrink-0" />
-                <p className="min-w-0 shrink">Go Back</p>
-              </LinkButton>
-            </div>
-            <div className="order-first flex w-full px-1 py-1.5 sm:order-0 sm:w-1/2">
               <Button
                 isPending={isPendingApplyUpdate}
                 onClick={() => applyUpdate(latestVersion)}
@@ -264,12 +254,6 @@ function UpdateSectionInner({
         {updatePhase === "failed" && (
           <div className="flex w-full flex-wrap items-center justify-center">
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
-              <LinkButton to={backTo} variant="outline" className="text-muted-foreground w-full">
-                <ArrowLeftIcon className="size-4.5 shrink-0" />
-                <p className="min-w-0 shrink">Go Back</p>
-              </LinkButton>
-            </div>
-            <div className="order-first flex w-full px-1 py-1.5 sm:order-0 sm:w-1/2">
               <Button
                 isPending={isPendingApplyUpdate}
                 onClick={() => applyUpdate(targetVersion)}

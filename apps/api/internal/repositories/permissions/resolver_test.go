@@ -136,7 +136,18 @@ func (suite *ResolverSuite) TestSystemSuperuserDoesNotGrantResources() {
 	suite.Empty(set.TeamActions(suite.team.ID))
 	suite.Empty(set.ProjectActions(suite.team.ID, suite.project.ID))
 	suite.Equal([]schema.PermittedAction{schema.ActionAdmin, schema.ActionEditor, schema.ActionViewer},
-		set.AllowedActions(ResourceRef{Type: schema.ResourceTypeSystem, ID: uuid.Nil}))
+		set.SystemActions())
+}
+
+func (suite *ResolverSuite) TestSystemActionsWithoutSystemGrant() {
+	for _, user := range []*ent.User{suite.teamUser, suite.projectAdmin, suite.superuserUser, suite.groupless} {
+		set, err := suite.permissionsRepo.GetUserPermissionSet(suite.Ctx, user.ID)
+		suite.NoError(err)
+
+		actions := set.SystemActions()
+		suite.NotNil(actions, user.Email)
+		suite.Empty(actions, user.Email)
+	}
 }
 
 func (suite *ResolverSuite) TestNoGroups() {

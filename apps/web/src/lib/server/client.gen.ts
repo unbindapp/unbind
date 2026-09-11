@@ -2021,9 +2021,19 @@ export const LogoutResponseBodySchema = z
 
 export const LokiDirectionSchema = z.enum(['forward', 'backward']);
 
+export const MeDataSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    email: z.string(),
+    id: z.string(),
+    system_permissions: z.array(PermittedActionSchema), // Actions the current user can perform on system-wide resources
+    updated_at: z.string().datetime({ offset: true }),
+  })
+  .strip();
+
 export const MeResponseBodySchema = z
   .object({
-    data: UserResponseSchema,
+    data: MeDataSchema,
   })
   .strip();
 
@@ -2296,6 +2306,8 @@ export const SystemMetaSchema = z
     networking_provider: z.string(),
     storage: StorageMetadataSchema,
     system_settings: SystemSettingsResponseSchema,
+    version: z.string(),
+    version_url: z.string(),
   })
   .strip();
 
@@ -2875,6 +2887,7 @@ export type LogType = z.infer<typeof LogTypeSchema>;
 export type LoginInputBody = z.infer<typeof LoginInputBodySchema>;
 export type LogoutResponseBody = z.infer<typeof LogoutResponseBodySchema>;
 export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
+export type MeData = z.infer<typeof MeDataSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
 export type RedeployInputBody = z.infer<typeof RedeployInputBodySchema>;

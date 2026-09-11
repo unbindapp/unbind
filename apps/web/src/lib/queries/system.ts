@@ -1,7 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/lib/server/client";
-import type { SystemMetaResponseBody, UpdateStatusResponseBody } from "@/lib/server/client.gen";
+import type {
+  SystemMetaResponseBody,
+  SystemSettingUpdateInput,
+  UpdateStatusResponseBody,
+} from "@/lib/server/client.gen";
 
 export type TSystem = { data: SystemMetaResponseBody["data"] };
 export type TUpdateStatus = { data: UpdateStatusResponseBody };
@@ -38,6 +42,11 @@ export const updateStatusQuery = () =>
       return { data: res };
     },
   });
+
+export async function updateSystemSettings(input: Partial<SystemSettingUpdateInput>) {
+  const res = await getGoClient().system.settings.update(input as SystemSettingUpdateInput);
+  return { data: res.data };
+}
 
 export async function applyUpdate(targetVersion: string) {
   const res = await getGoClient().system.update.apply({ target_version: targetVersion });

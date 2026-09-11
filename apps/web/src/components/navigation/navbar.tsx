@@ -21,7 +21,7 @@ export type TNavbarCommandPanelContext = Extract<
 >;
 
 type TProps = {
-  commandPanelContext: TNavbarCommandPanelContext;
+  commandPanelContext?: TNavbarCommandPanelContext;
   className?: string;
   children?: ReactNode;
 };
@@ -83,7 +83,7 @@ export function Navbar({ commandPanelContext, children, className }: TProps) {
           )}
         </div>
         <div className="flex shrink-0 items-center justify-end gap-3">
-          <NavbarSearchButton context={commandPanelContext} />
+          {commandPanelContext && <NavbarSearchButton context={commandPanelContext} />}
           <UserAvatarOrSignIn />
         </div>
       </div>

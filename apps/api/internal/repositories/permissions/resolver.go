@@ -78,6 +78,10 @@ func (s *UserPermissionSet) AllowedActions(refs ...ResourceRef) []entSchema.Perm
 	}
 }
 
+func (s *UserPermissionSet) SystemActions() []entSchema.PermittedAction {
+	return s.AllowedActions(ResourceRef{Type: entSchema.ResourceTypeSystem})
+}
+
 func (s *UserPermissionSet) TeamActions(teamID uuid.UUID) []entSchema.PermittedAction {
 	return s.AllowedActions(
 		ResourceRef{Type: entSchema.ResourceTypeTeam, ID: teamID},

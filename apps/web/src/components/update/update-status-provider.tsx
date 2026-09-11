@@ -4,10 +4,10 @@ import BrandIcon from "@/components/icons/brand";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
 import { Button, LinkButton } from "@/components/ui/button";
 import { useMounted } from "@/lib/hooks/use-mounted";
+import { isSystemAdmin, meQuery } from "@/lib/queries/me";
 import { queryKeySystem, updateStatusQuery, type TUpdateStatus } from "@/lib/queries/system";
 import type { Change } from "@/lib/server/client.gen";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
-import { useLocation } from "@tanstack/react-router";
 import { CircleCheckBigIcon, ExternalLinkIcon, GiftIcon, RefreshCwIcon } from "lucide-react";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useRef } from "react";
 import { toast } from "@/components/ui/toast";
@@ -16,13 +16,17 @@ type TUpdateStatusQuery = UseQueryResult<TUpdateStatus, Error>;
 
 const UpdateStatusContext = createContext<TUpdateStatusQuery | null>(null);
 
+// Update status is admin-only on the API, so the query never runs for other users:
+// they see no update card, dot, or toast, and never hit a 403.
 export const UpdateStatusProvider: React.FC<{
   refetchInterval?: number;
   children: ReactNode;
 }> = ({ refetchInterval, children }) => {
+  const { data: me } = useQuery(meQuery);
   const query = useQuery({
     ...updateStatusQuery(),
     refetchInterval,
+    enabled: isSystemAdmin(me),
   });
   return <UpdateStatusContext.Provider value={query}>{children}</UpdateStatusContext.Provider>;
 };
@@ -64,7 +68,7 @@ function isNewerVersion(version: string, currentVersion: string): boolean {
 // latest-version fields. An update is only considered available when available_versions
 // contains something newer than current_version, regardless of what the API's
 // has_update_available flag claims.
-// `hasUnseenUpdate` additionally accounts for dismissal (toast dismissed or /update visited);
+// `hasUnseenUpdate` additionally accounts for dismissal (toast dismissed or /system/update visited);
 // passive indicators like the avatar dot should use it, while surfaces that must always
 // reflect reality (the /update page, the menu card) use `hasUpdateAvailable`.
 export const useUpdateStatus = (): TUpdateStatusQuery & TNewVersion => {
@@ -127,7 +131,6 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
   const setLastDismissedVersion = useMainStore((state) => state.setLastDismissedVersion);
 
   const { hasUnseenUpdate, latestVersion } = useUpdateStatus();
-  const locationHref = useLocation({ select: (l) => l.href });
 
   const updateShownRef = useRef(false);
 
@@ -151,8 +154,7 @@ export function UpdateToastProvider({ children }: { children: ReactNode }) {
               toast.close("update_toast");
               setLastDismissedVersion(latestVersion);
             }}
-            to="/update"
-            search={{ from: locationHref }}
+            to="/system/update"
             size="sm"
           >
             Update

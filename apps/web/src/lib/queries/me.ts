@@ -6,6 +6,10 @@ import type { MeResponseBody } from "@/lib/server/client.gen";
 
 export type Me = MeResponseBody["data"];
 
+export function isSystemAdmin(me: Me | null | undefined): boolean {
+  return me?.system_permissions.includes("admin") ?? false;
+}
+
 export const queryKeyMe = ["me"] as const;
 
 /**

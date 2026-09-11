@@ -10,8 +10,8 @@ import (
 
 // Sub categories
 type BuildkitSettings struct {
-	MaxParallelism int `json:"max_parallelism"`
-	Replicas       int `json:"replicas"`
+	MaxParallelism int `json:"max_parallelism" minimum:"1" maximum:"32"`
+	Replicas       int `json:"replicas" minimum:"1" maximum:"10"`
 }
 
 // RegistryCacheSettings holds the desired configuration for the self-hosted
