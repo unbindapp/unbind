@@ -35,8 +35,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioButton,
   DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -346,15 +346,9 @@ function FilterButton({ className }: { className?: string }) {
               className="grid w-full grid-cols-4 gap-1.5 px-1.5 pt-1.5"
             >
               {logRangePresets.map((preset) => (
-                <Button
-                  key={preset}
-                  size="sm"
-                  variant="outline"
-                  render={<DropdownMenuRadioItem hideIndicator value={preset} />}
-                  className="data-checked:border-foreground text-muted-foreground data-checked:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-mono font-semibold"
-                >
+                <DropdownMenuRadioButton key={preset} value={preset} className="font-mono">
                   {preset}
-                </Button>
+                </DropdownMenuRadioButton>
               ))}
             </DropdownMenuRadioGroup>
             <div

@@ -10,8 +10,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioButton,
   DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -38,9 +38,6 @@ type TProps = {
 const dropdownCollisionPadding = { top: 16, bottom: 16, left: 8, right: 8 };
 const itemClassName = "py-3.5 sm:py-2.25";
 const checkboxItemClassName = "py-3 sm:py-2.25";
-const gridItemClassName =
-  "data-checked:border-foreground text-muted-foreground data-checked:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-semibold";
-
 const viewLabels: Record<TMetricsView, string> = {
   individual: "Individual",
   total: "Total",
@@ -101,15 +98,9 @@ export default function MetricsFilterDropdown({ selection, className }: TProps) 
               className="grid w-full grid-cols-4 gap-1.5 px-1.5 pt-1.5"
             >
               {intervals.map((i) => (
-                <Button
-                  key={i.value}
-                  size="sm"
-                  variant="outline"
-                  render={<DropdownMenuRadioItem hideIndicator value={i.value} />}
-                  className={cn(gridItemClassName, "font-mono")}
-                >
+                <DropdownMenuRadioButton key={i.value} value={i.value} className="font-mono">
                   {i.label}
-                </Button>
+                </DropdownMenuRadioButton>
               ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuGroup>
@@ -124,15 +115,9 @@ export default function MetricsFilterDropdown({ selection, className }: TProps) 
                   className="grid w-full grid-cols-2 gap-1.5 px-1.5 pt-1.5"
                 >
                   {metricsViews.map((v) => (
-                    <Button
-                      key={v}
-                      size="sm"
-                      variant="outline"
-                      render={<DropdownMenuRadioItem hideIndicator value={v} />}
-                      className={gridItemClassName}
-                    >
+                    <DropdownMenuRadioButton key={v} value={v}>
                       {viewLabels[v]}
-                    </Button>
+                    </DropdownMenuRadioButton>
                   ))}
                 </DropdownMenuRadioGroup>
               </DropdownMenuGroup>

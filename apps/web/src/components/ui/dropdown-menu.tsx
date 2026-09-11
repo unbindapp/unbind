@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
 import { cva, VariantProps } from "class-variance-authority";
@@ -254,6 +255,29 @@ function DropdownMenuRadioItem({
   );
 }
 
+/** A radio item styled as a pill button, for grids of presets. */
+function DropdownMenuRadioButton({
+  className,
+  value,
+  children,
+  ...props
+}: React.ComponentProps<typeof Button> & { value: MenuPrimitive.RadioItem.Props["value"] }) {
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      render={<DropdownMenuRadioItem hideIndicator value={value} />}
+      className={cn(
+        "data-checked:border-foreground text-muted-foreground data-checked:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-semibold",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </Button>
+  );
+}
+
 function DropdownMenuSeparator({ className, ...props }: MenuPrimitive.Separator.Props) {
   return (
     <MenuPrimitive.Separator
@@ -288,6 +312,7 @@ export {
   DropdownMenuCheckboxItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuRadioButton,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
