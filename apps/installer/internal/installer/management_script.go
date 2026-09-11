@@ -88,7 +88,7 @@ handle_uninstall() {
         echo -e "${YELLOW}Uninstalling Unbind...${NC}"
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
         kubectl -n longhorn-system patch settings.longhorn.io deleting-confirmation-flag -p '{"value":"true"}' --type=merge || true
-        kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/v1.12.0/uninstall/uninstall.yaml || true
+        kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/v1.12.1/uninstall/uninstall.yaml || true
 
         # Wait for uninstall job with timeout
         timeout=300

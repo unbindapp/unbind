@@ -898,7 +898,7 @@ LimitNPROC=65536
 				installCmd := exec.CommandContext(ctx, "helm", "install", "longhorn", "longhorn/longhorn",
 					"--namespace", "longhorn-system",
 					"--create-namespace",
-					"--version", "1.12.0",
+					"--version", "1.12.1",
 					"--set", "defaultSettings.admissionWebhookTimeout=30",
 					"--set", "defaultSettings.conversionWebhookTimeout=30",
 					"--set", "defaultSettings.defaultReplicaCount=1",
