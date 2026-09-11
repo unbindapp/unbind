@@ -14,7 +14,6 @@ import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider, {
   metricsIntervalEnumDefault,
 } from "@/components/metrics/metrics-state-provider";
-import MetricsViewToggle from "@/components/metrics/metrics-view-toggle";
 import EnvironmentSelector from "@/components/environment/environment-selector";
 import PageWrapper from "@/components/page-wrapper";
 import ServiceIcon from "@/components/service/service-icon";
@@ -86,10 +85,7 @@ function MetricsPage() {
                   </h1>
                   <EnvironmentSelector />
                 </div>
-                <div className="-my-2 flex min-w-0 flex-wrap items-center justify-end gap-2">
-                  <MetricsViewToggle />
-                  <ServicesFilterDropdown />
-                </div>
+                <ServicesFilterDropdown className="-my-2" />
               </div>
               <div className="flex w-full flex-row flex-wrap pt-3">
                 <Charts />
@@ -102,7 +98,7 @@ function MetricsPage() {
   );
 }
 
-function ServicesFilterDropdown() {
+function ServicesFilterDropdown({ className }: { className?: string }) {
   const {
     query: { data: servicesData },
   } = useServices();
@@ -117,5 +113,5 @@ function ServicesFilterDropdown() {
     [servicesData],
   );
 
-  return <MetricsFilterDropdown selection={{ label: "Services", items }} />;
+  return <MetricsFilterDropdown selection={{ label: "Services", items }} className={className} />;
 }

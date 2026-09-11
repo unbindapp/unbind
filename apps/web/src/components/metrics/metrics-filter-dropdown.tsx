@@ -1,6 +1,7 @@
 "use client";
 
 import { useMetricsState } from "@/components/metrics/metrics-state-provider";
+import { metricsViews, type TMetricsView } from "@/components/metrics/shape-metrics";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,7 +19,7 @@ import NonDefaultIndicator from "@/components/ui/non-default-indicator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TMetricsIntervalEnum } from "@/lib/queries/metrics";
-import { FilterIcon, RotateCcwIcon } from "lucide-react";
+import { FilterIcon, RotateCcwIcon, XIcon } from "lucide-react";
 import { useState, type ReactNode } from "react";
 
 export type TMetricsSelectionItem = { id: string; name: string; icon?: ReactNode };
@@ -37,11 +38,27 @@ type TProps = {
 const dropdownCollisionPadding = { top: 16, bottom: 16, left: 8, right: 8 };
 const itemClassName = "py-3.5 sm:py-2.25";
 const checkboxItemClassName = "py-3 sm:py-2.25";
+const gridItemClassName =
+  "data-checked:border-foreground text-muted-foreground data-checked:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-semibold";
+
+const viewLabels: Record<TMetricsView, string> = {
+  individual: "Individual",
+  total: "Total",
+};
 
 export default function MetricsFilterDropdown({ selection, className }: TProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const { interval, intervals, setInterval, resetFilters, hasActiveFilters, selectionEnabled } =
-    useMetricsState();
+  const {
+    interval,
+    intervals,
+    setInterval,
+    view,
+    setView,
+    viewEnabled,
+    resetFilters,
+    hasActiveFilters,
+    selectionEnabled,
+  } = useMetricsState();
 
   return (
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -59,8 +76,13 @@ export default function MetricsFilterDropdown({ selection, className }: TProps) 
               className,
             )}
           >
-            <FilterIcon className="group-data-non-default/button:text-warning -ml-0.5 size-4.5 shrink-0" />
-            <p className="min-w-0 shrink truncate">Filter</p>
+            <div className="group-data-non-default/button:text-warning flex min-w-0 items-center gap-1.5">
+              <div className="relative -ml-0.5 size-4.5 shrink-0 transition-transform group-data-open/button:rotate-45">
+                <FilterIcon className="size-full opacity-100 group-data-open/button:opacity-0" />
+                <XIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-data-open/button:opacity-100" />
+              </div>
+              <p className="min-w-0 shrink truncate">Filter</p>
+            </div>
             <NonDefaultIndicator isNotDefaultState={hasActiveFilters} />
           </Button>
         }
@@ -84,13 +106,38 @@ export default function MetricsFilterDropdown({ selection, className }: TProps) 
                   size="sm"
                   variant="outline"
                   render={<DropdownMenuRadioItem hideIndicator value={i.value} />}
-                  className="data-checked:border-foreground text-muted-foreground data-checked:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-mono font-semibold"
+                  className={cn(gridItemClassName, "font-mono")}
                 >
                   {i.label}
                 </Button>
               ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuGroup>
+          {viewEnabled && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup className="pb-2">
+                <DropdownMenuLabel>View</DropdownMenuLabel>
+                <DropdownMenuRadioGroup
+                  value={view}
+                  onValueChange={(value: TMetricsView) => setView(value)}
+                  className="grid w-full grid-cols-2 gap-1.5 px-1.5 pt-1.5"
+                >
+                  {metricsViews.map((v) => (
+                    <Button
+                      key={v}
+                      size="sm"
+                      variant="outline"
+                      render={<DropdownMenuRadioItem hideIndicator value={v} />}
+                      className={gridItemClassName}
+                    >
+                      {viewLabels[v]}
+                    </Button>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuGroup>
+            </>
+          )}
           {selectionEnabled && selection?.items && (
             <SelectionGroup label={selection.label} items={selection.items} />
           )}

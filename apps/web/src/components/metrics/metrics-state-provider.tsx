@@ -72,6 +72,7 @@ type TMetricsStateContext = {
   selectedIds: string[];
   setSelectedIds: (ids: string[]) => void;
   selectionEnabled: boolean;
+  viewEnabled: boolean;
   resetFilters: () => void;
   hasActiveFilters: boolean;
 };
@@ -118,6 +119,7 @@ export const MetricsStateProvider: React.FC<TProps> = ({ children, type, default
   const view = decodeView(rawParams.view);
   const selectedIds = useMemo(() => decodeList(rawParams.selection), [rawParams.selection]);
   const selectionEnabled = keys.selection !== undefined;
+  const viewEnabled = keys.view !== undefined;
 
   const setInterval = useCallback(
     (value: TMetricsIntervalEnum | null) => setParams({ [keys.interval]: value ?? undefined }),
@@ -142,11 +144,15 @@ export const MetricsStateProvider: React.FC<TProps> = ({ children, type, default
 
   const resetFilters = useCallback(() => {
     const patch: Record<string, string | undefined> = { [keys.interval]: undefined };
+    if (keys.view) patch[keys.view] = undefined;
     if (keys.selection) patch[keys.selection] = undefined;
     setParams(patch);
   }, [setParams, keys]);
 
-  const hasActiveFilters = interval.value !== resolvedDefaultIntervalEnum || selectedIds.length > 0;
+  const hasActiveFilters =
+    interval.value !== resolvedDefaultIntervalEnum ||
+    view !== metricsViewDefault ||
+    selectedIds.length > 0;
 
   const value: TMetricsStateContext = useMemo(
     () => ({
@@ -158,6 +164,7 @@ export const MetricsStateProvider: React.FC<TProps> = ({ children, type, default
       selectedIds,
       setSelectedIds,
       selectionEnabled,
+      viewEnabled,
       resetFilters,
       hasActiveFilters,
     }),
@@ -169,6 +176,7 @@ export const MetricsStateProvider: React.FC<TProps> = ({ children, type, default
       selectedIds,
       setSelectedIds,
       selectionEnabled,
+      viewEnabled,
       resetFilters,
       hasActiveFilters,
     ],

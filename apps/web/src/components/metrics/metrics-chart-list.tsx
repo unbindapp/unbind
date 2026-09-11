@@ -17,7 +17,7 @@ type TProps = {
   tooltipNameFormatterError: string | undefined;
 };
 
-const aggregateNameFormatter = () => "Total";
+const totalNameFormatter = () => "Total";
 
 type TMetrics = {
   cpu: TChartDataItem[];
@@ -51,7 +51,7 @@ export default function MetricsChartList({
     };
   }, [data, view, selectedIds]);
 
-  const nameFormatter = view === "aggregate" ? aggregateNameFormatter : tooltipNameFormatter;
+  const nameFormatter = view === "total" ? totalNameFormatter : tooltipNameFormatter;
 
   return (
     <div className={cn("flex w-full flex-wrap items-stretch", className)}>

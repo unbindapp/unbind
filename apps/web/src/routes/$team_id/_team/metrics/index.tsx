@@ -13,7 +13,6 @@ import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider, {
   metricsIntervalEnumDefault,
 } from "@/components/metrics/metrics-state-provider";
-import MetricsViewToggle from "@/components/metrics/metrics-view-toggle";
 import TeamCharts from "@/components/metrics/team-charts";
 import PageWrapper from "@/components/page-wrapper";
 import ProjectsProvider, { useProjects } from "@/components/project/projects-provider";
@@ -52,10 +51,7 @@ function TeamMetricsPage() {
             <div className="flex w-full max-w-7xl flex-col">
               <div className="flex w-full flex-wrap items-center justify-between gap-4 px-1">
                 <h1 className="min-w-0 px-2 text-2xl leading-tight font-semibold">Metrics</h1>
-                <div className="-my-2 flex min-w-0 flex-wrap items-center justify-end gap-2">
-                  <MetricsViewToggle />
-                  <ProjectsFilterDropdown />
-                </div>
+                <ProjectsFilterDropdown className="-my-2" />
               </div>
               <div className="flex w-full flex-row flex-wrap pt-3">
                 <TeamCharts />
@@ -68,7 +64,7 @@ function TeamMetricsPage() {
   );
 }
 
-function ProjectsFilterDropdown() {
+function ProjectsFilterDropdown({ className }: { className?: string }) {
   const { data: projectsData } = useProjects();
 
   const items: TMetricsSelectionItem[] | undefined = useMemo(
@@ -76,5 +72,5 @@ function ProjectsFilterDropdown() {
     [projectsData],
   );
 
-  return <MetricsFilterDropdown selection={{ label: "Projects", items }} />;
+  return <MetricsFilterDropdown selection={{ label: "Projects", items }} className={className} />;
 }

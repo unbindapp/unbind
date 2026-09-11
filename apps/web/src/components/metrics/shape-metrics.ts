@@ -1,7 +1,7 @@
-export const metricsViews = ["individual", "aggregate"] as const;
+export const metricsViews = ["individual", "total"] as const;
 export type TMetricsView = (typeof metricsViews)[number];
 
-export const aggregateDataKey = "total";
+export const totalDataKey = "total";
 
 export type TMetricDetail = { timestamp: string; breakdown: Record<string, number | null> };
 export type TMetricRow = { timestamp: string } & Record<string, string | number | null>;
@@ -17,14 +17,14 @@ export function shapeMetricSeries(
   return details.map((detail) => {
     const keys = Object.keys(detail.breakdown).filter((key) => !selected || selected.has(key));
 
-    if (view === "aggregate") {
+    if (view === "total") {
       let total: number | null = null;
       for (const key of keys) {
         const value = detail.breakdown[key];
         if (value === null) continue;
         total = (total ?? 0) + value;
       }
-      return { timestamp: detail.timestamp, [aggregateDataKey]: total };
+      return { timestamp: detail.timestamp, [totalDataKey]: total };
     }
 
     const row: TMetricRow = { timestamp: detail.timestamp };
