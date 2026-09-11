@@ -13,10 +13,10 @@ func ghostTemplate() *schema.TemplateDefinition {
 		Icon:        "ghost",
 		Keywords:    []string{"blogging", "cms", "mysql"},
 		Description: "Open source blog and newsletter platform.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumCPUs:  1,
-			MinimumRAMGB: 1,
+			MinimumRecommendedCPU:   1,
+			MinimumRecommendedRAMGB: 1,
 		},
 		Inputs: []schema.TemplateInput{
 			{

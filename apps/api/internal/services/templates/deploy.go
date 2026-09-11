@@ -519,7 +519,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					log.Error("failed to find service for variable reference", "serviceID", variableReference.SourceID, "template", templateService.Name)
 					return fmt.Errorf("failed to find source service %s for variable reference %s", variableReference.SourceID, variableReference.TargetName)
 				}
-				values[variableReference.TargetName] = []byte(templateReferenceValue(variableReference, sourceService.ID))
+				values[variableReference.TargetName] = []byte(templateReferenceValue(variableReference, sourceService))
 			}
 			if len(values) == 0 {
 				continue
@@ -778,17 +778,25 @@ func (self *TemplatesService) generateWildcardHost(ctx context.Context, tx repos
 }
 
 // templateReferenceValue turns a template's reference into a ${{service.<id>.KEY}} template string
-func templateReferenceValue(reference schema.TemplateVariableReference, sourceID uuid.UUID) string {
+func templateReferenceValue(reference schema.TemplateVariableReference, source *ent.Service) string {
 	if reference.IsHost {
-		return vartemplate.ServiceToken(sourceID, vartemplate.KeyInternalHost)
+		return vartemplate.ServiceToken(source.ID, hostReferenceKey(source))
 	}
 	if reference.TemplateString == "" {
-		return vartemplate.ServiceToken(sourceID, reference.SourceName)
+		return vartemplate.ServiceToken(source.ID, reference.SourceName)
 	}
 
 	value := reference.TemplateString
 	for _, key := range append([]string{reference.SourceName}, reference.AdditionalTemplateSources...) {
-		value = strings.ReplaceAll(value, fmt.Sprintf("${%s}", key), vartemplate.ServiceToken(sourceID, key))
+		value = strings.ReplaceAll(value, fmt.Sprintf("${%s}", key), vartemplate.ServiceToken(source.ID, key))
 	}
 	return value
+}
+
+// Databases are addressed by host; anything else gets the full internal URL, matching the legacy migration.
+func hostReferenceKey(source *ent.Service) string {
+	if source.Type == schema.ServiceTypeDatabase {
+		return vartemplate.KeyInternalHost
+	}
+	return vartemplate.KeyInternalURL
 }

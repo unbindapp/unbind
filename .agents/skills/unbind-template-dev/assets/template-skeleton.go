@@ -22,8 +22,8 @@ func myAppTemplate() *schema.TemplateDefinition {
 		Description: "One blunt sentence describing MyApp.",
 		Version:     1,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumCPUs:  1,
-			MinimumRAMGB: 0.5,
+			MinimumRecommendedCPU:    1,
+			MinimumRecommendedRAMGB: 0.5,
 		},
 		Inputs: []schema.TemplateInput{
 			{

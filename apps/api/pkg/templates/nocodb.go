@@ -13,10 +13,10 @@ func nocodbTemplate() *schema.TemplateDefinition {
 		Icon:        "nocodb",
 		Keywords:    []string{"low code", "no code", "no-code", "database", "spreadsheet", "airtable alternative", "api builder", "sql", "postgresql"},
 		Description: "Build databases as spreadsheets.",
-		Version:     2,
+		Version:     3,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumCPUs:  1,
-			MinimumRAMGB: 1,
+			MinimumRecommendedCPU:   1,
+			MinimumRecommendedRAMGB: 1.5,
 		},
 		Inputs: []schema.TemplateInput{
 			{
@@ -83,7 +83,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 					Port:                    new(int32(8080)),
 					StartupPeriodSeconds:    new(int32(5)),
 					StartupTimeoutSeconds:   new(int32(20)),
-					StartupFailureThreshold: new(int32(10)),
+					StartupFailureThreshold: new(int32(30)),
 					HealthPeriodSeconds:     new(int32(10)),
 					HealthTimeoutSeconds:    new(int32(5)),
 					HealthFailureThreshold:  new(int32(5)),

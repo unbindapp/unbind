@@ -13,10 +13,10 @@ func flowiseTemplate() *schema.TemplateDefinition {
 		Icon:        "flowise",
 		Keywords:    []string{"llm", "ai", "chatbot", "langchain", "flow", "workflow", "automation", "low code", "low-code", "no code", "no-code", "chatbot", "ai"},
 		Description: "Low code tool for building LLM flows.",
-		Version:     2,
+		Version:     3,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumCPUs:  1,
-			MinimumRAMGB: 2,
+			MinimumRecommendedCPU:   1,
+			MinimumRecommendedRAMGB: 1.5,
 		},
 		Inputs: []schema.TemplateInput{
 			{
@@ -32,7 +32,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
 					Name:      "flowise-volume",
-					MountPath: "/root/.flowise",
+					MountPath: "/home/node/.flowise",
 				},
 				Description: "Size of the storage for the Flowise app data.",
 				Required:    true,
@@ -68,6 +68,13 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				Builder:    schema.ServiceBuilderDocker,
 				Image:      new("flowiseai/flowise:3.1.4"),
 				RunCommand: new("flowise start"),
+				// The image runs as node (uid 1000); fresh volumes are root-owned
+				InitContainers: []*schema.InitContainer{
+					{
+						Image:   "busybox:1.37.0",
+						Command: "chown -R 1000:1000 /home/node/.flowise",
+					},
+				},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
 				},
@@ -113,11 +120,11 @@ func flowiseTemplate() *schema.TemplateDefinition {
 					},
 					{
 						Name:  "APIKEY_PATH",
-						Value: "/root/.flowise",
+						Value: "/home/node/.flowise",
 					},
 					{
 						Name:  "SECRETKEY_PATH",
-						Value: "/root/.flowise",
+						Value: "/home/node/.flowise",
 					},
 					{
 						Name:  "LOG_LEVEL",
@@ -125,7 +132,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 					},
 					{
 						Name:  "LOG_PATH",
-						Value: "/root/.flowise/logs",
+						Value: "/home/node/.flowise/logs",
 					},
 					{
 						Name:  "DATABASE_TYPE",

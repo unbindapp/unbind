@@ -743,8 +743,8 @@ export const ServiceConfigResponseSchema = z
 
 export const TemplateResourceRecommendationsSchema = z
   .object({
-    minimum_cpus: z.number(),
-    minimum_ram_gb: z.number(),
+    minimum_recommended_cpu: z.number(),
+    minimum_recommended_ram_gb: z.number(),
   })
   .strip();
 
@@ -1893,6 +1893,36 @@ export const ListS3BucketsOutputBodySchema = z
   })
   .strip();
 
+export const ServerResponseSchema = z
+  .object({
+    architecture: z.string(),
+    cpu_allocatable_millicores: z.number(),
+    cpu_requested_millicores: z.number(),
+    created_at: z.string().datetime({ offset: true }),
+    disk_pressure: z.boolean(),
+    external_ip: z.string(),
+    internal_ip: z.string(),
+    kubernetes_version: z.string(),
+    memory_allocatable_megabytes: z.number(),
+    memory_pressure: z.boolean(),
+    memory_requested_megabytes: z.number(),
+    name: z.string(),
+    os: z.string(),
+    pid_pressure: z.boolean(),
+    pod_capacity: z.number(),
+    pod_count: z.number(),
+    ready: z.boolean(),
+    roles: z.array(z.string()),
+    unschedulable: z.boolean(),
+  })
+  .strip();
+
+export const ListServersResponseBodySchema = z
+  .object({
+    data: z.array(ServerResponseSchema),
+  })
+  .strip();
+
 export const ListServiceGroupResponseBodySchema = z
   .object({
     data: z.array(ServiceGroupResponseSchema),
@@ -2827,6 +2857,8 @@ export type PodPhase = z.infer<typeof PodPhaseSchema>;
 export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
 export type ListReplicasResponseBody = z.infer<typeof ListReplicasResponseBodySchema>;
 export type ListS3BucketsOutputBody = z.infer<typeof ListS3BucketsOutputBodySchema>;
+export type ServerResponse = z.infer<typeof ServerResponseSchema>;
+export type ListServersResponseBody = z.infer<typeof ListServersResponseBodySchema>;
 export type ListServiceGroupResponseBody = z.infer<typeof ListServiceGroupResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
 export type ListTagsResponseBody = z.infer<typeof ListTagsResponseBodySchema>;
@@ -5619,6 +5651,49 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = RestartServicesResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+    },
+    servers: {
+      list: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<ListServersResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/servers/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListServersResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

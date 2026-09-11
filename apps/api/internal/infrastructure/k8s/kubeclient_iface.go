@@ -144,6 +144,8 @@ type KubeClientInterface interface {
 	GetAllSecrets(ctx context.Context, teamID uuid.UUID, teamSecret string, projectID uuid.UUID, projectSecret string, environmentID uuid.UUID, environmentSecret string, serviceSecrets map[uuid.UUID]string, client kubernetes.Interface, namespace string) ([]models.SecretData, error)
 	// CopySecret copies a secret from one namespace to another
 	CopySecret(ctx context.Context, secretName string, sourceNamespace string, targetNamespace string, client kubernetes.Interface) (*corev1.Secret, error)
+	// ListServers returns every node with its allocatable capacity and the requests already scheduled on it
+	ListServers(ctx context.Context) ([]*models.ServerResponse, error)
 	// AvailableStorageBytes inspects the default StorageClass and returns
 	// capacity / sizing metadata
 	//

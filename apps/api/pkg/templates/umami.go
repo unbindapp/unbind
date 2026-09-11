@@ -13,10 +13,10 @@ func umamiTemplate() *schema.TemplateDefinition {
 		Icon:        "umami",
 		Keywords:    []string{"analytics", "open source", "privacy-friendly", "Google Analytics", "plausible"},
 		Description: "Privacy-focused Google Analytics alternative.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumCPUs:  1,
-			MinimumRAMGB: 1,
+			MinimumRecommendedCPU:   0.5,
+			MinimumRecommendedRAMGB: 0.5,
 		},
 		Inputs: []schema.TemplateInput{
 			{

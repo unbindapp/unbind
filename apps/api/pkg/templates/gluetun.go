@@ -13,10 +13,10 @@ func gluetunTemplate() *schema.TemplateDefinition {
 		Icon:        "gluetun",
 		Keywords:    []string{"gluetun", "vpn", "proxy", "http proxy", "wireguard", "mullvad", "nordvpn", "protonvpn"},
 		Description: "VPN client with a built-in HTTP proxy.",
-		Version:     3,
+		Version:     4,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumCPUs:  1,
-			MinimumRAMGB: 0.25,
+			MinimumRecommendedCPU:   0.5,
+			MinimumRecommendedRAMGB: 0.25,
 		},
 		Inputs: []schema.TemplateInput{
 			{

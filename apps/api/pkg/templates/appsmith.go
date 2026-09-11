@@ -13,10 +13,10 @@ func appsmithTemplate() *schema.TemplateDefinition {
 		Icon:        "appsmith",
 		Keywords:    []string{"low code", "no code", "app builder", "internal tools", "dashboard", "automation"},
 		Description: "Build admin panels, internal tools, and dashboards.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumCPUs:  2,
-			MinimumRAMGB: 4,
+			MinimumRecommendedCPU:   2,
+			MinimumRecommendedRAMGB: 4,
 		},
 		Inputs: []schema.TemplateInput{
 			{

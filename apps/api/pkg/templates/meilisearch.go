@@ -13,10 +13,10 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 		Icon:        "meilisearch",
 		Keywords:    []string{"full text search", "elasticsearch", "search engine", "ram"},
 		Description: "Fast & open source search engine.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumCPUs:  1,
-			MinimumRAMGB: 0.5,
+			MinimumRecommendedCPU:   0.5,
+			MinimumRecommendedRAMGB: 0.5,
 		},
 		Inputs: []schema.TemplateInput{
 			{

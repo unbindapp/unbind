@@ -27,7 +27,7 @@ column. The `json` tags below are the wire/storage names and the frontend Zod sc
 | `RequiredCapabilities` | `[]string` | no | Cluster capabilities required (e.g. `"tls"`); empty = runs anywhere. Filters the gallery. |
 
 ### TemplateResourceRecommendations
-`MinimumCPUs float64`, `MinimumRAMGB float64`. Advisory only.
+`MinimumRecommendedCPU float64`, `MinimumRecommendedRAMGB float64`. The minimum recommended sizing for the whole bundle (databases included) at light use, rounded to 0.25. A suggestion shown in the UI, never a hard requirement. Must be at least the sum of the services' resolved requests (enforced by a test in `pkg/templates`).
 
 ## TemplateService
 

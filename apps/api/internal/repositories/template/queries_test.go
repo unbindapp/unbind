@@ -27,8 +27,8 @@ func (suite *TemplateQueriesSuite) SetupTest() {
 		SetIcon("test-icon").
 		SetKeywords([]string{"test", "template"}).
 		SetResourceRecommendations(schema.TemplateResourceRecommendations{
-			MinimumCPUs:  0.5,
-			MinimumRAMGB: 1.0,
+			MinimumRecommendedCPU:   0.5,
+			MinimumRecommendedRAMGB: 1.0,
 		}).
 		SetDisplayRank(1).
 		SetVersion(1).
@@ -99,8 +99,8 @@ func (suite *TemplateQueriesSuite) TestGetAll() {
 			SetVersion(2).
 			SetResourceRecommendations(
 				schema.TemplateResourceRecommendations{
-					MinimumCPUs:  0.5,
-					MinimumRAMGB: 1.0,
+					MinimumRecommendedCPU:   0.5,
+					MinimumRecommendedRAMGB: 1.0,
 				},
 			).
 			SetDefinition(schema.TemplateDefinition{
@@ -138,8 +138,8 @@ func (suite *TemplateQueriesSuite) TestGetAll() {
 			SetVersion(1).
 			SetResourceRecommendations(
 				schema.TemplateResourceRecommendations{
-					MinimumCPUs:  0.5,
-					MinimumRAMGB: 1.0,
+					MinimumRecommendedCPU:   0.5,
+					MinimumRecommendedRAMGB: 1.0,
 				},
 			).
 			SetDefinition(schema.TemplateDefinition{
@@ -159,8 +159,8 @@ func (suite *TemplateQueriesSuite) TestGetAll() {
 			SetVersion(1).
 			SetResourceRecommendations(
 				schema.TemplateResourceRecommendations{
-					MinimumCPUs:  0.5,
-					MinimumRAMGB: 1.0,
+					MinimumRecommendedCPU:   0.5,
+					MinimumRecommendedRAMGB: 1.0,
 				},
 			).
 			SetDefinition(schema.TemplateDefinition{

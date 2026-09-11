@@ -13,10 +13,10 @@ func pocketBaseTemplate() *schema.TemplateDefinition {
 		Icon:        "pocketbase",
 		Keywords:    []string{"pocketbase", "database", "backend", "supabase", "firebase"},
 		Description: "Open source backend in 1 file.",
-		Version:     1,
+		Version:     2,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumCPUs:  1,
-			MinimumRAMGB: 0.25,
+			MinimumRecommendedCPU:   0.5,
+			MinimumRecommendedRAMGB: 0.5,
 		},
 		Inputs: []schema.TemplateInput{
 			{

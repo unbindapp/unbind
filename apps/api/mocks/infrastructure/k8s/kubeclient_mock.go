@@ -3174,6 +3174,68 @@ func (_c *KubeClientMock_ListPersistentVolumeClaims_Call) RunAndReturn(run func(
 	return _c
 }
 
+// ListServers provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) ListServers(ctx context.Context) ([]*models.ServerResponse, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListServers")
+	}
+
+	var r0 []*models.ServerResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]*models.ServerResponse, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []*models.ServerResponse); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.ServerResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_ListServers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListServers'
+type KubeClientMock_ListServers_Call struct {
+	*mock.Call
+}
+
+// ListServers is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *KubeClientMock_Expecter) ListServers(ctx any) *KubeClientMock_ListServers_Call {
+	return &KubeClientMock_ListServers_Call{Call: _e.mock.On("ListServers", ctx)}
+}
+
+func (_c *KubeClientMock_ListServers_Call) Run(run func(ctx context.Context)) *KubeClientMock_ListServers_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_ListServers_Call) Return(serverResponses []*models.ServerResponse, err error) *KubeClientMock_ListServers_Call {
+	_c.Call.Return(serverResponses, err)
+	return _c
+}
+
+func (_c *KubeClientMock_ListServers_Call) RunAndReturn(run func(ctx context.Context) ([]*models.ServerResponse, error)) *KubeClientMock_ListServers_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NetworkingCapabilities provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) NetworkingCapabilities(ctx context.Context) []string {
 	ret := _mock.Called(ctx)

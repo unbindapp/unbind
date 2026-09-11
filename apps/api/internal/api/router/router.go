@@ -24,6 +24,7 @@ import (
 	metrics_handler "github.com/unbindapp/unbind-api/internal/api/handlers/metrics"
 	projects_handler "github.com/unbindapp/unbind-api/internal/api/handlers/projects"
 	replicas_handler "github.com/unbindapp/unbind-api/internal/api/handlers/replicas"
+	servers_handler "github.com/unbindapp/unbind-api/internal/api/handlers/servers"
 	service_handler "github.com/unbindapp/unbind-api/internal/api/handlers/service"
 	servicegroups_handler "github.com/unbindapp/unbind-api/internal/api/handlers/service_groups"
 	setup_handler "github.com/unbindapp/unbind-api/internal/api/handlers/setup"
@@ -149,6 +150,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/auth", "Auth", false, auth_handler.RegisterHandlers)
 	register("/webhook", "Webhook", false, webhook_handler.RegisterHandlers)
 	register("/system", "System", true, system_handler.RegisterHandlers)
+	register("/servers", "Servers", true, servers_handler.RegisterHandlers)
 	register("/users", "Users", true, user_handler.RegisterHandlers)
 	register("/groups", "Groups", true, groups_handler.RegisterHandlers)
 	register("/github", "GitHub", true, github_handler.RegisterHandlers)

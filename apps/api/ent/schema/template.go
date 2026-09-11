@@ -93,10 +93,10 @@ type TemplateDefinition struct {
 	RequiredCapabilities []string `json:"required_capabilities,omitempty" nullable:"false"`
 }
 
-// TemplateResourceRecommendations represents resource recommendations for a template
+// TemplateResourceRecommendations is the minimum recommended sizing for the whole bundle, a suggestion rather than a hard requirement
 type TemplateResourceRecommendations struct {
-	MinimumCPUs  float64 `json:"minimum_cpus"`   // Minimum CPUs required
-	MinimumRAMGB float64 `json:"minimum_ram_gb"` // Minimum RAM required in GB
+	MinimumRecommendedCPU   float64 `json:"minimum_recommended_cpu"`
+	MinimumRecommendedRAMGB float64 `json:"minimum_recommended_ram_gb"`
 }
 
 // TemplateService represents a service within a template

@@ -23,6 +23,7 @@ import (
 	metric_service "github.com/unbindapp/unbind-api/internal/services/metrics"
 	project_service "github.com/unbindapp/unbind-api/internal/services/project"
 	replica_service "github.com/unbindapp/unbind-api/internal/services/replicas"
+	servers_service "github.com/unbindapp/unbind-api/internal/services/servers"
 	service_service "github.com/unbindapp/unbind-api/internal/services/service"
 	servicegroup_service "github.com/unbindapp/unbind-api/internal/services/service_group"
 	storage_service "github.com/unbindapp/unbind-api/internal/services/storage"
@@ -77,6 +78,7 @@ type Server struct {
 	LogService          *logs_service.LogsService
 	DeploymentService   *deployments_service.DeploymentService
 	SystemService       *system_service.SystemService
+	ServersService      *servers_service.ServersService
 	MetricsService      *metric_service.MetricsService
 	WebhooksService     *webhooks_service.WebhooksService
 	ReplicaService      *replica_service.ReplicaService
