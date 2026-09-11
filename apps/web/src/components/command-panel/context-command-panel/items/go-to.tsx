@@ -253,6 +253,7 @@ export default function useGoToItem({ context }: TProps) {
         id,
         title: service.name,
         titleSuffix: " (Service)",
+        hideFromParentSearch: true,
         Icon: ({ className }) => <ServiceIcon service={service} className={className} />,
         description: duplicateNames.has(service.name)
           ? () => <ServicePickerDescription service={service} />

@@ -4,8 +4,9 @@ export function getAllItemsFromCommandPanelPage(page: TCommandPanelPage): TComma
   if (!page.items) return [];
   return page.items.flatMap((item) => {
     if (item.subpage) {
-      return [...getAllItemsFromCommandPanelPage(item.subpage)];
+      return getAllItemsFromCommandPanelPage(item.subpage);
     }
+    if (item.hideFromParentSearch) return [];
     return item;
   });
 }

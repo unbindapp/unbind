@@ -56,6 +56,8 @@ export type TCommandPanelItem = {
   onHighlight?: () => void;
   keywords: string[];
   disabled?: boolean;
+  // Only matches on its own page, not when searching from a parent page
+  hideFromParentSearch?: boolean;
 };
 
 export type TContextCommandPanelContext =
