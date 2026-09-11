@@ -313,5 +313,10 @@
     "version": "v0.1.62",
     "summary": "Project and service navigation from the command panel, server capacity details, template sizing fixes, instances renamed to replicas, and staged changes improvements.",
     "breaking": false
+  },
+  "v0.1.63": {
+    "version": "v0.1.63",
+    "summary": "Longhorn 1.12.1 for new installs, variable card rounding fixes, and changelog accordion style tweaks on the update page.",
+    "breaking": false
   }
 }
