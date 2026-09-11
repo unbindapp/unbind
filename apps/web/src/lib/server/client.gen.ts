@@ -758,7 +758,7 @@ export const TemplateShortResponseSchema = z
     immutable: z.boolean(),
     keywords: z.array(z.string()),
     name: z.string(),
-    resource_recommendations: TemplateResourceRecommendationsSchema.optional(),
+    resource_recommendations: TemplateResourceRecommendationsSchema,
     version: z.number(),
   })
   .strip();
@@ -1502,7 +1502,7 @@ export const TemplateDefinitionSchema = z
     keywords: z.array(z.string()).nullable().optional(),
     name: z.string(),
     required_capabilities: z.array(z.string()).optional(),
-    resource_recommendations: TemplateResourceRecommendationsSchema.optional(),
+    resource_recommendations: TemplateResourceRecommendationsSchema,
     services: z.array(TemplateServiceSchema),
     version: z.number(),
   })
@@ -1519,7 +1519,7 @@ export const TemplateWithDefinitionResponseSchema = z
     immutable: z.boolean(),
     keywords: z.array(z.string()),
     name: z.string(),
-    resource_recommendations: TemplateResourceRecommendationsSchema.optional(),
+    resource_recommendations: TemplateResourceRecommendationsSchema,
     version: z.number(),
   })
   .strip();

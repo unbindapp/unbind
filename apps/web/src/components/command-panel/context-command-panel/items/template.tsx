@@ -82,10 +82,10 @@ function useTemplateItem() {
                 <span className="text-muted-most-foreground px-[1ch]">{"|"}</span>
                 <span className="pr-[0.6ch]">{"Min:"}</span>
                 <CpuIcon className="mr-[0.4ch] mb-0.5 inline-block size-4" />
-                <span>{template.resource_recommendations?.minimum_recommended_cpu}</span>
+                <span>{template.resource_recommendations.minimum_recommended_cpu}</span>
                 <span className="text-muted-most-foreground px-[0.5ch]">{"•"}</span>
                 <MemoryStickIcon className="mr-[0.4ch] mb-0.5 inline-block size-4" />
-                <span>{template.resource_recommendations?.minimum_recommended_ram_gb} GB</span>
+                <span>{template.resource_recommendations.minimum_recommended_ram_gb} GB</span>
               </p>
             </div>
           );

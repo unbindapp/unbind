@@ -80,9 +80,9 @@ func (Template) Annotations() []schema.Annotation {
 // TemplateDefinition represents a complete template configuration
 type TemplateDefinition struct {
 	Name                    string                          `json:"name"`
-	ResourceRecommendations TemplateResourceRecommendations `json:"resource_recommendations,omitempty"` // Resource recommendations for the template
-	DisplayRank             uint                            `json:"display_rank"`                       // Rank for ordering results, lower ranks higher
-	Icon                    string                          `json:"icon,omitempty"`                     // Icon name
+	ResourceRecommendations TemplateResourceRecommendations `json:"resource_recommendations"` // Resource recommendations for the template
+	DisplayRank             uint                            `json:"display_rank"`             // Rank for ordering results, lower ranks higher
+	Icon                    string                          `json:"icon,omitempty"`           // Icon name
 	Description             string                          `json:"description"`
 	Keywords                []string                        `json:"keywords,omitempty"`
 	Version                 int                             `json:"version"`

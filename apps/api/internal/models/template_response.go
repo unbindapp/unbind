@@ -11,7 +11,7 @@ import (
 type TemplateShortResponse struct {
 	ID                      uuid.UUID                              `json:"id" format:"uuid"`
 	DisplayRank             uint                                   `json:"display_rank"`
-	ResourceRecommendations schema.TemplateResourceRecommendations `json:"resource_recommendations,omitempty"`
+	ResourceRecommendations schema.TemplateResourceRecommendations `json:"resource_recommendations"`
 	Name                    string                                 `json:"name"`
 	Icon                    string                                 `json:"icon"`
 	Keywords                []string                               `json:"keywords" nullable:"false"`
@@ -53,7 +53,7 @@ type TemplateWithDefinitionResponse struct {
 	Keywords                []string                               `json:"keywords" nullable:"false"`
 	Description             string                                 `json:"description"`
 	Version                 int                                    `json:"version"`
-	ResourceRecommendations schema.TemplateResourceRecommendations `json:"resource_recommendations,omitempty"`
+	ResourceRecommendations schema.TemplateResourceRecommendations `json:"resource_recommendations"`
 	Immutable               bool                                   `json:"immutable"`
 	Definition              schema.TemplateDefinition              `json:"definition"`
 	CreatedAt               time.Time                              `json:"created_at"`
