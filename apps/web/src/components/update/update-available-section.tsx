@@ -319,9 +319,13 @@ function Changelog({
           <div className="flex min-w-0 flex-1 flex-col gap-1.5 overflow-hidden sm:px-0.75 sm:py-1">
             <div className="flex items-center gap-1.5">
               <FileTextIcon className="size-4.5 shrink-0" />
-              <p className="min-w-0 shrink leading-tight font-bold wrap-break-word">Changelog</p>
+              <p className="min-w-0 shrink leading-tight font-semibold wrap-break-word">
+                Changelog
+              </p>
             </div>
-            {summary && <p className="text-muted-foreground min-w-0 text-sm">{summary}</p>}
+            {summary && (
+              <p className="text-muted-foreground min-w-0 text-sm font-normal">{summary}</p>
+            )}
           </div>
         </AccordionTrigger>
         <AccordionContent className="flex flex-col gap-3 border-t pt-3.5 pb-4">
