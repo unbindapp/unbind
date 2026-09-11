@@ -15,7 +15,7 @@ func plausibleTemplate() *schema.TemplateDefinition {
 		Description: "Privacy-friendly Google Analytics alternative.",
 		Version:     3,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
-			MinimumRecommendedCPU:   2,
+			MinimumRecommendedCPU:   1,
 			MinimumRecommendedRAMGB: 2,
 		},
 		Inputs: []schema.TemplateInput{

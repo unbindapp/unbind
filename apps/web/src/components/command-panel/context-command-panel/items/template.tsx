@@ -9,7 +9,7 @@ import { useTemplateDraftStore } from "@/components/templates/template-draft-sto
 import { useTemplates } from "@/components/templates/templates-provider";
 import { toast } from "@/components/ui/toast";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { BlocksIcon } from "lucide-react";
+import { BlocksIcon, CpuIcon, MemoryStickIcon } from "lucide-react";
 import { useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -61,23 +61,35 @@ function useTemplateItem() {
       const item: TCommandPanelItem = {
         id: `${subpageId}_${template.name.replaceAll(" ", "-").toLowerCase()}`,
         title: template.name,
-        description: () => (
-          <div className="text-muted-foreground flex min-w-0 shrink flex-col gap-2 text-sm leading-tight font-normal">
-            <p className="min-w-0 shrink">{template.description}</p>
-            <div className="flex min-w-0 shrink flex-row flex-wrap items-start gap-1">
+        description: () => {
+          const iconSet = [...new Set(template.definition.services.map((s) => s.icon))];
+          return (
+            <div className="text-muted-foreground flex min-w-0 shrink flex-col gap-2 text-sm leading-tight font-normal">
+              <p className="min-w-0 shrink">{template.description}</p>
               <p className="min-w-0 shrink">
-                {template.definition.services.length}{" "}
-                {`service${template.definition.services.length >= 2 ? "s" : ""}`}
-                <span className="text-muted-most-foreground pr-[0.35ch] pl-[0.75ch]">{"|"}</span>
-              </p>
-              <div className="mt-[0.07rem] inline-flex min-w-0 shrink items-center gap-1.5">
-                {[...new Set(template.definition.services.map((s) => s.icon))].map((icon) => (
-                  <BrandIcon key={icon} brand={icon} color="monochrome" className="size-4" />
+                <span className="pr-[0.6ch]">
+                  {template.definition.services.length}{" "}
+                  {`service${template.definition.services.length >= 2 ? "s" : ""}:`}
+                </span>
+                {iconSet.map((icon, index) => (
+                  <BrandIcon
+                    data-last={index === iconSet.length - 1 || undefined}
+                    brand={icon}
+                    color="monochrome"
+                    className="mr-[0.6ch] mb-0.5 inline-block size-4 data-last:mr-0"
+                  />
                 ))}
-              </div>
+                <span className="text-muted-most-foreground px-[1ch]">{"|"}</span>
+                <span className="pr-[0.6ch]">{"Min:"}</span>
+                <CpuIcon className="mr-[0.4ch] mb-0.5 inline-block size-4" />
+                <span>{template.resource_recommendations?.minimum_recommended_cpu}</span>
+                <span className="text-muted-most-foreground px-[0.5ch]">{"•"}</span>
+                <MemoryStickIcon className="mr-[0.4ch] mb-0.5 inline-block size-4" />
+                <span>{template.resource_recommendations?.minimum_recommended_ram_gb} GB</span>
+              </p>
             </div>
-          </div>
-        ),
+          );
+        },
         keywords: template.keywords,
         onSelect: () => {
           const id = uuidv4();
