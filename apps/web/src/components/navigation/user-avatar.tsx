@@ -27,7 +27,7 @@ import {
   GitBranchIcon,
   LoaderIcon,
   LogOutIcon,
-  ServerCogIcon,
+  WrenchIcon,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -113,7 +113,7 @@ export default function UserAvatar({ email, className }: TProps) {
               variant="ghost"
               className="w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-3.5 text-left font-medium"
             >
-              <ServerCogIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+              <WrenchIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
               <p className="min-w-0 shrink leading-tight">System</p>
             </LinkButton>
           )}
@@ -191,7 +191,7 @@ export default function UserAvatar({ email, className }: TProps) {
           {isAdmin && (
             <DropdownMenuItem className="p-0" render={<Link to="/system" />}>
               <div className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight">
-                <ServerCogIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+                <WrenchIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
                 <p className="min-w-0 shrink leading-tight">System</p>
               </div>
             </DropdownMenuItem>
