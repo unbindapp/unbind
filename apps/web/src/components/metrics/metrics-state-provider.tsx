@@ -1,6 +1,13 @@
 "use client";
 
-import { TMetricsIntervalEnum } from "@/lib/queries/metrics";
+import {
+  metricsSearchParamKeys,
+  metricsViewDefault,
+  type TMetricsScope,
+  type TMetricsSearchParamKeys,
+} from "@/components/metrics/constants";
+import { metricsViews, type TMetricsView } from "@/components/metrics/shape-metrics";
+import { MetricsIntervalEnum, TMetricsIntervalEnum } from "@/lib/queries/metrics";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { createContext, useCallback, useContext, useMemo } from "react";
 
@@ -9,43 +16,15 @@ type TInterval = {
   label: string;
 };
 
-const intervals: TInterval[] = [
-  {
-    value: "5m",
-    label: "5m",
-  },
-  {
-    value: "15m",
-    label: "15m",
-  },
-  {
-    value: "1h",
-    label: "1h",
-  },
-  {
-    value: "6h",
-    label: "6h",
-  },
-  {
-    value: "24h",
-    label: "24h",
-  },
-  {
-    value: "7d",
-    label: "7d",
-  },
-  {
-    value: "30d",
-    label: "30d",
-  },
-];
+const intervals: TInterval[] = MetricsIntervalEnum.options.map((value) => ({
+  value,
+  label: value,
+}));
 
 export const metricsIntervalEnumDefault: TMetricsIntervalEnum = "1h";
 export const metricsIntervalDefault =
   intervals.find((i) => i.value === metricsIntervalEnumDefault) ||
   intervals[Math.min(2, intervals.length - 1)];
-
-export const metricsIntervalSearchParamKey = "metrics_interval";
 
 /** The default interval for a freshly created service, narrowing as it ages. */
 export function getAgeBasedDefaultIntervalEnum(
@@ -71,46 +50,128 @@ export function resolveMetricsIntervalEnum(params: {
   return intervals.find((i) => i.value === candidate)?.value ?? metricsIntervalEnumDefault;
 }
 
+function decodeView(value: string | undefined): TMetricsView {
+  if (!value) return metricsViewDefault;
+  return (metricsViews as readonly string[]).includes(value)
+    ? (value as TMetricsView)
+    : metricsViewDefault;
+}
+
+function decodeList(value: string | undefined): string[] {
+  if (!value) return [];
+  return value.split(",").filter(Boolean);
+}
+
 type TMetricsStateContext = {
   intervals: TInterval[];
-  setInterval: (value: TMetricsIntervalEnum | null) => void;
   interval: TInterval;
+  setInterval: (value: TMetricsIntervalEnum | null) => void;
+  view: TMetricsView;
+  setView: (view: TMetricsView) => void;
+  /** Empty means everything; only meaningful when `selectionEnabled`. */
+  selectedIds: string[];
+  setSelectedIds: (ids: string[]) => void;
+  selectionEnabled: boolean;
+  resetFilters: () => void;
+  hasActiveFilters: boolean;
 };
 
 const MetricsStateContext = createContext<TMetricsStateContext | null>(null);
 
 type TProps = {
   children: React.ReactNode;
+  type: TMetricsScope;
   defaultIntervalEnum?: TMetricsIntervalEnum;
 };
 
-export const MetricsStateProvider: React.FC<TProps> = ({ children, defaultIntervalEnum }) => {
+export const MetricsStateProvider: React.FC<TProps> = ({ children, type, defaultIntervalEnum }) => {
+  const keys: TMetricsSearchParamKeys = metricsSearchParamKeys[type];
   const navigate = useNavigate();
-  const intervalParam = useSearch({
-    strict: false,
-    select: (s) => s[metricsIntervalSearchParamKey],
-  });
-  const interval = intervalParam ?? defaultIntervalEnum ?? metricsIntervalEnumDefault;
 
-  const setInterval = useCallback(
-    (value: TMetricsIntervalEnum | null) =>
+  const rawParams = useSearch({
+    strict: false,
+    select: (s) => {
+      const search = s as Record<string, string | undefined>;
+      return {
+        interval: search[keys.interval],
+        view: keys.view ? search[keys.view] : undefined,
+        selection: keys.selection ? search[keys.selection] : undefined,
+      };
+    },
+    structuralSharing: true,
+  });
+
+  const setParams = useCallback(
+    (patch: Record<string, string | undefined>) =>
       navigate({
         to: ".",
-        search: (prev) => ({ ...prev, [metricsIntervalSearchParamKey]: value ?? undefined }),
+        search: (prev) => ({ ...prev, ...patch }),
         replace: true,
+        resetScroll: false,
       }),
     [navigate],
   );
 
-  const currentInterval = intervals.find((i) => i.value === interval) || metricsIntervalDefault;
+  const resolvedDefaultIntervalEnum = defaultIntervalEnum ?? metricsIntervalEnumDefault;
+  const intervalEnum = rawParams.interval ?? resolvedDefaultIntervalEnum;
+  const interval = intervals.find((i) => i.value === intervalEnum) || metricsIntervalDefault;
+  const view = decodeView(rawParams.view);
+  const selectedIds = useMemo(() => decodeList(rawParams.selection), [rawParams.selection]);
+  const selectionEnabled = keys.selection !== undefined;
+
+  const setInterval = useCallback(
+    (value: TMetricsIntervalEnum | null) => setParams({ [keys.interval]: value ?? undefined }),
+    [setParams, keys],
+  );
+
+  const setView = useCallback(
+    (next: TMetricsView) => {
+      if (!keys.view) return;
+      setParams({ [keys.view]: next === metricsViewDefault ? undefined : next });
+    },
+    [setParams, keys],
+  );
+
+  const setSelectedIds = useCallback(
+    (ids: string[]) => {
+      if (!keys.selection) return;
+      setParams({ [keys.selection]: ids.length ? ids.join(",") : undefined });
+    },
+    [setParams, keys],
+  );
+
+  const resetFilters = useCallback(() => {
+    const patch: Record<string, string | undefined> = { [keys.interval]: undefined };
+    if (keys.selection) patch[keys.selection] = undefined;
+    setParams(patch);
+  }, [setParams, keys]);
+
+  const hasActiveFilters = interval.value !== resolvedDefaultIntervalEnum || selectedIds.length > 0;
 
   const value: TMetricsStateContext = useMemo(
     () => ({
       intervals,
+      interval,
       setInterval,
-      interval: currentInterval,
+      view,
+      setView,
+      selectedIds,
+      setSelectedIds,
+      selectionEnabled,
+      resetFilters,
+      hasActiveFilters,
     }),
-    [setInterval, currentInterval],
+    [
+      interval,
+      setInterval,
+      view,
+      setView,
+      selectedIds,
+      setSelectedIds,
+      selectionEnabled,
+      resetFilters,
+      hasActiveFilters,
+    ],
   );
 
   return <MetricsStateContext.Provider value={value}>{children}</MetricsStateContext.Provider>;

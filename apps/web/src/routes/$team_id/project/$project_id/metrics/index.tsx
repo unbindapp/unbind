@@ -1,28 +1,39 @@
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
+import { useMemo } from "react";
 import { z } from "zod";
 
 import { metricsListQuery, MetricsIntervalEnum } from "@/lib/queries/metrics";
 import { servicesListQuery } from "@/lib/queries/services";
 import Charts from "@/components/metrics/charts";
-import MetricsIntervalDropdown from "@/components/metrics/metrics-interval-dropdown";
+import { metricsSearchParamKeys, MetricsViewEnum } from "@/components/metrics/constants";
+import MetricsFilterDropdown, {
+  type TMetricsSelectionItem,
+} from "@/components/metrics/metrics-filter-dropdown";
 import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider, {
   metricsIntervalEnumDefault,
 } from "@/components/metrics/metrics-state-provider";
+import MetricsViewToggle from "@/components/metrics/metrics-view-toggle";
 import EnvironmentSelector from "@/components/environment/environment-selector";
 import PageWrapper from "@/components/page-wrapper";
-import ServicesProvider from "@/components/service/services-provider";
+import ServiceIcon from "@/components/service/service-icon";
+import ServicesProvider, { useServices } from "@/components/service/services-provider";
 
 const projectRouteId = "/$team_id/project/$project_id";
+const keys = metricsSearchParamKeys.environment;
 
-const searchSchema = z.object({ metrics_interval: MetricsIntervalEnum.optional() });
+const searchSchema = z.object({
+  [keys.interval]: MetricsIntervalEnum.optional(),
+  [keys.view]: MetricsViewEnum.optional(),
+  [keys.selection]: z.string().optional(),
+});
 
 export const Route = createFileRoute("/$team_id/project/$project_id/metrics/")({
   validateSearch: zodValidator(searchSchema),
   // Expose the params the queries are keyed by so the loader runs on intent
   // preload (hover) too. `environment` comes from the parent project route's
-  // schema; `metrics_interval` from this route's schema (default 24h).
+  // schema; `metrics_interval` from this route's schema.
   loaderDeps: ({ search }) => ({
     environment: search.environment,
     interval: search.metrics_interval ?? metricsIntervalEnumDefault,
@@ -60,7 +71,7 @@ function MetricsPage() {
   return (
     <PageWrapper>
       <ServicesProvider teamId={teamId} projectId={projectId} environmentId={environmentId}>
-        <MetricsStateProvider>
+        <MetricsStateProvider type="environment">
           <MetricsProvider
             teamId={teamId}
             projectId={projectId}
@@ -75,7 +86,10 @@ function MetricsPage() {
                   </h1>
                   <EnvironmentSelector />
                 </div>
-                <MetricsIntervalDropdown className="-my-2" />
+                <div className="-my-2 flex min-w-0 flex-wrap items-center justify-end gap-2">
+                  <MetricsViewToggle />
+                  <ServicesFilterDropdown />
+                </div>
               </div>
               <div className="flex w-full flex-row flex-wrap pt-3">
                 <Charts />
@@ -86,4 +100,22 @@ function MetricsPage() {
       </ServicesProvider>
     </PageWrapper>
   );
+}
+
+function ServicesFilterDropdown() {
+  const {
+    query: { data: servicesData },
+  } = useServices();
+
+  const items: TMetricsSelectionItem[] | undefined = useMemo(
+    () =>
+      servicesData?.services.map((service) => ({
+        id: service.id,
+        name: service.name,
+        icon: <ServiceIcon service={service} className="size-4.5 shrink-0" />,
+      })),
+    [servicesData],
+  );
+
+  return <MetricsFilterDropdown selection={{ label: "Services", items }} />;
 }

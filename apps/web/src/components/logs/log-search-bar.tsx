@@ -41,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import NonDefaultIndicator from "@/components/ui/non-default-indicator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { iconCompletionAddition } from "@/components/ui/token-field/icon-completion";
 import TokenField, { type TTokenFieldHandle } from "@/components/ui/token-field/token-field";
@@ -385,15 +386,6 @@ function FilterButton({ className }: { className?: string }) {
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-}
-
-function NonDefaultIndicator({ isNotDefaultState }: { isNotDefaultState: boolean }) {
-  return (
-    <div
-      data-non-default={isNotDefaultState || undefined}
-      className="bg-warning absolute top-1 right-1 h-1.5 w-1.5 scale-50 rounded-full opacity-0 transition-[scale,opacity] data-non-default:scale-100 data-non-default:opacity-100"
-    />
   );
 }
 

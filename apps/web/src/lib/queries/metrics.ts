@@ -11,6 +11,7 @@ function intervalToStart(interval: TMetricsIntervalEnum): string {
   else if (interval === "15m") defaultDuration = 15 * 60 * 1000;
   else if (interval === "1h") defaultDuration = 60 * 60 * 1000;
   else if (interval === "6h") defaultDuration = 6 * 60 * 60 * 1000;
+  else if (interval === "12h") defaultDuration = 12 * 60 * 60 * 1000;
   else if (interval === "7d") defaultDuration = 7 * 24 * 60 * 60 * 1000;
   else if (interval === "30d") defaultDuration = 30 * 24 * 60 * 60 * 1000;
 
@@ -67,5 +68,5 @@ export const metricsListQuery = (input: TMetricsListInput) =>
 
 export type TMetrics = GetMetricsResponseBody["data"];
 
-export const MetricsIntervalEnum = z.enum(["5m", "15m", "1h", "6h", "24h", "7d", "30d"]);
+export const MetricsIntervalEnum = z.enum(["5m", "15m", "1h", "6h", "12h", "24h", "7d", "30d"]);
 export type TMetricsIntervalEnum = z.infer<typeof MetricsIntervalEnum>;

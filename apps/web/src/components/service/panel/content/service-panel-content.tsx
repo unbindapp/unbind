@@ -5,10 +5,10 @@ import ReplicaHealthProvider, {
   useReplicaHealth,
 } from "@/components/replicas/replica-health-provider";
 import ReplicasProvider from "@/components/replicas/replicas-provider";
+import { metricsSearchParamKeys } from "@/components/metrics/constants";
 import MetricsProvider from "@/components/metrics/metrics-provider";
 import MetricsStateProvider, {
   getAgeBasedDefaultIntervalEnum,
-  metricsIntervalSearchParamKey,
   resolveMetricsIntervalEnum,
 } from "@/components/metrics/metrics-state-provider";
 import { TServicePanelTabEnum } from "@/components/service/panel/constants";
@@ -85,14 +85,14 @@ const tabs: TServicePanelTab[] = [
       const defaultIntervalEnum = getAgeBasedDefaultIntervalEnum(props.service.created_at);
 
       return (
-        <MetricsStateProvider defaultIntervalEnum={defaultIntervalEnum}>
+        <MetricsStateProvider type="service" defaultIntervalEnum={defaultIntervalEnum}>
           <MetricsProvider type="service" {...props} />
         </MetricsStateProvider>
       );
     },
     onIntent: ({ queryClient, teamId, projectId, environmentId, serviceId, service }) => {
       const searchParamValue = new URLSearchParams(window.location.search).get(
-        metricsIntervalSearchParamKey,
+        metricsSearchParamKeys.service.interval,
       );
       const interval = resolveMetricsIntervalEnum({
         searchParamValue,

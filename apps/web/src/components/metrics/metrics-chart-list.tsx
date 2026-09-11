@@ -2,6 +2,8 @@ import ChartWrapper from "@/components/metrics/chart-wrapper";
 import { bytesToHumanReadable, cpuToHumanReadable } from "@/components/metrics/formatters";
 import MetricsChart, { TChartDataItem } from "@/components/metrics/metrics-chart";
 import { useMetrics } from "@/components/metrics/metrics-provider";
+import { useMetricsState } from "@/components/metrics/metrics-state-provider";
+import { shapeMetricSeries } from "@/components/metrics/shape-metrics";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { useMemo } from "react";
@@ -14,6 +16,8 @@ type TProps = {
   tooltipNameFormatterIsPending: boolean;
   tooltipNameFormatterError: string | undefined;
 };
+
+const aggregateNameFormatter = () => "Total";
 
 type TMetrics = {
   cpu: TChartDataItem[];
@@ -31,6 +35,7 @@ export default function MetricsChartList({
   tooltipNameFormatterIsPending,
 }: TProps) {
   const { data, isPending: isPendingMetrics, error: errorMetrics } = useMetrics();
+  const { view, selectedIds } = useMetricsState();
   const defaultErrorMessage = "Something went wrong";
 
   const isPending = tooltipNameFormatterIsPending || isPendingMetrics;
@@ -38,40 +43,15 @@ export default function MetricsChartList({
 
   const modifiedData: TMetrics | undefined = useMemo(() => {
     if (!data) return undefined;
-
-    const shapedData: TMetrics = {
-      cpu: [],
-      ram: [],
-      disk: [],
-      network: [],
+    return {
+      cpu: shapeMetricSeries(data.metrics.cpu, view, selectedIds),
+      ram: shapeMetricSeries(data.metrics.ram, view, selectedIds),
+      disk: shapeMetricSeries(data.metrics.disk, view, selectedIds),
+      network: shapeMetricSeries(data.metrics.network, view, selectedIds),
     };
+  }, [data, view, selectedIds]);
 
-    for (const metric of data.metrics.cpu) {
-      shapedData.cpu.push({
-        timestamp: metric.timestamp,
-        ...metric.breakdown,
-      });
-    }
-    for (const metric of data.metrics.ram) {
-      shapedData.ram.push({
-        timestamp: metric.timestamp,
-        ...metric.breakdown,
-      });
-    }
-    for (const metric of data.metrics.disk) {
-      shapedData.disk.push({
-        timestamp: metric.timestamp,
-        ...metric.breakdown,
-      });
-    }
-    for (const metric of data.metrics.network) {
-      shapedData.network.push({
-        timestamp: metric.timestamp,
-        ...metric.breakdown,
-      });
-    }
-    return shapedData;
-  }, [data]);
+  const nameFormatter = view === "aggregate" ? aggregateNameFormatter : tooltipNameFormatter;
 
   return (
     <div className={cn("flex w-full flex-wrap items-stretch", className)}>
@@ -89,7 +69,7 @@ export default function MetricsChartList({
             chartData={modifiedData.cpu}
             yFormatter={cpuToHumanReadable}
             tooltipValueFormatter={cpuToHumanReadable}
-            tooltipNameFormatter={tooltipNameFormatter}
+            tooltipNameFormatter={nameFormatter}
             noLegends={noLegends}
           />
         )}
@@ -108,7 +88,7 @@ export default function MetricsChartList({
             chartData={modifiedData.ram}
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
-            tooltipNameFormatter={tooltipNameFormatter}
+            tooltipNameFormatter={nameFormatter}
             noLegends={noLegends}
           />
         )}
@@ -127,7 +107,7 @@ export default function MetricsChartList({
             chartData={modifiedData.network}
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
-            tooltipNameFormatter={tooltipNameFormatter}
+            tooltipNameFormatter={nameFormatter}
             noLegends={noLegends}
           />
         )}
@@ -146,7 +126,7 @@ export default function MetricsChartList({
             chartData={modifiedData.disk}
             yFormatter={bytesToHumanReadable}
             tooltipValueFormatter={bytesToHumanReadable}
-            tooltipNameFormatter={tooltipNameFormatter}
+            tooltipNameFormatter={nameFormatter}
             noLegends={noLegends}
           />
         )}

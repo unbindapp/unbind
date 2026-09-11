@@ -9,7 +9,7 @@ import {
   DeploymentPanelTabEnum,
 } from "@/components/deployment/panel/constants";
 import { projectRouteLogSearchParamKeys } from "@/components/logs/constants";
-import { metricsIntervalSearchParamKey } from "@/components/metrics/metrics-state-provider";
+import { metricsSearchParamKeys, MetricsViewEnum } from "@/components/metrics/constants";
 import {
   servicePanelServiceIdKey,
   servicePanelTabKey,
@@ -53,8 +53,11 @@ const searchSchema = z.object({
   [deploymentPanelTabKey]: DeploymentPanelTabEnum.optional(),
   // Template draft panel
   [templateDraftPanelTemplateDraftIdKey]: z.string().optional(),
-  // Metrics
-  [metricsIntervalSearchParamKey]: MetricsIntervalEnum.optional(),
+  // Metrics (page keys plus the service panel's prefixed ones, see components/metrics/constants)
+  [metricsSearchParamKeys.environment.interval]: MetricsIntervalEnum.optional(),
+  [metricsSearchParamKeys.environment.view]: MetricsViewEnum.optional(),
+  [metricsSearchParamKeys.environment.selection]: z.string().optional(),
+  [metricsSearchParamKeys.service.interval]: MetricsIntervalEnum.optional(),
   // Logs (one namespace per log scope, see components/logs/constants)
   ...Object.fromEntries(projectRouteLogSearchParamKeys.map((key) => [key, z.string().optional()])),
 });
