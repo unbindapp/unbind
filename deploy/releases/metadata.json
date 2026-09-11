@@ -308,5 +308,10 @@
     "version": "v0.1.61",
     "summary": "Build command fields stay open while editing, watch paths picker improvements, and border color tweaks for hover and staged states.",
     "breaking": false
+  },
+  "v0.1.62": {
+    "version": "v0.1.62",
+    "summary": "Project and service navigation from the command panel, server capacity details, template sizing fixes, instances renamed to replicas, and staged changes improvements.",
+    "breaking": false
   }
 }
