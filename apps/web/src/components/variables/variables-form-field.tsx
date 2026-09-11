@@ -264,18 +264,14 @@ export function VariableValueField({
       trailing={
         referencesDisabled ? undefined : (
           <Button
+            data-compact={compact || undefined}
             type="button"
             size="icon"
             variant="outline"
             aria-label="Insert reference"
-            // Keeps the focus in the field: a blur closes the dropdown on a
-            // delay, which would land after this reopens it.
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => fieldRef.current?.insertAndComplete(resolveReferenceInsertion)}
-            className={cn(
-              "text-muted-foreground focus:ring-primary mb-auto rounded-md",
-              compact ? "mt-0.75 mr-0.75 h-7 w-8" : "mt-1 mr-1 h-8 w-9",
-            )}
+            className="text-muted-foreground focus:ring-primary mt-0.75 mr-0.75 mb-auto h-8.5 w-9 rounded-md data-compact:mt-0.75 data-compact:mr-0.75 data-compact:h-7 data-compact:w-7.5 data-compact:rounded"
           >
             <Link2Icon className="size-4" />
           </Button>
