@@ -244,9 +244,9 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
       <ScrollArea classNameViewport="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-5 sm:p-6">
           {errorDeployTemplate && <ErrorLine message={errorDeployTemplate.message} />}
-          <TemplateHeadroomBanner template={templateDraft.template} />
           {/* Inputs */}
           <div className="-mx-1 flex w-[calc(100%+0.5rem)] flex-col">
+            <TemplateHeadroomBanner template={templateDraft.template} />
             <div className="-my-4 flex w-full flex-col">
               <form.AppField
                 name="inputs"
