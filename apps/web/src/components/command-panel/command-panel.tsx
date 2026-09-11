@@ -545,7 +545,7 @@ function Item({
         </div>
       )}
       <div className="relative flex min-w-0 flex-1 items-center justify-start gap-2.5 group-data-has-description/item:items-start">
-        <Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-has-description/item:mt-px group-data-placeholder/item:rounded-full" />
+        <Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton mt-px -ml-0.5 size-5 self-start group-data-has-description/item:mt-px group-data-placeholder/item:rounded-full" />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <div className="flex w-full justify-start">
             <p className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink leading-tight group-data-placeholder/item:rounded-md">

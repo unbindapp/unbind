@@ -7,12 +7,11 @@ import { useTemplateDraftPanel } from "@/components/templates/panel/template-dra
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { useTemplates } from "@/components/templates/templates-provider";
+import { toast } from "@/components/ui/toast";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { BlocksIcon } from "lucide-react";
 import { useMemo } from "react";
-import { toast } from "@/components/ui/toast";
 import { v4 as uuidv4 } from "uuid";
-import { cn } from "@/components/ui/utils";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -106,11 +105,7 @@ function useTemplateItem() {
           openTemplateDraftPanel(id);
         },
         Icon: ({ className }: { className?: string }) => (
-          <BrandIcon
-            brand={template.icon}
-            color="brand"
-            className={cn("mt-px self-start", className)}
-          />
+          <BrandIcon brand={template.icon} color="brand" className={className} />
         ),
       };
       return item;
