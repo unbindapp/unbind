@@ -15,7 +15,7 @@ export default function TemplateHeadroomBanner({ template }: TProps) {
   if (!data) return null;
 
   const headroom = getTemplateHeadroom(data.data, template.resource_recommendations);
-  if (!headroom) return null;
+  if (headroom.level === "normal") return null;
 
   return (
     <Banner

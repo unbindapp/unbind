@@ -7,7 +7,7 @@ export const templateHeadroomThresholds = {
   warning: 1.5,
 };
 
-export type TTemplateHeadroomLevel = "warning" | "destructive";
+export type TTemplateHeadroomLevel = "normal" | "warning" | "destructive";
 
 export type TTemplateHeadroom = {
   level: TTemplateHeadroomLevel;
@@ -20,7 +20,7 @@ export type TTemplateHeadroom = {
 export function getTemplateHeadroom(
   servers: TServer[],
   recommendations: TemplateResourceRecommendations,
-): TTemplateHeadroom | null {
+): TTemplateHeadroom {
   const recommendedCpuMillicores = Math.round(recommendations.minimum_recommended_cpu * 1000);
   const recommendedMemoryMegabytes = Math.round(recommendations.minimum_recommended_ram_gb * 1024);
 
@@ -43,11 +43,8 @@ export function getTemplateHeadroom(
     ratioOf(availableMemoryMegabytes, recommendedMemoryMegabytes),
   );
 
-  const level = levelOf(ratio);
-  if (level === null) return null;
-
   return {
-    level,
+    level: levelOf(ratio),
     recommendedCpuMillicores,
     recommendedMemoryMegabytes,
     availableCpuMillicores,
@@ -60,8 +57,8 @@ function ratioOf(available: number, recommended: number): number {
   return available / recommended;
 }
 
-function levelOf(ratio: number): TTemplateHeadroomLevel | null {
+function levelOf(ratio: number): TTemplateHeadroomLevel {
   if (ratio < templateHeadroomThresholds.destructive) return "destructive";
   if (ratio < templateHeadroomThresholds.warning) return "warning";
-  return null;
+  return "normal";
 }

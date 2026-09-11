@@ -31,22 +31,28 @@ function server(overrides: Partial<TServer>): TServer {
 
 const twoCoresFourGb = { minimum_recommended_cpu: 2, minimum_recommended_ram_gb: 4 };
 
-test("plenty of headroom returns null", () => {
-  assert.equal(getTemplateHeadroom([server({})], twoCoresFourGb), null);
+test("plenty of headroom is normal", () => {
+  assert.deepEqual(getTemplateHeadroom([server({})], twoCoresFourGb), {
+    level: "normal",
+    recommendedCpuMillicores: 2000,
+    recommendedMemoryMegabytes: 4096,
+    availableCpuMillicores: 4000,
+    availableMemoryMegabytes: 8192,
+  });
 });
 
-test("ratio at the warning threshold is fine, just below is a warning", () => {
+test("ratio at the warning threshold is normal, just below is a warning", () => {
   const atThreshold = server({
     cpu_allocatable_millicores: 2000 * templateHeadroomThresholds.warning,
     memory_allocatable_megabytes: 4096 * templateHeadroomThresholds.warning,
   });
-  assert.equal(getTemplateHeadroom([atThreshold], twoCoresFourGb), null);
+  assert.equal(getTemplateHeadroom([atThreshold], twoCoresFourGb).level, "normal");
 
   const justBelow = server({
     cpu_allocatable_millicores: 2000 * templateHeadroomThresholds.warning - 1,
     memory_allocatable_megabytes: 4096 * templateHeadroomThresholds.warning,
   });
-  assert.equal(getTemplateHeadroom([justBelow], twoCoresFourGb)?.level, "warning");
+  assert.equal(getTemplateHeadroom([justBelow], twoCoresFourGb).level, "warning");
 });
 
 test("ratio at the destructive threshold is a warning, just below is destructive", () => {
@@ -54,13 +60,13 @@ test("ratio at the destructive threshold is a warning, just below is destructive
     cpu_allocatable_millicores: 2000 * templateHeadroomThresholds.destructive,
     memory_allocatable_megabytes: 4096 * templateHeadroomThresholds.destructive,
   });
-  assert.equal(getTemplateHeadroom([atThreshold], twoCoresFourGb)?.level, "warning");
+  assert.equal(getTemplateHeadroom([atThreshold], twoCoresFourGb).level, "warning");
 
   const justBelow = server({
     cpu_allocatable_millicores: 2000 * templateHeadroomThresholds.destructive - 1,
     memory_allocatable_megabytes: 4096 * templateHeadroomThresholds.destructive,
   });
-  assert.equal(getTemplateHeadroom([justBelow], twoCoresFourGb)?.level, "destructive");
+  assert.equal(getTemplateHeadroom([justBelow], twoCoresFourGb).level, "destructive");
 });
 
 test("the worse of cpu and memory decides the level", () => {
@@ -68,13 +74,13 @@ test("the worse of cpu and memory decides the level", () => {
     cpu_allocatable_millicores: 16000,
     memory_allocatable_megabytes: 2048,
   });
-  assert.equal(getTemplateHeadroom([cpuFineMemoryShort], twoCoresFourGb)?.level, "destructive");
+  assert.equal(getTemplateHeadroom([cpuFineMemoryShort], twoCoresFourGb).level, "destructive");
 
   const memoryFineCpuTight = server({
     cpu_allocatable_millicores: 2500,
     memory_allocatable_megabytes: 65536,
   });
-  assert.equal(getTemplateHeadroom([memoryFineCpuTight], twoCoresFourGb)?.level, "warning");
+  assert.equal(getTemplateHeadroom([memoryFineCpuTight], twoCoresFourGb).level, "warning");
 });
 
 test("available is allocatable minus requested, summed across servers", () => {
@@ -102,8 +108,8 @@ test("over-committed servers count as zero, not negative", () => {
     ],
     { minimum_recommended_cpu: 4, minimum_recommended_ram_gb: 8 },
   );
-  assert.equal(result?.availableCpuMillicores, 3000);
-  assert.equal(result?.availableMemoryMegabytes, 6144);
+  assert.equal(result.availableCpuMillicores, 3000);
+  assert.equal(result.availableMemoryMegabytes, 6144);
 });
 
 test("not ready and unschedulable servers are ignored", () => {
@@ -115,13 +121,13 @@ test("not ready and unschedulable servers are ignored", () => {
     ],
     twoCoresFourGb,
   );
-  assert.equal(result?.level, "destructive");
-  assert.equal(result?.availableCpuMillicores, 1000);
-  assert.equal(result?.availableMemoryMegabytes, 1024);
+  assert.equal(result.level, "destructive");
+  assert.equal(result.availableCpuMillicores, 1000);
+  assert.equal(result.availableMemoryMegabytes, 1024);
 });
 
 test("no schedulable servers is destructive", () => {
-  assert.equal(getTemplateHeadroom([], twoCoresFourGb)?.level, "destructive");
+  assert.equal(getTemplateHeadroom([], twoCoresFourGb).level, "destructive");
 });
 
 test("fractional recommendations round to whole millicores and megabytes", () => {
@@ -129,6 +135,6 @@ test("fractional recommendations round to whole millicores and megabytes", () =>
     [server({ cpu_allocatable_millicores: 100, memory_allocatable_megabytes: 100 })],
     { minimum_recommended_cpu: 0.5, minimum_recommended_ram_gb: 0.25 },
   );
-  assert.equal(result?.recommendedCpuMillicores, 500);
-  assert.equal(result?.recommendedMemoryMegabytes, 256);
+  assert.equal(result.recommendedCpuMillicores, 500);
+  assert.equal(result.recommendedMemoryMegabytes, 256);
 });
