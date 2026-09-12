@@ -226,7 +226,7 @@ function UpdateSectionInner({
                 <p className="min-w-0 shrink">Update Now</p>
               </Button>
             </div>
-            <div className="flex w-full px-1 py-1.5">
+            <div className="flex w-full px-1 py-4">
               <Changelog
                 summary={latestVersionSummary}
                 changes={latestVersionChanges}
