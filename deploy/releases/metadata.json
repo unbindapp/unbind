@@ -318,5 +318,10 @@
     "version": "v0.1.63",
     "summary": "Longhorn 1.12.1 for new installs, variable card rounding fixes, and changelog accordion style tweaks on the update page.",
     "breaking": false
+  },
+  "v0.1.64": {
+    "version": "v0.1.64",
+    "summary": "System administration pages, team metrics pages with new view filters, and warnings when a template exceeds available headroom.",
+    "breaking": false
   }
 }
