@@ -23,7 +23,7 @@ A release is an annotated `vX.Y.Z` tag pushed to `origin`. Nothing else is done 
 for amd64 and arm64, pushes them to ghcr.io, builds the installer binaries, creates the
 GitHub Release, and commits a `deploy/releases/metadata.json` entry to `master`.
 
-The tag subject becomes the release **summary**. It is shown on every install's `/update`
+The tag subject becomes the release **summary**. It is shown on every install's `/system/update`
 page and is the first line of the GitHub Release body. A release without a summary fails.
 
 **Never tag before the user has approved a summary.** Show three options first, always.

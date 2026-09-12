@@ -33,7 +33,7 @@ before tagging, so `depends_on` is set.
 - `breaking: true` without `depends_on` hides the version from every install.
 - `depends_on` lists the versions an install must be on to jump to this one; the updater
   walks intermediate versions in order (`GetUpdatePath`).
-- `summary` is shown on the `/update` page for every available version. The list of changes
+- `summary` is shown on the `/system/update` page for every available version. The list of changes
   under it is not stored here; the API parses it from the "What's Changed" section that
   `release.yml` writes into the GitHub Release body.
 

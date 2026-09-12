@@ -70,7 +70,7 @@ function isNewerVersion(version: string, currentVersion: string): boolean {
 // has_update_available flag claims.
 // `hasUnseenUpdate` additionally accounts for dismissal (toast dismissed or /system/update visited);
 // passive indicators like the avatar dot should use it, while surfaces that must always
-// reflect reality (the /update page, the menu card) use `hasUpdateAvailable`.
+// reflect reality (the /system/update page, the menu card) use `hasUpdateAvailable`.
 export const useUpdateStatus = (): TUpdateStatusQuery & TNewVersion => {
   const query = useContext(UpdateStatusContext);
   if (!query) {
