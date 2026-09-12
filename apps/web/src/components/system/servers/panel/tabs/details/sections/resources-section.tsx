@@ -74,12 +74,12 @@ function ResourceRow({
         />
       </div>
       <div className="flex w-full items-center justify-between gap-6 px-0.5">
-        <p className="text-foreground -ml-0.5 min-w-0 shrink truncate leading-tight font-medium">
+        <p className="text-foreground group-data-placeholder/line:bg-foreground group-data-placeholder/line:animate-skeleton -ml-0.5 min-w-0 shrink truncate leading-tight font-medium group-data-placeholder/line:rounded-md group-data-placeholder/line:text-transparent">
           <Icon className="mr-[0.5ch] mb-0.75 inline-block size-4" />
           {title}
         </p>
         <div className="flex max-w-1/2 min-w-0 flex-col items-end">
-          <p className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive w-full shrink truncate text-right leading-tight font-medium">
+          <p className="group-data-placeholder/line:bg-muted-foreground group-data-placeholder/line:animate-skeleton text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive w-full shrink truncate text-right leading-tight font-medium group-data-placeholder/line:rounded-md group-data-placeholder/line:text-transparent">
             {percentage.toLocaleString(appLocale, {
               maximumFractionDigits: 1,
             })}
