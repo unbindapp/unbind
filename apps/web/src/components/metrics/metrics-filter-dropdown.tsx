@@ -40,8 +40,8 @@ const dropdownCollisionPadding = { top: 16, bottom: 16, left: 8, right: 8 };
 const itemClassName = "py-3.5 sm:py-2.25";
 const checkboxItemClassName = "py-3 sm:py-2.25";
 const viewLabels: Record<TMetricsView, string> = {
-  individual: "Individual",
-  total: "Total",
+  individual: "Separate",
+  total: "Combined",
 };
 
 export default function MetricsFilterDropdown({

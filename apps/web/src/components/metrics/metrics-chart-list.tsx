@@ -17,7 +17,7 @@ type TProps = {
   tooltipNameFormatterError: string | undefined;
 };
 
-const totalNameFormatter = () => "Total";
+const totalNameFormatter = () => "Combined";
 
 const diskUsage = { title: "Disk", description: "Disk usage over time" };
 const diskIO = { title: "Disk I/O", description: "Disk read and write throughput over time" };
