@@ -42,18 +42,21 @@ export default function ResourcesSection({ server }: TProps) {
       Icon: CpuIcon,
       used: server.cpu_requested_millicores,
       total: server.cpu_allocatable_millicores,
+      valueSuffix: "reserved",
     }),
     usageRow({
       label: `${formatMegabytes(server.memory_allocatable_megabytes)} RAM`,
       Icon: MemoryStickIcon,
       used: server.memory_requested_megabytes,
       total: server.memory_allocatable_megabytes,
+      valueSuffix: "reserved",
     }),
     usageRow({
       label: `${server.pod_capacity} Replicas`,
       Icon: ServerIcon,
       used: server.pod_count,
       total: server.pod_capacity,
+      valueSuffix: "used",
     }),
   ];
 
@@ -74,11 +77,13 @@ function usageRow({
   Icon,
   used,
   total,
+  valueSuffix,
 }: {
   label: string;
   Icon: LucideIcon;
   used: number;
   total: number;
+  valueSuffix: string;
 }): TInfoRow {
   const level = getUsageLevel({ used, total });
   const percentage = getUsagePercentage({ used, total });
@@ -88,7 +93,7 @@ function usageRow({
     Icon,
     classNameLabel: "text-foreground",
     classNameValue: usageTexts[level],
-    value: `${percentage.toLocaleString(appLocale, { maximumFractionDigits: 1 })}%`,
+    value: `${percentage.toLocaleString(appLocale, { maximumFractionDigits: 1 })}% ${valueSuffix}`,
     background: (
       <div className="absolute top-0 left-0 h-full w-full">
         <div
