@@ -8,12 +8,13 @@ import { useEffect, useState } from "react";
 
 type TTab = {
   title: string;
-  to: "/system" | "/system/update" | "/system/settings";
+  to: "/system" | "/system/metrics" | "/system/update" | "/system/settings";
   strictMatch?: boolean;
 };
 
 const tabs: TTab[] = [
   { title: "Servers", to: "/system", strictMatch: true },
+  { title: "Metrics", to: "/system/metrics" },
   { title: "Updates", to: "/system/update" },
   { title: "Settings", to: "/system/settings" },
 ];

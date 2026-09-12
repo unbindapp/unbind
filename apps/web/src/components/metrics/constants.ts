@@ -4,7 +4,7 @@ import { z } from "zod";
 export const MetricsViewEnum = z.enum(metricsViews);
 export const metricsViewDefault: TMetricsView = "individual";
 
-export type TMetricsScope = "team" | "environment" | "service" | "server";
+export type TMetricsScope = "team" | "environment" | "system" | "service" | "server";
 
 export type TMetricsSearchParamKeys = { interval: string; view?: string; selection?: string };
 
@@ -17,6 +17,7 @@ export const metricsSearchParamKeys = {
     view: "metrics_view",
     selection: "metrics_services",
   },
+  system: { interval: "metrics_interval", view: "metrics_view", selection: "metrics_servers" },
   service: { interval: "service_metrics_interval" },
   server: { interval: "server_metrics_interval" },
 } as const satisfies Record<TMetricsScope, TMetricsSearchParamKeys>;

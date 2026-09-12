@@ -63,6 +63,7 @@ function decodeList(value: string | undefined): string[] {
 }
 
 type TMetricsStateContext = {
+  scope: TMetricsScope;
   intervals: TInterval[];
   interval: TInterval;
   setInterval: (value: TMetricsIntervalEnum | null) => void;
@@ -156,6 +157,7 @@ export const MetricsStateProvider: React.FC<TProps> = ({ children, type, default
 
   const value: TMetricsStateContext = useMemo(
     () => ({
+      scope: type,
       intervals,
       interval,
       setInterval,
@@ -169,6 +171,7 @@ export const MetricsStateProvider: React.FC<TProps> = ({ children, type, default
       hasActiveFilters,
     }),
     [
+      type,
       interval,
       setInterval,
       view,

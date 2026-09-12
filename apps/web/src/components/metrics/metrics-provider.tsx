@@ -79,7 +79,7 @@ export const MetricsProvider: React.FC<TProps> = ({
   return <MetricsContext.Provider value={query}>{children}</MetricsContext.Provider>;
 };
 
-export const ServerMetricsProvider: React.FC<{ children: ReactNode; serverName: string }> = ({
+export const ServerMetricsProvider: React.FC<{ children: ReactNode; serverName?: string }> = ({
   children,
   serverName,
 }) => {

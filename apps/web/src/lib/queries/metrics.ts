@@ -69,11 +69,15 @@ export const metricsListQuery = (input: TMetricsListInput) =>
   });
 
 export const queryKeyServerMetrics = {
-  get: (input: { serverName: string; interval: string }) =>
-    ["metrics", "server", input.serverName, input.interval] as const,
+  get: (input: { serverName?: string; interval: string }) =>
+    ["metrics", "server", input.serverName ?? null, input.interval] as const,
 };
 
-export const serverMetricsQuery = (input: { serverName: string; interval: TMetricsIntervalEnum }) =>
+// Omitting `serverName` returns every server, broken down by server name
+export const serverMetricsQuery = (input: {
+  serverName?: string;
+  interval: TMetricsIntervalEnum;
+}) =>
   queryOptions({
     queryKey: queryKeyServerMetrics.get(input),
     queryFn: async (): Promise<TServerMetrics> => {

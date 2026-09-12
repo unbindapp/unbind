@@ -19,6 +19,9 @@ type TProps = {
 
 const totalNameFormatter = () => "Total";
 
+const diskUsage = { title: "Disk", description: "Disk usage over time" };
+const diskIO = { title: "Disk I/O", description: "Disk read and write throughput over time" };
+
 type TMetrics = {
   cpu: TChartDataItem[];
   ram: TChartDataItem[];
@@ -35,7 +38,7 @@ export default function MetricsChartList({
   tooltipNameFormatterIsPending,
 }: TProps) {
   const { data, isPending: isPendingMetrics, error: errorMetrics } = useMetrics();
-  const { view, selectedIds } = useMetricsState();
+  const { view, selectedIds, scope } = useMetricsState();
   const defaultErrorMessage = "Something went wrong";
 
   const isPending = tooltipNameFormatterIsPending || isPendingMetrics;
@@ -52,6 +55,8 @@ export default function MetricsChartList({
   }, [data, view, selectedIds]);
 
   const nameFormatter = view === "total" ? totalNameFormatter : tooltipNameFormatter;
+  // Servers chart disk throughput, everything else charts the space volumes take up
+  const disk = scope === "server" || scope === "system" ? diskIO : diskUsage;
 
   return (
     <div className={cn("flex w-full flex-wrap items-stretch", className)}>
@@ -113,8 +118,8 @@ export default function MetricsChartList({
         )}
       </ChartWrapper>
       <ChartWrapper
-        title="Disk"
-        description="Disk usage over time"
+        title={disk.title}
+        description={disk.description}
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
         {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
