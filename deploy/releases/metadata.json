@@ -323,5 +323,10 @@
     "version": "v0.1.64",
     "summary": "System administration pages, team metrics pages with new view filters, and warnings when a template exceeds available headroom.",
     "breaking": false
+  },
+  "v0.1.65": {
+    "version": "v0.1.65",
+    "summary": "Server details and metrics panels, clearer server health reporting, the update page moved under system settings, project card polish, and a simpler number range error.",
+    "breaking": false
   }
 }
