@@ -12,7 +12,7 @@ import { TServer, TServerConditionType } from "@/lib/queries/servers";
 import {
   ActivityIcon,
   HardDriveIcon,
-  HeartPulseIcon,
+  HeartIcon,
   InboxIcon,
   ListTreeIcon,
   LucideIcon,
@@ -44,7 +44,7 @@ export default function StatusSection({ server, error }: TProps) {
   const rows: TInfoRow[] = [
     {
       label: "Status",
-      Icon: HeartPulseIcon,
+      Icon: HeartIcon,
       value: <Value level={getServerStatusLevel(status)}>{serverStatusTitles[status]}</Value>,
     },
     {

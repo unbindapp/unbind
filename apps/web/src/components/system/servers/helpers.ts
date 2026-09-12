@@ -57,7 +57,7 @@ export function getServerStatusLevel(status: TServerStatus): "error" | "warning"
   return "error";
 }
 
-type TUsageLevel = "normal" | "high" | "critical" | "unknown";
+export type TUsageLevel = "normal" | "high" | "critical" | "unknown";
 
 export function getUsageLevel({ used, total }: { used: number; total: number }): TUsageLevel {
   if (total <= 0) return "unknown";
