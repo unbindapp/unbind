@@ -11,7 +11,8 @@ type NodeMetrics struct {
 	Load       []model.SamplePair
 }
 
-// NodeMetricsFilter contains filtering options for node metrics
+// NodeMetricsFilter narrows node metrics to specific servers. node-exporter labels its
+// series with the scrape target (<internal IP>:<port>), so servers are selected by IP.
 type NodeMetricsFilter struct {
-	NodeName []string
+	InstanceIPs []string
 }

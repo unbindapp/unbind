@@ -2,7 +2,11 @@ import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { getGoClient } from "@/lib/server/client";
-import type { GetMetricsResponseBody, MetricsType } from "@/lib/server/client.gen";
+import type {
+  GetMetricsResponseBody,
+  GetNodeMetricsResponseBody,
+  MetricsType,
+} from "@/lib/server/client.gen";
 
 function intervalToStart(interval: TMetricsIntervalEnum): string {
   let defaultDuration = 24 * 60 * 60 * 1000;
@@ -64,9 +68,27 @@ export const metricsListQuery = (input: TMetricsListInput) =>
     },
   });
 
+export const queryKeyServerMetrics = {
+  get: (input: { serverName: string; interval: string }) =>
+    ["metrics", "server", input.serverName, input.interval] as const,
+};
+
+export const serverMetricsQuery = (input: { serverName: string; interval: TMetricsIntervalEnum }) =>
+  queryOptions({
+    queryKey: queryKeyServerMetrics.get(input),
+    queryFn: async (): Promise<TServerMetrics> => {
+      const res = await getGoClient().metrics.getSystem({
+        node_name: input.serverName,
+        start: intervalToStart(input.interval),
+      });
+      return res.data;
+    },
+  });
+
 // ---- Types ----
 
 export type TMetrics = GetMetricsResponseBody["data"];
+export type TServerMetrics = GetNodeMetricsResponseBody["data"];
 
 export const MetricsIntervalEnum = z.enum(["5m", "15m", "1h", "6h", "12h", "24h", "7d", "30d"]);
 export type TMetricsIntervalEnum = z.infer<typeof MetricsIntervalEnum>;

@@ -24,4 +24,12 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/list",
 		Method:      http.MethodGet,
 	}, handlers.ListServers)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-server",
+		Summary:     "Get Server",
+		Description: "Get a single server with its conditions, taints and hardware details.",
+		Path:        "/get",
+		Method:      http.MethodGet,
+	}, handlers.GetServer)
 }

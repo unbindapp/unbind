@@ -146,6 +146,10 @@ type KubeClientInterface interface {
 	CopySecret(ctx context.Context, secretName string, sourceNamespace string, targetNamespace string, client kubernetes.Interface) (*corev1.Secret, error)
 	// ListServers returns every node with its allocatable capacity and the requests already scheduled on it
 	ListServers(ctx context.Context) ([]*models.ServerResponse, error)
+	// GetServer returns a single node with the conditions, taints and hardware details the list omits
+	GetServer(ctx context.Context, name string) (*models.ServerDetailResponse, error)
+	// NodeInternalIPs maps server names to their internal IPs, which is how metrics scrape targets are labelled
+	NodeInternalIPs(ctx context.Context, names ...string) (map[string]string, error)
 	// AvailableStorageBytes inspects the default StorageClass and returns
 	// capacity / sizing metadata
 	//

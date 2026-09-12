@@ -6,12 +6,18 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const nodeRoleLabelPrefix = "node-role.kubernetes.io/"
+
+type usage struct {
+	cpu, memory, pods int64
+}
 
 // ListServers returns every node with its allocatable capacity and the requests already scheduled on it
 func (self *KubeClient) ListServers(ctx context.Context) ([]*models.ServerResponse, error) {
@@ -27,9 +33,6 @@ func (self *KubeClient) ListServers(ctx context.Context) ([]*models.ServerRespon
 		return nil, fmt.Errorf("failed to list pods: %w", err)
 	}
 
-	type usage struct {
-		cpu, memory, pods int64
-	}
 	requested := make(map[string]*usage, len(nodes.Items))
 	for i := range pods.Items {
 		pod := &pods.Items[i]
@@ -54,30 +57,128 @@ func (self *KubeClient) ListServers(ctx context.Context) ([]*models.ServerRespon
 		if u == nil {
 			u = &usage{}
 		}
-		servers = append(servers, &models.ServerResponse{
-			Name:                       node.Name,
-			Ready:                      nodeCondition(node, corev1.NodeReady),
-			Unschedulable:              node.Spec.Unschedulable,
-			Roles:                      nodeRoles(node),
-			CreatedAt:                  node.CreationTimestamp.Time,
-			OS:                         node.Status.NodeInfo.OSImage,
-			Architecture:               node.Status.NodeInfo.Architecture,
-			KubernetesVersion:          node.Status.NodeInfo.KubeletVersion,
-			InternalIP:                 nodeAddress(node, corev1.NodeInternalIP),
-			ExternalIP:                 nodeAddress(node, corev1.NodeExternalIP),
-			CPUAllocatableMillicores:   node.Status.Allocatable.Cpu().MilliValue(),
-			CPURequestedMillicores:     u.cpu,
-			MemoryAllocatableMegabytes: node.Status.Allocatable.Memory().Value() / (1024 * 1024),
-			MemoryRequestedMegabytes:   u.memory,
-			PodCount:                   u.pods,
-			PodCapacity:                node.Status.Allocatable.Pods().Value(),
-			MemoryPressure:             nodeCondition(node, corev1.NodeMemoryPressure),
-			DiskPressure:               nodeCondition(node, corev1.NodeDiskPressure),
-			PIDPressure:                nodeCondition(node, corev1.NodePIDPressure),
-		})
+		servers = append(servers, serverResponse(node, u))
 	}
 	sort.Slice(servers, func(i, j int) bool { return servers[i].Name < servers[j].Name })
 	return servers, nil
+}
+
+// GetServer returns a single node with the conditions, taints and hardware details the list omits
+func (self *KubeClient) GetServer(ctx context.Context, name string) (*models.ServerDetailResponse, error) {
+	node, err := self.clientset.CoreV1().Nodes().Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Server '%s' not found", name))
+		}
+		return nil, fmt.Errorf("failed to get node '%s': %w", name, err)
+	}
+
+	pods, err := self.clientset.CoreV1().Pods(metav1.NamespaceAll).List(ctx, metav1.ListOptions{
+		FieldSelector: fmt.Sprintf("spec.nodeName=%s,status.phase!=Succeeded,status.phase!=Failed", name),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list pods of node '%s': %w", name, err)
+	}
+
+	u := &usage{}
+	for i := range pods.Items {
+		pod := &pods.Items[i]
+		if pod.Spec.NodeName != name || isTerminated(pod) {
+			continue
+		}
+		cpu, memory := podRequests(pod)
+		u.cpu += cpu
+		u.memory += memory
+		u.pods++
+	}
+
+	conditions := make([]models.ServerConditionResponse, 0, len(node.Status.Conditions))
+	for _, c := range node.Status.Conditions {
+		conditions = append(conditions, models.ServerConditionResponse{
+			Type:             string(c.Type),
+			Status:           string(c.Status),
+			Reason:           c.Reason,
+			Message:          c.Message,
+			LastTransitionAt: c.LastTransitionTime.Time,
+		})
+	}
+
+	taints := make([]models.ServerTaintResponse, 0, len(node.Spec.Taints))
+	for _, t := range node.Spec.Taints {
+		taints = append(taints, models.ServerTaintResponse{
+			Key:    t.Key,
+			Value:  t.Value,
+			Effect: string(t.Effect),
+		})
+	}
+
+	return &models.ServerDetailResponse{
+		ServerResponse:          *serverResponse(node, u),
+		KernelVersion:           node.Status.NodeInfo.KernelVersion,
+		ContainerRuntime:        node.Status.NodeInfo.ContainerRuntimeVersion,
+		CPUCapacityMillicores:   node.Status.Capacity.Cpu().MilliValue(),
+		MemoryCapacityMegabytes: node.Status.Capacity.Memory().Value() / (1024 * 1024),
+		Conditions:              conditions,
+		Taints:                  taints,
+	}, nil
+}
+
+// NodeInternalIPs maps server names to their internal IPs, which is how metrics scrape targets are labelled
+func (self *KubeClient) NodeInternalIPs(ctx context.Context, names ...string) (map[string]string, error) {
+	nodes, err := self.clientset.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list nodes: %w", err)
+	}
+
+	wanted := make(map[string]bool, len(names))
+	for _, name := range names {
+		wanted[name] = true
+	}
+
+	ips := make(map[string]string, len(nodes.Items))
+	for i := range nodes.Items {
+		node := &nodes.Items[i]
+		if len(wanted) > 0 && !wanted[node.Name] {
+			continue
+		}
+		ip := nodeAddress(node, corev1.NodeInternalIP)
+		if ip == "" {
+			continue
+		}
+		ips[node.Name] = ip
+	}
+
+	for _, name := range names {
+		if _, ok := ips[name]; !ok {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Server '%s' not found", name))
+		}
+	}
+
+	return ips, nil
+}
+
+func serverResponse(node *corev1.Node, u *usage) *models.ServerResponse {
+	return &models.ServerResponse{
+		Name:                       node.Name,
+		Ready:                      nodeCondition(node, corev1.NodeReady),
+		Unschedulable:              node.Spec.Unschedulable,
+		Roles:                      nodeRoles(node),
+		CreatedAt:                  node.CreationTimestamp.Time,
+		OS:                         node.Status.NodeInfo.OSImage,
+		Architecture:               node.Status.NodeInfo.Architecture,
+		KubernetesVersion:          node.Status.NodeInfo.KubeletVersion,
+		InternalIP:                 nodeAddress(node, corev1.NodeInternalIP),
+		ExternalIP:                 nodeAddress(node, corev1.NodeExternalIP),
+		CPUAllocatableMillicores:   node.Status.Allocatable.Cpu().MilliValue(),
+		CPURequestedMillicores:     u.cpu,
+		MemoryAllocatableMegabytes: node.Status.Allocatable.Memory().Value() / (1024 * 1024),
+		MemoryRequestedMegabytes:   u.memory,
+		PodCount:                   u.pods,
+		PodCapacity:                node.Status.Allocatable.Pods().Value(),
+		MemoryPressure:             nodeCondition(node, corev1.NodeMemoryPressure),
+		DiskPressure:               nodeCondition(node, corev1.NodeDiskPressure),
+		PIDPressure:                nodeCondition(node, corev1.NodePIDPressure),
+	}
 }
 
 func isTerminated(pod *corev1.Pod) bool {

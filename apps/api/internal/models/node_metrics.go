@@ -10,12 +10,9 @@ import (
 
 // NodeMetricsQueryInput defines the query parameters for node prometheus metrics
 type NodeMetricsQueryInput struct {
-	NodeName    string    `query:"node_name" required:"false"`
-	Zone        string    `query:"zone" required:"false"`
-	Region      string    `query:"region" required:"false"`
-	ClusterName string    `query:"cluster_name" required:"false"`
-	Start       time.Time `query:"start" required:"false" doc:"Start time for the query, defaults to 24 hours ago"`
-	End         time.Time `query:"end" required:"false" doc:"End time for the query, defaults to now"`
+	NodeName string    `query:"node_name" required:"false" doc:"Limit the metrics to a single server, defaults to every server"`
+	Start    time.Time `query:"start" required:"false" doc:"Start time for the query, defaults to 24 hours ago"`
+	End      time.Time `query:"end" required:"false" doc:"End time for the query, defaults to now"`
 }
 
 // NodeMetricsMapEntry contains arrays of metric details for each node resource type

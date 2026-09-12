@@ -3,6 +3,7 @@ package prometheus
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/prometheus/common/model"
 )
 
-// Get metrics for specific nodes
+// Get metrics for specific nodes, keyed by the scrape target instance (<internal IP>:<port>)
 func (self *PrometheusClient) GetNodeMetrics(
 	ctx context.Context,
 	start time.Time,
@@ -28,41 +29,39 @@ func (self *PrometheusClient) GetNodeMetrics(
 		Step:  step,
 	}
 
-	// Build the label selector for node metrics
-	nodeSelector := buildNodeLabelSelector(filter)
+	selector := buildNodeInstanceSelector(filter)
+	cpuSelector := joinSelectors(`mode!="idle"`, selector)
 
 	// Use fixed time windows that don't depend on step size
 	cpuWindow := "5m"
 	networkWindow := calculateNetworkWindow(step)
 	diskWindow := calculateNetworkWindow(step) // Use same logic for disk I/O
 
-	// Queries for node-level metrics with fixed time windows
-	cpuQuery := fmt.Sprintf(`sum by (nodename) (
-		rate(node_cpu_seconds_total{mode!="idle"}[%s])%s * on(instance) group_left(nodename) node_uname_info
-	)`, cpuWindow, nodeSelector)
+	cpuQuery := fmt.Sprintf(`sum by (instance) (
+		rate(node_cpu_seconds_total{%s}[%s])
+	)`, cpuSelector, cpuWindow)
 
-	ramQuery := fmt.Sprintf(`sum by (nodename) (
-		(node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)%s * on(instance) group_left(nodename) node_uname_info
-	)`, nodeSelector)
+	ramQuery := fmt.Sprintf(`sum by (instance) (
+		node_memory_MemTotal_bytes{%s} - node_memory_MemAvailable_bytes{%s}
+	)`, selector, selector)
 
-	networkQuery := fmt.Sprintf(`sum by (nodename) (
-		(rate(node_network_receive_bytes_total[%s]) +
-		 rate(node_network_transmit_bytes_total[%s])%s) * on(instance) group_left(nodename) node_uname_info
-	)`, networkWindow, networkWindow, nodeSelector)
+	networkQuery := fmt.Sprintf(`sum by (instance) (
+		rate(node_network_receive_bytes_total{%s}[%s]) +
+		rate(node_network_transmit_bytes_total{%s}[%s])
+	)`, selector, networkWindow, selector, networkWindow)
 
-	diskQuery := fmt.Sprintf(`sum by (nodename) (
-		(rate(node_disk_read_bytes_total[%s]) +
-		 rate(node_disk_written_bytes_total[%s])%s) * on(instance) group_left(nodename) node_uname_info
-	)`, diskWindow, diskWindow, nodeSelector)
+	diskQuery := fmt.Sprintf(`sum by (instance) (
+		rate(node_disk_read_bytes_total{%s}[%s]) +
+		rate(node_disk_written_bytes_total{%s}[%s])
+	)`, selector, diskWindow, selector, diskWindow)
 
-	fsQuery := fmt.Sprintf(`sum by (nodename) (
-		(node_filesystem_size_bytes%s - node_filesystem_free_bytes%s) * on(instance) group_left(nodename) node_uname_info
-	)`, nodeSelector, nodeSelector)
+	fsQuery := fmt.Sprintf(`sum by (instance) (
+		node_filesystem_size_bytes{%s} - node_filesystem_free_bytes{%s}
+	)`, selector, selector)
 
-	// Load average
-	loadQuery := fmt.Sprintf(`sum by (nodename) (
-		node_load1%s * on(instance) group_left(nodename) node_uname_info
-	)`, nodeSelector)
+	loadQuery := fmt.Sprintf(`sum by (instance) (
+		node_load1{%s}
+	)`, selector)
 
 	// Execute queries
 	cpuResult, _, err := self.api.QueryRange(ctx, cpuQuery, r)
@@ -130,52 +129,50 @@ func extractNodeMetrics(
 	groupedMetrics map[string]*NodeMetrics,
 	assignFunc func(*NodeMetrics, []model.SamplePair),
 ) {
-	if matrix, ok := result.(model.Matrix); ok {
-		for _, series := range matrix {
-			// Get node identifier from the metric labels
-			nodeID := string(series.Metric[model.LabelName("nodename")])
-			if nodeID == "" {
-				nodeID = "unknown" // Default for metrics without the specified label
-			}
+	matrix, ok := result.(model.Matrix)
+	if !ok {
+		return
+	}
 
-			// Create node entry if it doesn't exist
-			if _, exists := groupedMetrics[nodeID]; !exists {
-				groupedMetrics[nodeID] = &NodeMetrics{}
-			}
-
-			// Assign metrics using the provided function
-			assignFunc(groupedMetrics[nodeID], series.Values)
+	for _, series := range matrix {
+		instance := string(series.Metric[model.LabelName("instance")])
+		if instance == "" {
+			continue
 		}
+		if _, exists := groupedMetrics[instance]; !exists {
+			groupedMetrics[instance] = &NodeMetrics{}
+		}
+		assignFunc(groupedMetrics[instance], series.Values)
 	}
 }
 
-// buildNodeLabelSelector constructs a Prometheus label selector string for node metrics filtering
-func buildNodeLabelSelector(filter *NodeMetricsFilter) string {
-	if filter == nil {
+// buildNodeInstanceSelector limits the queries to the given servers' scrape targets, matching
+// any port so a node-exporter listening somewhere other than 9100 is still picked up
+func buildNodeInstanceSelector(filter *NodeMetricsFilter) string {
+	if filter == nil || len(filter.InstanceIPs) == 0 {
 		return ""
 	}
 
-	var selector string
-
-	// Add node name filter
-	if len(filter.NodeName) > 0 {
-		selector += buildLabelValueFilter("nodename", filter.NodeName)
+	patterns := make([]string, 0, len(filter.InstanceIPs))
+	for _, ip := range filter.InstanceIPs {
+		target := ip
+		if strings.Contains(ip, ":") {
+			target = "[" + ip + "]" // scrape targets bracket IPv6 addresses
+		}
+		// Each backslash is doubled because the matcher is a PromQL string literal
+		escaped := strings.ReplaceAll(regexp.QuoteMeta(target), `\`, `\\`)
+		patterns = append(patterns, escaped+`:\\d+`)
 	}
-
-	return selector
+	return fmt.Sprintf(`instance=~"%s"`, strings.Join(patterns, "|"))
 }
 
-// buildLabelValueFilter creates a label filter expression for Prometheus
-func buildLabelValueFilter(label string, values []string) string {
-	if len(values) == 0 {
-		return ""
+func joinSelectors(selectors ...string) string {
+	parts := make([]string, 0, len(selectors))
+	for _, selector := range selectors {
+		if selector == "" {
+			continue
+		}
+		parts = append(parts, selector)
 	}
-
-	if len(values) == 1 {
-		return fmt.Sprintf(`, %s="%s"`, label, values[0])
-	}
-
-	// Create regex pattern with all values joined by |
-	regexPattern := strings.Join(values, "|")
-	return fmt.Sprintf(`, %s=~"%s"`, label, regexPattern)
+	return strings.Join(parts, ", ")
 }

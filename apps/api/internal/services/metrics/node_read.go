@@ -3,6 +3,7 @@ package metric_service
 import (
 	"context"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,9 +26,22 @@ func (self *MetricsService) GetNodeMetrics(ctx context.Context, requesterUserID 
 		return nil, err
 	}
 
-	nodeMetricsFilters := prometheus.NodeMetricsFilter{}
+	var names []string
 	if input.NodeName != "" {
-		nodeMetricsFilters.NodeName = []string{input.NodeName}
+		names = []string{input.NodeName}
+	}
+
+	// node-exporter labels its series with the scrape target, so servers are selected by IP
+	ipsByName, err := self.k8s.NodeInternalIPs(ctx, names...)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := &prometheus.NodeMetricsFilter{InstanceIPs: make([]string, 0, len(ipsByName))}
+	namesByIP := make(map[string]string, len(ipsByName))
+	for name, ip := range ipsByName {
+		filter.InstanceIPs = append(filter.InstanceIPs, ip)
+		namesByIP[ip] = name
 	}
 
 	var start time.Time
@@ -60,17 +74,30 @@ func (self *MetricsService) GetNodeMetrics(ctx context.Context, requesterUserID 
 		1 * 24 * time.Hour,
 	})
 
-	var filter *prometheus.NodeMetricsFilter
-	if input.NodeName != "" || input.Zone != "" || input.Region != "" || input.ClusterName != "" {
-		filter = &nodeMetricsFilters
-	} else {
-		filter = nil // Get all nodes if no specific filters
-	}
-
 	rawMetrics, err := self.promClient.GetNodeMetrics(ctx, start, end, step, filter)
 	if err != nil {
 		return nil, fmt.Errorf("error getting node metrics: %w", err)
 	}
 
-	return models.TransformNodeMetricsEntity(rawMetrics, step), nil
+	return models.TransformNodeMetricsEntity(metricsByServerName(rawMetrics, namesByIP), step), nil
+}
+
+// metricsByServerName re-keys the scrape target instances (<internal IP>:<port>) to server names
+func metricsByServerName(
+	metrics map[string]*prometheus.NodeMetrics,
+	namesByIP map[string]string,
+) map[string]*prometheus.NodeMetrics {
+	result := make(map[string]*prometheus.NodeMetrics, len(metrics))
+	for instance, nodeMetrics := range metrics {
+		ip, _, err := net.SplitHostPort(instance)
+		if err != nil {
+			ip = instance
+		}
+		name, ok := namesByIP[ip]
+		if !ok {
+			continue
+		}
+		result[name] = nodeMetrics
+	}
+	return result
 }

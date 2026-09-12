@@ -2874,6 +2874,74 @@ func (_c *KubeClientMock_GetSecretValue_Call) RunAndReturn(run func(ctx context.
 	return _c
 }
 
+// GetServer provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) GetServer(ctx context.Context, name string) (*models.ServerDetailResponse, error) {
+	ret := _mock.Called(ctx, name)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetServer")
+	}
+
+	var r0 *models.ServerDetailResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*models.ServerDetailResponse, error)); ok {
+		return returnFunc(ctx, name)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *models.ServerDetailResponse); ok {
+		r0 = returnFunc(ctx, name)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.ServerDetailResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, name)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_GetServer_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetServer'
+type KubeClientMock_GetServer_Call struct {
+	*mock.Call
+}
+
+// GetServer is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+func (_e *KubeClientMock_Expecter) GetServer(ctx any, name any) *KubeClientMock_GetServer_Call {
+	return &KubeClientMock_GetServer_Call{Call: _e.mock.On("GetServer", ctx, name)}
+}
+
+func (_c *KubeClientMock_GetServer_Call) Run(run func(ctx context.Context, name string)) *KubeClientMock_GetServer_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_GetServer_Call) Return(serverDetailResponse *models.ServerDetailResponse, err error) *KubeClientMock_GetServer_Call {
+	_c.Call.Return(serverDetailResponse, err)
+	return _c
+}
+
+func (_c *KubeClientMock_GetServer_Call) RunAndReturn(run func(ctx context.Context, name string) (*models.ServerDetailResponse, error)) *KubeClientMock_GetServer_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetSimpleHealthStatus provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) GetSimpleHealthStatus(ctx context.Context, namespace string, labels map[string]string, expectedReplicas *int, client kubernetes.Interface) (*k8s.SimpleHealthStatus, error) {
 	ret := _mock.Called(ctx, namespace, labels, expectedReplicas, client)
@@ -3336,6 +3404,87 @@ func (_c *KubeClientMock_NetworkingProvider_Call) Return(s string) *KubeClientMo
 }
 
 func (_c *KubeClientMock_NetworkingProvider_Call) RunAndReturn(run func(ctx context.Context) string) *KubeClientMock_NetworkingProvider_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NodeInternalIPs provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) NodeInternalIPs(ctx context.Context, names ...string) (map[string]string, error) {
+	// string
+	_va := make([]any, len(names))
+	for _i := range names {
+		_va[_i] = names[_i]
+	}
+	var _ca []any
+	_ca = append(_ca, ctx)
+	_ca = append(_ca, _va...)
+	ret := _mock.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NodeInternalIPs")
+	}
+
+	var r0 map[string]string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...string) (map[string]string, error)); ok {
+		return returnFunc(ctx, names...)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ...string) map[string]string); ok {
+		r0 = returnFunc(ctx, names...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ...string) error); ok {
+		r1 = returnFunc(ctx, names...)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_NodeInternalIPs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NodeInternalIPs'
+type KubeClientMock_NodeInternalIPs_Call struct {
+	*mock.Call
+}
+
+// NodeInternalIPs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - names ...string
+func (_e *KubeClientMock_Expecter) NodeInternalIPs(ctx any, names ...any) *KubeClientMock_NodeInternalIPs_Call {
+	return &KubeClientMock_NodeInternalIPs_Call{Call: _e.mock.On("NodeInternalIPs",
+		append([]any{ctx}, names...)...)}
+}
+
+func (_c *KubeClientMock_NodeInternalIPs_Call) Run(run func(ctx context.Context, names ...string)) *KubeClientMock_NodeInternalIPs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []string
+		variadicArgs := make([]string, len(args)-1)
+		for i, a := range args[1:] {
+			if a != nil {
+				variadicArgs[i] = a.(string)
+			}
+		}
+		arg1 = variadicArgs
+		run(
+			arg0,
+			arg1...,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_NodeInternalIPs_Call) Return(stringToString map[string]string, err error) *KubeClientMock_NodeInternalIPs_Call {
+	_c.Call.Return(stringToString, err)
+	return _c
+}
+
+func (_c *KubeClientMock_NodeInternalIPs_Call) RunAndReturn(run func(ctx context.Context, names ...string) (map[string]string, error)) *KubeClientMock_NodeInternalIPs_Call {
 	_c.Call.Return(run)
 	return _c
 }

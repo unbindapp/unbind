@@ -1299,6 +1299,60 @@ export const GetS3BucketByIDOutputBodySchema = z
   })
   .strip();
 
+export const ServerConditionResponseSchema = z
+  .object({
+    last_transition_at: z.string().datetime({ offset: true }),
+    message: z.string(),
+    reason: z.string(),
+    status: z.string(),
+    type: z.string(),
+  })
+  .strip();
+
+export const ServerTaintResponseSchema = z
+  .object({
+    effect: z.string(),
+    key: z.string(),
+    value: z.string(),
+  })
+  .strip();
+
+export const ServerDetailResponseSchema = z
+  .object({
+    architecture: z.string(),
+    conditions: z.array(ServerConditionResponseSchema),
+    container_runtime: z.string(),
+    cpu_allocatable_millicores: z.number(),
+    cpu_capacity_millicores: z.number(),
+    cpu_requested_millicores: z.number(),
+    created_at: z.string().datetime({ offset: true }),
+    disk_pressure: z.boolean(),
+    external_ip: z.string(),
+    internal_ip: z.string(),
+    kernel_version: z.string(),
+    kubernetes_version: z.string(),
+    memory_allocatable_megabytes: z.number(),
+    memory_capacity_megabytes: z.number(),
+    memory_pressure: z.boolean(),
+    memory_requested_megabytes: z.number(),
+    name: z.string(),
+    os: z.string(),
+    pid_pressure: z.boolean(),
+    pod_capacity: z.number(),
+    pod_count: z.number(),
+    ready: z.boolean(),
+    roles: z.array(z.string()),
+    taints: z.array(ServerTaintResponseSchema),
+    unschedulable: z.boolean(),
+  })
+  .strip();
+
+export const GetServerResponseBodySchema = z
+  .object({
+    data: ServerDetailResponseSchema,
+  })
+  .strip();
+
 export const ServiceGroupHostInfoSchema = z
   .object({
     description: z.string().optional(),
@@ -2784,6 +2838,10 @@ export type ReplicaStatus = z.infer<typeof ReplicaStatusSchema>;
 export type SimpleHealthStatus = z.infer<typeof SimpleHealthStatusSchema>;
 export type GetReplicaHealthResponseBody = z.infer<typeof GetReplicaHealthResponseBodySchema>;
 export type GetS3BucketByIDOutputBody = z.infer<typeof GetS3BucketByIDOutputBodySchema>;
+export type ServerConditionResponse = z.infer<typeof ServerConditionResponseSchema>;
+export type ServerTaintResponse = z.infer<typeof ServerTaintResponseSchema>;
+export type ServerDetailResponse = z.infer<typeof ServerDetailResponseSchema>;
+export type GetServerResponseBody = z.infer<typeof GetServerResponseBodySchema>;
 export type ServiceGroupHostInfo = z.infer<typeof ServiceGroupHostInfoSchema>;
 export type ServiceGroupVariableInfo = z.infer<typeof ServiceGroupVariableInfoSchema>;
 export type ServiceGroupServiceInfo = z.infer<typeof ServiceGroupServiceInfoSchema>;
@@ -3129,10 +3187,7 @@ export const get_metricsQuerySchema = z
 
 export const get_system_metricsQuerySchema = z
   .object({
-    node_name: z.string().optional(),
-    zone: z.string().optional(),
-    region: z.string().optional(),
-    cluster_name: z.string().optional(),
+    node_name: z.string().optional(), // Limit the metrics to a single server, defaults to every server
     start: z.string().datetime({ offset: true }).optional(), // Start time for the query, defaults to 24 hours ago
     end: z.string().datetime({ offset: true }).optional(), // End time for the query, defaults to now
   })
@@ -3178,6 +3233,12 @@ export const list_replicasQuerySchema = z
     project_id: z.string().optional(),
     environment_id: z.string().optional(),
     service_id: z.string().optional(),
+  })
+  .passthrough();
+
+export const get_serverQuerySchema = z
+  .object({
+    name: z.string(), // The name of the server
   })
   .passthrough();
 
@@ -5230,7 +5291,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             typeof window !== 'undefined' ? window.location.origin : undefined,
           );
           const validatedQuery = get_system_metricsQuerySchema.parse(params);
-          const queryKeys = ['node_name', 'zone', 'region', 'cluster_name', 'start', 'end'];
+          const queryKeys = ['node_name', 'start', 'end'];
           queryKeys.forEach((key) => {
             const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
@@ -5679,6 +5740,54 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
       },
     },
     servers: {
+      get: async (
+        params: z.infer<typeof get_serverQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetServerResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/servers/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = get_serverQuerySchema.parse(params);
+          const queryKeys = ['name'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = GetServerResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
       list: async (
         params?: undefined,
         fetchOptions?: RequestInit,

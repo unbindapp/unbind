@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/prometheus"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
@@ -64,4 +65,24 @@ func TestPermissionCheckForType_MissingID(t *testing.T) {
 			assert.Error(t, err)
 		})
 	}
+}
+
+func TestMetricsByServerName(t *testing.T) {
+	cpu := &prometheus.NodeMetrics{}
+	ram := &prometheus.NodeMetrics{}
+	metrics := map[string]*prometheus.NodeMetrics{
+		"10.0.0.1:9100":  cpu,
+		"[fd00::1]:9100": ram,
+		"10.0.0.9:9100":  {},
+		"without-a-port": {},
+	}
+	namesByIP := map[string]string{"10.0.0.1": "cp", "fd00::1": "worker", "without-a-port": "odd"}
+
+	result := metricsByServerName(metrics, namesByIP)
+
+	assert.Equal(t, cpu, result["cp"])
+	assert.Equal(t, ram, result["worker"])
+	assert.Contains(t, result, "odd", "an instance without a port falls back to the whole label")
+	assert.NotContains(t, result, "10.0.0.9", "instances of unknown servers are dropped")
+	assert.Len(t, result, 3)
 }

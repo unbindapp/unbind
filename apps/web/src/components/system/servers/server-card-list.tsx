@@ -10,7 +10,7 @@ type TProps = {
   className?: string;
 };
 
-const cardClassName = "w-full md:w-1/2 lg:w-1/3";
+const cardClassName = "w-full sm:w-1/2 lg:w-1/3";
 
 export default function ServerCardList({ className }: TProps) {
   const { data, isPending, error } = useQuery(serversListQuery());

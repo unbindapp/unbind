@@ -2,6 +2,7 @@ import { TDeploymentPanelTabEnum } from "@/components/deployment/panel/constants
 import TabIndicator from "@/components/navigation/tab-indicator";
 import ScrollOverflowIndicator from "@/components/scroll-overflow-indicator";
 import { TServicePanelTabEnum } from "@/components/service/panel/constants";
+import { TServerPanelTabEnum } from "@/components/system/servers/panel/constants";
 import { LinkButton } from "@/components/ui/button";
 import { TVolumePanelTabEnum } from "@/components/volume/panel/constants";
 import { useIntent } from "@/lib/hooks/use-intent";
@@ -15,8 +16,12 @@ type TPanelTabValueByKey = {
   service_tab: TServicePanelTabEnum;
   deployment_tab: TDeploymentPanelTabEnum;
   volume_tab: TVolumePanelTabEnum;
+  server_tab: TServerPanelTabEnum;
 };
 type TPanelTabKey = keyof TPanelTabValueByKey;
+
+// Panels open on top of a page, so the tab links navigate relative to the page's route
+type TPanelFromRoute = "/$team_id/project/$project_id" | "/system";
 
 type TGenericTab<T, V extends string> = T & {
   title: string;
@@ -26,6 +31,7 @@ type TGenericTab<T, V extends string> = T & {
 
 type TProps<T, K extends TPanelTabKey> = {
   tabs: TGenericTab<T, TPanelTabValueByKey[K]>[];
+  from?: TPanelFromRoute;
   searchKey: K;
   currentTabId: TPanelTabValueByKey[K];
   layoutId: string;
@@ -33,6 +39,7 @@ type TProps<T, K extends TPanelTabKey> = {
 
 export default function PanelNavbar<T, K extends TPanelTabKey>({
   tabs,
+  from = "/$team_id/project/$project_id",
   searchKey,
   currentTabId,
   layoutId,
@@ -58,6 +65,7 @@ export default function PanelNavbar<T, K extends TPanelTabKey>({
               key={tab.value}
               ref={registerItem(tab.value)}
               tab={tab}
+              from={from}
               searchKey={searchKey}
               isActive={tab.value === currentTabId}
               layoutId={layoutId}
@@ -73,12 +81,14 @@ export default function PanelNavbar<T, K extends TPanelTabKey>({
 function PanelNavbarTab<T, K extends TPanelTabKey>({
   ref,
   tab,
+  from,
   searchKey,
   isActive,
   layoutId,
 }: {
   ref: Ref<HTMLAnchorElement>;
   tab: TGenericTab<T, TPanelTabValueByKey[K]>;
+  from: TPanelFromRoute;
   searchKey: K;
   isActive: boolean;
   layoutId: string;
@@ -91,7 +101,7 @@ function PanelNavbarTab<T, K extends TPanelTabKey>({
   return (
     <LinkButton
       ref={ref}
-      from="/$team_id/project/$project_id"
+      from={from}
       search={(prev) => ({ ...prev, [searchKey]: tab.value })}
       resetScroll={false}
       variant="ghost"

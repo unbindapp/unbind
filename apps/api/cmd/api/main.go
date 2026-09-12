@@ -169,7 +169,7 @@ func startAPI(cfg *config.Config) {
 	systemService := system_service.NewSystemService(cfg, repo, buildkitSettings, registryTester, registryCacheManager, kubeClient)
 	systemService.ReconcileRegistryCache(ctx, k8s.AppImageRepository+":"+Version)
 	metricsService := metric_service.NewMetricService(promClient, repo, kubeClient)
-	serversService := servers_service.NewServersService(kubeClient)
+	serversService := servers_service.NewServersService(kubeClient, repo)
 	replicaService := replica_service.NewReplicaService(cfg, repo, kubeClient)
 	storageService := storage_service.NewStorageService(cfg, repo, kubeClient, promClient, serviceService)
 	templateService := templates_service.NewTemplatesService(cfg, repo, kubeClient, dbProvider, deploymentController)

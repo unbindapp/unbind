@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -113,4 +114,76 @@ func TestListServers(t *testing.T) {
 	assert.Equal(t, int64(10), w.CPURequestedMillicores)
 	assert.Equal(t, int64(10), w.MemoryRequestedMegabytes)
 	assert.Equal(t, int64(1), w.PodCount)
+}
+
+func TestGetServer(t *testing.T) {
+	node := serverTestNode("cp", map[string]string{"node-role.kubernetes.io/control-plane": "true"}, true)
+	node.Status.Capacity = corev1.ResourceList{
+		corev1.ResourceCPU:    resource.MustParse("4"),
+		corev1.ResourceMemory: resource.MustParse("16Gi"),
+	}
+	node.Status.NodeInfo.KernelVersion = "6.8.0-generic"
+	node.Status.NodeInfo.ContainerRuntimeVersion = "containerd://2.3.2-k3s2"
+	node.Status.Conditions = append(node.Status.Conditions, corev1.NodeCondition{
+		Type:    corev1.NodePIDPressure,
+		Status:  corev1.ConditionFalse,
+		Reason:  "KubeletHasSufficientPID",
+		Message: "kubelet has sufficient PID available",
+	})
+	node.Spec.Taints = []corev1.Taint{{Key: "node.kubernetes.io/unreachable", Value: "", Effect: corev1.TaintEffectNoSchedule}}
+
+	client := fake.NewSimpleClientset(
+		node,
+		serverTestNode("worker", nil, true),
+		serverTestPod("running", "cp", corev1.PodRunning, "250m", "256Mi"),
+		serverTestPod("done", "cp", corev1.PodSucceeded, "1", "1Gi"),
+		serverTestPod("elsewhere", "worker", corev1.PodRunning, "1", "1Gi"),
+	)
+	kubeClient := &KubeClient{clientset: client}
+
+	server, err := kubeClient.GetServer(context.Background(), "cp")
+	require.NoError(t, err)
+
+	assert.Equal(t, "cp", server.Name)
+	assert.True(t, server.Ready)
+	assert.True(t, server.DiskPressure)
+	assert.Equal(t, int64(250), server.CPURequestedMillicores, "only running pods of this server count")
+	assert.Equal(t, int64(256), server.MemoryRequestedMegabytes)
+	assert.Equal(t, int64(1), server.PodCount)
+	assert.Equal(t, int64(4000), server.CPUCapacityMillicores)
+	assert.Equal(t, int64(16384), server.MemoryCapacityMegabytes)
+	assert.Equal(t, "6.8.0-generic", server.KernelVersion)
+	assert.Equal(t, "containerd://2.3.2-k3s2", server.ContainerRuntime)
+	require.Len(t, server.Taints, 1)
+	assert.Equal(t, "node.kubernetes.io/unreachable", server.Taints[0].Key)
+	assert.Equal(t, "NoSchedule", server.Taints[0].Effect)
+	require.Len(t, server.Conditions, 4)
+	assert.Equal(t, "PIDPressure", server.Conditions[3].Type)
+	assert.Equal(t, "False", server.Conditions[3].Status)
+	assert.Equal(t, "KubeletHasSufficientPID", server.Conditions[3].Reason)
+	assert.Equal(t, "kubelet has sufficient PID available", server.Conditions[3].Message)
+}
+
+func TestGetServerNotFound(t *testing.T) {
+	kubeClient := &KubeClient{clientset: fake.NewSimpleClientset(serverTestNode("cp", nil, true))}
+
+	_, err := kubeClient.GetServer(context.Background(), "missing")
+	require.ErrorIs(t, err, errdefs.ErrNotFound)
+}
+
+func TestNodeInternalIPs(t *testing.T) {
+	worker := serverTestNode("worker", nil, true)
+	worker.Status.Addresses = []corev1.NodeAddress{{Type: corev1.NodeInternalIP, Address: "10.0.0.2"}}
+	kubeClient := &KubeClient{clientset: fake.NewSimpleClientset(serverTestNode("cp", nil, true), worker)}
+
+	all, err := kubeClient.NodeInternalIPs(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, map[string]string{"cp": "10.0.0.1", "worker": "10.0.0.2"}, all)
+
+	one, err := kubeClient.NodeInternalIPs(context.Background(), "worker")
+	require.NoError(t, err)
+	assert.Equal(t, map[string]string{"worker": "10.0.0.2"}, one)
+
+	_, err = kubeClient.NodeInternalIPs(context.Background(), "missing")
+	require.ErrorIs(t, err, errdefs.ErrNotFound)
 }

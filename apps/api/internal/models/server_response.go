@@ -25,3 +25,29 @@ type ServerResponse struct {
 	DiskPressure   bool `json:"disk_pressure"`
 	PIDPressure    bool `json:"pid_pressure"`
 }
+
+type ServerConditionResponse struct {
+	Type             string    `json:"type"`
+	Status           string    `json:"status"`
+	Reason           string    `json:"reason"`
+	Message          string    `json:"message"`
+	LastTransitionAt time.Time `json:"last_transition_at"`
+}
+
+type ServerTaintResponse struct {
+	Key    string `json:"key"`
+	Value  string `json:"value"`
+	Effect string `json:"effect"`
+}
+
+type ServerDetailResponse struct {
+	ServerResponse
+	KernelVersion    string `json:"kernel_version"`
+	ContainerRuntime string `json:"container_runtime"`
+
+	CPUCapacityMillicores   int64 `json:"cpu_capacity_millicores"`
+	MemoryCapacityMegabytes int64 `json:"memory_capacity_megabytes"`
+
+	Conditions []ServerConditionResponse `json:"conditions" nullable:"false"`
+	Taints     []ServerTaintResponse     `json:"taints" nullable:"false"`
+}
