@@ -134,19 +134,19 @@ const buildkitMin = 1;
 const buildkitMaxReplicas = 10;
 const buildkitMaxParallelism = 32;
 
-function integerInRange(min: number, max: number, label: string) {
+function integerInRange({ min, max }: { min: number; max: number }) {
   return z
     .string()
     .refine(
       (v) => /^\d+$/.test(v) && Number(v) >= min && Number(v) <= max,
-      `${label} must be a whole number between ${min} and ${max}.`,
+      `Must be a whole number between ${min} and ${max}.`,
     );
 }
 
 const BuildkitFormSchema = z
   .object({
-    replicas: integerInRange(buildkitMin, buildkitMaxReplicas, "Replicas"),
-    maxParallelism: integerInRange(buildkitMin, buildkitMaxParallelism, "Parallelism"),
+    replicas: integerInRange({ min: buildkitMin, max: buildkitMaxReplicas }),
+    maxParallelism: integerInRange({ min: buildkitMin, max: buildkitMaxParallelism }),
   })
   .strip();
 
