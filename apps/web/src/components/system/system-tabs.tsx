@@ -14,7 +14,7 @@ type TTab = {
 
 const tabs: TTab[] = [
   { title: "Servers", to: "/system", strictMatch: true },
-  { title: "Update", to: "/system/update" },
+  { title: "Updates", to: "/system/update" },
   { title: "Settings", to: "/system/settings" },
 ];
 
