@@ -8,12 +8,28 @@ import {
   serverStatusTitles,
 } from "@/components/system/servers/helpers";
 import InfoRows, { TInfoRow } from "@/components/system/servers/panel/tabs/details/info-rows";
-import { TServer } from "@/lib/queries/servers";
-import { ActivityIcon } from "lucide-react";
+import { TServer, TServerConditionType } from "@/lib/queries/servers";
+import {
+  ActivityIcon,
+  HardDriveIcon,
+  HeartPulseIcon,
+  InboxIcon,
+  ListTreeIcon,
+  LucideIcon,
+  MemoryStickIcon,
+  NetworkIcon,
+} from "lucide-react";
 
 type TProps = {
   server: TServer;
   error: string | undefined;
+};
+
+const conditionIcons: Record<TServerConditionType, LucideIcon> = {
+  memory: MemoryStickIcon,
+  disk: HardDriveIcon,
+  processes: ListTreeIcon,
+  network: NetworkIcon,
 };
 
 const conditionLevels = {
@@ -28,10 +44,12 @@ export default function StatusSection({ server, error }: TProps) {
   const rows: TInfoRow[] = [
     {
       label: "Status",
+      Icon: HeartPulseIcon,
       value: <Value level={getServerStatusLevel(status)}>{serverStatusTitles[status]}</Value>,
     },
     {
       label: "Scheduling",
+      Icon: InboxIcon,
       value: (
         <Value level={server.unschedulable ? "warning" : "success"}>
           {server.unschedulable ? "Paused" : "Enabled"}
@@ -40,6 +58,7 @@ export default function StatusSection({ server, error }: TProps) {
     },
     ...server.conditions.map((condition) => ({
       label: serverConditionTitles[condition.type],
+      Icon: conditionIcons[condition.type],
       value: (
         <Value level={conditionLevels[condition.status]}>
           {serverConditionTexts[condition.type][condition.status]}
