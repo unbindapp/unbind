@@ -44,7 +44,7 @@ export default function SettingsTabs({ tabs }: TProps) {
         ref={navRef}
         className="bg-background max-md:touch:scrollbar-hidden z-10 flex max-h-full w-full flex-row items-center overflow-auto border-b pr-6 sm:top-23.5 md:max-h-[calc(100svh-6rem)] md:flex-col md:items-start md:justify-start md:border-0 md:pr-0 lg:top-11.75 lg:max-h-[calc(100svh-3rem-1px)]"
       >
-        <div className="flex flex-row sm:px-3 md:flex-col md:p-1">
+        <div className="flex flex-row sm:px-3 md:w-full md:flex-col md:p-1">
           {tabs.map((tab) => (
             <LinkButton
               {...tab.link}
@@ -66,10 +66,12 @@ export default function SettingsTabs({ tabs }: TProps) {
                   className="md:w-2px md:top-2.75 md:h-[calc(100%-1.375rem)]"
                 />
               )}
-              <SettingsTabIcon
-                variant={tab.icon}
-                className="relative -my-1 -ml-px size-4 shrink-0 translate-z-0 md:-ml-1 md:size-5"
-              />
+              <div className="mt-0.5 shrink-0 self-start">
+                <SettingsTabIcon
+                  variant={tab.icon}
+                  className="relative -my-1 -ml-px size-4 shrink-0 translate-z-0 self-start md:-ml-1 md:size-5"
+                />
+              </div>
               <p className="relative leading-none whitespace-nowrap md:min-w-0 md:shrink md:whitespace-normal">
                 {tab.label}
               </p>
