@@ -2,7 +2,7 @@ import PanelContentWrapper from "@/components/panel/panel-content-wrapper";
 import PanelNavbar from "@/components/panel/panel-navbar";
 import PanelTabWrapper from "@/components/panel/panel-tab-wrapper";
 import { TVolumePanelTabEnum, volumePanelTabKey } from "@/components/volume/panel/constants";
-import Settings from "@/components/volume/panel/tabs/settings/settings";
+import Details from "@/components/volume/panel/tabs/details/details";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { TVolumeShallow } from "@/lib/queries/services";
 import { FC, HTMLAttributes, ReactNode } from "react";
@@ -30,7 +30,7 @@ export type TVolumePanelTab = {
 const EmptyProvider = ({ children }: TVolumePageProviderProps) => children;
 
 const tabs: TVolumePanelTab[] = [
-  { title: "Settings", value: "settings", Page: Settings, Provider: EmptyProvider },
+  { title: "Details", value: "details", Page: Details, Provider: EmptyProvider },
 ];
 
 export default function VolumePanelContent({ volume, className, ...rest }: TProps) {

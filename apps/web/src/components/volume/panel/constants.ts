@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const VolumePanelTabEnum = z.enum(["settings"]);
+export const VolumePanelTabEnum = z.enum(["details"]);
 export type TVolumePanelTabEnum = z.infer<typeof VolumePanelTabEnum>;
 export const volumePanelDefaultTabId = VolumePanelTabEnum.options[0];
 

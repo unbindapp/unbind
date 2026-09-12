@@ -1,9 +1,9 @@
 import Banner from "@/components/banner";
 import TabWrapper from "@/components/navigation/tab-wrapper";
-import ConnectionSection from "@/components/volume/panel/tabs/settings/sections/connection-section";
-import DeleteSection from "@/components/volume/panel/tabs/settings/sections/delete-section";
-import ExpandSection from "@/components/volume/panel/tabs/settings/sections/expand-section";
-import UsageSection from "@/components/volume/panel/tabs/settings/sections/usage-section";
+import ConnectionSection from "@/components/volume/panel/tabs/details/sections/connection-section";
+import DeleteSection from "@/components/volume/panel/tabs/details/sections/delete-section";
+import ExpandSection from "@/components/volume/panel/tabs/details/sections/expand-section";
+import UsageSection from "@/components/volume/panel/tabs/details/sections/usage-section";
 import { TVolumeShallow } from "@/lib/queries/services";
 import { ClockIcon, HourglassIcon } from "lucide-react";
 
