@@ -13,7 +13,7 @@ import {
 } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { LoaderIcon } from "lucide-react";
+import { FolderIcon, LoaderIcon } from "lucide-react";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -28,7 +28,7 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
   const isDeleting = useIsDeleting(deleteMutationKeys.project(project?.id ?? ""));
   const environments = !isPlaceholder ? project.environments : [];
   const serviceCount = !isPlaceholder ? project.service_count : 1;
-  const serviceIcons = !isPlaceholder ? project.service_icons : [];
+  const serviceIcons = !isPlaceholder ? project.service_icons : [""];
   const hasIconOverflow = serviceIcons !== undefined && serviceIcons.length > maxIconSlots;
   const visibleIconCount = hasIconOverflow ? maxIconSlots - 1 : maxIconSlots;
 
@@ -55,9 +55,16 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
         className="flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold"
       >
         {project && <NewEntityIndicator id={project.id} />}
-        <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton max-w-full overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
-          {!isPlaceholder ? project.name : "Loading"}
-        </h3>
+        <div className="flex w-full items-center justify-start gap-2">
+          {!isPlaceholder ? (
+            <FolderIcon className="-ml-1 size-5" />
+          ) : (
+            <div className="animate-skeleton bg-foreground -ml-1 size-5 rounded-full" />
+          )}
+          <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+            {!isPlaceholder ? project.name : "Loading"}
+          </h3>
+        </div>
         <div className="flex w-full flex-1 flex-col justify-end">
           <div className="text-muted-foreground flex w-full items-end justify-between gap-6">
             {isDeleting ? (
