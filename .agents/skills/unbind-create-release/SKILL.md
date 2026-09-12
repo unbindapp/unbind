@@ -164,15 +164,21 @@ report it:
 ```bash
 gh release view <next> --json name,isDraft,isPrerelease,assets,body \
   --jq '{name, isDraft, isPrerelease, assets: [.assets[].name], summaryLine: (.body | split("\n")[2])}'
-git fetch origin master -q
-git log origin/master --oneline -1 -- deploy/releases/metadata.json
-git show origin/master:deploy/releases/metadata.json | grep -A3 '"<next>"'
+git pull --ff-only -q origin master               # brings in the bot's metadata commit
+git log --oneline -1 -- deploy/releases/metadata.json
+git show HEAD:deploy/releases/metadata.json | grep -A3 '"<next>"'
+git status -sb                                   # must not say "behind"
 ```
 
 Expected: not a draft, not a prerelease, four installer assets
 (`unbind-installer-{amd64,arm64}.gz` plus `.sha256`), the summary as the third line of the
-body, and a `releases: add metadata entry for <next>` commit on `origin/master` with the
-same summary and `breaking: false`.
+body, and a `releases: add metadata entry for <next>` commit at the tip with the same
+summary and `breaking: false`.
+
+The pull is `--ff-only` on purpose: it never merges or rebases. If it refuses because of
+local commits or uncommitted changes, leave the tree alone, verify against `origin/master`
+instead (`git fetch origin master -q` then `git show origin/master:deploy/releases/metadata.json`)
+and tell the user local `master` is still behind and why.
 
 If the monitor timed out or the session restarted before it fired, check `gh run list`
 before doing anything else; the release usually finished fine. Re-arm the monitor only if
@@ -181,7 +187,8 @@ the run is still in progress.
 ## 6. Report
 
 State plainly: the version, that it is published, what was verified, and that local
-`master` is now one bot commit behind `origin` (a `git pull` fixes it). If anything failed,
+`master` is up to date with `origin` again after the pull. If the pull was refused, say
+local `master` is still one bot commit behind and why. If anything failed,
 paste the failing step's output (`gh run view <run-id> --log-failed`) and stop. Do not
 retry a failed tag push with a different version on your own.
 
