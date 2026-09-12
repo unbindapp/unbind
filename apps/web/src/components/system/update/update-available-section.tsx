@@ -15,7 +15,7 @@ import { toast } from "@/components/ui/toast";
 import UpdateStatusProvider, {
   useUpdateStatus,
   useUpdateStatusUtils,
-} from "@/components/update/update-status-provider";
+} from "@/components/system/update/update-status-provider";
 import { applyUpdate as applyUpdateFn } from "@/lib/queries/system";
 import type { Change } from "@/lib/server/client.gen";
 import { useMutation } from "@tanstack/react-query";

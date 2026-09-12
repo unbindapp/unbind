@@ -3,9 +3,9 @@ import { CircleArrowUpIcon } from "lucide-react";
 import { ReactNode, useRef } from "react";
 
 import { cn } from "@/components/ui/utils";
-import UpdateAvailableSection from "@/components/update/update-available-section";
-import UpdateNotAvailableSection from "@/components/update/update-not-available-section";
-import { useUpdateStatus } from "@/components/update/update-status-provider";
+import UpdateAvailableSection from "@/components/system/update/update-available-section";
+import UpdateNotAvailableSection from "@/components/system/update/update-not-available-section";
+import { useUpdateStatus } from "@/components/system/update/update-status-provider";
 
 export const Route = createFileRoute("/system/update/")({
   component: SystemUpdatePage,
@@ -78,7 +78,7 @@ function Wrapper({
   return (
     <div
       className={cn(
-        "relative flex w-full flex-1 flex-col items-center px-4 pt-10 pb-16 sm:pt-16",
+        "relative flex w-full flex-1 flex-col items-center justify-center px-4 pt-12 pb-[calc(3rem+8vh)]",
         className,
       )}
       {...props}

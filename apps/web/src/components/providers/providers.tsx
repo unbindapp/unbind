@@ -7,7 +7,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { MainStoreProvider } from "@/components/stores/main/main-store-provider";
 import { PendingEntityStoreProvider } from "@/components/stores/pending/pending-entity-store-provider";
 import { TemplateDraftStoreProvider } from "@/components/templates/template-draft-store-provider";
-import UpdateStatusProvider from "@/components/update/update-status-provider";
+import UpdateStatusProvider from "@/components/system/update/update-status-provider";
 import { getConfig } from "@/lib/config";
 import useKeyboardInsetHeight from "@/lib/hooks/use-keyboard-inset-height";
 import React from "react";

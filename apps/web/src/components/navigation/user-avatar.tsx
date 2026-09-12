@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
-import { useUpdateStatus } from "@/components/update/update-status-provider";
+import { useUpdateStatus } from "@/components/system/update/update-status-provider";
 import { isSystemAdmin, meQuery } from "@/lib/queries/me";
 import { systemQuery } from "@/lib/queries/system";
 import { getGoClient } from "@/lib/server/client";
