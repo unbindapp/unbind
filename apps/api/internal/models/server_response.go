@@ -2,6 +2,29 @@ package models
 
 import "time"
 
+// ServerConditionType is what the condition is about, in Unbind's terms rather than the kubelet's
+type ServerConditionType string
+
+const (
+	ServerConditionTypeMemory    ServerConditionType = "memory"
+	ServerConditionTypeDisk      ServerConditionType = "disk"
+	ServerConditionTypeProcesses ServerConditionType = "processes"
+	ServerConditionTypeNetwork   ServerConditionType = "network"
+)
+
+type ServerConditionStatus string
+
+const (
+	ServerConditionStatusHealthy   ServerConditionStatus = "healthy"
+	ServerConditionStatusUnhealthy ServerConditionStatus = "unhealthy"
+	ServerConditionStatusUnknown   ServerConditionStatus = "unknown"
+)
+
+type ServerConditionResponse struct {
+	Type   ServerConditionType   `json:"type" enum:"memory,disk,processes,network"`
+	Status ServerConditionStatus `json:"status" enum:"healthy,unhealthy,unknown"`
+}
+
 type ServerResponse struct {
 	Name              string    `json:"name"`
 	Ready             bool      `json:"ready"`
@@ -21,17 +44,7 @@ type ServerResponse struct {
 	PodCount                   int64 `json:"pod_count"`
 	PodCapacity                int64 `json:"pod_capacity"`
 
-	MemoryPressure bool `json:"memory_pressure"`
-	DiskPressure   bool `json:"disk_pressure"`
-	PIDPressure    bool `json:"pid_pressure"`
-}
-
-type ServerConditionResponse struct {
-	Type             string    `json:"type"`
-	Status           string    `json:"status"`
-	Reason           string    `json:"reason"`
-	Message          string    `json:"message"`
-	LastTransitionAt time.Time `json:"last_transition_at"`
+	Conditions []ServerConditionResponse `json:"conditions" nullable:"false"`
 }
 
 type ServerTaintResponse struct {
@@ -48,6 +61,5 @@ type ServerDetailResponse struct {
 	CPUCapacityMillicores   int64 `json:"cpu_capacity_millicores"`
 	MemoryCapacityMegabytes int64 `json:"memory_capacity_megabytes"`
 
-	Conditions []ServerConditionResponse `json:"conditions" nullable:"false"`
-	Taints     []ServerTaintResponse     `json:"taints" nullable:"false"`
+	Taints []ServerTaintResponse `json:"taints" nullable:"false"`
 }

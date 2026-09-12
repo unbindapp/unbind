@@ -5,6 +5,8 @@ import type { GetServerResponseBody, ListServersResponseBody } from "@/lib/serve
 
 export type TServer = ListServersResponseBody["data"][number];
 export type TServerDetail = GetServerResponseBody["data"];
+export type TServerCondition = TServer["conditions"][number];
+export type TServerConditionType = TServerCondition["type"];
 export type TServers = { data: TServer[] };
 
 export const queryKeyServers = {

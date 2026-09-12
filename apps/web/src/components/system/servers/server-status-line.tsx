@@ -7,7 +7,13 @@ import {
 } from "@/components/system/servers/helpers";
 import { cn } from "@/components/ui/utils";
 import { TServer, TServerDetail } from "@/lib/queries/servers";
-import { BanIcon, HardDriveIcon, MemoryStickIcon, TriangleAlertIcon } from "lucide-react";
+import {
+  BanIcon,
+  HardDriveIcon,
+  MemoryStickIcon,
+  PlugZapIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 
 type TProps = {
   server: TServer | TServerDetail;
@@ -37,7 +43,8 @@ function StatusIcon({ status, className }: { status: TServerStatus; className?: 
 
   if (status === "ready") return <OnlineIcon className={cn("text-success", classNameFinal)} />;
   if (status === "unschedulable") return <BanIcon className={classNameFinal} />;
-  if (status === "disk-pressure") return <HardDriveIcon className={classNameFinal} />;
-  if (status === "memory-pressure") return <MemoryStickIcon className={classNameFinal} />;
+  if (status === "disk") return <HardDriveIcon className={classNameFinal} />;
+  if (status === "memory") return <MemoryStickIcon className={classNameFinal} />;
+  if (status === "network") return <PlugZapIcon className={classNameFinal} />;
   return <TriangleAlertIcon className={classNameFinal} />;
 }

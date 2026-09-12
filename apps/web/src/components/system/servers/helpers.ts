@@ -1,23 +1,52 @@
-import { TServer, TServerDetail } from "@/lib/queries/servers";
+import {
+  TServer,
+  TServerCondition,
+  TServerConditionType,
+  TServerDetail,
+} from "@/lib/queries/servers";
 
-export type TServerStatus =
-  "not-ready" | "disk-pressure" | "memory-pressure" | "pid-pressure" | "unschedulable" | "ready";
+export type TServerStatus = "not-ready" | "unschedulable" | "ready" | TServerConditionType;
 
 export const serverStatusTitles: Record<TServerStatus, string> = {
   "not-ready": "Not ready",
-  "disk-pressure": "Disk pressure",
-  "memory-pressure": "Memory pressure",
-  "pid-pressure": "PID pressure",
+  disk: "Low disk space",
+  memory: "Low memory",
+  processes: "Too many processes",
+  network: "No network",
   unschedulable: "Unschedulable",
   ready: "Ready",
 };
 
-// Only the worst problem is shown, the rest live in the panel's details tab
+// What each condition is called and what it says when healthy or not
+export const serverConditionTitles: Record<TServerConditionType, string> = {
+  memory: "Memory",
+  disk: "Disk",
+  processes: "Processes",
+  network: "Network",
+};
+
+export const serverConditionTexts: Record<
+  TServerConditionType,
+  Record<TServerCondition["status"], string>
+> = {
+  memory: { healthy: "Sufficient", unhealthy: "Running out", unknown: "Unknown" },
+  disk: { healthy: "Sufficient", unhealthy: "Running out", unknown: "Unknown" },
+  processes: { healthy: "Sufficient", unhealthy: "Too many", unknown: "Unknown" },
+  network: { healthy: "Available", unhealthy: "Unavailable", unknown: "Unknown" },
+};
+
+// Worst first, so a server short on disk doesn't advertise itself as merely unschedulable
+const conditionSeverity: TServerConditionType[] = ["disk", "memory", "processes", "network"];
+
+// Only the worst problem is shown on the card, every condition lives in the panel
 export function getServerStatus(server: TServer | TServerDetail): TServerStatus {
   if (!server.ready) return "not-ready";
-  if (server.disk_pressure) return "disk-pressure";
-  if (server.memory_pressure) return "memory-pressure";
-  if (server.pid_pressure) return "pid-pressure";
+
+  for (const type of conditionSeverity) {
+    const condition = server.conditions.find((c) => c.type === type);
+    if (condition?.status === "unhealthy") return type;
+  }
+
   if (server.unschedulable) return "unschedulable";
   return "ready";
 }

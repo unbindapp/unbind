@@ -92,17 +92,6 @@ func (self *KubeClient) GetServer(ctx context.Context, name string) (*models.Ser
 		u.pods++
 	}
 
-	conditions := make([]models.ServerConditionResponse, 0, len(node.Status.Conditions))
-	for _, c := range node.Status.Conditions {
-		conditions = append(conditions, models.ServerConditionResponse{
-			Type:             string(c.Type),
-			Status:           string(c.Status),
-			Reason:           c.Reason,
-			Message:          c.Message,
-			LastTransitionAt: c.LastTransitionTime.Time,
-		})
-	}
-
 	taints := make([]models.ServerTaintResponse, 0, len(node.Spec.Taints))
 	for _, t := range node.Spec.Taints {
 		taints = append(taints, models.ServerTaintResponse{
@@ -118,7 +107,6 @@ func (self *KubeClient) GetServer(ctx context.Context, name string) (*models.Ser
 		ContainerRuntime:        node.Status.NodeInfo.ContainerRuntimeVersion,
 		CPUCapacityMillicores:   node.Status.Capacity.Cpu().MilliValue(),
 		MemoryCapacityMegabytes: node.Status.Capacity.Memory().Value() / (1024 * 1024),
-		Conditions:              conditions,
 		Taints:                  taints,
 	}, nil
 }
@@ -175,10 +163,55 @@ func serverResponse(node *corev1.Node, u *usage) *models.ServerResponse {
 		MemoryRequestedMegabytes:   u.memory,
 		PodCount:                   u.pods,
 		PodCapacity:                node.Status.Allocatable.Pods().Value(),
-		MemoryPressure:             nodeCondition(node, corev1.NodeMemoryPressure),
-		DiskPressure:               nodeCondition(node, corev1.NodeDiskPressure),
-		PIDPressure:                nodeCondition(node, corev1.NodePIDPressure),
+		Conditions:                 serverConditions(node),
 	}
+}
+
+// The kubelet reports a condition per resource it can run short of, plus the cloud
+// controller's network check. Their "pressure is true" phrasing is flipped here so
+// every condition reads the same way: healthy or not.
+var serverConditionTypes = []struct {
+	nodeType      corev1.NodeConditionType
+	conditionType models.ServerConditionType
+}{
+	{corev1.NodeMemoryPressure, models.ServerConditionTypeMemory},
+	{corev1.NodeDiskPressure, models.ServerConditionTypeDisk},
+	{corev1.NodePIDPressure, models.ServerConditionTypeProcesses},
+	{corev1.NodeNetworkUnavailable, models.ServerConditionTypeNetwork},
+}
+
+func serverConditions(node *corev1.Node) []models.ServerConditionResponse {
+	conditions := make([]models.ServerConditionResponse, 0, len(serverConditionTypes))
+	for _, candidate := range serverConditionTypes {
+		status, reported := nodeConditionStatus(node, candidate.nodeType)
+		if !reported {
+			continue
+		}
+		conditions = append(conditions, models.ServerConditionResponse{
+			Type:   candidate.conditionType,
+			Status: status,
+		})
+	}
+	return conditions
+}
+
+func nodeConditionStatus(
+	node *corev1.Node,
+	conditionType corev1.NodeConditionType,
+) (models.ServerConditionStatus, bool) {
+	for _, c := range node.Status.Conditions {
+		if c.Type != conditionType {
+			continue
+		}
+		if c.Status == corev1.ConditionTrue {
+			return models.ServerConditionStatusUnhealthy, true
+		}
+		if c.Status == corev1.ConditionFalse {
+			return models.ServerConditionStatusHealthy, true
+		}
+		return models.ServerConditionStatusUnknown, true
+	}
+	return models.ServerConditionStatusUnknown, false
 }
 
 func isTerminated(pod *corev1.Pod) bool {

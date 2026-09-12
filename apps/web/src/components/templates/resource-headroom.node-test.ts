@@ -22,9 +22,7 @@ function server(overrides: Partial<TServer>): TServer {
     memory_requested_megabytes: 0,
     pod_count: 0,
     pod_capacity: 110,
-    memory_pressure: false,
-    disk_pressure: false,
-    pid_pressure: false,
+    conditions: [],
     ...overrides,
   };
 }

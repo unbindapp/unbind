@@ -16,7 +16,7 @@ export default function Details({ server }: TProps) {
 
   return (
     <TabWrapper className="gap-6">
-      <StatusSection server={data ?? server} detail={data} error={error?.message} />
+      <StatusSection server={data ?? server} error={error?.message} />
       <ResourcesSection server={data ?? server} />
       <SystemSection server={data ?? server} detail={data} error={error?.message} />
     </TabWrapper>

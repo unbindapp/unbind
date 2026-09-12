@@ -1301,11 +1301,8 @@ export const GetS3BucketByIDOutputBodySchema = z
 
 export const ServerConditionResponseSchema = z
   .object({
-    last_transition_at: z.string().datetime({ offset: true }),
-    message: z.string(),
-    reason: z.string(),
-    status: z.string(),
-    type: z.string(),
+    status: z.enum(['healthy', 'unhealthy', 'unknown']),
+    type: z.enum(['memory', 'disk', 'processes', 'network']),
   })
   .strip();
 
@@ -1326,18 +1323,15 @@ export const ServerDetailResponseSchema = z
     cpu_capacity_millicores: z.number(),
     cpu_requested_millicores: z.number(),
     created_at: z.string().datetime({ offset: true }),
-    disk_pressure: z.boolean(),
     external_ip: z.string(),
     internal_ip: z.string(),
     kernel_version: z.string(),
     kubernetes_version: z.string(),
     memory_allocatable_megabytes: z.number(),
     memory_capacity_megabytes: z.number(),
-    memory_pressure: z.boolean(),
     memory_requested_megabytes: z.number(),
     name: z.string(),
     os: z.string(),
-    pid_pressure: z.boolean(),
     pod_capacity: z.number(),
     pod_count: z.number(),
     ready: z.boolean(),
@@ -1950,19 +1944,17 @@ export const ListS3BucketsOutputBodySchema = z
 export const ServerResponseSchema = z
   .object({
     architecture: z.string(),
+    conditions: z.array(ServerConditionResponseSchema),
     cpu_allocatable_millicores: z.number(),
     cpu_requested_millicores: z.number(),
     created_at: z.string().datetime({ offset: true }),
-    disk_pressure: z.boolean(),
     external_ip: z.string(),
     internal_ip: z.string(),
     kubernetes_version: z.string(),
     memory_allocatable_megabytes: z.number(),
-    memory_pressure: z.boolean(),
     memory_requested_megabytes: z.number(),
     name: z.string(),
     os: z.string(),
-    pid_pressure: z.boolean(),
     pod_capacity: z.number(),
     pod_count: z.number(),
     ready: z.boolean(),

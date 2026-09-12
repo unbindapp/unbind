@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"github.com/unbindapp/unbind-api/internal/models"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,6 +31,7 @@ func serverTestNode(name string, labels map[string]string, ready bool) *corev1.N
 				{Type: corev1.NodeReady, Status: readyStatus},
 				{Type: corev1.NodeMemoryPressure, Status: corev1.ConditionFalse},
 				{Type: corev1.NodeDiskPressure, Status: corev1.ConditionTrue},
+				{Type: corev1.NodePIDPressure, Status: corev1.ConditionUnknown},
 			},
 			Addresses: []corev1.NodeAddress{
 				{Type: corev1.NodeInternalIP, Address: "10.0.0.1"},
@@ -102,9 +104,11 @@ func TestListServers(t *testing.T) {
 	assert.Equal(t, int64(250+50+500), cp.CPURequestedMillicores, "running + pending + max(init, containers); finished and unscheduled pods excluded")
 	assert.Equal(t, int64(256+128+64), cp.MemoryRequestedMegabytes)
 	assert.Equal(t, int64(3), cp.PodCount)
-	assert.False(t, cp.MemoryPressure)
-	assert.True(t, cp.DiskPressure)
-	assert.False(t, cp.PIDPressure)
+	assert.Equal(t, []models.ServerConditionResponse{
+		{Type: models.ServerConditionTypeMemory, Status: models.ServerConditionStatusHealthy},
+		{Type: models.ServerConditionTypeDisk, Status: models.ServerConditionStatusUnhealthy},
+		{Type: models.ServerConditionTypeProcesses, Status: models.ServerConditionStatusUnknown},
+	}, cp.Conditions, "conditions the kubelet does not report are left out")
 
 	w := servers[1]
 	assert.Equal(t, "worker", w.Name)
@@ -125,10 +129,9 @@ func TestGetServer(t *testing.T) {
 	node.Status.NodeInfo.KernelVersion = "6.8.0-generic"
 	node.Status.NodeInfo.ContainerRuntimeVersion = "containerd://2.3.2-k3s2"
 	node.Status.Conditions = append(node.Status.Conditions, corev1.NodeCondition{
-		Type:    corev1.NodePIDPressure,
-		Status:  corev1.ConditionFalse,
-		Reason:  "KubeletHasSufficientPID",
-		Message: "kubelet has sufficient PID available",
+		Type:   corev1.NodeNetworkUnavailable,
+		Status: corev1.ConditionFalse,
+		Reason: "RouteCreated",
 	})
 	node.Spec.Taints = []corev1.Taint{{Key: "node.kubernetes.io/unreachable", Value: "", Effect: corev1.TaintEffectNoSchedule}}
 
@@ -146,7 +149,6 @@ func TestGetServer(t *testing.T) {
 
 	assert.Equal(t, "cp", server.Name)
 	assert.True(t, server.Ready)
-	assert.True(t, server.DiskPressure)
 	assert.Equal(t, int64(250), server.CPURequestedMillicores, "only running pods of this server count")
 	assert.Equal(t, int64(256), server.MemoryRequestedMegabytes)
 	assert.Equal(t, int64(1), server.PodCount)
@@ -157,11 +159,12 @@ func TestGetServer(t *testing.T) {
 	require.Len(t, server.Taints, 1)
 	assert.Equal(t, "node.kubernetes.io/unreachable", server.Taints[0].Key)
 	assert.Equal(t, "NoSchedule", server.Taints[0].Effect)
-	require.Len(t, server.Conditions, 4)
-	assert.Equal(t, "PIDPressure", server.Conditions[3].Type)
-	assert.Equal(t, "False", server.Conditions[3].Status)
-	assert.Equal(t, "KubeletHasSufficientPID", server.Conditions[3].Reason)
-	assert.Equal(t, "kubelet has sufficient PID available", server.Conditions[3].Message)
+	assert.Equal(t, []models.ServerConditionResponse{
+		{Type: models.ServerConditionTypeMemory, Status: models.ServerConditionStatusHealthy},
+		{Type: models.ServerConditionTypeDisk, Status: models.ServerConditionStatusUnhealthy},
+		{Type: models.ServerConditionTypeProcesses, Status: models.ServerConditionStatusUnknown},
+		{Type: models.ServerConditionTypeNetwork, Status: models.ServerConditionStatusHealthy},
+	}, server.Conditions)
 }
 
 func TestGetServerNotFound(t *testing.T) {
