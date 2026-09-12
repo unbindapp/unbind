@@ -27,8 +27,8 @@ const maxIconSlots = 5;
 export default function ProjectCard({ project, isPlaceholder, className }: TProps) {
   const isDeleting = useIsDeleting(deleteMutationKeys.project(project?.id ?? ""));
   const environments = !isPlaceholder ? project.environments : [];
-  const serviceCount = !isPlaceholder ? project.service_count : 1;
-  const serviceIcons = !isPlaceholder ? project.service_icons : [""];
+  const serviceCount = !isPlaceholder ? project.service_count : 2;
+  const serviceIcons = !isPlaceholder ? project.service_icons : ["", ""];
   const hasIconOverflow = serviceIcons !== undefined && serviceIcons.length > maxIconSlots;
   const visibleIconCount = hasIconOverflow ? maxIconSlots - 1 : maxIconSlots;
 
