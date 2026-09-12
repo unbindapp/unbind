@@ -33,6 +33,7 @@ export type TMetricsSelection = {
 type TProps = {
   selection?: TMetricsSelection;
   className?: string;
+  dropdownMenuContentAlign?: "start" | "end" | "center";
 };
 
 const dropdownCollisionPadding = { top: 16, bottom: 16, left: 8, right: 8 };
@@ -43,7 +44,11 @@ const viewLabels: Record<TMetricsView, string> = {
   total: "Total",
 };
 
-export default function MetricsFilterDropdown({ selection, className }: TProps) {
+export default function MetricsFilterDropdown({
+  selection,
+  className,
+  dropdownMenuContentAlign,
+}: TProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const {
     interval,
@@ -85,7 +90,7 @@ export default function MetricsFilterDropdown({ selection, className }: TProps) 
         }
       />
       <DropdownMenuContent
-        align="end"
+        align={dropdownMenuContentAlign}
         collisionPadding={dropdownCollisionPadding}
         className="max-h-[calc(var(--available-height)-4rem)] w-3xl sm:max-h-[min(45rem,calc(var(--available-height)-4rem))] sm:w-80"
       >

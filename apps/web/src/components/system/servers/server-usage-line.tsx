@@ -30,11 +30,11 @@ export default function ServerUsageLine({ used, total, totalLabel, Icon, classNa
       <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive relative flex w-full items-center justify-between gap-4 px-4 leading-tight font-medium">
         <div className="flex min-w-0 shrink items-center gap-1.5">
           <Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton size-3.5 shrink-0 group-data-placeholder/item:rounded-full group-data-placeholder/item:text-transparent" />
-          <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+          <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate group-data-placeholder/item:rounded group-data-placeholder/item:text-transparent">
             {totalLabel}
           </p>
         </div>
-        <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton max-w-[40%] min-w-0 shrink truncate text-right group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+        <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton max-w-[40%] min-w-0 shrink truncate text-right group-data-placeholder/item:rounded group-data-placeholder/item:text-transparent">
           {Math.round(percentage)}%
         </p>
       </div>

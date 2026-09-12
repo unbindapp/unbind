@@ -6,7 +6,7 @@ export default function Metrics() {
   return (
     <TabWrapper>
       <div className="flex w-full items-center">
-        <MetricsFilterDropdown />
+        <MetricsFilterDropdown dropdownMenuContentAlign="start" />
       </div>
       <div className="flex w-full flex-row flex-wrap pt-1">
         <Charts noLegends />
