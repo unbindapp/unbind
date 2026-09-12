@@ -11,46 +11,35 @@ type TProps = {
   error: string | undefined;
 };
 
-const unknown = "Unknown";
-const loading = "•••";
+const UNKNOWN = "Unknown";
 
-export default function SystemSection({ server, detail, error }: TProps) {
+export default function SystemSection({ server, error }: TProps) {
   const { str: createdStr } = useTimeDifference({
     timestamp: server.created_at ? new Date(server.created_at).getTime() : 0,
   });
 
-  const detailValue = (value: string | undefined) => {
-    if (error) return unknown;
-    if (detail === undefined) return loading;
-    return value || unknown;
-  };
-
   const rows: TInfoRow[] = [
-    { label: "Roles", value: server.roles.join(", ") },
-    { label: "Kubernetes", value: server.kubernetes_version },
-    { label: "OS", value: server.os },
-    { label: "Architecture", value: server.architecture },
-    { label: "Kernel", value: detailValue(detail?.kernel_version) },
-    { label: "Container runtime", value: detailValue(detail?.container_runtime) },
-    { label: "Internal IP", value: server.internal_ip || unknown },
     { label: "External IP", value: server.external_ip || "None" },
-    { label: "Schedulable", value: server.unschedulable ? "No" : "Yes" },
-    { label: "Created", value: createdStr },
+    { label: "Internal IP", value: server.internal_ip || UNKNOWN },
+    { label: "Roles", value: server.roles.join(", ") },
+    { label: "Architecture", value: server.architecture },
+    { label: "OS", value: server.os },
+    { label: "Kubernetes", value: server.kubernetes_version },
+    { label: "Creation", value: createdStr },
   ];
 
   return (
-    <SettingsSection title="System" Icon={InfoIcon} entityId={`server-system-${server.name}`}>
-      <div className="flex w-full flex-col gap-3">
-        {error && <ErrorLine withIcon message={error} />}
-        <InfoRows rows={rows} />
-        {detail !== undefined && detail.taints.length > 0 && (
-          <InfoRows
-            rows={detail.taints.map((taint) => ({
-              label: taint.value ? `${taint.key}=${taint.value}` : taint.key,
-              value: taint.effect,
-            }))}
-          />
+    <SettingsSection
+      classNameContent="p-0 sm:p-0"
+      title="System"
+      Icon={InfoIcon}
+      entityId={`server-system-${server.name}`}
+    >
+      <div className="flex w-full flex-col">
+        {error && (
+          <ErrorLine className="rounded-none px-4 py-2.75 sm:px-4.5" withIcon message={error} />
         )}
+        <InfoRows rows={rows} className={error ? "border-t" : ""} />
       </div>
     </SettingsSection>
   );

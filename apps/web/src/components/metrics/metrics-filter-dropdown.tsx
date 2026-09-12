@@ -74,7 +74,7 @@ export default function MetricsFilterDropdown({
             type="button"
             variant="outline"
             className={cn(
-              "group/button relative touch-manipulation gap-1.5 py-2 text-left font-medium",
+              "group/button relative touch-manipulation gap-1.5 py-2 text-left font-semibold",
               className,
             )}
           >
