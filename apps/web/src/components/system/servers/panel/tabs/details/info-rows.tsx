@@ -5,7 +5,8 @@ import { ReactNode } from "react";
 export type TInfoRow = {
   label: string;
   value: ReactNode;
-  Icon?: LucideIcon;
+  IconLabel?: LucideIcon;
+  IconValue?: LucideIcon;
   // Rendered behind the row, e.g. the usage bar of a resource
   background?: ReactNode;
   classNameLabel?: string;
@@ -22,13 +23,13 @@ export default function InfoRows({ rows, className }: { rows: TInfoRow[]; classN
         >
           {row.background}
           <p
-            data-icon={row.Icon ? true : undefined}
+            data-icon={row.IconLabel ? true : undefined}
             className={cn(
               "text-muted-foreground group-data-placeholder/list:bg-muted-foreground group-data-placeholder/list:animate-skeleton relative min-w-0 shrink truncate leading-tight group-data-placeholder/list:rounded-md group-data-placeholder/list:text-transparent data-icon:-ml-0.5",
               row.classNameLabel,
             )}
           >
-            {row.Icon && <row.Icon className="mr-2 mb-0.75 inline-block size-4" />}
+            {row.IconLabel && <row.IconLabel className="mr-2 mb-0.75 inline-block size-4" />}
             {row.label}
           </p>
           <p
@@ -37,6 +38,7 @@ export default function InfoRows({ rows, className }: { rows: TInfoRow[]; classN
               row.classNameValue,
             )}
           >
+            {row.IconValue && <row.IconValue className="mr-1.5 mb-0.75 inline-block size-4" />}
             {row.value}
           </p>
         </li>

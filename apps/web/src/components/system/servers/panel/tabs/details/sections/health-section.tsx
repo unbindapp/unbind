@@ -8,9 +8,12 @@ import {
   serverStatusTitles,
 } from "@/components/system/servers/helpers";
 import InfoRows, { TInfoRow } from "@/components/system/servers/panel/tabs/details/info-rows";
-import { TServer, TServerConditionType } from "@/lib/queries/servers";
+import { TServer, TServerCondition, TServerConditionType } from "@/lib/queries/servers";
 import {
   ActivityIcon,
+  CheckIcon,
+  CircleAlertIcon,
+  CircleHelpIcon,
   HardDriveIcon,
   HeartIcon,
   InboxIcon,
@@ -18,12 +21,15 @@ import {
   LucideIcon,
   MemoryStickIcon,
   NetworkIcon,
+  TriangleAlertIcon,
 } from "lucide-react";
 
 type TProps = {
   server: TServer;
   error: string | undefined;
 };
+
+type TLevel = "success" | "warning" | "error" | "muted";
 
 const conditionIcons: Record<TServerConditionType, LucideIcon> = {
   memory: MemoryStickIcon,
@@ -32,39 +38,50 @@ const conditionIcons: Record<TServerConditionType, LucideIcon> = {
   network: NetworkIcon,
 };
 
-const conditionLevels = {
+const conditionLevels: Record<TServerCondition["status"], TLevel> = {
   healthy: "success",
   unhealthy: "error",
   unknown: "muted",
-} as const;
+};
+
+const levelIcons: Record<TLevel, LucideIcon> = {
+  success: CheckIcon,
+  warning: CircleAlertIcon,
+  error: TriangleAlertIcon,
+  muted: CircleHelpIcon,
+};
+
+const levelTexts: Record<TLevel, string> = {
+  success: "text-success",
+  warning: "text-warning",
+  error: "text-destructive",
+  muted: "text-muted-foreground",
+};
 
 export default function HealthSection({ server, error }: TProps) {
   const status = getServerStatus(server);
 
   const rows: TInfoRow[] = [
-    {
+    healthRow({
       label: "Status",
-      Icon: ActivityIcon,
-      value: <Value level={getServerStatusLevel(status)}>{serverStatusTitles[status]}</Value>,
-    },
-    {
+      IconLabel: ActivityIcon,
+      level: getServerStatusLevel(status),
+      value: serverStatusTitles[status],
+    }),
+    healthRow({
       label: "Scheduling",
-      Icon: InboxIcon,
-      value: (
-        <Value level={server.unschedulable ? "warning" : "success"}>
-          {server.unschedulable ? "Paused" : "Enabled"}
-        </Value>
-      ),
-    },
-    ...server.conditions.map((condition) => ({
-      label: serverConditionTitles[condition.type],
-      Icon: conditionIcons[condition.type],
-      value: (
-        <Value level={conditionLevels[condition.status]}>
-          {serverConditionTexts[condition.type][condition.status]}
-        </Value>
-      ),
-    })),
+      IconLabel: InboxIcon,
+      level: server.unschedulable ? "warning" : "success",
+      value: server.unschedulable ? "Paused" : "Enabled",
+    }),
+    ...server.conditions.map((condition) =>
+      healthRow({
+        label: serverConditionTitles[condition.type],
+        IconLabel: conditionIcons[condition.type],
+        level: conditionLevels[condition.status],
+        value: serverConditionTexts[condition.type][condition.status],
+      }),
+    ),
   ];
 
   return (
@@ -84,19 +101,22 @@ export default function HealthSection({ server, error }: TProps) {
   );
 }
 
-function Value({
+function healthRow({
+  label,
+  IconLabel,
   level,
-  children,
+  value,
 }: {
-  level: "success" | "warning" | "error" | "muted";
-  children: string;
-}) {
-  return (
-    <span
-      data-level={level}
-      className="data-[level=error]:text-destructive data-[level=success]:text-success data-[level=warning]:text-warning data-[level=muted]:text-muted-foreground"
-    >
-      {children}
-    </span>
-  );
+  label: string;
+  IconLabel: LucideIcon;
+  level: TLevel;
+  value: string;
+}): TInfoRow {
+  return {
+    label,
+    IconLabel,
+    IconValue: levelIcons[level],
+    classNameValue: levelTexts[level],
+    value,
+  };
 }

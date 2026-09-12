@@ -39,21 +39,21 @@ export default function ResourcesSection({ server }: TProps) {
   const rows: TInfoRow[] = [
     usageRow({
       label: `${formatCores(server.cpu_allocatable_millicores)} vCPU`,
-      Icon: CpuIcon,
+      IconLabel: CpuIcon,
       used: server.cpu_requested_millicores,
       total: server.cpu_allocatable_millicores,
       valueSuffix: "reserved",
     }),
     usageRow({
       label: `${formatMegabytes(server.memory_allocatable_megabytes)} RAM`,
-      Icon: MemoryStickIcon,
+      IconLabel: MemoryStickIcon,
       used: server.memory_requested_megabytes,
       total: server.memory_allocatable_megabytes,
       valueSuffix: "reserved",
     }),
     usageRow({
       label: `${server.pod_capacity} Replicas`,
-      Icon: ServerIcon,
+      IconLabel: ServerIcon,
       used: server.pod_count,
       total: server.pod_capacity,
       valueSuffix: "used",
@@ -74,13 +74,13 @@ export default function ResourcesSection({ server }: TProps) {
 
 function usageRow({
   label,
-  Icon,
+  IconLabel,
   used,
   total,
   valueSuffix,
 }: {
   label: string;
-  Icon: LucideIcon;
+  IconLabel: LucideIcon;
   used: number;
   total: number;
   valueSuffix: string;
@@ -90,7 +90,7 @@ function usageRow({
 
   return {
     label,
-    Icon,
+    IconLabel,
     classNameLabel: "text-foreground",
     classNameValue: usageTexts[level],
     value: `${percentage.toLocaleString(appLocale, { maximumFractionDigits: 1 })}% ${valueSuffix}`,
