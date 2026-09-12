@@ -28,7 +28,7 @@ export default function InfoRows({ rows, className }: { rows: TInfoRow[]; classN
               row.classNameLabel,
             )}
           >
-            {row.Icon && <row.Icon className="mr-[0.5ch] mb-0.75 inline-block size-4" />}
+            {row.Icon && <row.Icon className="mr-2 mb-0.75 inline-block size-4" />}
             {row.label}
           </p>
           <p

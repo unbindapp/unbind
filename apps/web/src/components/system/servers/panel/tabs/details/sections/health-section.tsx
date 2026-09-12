@@ -38,13 +38,13 @@ const conditionLevels = {
   unknown: "muted",
 } as const;
 
-export default function StatusSection({ server, error }: TProps) {
+export default function HealthSection({ server, error }: TProps) {
   const status = getServerStatus(server);
 
   const rows: TInfoRow[] = [
     {
       label: "Status",
-      Icon: HeartIcon,
+      Icon: ActivityIcon,
       value: <Value level={getServerStatusLevel(status)}>{serverStatusTitles[status]}</Value>,
     },
     {
@@ -70,9 +70,9 @@ export default function StatusSection({ server, error }: TProps) {
   return (
     <SettingsSection
       classNameContent="p-0 sm:p-0"
-      title="Status"
-      Icon={ActivityIcon}
-      entityId={`server-status-${server.name}`}
+      title="Health"
+      Icon={HeartIcon}
+      entityId={`server-health-${server.name}`}
     >
       <div className="flex w-full flex-col">
         {error && (

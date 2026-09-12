@@ -2,7 +2,7 @@
 
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import ResourcesSection from "@/components/system/servers/panel/tabs/details/sections/resources-section";
-import StatusSection from "@/components/system/servers/panel/tabs/details/sections/status-section";
+import HealthSection from "@/components/system/servers/panel/tabs/details/sections/health-section";
 import SystemSection from "@/components/system/servers/panel/tabs/details/sections/system-section";
 import { serverQuery, TServer } from "@/lib/queries/servers";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ export default function Details({ server }: TProps) {
 
   return (
     <TabWrapper className="gap-6">
-      <StatusSection server={data ?? server} error={error?.message} />
+      <HealthSection server={data ?? server} error={error?.message} />
       <ResourcesSection server={data ?? server} />
       <SystemSection server={data ?? server} detail={data} error={error?.message} />
     </TabWrapper>
