@@ -47,7 +47,7 @@ const viewLabels: Record<TMetricsView, string> = {
 export default function MetricsFilterDropdown({
   selection,
   className,
-  dropdownMenuContentAlign,
+  dropdownMenuContentAlign = "end",
 }: TProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const {
