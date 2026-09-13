@@ -9,7 +9,7 @@ import PublicPrivateToggle from "@/components/service/public-private-toggle";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { withForm } from "@/lib/hooks/use-app-form";
-import { CheckCircleIcon, CircleSlashIcon, EyeOffIcon } from "lucide-react";
+import { CheckCircleIcon, CircleSlashIcon, LockIcon } from "lucide-react";
 
 const DomainPortBlock = withForm({
   defaultValues: {
@@ -59,7 +59,7 @@ const DomainPortBlock = withForm({
                       fadeOnDisabled={!isPublic ? false : undefined}
                       data-private={!isPublic || undefined}
                       classNameInput="data-private:text-muted-foreground"
-                      Icon={!isPublic ? EyeOffIcon : undefined}
+                      Icon={!isPublic ? LockIcon : undefined}
                       classNameIcon="text-muted-foreground"
                       field={field}
                       value={!isPublic ? "Private service" : field.state.value}
@@ -131,7 +131,7 @@ const DomainPortBlock = withForm({
                       fadeOnDisabled={!isPublic ? false : undefined}
                       data-private={!isPublic || undefined}
                       classNameInput="data-private:text-muted-foreground"
-                      Icon={!isPublic ? EyeOffIcon : undefined}
+                      Icon={!isPublic ? LockIcon : undefined}
                       classNameIcon="text-muted-foreground"
                       field={field}
                       value={!isPublic ? "Private service" : field.state.value}
