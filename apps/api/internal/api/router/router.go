@@ -115,6 +115,9 @@ func NewHumaConfig(title, version string, cookieSecure bool) huma.Config {
 		SchemasPath:   schemasPath,
 		Formats:       huma.DefaultFormats,
 		DefaultFormat: "application/json",
+		// Stamps the request id on error bodies and logs server-side failures
+		// with the request that caused them.
+		Transformers: []huma.Transformer{middleware.ErrorTransformer},
 	}
 	cfg.Formats["application/x-www-form-urlencoded"] = urlEncodedFormat
 	cfg.Formats["x-www-form-urlencoded"] = urlEncodedFormat

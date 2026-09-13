@@ -5,8 +5,9 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
 	"github.com/unbindapp/unbind-api/internal/watchpaths"
 )
@@ -26,8 +27,7 @@ func (self *HandlerGroup) HandleListGithubRepositories(ctx context.Context, inpu
 	// ! TODO - group RBAC
 	installations, err := self.srv.Repository.Github().GetInstallationsByCreator(ctx, user.ID)
 	if err != nil {
-		log.Error("Error getting github installation", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to get github installation")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub installation"))
 	}
 	if len(installations) == 0 {
 		return &GithubRepositoryListResponse{
@@ -41,8 +41,7 @@ func (self *HandlerGroup) HandleListGithubRepositories(ctx context.Context, inpu
 
 	repos, err := self.srv.GithubClient.ReadInstallationRepositories(ctx, installations)
 	if err != nil {
-		log.Error("Error listing installation repositories", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to list repositories")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the repositories"))
 	}
 
 	resp := &GithubRepositoryListResponse{}
@@ -71,14 +70,12 @@ func (self *HandlerGroup) HandleGetGithubRepositoryDetail(ctx context.Context, i
 		if ent.IsNotFound(err) {
 			return nil, huma.Error404NotFound("GitHub installation not found")
 		}
-		log.Error("Error getting github installation", "err", err, "installationID", installationID)
-		return nil, huma.Error500InternalServerError("Failed to get github installation")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub installation"))
 	}
 
 	repoDetail, err := self.srv.GithubClient.GetRepositoryDetail(ctx, installation, input.Owner, input.RepoName)
 	if err != nil {
-		log.Error("Error getting repository detail", "err", err, "owner", input.Owner, "repo", input.RepoName)
-		return nil, huma.Error500InternalServerError("Failed to get repository details")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the repository details"))
 	}
 
 	resp := &GithubRepositoryDetailResponse{}
@@ -112,14 +109,12 @@ func (self *HandlerGroup) HandleGetGithubWatchPathSuggestions(ctx context.Contex
 		if ent.IsNotFound(err) {
 			return nil, huma.Error404NotFound("GitHub installation not found")
 		}
-		log.Error("Error getting github installation", "err", err, "installationID", input.InstallationID)
-		return nil, huma.Error500InternalServerError("Failed to get github installation")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub installation"))
 	}
 
 	files, truncated, err := self.srv.GithubClient.GetRepositoryFiles(ctx, installation, input.Owner, input.RepoName, input.Ref)
 	if err != nil {
-		log.Error("Error getting repository files", "err", err, "owner", input.Owner, "repo", input.RepoName, "ref", input.Ref)
-		return nil, huma.Error500InternalServerError("Failed to get repository files")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the repository files"))
 	}
 
 	resp := &GithubWatchPathSuggestionsResponse{}

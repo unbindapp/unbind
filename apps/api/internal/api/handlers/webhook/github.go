@@ -17,6 +17,8 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
@@ -40,7 +42,7 @@ func (self *HandlerGroup) HandleGithubAppSave(ctx context.Context, input *Handle
 	// Exchange the code for tokens.
 	appConfig, err := self.srv.GithubClient.ManifestCodeConversion(ctx, input.Code)
 	if err != nil {
-		return nil, huma.Error500InternalServerError(fmt.Sprintf("Failed to exchange manifest code: %v", err))
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to exchange the GitHub manifest code"))
 	}
 
 	// Verify state
@@ -49,8 +51,7 @@ func (self *HandlerGroup) HandleGithubAppSave(ctx context.Context, input *Handle
 		if err == redis.Nil {
 			return nil, huma.Error400BadRequest("Invalid state")
 		}
-		log.Error("Error getting state from cache", "err", err)
-		return nil, huma.Error500InternalServerError(fmt.Sprintf("Failed to get state: %v", err))
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub app state"))
 	}
 
 	if state != input.State {
@@ -69,28 +70,24 @@ func (self *HandlerGroup) HandleGithubAppSave(ctx context.Context, input *Handle
 		if err == redis.Nil {
 			return nil, huma.Error400BadRequest("Invalid state")
 		}
-		log.Error("Error getting user ID from cache", "err", err)
-		return nil, huma.Error500InternalServerError(fmt.Sprintf("Failed to get user ID: %v", err))
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the user this GitHub app belongs to"))
 	}
 	userIDParsed, err := uuid.Parse(userID)
 	if err != nil {
-		log.Error("Error parsing user ID", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to determine user ID")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to determine user ID"))
 	}
 
 	// Get organization from the cache
 	// !  TODO - do we need this? seems like installation URL is the same regardless of org
 	_, err = self.srv.StringCache.Getdel(ctx, state+"-org")
 	if err != nil && !errors.Is(err, redis.Nil) {
-		log.Error("Error getting organization from the cache", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to get organization from cache")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub organization from the cache"))
 	}
 
 	// Save the app config
 	ghApp, err := self.srv.Repository.Github().CreateApp(ctx, parsedState, appConfig, userIDParsed)
 	if err != nil {
-		log.Error("Error saving github app", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to save github app")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to save the GitHub app"))
 	}
 
 	// create a cookie that stores the state value
@@ -135,8 +132,7 @@ func (self *HandlerGroup) HandleGithubWebhook(ctx context.Context, input *Github
 	// Since we may have multiple apps, we want to validate against every webhook secret to see if it belongs to any of our apps
 	ghApps, err := self.srv.Repository.Github().GetApps(ctx, false)
 	if err != nil {
-		log.Error("Error getting github apps", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to get github apps")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the GitHub apps"))
 	}
 	var ghApp *ent.GithubApp
 
@@ -222,30 +218,26 @@ func (self *HandlerGroup) HandleGithubWebhook(ctx context.Context, input *Github
 			)
 
 			if err != nil {
-				log.Error("Error upserting github installation", "err", err)
-				return nil, huma.Error500InternalServerError("Failed to upsert github installation")
+				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to save the GitHub installation"))
 			}
 
 		case "deleted":
 			// Mark as inactive instead of deleting
 			_, err := self.srv.Repository.Github().SetInstallationActive(ctx, installationID, false)
 			if err != nil {
-				log.Error("Error setting installation as inactive", "err", err)
-				return nil, huma.Error500InternalServerError("Failed to set installation as inactive")
+				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to mark the GitHub installation inactive"))
 			}
 
 		case "suspended":
 			_, err := self.srv.Repository.Github().SetInstallationSuspended(ctx, installationID, true)
 			if err != nil {
-				log.Error("Error setting installation as suspended", "err", err)
-				return nil, huma.Error500InternalServerError("Failed to set installation as suspended")
+				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to mark the GitHub installation suspended"))
 			}
 
 		case "unsuspended":
 			_, err := self.srv.Repository.Github().SetInstallationSuspended(ctx, installationID, false)
 			if err != nil {
-				log.Error("Error setting installation as unsuspended", "err", err)
-				return nil, huma.Error500InternalServerError("Failed to set installation as unsuspended")
+				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to mark the GitHub installation unsuspended"))
 			}
 		}
 	case *github.PushEvent:
@@ -286,15 +278,13 @@ func (self *HandlerGroup) HandleGithubWebhook(ctx context.Context, input *Github
 				log.Info("Received event for installation not found in DB", "id", installationID)
 				return &GithubWebhookOutput{}, nil
 			}
-			log.Error("Error getting installation", "err", err)
-			return nil, huma.Error500InternalServerError("Failed to get installation")
+			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub installation"))
 		}
 
 		// Get the services associated with this installation and repo
 		services, err := self.srv.Repository.Service().GetByInstallationIDAndRepoName(ctx, installation.ID, repoName)
 		if err != nil {
-			log.Error("Error getting services", "err", err)
-			return nil, huma.Error500InternalServerError("Failed to get services")
+			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the services for this repository"))
 		}
 
 		servicesToBuild := make([]*ent.Service, 0)
@@ -356,8 +346,7 @@ func (self *HandlerGroup) HandleGithubWebhook(ctx context.Context, input *Github
 
 			env, err := self.srv.DeploymentController.PopulateBuildEnvironment(ctx, service.ID, tagName, nil)
 			if err != nil {
-				log.Error("Error populating build environment", "err", err)
-				return nil, huma.Error500InternalServerError("Failed to populate build environment")
+				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to build the deployment environment"))
 			}
 
 			log.Info("Enqueuing build", "repo", repoName, "branch", ref, "serviceID", service.ID, "installationID", installationID, "appID", installation.GithubAppID, "repoUrl", repoUrl)
@@ -376,8 +365,7 @@ func (self *HandlerGroup) HandleGithubWebhook(ctx context.Context, input *Github
 			)
 
 			if err != nil {
-				log.Error("Error enqueuing build job", "err", err)
-				return nil, huma.Error500InternalServerError("Failed to enqueue build job")
+				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to queue the deployment"))
 			}
 
 			log.Info("Enqueued build job", "jobID", jobID)

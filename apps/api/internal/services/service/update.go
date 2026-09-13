@@ -236,7 +236,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		if err := self.repo.Service().Update(ctx, tx, input.ServiceID, input.Name, input.Description); err != nil {
-			return fmt.Errorf("failed to update service: %w", err)
+			return errdefs.NewInternalError(err, "Failed to save the service")
 		}
 
 		// Toggling a database public/private manages its L4 host and allocated port.
@@ -287,7 +287,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 
 			generatedHost, err := self.generateWildcardHost(ctx, tx, service.KubernetesName, ports)
 			if err != nil {
-				return fmt.Errorf("failed to generate wildcard host: %w", err)
+				return errdefs.NewInternalError(err, "Failed to generate a domain for this service")
 			}
 			if generatedHost == nil {
 				input.IsPublic = new(false)
@@ -303,7 +303,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			// Count domain collisions
 			domainCount, err := self.repo.Service().CountDomainCollisons(ctx, tx, host.Host, new(service.ID))
 			if err != nil {
-				return fmt.Errorf("failed to count domain collisions: %w", err)
+				return errdefs.NewInternalError(err, "Failed to check the domain for collisions")
 			}
 			if domainCount > 0 {
 				return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", host.Host))
@@ -427,7 +427,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			Resources:                     input.Resources,
 		}
 		if err := self.repo.Service().UpdateConfig(ctx, tx, updateInput); err != nil {
-			return fmt.Errorf("failed to update service config: %w", err)
+			return errdefs.NewInternalError(err, "Failed to save the service configuration")
 		}
 
 		return nil

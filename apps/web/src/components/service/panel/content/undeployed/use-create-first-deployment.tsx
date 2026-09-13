@@ -10,6 +10,22 @@ import { createOrUpdateVariables as createOrUpdateVariablesFn } from "@/lib/quer
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useMemo, useRef } from "react";
 
+// Deploying runs three calls in a row. Naming the step keeps a failure from
+// reading like the whole deploy is broken when only one part of it is.
+function withStep<TArgs extends unknown[], TResult>(
+  step: string,
+  fn: (...args: TArgs) => Promise<TResult>,
+) {
+  return async (...args: TArgs): Promise<TResult> => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new Error(`${step}: ${reason}`, { cause: error });
+    }
+  };
+}
+
 export default function useCreateFirstDeployment() {
   const {
     teamId,
@@ -38,11 +54,26 @@ export default function useCreateFirstDeployment() {
     serviceId,
   });
 
-  const { mutateAsync: createDeployment } = useMutation({ mutationFn: createDeploymentFn });
-  const { mutateAsync: createOrUpdateVariables } = useMutation({
+  const { mutateAsync: createDeploymentMutation } = useMutation({
+    mutationFn: createDeploymentFn,
+  });
+  const { mutateAsync: createOrUpdateVariablesMutation } = useMutation({
     mutationFn: createOrUpdateVariablesFn,
   });
-  const { mutateAsync: updateService } = useMutation({ mutationFn: updateServiceFn });
+  const { mutateAsync: updateServiceMutation } = useMutation({ mutationFn: updateServiceFn });
+
+  const createDeployment = useMemo(
+    () => withStep("Failed to start the deployment", createDeploymentMutation),
+    [createDeploymentMutation],
+  );
+  const createOrUpdateVariables = useMemo(
+    () => withStep("Failed to save the variables", createOrUpdateVariablesMutation),
+    [createOrUpdateVariablesMutation],
+  );
+  const updateService = useMemo(
+    () => withStep("Failed to save the settings", updateServiceMutation),
+    [updateServiceMutation],
+  );
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 

@@ -7,9 +7,9 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 	team_service "github.com/unbindapp/unbind-api/internal/services/team"
 )
@@ -51,8 +51,7 @@ func (self *HandlerGroup) UpdateTeam(ctx context.Context, input *UpdateTeamInput
 		if errors.Is(err, errdefs.ErrUnauthorized) {
 			return nil, huma.Error403Forbidden("Unauthorized")
 		}
-		log.Error("Error getting teams", "err", err)
-		return nil, huma.Error500InternalServerError("Unable to update team")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to update the team"))
 	}
 
 	resp := &UpdateTeamResponse{}

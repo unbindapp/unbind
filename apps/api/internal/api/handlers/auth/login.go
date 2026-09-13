@@ -7,7 +7,9 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/auth"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 )
 
 type LoginInput struct {
@@ -43,12 +45,12 @@ func (self *HandlerGroup) Login(ctx context.Context, input *LoginInput) (*Sessio
 func (self *HandlerGroup) issueSession(ctx context.Context, user *ent.User) (*SessionResponse, error) {
 	groups, err := self.srv.Repository.User().GetGroups(ctx, user.ID)
 	if err != nil {
-		return nil, huma.Error500InternalServerError("Failed to load groups", err)
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to load the groups this user belongs to"))
 	}
 
 	accessToken, accessExpiresAt, err := self.srv.TokenManager.MintAccessToken(user, groups)
 	if err != nil {
-		return nil, huma.Error500InternalServerError("Failed to issue token", err)
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to issue a session token"))
 	}
 
 	refreshToken := auth.NewRefreshToken()
@@ -62,7 +64,7 @@ func (self *HandlerGroup) issueSession(ctx context.Context, user *ent.User) (*Se
 		user,
 	)
 	if err != nil {
-		return nil, huma.Error500InternalServerError("Failed to persist session", err)
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the session"))
 	}
 
 	csrfToken := auth.MintCSRFToken(self.srv.TokenManager.CSRFSecret(), refreshToken)

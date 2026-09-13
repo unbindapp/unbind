@@ -14,10 +14,13 @@ import (
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
+
+	"github.com/unbindapp/unbind-api/internal/common/log"
 )
 
-// Recover catches panics, logs a pretty stack trace, and returns the
-// usual Huma error envelope `{error:"Internal server error",status:500}`.
+// Recoverer catches panics, logs them with the request that caused them, and
+// returns the usual error envelope. The envelope carries the request id, so the
+// caller can point at the log line holding the stack.
 func (self *Middleware) Recoverer(ctx huma.Context, next func(huma.Context)) {
 	defer func() {
 		if rvr := recover(); rvr != nil {
@@ -26,7 +29,14 @@ func (self *Middleware) Recoverer(ctx huma.Context, next func(huma.Context)) {
 				panic(rvr)
 			}
 
-			// Pretty print stack
+			// The stack goes to stderr as before; the log line carries what is
+			// needed to tie the panic to the request the caller saw fail.
+			log.Error("Panic recovered",
+				"request_id", GetReqID(ctx.Context()),
+				"method", ctx.Method(),
+				"path", ctx.URL().Path,
+				"panic", rvr,
+			)
 			PrintPrettyStack(rvr)
 
 			// Skip WebSocket/upgrade connections, just like chi.

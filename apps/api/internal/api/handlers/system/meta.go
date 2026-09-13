@@ -3,9 +3,9 @@ package system_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	system_service "github.com/unbindapp/unbind-api/internal/services/system"
@@ -47,8 +47,7 @@ func (self *HandlerGroup) GetSystemInformation(ctx context.Context, input *serve
 	// Get k8s IPs for load balancer server
 	ips, err := self.srv.KubeClient.GetIngressNginxIP(ctx)
 	if err != nil {
-		log.Error("Error getting ingress nginx IP", "err", err)
-		return nil, huma.Error500InternalServerError("Error getting ingress nginx IP")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to look up the ingress IP"))
 	}
 
 	meta := &SystemMeta{

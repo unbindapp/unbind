@@ -69,3 +69,36 @@ func TestRequestID(t *testing.T) {
 		}
 	}
 }
+
+func TestRequestIDIsEchoedBack(t *testing.T) {
+	defer maintainDefaultRequestID()()
+
+	r := chi.NewRouter()
+	r.Use(RequestID)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {})
+
+	tests := map[string]string{
+		"generated": "",
+		"supplied":  "req-123456",
+	}
+
+	for name, supplied := range tests {
+		t.Run(name, func(t *testing.T) {
+			req, _ := http.NewRequest("GET", "/", nil)
+			if supplied != "" {
+				req.Header.Add(RequestIDHeader, supplied)
+			}
+
+			w := httptest.NewRecorder()
+			r.ServeHTTP(w, req)
+
+			got := w.Header().Get(RequestIDHeader)
+			if got == "" {
+				t.Fatal("response carried no request id header")
+			}
+			if supplied != "" && got != supplied {
+				t.Fatalf("request id header = %q, want the supplied %q", got, supplied)
+			}
+		})
+	}
+}

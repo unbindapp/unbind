@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 )
 
 // GET Github app installations
@@ -28,8 +28,7 @@ func (self *HandlerGroup) HandleListGithubAppInstallations(ctx context.Context, 
 	// ! TODO - RBAC
 	installations, err := self.srv.Repository.Github().GetInstallationsByCreator(ctx, user.ID)
 	if err != nil {
-		log.Error("Error getting github installations", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to get github installations")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the GitHub installations"))
 	}
 
 	resp := &GithubAppInstallationListResponse{}

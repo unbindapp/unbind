@@ -6,9 +6,9 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
@@ -44,8 +44,7 @@ func (self *HandlerGroup) UpdateProject(ctx context.Context, input *UpdateProjec
 		if ent.IsNotFound(err) || errors.Is(err, errdefs.ErrNotFound) {
 			return nil, huma.Error404NotFound(err.Error())
 		}
-		log.Error("Error updating project", "err", err)
-		return nil, huma.Error500InternalServerError("Unable to update project")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to update the project"))
 	}
 
 	resp := &UpdateProjectResponse{}

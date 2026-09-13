@@ -5,8 +5,9 @@ import (
 	"errors"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/pkg/databases"
 )
 
@@ -21,8 +22,7 @@ func (self *HandlerGroup) ListDatabases(ctx context.Context, input *server.BaseA
 
 	dbList, err := self.srv.DatabaseProvider.ListDatabases(ctx, self.srv.Cfg.UnbindServiceDefVersion)
 	if err != nil {
-		log.Errorf("failed to list databases: %v", err)
-		return nil, huma.Error500InternalServerError("An unknown error occured")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the available databases"))
 	}
 
 	resp := &ListDatabasesResponse{}
@@ -67,8 +67,7 @@ func (self *HandlerGroup) GetDatabaseDefinition(ctx context.Context, input *GetD
 		if errors.Is(err, databases.ErrDatabaseNotFound) {
 			return nil, huma.Error404NotFound("Database not found")
 		}
-		log.Errorf("failed to get databases: %v", err)
-		return nil, huma.Error500InternalServerError("An unknown error occured")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the database definition"))
 	}
 
 	versionConfigurable := DatabaseConfigurable{}
@@ -84,8 +83,7 @@ func (self *HandlerGroup) GetDatabaseDefinition(ctx context.Context, input *GetD
 		}
 	}
 	if !ok {
-		log.Errorf("failed to get version property from database template: %v", err)
-		return nil, huma.Error500InternalServerError("An unknown error occured")
+		return nil, oapi.MapError(errdefs.NewInternalError(nil, "The database definition declares no versions"))
 	}
 
 	response := &GetDatabaseResponse{}

@@ -3,9 +3,9 @@ package setup_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 )
 
 type SetupData struct {
@@ -22,8 +22,7 @@ type SetupStatusResponse struct {
 func (self *HandlerGroup) GetStatus(ctx context.Context, input *server.EmptyInput) (*SetupStatusResponse, error) {
 	userExists, bootstrapped, err := self.srv.Repository.Bootstrap().IsBootstrapped(ctx, nil)
 	if err != nil {
-		log.Error("Error checking if bootstrapped", "err", err)
-		return nil, huma.Error500InternalServerError("Error checking if bootstrapped")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check whether Unbind is set up"))
 	}
 
 	resp := &SetupStatusResponse{}

@@ -3,11 +3,10 @@ package template_handler
 import (
 	"context"
 
-	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
@@ -20,8 +19,7 @@ type ListTemplatesResponse struct {
 func (self *HandlerGroup) ListTemplates(ctx context.Context, input *server.BaseAuthInput) (*ListTemplatesResponse, error) {
 	templates, err := self.srv.TemplateService.GetAvailable(ctx)
 	if err != nil {
-		log.Errorf("Failed to get templates: %v", err)
-		return nil, huma.Error500InternalServerError("Failed to get templates")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the templates"))
 	}
 
 	resp := &ListTemplatesResponse{}

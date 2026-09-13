@@ -325,7 +325,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		if len(hosts) == 0 && input.IsPublic != nil && *isPublic && input.Type != schema.ServiceTypeDatabase && len(ports) > 0 {
 			generatedHost, err := self.generateWildcardHost(ctx, tx, kubernetesName, ports)
 			if err != nil {
-				return fmt.Errorf("failed to generate wildcard host: %w", err)
+				return errdefs.NewInternalError(err, "Failed to generate a domain for this service")
 			}
 			if generatedHost == nil {
 				isPublic = new(false)
@@ -355,7 +355,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			// Count domain collisions
 			domainCount, err := self.repo.Service().CountDomainCollisons(ctx, tx, host.Host, nil)
 			if err != nil {
-				return fmt.Errorf("failed to count domain collisions: %w", err)
+				return errdefs.NewInternalError(err, "Failed to check the domain for collisions")
 			}
 			if domainCount > 0 {
 				return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", host.Host))
@@ -363,16 +363,14 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 
 		if project == nil {
-			log.Errorf("Project not found")
-			return fmt.Errorf("project not found")
+			return errdefs.NewInternalError(errors.New("project missing"), "Failed to resolve the project this service belongs to")
 		}
 		if project.Edges.Team == nil {
-			log.Errorf("Team not found")
-			return fmt.Errorf("team not found")
+			return errdefs.NewInternalError(errors.New("project has no team"), "Failed to resolve the team this service belongs to")
 		}
 		secret, _, err := self.k8s.GetOrCreateSecret(ctx, kubernetesName, project.Edges.Team.Namespace, client)
 		if err != nil {
-			return fmt.Errorf("failed to create secret: %v", err)
+			return errdefs.NewInternalError(err, "Failed to create the service's secret in the cluster")
 		}
 
 		var detectedPorts []schema.PortSpec
@@ -396,7 +394,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 				DetectedPorts:        detectedPorts,
 			})
 		if err != nil {
-			return fmt.Errorf("failed to create service: %w", err)
+			return errdefs.NewInternalError(err, "Failed to save the service")
 		}
 		service = createService
 
@@ -445,7 +443,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 
 		serviceConfig, err = self.repo.Service().CreateConfig(ctx, tx, createInput)
 		if err != nil {
-			return fmt.Errorf("failed to create service config: %w", err)
+			return errdefs.NewInternalError(err, "Failed to save the service configuration")
 		}
 		service.Edges.ServiceConfig = serviceConfig
 		return nil

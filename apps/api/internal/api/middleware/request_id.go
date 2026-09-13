@@ -75,6 +75,9 @@ func RequestID(next http.Handler) http.Handler {
 			requestID = fmt.Sprintf("%s-%06d", prefix, myid)
 		}
 		ctx = context.WithValue(ctx, RequestIDKey, requestID)
+		// Echoed back so a caller can quote the id of a request that failed
+		// without a body, or before a handler ever ran.
+		w.Header().Set(RequestIDHeader, requestID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)

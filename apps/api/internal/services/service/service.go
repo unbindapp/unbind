@@ -138,7 +138,7 @@ func (self *ServiceService) generateWildcardHost(ctx context.Context, tx reposit
 func (self *ServiceService) prepareDatabaseExposure(ctx context.Context, tx repository.TxInterface, kubernetesName string, ports []schema.PortSpec) ([]schema.HostSpec, []int32, error) {
 	nodePorts, err := self.k8s.GetUnusedNodePorts(ctx, len(ports))
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to allocate node ports: %w", err)
+		return nil, nil, errdefs.NewInternalError(err, "Failed to allocate a port for the database on the cluster")
 	}
 
 	if self.k8s.NetworkingProvider(ctx) != "gateway" {

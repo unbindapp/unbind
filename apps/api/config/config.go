@@ -19,6 +19,8 @@ type ConfigInterface interface {
 	GetPostgresSSLMode() string
 	GetBuilderPostgresHost() string
 	GetKubeConfig() string
+	GetKubernetesQPS() float32
+	GetKubernetesBurst() int
 	GetSystemNamespace() string
 	GetBuildkitHost() string
 	GetBuildImage() string
@@ -63,6 +65,11 @@ type Config struct {
 	CookieSecure bool `env:"COOKIE_SECURE" envDefault:"true"`
 	// Kubernetes config, optional - if in cluster it will use the in-cluster config
 	KubeConfig string `env:"KUBECONFIG"`
+	// client-go defaults to 5 QPS / 10 burst per client, which a single busy
+	// page already saturates: requests then queue client-side until their
+	// context expires and surface as unexplained failures.
+	KubernetesQPS   float32 `env:"KUBERNETES_QPS" envDefault:"50"`
+	KubernetesBurst int     `env:"KUBERNETES_BURST" envDefault:"100"`
 	// Registry specific
 	BootstrapContainerRegistryHost     string `env:"BOOTSTRAP_CONTAINER_REGISTRY_HOST"`
 	BootstrapContainerRegistryUser     string `env:"BOOTSTRAP_CONTAINER_REGISTRY_USER"`
@@ -125,6 +132,14 @@ func (self *Config) GetPostgresSSLMode() string {
 
 func (self *Config) GetKubeConfig() string {
 	return self.KubeConfig
+}
+
+func (self *Config) GetKubernetesQPS() float32 {
+	return self.KubernetesQPS
+}
+
+func (self *Config) GetKubernetesBurst() int {
+	return self.KubernetesBurst
 }
 
 func (self *Config) GetSystemNamespace() string {

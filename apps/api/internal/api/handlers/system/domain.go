@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
@@ -26,8 +28,7 @@ type GenerateWildcardDomainOutput struct {
 func (self *HandlerGroup) GenerateWildcardDomain(ctx context.Context, input *GenerateWildcardDomainInput) (output *GenerateWildcardDomainOutput, err error) {
 	settings, err := self.srv.Repository.System().GetSystemSettings(ctx, nil)
 	if err != nil {
-		log.Error("failed to get system settings", "error", err)
-		return nil, huma.Error500InternalServerError("An unknown error occured")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the system settings"))
 	}
 
 	if settings.WildcardBaseURL == nil || *settings.WildcardBaseURL == "" {
@@ -51,8 +52,7 @@ func (self *HandlerGroup) GenerateWildcardDomain(ctx context.Context, input *Gen
 	// Check for collisions
 	domainCount, err := self.srv.Repository.Service().CountDomainCollisons(ctx, nil, domain, nil)
 	if err != nil {
-		log.Error("failed to count domain collisions", "error", err)
-		return nil, huma.Error500InternalServerError("An unknown error occured")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain for collisions"))
 	}
 
 	if domainCount > 0 {
@@ -93,8 +93,7 @@ func (self *HandlerGroup) CheckForDomainCollision(ctx context.Context, input *Ch
 	// Check for collisions
 	domainCount, err := self.srv.Repository.Service().CountDomainCollisons(ctx, nil, cleanedDomain, nil)
 	if err != nil {
-		log.Error("failed to count domain collisions", "error", err)
-		return nil, huma.Error500InternalServerError("An unknown error occured")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain for collisions"))
 	}
 
 	output = &CheckUniqueDomainOutput{}

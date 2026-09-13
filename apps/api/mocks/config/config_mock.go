@@ -308,6 +308,94 @@ func (_c *ConfigMock_GetKubeConfig_Call) RunAndReturn(run func() string) *Config
 	return _c
 }
 
+// GetKubernetesBurst provides a mock function for the type ConfigMock
+func (_mock *ConfigMock) GetKubernetesBurst() int {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetKubernetesBurst")
+	}
+
+	var r0 int
+	if returnFunc, ok := ret.Get(0).(func() int); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	return r0
+}
+
+// ConfigMock_GetKubernetesBurst_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetKubernetesBurst'
+type ConfigMock_GetKubernetesBurst_Call struct {
+	*mock.Call
+}
+
+// GetKubernetesBurst is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetKubernetesBurst() *ConfigMock_GetKubernetesBurst_Call {
+	return &ConfigMock_GetKubernetesBurst_Call{Call: _e.mock.On("GetKubernetesBurst")}
+}
+
+func (_c *ConfigMock_GetKubernetesBurst_Call) Run(run func()) *ConfigMock_GetKubernetesBurst_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ConfigMock_GetKubernetesBurst_Call) Return(n int) *ConfigMock_GetKubernetesBurst_Call {
+	_c.Call.Return(n)
+	return _c
+}
+
+func (_c *ConfigMock_GetKubernetesBurst_Call) RunAndReturn(run func() int) *ConfigMock_GetKubernetesBurst_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetKubernetesQPS provides a mock function for the type ConfigMock
+func (_mock *ConfigMock) GetKubernetesQPS() float32 {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetKubernetesQPS")
+	}
+
+	var r0 float32
+	if returnFunc, ok := ret.Get(0).(func() float32); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Get(0).(float32)
+	}
+	return r0
+}
+
+// ConfigMock_GetKubernetesQPS_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetKubernetesQPS'
+type ConfigMock_GetKubernetesQPS_Call struct {
+	*mock.Call
+}
+
+// GetKubernetesQPS is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetKubernetesQPS() *ConfigMock_GetKubernetesQPS_Call {
+	return &ConfigMock_GetKubernetesQPS_Call{Call: _e.mock.On("GetKubernetesQPS")}
+}
+
+func (_c *ConfigMock_GetKubernetesQPS_Call) Run(run func()) *ConfigMock_GetKubernetesQPS_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ConfigMock_GetKubernetesQPS_Call) Return(f float32) *ConfigMock_GetKubernetesQPS_Call {
+	_c.Call.Return(f)
+	return _c
+}
+
+func (_c *ConfigMock_GetKubernetesQPS_Call) RunAndReturn(run func() float32) *ConfigMock_GetKubernetesQPS_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetNetworkingProvider provides a mock function for the type ConfigMock
 func (_mock *ConfigMock) GetNetworkingProvider() string {
 	ret := _mock.Called()

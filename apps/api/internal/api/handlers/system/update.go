@@ -11,7 +11,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/pkg/release"
@@ -114,8 +116,7 @@ func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInp
 	availableUpdates, err := self.srv.UpdateManager.CheckForUpdates(ctx)
 	if err != nil {
 		// Log the error but return error since this is an apply operation
-		log.Errorf("Failed to check for updates: %v", err)
-		return nil, huma.Error500InternalServerError("Failed to check for updates: " + err.Error())
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check for updates"))
 	}
 
 	// Validate version is in the available updates list
@@ -130,8 +131,7 @@ func (self *HandlerGroup) ApplyUpdate(ctx context.Context, input *UpdateApplyInp
 	// Refuse to start an update we can't track; the status endpoint would have no
 	// target to check against.
 	if err := self.setUpdateState(ctx, &updateState{TargetVersion: targetVersion}); err != nil {
-		log.Errorf("Failed to record update target: %v", err)
-		return nil, huma.Error500InternalServerError("Failed to record update target: " + err.Error())
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to record the update target"))
 	}
 
 	// Run the update detached from the request so closing the page can't abort it
@@ -230,7 +230,7 @@ func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.Bas
 
 	ready, err := self.srv.UpdateManager.CheckUpdateComplete(ctx, targetVersion)
 	if err != nil {
-		return nil, huma.Error500InternalServerError("Failed to get update status: " + err.Error())
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the update status"))
 	}
 
 	if ready && updateInProgress {

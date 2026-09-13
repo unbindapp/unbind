@@ -59,6 +59,12 @@ func NewKubeClient(cfg config.ConfigInterface, repo repositories.RepositoriesInt
 		}
 	}
 
+	// Every request the API makes shares these clients, so leaving client-go's
+	// 5 QPS / 10 burst defaults in place throttles unrelated users against each
+	// other once a cluster holds more than a handful of services.
+	kubeConfig.QPS = cfg.GetKubernetesQPS()
+	kubeConfig.Burst = cfg.GetKubernetesBurst()
+
 	dynamicClient, err := dynamic.NewForConfig(kubeConfig)
 	if err != nil {
 		log.Fatalf("Error creating clientset: %v", err)

@@ -578,6 +578,8 @@ async function main() {
           readonly status: number;
           readonly type: string;
           readonly details: string[];
+          /** Id of the request that failed, to look the failure up in the server logs. */
+          readonly requestId: string | undefined;
           /** Parsed JSON body, or undefined when the response wasn't JSON. */
           readonly body: unknown;
           /** Unparsed response body, kept for non-JSON failures (proxies, gateways). */
@@ -589,6 +591,7 @@ async function main() {
               status: number;
               type: string;
               details: string[];
+              requestId?: string;
               body: unknown;
               raw: string;
             },
@@ -598,6 +601,7 @@ async function main() {
             this.status = init.status;
             this.type = init.type;
             this.details = init.details;
+            this.requestId = init.requestId;
             this.body = init.body;
             this.raw = init.raw;
           }
@@ -661,13 +665,25 @@ async function main() {
             (body === undefined ? plainTextMessage(raw) : undefined) ||
             \`Request failed with status \${response.status}\`;
           const type = typeof envelope?.type === 'string' ? envelope.type : 'error';
+          // The header is set for every response, so a failure that never reached a
+          // handler (or never produced JSON) is still traceable.
+          const requestId =
+            (typeof (envelope as { request_id?: unknown } | undefined)?.request_id === 'string'
+              ? ((envelope as { request_id?: string }).request_id as string)
+              : undefined) ||
+            response.headers.get('X-Request-Id') ||
+            undefined;
+          // Only server-side failures need the reference: it is what ties the red
+          // banner to one line in the API log. A rejected input needs no ticket.
+          const messageWithRef =
+            requestId && response.status >= 500 ? \`\${message} (ref: \${requestId})\` : message;
 
           if (import.meta.env.DEV) {
             // Never log the request body: it can contain passwords and secrets.
             console.error(\`API \${response.status} \${url}\`, body ?? (raw || '(empty body)'));
           }
 
-          return new ApiError(message, { status: response.status, type, details, body, raw });
+          return new ApiError(messageWithRef, { status: response.status, type, details, requestId, body, raw });
         }
 
         export type ClientOptions = {

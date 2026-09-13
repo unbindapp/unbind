@@ -12,10 +12,15 @@ import (
 // field is a stable, machine-readable code so clients can branch on the failure
 // without parsing prose.
 type ResponseError struct {
-	Type    string   `json:"type" doc:"Stable, machine-readable error code" enum:"bad_request,unauthorized,forbidden,not_found,conflict,validation_error,rate_limited,internal_error,error" example:"not_found"`
-	Status  int      `json:"status" doc:"HTTP status code" example:"404"`
-	Message string   `json:"message" doc:"Human-readable summary of what went wrong" example:"Project not found"`
-	Details []string `json:"details,omitempty" doc:"Optional actionable details, e.g. which field failed validation"`
+	Type      string   `json:"type" doc:"Stable, machine-readable error code" enum:"bad_request,unauthorized,forbidden,not_found,conflict,validation_error,rate_limited,internal_error,error" example:"not_found"`
+	Status    int      `json:"status" doc:"HTTP status code" example:"404"`
+	Message   string   `json:"message" doc:"Human-readable summary of what went wrong" example:"Project not found"`
+	Details   []string `json:"details,omitempty" doc:"Optional actionable details, e.g. which field failed validation"`
+	RequestID string   `json:"request_id,omitempty" doc:"Identifier of the request, quote it when reporting the failure so it can be found in the server logs" example:"api-7f9c4d2b-000042"`
+
+	// cause is the underlying failure. It never reaches the client; it is logged
+	// with the request context when the response is written.
+	cause error
 }
 
 func (e *ResponseError) Error() string {
@@ -24,6 +29,15 @@ func (e *ResponseError) Error() string {
 
 func (e *ResponseError) GetStatus() int {
 	return e.Status
+}
+
+// Cause returns the underlying failure, if the error carries one.
+func (e *ResponseError) Cause() error {
+	return e.cause
+}
+
+func (e *ResponseError) Unwrap() error {
+	return e.cause
 }
 
 // errorCode maps an HTTP status to its stable machine-readable code.
@@ -65,6 +79,17 @@ var HumaErrorFunc = func(status int, message string, errs ...error) huma.StatusE
 		Message: message,
 		Details: details,
 	}
+}
+
+// WithCause attaches the underlying failure so the response writer can log it
+// alongside the request id, method and path. The cause is never serialized.
+func WithCause(err huma.StatusError, cause error) huma.StatusError {
+	resp, ok := err.(*ResponseError)
+	if !ok {
+		return err
+	}
+	resp.cause = cause
+	return resp
 }
 
 // detailMessage renders an error for the client-facing Details field. A CustomError carries an
@@ -121,6 +146,31 @@ func MaskAsNotFound(err error, message string) error {
 		return NewCustomError(ErrTypeNotFound, message)
 	}
 	return err
+}
+
+// InternalError names the step that failed in words the caller can act on,
+// while keeping the raw failure for the logs. Use it instead of returning a
+// bare wrapped error when a 500 is unavoidable, so the response says what broke
+// rather than "Internal server error".
+type InternalError struct {
+	Summary string
+	cause   error
+}
+
+func (e *InternalError) Error() string {
+	if e.cause == nil {
+		return e.Summary
+	}
+	return fmt.Sprintf("%s: %v", e.Summary, e.cause)
+}
+
+func (e *InternalError) Unwrap() error {
+	return e.cause
+}
+
+// NewInternalError wraps cause with a caller-facing summary of the step that failed.
+func NewInternalError(cause error, summary string) error {
+	return &InternalError{Summary: summary, cause: cause}
 }
 
 type CustomError struct {

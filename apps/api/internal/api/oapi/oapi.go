@@ -45,6 +45,11 @@ func agentHints(readOnly, destructive, idempotent bool, risk string, confirm boo
 	}
 }
 
+// clusterErrors are reachable from any operation that touches Kubernetes, which
+// in practice is almost all of them: the cluster rate limiting us, refusing us
+// or not answering in time are documented outcomes, not surprises.
+var clusterErrors = []int{429, 502, 504}
+
 // baseProfile assumes an authenticated, resource-scoped endpoint, which covers
 // the vast majority of operations. Use Public for unauthenticated ones.
 func baseProfile(a Action) profile {
@@ -121,7 +126,7 @@ func Apply(action Action, op *huma.Operation, opts ...Option) {
 		o(&p)
 	}
 
-	op.Errors = mergeInts(p.errors, op.Errors)
+	op.Errors = mergeInts(mergeInts(p.errors, clusterErrors), op.Errors)
 
 	if op.Extensions == nil {
 		op.Extensions = map[string]any{}

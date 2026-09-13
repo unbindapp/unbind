@@ -13,7 +13,9 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
@@ -67,8 +69,7 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 
 	redirect, err := utils.JoinURLPaths(self.srv.Cfg.ExternalAPIURL, "/webhook/github/app/save")
 	if err != nil {
-		log.Error("Error building redirect URL", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to build redirect URL")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to build the GitHub redirect URL"))
 	}
 
 	// Create a unique state to identify this request
@@ -89,25 +90,21 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 	manifest, appName, err := self.srv.GithubClient.CreateAppManifest(redirect, input.RedirectURL, input.Organization != "")
 
 	if err != nil {
-		log.Error("Error creating github app manifest", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to create github app manifest")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to create the GitHub app manifest"))
 	}
 
 	err = self.srv.StringCache.SetWithExpiration(ctx, appName, state, 30*time.Minute)
 	if err != nil {
-		log.Error("Error setting state in cache", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to set state in cache")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the GitHub app state"))
 	}
 	err = self.srv.StringCache.SetWithExpiration(ctx, state, user.ID.String(), 30*time.Minute)
 	if err != nil {
-		log.Error("Error setting user ID in cache", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to set user ID in cache")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the requesting user"))
 	}
 	if input.Organization != "" {
 		err = self.srv.StringCache.SetWithExpiration(ctx, state+"-org", input.Organization, 30*time.Minute)
 		if err != nil {
-			log.Error("Error setting organization in cache", "err", err)
-			return nil, huma.Error500InternalServerError("Failed to set organization in cache")
+			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the GitHub organization"))
 		}
 	}
 
@@ -127,8 +124,7 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 
 	manifestJSON, err := json.Marshal(manifest)
 	if err != nil {
-		log.Error("Error marshaling manifest to JSON", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to prepare manifest data")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to prepare the GitHub app manifest"))
 	}
 
 	data := templateData{
@@ -138,14 +134,12 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 
 	t, err := template.New("github-form").Parse(tmpl)
 	if err != nil {
-		log.Error("Error parsing template", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to parse HTML template")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to render the GitHub redirect page"))
 	}
 
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
-		log.Error("Error executing template", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to render HTML template")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to render the GitHub redirect page"))
 	}
 
 	return &GithubAppCreateResponse{
@@ -172,8 +166,7 @@ type GithubAppListResponse struct {
 func (self *HandlerGroup) HandleListGithubApps(ctx context.Context, input *GithubAppListInput) (*GithubAppListResponse, error) {
 	apps, err := self.srv.Repository.Github().GetApps(ctx, input.WithInstallations)
 	if err != nil {
-		log.Error("Error getting github apps", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to get github apps")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the GitHub apps"))
 	}
 
 	resp := &GithubAppListResponse{}
@@ -199,8 +192,7 @@ func (self *HandlerGroup) HandleGetGithubApp(ctx context.Context, input *GithubA
 		if ent.IsNotFound(err) {
 			return nil, huma.Error404NotFound("App not found")
 		}
-		log.Error("Error getting github app", "err", err)
-		return nil, huma.Error500InternalServerError("Failed to get github app")
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub app"))
 	}
 
 	resp := &GithubAppGetResponse{}

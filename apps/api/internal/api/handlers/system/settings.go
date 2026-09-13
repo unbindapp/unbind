@@ -7,7 +7,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	system_repo "github.com/unbindapp/unbind-api/internal/repositories/system"
 	system_service "github.com/unbindapp/unbind-api/internal/services/system"
 )
@@ -37,27 +37,23 @@ func (self *HandlerGroup) UpdateBuildkitSettings(ctx context.Context, input *Set
 
 		ips, err := self.srv.KubeClient.GetIngressNginxIP(ctx)
 		if err != nil {
-			log.Error("Error getting ingress nginx IP", "err", err)
-			return nil, huma.Error500InternalServerError("Error getting ingress nginx IP")
+			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to look up the ingress IP"))
 		}
 
 		resolved, err := self.srv.DNSChecker.IsPointingToIP(baseDomain, ips.IPv4)
 		if err != nil {
-			log.Error("Error checking DNS", "err", err)
-			return nil, huma.Error500InternalServerError("Error checking DNS")
+			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain's DNS records"))
 		}
 		if !resolved {
 			resolved, err = self.srv.DNSChecker.IsPointingToIP(baseDomain, ips.IPv6)
 			if err != nil {
-				log.Error("Error checking DNS", "err", err)
-				return nil, huma.Error500InternalServerError("Error checking DNS")
+				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain's DNS records"))
 			}
 		}
 		if !resolved {
 			resolved, err = self.srv.DNSChecker.IsUsingCloudflareProxy(baseDomain)
 			if err != nil {
-				log.Error("Error checking Cloudflare", "err", err)
-				return nil, huma.Error500InternalServerError("Error checking Cloudflare")
+				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check whether the domain uses Cloudflare"))
 			}
 		}
 

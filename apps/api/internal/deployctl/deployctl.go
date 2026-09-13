@@ -133,13 +133,13 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 
 	namespace, err := self.repo.Service().GetDeploymentNamespace(ctx, service.ID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get deployment namespace: %w", err)
+		return nil, errdefs.NewInternalError(err, "Failed to resolve the namespace to deploy into")
 	}
 
 	// Get build secrets
 	buildSecrets, err := self.k8s.GetSecretMap(ctx, service.KubernetesSecret, namespace, self.k8s.GetInternalClient())
 	if err != nil {
-		return nil, fmt.Errorf("failed to get build secrets: %w", err)
+		return nil, errdefs.NewInternalError(err, "Failed to read the service's variables from the cluster")
 	}
 
 	serializableSecrets := make(map[string]string)
@@ -463,7 +463,7 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 		)
 
 		if err != nil {
-			return nil, fmt.Errorf("failed to create deployment record: %w", err)
+			return nil, errdefs.NewInternalError(err, "Failed to record the deployment")
 		}
 	}
 
@@ -521,7 +521,7 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 
 	err = self.jobQueue.Enqueue(ctx, job.ID.String(), req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to enqueue job: %w", err)
+		return nil, errdefs.NewInternalError(err, "Failed to queue the deployment")
 	}
 
 	// Trigger webhook

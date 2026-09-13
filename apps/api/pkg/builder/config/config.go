@@ -88,6 +88,10 @@ type Config struct {
 	RailpackBuildCommand   string `env:"RAILPACK_BUILD_CMD"`
 	// Kubeconfig for local testing
 	KubeConfig string `env:"KUBECONFIG"`
+	// Matches the API's defaults; client-go's own (5 QPS / 10 burst) throttle
+	// the build's own status updates against each other.
+	KubernetesQPS   float32 `env:"KUBERNETES_QPS" envDefault:"50"`
+	KubernetesBurst int     `env:"KUBERNETES_BURST" envDefault:"100"`
 	// Non-env config
 	Hosts []v1.HostSpec
 	Ports []v1.PortSpec
@@ -132,6 +136,14 @@ func (self *Config) GetPostgresSSLMode() string {
 
 func (self *Config) GetKubeConfig() string {
 	return self.KubeConfig
+}
+
+func (self *Config) GetKubernetesQPS() float32 {
+	return self.KubernetesQPS
+}
+
+func (self *Config) GetKubernetesBurst() int {
+	return self.KubernetesBurst
 }
 
 func (self *Config) GetBuildImage() string {
