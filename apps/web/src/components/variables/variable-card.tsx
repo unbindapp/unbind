@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { HIDDEN_VARIABLE_VALUE } from "@/components/variables/constants";
 import {
   referenceMapForVariables,
   splitByStoredReferences,
@@ -49,8 +50,7 @@ import {
 import { Dispatch, FC, Fragment, useMemo, useState } from "react";
 import { z } from "zod";
 
-const hiddenString = "••••••••••";
-const unresolvedMessage = "Unresolved references are kept as literal text.";
+const unresolvedMessage = "Couldn't resolve a reference, kept as literal text.";
 
 type TPlaceholderProps = {
   isPlaceholder: true;
@@ -186,7 +186,7 @@ export default function VariableCard({
                 <div className="flex w-full flex-col items-start justify-start gap-1 lg:flex-row lg:items-center lg:gap-1.5">
                   <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                     {isPlaceholder || !variable || !isValueVisible ? (
-                      hiddenString
+                      HIDDEN_VARIABLE_VALUE
                     ) : isDynamic ? (
                       <RenderedValue parts={renderedParts} />
                     ) : (

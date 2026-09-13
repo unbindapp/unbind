@@ -24,6 +24,7 @@ import {
 import { toast } from "@/components/ui/toast";
 import TokenField, { type TTokenFieldHandle } from "@/components/ui/token-field/token-field";
 import { cn } from "@/components/ui/utils";
+import { HIDDEN_VARIABLE_VALUE } from "@/components/variables/constants";
 import {
   getVariablesFromRawText,
   referenceMapForVariables,
@@ -518,7 +519,7 @@ function getEditorValue({
   const storedToReadable = readableTokenMap(tokens ?? []);
   return variables
     .map((variable) => {
-      if (hidden) return `${variable.name}=••••••••••`;
+      if (hidden) return `${variable.name}=${HIDDEN_VARIABLE_VALUE}`;
       return `${variable.name}=${toReadableValue(variable.value, variable.references, storedToReadable)}`;
     })
     .join("\n");

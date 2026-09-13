@@ -17,6 +17,7 @@ import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui
 import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { HIDDEN_VARIABLE_VALUE } from "@/components/variables/constants";
 import type { AffectedService, ChangeFailure } from "@/lib/server/client.gen";
 import {
   EyeIcon,
@@ -30,8 +31,6 @@ import {
   XIcon,
 } from "lucide-react";
 import { ComponentProps, FC, ReactElement, ReactNode, useMemo, useState } from "react";
-
-const hiddenString = "••••••••••";
 
 type TChangeKind = "variable" | "setting";
 type TChangeAction = "add" | "remove" | "edit";
@@ -378,7 +377,7 @@ function ChangeRow({
   const action = rowAction(row);
   const ActionIcon = actionIcons[action];
   const KindIcon = kindIcons[row.kind];
-  const mask = (value: string) => (row.isSecret && !showValues ? hiddenString : value);
+  const mask = (value: string) => (row.isSecret && !showValues ? HIDDEN_VARIABLE_VALUE : value);
 
   return (
     <li className={cn(rowGrid, "items-start px-1")}>
