@@ -16,6 +16,7 @@ import AdvancedSettingsButton from "@/components/service/panel/content/undeploye
 import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
+import { usePublishDraftDomain } from "@/components/service/panel/draft-domain-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { cn } from "@/components/ui/utils";
 import { toStoredVariables } from "@/components/variables/helpers";
@@ -30,6 +31,7 @@ import {
 import { dockerTagsQuery } from "@/lib/queries/docker";
 import { TServiceShallow } from "@/lib/queries/services";
 import { TVariableForCreate } from "@/lib/queries/variables";
+import { useStore } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { PackageIcon, TagIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -231,6 +233,10 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     persistenceKey,
     persistenceSchema: DraftSchema,
   });
+
+  // The header shows the domain this draft will deploy with, not the one it was created with
+  const draftDomain = useStore(form.store, (s) => (s.values.isPublic ? s.values.domain : ""));
+  usePublishDraftDomain(draftDomain);
 
   const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false);
 

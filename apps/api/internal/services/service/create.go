@@ -278,7 +278,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		var framework *enum.Framework
 		hosts := input.Hosts
 		ports := input.Ports
-		isPublic := input.IsPublic
 		if analysisResult != nil {
 			// Service core information
 			if analysisResult.Provider != enum.UnknownProvider {
@@ -318,11 +317,9 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			return err
 		}
 
-		if len(ports) > 0 && input.IsPublic == nil {
-			isPublic = new(true)
-		}
+		isPublic := resolveIsPublic(input.IsPublic, ports)
 
-		if len(hosts) == 0 && input.IsPublic != nil && *isPublic && input.Type != schema.ServiceTypeDatabase && len(ports) > 0 {
+		if len(hosts) == 0 && isPublic != nil && *isPublic && input.Type != schema.ServiceTypeDatabase && len(ports) > 0 {
 			generatedHost, err := self.generateWildcardHost(ctx, tx, kubernetesName, ports)
 			if err != nil {
 				return errdefs.NewInternalError(err, "Failed to generate a domain for this service")
@@ -527,4 +524,17 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	}
 
 	return resp, nil
+}
+
+// A service that listens on a port is public unless the caller says otherwise.
+// Databases rely on this too: they always carry the port their engine answers on,
+// so a database is public by default and exposed on an allocated node port.
+func resolveIsPublic(requested *bool, ports []schema.PortSpec) *bool {
+	if requested != nil {
+		return requested
+	}
+	if len(ports) == 0 {
+		return nil
+	}
+	return new(true)
 }

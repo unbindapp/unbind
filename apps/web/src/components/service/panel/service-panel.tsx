@@ -3,6 +3,7 @@ import ServiceUrls from "@/components/service/panel/components/service-urls";
 import ThreeDotButton from "@/components/service/panel/components/three-dot-button";
 import TitleButton from "@/components/service/panel/components/title-button";
 import ServicePanelContent from "@/components/service/panel/content/service-panel-content";
+import DraftDomainProvider from "@/components/service/panel/draft-domain-provider";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import ServiceEndpointsProvider from "@/components/service/service-endpoints-provider";
 import ServiceProvider from "@/components/service/service-provider";
@@ -100,14 +101,11 @@ export default function ServicePanel({
             environmentId={environmentId}
             serviceId={service.id}
           >
-            {/* A database is reached at an allocated port, so it has no host to gate on */}
-            {service.config.is_public &&
-              (service.type === "database" ||
-                (service.config.hosts && service.config.hosts.length >= 1)) && (
-                <ServiceUrls hosts={service.config.hosts ?? []} />
-              )}
-            {/* Content */}
-            <ServicePanelContent service={service} />
+            <DraftDomainProvider>
+              <ServiceUrls service={service} />
+              {/* Content */}
+              <ServicePanelContent service={service} />
+            </DraftDomainProvider>
           </ServiceEndpointsProvider>
         </ServiceProvider>
       </DrawerContent>

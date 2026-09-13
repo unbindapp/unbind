@@ -114,78 +114,13 @@ export default function ServiceUrl({
     endpoint.tls_status === "attempting"
   ) {
     return (
-      <Wrapper className={className}>
-        <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-          <PopoverTrigger
-            render={
-              <Button
-                data-open={isDropdownOpen || undefined}
-                className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
-                variant="ghost"
-                size="sm"
-              >
-                <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-open/button:rotate-90">
-                  {endpoint.tls_status === "pending" || endpoint.dns_status === "unresolved" ? (
-                    <HourglassIcon className="animate-hourglass size-full group-data-open/button:animate-none group-data-open/button:opacity-0" />
-                  ) : (
-                    <LoaderIcon className="size-full animate-spin group-data-open/button:animate-none group-data-open/button:opacity-0" />
-                  )}
-                  <ChevronUpIcon className="absolute top-0 left-0 size-full scale-110 -rotate-90 opacity-0 group-data-open/button:opacity-100" />
-                </div>
-                <p className="min-w-0 shrink truncate">{getUrlDisplayStr(endpoint)}</p>
-              </Button>
-            }
-          />
-          <PopoverContent
-            data-unresolved={endpoint.dns_status === "unresolved" || undefined}
-            align="start"
-            className="group/popover flex w-72 flex-col gap-0.5 overflow-hidden p-0 data-unresolved:w-90"
-          >
-            <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col justify-start p-2">
-              {endpoint.dns_status === "unresolved" ? (
-                <DomainCard
-                  className="-mt-2 -mb-1 border-none"
-                  domain={endpoint.host}
-                  paragraph="Create the DNS record below."
-                />
-              ) : (
-                <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
-                  <div className="text-warning flex w-full justify-start gap-1.5">
-                    {endpoint.tls_status === "pending" ? (
-                      <HourglassIcon className="animate-hourglass mt-0.75 -ml-0.5 size-3.5 shrink-0" />
-                    ) : (
-                      <LoaderIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0 animate-spin" />
-                    )}
-                    <p className="min-w-0 shrink text-base leading-tight font-semibold">
-                      {endpoint.tls_status === "pending"
-                        ? "Waiting for deployment"
-                        : "Issuing the certificate"}
-                    </p>
-                  </div>
-                  <p className="w-full text-sm leading-snug">
-                    {endpoint.tls_status === "pending"
-                      ? "The TLS certificate will be issued once the first deployment is complete."
-                      : "The TLS certificate is being issued. This can take a few minutes..."}
-                  </p>
-                </div>
-              )}
-              <Button
-                render={<a href={getUrl(endpoint)} target="_blank" rel="noopener noreferrer" />}
-                className="group/button mt-2 min-w-0 shrink px-2.25 py-1.5 text-left font-medium"
-                variant="outline"
-                size="sm"
-                forceMinSize={false}
-              >
-                <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
-                  <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
-                  <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
-                </div>
-                <p className="min-w-0 shrink truncate">Visit</p>
-              </Button>
-            </ScrollArea>
-          </PopoverContent>
-        </Popover>
-      </Wrapper>
+      <PendingServiceUrl
+        host={endpoint.host}
+        path={endpoint.path}
+        dnsStatus={endpoint.dns_status}
+        tlsStatus={endpoint.tls_status}
+        className={className}
+      />
     );
   }
 
@@ -207,6 +142,98 @@ export default function ServiceUrl({
   );
 }
 
+type TPendingServiceUrlProps = {
+  host: string;
+  path: string;
+  dnsStatus: TExternalEndpoint["dns_status"];
+  tlsStatus: TExternalEndpoint["tls_status"];
+  className?: string;
+};
+
+// A domain that exists but isn't serving yet: no deployment, or no certificate
+export function PendingServiceUrl({
+  host,
+  path,
+  dnsStatus,
+  tlsStatus,
+  className,
+}: TPendingServiceUrlProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  return (
+    <Wrapper className={className}>
+      <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <PopoverTrigger
+          render={
+            <Button
+              data-open={isDropdownOpen || undefined}
+              className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
+              variant="ghost"
+              size="sm"
+            >
+              <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-open/button:rotate-90">
+                {tlsStatus === "pending" || dnsStatus === "unresolved" ? (
+                  <HourglassIcon className="animate-hourglass size-full group-data-open/button:animate-none group-data-open/button:opacity-0" />
+                ) : (
+                  <LoaderIcon className="size-full animate-spin group-data-open/button:animate-none group-data-open/button:opacity-0" />
+                )}
+                <ChevronUpIcon className="absolute top-0 left-0 size-full scale-110 -rotate-90 opacity-0 group-data-open/button:opacity-100" />
+              </div>
+              <p className="min-w-0 shrink truncate">{getUrlDisplayStr({ host, path })}</p>
+            </Button>
+          }
+        />
+        <PopoverContent
+          data-unresolved={dnsStatus === "unresolved" || undefined}
+          align="start"
+          className="group/popover flex w-72 flex-col gap-0.5 overflow-hidden p-0 data-unresolved:w-90"
+        >
+          <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col justify-start p-2">
+            {dnsStatus === "unresolved" ? (
+              <DomainCard
+                className="-mt-2 -mb-1 border-none"
+                domain={host}
+                paragraph="Create the DNS record below."
+              />
+            ) : (
+              <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
+                <div className="text-warning flex w-full justify-start gap-1.5">
+                  {tlsStatus === "pending" ? (
+                    <HourglassIcon className="animate-hourglass mt-0.75 -ml-0.5 size-3.5 shrink-0" />
+                  ) : (
+                    <LoaderIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0 animate-spin" />
+                  )}
+                  <p className="min-w-0 shrink text-base leading-tight font-semibold">
+                    {tlsStatus === "pending" ? "Waiting for deployment" : "Issuing the certificate"}
+                  </p>
+                </div>
+                <p className="w-full text-sm leading-snug">
+                  {tlsStatus === "pending"
+                    ? "The TLS certificate will be issued once the first deployment is complete."
+                    : "The TLS certificate is being issued. This can take a few minutes..."}
+                </p>
+              </div>
+            )}
+            <Button
+              render={<a href={getUrl({ host, path })} target="_blank" rel="noopener noreferrer" />}
+              className="group/button mt-2 min-w-0 shrink px-2.25 py-1.5 text-left font-medium"
+              variant="outline"
+              size="sm"
+              forceMinSize={false}
+            >
+              <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
+                <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
+                <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+              </div>
+              <p className="min-w-0 shrink truncate">Visit</p>
+            </Button>
+          </ScrollArea>
+        </PopoverContent>
+      </Popover>
+    </Wrapper>
+  );
+}
+
 function Wrapper({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div className={cn("flex max-w-full items-start justify-start sm:max-w-full", className)}>
@@ -215,8 +242,8 @@ function Wrapper({ children, className }: { children: ReactNode; className?: str
   );
 }
 
-function getUrlDisplayStr(endpoint: TExternalEndpoint) {
-  return endpoint.host + (endpoint.path === "/" ? "" : endpoint.path);
+function getUrlDisplayStr({ host, path }: { host: string; path: string }) {
+  return host + (path === "/" ? "" : path);
 }
 
 // LoadBalancer discovery embeds the port in the host already
@@ -225,6 +252,6 @@ function getTcpDisplayStr(endpoint: TExternalEndpoint) {
   return `${endpoint.host}:${endpoint.target_port.port}`;
 }
 
-function getUrl(endpoint: TExternalEndpoint) {
-  return "https://" + endpoint.host + endpoint.path;
+function getUrl({ host, path }: { host: string; path: string }) {
+  return "https://" + host + path;
 }
