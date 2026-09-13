@@ -101,7 +101,7 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 			SourceType:           schema.VariableReferenceSourceTypeService,
 			SourceID:             otherService.ID,
 		}
-		if keys := privateEndpointKeys(otherService); len(keys) > 0 {
+		if keys := privateEndpointKeys(otherService, team.Namespace); len(keys) > 0 {
 			private := base
 			private.Type = schema.VariableReferenceTypePrivateEndpoint
 			private.Keys = keys
@@ -120,8 +120,8 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 
 // privateEndpointKeys are the keys the picker offers for reaching a service from
 // inside the cluster. The host never varies by port, so it is offered once.
-func privateEndpointKeys(service *ent.Service) []string {
-	endpoints := privateEndpoints(service, serviceNamespace(service))
+func privateEndpointKeys(service *ent.Service, namespace string) []string {
+	endpoints := privateEndpoints(service, namespace)
 	if len(endpoints) == 0 {
 		return nil
 	}
@@ -136,8 +136,7 @@ func privateEndpointKeys(service *ent.Service) []string {
 }
 
 // publicEndpointKeys are the keys the picker offers for reaching a service from the
-// internet. A private service has none. Domain is offered only where the address is
-// a name rather than a bare IP, so referencing it is a promise of a routable domain.
+// internet. A private service has none.
 func publicEndpointKeys(service *ent.Service, clusterAddress func() string) []string {
 	endpoints := publicEndpoints(service, clusterAddress)
 	if len(endpoints) == 0 {
@@ -149,13 +148,5 @@ func publicEndpointKeys(service *ent.Service, clusterAddress func() string) []st
 	}
 	keys := endpointKeys(urlBase, endpoints)
 	keys = append(keys, endpointKeys(vartemplate.KeyHostPublic, endpoints)...)
-	keys = append(keys, endpointKeys(vartemplate.KeyPortPublic, endpoints)...)
-
-	named := make([]serviceEndpoint, 0, len(endpoints))
-	for _, endpoint := range endpoints {
-		if endpoint.IsDomain {
-			named = append(named, endpoint)
-		}
-	}
-	return append(keys, endpointKeys(vartemplate.KeyDomainPublic, named)...)
+	return append(keys, endpointKeys(vartemplate.KeyPortPublic, endpoints)...)
 }

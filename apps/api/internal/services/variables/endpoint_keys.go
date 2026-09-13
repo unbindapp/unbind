@@ -32,7 +32,7 @@ func privateBases(serviceType schema.ServiceType) []string {
 }
 
 func publicBases(serviceType schema.ServiceType) []string {
-	bases := []string{vartemplate.KeyHostPublic, vartemplate.KeyDomainPublic, vartemplate.KeyPortPublic}
+	bases := []string{vartemplate.KeyHostPublic, vartemplate.KeyPortPublic}
 	if serviceType == schema.ServiceTypeDatabase {
 		return append(bases, vartemplate.KeyDatabaseURLPublic)
 	}
@@ -98,11 +98,6 @@ func endpointFacet(base string, endpoints []serviceEndpoint, ref vartemplate.End
 	switch base {
 	case vartemplate.KeyHostPrivate, vartemplate.KeyHostPublic:
 		return endpoint.Host
-	case vartemplate.KeyDomainPublic:
-		if !endpoint.IsDomain {
-			return ""
-		}
-		return endpoint.Host
 	case vartemplate.KeyPortPrivate, vartemplate.KeyPortPublic:
 		return strconv.Itoa(int(endpoint.Port))
 	}
@@ -124,7 +119,7 @@ func DerivedEndpointKeys(service *ent.Service, changedKeys []string) []string {
 	}
 
 	var keys []string
-	keys = append(keys, endpointKeys(vartemplate.KeyDatabaseURLPrivate, privateEndpoints(service, serviceNamespace(service)))...)
+	keys = append(keys, endpointKeys(vartemplate.KeyDatabaseURLPrivate, privateEndpoints(service, changeSentinel))...)
 	keys = append(keys, endpointKeys(vartemplate.KeyDatabaseURLPublic, publicEndpoints(service, sentinelAddress))...)
 	return keys
 }

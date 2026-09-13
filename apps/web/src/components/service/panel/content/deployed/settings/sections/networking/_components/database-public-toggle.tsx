@@ -4,11 +4,12 @@ import { useServiceEndpointsUtils } from "@/components/service/service-endpoints
 import { useService } from "@/components/service/service-provider";
 import useUpdateService from "@/components/service/use-update-service";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
+import { createDialogHandle } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toast";
 import { TServiceShallow } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 // Making a database private drops its public address and every UNBIND_*_PUBLIC key
 // built on it, so anything referencing one is left holding a literal token
@@ -21,6 +22,7 @@ export default function DatabasePublicToggle({ service }: { service: TServiceSha
     serviceId,
   });
 
+  const [dialogHandle] = useState(() => createDialogHandle());
   const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
   const { mutateAsync: updateService, refetch: refetchServices } = useUpdateService({
     idToHighlight: sectionHighlightId,
@@ -48,24 +50,26 @@ export default function DatabasePublicToggle({ service }: { service: TServiceSha
     },
   });
 
-  if (!service.config.is_public) {
-    return (
-      <PublicPrivateToggle isPublic={false} disabled={isPending} onChange={() => setPublic(true)} />
-    );
-  }
-
   return (
-    <DeleteEntityTrigger
-      variant="warning"
-      dialogTitle="Make Database Private"
-      dialogDescription="The database will only be reachable from inside the cluster. Services referencing its public address will stop resolving, and making it public again allocates a different port."
-      deletingEntityName="the public address"
-      submitButtonText="Make Private"
-      disableConfirmationInput
-      onSubmit={() => setPublic(false)}
-      error={error}
-    >
-      <PublicPrivateToggle isPublic disabled={isPending} onChange={() => {}} />
-    </DeleteEntityTrigger>
+    <>
+      <PublicPrivateToggle
+        isPublic={service.config.is_public}
+        disabled={isPending}
+        onChange={(isPublic) => (isPublic ? setPublic(true) : dialogHandle.open(null))}
+      />
+      {/* Going public is harmless; going private takes an address away from whoever
+          is using it, so only that direction asks */}
+      <DeleteEntityTrigger
+        handle={dialogHandle}
+        variant="warning"
+        dialogTitle="Make Database Private"
+        dialogDescription="The database will only be reachable from inside the cluster. Services referencing its public address will stop resolving, and making it public again allocates a different port."
+        deletingEntityName="the public address"
+        submitButtonText="Make Private"
+        disableConfirmationInput
+        onSubmit={() => setPublic(false)}
+        error={error}
+      />
+    </>
   );
 }

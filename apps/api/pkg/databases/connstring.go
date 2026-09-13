@@ -26,6 +26,7 @@ var StoredAddressKeys = []string{
 	"DATABASE_URL",
 	"DATABASE_HTTP_URL",
 	"DATABASE_HTTP_PORT",
+	"DATABASE_EXTERNAL_URL",
 }
 
 // DefaultPort is the port an engine answers its primary protocol on

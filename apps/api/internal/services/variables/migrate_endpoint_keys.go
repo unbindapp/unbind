@@ -18,25 +18,32 @@ func (self *VariablesService) MigrateEndpointKeys(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	var services []*ent.Service
+	type teamService struct {
+		service   *ent.Service
+		namespace string
+	}
+	var services []teamService
 	for _, team := range teams {
 		teamServices, err := self.repo.Service().GetByScope(ctx, schema.VariableReferenceSourceTypeTeam, team.ID)
 		if err != nil {
 			log.Warnf("Failed to list services of team %s while renaming endpoint keys: %v", team.ID, err)
 			continue
 		}
-		services = append(services, teamServices...)
+		for _, service := range teamServices {
+			services = append(services, teamService{service: service, namespace: team.Namespace})
+		}
 	}
 
 	client := self.k8s.GetInternalClient()
 	sources := make(map[uuid.UUID]*ent.Service, len(services))
-	for _, service := range services {
-		sources[service.ID] = service
+	for _, entry := range services {
+		sources[entry.service.ID] = entry.service
 	}
 
 	migrated := 0
-	for _, service := range services {
-		values, err := self.k8s.GetSecretMap(ctx, service.KubernetesSecret, serviceNamespace(service), client)
+	for _, entry := range services {
+		service := entry.service
+		values, err := self.k8s.GetSecretMap(ctx, service.KubernetesSecret, entry.namespace, client)
 		if err != nil {
 			log.Warnf("Failed to read variables of service %s while renaming endpoint keys: %v", service.ID, err)
 			continue
@@ -63,7 +70,7 @@ func (self *VariablesService) MigrateEndpointKeys(ctx context.Context) error {
 			continue
 		}
 
-		if _, err := self.k8s.UpsertSecretValues(ctx, service.KubernetesSecret, serviceNamespace(service), updates, client); err != nil {
+		if _, err := self.k8s.UpsertSecretValues(ctx, service.KubernetesSecret, entry.namespace, updates, client); err != nil {
 			log.Errorf("Failed to rename endpoint keys for service %s: %v", service.ID, err)
 			continue
 		}
@@ -90,7 +97,8 @@ func (self *VariablesService) renamedEndpointKey(sources map[uuid.UUID]*ent.Serv
 		return "", false
 	}
 
-	endpoints := privateEndpoints(source, serviceNamespace(source))
+	// Only the key names matter here, never the address they resolve to
+	endpoints := privateEndpoints(source, changeSentinel)
 	if ref.Base == vartemplate.KeyURLPublic {
 		endpoints = publicEndpoints(source, sentinelAddress)
 	}

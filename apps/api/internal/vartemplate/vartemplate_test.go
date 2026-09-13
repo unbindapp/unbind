@@ -91,7 +91,7 @@ func TestParseEndpointKey(t *testing.T) {
 	assert.False(t, ok)
 	_, ok = ParseEndpointKey("UNBIND_OTHER")
 	assert.False(t, ok)
-	assert.True(t, IsEndpointKey("UNBIND_DOMAIN_PUBLIC"))
+	assert.True(t, IsEndpointKey("UNBIND_HOST_PUBLIC"))
 }
 
 // Keys written before the public/private rename still resolve, by position

@@ -173,7 +173,7 @@ func (self *VariablesService) ApplyVariableWrite(ctx context.Context, write *Var
 		return nil, err
 	}
 
-	return self.buildResponse(ctx, client, write.Input.Type, write.service, secrets)
+	return self.buildResponse(ctx, client, write.Input.Type, write.team.Namespace, write.service, secrets)
 }
 
 // RestartForWrite restarts pods that read changed values straight from the secret.

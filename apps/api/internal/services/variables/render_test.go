@@ -182,19 +182,18 @@ func (suite *RenderSuite) TestRender_EndpointKeys() {
 	})
 
 	values := map[string][]byte{
-		"API_URL":       []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PRIVATE")),
-		"API_URL_5000":  []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PRIVATE_5000")),
-		"API_URL_9999":  []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PRIVATE_9999")),
-		"API_PORT":      []byte(vartemplate.ServiceToken(api.ID, "UNBIND_PORT_PRIVATE")),
-		"API_HOST":      []byte(vartemplate.ServiceToken(api.ID, "UNBIND_HOST_PRIVATE")),
-		"PUBLIC":        []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PUBLIC_5000")),
-		"PUBLIC_DOMAIN": []byte(vartemplate.ServiceToken(api.ID, "UNBIND_DOMAIN_PUBLIC")),
-		"PUBLIC_PORT":   []byte(vartemplate.ServiceToken(api.ID, "UNBIND_PORT_PUBLIC")),
-		"REDIS_HOST":    []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_HOST_PRIVATE")),
-		"REDIS_PORT":    []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_PORT_PRIVATE")),
-		"REDIS_URL":     []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_DATABASE_URL_PRIVATE")),
-		"REDIS_NOPUB":   []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_DATABASE_URL_PUBLIC")),
-		"API_NOT_A_DB":  []byte(vartemplate.ServiceToken(api.ID, "UNBIND_DATABASE_URL_PRIVATE")),
+		"API_URL":      []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PRIVATE")),
+		"API_URL_5000": []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PRIVATE_5000")),
+		"API_URL_9999": []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PRIVATE_9999")),
+		"API_PORT":     []byte(vartemplate.ServiceToken(api.ID, "UNBIND_PORT_PRIVATE")),
+		"API_HOST":     []byte(vartemplate.ServiceToken(api.ID, "UNBIND_HOST_PRIVATE")),
+		"PUBLIC":       []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PUBLIC_5000")),
+		"PUBLIC_PORT":  []byte(vartemplate.ServiceToken(api.ID, "UNBIND_PORT_PUBLIC")),
+		"REDIS_HOST":   []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_HOST_PRIVATE")),
+		"REDIS_PORT":   []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_PORT_PRIVATE")),
+		"REDIS_URL":    []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_DATABASE_URL_PRIVATE")),
+		"REDIS_NOPUB":  []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_DATABASE_URL_PUBLIC")),
+		"API_NOT_A_DB": []byte(vartemplate.ServiceToken(api.ID, "UNBIND_DATABASE_URL_PRIVATE")),
 	}
 
 	result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
@@ -204,7 +203,6 @@ func (suite *RenderSuite) TestRender_EndpointKeys() {
 	suite.Equal("api-abc123.unbind-team.svc.cluster.local", result.Env["API_HOST"])
 	suite.Equal("3000", result.Env["API_PORT"])
 	suite.Equal("https://www.example.com", result.Env["PUBLIC"])
-	suite.Equal("api.example.com", result.Env["PUBLIC_DOMAIN"])
 	suite.Equal("443", result.Env["PUBLIC_PORT"])
 	suite.Equal("redis-abc123-headless.unbind-team.svc.cluster.local", result.Env["REDIS_HOST"])
 	suite.Equal("6379", result.Env["REDIS_PORT"])

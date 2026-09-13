@@ -238,7 +238,7 @@ func (rc *renderContext) endpointValue(source *ent.Service, key string) (string,
 			return "", false
 		}
 		return rc.addressValue(source, ref.Base, endpoint, false)
-	case vartemplate.KeyHostPublic, vartemplate.KeyDomainPublic, vartemplate.KeyPortPublic, vartemplate.KeyURLPublic, vartemplate.KeyDatabaseURLPublic:
+	case vartemplate.KeyHostPublic, vartemplate.KeyPortPublic, vartemplate.KeyURLPublic, vartemplate.KeyDatabaseURLPublic:
 		endpoint, ok := selectEndpoint(publicEndpoints(source, rc.clusterAddress), ref)
 		if !ok {
 			return "", false
@@ -252,11 +252,6 @@ func (rc *renderContext) endpointValue(source *ent.Service, key string) (string,
 func (rc *renderContext) addressValue(source *ent.Service, base string, endpoint serviceEndpoint, public bool) (string, bool) {
 	switch base {
 	case vartemplate.KeyHostPrivate, vartemplate.KeyHostPublic:
-		return endpoint.Host, true
-	case vartemplate.KeyDomainPublic:
-		if !endpoint.IsDomain {
-			return "", false
-		}
 		return endpoint.Host, true
 	case vartemplate.KeyPortPrivate, vartemplate.KeyPortPublic:
 		return strconv.Itoa(int(endpoint.Port)), true
@@ -303,7 +298,7 @@ func (rc *renderContext) databaseURL(source *ent.Service, endpoint serviceEndpoi
 // Databases created before ports were tracked on the config have none, so fall back
 // to the port the engine answers on
 func (rc *renderContext) privateEndpoints(source *ent.Service) []serviceEndpoint {
-	endpoints := privateEndpoints(source, serviceNamespace(source))
+	endpoints := privateEndpoints(source, rc.namespace)
 	if len(endpoints) > 0 || source.Type != schema.ServiceTypeDatabase {
 		return endpoints
 	}
@@ -312,7 +307,7 @@ func (rc *renderContext) privateEndpoints(source *ent.Service) []serviceEndpoint
 	if port == 0 {
 		return nil
 	}
-	host := utils.ServiceFQDN(utils.InternalServiceName(dbType, source.KubernetesName), serviceNamespace(source))
+	host := utils.ServiceFQDN(utils.InternalServiceName(dbType, source.KubernetesName), rc.namespace)
 	return []serviceEndpoint{{Host: host, IsDomain: true, Port: port, Target: port}}
 }
 
@@ -352,8 +347,14 @@ func (rc *renderContext) referenceInfos(value string) []models.VariableReference
 	return infos
 }
 
+// Services are not always loaded with the whole chain, so callers that need a real
+// namespace pass the team's; this is the best effort for the ones that do have it
 func serviceNamespace(service *ent.Service) string {
-	return service.Edges.Environment.Edges.Project.Edges.Team.Namespace
+	environment := service.Edges.Environment
+	if environment == nil || environment.Edges.Project == nil || environment.Edges.Project.Edges.Team == nil {
+		return ""
+	}
+	return environment.Edges.Project.Edges.Team.Namespace
 }
 
 func databaseType(service *ent.Service) string {

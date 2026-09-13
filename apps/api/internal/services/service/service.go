@@ -145,9 +145,12 @@ func (self *ServiceService) prepareDatabaseExposure(ctx context.Context, tx repo
 		return nil, nodePorts, nil
 	}
 
+	// A misconfigured wildcard domain should not stop a database being exposed; it is
+	// still reachable at the cluster address and the allocated port
 	host, err := self.generateWildcardHost(ctx, tx, kubernetesName, ports)
 	if err != nil {
-		return nil, nil, err
+		log.Warnf("Exposing database %s without a domain: %v", kubernetesName, err)
+		return nil, nodePorts, nil
 	}
 	if host == nil {
 		return nil, nodePorts, nil

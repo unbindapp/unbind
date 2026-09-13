@@ -2,6 +2,7 @@ package service_service
 
 import (
 	"context"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -55,6 +56,16 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 
 	if err != nil {
 		return nil, err
+	}
+
+	// The database exposure service is the public L4 bridge. On gateway clusters it is
+	// a ClusterIP, so discovery reports it as an internal endpoint alongside the real
+	// one; it is the same database on the same port, under a name nobody should use.
+	if service.Type == schema.ServiceTypeDatabase {
+		bridge := service.KubernetesName + "-db"
+		endpoints.Internal = slices.DeleteFunc(endpoints.Internal, func(endpoint models.ServiceEndpoint) bool {
+			return endpoint.KubernetesName == bridge
+		})
 	}
 
 	// Build a map of discovered hosts

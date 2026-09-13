@@ -25,9 +25,6 @@ const (
 	KeyHostPrivate = "UNBIND_HOST_PRIVATE"
 	// KeyHostPublic is the internet-facing address, a DNS name or a bare IP
 	KeyHostPublic = "UNBIND_HOST_PUBLIC"
-	// KeyDomainPublic is the internet-facing address only when it is a DNS name.
-	// There is no private counterpart: an in-cluster address is always a name.
-	KeyDomainPublic = "UNBIND_DOMAIN_PUBLIC"
 	// KeyPortPrivate is the container port
 	KeyPortPrivate = "UNBIND_PORT_PRIVATE"
 	// KeyPortPublic is the port the service answers on from outside the cluster
@@ -43,7 +40,6 @@ var endpointBases = []string{
 	KeyURLPublic,
 	KeyHostPrivate,
 	KeyHostPublic,
-	KeyDomainPublic,
 	KeyPortPrivate,
 	KeyPortPublic,
 	KeyDatabaseURLPrivate,

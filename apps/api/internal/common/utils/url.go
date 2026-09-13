@@ -86,6 +86,14 @@ func GenerateSubdomain(name, externalURL string) (string, error) {
 
 	fullDomain := fmt.Sprintf("%s.%s", subdomain, domain)
 
+	// A base like "." parses fine but leaves an empty label, which produces a host
+	// nothing can resolve. Fail here rather than store it.
+	for _, label := range strings.Split(fullDomain, ".") {
+		if label == "" {
+			return "", fmt.Errorf("could not generate subdomain: %q is not a usable domain", externalURL)
+		}
+	}
+
 	return fullDomain, nil
 }
 
