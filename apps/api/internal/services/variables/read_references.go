@@ -90,7 +90,7 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 		return nil, err
 	}
 
-	publicAddress := sync.OnceValue(func() string { return clusterAddress(ctx, self.k8s) })
+	publicAddress := sync.OnceValue(func() string { return ClusterAddress(ctx, self.k8s) })
 
 	var endpoints []models.AvailableVariableReference
 	for _, otherService := range accessibleServices {

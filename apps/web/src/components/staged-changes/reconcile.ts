@@ -47,7 +47,7 @@ export function variableChangesMatchingServer(
 
 export function serviceChangesMatchingServer(
   staged: Partial<Record<TServiceChangeField, TStagedServiceChange>>,
-  serverValues: Partial<Record<TServiceChangeField, string | number>>,
+  serverValues: Partial<Record<TServiceChangeField, string | number | boolean>>,
 ): string[] {
   const ids: string[] = [];
   for (const change of Object.values(staged)) {

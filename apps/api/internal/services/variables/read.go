@@ -109,7 +109,7 @@ func (self *VariablesService) providedVariables(ctx context.Context, variableTyp
 	}
 	rc.services[service.ID] = service
 
-	address := sync.OnceValue(func() string { return clusterAddress(ctx, self.k8s) })
+	address := sync.OnceValue(func() string { return ClusterAddress(ctx, self.k8s) })
 	keys := privateEndpointKeys(service, namespace)
 	keys = append(keys, publicEndpointKeys(service, address)...)
 

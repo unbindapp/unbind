@@ -28,6 +28,7 @@ export const StagedVariableChangeSchema = z.object({
 export type TStagedVariableChange = z.infer<typeof StagedVariableChangeSchema>;
 
 export const ServiceChangeFieldSchema = z.enum([
+  "isPublic",
   "replicaCount",
   "cpuLimitMillicores",
   "memoryLimitMb",
@@ -68,7 +69,7 @@ export const StagedServiceChangeSchema = z.object({
   serviceName: z.string(),
   serviceIcon: z.string().optional(),
   field: ServiceChangeFieldSchema,
-  value: z.union([z.string(), z.number()]),
+  value: z.union([z.string(), z.number(), z.boolean()]),
   label: z.string(),
   displayValue: z.string(),
   displayPrevious: z.string(),

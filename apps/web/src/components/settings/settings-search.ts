@@ -3,7 +3,15 @@ import fuzzysort from "fuzzysort";
 import { settingsIds } from "./settings-ids.ts";
 
 export type TSettingsSectionId =
-  "source" | "networking" | "backups" | "build" | "deploy" | "health" | "database" | "danger";
+  | "source"
+  | "network-access"
+  | "networking"
+  | "backups"
+  | "build"
+  | "deploy"
+  | "health"
+  | "database"
+  | "danger";
 
 export type TSettingsSearchItem = {
   id: string;
@@ -54,6 +62,19 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
         id: settingsIds.source.version,
         title: "Version",
         keywords: ["release", "database"],
+      },
+    ],
+  },
+  {
+    id: "network-access",
+    title: "Network Access",
+    keywords: ["public", "private", "expose", "access", "reachable"],
+    items: [
+      {
+        id: settingsIds.networkAccess.access,
+        title: "Network Access",
+        description: "Who can reach the database. Private keeps it inside the cluster.",
+        keywords: ["public", "private", "expose", "access", "reachable", "database"],
       },
     ],
   },

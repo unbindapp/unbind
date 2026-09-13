@@ -4,9 +4,8 @@ import ErrorLine from "@/components/error-line";
 import AddDomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/add-domain-port-card";
 import DomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-port-card";
 import DatabaseEndpointCard, {
-  DatabasePrivateRow,
+  DatabasePendingEndpointRow,
 } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-endpoint-card";
-import DatabasePublicToggle from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-public-toggle";
 import { getNetworkingEntityId } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
 import {
   Block,
@@ -18,6 +17,8 @@ import {
   BlockItemTitle,
 } from "@/components/block";
 import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
+import { stagedBoolean } from "@/components/service/panel/content/deployed/settings/use-service-changes";
+import { useStagedServiceChanges } from "@/components/staged-changes/staged-changes-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
@@ -75,9 +76,13 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
 
   const { isItemVisible } = useSettingsSectionSearch("networking");
   const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
+  const staged = useStagedServiceChanges(service.id);
 
   const isDatabase = service.type === "database";
-  const showPublic = isItemVisible(settingsIds.networking.public);
+  // A database that is staged private loses this whole block before it is applied,
+  // and a database that is staged public gets it right away, with nothing in it yet
+  const isPublic = stagedBoolean(staged.isPublic, service.config.is_public);
+  const showPublic = isItemVisible(settingsIds.networking.public) && (!isDatabase || isPublic);
   const showPrivate = isItemVisible(settingsIds.networking.private);
   if (!showPublic && !showPrivate) return null;
 
@@ -92,10 +97,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
         <Block>
           <BlockItem id={settingsIds.networking.public} className="w-full md:w-full">
             <BlockItemHeader type="column">
-              <div className="flex w-full items-center gap-2">
-                <BlockItemTitle>Public Networking</BlockItemTitle>
-                {isDatabase && <DatabasePublicToggle service={service} />}
-              </div>
+              <BlockItemTitle>Public Networking</BlockItemTitle>
               <BlockItemDescription>
                 {isDatabase
                   ? "Reach the database from outside the cluster."
@@ -136,7 +138,6 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                   ))}
                 {endpointsData?.endpoints &&
                   isDatabase &&
-                  service.config.is_public &&
                   endpointsData.endpoints.external.map((endpoint) => (
                     <DatabaseEndpointCard
                       mode="public"
@@ -145,7 +146,9 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                       port={endpoint.target_port?.port}
                     />
                   ))}
-                {isDatabase && !service.config.is_public && <DatabasePrivateRow />}
+                {isDatabase &&
+                  !isPendingEndpoints &&
+                  endpointsData?.endpoints.external.length === 0 && <DatabasePendingEndpointRow />}
                 {!isDatabase && (
                   <AddDomainPortCard service={service} isPending={isPendingEndpoints} />
                 )}

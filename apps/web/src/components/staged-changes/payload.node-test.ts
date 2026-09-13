@@ -30,7 +30,7 @@ function variable(
 
 function service(
   field: TStagedServiceChange["field"],
-  value: string | number,
+  value: TStagedServiceChange["value"],
   overrides: Partial<TStagedServiceChange> = {},
 ): TStagedServiceChange {
   return {
@@ -117,6 +117,17 @@ test("merges service field changes into one update per service", () => {
   assert.equal(web.backup_schedule, "0 */6 * * *");
   assert.equal(web.backup_retention_count, 5);
   assert.equal(web.replicas, undefined);
+});
+
+test("carries a boolean field through as a boolean", () => {
+  const payload = buildApplyChangesPayload(
+    state([], [service("isPublic", false), service("isPublic", true, { serviceId: "web" })]),
+  );
+
+  assert.equal(payload.services.length, 2);
+  const [api, web] = payload.services;
+  assert.equal(api.is_public, false);
+  assert.equal(web.is_public, true);
 });
 
 test("nests database settings into database_config", () => {

@@ -3,6 +3,7 @@ package service_service
 import (
 	"context"
 	"slices"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -11,6 +12,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	variables_service "github.com/unbindapp/unbind-api/internal/services/variables"
 )
 
 // Get a service by ID
@@ -126,6 +128,12 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 		endpoints.External = append(endpoints.External, newHost)
 	}
 
+	// An allocated node port is reachable at the cluster's own address whether or not
+	// a host fronts it, and whether or not the operator has caught up. Discovery only
+	// sees it once the Service exists, and on gateway clusters never, so infer it.
+	appendClusterAddressEndpoints(endpoints, service, project, env,
+		sync.OnceValue(func() string { return variables_service.ClusterAddress(ctx, self.k8s) }))
+
 	// Infer internal endpoints that should exist and merge with the discovered internal endpoints
 	for _, port := range service.Edges.ServiceConfig.Ports {
 		// Skip node ports (external-only) and UDP ports. A database's port is its
@@ -167,6 +175,43 @@ func (self *ServiceService) GetDNSForService(ctx context.Context, requesterUserI
 	}
 
 	return endpoints, nil
+}
+
+// appendClusterAddressEndpoints adds an external endpoint for every allocated node
+// port nothing else already covers, mirroring how endpoint variables resolve the
+// same ports. clusterAddress is resolved lazily: it talks to the cluster, and a
+// service with nothing to expose never needs it.
+func appendClusterAddressEndpoints(endpoints *models.EndpointDiscovery, service *ent.Service, project *ent.Project, env *ent.Environment, clusterAddress func() string) {
+	config := service.Edges.ServiceConfig
+	if config == nil || !config.IsPublic {
+		return
+	}
+
+	for _, port := range config.Ports {
+		if !port.IsNodePort || port.NodePort == nil {
+			continue
+		}
+		if hasL4Endpoint(endpoints.External, *port.NodePort) {
+			continue
+		}
+		address := clusterAddress()
+		if address == "" {
+			return
+		}
+		endpoints.External = append(endpoints.External, l4HostEndpoint(service, project, env, address, &port))
+	}
+}
+
+func hasL4Endpoint(external []models.IngressEndpoint, listenerPort int32) bool {
+	for _, endpoint := range external {
+		if endpoint.IsIngress || endpoint.TargetPort == nil {
+			continue
+		}
+		if endpoint.TargetPort.Port == listenerPort {
+			return true
+		}
+	}
+	return false
 }
 
 // A node-port-bridged host is raw L4 exposure; no ingress or certificate will ever exist for it.

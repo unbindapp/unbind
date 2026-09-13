@@ -314,7 +314,7 @@ func (rc *renderContext) privateEndpoints(source *ent.Service) []serviceEndpoint
 // clusterAddress resolves the node or load balancer address once per render
 func (rc *renderContext) clusterAddress() string {
 	if rc.resolvedClusterAddress == nil {
-		address := clusterAddress(rc.ctx, rc.svc.k8s)
+		address := ClusterAddress(rc.ctx, rc.svc.k8s)
 		rc.resolvedClusterAddress = &address
 	}
 	return *rc.resolvedClusterAddress

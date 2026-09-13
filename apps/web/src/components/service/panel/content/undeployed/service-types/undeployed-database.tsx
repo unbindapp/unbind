@@ -9,6 +9,13 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import {
+  NetworkAccessIcon,
+  networkAccessItems,
+  networkAccessLabel,
+  networkAccessValue,
+  publicValue,
+} from "@/components/service/network-access";
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";
 import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";
@@ -43,14 +50,7 @@ import { databaseQuery } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
-import {
-  CalendarClockIcon,
-  CylinderIcon,
-  GlobeIcon,
-  LockIcon,
-  MilestoneIcon,
-  OctagonXIcon,
-} from "lucide-react";
+import { CalendarClockIcon, CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useCallback, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
@@ -73,18 +73,6 @@ const DraftSchema = z.object({
 
 const defaultBackupSchedule = "0 0 * * *";
 const defaultBackupRetentionCount = "3";
-
-const publicValue = "public";
-const privateValue = "private";
-
-const networkingItems: TCommandItem[] = [
-  { value: publicValue, label: "Public", description: "Reachable from the internet" },
-  {
-    value: privateValue,
-    label: "Private",
-    description: "Reachable only by your services",
-  },
-];
 
 const scheduleItems: TCommandItem[] = [
   ...backupSchedulePresets,
@@ -358,30 +346,22 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                   <field.AsyncDropdownMenu
                     dontCheckUntilSubmit
                     field={field}
-                    value={field.state.value ? publicValue : privateValue}
+                    value={networkAccessValue(field.state.value)}
                     onChange={(v) => field.handleChange(v === publicValue)}
-                    items={networkingItems}
-                    ItemIcon={({ className, value }) =>
-                      value === publicValue ? (
-                        <GlobeIcon className={cn(className, "size-4.5")} />
-                      ) : (
-                        <LockIcon className={cn(className, "size-4.5")} />
-                      )
-                    }
+                    items={networkAccessItems}
+                    ItemIcon={({ className, value }) => (
+                      <NetworkAccessIcon isPublic={value === publicValue} className={className} />
+                    )}
                     isPending={false}
                     error={undefined}
                   >
                     {({ isOpen }) => (
                       <BlockItemButtonLike
                         asElement="button"
-                        text={field.state.value ? "Public" : "Private"}
-                        Icon={({ className }) =>
-                          field.state.value ? (
-                            <GlobeIcon className={cn(className, "size-4.5")} />
-                          ) : (
-                            <LockIcon className={cn(className, "size-4.5")} />
-                          )
-                        }
+                        text={networkAccessLabel(field.state.value)}
+                        Icon={({ className }) => (
+                          <NetworkAccessIcon isPublic={field.state.value} className={className} />
+                        )}
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}

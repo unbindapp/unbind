@@ -105,3 +105,14 @@ func TestProjectConfig(t *testing.T) {
 	assert.Equal(t, config.Hosts, untouched.Hosts)
 	assert.Equal(t, []schema.PortSpec{{Port: 3000}, {Port: 4000}}, config.Ports)
 }
+
+// Public endpoint keys hang off IsPublic, so a projection that drops it finds no
+// changed keys and reports none of the services referencing them
+func TestProjectConfigIsPublic(t *testing.T) {
+	config := &ent.ServiceConfig{IsPublic: true}
+
+	assert.False(t, projectConfig(config, &models.UpdateServiceInput{IsPublic: utils.ToPtr(false)}).IsPublic)
+	assert.True(t, projectConfig(config, &models.UpdateServiceInput{IsPublic: utils.ToPtr(true)}).IsPublic)
+	assert.True(t, projectConfig(config, &models.UpdateServiceInput{}).IsPublic)
+	assert.True(t, config.IsPublic)
+}

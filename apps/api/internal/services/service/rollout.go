@@ -107,11 +107,16 @@ func (self *ServiceService) touchReferences(ctx context.Context, touched touched
 	}
 }
 
-// projectConfig guesses the ports and hosts an update would leave on the config
+// projectConfig guesses the ports, hosts and public flag an update would leave on
+// the config. Going private is enough on its own to drop every public endpoint key,
+// so the services referencing them are found before anything is written.
 func projectConfig(config *ent.ServiceConfig, input *models.UpdateServiceInput) *ent.ServiceConfig {
 	projected := *config
 	projected.Ports = service_repo.MergePorts(config.Ports, input.OverwritePorts, input.AddPorts, input.RemovePorts)
 	projected.Hosts = service_repo.MergeHosts(config.Hosts, input.OverwriteHosts, input.UpsertHosts, input.RemoveHosts)
+	if input.IsPublic != nil {
+		projected.IsPublic = *input.IsPublic
+	}
 	return &projected
 }
 

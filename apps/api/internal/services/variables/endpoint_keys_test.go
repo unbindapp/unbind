@@ -92,7 +92,7 @@ func TestChangedEndpointKeys(t *testing.T) {
 			nil,
 		},
 		{
-			// The toggle a database's public networking section drives
+			// What the Network Access section stages
 			"database made public",
 			schema.ServiceTypeDatabase,
 			&ent.ServiceConfig{Ports: ports(5432)},

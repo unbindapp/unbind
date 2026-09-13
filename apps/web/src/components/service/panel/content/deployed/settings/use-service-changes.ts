@@ -14,9 +14,9 @@ import { TServiceShallow } from "@/lib/queries/services";
 import { useCallback, useEffect, useRef } from "react";
 
 export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceField>>;
-export type TServerValues = Partial<Record<TServiceChangeField, string | number>>;
+export type TServerValues = Partial<Record<TServiceChangeField, string | number | boolean>>;
 
-type TStageInput<T extends string | number> = {
+type TStageInput<T extends string | number | boolean> = {
   field: TServiceChangeField;
   label: string;
   value: T;
@@ -40,7 +40,13 @@ export function useServiceChanges(service: TServiceShallow, serverValues: TServe
   }, [settledKey, discard]);
 
   const stage = useCallback(
-    <T extends string | number>({ field, label, value, previous, format }: TStageInput<T>) => {
+    <T extends string | number | boolean>({
+      field,
+      label,
+      value,
+      previous,
+      format,
+    }: TStageInput<T>) => {
       const display = format ?? String;
       stageService({
         teamId,
@@ -69,7 +75,7 @@ export function useServiceChanges(service: TServiceShallow, serverValues: TServe
   return { staged, stage, unstage };
 }
 
-type TFormValues = Record<string, string | number>;
+type TFormValues = Record<string, string | number | boolean>;
 
 // Form defaults come from the staged values, so a discard elsewhere has to reset the
 // form for the fields to show the server value again. Edits staged by this form
@@ -117,4 +123,9 @@ export function stagedNumber(change: TStagedServiceChange | undefined, fallback:
 export function stagedString(change: TStagedServiceChange | undefined, fallback: string) {
   if (!change) return fallback;
   return String(change.value);
+}
+
+export function stagedBoolean(change: TStagedServiceChange | undefined, fallback: boolean) {
+  if (!change) return fallback;
+  return change.value === true;
 }

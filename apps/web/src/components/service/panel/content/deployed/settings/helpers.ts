@@ -12,6 +12,12 @@ export function shouldDeploySectionHaveReplicas(service: TServiceShallow) {
   return service.type === "github" || service.type === "docker-image";
 }
 
+// Only databases choose this directly: every other service type is public because
+// it has a domain, not because a setting says so.
+export function shouldServiceSettingsHaveNetworkAccessSection(service: TServiceShallow) {
+  return service.type === "database";
+}
+
 export function shouldServiceSettingsHaveHealthSection(service: TServiceShallow) {
   return service.type === "github" || service.type === "docker-image";
 }

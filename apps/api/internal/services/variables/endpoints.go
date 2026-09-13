@@ -182,9 +182,10 @@ func endpointKeyAt(base string, endpoints []serviceEndpoint, index int) string {
 	return vartemplate.EndpointKey(base, target, tiebreak)
 }
 
-// clusterAddress is the address that reaches raw L4 ports from outside: the load
-// balancer in front of the gateway, or any node otherwise. Resolved once per render.
-func clusterAddress(ctx context.Context, client k8s.KubeClientInterface) string {
+// ClusterAddress is the address that reaches raw L4 ports from outside: the load
+// balancer in front of the gateway, or any node otherwise. Resolve it once per
+// render or request, it talks to the cluster.
+func ClusterAddress(ctx context.Context, client k8s.KubeClientInterface) string {
 	if client.NetworkingProvider(ctx) == "gateway" {
 		lb, err := client.GetActiveControllerIP(ctx)
 		if err != nil {

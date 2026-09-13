@@ -23,9 +23,13 @@ function variable(name: string, value: string | null, previous: string | null = 
   return change;
 }
 
-function service(field: TStagedServiceChange["field"], value: string | number) {
+function service(
+  field: TStagedServiceChange["field"],
+  value: TStagedServiceChange["value"],
+  overrides: Partial<TStagedServiceChange> = {},
+) {
   const change: TStagedServiceChange = {
-    id: `service:api:${field}`,
+    id: `service:${overrides.serviceId ?? "api"}:${field}`,
     ...ids,
     serviceId: "api",
     serviceName: "api",
@@ -35,6 +39,7 @@ function service(field: TStagedServiceChange["field"], value: string | number) {
     displayValue: String(value),
     displayPrevious: "old",
     createdAt: 1,
+    ...overrides,
   };
   return change;
 }
@@ -116,4 +121,14 @@ test("serviceChangesMatchingServer reports fields equal to the server value", ()
   );
 
   assert.deepEqual(result, [replicas.id]);
+});
+
+test("serviceChangesMatchingServer compares boolean fields by value", () => {
+  const stillPrivate = service("isPublic", false);
+  const nowPublic = service("isPublic", true, { serviceId: "web" });
+
+  assert.deepEqual(serviceChangesMatchingServer({ isPublic: stillPrivate }, { isPublic: false }), [
+    stillPrivate.id,
+  ]);
+  assert.deepEqual(serviceChangesMatchingServer({ isPublic: nowPublic }, { isPublic: false }), []);
 });

@@ -2,7 +2,7 @@ import { BlockItemButtonLike } from "@/components/block";
 import CopyButton from "@/components/copy-button";
 import { getNetworkingDisplayUrl } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
 import { cn } from "@/components/ui/utils";
-import { EthernetPortIcon, GlobeIcon, GlobeLockIcon } from "lucide-react";
+import { GlobeIcon, GlobeLockIcon, HourglassIcon } from "lucide-react";
 import { useCallback } from "react";
 
 type TProps = {
@@ -45,15 +45,17 @@ export default function DatabaseEndpointCard({ mode, domain, port }: TProps) {
   );
 }
 
-export function DatabasePrivateRow() {
+// The address is allocated while the change is applied, so there is nothing to show
+// until then. An empty block here is what made this section confusing.
+export function DatabasePendingEndpointRow() {
   return (
     <div className="flex w-full flex-col overflow-hidden rounded-lg border">
       <BlockItemButtonLike
         asElement="div"
         className="text-muted-foreground border-none"
-        text="Private database"
+        text="Public URLs will show up here"
         Icon={({ className }: { className?: string }) => (
-          <EthernetPortIcon className={cn(className, "size-4.5")} />
+          <HourglassIcon className={cn(className, "animate-hourglass size-4.5")} />
         )}
       />
     </div>
