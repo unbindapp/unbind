@@ -27,7 +27,7 @@ function ProjectSettingsLayout() {
       link: linkOptions({ to: "/$team_id/project/$project_id/settings/environments", params }),
     },
     {
-      label: "Project Variables",
+      label: "Variables",
       icon: "variables",
       matchPath: `${basePath}/variables`,
       link: linkOptions({ to: "/$team_id/project/$project_id/settings/variables", params }),

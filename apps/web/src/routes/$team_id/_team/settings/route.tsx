@@ -21,7 +21,7 @@ function TeamSettingsLayout() {
       link: linkOptions({ to: "/$team_id/settings", params }),
     },
     {
-      label: "Team Variables",
+      label: "Variables",
       icon: "variables",
       matchPath: `${basePath}/variables`,
       link: linkOptions({ to: "/$team_id/settings/variables", params }),
