@@ -46,7 +46,7 @@ import {
   Undo2Icon,
   XIcon,
 } from "lucide-react";
-import { Dispatch, FC, useMemo, useState } from "react";
+import { Dispatch, FC, Fragment, useMemo, useState } from "react";
 import { z } from "zod";
 
 const hiddenString = "••••••••••";
@@ -126,7 +126,7 @@ export default function VariableCard({
           id={getNewEntityIdForVariable({ name: variable.name, value: variable.value })}
         />
       )}
-      <div className="flex h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-72">
+      <div className="flex min-h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
         {Icon && <Icon className="text-foreground mr-2 size-3.5 shrink-0" />}
         {!Icon && variable && (
           <KeyIcon
@@ -138,8 +138,8 @@ export default function VariableCard({
         {isPlaceholder && (
           <div className="bg-foreground animate-skeleton mr-2 size-3.5 shrink-0 rounded-full" />
         )}
-        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink overflow-hidden font-mono text-sm leading-normal text-ellipsis whitespace-nowrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-          {isPlaceholder ? "Loading key" : variable.name}
+        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink font-mono text-sm leading-normal break-words group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+          {isPlaceholder ? "Loading key" : <VariableName name={variable.name} />}
         </p>
       </div>
       <div className="relative -ml-2 flex w-[calc(100%+1rem)] min-w-0 flex-1 items-start sm:mt-0 sm:w-auto">
@@ -314,6 +314,22 @@ function RenderedValue({ parts }: { parts: TRenderedPart[] }) {
       <span key={index}>{part.value}</span>
     ),
   );
+}
+
+// Keys have no spaces to wrap at, so offer a break after each underscore rather than
+// letting a long one split mid-word
+function VariableName({ name }: { name: string }) {
+  return name.split("_").map((part, index) => (
+    <Fragment key={index}>
+      {index > 0 && (
+        <>
+          {"_"}
+          <wbr />
+        </>
+      )}
+      {part}
+    </Fragment>
+  ));
 }
 
 function ConditionalDropdownButton({
