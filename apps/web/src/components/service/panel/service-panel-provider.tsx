@@ -1,32 +1,25 @@
 "use client";
 
-import { useDeploymentPanelId } from "@/components/deployment/panel/deployment-panel-id-provider";
+import { deploymentPanelDeploymentIdKey } from "@/components/deployment/panel/constants";
+import { usePanelSearchState } from "@/components/panel/use-panel-search-state";
 import {
   servicePanelDefaultTabId,
+  servicePanelOwnedSearchKeys,
   servicePanelServiceIdKey,
   servicePanelTabKey,
   TServicePanelTabEnum,
 } from "@/components/service/panel/constants";
-import { drawerAnimationMs } from "@/lib/constants";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { getRouteApi } from "@tanstack/react-router";
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 
 const routeApi = getRouteApi("/$team_id/project/$project_id");
 
+const nestedIdKeys = [deploymentPanelDeploymentIdKey];
+
 type TServicePanelContext = {
   currentTabId: TServicePanelTabEnum;
-  setCurrentTabId: (value: TServicePanelTabEnum | null) => void;
   currentServiceId: string | null;
-  setCurrentServiceId: (value: string | null) => void;
-  resetCurrentTabId: () => void;
+  getOpenSearch: (serviceId: string) => Record<string, unknown>;
   closePanel: () => void;
   openPanel: (serviceId: string, tabId?: TServicePanelTabEnum) => void;
   // The terminal tab can maximize to fill the viewport; while it does, Esc should exit
@@ -40,69 +33,35 @@ const ServicePanelContext = createContext<TServicePanelContext | null>(null);
 export const ServicePanelProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const { setDeploymentPanelId } = useDeploymentPanelId();
-  const navigate = useNavigate();
-  const search = routeApi.useSearch();
-  const currentTabId = search[servicePanelTabKey] ?? servicePanelDefaultTabId;
-  const currentServiceId = search[servicePanelServiceIdKey] ?? null;
+  const currentTabId = routeApi.useSearch({
+    select: (s) => s[servicePanelTabKey] ?? servicePanelDefaultTabId,
+  });
 
-  const setCurrentTabId = useCallback(
-    (value: TServicePanelTabEnum | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, [servicePanelTabKey]: value ?? undefined }),
-        replace: true,
-        resetScroll: false,
-      }),
-    [navigate],
-  );
-  const setCurrentServiceId = useCallback(
-    (value: string | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, [servicePanelServiceIdKey]: value ?? undefined }),
-        replace: true,
-        resetScroll: false,
-      }),
-    [navigate],
-  );
+  const {
+    currentId: currentServiceId,
+    getOpenSearch,
+    openPanel,
+    closePanel,
+  } = usePanelSearchState({
+    idKey: servicePanelServiceIdKey,
+    ownedKeys: servicePanelOwnedSearchKeys,
+    nestedIdKeys,
+  });
 
   const [isTerminalFullscreen, setIsTerminalFullscreen] = useState(false);
-
-  const timeout = useRef<NodeJS.Timeout | null>(null);
 
   const value: TServicePanelContext = useMemo(
     () => ({
       currentTabId,
-      setCurrentTabId,
       currentServiceId,
-      setCurrentServiceId,
-      openPanel: (serviceId: string, tabId?: TServicePanelTabEnum) => {
-        // Opening a different service must drop the previous service's deployment context.
-        setDeploymentPanelId(null);
-        setCurrentTabId(tabId ?? servicePanelDefaultTabId);
-        setCurrentServiceId(serviceId);
-      },
-      closePanel: () => {
-        setDeploymentPanelId(null);
-        setCurrentServiceId(null);
-        if (timeout.current) clearTimeout(timeout.current);
-        timeout.current = setTimeout(() => {
-          setCurrentTabId(servicePanelDefaultTabId);
-        }, drawerAnimationMs);
-      },
-      resetCurrentTabId: () => setCurrentTabId(servicePanelDefaultTabId),
+      getOpenSearch,
+      closePanel,
+      openPanel: (serviceId: string, tabId?: TServicePanelTabEnum) =>
+        openPanel(serviceId, tabId ? { [servicePanelTabKey]: tabId } : undefined),
       isTerminalFullscreen,
       setIsTerminalFullscreen,
     }),
-    [
-      currentTabId,
-      setCurrentTabId,
-      currentServiceId,
-      setCurrentServiceId,
-      setDeploymentPanelId,
-      isTerminalFullscreen,
-    ],
+    [currentTabId, currentServiceId, getOpenSearch, openPanel, closePanel, isTerminalFullscreen],
   );
 
   return <ServicePanelContext.Provider value={value}>{children}</ServicePanelContext.Provider>;

@@ -1,71 +1,53 @@
 "use client";
 
+import { usePanelSearchState } from "@/components/panel/use-panel-search-state";
 import {
   serverPanelDefaultTabId,
+  serverPanelOwnedSearchKeys,
   serverPanelServerNameKey,
   serverPanelTabKey,
   TServerPanelTabEnum,
 } from "@/components/system/servers/panel/constants";
-import { drawerAnimationMs } from "@/lib/constants";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { createContext, ReactNode, useCallback, useContext, useMemo, useRef } from "react";
+import { getRouteApi } from "@tanstack/react-router";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 
 const routeApi = getRouteApi("/system");
 
 type TServerPanelContext = {
   currentTabId: TServerPanelTabEnum;
-  setCurrentTabId: (value: TServerPanelTabEnum | null) => void;
   currentServerName: string | null;
-  setCurrentServerName: (value: string | null) => void;
+  getOpenSearch: (serverName: string) => Record<string, unknown>;
   closePanel: () => void;
+  openPanel: (serverName: string, tabId?: TServerPanelTabEnum) => void;
 };
 
 const ServerPanelContext = createContext<TServerPanelContext | null>(null);
 
 export const ServerPanelProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const navigate = useNavigate();
-  const search = routeApi.useSearch();
-  const currentTabId = search[serverPanelTabKey] ?? serverPanelDefaultTabId;
-  const currentServerName = search[serverPanelServerNameKey] ?? null;
+  const currentTabId = routeApi.useSearch({
+    select: (s) => s[serverPanelTabKey] ?? serverPanelDefaultTabId,
+  });
 
-  const setCurrentTabId = useCallback(
-    (value: TServerPanelTabEnum | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, [serverPanelTabKey]: value ?? undefined }),
-        replace: true,
-        resetScroll: false,
-      }),
-    [navigate],
-  );
-  const setCurrentServerName = useCallback(
-    (value: string | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, [serverPanelServerNameKey]: value ?? undefined }),
-        replace: true,
-        resetScroll: false,
-      }),
-    [navigate],
-  );
-
-  const timeout = useRef<NodeJS.Timeout | null>(null);
+  const {
+    currentId: currentServerName,
+    getOpenSearch,
+    openPanel,
+    closePanel,
+  } = usePanelSearchState({
+    idKey: serverPanelServerNameKey,
+    ownedKeys: serverPanelOwnedSearchKeys,
+  });
 
   const value: TServerPanelContext = useMemo(
     () => ({
       currentTabId,
-      setCurrentTabId,
       currentServerName,
-      setCurrentServerName,
-      closePanel: () => {
-        setCurrentServerName(null);
-        if (timeout.current) clearTimeout(timeout.current);
-        timeout.current = setTimeout(() => {
-          setCurrentTabId(serverPanelDefaultTabId);
-        }, drawerAnimationMs);
-      },
+      getOpenSearch,
+      closePanel,
+      openPanel: (serverName: string, tabId?: TServerPanelTabEnum) =>
+        openPanel(serverName, tabId ? { [serverPanelTabKey]: tabId } : undefined),
     }),
-    [currentTabId, setCurrentTabId, currentServerName, setCurrentServerName],
+    [currentTabId, currentServerName, getOpenSearch, openPanel, closePanel],
   );
 
   return <ServerPanelContext.Provider value={value}>{children}</ServerPanelContext.Provider>;

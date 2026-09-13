@@ -5,7 +5,7 @@ import {
   getVolumeUsageLevel,
   percentageFormatter,
 } from "@/components/volume/helpers";
-import { volumePanelVolumeIdKey } from "@/components/volume/panel/constants";
+import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { TVolumeUsageLevel } from "@/components/volume/types";
 import { TVolumeShallow } from "@/lib/queries/services";
@@ -18,6 +18,7 @@ type TProps = {
 };
 
 export default function VolumeLine({ volume, className }: TProps) {
+  const { getOpenSearch } = useVolumePanel();
   const usagePercentage = useMemo(() => {
     if (volume.used_gb === undefined || !volume.capacity_gb) return undefined;
     return Math.min(Math.max(0, (volume.used_gb / volume.capacity_gb) * 100), 100);
@@ -36,7 +37,7 @@ export default function VolumeLine({ volume, className }: TProps) {
         data-usage={usageLevel}
         from="/$team_id/project/$project_id"
         to="."
-        search={(prev) => ({ ...prev, [volumePanelVolumeIdKey]: volume.id })}
+        search={(prev) => ({ ...prev, ...getOpenSearch(volume.id) })}
         replace={true}
         resetScroll={false}
         className={cn(

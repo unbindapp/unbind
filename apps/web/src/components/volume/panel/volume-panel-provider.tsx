@@ -1,25 +1,24 @@
 "use client";
 
+import { usePanelSearchState } from "@/components/panel/use-panel-search-state";
 import {
   TVolumePanelTabEnum,
   volumePanelDefaultTabId,
+  volumePanelOwnedSearchKeys,
   volumePanelTabKey,
   volumePanelVolumeIdKey,
 } from "@/components/volume/panel/constants";
-import { drawerAnimationMs } from "@/lib/constants";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { createContext, ReactNode, useCallback, useContext, useMemo, useRef } from "react";
+import { getRouteApi } from "@tanstack/react-router";
+import { createContext, ReactNode, useContext, useMemo } from "react";
 
 const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TVolumePanelContext = {
   currentTabId: TVolumePanelTabEnum;
-  setCurrentTabId: (value: TVolumePanelTabEnum | null) => void;
   currentVolumeId: string | null;
-  setCurrentVolumeId: (value: string | null) => void;
-  resetCurrentTabId: () => void;
+  getOpenSearch: (volumeId: string) => Record<string, unknown>;
   closePanel: () => void;
-  openPanel: (serviceId: string, tabId?: TVolumePanelTabEnum) => void;
+  openPanel: (volumeId: string, tabId?: TVolumePanelTabEnum) => void;
 };
 
 const VolumePanelContext = createContext<TVolumePanelContext | null>(null);
@@ -27,54 +26,30 @@ const VolumePanelContext = createContext<TVolumePanelContext | null>(null);
 export const VolumePanelProvider: React.FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const navigate = useNavigate();
-  const search = routeApi.useSearch();
-  const currentTabId = search[volumePanelTabKey] ?? volumePanelDefaultTabId;
-  const currentVolumeId = search[volumePanelVolumeIdKey] ?? null;
+  const currentTabId = routeApi.useSearch({
+    select: (s) => s[volumePanelTabKey] ?? volumePanelDefaultTabId,
+  });
 
-  const setCurrentTabId = useCallback(
-    (value: TVolumePanelTabEnum | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, [volumePanelTabKey]: value ?? undefined }),
-        replace: true,
-        resetScroll: false,
-      }),
-    [navigate],
-  );
-  const setCurrentVolumeId = useCallback(
-    (value: string | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, [volumePanelVolumeIdKey]: value ?? undefined }),
-        replace: true,
-        resetScroll: false,
-      }),
-    [navigate],
-  );
-
-  const timeout = useRef<NodeJS.Timeout | null>(null);
+  const {
+    currentId: currentVolumeId,
+    getOpenSearch,
+    openPanel,
+    closePanel,
+  } = usePanelSearchState({
+    idKey: volumePanelVolumeIdKey,
+    ownedKeys: volumePanelOwnedSearchKeys,
+  });
 
   const value: TVolumePanelContext = useMemo(
     () => ({
       currentTabId,
-      setCurrentTabId,
       currentVolumeId,
-      setCurrentVolumeId,
-      openPanel: (serviceId: string, tabId?: TVolumePanelTabEnum) => {
-        setCurrentTabId(tabId ?? volumePanelDefaultTabId);
-        setCurrentVolumeId(serviceId);
-      },
-      closePanel: () => {
-        setCurrentVolumeId(null);
-        if (timeout.current) clearTimeout(timeout.current);
-        timeout.current = setTimeout(() => {
-          setCurrentTabId(volumePanelDefaultTabId);
-        }, drawerAnimationMs);
-      },
-      resetCurrentTabId: () => setCurrentTabId(volumePanelDefaultTabId),
+      getOpenSearch,
+      closePanel,
+      openPanel: (volumeId: string, tabId?: TVolumePanelTabEnum) =>
+        openPanel(volumeId, tabId ? { [volumePanelTabKey]: tabId } : undefined),
     }),
-    [currentTabId, setCurrentTabId, currentVolumeId, setCurrentVolumeId],
+    [currentTabId, currentVolumeId, getOpenSearch, openPanel, closePanel],
   );
 
   return <VolumePanelContext.Provider value={value}>{children}</VolumePanelContext.Provider>;

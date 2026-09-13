@@ -6,8 +6,8 @@ import {
 import OnlineIcon from "@/components/icons/online";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useNow } from "@/components/providers/now-provider";
-import { servicePanelServiceIdKey } from "@/components/service/panel/constants";
 import ServicePanel from "@/components/service/panel/service-panel";
+import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import { usePrefetchService } from "@/components/service/use-prefetch-service";
 import { Button, LinkButton } from "@/components/ui/button";
@@ -64,6 +64,7 @@ export default function ServiceCard({
   classNameVolume,
   classNameVolumeLast,
 }: TProps) {
+  const { getOpenSearch } = useServicePanel();
   const isOwnDeleting = useIsDeleting(deleteMutationKeys.service(service?.id ?? ""));
   const isDeleting = Boolean(isDeletingProp || isOwnDeleting);
   const panelProps = isPlaceholder
@@ -159,7 +160,7 @@ export default function ServiceCard({
             variant="card"
             from="/$team_id/project/$project_id"
             to="."
-            search={(prev) => ({ ...prev, [servicePanelServiceIdKey]: service.id })}
+            search={(prev) => ({ ...prev, ...getOpenSearch(service.id) })}
             replace={true}
             resetScroll={false}
             disabled={isDeleting}

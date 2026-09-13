@@ -1,7 +1,7 @@
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { getVolumeDisplayName } from "@/components/volume/helpers";
-import { volumePanelVolumeIdKey } from "@/components/volume/panel/constants";
+import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { deleteMutationKeys, useIsDeleting } from "@/lib/hooks/use-is-deleting";
@@ -15,6 +15,7 @@ type TProps = {
 };
 
 export default function VolumeCard({ volume, className }: TProps) {
+  const { getOpenSearch } = useVolumePanel();
   const isDeleting = useIsDeleting(deleteMutationKeys.volume(volume.id)) || volume.is_deleting;
 
   const bottomLeftTextAndIcon = useMemo(() => {
@@ -55,7 +56,7 @@ export default function VolumeCard({ volume, className }: TProps) {
           variant="card"
           from="/$team_id/project/$project_id"
           to="."
-          search={(prev) => ({ ...prev, [volumePanelVolumeIdKey]: volume.id })}
+          search={(prev) => ({ ...prev, ...getOpenSearch(volume.id) })}
           replace={true}
           resetScroll={false}
           disabled={isDeleting}

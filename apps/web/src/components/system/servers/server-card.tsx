@@ -1,5 +1,5 @@
 import { formatCores, formatMegabytes } from "@/components/system/servers/format";
-import { serverPanelServerNameKey } from "@/components/system/servers/panel/constants";
+import { useServerPanel } from "@/components/system/servers/panel/server-panel-provider";
 import ServerPanel from "@/components/system/servers/panel/server-panel";
 import ServerStatusLine from "@/components/system/servers/server-status-line";
 import ServerUsageLine from "@/components/system/servers/server-usage-line";
@@ -37,6 +37,7 @@ const placeholderServer: TServer = {
 };
 
 export default function ServerCard({ server, isPlaceholder, className }: TProps) {
+  const { getOpenSearch } = useServerPanel();
   const s = isPlaceholder ? placeholderServer : server;
 
   const cardContent = (
@@ -84,7 +85,7 @@ export default function ServerCard({ server, isPlaceholder, className }: TProps)
             variant="card"
             from="/system"
             to="."
-            search={(prev) => ({ ...prev, [serverPanelServerNameKey]: s.name })}
+            search={(prev) => ({ ...prev, ...getOpenSearch(s.name) })}
             replace={true}
             resetScroll={false}
             className={cardClassName}

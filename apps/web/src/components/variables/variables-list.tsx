@@ -148,7 +148,8 @@ export default function VariablesList({ variableTypeProps }: TProps) {
   );
 }
 
-// Collapsed by default, so the key is dropped from the URL instead of written as false.
+// Collapsed is the default, so writing false drops the key (see the project route's
+// search middleware) and the service panel clears it when it closes.
 function useProvidedVariablesOpen() {
   const navigate = useNavigate();
 
@@ -161,7 +162,7 @@ function useProvidedVariablesOpen() {
     (value: boolean) =>
       navigate({
         to: ".",
-        search: (prev) => ({ ...prev, [variablesByUnbindKey]: value || undefined }),
+        search: (prev) => ({ ...prev, [variablesByUnbindKey]: value }),
         replace: true,
         resetScroll: false,
       }),

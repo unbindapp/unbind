@@ -47,7 +47,7 @@ import {
   CalendarClockIcon,
   CylinderIcon,
   GlobeIcon,
-  GlobeLockIcon,
+  LockIcon,
   MilestoneIcon,
   OctagonXIcon,
 } from "lucide-react";
@@ -365,7 +365,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                       value === publicValue ? (
                         <GlobeIcon className={cn(className, "size-4.5")} />
                       ) : (
-                        <GlobeLockIcon className={cn(className, "size-4.5")} />
+                        <LockIcon className={cn(className, "size-4.5")} />
                       )
                     }
                     isPending={false}
@@ -379,7 +379,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                           field.state.value ? (
                             <GlobeIcon className={cn(className, "size-4.5")} />
                           ) : (
-                            <GlobeLockIcon className={cn(className, "size-4.5")} />
+                            <LockIcon className={cn(className, "size-4.5")} />
                           )
                         }
                         variant="outline"

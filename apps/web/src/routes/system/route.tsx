@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect, stripSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
@@ -7,6 +7,7 @@ import { MetricsIntervalEnum } from "@/lib/queries/metrics";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import { metricsSearchParamKeys } from "@/components/metrics/constants";
 import {
+  serverPanelDefaultTabId,
   ServerPanelTabEnum,
   serverPanelServerNameKey,
   serverPanelTabKey,
@@ -27,6 +28,11 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/system")({
   validateSearch: zodValidator(searchSchema),
+  // A param equal to its default says nothing, so it never reaches the URL no matter
+  // which link or panel writes it.
+  search: {
+    middlewares: [stripSearchParams({ [serverPanelTabKey]: serverPanelDefaultTabId })],
+  },
   beforeLoad: ({ context }) => {
     const me = "me" in context ? context.me : undefined;
     if (!isSystemAdmin(me)) {

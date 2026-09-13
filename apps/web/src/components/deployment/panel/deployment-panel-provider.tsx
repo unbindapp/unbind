@@ -3,33 +3,24 @@
 import {
   deploymentPanelDefaultTabId,
   deploymentPanelDeploymentIdKey,
+  deploymentPanelOwnedSearchKeys,
   deploymentPanelTabKey,
   TDeploymentPanelTabEnum,
 } from "@/components/deployment/panel/constants";
+import { usePanelSearchState } from "@/components/panel/use-panel-search-state";
 import { drawerAnimationMs } from "@/lib/constants";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { getRouteApi } from "@tanstack/react-router";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 
 const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TDeploymentPanelContext = {
   currentTabId: TDeploymentPanelTabEnum;
-  setCurrentTabId: (value: TDeploymentPanelTabEnum | null) => void;
   currentDeploymentId: string | null;
-  setCurrentDeploymentId: (value: string | null) => void;
   currentDeployment: TDeploymentShallow | null;
   isPending: boolean;
-  resetCurrentTabId: () => void;
+  getOpenSearch: (deploymentId: string) => Record<string, unknown>;
   closePanel: () => void;
   openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => void;
 };
@@ -42,34 +33,21 @@ export const DeploymentPanelProvider: React.FC<{
   isPending: boolean;
 }> = ({ deployments, isPending, children }) => {
   const [currentDeployment, setCurrentDeployment] = useState<TDeploymentShallow | null>(null);
-  const navigate = useNavigate();
-  const search = routeApi.useSearch();
-  const currentTabId = search[deploymentPanelTabKey] ?? deploymentPanelDefaultTabId;
-  const currentDeploymentId = search[deploymentPanelDeploymentIdKey] ?? null;
+  const currentTabId = routeApi.useSearch({
+    select: (s) => s[deploymentPanelTabKey] ?? deploymentPanelDefaultTabId,
+  });
 
-  const setCurrentTabId = useCallback(
-    (value: TDeploymentPanelTabEnum | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, [deploymentPanelTabKey]: value ?? undefined }),
-        replace: true,
-        resetScroll: false,
-      }),
-    [navigate],
-  );
-  const setCurrentDeploymentId = useCallback(
-    (value: string | null) =>
-      navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, [deploymentPanelDeploymentIdKey]: value ?? undefined }),
-        replace: true,
-        resetScroll: false,
-      }),
-    [navigate],
-  );
+  const {
+    currentId: currentDeploymentId,
+    getOpenSearch,
+    openPanel,
+    closePanel,
+  } = usePanelSearchState({
+    idKey: deploymentPanelDeploymentIdKey,
+    ownedKeys: deploymentPanelOwnedSearchKeys,
+  });
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
-  const tabTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (currentDeploymentId) {
@@ -90,31 +68,22 @@ export const DeploymentPanelProvider: React.FC<{
   const value: TDeploymentPanelContext = useMemo(
     () => ({
       currentTabId,
-      setCurrentTabId,
       currentDeploymentId,
-      setCurrentDeploymentId,
       currentDeployment,
       isPending,
-      openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) => {
-        setCurrentTabId(tabId ?? deploymentPanelDefaultTabId);
-        setCurrentDeploymentId(deploymentId);
-      },
-      closePanel: () => {
-        setCurrentDeploymentId(null);
-        if (tabTimeout.current) clearTimeout(tabTimeout.current);
-        tabTimeout.current = setTimeout(() => {
-          setCurrentTabId(deploymentPanelDefaultTabId);
-        }, drawerAnimationMs);
-      },
-      resetCurrentTabId: () => setCurrentTabId(deploymentPanelDefaultTabId),
+      getOpenSearch,
+      closePanel,
+      openPanel: (deploymentId: string, tabId?: TDeploymentPanelTabEnum) =>
+        openPanel(deploymentId, tabId ? { [deploymentPanelTabKey]: tabId } : undefined),
     }),
     [
       currentTabId,
-      setCurrentTabId,
       currentDeploymentId,
-      setCurrentDeploymentId,
       currentDeployment,
       isPending,
+      getOpenSearch,
+      openPanel,
+      closePanel,
     ],
   );
 

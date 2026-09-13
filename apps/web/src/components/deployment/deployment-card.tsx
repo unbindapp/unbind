@@ -5,9 +5,9 @@ import DeploymentStatusChip, {
 import { useDeploymentsUtils } from "@/components/deployment/deployments-provider";
 import {
   deploymentPanelDefaultTabId,
-  deploymentPanelDeploymentIdKey,
   deploymentPanelTabKey,
 } from "@/components/deployment/panel/constants";
+import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
 import ErrorLine from "@/components/error-line";
 import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import BrandIcon from "@/components/icons/brand";
@@ -89,6 +89,7 @@ export default function DeploymentCard({
   showReplicas,
   ...rest
 }: TProps) {
+  const { getOpenSearch } = useDeploymentPanel();
   const { title, titleNotFound } = getTitle({ deployment, service, isPlaceholder });
   const brand = getBrand(service, isPlaceholder);
 
@@ -157,7 +158,7 @@ export default function DeploymentCard({
           to="."
           search={(prev) => ({
             ...prev,
-            [deploymentPanelDeploymentIdKey]: deployment.id,
+            ...getOpenSearch(deployment.id),
             [deploymentPanelTabKey]: isDeployed ? "deploy-logs" : deploymentPanelDefaultTabId,
           })}
           replace={true}

@@ -1,9 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Navigate, Outlet, useMatch } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  Navigate,
+  Outlet,
+  stripSearchParams,
+  useMatch,
+} from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
 import {
+  deploymentPanelDefaultTabId,
   deploymentPanelDeploymentIdKey,
   deploymentPanelTabKey,
   DeploymentPanelTabEnum,
@@ -11,6 +18,7 @@ import {
 import { projectRouteLogSearchParamKeys } from "@/components/logs/constants";
 import { metricsSearchParamKeys, MetricsViewEnum } from "@/components/metrics/constants";
 import {
+  servicePanelDefaultTabId,
   servicePanelServiceIdKey,
   servicePanelTabKey,
   ServicePanelTabEnum,
@@ -18,6 +26,7 @@ import {
 import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
 import { variablesByUnbindKey } from "@/components/variables/constants";
 import {
+  volumePanelDefaultTabId,
   volumePanelTabKey,
   VolumePanelTabEnum,
   volumePanelVolumeIdKey,
@@ -27,7 +36,6 @@ import { projectQuery, projectsListQuery } from "@/lib/queries/projects";
 import { systemQuery } from "@/lib/queries/system";
 import { templatesListQuery } from "@/lib/queries/templates";
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
-import DeploymentPanelIdProvider from "@/components/deployment/panel/deployment-panel-id-provider";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import ProjectNavbar from "@/components/project/project-navbar";
 import ProjectProvider from "@/components/project/project-provider";
@@ -67,6 +75,18 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/$team_id/project/$project_id")({
   validateSearch: zodValidator(searchSchema),
+  // A param equal to its default says nothing, so it never reaches the URL no matter
+  // which link or panel writes it.
+  search: {
+    middlewares: [
+      stripSearchParams({
+        [servicePanelTabKey]: servicePanelDefaultTabId,
+        [volumePanelTabKey]: volumePanelDefaultTabId,
+        [deploymentPanelTabKey]: deploymentPanelDefaultTabId,
+        [variablesByUnbindKey]: false,
+      }),
+    ],
+  },
   loader: ({ context: { queryClient }, params }) => {
     // Warm the cache (this also runs on intent preload) without blocking the
     // navigation — the components below render immediately and show skeletons.
@@ -124,27 +144,25 @@ function ProjectLayout() {
         <UpdateToastProvider>
           <ProjectsProvider teamId={teamId}>
             <ProjectProvider teamId={teamId} projectId={projectId}>
-              <DeploymentPanelIdProvider>
-                <TemplateDraftPanelProvider>
-                  <ServicePanelProvider>
-                    <VolumePanelProvider>
-                      <ProjectNavbar />
-                      <Outlet />
-                      {!isLogsPage && <NavbarSafeAreaInsetBottom className="sm:hidden" />}
-                      <ContextCommandPanel
-                        title="Project Command Panel"
-                        description="Project command panel"
-                        triggerType="layout"
-                        context={{
-                          contextType: "project",
-                          projectId,
-                          teamId,
-                        }}
-                      />
-                    </VolumePanelProvider>
-                  </ServicePanelProvider>
-                </TemplateDraftPanelProvider>
-              </DeploymentPanelIdProvider>
+              <TemplateDraftPanelProvider>
+                <ServicePanelProvider>
+                  <VolumePanelProvider>
+                    <ProjectNavbar />
+                    <Outlet />
+                    {!isLogsPage && <NavbarSafeAreaInsetBottom className="sm:hidden" />}
+                    <ContextCommandPanel
+                      title="Project Command Panel"
+                      description="Project command panel"
+                      triggerType="layout"
+                      context={{
+                        contextType: "project",
+                        projectId,
+                        teamId,
+                      }}
+                    />
+                  </VolumePanelProvider>
+                </ServicePanelProvider>
+              </TemplateDraftPanelProvider>
             </ProjectProvider>
           </ProjectsProvider>
         </UpdateToastProvider>

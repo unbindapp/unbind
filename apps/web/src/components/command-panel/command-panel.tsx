@@ -545,7 +545,7 @@ function Item({
         </div>
       )}
       <div className="relative flex min-w-0 flex-1 items-center justify-start gap-2.5 group-data-has-description/item:items-start">
-        <div className="line-icon">
+        <div className="line-icon self-start">
           <Icon className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton -ml-0.5 size-5 group-data-placeholder/item:rounded-full" />
         </div>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
