@@ -176,11 +176,11 @@ function ProvidedVariablesSection({
       >
         <span className="min-w-0 shrink truncate">
           Variables by Unbind{" "}
-          <span className="text-muted-more-foreground group-data-open/button:text-muted-foreground font-normal">
+          <span className="text-muted-more-foreground group-data-open/button:text-muted-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground font-normal">
             ({provided.length})
           </span>
         </span>
-        <ChevronDown className="text-muted-more-foreground group-data-open/button:text-muted-foreground -mr-0.5 size-5 shrink-0 transition group-data-open/button:rotate-180" />
+        <ChevronDown className="text-muted-more-foreground group-data-open/button:text-muted-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground -mr-0.5 size-5 shrink-0 transition-transform group-data-open/button:rotate-180" />
       </Button>
       {isOpen &&
         provided.map((variable) => (

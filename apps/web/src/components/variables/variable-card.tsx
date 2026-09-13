@@ -110,6 +110,8 @@ export default function VariableCard({
     };
   }, [isPlaceholder, variable, variableTypeProps]);
 
+  const IconFinal = Icon || KeyIcon;
+
   return (
     <Element
       data-placeholder={isPlaceholder || undefined}
@@ -126,18 +128,12 @@ export default function VariableCard({
           id={getNewEntityIdForVariable({ name: variable.name, value: variable.value })}
         />
       )}
-      <div className="flex min-h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-56 sm:pr-4 md:w-64">
-        {Icon && <Icon className="text-foreground mr-2 size-3.5 shrink-0" />}
-        {!Icon && variable && (
-          <KeyIcon
-            data-dynamic={isDynamic || undefined}
-            data-unresolved={hasUnresolved || undefined}
-            className="text-foreground data-dynamic:text-process mr-2 size-3.5 shrink-0"
-          />
-        )}
-        {isPlaceholder && (
-          <div className="bg-foreground animate-skeleton mr-2 size-3.5 shrink-0 rounded-full" />
-        )}
+      <div className="flex min-h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-48 sm:pr-4 lg:w-68">
+        <IconFinal
+          data-dynamic={isDynamic || undefined}
+          data-unresolved={hasUnresolved || undefined}
+          className="text-foreground data-dynamic:text-process group-data-placeholder/card:animate-skeleton group-data-placeholder/card:bg-foreground mt-1 mr-2 size-3.5 shrink-0 self-start group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent"
+        />
         <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink font-mono text-sm leading-normal wrap-break-word group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {isPlaceholder ? "Loading key" : <VariableName name={variable.name} />}
         </p>
