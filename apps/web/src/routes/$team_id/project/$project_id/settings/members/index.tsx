@@ -10,7 +10,7 @@ export const Route = createFileRoute("/$team_id/project/$project_id/settings/mem
 function ProjectMembersSettings() {
   return (
     <>
-      <SettingsTabTitle>Members</SettingsTabTitle>
+      <SettingsTabTitle>Project Members</SettingsTabTitle>
       <div className="-mx-1 mt-2 w-[calc(100%+0.5rem)] p-1 md:max-w-3xl">
         <ComingSoonCard />
       </div>

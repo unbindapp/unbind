@@ -507,7 +507,7 @@ export default function useGoToItem({ context }: TProps) {
           },
           {
             id: `${subpageId}_/settings/members`,
-            title: "Members",
+            title: context.contextType === "project" ? "Project Members" : "Team Members",
             titleSuffix: ` | ${settingsTitle}`,
             onSelect: () => {
               navigateToSettings({
