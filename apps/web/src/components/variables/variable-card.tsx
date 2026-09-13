@@ -128,7 +128,7 @@ export default function VariableCard({
           id={getNewEntityIdForVariable({ name: variable.name, value: variable.value })}
         />
       )}
-      <div className="flex min-h-9 w-full shrink-0 items-center py-2 pr-8 sm:w-48 sm:pr-4 lg:w-68">
+      <div className="flex min-h-9 w-full shrink-0 items-center py-1.75 pr-8 sm:w-48 sm:pr-4 lg:w-68">
         <IconFinal
           data-dynamic={isDynamic || undefined}
           data-unresolved={hasUnresolved || undefined}
