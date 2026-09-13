@@ -4,7 +4,7 @@ import {
 } from "@/components/deployment/panel/constants";
 import { logSearchParamKeys } from "@/components/logs/constants";
 import { metricsSearchParamKeys } from "@/components/metrics/constants";
-import { variablesByUnbindKey } from "@/components/variables/constants";
+import { providedVariablesKey } from "@/components/variables/constants";
 import { z } from "zod";
 
 export const ServicePanelTabEnum = z.enum([
@@ -26,7 +26,7 @@ export const servicePanelServiceIdKey = "service";
 // service is opened again, so anything new the panel puts in the URL belongs here.
 export const servicePanelOwnedSearchKeys = [
   servicePanelTabKey,
-  variablesByUnbindKey,
+  providedVariablesKey,
   metricsSearchParamKeys.service.interval,
   ...Object.values(logSearchParamKeys.service),
   deploymentPanelDeploymentIdKey,

@@ -4,7 +4,7 @@ import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { variablesByUnbindKey } from "@/components/variables/constants";
+import { providedVariablesKey } from "@/components/variables/constants";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import VariableCard from "@/components/variables/variable-card";
 import type { TVariableWithStaged } from "@/components/variables/variables-provider";
@@ -155,14 +155,14 @@ function useProvidedVariablesOpen() {
 
   const isOpen = useSearch({
     strict: false,
-    select: (s) => (s as Record<string, unknown>)[variablesByUnbindKey] === true,
+    select: (s) => (s as Record<string, unknown>)[providedVariablesKey] === true,
   });
 
   const setIsOpen = useCallback(
     (value: boolean) =>
       navigate({
         to: ".",
-        search: (prev) => ({ ...prev, [variablesByUnbindKey]: value }),
+        search: (prev) => ({ ...prev, [providedVariablesKey]: value }),
         replace: true,
         resetScroll: false,
       }),
@@ -202,7 +202,7 @@ function ProvidedVariablesSection({
         variant="ghost"
       >
         <span className="min-w-0 shrink truncate">
-          Variables by Unbind{" "}
+          Provided Variables{" "}
           <span className="text-muted-more-foreground group-data-open/button:text-muted-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground font-normal">
             ({provided.length})
           </span>

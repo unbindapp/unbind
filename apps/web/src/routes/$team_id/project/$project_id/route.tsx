@@ -24,7 +24,7 @@ import {
   ServicePanelTabEnum,
 } from "@/components/service/panel/constants";
 import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
-import { variablesByUnbindKey } from "@/components/variables/constants";
+import { providedVariablesKey } from "@/components/variables/constants";
 import {
   volumePanelDefaultTabId,
   volumePanelTabKey,
@@ -67,8 +67,8 @@ const searchSchema = z.object({
   [metricsSearchParamKeys.environment.view]: MetricsViewEnum.optional(),
   [metricsSearchParamKeys.environment.selection]: z.string().optional(),
   [metricsSearchParamKeys.service.interval]: MetricsIntervalEnum.optional(),
-  // Variables ("Variables by Unbind" section)
-  [variablesByUnbindKey]: z.boolean().optional(),
+  // Variables ("Provided Variables" section)
+  [providedVariablesKey]: z.boolean().optional(),
   // Logs (one namespace per log scope, see components/logs/constants)
   ...Object.fromEntries(projectRouteLogSearchParamKeys.map((key) => [key, z.string().optional()])),
 });
@@ -83,7 +83,7 @@ export const Route = createFileRoute("/$team_id/project/$project_id")({
         [servicePanelTabKey]: servicePanelDefaultTabId,
         [volumePanelTabKey]: volumePanelDefaultTabId,
         [deploymentPanelTabKey]: deploymentPanelDefaultTabId,
-        [variablesByUnbindKey]: false,
+        [providedVariablesKey]: false,
       }),
     ],
   },
