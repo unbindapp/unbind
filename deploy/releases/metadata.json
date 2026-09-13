@@ -328,5 +328,10 @@
     "version": "v0.1.65",
     "summary": "Server details and metrics panels, clearer server health reporting, the update page moved under system settings, project card polish, and a simpler number range error.",
     "breaking": false
+  },
+  "v0.1.66": {
+    "version": "v0.1.66",
+    "summary": "System-wide metrics page with server filtering and disk I/O charts, more accurate resource and network metrics, clearer chart units, status icons on server details, and changelog padding fixes.",
+    "breaking": false
   }
 }
