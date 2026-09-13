@@ -42,7 +42,11 @@ export default function usePreferencesItem({ context }: TProps) {
         : MoonIcon;
 
   const item: TCommandPanelItem | null = useMemo(() => {
-    if (context.contextType !== "team" && context.contextType !== "project") {
+    if (
+      context.contextType !== "team" &&
+      context.contextType !== "project" &&
+      context.contextType !== "system"
+    ) {
       return null;
     }
     const item: TCommandPanelItem = {

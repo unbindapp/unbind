@@ -63,7 +63,9 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
     {
       enabled:
         triggerType === "layout" &&
-        (context.contextType === "team" || context.contextType === "project"),
+        (context.contextType === "team" ||
+          context.contextType === "project" ||
+          context.contextType === "system"),
       conflictBehavior: "allow",
     },
   );
@@ -78,7 +80,7 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
 
   return (
     <ContextCommandPanelItemsProvider
-      teamId={context.teamId}
+      teamId={context.teamId ?? ""}
       projectId={context.projectId || ""}
       page={currentPage}
       context={context}

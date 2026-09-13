@@ -80,4 +80,9 @@ export type TContextCommandPanelContext =
       contextType: "new-service";
       teamId: string;
       projectId: string;
+    }
+  | {
+      contextType: "system";
+      teamId?: never;
+      projectId?: never;
     };

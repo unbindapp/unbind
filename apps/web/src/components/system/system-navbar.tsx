@@ -5,12 +5,19 @@ import {
   NavbarTabsLg,
   NavbarTabsMd,
   NavbarTabsSm,
+  TNavbarCommandPanelContext,
 } from "@/components/navigation/navbar";
 import SystemTabs from "@/components/system/system-tabs";
+import { useMemo } from "react";
 
 export default function SystemNavbar() {
+  const commandPanelContext: TNavbarCommandPanelContext = useMemo(
+    () => ({ contextType: "system" }),
+    [],
+  );
+
   return (
-    <Navbar>
+    <Navbar commandPanelContext={commandPanelContext}>
       <NavbarBreadcrumb>
         <BreadcrumbWrapper>
           <div className="flex min-w-0 shrink items-center py-3.5 pr-1.5 pl-2.75 text-sm font-medium">

@@ -80,7 +80,7 @@ function useGitItem({ context }: TProps) {
   const defaultEnvironmentId = projectData?.project.default_environment_id || environments?.[0]?.id;
 
   const { refetch: refetchServices } = useServicesUtils({
-    teamId: context.teamId,
+    teamId,
     projectId,
     environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
@@ -103,7 +103,7 @@ function useGitItem({ context }: TProps) {
         repository_owner: owner,
         repository_name: repoName,
         name: repoName,
-        team_id: context.teamId,
+        team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
         github_installation_id: installationId,
@@ -121,7 +121,7 @@ function useGitItem({ context }: TProps) {
       const pendingId = uuidv4();
       addPendingService({
         id: pendingId,
-        teamId: context.teamId,
+        teamId,
         projectId,
         environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
         name: repository.full_name.split("/")[1],

@@ -45,7 +45,7 @@ export function useDatabaseItemHook({ context }: TProps) {
   return hook;
 }
 
-function useDatabaseItem({ context }: TProps) {
+function useDatabaseItem() {
   const mainPageId = "databases";
   const subpageId = "databases_subpage";
 
@@ -74,7 +74,7 @@ function useDatabaseItem({ context }: TProps) {
   const defaultEnvironmentId = projectData?.project.default_environment_id || environments?.[0]?.id;
 
   const { refetch: refetchServices } = useServicesUtils({
-    teamId: context.teamId,
+    teamId,
     projectId,
     environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
@@ -93,7 +93,7 @@ function useDatabaseItem({ context }: TProps) {
         builder: "database",
         database_type: databaseType,
         name: databaseTypeToName(databaseType),
-        team_id: context.teamId,
+        team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
         auto_deploy: false,
@@ -110,7 +110,7 @@ function useDatabaseItem({ context }: TProps) {
       const pendingId = uuidv4();
       addPendingService({
         id: pendingId,
-        teamId: context.teamId,
+        teamId,
         projectId,
         environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
         name: databaseTypeToName(data.databaseType),

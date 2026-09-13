@@ -3,6 +3,7 @@ import { useDatabaseItemHook } from "@/components/command-panel/context-command-
 import { useDockerImageItemHook } from "@/components/command-panel/context-command-panel/items/docker-image";
 import { useGitItemHook } from "@/components/command-panel/context-command-panel/items/git";
 import useGoToItem from "@/components/command-panel/context-command-panel/items/go-to";
+import useSystemGoToItem from "@/components/command-panel/context-command-panel/items/go-to-system";
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
 import usePreferencesItem from "@/components/command-panel/context-command-panel/items/preferences";
 import { useTemplateItemHook } from "@/components/command-panel/context-command-panel/items/template";
@@ -24,12 +25,13 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const useVolumeItem = useVolumeItemHook({ context });
 
   const { item: gitItem } = useGitItem({ context });
-  const { item: dockerImageItem } = useDockerImageItem({ context });
-  const { item: databaseItem } = useDatabaseItem({ context });
-  const { item: volumeItem } = useVolumeItem({ context });
+  const { item: dockerImageItem } = useDockerImageItem();
+  const { item: databaseItem } = useDatabaseItem();
+  const { item: volumeItem } = useVolumeItem();
 
   const { item: templateItem } = useTemplateItem();
   const { item: goToItem } = useGoToItem({ context });
+  const { item: systemGoToItem } = useSystemGoToItem({ context });
   const { item: newProjectItem } = useNewProjectItem({ context });
   const { item: preferencesItem } = usePreferencesItem({ context });
 
@@ -55,6 +57,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
         ...(volumeItem ? [volumeItem] : []),
         ...(preferencesItem ? [preferencesItem] : []),
         ...(goToItem ? [goToItem] : []),
+        ...(systemGoToItem ? [systemGoToItem] : []),
       ],
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -65,6 +68,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
       templateItem,
       volumeItem,
       goToItem,
+      systemGoToItem,
       preferencesItem,
       context,
     ],

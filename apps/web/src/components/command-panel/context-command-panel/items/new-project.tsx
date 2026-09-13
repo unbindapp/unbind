@@ -20,6 +20,7 @@ type TProps = {
 };
 
 export default function useNewProjectItem({ context }: TProps) {
+  const teamId = context.teamId ?? "";
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
@@ -27,7 +28,7 @@ export default function useNewProjectItem({ context }: TProps) {
   const removePendingProject = usePendingEntityStore((s) => s.removePendingProject);
 
   const router = useRouter();
-  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: context.teamId });
+  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
@@ -39,7 +40,7 @@ export default function useNewProjectItem({ context }: TProps) {
       const pendingId = uuidv4();
       addPendingProject({
         id: pendingId,
-        teamId: context.teamId,
+        teamId,
         name: name || "",
         createdAt: new Date().toISOString(),
       });
@@ -87,7 +88,7 @@ export default function useNewProjectItem({ context }: TProps) {
       const navigateRes = await ResultAsync.fromPromise(
         router.navigate({
           to: "/$team_id/project/$project_id",
-          params: { team_id: context.teamId, project_id: projectId },
+          params: { team_id: teamId, project_id: projectId },
           search: { environment: environmentId },
         }),
         () => new Error("Failed to navigate to project"),
@@ -123,11 +124,11 @@ export default function useNewProjectItem({ context }: TProps) {
       onSelect: (props) => {
         if (props?.isPendingId === id) return;
         setIsPendingId(id);
-        createProject({ teamId: context.teamId, name: generateProjectName() });
+        createProject({ teamId, name: generateProjectName() });
       },
       Icon: FolderPlusIcon,
     };
-  }, [setIsPendingId, createProject, context.teamId]);
+  }, [setIsPendingId, createProject, teamId]);
 
   const value = useMemo(
     () => ({

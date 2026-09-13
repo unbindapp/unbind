@@ -2,6 +2,7 @@ import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 
+import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import { MetricsIntervalEnum } from "@/lib/queries/metrics";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import { metricsSearchParamKeys } from "@/components/metrics/constants";
@@ -46,6 +47,12 @@ function SystemLayout() {
         <SystemNavbar />
         <Outlet />
         <NavbarSafeAreaInsetBottom className="sm:hidden" />
+        <ContextCommandPanel
+          title="System Command Panel"
+          description="System command panel"
+          context={{ contextType: "system" }}
+          triggerType="layout"
+        />
       </ServerPanelProvider>
     </SystemProvider>
   );

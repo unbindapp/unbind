@@ -17,7 +17,7 @@ const NAVBAR_ROLE = {
 
 export type TNavbarCommandPanelContext = Extract<
   TContextCommandPanelContext,
-  { contextType: "team" | "project" }
+  { contextType: "team" | "project" | "system" }
 >;
 
 type TProps = {

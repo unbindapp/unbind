@@ -56,7 +56,7 @@ function cleanSearch(search: string | undefined) {
   return search;
 }
 
-function useDockerImageItem({ context }: TProps) {
+function useDockerImageItem() {
   const mainPageId = "docker-image";
   const subpageId = "docker-image_subpage";
 
@@ -86,7 +86,7 @@ function useDockerImageItem({ context }: TProps) {
   const defaultEnvironmentId = projectData?.project.default_environment_id || environments?.[0]?.id;
 
   const { refetch: refetchServices } = useServicesUtils({
-    teamId: context.teamId,
+    teamId,
     projectId,
     environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
@@ -106,7 +106,7 @@ function useDockerImageItem({ context }: TProps) {
         type: "docker-image",
         builder: "docker",
         name: imageNameWithoutTag,
-        team_id: context.teamId,
+        team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
         is_public: false,
@@ -125,7 +125,7 @@ function useDockerImageItem({ context }: TProps) {
       const pendingId = uuidv4();
       addPendingService({
         id: pendingId,
-        teamId: context.teamId,
+        teamId,
         projectId,
         environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
         name: getImageName(data.image),

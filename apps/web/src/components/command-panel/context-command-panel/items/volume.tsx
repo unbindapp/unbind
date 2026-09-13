@@ -73,7 +73,7 @@ function getDefaultCapacityGb(minimumStorageGb: number | undefined) {
   return Math.max(1, minimumStorageGb ?? 1);
 }
 
-function useVolumeItem({ context }: TProps) {
+function useVolumeItem() {
   const { closePanel: closeCommandPanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
@@ -115,7 +115,7 @@ function useVolumeItem({ context }: TProps) {
         throw new Error("Environment ID is missing");
       }
       return createVolumeFn({
-        teamId: context.teamId,
+        teamId,
         projectId,
         environmentId,
         name: getDefaultVolumeName(service.name),
