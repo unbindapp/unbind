@@ -247,6 +247,31 @@ export default function useGoToItem({ context }: TProps) {
     router,
   ]);
 
+  // The team's home page: its own page in the team context, the step above in the
+  // project context.
+  const teamProjectsItem: TCommandPanelItem | null = useMemo(() => {
+    if (!context.teamId) return null;
+    const id = `${subpageId}_projects`;
+    const linkProps = { to: "/$team_id", params: { team_id: context.teamId } } as const;
+    return {
+      id,
+      title: "Projects",
+      titleSuffix: ` | Team`,
+      Icon: FolderIcon,
+      keywords: ["projects", "home page", "team", "parent", "up", "back", ...goToKeywords],
+      onHighlight: () => {
+        void router.preloadRoute(linkProps);
+      },
+      onSelect: () => {
+        navigateTo({
+          run: () => router.navigate(linkProps),
+          isPendingId: id,
+          error: "Failed to navigate to projects",
+        });
+      },
+    };
+  }, [context.teamId, goToKeywords, navigateTo, router]);
+
   const settingsTitle = useMemo(() => {
     return context.contextType === "project" || context.contextType === "new-service"
       ? "Project Settings"
@@ -348,31 +373,12 @@ export default function useGoToItem({ context }: TProps) {
                   },
                   keywords: ["metrics", "usage", "system", "project", ...goToKeywords],
                 },
+                ...(teamProjectsItem ? [teamProjectsItem] : []),
                 ...serviceItems,
               ] as TCommandPanelItem[])
             : context.contextType === "team"
               ? [
-                  {
-                    id: `${subpageId}_projects`,
-                    title: "Projects",
-                    titleSuffix: ` | Team`,
-                    Icon: FolderIcon,
-                    onSelect: async () => {
-                      navigateTo({
-                        run: () =>
-                          router.navigate({ to: "/$team_id", params: { team_id: context.teamId } }),
-                        isPendingId: `${subpageId}_projects`,
-                        error: "Failed to navigate to projects",
-                      });
-                    },
-                    onHighlight: () => {
-                      void router.preloadRoute({
-                        to: "/$team_id",
-                        params: { team_id: context.teamId },
-                      });
-                    },
-                    keywords: ["projects", "home page", "team", ...goToKeywords],
-                  },
+                  ...(teamProjectsItem ? [teamProjectsItem] : []),
                   {
                     id: `${subpageId}_metrics`,
                     title: "Metrics",
@@ -570,6 +576,7 @@ export default function useGoToItem({ context }: TProps) {
     router,
     projectItems,
     serviceItems,
+    teamProjectsItem,
   ]);
 
   const value = useMemo(
