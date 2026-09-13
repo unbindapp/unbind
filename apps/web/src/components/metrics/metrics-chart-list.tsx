@@ -10,6 +10,7 @@ import { useMetricsState } from "@/components/metrics/metrics-state-provider";
 import { shapeMetricSeries } from "@/components/metrics/shape-metrics";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { CpuIcon, HardDriveIcon, MemoryStickIcon, NetworkIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -26,11 +27,13 @@ const totalNameFormatter = () => "Combined";
 const volumeUsage = {
   title: "Volumes",
   description: "Space used by volumes over time",
+  Icon: HardDriveIcon,
   formatter: bytesToHumanReadable,
 };
 const diskIO = {
   title: "Disk I/O",
   description: "Disk read and write throughput over time",
+  Icon: HardDriveIcon,
   formatter: bytesPerSecondToHumanReadable,
 };
 
@@ -81,6 +84,7 @@ export default function MetricsChartList({
       <ChartWrapper
         title="CPU"
         description="CPU usage over time"
+        Icon={CpuIcon}
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
         {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
@@ -100,6 +104,7 @@ export default function MetricsChartList({
       <ChartWrapper
         title="RAM"
         description="RAM usage over time"
+        Icon={MemoryStickIcon}
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
         {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
@@ -119,6 +124,7 @@ export default function MetricsChartList({
       <ChartWrapper
         title="Network"
         description={networkDescription}
+        Icon={NetworkIcon}
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
         {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
@@ -138,6 +144,7 @@ export default function MetricsChartList({
       <ChartWrapper
         title={disk.title}
         description={disk.description}
+        Icon={disk.Icon}
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
         {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
