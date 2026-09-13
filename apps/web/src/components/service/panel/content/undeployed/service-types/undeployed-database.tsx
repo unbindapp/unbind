@@ -82,7 +82,7 @@ const networkingItems: TCommandItem[] = [
   {
     value: privateValue,
     label: "Private",
-    description: "Reachable only by your other services",
+    description: "Reachable only by your services",
   },
 ];
 
@@ -349,7 +349,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
         <Block>
           <BlockItem>
             <BlockItemHeader>
-              <BlockItemTitle>Networking</BlockItemTitle>
+              <BlockItemTitle>Network Access</BlockItemTitle>
             </BlockItemHeader>
             <BlockItemContent>
               <form.AppField
