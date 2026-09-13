@@ -72,7 +72,7 @@ export function S3BucketLabel({
   // box, which gets sliced off wherever the line clips its overflow.
   return (
     <span className={cn("flex max-w-full min-w-0 items-center gap-2", wrap && "flex-wrap gap-y-1")}>
-      <span className={wrap ? "min-w-0 break-words" : "min-w-0 truncate"}>{name}</span>
+      <span className={wrap ? "warp-break-word min-w-0" : "min-w-0 truncate"}>{name}</span>
       <span
         className={cn(
           "bg-foreground/2-10 border-foreground/2-10 rounded-sm border px-1.25 font-mono text-sm font-normal",

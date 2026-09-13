@@ -138,7 +138,7 @@ export default function VariableCard({
         {isPlaceholder && (
           <div className="bg-foreground animate-skeleton mr-2 size-3.5 shrink-0 rounded-full" />
         )}
-        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink font-mono text-sm leading-normal break-words group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink font-mono text-sm leading-normal wrap-break-word group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {isPlaceholder ? "Loading key" : <VariableName name={variable.name} />}
         </p>
       </div>

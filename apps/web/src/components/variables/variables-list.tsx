@@ -2,14 +2,15 @@
 
 import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
-import { useVariables } from "@/components/variables/variables-provider";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import VariableCard from "@/components/variables/variable-card";
-import { HourglassIcon, KeyIcon, LoaderIcon, WandSparklesIcon } from "lucide-react";
-import { ReactNode } from "react";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
-import { TVariableShallow } from "@/lib/queries/variables";
+import VariableCard from "@/components/variables/variable-card";
 import type { TVariableWithStaged } from "@/components/variables/variables-provider";
+import { useVariables } from "@/components/variables/variables-provider";
+import { TVariableShallow } from "@/lib/queries/variables";
+import { ChevronDown, HourglassIcon, KeyIcon, LoaderIcon, WandSparklesIcon } from "lucide-react";
+import { ReactNode, useState } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -61,6 +62,8 @@ export default function VariablesList({ variableTypeProps }: TProps) {
     provided,
   } = useVariables();
 
+  const [isProvidedVariablesOpen, setIsProvidedVariablesOpen] = useState(false);
+
   if (!variables && !isPending && error) {
     return (
       <Wrapper>
@@ -98,7 +101,12 @@ export default function VariablesList({ variableTypeProps }: TProps) {
             No variables yet
           </NoItemsCard>
         )}
-        <ProvidedVariablesSection provided={provided} variableTypeProps={variableTypeProps} />
+        <ProvidedVariablesSection
+          provided={provided}
+          variableTypeProps={variableTypeProps}
+          isOpen={isProvidedVariablesOpen}
+          setIsOpen={setIsProvidedVariablesOpen}
+        />
       </Wrapper>
     );
   }
@@ -126,7 +134,13 @@ export default function VariablesList({ variableTypeProps }: TProps) {
           />
         );
       })}
-      <ProvidedVariablesSection provided={provided} variableTypeProps={variableTypeProps} />
+      <ProvidedVariablesSection
+        provided={provided}
+        variableTypeProps={variableTypeProps}
+        className="mt-2"
+        isOpen={isProvidedVariablesOpen}
+        setIsOpen={setIsProvidedVariablesOpen}
+      />
     </Wrapper>
   );
 }
@@ -137,30 +151,48 @@ export default function VariablesList({ variableTypeProps }: TProps) {
 function ProvidedVariablesSection({
   provided,
   variableTypeProps,
+  className,
+  isOpen,
+  setIsOpen,
 }: {
   provided: TVariableShallow[] | undefined;
   variableTypeProps: TEntityVariableTypeProps;
+  className?: string;
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
 }) {
   if (!provided || provided.length === 0) return null;
 
   return (
     <>
-      <div className="mt-1 flex w-full items-center gap-2 px-1 pt-2">
-        <p className="text-muted-foreground min-w-0 shrink text-sm leading-tight font-medium">
-          Provided by Unbind
-        </p>
-        <div className="bg-border h-px min-w-0 flex-1 rounded-full" />
-      </div>
-      {provided.map((variable) => (
-        <VariableCard
-          key={variable.name}
-          variable={variable}
-          variableTypeProps={variableTypeProps}
-          asElement="li"
-          hideThreeDotButton
-          Icon={({ className }) => <WandSparklesIcon className={className} />}
-        />
-      ))}
+      <Button
+        data-open={isOpen || undefined}
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "text-muted-foreground data-open:text-foreground group/button -mx-2 -mb-0.5 w-[calc(100%+1rem)] max-w-[calc(100%+1rem)] justify-between px-3 text-left font-medium",
+          className,
+        )}
+        variant="ghost"
+      >
+        <span className="min-w-0 shrink truncate">
+          Variables by Unbind{" "}
+          <span className="text-muted-more-foreground group-data-open/button:text-muted-foreground font-normal">
+            ({provided.length})
+          </span>
+        </span>
+        <ChevronDown className="text-muted-more-foreground group-data-open/button:text-muted-foreground -mr-0.5 size-5 shrink-0 transition group-data-open/button:rotate-180" />
+      </Button>
+      {isOpen &&
+        provided.map((variable) => (
+          <VariableCard
+            key={variable.name}
+            variable={variable}
+            variableTypeProps={variableTypeProps}
+            asElement="li"
+            hideThreeDotButton
+            Icon={({ className }) => <WandSparklesIcon className={className} />}
+          />
+        ))}
     </>
   );
 }
