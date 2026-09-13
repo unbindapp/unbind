@@ -59,14 +59,29 @@ export function AddBackupBucketTrigger({
   );
 }
 
-export function S3BucketLabel({ name, bucket }: { name: string; bucket: string }) {
+export function S3BucketLabel({
+  name,
+  bucket,
+  wrap,
+}: {
+  name: string;
+  bucket: string;
+  wrap?: boolean;
+}) {
+  // The bucket is a flex item, not inline text. An inline chip paints its border outside the line
+  // box, which gets sliced off wherever the line clips its overflow.
   return (
-    <>
-      <span className="pr-2">{name}</span>
-      <span className="bg-foreground/2-10 border-foreground/2-10 -my-1 rounded-sm border px-1.25 font-mono text-sm font-normal">
+    <span className={cn("flex max-w-full min-w-0 items-center gap-2", wrap && "flex-wrap gap-y-1")}>
+      <span className={wrap ? "min-w-0 break-words" : "min-w-0 truncate"}>{name}</span>
+      <span
+        className={cn(
+          "bg-foreground/2-10 border-foreground/2-10 rounded-sm border px-1.25 font-mono text-sm font-normal",
+          wrap ? "max-w-full min-w-0 break-all" : "-my-1 min-w-0 truncate",
+        )}
+      >
         {bucket}
       </span>
-    </>
+    </span>
   );
 }
 
@@ -79,7 +94,7 @@ export function S3BucketCommandItemElement({
 }) {
   return (
     <p className={cn("min-w-0 leading-tight", className)}>
-      <S3BucketLabel name={item.label} bucket={item.description ?? ""} />
+      <S3BucketLabel name={item.label} bucket={item.description ?? ""} wrap />
     </p>
   );
 }

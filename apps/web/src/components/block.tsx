@@ -289,7 +289,10 @@ export function BlockItemButtonLike({
           <div className="flex w-full flex-row">
             <p
               className={cn(
-                "group-data-pending/button:bg-foreground max-w-full min-w-0 truncate leading-tight font-medium select-text group-data-pending/button:rounded-md",
+                "group-data-pending/button:bg-foreground max-w-full min-w-0 leading-tight font-medium select-text group-data-pending/button:rounded-md",
+                // A node brings its own layout, clipping it here cuts anything that paints
+                // outside the line box, like a chip's border
+                typeof text === "string" && "truncate",
                 classNameText,
               )}
             >
