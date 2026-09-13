@@ -15,7 +15,7 @@ export default function ChartWrapper({ title, description, Icon, className, chil
     <div className={cn("flex w-full p-1", className)}>
       <Card className="bg-background flex w-full flex-col justify-start rounded-xl border shadow-none">
         <CardHeader className="px-4 py-2.25 sm:px-5 sm:py-3">
-          <CardTitle className="flex items-start gap-2.5 text-lg">
+          <CardTitle className="flex items-start gap-2 text-lg">
             <div className="line-icon">
               <Icon className="size-5 shrink-0" />
             </div>
