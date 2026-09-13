@@ -42,6 +42,8 @@ func (self *KubeClient) CreatePersistentVolumeClaim(
 	storageClassName *string,
 	client kubernetes.Interface,
 ) (*models.PVCInfo, error) {
+	defer self.invalidateCache()
+
 	if namespace == "" {
 		return nil, fmt.Errorf("namespace cannot be empty")
 	}
@@ -484,6 +486,19 @@ func anyPodRunning(pods []corev1.Pod) bool {
 	return false
 }
 
+// listPVCs reads the claims in a namespace, serving identical reads from the
+// short-lived cache when they go through the shared internal client.
+func (self *KubeClient) listPVCs(ctx context.Context, namespace, labelSelector string, client kubernetes.Interface) (*corev1.PersistentVolumeClaimList, error) {
+	fetch := func(ctx context.Context) (*corev1.PersistentVolumeClaimList, error) {
+		return client.CoreV1().PersistentVolumeClaims(namespace).List(ctx, metav1.ListOptions{LabelSelector: labelSelector})
+	}
+
+	if !self.cacheable(client) {
+		return fetch(ctx)
+	}
+	return cached(ctx, self.listCache, "pvcs|"+namespace+"|"+labelSelector, fetch, (*corev1.PersistentVolumeClaimList).DeepCopy)
+}
+
 // ListPersistentVolumeClaims lists all PersistentVolumeClaims in a given namespace, optionally filtered by a label selector,
 func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) ([]*models.PVCInfo, error) {
 	if namespace == "" {
@@ -497,13 +512,13 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 	}
 	listOptions.LabelSelector = strings.Join(selectors, ",")
 
-	pvcList, err := client.CoreV1().PersistentVolumeClaims(namespace).List(ctx, listOptions)
+	pvcList, err := self.listPVCs(ctx, namespace, listOptions.LabelSelector, client)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list PersistentVolumeClaims in namespace '%s' with selector '%s': %w", namespace, listOptions.LabelSelector, err)
 	}
 
 	// List all pods ONCE and build a map of PVC -> Pods using it
-	podList, err := client.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{})
+	podList, err := self.GetPodsByLabels(ctx, namespace, nil, client)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list pods in namespace '%s': %w", namespace, err)
 	}
@@ -547,6 +562,8 @@ func (self *KubeClient) ListPersistentVolumeClaims(ctx context.Context, namespac
 
 // DeletePersistentVolumeClaim deletes a specific PersistentVolumeClaim by its name and namespace.
 func (self *KubeClient) DeletePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error {
+	defer self.invalidateCache()
+
 	if namespace == "" {
 		return fmt.Errorf("namespace cannot be empty")
 	}
@@ -636,6 +653,9 @@ func patchPVReclaimPolicy(ctx context.Context, client kubernetes.Interface, pvNa
 }
 
 // GetPodsUsingPVC finds all pods in a given namespace that are mounting the specified PVC.
+// This one reads through to the cluster on purpose: it guards detaches and deletes,
+// where acting on a pod list that is even a second old is how a mounted volume gets
+// pulled out from under a running database.
 func (self *KubeClient) GetPodsUsingPVC(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) ([]corev1.Pod, error) {
 	if namespace == "" {
 		return nil, fmt.Errorf("namespace cannot be empty")

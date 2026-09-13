@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/unbindapp/unbind-api/internal/common/log"
@@ -21,6 +22,7 @@ type ConfigInterface interface {
 	GetKubeConfig() string
 	GetKubernetesQPS() float32
 	GetKubernetesBurst() int
+	GetKubernetesListCacheTTL() time.Duration
 	GetSystemNamespace() string
 	GetBuildkitHost() string
 	GetBuildImage() string
@@ -70,6 +72,9 @@ type Config struct {
 	// context expires and surface as unexplained failures.
 	KubernetesQPS   float32 `env:"KUBERNETES_QPS" envDefault:"50"`
 	KubernetesBurst int     `env:"KUBERNETES_BURST" envDefault:"100"`
+	// How long a cluster read may be reused. The UI polls every few seconds, so a
+	// couple of seconds collapses every open tab into one read. Zero disables it.
+	KubernetesListCacheTTL time.Duration `env:"KUBERNETES_LIST_CACHE_TTL" envDefault:"2s"`
 	// Registry specific
 	BootstrapContainerRegistryHost     string `env:"BOOTSTRAP_CONTAINER_REGISTRY_HOST"`
 	BootstrapContainerRegistryUser     string `env:"BOOTSTRAP_CONTAINER_REGISTRY_USER"`
@@ -140,6 +145,10 @@ func (self *Config) GetKubernetesQPS() float32 {
 
 func (self *Config) GetKubernetesBurst() int {
 	return self.KubernetesBurst
+}
+
+func (self *Config) GetKubernetesListCacheTTL() time.Duration {
+	return self.KubernetesListCacheTTL
 }
 
 func (self *Config) GetSystemNamespace() string {

@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -12,17 +13,27 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// GetPodsByLabels returns pods matching the provided labels in a namespace
+// GetPodsByLabels returns pods matching the provided labels in a namespace. The
+// replica views poll this every few seconds per open tab, so identical reads are
+// served from a short-lived cache (see ttlCache).
 func (k *KubeClient) GetPodsByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) (*corev1.PodList, error) {
 	var labelSelectors []string
 	for key, value := range labels {
 		labelSelectors = append(labelSelectors, fmt.Sprintf("%s=%s", key, value))
 	}
+	sort.Strings(labelSelectors)
 	labelSelector := strings.Join(labelSelectors, ",")
 
-	return client.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
-		LabelSelector: labelSelector,
-	})
+	fetch := func(ctx context.Context) (*corev1.PodList, error) {
+		return client.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
+			LabelSelector: labelSelector,
+		})
+	}
+
+	if !k.cacheable(client) {
+		return fetch(ctx)
+	}
+	return cached(ctx, k.listCache, "pods|"+namespace+"|"+labelSelector, fetch, (*corev1.PodList).DeepCopy)
 }
 
 // RollingRestartPodsByLabel performs a rolling restart of all pods with a specific label
@@ -34,6 +45,9 @@ func (k *KubeClient) RollingRestartPodsByLabel(
 	labelValue string,
 	client kubernetes.Interface,
 ) error {
+	// What this writes can change pods or claims, so the cached reads go with it.
+	defer k.invalidateCache()
+
 	labels := map[string]string{
 		labelKey: labelValue,
 	}
@@ -155,11 +169,15 @@ func (k *KubeClient) restartDaemonSet(ctx context.Context, namespace, name strin
 
 // Delete a standalone pod
 func (k *KubeClient) deletePod(ctx context.Context, namespace, name string, client kubernetes.Interface) error {
+	defer k.invalidateCache()
+
 	return client.CoreV1().Pods(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 }
 
 // DeleteStatefulSetsWithOrphanCascade deletes StatefulSets matching the label selector with orphan cascade
 func (self *KubeClient) DeleteStatefulSetsWithOrphanCascade(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) error {
+	defer self.invalidateCache()
+
 	var labelSelectors []string
 	for key, value := range labels {
 		labelSelectors = append(labelSelectors, fmt.Sprintf("%s=%s", key, value))

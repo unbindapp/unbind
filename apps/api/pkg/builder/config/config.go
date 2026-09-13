@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/google/uuid"
@@ -90,8 +91,9 @@ type Config struct {
 	KubeConfig string `env:"KUBECONFIG"`
 	// Matches the API's defaults; client-go's own (5 QPS / 10 burst) throttle
 	// the build's own status updates against each other.
-	KubernetesQPS   float32 `env:"KUBERNETES_QPS" envDefault:"50"`
-	KubernetesBurst int     `env:"KUBERNETES_BURST" envDefault:"100"`
+	KubernetesQPS          float32       `env:"KUBERNETES_QPS" envDefault:"50"`
+	KubernetesBurst        int           `env:"KUBERNETES_BURST" envDefault:"100"`
+	KubernetesListCacheTTL time.Duration `env:"KUBERNETES_LIST_CACHE_TTL" envDefault:"2s"`
 	// Non-env config
 	Hosts []v1.HostSpec
 	Ports []v1.PortSpec
@@ -144,6 +146,10 @@ func (self *Config) GetKubernetesQPS() float32 {
 
 func (self *Config) GetKubernetesBurst() int {
 	return self.KubernetesBurst
+}
+
+func (self *Config) GetKubernetesListCacheTTL() time.Duration {
+	return self.KubernetesListCacheTTL
 }
 
 func (self *Config) GetBuildImage() string {

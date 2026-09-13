@@ -11,6 +11,8 @@ import (
 
 // Delete a custom unbind service CRD
 func (k *KubeClient) DeleteUnbindService(ctx context.Context, namespace, name string) error {
+	defer k.invalidateCache()
+
 	err := k.client.Resource(servicesGVR).Namespace(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {

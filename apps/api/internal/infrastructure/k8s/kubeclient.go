@@ -37,6 +37,8 @@ type KubeClient struct {
 	longhornBackendURL        string
 	certmanagerclient         *certmanagerclientset.Clientset
 	dnsChecker                *utils.DNSChecker
+	listCache                 *ttlCache
+	clusterCache              *ttlCache
 	httpClient                *http.Client
 	repo                      repositories.RepositoriesInterface
 }
@@ -91,6 +93,8 @@ func NewKubeClient(cfg config.ConfigInterface, repo repositories.RepositoriesInt
 		longhornBackendURL:        longhornBackendURL,
 		certmanagerclient:         certManagerClientSet,
 		dnsChecker:                utils.NewDNSChecker(),
+		listCache:                 newTTLCache(cfg.GetKubernetesListCacheTTL()),
+		clusterCache:              newTTLCache(clusterFactTTL),
 		httpClient: &http.Client{
 			Timeout: 1 * time.Second,
 		},
@@ -111,5 +115,8 @@ func (self *KubeClient) SetTokenVerifier(verifier TokenVerifier) {
 
 // ApplyYAML applies a multi-document YAML bundle with server-side apply, dry-run first
 func (self *KubeClient) ApplyYAML(ctx context.Context, yaml []byte) error {
+	// What this writes can change pods or claims, so the cached reads go with it.
+	defer self.invalidateCache()
+
 	return self.applier.Apply(ctx, yaml)
 }

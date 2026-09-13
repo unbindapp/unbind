@@ -5,6 +5,8 @@
 package mocks_config
 
 import (
+	"time"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -348,6 +350,50 @@ func (_c *ConfigMock_GetKubernetesBurst_Call) Return(n int) *ConfigMock_GetKuber
 }
 
 func (_c *ConfigMock_GetKubernetesBurst_Call) RunAndReturn(run func() int) *ConfigMock_GetKubernetesBurst_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetKubernetesListCacheTTL provides a mock function for the type ConfigMock
+func (_mock *ConfigMock) GetKubernetesListCacheTTL() time.Duration {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetKubernetesListCacheTTL")
+	}
+
+	var r0 time.Duration
+	if returnFunc, ok := ret.Get(0).(func() time.Duration); ok {
+		r0 = returnFunc()
+	} else {
+		r0 = ret.Get(0).(time.Duration)
+	}
+	return r0
+}
+
+// ConfigMock_GetKubernetesListCacheTTL_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetKubernetesListCacheTTL'
+type ConfigMock_GetKubernetesListCacheTTL_Call struct {
+	*mock.Call
+}
+
+// GetKubernetesListCacheTTL is a helper method to define mock.On call
+func (_e *ConfigMock_Expecter) GetKubernetesListCacheTTL() *ConfigMock_GetKubernetesListCacheTTL_Call {
+	return &ConfigMock_GetKubernetesListCacheTTL_Call{Call: _e.mock.On("GetKubernetesListCacheTTL")}
+}
+
+func (_c *ConfigMock_GetKubernetesListCacheTTL_Call) Run(run func()) *ConfigMock_GetKubernetesListCacheTTL_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ConfigMock_GetKubernetesListCacheTTL_Call) Return(duration time.Duration) *ConfigMock_GetKubernetesListCacheTTL_Call {
+	_c.Call.Return(duration)
+	return _c
+}
+
+func (_c *ConfigMock_GetKubernetesListCacheTTL_Call) RunAndReturn(run func() time.Duration) *ConfigMock_GetKubernetesListCacheTTL_Call {
 	_c.Call.Return(run)
 	return _c
 }
