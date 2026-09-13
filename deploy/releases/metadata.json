@@ -333,5 +333,10 @@
     "version": "v0.1.66",
     "summary": "System-wide metrics page with server filtering and disk I/O charts, more accurate resource and network metrics, clearer chart units, status icons on server details, and changelog padding fixes.",
     "breaking": false
+  },
+  "v0.1.67": {
+    "version": "v0.1.67",
+    "summary": "Metrics filter dropdown now aligns to the end by default.",
+    "breaking": false
   }
 }
