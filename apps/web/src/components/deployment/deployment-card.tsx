@@ -839,7 +839,9 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
         )}
         {deployment?.git_branch !== undefined && deployment.git_branch !== "" && (
           <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
-            <GitBranchIcon className="mr-[0.5ch] inline-block size-3.5" />
+            <span className="inline-icon mr-[0.5ch]">
+              <GitBranchIcon className="size-3.5" />
+            </span>
             {deployment.git_branch}
           </p>
         )}
@@ -850,7 +852,9 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
         )}
         {deployment?.commit_sha !== undefined && deployment.commit_sha !== "" && (
           <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
-            <GitCommitHorizontalIcon className="mr-[0.5ch] inline-block size-3.5" />
+            <span className="inline-icon mr-[0.5ch]">
+              <GitCommitHorizontalIcon className="size-3.5" />
+            </span>
             {deployment.commit_sha.slice(0, 6)}
           </p>
         )}
@@ -861,10 +865,9 @@ function DeploymentInfo({ deployment, service, isPlaceholder, className }: TDepl
         )}
         {durationStr !== undefined && durationStr !== "" && (
           <p className="text-muted-foreground max-w-full min-w-0 shrink leading-tight">
-            <AnimatedTimerIcon
-              animate={isBuilding}
-              className="-mt-0.75 mr-[0.4ch] inline-block size-3.5 shrink-0"
-            />
+            <span className="inline-icon mr-[0.4ch]">
+              <AnimatedTimerIcon animate={isBuilding} className="size-3.5 shrink-0" />
+            </span>
             {durationStr}
           </p>
         )}

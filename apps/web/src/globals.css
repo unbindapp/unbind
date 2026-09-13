@@ -60,6 +60,13 @@
   justify-content: center;
 }
 
+@utility inline-icon {
+  display: inline-flex;
+  height: 1lh;
+  align-items: center;
+  vertical-align: bottom;
+}
+
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
   --keyboard-inset-height: 0px;

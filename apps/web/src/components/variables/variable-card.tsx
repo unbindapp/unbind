@@ -195,12 +195,14 @@ export default function VariableCard({
                   </p>
                   {!isValueVisible && hasUnresolved && (
                     <p className="min-w-0 shrink pr-2 pb-0.5 text-sm leading-snug lg:pb-0">
-                      <CircleAlertIcon
-                        aria-label={unresolvedMessage}
-                        className="text-warning mr-1.5 mb-0.5 inline-block size-3.25 shrink-0"
-                      >
-                        <title>{unresolvedMessage}</title>
-                      </CircleAlertIcon>
+                      <span className="inline-icon mr-1.5">
+                        <CircleAlertIcon
+                          aria-label={unresolvedMessage}
+                          className="text-warning size-3.25 shrink-0"
+                        >
+                          <title>{unresolvedMessage}</title>
+                        </CircleAlertIcon>
+                      </span>
                       <span className="text-warning font-medium">{unresolvedMessage}</span>
                     </p>
                   )}

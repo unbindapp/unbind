@@ -29,16 +29,16 @@ export default function TemplateHeadroomBanner({ template }: TProps) {
         data-level={headroom.level}
         className="group/banner data-[level=destructive]:border-destructive/7-10 data-[level=warning]:border-warning/7-10 border md:max-w-full"
       >
-        <div className="text-foreground group-data-[level=destructive]/banner:text-destructive group-data-[level=warning]/banner:text-warning mt-0.5 -ml-0.5 size-4 shrink-0">
+        <div className="text-foreground group-data-[level=destructive]/banner:text-destructive group-data-[level=warning]/banner:text-warning line-icon -ml-0.5">
           {headroom.level === "destructive" ? (
-            <TriangleAlertIcon className="size-full" />
+            <TriangleAlertIcon className="size-4" />
           ) : headroom.level === "warning" ? (
-            <CircleAlertIcon className="size-full" />
+            <CircleAlertIcon className="size-4" />
           ) : (
-            <CheckCircle2Icon className="size-full" />
+            <CheckCircle2Icon className="size-4" />
           )}
         </div>
-        <div className="flex min-w-0 shrink flex-col gap-2 leading-tight">
+        <div className="flex min-w-0 shrink flex-col gap-2">
           <p className="group-data-[level=destructive]/banner:text-destructive group-data-[level=warning]/banner:text-warning font-semibold">
             {headroom.level === "destructive"
               ? "Deploying the template may overload Unbind."
@@ -76,10 +76,14 @@ function ResourceLine({
   return (
     <p className="text-sm font-semibold">
       <span className="text-muted-foreground pr-[0.6ch] font-normal">{label}</span>
-      <CpuIcon className="mr-[0.4ch] mb-0.5 inline-block size-4" />
+      <span className="inline-icon mr-[0.4ch]">
+        <CpuIcon className="size-4" />
+      </span>
       <span>{formatCores(cpuMillicores)}</span>
       <span className="text-muted-most-foreground px-[0.5ch]">{"•"}</span>
-      <MemoryStickIcon className="mr-[0.4ch] mb-0.5 inline-block size-4" />
+      <span className="inline-icon mr-[0.4ch]">
+        <MemoryStickIcon className="size-4" />
+      </span>
       <span>{formatMegabytes(memoryMegabytes)}</span>
     </p>
   );

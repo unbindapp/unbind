@@ -10,7 +10,7 @@ export default function Banner({ children, className, ...rest }: TProps) {
   return (
     <div
       className={cn(
-        "flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 md:max-w-xl",
+        "flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 leading-tight md:max-w-xl",
         className,
       )}
       {...rest}

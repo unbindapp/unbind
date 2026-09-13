@@ -38,12 +38,14 @@ export default function DeleteCard({
     >
       <div
         className={cn(
-          "-mt-0.75 flex w-full items-start justify-start gap-2 px-0.5",
+          "-mt-0.75 flex w-full items-start justify-start gap-2 px-0.5 leading-snug",
           classNameHeader,
         )}
       >
-        <TriangleAlertIcon className="mt-0.5 size-4.5 shrink-0" />
-        <p className="min-w-0 shrink leading-snug text-balance">{paragraph}</p>
+        <div className="line-icon">
+          <TriangleAlertIcon className="size-4.5 shrink-0" />
+        </div>
+        <p className="min-w-0 shrink text-balance">{paragraph}</p>
       </div>
       <DeleteButton
         dialogTitle={dialogTitle}

@@ -72,19 +72,24 @@ function useTemplateItem() {
                   {`service${template.definition.services.length >= 2 ? "s" : ""}:`}
                 </span>
                 {iconSet.map((icon, index) => (
-                  <BrandIcon
+                  <span
+                    key={icon}
                     data-last={index === iconSet.length - 1 || undefined}
-                    brand={icon}
-                    color="monochrome"
-                    className="mr-[0.6ch] mb-0.5 inline-block size-4 data-last:mr-0"
-                  />
+                    className="inline-icon mr-[0.6ch] data-last:mr-0"
+                  >
+                    <BrandIcon brand={icon} color="monochrome" className="size-4" />
+                  </span>
                 ))}
                 <span className="text-muted-most-foreground px-[1ch]">{"|"}</span>
                 <span className="pr-[0.6ch]">{"Min:"}</span>
-                <CpuIcon className="mr-[0.4ch] mb-0.5 inline-block size-4" />
+                <span className="inline-icon mr-[0.4ch]">
+                  <CpuIcon className="size-4" />
+                </span>
                 <span>{template.resource_recommendations.minimum_recommended_cpu}</span>
                 <span className="text-muted-most-foreground px-[0.5ch]">{"•"}</span>
-                <MemoryStickIcon className="mr-[0.4ch] mb-0.5 inline-block size-4" />
+                <span className="inline-icon mr-[0.4ch]">
+                  <MemoryStickIcon className="size-4" />
+                </span>
                 <span>{template.resource_recommendations.minimum_recommended_ram_gb} GB</span>
               </p>
             </div>

@@ -130,9 +130,11 @@ export default function ExpandSection({ volume }: TProps) {
     return (
       <SettingsSection title="Expand" id="expand" entityId={sectionHighlightId} Icon={ScalingIcon}>
         <div className="flex w-full flex-col gap-2 pt-1">
-          <div className="bg-warning/3-10 border-warning/3-10 text-warning flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 font-medium">
-            <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
-            <p className="min-w-0 shrink leading-tight">
+          <div className="bg-warning/3-10 border-warning/3-10 text-warning flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 leading-tight font-medium">
+            <div className="line-icon">
+              <HourglassIcon className="animate-hourglass -ml-0.5 size-4 shrink-0" />
+            </div>
+            <p className="min-w-0 shrink">
               Expanding the volume. This could take a couple of minutes.
             </p>
           </div>

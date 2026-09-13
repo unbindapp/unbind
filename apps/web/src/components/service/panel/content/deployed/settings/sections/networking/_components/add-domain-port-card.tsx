@@ -241,9 +241,11 @@ export default function AddDomainPortCard({
                       </Block>
                     )}
                     {mode === "private" && (
-                      <div className="text-success bg-success/3-10 mt-2 flex justify-start gap-1.5 rounded-md px-3 py-2 text-sm">
-                        <GlobeLockIcon className="mt-0.5 -ml-0.5 size-3.5 shrink-0" />
-                        <p className="min-w-0 shrink leading-tight">
+                      <div className="text-success bg-success/3-10 mt-2 flex justify-start gap-1.5 rounded-md px-3 py-2 text-sm leading-tight">
+                        <div className="line-icon">
+                          <GlobeLockIcon className="-ml-0.5 size-3.5 shrink-0" />
+                        </div>
+                        <p className="min-w-0 shrink">
                           The private domain will be generated based on the port.
                         </p>
                       </div>

@@ -382,15 +382,17 @@ function ChangeRow({
 
   return (
     <li className={cn(rowGrid, "items-start px-1")}>
-      <div className={cn("flex min-w-0 items-start gap-1.5", actionClassNames[action])}>
-        <ActionIcon className="mt-px size-4 shrink-0" />
+      <div
+        className={cn(
+          "flex min-w-0 items-start gap-1.5 text-sm leading-tight",
+          actionClassNames[action],
+        )}
+      >
+        <div className="line-icon">
+          <ActionIcon className="size-4 shrink-0" />
+        </div>
         <div className="flex min-w-0 shrink flex-col gap-0.5">
-          <p
-            className={cn(
-              "min-w-0 shrink truncate text-sm leading-tight font-medium",
-              row.isSecret && "font-mono",
-            )}
-          >
+          <p className={cn("min-w-0 shrink truncate font-medium", row.isSecret && "font-mono")}>
             {row.label}
           </p>
           <div className="text-muted-foreground flex shrink-0 items-center gap-1 text-xs leading-tight">

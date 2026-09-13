@@ -70,7 +70,7 @@ function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
     <ToastPrimitive.Content
       data-slot="toast-content"
       className={cn(
-        "flex h-full gap-2 overflow-hidden px-4 py-3.5 pr-10 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
+        "flex h-full gap-2 overflow-hidden px-4 py-3.5 pr-10 leading-tight transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
         className,
       )}
       {...props}
@@ -83,7 +83,7 @@ function ToastTitle({ className, ...props }: ToastPrimitive.Title.Props) {
     <ToastPrimitive.Title
       data-slot="toast-title"
       className={cn(
-        "text-foreground group-data-[type=error]/toast:text-destructive group-data-[type=success]/toast:text-success group-data-[type=warning]/toast:text-warning -mt-px leading-tight font-semibold",
+        "text-foreground group-data-[type=error]/toast:text-destructive group-data-[type=success]/toast:text-success group-data-[type=warning]/toast:text-warning font-semibold",
         className,
       )}
       {...props}
@@ -121,11 +121,11 @@ function ToastClose({ className, ...props }: ToastPrimitive.Close.Props) {
 }
 
 const toastIcons: Record<string, React.ReactNode> = {
-  success: <CheckCircleIcon className="size-full" />,
-  info: <InfoIcon className="size-full" />,
-  warning: <CircleAlertIcon className="size-full" />,
-  error: <TriangleAlertIcon className="size-full" />,
-  loading: <LoaderIcon className="size-full animate-spin" />,
+  success: <CheckCircleIcon className="size-4" />,
+  info: <InfoIcon className="size-4" />,
+  warning: <CircleAlertIcon className="size-4" />,
+  error: <TriangleAlertIcon className="size-4" />,
+  loading: <LoaderIcon className="size-4 animate-spin" />,
 };
 
 function ToastIcon({ icon, type }: { icon: React.ReactNode; type: string | undefined }) {
@@ -135,7 +135,7 @@ function ToastIcon({ icon, type }: { icon: React.ReactNode; type: string | undef
   return (
     <span
       data-slot="toast-icon"
-      className="text-foreground group-data-[type=error]/toast:text-destructive group-data-[type=success]/toast:text-success group-data-[type=warning]/toast:text-warning mt-0.5 size-4 shrink-0 [&_svg]:pointer-events-none"
+      className="text-foreground group-data-[type=error]/toast:text-destructive group-data-[type=success]/toast:text-success group-data-[type=warning]/toast:text-warning line-icon [&_svg]:pointer-events-none"
     >
       {resolvedIcon}
     </span>

@@ -774,7 +774,9 @@ function AsyncDropdownMenu({
                     )}
                   >
                     {ItemIcon && (
-                      <ItemIcon className="-ml-0.5 size-5 shrink-0" value={item.value} />
+                      <div className="line-icon">
+                        <ItemIcon className="-ml-0.5 size-5 shrink-0" value={item.value} />
+                      </div>
                     )}
                     <div className="flex min-w-0 shrink flex-col gap-1 pr-1">
                       <div className="flex min-w-0 flex-wrap items-center gap-2.5">
@@ -787,10 +789,12 @@ function AsyncDropdownMenu({
                         </p>
                       )}
                     </div>
-                    <CheckIcon
-                      strokeWidth={2.5}
-                      className="-mr-0.5 ml-auto size-4.5 opacity-0 group-data-checked/item:opacity-100"
-                    />
+                    <div className="line-icon ml-auto">
+                      <CheckIcon
+                        strokeWidth={2.5}
+                        className="-mr-0.5 size-4.5 opacity-0 group-data-checked/item:opacity-100"
+                      />
+                    </div>
                   </DropdownMenuItem>
                 ))}
             </DropdownMenuGroup>

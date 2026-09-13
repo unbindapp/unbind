@@ -29,7 +29,11 @@ export default function InfoRows({ rows, className }: { rows: TInfoRow[]; classN
               row.classNameLabel,
             )}
           >
-            {row.IconLabel && <row.IconLabel className="mr-2 mb-0.75 inline-block size-4" />}
+            {row.IconLabel && (
+              <span className="inline-icon mr-2">
+                <row.IconLabel className="size-4" />
+              </span>
+            )}
             {row.label}
           </p>
           <p
@@ -38,7 +42,11 @@ export default function InfoRows({ rows, className }: { rows: TInfoRow[]; classN
               row.classNameValue,
             )}
           >
-            {row.IconValue && <row.IconValue className="mr-1.5 mb-0.75 inline-block size-4" />}
+            {row.IconValue && (
+              <span className="inline-icon mr-1.5">
+                <row.IconValue className="size-4" />
+              </span>
+            )}
             {row.value}
           </p>
         </li>

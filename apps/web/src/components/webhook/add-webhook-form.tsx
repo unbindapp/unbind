@@ -189,21 +189,15 @@ export default function AddWebhookForm({ className, ...rest }: TProps) {
           <span className="mr-[0.75ch]">
             The events will be sent to this URL. Automatic formatting is available for:
           </span>
-          <BrandIcon
-            brand="discord"
-            aria-label="Discord"
-            className="mr-[0.5ch] inline-block size-4.5"
-          />
-          <BrandIcon
-            brand="slack"
-            aria-label="Slack"
-            className="mr-[0.5ch] inline-block size-4.5"
-          />
-          <BrandIcon
-            brand="telegram"
-            aria-label="Telegram"
-            className="mr-[0.5ch] inline-block size-4.5"
-          />
+          <span className="inline-icon mr-[0.5ch]">
+            <BrandIcon brand="discord" aria-label="Discord" className="size-4.5" />
+          </span>
+          <span className="inline-icon mr-[0.5ch]">
+            <BrandIcon brand="slack" aria-label="Slack" className="size-4.5" />
+          </span>
+          <span className="inline-icon mr-[0.5ch]">
+            <BrandIcon brand="telegram" aria-label="Telegram" className="size-4.5" />
+          </span>
         </p>
         <form.AppField
           name="url"

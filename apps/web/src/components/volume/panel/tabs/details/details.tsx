@@ -14,30 +14,38 @@ export default function Settings({ volume }: TProps) {
     <TabWrapper className="gap-6">
       {volume.is_deleting && (
         <Banner className="bg-destructive/3-10 border-destructive/3-10 text-destructive">
-          <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
-          <p className="min-w-0 shrink leading-tight">
+          <div className="line-icon">
+            <HourglassIcon className="animate-hourglass -ml-0.5 size-4 shrink-0" />
+          </div>
+          <p className="min-w-0 shrink">
             Deleting the volume. It will disappear once the deletion is complete.
           </p>
         </Banner>
       )}
       {volume.mount_status === "awaiting_deployment" && (
         <Banner className="bg-process/3-10 border-process/3-10 text-process">
-          <ClockIcon className="mt-0.5 -ml-0.5 size-4 shrink-0" />
-          <p className="min-w-0 shrink leading-tight">
+          <div className="line-icon">
+            <ClockIcon className="-ml-0.5 size-4 shrink-0" />
+          </div>
+          <p className="min-w-0 shrink">
             Waiting for the service to deploy before mounting this volume.
           </p>
         </Banner>
       )}
       {volume.mount_status === "attaching" && (
         <Banner className="bg-process/3-10 border-process/3-10 text-process">
-          <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
-          <p className="min-w-0 shrink leading-tight">Attaching the volume to the service.</p>
+          <div className="line-icon">
+            <HourglassIcon className="animate-hourglass -ml-0.5 size-4 shrink-0" />
+          </div>
+          <p className="min-w-0 shrink">Attaching the volume to the service.</p>
         </Banner>
       )}
       {volume.mount_status === "detaching" && (
         <Banner className="bg-warning/3-10 border-warning/3-10 text-warning">
-          <HourglassIcon className="animate-hourglass mt-0.5 -ml-0.5 size-4 shrink-0" />
-          <p className="min-w-0 shrink leading-tight">
+          <div className="line-icon">
+            <HourglassIcon className="animate-hourglass -ml-0.5 size-4 shrink-0" />
+          </div>
+          <p className="min-w-0 shrink">
             Detaching the volume. It can be reattached once this is complete.
           </p>
         </Banner>

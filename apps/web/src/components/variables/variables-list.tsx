@@ -239,9 +239,11 @@ function SpecialDbVariablesSection({
 
   return (
     <>
-      <div className="bg-process/3-10 border-process/3-10 text-process flex w-full items-start gap-2 rounded-lg border px-3 py-2.5">
-        <LoaderIcon className="mt-0.5 -ml-0.5 size-4 animate-spin" />
-        <p className="min-w-0 shrink leading-tight font-medium">
+      <div className="bg-process/3-10 border-process/3-10 text-process flex w-full items-start gap-2 rounded-lg border px-3 py-2.5 leading-tight">
+        <div className="line-icon">
+          <LoaderIcon className="-ml-0.5 size-4 animate-spin" />
+        </div>
+        <p className="min-w-0 shrink font-medium">
           Waiting for database variables to become available...
         </p>
       </div>

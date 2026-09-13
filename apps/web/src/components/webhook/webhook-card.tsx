@@ -48,13 +48,15 @@ export default function WebhookCard({ type, webhook, teamId, projectId }: TProps
       className="group/item relative flex flex-col items-start justify-start gap-3 rounded-xl border p-3 sm:p-4 sm:pt-3.5"
     >
       {webhook && <NewEntityIndicator id={webhook.id} />}
-      <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-10">
-        <BrandIcon
-          color="brand"
-          brand={type === "placeholder" ? "webhook" : getWebhookIcon(webhook.url)}
-          className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground -mt-px size-5 group-data-placeholder/item:rounded-full"
-        />
-        <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
+      <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-10 text-sm leading-tight">
+        <div className="line-icon">
+          <BrandIcon
+            color="brand"
+            brand={type === "placeholder" ? "webhook" : getWebhookIcon(webhook.url)}
+            className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-5 group-data-placeholder/item:rounded-full"
+          />
+        </div>
+        <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
           {type === "placeholder" ? "https://unbind.app/webhook" : webhook.url}
         </p>
       </div>
