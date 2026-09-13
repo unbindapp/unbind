@@ -767,6 +767,7 @@ function AsyncDropdownMenu({
                     data-checked={value === item.value || undefined}
                     className={cn(
                       "group/item",
+                      item.description && "items-start",
                       typeof classNameItem === "function"
                         ? classNameItem({ value: item.value })
                         : classNameItem,
@@ -775,9 +776,16 @@ function AsyncDropdownMenu({
                     {ItemIcon && (
                       <ItemIcon className="-ml-0.5 size-5 shrink-0" value={item.value} />
                     )}
-                    <div className="flex min-w-0 flex-wrap items-center gap-2.5 pr-1">
-                      <p className="min-w-0 shrink leading-tight">{item.label}</p>
-                      {ItemSuffix && <ItemSuffix value={item.value} />}
+                    <div className="flex min-w-0 shrink flex-col gap-1 pr-1">
+                      <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+                        <p className="min-w-0 shrink leading-tight">{item.label}</p>
+                        {ItemSuffix && <ItemSuffix value={item.value} />}
+                      </div>
+                      {item.description && (
+                        <p className="text-muted-foreground min-w-0 shrink text-sm leading-tight">
+                          {item.description}
+                        </p>
+                      )}
                     </div>
                     <CheckIcon
                       strokeWidth={2.5}
