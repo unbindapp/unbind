@@ -67,10 +67,13 @@ type Config struct {
 	CookieSecure bool `env:"COOKIE_SECURE" envDefault:"true"`
 	// Kubernetes config, optional - if in cluster it will use the in-cluster config
 	KubeConfig string `env:"KUBECONFIG"`
-	// client-go defaults to 5 QPS / 10 burst per client, which a single busy
-	// page already saturates: requests then queue client-side until their
-	// context expires and surface as unexplained failures.
-	KubernetesQPS   float32 `env:"KUBERNETES_QPS" envDefault:"50"`
+	// Client-side throttling is off by default: client-go's 5 QPS / 10 burst (and
+	// any fixed number we pick in its place) is a limit we impose on ourselves,
+	// and when a cluster outgrows it the calls queue until their context expires
+	// and surface as failures nobody can act on. The API server's own priority
+	// and fairness does this job with knowledge we don't have. A positive value
+	// here restores a client-side cap for anyone who wants one.
+	KubernetesQPS   float32 `env:"KUBERNETES_QPS" envDefault:"-1"`
 	KubernetesBurst int     `env:"KUBERNETES_BURST" envDefault:"100"`
 	// How long a cluster read may be reused. The UI polls every few seconds, so a
 	// couple of seconds collapses every open tab into one read. Zero disables it.

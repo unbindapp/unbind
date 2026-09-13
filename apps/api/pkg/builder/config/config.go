@@ -89,9 +89,9 @@ type Config struct {
 	RailpackBuildCommand   string `env:"RAILPACK_BUILD_CMD"`
 	// Kubeconfig for local testing
 	KubeConfig string `env:"KUBECONFIG"`
-	// Matches the API's defaults; client-go's own (5 QPS / 10 burst) throttle
-	// the build's own status updates against each other.
-	KubernetesQPS          float32       `env:"KUBERNETES_QPS" envDefault:"50"`
+	// Matches the API's defaults: no client-side throttle, the API server's
+	// priority and fairness decides how much we get.
+	KubernetesQPS          float32       `env:"KUBERNETES_QPS" envDefault:"-1"`
 	KubernetesBurst        int           `env:"KUBERNETES_BURST" envDefault:"100"`
 	KubernetesListCacheTTL time.Duration `env:"KUBERNETES_LIST_CACHE_TTL" envDefault:"2s"`
 	// Non-env config

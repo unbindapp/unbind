@@ -260,36 +260,40 @@ export function BlockItemButtonLike({
     >
       <div
         className={cn(
-          "group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2",
+          "group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2 leading-tight",
           classNameContent,
         )}
       >
         {asElement === "LinkButton" && href !== undefined && Icon ? (
-          <div
-            className={cn(
-              "relative size-4.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45",
-              classNameIcon,
-            )}
-          >
-            <Icon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
-            <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+          <div className="line-icon">
+            <div
+              className={cn(
+                "relative size-4.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45",
+                classNameIcon,
+              )}
+            >
+              <Icon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
+              <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+            </div>
           </div>
         ) : (
           Icon && (
-            <Icon
-              className={cn(
-                "group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full",
-                classNameIcon,
-              )}
-              isEditing={isEditing}
-            />
+            <div className="line-icon">
+              <Icon
+                className={cn(
+                  "group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full",
+                  classNameIcon,
+                )}
+                isEditing={isEditing}
+              />
+            </div>
           )
         )}
         <div className="flex w-full min-w-0 shrink flex-col items-start gap-1">
           <div className="flex w-full flex-row">
             <p
               className={cn(
-                "group-data-pending/button:bg-foreground max-w-full min-w-0 leading-tight font-medium select-text group-data-pending/button:rounded-md",
+                "group-data-pending/button:bg-foreground max-w-full min-w-0 font-medium select-text group-data-pending/button:rounded-md",
                 // A node brings its own layout, clipping it here cuts anything that paints
                 // outside the line box, like a chip's border
                 typeof text === "string" && "truncate",

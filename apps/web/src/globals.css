@@ -52,6 +52,14 @@
   -ms-overflow-style: none;
 }
 
+@utility line-icon {
+  display: flex;
+  height: 1lh;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
 :root {
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
   --keyboard-inset-height: 0px;

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -193,5 +194,22 @@ func TestMapErrorKubernetesStatusMessageIsReadable(t *testing.T) {
 	}
 	if resp.Details[0] != status.Message {
 		t.Fatalf("detail = %q, want the cluster's own message", resp.Details[0])
+	}
+}
+
+func TestMapErrorNamesOurOwnRateLimiter(t *testing.T) {
+	// Verbatim shape of what client-go returns when its limiter gives up.
+	cause := errors.New("client rate limiter Wait returned an error: rate: Wait(n=1) would exceed context deadline")
+	err := errdefs.NewInternalError(
+		fmt.Errorf("failed to get PersistentVolumeClaim 'pgdata-0': %w", cause),
+		"Failed to start the deployment",
+	)
+
+	resp := mapped(t, err)
+	if resp.Status != 503 {
+		t.Fatalf("status = %d, want 503", resp.Status)
+	}
+	if len(resp.Details) != 1 || !strings.Contains(resp.Details[0], "KUBERNETES_QPS") {
+		t.Fatalf("details = %v, want the limit that needs raising", resp.Details)
 	}
 }

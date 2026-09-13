@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -62,6 +63,14 @@ func classifyError(err error) error {
 		return mapped
 	}
 
+	if isSelfThrottled(err) {
+		return errdefs.WithCause(
+			huma.NewError(http.StatusServiceUnavailable,
+				"Unbind is throttling its own calls to the cluster, raise KUBERNETES_QPS and KUBERNETES_BURST"),
+			err,
+		)
+	}
+
 	return errdefs.WithCause(huma.Error500InternalServerError(genericMessage), err)
 }
 
@@ -95,6 +104,15 @@ func mapKubernetesError(err error) (error, bool) {
 	}
 
 	return errdefs.WithCause(huma.Error502BadGateway("The cluster returned an error", detail), err), true
+}
+
+// isSelfThrottled reports whether client-go's own rate limiter rejected the call
+// before it ever left the process. It carries no sentinel error and does not wrap
+// context.DeadlineExceeded, so the string client-go builds it from is all there
+// is to match on — and being told "Internal server error" for a limit we set
+// ourselves has cost enough debugging already.
+func isSelfThrottled(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "client rate limiter Wait returned an error")
 }
 
 // withSummary puts the step that failed in the message, where the caller reads

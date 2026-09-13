@@ -61,9 +61,10 @@ func NewKubeClient(cfg config.ConfigInterface, repo repositories.RepositoriesInt
 		}
 	}
 
-	// Every request the API makes shares these clients, so leaving client-go's
-	// 5 QPS / 10 burst defaults in place throttles unrelated users against each
-	// other once a cluster holds more than a handful of services.
+	// Every request the API makes shares these clients, so a client-side limit
+	// throttles unrelated users against each other. A negative QPS tells
+	// client-go to install no limiter at all, which is the default: the cluster
+	// decides how much we get, rather than a number we guessed at build time.
 	kubeConfig.QPS = cfg.GetKubernetesQPS()
 	kubeConfig.Burst = cfg.GetKubernetesBurst()
 
