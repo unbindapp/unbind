@@ -66,23 +66,16 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
     ],
   },
   {
-    id: "network-access",
-    title: "Network Access",
-    keywords: ["public", "private", "expose", "access", "reachable"],
-    items: [
-      {
-        id: settingsIds.networkAccess.access,
-        title: "Network Access",
-        description: "Who can reach the database. Private keeps it inside the cluster.",
-        keywords: ["public", "private", "expose", "access", "reachable", "database"],
-      },
-    ],
-  },
-  {
     id: "networking",
     title: "Networking",
     keywords: ["network", "url", "dns", "domain", "host", "port", "https", "tls", "ssl"],
     items: [
+      {
+        id: settingsIds.networking.access,
+        title: "Network Access",
+        description: "Whether the database is reachable from the internet.",
+        keywords: ["public", "private", "expose", "access", "reachable", "database"],
+      },
       {
         id: settingsIds.networking.public,
         title: "Public Networking",

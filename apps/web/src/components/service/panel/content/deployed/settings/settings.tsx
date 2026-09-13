@@ -6,7 +6,6 @@ import {
   shouldServiceSettingsHaveDatabaseSection,
   shouldServiceSettingsHaveDeploySection,
   shouldServiceSettingsHaveHealthSection,
-  shouldServiceSettingsHaveNetworkAccessSection,
 } from "@/components/service/panel/content/deployed/settings/helpers";
 import BackupsSection from "@/components/service/panel/content/deployed/settings/sections/backups-section";
 import BuildSection from "@/components/service/panel/content/deployed/settings/sections/build-section";
@@ -14,7 +13,6 @@ import DatabaseSection from "@/components/service/panel/content/deployed/setting
 import DeleteSection from "@/components/service/panel/content/deployed/settings/sections/delete-section";
 import DeploySection from "@/components/service/panel/content/deployed/settings/sections/deploy-section";
 import HealthSection from "@/components/service/panel/content/deployed/settings/sections/health-section";
-import NetworkAccessSection from "@/components/service/panel/content/deployed/settings/sections/network-access-section";
 import NetworkingSection from "@/components/service/panel/content/deployed/settings/sections/networking/networking-section";
 import SourceSection from "@/components/service/panel/content/deployed/settings/sections/source-section";
 import SettingsSearchBar from "@/components/service/panel/content/deployed/settings/settings-search-bar";
@@ -39,9 +37,6 @@ export default function Settings({ service }: { service: TServiceShallow }) {
           <ScrollArea classNameViewport="pb-(--safe-area-inset-bottom)">
             <TabWrapper className="gap-6 pt-4 sm:pt-5">
               <SourceSection service={service} />
-              {shouldServiceSettingsHaveNetworkAccessSection(service) && (
-                <NetworkAccessSection service={service} />
-              )}
               <NetworkingSection service={service} />
               {shouldServiceSettingsHaveBackupsSection(service) && (
                 <BackupsSection service={service} />

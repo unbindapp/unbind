@@ -16,9 +16,15 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import { networkAccessLabel } from "@/components/service/network-access";
 import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
-import { stagedBoolean } from "@/components/service/panel/content/deployed/settings/use-service-changes";
-import { useStagedServiceChanges } from "@/components/staged-changes/staged-changes-provider";
+import DatabaseNetworkAccess from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-network-access";
+import {
+  hasApplying,
+  networkAccessFields,
+  stagedBoolean,
+  useServiceChanges,
+} from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
@@ -76,15 +82,18 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
 
   const { isItemVisible } = useSettingsSectionSearch("networking");
   const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
-  const staged = useStagedServiceChanges(service.id);
+  const { staged, stage, unstage } = useServiceChanges(service, {
+    isPublic: service.config.is_public,
+  });
 
   const isDatabase = service.type === "database";
-  // A database that is staged private loses this whole block before it is applied,
-  // and a database that is staged public gets it right away, with nothing in it yet
+  // A database that is staged private loses its public block before it is applied,
+  // and one that is staged public gets it right away, with nothing in it yet
   const isPublic = stagedBoolean(staged.isPublic, service.config.is_public);
+  const showAccess = isDatabase && isItemVisible(settingsIds.networking.access);
   const showPublic = isItemVisible(settingsIds.networking.public) && (!isDatabase || isPublic);
   const showPrivate = isItemVisible(settingsIds.networking.private);
-  if (!showPublic && !showPrivate) return null;
+  if (!showAccess && !showPublic && !showPrivate) return null;
 
   return (
     <SettingsSection
@@ -92,7 +101,37 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
       id="networking"
       Icon={NetworkIcon}
       entityId={sectionHighlightId}
+      hasChanges={staged.isPublic !== undefined}
+      isApplying={hasApplying(staged, networkAccessFields)}
+      onDiscard={() => unstage(networkAccessFields)}
     >
+      {showAccess && (
+        <Block>
+          <BlockItem id={settingsIds.networking.access} className="w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle>Network Access</BlockItemTitle>
+              <BlockItemDescription>
+                Whether the database is reachable from the internet.
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <DatabaseNetworkAccess
+                service={service}
+                staged={staged}
+                stage={(isPublic) =>
+                  stage({
+                    field: "isPublic",
+                    label: "Network access",
+                    value: isPublic,
+                    previous: service.config.is_public,
+                    format: (value) => networkAccessLabel(value),
+                  })
+                }
+              />
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
       {showPublic && (
         <Block>
           <BlockItem id={settingsIds.networking.public} className="w-full md:w-full">

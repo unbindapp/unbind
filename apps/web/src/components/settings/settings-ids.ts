@@ -8,10 +8,8 @@ export const settingsIds = {
     database: "source_database",
     version: "source_version",
   },
-  networkAccess: {
-    access: "network-access_access",
-  },
   networking: {
+    access: "networking_access",
     public: "networking_public",
     private: "networking_private",
   },

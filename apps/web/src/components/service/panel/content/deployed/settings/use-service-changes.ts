@@ -14,6 +14,8 @@ import { TServiceShallow } from "@/lib/queries/services";
 import { useCallback, useEffect, useRef } from "react";
 
 export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceField>>;
+
+export const networkAccessFields: TServiceChangeField[] = ["isPublic"];
 export type TServerValues = Partial<Record<TServiceChangeField, string | number | boolean>>;
 
 type TStageInput<T extends string | number | boolean> = {

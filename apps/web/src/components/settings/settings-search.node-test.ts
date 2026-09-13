@@ -60,7 +60,10 @@ test("typos still match", () => {
 });
 
 test("description words match only when nothing else does", () => {
-  assert.deepEqual(visibleItems("internet"), [settingsIds.networking.public]);
+  assert.deepEqual(visibleItems("internet"), [
+    settingsIds.networking.access,
+    settingsIds.networking.public,
+  ]);
   assert.ok(!visibleItems("Repository").includes(settingsIds.build.dockerfilePath));
 });
 
