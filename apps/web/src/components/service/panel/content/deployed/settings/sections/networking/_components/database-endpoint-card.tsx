@@ -12,7 +12,7 @@ type TProps = {
 };
 
 // A database's address is allocated rather than chosen, so there is nothing to edit
-// and nothing to delete here. Public and private are switched with the toggle above.
+// and nothing to delete here. Public and private are switched in Network Access above.
 export default function DatabaseEndpointCard({ mode, domain, port }: TProps) {
   const address = getNetworkingDisplayUrl({ host: domain, port: port?.toString() ?? "" });
 
@@ -47,15 +47,17 @@ export default function DatabaseEndpointCard({ mode, domain, port }: TProps) {
 
 // The address is allocated while the change is applied, so there is nothing to show
 // until then. An empty block here is what made this section confusing.
-export function DatabasePendingEndpointRow() {
+// The hourglass only turns while something is actually being waited on: a staged
+// change is waiting on the user, not on us.
+export function DatabasePendingEndpointRow({ isWaiting }: { isWaiting: boolean }) {
   return (
     <div className="flex w-full flex-col overflow-hidden rounded-lg border">
       <BlockItemButtonLike
         asElement="div"
         className="text-muted-foreground border-none"
-        text="Public URLs will show up here"
+        text="Public address will show up here"
         Icon={({ className }: { className?: string }) => (
-          <HourglassIcon className={cn(className, "animate-hourglass size-4.5")} />
+          <HourglassIcon className={cn(className, isWaiting && "animate-hourglass", "size-4.5")} />
         )}
       />
     </div>

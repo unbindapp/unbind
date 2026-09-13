@@ -87,9 +87,12 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
   });
 
   const isDatabase = service.type === "database";
+  const subject = isDatabase ? "database" : "service";
   // A database that is staged private loses its public block before it is applied,
   // and one that is staged public gets it right away, with nothing in it yet
   const isPublic = stagedBoolean(staged.isPublic, service.config.is_public);
+  // Nothing is being allocated until the change is applied
+  const isAwaitingAddress = staged.isPublic === undefined;
   const showAccess = isDatabase && isItemVisible(settingsIds.networking.access);
   const showPublic = isItemVisible(settingsIds.networking.public) && (!isDatabase || isPublic);
   const showPrivate = isItemVisible(settingsIds.networking.private);
@@ -138,9 +141,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Public Networking</BlockItemTitle>
               <BlockItemDescription>
-                {isDatabase
-                  ? "Reach the database from outside the cluster."
-                  : "Communicate with the service over the internet."}
+                {`Communicate with the ${subject} over the internet.`}
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>
@@ -187,7 +188,9 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                   ))}
                 {isDatabase &&
                   !isPendingEndpoints &&
-                  endpointsData?.endpoints.external.length === 0 && <DatabasePendingEndpointRow />}
+                  endpointsData?.endpoints.external.length === 0 && (
+                    <DatabasePendingEndpointRow isWaiting={isAwaitingAddress} />
+                  )}
                 {!isDatabase && (
                   <AddDomainPortCard service={service} isPending={isPendingEndpoints} />
                 )}
@@ -202,7 +205,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Private Networking</BlockItemTitle>
               <BlockItemDescription>
-                {"Communicate with the service from within the Unbind's network."}
+                {`Communicate with the ${subject} from within the Unbind's network.`}
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>
