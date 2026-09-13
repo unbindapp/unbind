@@ -87,7 +87,7 @@ type KubeClientInterface interface {
 	// ReleasePersistentVolumeClaimsForService clears the service label from every
 	// claim bound to the service. Runs before the service row is deleted so the
 	// claims never point at a missing service.
-	ReleasePersistentVolumeClaimsForService(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) error
+	ReleasePersistentVolumeClaimsForService(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) ([]string, error)
 	// UpdatePersistentVolumeClaim updates an existing PersistentVolumeClaim with new parameters (size, name)
 	UpdatePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, newSize *string, client kubernetes.Interface) (*models.PVCInfo, error)
 	GetPersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) (*models.PVCInfo, error)
@@ -96,6 +96,9 @@ type KubeClientInterface interface {
 	// DeletePersistentVolumeClaim deletes a specific PersistentVolumeClaim by its name and namespace.
 	DeletePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error
 	// GetPodsUsingPVC finds all pods in a given namespace that are mounting the specified PVC.
+	// This one reads through to the cluster on purpose: it guards detaches and deletes,
+	// where acting on a pod list that is even a second old is how a mounted volume gets
+	// pulled out from under a running database.
 	GetPodsUsingPVC(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) ([]corev1.Pod, error)
 	// unbound claims (WaitForFirstConsumer) are skipped and picked up on the next reconcile
 	RetainVolumeForClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error
@@ -109,7 +112,9 @@ type KubeClientInterface interface {
 	GetPodContainerStatusByLabelsWithOptions(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface, options PodStatusOptions) ([]PodContainerStatus, error)
 	GetExpectedReplicas(ctx context.Context, namespace string, podName string, client kubernetes.Interface) (int, error)
 	GetSimpleHealthStatus(ctx context.Context, namespace string, labels map[string]string, expectedReplicas *int, client kubernetes.Interface) (*SimpleHealthStatus, error)
-	// GetPodsByLabels returns pods matching the provided labels in a namespace
+	// GetPodsByLabels returns pods matching the provided labels in a namespace. The
+	// replica views poll this every few seconds per open tab, so identical reads are
+	// served from a short-lived cache (see ttlCache).
 	GetPodsByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) (*corev1.PodList, error)
 	// RollingRestartPodsByLabel performs a rolling restart of all pods with a specific label
 	// regardless of whether they're part of Deployments, StatefulSets, or standalone pods.

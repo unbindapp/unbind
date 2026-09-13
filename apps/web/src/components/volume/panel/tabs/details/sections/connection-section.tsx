@@ -8,6 +8,7 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import {
   getDuplicateServiceNames,
@@ -26,7 +27,7 @@ import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow, updateService } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { BoxIcon, FolderClosedIcon, UnplugIcon } from "lucide-react";
+import { BoxIcon, FolderClosedIcon, HardDriveIcon, UnplugIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useCallback, useMemo } from "react";
 import { z } from "zod";
@@ -242,6 +243,7 @@ function AttachSection({ volume }: TProps) {
           )}
         />
       </Block>
+      <VolumeIdBlock volume={volume} />
     </SettingsSection>
   );
 }
@@ -320,7 +322,43 @@ function AttachedSection({ volume }: TProps) {
           <ErrorLine message={errorServices.message} />
         )}
       </div>
+      <VolumeIdBlock volume={volume} />
     </SettingsSection>
+  );
+}
+
+// The display name is the service's, so this is the only place the name the volume
+// actually has in the cluster shows up.
+function VolumeIdBlock({ volume }: TProps) {
+  const SuffixComponent = useCallback(
+    ({ className }: { className?: string }) => (
+      <div className={cn("-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1", className)}>
+        <CopyButton className="size-8" classNameIcon="size-4" valueToCopy={volume.id} />
+      </div>
+    ),
+    [volume.id],
+  );
+
+  return (
+    <Block>
+      <BlockItem id={volumeSettingsIds.connection.volumeId} className="w-full md:w-full">
+        <BlockItemHeader type="column">
+          <BlockItemTitle>Volume ID</BlockItemTitle>
+          <BlockItemDescription>The name of this volume in the cluster.</BlockItemDescription>
+        </BlockItemHeader>
+        <BlockItemContent>
+          <BlockItemButtonLike
+            asElement="div"
+            text={volume.id}
+            classNameText="whitespace-normal"
+            Icon={({ className }: { className?: string }) => (
+              <HardDriveIcon className={cn(className, "size-4.5")} />
+            )}
+            SuffixComponent={SuffixComponent}
+          />
+        </BlockItemContent>
+      </BlockItem>
+    </Block>
   );
 }
 

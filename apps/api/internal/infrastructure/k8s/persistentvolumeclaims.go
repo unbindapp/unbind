@@ -29,6 +29,8 @@ const (
 	projectLabel     = "unbind-project"
 	environmentLabel = "unbind-environment"
 	serviceLabel     = "unbind-service"
+	// the engine a claim holds data for, set by internal/dbvolumes
+	databaseLabel = "unbind-database"
 )
 
 // CreatePersistentVolumeClaim creates a new PersistentVolumeClaim in the specified namespace.
@@ -150,26 +152,28 @@ func (self *KubeClient) SetPersistentVolumeClaimService(ctx context.Context, nam
 // ReleasePersistentVolumeClaimsForService clears the service label from every
 // claim bound to the service. Runs before the service row is deleted so the
 // claims never point at a missing service.
-func (self *KubeClient) ReleasePersistentVolumeClaimsForService(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) error {
+func (self *KubeClient) ReleasePersistentVolumeClaimsForService(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) ([]string, error) {
 	if namespace == "" {
-		return fmt.Errorf("namespace cannot be empty")
+		return nil, fmt.Errorf("namespace cannot be empty")
 	}
 
 	pvcList, err := client.CoreV1().PersistentVolumeClaims(namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", serviceLabel, serviceID.String()),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to list PersistentVolumeClaims for service '%s': %w", serviceID, err)
+		return nil, fmt.Errorf("failed to list PersistentVolumeClaims for service '%s': %w", serviceID, err)
 	}
 
+	released := make([]string, 0, len(pvcList.Items))
 	for i := range pvcList.Items {
 		pvc := &pvcList.Items[i]
 		delete(pvc.Labels, serviceLabel)
 		if _, err := client.CoreV1().PersistentVolumeClaims(namespace).Update(ctx, pvc, metav1.UpdateOptions{}); err != nil {
-			return fmt.Errorf("failed to release PersistentVolumeClaim '%s': %w", pvc.Name, err)
+			return nil, fmt.Errorf("failed to release PersistentVolumeClaim '%s': %w", pvc.Name, err)
 		}
+		released = append(released, pvc.Name)
 	}
-	return nil
+	return released, nil
 }
 
 // UpdatePersistentVolumeClaim updates an existing PersistentVolumeClaim with new parameters (size, name)
@@ -252,6 +256,13 @@ func (self *KubeClient) resolvePVCServiceBinding(ctx context.Context, pvcName st
 	return &serviceID, service, nil
 }
 
+func isDatabaseClaim(pvcLabels map[string]string, service *ent.Service) bool {
+	if _, ok := pvcLabels[databaseLabel]; ok {
+		return true
+	}
+	return service != nil && service.Type == schema.ServiceTypeDatabase
+}
+
 // pvcBinding describes which service owns a PVC and the lifecycle state of its mounts.
 type pvcBinding struct {
 	ServiceID   *uuid.UUID
@@ -264,7 +275,9 @@ type pvcBinding struct {
 // from the PVC label or the DB; a pod's service label is only trusted if that
 // service still exists. Pods otherwise just signal whether mounts are still
 // physically live, so a volume whose service was deleted reports as detaching
-// while its old pods terminate instead of appearing mounted.
+// while its old pods terminate instead of appearing mounted. A claim keeps
+// holding database data after its service is gone, so the engine label counts
+// on its own.
 func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName string, pvcLabels map[string]string, pods []corev1.Pod) (*pvcBinding, error) {
 	serviceID, service, err := self.resolvePVCServiceBinding(ctx, pvcName, pvcLabels)
 	if err != nil {
@@ -293,7 +306,7 @@ func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName string, p
 
 	return &pvcBinding{
 		ServiceID:   serviceID,
-		IsDatabase:  service != nil && service.Type == schema.ServiceTypeDatabase,
+		IsDatabase:  isDatabaseClaim(pvcLabels, service),
 		MountStatus: resolveMountStatus(serviceID, service, pods, blockingPods),
 		InUseByPods: len(blockingPods) > 0,
 	}, nil

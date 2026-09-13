@@ -580,6 +580,27 @@ func (self *ServiceRepository) GetPVCMountPaths(ctx context.Context, pvcs []*mod
 	return mountPaths, nil
 }
 
+// GetNamesByIDs looks up display names without loading whole services
+func (self *ServiceRepository) GetNamesByIDs(ctx context.Context, serviceIDs []uuid.UUID) (map[uuid.UUID]string, error) {
+	names := make(map[uuid.UUID]string, len(serviceIDs))
+	if len(serviceIDs) == 0 {
+		return names, nil
+	}
+
+	services, err := self.base.DB.Service.Query().
+		Select(service.FieldName).
+		Where(service.IDIn(serviceIDs...)).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, svc := range services {
+		names[svc.ID] = svc.Name
+	}
+	return names, nil
+}
+
 // empty volume set means the engine's operator still owns the storage
 func (self *ServiceRepository) GetDatabaseStorageConfig(ctx context.Context, serviceID uuid.UUID) (*schema.DatabaseConfig, []schema.ServiceVolume, error) {
 	svcConfig, err := self.base.DB.Service.Query().

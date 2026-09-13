@@ -11,6 +11,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/prometheus"
@@ -348,21 +349,15 @@ func (self *ServiceService) GetVolumesForServices(ctx context.Context, namespace
 			}
 		}
 
-		// Attach metadata
-		if metadata, ok := pvcMetadata[pvc.ID]; ok {
-			if metadata.Name != nil {
-				pvc.Name = *metadata.Name
-			} else {
-				pvc.Name = pvc.ID
-			}
-			pvc.Description = metadata.Description
-		} else {
-			pvc.Name = pvc.ID
-		}
-
 		// Add to result
 		result[serviceID] = append(result[serviceID], pvc)
 	}
+
+	serviceNames := make(map[uuid.UUID]string, len(serviceMap))
+	for id, service := range serviceMap {
+		serviceNames[id] = service.Name
+	}
+	dbvolumes.ResolveNames(relevantPVCs, pvcMetadata, serviceNames)
 
 	return result, nil
 }

@@ -39,6 +39,12 @@ func (self *StorageService) ListPVCs(ctx context.Context, requesterUserID uuid.U
 		pvcNames = append(pvcNames, pvc.ID)
 	}
 
+	// before the enrichment below, which gives up on its own errors and would leave volumes nameless
+	if err := self.resolveNames(ctx, nil, pvcs); err != nil {
+		log.Errorf("Failed to resolve PVC names: %v", err)
+		return nil, err
+	}
+
 	stats, err := self.promClient.GetPVCsVolumeStats(ctx, pvcNames, team.Namespace, self.k8s.GetInternalClient())
 	if err != nil {
 		log.Errorf("Failed to get PVC stats from prometheus: %v", err)
@@ -66,25 +72,6 @@ func (self *StorageService) ListPVCs(ctx context.Context, requesterUserID uuid.U
 	for i := range pvcs {
 		if path, ok := pathMap[pvcs[i].ID]; ok {
 			pvcs[i].MountPath = new(path)
-		}
-	}
-
-	pvcMetadata, err := self.repo.System().GetPVCMetadata(ctx, nil, pvcNames)
-	if err != nil {
-		log.Errorf("Failed to get PVC metadata: %v", err)
-		return nil, err
-	}
-
-	for i := range pvcs {
-		if metadata, ok := pvcMetadata[pvcs[i].ID]; ok {
-			if metadata.Name != nil {
-				pvcs[i].Name = *metadata.Name
-			} else {
-				pvcs[i].Name = pvcs[i].ID
-			}
-			pvcs[i].Description = metadata.Description
-		} else {
-			pvcs[i].Name = pvcs[i].ID
 		}
 	}
 
@@ -120,6 +107,11 @@ func (self *StorageService) GetPVC(ctx context.Context, requesterUserID uuid.UUI
 		}
 	}
 
+	if err := self.resolveNames(ctx, nil, []*models.PVCInfo{pvc}); err != nil {
+		log.Errorf("Failed to resolve PVC name: %v", err)
+		return nil, err
+	}
+
 	stats, err := self.promClient.GetPVCsVolumeStats(ctx, []string{pvc.ID}, team.Namespace, self.k8s.GetInternalClient())
 	if err != nil {
 		log.Errorf("Failed to get PVC stats from prometheus: %v", err)
@@ -144,23 +136,6 @@ func (self *StorageService) GetPVC(ctx context.Context, requesterUserID uuid.UUI
 
 	if path, ok := pathMap[pvc.ID]; ok {
 		pvc.MountPath = new(path)
-	}
-
-	pvcMetadata, err := self.repo.System().GetPVCMetadata(ctx, nil, []string{pvc.ID})
-	if err != nil {
-		log.Errorf("Failed to get PVC metadata: %v", err)
-		return nil, err
-	}
-
-	if metadata, ok := pvcMetadata[pvc.ID]; ok {
-		if metadata.Name != nil {
-			pvc.Name = *metadata.Name
-		} else {
-			pvc.Name = pvc.ID
-		}
-		pvc.Description = metadata.Description
-	} else {
-		pvc.Name = pvc.ID
 	}
 
 	return pvc, nil

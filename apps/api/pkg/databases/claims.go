@@ -1,6 +1,10 @@
 package databases
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+	"strconv"
+)
 
 const (
 	TypePostgres   = "postgres"
@@ -53,4 +57,27 @@ func StatefulSetClaimNames(dbType, crName, serviceRef string, replicas int) []st
 		names[i] = fmt.Sprintf(format, i)
 	}
 	return names
+}
+
+var claimPatterns = []*regexp.Regexp{
+	regexp.MustCompile(`^pgdata-(.+)-(\d+)$`),
+	regexp.MustCompile(`^mysql-data-moco-(.+)-(\d+)$`),
+	regexp.MustCompile(`^clickhouse-data-chi-(.+)-chi-[a-z0-9-]+-0-(\d+)-0$`),
+}
+
+// ClaimBaseName undoes StatefulSetClaimNames: it returns the name the claim was built around and
+// the replica it belongs to. Redis and mongodb claims carry no decoration and come back untouched.
+func ClaimBaseName(claim string) (string, int) {
+	for _, pattern := range claimPatterns {
+		match := pattern.FindStringSubmatch(claim)
+		if match == nil {
+			continue
+		}
+		ordinal, err := strconv.Atoi(match[2])
+		if err != nil {
+			continue
+		}
+		return match[1], ordinal
+	}
+	return claim, 0
 }

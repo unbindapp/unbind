@@ -83,3 +83,63 @@ func TestMountsExistingClaim(t *testing.T) {
 	assert.False(t, MountsExistingClaim(TypeMySQL))
 	assert.False(t, MountsExistingClaim(TypeClickhouse))
 }
+
+func TestClaimBaseName(t *testing.T) {
+	tests := []struct {
+		name            string
+		claim           string
+		expectedBase    string
+		expectedOrdinal int
+	}{
+		{
+			name:         "postgres",
+			claim:        "pgdata-unb304-pg-svvhvbaeroeg-0",
+			expectedBase: "unb304-pg-svvhvbaeroeg",
+		},
+		{
+			name:            "postgres replica",
+			claim:           "pgdata-unb304-pg-svvhvbaeroeg-2",
+			expectedBase:    "unb304-pg-svvhvbaeroeg",
+			expectedOrdinal: 2,
+		},
+		{
+			name:         "mysql",
+			claim:        "mysql-data-moco-my-sql-abc123def456-0",
+			expectedBase: "my-sql-abc123def456",
+		},
+		{
+			name:         "clickhouse",
+			claim:        "clickhouse-data-chi-ch-verify-fwcwoij97emw-chi-12b1f2f7-7a-0-0-0",
+			expectedBase: "ch-verify-fwcwoij97emw",
+		},
+		{
+			name:            "clickhouse replica",
+			claim:           "clickhouse-data-chi-ch-verify-fwcwoij97emw-chi-12b1f2f7-7a-0-1-0",
+			expectedBase:    "ch-verify-fwcwoij97emw",
+			expectedOrdinal: 1,
+		},
+		{
+			name:         "clickhouse name containing chi",
+			claim:        "clickhouse-data-chi-chi-chi-abc123def456-chi-12b1f2f7-7a-0-0-0",
+			expectedBase: "chi-chi-abc123def456",
+		},
+		{
+			name:         "redis carries no decoration",
+			claim:        "unb293-redis-yset0qaxuq5w",
+			expectedBase: "unb293-redis-yset0qaxuq5w",
+		},
+		{
+			name:         "unrecognized claim",
+			claim:        "minio-volume-21cl9ijyli5w",
+			expectedBase: "minio-volume-21cl9ijyli5w",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			base, ordinal := ClaimBaseName(tt.claim)
+			assert.Equal(t, tt.expectedBase, base)
+			assert.Equal(t, tt.expectedOrdinal, ordinal)
+		})
+	}
+}

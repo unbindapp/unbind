@@ -64,8 +64,13 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 		}
 
 		// claims outlive the service; releasing makes them attachable right away
-		if err := self.k8s.ReleasePersistentVolumeClaimsForService(ctx, team.Namespace, service.ID, client); err != nil {
+		released, err := self.k8s.ReleasePersistentVolumeClaimsForService(ctx, team.Namespace, service.ID, client)
+		if err != nil {
 			log.Error("Error releasing volumes from k8s", "svc", service.KubernetesName, "err", err)
+			return err
+		}
+
+		if err := self.retainDatabaseVolumeNames(ctx, tx, service, released); err != nil {
 			return err
 		}
 

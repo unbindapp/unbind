@@ -46,5 +46,6 @@ export const volumeSettingsIds = {
   connection: {
     service: "connection_service",
     mountPath: "connection_mount-path",
+    volumeId: "connection_volume-id",
   },
 } as const;

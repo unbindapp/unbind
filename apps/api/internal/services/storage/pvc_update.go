@@ -102,19 +102,7 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 			updatedPvc = resized
 		}
 
-		pvcMetadata, err := self.repo.System().GetPVCMetadata(ctx, tx, []string{pvc.ID})
-		if err != nil {
-			return err
-		}
-
-		updatedPvc.Name = pvc.ID
-		if metadata, ok := pvcMetadata[pvc.ID]; ok {
-			if metadata.Name != nil {
-				updatedPvc.Name = *metadata.Name
-			}
-			updatedPvc.Description = metadata.Description
-		}
-		return nil
+		return self.resolveNames(ctx, tx, []*models.PVCInfo{updatedPvc})
 	}); err != nil {
 		return nil, err
 	}

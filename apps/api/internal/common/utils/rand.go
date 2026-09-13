@@ -101,16 +101,17 @@ func GenerateRandomSimpleID(length int) (string, error) {
 	return string(result), nil
 }
 
-func GenerateSlug(displayName string) (string, error) {
+var nonAlphanumeric = regexp.MustCompile(`[^a-z0-9]+`)
+
+// Slugify is empty when the display name has nothing alphanumeric in it
+func Slugify(displayName string) string {
 	slug := strings.ToLower(displayName)
+	slug = nonAlphanumeric.ReplaceAllString(slug, "-")
+	return strings.Trim(slug, "-")
+}
 
-	// Replace non-alphanumeric characters with hyphens
-	reg := regexp.MustCompile(`[^a-z0-9]+`)
-	slug = reg.ReplaceAllString(slug, "-")
-
-	slug = strings.Trim(slug, "-")
-
-	// If slug is empty after cleaning, use a default
+func GenerateSlug(displayName string) (string, error) {
+	slug := Slugify(displayName)
 	if slug == "" {
 		slug = "untitled"
 	}

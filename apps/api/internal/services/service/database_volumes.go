@@ -85,6 +85,31 @@ func (self *ServiceService) detachDatabaseVolumes(ctx context.Context, tx reposi
 	return nil
 }
 
+// a released claim outlives the service it belonged to, so the name it was shown under has to be
+// recorded before the service row is gone. Only databases need this: every other volume was
+// created by name and already has one.
+func (self *ServiceService) retainDatabaseVolumeNames(ctx context.Context, tx repository.TxInterface, service *ent.Service, claims []string) error {
+	if service.Type != schema.ServiceTypeDatabase || len(claims) == 0 {
+		return nil
+	}
+
+	metadata, err := self.repo.System().GetPVCMetadata(ctx, tx, claims)
+	if err != nil {
+		return err
+	}
+
+	for _, claim := range claims {
+		if entry, ok := metadata[claim]; ok && entry.Name != nil && *entry.Name != "" {
+			continue
+		}
+		name := dbvolumes.DefaultNameForClaim(service.Name, claim)
+		if err := self.repo.System().UpsertPVCMetadata(ctx, tx, claim, &name, nil); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (self *ServiceService) detachedVolumeName(ctx context.Context, tx repository.TxInterface, pvcID, fallback string) (string, error) {
 	displayName := fallback
 	metadata, err := self.repo.System().GetPVCMetadata(ctx, tx, []string{pvcID})

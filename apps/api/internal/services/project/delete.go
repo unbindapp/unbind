@@ -82,7 +82,7 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 					return err
 				}
 
-				if err := self.k8s.ReleasePersistentVolumeClaimsForService(ctx, team.Namespace, service.ID, client); err != nil {
+				if _, err := self.k8s.ReleasePersistentVolumeClaimsForService(ctx, team.Namespace, service.ID, client); err != nil {
 					log.Error("Error releasing volumes from k8s", "svc", service.KubernetesName, "err", err)
 					return err
 				}

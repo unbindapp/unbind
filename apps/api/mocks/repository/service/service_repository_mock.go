@@ -1252,6 +1252,74 @@ func (_c *ServiceRepositoryMock_GetGithubPrivateKey_Call) RunAndReturn(run func(
 	return _c
 }
 
+// GetNamesByIDs provides a mock function for the type ServiceRepositoryMock
+func (_mock *ServiceRepositoryMock) GetNamesByIDs(ctx context.Context, serviceIDs []uuid.UUID) (map[uuid.UUID]string, error) {
+	ret := _mock.Called(ctx, serviceIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNamesByIDs")
+	}
+
+	var r0 map[uuid.UUID]string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) (map[uuid.UUID]string, error)); ok {
+		return returnFunc(ctx, serviceIDs)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) map[uuid.UUID]string); ok {
+		r0 = returnFunc(ctx, serviceIDs)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[uuid.UUID]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, serviceIDs)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ServiceRepositoryMock_GetNamesByIDs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNamesByIDs'
+type ServiceRepositoryMock_GetNamesByIDs_Call struct {
+	*mock.Call
+}
+
+// GetNamesByIDs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceIDs []uuid.UUID
+func (_e *ServiceRepositoryMock_Expecter) GetNamesByIDs(ctx any, serviceIDs any) *ServiceRepositoryMock_GetNamesByIDs_Call {
+	return &ServiceRepositoryMock_GetNamesByIDs_Call{Call: _e.mock.On("GetNamesByIDs", ctx, serviceIDs)}
+}
+
+func (_c *ServiceRepositoryMock_GetNamesByIDs_Call) Run(run func(ctx context.Context, serviceIDs []uuid.UUID)) *ServiceRepositoryMock_GetNamesByIDs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetNamesByIDs_Call) Return(uUIDToString map[uuid.UUID]string, err error) *ServiceRepositoryMock_GetNamesByIDs_Call {
+	_c.Call.Return(uUIDToString, err)
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetNamesByIDs_Call) RunAndReturn(run func(ctx context.Context, serviceIDs []uuid.UUID) (map[uuid.UUID]string, error)) *ServiceRepositoryMock_GetNamesByIDs_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetPVCMountPaths provides a mock function for the type ServiceRepositoryMock
 func (_mock *ServiceRepositoryMock) GetPVCMountPaths(ctx context.Context, pvcs []*models.PVCInfo) (map[string]string, error) {
 	ret := _mock.Called(ctx, pvcs)

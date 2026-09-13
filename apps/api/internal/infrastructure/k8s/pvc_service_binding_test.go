@@ -57,7 +57,9 @@ func TestReleasePersistentVolumeClaimsForService(t *testing.T) {
 	client := fake.NewSimpleClientset(mine, other, plain)
 	kube := &KubeClient{clientset: client}
 
-	require.NoError(t, kube.ReleasePersistentVolumeClaimsForService(ctx, rebindNamespace, serviceID, client))
+	names, err := kube.ReleasePersistentVolumeClaimsForService(ctx, rebindNamespace, serviceID, client)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"mine"}, names)
 
 	released, err := client.CoreV1().PersistentVolumeClaims(rebindNamespace).Get(ctx, "mine", metav1.GetOptions{})
 	require.NoError(t, err)
@@ -71,6 +73,10 @@ func TestReleasePersistentVolumeClaimsForService(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "team", kept.Labels["unbind-team"])
 
-	require.NoError(t, kube.ReleasePersistentVolumeClaimsForService(ctx, rebindNamespace, serviceID, client))
-	assert.Error(t, kube.ReleasePersistentVolumeClaimsForService(ctx, "", serviceID, client))
+	names, err = kube.ReleasePersistentVolumeClaimsForService(ctx, rebindNamespace, serviceID, client)
+	require.NoError(t, err)
+	assert.Empty(t, names)
+
+	_, err = kube.ReleasePersistentVolumeClaimsForService(ctx, "", serviceID, client)
+	assert.Error(t, err)
 }
