@@ -42,35 +42,49 @@ func (self *PrometheusClient) GetResourceMetrics(
 	// For network calculations, use a window that's at least 2x the step size but minimum 1m
 	networkWindow := calculateNetworkWindow(step)
 
-	// Queries with label filtering and fixed time windows
+	// The kubelet exports container CPU and memory from both /metrics/cadvisor and
+	// /metrics/resource, so every container is in the result twice. Collapsing to one value per
+	// container before summing keeps the totals right whichever endpoints an install scrapes.
 	cpuQuery := fmt.Sprintf(`sum by (%s) (
-		rate(container_cpu_usage_seconds_total{container!="POD", container!=""}[%s])
+		max by (namespace, pod, container) (
+			rate(container_cpu_usage_seconds_total{container!="POD", container!=""}[%s])
+		)
 		* on(namespace, pod) group_left(label_unbind_team,label_unbind_project,label_unbind_environment,label_unbind_service)
 		kube_pod_labels%s
 	)`, sumBy.Label(), cpuWindow, kubeLabelsSelector)
 
 	ramQuery := fmt.Sprintf(`sum by (%s) (
-		container_memory_working_set_bytes{container!="POD", container!=""}
-		* on(namespace, pod) group_left(label_unbind_team,label_unbind_project,label_unbind_environment,label_unbind_service)
-		kube_pod_labels%s
-	)`, sumBy.Label(), kubeLabelsSelector)
-
-	networkQuery := fmt.Sprintf(`sum by (%s) (
-		(rate(container_network_receive_bytes_total{pod!=""}[%s]) +
-		rate(container_network_transmit_bytes_total{pod!=""}[%s]))
-		* on(namespace, pod) group_left(label_unbind_team,label_unbind_project,label_unbind_environment,label_unbind_service)
-		kube_pod_labels%s
-	)`, sumBy.Label(), networkWindow, networkWindow, kubeLabelsSelector)
-
-	diskQuery := fmt.Sprintf(`sum by (%s) (
-		(
-			max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes)
-			* on(namespace, persistentvolumeclaim) group_right()
-			kube_pod_spec_volumes_persistentvolumeclaims_info
+		max by (namespace, pod, container) (
+			container_memory_working_set_bytes{container!="POD", container!=""}
 		)
-		* on(namespace, pod) group_left(label_unbind_team, label_unbind_project, label_unbind_environment, label_unbind_service)
+		* on(namespace, pod) group_left(label_unbind_team,label_unbind_project,label_unbind_environment,label_unbind_service)
 		kube_pod_labels%s
 	)`, sumBy.Label(), kubeLabelsSelector)
+
+	// Only the pod's own interfaces. A pod on the host network sees every device on the server,
+	// which would report the whole server's traffic as the service's
+	networkQuery := fmt.Sprintf(`sum by (%s) (
+		max by (namespace, pod, interface) (
+			rate(container_network_receive_bytes_total{pod!="", interface!~"%s"}[%s]) +
+			rate(container_network_transmit_bytes_total{pod!="", interface!~"%s"}[%s])
+		)
+		* on(namespace, pod) group_left(label_unbind_team,label_unbind_project,label_unbind_environment,label_unbind_service)
+		kube_pod_labels%s
+	)`, sumBy.Label(), virtualNetworkDevices, networkWindow, virtualNetworkDevices, networkWindow, kubeLabelsSelector)
+
+	// A volume is counted once even when several pods mount it, which they do on every rolling
+	// deploy while the old and new pod overlap
+	diskQuery := fmt.Sprintf(`sum by (%s) (
+		max by (namespace, persistentvolumeclaim, %s) (
+			(
+				max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes)
+				* on(namespace, persistentvolumeclaim) group_right()
+				kube_pod_spec_volumes_persistentvolumeclaims_info
+			)
+			* on(namespace, pod) group_left(label_unbind_team, label_unbind_project, label_unbind_environment, label_unbind_service)
+			kube_pod_labels%s
+		)
+	)`, sumBy.Label(), sumBy.Label(), kubeLabelsSelector)
 
 	// Execute queries
 	cpuResult, _, err := self.api.QueryRange(ctx, cpuQuery, r)

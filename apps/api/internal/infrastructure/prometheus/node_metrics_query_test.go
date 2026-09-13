@@ -558,6 +558,64 @@ func (s *NodeMetricsQueryTestSuite) TestExtractNodeMetrics_NonMatrixResult() {
 	s.Empty(groupedMetrics)
 }
 
+// The server charts are compared against the team and service charts, so they have to measure
+// the same thing: time the CPU actually ran, memory that cannot be reclaimed on demand, and one
+// entry per physical device
+func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_QueryDefinitions() {
+	queries := s.captureQueries(&NodeMetricsFilter{InstanceIPs: []string{"10.0.0.1"}})
+
+	cpu := queries["node_cpu_seconds_total"]
+	s.Contains(cpu, `mode!~"idle|iowait|steal"`)
+
+	ram := queries["node_memory_MemTotal_bytes"]
+	s.Contains(ram, "node_memory_MemFree_bytes")
+	s.Contains(ram, "node_memory_Inactive_file_bytes")
+	s.NotContains(ram, "node_memory_MemAvailable_bytes")
+
+	network := queries["node_network_receive_bytes_total"]
+	s.Contains(network, `device!~"lo|veth.*`)
+
+	disk := queries["node_disk_read_bytes_total"]
+	s.Contains(disk, `device=~"nvme`)
+
+	filesystem := queries["node_filesystem_size_bytes"]
+	s.Contains(filesystem, "max by (instance, device)")
+	s.Contains(filesystem, `mountpoint!~"/var/lib/kubelet/.*"`)
+
+	for _, query := range queries {
+		s.Contains(query, `instance=~"10\\.0\\.0\\.1:\\d+"`)
+	}
+}
+
+// captureQueries returns every query the client sends, keyed by the metric it reads
+func (s *NodeMetricsQueryTestSuite) captureQueries(filter *NodeMetricsFilter) map[string]string {
+	metricNames := []string{
+		"node_cpu_seconds_total",
+		"node_memory_MemTotal_bytes",
+		"node_network_receive_bytes_total",
+		"node_disk_read_bytes_total",
+		"node_filesystem_size_bytes",
+		"node_load1",
+	}
+
+	queries := make(map[string]string, len(metricNames))
+	s.mockAPI.On("QueryRange", s.ctx, mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		query := args.String(1)
+		for _, name := range metricNames {
+			if containsString(query, name) {
+				queries[name] = query
+				return
+			}
+		}
+	}).Return(model.Matrix{}, v1.Warnings{}, nil).Times(len(metricNames))
+
+	_, err := s.client.GetNodeMetrics(s.ctx, s.testStart, s.testEnd, s.testStep, filter)
+	s.Require().NoError(err)
+	s.Require().Len(queries, len(metricNames))
+
+	return queries
+}
+
 func TestNodeMetricsQueryTestSuite(t *testing.T) {
 	suite.Run(t, new(NodeMetricsQueryTestSuite))
 }

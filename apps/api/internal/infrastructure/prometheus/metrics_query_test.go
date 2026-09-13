@@ -420,8 +420,8 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_NilFilter() {
 	samples := s.createTestSamples()
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
-		// Should not contain label selector filters when filter is nil (ends with kube_pod_labels not kube_pod_labels{...})
-		return containsString(query, "kube_pod_labels\n\t)")
+		// Should not contain label selector filters when filter is nil (kube_pod_labels, not kube_pod_labels{...})
+		return containsString(query, "kube_pod_labels") && !containsString(query, "kube_pod_labels{")
 	}), mock.AnythingOfType("v1.Range")).Return(
 		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
 	).Times(4)
@@ -534,6 +534,48 @@ func stringContains(s, substr string) bool {
 		}
 	}
 	return false
+}
+
+// The kubelet can export container CPU and memory from two endpoints under the same names, and a
+// volume is mounted by every pod that uses it, so each query has to collapse its duplicates before
+// summing or the totals come out as a multiple of the real usage
+func (s *MetricsQueryTestSuite) TestGetResourceMetrics_QueryDefinitions() {
+	metricNames := []string{
+		"container_cpu_usage_seconds_total",
+		"container_memory_working_set_bytes",
+		"container_network_receive_bytes_total",
+		"kubelet_volume_stats_used_bytes",
+	}
+
+	queries := make(map[string]string, len(metricNames))
+	s.mockAPI.On("QueryRange", s.ctx, mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+		query := args.String(1)
+		for _, name := range metricNames {
+			if containsString(query, name) {
+				queries[name] = query
+				return
+			}
+		}
+	}).Return(model.Matrix{}, v1.Warnings{}, nil).Times(len(metricNames))
+
+	_, err := s.client.GetResourceMetrics(
+		s.ctx,
+		MetricsFilterSumByService,
+		s.testStart,
+		s.testEnd,
+		s.testStep,
+		s.testFilter,
+	)
+	s.Require().NoError(err)
+	s.Require().Len(queries, len(metricNames))
+
+	s.Contains(queries["container_cpu_usage_seconds_total"], "max by (namespace, pod, container)")
+	s.Contains(queries["container_memory_working_set_bytes"], "max by (namespace, pod, container)")
+	s.Contains(queries["container_network_receive_bytes_total"], `interface!~"lo|veth.*`)
+	s.Contains(
+		queries["kubelet_volume_stats_used_bytes"],
+		"max by (namespace, persistentvolumeclaim, label_unbind_service)",
+	)
 }
 
 func TestMetricsQueryTestSuite(t *testing.T) {

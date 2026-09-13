@@ -35,3 +35,7 @@ export function cpuToHumanReadable(v: number) {
   const str = `${v.toLocaleString(undefined, { maximumSignificantDigits: 3 })}`;
   return str.startsWith("0.") ? str.substring(1) : str;
 }
+
+export function bytesPerSecondToHumanReadable(v: number) {
+  return `${bytesToHumanReadable(v)}/s`;
+}

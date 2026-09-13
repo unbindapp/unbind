@@ -11,6 +11,19 @@ import (
 	"github.com/prometheus/common/model"
 )
 
+const (
+	// Bridges, veth pairs and the loopback carry the same packets as the physical interface they
+	// sit behind, so counting them would report a multiple of the server's real traffic
+	virtualNetworkDevices = `lo|veth.*|cni.*|flannel.*|docker.*|br-.*|cali.*|lxc.*|tunl.*|vxlan.*|dummy.*|kube-ipvs.*|nodelocaldns.*|cilium.*|tailscale.*|wg.*|tap.*|virbr.*`
+
+	// Partitions and device-mapper devices repeat the I/O of the disk underneath them
+	// Each backslash is doubled because the matcher is a PromQL string literal
+	wholeDiskDevices = `nvme\\d+n\\d+|sd[a-z]+|vd[a-z]+|xvd[a-z]+|hd[a-z]+|mmcblk\\d+|md\\d+|rbd\\d+|dasd[a-z]+`
+
+	// In-memory and pseudo filesystems are not disk space
+	virtualFilesystemTypes = `tmpfs|ramfs|devtmpfs|overlay|squashfs|iso9660|nsfs|autofs|fuse.*|cgroup.*|debugfs|tracefs|configfs|mqueue|bpf|proc|procfs|sysfs|devpts|hugetlbfs|pstore|securityfs`
+)
+
 // Get metrics for specific nodes, keyed by the scrape target instance (<internal IP>:<port>)
 func (self *PrometheusClient) GetNodeMetrics(
 	ctx context.Context,
@@ -30,34 +43,50 @@ func (self *PrometheusClient) GetNodeMetrics(
 	}
 
 	selector := buildNodeInstanceSelector(filter)
-	cpuSelector := joinSelectors(`mode!="idle"`, selector)
 
 	// Use fixed time windows that don't depend on step size
 	cpuWindow := "5m"
 	networkWindow := calculateNetworkWindow(step)
 	diskWindow := calculateNetworkWindow(step) // Use same logic for disk I/O
 
+	// idle, iowait and steal are not time the CPU spent running anything, so they are not usage
 	cpuQuery := fmt.Sprintf(`sum by (instance) (
 		rate(node_cpu_seconds_total{%s}[%s])
-	)`, cpuSelector, cpuWindow)
+	)`, joinSelectors(`mode!~"idle|iowait|steal"`, selector), cpuWindow)
 
+	// Working set: everything in use except the page cache the kernel can drop right away. Same
+	// definition the kubelet uses for eviction and the same one container metrics report, so a
+	// team's usage is always a subset of its server's
 	ramQuery := fmt.Sprintf(`sum by (instance) (
-		node_memory_MemTotal_bytes{%s} - node_memory_MemAvailable_bytes{%s}
-	)`, selector, selector)
+		node_memory_MemTotal_bytes{%s}
+		- node_memory_MemFree_bytes{%s}
+		- node_memory_Inactive_file_bytes{%s}
+	)`, selector, selector, selector)
 
+	networkSelector := joinSelectors(fmt.Sprintf(`device!~"%s"`, virtualNetworkDevices), selector)
 	networkQuery := fmt.Sprintf(`sum by (instance) (
 		rate(node_network_receive_bytes_total{%s}[%s]) +
 		rate(node_network_transmit_bytes_total{%s}[%s])
-	)`, selector, networkWindow, selector, networkWindow)
+	)`, networkSelector, networkWindow, networkSelector, networkWindow)
 
+	diskSelector := joinSelectors(fmt.Sprintf(`device=~"%s"`, wholeDiskDevices), selector)
 	diskQuery := fmt.Sprintf(`sum by (instance) (
 		rate(node_disk_read_bytes_total{%s}[%s]) +
 		rate(node_disk_written_bytes_total{%s}[%s])
-	)`, selector, diskWindow, selector, diskWindow)
+	)`, diskSelector, diskWindow, diskSelector, diskWindow)
 
+	// One filesystem can be mounted in several places, so collapse to a single value per device.
+	// Volume mounts are left out, they are the same bytes the disk holding them already reports
+	fsSelector := joinSelectors(
+		fmt.Sprintf(`fstype!~"%s"`, virtualFilesystemTypes),
+		`mountpoint!~"/var/lib/kubelet/.*"`,
+		selector,
+	)
 	fsQuery := fmt.Sprintf(`sum by (instance) (
-		node_filesystem_size_bytes{%s} - node_filesystem_free_bytes{%s}
-	)`, selector, selector)
+		max by (instance, device) (
+			node_filesystem_size_bytes{%s} - node_filesystem_free_bytes{%s}
+		)
+	)`, fsSelector, fsSelector)
 
 	loadQuery := fmt.Sprintf(`sum by (instance) (
 		node_load1{%s}

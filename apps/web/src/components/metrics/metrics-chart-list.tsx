@@ -1,5 +1,9 @@
 import ChartWrapper from "@/components/metrics/chart-wrapper";
-import { bytesToHumanReadable, cpuToHumanReadable } from "@/components/metrics/formatters";
+import {
+  bytesPerSecondToHumanReadable,
+  bytesToHumanReadable,
+  cpuToHumanReadable,
+} from "@/components/metrics/formatters";
 import MetricsChart, { TChartDataItem } from "@/components/metrics/metrics-chart";
 import { useMetrics } from "@/components/metrics/metrics-provider";
 import { useMetricsState } from "@/components/metrics/metrics-state-provider";
@@ -19,8 +23,16 @@ type TProps = {
 
 const totalNameFormatter = () => "Combined";
 
-const diskUsage = { title: "Disk", description: "Disk usage over time" };
-const diskIO = { title: "Disk I/O", description: "Disk read and write throughput over time" };
+const volumeUsage = {
+  title: "Volumes",
+  description: "Space used by volumes over time",
+  formatter: bytesToHumanReadable,
+};
+const diskIO = {
+  title: "Disk I/O",
+  description: "Disk read and write throughput over time",
+  formatter: bytesPerSecondToHumanReadable,
+};
 
 type TMetrics = {
   cpu: TChartDataItem[];
@@ -55,8 +67,14 @@ export default function MetricsChartList({
   }, [data, view, selectedIds]);
 
   const nameFormatter = view === "total" ? totalNameFormatter : tooltipNameFormatter;
+  // Servers only see traffic that crosses a physical interface, services also see traffic between
+  // pods on the same server, so the two are not comparable
+  const networkDescription =
+    scope === "server" || scope === "system"
+      ? "Traffic through the server's network interfaces over time"
+      : "Traffic through the pods' network interfaces over time";
   // Servers chart disk throughput, everything else charts the space volumes take up
-  const disk = scope === "server" || scope === "system" ? diskIO : diskUsage;
+  const disk = scope === "server" || scope === "system" ? diskIO : volumeUsage;
 
   return (
     <div className={cn("flex w-full flex-wrap items-stretch", className)}>
@@ -100,7 +118,7 @@ export default function MetricsChartList({
       </ChartWrapper>
       <ChartWrapper
         title="Network"
-        description="Network usage over time"
+        description={networkDescription}
         className={cn("w-full lg:w-1/2", classNameChart)}
       >
         {isPending && !modifiedData && <LoadingPlaceholder noLegends={noLegends} />}
@@ -110,8 +128,8 @@ export default function MetricsChartList({
         {modifiedData && (
           <MetricsChart
             chartData={modifiedData.network}
-            yFormatter={bytesToHumanReadable}
-            tooltipValueFormatter={bytesToHumanReadable}
+            yFormatter={bytesPerSecondToHumanReadable}
+            tooltipValueFormatter={bytesPerSecondToHumanReadable}
             tooltipNameFormatter={nameFormatter}
             noLegends={noLegends}
           />
@@ -129,8 +147,8 @@ export default function MetricsChartList({
         {modifiedData && (
           <MetricsChart
             chartData={modifiedData.disk}
-            yFormatter={bytesToHumanReadable}
-            tooltipValueFormatter={bytesToHumanReadable}
+            yFormatter={disk.formatter}
+            tooltipValueFormatter={disk.formatter}
             tooltipNameFormatter={nameFormatter}
             noLegends={noLegends}
           />

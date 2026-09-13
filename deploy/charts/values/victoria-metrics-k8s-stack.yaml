@@ -57,6 +57,11 @@ kubelet:
   vmScrapes:
     probes:
       enabled: false
+    # /metrics/resource exports container_cpu_usage_seconds_total and
+    # container_memory_working_set_bytes under the same names as /metrics/cadvisor, so scraping
+    # both stores every container twice. Nothing here reads its node and pod level series.
+    resources:
+      enabled: false
   vmScrape:
     spec:
       scrapeTimeout: "15s"
@@ -85,6 +90,7 @@ prometheus-node-exporter:
     - --collector.netdev
     - --collector.diskstats
     - --collector.loadavg
+    - --collector.filesystem
   resources:
     requests:
       cpu: 10m
