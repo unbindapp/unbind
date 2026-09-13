@@ -3,6 +3,7 @@ package variables_service
 import (
 	"context"
 	"fmt"
+	"net"
 	"slices"
 	"sort"
 	"strconv"
@@ -17,6 +18,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	"github.com/unbindapp/unbind-api/internal/vartemplate"
+	"github.com/unbindapp/unbind-api/pkg/databases"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
@@ -123,6 +125,8 @@ type renderContext struct {
 	// Referenced services in the same project as the target
 	services map[uuid.UUID]*ent.Service
 	secrets  map[string]map[string][]byte
+	// Nil until a public endpoint needs the cluster's own address
+	resolvedClusterAddress *string
 }
 
 func (self *VariablesService) newRenderContext(ctx context.Context, client kubernetes.Interface, target *ent.Service, tokens []vartemplate.Token) (*renderContext, error) {
@@ -212,60 +216,113 @@ func (rc *renderContext) resolve(token vartemplate.Token) (string, bool) {
 	if vartemplate.IsEndpointKey(token.Key) {
 		return rc.endpointValue(source, token.Key)
 	}
-	value, ok := rc.secret(source.KubernetesSecret)[token.Key]
-	return string(value), ok
-}
-
-func (rc *renderContext) endpointValue(source *ent.Service, key string) (string, bool) {
-	base, index, ok := vartemplate.ParseEndpointKey(key)
-	if !ok {
-		return "", false
+	if value, ok := rc.secret(source.KubernetesSecret)[token.Key]; ok {
+		return string(value), true
 	}
-
-	switch base {
-	case vartemplate.KeyExternalURL:
-		hosts := externalHosts(source)
-		if index > len(hosts) {
-			return "", false
-		}
-		return fmt.Sprintf("https://%s", hosts[index-1].Host), true
-	case vartemplate.KeyInternalHost:
-		return rc.internalHost(source), true
-	case vartemplate.KeyInternalPort:
-		ports := rc.internalPorts(source)
-		if index > len(ports) {
-			return "", false
-		}
-		return strconv.Itoa(int(ports[index-1])), true
-	case vartemplate.KeyInternalURL:
-		ports := rc.internalPorts(source)
-		if index > len(ports) {
-			return "", false
-		}
-		return fmt.Sprintf("http://%s:%d", rc.internalHost(source), ports[index-1]), true
+	if replacement := LegacyDatabaseKey(source, token.Key); replacement != "" {
+		return rc.endpointValue(source, replacement)
 	}
 	return "", false
 }
 
-func (rc *renderContext) internalHost(source *ent.Service) string {
-	return utils.ServiceFQDN(utils.InternalServiceName(databaseType(source), source.KubernetesName), rc.namespace)
+func (rc *renderContext) endpointValue(source *ent.Service, key string) (string, bool) {
+	ref, ok := vartemplate.ParseEndpointKey(key)
+	if !ok {
+		return "", false
+	}
+
+	switch ref.Base {
+	case vartemplate.KeyHostPrivate, vartemplate.KeyPortPrivate, vartemplate.KeyURLPrivate, vartemplate.KeyDatabaseURLPrivate:
+		endpoint, ok := selectEndpoint(rc.privateEndpoints(source), ref)
+		if !ok {
+			return "", false
+		}
+		return rc.addressValue(source, ref.Base, endpoint, false)
+	case vartemplate.KeyHostPublic, vartemplate.KeyDomainPublic, vartemplate.KeyPortPublic, vartemplate.KeyURLPublic, vartemplate.KeyDatabaseURLPublic:
+		endpoint, ok := selectEndpoint(publicEndpoints(source, rc.clusterAddress), ref)
+		if !ok {
+			return "", false
+		}
+		return rc.addressValue(source, ref.Base, endpoint, true)
+	}
+	return "", false
 }
 
-// Databases created before ports were tracked on the config only expose their port through the secret
-func (rc *renderContext) internalPorts(source *ent.Service) []int32 {
-	ports := internalPortsFromConfig(source)
-	if len(ports) > 0 || source.Type != schema.ServiceTypeDatabase {
-		return ports
+// addressValue turns one endpoint into the value the key asks for
+func (rc *renderContext) addressValue(source *ent.Service, base string, endpoint serviceEndpoint, public bool) (string, bool) {
+	switch base {
+	case vartemplate.KeyHostPrivate, vartemplate.KeyHostPublic:
+		return endpoint.Host, true
+	case vartemplate.KeyDomainPublic:
+		if !endpoint.IsDomain {
+			return "", false
+		}
+		return endpoint.Host, true
+	case vartemplate.KeyPortPrivate, vartemplate.KeyPortPublic:
+		return strconv.Itoa(int(endpoint.Port)), true
+	case vartemplate.KeyURLPrivate:
+		if isDatabase(source) {
+			return "", false
+		}
+		return fmt.Sprintf("http://%s", net.JoinHostPort(endpoint.Host, strconv.Itoa(int(endpoint.Port)))), true
+	case vartemplate.KeyURLPublic:
+		if isDatabase(source) {
+			return "", false
+		}
+		// Raw L4 has no scheme to speak of, so the address stands on its own
+		if endpoint.L4 {
+			return net.JoinHostPort(endpoint.Host, strconv.Itoa(int(endpoint.Port))), true
+		}
+		return fmt.Sprintf("https://%s", endpoint.Host), true
+	case vartemplate.KeyDatabaseURLPrivate, vartemplate.KeyDatabaseURLPublic:
+		if !isDatabase(source) {
+			return "", false
+		}
+		return rc.databaseURL(source, endpoint)
 	}
-	raw, ok := rc.secret(source.KubernetesSecret)["DATABASE_PORT"]
-	if !ok {
+	return "", false
+}
+
+// databaseURL builds the engine's connection string against one endpoint, picking
+// the HTTP protocol when the endpoint fronts the engine's HTTP port
+func (rc *renderContext) databaseURL(source *ent.Service, endpoint serviceEndpoint) (string, bool) {
+	conn := databaseConnection(source, rc.secret(source.KubernetesSecret))
+	conn.Host = endpoint.Host
+	conn.Port = endpoint.Port
+
+	url := databases.ConnectionString(conn)
+	if endpoint.Target == databases.DefaultHTTPPort(conn.Type) {
+		url = databases.HTTPConnectionString(conn)
+	}
+	if url == "" {
+		return "", false
+	}
+	return url, true
+}
+
+// Databases created before ports were tracked on the config have none, so fall back
+// to the port the engine answers on
+func (rc *renderContext) privateEndpoints(source *ent.Service) []serviceEndpoint {
+	endpoints := privateEndpoints(source, serviceNamespace(source))
+	if len(endpoints) > 0 || source.Type != schema.ServiceTypeDatabase {
+		return endpoints
+	}
+	dbType := databaseType(source)
+	port := databases.DefaultPort(dbType)
+	if port == 0 {
 		return nil
 	}
-	port, err := strconv.Atoi(string(raw))
-	if err != nil {
-		return nil
+	host := utils.ServiceFQDN(utils.InternalServiceName(dbType, source.KubernetesName), serviceNamespace(source))
+	return []serviceEndpoint{{Host: host, IsDomain: true, Port: port, Target: port}}
+}
+
+// clusterAddress resolves the node or load balancer address once per render
+func (rc *renderContext) clusterAddress() string {
+	if rc.resolvedClusterAddress == nil {
+		address := clusterAddress(rc.ctx, rc.svc.k8s)
+		rc.resolvedClusterAddress = &address
 	}
-	return []int32{int32(port)}
+	return *rc.resolvedClusterAddress
 }
 
 func (rc *renderContext) referenceInfos(value string) []models.VariableReferenceInfo {
@@ -313,21 +370,6 @@ func serviceIcon(service *ent.Service) string {
 	return string(service.Type)
 }
 
-func externalHosts(service *ent.Service) []schema.HostSpec {
-	return configHosts(service.Edges.ServiceConfig)
-}
-
-func configHosts(config *ent.ServiceConfig) []schema.HostSpec {
-	if config == nil {
-		return nil
-	}
-	return config.Hosts
-}
-
-func internalPortsFromConfig(service *ent.Service) []int32 {
-	return configInternalPorts(service.Type, service.Edges.ServiceConfig)
-}
-
 // Internal TCP ports, in config order. Node ports are external-only except for databases.
 func configInternalPorts(serviceType schema.ServiceType, config *ent.ServiceConfig) []int32 {
 	if config == nil {
@@ -360,6 +402,8 @@ func (self *VariablesService) FindReferencingServices(ctx context.Context, sourc
 			return nil, err
 		}
 		scope, scopeID = schema.VariableReferenceSourceTypeProject, source.Edges.Environment.ProjectID
+		// Nobody references a credential directly, they reference what it builds
+		keys = slices.Concat(keys, DerivedEndpointKeys(source, keys))
 	}
 
 	candidates, err := self.repo.Service().GetByScope(ctx, scope, scopeID)

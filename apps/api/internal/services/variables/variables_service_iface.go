@@ -16,6 +16,10 @@ type VariablesServiceInterface interface {
 	// DeleteVariablesByKey removes variables. The returned bool is true when a rendered
 	// value was removed, meaning the service needs a new deployment rather than a pod restart.
 	DeleteVariablesByKey(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, keys []models.VariableDeleteInput) (*models.VariableResponse, bool, error)
+	// MigrateEndpointKeys rewrites references that use a pre-rename endpoint key
+	// (UNBIND_INTERNAL_URL and friends) into the public/private names. Old keys still
+	// resolve, so this only has to run once and a failure is not fatal.
+	MigrateEndpointKeys(ctx context.Context) error
 	// MigrateLegacyReferences writes rows of the old variable_references table into the
 	// target service's secret as ${{...}} templates. Rows are kept and marked so the
 	// step is idempotent and an older release can still read them.

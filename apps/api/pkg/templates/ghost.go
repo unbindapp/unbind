@@ -95,7 +95,7 @@ func ghostTemplate() *schema.TemplateDefinition {
 					},
 					{
 						SourceID:   "service_mysql",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "database__connection__host",
 					},
 				},

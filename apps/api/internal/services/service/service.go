@@ -131,33 +131,36 @@ func (self *ServiceService) generateWildcardHost(ctx context.Context, tx reposit
 	}, nil
 }
 
-// prepareDatabaseExposure decides public-by-default exposure for a database, gated on
-// a configured wildcard domain. It allocates an external node port; only gateway
-// clusters get a routable host (NodePort clusters are reached at node IP:port). Returns
-// (nil, nil, nil) when no wildcard is configured.
-func (self *ServiceService) prepareDatabaseExposure(ctx context.Context, tx repository.TxInterface, kubernetesName string, ports []schema.PortSpec) (*schema.HostSpec, *int32, error) {
-	settings, err := self.repo.System().GetSystemSettings(ctx, tx)
+// prepareDatabaseExposure allocates the external port a public database is reached
+// on. Clusters that route L4 through a gateway and have a wildcard domain also get a
+// routable host; everywhere else the database answers at the cluster address and the
+// allocated port, which needs no domain at all.
+func (self *ServiceService) prepareDatabaseExposure(ctx context.Context, tx repository.TxInterface, kubernetesName string, ports []schema.PortSpec) ([]schema.HostSpec, []int32, error) {
+	nodePorts, err := self.k8s.GetUnusedNodePorts(ctx, len(ports))
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to get system settings: %w", err)
-	}
-	if settings.WildcardBaseURL == nil || *settings.WildcardBaseURL == "" {
-		return nil, nil, nil
+		return nil, nil, fmt.Errorf("failed to allocate node ports: %w", err)
 	}
 
-	nodePort, err := self.k8s.GetUnusedNodePort(ctx)
+	if self.k8s.NetworkingProvider(ctx) != "gateway" {
+		return nil, nodePorts, nil
+	}
+
+	host, err := self.generateWildcardHost(ctx, tx, kubernetesName, ports)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to allocate node port: %w", err)
+		return nil, nil, err
+	}
+	if host == nil {
+		return nil, nodePorts, nil
 	}
 
-	var host *schema.HostSpec
-	if self.k8s.NetworkingProvider(ctx) == "gateway" {
-		host, err = self.generateWildcardHost(ctx, tx, kubernetesName, ports)
-		if err != nil {
-			return nil, nil, err
-		}
+	// One host per exposed port, so a database speaking two protocols is reachable
+	// at the same domain on both
+	hosts := make([]schema.HostSpec, len(ports))
+	for i, port := range ports {
+		hosts[i] = *host
+		hosts[i].TargetPort = new(port.Port)
 	}
-
-	return host, &nodePort, nil
+	return hosts, nodePorts, nil
 }
 
 func (self *ServiceService) verifyS3BackupBucket(ctx context.Context, s3BucketID uuid.UUID, team *ent.Team, client kubernetes.Interface) error {

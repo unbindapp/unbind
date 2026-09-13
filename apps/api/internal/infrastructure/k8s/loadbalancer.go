@@ -131,45 +131,61 @@ func controllerServiceSelector(provider string) (labelSelector, nameMatch string
 
 // GetUnusedNodePort returns an unused NodePort, determined by letting kubernetes allocate one then deleting the temp service
 func (self *KubeClient) GetUnusedNodePort(ctx context.Context) (int32, error) {
-	// Create a temporary service to get an allocated NodePort
+	ports, err := self.GetUnusedNodePorts(ctx, 1)
+	if err != nil {
+		return 0, err
+	}
+	return ports[0], nil
+}
+
+// GetUnusedNodePorts returns count distinct unused NodePorts. They are allocated from
+// one temporary service: allocating them one at a time would release each port before
+// the next call and hand back the same number again.
+func (self *KubeClient) GetUnusedNodePorts(ctx context.Context, count int) ([]int32, error) {
+	if count < 1 {
+		return nil, nil
+	}
+
+	servicePorts := make([]corev1.ServicePort, count)
+	for i := range servicePorts {
+		servicePorts[i] = corev1.ServicePort{
+			Name:       fmt.Sprintf("p%d", i),
+			Port:       int32(80 + i),
+			TargetPort: intstr.FromInt(80 + i),
+		}
+	}
+
 	tempSvc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("temp-nodeport-%d", time.Now().UnixNano()),
 			Namespace: self.config.GetSystemNamespace(),
 		},
 		Spec: corev1.ServiceSpec{
-			Type: corev1.ServiceTypeNodePort,
-			Ports: []corev1.ServicePort{
-				{
-					Port:       80,
-					TargetPort: intstr.FromInt(80),
-				},
-			},
+			Type:  corev1.ServiceTypeNodePort,
+			Ports: servicePorts,
 		},
 	}
 
-	// Create the service
 	createdSvc, err := self.clientset.CoreV1().Services(self.config.GetSystemNamespace()).Create(ctx, tempSvc, metav1.CreateOptions{})
 	if err != nil {
-		return 0, fmt.Errorf("failed to create temporary service: %w", err)
+		return nil, fmt.Errorf("failed to create temporary service: %w", err)
 	}
 
-	// Get the allocated NodePort
-	var nodePort int32
-	if len(createdSvc.Spec.Ports) > 0 {
-		nodePort = createdSvc.Spec.Ports[0].NodePort
+	nodePorts := make([]int32, 0, count)
+	for _, port := range createdSvc.Spec.Ports {
+		if port.NodePort > 0 {
+			nodePorts = append(nodePorts, port.NodePort)
+		}
 	}
 
-	// Delete the temporary service
-	err = self.clientset.CoreV1().Services(self.config.GetSystemNamespace()).Delete(ctx, createdSvc.Name, metav1.DeleteOptions{})
-	if err != nil {
-		// Log the error but don't fail the function since we already got the port
+	if err := self.clientset.CoreV1().Services(self.config.GetSystemNamespace()).Delete(ctx, createdSvc.Name, metav1.DeleteOptions{}); err != nil {
+		// The ports are already known, so a leaked temporary service is not fatal
 		log.Warnf("failed to delete temporary service: %v", err)
 	}
 
-	if nodePort == 0 {
-		return 0, fmt.Errorf("no NodePort was allocated for temporary service")
+	if len(nodePorts) < count {
+		return nil, fmt.Errorf("kubernetes allocated %d of %d requested node ports", len(nodePorts), count)
 	}
 
-	return nodePort, nil
+	return nodePorts, nil
 }

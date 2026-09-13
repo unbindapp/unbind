@@ -148,6 +148,9 @@ func startAPI(cfg *config.Config) {
 	if err := variableService.MigrateLegacyReferences(ctx); err != nil {
 		log.Errorf("Failed to migrate legacy variable references: %v", err)
 	}
+	if err := variableService.MigrateEndpointKeys(ctx); err != nil {
+		log.Errorf("Failed to rename endpoint key references: %v", err)
+	}
 	webhooksService := webhooks_service.NewWebhooksService(repo)
 
 	deploymentController := deployctl.NewDeploymentController(ctx, cancel, cfg, kubeClient, redisClient, repo, githubClient, webhooksService, variableService)

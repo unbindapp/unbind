@@ -2,6 +2,7 @@ package variables_service
 
 import (
 	"context"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -89,6 +90,8 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 		return nil, err
 	}
 
+	publicAddress := sync.OnceValue(func() string { return clusterAddress(ctx, self.k8s) })
+
 	var endpoints []models.AvailableVariableReference
 	for _, otherService := range accessibleServices {
 		base := models.AvailableVariableReference{
@@ -98,41 +101,61 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 			SourceType:           schema.VariableReferenceSourceTypeService,
 			SourceID:             otherService.ID,
 		}
-		if keys := internalEndpointKeys(otherService); len(keys) > 0 {
-			internal := base
-			internal.Type = schema.VariableReferenceTypeInternalEndpoint
-			internal.Keys = keys
-			endpoints = append(endpoints, internal)
+		if keys := privateEndpointKeys(otherService); len(keys) > 0 {
+			private := base
+			private.Type = schema.VariableReferenceTypePrivateEndpoint
+			private.Keys = keys
+			endpoints = append(endpoints, private)
 		}
-		if keys := externalEndpointKeys(otherService); len(keys) > 0 {
-			external := base
-			external.Type = schema.VariableReferenceTypeExternalEndpoint
-			external.Keys = keys
-			endpoints = append(endpoints, external)
+		if keys := publicEndpointKeys(otherService, publicAddress); len(keys) > 0 {
+			public := base
+			public.Type = schema.VariableReferenceTypePublicEndpoint
+			public.Keys = keys
+			endpoints = append(endpoints, public)
 		}
 	}
 
 	return models.TransformAvailableVariableResponse(k8sSecrets, endpoints, kubernetesNameMap, nameMap, iconMap), nil
 }
 
-// Databases expose host and port separately since their URL lives in DATABASE_URL
-func internalEndpointKeys(service *ent.Service) []string {
-	if service.Type == schema.ServiceTypeDatabase {
-		return []string{vartemplate.KeyInternalHost, vartemplate.KeyInternalPort}
+// privateEndpointKeys are the keys the picker offers for reaching a service from
+// inside the cluster. The host never varies by port, so it is offered once.
+func privateEndpointKeys(service *ent.Service) []string {
+	endpoints := privateEndpoints(service, serviceNamespace(service))
+	if len(endpoints) == 0 {
+		return nil
 	}
-	ports := internalPortsFromConfig(service)
-	keys := make([]string, 0, len(ports))
-	for i := range ports {
-		keys = append(keys, vartemplate.EndpointKey(vartemplate.KeyInternalURL, i+1))
+	keys := []string{vartemplate.KeyHostPrivate}
+	urlBase := vartemplate.KeyURLPrivate
+	if isDatabase(service) {
+		urlBase = vartemplate.KeyDatabaseURLPrivate
 	}
+	keys = append(keys, endpointKeys(urlBase, endpoints)...)
+	keys = append(keys, endpointKeys(vartemplate.KeyPortPrivate, endpoints)...)
 	return keys
 }
 
-func externalEndpointKeys(service *ent.Service) []string {
-	hosts := externalHosts(service)
-	keys := make([]string, 0, len(hosts))
-	for i := range hosts {
-		keys = append(keys, vartemplate.EndpointKey(vartemplate.KeyExternalURL, i+1))
+// publicEndpointKeys are the keys the picker offers for reaching a service from the
+// internet. A private service has none. Domain is offered only where the address is
+// a name rather than a bare IP, so referencing it is a promise of a routable domain.
+func publicEndpointKeys(service *ent.Service, clusterAddress func() string) []string {
+	endpoints := publicEndpoints(service, clusterAddress)
+	if len(endpoints) == 0 {
+		return nil
 	}
-	return keys
+	urlBase := vartemplate.KeyURLPublic
+	if isDatabase(service) {
+		urlBase = vartemplate.KeyDatabaseURLPublic
+	}
+	keys := endpointKeys(urlBase, endpoints)
+	keys = append(keys, endpointKeys(vartemplate.KeyHostPublic, endpoints)...)
+	keys = append(keys, endpointKeys(vartemplate.KeyPortPublic, endpoints)...)
+
+	named := make([]serviceEndpoint, 0, len(endpoints))
+	for _, endpoint := range endpoints {
+		if endpoint.IsDomain {
+			named = append(named, endpoint)
+		}
+	}
+	return append(keys, endpointKeys(vartemplate.KeyDomainPublic, named)...)
 }

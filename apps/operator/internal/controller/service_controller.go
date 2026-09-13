@@ -166,10 +166,6 @@ func (r *ServiceReconciler) reconcileResources(ctx context.Context, service *v1.
 			logger.Error(err, "Failed to reconcile database routes")
 			return err
 		}
-		if err := r.reconcileExternalDatabaseURL(ctx, service); err != nil {
-			logger.Error(err, "Failed to reconcile external database URL")
-			return err
-		}
 		return nil
 	}
 

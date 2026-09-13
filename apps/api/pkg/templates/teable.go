@@ -119,12 +119,12 @@ func teableTemplate() *schema.TemplateDefinition {
 				VariableReferences: []schema.TemplateVariableReference{
 					{
 						SourceID:   "service_redis",
-						SourceName: "DATABASE_URL",
+						SourceName: "UNBIND_DATABASE_URL_PRIVATE",
 						TargetName: "BACKEND_CACHE_REDIS_URI",
 					},
 					{
 						SourceID:   "service_postgres",
-						SourceName: "DATABASE_URL",
+						SourceName: "UNBIND_DATABASE_URL_PRIVATE",
 						TargetName: "PRISMA_DATABASE_URL",
 					},
 				},

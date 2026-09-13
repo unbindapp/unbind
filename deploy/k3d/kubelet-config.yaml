@@ -1,0 +1,14 @@
+# Mirrors the kubelet config the installer writes for production k3s
+# (apps/installer/internal/k3s/install.go). Setting evictionHard replaces every
+# kubelet default, so disk signals must be listed alongside each other; dev stays
+# looser than production because the cluster shares the workstation's disk.
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+evictionHard:
+  nodefs.available: 5%
+  imagefs.available: 5%
+# Without these, kubelet only collects images at its 85% default, which on a large
+# workstation disk never fires and lets benched template images pile up unbounded.
+imageGCHighThresholdPercent: 70
+imageGCLowThresholdPercent: 50
+imageMaximumGCAge: 72h

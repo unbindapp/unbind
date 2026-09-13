@@ -5,7 +5,7 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import { Button } from "@/components/ui/button";
+import PublicPrivateToggle from "@/components/service/public-private-toggle";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { withForm } from "@/lib/hooks/use-app-form";
@@ -30,28 +30,17 @@ const DomainPortBlock = withForm({
             <form.AppField
               name="isPublic"
               children={(field) => (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    const newIsPublic = !field.state.value;
-                    if (!newIsPublic) {
+                <PublicPrivateToggle
+                  isPublic={field.state.value}
+                  onChange={(isPublic) => {
+                    if (!isPublic) {
                       form.setErrorMap({
                         onChange: { fields: { domain: undefined, targetPort: undefined } },
                       });
                     }
-                    field.handleChange(newIsPublic);
+                    field.handleChange(isPublic);
                   }}
-                  data-private={!field.state.value || undefined}
-                  className="group/button has-hover:hover:bg-border -my-1 -mr-0.5 ml-auto flex cursor-pointer items-center justify-center gap-2.5 rounded-full py-1 pr-1 pl-2.5 font-medium"
-                >
-                  <p className="text-muted-foreground group-data-private/button:text-foreground has-hover:group-hover/button:text-foreground min-w-0 shrink">
-                    Private
-                  </p>
-                  <div className="bg-muted-more-foreground group-data-private/button:bg-foreground relative h-5 w-9 rounded-full transition">
-                    <div className="bg-background absolute top-0.5 left-0.5 size-4 rounded-full transition group-data-private/button:translate-x-4" />
-                  </div>
-                </Button>
+                />
               )}
             />
           </BlockItemHeader>

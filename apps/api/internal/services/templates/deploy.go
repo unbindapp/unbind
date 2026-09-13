@@ -796,7 +796,7 @@ func templateReferenceValue(reference schema.TemplateVariableReference, source *
 // Databases are addressed by host; anything else gets the full internal URL, matching the legacy migration.
 func hostReferenceKey(source *ent.Service) string {
 	if source.Type == schema.ServiceTypeDatabase {
-		return vartemplate.KeyInternalHost
+		return vartemplate.KeyHostPrivate
 	}
-	return vartemplate.KeyInternalURL
+	return vartemplate.KeyURLPrivate
 }

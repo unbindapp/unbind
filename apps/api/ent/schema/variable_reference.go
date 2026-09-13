@@ -94,9 +94,12 @@ type VariableReferenceType string
 
 const (
 	VariableReferenceTypeVariable VariableReferenceType = "variable"
-	// Kubernetes ingresses
+	// Reachable from the internet
+	VariableReferenceTypePublicEndpoint VariableReferenceType = "public_endpoint"
+	// Reachable from inside the cluster
+	VariableReferenceTypePrivateEndpoint VariableReferenceType = "private_endpoint"
+	// Pre-rename spellings, still stored on unmigrated rows of the legacy table
 	VariableReferenceTypeExternalEndpoint VariableReferenceType = "external_endpoint"
-	// Kubedns
 	VariableReferenceTypeInternalEndpoint VariableReferenceType = "internal_endpoint"
 )
 
@@ -104,6 +107,8 @@ const (
 func (s VariableReferenceType) Values() (kinds []string) {
 	kinds = append(kinds, []string{
 		string(VariableReferenceTypeVariable),
+		string(VariableReferenceTypePublicEndpoint),
+		string(VariableReferenceTypePrivateEndpoint),
 		string(VariableReferenceTypeExternalEndpoint),
 		string(VariableReferenceTypeInternalEndpoint),
 	}...)
@@ -118,8 +123,8 @@ func (u VariableReferenceType) Schema(r huma.Registry) *huma.Schema {
 		schemaRef.Title = "VariableReferenceType"
 		schemaRef.Enum = append(schemaRef.Enum, []any{
 			string(VariableReferenceTypeVariable),
-			string(VariableReferenceTypeExternalEndpoint),
-			string(VariableReferenceTypeInternalEndpoint),
+			string(VariableReferenceTypePublicEndpoint),
+			string(VariableReferenceTypePrivateEndpoint),
 		}...)
 		r.Map()["VariableReferenceType"] = schemaRef
 	}

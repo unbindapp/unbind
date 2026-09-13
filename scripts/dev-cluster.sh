@@ -6,6 +6,7 @@ cd "$(dirname "$0")/.."
 CLUSTER=unbind-dev
 NAMESPACE=unbind-system
 KUBECONFIG_PATH=apps/api/.data/kubernetes/k3d.kubeconfig.yaml
+KUBELET_CONFIG_PATH=/etc/rancher/k3s/kubelet-config.yaml
 # Flux's preflight check requires Kubernetes >=1.33; k3d's default k3s is older.
 K3S_IMAGE=rancher/k3s:v1.36.2-k3s1
 # longhorn can't run on k3d (busybox nodes, no iscsiadm); hostpath CSI stands in as the
@@ -73,10 +74,11 @@ up() {
     k3d cluster create "$CLUSTER" \
       --image "$K3S_IMAGE" \
       --registry-config deploy/k3d/registries.yaml \
+      --volume "$PWD/deploy/k3d/kubelet-config.yaml:$KUBELET_CONFIG_PATH@server:0" \
       -p 80:80@loadbalancer \
       -p 443:443@loadbalancer \
       --k3s-arg "--disable=traefik@server:0" \
-      --k3s-arg "--kubelet-arg=eviction-hard=nodefs.available<5%,imagefs.available<5%@server:0" \
+      --k3s-arg "--kubelet-arg=config=$KUBELET_CONFIG_PATH@server:0" \
       --kubeconfig-update-default=false \
       --kubeconfig-switch-context=false \
       --wait

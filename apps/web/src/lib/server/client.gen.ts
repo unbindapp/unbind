@@ -211,8 +211,8 @@ export const ApplyChangesResponseBodySchema = z
 
 export const VariableReferenceTypeSchema = z.enum([
   'variable',
-  'external_endpoint',
-  'internal_endpoint',
+  'public_endpoint',
+  'private_endpoint',
 ]);
 
 export const AvailableVariableReferenceSchema = z
@@ -2642,6 +2642,7 @@ export const VariableReferenceInfoSchema = z
 export const VariableResponseItemSchema = z
   .object({
     name: z.string(),
+    provided: z.boolean(), // True for values Unbind computes from the service itself, which cannot be edited or deleted
     references: z.array(VariableReferenceInfoSchema), // The references found in the value
     resolved_value: z.string().optional(), // The value with references rendered, only present when the value contains references
     type: VariableReferenceSourceTypeSchema,

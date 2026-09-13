@@ -34,6 +34,8 @@ type TVariablesContext = {
   list: UseQueryResult<TVariablesList, Error>;
   // Server variables with the staged changes applied on top
   variables: TVariableWithStaged[] | undefined;
+  // Computed endpoint values, read-only
+  provided: TVariableShallow[] | undefined;
   scope: TVariableScope;
   scopeName: string;
   staged: Map<string, TStagedVariable>;
@@ -94,7 +96,16 @@ export const VariablesProvider: React.FC<TProps> = ({
   const stageVariables = useStagedChangesStore((s) => s.stageVariables);
   const discard = useStagedChangesStore((s) => s.discard);
 
-  const serverVariables = list.data?.variables;
+  // Values Unbind computes are listed alongside the stored ones but are not part of
+  // them: they cannot be staged, edited, deleted or counted as the user's variables
+  const serverVariables = useMemo(
+    () => list.data?.variables.filter((v) => !v.provided),
+    [list.data?.variables],
+  );
+  const provided = useMemo(
+    () => list.data?.variables.filter((v) => v.provided),
+    [list.data?.variables],
+  );
   const variables = useMemo(
     () => (serverVariables ? mergeStagedVariables(serverVariables, staged) : undefined),
     [serverVariables, staged],
@@ -141,6 +152,7 @@ export const VariablesProvider: React.FC<TProps> = ({
     () => ({
       list,
       variables,
+      provided,
       scope,
       scopeName: resolvedScopeName,
       staged,
@@ -148,7 +160,7 @@ export const VariablesProvider: React.FC<TProps> = ({
       discardStaged,
       ...typedProps,
     }),
-    [list, variables, scope, resolvedScopeName, staged, stage, discardStaged, typedProps],
+    [list, variables, provided, scope, resolvedScopeName, staged, stage, discardStaged, typedProps],
   );
 
   return <VariablesContext.Provider value={value}>{children}</VariablesContext.Provider>;
@@ -192,6 +204,7 @@ export function mergeStagedVariables(
       type: change.scope.type,
       name: change.name,
       value: change.value,
+      provided: false,
       references: referencesInStoredValue(change.value),
       staged: "new",
       isApplying: change.isApplying,

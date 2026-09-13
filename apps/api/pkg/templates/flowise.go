@@ -142,12 +142,12 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				VariableReferences: []schema.TemplateVariableReference{
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "DATABASE_HOST",
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_PORT",
+						SourceName: "UNBIND_PORT_PRIVATE",
 						TargetName: "DATABASE_PORT",
 					},
 					{

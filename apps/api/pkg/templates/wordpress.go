@@ -91,7 +91,7 @@ func wordPressTemplate() *schema.TemplateDefinition {
 					},
 					{
 						SourceID:   "service_mysql",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "WORDPRESS_DB_HOST",
 					},
 				},

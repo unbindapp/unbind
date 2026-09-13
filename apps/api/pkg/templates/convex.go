@@ -128,10 +128,10 @@ func convexTemplate() *schema.TemplateDefinition {
 				VariableReferences: []schema.TemplateVariableReference{
 					{
 						SourceID:                  "service_postgres",
-						SourceName:                "DATABASE_HOST",
+						SourceName:                "UNBIND_HOST_PRIVATE",
 						TargetName:                "POSTGRES_URL",
 						AdditionalTemplateSources: []string{"DATABASE_USERNAME", "DATABASE_PASSWORD"},
-						TemplateString:            "postgresql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432?sslmode=disable",
+						TemplateString:            "postgresql://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${UNBIND_HOST_PRIVATE}:5432?sslmode=disable",
 					},
 				},
 				Variables: []schema.TemplateVariable{

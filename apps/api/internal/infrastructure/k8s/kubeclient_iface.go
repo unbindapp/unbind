@@ -72,6 +72,10 @@ type KubeClientInterface interface {
 	GetActiveControllerIP(ctx context.Context) (*LoadBalancerAddresses, error)
 	// GetUnusedNodePort returns an unused NodePort, determined by letting kubernetes allocate one then deleting the temp service
 	GetUnusedNodePort(ctx context.Context) (int32, error)
+	// GetUnusedNodePorts returns count distinct unused NodePorts. They are allocated from
+	// one temporary service: allocating them one at a time would release each port before
+	// the next call and hand back the same number again.
+	GetUnusedNodePorts(ctx context.Context, count int) ([]int32, error)
 	// Longhorn only prunes a removed snapshot behind the volume head during a purge, and nothing else triggers one
 	PurgeRemovedLonghornSnapshots(ctx context.Context) error
 	// CreatePersistentVolumeClaim creates a new PersistentVolumeClaim in the specified namespace.
@@ -138,6 +142,8 @@ type KubeClientInterface interface {
 	DeleteSecret(ctx context.Context, name, namespace string, client kubernetes.Interface) error
 	// UpsertSecretValues adds or updates specific keys in a secret without affecting other keys
 	UpsertSecretValues(ctx context.Context, name, namespace string, values map[string][]byte, client kubernetes.Interface) (*corev1.Secret, error)
+	// RemoveSecretValues deletes the named keys from a secret, leaving the rest alone
+	RemoveSecretValues(ctx context.Context, name, namespace string, keys []string, client kubernetes.Interface) error
 	// OverwriteSecretValues overwrites all values in a secret with new values
 	OverwriteSecretValues(ctx context.Context, name, namespace string, values map[string][]byte, client kubernetes.Interface) (*corev1.Secret, error)
 	// GetAllSecrets retrieves all secrets for the team hierarchy concurrently and returns them with just their keys

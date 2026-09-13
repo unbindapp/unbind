@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/unbindapp/unbind-api/pkg/databases"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -92,7 +93,7 @@ func (r *ServiceReconciler) waitForSecret(ctx context.Context, namespace, name, 
 // hasDatabaseCredentials reports whether the secret already carries the standard
 // connection keys, so they are not overwritten on subsequent reconciles.
 func hasDatabaseCredentials(secret *corev1.Secret) bool {
-	for _, key := range []string{"DATABASE_USERNAME", "DATABASE_PASSWORD", "DATABASE_URL"} {
+	for _, key := range []string{"DATABASE_USERNAME", "DATABASE_PASSWORD"} {
 		if _, ok := secret.Data[key]; !ok {
 			return false
 		}
@@ -133,63 +134,52 @@ func (r *ServiceReconciler) copyClickhouseCredentials(ctx context.Context, servi
 	})
 }
 
+// writeCredentials stores the credentials an engine generated. Only these are stored:
+// hosts, ports and connection strings are computed from them when a variable is
+// rendered, so there is no copy that can go stale.
+func writeCredentials(target *corev1.Secret, conn databases.Connection) {
+	if conn.Username != "" {
+		target.Data["DATABASE_USERNAME"] = []byte(conn.Username)
+	}
+	if conn.Password != "" {
+		target.Data["DATABASE_PASSWORD"] = []byte(conn.Password)
+	}
+	if conn.Database != "" {
+		target.Data["DATABASE_DEFAULT_DB_NAME"] = []byte(conn.Database)
+	}
+	// Addresses moved to the computed UNBIND_* keys
+	for _, key := range databases.StoredAddressKeys {
+		delete(target.Data, key)
+	}
+}
+
+func credentials(databaseType, username string, password []byte, database string) databases.Connection {
+	return databases.Connection{
+		Type:     databaseType,
+		Username: username,
+		Password: string(password),
+		Database: database,
+	}
+}
+
 // updatePostgresSecretData writes the standard connection keys from a Zalando secret.
 func updatePostgresSecretData(target, source *corev1.Secret, service *v1.Service, dbName string) {
-	if username, ok := source.Data["username"]; ok {
-		target.Data["DATABASE_USERNAME"] = username
-	}
-	if password, ok := source.Data["password"]; ok {
-		target.Data["DATABASE_PASSWORD"] = password
-	}
-	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "postgresql://%s:%s@%s:%d/%s?sslmode=disable", target.Data["DATABASE_USERNAME"], target.Data["DATABASE_PASSWORD"], serviceFQDN(service.Name, service.Namespace), 5432, dbName)
-	target.Data["DATABASE_DEFAULT_DB_NAME"] = []byte(dbName)
-	target.Data["DATABASE_PORT"] = []byte("5432")
-	target.Data["DATABASE_HOST"] = []byte(serviceFQDN(service.Name, service.Namespace))
+	writeCredentials(target, credentials("postgres", string(source.Data["username"]), source.Data["password"], dbName))
 }
 
 // updateMySQLSecretData writes the standard connection keys from a MOCO secret.
 func updateMySQLSecretData(target, source *corev1.Secret, service *v1.Service) {
-	target.Data["DATABASE_USERNAME"] = []byte("moco-writable")
-	if password, ok := source.Data["WRITABLE_PASSWORD"]; ok {
-		target.Data["DATABASE_PASSWORD"] = password
-	}
-
-	username := string(target.Data["DATABASE_USERNAME"])
-	password := string(target.Data["DATABASE_PASSWORD"])
-	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "mysql://%s:%s@%s:%d/moco", username, password, serviceFQDN("moco-"+service.Name, service.Namespace), 3306)
-	target.Data["DATABASE_DEFAULT_DB_NAME"] = []byte("moco")
-	target.Data["DATABASE_PORT"] = []byte("3306")
-	target.Data["DATABASE_HOST"] = []byte(serviceFQDN("moco-"+service.Name, service.Namespace))
+	writeCredentials(target, credentials("mysql", "moco-writable", source.Data["WRITABLE_PASSWORD"], databases.DefaultDatabaseName("mysql")))
 }
 
 // updateMongoDBSecretData writes the standard connection keys from a MongoDB secret.
 func updateMongoDBSecretData(target, source *corev1.Secret, service *v1.Service) {
-	target.Data["DATABASE_USERNAME"] = []byte("root")
-	if password, ok := source.Data["mongodb-root-password"]; ok {
-		target.Data["DATABASE_PASSWORD"] = password
-	}
-
-	password := string(target.Data["DATABASE_PASSWORD"])
-	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "mongodb://%s:%s@%s:27017/admin?ssl=false", "root", password, serviceFQDN(service.Name, service.Namespace))
-	target.Data["DATABASE_DEFAULT_DB_NAME"] = []byte("admin")
-	target.Data["DATABASE_PORT"] = []byte("27017")
-	target.Data["DATABASE_HOST"] = []byte(serviceFQDN(service.Name, service.Namespace))
+	writeCredentials(target, credentials("mongodb", "root", source.Data["mongodb-root-password"], databases.DefaultDatabaseName("mongodb")))
 }
 
 // updateClickhouseSecretData writes the standard connection keys from a ClickHouse secret.
 func updateClickhouseSecretData(target, source *corev1.Secret, service *v1.Service) {
-	target.Data["DATABASE_USERNAME"] = []byte("default")
-	if password, ok := source.Data["password"]; ok {
-		target.Data["DATABASE_PASSWORD"] = password
-	}
-
-	password := string(target.Data["DATABASE_PASSWORD"])
-	target.Data["DATABASE_URL"] = fmt.Appendf(nil, "clickhouse://%s:%s@%s:9000/default", "default", password, serviceFQDN("clickhouse-"+service.Name, service.Namespace))
-	target.Data["DATABASE_HTTP_URL"] = fmt.Appendf(nil, "http://%s:%s@%s:8123/default", "default", password, serviceFQDN("clickhouse-"+service.Name, service.Namespace))
-	target.Data["DATABASE_DEFAULT_DB_NAME"] = []byte("default")
-	target.Data["DATABASE_PORT"] = []byte("9000")
-	target.Data["DATABASE_HTTP_PORT"] = []byte("8123")
-	target.Data["DATABASE_HOST"] = []byte(serviceFQDN("clickhouse-"+service.Name, service.Namespace))
+	writeCredentials(target, credentials("clickhouse", "default", source.Data["password"], databases.DefaultDatabaseName("clickhouse")))
 }
 
 func serviceFQDN(name, namespace string) string {

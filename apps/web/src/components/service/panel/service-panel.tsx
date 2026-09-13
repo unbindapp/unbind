@@ -100,9 +100,12 @@ export default function ServicePanel({
             environmentId={environmentId}
             serviceId={service.id}
           >
+            {/* A database is reached at an allocated port, so it has no host to gate on */}
             {service.config.is_public &&
-              service.config.hosts &&
-              service.config.hosts.length >= 1 && <ServiceUrls hosts={service.config.hosts} />}
+              (service.type === "database" ||
+                (service.config.hosts && service.config.hosts.length >= 1)) && (
+                <ServiceUrls hosts={service.config.hosts ?? []} />
+              )}
             {/* Content */}
             <ServicePanelContent service={service} />
           </ServiceEndpointsProvider>

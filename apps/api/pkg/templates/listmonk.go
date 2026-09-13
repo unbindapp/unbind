@@ -112,12 +112,12 @@ func listmonkTemplate() *schema.TemplateDefinition {
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "LISTMONK_db__host",
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_PORT",
+						SourceName: "UNBIND_PORT_PRIVATE",
 						TargetName: "LISTMONK_db__port",
 					},
 				},

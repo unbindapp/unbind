@@ -89,7 +89,7 @@ func umamiTemplate() *schema.TemplateDefinition {
 				VariableReferences: []schema.TemplateVariableReference{
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_URL",
+						SourceName: "UNBIND_DATABASE_URL_PRIVATE",
 						TargetName: "DATABASE_URL",
 					},
 				},

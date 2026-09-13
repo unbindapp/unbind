@@ -91,15 +91,15 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				VariableReferences: []schema.TemplateVariableReference{
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						AdditionalTemplateSources: []string{
-							"DATABASE_PORT",
+							"UNBIND_PORT_PRIVATE",
 							"DATABASE_USERNAME",
 							"DATABASE_PASSWORD",
 							"DATABASE_DEFAULT_DB_NAME",
 						},
 						TargetName:     "NC_DB",
-						TemplateString: "pg://${DATABASE_HOST}:${DATABASE_PORT}?u=${DATABASE_USERNAME}&p=${DATABASE_PASSWORD}&d=${DATABASE_DEFAULT_DB_NAME}",
+						TemplateString: "pg://${UNBIND_HOST_PRIVATE}:${UNBIND_PORT_PRIVATE}?u=${DATABASE_USERNAME}&p=${DATABASE_PASSWORD}&d=${DATABASE_DEFAULT_DB_NAME}",
 					},
 				},
 				Variables: []schema.TemplateVariable{

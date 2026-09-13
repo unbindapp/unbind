@@ -230,6 +230,28 @@ func (self *KubeClient) UpsertSecretValues(ctx context.Context, name, namespace 
 	return client.CoreV1().Secrets(namespace).Update(ctx, secret, metav1.UpdateOptions{})
 }
 
+// RemoveSecretValues deletes the named keys from a secret, leaving the rest alone
+func (self *KubeClient) RemoveSecretValues(ctx context.Context, name, namespace string, keys []string, client kubernetes.Interface) error {
+	secret, err := self.GetSecret(ctx, name, namespace, client)
+	if err != nil {
+		return err
+	}
+
+	removed := false
+	for _, key := range keys {
+		if _, ok := secret.Data[key]; ok {
+			delete(secret.Data, key)
+			removed = true
+		}
+	}
+	if !removed {
+		return nil
+	}
+
+	_, err = client.CoreV1().Secrets(namespace).Update(ctx, secret, metav1.UpdateOptions{})
+	return err
+}
+
 // OverwriteSecretValues overwrites all values in a secret with new values
 func (self *KubeClient) OverwriteSecretValues(ctx context.Context, name, namespace string, values map[string][]byte, client kubernetes.Interface) (*corev1.Secret, error) {
 	secret, err := self.GetSecret(ctx, name, namespace, client)

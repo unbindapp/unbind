@@ -2,8 +2,11 @@ package databases
 
 // DefinitionMetadata represents the metadata of a definition
 type DefinitionMetadata struct {
-	Name        string                    `yaml:"name" json:"name"`
-	Port        int                       `yaml:"port" json:"port"`
+	Name string `yaml:"name" json:"name"`
+	// Port is the engine's primary protocol
+	Port int `yaml:"port" json:"port"`
+	// HTTPPort is the engine's HTTP protocol, when it has a second one
+	HTTPPort    int                       `yaml:"httpPort,omitempty" json:"httpPort,omitempty"`
 	Description string                    `yaml:"description" json:"description"`
 	Type        string                    `yaml:"type" json:"type"`
 	Version     string                    `yaml:"version" json:"version"`
@@ -53,6 +56,7 @@ type ParameterProperty struct {
 type Definition struct {
 	Name        string                    `json:"name"`
 	Port        int                       `json:"port"`
+	HTTPPort    int                       `json:"httpPort,omitempty"`
 	Category    string                    `json:"category"`
 	Description string                    `json:"description"`
 	Type        string                    `json:"type"`

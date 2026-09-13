@@ -3,6 +3,10 @@ import { settingsIds } from "@/components/settings/settings-ids";
 import ErrorLine from "@/components/error-line";
 import AddDomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/add-domain-port-card";
 import DomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-port-card";
+import DatabaseEndpointCard, {
+  DatabasePrivateRow,
+} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-endpoint-card";
+import DatabasePublicToggle from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-public-toggle";
 import { getNetworkingEntityId } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
 import {
   Block,
@@ -72,7 +76,8 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
   const { isItemVisible } = useSettingsSectionSearch("networking");
   const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
 
-  const showPublic = service.type !== "database" && isItemVisible(settingsIds.networking.public);
+  const isDatabase = service.type === "database";
+  const showPublic = isItemVisible(settingsIds.networking.public);
   const showPrivate = isItemVisible(settingsIds.networking.private);
   if (!showPublic && !showPrivate) return null;
 
@@ -87,9 +92,14 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
         <Block>
           <BlockItem id={settingsIds.networking.public} className="w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle>Public Networking</BlockItemTitle>
+              <div className="flex w-full items-center gap-2">
+                <BlockItemTitle>Public Networking</BlockItemTitle>
+                {isDatabase && <DatabasePublicToggle service={service} />}
+              </div>
               <BlockItemDescription>
-                Communicate with the service over the internet.
+                {isDatabase
+                  ? "Reach the database from outside the cluster."
+                  : "Communicate with the service over the internet."}
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>
@@ -112,6 +122,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                   />
                 )}
                 {endpointsData?.endpoints &&
+                  !isDatabase &&
                   endpointsData.endpoints.external.map((endpoint) => (
                     <DomainPortCard
                       mode="public"
@@ -123,7 +134,21 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                       service={service}
                     />
                   ))}
-                <AddDomainPortCard service={service} isPending={isPendingEndpoints} />
+                {endpointsData?.endpoints &&
+                  isDatabase &&
+                  service.config.is_public &&
+                  endpointsData.endpoints.external.map((endpoint) => (
+                    <DatabaseEndpointCard
+                      mode="public"
+                      key={`${endpoint.host}:${endpoint.target_port?.port}`}
+                      domain={endpoint.host}
+                      port={endpoint.target_port?.port}
+                    />
+                  ))}
+                {isDatabase && !service.config.is_public && <DatabasePrivateRow />}
+                {!isDatabase && (
+                  <AddDomainPortCard service={service} isPending={isPendingEndpoints} />
+                )}
               </div>
             </BlockItemContent>
           </BlockItem>
@@ -158,15 +183,24 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                   />
                 )}
                 {endpointsData?.endpoints.internal?.flatMap((endpoint) =>
-                  endpoint.ports.map((portObject) => (
-                    <DomainPortCard
-                      mode="private"
-                      key={`${endpoint.dns}:${portObject.port}`}
-                      domain={endpoint.dns}
-                      port={portObject.port}
-                      service={service}
-                    />
-                  )),
+                  endpoint.ports.map((portObject) =>
+                    isDatabase ? (
+                      <DatabaseEndpointCard
+                        mode="private"
+                        key={`${endpoint.dns}:${portObject.port}`}
+                        domain={endpoint.dns}
+                        port={portObject.port}
+                      />
+                    ) : (
+                      <DomainPortCard
+                        mode="private"
+                        key={`${endpoint.dns}:${portObject.port}`}
+                        domain={endpoint.dns}
+                        port={portObject.port}
+                        service={service}
+                      />
+                    ),
+                  ),
                 )}
                 {service.type !== "database" && (
                   <AddDomainPortCard

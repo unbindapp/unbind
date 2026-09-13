@@ -21,10 +21,19 @@ func NewVariablesServiceMock(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *VariablesServiceMock {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &VariablesServiceMock{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -438,6 +447,57 @@ func (_c *VariablesServiceMock_GetVariables_Call) Return(variableResponse *model
 }
 
 func (_c *VariablesServiceMock_GetVariables_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error)) *VariablesServiceMock_GetVariables_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// MigrateEndpointKeys provides a mock function for the type VariablesServiceMock
+func (_mock *VariablesServiceMock) MigrateEndpointKeys(ctx context.Context) error {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MigrateEndpointKeys")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// VariablesServiceMock_MigrateEndpointKeys_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MigrateEndpointKeys'
+type VariablesServiceMock_MigrateEndpointKeys_Call struct {
+	*mock.Call
+}
+
+// MigrateEndpointKeys is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *VariablesServiceMock_Expecter) MigrateEndpointKeys(ctx any) *VariablesServiceMock_MigrateEndpointKeys_Call {
+	return &VariablesServiceMock_MigrateEndpointKeys_Call{Call: _e.mock.On("MigrateEndpointKeys", ctx)}
+}
+
+func (_c *VariablesServiceMock_MigrateEndpointKeys_Call) Run(run func(ctx context.Context)) *VariablesServiceMock_MigrateEndpointKeys_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *VariablesServiceMock_MigrateEndpointKeys_Call) Return(err error) *VariablesServiceMock_MigrateEndpointKeys_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *VariablesServiceMock_MigrateEndpointKeys_Call) RunAndReturn(run func(ctx context.Context) error) *VariablesServiceMock_MigrateEndpointKeys_Call {
 	_c.Call.Return(run)
 	return _c
 }

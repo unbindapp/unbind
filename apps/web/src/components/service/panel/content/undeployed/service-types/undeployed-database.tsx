@@ -9,6 +9,7 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import PublicPrivateToggle from "@/components/service/public-private-toggle";
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";
 import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";
@@ -43,7 +44,14 @@ import { databaseQuery } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
-import { CalendarClockIcon, CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
+import {
+  CalendarClockIcon,
+  CylinderIcon,
+  GlobeIcon,
+  GlobeLockIcon,
+  MilestoneIcon,
+  OctagonXIcon,
+} from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useCallback, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
@@ -56,6 +64,7 @@ type TProps = {
 
 const DraftSchema = z.object({
   version: z.string(),
+  isPublic: z.boolean(),
   variables: z.array(z.object({ name: z.string(), value: z.string() })),
   s3BucketId: z.string(),
   backupSchedulePreset: z.string(),
@@ -182,6 +191,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
         projectId,
         environmentId,
         serviceId,
+        isPublic: formValues.isPublic,
         databaseConfig: {
           version: formValues.version,
         },
@@ -219,6 +229,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
   const form = useAppFormWithPersistence({
     defaultValues: {
       version: version,
+      isPublic: true,
       variables: [{ name: "", value: "" }] as TVariableForCreate[],
       s3BucketId: "",
       backupSchedulePreset: defaultBackupSchedule,
@@ -318,6 +329,46 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                       />
                     )}
                   </field.AsyncDropdownMenu>
+                )}
+              />
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+        {/* Networking */}
+        <Block>
+          <BlockItem className="w-full md:w-full">
+            <BlockItemHeader>
+              <BlockItemTitle>Public Networking</BlockItemTitle>
+              <form.AppField
+                name="isPublic"
+                children={(field) => (
+                  <PublicPrivateToggle
+                    isPublic={field.state.value}
+                    onChange={(isPublic) => field.handleChange(isPublic)}
+                  />
+                )}
+              />
+            </BlockItemHeader>
+            <BlockItemContent>
+              <form.Subscribe
+                selector={(state) => ({ isPublic: state.values.isPublic })}
+                children={({ isPublic }) => (
+                  <BlockItemButtonLike
+                    asElement="div"
+                    className={isPublic ? undefined : "text-muted-foreground"}
+                    text={
+                      isPublic
+                        ? "Reachable from outside the cluster"
+                        : "Only reachable from inside the cluster"
+                    }
+                    Icon={({ className }) =>
+                      isPublic ? (
+                        <GlobeIcon className={cn(className, "size-4.5")} />
+                      ) : (
+                        <GlobeLockIcon className={cn(className, "size-4.5")} />
+                      )
+                    }
+                  />
                 )}
               />
             </BlockItemContent>
@@ -514,6 +565,7 @@ function scheduleLabel(value: string) {
 
 type TFormValues = {
   version: string;
+  isPublic: boolean;
   variables: TVariableForCreate[];
   s3BucketId: string;
   backupSchedulePreset: string;

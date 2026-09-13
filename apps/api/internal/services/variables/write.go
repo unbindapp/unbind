@@ -3,12 +3,14 @@ package variables_service
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"maps"
 	"slices"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -94,6 +96,16 @@ func (self *VariablesService) PrepareVariableWrite(
 	if upserts == nil {
 		upserts = map[string][]byte{}
 	}
+	// Endpoint keys are computed from the service, so a stored value of the same name
+	// would be shadowed and never read. A value stored under one of these names before
+	// they were reserved keeps working, or the raw editor could never save again.
+	for name := range upserts {
+		if _, stored := existing[name]; !stored && vartemplate.IsEndpointKey(name) {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+				fmt.Sprintf("%s is provided by Unbind and cannot be set", name))
+		}
+	}
+
 	overwrite := behavior == models.VariableUpdateBehaviorOverwrite
 	if input.Type == schema.VariableReferenceSourceTypeService {
 		if len(upserts) > 0 {

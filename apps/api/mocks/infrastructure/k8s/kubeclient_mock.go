@@ -3162,6 +3162,74 @@ func (_c *KubeClientMock_GetUnusedNodePort_Call) RunAndReturn(run func(ctx conte
 	return _c
 }
 
+// GetUnusedNodePorts provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) GetUnusedNodePorts(ctx context.Context, count int) ([]int32, error) {
+	ret := _mock.Called(ctx, count)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUnusedNodePorts")
+	}
+
+	var r0 []int32
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) ([]int32, error)); ok {
+		return returnFunc(ctx, count)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int) []int32); ok {
+		r0 = returnFunc(ctx, count)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]int32)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = returnFunc(ctx, count)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_GetUnusedNodePorts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUnusedNodePorts'
+type KubeClientMock_GetUnusedNodePorts_Call struct {
+	*mock.Call
+}
+
+// GetUnusedNodePorts is a helper method to define mock.On call
+//   - ctx context.Context
+//   - count int
+func (_e *KubeClientMock_Expecter) GetUnusedNodePorts(ctx any, count any) *KubeClientMock_GetUnusedNodePorts_Call {
+	return &KubeClientMock_GetUnusedNodePorts_Call{Call: _e.mock.On("GetUnusedNodePorts", ctx, count)}
+}
+
+func (_c *KubeClientMock_GetUnusedNodePorts_Call) Run(run func(ctx context.Context, count int)) *KubeClientMock_GetUnusedNodePorts_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int
+		if args[1] != nil {
+			arg1 = args[1].(int)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_GetUnusedNodePorts_Call) Return(int32s []int32, err error) *KubeClientMock_GetUnusedNodePorts_Call {
+	_c.Call.Return(int32s, err)
+	return _c
+}
+
+func (_c *KubeClientMock_GetUnusedNodePorts_Call) RunAndReturn(run func(ctx context.Context, count int) ([]int32, error)) *KubeClientMock_GetUnusedNodePorts_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListPersistentVolumeClaims provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) ListPersistentVolumeClaims(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) ([]*models.PVCInfo, error) {
 	ret := _mock.Called(ctx, namespace, labels, client)
@@ -3843,6 +3911,81 @@ func (_c *KubeClientMock_ReleasePersistentVolumeClaimsForService_Call) Return(er
 }
 
 func (_c *KubeClientMock_ReleasePersistentVolumeClaimsForService_Call) RunAndReturn(run func(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) error) *KubeClientMock_ReleasePersistentVolumeClaimsForService_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RemoveSecretValues provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) RemoveSecretValues(ctx context.Context, name string, namespace string, keys []string, client kubernetes.Interface) error {
+	ret := _mock.Called(ctx, name, namespace, keys, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveSecretValues")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, []string, kubernetes.Interface) error); ok {
+		r0 = returnFunc(ctx, name, namespace, keys, client)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// KubeClientMock_RemoveSecretValues_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RemoveSecretValues'
+type KubeClientMock_RemoveSecretValues_Call struct {
+	*mock.Call
+}
+
+// RemoveSecretValues is a helper method to define mock.On call
+//   - ctx context.Context
+//   - name string
+//   - namespace string
+//   - keys []string
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) RemoveSecretValues(ctx any, name any, namespace any, keys any, client any) *KubeClientMock_RemoveSecretValues_Call {
+	return &KubeClientMock_RemoveSecretValues_Call{Call: _e.mock.On("RemoveSecretValues", ctx, name, namespace, keys, client)}
+}
+
+func (_c *KubeClientMock_RemoveSecretValues_Call) Run(run func(ctx context.Context, name string, namespace string, keys []string, client kubernetes.Interface)) *KubeClientMock_RemoveSecretValues_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 []string
+		if args[3] != nil {
+			arg3 = args[3].([]string)
+		}
+		var arg4 kubernetes.Interface
+		if args[4] != nil {
+			arg4 = args[4].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_RemoveSecretValues_Call) Return(err error) *KubeClientMock_RemoveSecretValues_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *KubeClientMock_RemoveSecretValues_Call) RunAndReturn(run func(ctx context.Context, name string, namespace string, keys []string, client kubernetes.Interface) error) *KubeClientMock_RemoveSecretValues_Call {
 	_c.Call.Return(run)
 	return _c
 }

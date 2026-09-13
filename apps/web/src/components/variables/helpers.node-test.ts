@@ -37,22 +37,22 @@ const available: TAvailableVariableReference[] = [
     keys: ["REGION"],
   },
   {
-    type: "internal_endpoint",
+    type: "private_endpoint",
     source_type: "service",
     source_id: redisId,
     source_name: "Redis",
     source_icon: "redis",
     source_kubernetes_name: "redis-a1",
-    keys: ["UNBIND_INTERNAL_HOST"],
+    keys: ["UNBIND_HOST_PRIVATE"],
   },
   {
-    type: "internal_endpoint",
+    type: "private_endpoint",
     source_type: "service",
     source_id: redisTwoId,
     source_name: "Redis",
     source_icon: "redis",
     source_kubernetes_name: "redis-b2",
-    keys: ["UNBIND_INTERNAL_HOST"],
+    keys: ["UNBIND_HOST_PRIVATE"],
   },
 ];
 
@@ -64,8 +64,8 @@ test("tokens pair the readable form with the stored template", () => {
     ["${Postgres.DATABASE_URL}", `\${{service.${pgId}.DATABASE_URL}}`],
     ["${Postgres.DATABASE_HOST}", `\${{service.${pgId}.DATABASE_HOST}}`],
     ["${Team.REGION}", "${{team.REGION}}"],
-    ["${Redis.UNBIND_INTERNAL_HOST}", `\${{service.${redisId}.UNBIND_INTERNAL_HOST}}`],
-    ["${Redis(2).UNBIND_INTERNAL_HOST}", `\${{service.${redisTwoId}.UNBIND_INTERNAL_HOST}}`],
+    ["${Redis.UNBIND_HOST_PRIVATE}", `\${{service.${redisId}.UNBIND_HOST_PRIVATE}}`],
+    ["${Redis(2).UNBIND_HOST_PRIVATE}", `\${{service.${redisTwoId}.UNBIND_HOST_PRIVATE}}`],
   ]);
 });
 
@@ -86,21 +86,21 @@ test("readable references become stored templates with surrounding text kept", (
 });
 
 test("stored templates render back to the readable form", () => {
-  const value = `x=\${{service.${pgId}.DATABASE_URL}} y=\${{team.REGION}} z=\${{service.${redisTwoId}.UNBIND_INTERNAL_HOST}}`;
+  const value = `x=\${{service.${pgId}.DATABASE_URL}} y=\${{team.REGION}} z=\${{service.${redisTwoId}.UNBIND_HOST_PRIVATE}}`;
   const references: TVariableReferenceInfo[] = [
     reference(`\${{service.${pgId}.DATABASE_URL}}`, "service", pgId, "Postgres", "DATABASE_URL"),
     reference("${{team.REGION}}", "team", "", "My Team", "REGION"),
     reference(
-      `\${{service.${redisTwoId}.UNBIND_INTERNAL_HOST}}`,
+      `\${{service.${redisTwoId}.UNBIND_HOST_PRIVATE}}`,
       "service",
       redisTwoId,
       "Redis",
-      "UNBIND_INTERNAL_HOST",
+      "UNBIND_HOST_PRIVATE",
     ),
   ];
   assert.equal(
     toReadableValue(value, references, readableTokenMap(tokens)),
-    "x=${Postgres.DATABASE_URL} y=${Team.REGION} z=${Redis(2).UNBIND_INTERNAL_HOST}",
+    "x=${Postgres.DATABASE_URL} y=${Team.REGION} z=${Redis(2).UNBIND_HOST_PRIVATE}",
   );
 });
 

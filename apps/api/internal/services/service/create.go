@@ -56,16 +56,12 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		input.Builder = schema.ServiceBuilderDocker
 	case schema.ServiceTypeDatabase:
 		// Fixed protected variables for databases
+		// Only the credentials are stored. Addresses and connection strings are
+		// computed endpoint keys, which have no row to protect in the first place.
 		protectedVariables = &[]string{
 			"DATABASE_USERNAME",
 			"DATABASE_PASSWORD",
-			"DATABASE_HOST",
-			"DATABASE_PORT",
 			"DATABASE_DEFAULT_DB_NAME",
-			"DATABASE_URL",
-			"DATABASE_EXTERNAL_URL",
-			"DATABASE_HTTP_URL",
-			"DATABASE_HTTP_PORT",
 		}
 
 		// Validate that if database is provided, name is set
@@ -83,12 +79,19 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			return nil, err
 		}
 
-		// Nuke whatever they tell us for ports
+		// Nuke whatever they tell us for ports. The primary protocol comes first, so
+		// the unsuffixed endpoint keys name it.
 		input.Ports = []schema.PortSpec{
 			{
 				Port:     int32(dbDefinition.Port),
 				Protocol: utils.ToPtr(schema.ProtocolTCP),
 			},
+		}
+		if dbDefinition.HTTPPort > 0 {
+			input.Ports = append(input.Ports, schema.PortSpec{
+				Port:     int32(dbDefinition.HTTPPort),
+				Protocol: utils.ToPtr(schema.ProtocolTCP),
+			})
 		}
 
 		if input.Resources == nil {
@@ -335,18 +338,15 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		// exposed over L4 on a unique allocated port. Gateway clusters also get a
 		// routable host; NodePort clusters are reached at node IP:port.
 		if input.Type == schema.ServiceTypeDatabase && len(hosts) == 0 && isPublic != nil && *isPublic && len(ports) > 0 {
-			host, nodePort, err := self.prepareDatabaseExposure(ctx, tx, kubernetesName, ports)
+			databaseHosts, nodePorts, err := self.prepareDatabaseExposure(ctx, tx, kubernetesName, ports)
 			if err != nil {
 				return err
 			}
-			if nodePort == nil {
+			if len(nodePorts) == 0 {
 				isPublic = new(false)
 			} else {
-				ports[0].IsNodePort = true
-				ports[0].NodePort = nodePort
-				if host != nil {
-					hosts = append(hosts, *host)
-				}
+				ports = databasePortsWithNodePorts(ports, nodePorts)
+				hosts = append(hosts, databaseHosts...)
 			}
 		}
 

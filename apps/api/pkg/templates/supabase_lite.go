@@ -1375,12 +1375,12 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "POSTGRES_HOST",
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_PORT",
+						SourceName: "UNBIND_PORT_PRIVATE",
 						TargetName: "POSTGRES_PORT",
 					},
 					{
@@ -1499,9 +1499,9 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 					},
 					{
 						SourceID:       "service_postgresql",
-						SourceName:     "DATABASE_HOST",
+						SourceName:     "UNBIND_HOST_PRIVATE",
 						TargetName:     "DATABASE_URL",
-						TemplateString: "postgresql://supabase_storage_admin:${INPUT_INTERNAL_PASSWORD_VALUE}@${DATABASE_HOST}:5432/postgres?sslmode=disable",
+						TemplateString: "postgresql://supabase_storage_admin:${INPUT_INTERNAL_PASSWORD_VALUE}@${UNBIND_HOST_PRIVATE}:5432/postgres?sslmode=disable",
 					},
 				},
 				Variables: []schema.TemplateVariable{
@@ -1596,9 +1596,9 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 					},
 					{
 						SourceID:       "service_postgresql",
-						SourceName:     "DATABASE_HOST",
+						SourceName:     "UNBIND_HOST_PRIVATE",
 						TargetName:     "PGRST_DB_URI",
-						TemplateString: "postgresql://authenticator:${INPUT_INTERNAL_PASSWORD_VALUE}@${DATABASE_HOST}:5432/postgres?sslmode=disable",
+						TemplateString: "postgresql://authenticator:${INPUT_INTERNAL_PASSWORD_VALUE}@${UNBIND_HOST_PRIVATE}:5432/postgres?sslmode=disable",
 					},
 				},
 				Variables: []schema.TemplateVariable{
@@ -1656,9 +1656,9 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 					},
 					{
 						SourceID:       "service_postgresql",
-						SourceName:     "DATABASE_HOST",
+						SourceName:     "UNBIND_HOST_PRIVATE",
 						TargetName:     "GOTRUE_DB_DATABASE_URL",
-						TemplateString: "postgresql://supabase_auth_admin:${INPUT_INTERNAL_PASSWORD_VALUE}@${DATABASE_HOST}:5432/postgres?sslmode=disable",
+						TemplateString: "postgresql://supabase_auth_admin:${INPUT_INTERNAL_PASSWORD_VALUE}@${UNBIND_HOST_PRIVATE}:5432/postgres?sslmode=disable",
 					},
 				},
 				Variables: []schema.TemplateVariable{
@@ -1711,12 +1711,12 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "PG_META_DB_HOST",
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_PORT",
+						SourceName: "UNBIND_PORT_PRIVATE",
 						TargetName: "PG_META_DB_PORT",
 					},
 				},
@@ -1792,8 +1792,8 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 						SourceID:                  "service_postgresql",
 						SourceName:                "DATABASE_PASSWORD",
 						TargetName:                "SUPABASE_DB_URL",
-						AdditionalTemplateSources: []string{"DATABASE_HOST"},
-						TemplateString:            "postgresql://postgres:${DATABASE_PASSWORD}@${DATABASE_HOST}:5432/postgres",
+						AdditionalTemplateSources: []string{"UNBIND_HOST_PRIVATE"},
+						TemplateString:            "postgresql://postgres:${DATABASE_PASSWORD}@${UNBIND_HOST_PRIVATE}:5432/postgres",
 					},
 				},
 				Variables: []schema.TemplateVariable{

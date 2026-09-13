@@ -2,7 +2,8 @@ name: "ClickHouse"
 description: "Standard ClickHouse database using Altinity ClickHouse Operator"
 type: "clickhouse-operator"
 version: "1.0.0"
-port: 8123
+port: 9000
+httpPort: 8123
 imports:
   - path: "../../common/base.yaml"
     as: base

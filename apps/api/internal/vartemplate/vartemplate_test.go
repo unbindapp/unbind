@@ -61,24 +61,69 @@ func TestRender_NoTokensIsIdentity(t *testing.T) {
 }
 
 func TestEndpointKeys(t *testing.T) {
-	assert.Equal(t, "UNBIND_INTERNAL_URL", EndpointKey(KeyInternalURL, 1))
-	assert.Equal(t, "UNBIND_INTERNAL_URL", EndpointKey(KeyInternalURL, 0))
-	assert.Equal(t, "UNBIND_EXTERNAL_URL_3", EndpointKey(KeyExternalURL, 3))
+	assert.Equal(t, "UNBIND_URL_PRIVATE", EndpointKey(KeyURLPrivate, 0, 0))
+	assert.Equal(t, "UNBIND_URL_PRIVATE_8080", EndpointKey(KeyURLPrivate, 8080, 1))
+	assert.Equal(t, "UNBIND_URL_PUBLIC_8080_2", EndpointKey(KeyURLPublic, 8080, 2))
+	assert.Equal(t, "UNBIND_DATABASE_URL_PUBLIC_9000", EndpointKey(KeyDatabaseURLPublic, 9000, 0))
+}
 
-	base, index, ok := ParseEndpointKey("UNBIND_INTERNAL_PORT")
+func TestParseEndpointKey(t *testing.T) {
+	ref, ok := ParseEndpointKey("UNBIND_PORT_PRIVATE")
 	assert.True(t, ok)
-	assert.Equal(t, KeyInternalPort, base)
-	assert.Equal(t, 1, index)
+	assert.Equal(t, EndpointRef{Base: KeyPortPrivate}, ref)
 
-	base, index, ok = ParseEndpointKey("UNBIND_EXTERNAL_URL_12")
+	ref, ok = ParseEndpointKey("UNBIND_URL_PUBLIC_8080")
 	assert.True(t, ok)
-	assert.Equal(t, KeyExternalURL, base)
-	assert.Equal(t, 12, index)
+	assert.Equal(t, EndpointRef{Base: KeyURLPublic, Port: 8080}, ref)
 
-	_, _, ok = ParseEndpointKey("UNBIND_EXTERNAL_URL_0")
+	ref, ok = ParseEndpointKey("UNBIND_URL_PUBLIC_8080_2")
+	assert.True(t, ok)
+	assert.Equal(t, EndpointRef{Base: KeyURLPublic, Port: 8080, Tiebreak: 2}, ref)
+
+	// The database bases share a prefix shape with the plain URL ones
+	ref, ok = ParseEndpointKey("UNBIND_DATABASE_URL_PRIVATE_5432")
+	assert.True(t, ok)
+	assert.Equal(t, EndpointRef{Base: KeyDatabaseURLPrivate, Port: 5432}, ref)
+
+	_, ok = ParseEndpointKey("UNBIND_URL_PUBLIC_0")
 	assert.False(t, ok)
-	_, _, ok = ParseEndpointKey("DATABASE_URL")
+	_, ok = ParseEndpointKey("DATABASE_URL")
 	assert.False(t, ok)
-	assert.True(t, IsEndpointKey("UNBIND_INTERNAL_HOST"))
-	assert.False(t, IsEndpointKey("UNBIND_OTHER"))
+	_, ok = ParseEndpointKey("UNBIND_OTHER")
+	assert.False(t, ok)
+	assert.True(t, IsEndpointKey("UNBIND_DOMAIN_PUBLIC"))
+}
+
+// Keys written before the public/private rename still resolve, by position
+func TestParseEndpointKeyLegacy(t *testing.T) {
+	ref, ok := ParseEndpointKey("UNBIND_INTERNAL_HOST")
+	assert.True(t, ok)
+	assert.Equal(t, EndpointRef{Base: KeyHostPrivate, Index: 1, Legacy: true}, ref)
+
+	ref, ok = ParseEndpointKey("UNBIND_EXTERNAL_URL_12")
+	assert.True(t, ok)
+	assert.Equal(t, EndpointRef{Base: KeyURLPublic, Index: 12, Legacy: true}, ref)
+
+	_, ok = ParseEndpointKey("UNBIND_EXTERNAL_URL_0")
+	assert.False(t, ok)
+	// A legacy key never carries a tiebreaker
+	_, ok = ParseEndpointKey("UNBIND_EXTERNAL_URL_1_2")
+	assert.False(t, ok)
+}
+
+func TestRenameLegacyEndpointKeys(t *testing.T) {
+	id := uuid.New()
+	rename := func(_ Token, ref EndpointRef) (string, bool) {
+		return EndpointKey(ref.Base, int32(ref.Index*1000), 1), true
+	}
+
+	value := "a=" + ServiceToken(id, "UNBIND_EXTERNAL_URL_2") + " b=" + ServiceToken(id, "DATABASE_URL")
+	renamed, changed := RenameLegacyEndpointKeys(value, rename)
+	assert.True(t, changed)
+	assert.Equal(t, "a="+ServiceToken(id, "UNBIND_URL_PUBLIC_2000")+" b="+ServiceToken(id, "DATABASE_URL"), renamed)
+
+	// Nothing legacy, nothing rewritten
+	renamed, changed = RenameLegacyEndpointKeys(ServiceToken(id, "UNBIND_URL_PUBLIC"), rename)
+	assert.False(t, changed)
+	assert.Equal(t, ServiceToken(id, "UNBIND_URL_PUBLIC"), renamed)
 }

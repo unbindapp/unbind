@@ -119,13 +119,13 @@ func plausibleTemplate() *schema.TemplateDefinition {
 					// PostgreSQL references
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_URL",
+						SourceName: "UNBIND_DATABASE_URL_PRIVATE",
 						TargetName: "DATABASE_URL",
 					},
 					// ClickHouse references
 					{
 						SourceID:   "service_clickhouse",
-						SourceName: "DATABASE_HTTP_URL",
+						SourceName: "UNBIND_DATABASE_URL_PRIVATE_8123",
 						TargetName: "CLICKHOUSE_DATABASE_URL",
 					},
 				},

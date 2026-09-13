@@ -5,7 +5,7 @@ import NoItemsCard from "@/components/no-items-card";
 import { useVariables } from "@/components/variables/variables-provider";
 import { cn } from "@/components/ui/utils";
 import VariableCard from "@/components/variables/variable-card";
-import { HourglassIcon, KeyIcon, LoaderIcon } from "lucide-react";
+import { HourglassIcon, KeyIcon, LoaderIcon, WandSparklesIcon } from "lucide-react";
 import { ReactNode } from "react";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { TVariableShallow } from "@/lib/queries/variables";
@@ -18,29 +18,18 @@ type TProps = {
 
 const placeholderArray = Array.from({ length: 10 });
 
-const SHARED_SPECIAL_DB_VARIABLES = z.enum([
-  "DATABASE_URL",
-  "DATABASE_USERNAME",
-  "DATABASE_PASSWORD",
-  "DATABASE_HOST",
-  "DATABASE_PORT",
-]);
+// The credentials the engine generates. Everything else about reaching a database
+// is computed from them, so these are what the panel waits for.
+const DB_CREDENTIALS = z.enum(["DATABASE_USERNAME", "DATABASE_PASSWORD"]);
 
 export const SPECIAL_DB_VARIABLES_ENUM = z.enum([
-  ...SHARED_SPECIAL_DB_VARIABLES.options,
+  ...DB_CREDENTIALS.options,
   "DATABASE_DEFAULT_DB_NAME",
 ]);
-export const SPECIAL_REDIS_VARIABLES_ENUM = z.enum([...SHARED_SPECIAL_DB_VARIABLES.options]);
-export const SPECIAL_CLICKHOUSE_VARIABLES_ENUM = z.enum([
-  ...SHARED_SPECIAL_DB_VARIABLES.options,
-  "DATABASE_DEFAULT_DB_NAME",
-  "DATABASE_HTTP_URL",
-  "DATABASE_HTTP_PORT",
-]);
+export const SPECIAL_REDIS_VARIABLES_ENUM = z.enum([...DB_CREDENTIALS.options]);
 
 export function specialDbVariablesFor(databaseType: string): string[] {
   if (databaseType === "redis") return SPECIAL_REDIS_VARIABLES_ENUM.options;
-  if (databaseType === "clickhouse") return SPECIAL_CLICKHOUSE_VARIABLES_ENUM.options;
   return SPECIAL_DB_VARIABLES_ENUM.options;
 }
 
@@ -55,20 +44,21 @@ function databaseTypeOf(variableTypeProps: TEntityVariableTypeProps) {
   return variableTypeProps.service.database_type || "";
 }
 
-// Auto-generated database variables are written by the operator and can't be changed
+// The server owns the list of variables it writes itself, so the lock icon can never
+// drift from what the API actually enforces
 function isLockedVariable(
   variable: TVariableWithStaged,
   variableTypeProps: TEntityVariableTypeProps,
 ) {
-  const databaseType = databaseTypeOf(variableTypeProps);
-  if (databaseType === null) return false;
-  return specialDbVariablesFor(databaseType).includes(variable.name);
+  if (variableTypeProps.type !== "service") return false;
+  return variableTypeProps.service.config.protected_variables.includes(variable.name);
 }
 
 export default function VariablesList({ variableTypeProps }: TProps) {
   const {
     list: { isPending, error },
     variables,
+    provided,
   } = useVariables();
 
   if (!variables && !isPending && error) {
@@ -108,6 +98,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
             No variables yet
           </NoItemsCard>
         )}
+        <ProvidedVariablesSection provided={provided} variableTypeProps={variableTypeProps} />
       </Wrapper>
     );
   }
@@ -135,7 +126,42 @@ export default function VariablesList({ variableTypeProps }: TProps) {
           />
         );
       })}
+      <ProvidedVariablesSection provided={provided} variableTypeProps={variableTypeProps} />
     </Wrapper>
+  );
+}
+
+// Values Unbind computes from the service itself. They are listed with the stored
+// variables so a connection string can be copied from one place, but there is no row
+// behind them to edit or delete.
+function ProvidedVariablesSection({
+  provided,
+  variableTypeProps,
+}: {
+  provided: TVariableShallow[] | undefined;
+  variableTypeProps: TEntityVariableTypeProps;
+}) {
+  if (!provided || provided.length === 0) return null;
+
+  return (
+    <>
+      <div className="mt-1 flex w-full items-center gap-2 px-1 pt-2">
+        <p className="text-muted-foreground min-w-0 shrink text-sm leading-tight font-medium">
+          Provided by Unbind
+        </p>
+        <div className="bg-border h-px min-w-0 flex-1 rounded-full" />
+      </div>
+      {provided.map((variable) => (
+        <VariableCard
+          key={variable.name}
+          variable={variable}
+          variableTypeProps={variableTypeProps}
+          asElement="li"
+          hideThreeDotButton
+          Icon={({ className }) => <WandSparklesIcon className={className} />}
+        />
+      ))}
+    </>
   );
 }
 
@@ -175,6 +201,7 @@ function SpecialDbVariablesSection({
               type: "service",
               name: val,
               value: "Waiting...",
+              provided: false,
               references: [],
             }}
             hideThreeDotButton

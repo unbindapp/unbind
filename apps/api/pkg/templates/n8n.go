@@ -127,12 +127,12 @@ func n8nTemplate() *schema.TemplateDefinition {
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "DB_POSTGRESDB_HOST",
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_PORT",
+						SourceName: "UNBIND_PORT_PRIVATE",
 						TargetName: "DB_POSTGRESDB_PORT",
 					},
 					{
@@ -148,12 +148,12 @@ func n8nTemplate() *schema.TemplateDefinition {
 					// Redis references
 					{
 						SourceID:   "service_redis",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "QUEUE_BULL_REDIS_HOST",
 					},
 					{
 						SourceID:   "service_redis",
-						SourceName: "DATABASE_PORT",
+						SourceName: "UNBIND_PORT_PRIVATE",
 						TargetName: "QUEUE_BULL_REDIS_PORT",
 					},
 					{
@@ -284,12 +284,12 @@ func n8nTemplate() *schema.TemplateDefinition {
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "DB_POSTGRESDB_HOST",
 					},
 					{
 						SourceID:   "service_postgresql",
-						SourceName: "DATABASE_PORT",
+						SourceName: "UNBIND_PORT_PRIVATE",
 						TargetName: "DB_POSTGRESDB_PORT",
 					},
 					{
@@ -305,12 +305,12 @@ func n8nTemplate() *schema.TemplateDefinition {
 					// Redis references
 					{
 						SourceID:   "service_redis",
-						SourceName: "DATABASE_HOST",
+						SourceName: "UNBIND_HOST_PRIVATE",
 						TargetName: "QUEUE_BULL_REDIS_HOST",
 					},
 					{
 						SourceID:   "service_redis",
-						SourceName: "DATABASE_PORT",
+						SourceName: "UNBIND_PORT_PRIVATE",
 						TargetName: "QUEUE_BULL_REDIS_PORT",
 					},
 					{

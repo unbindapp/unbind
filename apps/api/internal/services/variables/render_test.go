@@ -162,40 +162,126 @@ func (suite *RenderSuite) TestRender_UnresolvedStaysLiteral() {
 
 func (suite *RenderSuite) TestRender_EndpointKeys() {
 	api := suite.newService("api", schema.ServiceTypeGithub, nil)
+	api.Edges.ServiceConfig.IsPublic = true
 	api.Edges.ServiceConfig.Ports = []schema.PortSpec{
 		{Port: 9000, Protocol: utils.ToPtr(schema.ProtocolUDP)},
 		{Port: 3000, Protocol: utils.ToPtr(schema.ProtocolTCP)},
 		{Port: 4000, IsNodePort: true},
 		{Port: 5000},
 	}
-	api.Edges.ServiceConfig.Hosts = []schema.HostSpec{{Host: "api.example.com"}, {Host: "www.example.com"}}
+	api.Edges.ServiceConfig.Hosts = []schema.HostSpec{
+		{Host: "api.example.com", TargetPort: utils.ToPtr[int32](3000)},
+		{Host: "www.example.com", TargetPort: utils.ToPtr[int32](5000)},
+	}
 	redis := suite.newService("redis", schema.ServiceTypeDatabase, utils.ToPtr("redis"))
 
 	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, sortedIDs(api.ID, redis.ID)).Return([]*ent.Service{api, redis}, nil).Once()
-	suite.expectSecret(redis.KubernetesSecret, map[string][]byte{"DATABASE_PORT": []byte("6379")})
+	suite.expectSecret(redis.KubernetesSecret, map[string][]byte{
+		"DATABASE_PORT":     []byte("6379"),
+		"DATABASE_PASSWORD": []byte("hunter2"),
+	})
 
 	values := map[string][]byte{
-		"API_URL":     []byte(vartemplate.ServiceToken(api.ID, "UNBIND_INTERNAL_URL")),
-		"API_URL_2":   []byte(vartemplate.ServiceToken(api.ID, "UNBIND_INTERNAL_URL_2")),
-		"API_URL_3":   []byte(vartemplate.ServiceToken(api.ID, "UNBIND_INTERNAL_URL_3")),
-		"API_PORT":    []byte(vartemplate.ServiceToken(api.ID, "UNBIND_INTERNAL_PORT")),
-		"PUBLIC":      []byte(vartemplate.ServiceToken(api.ID, "UNBIND_EXTERNAL_URL_2")),
-		"REDIS_HOST":  []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_INTERNAL_HOST")),
-		"REDIS_PORT":  []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_INTERNAL_PORT")),
-		"REDIS_NOPUB": []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_EXTERNAL_URL")),
+		"API_URL":       []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PRIVATE")),
+		"API_URL_5000":  []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PRIVATE_5000")),
+		"API_URL_9999":  []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PRIVATE_9999")),
+		"API_PORT":      []byte(vartemplate.ServiceToken(api.ID, "UNBIND_PORT_PRIVATE")),
+		"API_HOST":      []byte(vartemplate.ServiceToken(api.ID, "UNBIND_HOST_PRIVATE")),
+		"PUBLIC":        []byte(vartemplate.ServiceToken(api.ID, "UNBIND_URL_PUBLIC_5000")),
+		"PUBLIC_DOMAIN": []byte(vartemplate.ServiceToken(api.ID, "UNBIND_DOMAIN_PUBLIC")),
+		"PUBLIC_PORT":   []byte(vartemplate.ServiceToken(api.ID, "UNBIND_PORT_PUBLIC")),
+		"REDIS_HOST":    []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_HOST_PRIVATE")),
+		"REDIS_PORT":    []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_PORT_PRIVATE")),
+		"REDIS_URL":     []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_DATABASE_URL_PRIVATE")),
+		"REDIS_NOPUB":   []byte(vartemplate.ServiceToken(redis.ID, "UNBIND_DATABASE_URL_PUBLIC")),
+		"API_NOT_A_DB":  []byte(vartemplate.ServiceToken(api.ID, "UNBIND_DATABASE_URL_PRIVATE")),
 	}
 
 	result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
 	suite.NoError(err)
 	suite.Equal("http://api-abc123.unbind-team.svc.cluster.local:3000", result.Env["API_URL"])
-	suite.Equal("http://api-abc123.unbind-team.svc.cluster.local:5000", result.Env["API_URL_2"])
-	suite.Equal(string(values["API_URL_3"]), result.Env["API_URL_3"])
+	suite.Equal("http://api-abc123.unbind-team.svc.cluster.local:5000", result.Env["API_URL_5000"])
+	suite.Equal("api-abc123.unbind-team.svc.cluster.local", result.Env["API_HOST"])
 	suite.Equal("3000", result.Env["API_PORT"])
 	suite.Equal("https://www.example.com", result.Env["PUBLIC"])
+	suite.Equal("api.example.com", result.Env["PUBLIC_DOMAIN"])
+	suite.Equal("443", result.Env["PUBLIC_PORT"])
 	suite.Equal("redis-abc123-headless.unbind-team.svc.cluster.local", result.Env["REDIS_HOST"])
 	suite.Equal("6379", result.Env["REDIS_PORT"])
+	suite.Equal("redis://default:hunter2@redis-abc123-headless.unbind-team.svc.cluster.local:6379", result.Env["REDIS_URL"])
+
+	// A port nobody exposes, a private database's public URL and an app's database
+	// URL all stay literal
+	suite.Equal(string(values["API_URL_9999"]), result.Env["API_URL_9999"])
 	suite.Equal(string(values["REDIS_NOPUB"]), result.Env["REDIS_NOPUB"])
-	suite.Len(result.Unresolved, 2)
+	suite.Equal(string(values["API_NOT_A_DB"]), result.Env["API_NOT_A_DB"])
+	suite.Len(result.Unresolved, 3)
+}
+
+// References written before the public/private rename keep resolving, by position
+func (suite *RenderSuite) TestRender_LegacyEndpointKeys() {
+	api := suite.newService("api", schema.ServiceTypeGithub, nil)
+	api.Edges.ServiceConfig.IsPublic = true
+	api.Edges.ServiceConfig.Ports = []schema.PortSpec{{Port: 3000}, {Port: 5000}}
+	api.Edges.ServiceConfig.Hosts = []schema.HostSpec{
+		{Host: "api.example.com", TargetPort: utils.ToPtr[int32](3000)},
+		{Host: "www.example.com", TargetPort: utils.ToPtr[int32](5000)},
+	}
+
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{api.ID}).Return([]*ent.Service{api}, nil).Once()
+
+	values := map[string][]byte{
+		"OLD_URL":   []byte(vartemplate.ServiceToken(api.ID, "UNBIND_INTERNAL_URL")),
+		"OLD_URL_2": []byte(vartemplate.ServiceToken(api.ID, "UNBIND_INTERNAL_URL_2")),
+		"OLD_HOST":  []byte(vartemplate.ServiceToken(api.ID, "UNBIND_INTERNAL_HOST")),
+		"OLD_PUB_2": []byte(vartemplate.ServiceToken(api.ID, "UNBIND_EXTERNAL_URL_2")),
+	}
+
+	result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
+	suite.NoError(err)
+	suite.Equal("http://api-abc123.unbind-team.svc.cluster.local:3000", result.Env["OLD_URL"])
+	suite.Equal("http://api-abc123.unbind-team.svc.cluster.local:5000", result.Env["OLD_URL_2"])
+	suite.Equal("api-abc123.unbind-team.svc.cluster.local", result.Env["OLD_HOST"])
+	suite.Equal("https://www.example.com", result.Env["OLD_PUB_2"])
+	suite.True(result.FullyResolved())
+}
+
+// ClickHouse speaks two protocols, so it has an endpoint per port on both sides
+func (suite *RenderSuite) TestRender_ClickhouseBothProtocols() {
+	ch := suite.newService("analytics", schema.ServiceTypeDatabase, utils.ToPtr("clickhouse"))
+	ch.Edges.ServiceConfig.IsPublic = true
+	ch.Edges.ServiceConfig.Ports = []schema.PortSpec{
+		{Port: 9000, IsNodePort: true, NodePort: utils.ToPtr[int32](30001)},
+		{Port: 8123, IsNodePort: true, NodePort: utils.ToPtr[int32](30002)},
+	}
+	ch.Edges.ServiceConfig.Hosts = []schema.HostSpec{
+		{Host: "ch.example.com", TargetPort: utils.ToPtr[int32](9000)},
+		{Host: "ch.example.com", TargetPort: utils.ToPtr[int32](8123)},
+	}
+
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{ch.ID}).Return([]*ent.Service{ch}, nil).Once()
+	suite.expectSecret(ch.KubernetesSecret, map[string][]byte{
+		"DATABASE_USERNAME": []byte("default"),
+		"DATABASE_PASSWORD": []byte("pw"),
+	})
+
+	values := map[string][]byte{
+		"NATIVE":     []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PRIVATE")),
+		"HTTP":       []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PRIVATE_8123")),
+		"NATIVE_PUB": []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PUBLIC")),
+		"HTTP_PUB":   []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PUBLIC_8123")),
+		"HTTP_PORT":  []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_PORT_PUBLIC_8123")),
+	}
+
+	result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
+	suite.NoError(err)
+	host := "clickhouse-analytics-abc123.unbind-team.svc.cluster.local"
+	suite.Equal("clickhouse://default:pw@"+host+":9000/default", result.Env["NATIVE"])
+	suite.Equal("http://default:pw@"+host+":8123/default", result.Env["HTTP"])
+	suite.Equal("clickhouse://default:pw@ch.example.com:30001/default", result.Env["NATIVE_PUB"])
+	suite.Equal("http://default:pw@ch.example.com:30002/default", result.Env["HTTP_PUB"])
+	suite.Equal("30002", result.Env["HTTP_PORT"])
+	suite.True(result.FullyResolved())
 }
 
 func (suite *RenderSuite) TestRenderedValuesChange() {

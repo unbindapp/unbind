@@ -22,16 +22,16 @@ func TestTemplateReferenceValue(t *testing.T) {
 		want string
 	}{
 		{
-			name: "host reference to a container resolves to the internal URL",
+			name: "host reference to a container resolves to the private URL",
 			ref:  schema.TemplateVariableReference{IsHost: true, TargetName: "API_EXTERNAL_URL"},
 			src:  app,
-			want: vartemplate.ServiceToken(id, vartemplate.KeyInternalURL),
+			want: vartemplate.ServiceToken(id, vartemplate.KeyURLPrivate),
 		},
 		{
-			name: "host reference to a database resolves to the internal host",
+			name: "host reference to a database resolves to the private host",
 			ref:  schema.TemplateVariableReference{IsHost: true, TargetName: "DB_HOST"},
 			src:  db,
-			want: vartemplate.ServiceToken(id, vartemplate.KeyInternalHost),
+			want: vartemplate.ServiceToken(id, vartemplate.KeyHostPrivate),
 		},
 		{
 			name: "plain reference copies the source variable",

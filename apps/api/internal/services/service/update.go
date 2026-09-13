@@ -20,16 +20,15 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-// databasePortsWithNodePort returns a copy of ports with the external node port set
-// (public) or stripped (private). The container port is always preserved.
-func databasePortsWithNodePort(ports []schema.PortSpec, nodePort *int32) []schema.PortSpec {
+// databasePortsWithNodePorts returns a copy of ports with one external node port set
+// per port. A database speaking two protocols needs one allocated port each.
+func databasePortsWithNodePorts(ports []schema.PortSpec, nodePorts []int32) []schema.PortSpec {
 	out := make([]schema.PortSpec, len(ports))
 	for i, port := range ports {
-		port.IsNodePort = nodePort != nil
-		if nodePort != nil {
-			port.NodePort = new(*nodePort)
-		} else {
-			port.NodePort = nil
+		port.IsNodePort = i < len(nodePorts)
+		port.NodePort = nil
+		if port.IsNodePort {
+			port.NodePort = new(nodePorts[i])
 		}
 		out[i] = port
 	}
@@ -253,22 +252,20 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 				}
 				hasIncomingHost := len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0
 				if !alreadyExposed && !hasIncomingHost && len(existingPorts) > 0 {
-					host, nodePort, err := self.prepareDatabaseExposure(ctx, tx, service.KubernetesName, existingPorts)
+					databaseHosts, nodePorts, err := self.prepareDatabaseExposure(ctx, tx, service.KubernetesName, existingPorts)
 					if err != nil {
 						return err
 					}
-					if nodePort == nil {
+					if len(nodePorts) == 0 {
 						input.IsPublic = new(false)
 					} else {
-						if host != nil {
-							input.OverwriteHosts = append(input.OverwriteHosts, *host)
-						}
-						input.OverwritePorts = databasePortsWithNodePort(existingPorts, nodePort)
+						input.OverwriteHosts = append(input.OverwriteHosts, databaseHosts...)
+						input.OverwritePorts = databasePortsWithNodePorts(existingPorts, nodePorts)
 					}
 				}
 			} else {
 				input.RemoveHosts = append(input.RemoveHosts, service.Edges.ServiceConfig.Hosts...)
-				input.OverwritePorts = databasePortsWithNodePort(existingPorts, nil)
+				input.OverwritePorts = databasePortsWithNodePorts(existingPorts, nil)
 			}
 		}
 

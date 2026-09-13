@@ -6,6 +6,7 @@ package vartemplate
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -13,16 +14,55 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
+// Endpoint keys describe how to reach a service. They are computed when a variable
+// is rendered rather than stored, so they cannot be edited, deleted or go stale.
 const (
-	KeyInternalURL  = "UNBIND_INTERNAL_URL"
-	KeyInternalHost = "UNBIND_INTERNAL_HOST"
-	KeyInternalPort = "UNBIND_INTERNAL_PORT"
-	KeyExternalURL  = "UNBIND_EXTERNAL_URL"
+	// KeyURLPrivate is the in-cluster URL of a non-database service
+	KeyURLPrivate = "UNBIND_URL_PRIVATE"
+	// KeyURLPublic is the internet-facing URL of a non-database service
+	KeyURLPublic = "UNBIND_URL_PUBLIC"
+	// KeyHostPrivate is the in-cluster address, always a DNS name
+	KeyHostPrivate = "UNBIND_HOST_PRIVATE"
+	// KeyHostPublic is the internet-facing address, a DNS name or a bare IP
+	KeyHostPublic = "UNBIND_HOST_PUBLIC"
+	// KeyDomainPublic is the internet-facing address only when it is a DNS name.
+	// There is no private counterpart: an in-cluster address is always a name.
+	KeyDomainPublic = "UNBIND_DOMAIN_PUBLIC"
+	// KeyPortPrivate is the container port
+	KeyPortPrivate = "UNBIND_PORT_PRIVATE"
+	// KeyPortPublic is the port the service answers on from outside the cluster
+	KeyPortPublic = "UNBIND_PORT_PUBLIC"
+	// KeyDatabaseURLPrivate is a database's in-cluster connection string, credentials included
+	KeyDatabaseURLPrivate = "UNBIND_DATABASE_URL_PRIVATE"
+	// KeyDatabaseURLPublic is a database's internet-facing connection string
+	KeyDatabaseURLPublic = "UNBIND_DATABASE_URL_PUBLIC"
 )
 
-var tokenPattern = regexp.MustCompile(`\$\{\{(?:service\.([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(team|project|environment))\.([-._a-zA-Z0-9]+)\}\}`)
+var endpointBases = []string{
+	KeyURLPrivate,
+	KeyURLPublic,
+	KeyHostPrivate,
+	KeyHostPublic,
+	KeyDomainPublic,
+	KeyPortPrivate,
+	KeyPortPublic,
+	KeyDatabaseURLPrivate,
+	KeyDatabaseURLPublic,
+}
 
-var endpointKeyPattern = regexp.MustCompile(`^(UNBIND_INTERNAL_URL|UNBIND_INTERNAL_HOST|UNBIND_INTERNAL_PORT|UNBIND_EXTERNAL_URL)(?:_([1-9][0-9]*))?$`)
+// Keys renamed in the public/private scheme. Accepted for one release so references
+// written before the rename keep resolving; their suffix is a 1-based index rather
+// than a port.
+var legacyEndpointBases = map[string]string{
+	"UNBIND_INTERNAL_URL":  KeyURLPrivate,
+	"UNBIND_INTERNAL_HOST": KeyHostPrivate,
+	"UNBIND_INTERNAL_PORT": KeyPortPrivate,
+	"UNBIND_EXTERNAL_URL":  KeyURLPublic,
+}
+
+const endpointKeyPrefix = "UNBIND_"
+
+var tokenPattern = regexp.MustCompile(`\$\{\{(?:service\.([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(team|project|environment))\.([-._a-zA-Z0-9]+)\}\}`)
 
 type Token struct {
 	Raw        string
@@ -30,6 +70,18 @@ type Token struct {
 	// Zero for team, project and environment tokens
 	SourceID uuid.UUID
 	Key      string
+}
+
+// EndpointRef is a parsed endpoint key. Port selects which endpoint the key refers
+// to and is zero for the unsuffixed key, which always means the primary endpoint.
+// Tiebreak separates hosts that share a port. Index is set only for legacy keys,
+// which selected an endpoint by position instead.
+type EndpointRef struct {
+	Base     string
+	Port     int32
+	Tiebreak int
+	Index    int
+	Legacy   bool
 }
 
 // Resolver returns the value for a token and whether it could be resolved
@@ -95,29 +147,129 @@ func ScopeToken(sourceType schema.VariableReferenceSourceType, key string) strin
 	return fmt.Sprintf("${{%s.%s}}", sourceType, key)
 }
 
-// EndpointKey builds UNBIND_INTERNAL_URL, UNBIND_INTERNAL_URL_2, ... for the
-// 1-based index of a port or host
-func EndpointKey(base string, index int) string {
-	if index <= 1 {
+// EndpointKey names the endpoint of base reached on port. The primary endpoint keeps
+// the bare base so adding a second port never renames an existing key. Tiebreak
+// separates hosts sharing a port and is omitted for the first of them.
+func EndpointKey(base string, port int32, tiebreak int) string {
+	if port <= 0 {
 		return base
 	}
-	return fmt.Sprintf("%s_%d", base, index)
+	if tiebreak <= 1 {
+		return fmt.Sprintf("%s_%d", base, port)
+	}
+	return fmt.Sprintf("%s_%d_%d", base, port, tiebreak)
 }
 
-// ParseEndpointKey splits a key like UNBIND_EXTERNAL_URL_2 into its base and
-// 1-based index. ok is false for keys that are not endpoint keys.
-func ParseEndpointKey(key string) (base string, index int, ok bool) {
-	match := endpointKeyPattern.FindStringSubmatch(key)
-	if match == nil {
-		return "", 0, false
+// ParseEndpointKey splits a key like UNBIND_URL_PUBLIC_8080_2 into its parts.
+// ok is false for keys that are not endpoint keys.
+func ParseEndpointKey(key string) (EndpointRef, bool) {
+	if !strings.HasPrefix(key, endpointKeyPrefix) {
+		return EndpointRef{}, false
 	}
-	index = 1
-	if match[2] != "" {
-		index, _ = strconv.Atoi(match[2])
+
+	// Try the bare key first, then peel one and two trailing numbers, so a base is
+	// never mistaken for a shorter one that happens to be a prefix of it
+	for stripped := range 3 {
+		base, numbers, ok := splitTrailingNumbers(key, stripped)
+		if !ok {
+			break
+		}
+		if newBase, isLegacy := legacyEndpointBases[base]; isLegacy {
+			if stripped > 1 {
+				return EndpointRef{}, false
+			}
+			ref := EndpointRef{Base: newBase, Index: 1, Legacy: true}
+			if stripped == 1 {
+				ref.Index = numbers[0]
+			}
+			return ref, true
+		}
+		if !slices.Contains(endpointBases, base) {
+			continue
+		}
+		ref := EndpointRef{Base: base}
+		if stripped > 0 {
+			ref.Port = int32(numbers[0])
+		}
+		if stripped > 1 {
+			ref.Tiebreak = numbers[1]
+		}
+		return ref, true
 	}
-	return match[1], index, true
+
+	return EndpointRef{}, false
+}
+
+// splitTrailingNumbers removes count trailing _<number> segments, returning the
+// remaining base and the numbers in the order they appear in the key
+func splitTrailingNumbers(key string, count int) (string, []int, bool) {
+	numbers := make([]int, 0, count)
+	base := key
+	for range count {
+		index := strings.LastIndex(base, "_")
+		if index < 0 {
+			return "", nil, false
+		}
+		number, err := strconv.Atoi(base[index+1:])
+		if err != nil || number < 1 {
+			return "", nil, false
+		}
+		numbers = append(numbers, number)
+		base = base[:index]
+	}
+	slices.Reverse(numbers)
+	return base, numbers, true
 }
 
 func IsEndpointKey(key string) bool {
-	return strings.HasPrefix(key, "UNBIND_") && endpointKeyPattern.MatchString(key)
+	_, ok := ParseEndpointKey(key)
+	return ok
+}
+
+// RenameKeys rewrites the key of every service token that rename resolves, returning
+// the new value and whether anything changed
+func RenameKeys(value string, rename func(token Token) (string, bool)) (string, bool) {
+	changed := false
+	rendered := tokenPattern.ReplaceAllStringFunc(value, func(raw string) string {
+		token := tokenFromMatch(tokenPattern.FindStringSubmatch(raw))
+		if token.SourceType != schema.VariableReferenceSourceTypeService {
+			return raw
+		}
+		renamed, ok := rename(token)
+		if !ok {
+			return raw
+		}
+		changed = true
+		return ServiceToken(token.SourceID, renamed)
+	})
+	return rendered, changed
+}
+
+// EndpointKeyRenamer turns the position a legacy key selected by into the key that
+// selects the same endpoint by port. Returning false leaves the token untouched.
+type EndpointKeyRenamer func(token Token, ref EndpointRef) (string, bool)
+
+// RenameLegacyEndpointKeys rewrites the tokens in value that use a pre-rename
+// endpoint key, returning the new value and whether anything changed. Positional
+// suffixes cannot be translated by string surgery alone, so rename resolves them
+// against the source service.
+func RenameLegacyEndpointKeys(value string, rename EndpointKeyRenamer) (string, bool) {
+	changed := false
+	rendered := tokenPattern.ReplaceAllStringFunc(value, func(raw string) string {
+		token := tokenFromMatch(tokenPattern.FindStringSubmatch(raw))
+		ref, ok := ParseEndpointKey(token.Key)
+		if !ok || !ref.Legacy {
+			return raw
+		}
+		renamed, ok := rename(token, ref)
+		if !ok {
+			return raw
+		}
+		changed = true
+		if token.SourceType == schema.VariableReferenceSourceTypeService {
+			return ServiceToken(token.SourceID, renamed)
+		}
+		return ScopeToken(token.SourceType, renamed)
+	})
+	return rendered, changed
 }

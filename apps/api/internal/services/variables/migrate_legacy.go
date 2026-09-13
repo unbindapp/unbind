@@ -87,26 +87,31 @@ func (self *VariablesService) legacyToken(ctx context.Context, source schema.Var
 			log.Warnf("Failed to load referenced service %s: %v", source.SourceID, err)
 		}
 		if databaseType != "" {
-			return vartemplate.ServiceToken(source.SourceID, vartemplate.KeyInternalHost)
+			return vartemplate.ServiceToken(source.SourceID, vartemplate.KeyHostPrivate)
 		}
-		return vartemplate.ServiceToken(source.SourceID, vartemplate.KeyInternalURL)
+		return vartemplate.ServiceToken(source.SourceID, vartemplate.KeyURLPrivate)
 	case schema.VariableReferenceTypeExternalEndpoint:
-		return vartemplate.ServiceToken(source.SourceID, vartemplate.EndpointKey(vartemplate.KeyExternalURL, self.legacyHostIndex(ctx, source)))
+		return vartemplate.ServiceToken(source.SourceID, self.legacyPublicKey(ctx, source))
 	default:
 		return vartemplate.ServiceToken(source.SourceID, source.Key)
 	}
 }
 
-// Old external references named the host; the new ones name its position in the service config
-func (self *VariablesService) legacyHostIndex(ctx context.Context, source schema.VariableReferenceSource) int {
+// Old external references named the host itself; the new ones name the port it fronts
+func (self *VariablesService) legacyPublicKey(ctx context.Context, source schema.VariableReferenceSource) string {
 	services, err := self.repo.Service().GetByIDs(ctx, []uuid.UUID{source.SourceID})
 	if err != nil || len(services) == 0 {
-		return 1
+		return vartemplate.KeyURLPublic
 	}
-	for i, host := range externalHosts(services[0]) {
-		if host.Host == source.Key {
-			return i + 1
+	base := vartemplate.KeyURLPublic
+	if isDatabase(services[0]) {
+		base = vartemplate.KeyDatabaseURLPublic
+	}
+	endpoints := publicEndpoints(services[0], sentinelAddress)
+	for index, endpoint := range endpoints {
+		if endpoint.Host == source.Key {
+			return endpointKeyAt(base, endpoints, index)
 		}
 	}
-	return 1
+	return base
 }
