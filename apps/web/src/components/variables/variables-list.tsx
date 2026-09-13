@@ -4,13 +4,15 @@ import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { variablesByUnbindKey } from "@/components/variables/constants";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import VariableCard from "@/components/variables/variable-card";
 import type { TVariableWithStaged } from "@/components/variables/variables-provider";
 import { useVariables } from "@/components/variables/variables-provider";
 import { TVariableShallow } from "@/lib/queries/variables";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { ChevronDown, HourglassIcon, KeyIcon, LoaderIcon, WandSparklesIcon } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ReactNode, useCallback } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -62,7 +64,8 @@ export default function VariablesList({ variableTypeProps }: TProps) {
     provided,
   } = useVariables();
 
-  const [isProvidedVariablesOpen, setIsProvidedVariablesOpen] = useState(false);
+  const { isOpen: isProvidedVariablesOpen, setIsOpen: setIsProvidedVariablesOpen } =
+    useProvidedVariablesOpen();
 
   if (!variables && !isPending && error) {
     return (
@@ -143,6 +146,29 @@ export default function VariablesList({ variableTypeProps }: TProps) {
       />
     </Wrapper>
   );
+}
+
+// Collapsed by default, so the key is dropped from the URL instead of written as false.
+function useProvidedVariablesOpen() {
+  const navigate = useNavigate();
+
+  const isOpen = useSearch({
+    strict: false,
+    select: (s) => (s as Record<string, unknown>)[variablesByUnbindKey] === true,
+  });
+
+  const setIsOpen = useCallback(
+    (value: boolean) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [variablesByUnbindKey]: value || undefined }),
+        replace: true,
+        resetScroll: false,
+      }),
+    [navigate],
+  );
+
+  return { isOpen, setIsOpen };
 }
 
 // Values Unbind computes from the service itself. They are listed with the stored

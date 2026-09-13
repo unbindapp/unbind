@@ -83,13 +83,16 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
   const servicesLoaded = Boolean(servicesData);
 
   const rawParams = routeApi.useSearch({
-    select: (s: Record<string, string | undefined>) => ({
-      q: s[keys.q],
-      levels: s[keys.levels],
-      services: s[keys.services],
-      range: s[keys.range],
-      highlight: s[keys.highlight],
-    }),
+    select: (s) => {
+      const search = s as Record<string, string | undefined>;
+      return {
+        q: search[keys.q],
+        levels: search[keys.levels],
+        services: search[keys.services],
+        range: search[keys.range],
+        highlight: search[keys.highlight],
+      };
+    },
     structuralSharing: true,
   });
 

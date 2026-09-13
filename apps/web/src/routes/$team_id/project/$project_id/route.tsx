@@ -16,6 +16,7 @@ import {
   ServicePanelTabEnum,
 } from "@/components/service/panel/constants";
 import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
+import { variablesByUnbindKey } from "@/components/variables/constants";
 import {
   volumePanelTabKey,
   VolumePanelTabEnum,
@@ -58,6 +59,8 @@ const searchSchema = z.object({
   [metricsSearchParamKeys.environment.view]: MetricsViewEnum.optional(),
   [metricsSearchParamKeys.environment.selection]: z.string().optional(),
   [metricsSearchParamKeys.service.interval]: MetricsIntervalEnum.optional(),
+  // Variables ("Variables by Unbind" section)
+  [variablesByUnbindKey]: z.boolean().optional(),
   // Logs (one namespace per log scope, see components/logs/constants)
   ...Object.fromEntries(projectRouteLogSearchParamKeys.map((key) => [key, z.string().optional()])),
 });
