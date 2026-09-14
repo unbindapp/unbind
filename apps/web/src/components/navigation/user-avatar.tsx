@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
 import { useUpdateStatus } from "@/components/system/update/update-status-provider";
+import { useIsAwayFromHome } from "@/lib/hooks/use-is-away-from-home";
 import { isSystemAdmin, meQuery } from "@/lib/queries/me";
 import { systemQuery } from "@/lib/queries/system";
 import { getGoClient } from "@/lib/server/client";
@@ -25,6 +26,7 @@ import {
   ExternalLink,
   GiftIcon,
   GitBranchIcon,
+  HouseIcon,
   LoaderIcon,
   LogOutIcon,
   WrenchIcon,
@@ -47,6 +49,7 @@ export default function UserAvatar({ email, className }: TProps) {
 
   const { data: me } = useQuery(meQuery);
   const isAdmin = isSystemAdmin(me);
+  const isAwayFromHome = useIsAwayFromHome();
   const {
     data: systemData,
     isPending: isPendingSystem,
@@ -105,6 +108,17 @@ export default function UserAvatar({ email, className }: TProps) {
               version={latestVersion}
               onUpdateClicked={() => setOpen(false)}
             />
+          )}
+          {isAwayFromHome && (
+            <LinkButton
+              to="/"
+              onClick={() => setOpen(false)}
+              variant="ghost"
+              className="w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-3.5 text-left font-medium"
+            >
+              <HouseIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+              <p className="min-w-0 shrink leading-tight">Home</p>
+            </LinkButton>
           )}
           {isAdmin && (
             <LinkButton
@@ -187,6 +201,14 @@ export default function UserAvatar({ email, className }: TProps) {
               version={latestVersion}
               onUpdateClicked={() => setOpen(false)}
             />
+          )}
+          {isAwayFromHome && (
+            <DropdownMenuItem className="p-0" render={<Link to="/" />}>
+              <div className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight">
+                <HouseIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+                <p className="min-w-0 shrink leading-tight">Home</p>
+              </div>
+            </DropdownMenuItem>
           )}
           {isAdmin && (
             <DropdownMenuItem className="p-0" render={<Link to="/system" />}>

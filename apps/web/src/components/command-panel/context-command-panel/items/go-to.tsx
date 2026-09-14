@@ -1,5 +1,8 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
-import { useSystemPageItems } from "@/components/command-panel/context-command-panel/items/go-to-system";
+import {
+  useHomePageItem,
+  useSystemPageItems,
+} from "@/components/command-panel/context-command-panel/items/go-to-shared";
 import useNavigateFromCommandPanel from "@/components/command-panel/context-command-panel/use-navigate-from-command-panel";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/service/service-icon";
@@ -177,6 +180,7 @@ export default function useGoToItem({ context }: TProps) {
   const prefetchService = usePrefetchService();
 
   const { data: me } = useQuery(meQuery);
+  const homeItem = useHomePageItem();
   const systemPageItems = useSystemPageItems();
   const systemItems = useMemo(
     () => (isSystemAdmin(me) ? systemPageItems : []),
@@ -571,6 +575,7 @@ export default function useGoToItem({ context }: TProps) {
             Icon: TriangleAlertIcon,
             keywords: ["delete", "danger", ...goToKeywords],
           },
+          homeItem,
           ...systemItems,
         ],
       },
@@ -587,6 +592,7 @@ export default function useGoToItem({ context }: TProps) {
     projectItems,
     serviceItems,
     teamProjectsItem,
+    homeItem,
     systemItems,
   ]);
 
