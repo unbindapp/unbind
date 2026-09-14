@@ -30,9 +30,17 @@ const (
 )
 
 type profile struct {
-	errors []int
-	hints  map[string]any
+	errors      []int
+	hints       map[string]any
+	sessionOnly bool
 }
+
+// Operation metadata read by the auth middleware. Metadata is never serialized
+// into the OpenAPI document.
+const (
+	metadataAction      = "unbind.action"
+	metadataSessionOnly = "unbind.session_only"
+)
 
 func agentHints(readOnly, destructive, idempotent bool, risk string, confirm bool) map[string]any {
 	return map[string]any{
@@ -110,6 +118,38 @@ func Risk(level string) Option {
 	return func(p *profile) { p.hints["risk"] = level }
 }
 
+// SessionOnly refuses API key callers. Use it on anything that mints or
+// changes credentials or authorization, so a key can never widen itself.
+func SessionOnly(p *profile) {
+	p.sessionOnly = true
+}
+
+// MarkSessionOnly is the group-level form of SessionOnly, for route groups
+// that are session only in their entirety.
+func MarkSessionOnly(op *huma.Operation) {
+	if op.Metadata == nil {
+		op.Metadata = map[string]any{}
+	}
+	op.Metadata[metadataSessionOnly] = true
+}
+
+func IsSessionOnly(op *huma.Operation) bool {
+	if op == nil {
+		return false
+	}
+	v, _ := op.Metadata[metadataSessionOnly].(bool)
+	return v
+}
+
+// ActionOf returns the Action the operation was registered with.
+func ActionOf(op *huma.Operation) (Action, bool) {
+	if op == nil {
+		return 0, false
+	}
+	action, ok := op.Metadata[metadataAction].(Action)
+	return action, ok
+}
+
 // Register documents and registers an operation. It merges the Action's default
 // error set with any codes the caller already set on op.Errors, and attaches the
 // x-agent extension unless the caller supplied one.
@@ -127,6 +167,14 @@ func Apply(action Action, op *huma.Operation, opts ...Option) {
 	}
 
 	op.Errors = mergeInts(mergeInts(p.errors, clusterErrors), op.Errors)
+
+	if op.Metadata == nil {
+		op.Metadata = map[string]any{}
+	}
+	op.Metadata[metadataAction] = action
+	if p.sessionOnly {
+		MarkSessionOnly(op)
+	}
 
 	if op.Extensions == nil {
 		op.Extensions = map[string]any{}

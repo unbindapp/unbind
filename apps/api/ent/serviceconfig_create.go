@@ -529,6 +529,11 @@ func (_c *ServiceConfigCreate) check() error {
 			return &ValidationError{Name: "health_check", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.health_check": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.Resources(); ok {
+		if err := v.Validate(); err != nil {
+			return &ValidationError{Name: "resources", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.resources": %w`, err)}
+		}
+	}
 	if len(_c.mutation.ServiceIDs()) == 0 {
 		return &ValidationError{Name: "service", err: errors.New(`ent: missing required edge "ServiceConfig.service"`)}
 	}

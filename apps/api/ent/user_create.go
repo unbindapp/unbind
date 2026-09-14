@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent/apikey"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/oauth2code"
@@ -156,6 +157,21 @@ func (_c *UserCreate) AddTeams(v ...*Team) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddTeamIDs(ids...)
+}
+
+// AddAPIKeyIDs adds the "api_keys" edge to the APIKey entity by IDs.
+func (_c *UserCreate) AddAPIKeyIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddAPIKeyIDs(ids...)
+	return _c
+}
+
+// AddAPIKeys adds the "api_keys" edges to the APIKey entity.
+func (_c *UserCreate) AddAPIKeys(v ...*APIKey) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAPIKeyIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -346,6 +362,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.APIKeysIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.APIKeysTable,
+			Columns: []string{user.APIKeysColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

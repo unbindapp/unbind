@@ -12,9 +12,9 @@ import (
 // layers must pass: the request Origin must be allow-listed, and the
 // X-CSRF-Token header must match the session-bound double-submit token.
 //
-// Bearer-authenticated requests carry no ambient cookies and so cannot be
-// forged cross-site; they are exempt. Must run after Authenticate, which sets
-// the auth method on the context.
+// Bearer- and API-key-authenticated requests carry no ambient cookies and so
+// cannot be forged cross-site; they are exempt. Must run after Authenticate,
+// which sets the auth method on the context.
 func (self *Middleware) CSRF(ctx huma.Context, next func(huma.Context)) {
 	switch ctx.Method() {
 	case http.MethodGet, http.MethodHead, http.MethodOptions:
@@ -22,7 +22,8 @@ func (self *Middleware) CSRF(ctx huma.Context, next func(huma.Context)) {
 		return
 	}
 
-	if method, _ := ctx.Context().Value(authMethodKey).(string); method == authMethodBearer {
+	switch method, _ := ctx.Context().Value(authMethodKey).(string); method {
+	case authMethodBearer, authMethodAPIKey:
 		next(ctx)
 		return
 	}

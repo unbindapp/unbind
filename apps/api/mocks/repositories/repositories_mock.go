@@ -10,6 +10,7 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/repositories"
+	"github.com/unbindapp/unbind-api/internal/repositories/apikey"
 	"github.com/unbindapp/unbind-api/internal/repositories/bootstrap"
 	"github.com/unbindapp/unbind-api/internal/repositories/deployment"
 	"github.com/unbindapp/unbind-api/internal/repositories/environment"
@@ -63,6 +64,52 @@ type RepositoriesMock_Expecter struct {
 
 func (_m *RepositoriesMock) EXPECT() *RepositoriesMock_Expecter {
 	return &RepositoriesMock_Expecter{mock: &_m.Mock}
+}
+
+// APIKey provides a mock function for the type RepositoriesMock
+func (_mock *RepositoriesMock) APIKey() apikey_repo.APIKeyRepositoryInterface {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for APIKey")
+	}
+
+	var r0 apikey_repo.APIKeyRepositoryInterface
+	if returnFunc, ok := ret.Get(0).(func() apikey_repo.APIKeyRepositoryInterface); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(apikey_repo.APIKeyRepositoryInterface)
+		}
+	}
+	return r0
+}
+
+// RepositoriesMock_APIKey_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'APIKey'
+type RepositoriesMock_APIKey_Call struct {
+	*mock.Call
+}
+
+// APIKey is a helper method to define mock.On call
+func (_e *RepositoriesMock_Expecter) APIKey() *RepositoriesMock_APIKey_Call {
+	return &RepositoriesMock_APIKey_Call{Call: _e.mock.On("APIKey")}
+}
+
+func (_c *RepositoriesMock_APIKey_Call) Run(run func()) *RepositoriesMock_APIKey_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *RepositoriesMock_APIKey_Call) Return(aPIKeyRepositoryInterface apikey_repo.APIKeyRepositoryInterface) *RepositoriesMock_APIKey_Call {
+	_c.Call.Return(aPIKeyRepositoryInterface)
+	return _c
+}
+
+func (_c *RepositoriesMock_APIKey_Call) RunAndReturn(run func() apikey_repo.APIKeyRepositoryInterface) *RepositoriesMock_APIKey_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // Bootstrap provides a mock function for the type RepositoriesMock

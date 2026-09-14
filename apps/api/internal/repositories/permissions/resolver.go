@@ -12,8 +12,14 @@ import (
 )
 
 // UserPermissionSet is an in-memory snapshot of every permission the user's
-// groups grant, loaded once per request to annotate response DTOs.
+// groups grant, loaded once per request to annotate response DTOs. For API key
+// callers it is further limited to the key's scopes.
 type UserPermissionSet struct {
+	granted grants
+	limit   *grants
+}
+
+type grants struct {
 	superuser map[entSchema.ResourceType]entSchema.PermittedAction
 	byID      map[entSchema.ResourceType]map[uuid.UUID]entSchema.PermittedAction
 }
@@ -33,37 +39,62 @@ func (self *PermissionsRepository) GetUserPermissionSet(ctx context.Context, use
 		return nil, fmt.Errorf("error fetching user permissions: %w", err)
 	}
 
-	set := &UserPermissionSet{
+	set := &UserPermissionSet{granted: newGrants()}
+	for _, perm := range perms {
+		set.granted.add(perm.ResourceType, perm.Action, perm.ResourceSelector)
+	}
+
+	scopes, scoped := APIKeyScopesFromContext(ctx)
+	if !scoped {
+		return set, nil
+	}
+
+	limit := newGrants()
+	for _, scope := range scopes {
+		limit.add(scope.ResourceType, scope.Action, scope.ResourceSelector)
+	}
+	set.limit = &limit
+	return set, nil
+}
+
+func newGrants() grants {
+	return grants{
 		superuser: make(map[entSchema.ResourceType]entSchema.PermittedAction),
 		byID:      make(map[entSchema.ResourceType]map[uuid.UUID]entSchema.PermittedAction),
 	}
+}
 
-	for _, perm := range perms {
-		switch {
-		case perm.ResourceSelector.Superuser:
-			set.superuser[perm.ResourceType] = strongerAction(set.superuser[perm.ResourceType], perm.Action)
-		case perm.ResourceSelector.ID != uuid.Nil:
-			byID := set.byID[perm.ResourceType]
-			if byID == nil {
-				byID = make(map[uuid.UUID]entSchema.PermittedAction)
-				set.byID[perm.ResourceType] = byID
-			}
-			byID[perm.ResourceSelector.ID] = strongerAction(byID[perm.ResourceSelector.ID], perm.Action)
+func (g *grants) add(resourceType entSchema.ResourceType, action entSchema.PermittedAction, selector entSchema.ResourceSelector) {
+	switch {
+	case selector.Superuser:
+		g.superuser[resourceType] = strongerAction(g.superuser[resourceType], action)
+	case selector.ID != uuid.Nil:
+		byID := g.byID[resourceType]
+		if byID == nil {
+			byID = make(map[uuid.UUID]entSchema.PermittedAction)
+			g.byID[resourceType] = byID
+		}
+		byID[selector.ID] = strongerAction(byID[selector.ID], action)
+	}
+}
+
+func (g *grants) strongest(refs ...ResourceRef) entSchema.PermittedAction {
+	var best entSchema.PermittedAction
+	for _, ref := range refs {
+		best = strongerAction(best, g.superuser[ref.Type])
+		if byID := g.byID[ref.Type]; byID != nil {
+			best = strongerAction(best, byID[ref.ID])
 		}
 	}
-
-	return set, nil
+	return best
 }
 
 // AllowedActions returns the actions permitted on the first ref, considering
 // grants on the ref itself and any ancestor refs, expanded via action implication.
 func (s *UserPermissionSet) AllowedActions(refs ...ResourceRef) []entSchema.PermittedAction {
-	var best entSchema.PermittedAction
-	for _, ref := range refs {
-		best = strongerAction(best, s.superuser[ref.Type])
-		if byID := s.byID[ref.Type]; byID != nil {
-			best = strongerAction(best, byID[ref.ID])
-		}
+	best := s.granted.strongest(refs...)
+	if s.limit != nil {
+		best = weakerAction(best, s.limit.strongest(refs...))
 	}
 
 	switch best {
@@ -114,6 +145,13 @@ func (s *UserPermissionSet) ServiceActions(teamID, projectID, environmentID, ser
 
 func strongerAction(a, b entSchema.PermittedAction) entSchema.PermittedAction {
 	if actionRank(b) > actionRank(a) {
+		return b
+	}
+	return a
+}
+
+func weakerAction(a, b entSchema.PermittedAction) entSchema.PermittedAction {
+	if actionRank(b) < actionRank(a) {
 		return b
 	}
 	return a

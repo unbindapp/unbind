@@ -45,9 +45,11 @@ type UserEdges struct {
 	Groups []*Group `json:"groups,omitempty"`
 	// Teams holds the value of the teams edge.
 	Teams []*Team `json:"teams,omitempty"`
+	// APIKeys holds the value of the api_keys edge.
+	APIKeys []*APIKey `json:"api_keys,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // Oauth2TokensOrErr returns the Oauth2Tokens value or an error if the edge
@@ -93,6 +95,15 @@ func (e UserEdges) TeamsOrErr() ([]*Team, error) {
 		return e.Teams, nil
 	}
 	return nil, &NotLoadedError{edge: "teams"}
+}
+
+// APIKeysOrErr returns the APIKeys value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) APIKeysOrErr() ([]*APIKey, error) {
+	if e.loadedTypes[5] {
+		return e.APIKeys, nil
+	}
+	return nil, &NotLoadedError{edge: "api_keys"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -187,6 +198,11 @@ func (_m *User) QueryGroups() *GroupQuery {
 // QueryTeams queries the "teams" edge of the User entity.
 func (_m *User) QueryTeams() *TeamQuery {
 	return NewUserClient(_m.config).QueryTeams(_m)
+}
+
+// QueryAPIKeys queries the "api_keys" edge of the User entity.
+func (_m *User) QueryAPIKeys() *APIKeyQuery {
+	return NewUserClient(_m.config).QueryAPIKeys(_m)
 }
 
 // Update returns a builder for updating this User.

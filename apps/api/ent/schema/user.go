@@ -42,6 +42,10 @@ func (User) Edges() []ent.Edge {
 			}),
 		edge.To("groups", Group.Type),
 		edge.To("teams", Team.Type),
+		edge.To("api_keys", APIKey.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 	}
 }
 

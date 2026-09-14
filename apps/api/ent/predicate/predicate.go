@@ -6,6 +6,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// APIKey is the predicate function for apikey builders.
+type APIKey func(*sql.Selector)
+
 // Bootstrap is the predicate function for bootstrap builders.
 type Bootstrap func(*sql.Selector)
 

@@ -18,6 +18,15 @@ packages:
           filename: tx_mock.go
           structname: TxMock
           pkgname: mocks_repository_tx
+  github.com/unbindapp/unbind-api/internal/repositories/apikey:
+    config:
+      dir: ./mocks/repository/apikey
+    interfaces:
+      APIKeyRepositoryInterface:
+        config:
+          filename: apikey_repository_mock.go
+          structname: APIKeyRepositoryMock
+          pkgname: mocks_repository_apikey
   github.com/unbindapp/unbind-api/internal/repositories/bootstrap:
     config:
       dir: ./mocks/repository/bootstrap

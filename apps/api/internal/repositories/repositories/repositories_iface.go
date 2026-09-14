@@ -7,6 +7,7 @@ import (
 
 	"github.com/unbindapp/unbind-api/ent"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	apikey_repo "github.com/unbindapp/unbind-api/internal/repositories/apikey"
 	bootstrap_repo "github.com/unbindapp/unbind-api/internal/repositories/bootstrap"
 	deployment_repo "github.com/unbindapp/unbind-api/internal/repositories/deployment"
 	environment_repo "github.com/unbindapp/unbind-api/internal/repositories/environment"
@@ -64,4 +65,6 @@ type RepositoriesInterface interface {
 	Template() template_repo.TemplateRepositoryInterface
 	ServiceGroup() servicegroup_repo.ServiceGroupRepositoryInterface
 	WithTx(ctx context.Context, fn func(tx repository.TxInterface) error) error
+	// APIKey returns the API key repository
+	APIKey() apikey_repo.APIKeyRepositoryInterface
 }

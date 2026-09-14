@@ -9,10 +9,12 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/gorilla/schema"
 	"github.com/unbindapp/unbind-api/internal/api/middleware"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 
+	apikeys_handler "github.com/unbindapp/unbind-api/internal/api/handlers/apikeys"
 	auth_handler "github.com/unbindapp/unbind-api/internal/api/handlers/auth"
 	changes_handler "github.com/unbindapp/unbind-api/internal/api/handlers/changes"
 	deployments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/deployments"
@@ -105,7 +107,7 @@ func NewHumaConfig(title, version string, cookieSecure bool) huma.Config {
 						Type:         "http",
 						Scheme:       "bearer",
 						BearerFormat: "JWT",
-						Description:  "Access token passed as `Authorization: Bearer <token>`.",
+						Description:  "Access token or API key (`unb_...`) passed as `Authorization: Bearer <token>`.",
 					},
 				},
 			},
@@ -133,7 +135,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 		{"cookieAuth": {}},
 		{"bearerAuth": {}},
 	}
-	register := func(prefix, tag string, authed bool, fn func(*server.Server, *huma.Group)) {
+	registerGroup := func(prefix, tag string, authed, sessionOnly bool, fn func(*server.Server, *huma.Group)) {
 		grp := huma.NewGroup(api, prefix)
 		if authed {
 			grp.UseMiddleware(mw.Authenticate)
@@ -144,9 +146,20 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 			if authed {
 				op.Security = authSecurity
 			}
+			if sessionOnly {
+				oapi.MarkSessionOnly(op)
+			}
 			next(op)
 		})
 		fn(srvImpl, grp)
+	}
+	register := func(prefix, tag string, authed bool, fn func(*server.Server, *huma.Group)) {
+		registerGroup(prefix, tag, authed, false, fn)
+	}
+	// Session-only groups mint or change credentials and authorization, or hand
+	// out a Kubernetes identity. API keys are refused on every route in them.
+	registerSessionOnly := func(prefix, tag string, fn func(*server.Server, *huma.Group)) {
+		registerGroup(prefix, tag, true, true, fn)
 	}
 
 	register("/setup", "Setup", false, setup_handler.RegisterHandlers)
@@ -155,7 +168,8 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/system", "System", true, system_handler.RegisterHandlers)
 	register("/servers", "Servers", true, servers_handler.RegisterHandlers)
 	register("/users", "Users", true, user_handler.RegisterHandlers)
-	register("/groups", "Groups", true, groups_handler.RegisterHandlers)
+	registerSessionOnly("/groups", "Groups", groups_handler.RegisterHandlers)
+	registerSessionOnly("/api-keys", "API Keys", apikeys_handler.RegisterHandlers)
 	register("/github", "GitHub", true, github_handler.RegisterHandlers)
 	register("/teams", "Teams", true, teams_handler.RegisterHandlers)
 	register("/projects", "Projects", true, projects_handler.RegisterHandlers)
@@ -172,7 +186,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/storage", "Storage", true, storage_handler.RegisterHandlers)
 	register("/templates", "Templates", true, template_handler.RegisterHandlers)
 	register("/docker", "Docker", true, docker_handler.RegisterHandlers)
-	register("/terminal", "Terminal", true, func(srv *server.Server, grp *huma.Group) {
+	registerSessionOnly("/terminal", "Terminal", func(srv *server.Server, grp *huma.Group) {
 		terminal_handler.RegisterHandlers(srv, grp, allowedOrigins)
 	})
 }

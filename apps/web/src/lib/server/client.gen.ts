@@ -1,5 +1,65 @@
 import { z } from 'zod';
 
+export const PermittedActionSchema = z.enum(['admin', 'edit', 'view']);
+
+export const ResourceSelectorSchema = z
+  .object({
+    id: z.string().optional(), // Specific resource ID
+    superuser: z.boolean().optional(), // Access to every resource of this type
+  })
+  .strip();
+
+export const ResourceTypeSchema = z.enum(['system', 'team', 'project', 'environment', 'service']);
+
+export const APIKeyScopeSchema = z
+  .object({
+    action: PermittedActionSchema,
+    resource_selector: ResourceSelectorSchema,
+    resource_type: ResourceTypeSchema,
+  })
+  .strip();
+
+export const APIKeyCreateInputSchema = z
+  .object({
+    expires_at: z.string().datetime({ offset: true }).optional(), // When the key stops working. Omit for a key that never expires.
+    name: z.string(),
+    scopes: z.array(APIKeyScopeSchema), // Grants the key carries. Each must be within what you can already do.
+  })
+  .strip();
+
+export const APIKeyCreatedResponseSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    expires_at: z.string().datetime({ offset: true }).optional(),
+    id: z.string(),
+    last_used_at: z.string().datetime({ offset: true }).optional(),
+    name: z.string(),
+    scopes: z.array(APIKeyScopeSchema),
+    token: z.string(), // The full API key. Shown once, store it now.
+    token_prefix: z.string(), // First characters of the token, for recognizing the key. Never the full token.
+    user_id: z.string(),
+  })
+  .strip();
+
+export const APIKeyDeleteInputSchema = z
+  .object({
+    id: z.string(),
+  })
+  .strip();
+
+export const APIKeyResponseSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    expires_at: z.string().datetime({ offset: true }).optional(),
+    id: z.string(),
+    last_used_at: z.string().datetime({ offset: true }).optional(),
+    name: z.string(),
+    scopes: z.array(APIKeyScopeSchema),
+    token_prefix: z.string(), // First characters of the token, for recognizing the key. Never the full token.
+    user_id: z.string(),
+  })
+  .strip();
+
 export const AffectedServiceSchema = z
   .object({
     action: z.enum(['build', 'redeploy', 'restart', 'none']),
@@ -419,6 +479,12 @@ export const CookieSchema = z
   })
   .strip();
 
+export const CreateAPIKeyResponseBodySchema = z
+  .object({
+    data: APIKeyCreatedResponseSchema,
+  })
+  .strip();
+
 export const CreateBuildInputBodySchema = z
   .object({
     disable_build_cache: z.boolean().optional(), // Disable build cache for this deployment
@@ -445,8 +511,6 @@ export const CreateEnvironmentInputSchema = z
     team_id: z.string(),
   })
   .strip();
-
-export const PermittedActionSchema = z.enum(['admin', 'edit', 'view']);
 
 export const EnvironmentResponseSchema = z
   .object({
@@ -875,18 +939,24 @@ export const DatabaseConfigurablesSchema = z
   })
   .strip();
 
+export const DeletedResponseSchema = z
+  .object({
+    deleted: z.boolean(),
+    id: z.string(),
+  })
+  .strip();
+
+export const DeleteAPIKeyResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
 export const DeleteEnvironmentInputBodySchema = z
   .object({
     environment_id: z.string(),
     project_id: z.string(),
     team_id: z.string(),
-  })
-  .strip();
-
-export const DeletedResponseSchema = z
-  .object({
-    deleted: z.boolean(),
-    id: z.string(),
   })
   .strip();
 
@@ -1761,8 +1831,6 @@ export const GithubWatchPathSuggestionsResponseBodySchema = z
   })
   .strip();
 
-export const ResourceTypeSchema = z.enum(['system', 'team', 'project', 'environment', 'service']);
-
 export const GrantGroupPermissionInputBodySchema = z
   .object({
     action: PermittedActionSchema,
@@ -1770,13 +1838,6 @@ export const GrantGroupPermissionInputBodySchema = z
     resource_id: z.string().optional(), // Specific resource to grant access to; omit when superuser is true
     resource_type: ResourceTypeSchema,
     superuser: z.boolean().optional(), // Grant access to every resource of this type
-  })
-  .strip();
-
-export const ResourceSelectorSchema = z
-  .object({
-    id: z.string(), // Specific resource ID
-    superuser: z.boolean(), // Access to every resource of this type
   })
   .strip();
 
@@ -1819,6 +1880,12 @@ export const ItemSchema = z
   .object({
     name: z.string(),
     value: z.string(), // May contain ${{source.KEY}} references
+  })
+  .strip();
+
+export const ListAPIKeysResponseBodySchema = z
+  .object({
+    data: z.array(APIKeyResponseSchema),
   })
   .strip();
 
@@ -2683,6 +2750,14 @@ export const WebhookUpdateInputSchema = z
   })
   .strip();
 
+export type PermittedAction = z.infer<typeof PermittedActionSchema>;
+export type ResourceSelector = z.infer<typeof ResourceSelectorSchema>;
+export type ResourceType = z.infer<typeof ResourceTypeSchema>;
+export type APIKeyScope = z.infer<typeof APIKeyScopeSchema>;
+export type APIKeyCreateInput = z.infer<typeof APIKeyCreateInputSchema>;
+export type APIKeyCreatedResponse = z.infer<typeof APIKeyCreatedResponseSchema>;
+export type APIKeyDeleteInput = z.infer<typeof APIKeyDeleteInputSchema>;
+export type APIKeyResponse = z.infer<typeof APIKeyResponseSchema>;
 export type AffectedService = z.infer<typeof AffectedServiceSchema>;
 export type Protocol = z.infer<typeof ProtocolSchema>;
 export type PortSpec = z.infer<typeof PortSpecSchema>;
@@ -2725,10 +2800,10 @@ export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type ContainerStatus = z.infer<typeof ContainerStatusSchema>;
 export type ConvexAdminKeyParams = z.infer<typeof ConvexAdminKeyParamsSchema>;
 export type Cookie = z.infer<typeof CookieSchema>;
+export type CreateAPIKeyResponseBody = z.infer<typeof CreateAPIKeyResponseBodySchema>;
 export type CreateBuildInputBody = z.infer<typeof CreateBuildInputBodySchema>;
 export type CreateBuildOutputBody = z.infer<typeof CreateBuildOutputBodySchema>;
 export type CreateEnvironmentInput = z.infer<typeof CreateEnvironmentInputSchema>;
-export type PermittedAction = z.infer<typeof PermittedActionSchema>;
 export type EnvironmentResponse = z.infer<typeof EnvironmentResponseSchema>;
 export type CreateEnvironmentResponseBody = z.infer<typeof CreateEnvironmentResponseBodySchema>;
 export type CreateGroupInputBody = z.infer<typeof CreateGroupInputBodySchema>;
@@ -2773,8 +2848,9 @@ export type DNSStatus = z.infer<typeof DNSStatusSchema>;
 export type DataStruct = z.infer<typeof DataStructSchema>;
 export type DatabaseConfigurable = z.infer<typeof DatabaseConfigurableSchema>;
 export type DatabaseConfigurables = z.infer<typeof DatabaseConfigurablesSchema>;
-export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBodySchema>;
 export type DeletedResponse = z.infer<typeof DeletedResponseSchema>;
+export type DeleteAPIKeyResponseBody = z.infer<typeof DeleteAPIKeyResponseBodySchema>;
+export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBodySchema>;
 export type DeleteEnvironmentResponseBody = z.infer<typeof DeleteEnvironmentResponseBodySchema>;
 export type DeleteGroupInputBody = z.infer<typeof DeleteGroupInputBodySchema>;
 export type DeleteGroupResponseBody = z.infer<typeof DeleteGroupResponseBodySchema>;
@@ -2891,9 +2967,7 @@ export type GithubWatchPathSuggestions = z.infer<typeof GithubWatchPathSuggestio
 export type GithubWatchPathSuggestionsResponseBody = z.infer<
   typeof GithubWatchPathSuggestionsResponseBodySchema
 >;
-export type ResourceType = z.infer<typeof ResourceTypeSchema>;
 export type GrantGroupPermissionInputBody = z.infer<typeof GrantGroupPermissionInputBodySchema>;
-export type ResourceSelector = z.infer<typeof ResourceSelectorSchema>;
 export type PermissionResponse = z.infer<typeof PermissionResponseSchema>;
 export type GrantGroupPermissionResponseBody = z.infer<
   typeof GrantGroupPermissionResponseBodySchema
@@ -2902,6 +2976,7 @@ export type GroupMemberInputBody = z.infer<typeof GroupMemberInputBodySchema>;
 export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
 export type GroupMemberResponseBody = z.infer<typeof GroupMemberResponseBodySchema>;
 export type Item = z.infer<typeof ItemSchema>;
+export type ListAPIKeysResponseBody = z.infer<typeof ListAPIKeysResponseBodySchema>;
 export type ListDatabasesResponseBody = z.infer<typeof ListDatabasesResponseBodySchema>;
 export type PaginationResponseMetadata = z.infer<typeof PaginationResponseMetadataSchema>;
 export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDataSchema>;
@@ -3025,6 +3100,12 @@ export type VariableResponse = z.infer<typeof VariableResponseSchema>;
 export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
 export type WebhookCreateInput = z.infer<typeof WebhookCreateInputSchema>;
 export type WebhookUpdateInput = z.infer<typeof WebhookUpdateInputSchema>;
+
+export const list_api_keysQuerySchema = z
+  .object({
+    user_id: z.string().optional(), // List another user's keys. Requires system admin. Defaults to your own.
+  })
+  .passthrough();
 
 export const get_deploymentQuerySchema = z
   .object({
@@ -3560,6 +3641,140 @@ export type ClientOptions = {
 
 export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
   return {
+    apiKeys: {
+      create: async (
+        params: APIKeyCreateInput,
+        fetchOptions?: RequestInit,
+      ): Promise<CreateAPIKeyResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/api-keys/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = APIKeyCreateInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = CreateAPIKeyResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      delete: async (
+        params: APIKeyDeleteInput,
+        fetchOptions?: RequestInit,
+      ): Promise<DeleteAPIKeyResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/api-keys/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = APIKeyDeleteInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = DeleteAPIKeyResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_api_keysQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListAPIKeysResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/api-keys/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = list_api_keysQuerySchema.parse(params);
+          const queryKeys = ['user_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListAPIKeysResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+    },
     auth: {
       login: async (
         params: LoginInputBody,

@@ -46,6 +46,21 @@ func (self *PermissionsRepository) GetAccessibleProjectPredicates(
 	userID uuid.UUID,
 	action entSchema.PermittedAction,
 ) (predicate.Project, error) {
+	preds, err := self.accessibleProjectPredicates(ctx, userID, action)
+	if err != nil {
+		return nil, err
+	}
+	return self.scopedProjectPredicate(ctx, preds, impliedActionsFor(action)), nil
+}
+
+// accessibleProjectPredicates is the user's own reach, before any API key
+// scope. Hierarchy builders nest on this form so a scope is applied once, at
+// the level being listed, never at an ancestor level where it may grant less.
+func (self *PermissionsRepository) accessibleProjectPredicates(
+	ctx context.Context,
+	userID uuid.UUID,
+	action entSchema.PermittedAction,
+) (predicate.Project, error) {
 	groupIDs, err := self.getUserGroupIDs(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -185,7 +200,11 @@ func (self *PermissionsRepository) GetAccessibleTeamPredicates(
 	// They need specific team-level permissions
 
 	impliedActions := self.getImpliedActions(action)
-	return self.buildTeamPredicatesInternal(ctx, groupIDs, impliedActions)
+	preds, err := self.buildTeamPredicatesInternal(ctx, groupIDs, impliedActions)
+	if err != nil {
+		return nil, err
+	}
+	return self.scopedTeamPredicate(ctx, preds, impliedActions), nil
 }
 
 func (self *PermissionsRepository) buildTeamPredicatesInternal(
@@ -263,6 +282,19 @@ func (self *PermissionsRepository) GetAccessibleEnvironmentPredicates(
 	userID uuid.UUID,
 	action entSchema.PermittedAction,
 	projectID *uuid.UUID, // Optional: For scoping environments to a specific project
+) (predicate.Environment, error) {
+	preds, err := self.accessibleEnvironmentPredicates(ctx, userID, action, projectID)
+	if err != nil {
+		return nil, err
+	}
+	return self.scopedEnvironmentPredicate(ctx, preds, impliedActionsFor(action)), nil
+}
+
+func (self *PermissionsRepository) accessibleEnvironmentPredicates(
+	ctx context.Context,
+	userID uuid.UUID,
+	action entSchema.PermittedAction,
+	projectID *uuid.UUID,
 ) (predicate.Environment, error) {
 	groupIDs, err := self.getUserGroupIDs(ctx, userID)
 	if err != nil {
@@ -343,7 +375,7 @@ func (self *PermissionsRepository) buildEnvironmentPredicatesInternal(
 
 	// 3. Hierarchical access: Environments belonging to accessible Projects or Teams
 	//    a) Via Project access
-	projectPerms, err := self.GetAccessibleProjectPredicates(ctx, userID, action)
+	projectPerms, err := self.accessibleProjectPredicates(ctx, userID, action)
 	if err != nil {
 		return nil, fmt.Errorf("error getting project predicates for env hierarchy: %w", err)
 	}
@@ -401,7 +433,11 @@ func (self *PermissionsRepository) GetAccessibleServicePredicates(
 	// They need specific service-level, environment-level, project-level, or team-level permissions
 
 	impliedActions := self.getImpliedActions(action)
-	return self.buildServicePredicatesInternal(ctx, userID, groupIDs, action, impliedActions, environmentID)
+	preds, err := self.buildServicePredicatesInternal(ctx, userID, groupIDs, action, impliedActions, environmentID)
+	if err != nil {
+		return nil, err
+	}
+	return self.scopedServicePredicate(ctx, preds, impliedActions), nil
 }
 
 func (self *PermissionsRepository) buildServicePredicatesInternal(
@@ -467,7 +503,7 @@ func (self *PermissionsRepository) buildServicePredicatesInternal(
 
 	// 3. Hierarchical access: Services belonging to accessible Environments, Projects, or Teams
 	//    a) Via Environment access
-	envPreds, err := self.GetAccessibleEnvironmentPredicates(ctx, userID, action, nil)
+	envPreds, err := self.accessibleEnvironmentPredicates(ctx, userID, action, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error getting environment predicates for service hierarchy: %w", err)
 	}

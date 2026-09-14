@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/unbindapp/unbind-api/ent/apikey"
 	"github.com/unbindapp/unbind-api/ent/bootstrap"
 	"github.com/unbindapp/unbind-api/ent/deployment"
 	"github.com/unbindapp/unbind-api/ent/environment"
@@ -95,6 +96,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			apikey.Table:             apikey.ValidColumn,
 			bootstrap.Table:          bootstrap.ValidColumn,
 			deployment.Table:         deployment.ValidColumn,
 			environment.Table:        environment.ValidColumn,

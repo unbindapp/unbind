@@ -1,4 +1,4 @@
-h1:uZDBM7XI9Znd4mJOOJcu+0s87Ioj9nRPBUdPizcnnKg=
+h1:r1+WWu6p+qoiqk1yoXnOIIL31A7pXp9p1O+OmYeFapI=
 20250519010757_initial_migration.sql h1:94lMwKemoNX/ichD+2Vzb7GmOHXVj4qVTfeBInQAe0g=
 20250519163449_add_init_containers.sql h1:7bt+zCbtmlYr1QDztgka0R5wUxdjD7XYUkrhL9GYYIQ=
 20250521202532_non_nillable_kubernetes_secret.sql h1:eDpMWyeBXh5cG4poavaUMeYs5QXddFBBIyYlxc+nq64=
@@ -22,3 +22,4 @@ h1:uZDBM7XI9Znd4mJOOJcu+0s87Ioj9nRPBUdPizcnnKg=
 20260909141500_backup_schedule_midnight.sql h1:6vXOeAF6NdO1GzClJsXV/GfNk6RXd+8e1UsXqiLW9Sg=
 20260909160000_watch_paths.sql h1:2RB7THASsD0FUwJJK0SPJwGOhqVMqD2Ee9WPoP3s258=
 20260913150000_clickhouse_native_port.sql h1:eYC0hben28WL5Jl9gk0U2G3+IyC3yDJw2kIIQKjAkzI=
+20260914165939_add_api_keys.sql h1:q+RzpKfqgNraVXODLJX7guf2Kf4KmSZJGELI8+HwtqA=

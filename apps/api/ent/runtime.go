@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent/apikey"
 	"github.com/unbindapp/unbind-api/ent/deployment"
 	"github.com/unbindapp/unbind-api/ent/environment"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
@@ -34,6 +35,31 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	apikeyMixin := schema.APIKey{}.Mixin()
+	apikeyMixinFields0 := apikeyMixin[0].Fields()
+	_ = apikeyMixinFields0
+	apikeyMixinFields1 := apikeyMixin[1].Fields()
+	_ = apikeyMixinFields1
+	apikeyFields := schema.APIKey{}.Fields()
+	_ = apikeyFields
+	// apikeyDescCreatedAt is the schema descriptor for created_at field.
+	apikeyDescCreatedAt := apikeyMixinFields1[0].Descriptor()
+	// apikey.DefaultCreatedAt holds the default value on creation for the created_at field.
+	apikey.DefaultCreatedAt = apikeyDescCreatedAt.Default.(func() time.Time)
+	// apikeyDescUpdatedAt is the schema descriptor for updated_at field.
+	apikeyDescUpdatedAt := apikeyMixinFields1[1].Descriptor()
+	// apikey.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	apikey.DefaultUpdatedAt = apikeyDescUpdatedAt.Default.(func() time.Time)
+	// apikey.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	apikey.UpdateDefaultUpdatedAt = apikeyDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// apikeyDescName is the schema descriptor for name field.
+	apikeyDescName := apikeyFields[0].Descriptor()
+	// apikey.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	apikey.NameValidator = apikeyDescName.Validators[0].(func(string) error)
+	// apikeyDescID is the schema descriptor for id field.
+	apikeyDescID := apikeyMixinFields0[0].Descriptor()
+	// apikey.DefaultID holds the default value on creation for the id field.
+	apikey.DefaultID = apikeyDescID.Default.(func() uuid.UUID)
 	deploymentMixin := schema.Deployment{}.Mixin()
 	deploymentMixinFields0 := deploymentMixin[0].Fields()
 	_ = deploymentMixinFields0

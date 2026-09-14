@@ -14,6 +14,8 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// APIKey is the client for interacting with the APIKey builders.
+	APIKey *APIKeyClient
 	// Bootstrap is the client for interacting with the Bootstrap builders.
 	Bootstrap *BootstrapClient
 	// Deployment is the client for interacting with the Deployment builders.
@@ -191,6 +193,7 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.APIKey = NewAPIKeyClient(tx.config)
 	tx.Bootstrap = NewBootstrapClient(tx.config)
 	tx.Deployment = NewDeploymentClient(tx.config)
 	tx.Environment = NewEnvironmentClient(tx.config)
@@ -223,7 +226,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Bootstrap.QueryXXX(), the query will be executed
+// applies a query, for example: APIKey.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

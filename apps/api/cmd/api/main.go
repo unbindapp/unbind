@@ -39,6 +39,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/updater"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
+	apikey_service "github.com/unbindapp/unbind-api/internal/services/apikey"
 	deployments_service "github.com/unbindapp/unbind-api/internal/services/deployments"
 	environment_service "github.com/unbindapp/unbind-api/internal/services/environment"
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
@@ -178,6 +179,7 @@ func startAPI(cfg *config.Config) {
 	templateService := templates_service.NewTemplatesService(cfg, repo, kubeClient, dbProvider, deploymentController)
 	serviceGroupService := servicegroup_service.NewServiceGroupService(cfg, repo, kubeClient, deploymentController, serviceService, storageService)
 	terminalService := terminal_service.NewTerminalService(repo, kubeClient)
+	apiKeyService := apikey_service.NewAPIKeyService(repo)
 
 	stringCache := cache.NewStringCache(redisClient, "unbind")
 
@@ -219,6 +221,7 @@ func startAPI(cfg *config.Config) {
 		TemplateService:      templateService,
 		ServiceGroupService:  serviceGroupService,
 		TerminalService:      terminalService,
+		APIKeyService:        apiKeyService,
 		TokenManager:         tokenManager,
 	}
 

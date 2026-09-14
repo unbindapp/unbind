@@ -8,6 +8,7 @@ import (
 	mocks_deployctl "github.com/unbindapp/unbind-api/mocks/deployctl"
 	mocks_infrastructure_k8s "github.com/unbindapp/unbind-api/mocks/infrastructure/k8s"
 	mocks_repositories "github.com/unbindapp/unbind-api/mocks/repositories"
+	mocks_repository_apikey "github.com/unbindapp/unbind-api/mocks/repository/apikey"
 	mocks_repository_bootstrap "github.com/unbindapp/unbind-api/mocks/repository/bootstrap"
 	mocks_repository_deployment "github.com/unbindapp/unbind-api/mocks/repository/deployment"
 	mocks_repository_environment "github.com/unbindapp/unbind-api/mocks/repository/environment"
@@ -51,6 +52,7 @@ type ServiceTestSuite struct {
 	MockGroupRepo       *mocks_repository_group.GroupRepositoryMock
 	MockBootstrapRepo   *mocks_repository_bootstrap.BootstrapRepositoryMock
 	MockVariablesRepo   *mocks_repository_variables.VariablesRepositoryMock
+	MockAPIKeyRepo      *mocks_repository_apikey.APIKeyRepositoryMock
 
 	// Infrastructure mocks
 	MockK8s       *mocks_infrastructure_k8s.KubeClientMock
@@ -79,6 +81,7 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockGroupRepo = mocks_repository_group.NewGroupRepositoryMock(suite.T())
 	suite.MockBootstrapRepo = mocks_repository_bootstrap.NewBootstrapRepositoryMock(suite.T())
 	suite.MockVariablesRepo = mocks_repository_variables.NewVariablesRepositoryMock(suite.T())
+	suite.MockAPIKeyRepo = mocks_repository_apikey.NewAPIKeyRepositoryMock(suite.T())
 
 	// Initialize infrastructure mocks
 	suite.MockK8s = mocks_infrastructure_k8s.NewKubeClientMock(suite.T())
@@ -100,6 +103,7 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockRepo.EXPECT().Group().Return(suite.MockGroupRepo).Maybe()
 	suite.MockRepo.EXPECT().Bootstrap().Return(suite.MockBootstrapRepo).Maybe()
 	suite.MockRepo.EXPECT().Variables().Return(suite.MockVariablesRepo).Maybe()
+	suite.MockRepo.EXPECT().APIKey().Return(suite.MockAPIKeyRepo).Maybe()
 }
 
 func (suite *ServiceTestSuite) TearDownTest() {
@@ -120,6 +124,7 @@ func (suite *ServiceTestSuite) TearDownTest() {
 	suite.MockGroupRepo.AssertExpectations(suite.T())
 	suite.MockBootstrapRepo.AssertExpectations(suite.T())
 	suite.MockVariablesRepo.AssertExpectations(suite.T())
+	suite.MockAPIKeyRepo.AssertExpectations(suite.T())
 	suite.MockK8s.AssertExpectations(suite.T())
 	suite.MockDeployCtl.AssertExpectations(suite.T())
 }

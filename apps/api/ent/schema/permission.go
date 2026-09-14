@@ -53,8 +53,8 @@ func (Permission) Annotations() []schema.Annotation {
 
 // * Types
 type ResourceSelector struct {
-	Superuser bool      `json:"superuser" doc:"Access to every resource of this type"`
-	ID        uuid.UUID `json:"id" doc:"Specific resource ID"`
+	Superuser bool      `json:"superuser,omitempty" required:"false" doc:"Access to every resource of this type"`
+	ID        uuid.UUID `json:"id,omitempty" required:"false" format:"uuid" doc:"Specific resource ID"`
 }
 
 // * Enums

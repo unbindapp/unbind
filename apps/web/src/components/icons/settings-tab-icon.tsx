@@ -11,7 +11,13 @@ import {
 import { ComponentProps } from "react";
 
 export type TSettingsTabVariant =
-  "general" | "environments" | "variables" | "members" | "webhooks" | "danger-zone" | "storage";
+  | "general"
+  | "environments"
+  | "variables"
+  | "members"
+  | "webhooks"
+  | "danger-zone"
+  | "storage";
 
 export default function SettingsTabIcon({
   variant,

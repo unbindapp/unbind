@@ -33,6 +33,8 @@ const (
 	EdgeGroups = "groups"
 	// EdgeTeams holds the string denoting the teams edge name in mutations.
 	EdgeTeams = "teams"
+	// EdgeAPIKeys holds the string denoting the api_keys edge name in mutations.
+	EdgeAPIKeys = "api_keys"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// Oauth2TokensTable is the table that holds the oauth2_tokens relation/edge.
@@ -66,6 +68,13 @@ const (
 	// TeamsInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	TeamsInverseTable = "teams"
+	// APIKeysTable is the table that holds the api_keys relation/edge.
+	APIKeysTable = "api_keys"
+	// APIKeysInverseTable is the table name for the APIKey entity.
+	// It exists in this package in order to avoid circular dependency with the "apikey" package.
+	APIKeysInverseTable = "api_keys"
+	// APIKeysColumn is the table column denoting the api_keys relation/edge.
+	APIKeysColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -204,6 +213,20 @@ func ByTeams(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTeamsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByAPIKeysCount orders the results by api_keys count.
+func ByAPIKeysCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAPIKeysStep(), opts...)
+	}
+}
+
+// ByAPIKeys orders the results by api_keys terms.
+func ByAPIKeys(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAPIKeysStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newOauth2TokensStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -237,5 +260,12 @@ func newTeamsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TeamsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, TeamsTable, TeamsPrimaryKey...),
+	)
+}
+func newAPIKeysStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(APIKeysInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, APIKeysTable, APIKeysColumn),
 	)
 }

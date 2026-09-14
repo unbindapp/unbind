@@ -101,6 +101,10 @@ func (self *PermissionsRepository) checkComprehensivePermission(
 		}
 	}
 
+	if scopes, scoped := APIKeyScopesFromContext(ctx); scoped && !scopesAllow(scopes, action, resourceType, resourceID, hierarchyInfo) {
+		return false, nil
+	}
+
 	// Determine which actions would satisfy this permission check
 	impliedActions := self.getImpliedActions(action)
 
@@ -308,6 +312,10 @@ func (self *PermissionsRepository) getResourceHierarchy(
 
 // getImpliedActions returns a list of actions that would satisfy the requested action
 func (self *PermissionsRepository) getImpliedActions(action entSchema.PermittedAction) []entSchema.PermittedAction {
+	return impliedActionsFor(action)
+}
+
+func impliedActionsFor(action entSchema.PermittedAction) []entSchema.PermittedAction {
 	switch action {
 	case entSchema.ActionViewer:
 		// Viewer permissions are implied by all other permission levels

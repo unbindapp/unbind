@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/updater"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
+	apikey_service "github.com/unbindapp/unbind-api/internal/services/apikey"
 	deployments_service "github.com/unbindapp/unbind-api/internal/services/deployments"
 	environment_service "github.com/unbindapp/unbind-api/internal/services/environment"
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
@@ -87,6 +88,7 @@ type Server struct {
 	TemplateService     *template_service.TemplatesService
 	ServiceGroupService *servicegroup_service.ServiceGroupService
 	TerminalService     *terminal_service.TerminalService
+	APIKeyService       *apikey_service.APIKeyService
 }
 
 func (self *Server) GetUserFromContext(ctx context.Context) (user *ent.User, found bool) {

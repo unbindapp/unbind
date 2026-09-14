@@ -1,24 +1,36 @@
 package middleware
 
 import (
+	"crypto/subtle"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/apictx"
+	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 const (
 	authMethodKey    = "auth_method"
 	authMethodBearer = "bearer"
 	authMethodCookie = "cookie"
+	authMethodAPIKey = "api_key"
+
+	apiKeyLastUsedInterval = time.Minute
 )
 
 func (self *Middleware) Authenticate(ctx huma.Context, next func(huma.Context)) {
-	if token, fromBearer, ok := extractToken(ctx, self.cfg.CookieSecure); ok {
+	token, fromBearer, ok := extractToken(ctx, self.cfg.CookieSecure)
+	if ok && fromBearer && auth.IsAPIKey(token) {
+		self.authenticateAPIKey(ctx, next, token)
+		return
+	}
+
+	if ok {
 		if claims, err := self.tokenManager.Verify(token); err == nil {
 			method := authMethodCookie
 			if fromBearer {
@@ -69,6 +81,39 @@ func (self *Middleware) Authenticate(ctx huma.Context, next func(huma.Context)) 
 	ctx = huma.WithValue(ctx, apictx.UserKey, user)
 	ctx = huma.WithValue(ctx, apictx.BearerTokenKey, accessToken)
 	ctx = huma.WithValue(ctx, authMethodKey, authMethodCookie)
+	next(ctx)
+}
+
+// authenticateAPIKey never falls back to cookies and never places a bearer
+// token in the context, so a key cannot reach anything that needs a session's
+// Kubernetes identity. Permission checks downstream are narrowed to the key's
+// scopes on top of the owner's own grants.
+func (self *Middleware) authenticateAPIKey(ctx huma.Context, next func(huma.Context), token string) {
+	now := time.Now()
+	hash := auth.HashAPIKey(token)
+	key, err := self.repository.APIKey().GetByTokenHash(ctx.Context(), hash)
+	if err != nil || key.Edges.User == nil || subtle.ConstantTimeCompare([]byte(key.TokenHash), []byte(hash)) != 1 || auth.APIKeyExpired(key.ExpiresAt, now) {
+		_ = huma.WriteErr(self.api, ctx, http.StatusUnauthorized, "Invalid or expired API key")
+		return
+	}
+
+	op := ctx.Operation()
+	if oapi.IsSessionOnly(op) {
+		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, "This endpoint cannot be used with an API key")
+		return
+	}
+	if action, known := oapi.ActionOf(op); known && action != oapi.Read && !permissions_repo.ScopesAllowWrites(key.Scopes) {
+		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, "This API key is read only")
+		return
+	}
+
+	if err := self.repository.APIKey().TouchLastUsed(ctx.Context(), key.ID, now, apiKeyLastUsedInterval); err != nil {
+		log.Warnf("auth: record api key use: %v", err)
+	}
+
+	ctx = huma.WithContext(ctx, permissions_repo.WithAPIKeyScopes(ctx.Context(), key.Scopes))
+	ctx = huma.WithValue(ctx, apictx.UserKey, key.Edges.User)
+	ctx = huma.WithValue(ctx, authMethodKey, authMethodAPIKey)
 	next(ctx)
 }
 

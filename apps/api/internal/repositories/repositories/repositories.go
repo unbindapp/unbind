@@ -5,6 +5,7 @@ import (
 
 	"github.com/unbindapp/unbind-api/ent"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	apikey_repo "github.com/unbindapp/unbind-api/internal/repositories/apikey"
 	bootstrap_repo "github.com/unbindapp/unbind-api/internal/repositories/bootstrap"
 	deployment_repo "github.com/unbindapp/unbind-api/internal/repositories/deployment"
 	environment_repo "github.com/unbindapp/unbind-api/internal/repositories/environment"
@@ -47,6 +48,7 @@ type Repositories struct {
 	s3Bucket     s3bucket_repo.S3BucketRepositoryInterface
 	template     template_repo.TemplateRepositoryInterface
 	serviceGroup servicegroup_repo.ServiceGroupRepositoryInterface
+	apiKey       apikey_repo.APIKeyRepositoryInterface
 }
 
 // NewRepositories creates a new Repositories facade
@@ -69,6 +71,7 @@ func NewRepositories(db *ent.Client) *Repositories {
 	s3BucketRepo := s3bucket_repo.NewS3BucketRepository(db)
 	templateRepo := template_repo.NewTemplateRepository(db)
 	serviceGroupRepo := servicegroup_repo.NewServiceGroupRepository(db)
+	apiKeyRepo := apikey_repo.NewAPIKeyRepository(db)
 	return &Repositories{
 		db:           db,
 		base:         base,
@@ -89,6 +92,7 @@ func NewRepositories(db *ent.Client) *Repositories {
 		s3Bucket:     s3BucketRepo,
 		template:     templateRepo,
 		serviceGroup: serviceGroupRepo,
+		apiKey:       apiKeyRepo,
 	}
 }
 
@@ -183,4 +187,9 @@ func (r *Repositories) ServiceGroup() servicegroup_repo.ServiceGroupRepositoryIn
 
 func (r *Repositories) WithTx(ctx context.Context, fn func(tx repository.TxInterface) error) error {
 	return r.base.WithTx(ctx, fn)
+}
+
+// APIKey returns the API key repository
+func (r *Repositories) APIKey() apikey_repo.APIKeyRepositoryInterface {
+	return r.apiKey
 }

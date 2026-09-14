@@ -678,6 +678,11 @@ func (_u *ServiceConfigUpdate) check() error {
 			return &ValidationError{Name: "health_check", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.health_check": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Resources(); ok {
+		if err := v.Validate(); err != nil {
+			return &ValidationError{Name: "resources", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.resources": %w`, err)}
+		}
+	}
 	if _u.mutation.ServiceCleared() && len(_u.mutation.ServiceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "ServiceConfig.service"`)
 	}
@@ -1639,6 +1644,11 @@ func (_u *ServiceConfigUpdateOne) check() error {
 	if v, ok := _u.mutation.HealthCheck(); ok {
 		if err := v.Validate(); err != nil {
 			return &ValidationError{Name: "health_check", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.health_check": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Resources(); ok {
+		if err := v.Validate(); err != nil {
+			return &ValidationError{Name: "resources", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.resources": %w`, err)}
 		}
 	}
 	if _u.mutation.ServiceCleared() && len(_u.mutation.ServiceIDs()) > 0 {
