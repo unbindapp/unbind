@@ -338,5 +338,10 @@
     "version": "v0.1.67",
     "summary": "Metrics filter dropdown now aligns to the end by default.",
     "breaking": false
+  },
+  "v0.1.68": {
+    "version": "v0.1.68",
+    "summary": "Database network access and endpoint variables, public service URLs before deployment, variables UI improvements, standardized API errors with request tracing, and faster Kubernetes data through caching.",
+    "breaking": false
   }
 }
