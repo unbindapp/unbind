@@ -30,7 +30,21 @@ func (u VariableUpdateBehavior) Schema(r huma.Registry) *huma.Schema {
 }
 
 type VariableResponse struct {
-	Variables []*VariableResponseItem `json:"variables" nullable:"false"`
+	Variables      []*VariableResponseItem `json:"variables" nullable:"false"`
+	ValuesRedacted bool                    `json:"values_redacted" doc:"True when the caller may only see names. Every value and resolved value is blank; editing needs the editor role."`
+}
+
+// Redact strips every value so viewers learn which variables exist without
+// learning what they hold.
+func (r *VariableResponse) Redact() {
+	r.ValuesRedacted = true
+	for _, item := range r.Variables {
+		item.Value = ""
+		item.ResolvedValue = nil
+		for i := range item.References {
+			item.References[i].ResolvedValue = nil
+		}
+	}
 }
 
 type VariableResponseItem struct {

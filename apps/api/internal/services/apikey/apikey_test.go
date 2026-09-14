@@ -33,8 +33,8 @@ func (suite *APIKeyServiceSuite) SetupTest() {
 	suite.projectID = uuid.New()
 }
 
-func (suite *APIKeyServiceSuite) projectScope(action schema.PermittedAction) schema.APIKeyScope {
-	return schema.APIKeyScope{Action: action, ResourceType: schema.ResourceTypeProject, ResourceSelector: schema.ResourceSelector{ID: suite.projectID}}
+func (suite *APIKeyServiceSuite) project() schema.APIKeyResource {
+	return schema.APIKeyResource{ResourceType: schema.ResourceTypeProject, ResourceID: suite.projectID}
 }
 
 func (suite *APIKeyServiceSuite) expectCheck(check permissions_repo.PermissionCheck, result error) {
@@ -43,55 +43,70 @@ func (suite *APIKeyServiceSuite) expectCheck(check permissions_repo.PermissionCh
 		Return(result).Once()
 }
 
-func (suite *APIKeyServiceSuite) TestCreateStoresHashAndReturnsTokenOnce() {
-	scope := suite.projectScope(schema.ActionViewer)
-	suite.expectCheck(permissions_repo.PermissionCheck{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeProject, ResourceID: suite.projectID}, nil)
-
-	var stored *apikey_repo.CreateAPIKeyInput
+func (suite *APIKeyServiceSuite) expectCreate() *apikey_repo.CreateAPIKeyInput {
+	stored := &apikey_repo.CreateAPIKeyInput{}
 	suite.MockAPIKeyRepo.EXPECT().
 		Create(suite.Ctx, mock.AnythingOfType("*apikey_repo.CreateAPIKeyInput")).
 		RunAndReturn(func(_ context.Context, input *apikey_repo.CreateAPIKeyInput) (*ent.APIKey, error) {
-			stored = input
-			return &ent.APIKey{ID: uuid.New(), UserID: input.UserID, Name: input.Name, TokenPrefix: input.TokenPrefix, TokenHash: input.TokenHash, Scopes: input.Scopes}, nil
+			*stored = *input
+			return &ent.APIKey{ID: uuid.New(), UserID: input.UserID, Name: input.Name, TokenPrefix: input.TokenPrefix, TokenHash: input.TokenHash, Role: input.Role, FullAccess: input.FullAccess, Resources: input.Resources}, nil
 		}).Once()
+	return stored
+}
 
-	resp, err := suite.service.Create(suite.Ctx, suite.requester, &models.APIKeyCreateInput{Name: "ci", Scopes: []schema.APIKeyScope{scope}})
+func (suite *APIKeyServiceSuite) TestCreateStoresHashAndReturnsTokenOnce() {
+	suite.expectCheck(permissions_repo.PermissionCheck{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeProject, ResourceID: suite.projectID}, nil)
+	stored := suite.expectCreate()
+
+	resp, err := suite.service.Create(suite.Ctx, suite.requester, &models.APIKeyCreateInput{Name: "ci", Role: schema.ActionViewer, Resources: []schema.APIKeyResource{suite.project()}})
 	suite.Require().NoError(err)
-	suite.Require().NotNil(stored)
 
 	suite.True(auth.IsAPIKey(resp.Token))
 	suite.Equal(auth.HashAPIKey(resp.Token), stored.TokenHash, "only the hash is persisted")
 	suite.Equal(suite.requester, stored.UserID, "keys are always minted for the requester")
 	suite.Equal(resp.TokenPrefix, stored.TokenPrefix)
 	suite.NotContains(resp.TokenPrefix, resp.Token[len(resp.TokenPrefix):])
-	suite.Equal([]schema.APIKeyScope{scope}, stored.Scopes)
+	suite.Equal(schema.ActionViewer, stored.Role)
+	suite.False(stored.FullAccess)
+	suite.Equal([]schema.APIKeyResource{suite.project()}, stored.Resources)
+	suite.Equal([]schema.APIKeyResource{suite.project()}, resp.Resources)
 }
 
-func (suite *APIKeyServiceSuite) TestCreateRejectsScopeBeyondRequester() {
-	suite.expectCheck(permissions_repo.PermissionCheck{Action: schema.ActionAdmin, ResourceType: schema.ResourceTypeProject, ResourceID: suite.projectID}, errdefs.ErrUnauthorized)
+func (suite *APIKeyServiceSuite) TestCreateChecksEveryResourceAtTheKeyRole() {
+	envID := uuid.New()
+	suite.expectCheck(permissions_repo.PermissionCheck{Action: schema.ActionEditor, ResourceType: schema.ResourceTypeProject, ResourceID: suite.projectID}, nil)
+	suite.expectCheck(permissions_repo.PermissionCheck{Action: schema.ActionEditor, ResourceType: schema.ResourceTypeEnvironment, ResourceID: envID}, errdefs.ErrUnauthorized)
 
-	_, err := suite.service.Create(suite.Ctx, suite.requester, &models.APIKeyCreateInput{Name: "ci", Scopes: []schema.APIKeyScope{suite.projectScope(schema.ActionAdmin)}})
+	_, err := suite.service.Create(suite.Ctx, suite.requester, &models.APIKeyCreateInput{Name: "ci", Role: schema.ActionEditor, Resources: []schema.APIKeyResource{
+		suite.project(),
+		{ResourceType: schema.ResourceTypeEnvironment, ResourceID: envID},
+	}})
 	suite.ErrorIs(err, errdefs.ErrInvalidInput)
-	suite.Contains(err.Error(), "exceeds your permissions")
+	suite.Contains(err.Error(), "you do not have editor access to environment "+envID.String())
 }
 
-func (suite *APIKeyServiceSuite) TestCreateSuperuserScopeChecksWithoutResourceID() {
-	suite.expectCheck(permissions_repo.PermissionCheck{Action: schema.ActionEditor, ResourceType: schema.ResourceTypeTeam}, errdefs.ErrUnauthorized)
+func (suite *APIKeyServiceSuite) TestCreateFullAccessNeedsNoCheck() {
+	stored := suite.expectCreate()
 
-	scope := schema.APIKeyScope{Action: schema.ActionEditor, ResourceType: schema.ResourceTypeTeam, ResourceSelector: schema.ResourceSelector{Superuser: true}}
-	_, err := suite.service.Create(suite.Ctx, suite.requester, &models.APIKeyCreateInput{Name: "ci", Scopes: []schema.APIKeyScope{scope}})
-	suite.ErrorIs(err, errdefs.ErrInvalidInput)
+	resp, err := suite.service.Create(suite.Ctx, suite.requester, &models.APIKeyCreateInput{Name: "me", Role: schema.ActionAdmin, FullAccess: true, Resources: []schema.APIKeyResource{}})
+	suite.Require().NoError(err)
+	suite.True(stored.FullAccess)
+	suite.Equal(schema.ActionAdmin, stored.Role)
+	suite.NotNil(stored.Resources, "resources are stored as an empty list, never null")
+	suite.Empty(resp.Resources)
 }
 
 func (suite *APIKeyServiceSuite) TestCreateRejectsMalformedInput() {
 	past := time.Now().Add(-time.Minute)
 	tests := map[string]*models.APIKeyCreateInput{
-		"expiry in the past":    {Name: "ci", ExpiresAt: &past, Scopes: []schema.APIKeyScope{suite.projectScope(schema.ActionViewer)}},
-		"unknown action":        {Name: "ci", Scopes: []schema.APIKeyScope{{Action: "owner", ResourceType: schema.ResourceTypeProject, ResourceSelector: schema.ResourceSelector{ID: suite.projectID}}}},
-		"unknown resource type": {Name: "ci", Scopes: []schema.APIKeyScope{{Action: schema.ActionViewer, ResourceType: "cluster", ResourceSelector: schema.ResourceSelector{Superuser: true}}}},
-		"selector with neither": {Name: "ci", Scopes: []schema.APIKeyScope{{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeProject}}},
-		"selector with both":    {Name: "ci", Scopes: []schema.APIKeyScope{{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeProject, ResourceSelector: schema.ResourceSelector{Superuser: true, ID: suite.projectID}}}},
-		"system scope by id":    {Name: "ci", Scopes: []schema.APIKeyScope{{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeSystem, ResourceSelector: schema.ResourceSelector{ID: suite.projectID}}}},
+		"expiry in the past":         {Name: "ci", ExpiresAt: &past, Role: schema.ActionViewer, Resources: []schema.APIKeyResource{suite.project()}},
+		"unknown role":               {Name: "ci", Role: "owner", Resources: []schema.APIKeyResource{suite.project()}},
+		"full access with resources": {Name: "ci", Role: schema.ActionViewer, FullAccess: true, Resources: []schema.APIKeyResource{suite.project()}},
+		"scoped without resources":   {Name: "ci", Role: schema.ActionViewer},
+		"system resource":            {Name: "ci", Role: schema.ActionAdmin, Resources: []schema.APIKeyResource{{ResourceType: schema.ResourceTypeSystem, ResourceID: uuid.New()}}},
+		"unknown resource type":      {Name: "ci", Role: schema.ActionViewer, Resources: []schema.APIKeyResource{{ResourceType: "cluster", ResourceID: uuid.New()}}},
+		"resource without id":        {Name: "ci", Role: schema.ActionViewer, Resources: []schema.APIKeyResource{{ResourceType: schema.ResourceTypeProject}}},
+		"duplicate resource":         {Name: "ci", Role: schema.ActionViewer, Resources: []schema.APIKeyResource{suite.project(), suite.project()}},
 	}
 
 	for name, input := range tests {
@@ -108,6 +123,7 @@ func (suite *APIKeyServiceSuite) TestListOwnKeys() {
 	keys, err := suite.service.List(suite.Ctx, suite.requester, &models.APIKeyListInput{})
 	suite.NoError(err)
 	suite.Len(keys, 1)
+	suite.NotNil(keys[0].Resources)
 }
 
 func (suite *APIKeyServiceSuite) TestListOtherUserRequiresSystemAdmin() {

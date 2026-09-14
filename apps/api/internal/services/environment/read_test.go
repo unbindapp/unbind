@@ -39,6 +39,8 @@ func (suite *ReadEnvironmentSuite) SetupTest() {
 
 	suite.MockPermissionsRepo.EXPECT().GetUserPermissionSet(mock.Anything, mock.Anything).
 		Return(&permissions_repo.UserPermissionSet{}, nil).Maybe()
+	suite.MockPermissionsRepo.EXPECT().GetAccessibleServicePredicates(mock.Anything, mock.Anything, schema.ActionViewer, mock.Anything).
+		Return(nil, nil).Maybe()
 
 	// Test data
 	suite.testUserID = uuid.New()
@@ -89,12 +91,7 @@ func (suite *ReadEnvironmentSuite) TearDownTest() {
 func (suite *ReadEnvironmentSuite) TestGetEnvironmentByID_Success() {
 	// Setup expectations
 	suite.MockPermissionsRepo.EXPECT().
-		Check(suite.Ctx, suite.testUserID, mock.MatchedBy(func(checks []permissions_repo.PermissionCheck) bool {
-			return len(checks) == 1 &&
-				checks[0].Action == schema.ActionViewer &&
-				checks[0].ResourceType == schema.ResourceTypeEnvironment &&
-				checks[0].ResourceID == suite.testEnvironmentID
-		})).
+		CheckVisible(suite.Ctx, suite.testUserID, schema.ResourceTypeEnvironment, suite.testEnvironmentID).
 		Return(nil).
 		Once()
 
@@ -106,7 +103,7 @@ func (suite *ReadEnvironmentSuite) TestGetEnvironmentByID_Success() {
 
 	// SummarizeServices call
 	suite.MockServiceRepo.EXPECT().
-		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}).
+		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}, mock.Anything).
 		Return(
 			map[uuid.UUID]int{suite.testEnvironmentID: 2},
 			map[uuid.UUID][]string{suite.testEnvironmentID: {"postgres", "redis"}},
@@ -131,7 +128,7 @@ func (suite *ReadEnvironmentSuite) TestGetEnvironmentByID_Success() {
 func (suite *ReadEnvironmentSuite) TestGetEnvironmentByID_PermissionDenied() {
 	// Setup expectations
 	suite.MockPermissionsRepo.EXPECT().
-		Check(suite.Ctx, suite.testUserID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
+		CheckVisible(suite.Ctx, suite.testUserID, schema.ResourceTypeEnvironment, suite.testEnvironmentID).
 		Return(errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Permission denied")).
 		Once()
 
@@ -147,7 +144,7 @@ func (suite *ReadEnvironmentSuite) TestGetEnvironmentByID_PermissionDenied() {
 func (suite *ReadEnvironmentSuite) TestGetEnvironmentByID_TeamNotFound() {
 	// Setup expectations
 	suite.MockPermissionsRepo.EXPECT().
-		Check(suite.Ctx, suite.testUserID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
+		CheckVisible(suite.Ctx, suite.testUserID, schema.ResourceTypeEnvironment, suite.testEnvironmentID).
 		Return(nil).
 		Once()
 
@@ -168,7 +165,7 @@ func (suite *ReadEnvironmentSuite) TestGetEnvironmentByID_TeamNotFound() {
 func (suite *ReadEnvironmentSuite) TestGetEnvironmentByID_ServiceSummaryFails() {
 	// Setup expectations
 	suite.MockPermissionsRepo.EXPECT().
-		Check(suite.Ctx, suite.testUserID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
+		CheckVisible(suite.Ctx, suite.testUserID, schema.ResourceTypeEnvironment, suite.testEnvironmentID).
 		Return(nil).
 		Once()
 
@@ -180,7 +177,7 @@ func (suite *ReadEnvironmentSuite) TestGetEnvironmentByID_ServiceSummaryFails() 
 
 	// SummarizeServices call fails
 	suite.MockServiceRepo.EXPECT().
-		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}).
+		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}, mock.Anything).
 		Return(nil, nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Failed to summarize services")).
 		Once()
 

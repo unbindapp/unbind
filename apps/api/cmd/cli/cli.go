@@ -312,14 +312,14 @@ func (self *cli) grantPermission(groupName, action, resourceType, resourceID str
 
 	var permAction schema.PermittedAction
 	switch strings.ToLower(action) {
-	case "view":
+	case "viewer", "view":
 		permAction = schema.ActionViewer
 	case "admin":
 		permAction = schema.ActionAdmin
-	case "edit":
+	case "editor", "edit":
 		permAction = schema.ActionEditor
 	default:
-		fmt.Printf("Error: Invalid action '%s'. Valid actions are: admin, edit, view \n", action)
+		fmt.Printf("Error: Invalid action '%s'. Valid actions are: admin, editor, viewer \n", action)
 		return
 	}
 

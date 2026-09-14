@@ -177,6 +177,75 @@ func (_c *PermissionsRepositoryMock_Check_Call) RunAndReturn(run func(ctx contex
 	return _c
 }
 
+// CheckVisible provides a mock function for the type PermissionsRepositoryMock
+func (_mock *PermissionsRepositoryMock) CheckVisible(ctx context.Context, userID uuid.UUID, resourceType schema.ResourceType, resourceID uuid.UUID) error {
+	ret := _mock.Called(ctx, userID, resourceType, resourceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CheckVisible")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.ResourceType, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, userID, resourceType, resourceID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// PermissionsRepositoryMock_CheckVisible_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CheckVisible'
+type PermissionsRepositoryMock_CheckVisible_Call struct {
+	*mock.Call
+}
+
+// CheckVisible is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - resourceType schema.ResourceType
+//   - resourceID uuid.UUID
+func (_e *PermissionsRepositoryMock_Expecter) CheckVisible(ctx any, userID any, resourceType any, resourceID any) *PermissionsRepositoryMock_CheckVisible_Call {
+	return &PermissionsRepositoryMock_CheckVisible_Call{Call: _e.mock.On("CheckVisible", ctx, userID, resourceType, resourceID)}
+}
+
+func (_c *PermissionsRepositoryMock_CheckVisible_Call) Run(run func(ctx context.Context, userID uuid.UUID, resourceType schema.ResourceType, resourceID uuid.UUID)) *PermissionsRepositoryMock_CheckVisible_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 schema.ResourceType
+		if args[2] != nil {
+			arg2 = args[2].(schema.ResourceType)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *PermissionsRepositoryMock_CheckVisible_Call) Return(err error) *PermissionsRepositoryMock_CheckVisible_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *PermissionsRepositoryMock_CheckVisible_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, resourceType schema.ResourceType, resourceID uuid.UUID) error) *PermissionsRepositoryMock_CheckVisible_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Create provides a mock function for the type PermissionsRepositoryMock
 func (_mock *PermissionsRepositoryMock) Create(ctx context.Context, action schema.PermittedAction, resourceType schema.ResourceType, selector schema.ResourceSelector) (*ent.Permission, error) {
 	ret := _mock.Called(ctx, action, resourceType, selector)

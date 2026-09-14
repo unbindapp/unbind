@@ -129,7 +129,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_Success() {
 
 	// SummarizeServices call
 	suite.MockServiceRepo.EXPECT().
-		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}).
+		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}, mock.Anything).
 		Return(
 			map[uuid.UUID]int{suite.testEnvironmentID: 3},
 			map[uuid.UUID][]string{suite.testEnvironmentID: {"postgres", "redis", "nginx"}},
@@ -189,7 +189,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_NameOnly() {
 
 	// SummarizeServices call
 	suite.MockServiceRepo.EXPECT().
-		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}).
+		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}, mock.Anything).
 		Return(
 			map[uuid.UUID]int{suite.testEnvironmentID: 1},
 			map[uuid.UUID][]string{suite.testEnvironmentID: {"postgres"}},
@@ -247,7 +247,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_DescriptionOnly() {
 
 	// SummarizeServices call
 	suite.MockServiceRepo.EXPECT().
-		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}).
+		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}, mock.Anything).
 		Return(
 			map[uuid.UUID]int{suite.testEnvironmentID: 0},
 			map[uuid.UUID][]string{suite.testEnvironmentID: {}},
@@ -448,7 +448,7 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_ServiceSummaryFails()
 
 	// SummarizeServices call fails
 	suite.MockServiceRepo.EXPECT().
-		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}).
+		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}, mock.Anything).
 		Return(nil, nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Service summary failed")).
 		Once()
 

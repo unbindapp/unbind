@@ -1658,8 +1658,8 @@ func (_c *ServiceRepositoryMock_SetCurrentDeployment_Call) RunAndReturn(run func
 }
 
 // SummarizeServices provides a mock function for the type ServiceRepositoryMock
-func (_mock *ServiceRepositoryMock) SummarizeServices(ctx context.Context, environmentIDs []uuid.UUID) (map[uuid.UUID]int, map[uuid.UUID][]string, error) {
-	ret := _mock.Called(ctx, environmentIDs)
+func (_mock *ServiceRepositoryMock) SummarizeServices(ctx context.Context, environmentIDs []uuid.UUID, authPredicate predicate.Service) (map[uuid.UUID]int, map[uuid.UUID][]string, error) {
+	ret := _mock.Called(ctx, environmentIDs, authPredicate)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SummarizeServices")
@@ -1668,25 +1668,25 @@ func (_mock *ServiceRepositoryMock) SummarizeServices(ctx context.Context, envir
 	var r0 map[uuid.UUID]int
 	var r1 map[uuid.UUID][]string
 	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) (map[uuid.UUID]int, map[uuid.UUID][]string, error)); ok {
-		return returnFunc(ctx, environmentIDs)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, predicate.Service) (map[uuid.UUID]int, map[uuid.UUID][]string, error)); ok {
+		return returnFunc(ctx, environmentIDs, authPredicate)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID) map[uuid.UUID]int); ok {
-		r0 = returnFunc(ctx, environmentIDs)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []uuid.UUID, predicate.Service) map[uuid.UUID]int); ok {
+		r0 = returnFunc(ctx, environmentIDs, authPredicate)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(map[uuid.UUID]int)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID) map[uuid.UUID][]string); ok {
-		r1 = returnFunc(ctx, environmentIDs)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []uuid.UUID, predicate.Service) map[uuid.UUID][]string); ok {
+		r1 = returnFunc(ctx, environmentIDs, authPredicate)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(map[uuid.UUID][]string)
 		}
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, []uuid.UUID) error); ok {
-		r2 = returnFunc(ctx, environmentIDs)
+	if returnFunc, ok := ret.Get(2).(func(context.Context, []uuid.UUID, predicate.Service) error); ok {
+		r2 = returnFunc(ctx, environmentIDs, authPredicate)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -1701,11 +1701,12 @@ type ServiceRepositoryMock_SummarizeServices_Call struct {
 // SummarizeServices is a helper method to define mock.On call
 //   - ctx context.Context
 //   - environmentIDs []uuid.UUID
-func (_e *ServiceRepositoryMock_Expecter) SummarizeServices(ctx any, environmentIDs any) *ServiceRepositoryMock_SummarizeServices_Call {
-	return &ServiceRepositoryMock_SummarizeServices_Call{Call: _e.mock.On("SummarizeServices", ctx, environmentIDs)}
+//   - authPredicate predicate.Service
+func (_e *ServiceRepositoryMock_Expecter) SummarizeServices(ctx any, environmentIDs any, authPredicate any) *ServiceRepositoryMock_SummarizeServices_Call {
+	return &ServiceRepositoryMock_SummarizeServices_Call{Call: _e.mock.On("SummarizeServices", ctx, environmentIDs, authPredicate)}
 }
 
-func (_c *ServiceRepositoryMock_SummarizeServices_Call) Run(run func(ctx context.Context, environmentIDs []uuid.UUID)) *ServiceRepositoryMock_SummarizeServices_Call {
+func (_c *ServiceRepositoryMock_SummarizeServices_Call) Run(run func(ctx context.Context, environmentIDs []uuid.UUID, authPredicate predicate.Service)) *ServiceRepositoryMock_SummarizeServices_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -1715,9 +1716,14 @@ func (_c *ServiceRepositoryMock_SummarizeServices_Call) Run(run func(ctx context
 		if args[1] != nil {
 			arg1 = args[1].([]uuid.UUID)
 		}
+		var arg2 predicate.Service
+		if args[2] != nil {
+			arg2 = args[2].(predicate.Service)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -1728,7 +1734,7 @@ func (_c *ServiceRepositoryMock_SummarizeServices_Call) Return(counts map[uuid.U
 	return _c
 }
 
-func (_c *ServiceRepositoryMock_SummarizeServices_Call) RunAndReturn(run func(ctx context.Context, environmentIDs []uuid.UUID) (map[uuid.UUID]int, map[uuid.UUID][]string, error)) *ServiceRepositoryMock_SummarizeServices_Call {
+func (_c *ServiceRepositoryMock_SummarizeServices_Call) RunAndReturn(run func(ctx context.Context, environmentIDs []uuid.UUID, authPredicate predicate.Service) (map[uuid.UUID]int, map[uuid.UUID][]string, error)) *ServiceRepositoryMock_SummarizeServices_Call {
 	_c.Call.Return(run)
 	return _c
 }

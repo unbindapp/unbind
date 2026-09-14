@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/environment"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
@@ -205,7 +206,7 @@ func (suite *ProjectQueriesSuite) TestGetTeamIDDBClosed() {
 }
 
 func (suite *ProjectQueriesSuite) TestGetByTeamBasic() {
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, "", "")
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, "", "")
 	suite.NoError(err)
 	suite.Len(projects, 2)
 
@@ -221,7 +222,7 @@ func (suite *ProjectQueriesSuite) TestGetByTeamBasic() {
 }
 
 func (suite *ProjectQueriesSuite) TestGetByTeamDifferentTeam() {
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam2.ID, nil, "", "")
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam2.ID, nil, nil, "", "")
 	suite.NoError(err)
 	suite.Len(projects, 1)
 	suite.Equal(suite.testProject3.ID, projects[0].ID)
@@ -237,7 +238,7 @@ func (suite *ProjectQueriesSuite) TestGetByTeamNoProjects() {
 		SetNamespace("empty-namespace").
 		SaveX(suite.Ctx)
 
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, emptyTeam.ID, nil, "", "")
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, emptyTeam.ID, nil, nil, "", "")
 	suite.NoError(err)
 	suite.Len(projects, 0)
 }
@@ -246,24 +247,38 @@ func (suite *ProjectQueriesSuite) TestGetByTeamWithAuthPredicate() {
 	// Create predicate that only matches projects with specific name
 	authPredicate := project.NameContains("Project 1")
 
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, authPredicate, "", "")
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, authPredicate, nil, "", "")
 	suite.NoError(err)
 	suite.Len(projects, 1)
 	suite.Equal(suite.testProject.ID, projects[0].ID)
 	suite.Equal("Test Project 1", projects[0].Name)
 }
 
+func (suite *ProjectQueriesSuite) TestGetByTeamFiltersNestedEnvironments() {
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, environment.NameContains("Dev"), "", "")
+	suite.NoError(err)
+	suite.Require().Len(projects, 2)
+
+	byID := map[uuid.UUID]*ent.Project{}
+	for _, p := range projects {
+		byID[p.ID] = p
+	}
+	suite.Require().Len(byID[suite.testProject.ID].Edges.Environments, 1)
+	suite.Equal("Dev Environment", byID[suite.testProject.ID].Edges.Environments[0].Name)
+	suite.Empty(byID[suite.testProject2.ID].Edges.Environments, "projects stay listed even when none of their environments match")
+}
+
 func (suite *ProjectQueriesSuite) TestGetByTeamWithAuthPredicateNoMatches() {
 	// Create predicate that matches no projects
 	authPredicate := project.NameContains("Nonexistent")
 
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, authPredicate, "", "")
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, authPredicate, nil, "", "")
 	suite.NoError(err)
 	suite.Len(projects, 0)
 }
 
 func (suite *ProjectQueriesSuite) TestGetByTeamSortByCreatedAtAsc() {
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, models.SortByCreatedAt, models.SortOrderAsc)
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByCreatedAt, models.SortOrderAsc)
 	suite.NoError(err)
 	suite.Len(projects, 2)
 
@@ -274,7 +289,7 @@ func (suite *ProjectQueriesSuite) TestGetByTeamSortByCreatedAtAsc() {
 }
 
 func (suite *ProjectQueriesSuite) TestGetByTeamSortByCreatedAtDesc() {
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, models.SortByCreatedAt, models.SortOrderDesc)
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByCreatedAt, models.SortOrderDesc)
 	suite.NoError(err)
 	suite.Len(projects, 2)
 
@@ -285,7 +300,7 @@ func (suite *ProjectQueriesSuite) TestGetByTeamSortByCreatedAtDesc() {
 }
 
 func (suite *ProjectQueriesSuite) TestGetByTeamSortByUpdatedAtAsc() {
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, models.SortByUpdatedAt, models.SortOrderAsc)
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByUpdatedAt, models.SortOrderAsc)
 	suite.NoError(err)
 	suite.Len(projects, 2)
 
@@ -296,7 +311,7 @@ func (suite *ProjectQueriesSuite) TestGetByTeamSortByUpdatedAtAsc() {
 }
 
 func (suite *ProjectQueriesSuite) TestGetByTeamSortByUpdatedAtDesc() {
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, models.SortByUpdatedAt, models.SortOrderDesc)
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByUpdatedAt, models.SortOrderDesc)
 	suite.NoError(err)
 	suite.Len(projects, 2)
 
@@ -308,7 +323,7 @@ func (suite *ProjectQueriesSuite) TestGetByTeamSortByUpdatedAtDesc() {
 
 func (suite *ProjectQueriesSuite) TestGetByTeamSortByInvalidField() {
 	// Invalid sort field should fallback to created_at ascending
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, "invalid_field", models.SortOrderDesc)
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, "invalid_field", models.SortOrderDesc)
 	suite.NoError(err)
 	suite.Len(projects, 2)
 
@@ -321,7 +336,7 @@ func (suite *ProjectQueriesSuite) TestGetByTeamSortWithAuthPredicate() {
 	// Test sorting with auth predicate
 	authPredicate := project.NameContains("Project")
 
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, authPredicate, models.SortByCreatedAt, models.SortOrderDesc)
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, authPredicate, nil, models.SortByCreatedAt, models.SortOrderDesc)
 	suite.NoError(err)
 	suite.Len(projects, 2)
 
@@ -332,14 +347,14 @@ func (suite *ProjectQueriesSuite) TestGetByTeamSortWithAuthPredicate() {
 
 func (suite *ProjectQueriesSuite) TestGetByTeamNonExistentTeam() {
 	nonExistentTeamID := uuid.New()
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, nonExistentTeamID, nil, "", "")
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, nonExistentTeamID, nil, nil, "", "")
 	suite.NoError(err)
 	suite.Len(projects, 0)
 }
 
 func (suite *ProjectQueriesSuite) TestGetByTeamDBClosed() {
 	suite.DB.Close()
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, "", "")
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, "", "")
 	suite.Error(err)
 	suite.Nil(projects)
 	suite.ErrorContains(err, "database is closed")

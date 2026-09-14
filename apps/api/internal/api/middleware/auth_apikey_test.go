@@ -27,7 +27,7 @@ type seen struct {
 	userID      uuid.UUID
 	bearerToken string
 	hasBearer   bool
-	scopes      []schema.APIKeyScope
+	access      permissions_repo.APIKeyAccess
 	scoped      bool
 }
 
@@ -62,7 +62,7 @@ func newAPIKeyHarness(t *testing.T) *apiKeyHarness {
 			s.userID = user.ID
 		}
 		s.bearerToken, s.hasBearer = ctx.Value(apictx.BearerTokenKey).(string)
-		s.scopes, s.scoped = permissions_repo.APIKeyScopesFromContext(ctx)
+		s.access, s.scoped = permissions_repo.APIKeyAccessFromContext(ctx)
 		h.last = s
 	}
 	type out struct {
@@ -87,14 +87,16 @@ func newAPIKeyHarness(t *testing.T) *apiKeyHarness {
 	return h
 }
 
-func (h *apiKeyHarness) stub(key *auth.GeneratedAPIKey, scopes []schema.APIKeyScope, expiresAt *time.Time) {
+func (h *apiKeyHarness) stub(key *auth.GeneratedAPIKey, access permissions_repo.APIKeyAccess, expiresAt *time.Time) {
 	h.keys.EXPECT().GetByTokenHash(mock.Anything, key.Hash).Return(&ent.APIKey{
-		ID:        uuid.New(),
-		UserID:    h.user.ID,
-		TokenHash: key.Hash,
-		Scopes:    scopes,
-		ExpiresAt: expiresAt,
-		Edges:     ent.APIKeyEdges{User: h.user},
+		ID:         uuid.New(),
+		UserID:     h.user.ID,
+		TokenHash:  key.Hash,
+		Role:       access.Role,
+		FullAccess: access.FullAccess,
+		Resources:  access.Resources,
+		ExpiresAt:  expiresAt,
+		Edges:      ent.APIKeyEdges{User: h.user},
 	}, nil).Maybe()
 	h.keys.EXPECT().TouchLastUsed(mock.Anything, mock.Anything, mock.Anything, apiKeyLastUsedInterval).Return(nil).Maybe()
 }
@@ -105,8 +107,7 @@ func bearer(token string) string {
 
 func TestAPIKeyAuthenticates(t *testing.T) {
 	h := newAPIKeyHarness(t)
-	scopes := []schema.APIKeyScope{{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeTeam, ResourceSelector: schema.ResourceSelector{Superuser: true}}}
-	h.stub(h.viewKey, scopes, nil)
+	h.stub(h.viewKey, permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true}, nil)
 
 	resp := h.api.Get("/v1/read", bearer(h.viewKey.Token))
 	if resp.Code != http.StatusOK {
@@ -118,15 +119,15 @@ func TestAPIKeyAuthenticates(t *testing.T) {
 	if h.last.hasBearer {
 		t.Fatal("an API key must never populate the bearer token used for Kubernetes identity")
 	}
-	if !h.last.scoped || len(h.last.scopes) != 1 {
-		t.Fatal("key scopes were not attached for the permission checker")
+	if !h.last.scoped || !h.last.access.FullAccess || h.last.access.Role != schema.ActionViewer {
+		t.Fatal("key access was not attached for the permission checker")
 	}
 }
 
 func TestAPIKeyRejectsUnknownAndExpired(t *testing.T) {
 	h := newAPIKeyHarness(t)
 	past := time.Now().Add(-time.Minute)
-	h.stub(h.viewKey, nil, &past)
+	h.stub(h.viewKey, permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true}, &past)
 	h.keys.EXPECT().GetByTokenHash(mock.Anything, mock.Anything).Return(nil, &ent.NotFoundError{}).Maybe()
 
 	tests := map[string]string{
@@ -150,8 +151,7 @@ func TestAPIKeyRejectsUnknownAndExpired(t *testing.T) {
 
 func TestAPIKeyRefusedOnSessionOnlyOperation(t *testing.T) {
 	h := newAPIKeyHarness(t)
-	scopes := []schema.APIKeyScope{{Action: schema.ActionAdmin, ResourceType: schema.ResourceTypeSystem, ResourceSelector: schema.ResourceSelector{Superuser: true}}}
-	h.stub(h.editKey, scopes, nil)
+	h.stub(h.editKey, permissions_repo.APIKeyAccess{Role: schema.ActionAdmin, FullAccess: true}, nil)
 
 	resp := h.api.Get("/v1/secret", bearer(h.editKey.Token))
 	if resp.Code != http.StatusForbidden {
@@ -164,8 +164,8 @@ func TestAPIKeyRefusedOnSessionOnlyOperation(t *testing.T) {
 
 func TestReadOnlyAPIKeyCannotWrite(t *testing.T) {
 	h := newAPIKeyHarness(t)
-	h.stub(h.viewKey, []schema.APIKeyScope{{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeTeam, ResourceSelector: schema.ResourceSelector{Superuser: true}}}, nil)
-	h.stub(h.editKey, []schema.APIKeyScope{{Action: schema.ActionEditor, ResourceType: schema.ResourceTypeProject, ResourceSelector: schema.ResourceSelector{ID: uuid.New()}}}, nil)
+	h.stub(h.viewKey, permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true}, nil)
+	h.stub(h.editKey, permissions_repo.APIKeyAccess{Role: schema.ActionEditor, Resources: []schema.APIKeyResource{{ResourceType: schema.ResourceTypeProject, ResourceID: uuid.New()}}}, nil)
 
 	resp := h.api.Post("/v1/write", bearer(h.viewKey.Token))
 	if resp.Code != http.StatusForbidden {

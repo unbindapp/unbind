@@ -19,8 +19,7 @@ import { ReactNode } from "react";
 type TProps = {
   className?: string;
 } & (
-  | { project: TProjectShallow; isPlaceholder?: never }
-  | { project?: never; isPlaceholder: true }
+  { project: TProjectShallow; isPlaceholder?: never } | { project?: never; isPlaceholder: true }
 );
 
 const maxIconSlots = 5;

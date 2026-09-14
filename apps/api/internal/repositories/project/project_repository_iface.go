@@ -21,5 +21,8 @@ type ProjectRepositoryInterface interface {
 	Delete(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) error
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Project, error)
 	GetTeamID(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
-	GetByTeam(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, sortField models.SortByField, sortOrder models.SortOrder) ([]*ent.Project, error)
+	// GetByTeam lists a team's projects, nesting only the environments the
+	// environment predicate allows so a caller who can see a project through one
+	// environment does not learn its siblings.
+	GetByTeam(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, environmentPredicate predicate.Environment, sortField models.SortByField, sortOrder models.SortOrder) ([]*ent.Project, error)
 }

@@ -9,20 +9,11 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
-	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 // Get a single environment by ID
 func (self *EnvironmentService) GetEnvironmentByID(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, projectID uuid.UUID, environmentID uuid.UUID) (*models.EnvironmentResponse, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeEnvironment,
-			ResourceID:   environmentID,
-		},
-	}
-
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+	if err := self.repo.Permissions().CheckVisible(ctx, requesterUserID, schema.ResourceTypeEnvironment, environmentID); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Environment not found")
 	}
 
@@ -39,8 +30,11 @@ func (self *EnvironmentService) GetEnvironmentByID(ctx context.Context, requeste
 	resp := models.TransformEnvironmentEntity(environment)
 	resp.Permissions = permSet.EnvironmentActions(teamID, projectID, environmentID)
 
-	// Summarizes services
-	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, []uuid.UUID{environmentID})
+	servicePreds, err := self.repo.Permissions().GetAccessibleServicePredicates(ctx, requesterUserID, schema.ActionViewer, &environmentID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting accessible service predicates: %w", err)
+	}
+	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, []uuid.UUID{environmentID}, servicePreds)
 	if err != nil {
 		return nil, err
 	}

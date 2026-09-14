@@ -2,6 +2,7 @@ package variables_service
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/google/uuid"
@@ -14,9 +15,16 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// GetVariables lists the scope's variables. Viewers get names only; values
+// are for editors, because a stored secret is as good as write access to
+// whatever it unlocks.
 func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error) {
 	if err := self.checkScopePermission(ctx, userID, schema.ActionViewer, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Resource not found")
+	}
+	canReadValues, err := self.holdsScopePermission(ctx, userID, schema.ActionEditor, input)
+	if err != nil {
+		return nil, err
 	}
 
 	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
@@ -38,7 +46,22 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 		return nil, err
 	}
 
-	return self.buildResponse(ctx, client, input.Type, team.Namespace, service, secrets)
+	response, err := self.buildResponse(ctx, client, input.Type, team.Namespace, service, secrets)
+	if err != nil {
+		return nil, err
+	}
+	if !canReadValues {
+		response.Redact()
+	}
+	return response, nil
+}
+
+func (self *VariablesService) holdsScopePermission(ctx context.Context, userID uuid.UUID, action schema.PermittedAction, input models.BaseVariablesInput) (bool, error) {
+	err := self.checkScopePermission(ctx, userID, action, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
+	if errors.Is(err, errdefs.ErrUnauthorized) {
+		return false, nil
+	}
+	return err == nil, err
 }
 
 func (self *VariablesService) checkScopePermission(ctx context.Context, userID uuid.UUID, action schema.PermittedAction, variableType schema.VariableReferenceSourceType, teamID, projectID, environmentID, serviceID uuid.UUID) error {

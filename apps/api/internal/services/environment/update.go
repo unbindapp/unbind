@@ -50,7 +50,7 @@ func (self *EnvironmentService) UpdateEnvironment(ctx context.Context, requester
 	resp.Permissions = permSet.EnvironmentActions(input.TeamID, input.ProjectID, input.EnvironmentID)
 
 	// Summarizes services
-	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, []uuid.UUID{environment.ID})
+	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, []uuid.UUID{environment.ID}, nil)
 	if err != nil {
 		return nil, err
 	}

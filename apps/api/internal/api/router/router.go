@@ -156,8 +156,10 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register := func(prefix, tag string, authed bool, fn func(*server.Server, *huma.Group)) {
 		registerGroup(prefix, tag, authed, false, fn)
 	}
-	// Session-only groups mint or change credentials and authorization, or hand
-	// out a Kubernetes identity. API keys are refused on every route in them.
+	// Session-only groups mint or change credentials, users or authorization,
+	// change instance-wide settings, or hand out a Kubernetes identity. API keys
+	// are refused on every route in them, so a leaked key cannot make its
+	// access permanent.
 	registerSessionOnly := func(prefix, tag string, fn func(*server.Server, *huma.Group)) {
 		registerGroup(prefix, tag, true, true, fn)
 	}
@@ -165,12 +167,12 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/setup", "Setup", false, setup_handler.RegisterHandlers)
 	register("/auth", "Auth", false, auth_handler.RegisterHandlers)
 	register("/webhook", "Webhook", false, webhook_handler.RegisterHandlers)
-	register("/system", "System", true, system_handler.RegisterHandlers)
+	registerSessionOnly("/system", "System", system_handler.RegisterHandlers)
 	register("/servers", "Servers", true, servers_handler.RegisterHandlers)
-	register("/users", "Users", true, user_handler.RegisterHandlers)
+	registerSessionOnly("/users", "Users", user_handler.RegisterHandlers)
 	registerSessionOnly("/groups", "Groups", groups_handler.RegisterHandlers)
 	registerSessionOnly("/api-keys", "API Keys", apikeys_handler.RegisterHandlers)
-	register("/github", "GitHub", true, github_handler.RegisterHandlers)
+	registerSessionOnly("/github", "GitHub", github_handler.RegisterHandlers)
 	register("/teams", "Teams", true, teams_handler.RegisterHandlers)
 	register("/projects", "Projects", true, projects_handler.RegisterHandlers)
 	register("/environments", "Environments", true, environments_handler.RegisterHandlers)

@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
 // ID filters vertices based on their ID field.
@@ -79,6 +80,11 @@ func TokenPrefix(v string) predicate.APIKey {
 // TokenHash applies equality check predicate on the "token_hash" field. It's identical to TokenHashEQ.
 func TokenHash(v string) predicate.APIKey {
 	return predicate.APIKey(sql.FieldEQ(FieldTokenHash, v))
+}
+
+// FullAccess applies equality check predicate on the "full_access" field. It's identical to FullAccessEQ.
+func FullAccess(v bool) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEQ(FieldFullAccess, v))
 }
 
 // ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
@@ -369,6 +375,46 @@ func TokenHashEqualFold(v string) predicate.APIKey {
 // TokenHashContainsFold applies the ContainsFold predicate on the "token_hash" field.
 func TokenHashContainsFold(v string) predicate.APIKey {
 	return predicate.APIKey(sql.FieldContainsFold(FieldTokenHash, v))
+}
+
+// RoleEQ applies the EQ predicate on the "role" field.
+func RoleEQ(v schema.PermittedAction) predicate.APIKey {
+	vc := v
+	return predicate.APIKey(sql.FieldEQ(FieldRole, vc))
+}
+
+// RoleNEQ applies the NEQ predicate on the "role" field.
+func RoleNEQ(v schema.PermittedAction) predicate.APIKey {
+	vc := v
+	return predicate.APIKey(sql.FieldNEQ(FieldRole, vc))
+}
+
+// RoleIn applies the In predicate on the "role" field.
+func RoleIn(vs ...schema.PermittedAction) predicate.APIKey {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.APIKey(sql.FieldIn(FieldRole, v...))
+}
+
+// RoleNotIn applies the NotIn predicate on the "role" field.
+func RoleNotIn(vs ...schema.PermittedAction) predicate.APIKey {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.APIKey(sql.FieldNotIn(FieldRole, v...))
+}
+
+// FullAccessEQ applies the EQ predicate on the "full_access" field.
+func FullAccessEQ(v bool) predicate.APIKey {
+	return predicate.APIKey(sql.FieldEQ(FieldFullAccess, v))
+}
+
+// FullAccessNEQ applies the NEQ predicate on the "full_access" field.
+func FullAccessNEQ(v bool) predicate.APIKey {
+	return predicate.APIKey(sql.FieldNEQ(FieldFullAccess, v))
 }
 
 // ExpiresAtEQ applies the EQ predicate on the "expires_at" field.

@@ -15,7 +15,9 @@ type CreateAPIKeyInput struct {
 	Name        string
 	TokenPrefix string
 	TokenHash   string
-	Scopes      []schema.APIKeyScope
+	Role        schema.PermittedAction
+	FullAccess  bool
+	Resources   []schema.APIKeyResource
 	ExpiresAt   *time.Time
 }
 
@@ -25,7 +27,9 @@ func (self *APIKeyRepository) Create(ctx context.Context, input *CreateAPIKeyInp
 		SetName(input.Name).
 		SetTokenPrefix(input.TokenPrefix).
 		SetTokenHash(input.TokenHash).
-		SetScopes(input.Scopes).
+		SetRole(input.Role).
+		SetFullAccess(input.FullAccess).
+		SetResources(input.Resources).
 		SetNillableExpiresAt(input.ExpiresAt).
 		Save(ctx)
 }

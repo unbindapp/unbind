@@ -9,7 +9,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
-	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 // ListTeams retrieves all teams the user has permission to view
@@ -40,19 +39,7 @@ func (self *TeamService) ListTeams(ctx context.Context, userID uuid.UUID) ([]*mo
 
 // GetTeamByID retrieves a team by ID
 func (self *TeamService) GetTeamByID(ctx context.Context, userID, teamID uuid.UUID) (*models.TeamResponse, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		// Has permission to read system resources
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   teamID,
-		},
-	}
-	if err := self.repo.Permissions().Check(
-		ctx,
-		userID,
-		permissionChecks,
-	); err != nil {
+	if err := self.repo.Permissions().CheckVisible(ctx, userID, schema.ResourceTypeTeam, teamID); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Team not found")
 	}
 

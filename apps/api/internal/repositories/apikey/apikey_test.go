@@ -31,12 +31,10 @@ func (suite *APIKeyRepositorySuite) create(userID uuid.UUID, hash string, expire
 		Name:        "ci",
 		TokenPrefix: "unb_abcdefgh",
 		TokenHash:   hash,
-		Scopes: []schema.APIKeyScope{{
-			Action:           schema.ActionViewer,
-			ResourceType:     schema.ResourceTypeTeam,
-			ResourceSelector: schema.ResourceSelector{Superuser: true},
-		}},
-		ExpiresAt: expiresAt,
+		Role:        schema.ActionViewer,
+		FullAccess:  true,
+		Resources:   []schema.APIKeyResource{},
+		ExpiresAt:   expiresAt,
 	})
 	suite.Require().NoError(err)
 	return key
@@ -54,7 +52,9 @@ func (suite *APIKeyRepositorySuite) TestCreateAndLookup() {
 	suite.Require().NotNil(found.ExpiresAt)
 	suite.True(expires.Equal(*found.ExpiresAt))
 	suite.Nil(found.LastUsedAt)
-	suite.Len(found.Scopes, 1)
+	suite.Equal(schema.ActionViewer, found.Role)
+	suite.True(found.FullAccess)
+	suite.Empty(found.Resources)
 
 	_, err = suite.repo.GetByTokenHash(suite.Ctx, "missing")
 	suite.True(ent.IsNotFound(err))
@@ -67,7 +67,7 @@ func (suite *APIKeyRepositorySuite) TestCreateAndLookup() {
 func (suite *APIKeyRepositorySuite) TestTokenHashIsUnique() {
 	suite.create(suite.user.ID, "dup", nil)
 	_, err := suite.repo.Create(suite.Ctx, &CreateAPIKeyInput{
-		UserID: suite.other.ID, Name: "x", TokenPrefix: "unb_", TokenHash: "dup", Scopes: []schema.APIKeyScope{},
+		UserID: suite.other.ID, Name: "x", TokenPrefix: "unb_", TokenHash: "dup", Role: schema.ActionViewer, Resources: []schema.APIKeyResource{},
 	})
 	suite.True(ent.IsConstraintError(err))
 }

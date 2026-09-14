@@ -78,7 +78,7 @@ var (
 // ActionValidator is a validator for the "action" field enum values. It is called by the builders before save.
 func ActionValidator(a schema.PermittedAction) error {
 	switch a {
-	case "admin", "edit", "view":
+	case "admin", "editor", "viewer":
 		return nil
 	default:
 		return fmt.Errorf("permission: invalid enum value for action field: %q", a)

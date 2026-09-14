@@ -56,6 +56,10 @@ func init() {
 	apikeyDescName := apikeyFields[0].Descriptor()
 	// apikey.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	apikey.NameValidator = apikeyDescName.Validators[0].(func(string) error)
+	// apikeyDescFullAccess is the schema descriptor for full_access field.
+	apikeyDescFullAccess := apikeyFields[4].Descriptor()
+	// apikey.DefaultFullAccess holds the default value on creation for the full_access field.
+	apikey.DefaultFullAccess = apikeyDescFullAccess.Default.(bool)
 	// apikeyDescID is the schema descriptor for id field.
 	apikeyDescID := apikeyMixinFields0[0].Descriptor()
 	// apikey.DefaultID holds the default value on creation for the id field.

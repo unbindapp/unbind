@@ -101,7 +101,7 @@ func (self *PermissionsRepository) checkComprehensivePermission(
 		}
 	}
 
-	if scopes, scoped := APIKeyScopesFromContext(ctx); scoped && !scopesAllow(scopes, action, resourceType, resourceID, hierarchyInfo) {
+	if key, scoped := APIKeyAccessFromContext(ctx); scoped && !key.allows(action, resourceType, resourceID, hierarchyInfo) {
 		return false, nil
 	}
 

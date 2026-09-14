@@ -35,7 +35,10 @@ type ServiceRepositoryInterface interface {
 	CountDomainCollisons(ctx context.Context, tx repository.TxInterface, domain string, excludingServiceID *uuid.UUID) (int, error)
 	GetDeploymentNamespace(ctx context.Context, serviceID uuid.UUID) (string, error)
 	// Summarize services in environment
-	SummarizeServices(ctx context.Context, environmentIDs []uuid.UUID) (counts map[uuid.UUID]int, icons map[uuid.UUID][]string, err error)
+	// SummarizeServices counts services and collects their icons per environment,
+	// limited to what authPredicate allows so callers who see an environment only
+	// as a path do not learn about services they cannot reach.
+	SummarizeServices(ctx context.Context, environmentIDs []uuid.UUID, authPredicate predicate.Service) (counts map[uuid.UUID]int, icons map[uuid.UUID][]string, err error)
 	NeedsDeployment(ctx context.Context, service *ent.Service) (NeedsDeploymentResponse, error)
 	// See if volume is in use
 	IsVolumeInUse(ctx context.Context, volumeName string) (bool, error)

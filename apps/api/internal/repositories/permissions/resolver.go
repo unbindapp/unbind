@@ -13,7 +13,7 @@ import (
 
 // UserPermissionSet is an in-memory snapshot of every permission the user's
 // groups grant, loaded once per request to annotate response DTOs. For API key
-// callers it is further limited to the key's scopes.
+// callers it is further limited to the key's access.
 type UserPermissionSet struct {
 	granted grants
 	limit   *grants
@@ -44,15 +44,12 @@ func (self *PermissionsRepository) GetUserPermissionSet(ctx context.Context, use
 		set.granted.add(perm.ResourceType, perm.Action, perm.ResourceSelector)
 	}
 
-	scopes, scoped := APIKeyScopesFromContext(ctx)
+	key, scoped := APIKeyAccessFromContext(ctx)
 	if !scoped {
 		return set, nil
 	}
 
-	limit := newGrants()
-	for _, scope := range scopes {
-		limit.add(scope.ResourceType, scope.Action, scope.ResourceSelector)
-	}
+	limit := key.grants()
 	set.limit = &limit
 	return set, nil
 }

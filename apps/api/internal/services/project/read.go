@@ -7,18 +7,23 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 
-	// entProject "github.com/unbindapp/unbind-api/ent/project" // No longer needed directly here
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
-	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 func (self *ProjectService) GetProjectsInTeam(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, sortBy models.SortByField, sortOrder models.SortOrder) ([]*models.ProjectResponse, error) {
-	// Step 1: Get accessible project predicates for the user with ActionViewer.
 	projectPreds, err := self.repo.Permissions().GetAccessibleProjectPredicates(ctx, requesterUserID, schema.ActionViewer)
 	if err != nil {
 		return nil, fmt.Errorf("error getting accessible project predicates: %w", err)
+	}
+	envPreds, err := self.repo.Permissions().GetAccessibleEnvironmentPredicates(ctx, requesterUserID, schema.ActionViewer, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error getting accessible environment predicates: %w", err)
+	}
+	servicePreds, err := self.repo.Permissions().GetAccessibleServicePredicates(ctx, requesterUserID, schema.ActionViewer, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error getting accessible service predicates: %w", err)
 	}
 
 	// Step 2: Check if the team itself exists. This is a necessary validation.
@@ -31,7 +36,7 @@ func (self *ProjectService) GetProjectsInTeam(ctx context.Context, requesterUser
 	}
 
 	// Step 3: Call the repository method to get projects, passing the auth predicate and sorting.
-	projects, err := self.repo.Project().GetByTeam(ctx, teamID, projectPreds, sortBy, sortOrder)
+	projects, err := self.repo.Project().GetByTeam(ctx, teamID, projectPreds, envPreds, sortBy, sortOrder)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching projects by team: %w", err)
 	}
@@ -44,7 +49,6 @@ func (self *ProjectService) GetProjectsInTeam(ctx context.Context, requesterUser
 		return nil, err
 	}
 
-	// Summarizes services
 	for _, project := range resp {
 		project.Permissions = permSet.ProjectActions(teamID, project.ID)
 		environmentIDs := make([]uuid.UUID, len(project.Environments))
@@ -52,7 +56,7 @@ func (self *ProjectService) GetProjectsInTeam(ctx context.Context, requesterUser
 			environmentIDs[i] = environment.ID
 			environment.Permissions = permSet.EnvironmentActions(teamID, project.ID, environment.ID)
 		}
-		counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, environmentIDs)
+		counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, environmentIDs, servicePreds)
 		if err != nil {
 			return nil, err
 		}
@@ -64,20 +68,7 @@ func (self *ProjectService) GetProjectsInTeam(ctx context.Context, requesterUser
 
 // Get a single project by ID
 func (self *ProjectService) GetProjectByID(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, projectID uuid.UUID) (*models.ProjectResponse, error) {
-	// For fetching a single resource, the existing Check method is generally fine.
-	// If the user doesn't have ActionViewer on that specific projectID (or its hierarchy),
-	// they shouldn't get it. The new predicate system is primarily for *filtering lists*.
-	// So, GetProjectByID might not need to change for now.
-	permissionChecks := []permissions_repo.PermissionCheck{
-		// Has permission to read project
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeProject,
-			ResourceID:   projectID,
-		},
-	}
-
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+	if err := self.repo.Permissions().CheckVisible(ctx, requesterUserID, schema.ResourceTypeProject, projectID); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Project not found")
 	}
 
@@ -89,10 +80,8 @@ func (self *ProjectService) GetProjectByID(ctx context.Context, requesterUserID 
 		return nil, err // Return the original error for better context
 	}
 
-	// Get projects
-	projectEntity, err := self.repo.Project().GetByID(ctx, projectID) // Renamed to avoid conflict with project package import
+	projectEntity, err := self.repo.Project().GetByID(ctx, projectID)
 	if err != nil {
-		// Handle potential not found from GetByID as well
 		if ent.IsNotFound(err) {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Project not found")
 		}
@@ -106,6 +95,19 @@ func (self *ProjectService) GetProjectByID(ctx context.Context, requesterUserID 
 		return nil, errdefs.ErrUnauthorized
 	}
 
+	envPreds, err := self.repo.Permissions().GetAccessibleEnvironmentPredicates(ctx, requesterUserID, schema.ActionViewer, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error getting accessible environment predicates: %w", err)
+	}
+	servicePreds, err := self.repo.Permissions().GetAccessibleServicePredicates(ctx, requesterUserID, schema.ActionViewer, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error getting accessible service predicates: %w", err)
+	}
+	projectEntity.Edges.Environments, err = self.repo.Environment().GetForProject(ctx, nil, projectID, envPreds)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching environments for project %s: %w", projectID, err)
+	}
+
 	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
 	if err != nil {
 		return nil, err
@@ -114,13 +116,12 @@ func (self *ProjectService) GetProjectByID(ctx context.Context, requesterUserID 
 	resp := models.TransformProjectEntity(projectEntity)
 	resp.Permissions = permSet.ProjectActions(teamID, projectID)
 
-	// Summarizes services
 	environmentIDs := make([]uuid.UUID, len(resp.Environments))
 	for i, environment := range resp.Environments {
 		environmentIDs[i] = environment.ID
 		environment.Permissions = permSet.EnvironmentActions(teamID, projectID, environment.ID)
 	}
-	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, environmentIDs)
+	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, environmentIDs, servicePreds)
 	if err != nil {
 		return nil, err
 	}

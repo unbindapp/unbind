@@ -32,8 +32,12 @@ type APIKey struct {
 	TokenPrefix string `json:"token_prefix,omitempty"`
 	// TokenHash holds the value of the "token_hash" field.
 	TokenHash string `json:"-"`
-	// Scopes holds the value of the "scopes" field.
-	Scopes []schema.APIKeyScope `json:"scopes,omitempty"`
+	// Strongest action the key can perform anywhere
+	Role schema.PermittedAction `json:"role,omitempty"`
+	// Reach everything the owner can, capped at role
+	FullAccess bool `json:"full_access,omitempty"`
+	// Resources the key is limited to; empty when full_access
+	Resources []schema.APIKeyResource `json:"resources,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// LastUsedAt holds the value of the "last_used_at" field.
@@ -71,9 +75,11 @@ func (*APIKey) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case apikey.FieldScopes:
+		case apikey.FieldResources:
 			values[i] = new([]byte)
-		case apikey.FieldName, apikey.FieldTokenPrefix, apikey.FieldTokenHash:
+		case apikey.FieldFullAccess:
+			values[i] = new(sql.NullBool)
+		case apikey.FieldName, apikey.FieldTokenPrefix, apikey.FieldTokenHash, apikey.FieldRole:
 			values[i] = new(sql.NullString)
 		case apikey.FieldCreatedAt, apikey.FieldUpdatedAt, apikey.FieldExpiresAt, apikey.FieldLastUsedAt:
 			values[i] = new(sql.NullTime)
@@ -130,12 +136,24 @@ func (_m *APIKey) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TokenHash = value.String
 			}
-		case apikey.FieldScopes:
+		case apikey.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				_m.Role = schema.PermittedAction(value.String)
+			}
+		case apikey.FieldFullAccess:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field full_access", values[i])
+			} else if value.Valid {
+				_m.FullAccess = value.Bool
+			}
+		case apikey.FieldResources:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field scopes", values[i])
+				return fmt.Errorf("unexpected type %T for field resources", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Scopes); err != nil {
-					return fmt.Errorf("unmarshal field scopes: %w", err)
+				if err := json.Unmarshal(*value, &_m.Resources); err != nil {
+					return fmt.Errorf("unmarshal field resources: %w", err)
 				}
 			}
 		case apikey.FieldExpiresAt:
@@ -213,8 +231,14 @@ func (_m *APIKey) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("token_hash=<sensitive>")
 	builder.WriteString(", ")
-	builder.WriteString("scopes=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Scopes))
+	builder.WriteString("role=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Role))
+	builder.WriteString(", ")
+	builder.WriteString("full_access=")
+	builder.WriteString(fmt.Sprintf("%v", _m.FullAccess))
+	builder.WriteString(", ")
+	builder.WriteString("resources=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Resources))
 	builder.WriteString(", ")
 	if v := _m.ExpiresAt; v != nil {
 		builder.WriteString("expires_at=")

@@ -17,7 +17,9 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "token_prefix", Type: field.TypeString},
 		{Name: "token_hash", Type: field.TypeString, Unique: true},
-		{Name: "scopes", Type: field.TypeJSON},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "editor", "viewer"}},
+		{Name: "full_access", Type: field.TypeBool, Default: false},
+		{Name: "resources", Type: field.TypeJSON},
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID},
@@ -30,7 +32,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "api_keys_users_api_keys",
-				Columns:    []*schema.Column{APIKeysColumns[9]},
+				Columns:    []*schema.Column{APIKeysColumns[11]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -295,7 +297,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "action", Type: field.TypeEnum, Enums: []string{"admin", "edit", "view"}},
+		{Name: "action", Type: field.TypeEnum, Enums: []string{"admin", "editor", "viewer"}},
 		{Name: "resource_type", Type: field.TypeEnum, Enums: []string{"system", "team", "project", "environment", "service"}},
 		{Name: "resource_selector", Type: field.TypeJSON},
 	}

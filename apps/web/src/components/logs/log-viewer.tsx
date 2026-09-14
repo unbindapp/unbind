@@ -70,10 +70,7 @@ export default function LogViewer({
   error,
 }: TProps) {
   const typeAndIds:
-    | TEnvironmentLogsProps
-    | TServiceLogsProps
-    | TDeploymentLogsProps
-    | TDeploymentBuildLogsProps =
+    TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps | TDeploymentBuildLogsProps =
     type === "service"
       ? { type: "service", environmentId: environmentId, serviceId }
       : type === "deployment"

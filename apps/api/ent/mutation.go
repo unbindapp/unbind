@@ -80,24 +80,26 @@ const (
 // APIKeyMutation represents an operation that mutates the APIKey nodes in the graph.
 type APIKeyMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	created_at    *time.Time
-	updated_at    *time.Time
-	name          *string
-	token_prefix  *string
-	token_hash    *string
-	scopes        *[]schema.APIKeyScope
-	appendscopes  []schema.APIKeyScope
-	expires_at    *time.Time
-	last_used_at  *time.Time
-	clearedFields map[string]struct{}
-	user          *uuid.UUID
-	cleareduser   bool
-	done          bool
-	oldValue      func(context.Context) (*APIKey, error)
-	predicates    []predicate.APIKey
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	created_at      *time.Time
+	updated_at      *time.Time
+	name            *string
+	token_prefix    *string
+	token_hash      *string
+	role            *schema.PermittedAction
+	full_access     *bool
+	resources       *[]schema.APIKeyResource
+	appendresources []schema.APIKeyResource
+	expires_at      *time.Time
+	last_used_at    *time.Time
+	clearedFields   map[string]struct{}
+	user            *uuid.UUID
+	cleareduser     bool
+	done            bool
+	oldValue        func(context.Context) (*APIKey, error)
+	predicates      []predicate.APIKey
 }
 
 var _ ent.Mutation = (*APIKeyMutation)(nil)
@@ -384,55 +386,127 @@ func (m *APIKeyMutation) ResetTokenHash() {
 	m.token_hash = nil
 }
 
-// SetScopes sets the "scopes" field.
-func (m *APIKeyMutation) SetScopes(sks []schema.APIKeyScope) {
-	m.scopes = &sks
-	m.appendscopes = nil
+// SetRole sets the "role" field.
+func (m *APIKeyMutation) SetRole(sa schema.PermittedAction) {
+	m.role = &sa
 }
 
-// Scopes returns the value of the "scopes" field in the mutation.
-func (m *APIKeyMutation) Scopes() (r []schema.APIKeyScope, exists bool) {
-	v := m.scopes
+// Role returns the value of the "role" field in the mutation.
+func (m *APIKeyMutation) Role() (r schema.PermittedAction, exists bool) {
+	v := m.role
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldScopes returns the old "scopes" field's value of the APIKey entity.
+// OldRole returns the old "role" field's value of the APIKey entity.
 // If the APIKey object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *APIKeyMutation) OldScopes(ctx context.Context) (v []schema.APIKeyScope, err error) {
+func (m *APIKeyMutation) OldRole(ctx context.Context) (v schema.PermittedAction, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldScopes is only allowed on UpdateOne operations")
+		return v, errors.New("OldRole is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldScopes requires an ID field in the mutation")
+		return v, errors.New("OldRole requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldScopes: %w", err)
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
 	}
-	return oldValue.Scopes, nil
+	return oldValue.Role, nil
 }
 
-// AppendScopes adds sks to the "scopes" field.
-func (m *APIKeyMutation) AppendScopes(sks []schema.APIKeyScope) {
-	m.appendscopes = append(m.appendscopes, sks...)
+// ResetRole resets all changes to the "role" field.
+func (m *APIKeyMutation) ResetRole() {
+	m.role = nil
 }
 
-// AppendedScopes returns the list of values that were appended to the "scopes" field in this mutation.
-func (m *APIKeyMutation) AppendedScopes() ([]schema.APIKeyScope, bool) {
-	if len(m.appendscopes) == 0 {
+// SetFullAccess sets the "full_access" field.
+func (m *APIKeyMutation) SetFullAccess(b bool) {
+	m.full_access = &b
+}
+
+// FullAccess returns the value of the "full_access" field in the mutation.
+func (m *APIKeyMutation) FullAccess() (r bool, exists bool) {
+	v := m.full_access
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFullAccess returns the old "full_access" field's value of the APIKey entity.
+// If the APIKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIKeyMutation) OldFullAccess(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFullAccess is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFullAccess requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFullAccess: %w", err)
+	}
+	return oldValue.FullAccess, nil
+}
+
+// ResetFullAccess resets all changes to the "full_access" field.
+func (m *APIKeyMutation) ResetFullAccess() {
+	m.full_access = nil
+}
+
+// SetResources sets the "resources" field.
+func (m *APIKeyMutation) SetResources(skr []schema.APIKeyResource) {
+	m.resources = &skr
+	m.appendresources = nil
+}
+
+// Resources returns the value of the "resources" field in the mutation.
+func (m *APIKeyMutation) Resources() (r []schema.APIKeyResource, exists bool) {
+	v := m.resources
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldResources returns the old "resources" field's value of the APIKey entity.
+// If the APIKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *APIKeyMutation) OldResources(ctx context.Context) (v []schema.APIKeyResource, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldResources is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldResources requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldResources: %w", err)
+	}
+	return oldValue.Resources, nil
+}
+
+// AppendResources adds skr to the "resources" field.
+func (m *APIKeyMutation) AppendResources(skr []schema.APIKeyResource) {
+	m.appendresources = append(m.appendresources, skr...)
+}
+
+// AppendedResources returns the list of values that were appended to the "resources" field in this mutation.
+func (m *APIKeyMutation) AppendedResources() ([]schema.APIKeyResource, bool) {
+	if len(m.appendresources) == 0 {
 		return nil, false
 	}
-	return m.appendscopes, true
+	return m.appendresources, true
 }
 
-// ResetScopes resets all changes to the "scopes" field.
-func (m *APIKeyMutation) ResetScopes() {
-	m.scopes = nil
-	m.appendscopes = nil
+// ResetResources resets all changes to the "resources" field.
+func (m *APIKeyMutation) ResetResources() {
+	m.resources = nil
+	m.appendresources = nil
 }
 
 // SetExpiresAt sets the "expires_at" field.
@@ -630,7 +704,7 @@ func (m *APIKeyMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *APIKeyMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 11)
 	if m.created_at != nil {
 		fields = append(fields, apikey.FieldCreatedAt)
 	}
@@ -646,8 +720,14 @@ func (m *APIKeyMutation) Fields() []string {
 	if m.token_hash != nil {
 		fields = append(fields, apikey.FieldTokenHash)
 	}
-	if m.scopes != nil {
-		fields = append(fields, apikey.FieldScopes)
+	if m.role != nil {
+		fields = append(fields, apikey.FieldRole)
+	}
+	if m.full_access != nil {
+		fields = append(fields, apikey.FieldFullAccess)
+	}
+	if m.resources != nil {
+		fields = append(fields, apikey.FieldResources)
 	}
 	if m.expires_at != nil {
 		fields = append(fields, apikey.FieldExpiresAt)
@@ -676,8 +756,12 @@ func (m *APIKeyMutation) Field(name string) (ent.Value, bool) {
 		return m.TokenPrefix()
 	case apikey.FieldTokenHash:
 		return m.TokenHash()
-	case apikey.FieldScopes:
-		return m.Scopes()
+	case apikey.FieldRole:
+		return m.Role()
+	case apikey.FieldFullAccess:
+		return m.FullAccess()
+	case apikey.FieldResources:
+		return m.Resources()
 	case apikey.FieldExpiresAt:
 		return m.ExpiresAt()
 	case apikey.FieldLastUsedAt:
@@ -703,8 +787,12 @@ func (m *APIKeyMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldTokenPrefix(ctx)
 	case apikey.FieldTokenHash:
 		return m.OldTokenHash(ctx)
-	case apikey.FieldScopes:
-		return m.OldScopes(ctx)
+	case apikey.FieldRole:
+		return m.OldRole(ctx)
+	case apikey.FieldFullAccess:
+		return m.OldFullAccess(ctx)
+	case apikey.FieldResources:
+		return m.OldResources(ctx)
 	case apikey.FieldExpiresAt:
 		return m.OldExpiresAt(ctx)
 	case apikey.FieldLastUsedAt:
@@ -755,12 +843,26 @@ func (m *APIKeyMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTokenHash(v)
 		return nil
-	case apikey.FieldScopes:
-		v, ok := value.([]schema.APIKeyScope)
+	case apikey.FieldRole:
+		v, ok := value.(schema.PermittedAction)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetScopes(v)
+		m.SetRole(v)
+		return nil
+	case apikey.FieldFullAccess:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFullAccess(v)
+		return nil
+	case apikey.FieldResources:
+		v, ok := value.([]schema.APIKeyResource)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetResources(v)
 		return nil
 	case apikey.FieldExpiresAt:
 		v, ok := value.(time.Time)
@@ -862,8 +964,14 @@ func (m *APIKeyMutation) ResetField(name string) error {
 	case apikey.FieldTokenHash:
 		m.ResetTokenHash()
 		return nil
-	case apikey.FieldScopes:
-		m.ResetScopes()
+	case apikey.FieldRole:
+		m.ResetRole()
+		return nil
+	case apikey.FieldFullAccess:
+		m.ResetFullAccess()
+		return nil
+	case apikey.FieldResources:
+		m.ResetResources()
 		return nil
 	case apikey.FieldExpiresAt:
 		m.ResetExpiresAt()

@@ -72,9 +72,29 @@ func (_c *APIKeyCreate) SetTokenHash(v string) *APIKeyCreate {
 	return _c
 }
 
-// SetScopes sets the "scopes" field.
-func (_c *APIKeyCreate) SetScopes(v []schema.APIKeyScope) *APIKeyCreate {
-	_c.mutation.SetScopes(v)
+// SetRole sets the "role" field.
+func (_c *APIKeyCreate) SetRole(v schema.PermittedAction) *APIKeyCreate {
+	_c.mutation.SetRole(v)
+	return _c
+}
+
+// SetFullAccess sets the "full_access" field.
+func (_c *APIKeyCreate) SetFullAccess(v bool) *APIKeyCreate {
+	_c.mutation.SetFullAccess(v)
+	return _c
+}
+
+// SetNillableFullAccess sets the "full_access" field if the given value is not nil.
+func (_c *APIKeyCreate) SetNillableFullAccess(v *bool) *APIKeyCreate {
+	if v != nil {
+		_c.SetFullAccess(*v)
+	}
+	return _c
+}
+
+// SetResources sets the "resources" field.
+func (_c *APIKeyCreate) SetResources(v []schema.APIKeyResource) *APIKeyCreate {
+	_c.mutation.SetResources(v)
 	return _c
 }
 
@@ -174,6 +194,10 @@ func (_c *APIKeyCreate) defaults() {
 		v := apikey.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.FullAccess(); !ok {
+		v := apikey.DefaultFullAccess
+		_c.mutation.SetFullAccess(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := apikey.DefaultID()
 		_c.mutation.SetID(v)
@@ -202,8 +226,19 @@ func (_c *APIKeyCreate) check() error {
 	if _, ok := _c.mutation.TokenHash(); !ok {
 		return &ValidationError{Name: "token_hash", err: errors.New(`ent: missing required field "APIKey.token_hash"`)}
 	}
-	if _, ok := _c.mutation.Scopes(); !ok {
-		return &ValidationError{Name: "scopes", err: errors.New(`ent: missing required field "APIKey.scopes"`)}
+	if _, ok := _c.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "APIKey.role"`)}
+	}
+	if v, ok := _c.mutation.Role(); ok {
+		if err := apikey.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "APIKey.role": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.FullAccess(); !ok {
+		return &ValidationError{Name: "full_access", err: errors.New(`ent: missing required field "APIKey.full_access"`)}
+	}
+	if _, ok := _c.mutation.Resources(); !ok {
+		return &ValidationError{Name: "resources", err: errors.New(`ent: missing required field "APIKey.resources"`)}
 	}
 	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "APIKey.user_id"`)}
@@ -267,9 +302,17 @@ func (_c *APIKeyCreate) createSpec() (*APIKey, *sqlgraph.CreateSpec) {
 		_spec.SetField(apikey.FieldTokenHash, field.TypeString, value)
 		_node.TokenHash = value
 	}
-	if value, ok := _c.mutation.Scopes(); ok {
-		_spec.SetField(apikey.FieldScopes, field.TypeJSON, value)
-		_node.Scopes = value
+	if value, ok := _c.mutation.Role(); ok {
+		_spec.SetField(apikey.FieldRole, field.TypeEnum, value)
+		_node.Role = value
+	}
+	if value, ok := _c.mutation.FullAccess(); ok {
+		_spec.SetField(apikey.FieldFullAccess, field.TypeBool, value)
+		_node.FullAccess = value
+	}
+	if value, ok := _c.mutation.Resources(); ok {
+		_spec.SetField(apikey.FieldResources, field.TypeJSON, value)
+		_node.Resources = value
 	}
 	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(apikey.FieldExpiresAt, field.TypeTime, value)
@@ -396,15 +439,39 @@ func (u *APIKeyUpsert) UpdateTokenHash() *APIKeyUpsert {
 	return u
 }
 
-// SetScopes sets the "scopes" field.
-func (u *APIKeyUpsert) SetScopes(v []schema.APIKeyScope) *APIKeyUpsert {
-	u.Set(apikey.FieldScopes, v)
+// SetRole sets the "role" field.
+func (u *APIKeyUpsert) SetRole(v schema.PermittedAction) *APIKeyUpsert {
+	u.Set(apikey.FieldRole, v)
 	return u
 }
 
-// UpdateScopes sets the "scopes" field to the value that was provided on create.
-func (u *APIKeyUpsert) UpdateScopes() *APIKeyUpsert {
-	u.SetExcluded(apikey.FieldScopes)
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *APIKeyUpsert) UpdateRole() *APIKeyUpsert {
+	u.SetExcluded(apikey.FieldRole)
+	return u
+}
+
+// SetFullAccess sets the "full_access" field.
+func (u *APIKeyUpsert) SetFullAccess(v bool) *APIKeyUpsert {
+	u.Set(apikey.FieldFullAccess, v)
+	return u
+}
+
+// UpdateFullAccess sets the "full_access" field to the value that was provided on create.
+func (u *APIKeyUpsert) UpdateFullAccess() *APIKeyUpsert {
+	u.SetExcluded(apikey.FieldFullAccess)
+	return u
+}
+
+// SetResources sets the "resources" field.
+func (u *APIKeyUpsert) SetResources(v []schema.APIKeyResource) *APIKeyUpsert {
+	u.Set(apikey.FieldResources, v)
+	return u
+}
+
+// UpdateResources sets the "resources" field to the value that was provided on create.
+func (u *APIKeyUpsert) UpdateResources() *APIKeyUpsert {
+	u.SetExcluded(apikey.FieldResources)
 	return u
 }
 
@@ -563,17 +630,45 @@ func (u *APIKeyUpsertOne) UpdateTokenHash() *APIKeyUpsertOne {
 	})
 }
 
-// SetScopes sets the "scopes" field.
-func (u *APIKeyUpsertOne) SetScopes(v []schema.APIKeyScope) *APIKeyUpsertOne {
+// SetRole sets the "role" field.
+func (u *APIKeyUpsertOne) SetRole(v schema.PermittedAction) *APIKeyUpsertOne {
 	return u.Update(func(s *APIKeyUpsert) {
-		s.SetScopes(v)
+		s.SetRole(v)
 	})
 }
 
-// UpdateScopes sets the "scopes" field to the value that was provided on create.
-func (u *APIKeyUpsertOne) UpdateScopes() *APIKeyUpsertOne {
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *APIKeyUpsertOne) UpdateRole() *APIKeyUpsertOne {
 	return u.Update(func(s *APIKeyUpsert) {
-		s.UpdateScopes()
+		s.UpdateRole()
+	})
+}
+
+// SetFullAccess sets the "full_access" field.
+func (u *APIKeyUpsertOne) SetFullAccess(v bool) *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetFullAccess(v)
+	})
+}
+
+// UpdateFullAccess sets the "full_access" field to the value that was provided on create.
+func (u *APIKeyUpsertOne) UpdateFullAccess() *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateFullAccess()
+	})
+}
+
+// SetResources sets the "resources" field.
+func (u *APIKeyUpsertOne) SetResources(v []schema.APIKeyResource) *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetResources(v)
+	})
+}
+
+// UpdateResources sets the "resources" field to the value that was provided on create.
+func (u *APIKeyUpsertOne) UpdateResources() *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateResources()
 	})
 }
 
@@ -907,17 +1002,45 @@ func (u *APIKeyUpsertBulk) UpdateTokenHash() *APIKeyUpsertBulk {
 	})
 }
 
-// SetScopes sets the "scopes" field.
-func (u *APIKeyUpsertBulk) SetScopes(v []schema.APIKeyScope) *APIKeyUpsertBulk {
+// SetRole sets the "role" field.
+func (u *APIKeyUpsertBulk) SetRole(v schema.PermittedAction) *APIKeyUpsertBulk {
 	return u.Update(func(s *APIKeyUpsert) {
-		s.SetScopes(v)
+		s.SetRole(v)
 	})
 }
 
-// UpdateScopes sets the "scopes" field to the value that was provided on create.
-func (u *APIKeyUpsertBulk) UpdateScopes() *APIKeyUpsertBulk {
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *APIKeyUpsertBulk) UpdateRole() *APIKeyUpsertBulk {
 	return u.Update(func(s *APIKeyUpsert) {
-		s.UpdateScopes()
+		s.UpdateRole()
+	})
+}
+
+// SetFullAccess sets the "full_access" field.
+func (u *APIKeyUpsertBulk) SetFullAccess(v bool) *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetFullAccess(v)
+	})
+}
+
+// UpdateFullAccess sets the "full_access" field to the value that was provided on create.
+func (u *APIKeyUpsertBulk) UpdateFullAccess() *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateFullAccess()
+	})
+}
+
+// SetResources sets the "resources" field.
+func (u *APIKeyUpsertBulk) SetResources(v []schema.APIKeyResource) *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetResources(v)
+	})
+}
+
+// UpdateResources sets the "resources" field to the value that was provided on create.
+func (u *APIKeyUpsertBulk) UpdateResources() *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateResources()
 	})
 }
 

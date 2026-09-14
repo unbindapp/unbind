@@ -87,7 +87,7 @@ func (self *Middleware) Authenticate(ctx huma.Context, next func(huma.Context)) 
 // authenticateAPIKey never falls back to cookies and never places a bearer
 // token in the context, so a key cannot reach anything that needs a session's
 // Kubernetes identity. Permission checks downstream are narrowed to the key's
-// scopes on top of the owner's own grants.
+// access on top of the owner's own grants.
 func (self *Middleware) authenticateAPIKey(ctx huma.Context, next func(huma.Context), token string) {
 	now := time.Now()
 	hash := auth.HashAPIKey(token)
@@ -102,7 +102,8 @@ func (self *Middleware) authenticateAPIKey(ctx huma.Context, next func(huma.Cont
 		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, "This endpoint cannot be used with an API key")
 		return
 	}
-	if action, known := oapi.ActionOf(op); known && action != oapi.Read && !permissions_repo.ScopesAllowWrites(key.Scopes) {
+	access := permissions_repo.APIKeyAccessOf(key)
+	if action, known := oapi.ActionOf(op); known && action != oapi.Read && !access.AllowsWrites() {
 		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, "This API key is read only")
 		return
 	}
@@ -111,7 +112,7 @@ func (self *Middleware) authenticateAPIKey(ctx huma.Context, next func(huma.Cont
 		log.Warnf("auth: record api key use: %v", err)
 	}
 
-	ctx = huma.WithContext(ctx, permissions_repo.WithAPIKeyScopes(ctx.Context(), key.Scopes))
+	ctx = huma.WithContext(ctx, permissions_repo.WithAPIKeyAccess(ctx.Context(), access))
 	ctx = huma.WithValue(ctx, apictx.UserKey, key.Edges.User)
 	ctx = huma.WithValue(ctx, authMethodKey, authMethodAPIKey)
 	next(ctx)

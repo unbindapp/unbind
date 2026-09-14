@@ -9,14 +9,16 @@ import (
 )
 
 type APIKeyResponse struct {
-	ID          uuid.UUID            `json:"id" format:"uuid"`
-	UserID      uuid.UUID            `json:"user_id" format:"uuid"`
-	Name        string               `json:"name"`
-	TokenPrefix string               `json:"token_prefix" doc:"First characters of the token, for recognizing the key. Never the full token."`
-	Scopes      []schema.APIKeyScope `json:"scopes" nullable:"false"`
-	ExpiresAt   *time.Time           `json:"expires_at,omitempty" required:"false"`
-	LastUsedAt  *time.Time           `json:"last_used_at,omitempty" required:"false"`
-	CreatedAt   time.Time            `json:"created_at"`
+	ID          uuid.UUID               `json:"id" format:"uuid"`
+	UserID      uuid.UUID               `json:"user_id" format:"uuid"`
+	Name        string                  `json:"name"`
+	TokenPrefix string                  `json:"token_prefix" doc:"First characters of the token, for recognizing the key. Never the full token."`
+	Role        schema.PermittedAction  `json:"role"`
+	FullAccess  bool                    `json:"full_access"`
+	Resources   []schema.APIKeyResource `json:"resources" nullable:"false"`
+	ExpiresAt   *time.Time              `json:"expires_at,omitempty" required:"false"`
+	LastUsedAt  *time.Time              `json:"last_used_at,omitempty" required:"false"`
+	CreatedAt   time.Time               `json:"created_at"`
 }
 
 // APIKeyCreatedResponse carries the plaintext token, returned once at creation.
@@ -29,16 +31,18 @@ func TransformAPIKeyEntity(entity *ent.APIKey) *APIKeyResponse {
 	if entity == nil {
 		return &APIKeyResponse{}
 	}
-	scopes := entity.Scopes
-	if scopes == nil {
-		scopes = []schema.APIKeyScope{}
+	resources := entity.Resources
+	if resources == nil {
+		resources = []schema.APIKeyResource{}
 	}
 	return &APIKeyResponse{
 		ID:          entity.ID,
 		UserID:      entity.UserID,
 		Name:        entity.Name,
 		TokenPrefix: entity.TokenPrefix,
-		Scopes:      scopes,
+		Role:        entity.Role,
+		FullAccess:  entity.FullAccess,
+		Resources:   resources,
 		ExpiresAt:   entity.ExpiresAt,
 		LastUsedAt:  entity.LastUsedAt,
 		CreatedAt:   entity.CreatedAt,

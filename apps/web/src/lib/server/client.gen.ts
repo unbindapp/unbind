@@ -1,29 +1,23 @@
 import { z } from 'zod';
 
-export const PermittedActionSchema = z.enum(['admin', 'edit', 'view']);
-
-export const ResourceSelectorSchema = z
-  .object({
-    id: z.string().optional(), // Specific resource ID
-    superuser: z.boolean().optional(), // Access to every resource of this type
-  })
-  .strip();
-
 export const ResourceTypeSchema = z.enum(['system', 'team', 'project', 'environment', 'service']);
 
-export const APIKeyScopeSchema = z
+export const APIKeyResourceSchema = z
   .object({
-    action: PermittedActionSchema,
-    resource_selector: ResourceSelectorSchema,
+    resource_id: z.string(),
     resource_type: ResourceTypeSchema,
   })
   .strip();
 
+export const PermittedActionSchema = z.enum(['admin', 'editor', 'viewer']);
+
 export const APIKeyCreateInputSchema = z
   .object({
     expires_at: z.string().datetime({ offset: true }).optional(), // When the key stops working. Omit for a key that never expires.
+    full_access: z.boolean(), // Reach everything you can, capped at role. Resources must be empty.
     name: z.string(),
-    scopes: z.array(APIKeyScopeSchema), // Grants the key carries. Each must be within what you can already do.
+    resources: z.array(APIKeyResourceSchema), // Resources the key is limited to, each reaching everything below it. Required unless full_access.
+    role: PermittedActionSchema, // Strongest action the key can perform. Never exceeds what you hold on a resource.
   })
   .strip();
 
@@ -31,10 +25,12 @@ export const APIKeyCreatedResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
     expires_at: z.string().datetime({ offset: true }).optional(),
+    full_access: z.boolean(),
     id: z.string(),
     last_used_at: z.string().datetime({ offset: true }).optional(),
     name: z.string(),
-    scopes: z.array(APIKeyScopeSchema),
+    resources: z.array(APIKeyResourceSchema),
+    role: PermittedActionSchema,
     token: z.string(), // The full API key. Shown once, store it now.
     token_prefix: z.string(), // First characters of the token, for recognizing the key. Never the full token.
     user_id: z.string(),
@@ -51,10 +47,12 @@ export const APIKeyResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
     expires_at: z.string().datetime({ offset: true }).optional(),
+    full_access: z.boolean(),
     id: z.string(),
     last_used_at: z.string().datetime({ offset: true }).optional(),
     name: z.string(),
-    scopes: z.array(APIKeyScopeSchema),
+    resources: z.array(APIKeyResourceSchema),
+    role: PermittedActionSchema,
     token_prefix: z.string(), // First characters of the token, for recognizing the key. Never the full token.
     user_id: z.string(),
   })
@@ -1841,6 +1839,13 @@ export const GrantGroupPermissionInputBodySchema = z
   })
   .strip();
 
+export const ResourceSelectorSchema = z
+  .object({
+    id: z.string().optional(), // Specific resource ID
+    superuser: z.boolean().optional(), // Access to every resource of this type
+  })
+  .strip();
+
 export const PermissionResponseSchema = z
   .object({
     action: PermittedActionSchema,
@@ -2720,6 +2725,7 @@ export const VariableResponseItemSchema = z
 
 export const VariableResponseSchema = z
   .object({
+    values_redacted: z.boolean(), // True when the caller may only see names. Every value and resolved value is blank; editing needs the editor role.
     variables: z.array(VariableResponseItemSchema),
   })
   .strip();
@@ -2750,10 +2756,9 @@ export const WebhookUpdateInputSchema = z
   })
   .strip();
 
-export type PermittedAction = z.infer<typeof PermittedActionSchema>;
-export type ResourceSelector = z.infer<typeof ResourceSelectorSchema>;
 export type ResourceType = z.infer<typeof ResourceTypeSchema>;
-export type APIKeyScope = z.infer<typeof APIKeyScopeSchema>;
+export type APIKeyResource = z.infer<typeof APIKeyResourceSchema>;
+export type PermittedAction = z.infer<typeof PermittedActionSchema>;
 export type APIKeyCreateInput = z.infer<typeof APIKeyCreateInputSchema>;
 export type APIKeyCreatedResponse = z.infer<typeof APIKeyCreatedResponseSchema>;
 export type APIKeyDeleteInput = z.infer<typeof APIKeyDeleteInputSchema>;
@@ -2968,6 +2973,7 @@ export type GithubWatchPathSuggestionsResponseBody = z.infer<
   typeof GithubWatchPathSuggestionsResponseBodySchema
 >;
 export type GrantGroupPermissionInputBody = z.infer<typeof GrantGroupPermissionInputBodySchema>;
+export type ResourceSelector = z.infer<typeof ResourceSelectorSchema>;
 export type PermissionResponse = z.infer<typeof PermissionResponseSchema>;
 export type GrantGroupPermissionResponseBody = z.infer<
   typeof GrantGroupPermissionResponseBodySchema

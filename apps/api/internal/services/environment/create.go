@@ -88,7 +88,7 @@ func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requester
 	resp.Permissions = permSet.EnvironmentActions(input.TeamID, input.ProjectID, environment.ID)
 
 	// Summarizes services
-	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, []uuid.UUID{environment.ID})
+	counts, providerSummaries, err := self.repo.Service().SummarizeServices(ctx, []uuid.UUID{environment.ID}, nil)
 	if err != nil {
 		return nil, err
 	}

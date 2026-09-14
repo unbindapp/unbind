@@ -81,15 +81,43 @@ func (_u *APIKeyUpdate) SetNillableTokenHash(v *string) *APIKeyUpdate {
 	return _u
 }
 
-// SetScopes sets the "scopes" field.
-func (_u *APIKeyUpdate) SetScopes(v []schema.APIKeyScope) *APIKeyUpdate {
-	_u.mutation.SetScopes(v)
+// SetRole sets the "role" field.
+func (_u *APIKeyUpdate) SetRole(v schema.PermittedAction) *APIKeyUpdate {
+	_u.mutation.SetRole(v)
 	return _u
 }
 
-// AppendScopes appends value to the "scopes" field.
-func (_u *APIKeyUpdate) AppendScopes(v []schema.APIKeyScope) *APIKeyUpdate {
-	_u.mutation.AppendScopes(v)
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *APIKeyUpdate) SetNillableRole(v *schema.PermittedAction) *APIKeyUpdate {
+	if v != nil {
+		_u.SetRole(*v)
+	}
+	return _u
+}
+
+// SetFullAccess sets the "full_access" field.
+func (_u *APIKeyUpdate) SetFullAccess(v bool) *APIKeyUpdate {
+	_u.mutation.SetFullAccess(v)
+	return _u
+}
+
+// SetNillableFullAccess sets the "full_access" field if the given value is not nil.
+func (_u *APIKeyUpdate) SetNillableFullAccess(v *bool) *APIKeyUpdate {
+	if v != nil {
+		_u.SetFullAccess(*v)
+	}
+	return _u
+}
+
+// SetResources sets the "resources" field.
+func (_u *APIKeyUpdate) SetResources(v []schema.APIKeyResource) *APIKeyUpdate {
+	_u.mutation.SetResources(v)
+	return _u
+}
+
+// AppendResources appends value to the "resources" field.
+func (_u *APIKeyUpdate) AppendResources(v []schema.APIKeyResource) *APIKeyUpdate {
+	_u.mutation.AppendResources(v)
 	return _u
 }
 
@@ -206,6 +234,11 @@ func (_u *APIKeyUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "APIKey.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Role(); ok {
+		if err := apikey.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "APIKey.role": %w`, err)}
+		}
+	}
 	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "APIKey.user"`)
 	}
@@ -242,12 +275,18 @@ func (_u *APIKeyUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.TokenHash(); ok {
 		_spec.SetField(apikey.FieldTokenHash, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Scopes(); ok {
-		_spec.SetField(apikey.FieldScopes, field.TypeJSON, value)
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(apikey.FieldRole, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AppendedScopes(); ok {
+	if value, ok := _u.mutation.FullAccess(); ok {
+		_spec.SetField(apikey.FieldFullAccess, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Resources(); ok {
+		_spec.SetField(apikey.FieldResources, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedResources(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, apikey.FieldScopes, value)
+			sqljson.Append(u, apikey.FieldResources, value)
 		})
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
@@ -361,15 +400,43 @@ func (_u *APIKeyUpdateOne) SetNillableTokenHash(v *string) *APIKeyUpdateOne {
 	return _u
 }
 
-// SetScopes sets the "scopes" field.
-func (_u *APIKeyUpdateOne) SetScopes(v []schema.APIKeyScope) *APIKeyUpdateOne {
-	_u.mutation.SetScopes(v)
+// SetRole sets the "role" field.
+func (_u *APIKeyUpdateOne) SetRole(v schema.PermittedAction) *APIKeyUpdateOne {
+	_u.mutation.SetRole(v)
 	return _u
 }
 
-// AppendScopes appends value to the "scopes" field.
-func (_u *APIKeyUpdateOne) AppendScopes(v []schema.APIKeyScope) *APIKeyUpdateOne {
-	_u.mutation.AppendScopes(v)
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *APIKeyUpdateOne) SetNillableRole(v *schema.PermittedAction) *APIKeyUpdateOne {
+	if v != nil {
+		_u.SetRole(*v)
+	}
+	return _u
+}
+
+// SetFullAccess sets the "full_access" field.
+func (_u *APIKeyUpdateOne) SetFullAccess(v bool) *APIKeyUpdateOne {
+	_u.mutation.SetFullAccess(v)
+	return _u
+}
+
+// SetNillableFullAccess sets the "full_access" field if the given value is not nil.
+func (_u *APIKeyUpdateOne) SetNillableFullAccess(v *bool) *APIKeyUpdateOne {
+	if v != nil {
+		_u.SetFullAccess(*v)
+	}
+	return _u
+}
+
+// SetResources sets the "resources" field.
+func (_u *APIKeyUpdateOne) SetResources(v []schema.APIKeyResource) *APIKeyUpdateOne {
+	_u.mutation.SetResources(v)
+	return _u
+}
+
+// AppendResources appends value to the "resources" field.
+func (_u *APIKeyUpdateOne) AppendResources(v []schema.APIKeyResource) *APIKeyUpdateOne {
+	_u.mutation.AppendResources(v)
 	return _u
 }
 
@@ -499,6 +566,11 @@ func (_u *APIKeyUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "APIKey.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Role(); ok {
+		if err := apikey.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "APIKey.role": %w`, err)}
+		}
+	}
 	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "APIKey.user"`)
 	}
@@ -552,12 +624,18 @@ func (_u *APIKeyUpdateOne) sqlSave(ctx context.Context) (_node *APIKey, err erro
 	if value, ok := _u.mutation.TokenHash(); ok {
 		_spec.SetField(apikey.FieldTokenHash, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Scopes(); ok {
-		_spec.SetField(apikey.FieldScopes, field.TypeJSON, value)
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(apikey.FieldRole, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AppendedScopes(); ok {
+	if value, ok := _u.mutation.FullAccess(); ok {
+		_spec.SetField(apikey.FieldFullAccess, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Resources(); ok {
+		_spec.SetField(apikey.FieldResources, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedResources(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, apikey.FieldScopes, value)
+			sqljson.Append(u, apikey.FieldResources, value)
 		})
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {

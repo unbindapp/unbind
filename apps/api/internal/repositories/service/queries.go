@@ -254,7 +254,10 @@ func (self *ServiceRepository) GetDeploymentNamespace(ctx context.Context, servi
 }
 
 // Summarize services in environment
-func (self *ServiceRepository) SummarizeServices(ctx context.Context, environmentIDs []uuid.UUID) (counts map[uuid.UUID]int, icons map[uuid.UUID][]string, err error) {
+// SummarizeServices counts services and collects their icons per environment,
+// limited to what authPredicate allows so callers who see an environment only
+// as a path do not learn about services they cannot reach.
+func (self *ServiceRepository) SummarizeServices(ctx context.Context, environmentIDs []uuid.UUID, authPredicate predicate.Service) (counts map[uuid.UUID]int, icons map[uuid.UUID][]string, err error) {
 	counts = make(map[uuid.UUID]int)
 
 	// Maps to not duplicate icons
@@ -264,11 +267,14 @@ func (self *ServiceRepository) SummarizeServices(ctx context.Context, environmen
 		iconSets[envID] = make(map[string]struct{})
 	}
 
-	services, err := self.base.DB.Service.Query().
+	q := self.base.DB.Service.Query().
 		Select(service.FieldEnvironmentID).
 		Where(service.EnvironmentIDIn(environmentIDs...)).
-		WithServiceConfig().
-		All(ctx)
+		WithServiceConfig()
+	if authPredicate != nil {
+		q = q.Where(authPredicate)
+	}
+	services, err := q.All(ctx)
 	if err != nil {
 		return
 	}

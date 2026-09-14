@@ -158,7 +158,7 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_Success() {
 		Once()
 
 	suite.MockServiceRepo.EXPECT().
-		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironment.ID}).
+		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironment.ID}, mock.Anything).
 		Return(
 			map[uuid.UUID]int{suite.testEnvironment.ID: 0},
 			map[uuid.UUID][]string{suite.testEnvironment.ID: {}},
@@ -428,7 +428,7 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_SuccessAsFirstEnviron
 		Once()
 
 	suite.MockServiceRepo.EXPECT().
-		SummarizeServices(suite.Ctx, []uuid.UUID{firstEnvironment.ID}).
+		SummarizeServices(suite.Ctx, []uuid.UUID{firstEnvironment.ID}, mock.Anything).
 		Return(
 			map[uuid.UUID]int{firstEnvironment.ID: 0},
 			map[uuid.UUID][]string{firstEnvironment.ID: {}},

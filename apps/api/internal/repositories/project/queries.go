@@ -27,10 +27,16 @@ func (self *ProjectRepository) GetTeamID(ctx context.Context, id uuid.UUID) (uui
 	return team.ID, nil
 }
 
-func (self *ProjectRepository) GetByTeam(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, sortField models.SortByField, sortOrder models.SortOrder) ([]*ent.Project, error) {
+// GetByTeam lists a team's projects, nesting only the environments the
+// environment predicate allows so a caller who can see a project through one
+// environment does not learn its siblings.
+func (self *ProjectRepository) GetByTeam(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, environmentPredicate predicate.Environment, sortField models.SortByField, sortOrder models.SortOrder) ([]*ent.Project, error) {
 	q := self.base.DB.Project.Query().
 		Where(project.TeamID(teamID)).
 		WithEnvironments(func(eq *ent.EnvironmentQuery) {
+			if environmentPredicate != nil {
+				eq.Where(environmentPredicate)
+			}
 			eq.Order(ent.Asc(environment.FieldCreatedAt))
 		})
 

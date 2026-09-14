@@ -65,9 +65,9 @@ const (
 	// Admin can perform any action (create, read, update, delete)
 	ActionAdmin PermittedAction = "admin"
 	// Editor can perform read and update actions
-	ActionEditor PermittedAction = "edit"
+	ActionEditor PermittedAction = "editor"
 	// Viewer can only perform read actions
-	ActionViewer PermittedAction = "view"
+	ActionViewer PermittedAction = "viewer"
 )
 
 var allPermittedActions = []PermittedAction{

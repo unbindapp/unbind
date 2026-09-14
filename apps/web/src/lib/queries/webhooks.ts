@@ -10,8 +10,7 @@ import {
 import type { WebhookEvent, WebhookResponse } from "@/lib/server/client.gen";
 
 export type TWebhooksListInput =
-  | { type: "project"; teamId: string; projectId: string }
-  | { type: "team"; teamId: string };
+  { type: "project"; teamId: string; projectId: string } | { type: "team"; teamId: string };
 
 export const queryKeyWebhooks = {
   list: (input: { type: "project" | "team"; teamId: string; projectId?: string }) =>

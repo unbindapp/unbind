@@ -255,7 +255,10 @@ export const useVariablesUtils = ({
     invalidate: () => queryClient.invalidateQueries({ queryKey }),
     refetch: () => queryClient.refetchQueries({ queryKey }),
     setVariables: (variables: TVariableShallow[]) => {
-      queryClient.setQueryData<TVariablesList>(queryKey, () => ({ variables }));
+      queryClient.setQueryData<TVariablesList>(queryKey, (previous) => ({
+        variables,
+        values_redacted: previous?.values_redacted ?? false,
+      }));
     },
   };
 };

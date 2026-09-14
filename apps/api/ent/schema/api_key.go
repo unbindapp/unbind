@@ -26,7 +26,9 @@ func (APIKey) Fields() []ent.Field {
 		field.String("name").NotEmpty(),
 		field.String("token_prefix"),
 		field.String("token_hash").Unique().Sensitive(),
-		field.JSON("scopes", []APIKeyScope{}),
+		field.Enum("role").GoType(PermittedAction("")).Comment("Strongest action the key can perform anywhere"),
+		field.Bool("full_access").Default(false).Comment("Reach everything the owner can, capped at role"),
+		field.JSON("resources", []APIKeyResource{}).Comment("Resources the key is limited to; empty when full_access"),
 		field.Time("expires_at").Optional().Nillable(),
 		field.Time("last_used_at").Optional().Nillable(),
 		field.UUID("user_id", uuid.UUID{}),
@@ -47,10 +49,9 @@ func (APIKey) Annotations() []schema.Annotation {
 	}
 }
 
-// APIKeyScope is one grant carried by an API key. It uses the same vocabulary as
-// a group permission and can never exceed what the key's owner holds.
-type APIKeyScope struct {
-	Action           PermittedAction  `json:"action" required:"true"`
-	ResourceType     ResourceType     `json:"resource_type" required:"true"`
-	ResourceSelector ResourceSelector `json:"resource_selector" required:"true"`
+// APIKeyResource is one resource an API key is limited to. The key reaches the
+// resource and everything below it, at the key's role, provided the owner can.
+type APIKeyResource struct {
+	ResourceType ResourceType `json:"resource_type" required:"true"`
+	ResourceID   uuid.UUID    `json:"resource_id" required:"true" format:"uuid"`
 }

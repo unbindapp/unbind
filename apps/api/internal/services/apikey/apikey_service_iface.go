@@ -11,9 +11,10 @@ import (
 
 // APIKeyServiceInterface ...
 type APIKeyServiceInterface interface {
-	// Create issues a key for the requester. Every scope is checked against the
-	// requester's own permissions, so a key starts as a subset of its owner. The
-	// checker keeps it a subset afterwards by intersecting at request time.
+	// Create issues a key for the requester. A scoped key must name resources the
+	// requester already holds at the key's role. A full-access key needs no check
+	// here because the checker intersects it with the owner's grants on every
+	// request, so it can never reach further than the owner.
 	Create(ctx context.Context, requesterUserID uuid.UUID, input *models.APIKeyCreateInput) (*models.APIKeyCreatedResponse, error)
 	// Delete revokes a key. Owners revoke their own keys; system admins revoke
 	// anyone's. Everyone else sees not found, so key ids cannot be probed.

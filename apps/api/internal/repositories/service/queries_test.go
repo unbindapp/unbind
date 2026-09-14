@@ -658,7 +658,7 @@ func (suite *ServiceQueriesSuite) TestSummarizeServices() {
 			SaveX(suite.Ctx)
 
 		environmentIDs := []uuid.UUID{suite.testEnvironment.ID, env2.ID}
-		counts, icons, err := suite.serviceRepo.SummarizeServices(suite.Ctx, environmentIDs)
+		counts, icons, err := suite.serviceRepo.SummarizeServices(suite.Ctx, environmentIDs, nil)
 
 		suite.NoError(err)
 		suite.NotNil(counts)
@@ -671,9 +671,33 @@ func (suite *ServiceQueriesSuite) TestSummarizeServices() {
 		suite.Contains(icons[env2.ID], "python")
 	})
 
+	suite.Run("SummarizeServices Honors Auth Predicate", func() {
+		hidden := suite.DB.Service.Create().
+			SetType(schema.ServiceTypeDockerimage).
+			SetKubernetesName("hidden-service").
+			SetName("Hidden Service").
+			SetEnvironmentID(suite.testEnvironment.ID).
+			SetKubernetesSecret("hidden-secret").
+			SaveX(suite.Ctx)
+		suite.DB.ServiceConfig.Create().
+			SetServiceID(hidden.ID).
+			SetBuilder(schema.ServiceBuilderDocker).
+			SetIcon("hidden").
+			SaveX(suite.Ctx)
+
+		all, allIcons, err := suite.serviceRepo.SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironment.ID}, nil)
+		suite.NoError(err)
+		suite.Contains(allIcons[suite.testEnvironment.ID], "hidden")
+
+		counts, icons, err := suite.serviceRepo.SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironment.ID}, entService.IDNEQ(hidden.ID))
+		suite.NoError(err)
+		suite.Equal(all[suite.testEnvironment.ID]-1, counts[suite.testEnvironment.ID])
+		suite.NotContains(icons[suite.testEnvironment.ID], "hidden")
+	})
+
 	suite.Run("SummarizeServices Empty Environments", func() {
 		environmentIDs := []uuid.UUID{uuid.New(), uuid.New()}
-		counts, icons, err := suite.serviceRepo.SummarizeServices(suite.Ctx, environmentIDs)
+		counts, icons, err := suite.serviceRepo.SummarizeServices(suite.Ctx, environmentIDs, nil)
 
 		suite.NoError(err)
 		suite.NotNil(counts)
@@ -687,7 +711,7 @@ func (suite *ServiceQueriesSuite) TestSummarizeServices() {
 
 	suite.Run("SummarizeServices Error when DB closed", func() {
 		suite.DB.Close()
-		_, _, err := suite.serviceRepo.SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironment.ID})
+		_, _, err := suite.serviceRepo.SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironment.ID}, nil)
 		suite.Error(err)
 		suite.ErrorContains(err, "database is closed")
 	})

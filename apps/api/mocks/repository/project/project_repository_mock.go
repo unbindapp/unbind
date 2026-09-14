@@ -344,8 +344,8 @@ func (_c *ProjectRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.
 }
 
 // GetByTeam provides a mock function for the type ProjectRepositoryMock
-func (_mock *ProjectRepositoryMock) GetByTeam(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, sortField models.SortByField, sortOrder models.SortOrder) ([]*ent.Project, error) {
-	ret := _mock.Called(ctx, teamID, authPredicate, sortField, sortOrder)
+func (_mock *ProjectRepositoryMock) GetByTeam(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, environmentPredicate predicate.Environment, sortField models.SortByField, sortOrder models.SortOrder) ([]*ent.Project, error) {
+	ret := _mock.Called(ctx, teamID, authPredicate, environmentPredicate, sortField, sortOrder)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetByTeam")
@@ -353,18 +353,18 @@ func (_mock *ProjectRepositoryMock) GetByTeam(ctx context.Context, teamID uuid.U
 
 	var r0 []*ent.Project
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, predicate.Project, models.SortByField, models.SortOrder) ([]*ent.Project, error)); ok {
-		return returnFunc(ctx, teamID, authPredicate, sortField, sortOrder)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, predicate.Project, predicate.Environment, models.SortByField, models.SortOrder) ([]*ent.Project, error)); ok {
+		return returnFunc(ctx, teamID, authPredicate, environmentPredicate, sortField, sortOrder)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, predicate.Project, models.SortByField, models.SortOrder) []*ent.Project); ok {
-		r0 = returnFunc(ctx, teamID, authPredicate, sortField, sortOrder)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, predicate.Project, predicate.Environment, models.SortByField, models.SortOrder) []*ent.Project); ok {
+		r0 = returnFunc(ctx, teamID, authPredicate, environmentPredicate, sortField, sortOrder)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*ent.Project)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, predicate.Project, models.SortByField, models.SortOrder) error); ok {
-		r1 = returnFunc(ctx, teamID, authPredicate, sortField, sortOrder)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, predicate.Project, predicate.Environment, models.SortByField, models.SortOrder) error); ok {
+		r1 = returnFunc(ctx, teamID, authPredicate, environmentPredicate, sortField, sortOrder)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -380,13 +380,14 @@ type ProjectRepositoryMock_GetByTeam_Call struct {
 //   - ctx context.Context
 //   - teamID uuid.UUID
 //   - authPredicate predicate.Project
+//   - environmentPredicate predicate.Environment
 //   - sortField models.SortByField
 //   - sortOrder models.SortOrder
-func (_e *ProjectRepositoryMock_Expecter) GetByTeam(ctx any, teamID any, authPredicate any, sortField any, sortOrder any) *ProjectRepositoryMock_GetByTeam_Call {
-	return &ProjectRepositoryMock_GetByTeam_Call{Call: _e.mock.On("GetByTeam", ctx, teamID, authPredicate, sortField, sortOrder)}
+func (_e *ProjectRepositoryMock_Expecter) GetByTeam(ctx any, teamID any, authPredicate any, environmentPredicate any, sortField any, sortOrder any) *ProjectRepositoryMock_GetByTeam_Call {
+	return &ProjectRepositoryMock_GetByTeam_Call{Call: _e.mock.On("GetByTeam", ctx, teamID, authPredicate, environmentPredicate, sortField, sortOrder)}
 }
 
-func (_c *ProjectRepositoryMock_GetByTeam_Call) Run(run func(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, sortField models.SortByField, sortOrder models.SortOrder)) *ProjectRepositoryMock_GetByTeam_Call {
+func (_c *ProjectRepositoryMock_GetByTeam_Call) Run(run func(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, environmentPredicate predicate.Environment, sortField models.SortByField, sortOrder models.SortOrder)) *ProjectRepositoryMock_GetByTeam_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -400,13 +401,17 @@ func (_c *ProjectRepositoryMock_GetByTeam_Call) Run(run func(ctx context.Context
 		if args[2] != nil {
 			arg2 = args[2].(predicate.Project)
 		}
-		var arg3 models.SortByField
+		var arg3 predicate.Environment
 		if args[3] != nil {
-			arg3 = args[3].(models.SortByField)
+			arg3 = args[3].(predicate.Environment)
 		}
-		var arg4 models.SortOrder
+		var arg4 models.SortByField
 		if args[4] != nil {
-			arg4 = args[4].(models.SortOrder)
+			arg4 = args[4].(models.SortByField)
+		}
+		var arg5 models.SortOrder
+		if args[5] != nil {
+			arg5 = args[5].(models.SortOrder)
 		}
 		run(
 			arg0,
@@ -414,6 +419,7 @@ func (_c *ProjectRepositoryMock_GetByTeam_Call) Run(run func(ctx context.Context
 			arg2,
 			arg3,
 			arg4,
+			arg5,
 		)
 	})
 	return _c
@@ -424,7 +430,7 @@ func (_c *ProjectRepositoryMock_GetByTeam_Call) Return(projects []*ent.Project, 
 	return _c
 }
 
-func (_c *ProjectRepositoryMock_GetByTeam_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, sortField models.SortByField, sortOrder models.SortOrder) ([]*ent.Project, error)) *ProjectRepositoryMock_GetByTeam_Call {
+func (_c *ProjectRepositoryMock_GetByTeam_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, environmentPredicate predicate.Environment, sortField models.SortByField, sortOrder models.SortOrder) ([]*ent.Project, error)) *ProjectRepositoryMock_GetByTeam_Call {
 	_c.Call.Return(run)
 	return _c
 }

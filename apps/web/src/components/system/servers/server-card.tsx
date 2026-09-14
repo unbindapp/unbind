@@ -119,8 +119,7 @@ function ServerPanelOrPlaceholder({
   isPlaceholder,
   children,
 }: { children: ReactElement } & (
-  | { server: TServer; isPlaceholder?: never }
-  | { server?: never; isPlaceholder: true }
+  { server: TServer; isPlaceholder?: never } | { server?: never; isPlaceholder: true }
 )) {
   if (isPlaceholder) {
     return children;

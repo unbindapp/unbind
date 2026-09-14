@@ -3,11 +3,13 @@
 package apikey
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
 const (
@@ -25,8 +27,12 @@ const (
 	FieldTokenPrefix = "token_prefix"
 	// FieldTokenHash holds the string denoting the token_hash field in the database.
 	FieldTokenHash = "token_hash"
-	// FieldScopes holds the string denoting the scopes field in the database.
-	FieldScopes = "scopes"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
+	// FieldFullAccess holds the string denoting the full_access field in the database.
+	FieldFullAccess = "full_access"
+	// FieldResources holds the string denoting the resources field in the database.
+	FieldResources = "resources"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
 	// FieldLastUsedAt holds the string denoting the last_used_at field in the database.
@@ -54,7 +60,9 @@ var Columns = []string{
 	FieldName,
 	FieldTokenPrefix,
 	FieldTokenHash,
-	FieldScopes,
+	FieldRole,
+	FieldFullAccess,
+	FieldResources,
 	FieldExpiresAt,
 	FieldLastUsedAt,
 	FieldUserID,
@@ -79,9 +87,21 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DefaultFullAccess holds the default value on creation for the "full_access" field.
+	DefaultFullAccess bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
+func RoleValidator(r schema.PermittedAction) error {
+	switch r {
+	case "admin", "editor", "viewer":
+		return nil
+	default:
+		return fmt.Errorf("apikey: invalid enum value for role field: %q", r)
+	}
+}
 
 // OrderOption defines the ordering options for the APIKey queries.
 type OrderOption func(*sql.Selector)
@@ -114,6 +134,16 @@ func ByTokenPrefix(opts ...sql.OrderTermOption) OrderOption {
 // ByTokenHash orders the results by the token_hash field.
 func ByTokenHash(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTokenHash, opts...).ToFunc()
+}
+
+// ByRole orders the results by the role field.
+func ByRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByFullAccess orders the results by the full_access field.
+func ByFullAccess(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFullAccess, opts...).ToFunc()
 }
 
 // ByExpiresAt orders the results by the expires_at field.
