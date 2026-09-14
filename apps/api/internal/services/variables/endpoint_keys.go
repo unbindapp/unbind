@@ -42,16 +42,17 @@ func publicBases(serviceType schema.ServiceType) []string {
 // ChangedEndpointKeys lists the endpoint keys of a service whose rendered value
 // differs between two of its configs. Hosts, ports, allocated node ports and the
 // public flag all move an address, so all of them are compared.
-func ChangedEndpointKeys(serviceType schema.ServiceType, before, after *ent.ServiceConfig) []string {
+func ChangedEndpointKeys(service *ent.Service, before, after *ent.ServiceConfig) []string {
 	changed := make(map[string]struct{})
+	serviceType, dbType := service.Type, databaseType(service)
 
 	collectChangedKeys(changed, privateBases(serviceType),
-		privateEndpointsFor(serviceType, before, changeSentinel),
-		privateEndpointsFor(serviceType, after, changeSentinel),
+		privateEndpointsFor(serviceType, dbType, before, changeSentinel),
+		privateEndpointsFor(serviceType, dbType, after, changeSentinel),
 	)
 	collectChangedKeys(changed, publicBases(serviceType),
-		publicEndpointsFor(before, sentinelAddress),
-		publicEndpointsFor(after, sentinelAddress),
+		publicEndpointsFor(serviceType, dbType, before, sentinelAddress),
+		publicEndpointsFor(serviceType, dbType, after, sentinelAddress),
 	)
 
 	if len(changed) == 0 {

@@ -84,7 +84,7 @@ func (self *ServiceService) touchServiceConfig(ctx context.Context, touched touc
 	touch.config = true
 	touch.service = service
 
-	keys := variables_service.ChangedEndpointKeys(service.Type, before, after)
+	keys := variables_service.ChangedEndpointKeys(service, before, after)
 	self.touchReferences(ctx, touched, schema.VariableReferenceSourceTypeService, service.ID, keys)
 }
 

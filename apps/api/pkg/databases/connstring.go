@@ -55,6 +55,18 @@ func DefaultHTTPPort(databaseType string) int32 {
 	return 0
 }
 
+// LabelHTTP names an engine's HTTP protocol in the keys that address it
+const LabelHTTP = "HTTP"
+
+// ProtocolLabel names the protocol an engine answers on a port. The primary protocol
+// has no label, so the keys naming it stay unsuffixed on every engine.
+func ProtocolLabel(databaseType string, port int32) string {
+	if port > 0 && port == DefaultHTTPPort(databaseType) {
+		return LabelHTTP
+	}
+	return ""
+}
+
 // DefaultDatabaseName is the database an engine connects to when none is named
 func DefaultDatabaseName(databaseType string) string {
 	switch databaseType {

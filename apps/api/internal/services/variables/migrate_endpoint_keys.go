@@ -8,11 +8,13 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/vartemplate"
+	"github.com/unbindapp/unbind-api/pkg/databases"
 )
 
-// MigrateEndpointKeys rewrites references that use a pre-rename endpoint key
-// (UNBIND_INTERNAL_URL and friends) into the public/private names. Old keys still
-// resolve, so this only has to run once and a failure is not fatal.
+// MigrateEndpointKeys rewrites references that use an outdated endpoint key into the
+// name that replaced it: the pre-rename names (UNBIND_INTERNAL_URL and friends), the
+// keys Unbind used to store on a database, and the port-suffixed keys that now name a
+// protocol. Old keys still resolve, so a failure here is not fatal.
 func (self *VariablesService) MigrateEndpointKeys(ctx context.Context) error {
 	teams, err := self.repo.Team().GetAll(ctx, nil)
 	if err != nil {
@@ -59,7 +61,10 @@ func (self *VariablesService) MigrateEndpointKeys(ctx context.Context) error {
 				if !ok {
 					return "", false
 				}
-				replacement := LegacyDatabaseKey(source, token.Key)
+				if replacement := LegacyDatabaseKey(source, token.Key); replacement != "" {
+					return replacement, true
+				}
+				replacement := relabelledEndpointKey(source, token.Key)
 				return replacement, replacement != ""
 			})
 			if changed || databaseChanged {
@@ -81,6 +86,30 @@ func (self *VariablesService) MigrateEndpointKeys(ctx context.Context) error {
 		log.Infof("Renamed endpoint key references in %d services", migrated)
 	}
 	return nil
+}
+
+// relabelledEndpointKey turns a key that names a database endpoint by container port
+// into the one that names it by protocol, empty when the key already reads right. The
+// bare key carries no tiebreaker, so a key that has one is left as it is.
+func relabelledEndpointKey(source *ent.Service, key string) string {
+	ref, ok := vartemplate.ParseEndpointKey(key)
+	if !ok || ref.Legacy || ref.Port == 0 {
+		return ""
+	}
+	dbType := databaseType(source)
+	if dbType == "" {
+		return ""
+	}
+	switch ref.Port {
+	case databases.DefaultHTTPPort(dbType):
+		return vartemplate.EndpointKey(ref.Base, databases.LabelHTTP, ref.Tiebreak)
+	case databases.DefaultPort(dbType):
+		if ref.Tiebreak > 1 {
+			return ""
+		}
+		return ref.Base
+	}
+	return ""
 }
 
 // renamedEndpointKey turns a positional legacy key into the key that names the same

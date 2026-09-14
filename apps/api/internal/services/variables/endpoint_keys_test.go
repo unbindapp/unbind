@@ -159,7 +159,24 @@ func TestChangedEndpointKeys(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, ChangedEndpointKeys(tt.serviceType, tt.before, tt.after))
+			service := &ent.Service{Type: tt.serviceType}
+			assert.Equal(t, tt.want, ChangedEndpointKeys(service, tt.before, tt.after))
 		})
 	}
+}
+
+// An engine that speaks two protocols names them, so the key that changed says which
+// protocol moved rather than which port number it sat on
+func TestChangedEndpointKeysNamesProtocols(t *testing.T) {
+	service := &ent.Service{Type: schema.ServiceTypeDatabase, Database: utils.ToPtr("clickhouse")}
+	nodePort := func(port, nodePort int32) schema.PortSpec {
+		return schema.PortSpec{Port: port, IsNodePort: true, NodePort: utils.ToPtr(nodePort)}
+	}
+	before := &ent.ServiceConfig{IsPublic: true, Ports: []schema.PortSpec{nodePort(9000, 30001), nodePort(8123, 30002)}}
+	after := &ent.ServiceConfig{IsPublic: true, Ports: []schema.PortSpec{nodePort(9000, 30001), nodePort(8123, 30003)}}
+
+	assert.Equal(t, []string{
+		"UNBIND_DATABASE_URL_PUBLIC_HTTP",
+		"UNBIND_PORT_PUBLIC_HTTP",
+	}, ChangedEndpointKeys(service, before, after))
 }

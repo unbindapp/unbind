@@ -2,6 +2,7 @@ package variables_service
 
 import (
 	"context"
+	"slices"
 	"sort"
 
 	"github.com/unbindapp/unbind-api/ent"
@@ -19,25 +20,27 @@ import (
 const httpsPort int32 = 443
 
 // serviceEndpoint is one address a service can be reached at. Target is the
-// container port the endpoint fronts and is what suffixes the endpoint key, so
-// UNBIND_URL_PRIVATE_8080 and UNBIND_URL_PUBLIC_8080 name the same logical port.
+// container port the endpoint fronts, so UNBIND_URL_PRIVATE_8080 and
+// UNBIND_URL_PUBLIC_8080 name the same logical port. Label is the protocol the
+// endpoint carries when the engine speaks more than one, and names the key instead.
 type serviceEndpoint struct {
 	Host     string
 	IsDomain bool
 	Port     int32
 	Target   int32
+	Label    string
 	L4       bool
 }
 
 // privateEndpoints lists the in-cluster addresses of a service, one per TCP port
 func privateEndpoints(service *ent.Service, namespace string) []serviceEndpoint {
 	host := utils.ServiceFQDN(utils.InternalServiceName(databaseType(service), service.KubernetesName), namespace)
-	return privateEndpointsFor(service.Type, service.Edges.ServiceConfig, host)
+	return privateEndpointsFor(service.Type, databaseType(service), service.Edges.ServiceConfig, host)
 }
 
 // privateEndpointsFor is the config-only form, used where only the shape of the
 // endpoints matters and the address does not
-func privateEndpointsFor(serviceType schema.ServiceType, config *ent.ServiceConfig, host string) []serviceEndpoint {
+func privateEndpointsFor(serviceType schema.ServiceType, databaseType string, config *ent.ServiceConfig, host string) []serviceEndpoint {
 	ports := configInternalPorts(serviceType, config)
 	endpoints := make([]serviceEndpoint, 0, len(ports))
 	for _, port := range ports {
@@ -46,21 +49,22 @@ func privateEndpointsFor(serviceType schema.ServiceType, config *ent.ServiceConf
 			IsDomain: true,
 			Port:     port,
 			Target:   port,
+			Label:    databases.ProtocolLabel(databaseType, port),
 		})
 	}
-	return endpoints
+	return orderByProtocol(endpoints)
 }
 
 // publicEndpoints lists the internet-facing addresses of a service. Hosts come
-// first so the primary key resolves to a domain when the service has one, falling
-// back to the cluster's own address for raw L4 ports that no host fronts.
+// before the cluster's own address, which is the fallback for raw L4 ports that no
+// host fronts, and the engine's primary protocol comes before all of them.
 func publicEndpoints(service *ent.Service, clusterAddress func() string) []serviceEndpoint {
-	return publicEndpointsFor(service.Edges.ServiceConfig, clusterAddress)
+	return publicEndpointsFor(service.Type, databaseType(service), service.Edges.ServiceConfig, clusterAddress)
 }
 
 // clusterAddress is resolved lazily: a service whose ports are all fronted by a host
 // never needs to know the cluster's own address.
-func publicEndpointsFor(config *ent.ServiceConfig, clusterAddress func() string) []serviceEndpoint {
+func publicEndpointsFor(serviceType schema.ServiceType, databaseType string, config *ent.ServiceConfig, clusterAddress func() string) []serviceEndpoint {
 	if config == nil || !config.IsPublic {
 		return nil
 	}
@@ -75,14 +79,26 @@ func publicEndpointsFor(config *ent.ServiceConfig, clusterAddress func() string)
 	var endpoints []serviceEndpoint
 	fronted := make(map[int32]struct{})
 	for _, host := range config.Hosts {
+		var nodePort int32
+		bridged := false
+		if host.TargetPort != nil {
+			nodePort, bridged = nodePorts[*host.TargetPort]
+		}
+		// Databases are never HTTP routed, so a host with no L4 bridge behind it
+		// reaches nothing and must not name an endpoint
+		if !bridged && serviceType == schema.ServiceTypeDatabase {
+			continue
+		}
+
 		endpoint := serviceEndpoint{Host: host.Host, IsDomain: true, Port: httpsPort}
 		if host.TargetPort != nil {
 			endpoint.Target = *host.TargetPort
-			if nodePort, ok := nodePorts[*host.TargetPort]; ok {
-				endpoint.Port = nodePort
-				endpoint.L4 = true
-			}
+			endpoint.Label = databases.ProtocolLabel(databaseType, *host.TargetPort)
 			fronted[*host.TargetPort] = struct{}{}
+		}
+		if bridged {
+			endpoint.Port = nodePort
+			endpoint.L4 = true
 		}
 		endpoints = append(endpoints, endpoint)
 	}
@@ -96,11 +112,11 @@ func publicEndpointsFor(config *ent.ServiceConfig, clusterAddress func() string)
 		targets = append(targets, target)
 	}
 	if len(targets) == 0 {
-		return endpoints
+		return orderByProtocol(endpoints)
 	}
 	address := clusterAddress()
 	if address == "" {
-		return endpoints
+		return orderByProtocol(endpoints)
 	}
 	sort.Slice(targets, func(i, j int) bool { return targets[i] < targets[j] })
 	for _, target := range targets {
@@ -108,16 +124,27 @@ func publicEndpointsFor(config *ent.ServiceConfig, clusterAddress func() string)
 			Host:   address,
 			Port:   nodePorts[target],
 			Target: target,
+			Label:  databases.ProtocolLabel(databaseType, target),
 			L4:     true,
 		})
 	}
 
+	return orderByProtocol(endpoints)
+}
+
+// orderByProtocol puts the engine's primary protocol first so the unsuffixed keys
+// name it on both sides, whatever order the config stores its ports in. Endpoints
+// that carry no protocol of their own keep the order they were built in.
+func orderByProtocol(endpoints []serviceEndpoint) []serviceEndpoint {
+	sort.SliceStable(endpoints, func(i, j int) bool {
+		return endpoints[i].Label == "" && endpoints[j].Label != ""
+	})
 	return endpoints
 }
 
-// selectEndpoint picks the endpoint a parsed key refers to. An unsuffixed key is
-// the primary endpoint, a port suffix selects by container port, and legacy keys
-// select by their original position.
+// selectEndpoint picks the endpoint a parsed key refers to. An unsuffixed key is the
+// primary protocol, a label selects the protocol that carries it, a port suffix
+// selects by container port, and legacy keys select by their original position.
 func selectEndpoint(endpoints []serviceEndpoint, ref vartemplate.EndpointRef) (serviceEndpoint, bool) {
 	if len(endpoints) == 0 {
 		return serviceEndpoint{}, false
@@ -128,58 +155,85 @@ func selectEndpoint(endpoints []serviceEndpoint, ref vartemplate.EndpointRef) (s
 		}
 		return endpoints[ref.Index-1], true
 	}
-	if ref.Port == 0 {
-		return endpoints[0], true
-	}
 
-	seen := 0
 	tiebreak := max(ref.Tiebreak, 1)
+	if ref.Label != "" {
+		return nthEndpoint(endpoints, tiebreak, func(endpoint serviceEndpoint) bool {
+			return endpoint.Label == ref.Label
+		})
+	}
+	if ref.Port != 0 {
+		return nthEndpoint(endpoints, tiebreak, func(endpoint serviceEndpoint) bool {
+			return endpoint.Target == ref.Port
+		})
+	}
+	return nthEndpoint(endpoints, 1, func(endpoint serviceEndpoint) bool {
+		return endpoint.Label == ""
+	})
+}
+
+// primaryEndpointIndex is the endpoint the bare key names: the first one carrying no
+// protocol of its own, which is the engine's primary protocol
+func primaryEndpointIndex(endpoints []serviceEndpoint) int {
+	for index, endpoint := range endpoints {
+		if endpoint.Label == "" {
+			return index
+		}
+	}
+	return -1
+}
+
+// nthEndpoint returns the nth endpoint that matches, counting from one
+func nthEndpoint(endpoints []serviceEndpoint, nth int, matches func(serviceEndpoint) bool) (serviceEndpoint, bool) {
+	seen := 0
 	for _, endpoint := range endpoints {
-		if endpoint.Target != ref.Port {
+		if !matches(endpoint) {
 			continue
 		}
 		seen++
-		if seen == tiebreak {
+		if seen == nth {
 			return endpoint, true
 		}
 	}
 	return serviceEndpoint{}, false
 }
 
-// endpointKeys names every key that resolves for a set of endpoints: the bare key
-// for the primary one, then a port-suffixed key each, with a tiebreaker where two
-// endpoints share a container port.
+// endpointKeys names every key that resolves for a set of endpoints: the bare key for
+// the primary protocol, a labelled key for every other protocol, and a port-suffixed
+// key for the ports of a service that speaks no protocol Unbind knows.
 func endpointKeys(base string, endpoints []serviceEndpoint) []string {
-	if len(endpoints) == 0 {
-		return nil
-	}
-	keys := []string{base}
-	if len(endpoints) == 1 {
-		return keys
-	}
+	var keys []string
 	for index := range endpoints {
-		if key := endpointKeyAt(base, endpoints, index); key != base {
+		key := endpointKeyAt(base, endpoints, index)
+		if !slices.Contains(keys, key) {
 			keys = append(keys, key)
 		}
 	}
 	return keys
 }
 
-// endpointKeyAt names one endpoint of a set. The first is the primary and keeps the
-// bare base; the rest are named by container port, with a tiebreaker where two
-// endpoints share one.
+// endpointKeyAt names one endpoint of a set. A labelled endpoint is named by its
+// protocol wherever it sits, the first unlabelled one is the primary and keeps the
+// bare base, and the rest are named by container port. Endpoints sharing a name are
+// separated by a tiebreaker.
 func endpointKeyAt(base string, endpoints []serviceEndpoint, index int) string {
-	if index <= 0 || index >= len(endpoints) || endpoints[index].Target == 0 {
+	if index < 0 || index >= len(endpoints) {
 		return base
 	}
-	target := endpoints[index].Target
+	endpoint := endpoints[index]
+	if endpoint.Label == "" && (endpoint.Target == 0 || index == primaryEndpointIndex(endpoints)) {
+		return base
+	}
 	tiebreak := 0
-	for _, endpoint := range endpoints[:index+1] {
-		if endpoint.Target == target {
+	for _, earlier := range endpoints[:index+1] {
+		if earlier.Target == endpoint.Target {
 			tiebreak++
 		}
 	}
-	return vartemplate.EndpointKey(base, target, tiebreak)
+	if endpoint.Label != "" {
+		return vartemplate.EndpointKey(base, endpoint.Label, tiebreak)
+	}
+	return vartemplate.EndpointKey(base, vartemplate.PortSuffix(endpoint.Target), tiebreak)
 }
 
 // ClusterAddress is the address that reaches raw L4 ports from outside: the load
@@ -243,10 +297,10 @@ var legacyDatabaseKeys = map[string]func(databaseType string) string{
 	"DATABASE_HOST": func(string) string { return vartemplate.KeyHostPrivate },
 	"DATABASE_PORT": func(string) string { return vartemplate.KeyPortPrivate },
 	"DATABASE_HTTP_URL": func(databaseType string) string {
-		return vartemplate.EndpointKey(vartemplate.KeyDatabaseURLPrivate, databases.DefaultHTTPPort(databaseType), 1)
+		return vartemplate.EndpointKey(vartemplate.KeyDatabaseURLPrivate, httpLabel(databaseType), 1)
 	},
 	"DATABASE_HTTP_PORT": func(databaseType string) string {
-		return vartemplate.EndpointKey(vartemplate.KeyPortPrivate, databases.DefaultHTTPPort(databaseType), 1)
+		return vartemplate.EndpointKey(vartemplate.KeyPortPrivate, httpLabel(databaseType), 1)
 	},
 }
 
@@ -258,6 +312,11 @@ func LegacyDatabaseKey(service *ent.Service, key string) string {
 		return ""
 	}
 	return resolve(databaseType(service))
+}
+
+// httpLabel is the label of an engine's HTTP protocol, empty when it has none
+func httpLabel(databaseType string) string {
+	return databases.ProtocolLabel(databaseType, databases.DefaultHTTPPort(databaseType))
 }
 
 func isDatabase(service *ent.Service) bool {

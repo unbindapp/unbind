@@ -11,6 +11,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/vartemplate"
@@ -265,10 +266,11 @@ func (suite *RenderSuite) TestRender_ClickhouseBothProtocols() {
 
 	values := map[string][]byte{
 		"NATIVE":     []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PRIVATE")),
-		"HTTP":       []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PRIVATE_8123")),
+		"HTTP":       []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PRIVATE_HTTP")),
 		"NATIVE_PUB": []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PUBLIC")),
-		"HTTP_PUB":   []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PUBLIC_8123")),
-		"HTTP_PORT":  []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_PORT_PUBLIC_8123")),
+		"HTTP_PUB":   []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PUBLIC_HTTP")),
+		"HTTP_PORT":  []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_PORT_PUBLIC_HTTP")),
+		"BY_PORT":    []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PRIVATE_8123")),
 	}
 
 	result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
@@ -279,7 +281,45 @@ func (suite *RenderSuite) TestRender_ClickhouseBothProtocols() {
 	suite.Equal("clickhouse://default:pw@ch.example.com:30001/default", result.Env["NATIVE_PUB"])
 	suite.Equal("http://default:pw@ch.example.com:30002/default", result.Env["HTTP_PUB"])
 	suite.Equal("30002", result.Env["HTTP_PORT"])
+	// The keys written before protocols were named still resolve to the same endpoint
+	suite.Equal(result.Env["HTTP"], result.Env["BY_PORT"])
 	suite.True(result.FullyResolved())
+}
+
+// The port migration left databases with a domain in front of a port that has no node
+// port behind it. Nothing routes a database over HTTP, so that domain reaches nothing
+// and the public keys have to name the port that is actually served.
+func (suite *RenderSuite) TestRender_ClickhouseStrandedHost() {
+	ch := suite.newService("analytics", schema.ServiceTypeDatabase, utils.ToPtr("clickhouse"))
+	ch.Edges.ServiceConfig.IsPublic = true
+	ch.Edges.ServiceConfig.Ports = []schema.PortSpec{
+		{Port: 9000, IsNodePort: true, NodePort: utils.ToPtr[int32](32368)},
+		{Port: 8123},
+	}
+	ch.Edges.ServiceConfig.Hosts = []schema.HostSpec{
+		{Host: "ch.example.com", TargetPort: utils.ToPtr[int32](8123)},
+	}
+
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{ch.ID}).Return([]*ent.Service{ch}, nil).Once()
+	suite.expectSecret(ch.KubernetesSecret, map[string][]byte{
+		"DATABASE_USERNAME": []byte("default"),
+		"DATABASE_PASSWORD": []byte("pw"),
+	})
+	suite.k8s.EXPECT().NetworkingProvider(suite.ctx).Return("gateway").Once()
+	suite.k8s.EXPECT().GetActiveControllerIP(suite.ctx).Return(&k8s.LoadBalancerAddresses{IPv4: "10.0.0.7"}, nil).Once()
+
+	values := map[string][]byte{
+		"PUB":      []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PUBLIC")),
+		"PUB_HOST": []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_HOST_PUBLIC")),
+		"PUB_HTTP": []byte(vartemplate.ServiceToken(ch.ID, "UNBIND_DATABASE_URL_PUBLIC_HTTP")),
+	}
+
+	result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
+	suite.NoError(err)
+	suite.Equal("clickhouse://default:pw@10.0.0.7:32368/default", result.Env["PUB"])
+	suite.Equal("10.0.0.7", result.Env["PUB_HOST"])
+	// The HTTP protocol has no public address at all, so its key resolves to nothing
+	suite.False(result.FullyResolved())
 }
 
 func (suite *RenderSuite) TestRenderedValuesChange() {

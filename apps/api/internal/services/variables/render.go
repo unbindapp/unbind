@@ -286,7 +286,7 @@ func (rc *renderContext) databaseURL(source *ent.Service, endpoint serviceEndpoi
 	conn.Port = endpoint.Port
 
 	url := databases.ConnectionString(conn)
-	if endpoint.Target == databases.DefaultHTTPPort(conn.Type) {
+	if endpoint.Label == databases.LabelHTTP {
 		url = databases.HTTPConnectionString(conn)
 	}
 	if url == "" {

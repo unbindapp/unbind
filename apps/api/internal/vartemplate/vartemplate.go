@@ -58,6 +58,11 @@ var legacyEndpointBases = map[string]string{
 
 const endpointKeyPrefix = "UNBIND_"
 
+// endpointLabels are the protocol names a key may carry instead of a port number.
+// They belong to engines that speak more than one protocol, so a key reads the same
+// whichever port the engine happens to answer on.
+var endpointLabels = []string{"HTTP"}
+
 var tokenPattern = regexp.MustCompile(`\$\{\{(?:service\.([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(team|project|environment))\.([-._a-zA-Z0-9]+)\}\}`)
 
 type Token struct {
@@ -68,12 +73,13 @@ type Token struct {
 	Key      string
 }
 
-// EndpointRef is a parsed endpoint key. Port selects which endpoint the key refers
-// to and is zero for the unsuffixed key, which always means the primary endpoint.
-// Tiebreak separates hosts that share a port. Index is set only for legacy keys,
-// which selected an endpoint by position instead.
+// EndpointRef is a parsed endpoint key. Label selects an endpoint by the protocol it
+// carries and Port by the container port it fronts; both are empty for the unsuffixed
+// key, which always means the primary protocol. Tiebreak separates hosts that share
+// an endpoint. Index is set only for legacy keys, which selected by position instead.
 type EndpointRef struct {
 	Base     string
+	Label    string
 	Port     int32
 	Tiebreak int
 	Index    int
@@ -143,78 +149,129 @@ func ScopeToken(sourceType schema.VariableReferenceSourceType, key string) strin
 	return fmt.Sprintf("${{%s.%s}}", sourceType, key)
 }
 
-// EndpointKey names the endpoint of base reached on port. The primary endpoint keeps
-// the bare base so adding a second port never renames an existing key. Tiebreak
-// separates hosts sharing a port and is omitted for the first of them.
-func EndpointKey(base string, port int32, tiebreak int) string {
-	if port <= 0 {
+// EndpointKey names the endpoint of base that suffix identifies: the protocol for an
+// engine that speaks more than one, the container port for everything else. An empty
+// suffix is the primary endpoint, which keeps the bare base. Tiebreak separates hosts
+// sharing an endpoint and is omitted for the first of them.
+func EndpointKey(base, suffix string, tiebreak int) string {
+	if suffix == "" {
 		return base
 	}
 	if tiebreak <= 1 {
-		return fmt.Sprintf("%s_%d", base, port)
+		return fmt.Sprintf("%s_%s", base, suffix)
 	}
-	return fmt.Sprintf("%s_%d_%d", base, port, tiebreak)
+	return fmt.Sprintf("%s_%s_%d", base, suffix, tiebreak)
 }
 
-// ParseEndpointKey splits a key like UNBIND_URL_PUBLIC_8080_2 into its parts.
-// ok is false for keys that are not endpoint keys.
+// PortSuffix names an endpoint by the container port it fronts, which is all there is
+// to go on for a service whose ports are arbitrary
+func PortSuffix(port int32) string {
+	if port <= 0 {
+		return ""
+	}
+	return strconv.Itoa(int(port))
+}
+
+// ParseEndpointKey splits a key like UNBIND_URL_PUBLIC_8080_2 or
+// UNBIND_DATABASE_URL_PRIVATE_HTTP into its parts. ok is false for keys that are not
+// endpoint keys.
 func ParseEndpointKey(key string) (EndpointRef, bool) {
 	if !strings.HasPrefix(key, endpointKeyPrefix) {
 		return EndpointRef{}, false
 	}
 
-	// Try the bare key first, then peel one and two trailing numbers, so a base is
+	// Try the bare key first, then peel one and two trailing segments, so a base is
 	// never mistaken for a shorter one that happens to be a prefix of it
 	for stripped := range 3 {
-		base, numbers, ok := splitTrailingNumbers(key, stripped)
+		base, segments, ok := splitTrailingSegments(key, stripped)
 		if !ok {
 			break
 		}
 		if newBase, isLegacy := legacyEndpointBases[base]; isLegacy {
-			if stripped > 1 {
-				return EndpointRef{}, false
+			if ref, ok := legacyEndpointRef(newBase, segments); ok {
+				return ref, true
 			}
-			ref := EndpointRef{Base: newBase, Index: 1, Legacy: true}
-			if stripped == 1 {
-				ref.Index = numbers[0]
-			}
-			return ref, true
+			continue
 		}
 		if !slices.Contains(endpointBases, base) {
 			continue
 		}
-		ref := EndpointRef{Base: base}
-		if stripped > 0 {
-			ref.Port = int32(numbers[0])
+		if ref, ok := endpointRef(base, segments); ok {
+			return ref, true
 		}
-		if stripped > 1 {
-			ref.Tiebreak = numbers[1]
-		}
-		return ref, true
 	}
 
 	return EndpointRef{}, false
 }
 
-// splitTrailingNumbers removes count trailing _<number> segments, returning the
-// remaining base and the numbers in the order they appear in the key
-func splitTrailingNumbers(key string, count int) (string, []int, bool) {
-	numbers := make([]int, 0, count)
+// endpointRef reads the segments trailing a base: a protocol label or a container
+// port, then an optional tiebreaker
+func endpointRef(base string, segments []string) (EndpointRef, bool) {
+	ref := EndpointRef{Base: base}
+	if len(segments) == 0 {
+		return ref, true
+	}
+	if slices.Contains(endpointLabels, segments[0]) {
+		ref.Label = segments[0]
+	} else {
+		port, ok := positiveNumber(segments[0])
+		if !ok {
+			return EndpointRef{}, false
+		}
+		ref.Port = int32(port)
+	}
+	if len(segments) < 2 {
+		return ref, true
+	}
+	tiebreak, ok := positiveNumber(segments[1])
+	if !ok {
+		return EndpointRef{}, false
+	}
+	ref.Tiebreak = tiebreak
+	return ref, true
+}
+
+// legacyEndpointRef reads a pre-rename key, whose only suffix was the 1-based
+// position of the endpoint it selected
+func legacyEndpointRef(base string, segments []string) (EndpointRef, bool) {
+	ref := EndpointRef{Base: base, Index: 1, Legacy: true}
+	if len(segments) == 0 {
+		return ref, true
+	}
+	if len(segments) > 1 {
+		return EndpointRef{}, false
+	}
+	index, ok := positiveNumber(segments[0])
+	if !ok {
+		return EndpointRef{}, false
+	}
+	ref.Index = index
+	return ref, true
+}
+
+// splitTrailingSegments removes count trailing _<segment> parts, returning the
+// remaining base and the segments in the order they appear in the key
+func splitTrailingSegments(key string, count int) (string, []string, bool) {
+	segments := make([]string, 0, count)
 	base := key
 	for range count {
 		index := strings.LastIndex(base, "_")
-		if index < 0 {
+		if index < 0 || index == len(base)-1 {
 			return "", nil, false
 		}
-		number, err := strconv.Atoi(base[index+1:])
-		if err != nil || number < 1 {
-			return "", nil, false
-		}
-		numbers = append(numbers, number)
+		segments = append(segments, base[index+1:])
 		base = base[:index]
 	}
-	slices.Reverse(numbers)
-	return base, numbers, true
+	slices.Reverse(segments)
+	return base, segments, true
+}
+
+func positiveNumber(segment string) (int, bool) {
+	number, err := strconv.Atoi(segment)
+	if err != nil || number < 1 {
+		return 0, false
+	}
+	return number, true
 }
 
 func IsEndpointKey(key string) bool {

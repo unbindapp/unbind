@@ -61,10 +61,12 @@ func TestRender_NoTokensIsIdentity(t *testing.T) {
 }
 
 func TestEndpointKeys(t *testing.T) {
-	assert.Equal(t, "UNBIND_URL_PRIVATE", EndpointKey(KeyURLPrivate, 0, 0))
-	assert.Equal(t, "UNBIND_URL_PRIVATE_8080", EndpointKey(KeyURLPrivate, 8080, 1))
-	assert.Equal(t, "UNBIND_URL_PUBLIC_8080_2", EndpointKey(KeyURLPublic, 8080, 2))
-	assert.Equal(t, "UNBIND_DATABASE_URL_PUBLIC_9000", EndpointKey(KeyDatabaseURLPublic, 9000, 0))
+	assert.Equal(t, "UNBIND_URL_PRIVATE", EndpointKey(KeyURLPrivate, "", 0))
+	assert.Equal(t, "UNBIND_URL_PRIVATE_8080", EndpointKey(KeyURLPrivate, PortSuffix(8080), 1))
+	assert.Equal(t, "UNBIND_URL_PUBLIC_8080_2", EndpointKey(KeyURLPublic, PortSuffix(8080), 2))
+	assert.Equal(t, "UNBIND_DATABASE_URL_PUBLIC", EndpointKey(KeyDatabaseURLPublic, PortSuffix(0), 0))
+	assert.Equal(t, "UNBIND_DATABASE_URL_PUBLIC_HTTP", EndpointKey(KeyDatabaseURLPublic, "HTTP", 0))
+	assert.Equal(t, "UNBIND_DATABASE_URL_PUBLIC_HTTP_2", EndpointKey(KeyDatabaseURLPublic, "HTTP", 2))
 }
 
 func TestParseEndpointKey(t *testing.T) {
@@ -84,6 +86,20 @@ func TestParseEndpointKey(t *testing.T) {
 	ref, ok = ParseEndpointKey("UNBIND_DATABASE_URL_PRIVATE_5432")
 	assert.True(t, ok)
 	assert.Equal(t, EndpointRef{Base: KeyDatabaseURLPrivate, Port: 5432}, ref)
+
+	// A protocol label names the endpoint instead of the port it happens to sit on
+	ref, ok = ParseEndpointKey("UNBIND_DATABASE_URL_PRIVATE_HTTP")
+	assert.True(t, ok)
+	assert.Equal(t, EndpointRef{Base: KeyDatabaseURLPrivate, Label: "HTTP"}, ref)
+
+	ref, ok = ParseEndpointKey("UNBIND_PORT_PUBLIC_HTTP_2")
+	assert.True(t, ok)
+	assert.Equal(t, EndpointRef{Base: KeyPortPublic, Label: "HTTP", Tiebreak: 2}, ref)
+
+	_, ok = ParseEndpointKey("UNBIND_PORT_PUBLIC_HTTPS")
+	assert.False(t, ok)
+	_, ok = ParseEndpointKey("UNBIND_PORT_PUBLIC_HTTP_0")
+	assert.False(t, ok)
 
 	_, ok = ParseEndpointKey("UNBIND_URL_PUBLIC_0")
 	assert.False(t, ok)
@@ -114,7 +130,7 @@ func TestParseEndpointKeyLegacy(t *testing.T) {
 func TestRenameLegacyEndpointKeys(t *testing.T) {
 	id := uuid.New()
 	rename := func(_ Token, ref EndpointRef) (string, bool) {
-		return EndpointKey(ref.Base, int32(ref.Index*1000), 1), true
+		return EndpointKey(ref.Base, PortSuffix(int32(ref.Index*1000)), 1), true
 	}
 
 	value := "a=" + ServiceToken(id, "UNBIND_EXTERNAL_URL_2") + " b=" + ServiceToken(id, "DATABASE_URL")

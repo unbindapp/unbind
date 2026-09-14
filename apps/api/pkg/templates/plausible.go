@@ -13,7 +13,7 @@ func plausibleTemplate() *schema.TemplateDefinition {
 		Icon:        "plausible",
 		Keywords:    []string{"analytics", "privacy-friendly", "open source", "Google Analytics", "umami"},
 		Description: "Privacy-friendly Google Analytics alternative.",
-		Version:     3,
+		Version:     4,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   1,
 			MinimumRecommendedRAMGB: 2,
@@ -125,7 +125,7 @@ func plausibleTemplate() *schema.TemplateDefinition {
 					// ClickHouse references
 					{
 						SourceID:   "service_clickhouse",
-						SourceName: "UNBIND_DATABASE_URL_PRIVATE_8123",
+						SourceName: "UNBIND_DATABASE_URL_PRIVATE_HTTP",
 						TargetName: "CLICKHOUSE_DATABASE_URL",
 					},
 				},
