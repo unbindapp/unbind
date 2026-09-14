@@ -46,21 +46,15 @@ const pages = [
   },
 ] as const;
 
-export default function useSystemGoToItem({ context }: TProps) {
-  const mainPageId = "go-to";
-  const subpageId = "go-to_subpage";
+const subpageId = "go-to_subpage";
+const goToKeywords = ["go to", "navigate to", "jump to"];
+
+// Shared with the team and project contexts, which list the system pages for admins.
+export function useSystemPageItems() {
   const router = useRouter();
-
   const navigateTo = useNavigateFromCommandPanel();
-  const isSystemContext = context.contextType === "system";
-  const goToKeywords = useMemo(() => ["go to", "navigate to", "jump to"], []);
 
-  const { data: serversData } = useQuery({
-    ...serversListQuery(),
-    enabled: isSystemContext,
-  });
-
-  const pageItems: TCommandPanelItem[] = useMemo(() => {
+  const items: TCommandPanelItem[] = useMemo(() => {
     return pages.map((page) => {
       const id = `${subpageId}_${page.to}`;
       return {
@@ -81,7 +75,24 @@ export default function useSystemGoToItem({ context }: TProps) {
         },
       };
     });
-  }, [goToKeywords, navigateTo, router]);
+  }, [navigateTo, router]);
+
+  return items;
+}
+
+export default function useSystemGoToItem({ context }: TProps) {
+  const mainPageId = "go-to";
+  const router = useRouter();
+
+  const navigateTo = useNavigateFromCommandPanel();
+  const isSystemContext = context.contextType === "system";
+
+  const { data: serversData } = useQuery({
+    ...serversListQuery(),
+    enabled: isSystemContext,
+  });
+
+  const pageItems = useSystemPageItems();
 
   // The server panel only renders on the servers page, so selecting a server
   // navigates there and opens it via the search param.
@@ -117,7 +128,7 @@ export default function useSystemGoToItem({ context }: TProps) {
         },
       };
     });
-  }, [isSystemContext, serversData, goToKeywords, navigateTo, router]);
+  }, [isSystemContext, serversData, navigateTo, router]);
 
   const item: TCommandPanelItem | null = useMemo(() => {
     if (!isSystemContext) return null;
@@ -153,7 +164,7 @@ export default function useSystemGoToItem({ context }: TProps) {
         ],
       },
     };
-  }, [isSystemContext, goToKeywords, pageItems, serverItems, navigateTo, router]);
+  }, [isSystemContext, pageItems, serverItems, navigateTo, router]);
 
   const value = useMemo(
     () => ({

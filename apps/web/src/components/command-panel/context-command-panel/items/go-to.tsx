@@ -1,4 +1,5 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
+import { useSystemPageItems } from "@/components/command-panel/context-command-panel/items/go-to-system";
 import useNavigateFromCommandPanel from "@/components/command-panel/context-command-panel/use-navigate-from-command-panel";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/service/service-icon";
@@ -8,6 +9,7 @@ import {
 } from "@/components/service/service-picker";
 import { getServiceLinkProps, usePrefetchService } from "@/components/service/use-prefetch-service";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
+import { isSystemAdmin, meQuery } from "@/lib/queries/me";
 import {
   getProjectDefaultEnvironmentId,
   getProjectLinkProps,
@@ -173,6 +175,13 @@ export default function useGoToItem({ context }: TProps) {
   });
 
   const prefetchService = usePrefetchService();
+
+  const { data: me } = useQuery(meQuery);
+  const systemPageItems = useSystemPageItems();
+  const systemItems = useMemo(
+    () => (isSystemAdmin(me) ? systemPageItems : []),
+    [me, systemPageItems],
+  );
 
   const projectItems: TCommandPanelItem[] = useMemo(() => {
     if (!isTeamContext || !projectsData) return [];
@@ -562,6 +571,7 @@ export default function useGoToItem({ context }: TProps) {
             Icon: TriangleAlertIcon,
             keywords: ["delete", "danger", ...goToKeywords],
           },
+          ...systemItems,
         ],
       },
     };
@@ -577,6 +587,7 @@ export default function useGoToItem({ context }: TProps) {
     projectItems,
     serviceItems,
     teamProjectsItem,
+    systemItems,
   ]);
 
   const value = useMemo(
