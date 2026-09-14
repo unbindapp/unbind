@@ -343,5 +343,10 @@
     "version": "v0.1.68",
     "summary": "Database network access and endpoint variables, public service URLs before deployment, variables UI improvements, standardized API errors with request tracing, and faster Kubernetes data through caching.",
     "breaking": false
+  },
+  "v0.1.69": {
+    "version": "v0.1.69",
+    "summary": "Database endpoint variables named by protocol with existing references migrated automatically, a button to generate a domain for public services, and domain and variables card polish.",
+    "breaking": false
   }
 }
