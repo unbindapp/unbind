@@ -39,13 +39,12 @@ const accessOptions: { value: TAccess; title: string; description: string }[] = 
   {
     value: "full",
     title: "Everything I can access",
-    description: "Follows your own permissions, including changes made later.",
+    description: "Follows your own permissions.",
   },
   {
     value: "scoped",
     title: "Only specific resources",
-    description:
-      "Pick a team, project, environment or service. Each pick includes everything below it.",
+    description: "Pick a team, project, environment or service.",
   },
 ];
 
@@ -141,7 +140,7 @@ export default function AddApiKeyForm({ className }: TProps) {
             children={(field) => (
               <field.TextField
                 dontCheckUntilSubmit
-                className="mt-3 w-full md:max-w-md"
+                className="mt-3 w-full sm:w-[calc((100%-0.5rem)/2)]"
                 field={field}
                 value={field.state.value}
                 onBlur={field.handleBlur}
@@ -285,7 +284,7 @@ export default function AddApiKeyForm({ className }: TProps) {
                 items={expiryOptions.map((o) => ({ value: o.value, label: o.label }))}
                 value={field.state.value}
                 onChange={(v) => field.handleChange(v as TExpiryValue)}
-                className="mt-3 w-full md:max-w-xs"
+                className="mt-3 w-full sm:w-[calc((100%-0.5rem)/2)]"
               >
                 {({ isOpen }) => (
                   <BlockItemButtonLike
@@ -333,7 +332,7 @@ export default function AddApiKeyForm({ className }: TProps) {
 
 function OptionList({ children }: { children: React.ReactNode }) {
   return (
-    <div className="-mx-3 mt-2 flex w-[calc(100%+1.5rem)] flex-col items-start justify-start">
+    <div className="-mx-3 mt-2 flex w-[calc(100%+1.5rem)] flex-row flex-wrap items-start justify-start">
       {children}
     </div>
   );
@@ -357,7 +356,7 @@ function OptionRow({
   return (
     <label
       data-disabled={disabled || undefined}
-      className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-start gap-2.75 rounded-md px-3.5 py-2.5 data-disabled:cursor-not-allowed data-disabled:opacity-50"
+      className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-start gap-2.75 rounded-md px-3.5 py-2.5 data-disabled:cursor-not-allowed data-disabled:opacity-50 lg:w-1/2"
     >
       <Checkbox
         className="mt-0.5"

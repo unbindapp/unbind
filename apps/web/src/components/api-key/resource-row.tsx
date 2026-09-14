@@ -131,7 +131,8 @@ export default function ResourceRow({
   );
 
   const Select = field.AsyncAndSearchableSelect;
-  const selectClassName = "w-full sm:w-[calc((100%-0.5rem)/2)] lg:flex-1";
+  // Fixed halves so a pick adding the next select never reflows the ones before it
+  const selectClassName = "w-full sm:w-[calc((100%-0.5rem)/2)]";
 
   return (
     <div className={cn("flex w-full items-start gap-2", className)}>
