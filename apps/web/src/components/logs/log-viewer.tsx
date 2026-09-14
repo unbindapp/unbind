@@ -355,13 +355,29 @@ function LogList({
     return lines.findIndex((line) => matchesLogLineRef(highlightedLog, line));
   }, [lines, highlightedLog, isRefreshing]);
 
-  // followOnAppend only reacts to the list growing, so the first render, a new
-  // result set, and switching the toggle back on have to pin to the bottom by
-  // hand. A pending highlight owns the scroll position instead.
+  // followOnAppend only reacts to the list growing, so the first render and
+  // every new result set pin to the bottom by hand: logs open on the newest
+  // line whatever auto-follow says, it only decides whether later appends keep
+  // the viewport there. Rows measure in after the first pass and move the end,
+  // so the pin repeats until it settles. A pending highlight owns the scroll
+  // position instead.
+  useLayoutEffect(() => {
+    if (highlightedLog) return;
+    return settleScroll(scrollRef.current, () => {
+      virtualizer.scrollToEnd();
+      return true;
+    });
+  }, [virtualizer, resultSetKey, highlightedLog]);
+
+  // switching the toggle back on jumps to the latest line once, without
+  // claiming the scroll position while it is off
+  const wasAutoFollow = useRef(autoFollow);
   useEffect(() => {
-    if (!autoFollow || highlightedLog) return;
+    const isTurnedOn = autoFollow && !wasAutoFollow.current;
+    wasAutoFollow.current = autoFollow;
+    if (!isTurnedOn || highlightedLog) return;
     virtualizer.scrollToEnd();
-  }, [autoFollow, highlightedLog, virtualizer, resultSetKey]);
+  }, [autoFollow, highlightedLog, virtualizer]);
 
   useScrollToHighlight({
     virtualizer,
@@ -546,11 +562,40 @@ function useScrollToHighlight({
 
 const SCROLL_SETTLE_FRAMES = 8;
 
-// Rows are measured as they render, so a single scrollToIndex lands where the
-// estimates said the row was. Re-centering over a few frames follows the
-// measurements in; a scroll of the user's own cuts it short. The target is a
-// key resolved to an index on every frame: centering near the top of the
-// buffer can trigger another older-page fetch, and a prepend landing
+// Rows are measured as they render, so a single scroll lands where the row
+// estimates said the target was. Repeating it over a few frames follows the
+// measurements in; a scroll of the user's own cuts it short. The step reports
+// false once there is nothing left to scroll to.
+function settleScroll(scrollElement: HTMLDivElement | null, step: () => boolean) {
+  let cancelled = false;
+  const cancel = () => {
+    cancelled = true;
+  };
+  scrollElement?.addEventListener("wheel", cancel, { passive: true });
+  scrollElement?.addEventListener("touchstart", cancel, { passive: true });
+  const cleanup = () => {
+    cancelled = true;
+    scrollElement?.removeEventListener("wheel", cancel);
+    scrollElement?.removeEventListener("touchstart", cancel);
+  };
+
+  if (!step()) return cleanup();
+  let frames = 0;
+  const settle = () => {
+    if (cancelled || !step()) return cleanup();
+    frames++;
+    if (frames < SCROLL_SETTLE_FRAMES) {
+      requestAnimationFrame(settle);
+      return;
+    }
+    cleanup();
+  };
+  requestAnimationFrame(settle);
+  return cleanup;
+}
+
+// The target is a key resolved to an index on every frame: centering near the
+// top of the buffer can trigger another older-page fetch, and a prepend landing
 // mid-settle shifts every index, so a captured index would re-center a line a
 // full page older than the one asked for.
 function settleScrollToLine(
@@ -559,36 +604,12 @@ function settleScrollToLine(
   linesRef: React.RefObject<TBufferedLogLine[] | null>,
   targetKey: string,
 ) {
-  let cancelled = false;
-  const cancel = () => {
-    cancelled = true;
-  };
-  scrollElement?.addEventListener("wheel", cancel, { passive: true });
-  scrollElement?.addEventListener("touchstart", cancel, { passive: true });
-  const cleanup = () => {
-    scrollElement?.removeEventListener("wheel", cancel);
-    scrollElement?.removeEventListener("touchstart", cancel);
-  };
-
-  const scrollToTarget = () => {
+  return settleScroll(scrollElement, () => {
     const index = linesRef.current?.findIndex((line) => line.key === targetKey) ?? -1;
     if (index < 0) return false;
     virtualizer.scrollToIndex(index, { align: "center" });
     return true;
-  };
-
-  if (!scrollToTarget()) return cleanup();
-  let frames = 0;
-  const settle = () => {
-    if (cancelled || !scrollToTarget()) return cleanup();
-    frames++;
-    if (frames < SCROLL_SETTLE_FRAMES) {
-      requestAnimationFrame(settle);
-    } else {
-      cleanup();
-    }
-  };
-  requestAnimationFrame(settle);
+  });
 }
 
 function useIndicatorHeight() {
@@ -690,17 +711,22 @@ function PlaceholderList({
   type: TLogType;
   containerType: TContainerType;
 }) {
+  // The list mounts pinned to its last line, so the skeleton stacks up from the
+  // bottom edge too, with the same inset and fade: the real lines then land
+  // where the placeholder ones were instead of jumping down from the top.
   return (
-    <div className="min-h-0 w-full flex-1 overflow-hidden pt-3 font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))]">
-      {placeholderArray.map((_, index) => (
-        <LogLine
-          isPlaceholder
-          type={type}
-          key={index}
-          data-container={containerType}
-          classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
-        />
-      ))}
+    <div className="relative flex min-h-0 w-full flex-1 flex-col justify-end overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_0.75rem,black_calc(100%-0.75rem),transparent)]">
+      <div className="w-full shrink-0 pb-[calc(1rem+var(--safe-area-inset-bottom))] font-mono group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem)/2))] group-data-[container=page]/wrapper:pb-4 sm:pb-[calc(1.5rem+var(--safe-area-inset-bottom))] sm:group-data-[container=page]/wrapper:pb-6">
+        {placeholderArray.map((_, index) => (
+          <LogLine
+            isPlaceholder
+            type={type}
+            key={index}
+            data-container={containerType}
+            classNameInner="min-[81.25rem]:group-data-[container=page]/line:rounded-sm"
+          />
+        ))}
+      </div>
     </div>
   );
 }
