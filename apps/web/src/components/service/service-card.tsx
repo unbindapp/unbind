@@ -12,7 +12,7 @@ import ServiceIcon from "@/components/service/service-icon";
 import { usePrefetchService } from "@/components/service/use-prefetch-service";
 import { Button, LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import VolumeLine from "@/components/volume/volume-line";
+import VolumeLine from "@/components/volume/volume-usage-line";
 import { sourceToTitle } from "@/lib/constants";
 import { useIntent } from "@/lib/hooks/use-intent";
 import { deleteMutationKeys, useIsDeleting } from "@/lib/hooks/use-is-deleting";

@@ -45,7 +45,7 @@ export default function ResourcesSection({ server }: TProps) {
       valueSuffix: "reserved",
     }),
     usageRow({
-      label: `${formatMegabytes(server.memory_allocatable_megabytes)} RAM`,
+      label: `${formatMegabytes(server.memory_allocatable_megabytes)} Memory`,
       IconLabel: MemoryStickIcon,
       used: server.memory_requested_megabytes,
       total: server.memory_allocatable_megabytes,

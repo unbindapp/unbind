@@ -102,8 +102,8 @@ export default function MetricsChartList({
         )}
       </ChartWrapper>
       <ChartWrapper
-        title="RAM"
-        description="RAM usage over time"
+        title="Memory"
+        description="Memory usage over time"
         Icon={MemoryStickIcon}
         className={cn("w-full lg:w-1/2", classNameChart)}
       >

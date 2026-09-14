@@ -27,7 +27,7 @@ export default function ServerUsageLine({ used, total, totalLabel, Icon, classNa
           className="bg-foreground/1-10 group-data-[usage=high]/line:bg-warning/3-10 group-data-[usage=critical]/line:bg-destructive/3-10 h-full w-full origin-left"
         />
       </div>
-      <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive relative flex w-full items-center justify-between gap-4 px-4 leading-tight font-medium">
+      <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive relative flex w-full items-center justify-between gap-4 px-3 leading-tight font-medium">
         <div className="flex min-w-0 shrink items-center gap-1.5">
           <Icon className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton size-3.5 shrink-0 group-data-placeholder/item:rounded-full group-data-placeholder/item:text-transparent" />
           <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate group-data-placeholder/item:rounded group-data-placeholder/item:text-transparent">

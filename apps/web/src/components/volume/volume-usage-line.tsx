@@ -17,7 +17,7 @@ type TProps = {
   className?: string;
 };
 
-export default function VolumeLine({ volume, className }: TProps) {
+export default function VolumeUsageLine({ volume, className }: TProps) {
   const { getOpenSearch } = useVolumePanel();
   const usagePercentage = useMemo(() => {
     if (volume.used_gb === undefined || !volume.capacity_gb) return undefined;
@@ -55,7 +55,7 @@ export default function VolumeLine({ volume, className }: TProps) {
             />
           </div>
         )}
-        <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive flex w-full items-center justify-between gap-4 px-4">
+        <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive flex w-full items-center justify-between gap-4 px-3">
           <div className="relative flex w-full items-center justify-between gap-8 leading-tight font-medium">
             <div
               data-truncate={usagePercentage === undefined || undefined}

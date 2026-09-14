@@ -105,7 +105,7 @@ export default function ServerCard({ server, isPlaceholder, className }: TProps)
         <ServerUsageLine
           used={s.memory_requested_megabytes}
           total={s.memory_allocatable_megabytes}
-          totalLabel={`${formatMegabytes(s.memory_allocatable_megabytes)} RAM`}
+          totalLabel={`${formatMegabytes(s.memory_allocatable_megabytes)} Memory`}
           Icon={MemoryStickIcon}
           className="rounded-br-xl"
         />
