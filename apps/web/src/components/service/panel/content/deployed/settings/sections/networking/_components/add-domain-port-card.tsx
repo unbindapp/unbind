@@ -1,6 +1,3 @@
-import ErrorLine from "@/components/error-line";
-import { getNetworkingEntityId } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
-import { TMode } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
 import {
   Block,
   BlockItem,
@@ -9,11 +6,15 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import ErrorLine from "@/components/error-line";
+import { getNetworkingEntityId } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
+import { TMode } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
 import { useServiceEndpointsUtils } from "@/components/service/service-endpoints-provider";
 import { useService } from "@/components/service/service-provider";
 import useUpdateService from "@/components/service/use-update-service";
 import { useSystem } from "@/components/system/system-provider";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { validateDomain } from "@/lib/helpers/validate-domain";
@@ -26,11 +27,10 @@ import {
   EthernetPortIcon,
   GlobeLockIcon,
   PlusIcon,
-  WandSparklesIcon,
+  ShuffleIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo, useState } from "react";
-import { toast } from "@/components/ui/toast";
 
 const maxGeneratedDomains = 100;
 
@@ -204,9 +204,9 @@ export default function AddDomainPortCard({
                       >
                         {(field) => (
                           <BlockItem className="w-full md:w-full">
-                            <BlockItemHeader>
+                            <BlockItemHeader className="justify-between">
                               <BlockItemTitle>Domain</BlockItemTitle>
-                              {nextGeneratedDomain && (
+                              {nextGeneratedDomain && field.state.value !== nextGeneratedDomain && (
                                 <Button
                                   type="button"
                                   variant="ghost"
@@ -214,10 +214,10 @@ export default function AddDomainPortCard({
                                     setGeneratedDomain(nextGeneratedDomain);
                                     field.handleChange(nextGeneratedDomain);
                                   }}
-                                  className="-my-1 -mr-0.5 ml-auto flex shrink-0 items-center gap-1.5 rounded-md py-1 pr-2.5 pl-2 font-medium"
+                                  className="text-muted-foreground -my-1.5 max-w-1/2 min-w-0 gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium wrap-break-word"
                                 >
-                                  <WandSparklesIcon className="size-3.5 shrink-0" />
-                                  <p className="min-w-0 shrink truncate leading-tight">Generate</p>
+                                  <ShuffleIcon className="size-3.5 shrink-0" />
+                                  <span className="min-w-0 shrink truncate">Generate</span>
                                 </Button>
                               )}
                             </BlockItemHeader>

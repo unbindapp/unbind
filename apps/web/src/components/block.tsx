@@ -71,7 +71,9 @@ export function BlockItemTitle({
   children: ReactNode;
 }) {
   return (
-    <h3 className={cn("min-w-0 shrink leading-tight font-semibold", className)}>{children}</h3>
+    <h3 className={cn("min-w-0 shrink leading-tight font-semibold wrap-break-word", className)}>
+      {children}
+    </h3>
   );
 }
 
