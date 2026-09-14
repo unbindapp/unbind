@@ -3,6 +3,7 @@ import {
   ArchiveIcon,
   ContainerIcon,
   KeyIcon,
+  KeySquareIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
   UsersIcon,
@@ -11,7 +12,14 @@ import {
 import { ComponentProps } from "react";
 
 export type TSettingsTabVariant =
-  "general" | "environments" | "variables" | "members" | "webhooks" | "danger-zone" | "storage";
+  | "general"
+  | "environments"
+  | "variables"
+  | "members"
+  | "webhooks"
+  | "danger-zone"
+  | "storage"
+  | "api-keys";
 
 export default function SettingsTabIcon({
   variant,
@@ -36,6 +44,10 @@ export default function SettingsTabIcon({
 
   if (variant === "danger-zone") {
     return <TriangleAlertIcon className={cn("size-5 shrink-0", className)} {...rest} />;
+  }
+
+  if (variant === "api-keys") {
+    return <KeySquareIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
   if (variant === "storage") {

@@ -21,6 +21,14 @@ export const APIKeyCreateInputSchema = z
   })
   .strip();
 
+export const APIKeyResourceResponseSchema = z
+  .object({
+    path: z.array(z.string()), // Names from the team down to the resource. Empty when the resource no longer exists.
+    resource_id: z.string(),
+    resource_type: ResourceTypeSchema,
+  })
+  .strip();
+
 export const APIKeyCreatedResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
@@ -29,7 +37,7 @@ export const APIKeyCreatedResponseSchema = z
     id: z.string(),
     last_used_at: z.string().datetime({ offset: true }).optional(),
     name: z.string(),
-    resources: z.array(APIKeyResourceSchema),
+    resources: z.array(APIKeyResourceResponseSchema),
     role: PermittedActionSchema,
     token: z.string(), // The full API key. Shown once, store it now.
     token_prefix: z.string(), // First characters of the token, for recognizing the key. Never the full token.
@@ -51,7 +59,7 @@ export const APIKeyResponseSchema = z
     id: z.string(),
     last_used_at: z.string().datetime({ offset: true }).optional(),
     name: z.string(),
-    resources: z.array(APIKeyResourceSchema),
+    resources: z.array(APIKeyResourceResponseSchema),
     role: PermittedActionSchema,
     token_prefix: z.string(), // First characters of the token, for recognizing the key. Never the full token.
     user_id: z.string(),
@@ -2139,8 +2147,17 @@ export const LogoutResponseBodySchema = z
 
 export const LokiDirectionSchema = z.enum(['forward', 'backward']);
 
+export const MeAPIKeySchema = z
+  .object({
+    full_access: z.boolean(),
+    resources: z.array(APIKeyResourceSchema),
+    role: PermittedActionSchema,
+  })
+  .strip();
+
 export const MeDataSchema = z
   .object({
+    api_key: MeAPIKeySchema.optional(), // Present when the request was authenticated with an API key: the limit the key puts on this user
     created_at: z.string().datetime({ offset: true }),
     email: z.string(),
     id: z.string(),
@@ -2760,6 +2777,7 @@ export type ResourceType = z.infer<typeof ResourceTypeSchema>;
 export type APIKeyResource = z.infer<typeof APIKeyResourceSchema>;
 export type PermittedAction = z.infer<typeof PermittedActionSchema>;
 export type APIKeyCreateInput = z.infer<typeof APIKeyCreateInputSchema>;
+export type APIKeyResourceResponse = z.infer<typeof APIKeyResourceResponseSchema>;
 export type APIKeyCreatedResponse = z.infer<typeof APIKeyCreatedResponseSchema>;
 export type APIKeyDeleteInput = z.infer<typeof APIKeyDeleteInputSchema>;
 export type APIKeyResponse = z.infer<typeof APIKeyResponseSchema>;
@@ -3020,6 +3038,7 @@ export type LogType = z.infer<typeof LogTypeSchema>;
 export type LoginInputBody = z.infer<typeof LoginInputBodySchema>;
 export type LogoutResponseBody = z.infer<typeof LogoutResponseBodySchema>;
 export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
+export type MeAPIKey = z.infer<typeof MeAPIKeySchema>;
 export type MeData = z.infer<typeof MeDataSchema>;
 export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;

@@ -28,7 +28,11 @@ func (self *APIKeyService) List(ctx context.Context, requesterUserID uuid.UUID, 
 	if err != nil {
 		return nil, err
 	}
-	return models.TransformAPIKeyEntities(keys), nil
+	paths, err := self.resourcePaths(ctx, keys)
+	if err != nil {
+		return nil, err
+	}
+	return models.TransformAPIKeyEntities(keys, paths), nil
 }
 
 func (self *APIKeyService) requireSystemAdmin(ctx context.Context, requesterUserID uuid.UUID) error {

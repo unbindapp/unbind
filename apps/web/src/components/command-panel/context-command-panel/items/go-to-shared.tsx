@@ -5,6 +5,7 @@ import {
   ChartColumnIcon,
   CircleArrowUpIcon,
   HouseIcon,
+  KeySquareIcon,
   MonitorIcon,
   SettingsIcon,
 } from "lucide-react";
@@ -41,6 +42,51 @@ const systemPages = [
     keywords: ["settings", "general", "change", "tweak", "adjust"],
   },
 ] as const;
+
+const accountPages = [
+  {
+    to: "/account/settings",
+    title: "Settings",
+    Icon: SettingsIcon,
+    keywords: ["account", "profile", "email", "password", "general"],
+  },
+  {
+    to: "/account/settings/api-keys",
+    title: "API Keys",
+    Icon: KeySquareIcon,
+    keywords: ["account", "api key", "token", "access", "cli", "automation"],
+  },
+] as const;
+
+export function useAccountPageItems() {
+  const router = useRouter();
+  const navigateTo = useNavigateFromCommandPanel();
+
+  const items: TCommandPanelItem[] = useMemo(() => {
+    return accountPages.map((page) => {
+      const id = `${subpageId}_${page.to}`;
+      return {
+        id,
+        title: page.title,
+        titleSuffix: " | Account",
+        Icon: page.Icon,
+        keywords: [...page.keywords, ...goToKeywords],
+        onHighlight: () => {
+          void router.preloadRoute({ to: page.to });
+        },
+        onSelect: () => {
+          navigateTo({
+            run: () => router.navigate({ to: page.to }),
+            isPendingId: id,
+            error: `Failed to navigate to ${page.title}`,
+          });
+        },
+      };
+    });
+  }, [navigateTo, router]);
+
+  return items;
+}
 
 export function useHomePageItem() {
   const router = useRouter();

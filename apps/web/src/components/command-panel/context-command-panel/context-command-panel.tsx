@@ -65,7 +65,8 @@ function ContextCommandPanel_({ context, triggerType, title, description, childr
         triggerType === "layout" &&
         (context.contextType === "team" ||
           context.contextType === "project" ||
-          context.contextType === "system"),
+          context.contextType === "system" ||
+          context.contextType === "account"),
       conflictBehavior: "allow",
     },
   );

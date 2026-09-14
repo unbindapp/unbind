@@ -1,5 +1,6 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import {
+  useAccountPageItems,
   useHomePageItem,
   useSystemPageItems,
 } from "@/components/command-panel/context-command-panel/items/go-to-shared";
@@ -33,6 +34,7 @@ export default function useSystemGoToItem({ context }: TProps) {
 
   const homeItem = useHomePageItem();
   const pageItems = useSystemPageItems();
+  const accountItems = useAccountPageItems();
 
   // The server panel only renders on the servers page, so selecting a server
   // navigates there and opens it via the search param.
@@ -82,10 +84,10 @@ export default function useSystemGoToItem({ context }: TProps) {
         title: "Go to",
         inputPlaceholder: "Go to...",
         parentPageId: contextCommandPanelRootPage,
-        items: [homeItem, ...pageItems, ...serverItems],
+        items: [homeItem, ...pageItems, ...serverItems, ...accountItems],
       },
     };
-  }, [isSystemContext, homeItem, pageItems, serverItems]);
+  }, [isSystemContext, homeItem, pageItems, serverItems, accountItems]);
 
   const value = useMemo(
     () => ({

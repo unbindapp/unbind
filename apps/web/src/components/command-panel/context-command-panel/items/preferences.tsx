@@ -45,7 +45,8 @@ export default function usePreferencesItem({ context }: TProps) {
     if (
       context.contextType !== "team" &&
       context.contextType !== "project" &&
-      context.contextType !== "system"
+      context.contextType !== "system" &&
+      context.contextType !== "account"
     ) {
       return null;
     }

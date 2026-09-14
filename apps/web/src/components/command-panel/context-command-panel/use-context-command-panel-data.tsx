@@ -3,6 +3,7 @@ import { useDatabaseItemHook } from "@/components/command-panel/context-command-
 import { useDockerImageItemHook } from "@/components/command-panel/context-command-panel/items/docker-image";
 import { useGitItemHook } from "@/components/command-panel/context-command-panel/items/git";
 import useGoToItem from "@/components/command-panel/context-command-panel/items/go-to";
+import useAccountGoToItem from "@/components/command-panel/context-command-panel/items/go-to-account";
 import useSystemGoToItem from "@/components/command-panel/context-command-panel/items/go-to-system";
 import useNewProjectItem from "@/components/command-panel/context-command-panel/items/new-project";
 import usePreferencesItem from "@/components/command-panel/context-command-panel/items/preferences";
@@ -32,6 +33,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const { item: templateItem } = useTemplateItem();
   const { item: goToItem } = useGoToItem({ context });
   const { item: systemGoToItem } = useSystemGoToItem({ context });
+  const { item: accountGoToItem } = useAccountGoToItem({ context });
   const { item: newProjectItem } = useNewProjectItem({ context });
   const { item: preferencesItem } = usePreferencesItem({ context });
 
@@ -58,6 +60,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
         ...(preferencesItem ? [preferencesItem] : []),
         ...(goToItem ? [goToItem] : []),
         ...(systemGoToItem ? [systemGoToItem] : []),
+        ...(accountGoToItem ? [accountGoToItem] : []),
       ],
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -69,6 +72,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
       volumeItem,
       goToItem,
       systemGoToItem,
+      accountGoToItem,
       preferencesItem,
       context,
     ],

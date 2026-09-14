@@ -1,5 +1,6 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
 import {
+  useAccountPageItems,
   useHomePageItem,
   useSystemPageItems,
 } from "@/components/command-panel/context-command-panel/items/go-to-shared";
@@ -181,6 +182,7 @@ export default function useGoToItem({ context }: TProps) {
 
   const { data: me } = useQuery(meQuery);
   const homeItem = useHomePageItem();
+  const accountItems = useAccountPageItems();
   const systemPageItems = useSystemPageItems();
   const systemItems = useMemo(
     () => (isSystemAdmin(me) ? systemPageItems : []),
@@ -576,6 +578,7 @@ export default function useGoToItem({ context }: TProps) {
             keywords: ["delete", "danger", ...goToKeywords],
           },
           homeItem,
+          ...accountItems,
           ...systemItems,
         ],
       },
@@ -593,6 +596,7 @@ export default function useGoToItem({ context }: TProps) {
     serviceItems,
     teamProjectsItem,
     homeItem,
+    accountItems,
     systemItems,
   ]);
 

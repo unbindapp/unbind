@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 
-import { apiFetch } from "@/lib/server/client";
+import { apiFetch, getGoClient } from "@/lib/server/client";
 import { getConfig } from "@/lib/config";
 import type { MeResponseBody } from "@/lib/server/client.gen";
 
@@ -28,3 +28,11 @@ export const meQuery = queryOptions({
   },
   staleTime: 5 * 60 * 1000,
 });
+
+export async function updatePassword(input: { currentPassword: string; newPassword: string }) {
+  const res = await getGoClient().users.updatePassword({
+    current_password: input.currentPassword,
+    new_password: input.newPassword,
+  });
+  return { data: res.data };
+}

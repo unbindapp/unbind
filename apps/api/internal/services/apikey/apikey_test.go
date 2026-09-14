@@ -57,6 +57,8 @@ func (suite *APIKeyServiceSuite) expectCreate() *apikey_repo.CreateAPIKeyInput {
 func (suite *APIKeyServiceSuite) TestCreateStoresHashAndReturnsTokenOnce() {
 	suite.expectCheck(permissions_repo.PermissionCheck{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeProject, ResourceID: suite.projectID}, nil)
 	stored := suite.expectCreate()
+	suite.MockProjectRepo.EXPECT().GetByID(suite.Ctx, suite.projectID).
+		Return(&ent.Project{ID: suite.projectID, Name: "Website", Edges: ent.ProjectEdges{Team: &ent.Team{Name: "Acme"}}}, nil).Once()
 
 	resp, err := suite.service.Create(suite.Ctx, suite.requester, &models.APIKeyCreateInput{Name: "ci", Role: schema.ActionViewer, Resources: []schema.APIKeyResource{suite.project()}})
 	suite.Require().NoError(err)
@@ -69,7 +71,29 @@ func (suite *APIKeyServiceSuite) TestCreateStoresHashAndReturnsTokenOnce() {
 	suite.Equal(schema.ActionViewer, stored.Role)
 	suite.False(stored.FullAccess)
 	suite.Equal([]schema.APIKeyResource{suite.project()}, stored.Resources)
-	suite.Equal([]schema.APIKeyResource{suite.project()}, resp.Resources)
+	suite.Require().Len(resp.Resources, 1)
+	suite.Equal(suite.project(), resp.Resources[0].APIKeyResource)
+	suite.Equal([]string{"Acme", "Website"}, resp.Resources[0].Path)
+}
+
+func (suite *APIKeyServiceSuite) TestListResolvesPathsAndSkipsDeletedResources() {
+	serviceID := uuid.New()
+	suite.MockAPIKeyRepo.EXPECT().ListByUser(suite.Ctx, suite.requester).Return([]*ent.APIKey{{
+		ID: uuid.New(), UserID: suite.requester, Role: schema.ActionEditor,
+		Resources: []schema.APIKeyResource{
+			suite.project(),
+			{ResourceType: schema.ResourceTypeService, ResourceID: serviceID},
+		},
+	}}, nil).Once()
+	suite.MockProjectRepo.EXPECT().GetByID(suite.Ctx, suite.projectID).
+		Return(&ent.Project{ID: suite.projectID, Name: "Website", Edges: ent.ProjectEdges{Team: &ent.Team{Name: "Acme"}}}, nil).Once()
+	suite.MockServiceRepo.EXPECT().GetByID(suite.Ctx, serviceID).Return(nil, &ent.NotFoundError{}).Once()
+
+	keys, err := suite.service.List(suite.Ctx, suite.requester, &models.APIKeyListInput{})
+	suite.Require().NoError(err)
+	suite.Require().Len(keys, 1)
+	suite.Equal([]string{"Acme", "Website"}, keys[0].Resources[0].Path)
+	suite.Equal([]string{}, keys[0].Resources[1].Path, "a deleted resource keeps its row with an empty path")
 }
 
 func (suite *APIKeyServiceSuite) TestCreateChecksEveryResourceAtTheKeyRole() {

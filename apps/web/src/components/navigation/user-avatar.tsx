@@ -29,6 +29,7 @@ import {
   HouseIcon,
   LoaderIcon,
   LogOutIcon,
+  UserRoundIcon,
   WrenchIcon,
 } from "lucide-react";
 import { useState } from "react";
@@ -120,6 +121,15 @@ export default function UserAvatar({ email, className }: TProps) {
               <p className="min-w-0 shrink leading-tight">Home</p>
             </LinkButton>
           )}
+          <LinkButton
+            to="/account"
+            onClick={() => setOpen(false)}
+            variant="ghost"
+            className="w-full cursor-default items-center justify-start gap-2.5 rounded-lg px-3 py-3.5 text-left font-medium"
+          >
+            <UserRoundIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+            <p className="min-w-0 shrink leading-tight">Account</p>
+          </LinkButton>
           {isAdmin && (
             <LinkButton
               to="/system"
@@ -210,6 +220,12 @@ export default function UserAvatar({ email, className }: TProps) {
               </div>
             </DropdownMenuItem>
           )}
+          <DropdownMenuItem className="p-0" render={<Link to="/account" />}>
+            <div className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight">
+              <UserRoundIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+              <p className="min-w-0 shrink leading-tight">Account</p>
+            </div>
+          </DropdownMenuItem>
           {isAdmin && (
             <DropdownMenuItem className="p-0" render={<Link to="/system" />}>
               <div className="flex w-full cursor-default items-center gap-2.5 px-3 py-2.25 text-left leading-tight">

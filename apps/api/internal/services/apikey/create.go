@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
@@ -56,8 +57,12 @@ func (self *APIKeyService) Create(ctx context.Context, requesterUserID uuid.UUID
 		return nil, err
 	}
 
+	paths, err := self.resourcePaths(ctx, []*ent.APIKey{key})
+	if err != nil {
+		return nil, err
+	}
 	return &models.APIKeyCreatedResponse{
-		APIKeyResponse: *models.TransformAPIKeyEntity(key),
+		APIKeyResponse: *models.TransformAPIKeyEntity(key, paths),
 		Token:          generated.Token,
 	}, nil
 }

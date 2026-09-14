@@ -329,7 +329,7 @@ function commandItemKeywords(item: TCommandItem): string[] {
   return item.description ? [item.label, item.description] : [item.label];
 }
 
-type TAsyncAndSearchableSelectProps = TFieldProps & {
+export type TAsyncAndSearchableSelectProps = TFieldProps & {
   items: TCommandItem[] | undefined;
   isPending: boolean;
   error: string | undefined;

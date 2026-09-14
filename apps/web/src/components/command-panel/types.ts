@@ -85,4 +85,9 @@ export type TContextCommandPanelContext =
       contextType: "system";
       teamId?: never;
       projectId?: never;
+    }
+  | {
+      contextType: "account";
+      teamId?: never;
+      projectId?: never;
     };
