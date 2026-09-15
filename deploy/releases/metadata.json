@@ -353,5 +353,10 @@
     "version": "v0.1.70",
     "summary": "Personal API keys with role-based access, resource restrictions and expiry, a new account settings page, a log viewer that stays pinned to the latest lines, and system pages for admins in the command panel.",
     "breaking": false
+  },
+  "v0.1.71": {
+    "version": "v0.1.71",
+    "summary": "Consistent icon sizing across service settings blocks and dropdown items, tidier API key form sections, and small polish in the service creation and networking cards.",
+    "breaking": false
   }
 }
