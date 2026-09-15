@@ -1,8 +1,30 @@
 import type { PermittedAction, ResourceType } from "@/lib/server/client.gen";
 import type { TApiKeyShallow } from "@/lib/queries/api-keys";
 import { addDays } from "date-fns";
-import { EyeIcon, ShieldHalfIcon, SquarePenIcon } from "lucide-react";
+import { EyeIcon, InfinityIcon, ListFilterIcon, ShieldHalfIcon, SquarePenIcon } from "lucide-react";
 import type { FC } from "react";
+
+export type TAccess = "full" | "scoped";
+
+export const accessOptions: {
+  value: TAccess;
+  label: string;
+  description: string;
+  Icon: FC<{ className?: string }>;
+}[] = [
+  {
+    value: "full",
+    label: "Everything I can access",
+    description: "Follows your own permissions.",
+    Icon: InfinityIcon,
+  },
+  {
+    value: "scoped",
+    label: "Only specific resources",
+    description: "Pick a team, project, environment or service.",
+    Icon: ListFilterIcon,
+  },
+];
 
 export const roleOptions: {
   value: PermittedAction;

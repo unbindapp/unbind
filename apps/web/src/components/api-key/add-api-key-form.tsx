@@ -3,6 +3,7 @@
 import ApiKeyCreatedDialog from "@/components/api-key/api-key-created-dialog";
 import { useApiKeysUtils } from "@/components/api-key/api-keys-provider";
 import {
+  accessOptions,
   defaultExpiry,
   emptyResourceRow,
   expiresAtFrom,
@@ -10,6 +11,7 @@ import {
   roleAllowedBy,
   roleOptions,
   rowToResource,
+  type TAccess,
   type TExpiryValue,
   type TResourceRow,
 } from "@/components/api-key/helpers";
@@ -18,7 +20,6 @@ import { BlockItemButtonLike } from "@/components/block";
 import ErrorLine from "@/components/error-line";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import DropdownSelect from "@/components/ui/dropdown-select";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -32,21 +33,6 @@ import { z } from "zod";
 type TProps = {
   className?: string;
 };
-
-type TAccess = "full" | "scoped";
-
-const accessOptions: { value: TAccess; title: string; description: string }[] = [
-  {
-    value: "full",
-    title: "Everything I can access",
-    description: "Follows your own permissions.",
-  },
-  {
-    value: "scoped",
-    title: "Only specific resources",
-    description: "Pick a team, project, environment or service.",
-  },
-];
 
 const FormSchema = z
   .object({
@@ -71,6 +57,9 @@ const FormSchema = z
     message: "Pick at least one resource.",
     path: ["rows"],
   });
+
+// Name, access, role and expiry share the picker's column width
+const fieldClassName = "mt-3 w-full sm:w-[calc((100%-0.5rem)/2)]";
 
 export default function AddApiKeyForm({ className }: TProps) {
   const { invalidate } = useApiKeysUtils();
@@ -140,7 +129,7 @@ export default function AddApiKeyForm({ className }: TProps) {
             children={(field) => (
               <field.TextField
                 dontCheckUntilSubmit
-                className="mt-3 w-full sm:w-[calc((100%-0.5rem)/2)]"
+                className={fieldClassName}
                 field={field}
                 value={field.state.value}
                 onBlur={field.handleBlur}
@@ -156,22 +145,36 @@ export default function AddApiKeyForm({ className }: TProps) {
           </p>
           <form.AppField
             name="access"
-            children={(field) => (
-              <OptionList>
-                {accessOptions.map((option) => (
-                  <OptionRow
-                    key={option.value}
-                    title={option.title}
-                    description={option.description}
-                    checked={field.state.value === option.value}
-                    onCheckedChange={(checked) => {
-                      if (checked) field.handleChange(option.value);
-                    }}
-                    onBlur={field.handleBlur}
-                  />
-                ))}
-              </OptionList>
-            )}
+            children={(field) => {
+              const selected = accessOptions.find((o) => o.value === field.state.value);
+              return (
+                <field.AsyncDropdownMenu
+                  field={field}
+                  className={fieldClassName}
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v as TAccess)}
+                  items={accessOptions}
+                  ItemIcon={({ className, value }) => {
+                    const Icon = accessOptions.find((o) => o.value === value)?.Icon;
+                    return Icon ? <Icon className={className} /> : null;
+                  }}
+                  isPending={false}
+                  error={undefined}
+                >
+                  {({ isOpen }) => (
+                    <BlockItemButtonLike
+                      asElement="button"
+                      text={selected?.label ?? ""}
+                      Icon={({ className }) =>
+                        selected ? <selected.Icon className={cn(className, "size-4.5")} /> : null
+                      }
+                      open={isOpen}
+                      onBlur={field.handleBlur}
+                    />
+                  )}
+                </field.AsyncDropdownMenu>
+              );
+            }}
           />
           <form.Subscribe selector={(state) => ({ access: state.values.access })}>
             {({ access }) =>
@@ -179,7 +182,7 @@ export default function AddApiKeyForm({ className }: TProps) {
                 <form.AppField
                   name="rows"
                   children={(field) => (
-                    <div className="mt-3 flex w-full flex-col gap-2">
+                    <div className="mt-2 flex w-full flex-col gap-2">
                       {field.state.value.map((row, index) => (
                         <ResourceRow
                           key={index}
@@ -238,38 +241,61 @@ export default function AddApiKeyForm({ className }: TProps) {
                 },
                 undefined,
               );
+              const isAllowed = (role: PermittedAction) =>
+                access === "full" || scopedCap === undefined || roleAllowedBy(role, scopedCap);
               return (
                 <form.AppField
                   name="role"
-                  children={(field) => (
-                    <OptionList>
-                      {roleOptions.map((option) => {
-                        const disabled =
-                          access === "scoped" &&
-                          scopedCap !== undefined &&
-                          !roleAllowedBy(option.value, scopedCap);
-                        return (
-                          <OptionRow
-                            key={option.value}
-                            className="lg:w-1/3"
-                            Icon={option.Icon}
-                            title={option.title}
-                            description={
-                              disabled
-                                ? "Above what you hold on a picked resource."
-                                : option.description
+                  children={(field) => {
+                    const selected = roleOptions.find((o) => o.value === field.state.value);
+                    return (
+                      <field.AsyncDropdownMenu
+                        field={field}
+                        className={fieldClassName}
+                        value={field.state.value}
+                        onChange={(v) => {
+                          if (isAllowed(v as PermittedAction)) {
+                            field.handleChange(v as PermittedAction);
+                          }
+                        }}
+                        items={roleOptions.map((o) => ({
+                          value: o.value,
+                          label: o.title,
+                          description: o.description,
+                        }))}
+                        ItemIcon={({ className, value }) => {
+                          const Icon = roleOptions.find((o) => o.value === value)?.Icon;
+                          return Icon ? <Icon className={className} /> : null;
+                        }}
+                        ItemSuffix={({ value }) =>
+                          isAllowed(value as PermittedAction) ? null : (
+                            <p className="bg-border text-muted-foreground rounded-sm px-1.5 py-0.5 text-xs leading-tight">
+                              Above your access
+                            </p>
+                          )
+                        }
+                        classNameItem={({ value }) =>
+                          isAllowed(value as PermittedAction) ? "" : "opacity-50"
+                        }
+                        isPending={false}
+                        error={undefined}
+                      >
+                        {({ isOpen }) => (
+                          <BlockItemButtonLike
+                            asElement="button"
+                            text={selected?.title ?? ""}
+                            Icon={({ className }) =>
+                              selected ? (
+                                <selected.Icon className={cn(className, "size-4.5")} />
+                              ) : null
                             }
-                            disabled={disabled}
-                            checked={field.state.value === option.value}
-                            onCheckedChange={(checked) => {
-                              if (checked) field.handleChange(option.value);
-                            }}
+                            open={isOpen}
                             onBlur={field.handleBlur}
                           />
-                        );
-                      })}
-                    </OptionList>
-                  )}
+                        )}
+                      </field.AsyncDropdownMenu>
+                    );
+                  }}
                 />
               );
             }}
@@ -286,7 +312,7 @@ export default function AddApiKeyForm({ className }: TProps) {
                 items={expiryOptions.map((o) => ({ value: o.value, label: o.label }))}
                 value={field.state.value}
                 onChange={(v) => field.handleChange(v as TExpiryValue)}
-                className="mt-3 w-full sm:w-[calc((100%-0.5rem)/2)]"
+                className={fieldClassName}
               >
                 {({ isOpen }) => (
                   <BlockItemButtonLike
@@ -329,58 +355,5 @@ export default function AddApiKeyForm({ className }: TProps) {
       </form>
       <ApiKeyCreatedDialog created={created} onClose={() => setCreated(null)} />
     </>
-  );
-}
-
-function OptionList({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="-mx-3 mt-2 flex w-[calc(100%+1.5rem)] flex-row flex-wrap items-start justify-start">
-      {children}
-    </div>
-  );
-}
-
-function OptionRow({
-  title,
-  description,
-  Icon,
-  checked,
-  disabled,
-  onCheckedChange,
-  onBlur,
-  className,
-}: {
-  title: string;
-  description: string;
-  Icon?: React.FC<{ className?: string }>;
-  checked: boolean;
-  disabled?: boolean;
-  onCheckedChange: (checked: boolean) => void;
-  onBlur: () => void;
-  className?: string;
-}) {
-  return (
-    <label
-      data-disabled={disabled || undefined}
-      className={cn(
-        "has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-start gap-2.75 rounded-md px-3.5 py-2.5 data-disabled:cursor-not-allowed data-disabled:opacity-50 lg:w-1/2",
-        className,
-      )}
-    >
-      <Checkbox
-        className="mt-0.5"
-        disabled={disabled}
-        onBlur={onBlur}
-        checked={checked}
-        onCheckedChange={(v) => onCheckedChange(v === true)}
-      />
-      <div className="flex min-w-0 shrink flex-col gap-0.5">
-        <div className="flex items-center gap-1.5">
-          {Icon && <Icon className="size-4.5 shrink-0" />}
-          <p className="min-w-0 shrink leading-tight font-medium select-none">{title}</p>
-        </div>
-        <p className="text-muted-foreground text-sm leading-tight select-none">{description}</p>
-      </div>
-    </label>
   );
 }
