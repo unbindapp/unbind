@@ -784,7 +784,7 @@ function AsyncDropdownMenu({
                         {ItemSuffix && <ItemSuffix value={item.value} />}
                       </div>
                       {item.description && (
-                        <p className="text-muted-foreground min-w-0 shrink text-sm leading-tight">
+                        <p className="text-muted-foreground min-w-0 shrink text-sm leading-tight font-normal">
                           {item.description}
                         </p>
                       )}

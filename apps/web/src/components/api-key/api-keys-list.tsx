@@ -29,7 +29,7 @@ export default function ApiKeysList({ className }: TProps) {
     return (
       <Wrapper className={className}>
         {placeholderArray.map((_, i) => (
-          <ApiKeyCard key={i} type="placeholder" />
+          <ApiKeyCard key={i} isPlaceholder={true} />
         ))}
       </Wrapper>
     );
@@ -46,7 +46,7 @@ export default function ApiKeysList({ className }: TProps) {
   return (
     <Wrapper className={className}>
       {data.apiKeys.map((apiKey) => (
-        <ApiKeyCard key={apiKey.id} type="key" apiKey={apiKey} />
+        <ApiKeyCard key={apiKey.id} apiKey={apiKey} />
       ))}
     </Wrapper>
   );

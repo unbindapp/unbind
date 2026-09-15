@@ -59,7 +59,7 @@ const FormSchema = z
   });
 
 // Name, access, role and expiry share the picker's column width
-const fieldClassName = "mt-3 w-full sm:w-[calc((100%-0.5rem)/2)]";
+const fieldClassName = "mt-3 w-full lg:w-[calc((100%-0.5rem)/2)]";
 
 export default function AddApiKeyForm({ className }: TProps) {
   const { invalidate } = useApiKeysUtils();
@@ -120,8 +120,10 @@ export default function AddApiKeyForm({ className }: TProps) {
         className={cn("flex w-full flex-col rounded-xl border", className)}
       >
         <div className="flex w-full flex-col px-5 pt-3.5 pb-4.5 sm:px-6 sm:pt-4 sm:pb-6">
-          <h2 className="w-full text-lg leading-tight font-semibold">Name</h2>
-          <p className="text-muted-foreground mt-1.5 leading-tight">
+          <h2 className="w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
+            Name
+          </h2>
+          <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
             Something that tells you where the key is used.
           </p>
           <form.AppField
@@ -138,10 +140,11 @@ export default function AddApiKeyForm({ className }: TProps) {
               />
             )}
           />
-
-          <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Access</h2>
-          <p className="text-muted-foreground mt-1.5 leading-tight">
-            A key can never do more than you can. Narrow it down to what the key is for.
+          <h2 className="mt-6 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
+            Access
+          </h2>
+          <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
+            You can narrow down a key's permissions if needed.
           </p>
           <form.AppField
             name="access"
@@ -185,6 +188,7 @@ export default function AddApiKeyForm({ className }: TProps) {
                     <div className="mt-2 flex w-full flex-col gap-2">
                       {field.state.value.map((row, index) => (
                         <ResourceRow
+                          index={index}
                           key={index}
                           field={field}
                           row={row}
@@ -206,8 +210,8 @@ export default function AddApiKeyForm({ className }: TProps) {
                       ))}
                       <Button
                         type="button"
-                        variant="ghost"
-                        className="text-muted-foreground w-full justify-start gap-1.5 px-3"
+                        variant="outline"
+                        className="text-muted-foreground justify-start gap-1.5 px-3 font-semibold"
                         onClick={() => {
                           field.handleChange((prev) => [...prev, emptyResourceRow]);
                           setCaps((prev) => [...prev, null]);
@@ -223,8 +227,10 @@ export default function AddApiKeyForm({ className }: TProps) {
             }
           </form.Subscribe>
 
-          <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Role</h2>
-          <p className="text-muted-foreground mt-1.5 leading-tight">
+          <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
+            Role
+          </h2>
+          <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
             The most a key can do on the resources above.
           </p>
           <form.Subscribe
@@ -301,9 +307,11 @@ export default function AddApiKeyForm({ className }: TProps) {
             }}
           </form.Subscribe>
 
-          <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Expires</h2>
-          <p className="text-muted-foreground mt-1.5 leading-tight">
-            An expired key stops working on its own. Pick never for long-running automation.
+          <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
+            Expires
+          </h2>
+          <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
+            An expired key stops working immediately.
           </p>
           <form.AppField
             name="expiry"

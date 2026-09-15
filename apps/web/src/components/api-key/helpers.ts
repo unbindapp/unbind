@@ -1,7 +1,13 @@
-import type { PermittedAction, ResourceType } from "@/lib/server/client.gen";
 import type { TApiKeyShallow } from "@/lib/queries/api-keys";
+import type { PermittedAction, ResourceType } from "@/lib/server/client.gen";
 import { addDays } from "date-fns";
-import { EyeIcon, InfinityIcon, ListFilterIcon, ShieldHalfIcon, SquarePenIcon } from "lucide-react";
+import {
+  EyeIcon,
+  ListFilterIcon,
+  ScrollTextIcon,
+  ShieldHalfIcon,
+  SquarePenIcon,
+} from "lucide-react";
 import type { FC } from "react";
 
 export type TAccess = "full" | "scoped";
@@ -16,7 +22,7 @@ export const accessOptions: {
     value: "full",
     label: "Everything I can access",
     description: "Follows your own permissions.",
-    Icon: InfinityIcon,
+    Icon: ScrollTextIcon,
   },
   {
     value: "scoped",
@@ -35,7 +41,7 @@ export const roleOptions: {
   {
     value: "viewer",
     title: "Viewer",
-    description: "Can read config, logs, and metrics. Variables are hidden.",
+    description: "Can read config, logs, and metrics. Can't view variables values.",
     Icon: EyeIcon,
   },
   {

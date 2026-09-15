@@ -23,7 +23,7 @@ export default function GeneralTabContent({ className }: TProps) {
   return (
     <div className={cn("flex w-full flex-col gap-6", className)}>
       <Section title="Email" description="The address you sign in with. It cannot be changed yet.">
-        <div className="flex w-full items-center gap-2 md:max-w-md">
+        <div className="flex w-full items-start gap-2 md:max-w-md">
           <Input
             readOnly
             value={me?.email ?? ""}

@@ -28,6 +28,7 @@ type TProps = {
   onRemove?: () => void;
   // Strongest role the owner holds on the row's deepest pick, null when none
   onCapChange: (cap: PermittedAction | null) => void;
+  index: number;
   className?: string;
 };
 
@@ -40,6 +41,7 @@ export default function ResourceRow({
   onRemove,
   onCapChange,
   className,
+  index,
 }: TProps) {
   const teams = useQuery(teamsListQuery());
   const projects = useQuery({
@@ -133,151 +135,156 @@ export default function ResourceRow({
 
   const Select = field.AsyncAndSearchableSelect;
   // Fixed halves so a pick adding the next select never reflows the ones before it
-  const selectClassName = "w-full sm:w-[calc((100%-0.5rem)/2)]";
+  const selectClassName = "w-full lg:w-[calc((100%-0.5rem)/2)]";
 
   return (
-    <div className={cn("flex w-full items-start gap-2", className)}>
-      <div className="flex min-w-0 flex-1 flex-wrap gap-2">
-        <Select
-          field={field}
-          hideError
-          className={selectClassName}
-          value={row.teamId}
-          onChange={(v: string) =>
-            onChange({
-              ...row,
-              teamId: v,
-              projectId: allValue,
-              environmentId: allValue,
-              serviceId: allValue,
-            })
-          }
-          items={teamItems}
-          isPending={teams.isPending}
-          error={teams.error?.message}
-          commandInputPlaceholder="Search teams..."
-          CommandEmptyText="No teams found"
-          CommandEmptyIcon={UsersIcon}
-        >
-          {({ isOpen }: { isOpen: boolean }) => (
-            <BlockItemButtonLike
-              asElement="button"
-              text={team?.name ?? "Select a team"}
-              Icon={({ className }) => <UsersIcon className={cn(className, "size-4.5")} />}
-              open={isOpen}
-              isPending={teams.isPending}
-            />
-          )}
-        </Select>
-        {row.teamId !== "" && (
-          <Select
-            field={field}
-            hideError
-            className={selectClassName}
-            value={row.projectId}
-            onChange={(v: string) =>
-              onChange({ ...row, projectId: v, environmentId: allValue, serviceId: allValue })
-            }
-            items={projectItems}
-            isPending={projects.isPending}
-            error={projects.error?.message}
-            commandInputPlaceholder="Search projects..."
-            CommandEmptyText="No projects found"
-            CommandEmptyIcon={FolderIcon}
-          >
-            {({ isOpen }: { isOpen: boolean }) => (
-              <BlockItemButtonLike
-                asElement="button"
-                text={
-                  row.projectId === allValue
-                    ? "All projects"
-                    : (project?.name ?? "Select a project")
-                }
-                Icon={({ className }) => <FolderIcon className={cn(className, "size-4.5")} />}
-                open={isOpen}
-                isPending={projects.isPending}
-              />
-            )}
-          </Select>
-        )}
-        {row.teamId !== "" && row.projectId !== allValue && (
-          <Select
-            field={field}
-            hideError
-            className={selectClassName}
-            value={row.environmentId}
-            onChange={(v: string) => onChange({ ...row, environmentId: v, serviceId: allValue })}
-            items={environmentItems}
-            isPending={environments.isPending}
-            error={environments.error?.message}
-            commandInputPlaceholder="Search environments..."
-            CommandEmptyText="No environments found"
-            CommandEmptyIcon={ContainerIcon}
-          >
-            {({ isOpen }: { isOpen: boolean }) => (
-              <BlockItemButtonLike
-                asElement="button"
-                text={
-                  row.environmentId === allValue
-                    ? "All environments"
-                    : (environment?.name ?? "Select an environment")
-                }
-                Icon={({ className }) => <ContainerIcon className={cn(className, "size-4.5")} />}
-                open={isOpen}
-                isPending={environments.isPending}
-              />
-            )}
-          </Select>
-        )}
-        {row.teamId !== "" && row.projectId !== allValue && row.environmentId !== allValue && (
-          <Select
-            field={field}
-            hideError
-            className={selectClassName}
-            value={row.serviceId}
-            onChange={(v: string) => onChange({ ...row, serviceId: v })}
-            items={serviceItems}
-            isPending={services.isPending}
-            error={services.error?.message}
-            commandInputPlaceholder="Search services..."
-            CommandEmptyText="No services found"
-            CommandEmptyIcon={BoxIcon}
-            CommandItemElement={ServiceItemElement}
-          >
-            {({ isOpen }: { isOpen: boolean }) => (
-              <BlockItemButtonLike
-                asElement="button"
-                text={
-                  row.serviceId === allValue
-                    ? "All services"
-                    : (service?.name ?? "Select a service")
-                }
-                Icon={({ className }) =>
-                  service ? (
-                    <ServiceIcon service={service} className={cn(className, "size-4.5")} />
-                  ) : (
-                    <BoxIcon className={cn(className, "size-4.5")} />
-                  )
-                }
-                open={isOpen}
-                isPending={services.isPending}
-              />
-            )}
-          </Select>
-        )}
-      </div>
-      {onRemove && (
+    <div className={cn("flex w-full flex-col items-start gap-2 rounded-xl border p-2", className)}>
+      <div className="flex w-full justify-between gap-4">
+        <p className="min-w-0 flex-1 truncate px-2 py-0.5 leading-tight font-medium">
+          Resource {index + 1}
+        </p>
         <Button
           type="button"
           aria-label="Remove row"
           variant="ghost"
           size="icon"
           onClick={onRemove}
-          className="text-muted-more-foreground shrink-0 rounded-lg"
+          className="text-muted-more-foreground -my-1 -mr-1 size-8.5 shrink-0 rounded-lg"
         >
-          <XIcon className="size-5" />
+          <XIcon className="size-4.5" />
         </Button>
-      )}
+      </div>
+      <div className="flex w-full items-start gap-2">
+        <div className="flex min-w-0 flex-1 flex-wrap gap-2">
+          <Select
+            field={field}
+            hideError
+            className={selectClassName}
+            value={row.teamId}
+            onChange={(v: string) =>
+              onChange({
+                ...row,
+                teamId: v,
+                projectId: allValue,
+                environmentId: allValue,
+                serviceId: allValue,
+              })
+            }
+            items={teamItems}
+            isPending={teams.isPending}
+            error={teams.error?.message}
+            commandInputPlaceholder="Search teams..."
+            CommandEmptyText="No teams found"
+            CommandEmptyIcon={UsersIcon}
+          >
+            {({ isOpen }: { isOpen: boolean }) => (
+              <BlockItemButtonLike
+                asElement="button"
+                text={team?.name ?? "Select a team"}
+                Icon={({ className }) => <UsersIcon className={cn(className, "size-4.5")} />}
+                open={isOpen}
+                isPending={teams.isPending}
+              />
+            )}
+          </Select>
+          {row.teamId !== "" && (
+            <Select
+              field={field}
+              hideError
+              className={selectClassName}
+              value={row.projectId}
+              onChange={(v: string) =>
+                onChange({ ...row, projectId: v, environmentId: allValue, serviceId: allValue })
+              }
+              items={projectItems}
+              isPending={projects.isPending}
+              error={projects.error?.message}
+              commandInputPlaceholder="Search projects..."
+              CommandEmptyText="No projects found"
+              CommandEmptyIcon={FolderIcon}
+            >
+              {({ isOpen }: { isOpen: boolean }) => (
+                <BlockItemButtonLike
+                  asElement="button"
+                  text={
+                    row.projectId === allValue
+                      ? "All projects"
+                      : (project?.name ?? "Select a project")
+                  }
+                  Icon={({ className }) => <FolderIcon className={cn(className, "size-4.5")} />}
+                  open={isOpen}
+                  isPending={projects.isPending}
+                />
+              )}
+            </Select>
+          )}
+          {row.teamId !== "" && row.projectId !== allValue && (
+            <Select
+              field={field}
+              hideError
+              className={selectClassName}
+              value={row.environmentId}
+              onChange={(v: string) => onChange({ ...row, environmentId: v, serviceId: allValue })}
+              items={environmentItems}
+              isPending={environments.isPending}
+              error={environments.error?.message}
+              commandInputPlaceholder="Search environments..."
+              CommandEmptyText="No environments found"
+              CommandEmptyIcon={ContainerIcon}
+            >
+              {({ isOpen }: { isOpen: boolean }) => (
+                <BlockItemButtonLike
+                  asElement="button"
+                  text={
+                    row.environmentId === allValue
+                      ? "All environments"
+                      : (environment?.name ?? "Select an environment")
+                  }
+                  Icon={({ className }) => <ContainerIcon className={cn(className, "size-4.5")} />}
+                  open={isOpen}
+                  isPending={environments.isPending}
+                />
+              )}
+            </Select>
+          )}
+          {row.teamId !== "" && row.projectId !== allValue && row.environmentId !== allValue && (
+            <Select
+              field={field}
+              hideError
+              className={selectClassName}
+              value={row.serviceId}
+              onChange={(v: string) => onChange({ ...row, serviceId: v })}
+              items={serviceItems}
+              isPending={services.isPending}
+              error={services.error?.message}
+              commandInputPlaceholder="Search services..."
+              CommandEmptyText="No services found"
+              CommandEmptyIcon={BoxIcon}
+              CommandItemElement={ServiceItemElement}
+            >
+              {({ isOpen }: { isOpen: boolean }) => (
+                <BlockItemButtonLike
+                  asElement="button"
+                  text={
+                    row.serviceId === allValue
+                      ? "All services"
+                      : (service?.name ?? "Select a service")
+                  }
+                  Icon={({ className }) =>
+                    service ? (
+                      <ServiceIcon service={service} className={cn(className, "size-4.5")} />
+                    ) : (
+                      <BoxIcon className={cn(className, "size-4.5")} />
+                    )
+                  }
+                  open={isOpen}
+                  isPending={services.isPending}
+                />
+              )}
+            </Select>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

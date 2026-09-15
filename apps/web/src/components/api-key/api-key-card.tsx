@@ -19,17 +19,25 @@ import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { deleteApiKey as deleteApiKeyFn, type TApiKeyShallow } from "@/lib/queries/api-keys";
 import { useMutation } from "@tanstack/react-query";
 import { differenceInDays, format, formatDistanceToNowStrict, isPast } from "date-fns";
-import { EllipsisVerticalIcon, KeySquareIcon, Trash2Icon } from "lucide-react";
+import {
+  EllipsisVerticalIcon,
+  EyeIcon,
+  KeySquareIcon,
+  ShieldHalfIcon,
+  SquarePenIcon,
+  Trash2Icon,
+} from "lucide-react";
 import { useState } from "react";
 
 const placeholderChips = Array.from({ length: 2 }, (_, i) => i);
 
-type TProps = { type: "key"; apiKey: TApiKeyShallow } | { type: "placeholder"; apiKey?: never };
+type TProps =
+  { apiKey: TApiKeyShallow; isPlaceholder?: never } | { apiKey?: never; isPlaceholder: true };
 
-export default function ApiKeyCard({ type, apiKey }: TProps) {
+export default function ApiKeyCard({ isPlaceholder, apiKey }: TProps) {
   return (
     <div
-      data-placeholder={type === "placeholder" || undefined}
+      data-placeholder={isPlaceholder || undefined}
       className="group/item relative flex flex-col items-start justify-start gap-3 rounded-xl border p-3 sm:p-4 sm:pt-3.5"
     >
       {apiKey && <NewEntityIndicator id={apiKey.id} />}
@@ -41,13 +49,23 @@ export default function ApiKeyCard({ type, apiKey }: TProps) {
           <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink font-medium group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
             {apiKey ? apiKey.name : "Loading key"}
           </p>
-          <p className="bg-border text-muted-foreground group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:animate-skeleton rounded-sm px-1.5 py-0.75 font-mono text-xs leading-tight group-data-placeholder/item:text-transparent">
-            {apiKey ? `${apiKey.token_prefix}…` : "unb_loading"}
-          </p>
+          <Chip className="font-mono">{apiKey ? `${apiKey.token_prefix}` : "unb_loading"}</Chip>
         </div>
       </div>
       <div className="flex w-full flex-wrap items-start justify-start gap-1.5 text-xs">
-        <Chip className="text-foreground bg-foreground/6-10 font-medium">
+        <Chip
+          data-variant={apiKey?.role}
+          className="text-foreground bg-foreground/6-10 data-[variant=admin]:text-destructive data-[variant=admin]:bg-destructive/4-10 data-[variant=admin]:border-destructive/4-10 data-[variant=editor]:text-warning data-[variant=editor]:bg-warning/4-10 data-[variant=editor]:border-warning/4-10 data-[variant=viewer]:text-process data-[variant=viewer]:bg-process/4-10 data-[variant=viewer]:border-process/4-10 font-medium"
+        >
+          {apiKey?.role === "admin" && (
+            <ShieldHalfIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+          )}
+          {apiKey?.role === "editor" && (
+            <SquarePenIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+          )}
+          {apiKey?.role === "viewer" && (
+            <EyeIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+          )}
           {apiKey ? roleTitle(apiKey.role) : "Viewer"}
         </Chip>
         {apiKey ? (
@@ -68,7 +86,7 @@ export default function ApiKeyCard({ type, apiKey }: TProps) {
         )}
       </div>
       <p className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full min-w-0 shrink px-0.75 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
-        {apiKey ? <Timeline apiKey={apiKey} /> : "Created Jan 01, 2024"}
+        <Timeline {...(isPlaceholder ? { isPlaceholder: true } : { apiKey })} />
       </p>
       {!apiKey ? (
         <Button
@@ -91,35 +109,55 @@ function roleTitle(role: TApiKeyShallow["role"]) {
   return roleOptions.find((option) => option.value === role)?.title ?? role;
 }
 
-function Chip({ className, children }: { className?: string; children: React.ReactNode }) {
+function Chip({ className, children, ...rest }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
       className={cn(
-        "bg-border text-muted-foreground group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:animate-skeleton max-w-full rounded-sm px-1.5 py-0.75 leading-tight group-data-placeholder/item:text-transparent",
+        "bg-foreground/2-10 border-foreground/2-10 text-muted-foreground group-data-placeholder/item:border-muted-more-foreground group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:animate-skeleton max-w-full rounded-sm border px-1.5 py-0.5 text-xs leading-tight group-data-placeholder/item:text-transparent",
         className,
       )}
+      {...rest}
     >
       {children}
     </p>
   );
 }
 
-function Timeline({ apiKey }: { apiKey: TApiKeyShallow }) {
+const placeholderTime = new Date("2020-01-01T00:00:00Z");
+
+function Timeline({
+  apiKey,
+  isPlaceholder,
+}: { apiKey: TApiKeyShallow; isPlaceholder?: never } | { apiKey?: never; isPlaceholder: true }) {
   const { str: lastUsed } = useTimeDifference({
-    timestamp: apiKey.last_used_at ? new Date(apiKey.last_used_at).getTime() : undefined,
+    timestamp: isPlaceholder
+      ? placeholderTime.getTime()
+      : apiKey.last_used_at
+        ? new Date(apiKey.last_used_at).getTime()
+        : undefined,
   });
-  const expiry = describeExpiry(apiKey.expires_at);
+  const expiry: ReturnType<typeof describeExpiry> = isPlaceholder
+    ? { state: "never", text: "Never expires" }
+    : describeExpiry(isPlaceholder ? placeholderTime.toISOString() : apiKey.expires_at);
   return (
     <>
-      <span>Created {format(apiKey.created_at, "MMMM dd, yyyy")}</span>
-      <span className="px-[0.75ch]">·</span>
-      <span>{apiKey.last_used_at && lastUsed ? `Last used ${lastUsed}` : "Never used"}</span>
-      <span className="px-[0.75ch]">·</span>
       <span
         data-state={expiry.state}
         className="data-[state=soon]:text-warning data-[state=expired]:text-destructive"
       >
         {expiry.text}
+      </span>
+      {!isPlaceholder && <span className="text-muted-more-foreground px-[0.75ch]">|</span>}
+      <span>
+        {isPlaceholder
+          ? "Never used"
+          : apiKey.last_used_at && lastUsed
+            ? `Last used ${lastUsed}`
+            : "Never used"}
+      </span>
+      {!isPlaceholder && <span className="text-muted-more-foreground px-[0.75ch]">|</span>}
+      <span>
+        Created {format(isPlaceholder ? placeholderTime : apiKey.created_at, "MMMM dd, yyyy")}
       </span>
     </>
   );
