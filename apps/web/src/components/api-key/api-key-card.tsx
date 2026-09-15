@@ -18,11 +18,13 @@ import { cn } from "@/components/ui/utils";
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { deleteApiKey as deleteApiKeyFn, type TApiKeyShallow } from "@/lib/queries/api-keys";
 import { useMutation } from "@tanstack/react-query";
-import { differenceInDays, format, formatDistanceToNowStrict, isPast } from "date-fns";
+import { differenceInDays, formatDistanceToNowStrict, isPast } from "date-fns";
 import {
   EllipsisVerticalIcon,
   EyeIcon,
   KeySquareIcon,
+  ListFilterIcon,
+  ScrollTextIcon,
   ShieldHalfIcon,
   SquarePenIcon,
   Trash2Icon,
@@ -70,13 +72,17 @@ export default function ApiKeyCard({ isPlaceholder, apiKey }: TProps) {
         </Chip>
         {apiKey ? (
           apiKey.full_access ? (
-            <Chip>Everything you can access</Chip>
+            <Chip>
+              <ScrollTextIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+              Everything I can access
+            </Chip>
           ) : (
             apiKey.resources.map((resource) => (
               <Chip
                 key={resource.resource_id}
                 className={resource.path.length === 0 ? "text-destructive" : undefined}
               >
+                <ListFilterIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
                 {describeResource(resource)}
               </Chip>
             ))
@@ -157,7 +163,10 @@ function Timeline({
       </span>
       {!isPlaceholder && <span className="text-muted-more-foreground px-[0.75ch]">|</span>}
       <span>
-        Created {format(isPlaceholder ? placeholderTime : apiKey.created_at, "MMMM dd, yyyy")}
+        Created at{" "}
+        {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
+          new Date(apiKey?.created_at || placeholderTime),
+        )}
       </span>
     </>
   );
