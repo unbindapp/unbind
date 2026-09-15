@@ -51,7 +51,7 @@ export default function ApiKeyCard({ isPlaceholder, apiKey }: TProps) {
           <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink font-medium group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
             {apiKey ? apiKey.name : "Loading key"}
           </p>
-          <Chip className="font-mono">{apiKey ? `${apiKey.token_prefix}` : "unb_loading"}</Chip>
+          <Chip className="font-mono">{apiKey ? `${apiKey.token_prefix}...` : "unb_1234..."}</Chip>
         </div>
       </div>
       <div className="flex w-full flex-wrap items-start justify-start gap-1.5 text-xs">
