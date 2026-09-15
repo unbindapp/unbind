@@ -197,14 +197,10 @@ export default function AddApiKeyForm({ className }: TProps) {
                               prev.map((r, i) => (i === index ? next : r)),
                             )
                           }
-                          onRemove={
-                            field.state.value.length > 1
-                              ? () => {
-                                  field.handleChange((prev) => prev.filter((_, i) => i !== index));
-                                  setCaps((prev) => prev.filter((_, i) => i !== index));
-                                }
-                              : undefined
-                          }
+                          onRemove={() => {
+                            field.handleChange((prev) => prev.filter((_, i) => i !== index));
+                            setCaps((prev) => prev.filter((_, i) => i !== index));
+                          }}
                           onCapChange={(cap) => setCap(index, cap)}
                         />
                       ))}
@@ -218,8 +214,29 @@ export default function AddApiKeyForm({ className }: TProps) {
                         }}
                       >
                         <PlusIcon className="-ml-0.5 size-4.5" />
-                        <p className="min-w-0 shrink">Add another</p>
+                        <p className="min-w-0 shrink">
+                          {field.state.value.length === 0 ? "Add resource" : "Add another"}
+                        </p>
                       </Button>
+                      <form.Subscribe
+                        selector={(state) => ({
+                          submissionAttempts: state.submissionAttempts,
+                          allErrors: state.errors,
+                        })}
+                        children={({ submissionAttempts, allErrors }) => {
+                          const errors = allErrors[0]?.rows;
+                          const message =
+                            errors && errors.length > 0 ? errors[0]?.message : undefined;
+                          if (submissionAttempts > 0 && message) {
+                            return (
+                              <ErrorLine
+                                className="bg-transparent px-1 py-0 leading-tight"
+                                message={message}
+                              />
+                            );
+                          }
+                        }}
+                      />
                     </div>
                   )}
                 />
@@ -333,22 +350,6 @@ export default function AddApiKeyForm({ className }: TProps) {
                 )}
               </DropdownSelect>
             )}
-          />
-
-          <form.Subscribe
-            selector={(state) => ({
-              submissionAttempts: state.submissionAttempts,
-              allErrors: state.errors,
-            })}
-            children={({ submissionAttempts, allErrors }) => {
-              const errors = allErrors[0]?.rows;
-              const message = errors && errors.length > 0 ? errors[0]?.message : undefined;
-              if (submissionAttempts > 0 && message) {
-                return (
-                  <ErrorLine className="mt-4 bg-transparent p-0 leading-tight" message={message} />
-                );
-              }
-            }}
           />
         </div>
         <div className="bg-card flex w-full items-center justify-end rounded-b-xl border-t p-2 sm:p-2.5">

@@ -25,7 +25,7 @@ type TProps = {
   field: TSelectField;
   row: TResourceRow;
   onChange: (row: TResourceRow) => void;
-  onRemove?: () => void;
+  onRemove: () => void;
   // Strongest role the owner holds on the row's deepest pick, null when none
   onCapChange: (cap: PermittedAction | null) => void;
   index: number;
