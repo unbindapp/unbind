@@ -18,7 +18,6 @@ import {
 } from "@/components/service/service-picker";
 import { useServices, useServicesUtils } from "@/components/service/services-provider";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
 import { MountPathSchema } from "@/components/volume/mount-path";
@@ -166,11 +165,6 @@ function AttachSection({ volume }: TProps) {
       isPending={isPendingAttach}
       error={errorAttach?.message}
     >
-      <p className="text-muted-foreground w-full px-1.5">
-        {volume.mount_status === "detaching"
-          ? "This volume is detaching from its previous service. It can be attached to a service once detaching is complete."
-          : "This volume is not attached to a service. Attach it to a service in this environment to start using it."}
-      </p>
       <Block>
         <form.AppField
           name="serviceId"
@@ -207,7 +201,7 @@ function AttachSection({ volume }: TProps) {
                         open={isOpen}
                         onBlur={field.handleBlur}
                         isPending={isPendingServices}
-                        disabled={volume.is_deleting || volume.mount_status === "detaching"}
+                        disabled={isVolumeLocked(volume)}
                         hasChanges={!field.state.meta.isDefaultValue}
                       />
                     );
@@ -238,7 +232,7 @@ function AttachSection({ volume }: TProps) {
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="/data"
                   className="w-full"
-                  disabled={volume.is_deleting || volume.mount_status === "detaching"}
+                  disabled={isVolumeLocked(volume)}
                   hasChanges={!field.state.meta.isDefaultValue}
                 />
               </BlockItemContent>
@@ -253,16 +247,12 @@ function AttachSection({ volume }: TProps) {
 
 function AttachedSection({ volume }: TProps) {
   const {
-    query: { data: servicesData, isPending: isPendingServices, error: errorServices },
+    query: { data: servicesData, isPending, error },
   } = useServices();
 
-  const attachedService = servicesData
-    ? servicesData.services.find((service) => service.id === volume.mounted_on_service_id)
-    : undefined;
-
-  const isPending = isPendingServices;
-  const error = errorServices;
-  const hasData = servicesData;
+  const attachedService = servicesData?.services.find(
+    (service) => service.id === volume.mounted_on_service_id,
+  );
 
   const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
 
@@ -273,58 +263,51 @@ function AttachedSection({ volume }: TProps) {
       entityId={sectionHighlightId}
       Icon={UnplugIcon}
     >
-      <div
-        data-pending={isPending || undefined}
-        className="group/section flex w-full flex-col gap-2.5"
-      >
-        <p className="text-muted-foreground w-full px-1.5">
-          {isPending ? (
-            <span className="bg-muted-foreground animate-skeleton rounded-md text-transparent">
-              Loading connection details...
-            </span>
-          ) : attachedService ? (
-            <span>
-              This volume is{" "}
-              {volume.mount_status === "attaching" ? "being attached to" : "attached to"}{" "}
-              <span className="text-foreground bg-foreground/2-10 border-foreground/2-10 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
-                {attachedService.name}
-              </span>{" "}
-              on:
-            </span>
-          ) : error ? (
-            <span>Something went wrong.</span>
-          ) : (
-            <span>This volume is not attached to a service.</span>
-          )}
-        </p>
-        <div className="relative w-full">
-          <FolderClosedIcon className="text-muted-foreground group-data-pending/section:animate-skeleton group-data-pending/section:bg-muted-foreground absolute top-1/2 left-3.25 z-1 size-5 -translate-y-1/2 group-data-pending/section:rounded-md" />
-          <Input
-            disabled
-            fadeOnDisabled={false}
-            value={
-              isPending
-                ? "Loading"
-                : !hasData && error
-                  ? "Error"
-                  : volume.mount_path
-                    ? volume.mount_path
-                    : "Not attached"
-            }
-            className="relative pl-10.25 group-data-pending/section:opacity-0 disabled:cursor-text"
-          />
-          {isPending && (
-            <div className="bg-input absolute top-0 left-0 flex h-full w-full items-center justify-start rounded-lg border pr-3 pl-10.25">
-              <p className="bg-foreground animate-skeleton max-w-full min-w-0 truncate rounded-md leading-tight">
-                Loading...
-              </p>
-            </div>
-          )}
-        </div>
-        {!servicesData && !isPendingServices && errorServices && (
-          <ErrorLine message={errorServices.message} />
-        )}
-      </div>
+      <Block>
+        <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
+          <BlockItemHeader type="column">
+            <BlockItemTitle>Mount Path</BlockItemTitle>
+            <BlockItemDescription>
+              {isPending ? (
+                <span className="bg-muted-foreground animate-skeleton rounded-md text-transparent">
+                  Loading connection details...
+                </span>
+              ) : attachedService ? (
+                <>
+                  {volume.mount_status === "attaching" ? "Being attached to" : "Mounted on"}{" "}
+                  <span className="text-foreground bg-foreground/2-10 border-foreground/2-10 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
+                    {attachedService.name}
+                  </span>{" "}
+                  at this path.
+                </>
+              ) : error ? (
+                "Something went wrong."
+              ) : (
+                "This volume is not attached to a service."
+              )}
+            </BlockItemDescription>
+          </BlockItemHeader>
+          <BlockItemContent>
+            <BlockItemButtonLike
+              asElement="div"
+              isPending={isPending}
+              className={cn(isVolumeLocked(volume) && "opacity-50")}
+              text={
+                isPending
+                  ? "Loading"
+                  : !servicesData && error
+                    ? "Error"
+                    : volume.mount_path || "Not attached"
+              }
+              classNameText="whitespace-normal"
+              Icon={({ className }: { className?: string }) => (
+                <FolderClosedIcon className={className} />
+              )}
+            />
+          </BlockItemContent>
+        </BlockItem>
+        {!servicesData && !isPending && error && <ErrorLine message={error.message} />}
+      </Block>
       <VolumeIdBlock volume={volume} />
     </SettingsSection>
   );
@@ -353,6 +336,7 @@ function VolumeIdBlock({ volume }: TProps) {
           <BlockItemButtonLike
             asElement="div"
             text={volume.id}
+            className={cn(isVolumeLocked(volume) && "opacity-50")}
             classNameText="whitespace-normal"
             Icon={({ className }: { className?: string }) => (
               <HardDriveIcon className={className} />
@@ -363,6 +347,10 @@ function VolumeIdBlock({ volume }: TProps) {
       </BlockItem>
     </Block>
   );
+}
+
+function isVolumeLocked(volume: TVolumeShallow): boolean {
+  return volume.is_deleting || volume.mount_status === "detaching";
 }
 
 function getEntityId(volume: TVolumeShallow): string {
