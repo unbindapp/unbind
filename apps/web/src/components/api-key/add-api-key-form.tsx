@@ -65,7 +65,7 @@ const FormSchema = z
       }),
     ),
     role: z.enum(["viewer", "editor", "admin"]),
-    expiry: z.enum(["7d", "30d", "90d", "1y", "never"]),
+    expiry: z.enum(["1d", "7d", "30d", "90d", "1y", "never"]),
   })
   .refine((v) => v.access === "full" || v.rows.some((row) => row.teamId !== ""), {
     message: "Pick at least one resource.",
@@ -145,7 +145,7 @@ export default function AddApiKeyForm({ className }: TProps) {
                 value={field.state.value}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="GitHub Actions deploy"
+                placeholder="CI Pipeline"
               />
             )}
           />
@@ -204,7 +204,7 @@ export default function AddApiKeyForm({ className }: TProps) {
                       <Button
                         type="button"
                         variant="ghost"
-                        className="text-muted-foreground -ml-1 gap-1.5 self-start px-3"
+                        className="text-muted-foreground w-full justify-start gap-1.5 px-3"
                         onClick={() => {
                           field.handleChange((prev) => [...prev, emptyResourceRow]);
                           setCaps((prev) => [...prev, null]);
@@ -251,6 +251,8 @@ export default function AddApiKeyForm({ className }: TProps) {
                         return (
                           <OptionRow
                             key={option.value}
+                            className="lg:w-1/3"
+                            Icon={option.Icon}
                             title={option.title}
                             description={
                               disabled
@@ -341,22 +343,29 @@ function OptionList({ children }: { children: React.ReactNode }) {
 function OptionRow({
   title,
   description,
+  Icon,
   checked,
   disabled,
   onCheckedChange,
   onBlur,
+  className,
 }: {
   title: string;
   description: string;
+  Icon?: React.FC<{ className?: string }>;
   checked: boolean;
   disabled?: boolean;
   onCheckedChange: (checked: boolean) => void;
   onBlur: () => void;
+  className?: string;
 }) {
   return (
     <label
       data-disabled={disabled || undefined}
-      className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-start gap-2.75 rounded-md px-3.5 py-2.5 data-disabled:cursor-not-allowed data-disabled:opacity-50 lg:w-1/2"
+      className={cn(
+        "has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-start gap-2.75 rounded-md px-3.5 py-2.5 data-disabled:cursor-not-allowed data-disabled:opacity-50 lg:w-1/2",
+        className,
+      )}
     >
       <Checkbox
         className="mt-0.5"
@@ -366,7 +375,10 @@ function OptionRow({
         onCheckedChange={(v) => onCheckedChange(v === true)}
       />
       <div className="flex min-w-0 shrink flex-col gap-0.5">
-        <p className="leading-tight font-medium select-none">{title}</p>
+        <div className="flex items-center gap-1.5">
+          {Icon && <Icon className="size-4.5 shrink-0" />}
+          <p className="min-w-0 shrink leading-tight font-medium select-none">{title}</p>
+        </div>
         <p className="text-muted-foreground text-sm leading-tight select-none">{description}</p>
       </div>
     </label>

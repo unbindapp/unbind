@@ -1,19 +1,33 @@
 import type { PermittedAction, ResourceType } from "@/lib/server/client.gen";
 import type { TApiKeyShallow } from "@/lib/queries/api-keys";
 import { addDays } from "date-fns";
+import { EyeIcon, ShieldHalfIcon, SquarePenIcon } from "lucide-react";
+import type { FC } from "react";
 
-export const roleOptions: { value: PermittedAction; title: string; description: string }[] = [
+export const roleOptions: {
+  value: PermittedAction;
+  title: string;
+  description: string;
+  Icon: FC<{ className?: string }>;
+}[] = [
   {
     value: "viewer",
     title: "Viewer",
-    description: "Can read config, logs and metrics. Variable values stay hidden.",
+    description: "Can read config, logs, and metrics. Variables are hidden.",
+    Icon: EyeIcon,
   },
   {
     value: "editor",
     title: "Editor",
-    description: "Can also deploy, change settings and read variable values.",
+    description: "Can also deploy, change settings, and read variables.",
+    Icon: SquarePenIcon,
   },
-  { value: "admin", title: "Admin", description: "Can also delete and manage access." },
+  {
+    value: "admin",
+    title: "Admin",
+    description: "Can also delete and manage access.",
+    Icon: ShieldHalfIcon,
+  },
 ];
 
 const roleRank: Record<PermittedAction, number> = { viewer: 1, editor: 2, admin: 3 };
@@ -29,6 +43,7 @@ export function roleAllowedBy(role: PermittedAction, cap: PermittedAction | null
 }
 
 export const expiryOptions = [
+  { value: "1d", label: "1 day", days: 1 },
   { value: "7d", label: "7 days", days: 7 },
   { value: "30d", label: "30 days", days: 30 },
   { value: "90d", label: "90 days", days: 90 },
