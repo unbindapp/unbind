@@ -12,7 +12,7 @@ import (
 const (
 	APIKeyPrefix           = "unb_"
 	apiKeySecretBytes      = 32
-	apiKeyDisplayPrefixLen = 8
+	apiKeyDisplayPrefixLen = 4
 )
 
 // GeneratedAPIKey is the only place the plaintext token ever exists. Callers
