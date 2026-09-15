@@ -207,7 +207,11 @@ export default function AddApiKeyForm({ className }: TProps) {
                       <Button
                         type="button"
                         variant="outline"
-                        className="text-muted-foreground justify-start gap-1.5 px-3 font-semibold"
+                        className={cn(
+                          "text-muted-foreground justify-start gap-1.5 px-3 font-semibold",
+                          // With no rows it stands in for the picker, so it takes the picker's column width
+                          field.state.value.length === 0 && fieldClassName.replace("mt-3", ""),
+                        )}
                         onClick={() => {
                           field.handleChange((prev) => [...prev, emptyResourceRow]);
                           setCaps((prev) => [...prev, null]);
