@@ -358,5 +358,10 @@
     "version": "v0.1.71",
     "summary": "Consistent icon sizing across service settings blocks and dropdown items, tidier API key form sections, and small polish in the service creation and networking cards.",
     "breaking": false
+  },
+  "v0.1.72": {
+    "version": "v0.1.72",
+    "summary": "Volume connection details improvements, sticky settings tabs, and API key display polish.",
+    "breaking": false
   }
 }
