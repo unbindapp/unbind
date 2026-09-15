@@ -15,6 +15,7 @@ import {
   type TExpiryValue,
   type TResourceRow,
 } from "@/components/api-key/helpers";
+import InputSectionWrapper from "@/components/api-key/input-section-wrapper";
 import ResourceRow from "@/components/api-key/resource-row";
 import { BlockItemButtonLike } from "@/components/block";
 import ErrorLine from "@/components/error-line";
@@ -126,235 +127,239 @@ export default function AddApiKeyForm({ className }: TProps) {
           <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
             Something that tells you where the key is used.
           </p>
-          <form.AppField
-            name="name"
-            children={(field) => (
-              <field.TextField
-                dontCheckUntilSubmit
-                className={fieldClassName}
-                field={field}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="CI Pipeline"
-              />
-            )}
-          />
+          <InputSectionWrapper>
+            <form.AppField
+              name="name"
+              children={(field) => (
+                <field.TextField
+                  dontCheckUntilSubmit
+                  className={fieldClassName}
+                  field={field}
+                  value={field.state.value}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="CI Pipeline"
+                />
+              )}
+            />
+          </InputSectionWrapper>
           <h2 className="mt-6 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
             Access
           </h2>
           <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
             You can narrow down a key's permissions if needed.
           </p>
-          <form.AppField
-            name="access"
-            children={(field) => {
-              const selected = accessOptions.find((o) => o.value === field.state.value);
-              return (
-                <field.AsyncDropdownMenu
-                  field={field}
-                  className={fieldClassName}
-                  value={field.state.value}
-                  onChange={(v) => field.handleChange(v as TAccess)}
-                  items={accessOptions}
-                  ItemIcon={({ className, value }) => {
-                    const Icon = accessOptions.find((o) => o.value === value)?.Icon;
-                    return Icon ? <Icon className={className} /> : null;
-                  }}
-                  isPending={false}
-                  error={undefined}
-                >
-                  {({ isOpen }) => (
-                    <BlockItemButtonLike
-                      asElement="button"
-                      text={selected?.label ?? ""}
-                      Icon={({ className }) =>
-                        selected ? <selected.Icon className={cn(className, "size-4.5")} /> : null
-                      }
-                      open={isOpen}
-                      onBlur={field.handleBlur}
-                    />
-                  )}
-                </field.AsyncDropdownMenu>
-              );
-            }}
-          />
-          <form.Subscribe selector={(state) => ({ access: state.values.access })}>
-            {({ access }) =>
-              access === "scoped" && (
-                <form.AppField
-                  name="rows"
-                  children={(field) => (
-                    <div className="mt-2 flex w-full flex-col gap-2">
-                      {field.state.value.map((row, index) => (
-                        <ResourceRow
-                          index={index}
-                          key={index}
-                          field={field}
-                          row={row}
-                          onChange={(next) =>
-                            field.handleChange((prev) =>
-                              prev.map((r, i) => (i === index ? next : r)),
-                            )
-                          }
-                          onRemove={() => {
-                            field.handleChange((prev) => prev.filter((_, i) => i !== index));
-                            setCaps((prev) => prev.filter((_, i) => i !== index));
-                          }}
-                          onCapChange={(cap) => setCap(index, cap)}
-                        />
-                      ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className={cn(
-                          "text-muted-foreground justify-start gap-1.5 px-3 font-semibold",
-                          // With no rows it stands in for the picker, so it takes the picker's column width
-                          field.state.value.length === 0 && fieldClassName.replace("mt-3", ""),
-                        )}
-                        onClick={() => {
-                          field.handleChange((prev) => [...prev, emptyResourceRow]);
-                          setCaps((prev) => [...prev, null]);
-                        }}
-                      >
-                        <PlusIcon className="-ml-0.5 size-4.5" />
-                        <p className="min-w-0 shrink">
-                          {field.state.value.length === 0 ? "Add resource" : "Add another"}
-                        </p>
-                      </Button>
-                      <form.Subscribe
-                        selector={(state) => ({
-                          submissionAttempts: state.submissionAttempts,
-                          allErrors: state.errors,
-                        })}
-                        children={({ submissionAttempts, allErrors }) => {
-                          const errors = allErrors[0]?.rows;
-                          const message =
-                            errors && errors.length > 0 ? errors[0]?.message : undefined;
-                          if (submissionAttempts > 0 && message) {
-                            return (
-                              <ErrorLine
-                                className="bg-transparent px-1 py-0 leading-tight"
-                                message={message}
-                              />
-                            );
-                          }
-                        }}
+          <InputSectionWrapper>
+            <form.AppField
+              name="access"
+              children={(field) => {
+                const selected = accessOptions.find((o) => o.value === field.state.value);
+                return (
+                  <field.AsyncDropdownMenu
+                    field={field}
+                    className={fieldClassName}
+                    value={field.state.value}
+                    onChange={(v) => field.handleChange(v as TAccess)}
+                    items={accessOptions}
+                    ItemIcon={({ className, value }) => {
+                      const Icon = accessOptions.find((o) => o.value === value)?.Icon;
+                      return Icon ? <Icon className={className} /> : null;
+                    }}
+                    isPending={false}
+                    error={undefined}
+                  >
+                    {({ isOpen }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        text={selected?.label ?? ""}
+                        Icon={({ className }) =>
+                          selected ? <selected.Icon className={className} /> : null
+                        }
+                        open={isOpen}
+                        onBlur={field.handleBlur}
                       />
-                    </div>
-                  )}
-                />
-              )
-            }
-          </form.Subscribe>
-
+                    )}
+                  </field.AsyncDropdownMenu>
+                );
+              }}
+            />
+            <form.Subscribe selector={(state) => ({ access: state.values.access })}>
+              {({ access }) =>
+                access === "scoped" && (
+                  <form.AppField
+                    name="rows"
+                    children={(field) => (
+                      <div className="mt-2 flex w-full flex-col gap-2">
+                        {field.state.value.map((row, index) => (
+                          <ResourceRow
+                            index={index}
+                            key={index}
+                            field={field}
+                            row={row}
+                            onChange={(next) =>
+                              field.handleChange((prev) =>
+                                prev.map((r, i) => (i === index ? next : r)),
+                              )
+                            }
+                            onRemove={() => {
+                              field.handleChange((prev) => prev.filter((_, i) => i !== index));
+                              setCaps((prev) => prev.filter((_, i) => i !== index));
+                            }}
+                            onCapChange={(cap) => setCap(index, cap)}
+                          />
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className={cn(
+                            "text-muted-foreground justify-start gap-1.5 px-3 font-semibold",
+                            // With no rows it stands in for the picker, so it takes the picker's column width
+                            field.state.value.length === 0 && fieldClassName.replace("mt-3", ""),
+                          )}
+                          onClick={() => {
+                            field.handleChange((prev) => [...prev, emptyResourceRow]);
+                            setCaps((prev) => [...prev, null]);
+                          }}
+                        >
+                          <PlusIcon className="-ml-0.5 size-4.5" />
+                          <p className="min-w-0 shrink">
+                            {field.state.value.length === 0 ? "Add Resource" : "Add Another"}
+                          </p>
+                        </Button>
+                        <form.Subscribe
+                          selector={(state) => ({
+                            submissionAttempts: state.submissionAttempts,
+                            allErrors: state.errors,
+                          })}
+                          children={({ submissionAttempts, allErrors }) => {
+                            const errors = allErrors[0]?.rows;
+                            const message =
+                              errors && errors.length > 0 ? errors[0]?.message : undefined;
+                            if (submissionAttempts > 0 && message) {
+                              return (
+                                <ErrorLine
+                                  className="bg-transparent px-1 py-0 leading-tight"
+                                  message={message}
+                                />
+                              );
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
+                  />
+                )
+              }
+            </form.Subscribe>
+          </InputSectionWrapper>
           <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
             Role
           </h2>
           <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
             The most a key can do on the resources above.
           </p>
-          <form.Subscribe
-            selector={(state) => ({ access: state.values.access, rows: state.values.rows })}
-          >
-            {({ access, rows }) => {
-              const pickedCaps = rows.map((row, i) => (row.teamId ? caps[i] : undefined));
-              const scopedCap = pickedCaps.reduce<PermittedAction | null | undefined>(
-                (weakest, cap) => {
-                  if (cap === undefined) return weakest;
-                  if (weakest === undefined) return cap;
-                  if (weakest === null || cap === null) return null;
-                  return roleAllowedBy(cap, weakest) ? cap : weakest;
-                },
-                undefined,
-              );
-              const isAllowed = (role: PermittedAction) =>
-                access === "full" || scopedCap === undefined || roleAllowedBy(role, scopedCap);
-              return (
-                <form.AppField
-                  name="role"
-                  children={(field) => {
-                    const selected = roleOptions.find((o) => o.value === field.state.value);
-                    return (
-                      <field.AsyncDropdownMenu
-                        field={field}
-                        className={fieldClassName}
-                        value={field.state.value}
-                        onChange={(v) => {
-                          if (isAllowed(v as PermittedAction)) {
-                            field.handleChange(v as PermittedAction);
-                          }
-                        }}
-                        items={roleOptions.map((o) => ({
-                          value: o.value,
-                          label: o.title,
-                          description: o.description,
-                        }))}
-                        ItemIcon={({ className, value }) => {
-                          const Icon = roleOptions.find((o) => o.value === value)?.Icon;
-                          return Icon ? <Icon className={className} /> : null;
-                        }}
-                        ItemSuffix={({ value }) =>
-                          isAllowed(value as PermittedAction) ? null : (
-                            <p className="bg-border text-muted-foreground rounded-sm px-1.5 py-0.5 text-xs leading-tight">
-                              Above your access
-                            </p>
-                          )
-                        }
-                        classNameItem={({ value }) =>
-                          isAllowed(value as PermittedAction) ? "" : "opacity-50"
-                        }
-                        isPending={false}
-                        error={undefined}
-                      >
-                        {({ isOpen }) => (
-                          <BlockItemButtonLike
-                            asElement="button"
-                            text={selected?.title ?? ""}
-                            Icon={({ className }) =>
-                              selected ? (
-                                <selected.Icon className={cn(className, "size-4.5")} />
-                              ) : null
+          <InputSectionWrapper>
+            <form.Subscribe
+              selector={(state) => ({ access: state.values.access, rows: state.values.rows })}
+            >
+              {({ access, rows }) => {
+                const pickedCaps = rows.map((row, i) => (row.teamId ? caps[i] : undefined));
+                const scopedCap = pickedCaps.reduce<PermittedAction | null | undefined>(
+                  (weakest, cap) => {
+                    if (cap === undefined) return weakest;
+                    if (weakest === undefined) return cap;
+                    if (weakest === null || cap === null) return null;
+                    return roleAllowedBy(cap, weakest) ? cap : weakest;
+                  },
+                  undefined,
+                );
+                const isAllowed = (role: PermittedAction) =>
+                  access === "full" || scopedCap === undefined || roleAllowedBy(role, scopedCap);
+                return (
+                  <form.AppField
+                    name="role"
+                    children={(field) => {
+                      const selected = roleOptions.find((o) => o.value === field.state.value);
+                      return (
+                        <field.AsyncDropdownMenu
+                          field={field}
+                          className={fieldClassName}
+                          value={field.state.value}
+                          onChange={(v) => {
+                            if (isAllowed(v as PermittedAction)) {
+                              field.handleChange(v as PermittedAction);
                             }
-                            open={isOpen}
-                            onBlur={field.handleBlur}
-                          />
-                        )}
-                      </field.AsyncDropdownMenu>
-                    );
-                  }}
-                />
-              );
-            }}
-          </form.Subscribe>
-
+                          }}
+                          items={roleOptions.map((o) => ({
+                            value: o.value,
+                            label: o.title,
+                            description: o.description,
+                          }))}
+                          ItemIcon={({ className, value }) => {
+                            const Icon = roleOptions.find((o) => o.value === value)?.Icon;
+                            return Icon ? <Icon className={className} /> : null;
+                          }}
+                          ItemSuffix={({ value }) =>
+                            isAllowed(value as PermittedAction) ? null : (
+                              <p className="bg-border text-muted-foreground rounded-sm px-1.5 py-0.5 text-xs leading-tight">
+                                Above your access
+                              </p>
+                            )
+                          }
+                          classNameItem={({ value }) =>
+                            isAllowed(value as PermittedAction) ? "" : "opacity-50"
+                          }
+                          isPending={false}
+                          error={undefined}
+                        >
+                          {({ isOpen }) => (
+                            <BlockItemButtonLike
+                              asElement="button"
+                              text={selected?.title ?? ""}
+                              Icon={({ className }) =>
+                                selected ? <selected.Icon className={className} /> : null
+                              }
+                              open={isOpen}
+                              onBlur={field.handleBlur}
+                            />
+                          )}
+                        </field.AsyncDropdownMenu>
+                      );
+                    }}
+                  />
+                );
+              }}
+            </form.Subscribe>
+          </InputSectionWrapper>
           <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
             Expires
           </h2>
           <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
             An expired key stops working immediately.
           </p>
-          <form.AppField
-            name="expiry"
-            children={(field) => (
-              <DropdownSelect
-                items={expiryOptions.map((o) => ({ value: o.value, label: o.label }))}
-                value={field.state.value}
-                onChange={(v) => field.handleChange(v as TExpiryValue)}
-                className={fieldClassName}
-              >
-                {({ isOpen }) => (
-                  <BlockItemButtonLike
-                    asElement="button"
-                    text={expiryOptions.find((o) => o.value === field.state.value)?.label ?? ""}
-                    Icon={({ className }) => <ClockIcon className={cn(className, "size-4.5")} />}
-                    open={isOpen}
-                    onBlur={field.handleBlur}
-                  />
-                )}
-              </DropdownSelect>
-            )}
-          />
+          <InputSectionWrapper>
+            <form.AppField
+              name="expiry"
+              children={(field) => (
+                <DropdownSelect
+                  items={expiryOptions.map((o) => ({ value: o.value, label: o.label }))}
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange(v as TExpiryValue)}
+                  className={fieldClassName}
+                >
+                  {({ isOpen }) => (
+                    <BlockItemButtonLike
+                      asElement="button"
+                      text={expiryOptions.find((o) => o.value === field.state.value)?.label ?? ""}
+                      Icon={({ className }) => <ClockIcon className={className} />}
+                      open={isOpen}
+                      onBlur={field.handleBlur}
+                    />
+                  )}
+                </DropdownSelect>
+              )}
+            />
+          </InputSectionWrapper>
         </div>
         <div className="bg-card flex w-full items-center justify-end rounded-b-xl border-t p-2 sm:p-2.5">
           <form.Subscribe selector={(state) => ({ isSubmitting: state.isSubmitting })}>

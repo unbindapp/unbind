@@ -1,4 +1,3 @@
-import { cn } from "@/components/ui/utils";
 import { TCommandItem } from "@/lib/hooks/use-app-form";
 import { GlobeIcon, LockIcon } from "lucide-react";
 
@@ -31,6 +30,6 @@ export function NetworkAccessIcon({
   isPublic: boolean;
   className?: string;
 }) {
-  if (isPublic) return <GlobeIcon className={cn(className, "size-4.5")} />;
-  return <LockIcon className={cn(className, "size-4.5")} />;
+  if (isPublic) return <GlobeIcon className={className} />;
+  return <LockIcon className={className} />;
 }

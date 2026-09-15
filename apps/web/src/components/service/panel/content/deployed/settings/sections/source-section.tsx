@@ -1,8 +1,3 @@
-import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
-import { settingsIds } from "@/components/settings/settings-ids";
-import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
-import { isNonDockerHubImage } from "@/components/command-panel/context-command-panel/items/docker-image";
-import BrandIcon from "@/components/icons/brand";
 import {
   Block,
   BlockItem,
@@ -11,25 +6,29 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
+import { isNonDockerHubImage } from "@/components/command-panel/context-command-panel/items/docker-image";
+import BrandIcon from "@/components/icons/brand";
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
+  hasApplying,
   stagedString,
   useResetFormOnStagedChange,
-  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
 import {
   TDatabaseSectionProps,
   TDockerImageSectionProps,
   TGitSectionProps,
 } from "@/components/settings/types";
-import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
-import { TServiceShallow } from "@/lib/queries/services";
 import { dockerTagsQuery } from "@/lib/queries/docker";
 import { gitRepositoryQuery } from "@/lib/queries/git";
+import { TServiceShallow } from "@/lib/queries/services";
 import { useQuery } from "@tanstack/react-query";
 import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -147,7 +146,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                 {...repositoryBlockProps}
                 text={`${owner}/${repo}`}
                 Icon={({ className }) => (
-                  <BrandIcon brand="github" color="brand" className={cn(className, "size-4.5")} />
+                  <BrandIcon brand="github" color="brand" className={className} />
                 )}
               />
             </BlockItemContent>
@@ -183,9 +182,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                       <BlockItemButtonLike
                         asElement="button"
                         text={field.state.value}
-                        Icon={({ className }) => (
-                          <GitBranchIcon className={cn(className, "size-4.5")} />
-                        )}
+                        Icon={({ className }) => <GitBranchIcon className={className} />}
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
@@ -312,7 +309,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                       <BlockItemButtonLike
                         asElement="button"
                         text={field.state.value}
-                        Icon={({ className }) => <TagIcon className={cn(className, "size-4.5")} />}
+                        Icon={({ className }) => <TagIcon className={className} />}
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
@@ -361,7 +358,7 @@ function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
                 asElement="div"
                 text={databaseTypeToName(type)}
                 Icon={({ className }) => (
-                  <BrandIcon brand={type} color="brand" className={cn(className, "size-4.5")} />
+                  <BrandIcon brand={type} color="brand" className={className} />
                 )}
               />
             </BlockItemContent>
@@ -379,7 +376,7 @@ function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
               <BlockItemButtonLike
                 asElement="div"
                 text={version}
-                Icon={({ className }) => <MilestoneIcon className={cn(className, "size-4.5")} />}
+                Icon={({ className }) => <MilestoneIcon className={className} />}
               />
             </BlockItemContent>
           </BlockItem>

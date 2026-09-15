@@ -1,5 +1,3 @@
-import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
-import { settingsIds } from "@/components/settings/settings-ids";
 import {
   Block,
   BlockItem,
@@ -17,16 +15,18 @@ import {
   validateBackupRetentionCount,
   validateCronExpression,
 } from "@/components/service/backups/backup-config";
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
+  hasApplying,
   stagedNumber,
   stagedString,
   useResetFormOnStagedChange,
-  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { useService } from "@/components/service/service-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { MiniSection } from "@/components/settings/mini-section";
+import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TDatabaseSectionProps } from "@/components/settings/types";
 import type { TServiceChangeField } from "@/components/staged-changes/types";
@@ -38,7 +38,6 @@ import {
 } from "@/components/storage/create-backup-bucket-trigger";
 import S3BucketsProvider, { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { CommandItem } from "@/components/ui/command";
-import { cn } from "@/components/ui/utils";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
@@ -254,9 +253,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                               "Select a bucket"
                             )
                           }
-                          Icon={({ className }) => (
-                            <CylinderIcon className={cn(className, "size-4.5")} />
-                          )}
+                          Icon={({ className }) => <CylinderIcon className={className} />}
                           variant="outline"
                           open={isOpen}
                           onBlur={field.handleBlur}
@@ -306,9 +303,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                         data-custom={field.state.value === customScheduleValue || undefined}
                         className="data-custom:rounded-b-none data-custom:border-b-0"
                         text={scheduleLabel(field.state.value)}
-                        Icon={({ className }) => (
-                          <CalendarClockIcon className={cn(className, "size-4.5")} />
-                        )}
+                        Icon={({ className }) => <CalendarClockIcon className={className} />}
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}

@@ -200,7 +200,7 @@ function AttachSection({ volume }: TProps) {
                         serviceItems?.find((item) => item.value === field.state.value)?.label ||
                         "Select a service"
                       }
-                      Icon={({ className }) => <BoxIcon className={cn(className, "size-4.5")} />}
+                      Icon={({ className }) => <BoxIcon className={className} />}
                       variant="outline"
                       open={isOpen}
                       onBlur={field.handleBlur}
@@ -352,7 +352,7 @@ function VolumeIdBlock({ volume }: TProps) {
             text={volume.id}
             classNameText="whitespace-normal"
             Icon={({ className }: { className?: string }) => (
-              <HardDriveIcon className={cn(className, "size-4.5")} />
+              <HardDriveIcon className={className} />
             )}
             SuffixComponent={SuffixComponent}
           />

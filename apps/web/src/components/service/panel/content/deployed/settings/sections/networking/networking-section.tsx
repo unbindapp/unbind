@@ -1,12 +1,3 @@
-import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
-import { settingsIds } from "@/components/settings/settings-ids";
-import ErrorLine from "@/components/error-line";
-import AddDomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/add-domain-port-card";
-import DomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-port-card";
-import DatabaseEndpointCard, {
-  DatabasePendingEndpointRow,
-} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-endpoint-card";
-import { getNetworkingEntityId } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
 import {
   Block,
   BlockItem,
@@ -16,18 +7,26 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import ErrorLine from "@/components/error-line";
 import { networkAccessLabel } from "@/components/service/network-access";
-import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
+import AddDomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/add-domain-port-card";
+import DatabaseEndpointCard, {
+  DatabasePendingEndpointRow,
+} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-endpoint-card";
 import DatabaseNetworkAccess from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-network-access";
+import DomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-port-card";
+import { getNetworkingEntityId } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
   hasApplying,
   networkAccessFields,
   stagedBoolean,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
+import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { cn } from "@/components/ui/utils";
 import { TServiceShallow } from "@/lib/queries/services";
 import { GlobeLockIcon, NetworkIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -159,7 +158,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     asElement="div"
                     text="loading.unbind"
                     Icon={({ className }: { className?: string }) => (
-                      <GlobeLockIcon className={cn(className, "size-4.5")} />
+                      <GlobeLockIcon className={className} />
                     )}
                   />
                 )}
@@ -223,7 +222,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     asElement="div"
                     text="loading.unbind:3000"
                     Icon={({ className }: { className?: string }) => (
-                      <GlobeLockIcon className={cn(className, "size-4.5")} />
+                      <GlobeLockIcon className={className} />
                     )}
                   />
                 )}

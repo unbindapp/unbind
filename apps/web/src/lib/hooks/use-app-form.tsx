@@ -775,7 +775,7 @@ function AsyncDropdownMenu({
                   >
                     {ItemIcon && (
                       <div className="line-icon">
-                        <ItemIcon className="-ml-0.5 size-5 shrink-0" value={item.value} />
+                        <ItemIcon className="-ml-0.5 size-4.5 shrink-0" value={item.value} />
                       </div>
                     )}
                     <div className="flex min-w-0 shrink flex-col gap-1 pr-1">

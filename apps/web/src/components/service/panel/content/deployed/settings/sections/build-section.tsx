@@ -1,9 +1,3 @@
-import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
-import { useStore } from "@tanstack/react-form";
-import { settingsIds } from "@/components/settings/settings-ids";
-import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
-import BrandIcon from "@/components/icons/brand";
-import { cn } from "@/components/ui/utils";
 import {
   Block,
   BlockItem,
@@ -13,21 +7,26 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import type { TServiceChangeField } from "@/components/staged-changes/types";
+import { builderEnumToName } from "@/components/command-panel/context-command-panel/items/git";
+import BrandIcon from "@/components/icons/brand";
+import WatchPathsInput from "@/components/service/panel/content/deployed/settings/sections/watch-paths-input";
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
+  hasApplying,
   stagedString,
   useResetFormOnStagedChange,
-  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
-import WatchPathsInput from "@/components/service/panel/content/deployed/settings/sections/watch-paths-input";
+import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TGitSectionProps } from "@/components/settings/types";
+import type { TServiceChangeField } from "@/components/staged-changes/types";
 import { Toggleable, Toggled, Untoggled } from "@/components/toggleable";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { GitServiceBuilderEnum, TGitServiceBuilder, TServiceShallow } from "@/lib/queries/services";
 import { formatWatchPaths, joinWatchPaths, splitWatchPaths } from "@/lib/watch-paths";
+import { useStore } from "@tanstack/react-form";
 import { PlusIcon, WrenchIcon } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
@@ -315,11 +314,7 @@ function GitSection({ service }: TGitSectionProps) {
                       value: o,
                     }))}
                     ItemIcon={({ className, value }) => (
-                      <BrandIcon
-                        brand={value}
-                        className={cn(className, "size-4.5")}
-                        color="brand"
-                      />
+                      <BrandIcon brand={value} className={className} color="brand" />
                     )}
                     isPending={false}
                     error={undefined}
@@ -331,7 +326,7 @@ function GitSection({ service }: TGitSectionProps) {
                         Icon={({ className }) => (
                           <BrandIcon
                             brand={field.state.value}
-                            className={cn(className, "size-4.5")}
+                            className={className}
                             color="brand"
                           />
                         )}

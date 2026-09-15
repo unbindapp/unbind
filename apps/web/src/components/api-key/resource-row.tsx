@@ -181,7 +181,7 @@ export default function ResourceRow({
               <BlockItemButtonLike
                 asElement="button"
                 text={team?.name ?? "Select a team"}
-                Icon={({ className }) => <UsersIcon className={cn(className, "size-4.5")} />}
+                Icon={({ className }) => <UsersIcon className={className} />}
                 open={isOpen}
                 isPending={teams.isPending}
               />
@@ -211,7 +211,7 @@ export default function ResourceRow({
                       ? "All projects"
                       : (project?.name ?? "Select a project")
                   }
-                  Icon={({ className }) => <FolderIcon className={cn(className, "size-4.5")} />}
+                  Icon={({ className }) => <FolderIcon className={className} />}
                   open={isOpen}
                   isPending={projects.isPending}
                 />
@@ -240,7 +240,7 @@ export default function ResourceRow({
                       ? "All environments"
                       : (environment?.name ?? "Select an environment")
                   }
-                  Icon={({ className }) => <ContainerIcon className={cn(className, "size-4.5")} />}
+                  Icon={({ className }) => <ContainerIcon className={className} />}
                   open={isOpen}
                   isPending={environments.isPending}
                 />
@@ -272,9 +272,9 @@ export default function ResourceRow({
                   }
                   Icon={({ className }) =>
                     service ? (
-                      <ServiceIcon service={service} className={cn(className, "size-4.5")} />
+                      <ServiceIcon service={service} className={className} />
                     ) : (
-                      <BoxIcon className={cn(className, "size-4.5")} />
+                      <BoxIcon className={className} />
                     )
                   }
                   open={isOpen}

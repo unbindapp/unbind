@@ -1,6 +1,3 @@
-import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
-import ErrorLine from "@/components/error-line";
-import BrandIcon from "@/components/icons/brand";
 import {
   Block,
   BlockItem,
@@ -9,6 +6,15 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
+import ErrorLine from "@/components/error-line";
+import BrandIcon from "@/components/icons/brand";
+import {
+  backupSchedulePresets,
+  customScheduleValue,
+  validateBackupRetentionCount,
+  validateCronExpression,
+} from "@/components/service/backups/backup-config";
 import {
   NetworkAccessIcon,
   networkAccessItems,
@@ -21,14 +27,8 @@ import DeployButtonSection from "@/components/service/panel/content/undeployed/d
 import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
-import {
-  backupSchedulePresets,
-  customScheduleValue,
-  validateBackupRetentionCount,
-  validateCronExpression,
-} from "@/components/service/backups/backup-config";
-import { MiniSection } from "@/components/settings/mini-section";
 import { useService } from "@/components/service/service-provider";
+import { MiniSection } from "@/components/settings/mini-section";
 import {
   AddBackupBucketTrigger,
   S3BucketCommandItemElement,
@@ -37,7 +37,7 @@ import {
 } from "@/components/storage/create-backup-bucket-trigger";
 import S3BucketsProvider, { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { CommandItem } from "@/components/ui/command";
-import { cn } from "@/components/ui/utils";
+import { toast } from "@/components/ui/toast";
 import { toStoredVariables } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { TCommandItem } from "@/lib/hooks/use-app-form";
@@ -45,15 +45,13 @@ import {
   removeFormDraft,
   useAppFormWithPersistence,
 } from "@/lib/hooks/use-app-form-with-persistence";
-import { TVariableForCreate } from "@/lib/queries/variables";
 import { databaseQuery } from "@/lib/queries/services";
+import { TVariableForCreate } from "@/lib/queries/variables";
 import { useStore } from "@tanstack/react-form";
-import { useQuery } from "@tanstack/react-query";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { CalendarClockIcon, CylinderIcon, MilestoneIcon, OctagonXIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useCallback, useMemo } from "react";
-import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 type TProps = {
@@ -292,7 +290,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                 asElement="div"
                 text={databaseTypeToName(type)}
                 Icon={({ className }) => (
-                  <BrandIcon brand={type} color="brand" className={cn(className, "size-4.5")} />
+                  <BrandIcon brand={type} color="brand" className={className} />
                 )}
               />
             </BlockItemContent>
@@ -319,9 +317,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                       <BlockItemButtonLike
                         asElement="button"
                         text={field.state.value}
-                        Icon={({ className }) => (
-                          <MilestoneIcon className={cn(className, "size-4.5")} />
-                        )}
+                        Icon={({ className }) => <MilestoneIcon className={className} />}
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
@@ -427,9 +423,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                                   "Select a bucket"
                                 )
                               }
-                              Icon={({ className }) => (
-                                <CylinderIcon className={cn(className, "size-4.5")} />
-                              )}
+                              Icon={({ className }) => <CylinderIcon className={className} />}
                               variant="outline"
                               open={isOpen}
                               onBlur={field.handleBlur}
@@ -469,9 +463,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                               data-custom={field.state.value === customScheduleValue || undefined}
                               className="data-custom:rounded-b-none data-custom:border-b-0"
                               text={scheduleLabel(field.state.value)}
-                              Icon={({ className }) => (
-                                <CalendarClockIcon className={cn(className, "size-4.5")} />
-                              )}
+                              Icon={({ className }) => <CalendarClockIcon className={className} />}
                               variant="outline"
                               open={isOpen}
                               onBlur={field.handleBlur}

@@ -358,7 +358,7 @@ export default function AddDomainPortCard({
                                       asElement="button"
                                       text={field.state.value}
                                       Icon={({ className }) => (
-                                        <EthernetPortIcon className={cn(className, "size-4.5")} />
+                                        <EthernetPortIcon className={className} />
                                       )}
                                       variant="outline"
                                       open={isOpen}

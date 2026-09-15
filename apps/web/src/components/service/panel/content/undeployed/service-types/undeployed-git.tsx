@@ -18,7 +18,7 @@ import { softValidateVariables } from "@/components/service/panel/content/undepl
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { usePublishDraftDomain } from "@/components/service/panel/draft-domain-provider";
 import { useSystem } from "@/components/system/system-provider";
-import { cn } from "@/components/ui/utils";
+import { toast } from "@/components/ui/toast";
 import { toStoredVariables } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { generateDomain } from "@/lib/helpers/generate-domain";
@@ -40,7 +40,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { GitBranchIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo, useState } from "react";
-import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
 type TProps = {
@@ -313,7 +312,7 @@ export function UndeployedContentGit({
                 {...repositoryBlockProps}
                 text={`${owner}/${repo}`}
                 Icon={({ className }) => (
-                  <BrandIcon brand="github" color="brand" className={cn(className, "size-4.5")} />
+                  <BrandIcon brand="github" color="brand" className={className} />
                 )}
               />
             </BlockItemContent>
@@ -343,9 +342,7 @@ export function UndeployedContentGit({
                       <BlockItemButtonLike
                         asElement="button"
                         text={field.state.value}
-                        Icon={({ className }) => (
-                          <GitBranchIcon className={cn(className, "size-4.5")} />
-                        )}
+                        Icon={({ className }) => <GitBranchIcon className={className} />}
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
@@ -395,11 +392,7 @@ export function UndeployedContentGit({
                             value: o,
                           }))}
                           ItemIcon={({ className, value }) => (
-                            <BrandIcon
-                              brand={value}
-                              className={cn(className, "size-4.5")}
-                              color="brand"
-                            />
+                            <BrandIcon brand={value} className={className} color="brand" />
                           )}
                           isPending={false}
                           error={undefined}
@@ -411,7 +404,7 @@ export function UndeployedContentGit({
                               Icon={({ className }) => (
                                 <BrandIcon
                                   brand={field.state.value}
-                                  className={cn(className, "size-4.5")}
+                                  className={className}
                                   color="brand"
                                 />
                               )}

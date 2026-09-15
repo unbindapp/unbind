@@ -18,7 +18,7 @@ import { softValidateVariables } from "@/components/service/panel/content/undepl
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { usePublishDraftDomain } from "@/components/service/panel/draft-domain-provider";
 import { useSystem } from "@/components/system/system-provider";
-import { cn } from "@/components/ui/utils";
+import { toast } from "@/components/ui/toast";
 import { toStoredVariables } from "@/components/variables/helpers";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { defaultDebounceMs } from "@/lib/constants";
@@ -36,7 +36,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { PackageIcon, TagIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useMemo, useState } from "react";
-import { toast } from "@/components/ui/toast";
 import { useDebounceValue } from "usehooks-ts";
 import { z } from "zod";
 
@@ -302,7 +301,7 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
                       <BlockItemButtonLike
                         asElement="button"
                         text={field.state.value}
-                        Icon={({ className }) => <TagIcon className={cn(className, "size-4.5")} />}
+                        Icon={({ className }) => <TagIcon className={className} />}
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}

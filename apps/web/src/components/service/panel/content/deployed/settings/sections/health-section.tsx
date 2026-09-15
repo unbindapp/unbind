@@ -1,5 +1,3 @@
-import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
-import { settingsIds } from "@/components/settings/settings-ids";
 import {
   Block,
   BlockItem,
@@ -9,25 +7,27 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import type { TServiceChangeField } from "@/components/staged-changes/types";
+import { validatePositiveInteger } from "@/components/service/backups/backup-config";
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
+  hasApplying,
   stagedNumber,
   stagedString,
   useResetFormOnStagedChange,
-  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { MiniSection } from "@/components/settings/mini-section";
+import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { validatePositiveInteger } from "@/components/service/backups/backup-config";
+import type { TServiceChangeField } from "@/components/staged-changes/types";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { HealthCheckTypeSchema } from "@/lib/server/client.gen";
 import { THealthCheckType, TServiceShallow } from "@/lib/queries/services";
-import { CircleHelpIcon } from "lucide-react";
+import { HealthCheckTypeSchema } from "@/lib/server/client.gen";
 import { useStore } from "@tanstack/react-form";
 import {
+  CircleHelpIcon,
   CircleSlashIcon,
   EthernetPortIcon,
   GlobeIcon,
@@ -297,7 +297,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                     }}
                     items={healthCheckItems}
                     ItemIcon={({ className, value }) => (
-                      <HealthCheckIcon className={cn(className, "size-4.5")} type={value} />
+                      <HealthCheckIcon className={className} type={value} />
                     )}
                     isPending={false}
                     error={undefined}
@@ -309,10 +309,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                         className="data-not-none:rounded-b-none data-not-none:border-b-0"
                         text={healthCheckTypeToName(field.state.value)}
                         Icon={({ className }) => (
-                          <HealthCheckIcon
-                            type={field.state.value}
-                            className={cn(className, "size-4.5")}
-                          />
+                          <HealthCheckIcon type={field.state.value} className={className} />
                         )}
                         variant="outline"
                         open={isOpen}

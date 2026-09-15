@@ -257,9 +257,9 @@ export default function DomainPortCard({
             port === undefined && !isEditing ? (
               <CircleAlertIcon className={cn("text-warning", className, "size-4.5")} />
             ) : mode === "private" ? (
-              <GlobeLockIcon className={cn(className, "size-4.5")} />
+              <GlobeLockIcon className={className} />
             ) : (
-              <GlobeIcon className={cn(className, "size-4.5")} />
+              <GlobeIcon className={className} />
             )
           }
           SuffixComponent={SuffixComponent}
@@ -403,7 +403,7 @@ export default function DomainPortCard({
                                     field.state.value === "" ? "Select Port" : field.state.value
                                   }
                                   Icon={({ className }) => (
-                                    <EthernetPortIcon className={cn(className, "size-4.5")} />
+                                    <EthernetPortIcon className={className} />
                                   )}
                                   variant="outline"
                                   open={isOpen}

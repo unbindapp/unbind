@@ -283,7 +283,7 @@ export function BlockItemButtonLike({
             <div className="line-icon">
               <Icon
                 className={cn(
-                  "group-data-pending/button:bg-foreground size-5 shrink-0 group-data-pending/button:rounded-full",
+                  "group-data-pending/button:bg-foreground size-4.5 shrink-0 group-data-pending/button:rounded-full",
                   classNameIcon,
                 )}
                 isEditing={isEditing}

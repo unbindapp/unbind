@@ -1,4 +1,3 @@
-import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
   Block,
   BlockItem,
@@ -9,6 +8,7 @@ import {
   BlockItemTitle,
 } from "@/components/block";
 import { validatePositiveInteger } from "@/components/service/backups/backup-config";
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
   hasApplying,
   stagedNumber,
@@ -21,7 +21,6 @@ import { MiniSection } from "@/components/settings/mini-section";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
 import type { TServiceChangeField } from "@/components/staged-changes/types";
-import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/lib/queries/services";
 import { WalLevelSchema, type WalLevel } from "@/lib/server/client.gen";
@@ -223,7 +222,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
                     }}
                     items={walLevelItems}
                     ItemIcon={({ className, value }) => (
-                      <WalLevelIcon className={cn(className, "size-4.5")} level={value} />
+                      <WalLevelIcon className={className} level={value} />
                     )}
                     isPending={false}
                     error={undefined}
@@ -233,10 +232,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
                         asElement="button"
                         text={walLevelToName(field.state.value)}
                         Icon={({ className }) => (
-                          <WalLevelIcon
-                            level={field.state.value}
-                            className={cn(className, "size-4.5")}
-                          />
+                          <WalLevelIcon level={field.state.value} className={className} />
                         )}
                         variant="outline"
                         open={isOpen}

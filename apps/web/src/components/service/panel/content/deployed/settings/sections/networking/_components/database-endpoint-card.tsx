@@ -34,9 +34,9 @@ export default function DatabaseEndpointCard({ mode, domain, port }: TProps) {
         text={address}
         Icon={({ className }: { className?: string }) =>
           mode === "private" ? (
-            <GlobeLockIcon className={cn(className, "size-4.5")} />
+            <GlobeLockIcon className={className} />
           ) : (
-            <GlobeIcon className={cn(className, "size-4.5")} />
+            <GlobeIcon className={className} />
           )
         }
         SuffixComponent={SuffixComponent}
