@@ -2,6 +2,7 @@ import ServiceIcon from "@/components/service/service-icon";
 import { cn } from "@/components/ui/utils";
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TServiceShallow } from "@/lib/queries/services";
+import { BoxIcon } from "lucide-react";
 
 // Pickers only label services that share a name with another one
 export function getDuplicateServiceNames(services: TServiceShallow[]) {
@@ -60,4 +61,15 @@ export function ServicePickerItem({
       </div>
     </div>
   );
+}
+
+export function ServicePickerTriggerIcon({
+  service,
+  className,
+}: {
+  service: TServiceShallow | undefined;
+  className?: string;
+}) {
+  if (!service) return <BoxIcon className={className} />;
+  return <ServiceIcon service={service} className={className} />;
 }

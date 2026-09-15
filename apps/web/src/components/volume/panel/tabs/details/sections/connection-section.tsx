@@ -14,6 +14,7 @@ import {
   getDuplicateServiceNames,
   getServicePublicHost,
   ServicePickerItem,
+  ServicePickerTriggerIcon,
 } from "@/components/service/service-picker";
 import { useServices, useServicesUtils } from "@/components/service/services-provider";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -193,22 +194,24 @@ function AttachSection({ volume }: TProps) {
                   CommandEmptyIcon={BoxIcon}
                   CommandItemElement={ServiceItemElement}
                 >
-                  {({ isOpen }) => (
-                    <BlockItemButtonLike
-                      asElement="button"
-                      text={
-                        serviceItems?.find((item) => item.value === field.state.value)?.label ||
-                        "Select a service"
-                      }
-                      Icon={({ className }) => <BoxIcon className={className} />}
-                      variant="outline"
-                      open={isOpen}
-                      onBlur={field.handleBlur}
-                      isPending={isPendingServices}
-                      disabled={volume.is_deleting || volume.mount_status === "detaching"}
-                      hasChanges={!field.state.meta.isDefaultValue}
-                    />
-                  )}
+                  {({ isOpen }) => {
+                    const selected = attachableServices?.find((s) => s.id === field.state.value);
+                    return (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        text={selected?.name ?? "Select a service"}
+                        Icon={({ className }) => (
+                          <ServicePickerTriggerIcon service={selected} className={className} />
+                        )}
+                        variant="outline"
+                        open={isOpen}
+                        onBlur={field.handleBlur}
+                        isPending={isPendingServices}
+                        disabled={volume.is_deleting || volume.mount_status === "detaching"}
+                        hasChanges={!field.state.meta.isDefaultValue}
+                      />
+                    );
+                  }}
                 </field.AsyncAndSearchableSelect>
               </BlockItemContent>
             </BlockItem>

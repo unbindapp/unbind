@@ -2,8 +2,11 @@
 
 import { allValue, strongestRole, type TResourceRow } from "@/components/api-key/helpers";
 import { BlockItemButtonLike } from "@/components/block";
-import ServiceIcon from "@/components/service/service-icon";
-import { ServicePickerItem, getDuplicateServiceNames } from "@/components/service/service-picker";
+import {
+  ServicePickerItem,
+  ServicePickerTriggerIcon,
+  getDuplicateServiceNames,
+} from "@/components/service/service-picker";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { TAsyncAndSearchableSelectProps, TCommandItem } from "@/lib/hooks/use-app-form";
@@ -270,13 +273,9 @@ export default function ResourceRow({
                       ? "All services"
                       : (service?.name ?? "Select a service")
                   }
-                  Icon={({ className }) =>
-                    service ? (
-                      <ServiceIcon service={service} className={className} />
-                    ) : (
-                      <BoxIcon className={className} />
-                    )
-                  }
+                  Icon={({ className }) => (
+                    <ServicePickerTriggerIcon service={service} className={className} />
+                  )}
                   open={isOpen}
                   isPending={services.isPending}
                 />
