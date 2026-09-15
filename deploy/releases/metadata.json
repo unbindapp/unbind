@@ -348,5 +348,10 @@
     "version": "v0.1.69",
     "summary": "Database endpoint variables named by protocol with existing references migrated automatically, a button to generate a domain for public services, and domain and variables card polish.",
     "breaking": false
+  },
+  "v0.1.70": {
+    "version": "v0.1.70",
+    "summary": "Personal API keys with role-based access, resource restrictions and expiry, a new account settings page, a log viewer that stays pinned to the latest lines, and system pages for admins in the command panel.",
+    "breaking": false
   }
 }
