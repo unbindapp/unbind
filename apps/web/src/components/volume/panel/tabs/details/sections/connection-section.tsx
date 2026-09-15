@@ -344,7 +344,7 @@ function VolumeIdBlock({ volume }: TProps) {
       <BlockItem id={volumeSettingsIds.connection.volumeId} className="w-full md:w-full">
         <BlockItemHeader type="column">
           <BlockItemTitle>Volume ID</BlockItemTitle>
-          <BlockItemDescription>The name of this volume in the cluster.</BlockItemDescription>
+          <BlockItemDescription>Unbind uses this ID to identify the volume.</BlockItemDescription>
         </BlockItemHeader>
         <BlockItemContent>
           <BlockItemButtonLike
