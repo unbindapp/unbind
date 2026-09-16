@@ -202,7 +202,7 @@ function ProvidedVariablesSection({
         variant="ghost"
       >
         <span className="min-w-0 shrink truncate">
-          Provided Variables{" "}
+          Provided by Unbind{" "}
           <span className="text-muted-more-foreground group-data-open/button:text-muted-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground font-normal">
             ({provided.length})
           </span>
