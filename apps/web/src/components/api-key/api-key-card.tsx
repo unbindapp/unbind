@@ -161,8 +161,10 @@ function Timeline({
             ? `Last used ${lastUsed}`
             : "Never used"}
       </span>
-      {!isPlaceholder && <span className="text-muted-more-foreground px-[0.75ch]">|</span>}
-      <span>
+      {!isPlaceholder && (
+        <span className="text-muted-more-foreground hidden px-[0.75ch] sm:inline">|</span>
+      )}
+      <span className="mt-0.5 block sm:mt-0 sm:inline">
         Created at{" "}
         {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(
           new Date(apiKey?.created_at || placeholderTime),
