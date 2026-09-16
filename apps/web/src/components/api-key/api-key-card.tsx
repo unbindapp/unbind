@@ -20,6 +20,7 @@ import { deleteApiKey as deleteApiKeyFn, type TApiKeyShallow } from "@/lib/queri
 import { useMutation } from "@tanstack/react-query";
 import { differenceInDays, formatDistanceToNowStrict, isPast } from "date-fns";
 import {
+  CircleAlertIcon,
   EllipsisVerticalIcon,
   EyeIcon,
   KeySquareIcon,
@@ -27,6 +28,7 @@ import {
   ScrollTextIcon,
   ShieldHalfIcon,
   SquarePenIcon,
+  TriangleAlertIcon,
   Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
@@ -151,6 +153,12 @@ function Timeline({
         data-state={expiry.state}
         className="data-[state=soon]:text-warning data-[state=expired]:text-destructive"
       >
+        {expiry.state === "soon" && (
+          <CircleAlertIcon className="mr-1 mb-0.5 inline-block size-3.5" />
+        )}
+        {expiry.state === "expired" && (
+          <TriangleAlertIcon className="mr-1 mb-0.5 inline-block size-3.5" />
+        )}
         {expiry.text}
       </span>
       {!isPlaceholder && <span className="text-muted-more-foreground px-[0.75ch]">|</span>}
