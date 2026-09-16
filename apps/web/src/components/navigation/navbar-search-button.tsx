@@ -44,8 +44,11 @@ export default function NavbarSearchButton({ context, className }: TProps) {
         <SearchIcon className="size-4 shrink-0" />
         {!isExtraSmall && (
           <>
-            <p className="min-w-0 flex-1 text-left leading-tight">Search</p>
-            <KeyboardShortcut classNameChip="rounded-sm px-1.5 text-muted-foreground">
+            <p className="min-w-0 flex-1 shrink truncate text-left leading-tight">Search</p>
+            <KeyboardShortcut
+              className="min-w-0 shrink"
+              classNameChip="rounded-sm truncate px-1.5 text-muted-foreground"
+            >
               {shortcut}
             </KeyboardShortcut>
           </>
