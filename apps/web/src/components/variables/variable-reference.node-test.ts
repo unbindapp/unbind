@@ -89,16 +89,24 @@ test("a bare dollar opens the dropdown", () => {
   assert.deepEqual(resolveReferenceTarget("prefix $", 8), { from: 7, to: 8 });
 });
 
-test("a dollar only counts with the cursor right after it", () => {
-  // cursor before the $ in "a$b"
-  assert.equal(resolveReferenceTarget("a$b", 1), null);
-  // cursor after the b
-  assert.equal(resolveReferenceTarget("a$b", 3), null);
+test("typing on after a bare dollar keeps the reference open", () => {
+  assert.deepEqual(resolveReferenceTarget("$postgres", 9), { from: 0, to: 9 });
+  assert.deepEqual(resolveReferenceTarget("value $postgres", 15), { from: 6, to: 15 });
+  // the cursor bounds it, like the braced form
+  assert.deepEqual(resolveReferenceTarget("$postgres", 5), { from: 0, to: 5 });
+  // a typo and its correction both resolve, so the dropdown can come back
+  assert.deepEqual(resolveReferenceTarget("$postgresdaty", 13), { from: 0, to: 13 });
+  assert.deepEqual(resolveReferenceTarget("$postgresdata", 13), { from: 0, to: 13 });
 });
 
-test("typing past a dollar closes it again", () => {
-  assert.equal(resolveReferenceTarget("$5", 2), null);
-  assert.equal(resolveReferenceTarget("costs $5 today", 14), null);
+test("a dollar does not count with the cursor before it", () => {
+  assert.equal(resolveReferenceTarget("a$b", 1), null);
+  assert.equal(resolveReferenceTarget("a$b", 0), null);
+});
+
+test("a brace or newline ends a bare dollar reference", () => {
+  assert.equal(resolveReferenceTarget("$a}b", 4), null);
+  assert.equal(resolveReferenceTarget("$a\nb", 4), null);
 });
 
 test("completion opens inside a reference being typed", () => {
@@ -115,7 +123,6 @@ test("completion stays shut once the reference is closed", () => {
 test("completion stays shut in plain text", () => {
   assert.equal(resolveReferenceTarget("plain", 5), null);
   assert.equal(resolveReferenceTarget("", 0), null);
-  assert.equal(resolveReferenceTarget("costs $5", 8), null);
 });
 
 test("a newline ends the reference being typed", () => {

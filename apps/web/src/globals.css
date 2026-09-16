@@ -916,6 +916,7 @@
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul {
   font-family: inherit;
+  white-space: normal;
   max-height: 16rem;
   min-width: 12rem;
   padding: 0.25rem;
@@ -923,11 +924,17 @@
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   padding: 0.5rem 0.625rem;
   border-radius: calc(var(--radius) - 2px);
   line-height: 1.2;
+}
+
+/* Labels wrap, so the icon sits on the first line rather than floating between lines. */
+.cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li > svg {
+  flex-shrink: 0;
+  margin-top: 0.1em;
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip > ul > li[aria-selected] {
@@ -935,13 +942,11 @@
   color: var(--foreground);
 }
 
-/* The flex layout above defeats CodeMirror's own ellipsis on the li, so the
-   label has to shrink and truncate itself. */
+/* Tokens are one unbroken run, so they need anywhere to wrap instead of truncating. */
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip
   :is(.cm-completionLabel, .token-field-reference-label) {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
 }
 
 /* Reference options render their own segmented label (variable-reference-label.ts)
@@ -970,6 +975,7 @@
 }
 
 .cm-tooltip.cm-tooltip-autocomplete.token-field-tooltip .cm-completionDetail {
+  flex-shrink: 0;
   margin-left: auto;
   padding-left: 0.75rem;
   font-style: normal;

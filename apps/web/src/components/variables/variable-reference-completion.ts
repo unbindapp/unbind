@@ -1,7 +1,7 @@
 // Works out whether the cursor sits somewhere a reference could be inserted,
-// which is the only place the reference dropdown should open. A bare "$" counts
-// as well as a half-typed "${", so picking an option writes the whole
-// ${Source.KEY} form rather than making you type the brace.
+// which is the only place the reference dropdown should open. A bare "$" with
+// text typed after it counts as well as a half-typed "${", so picking an option
+// writes the whole ${Source.KEY} form rather than making you type the brace.
 // Kept free of CodeMirror imports so it runs under `node --test`.
 
 import { parser } from "./variable-reference.gen.ts";
@@ -9,7 +9,7 @@ import { parser } from "./variable-reference.gen.ts";
 export type TReferenceTarget = { from: number; to: number };
 export type TReferenceInsertion = { from: number; to: number; insert: string };
 
-const targetNames = new Set(["IncompleteReference", "Dollar", "Reference"]);
+const targetNames = new Set(["IncompleteReference", "Dollar", "Reference", "Text"]);
 
 function nodeAt(value: string, pos: number, side: -1 | 1 = -1) {
   const tree = parser.parse(value);
@@ -21,10 +21,18 @@ function nodeAt(value: string, pos: number, side: -1 | 1 = -1) {
 export function resolveReferenceTarget(value: string, pos: number): TReferenceTarget | null {
   const node = nodeAt(value, pos);
 
-  // "$" only counts with the cursor right after it; "a$b" mid-word does not.
   if (node.name === "Dollar") {
     if (pos !== node.to) return null;
     return { from: node.from, to: node.to };
+  }
+
+  // Text right after a "$" is the reference being typed without its brace. It
+  // has the same bounds as the braced form: a "}" or a newline ends it.
+  if (node.name === "Text") {
+    const dollar = node.from - 1;
+    if (dollar < 0 || value[dollar] !== "$") return null;
+    if (/[}\n]/.test(value.slice(node.from, pos))) return null;
+    return { from: dollar, to: pos };
   }
 
   if (node.name !== "IncompleteReference") return null;
