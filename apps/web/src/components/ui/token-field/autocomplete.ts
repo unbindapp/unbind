@@ -1,11 +1,13 @@
 import {
   autocompletion,
+  completionStatus,
   selectedCompletionIndex,
   setSelectedCompletion,
+  startCompletion,
   type Completion,
 } from "@codemirror/autocomplete";
 import type { EditorState, Extension } from "@codemirror/state";
-import { ViewPlugin, type EditorView } from "@codemirror/view";
+import { EditorView, ViewPlugin } from "@codemirror/view";
 
 /** Completions that open another menu once picked, e.g. a key that expects a value. */
 export type TChainedCompletion = Completion & { chain?: boolean };
@@ -52,6 +54,16 @@ const hoverSelectsOption = ViewPlugin.fromClass(
   },
 );
 
+// CodeMirror only asks the completion sources on typed input. Once the list
+// has closed, say on a typo that matched nothing, deleting back to text that
+// does match leaves it shut until the next typed key. This asks again on delete
+// so the list comes back as soon as the text matches.
+const reopenOnDelete = EditorView.updateListener.of((update) => {
+  if (!update.docChanged || completionStatus(update.state) !== null) return;
+  if (!update.transactions.some((tr) => tr.isUserEvent("delete"))) return;
+  startCompletion(update.view);
+});
+
 export function tokenFieldAutocomplete(
   addToOptions?: TCompletionAddition[],
   anchorToField?: boolean,
@@ -68,5 +80,6 @@ export function tokenFieldAutocomplete(
       ...(addToOptions ? { addToOptions } : {}),
     }),
     hoverSelectsOption,
+    reopenOnDelete,
   ];
 }
