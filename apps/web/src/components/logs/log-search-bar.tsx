@@ -228,22 +228,22 @@ function LogSearchBar({
             classNameEditor="[--token-field-content-padding:0.4375rem_7.75rem_0.4375rem_2.125rem]"
             placeholder={scope.placeholder}
           />
-          <div className="absolute top-0 right-0 flex h-full justify-end">
+          <div className="pointer-events-none absolute top-0 right-0 flex h-full justify-end">
             <Button
               data-has-value={(inputValue !== undefined && inputValue !== "") || undefined}
               disabled={inputValue === "" || inputValue === undefined}
               onClick={onClearInput}
               variant="ghost"
-              className="text-muted-more-foreground data-has-value:bg-input relative z-0 h-full w-10 translate-x-10 rounded-none transition data-has-value:translate-x-0 data-has-value:border-t data-has-value:border-b"
+              className="text-muted-more-foreground data-has-value:bg-input pointer-events-auto relative z-0 h-full w-10 translate-x-10 rounded-none transition data-has-value:translate-x-0 data-has-value:border-t data-has-value:border-b"
             >
               <XIcon className="size-4.5" />
             </Button>
-            <FilterButton className="bg-input z-1 border-t border-b" />
+            <FilterButton className="bg-input pointer-events-auto z-1 border-t border-b" />
             <SettingsButton
               logType={logType}
               hasLogs={hasLogs}
               getLogsForDownload={getLogsForDownload}
-              className="bg-input group/button relative z-1 h-auto w-10 rounded-l-none rounded-r-lg border-t border-r border-b border-l"
+              className="bg-input group/button pointer-events-auto relative z-1 h-auto w-10 rounded-l-none rounded-r-lg border-t border-r border-b border-l"
             />
           </div>
         </form>
