@@ -1,7 +1,9 @@
 import PanelContentWrapper from "@/components/panel/panel-content-wrapper";
 import PanelNavbar from "@/components/panel/panel-navbar";
 import PanelTabWrapper from "@/components/panel/panel-tab-wrapper";
+import { panelScrollKey } from "@/components/panel/use-panel-scroll-state";
 import {
+  serverPanelServerNameKey,
   serverPanelTabKey,
   TServerPanelTabEnum,
 } from "@/components/system/servers/panel/constants";
@@ -40,7 +42,12 @@ export default function ServerPanelContent({ server, className, ...rest }: TProp
         currentTabId={currentTabId}
         layoutId="server-panel-tab"
       />
-      <PanelTabWrapper key={currentTab?.value}>
+      <PanelTabWrapper
+        scrollKey={
+          currentTab && panelScrollKey(serverPanelServerNameKey, server.name, currentTab.value)
+        }
+        key={currentTab?.value}
+      >
         {currentTab && <currentTab.Page server={server} />}
       </PanelTabWrapper>
     </PanelContentWrapper>

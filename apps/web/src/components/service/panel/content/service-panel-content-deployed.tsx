@@ -1,7 +1,8 @@
 import PanelContentWrapper from "@/components/panel/panel-content-wrapper";
 import PanelNavbar from "@/components/panel/panel-navbar";
 import PanelTabWrapper from "@/components/panel/panel-tab-wrapper";
-import { servicePanelTabKey } from "@/components/service/panel/constants";
+import { panelScrollKey } from "@/components/panel/use-panel-scroll-state";
+import { servicePanelServiceIdKey, servicePanelTabKey } from "@/components/service/panel/constants";
 import { TServicePanelTab } from "@/components/service/panel/content/service-panel-content";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useService } from "@/components/service/service-provider";
@@ -54,7 +55,13 @@ export default function ServicePanelContentDeployed({
         currentTabId={currentTabId}
         layoutId="service-panel-tab"
       />
-      <PanelTabWrapper noScrollArea={currentTab?.noScrollArea} key={currentTab?.value}>
+      <PanelTabWrapper
+        noScrollArea={currentTab?.noScrollArea}
+        scrollKey={
+          currentTab && panelScrollKey(servicePanelServiceIdKey, service.id, currentTab.value)
+        }
+        key={currentTab?.value}
+      >
         {currentTab && (
           <currentTab.Provider
             teamId={teamId}

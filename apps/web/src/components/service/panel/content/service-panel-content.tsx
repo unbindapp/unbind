@@ -11,7 +11,11 @@ import MetricsStateProvider, {
   getAgeBasedDefaultIntervalEnum,
   resolveMetricsIntervalEnum,
 } from "@/components/metrics/metrics-state-provider";
-import { TServicePanelTabEnum } from "@/components/service/panel/constants";
+import { PanelScrollKeyProvider, panelScrollKey } from "@/components/panel/use-panel-scroll-state";
+import {
+  servicePanelServiceIdKey,
+  TServicePanelTabEnum,
+} from "@/components/service/panel/constants";
 import Deployments from "@/components/service/panel/content/deployed/deployments/deployments";
 import Logs from "@/components/service/panel/content/deployed/logs/logs";
 import Metrics from "@/components/service/panel/content/deployed/metrics/metrics";
@@ -177,7 +181,11 @@ export default function ServicePanelContent({ service, className }: TProps) {
           type="service"
           scopeIcon={service.config.icon}
         >
-          <ServicePanelContentUndeployed className={className} service={service} />
+          <PanelScrollKeyProvider
+            scrollKey={panelScrollKey(servicePanelServiceIdKey, service.id, "undeployed")}
+          >
+            <ServicePanelContentUndeployed className={className} service={service} />
+          </PanelScrollKeyProvider>
         </VariablesProvider>
       </DeploymentsProvider>
     );

@@ -1,4 +1,8 @@
 import TabWrapper from "@/components/navigation/tab-wrapper";
+import {
+  usePanelScrollKey,
+  usePanelScrollRestoration,
+} from "@/components/panel/use-panel-scroll-state";
 import NoItemsCard from "@/components/no-items-card";
 import {
   shouldServiceSettingsHaveBackupsSection,
@@ -25,6 +29,8 @@ import { TServiceShallow } from "@/lib/queries/services";
 import { SearchIcon } from "lucide-react";
 
 export default function Settings({ service }: { service: TServiceShallow }) {
+  const viewportRef = usePanelScrollRestoration(usePanelScrollKey());
+
   return (
     <SettingsSearchProvider>
       <div className="flex min-h-0 w-full flex-1 flex-col">
@@ -34,7 +40,7 @@ export default function Settings({ service }: { service: TServiceShallow }) {
           </div>
         </div>
         <div className="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden mask-[linear-gradient(to_bottom,transparent,black_1rem,black_calc(100%-1rem),transparent)]">
-          <ScrollArea classNameViewport="pb-(--safe-area-inset-bottom)">
+          <ScrollArea classNameViewport="pb-(--safe-area-inset-bottom)" viewportRef={viewportRef}>
             <TabWrapper className="gap-6 pt-4 sm:pt-5">
               <SourceSection service={service} />
               <NetworkingSection service={service} />

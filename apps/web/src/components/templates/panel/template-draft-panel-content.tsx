@@ -9,6 +9,11 @@ import TemplateHeadroomBanner from "@/components/templates/panel/template-headro
 import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
+import {
+  panelScrollKey,
+  usePanelScrollRestoration,
+} from "@/components/panel/use-panel-scroll-state";
+import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { drawerAnimationMs } from "@/lib/constants";
@@ -52,6 +57,9 @@ export const templateDraftMaxStorageGb = 100;
 const collapseServicesAfter = 4;
 
 export default function TemplateDraftPanelContent({ templateDraft, className, ...rest }: TProps) {
+  const viewportRef = usePanelScrollRestoration(
+    panelScrollKey(templateDraftPanelTemplateDraftIdKey, templateDraft.id),
+  );
   const visibleInputs = useMemo(
     () => templateDraft.template.definition.inputs.filter((i) => !i.hidden),
     [templateDraft.template.definition.inputs],
@@ -241,7 +249,10 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         form.handleSubmit(e);
       }}
     >
-      <ScrollArea classNameViewport="pb-[calc(var(--safe-area-inset-bottom)+2rem)]">
+      <ScrollArea
+        classNameViewport="pb-[calc(var(--safe-area-inset-bottom)+2rem)]"
+        viewportRef={viewportRef}
+      >
         <div className="flex w-full flex-1 flex-col gap-6 px-3 py-5 sm:p-6">
           {errorDeployTemplate && <ErrorLine message={errorDeployTemplate.message} />}
           {/* Inputs */}

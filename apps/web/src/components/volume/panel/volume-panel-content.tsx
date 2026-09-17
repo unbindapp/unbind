@@ -1,7 +1,12 @@
 import PanelContentWrapper from "@/components/panel/panel-content-wrapper";
 import PanelNavbar from "@/components/panel/panel-navbar";
 import PanelTabWrapper from "@/components/panel/panel-tab-wrapper";
-import { TVolumePanelTabEnum, volumePanelTabKey } from "@/components/volume/panel/constants";
+import { panelScrollKey } from "@/components/panel/use-panel-scroll-state";
+import {
+  TVolumePanelTabEnum,
+  volumePanelTabKey,
+  volumePanelVolumeIdKey,
+} from "@/components/volume/panel/constants";
 import Details from "@/components/volume/panel/tabs/details/details";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { TVolumeShallow } from "@/lib/queries/services";
@@ -45,7 +50,13 @@ export default function VolumePanelContent({ volume, className, ...rest }: TProp
         currentTabId={currentTabId}
         layoutId="volume-panel-tab"
       />
-      <PanelTabWrapper noScrollArea={currentTab?.noScrollArea} key={currentTab?.value}>
+      <PanelTabWrapper
+        noScrollArea={currentTab?.noScrollArea}
+        scrollKey={
+          currentTab && panelScrollKey(volumePanelVolumeIdKey, volume.id, currentTab.value)
+        }
+        key={currentTab?.value}
+      >
         {currentTab && (
           <currentTab.Provider volume={volume}>
             <currentTab.Page volume={volume} />

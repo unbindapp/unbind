@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { TLogType } from "@/lib/queries/logs";
+import { settleScroll } from "@/lib/helpers/settle-scroll";
 import { useVirtualizer, type VirtualItem, type Virtualizer } from "@tanstack/react-virtual";
 import {
   ArrowDownIcon,
@@ -558,40 +559,6 @@ function useScrollToHighlight({
     scrollRef,
     logsRef,
   ]);
-}
-
-const SCROLL_SETTLE_FRAMES = 8;
-
-// Rows are measured as they render, so a single scroll lands where the row
-// estimates said the target was. Repeating it over a few frames follows the
-// measurements in; a scroll of the user's own cuts it short. The step reports
-// false once there is nothing left to scroll to.
-function settleScroll(scrollElement: HTMLDivElement | null, step: () => boolean) {
-  let cancelled = false;
-  const cancel = () => {
-    cancelled = true;
-  };
-  scrollElement?.addEventListener("wheel", cancel, { passive: true });
-  scrollElement?.addEventListener("touchstart", cancel, { passive: true });
-  const cleanup = () => {
-    cancelled = true;
-    scrollElement?.removeEventListener("wheel", cancel);
-    scrollElement?.removeEventListener("touchstart", cancel);
-  };
-
-  if (!step()) return cleanup();
-  let frames = 0;
-  const settle = () => {
-    if (cancelled || !step()) return cleanup();
-    frames++;
-    if (frames < SCROLL_SETTLE_FRAMES) {
-      requestAnimationFrame(settle);
-      return;
-    }
-    cleanup();
-  };
-  requestAnimationFrame(settle);
-  return cleanup;
 }
 
 // The target is a key resolved to an index on every frame: centering near the
