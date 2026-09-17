@@ -24,7 +24,7 @@ import {
 import { toast } from "@/components/ui/toast";
 import TokenField, { type TTokenFieldHandle } from "@/components/ui/token-field/token-field";
 import { cn } from "@/components/ui/utils";
-import { HIDDEN_VARIABLE_VALUE } from "@/components/variables/constants";
+import { HIDDEN_VARIABLE_VALUE, rawVariableEditorKey } from "@/components/variables/constants";
 import {
   getVariablesFromRawText,
   referenceMapForVariables,
@@ -44,17 +44,21 @@ import {
   TVariableShallow,
   VariableForCreateSchema,
 } from "@/lib/queries/variables";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { CheckCircleIcon, EyeIcon, EyeOffIcon, XIcon } from "lucide-react";
 import {
   FC,
   ReactElement,
   ReactNode,
   RefObject,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+
+const routeApi = getRouteApi("__root__");
 
 type TProps = {
   children: ReactElement;
@@ -86,7 +90,7 @@ export default function RawVariableEditor({ children }: TProps) {
   );
   const [editorValue, setEditorValue] = useState(editorText);
 
-  const [open, setOpen] = useState(false);
+  const { open, setOpen } = useRawEditorOpen();
   const isDrawerOpen = open && isExtraSmall;
   // Values stay masked until the editor is focused. Lives here so a switch
   // between the drawer and the dialog keeps it.
@@ -254,6 +258,26 @@ export default function RawVariableEditor({ children }: TProps) {
       </DialogContent>
     </Dialog>
   );
+}
+
+// Open state lives in the URL so a refresh brings the editor back. Closed is the
+// default, so closing drops the key, and the service panel clears it when it closes.
+function useRawEditorOpen() {
+  const navigate = useNavigate();
+  const open = routeApi.useSearch({ select: (s) => s[rawVariableEditorKey] === true });
+
+  const setOpen = useCallback(
+    (value: boolean) =>
+      navigate({
+        to: ".",
+        search: (prev) => ({ ...prev, [rawVariableEditorKey]: value || undefined }),
+        replace: true,
+        resetScroll: false,
+      }),
+    [navigate],
+  );
+
+  return { open, setOpen };
 }
 
 type TEditorBodyProps = {

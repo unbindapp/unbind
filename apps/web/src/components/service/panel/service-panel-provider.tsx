@@ -9,12 +9,13 @@ import {
   servicePanelTabKey,
   TServicePanelTabEnum,
 } from "@/components/service/panel/constants";
+import { rawVariableEditorKey } from "@/components/variables/constants";
 import { getRouteApi } from "@tanstack/react-router";
 import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 
 const routeApi = getRouteApi("/$team_id/project/$project_id");
 
-const nestedIdKeys = [deploymentPanelDeploymentIdKey];
+const nestedIdKeys = [deploymentPanelDeploymentIdKey, rawVariableEditorKey];
 
 type TServicePanelContext = {
   currentTabId: TServicePanelTabEnum;

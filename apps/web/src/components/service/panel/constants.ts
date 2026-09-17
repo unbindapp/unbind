@@ -4,7 +4,7 @@ import {
 } from "@/components/deployment/panel/constants";
 import { logSearchParamKeys } from "@/components/logs/constants";
 import { metricsSearchParamKeys } from "@/components/metrics/constants";
-import { providedVariablesKey } from "@/components/variables/constants";
+import { providedVariablesKey, rawVariableEditorKey } from "@/components/variables/constants";
 import { z } from "zod";
 
 export const ServicePanelTabEnum = z.enum([
@@ -27,6 +27,7 @@ export const servicePanelServiceIdKey = "service";
 export const servicePanelOwnedSearchKeys = [
   servicePanelTabKey,
   providedVariablesKey,
+  rawVariableEditorKey,
   metricsSearchParamKeys.service.interval,
   ...Object.values(logSearchParamKeys.service),
   deploymentPanelDeploymentIdKey,

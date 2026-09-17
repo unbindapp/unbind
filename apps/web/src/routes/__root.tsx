@@ -8,6 +8,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 /* import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"; */
 import { commandPanelKey, commandPanelPageKey } from "@/components/command-panel/constants";
 import { meQuery } from "@/lib/queries/me";
+import { rawVariableEditorKey } from "@/components/variables/constants";
 import { TriangleAlertIcon } from "lucide-react";
 import { z } from "zod";
 
@@ -21,6 +22,7 @@ const searchSchema = z.object({
   [commandPanelKey]: z.string().optional(),
   [commandPanelPageKey]: z.string().optional(),
   highlight_id: z.string().optional(),
+  [rawVariableEditorKey]: z.boolean().optional(),
 });
 
 // Routes reachable while signed out. Everything else requires auth.

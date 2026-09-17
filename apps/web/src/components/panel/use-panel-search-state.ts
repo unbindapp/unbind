@@ -35,9 +35,9 @@ function cleared(keys: readonly string[]) {
 type TProps = {
   idKey: string;
   ownedKeys: readonly string[];
-  // Ids of panels nested in this one, a subset of ownedKeys. They are cleared as soon
-  // as the panel closes instead of after the animation, so a nested drawer doesn't
-  // stay on screen after its parent is gone.
+  // Overlays nested in this one (panel ids, dialogs), a subset of ownedKeys. They are
+  // cleared as soon as the panel closes instead of after the animation, so a nested
+  // drawer or dialog doesn't stay on screen after its parent is gone.
   nestedIdKeys?: readonly string[];
 };
 
