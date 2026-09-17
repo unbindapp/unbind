@@ -19,7 +19,7 @@ import { cn } from "@/components/ui/utils";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
-import { useAppForm } from "@/lib/hooks/use-app-form";
+import { useAppFormWithPersistence } from "@/lib/hooks/use-app-form-with-persistence";
 import { TServiceShallow } from "@/lib/queries/services";
 import {
   CheckCircleIcon,
@@ -29,10 +29,20 @@ import {
   PlusIcon,
   RefreshCwIcon,
 } from "lucide-react";
+import { useStore } from "@tanstack/react-form";
 import { ResultAsync } from "neverthrow";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 
 const maxGeneratedDomains = 100;
+const customPortText = "Custom Port";
+
+const DraftSchema = z.object({
+  host: z.string(),
+  targetPortType: z.string(),
+  targetPort: z.string(),
+  isEditing: z.boolean(),
+});
 
 export default function AddDomainPortCard({
   service,
@@ -77,8 +87,6 @@ export default function AddDomainPortCard({
     idToHighlight: sectionHighlightId,
   });
 
-  const customPortText = "Custom Port";
-
   const { data: systemData } = useSystem();
   const wildcardDomain = systemData?.data.system_settings.wildcard_domain;
   const nextGeneratedDomain = useMemo(() => {
@@ -98,23 +106,28 @@ export default function AddDomainPortCard({
   }, [mode, wildcardDomain, service.name, service.id, service.config.hosts]);
   const [generatedDomain, setGeneratedDomain] = useState<string | undefined>(undefined);
 
-  const form = useAppForm({
+  const defaultTargetPortType =
+    service.config.ports.length >= 1
+      ? service.config.ports[0].port.toString()
+      : service.detected_ports.length >= 1
+        ? service.detected_ports[0].port.toString()
+        : "";
+
+  const form = useAppFormWithPersistence({
     defaultValues: {
       host: "",
-      targetPortType:
-        service.config.ports.length >= 1
-          ? service.config.ports[0].port.toString()
-          : service.detected_ports.length >= 1
-            ? service.detected_ports[0].port.toString()
-            : "",
+      targetPortType: defaultTargetPortType,
       targetPort: "",
       isEditing: false,
     },
+    persistenceType: "session",
+    persistenceKey: `add-domain:${service.id}:${mode}`,
+    persistenceSchema: DraftSchema,
     onSubmit: async ({ value }) => {
-      const port =
-        mode === "public" && value.targetPortType !== customPortText
-          ? value.targetPortType
-          : value.targetPort;
+      // The port select only renders for public domains with at least one known port
+      const usesPortSelect =
+        mode === "public" && allPortOptions.length >= 1 && value.targetPortType !== customPortText;
+      const port = usesPortSelect ? value.targetPortType : value.targetPort;
 
       await updateService({
         upsertHosts:
@@ -140,6 +153,14 @@ export default function AddDomainPortCard({
 
     return Array.from(allPorts);
   }, [service.detected_ports, currentPorts]);
+
+  // A restored draft can name a port the service no longer has
+  const targetPortType = useStore(form.store, (s) => s.values.targetPortType);
+  useEffect(() => {
+    if (!targetPortType || targetPortType === customPortText) return;
+    if (allPortOptions.includes(targetPortType)) return;
+    form.setFieldValue("targetPortType", defaultTargetPortType);
+  }, [targetPortType, allPortOptions, defaultTargetPortType, form]);
 
   const detectedPortsMap = useMemo(() => {
     const obj: Record<string, number> = {};
