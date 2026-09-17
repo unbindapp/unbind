@@ -23,6 +23,7 @@ import {
   removeFormDraft,
   useAppFormWithPersistence,
 } from "@/lib/hooks/use-app-form-with-persistence";
+import { PersistedBooleanSchema, usePersistedState } from "@/lib/hooks/use-persisted-state";
 import { TemplateInputTypeSchema } from "@/lib/server/client.gen";
 import { deployTemplate as deployTemplateFn } from "@/lib/queries/templates";
 import { useMutation } from "@tanstack/react-query";
@@ -35,7 +36,7 @@ import {
   TextCursorInputIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { HTMLAttributes, useMemo, useRef, useState } from "react";
+import { HTMLAttributes, useMemo, useRef } from "react";
 import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -75,8 +76,17 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
     [templateDraft.template.definition.services],
   );
 
-  const [isInputsCollapsed, setIsInputsCollapsed] = useState(true);
-  const [isServicesCollapsed, setIsServicesCollapsed] = useState(true);
+  const persistenceKey = `template-draft:${templateDraft.id}`;
+  const [isInputsCollapsed, setIsInputsCollapsed] = usePersistedState({
+    key: `${persistenceKey}:inputs-collapsed`,
+    schema: PersistedBooleanSchema,
+    defaultValue: true,
+  });
+  const [isServicesCollapsed, setIsServicesCollapsed] = usePersistedState({
+    key: `${persistenceKey}:services-collapsed`,
+    schema: PersistedBooleanSchema,
+    defaultValue: true,
+  });
   const collapsedServiceIds = useMemo(
     () => sortedServices.slice(collapseServicesAfter).map((s) => s.id),
     [sortedServices],
@@ -120,7 +130,6 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
 
   const timeout = useRef<NodeJS.Timeout | null>(null);
 
-  const persistenceKey = `template-draft:${templateDraft.id}`;
   const persistenceSchema = useMemo(
     () =>
       z.object({
@@ -364,7 +373,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                     type="button"
                     variant="outline"
                     className="text-muted-foreground w-full font-medium"
-                    onClick={() => setIsInputsCollapsed((c) => !c)}
+                    onClick={() => setIsInputsCollapsed(!isInputsCollapsed)}
                   >
                     <ChevronDownIcon className="size-5 shrink-0 rotate-180 transition group-data-collapsed/wrapper:rotate-0" />
                     <p className="min-w-0 shrink truncate">
@@ -401,7 +410,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                   data-collapsed={isServicesCollapsed || undefined}
                   variant="outline"
                   className="group/button text-muted-foreground w-full font-medium"
-                  onClick={() => setIsServicesCollapsed((c) => !c)}
+                  onClick={() => setIsServicesCollapsed(!isServicesCollapsed)}
                 >
                   <ChevronDownIcon className="size-5 shrink-0 rotate-180 transition group-data-collapsed/button:rotate-0" />
                   <p className="min-w-0 shrink truncate">

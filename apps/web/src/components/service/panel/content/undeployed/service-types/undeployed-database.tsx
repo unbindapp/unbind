@@ -537,8 +537,12 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
             </>
           )}
         </Block>
-        {/* @ts-expect-error: This type is completely fine. The form here encapculates the variable only form but it doesn't work for some reason */}
-        <VariablesBlock form={form} onTokensChanged={onTokensChanged} />
+        <VariablesBlock
+          // @ts-expect-error: This type is completely fine. The form here encapculates the variable only form but it doesn't work for some reason
+          form={form}
+          onTokensChanged={onTokensChanged}
+          persistenceKey={`${persistenceKey}:variables`}
+        />
       </WrapperInner>
       <form.Subscribe
         selector={(s) => ({ isSubmitting: s.isSubmitting })}

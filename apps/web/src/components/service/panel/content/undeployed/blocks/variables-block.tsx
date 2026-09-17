@@ -9,9 +9,10 @@ import {
   type TReferenceProps,
 } from "@/components/variables/variables-form-field";
 import { withForm } from "@/lib/hooks/use-app-form";
+import { PersistedBooleanSchema, usePersistedState } from "@/lib/hooks/use-persisted-state";
 import { useStore } from "@tanstack/react-form";
 import { ChevronDownIcon, KeyIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 type TOnTokensChanged = (tokens: TVariableToken<TReferenceExtended>[] | undefined) => void;
 
@@ -22,20 +23,25 @@ const VariablesBlock = withForm({
   props: {
     className: "",
     onTokensChanged: (() => {}) as TOnTokensChanged | undefined,
+    persistenceKey: undefined as string | undefined,
   },
-  render: function Render({ form, className, onTokensChanged }) {
+  render: function Render({ form, className, onTokensChanged, persistenceKey }) {
     const {
       tokens,
       list: { error: variableReferencesError },
     } = useVariableReferences();
 
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = usePersistedState({
+      key: persistenceKey,
+      schema: PersistedBooleanSchema,
+      defaultValue: false,
+    });
 
     const variableErrors = useStore(form.store, (s) => s.fieldMeta.variables?.errors);
 
     useEffect(() => {
       if (variableErrors && variableErrors.length > 0) setIsOpen(true);
-    }, [variableErrors]);
+    }, [variableErrors, setIsOpen]);
 
     useEffect(() => {
       onTokensChanged?.(tokens);
@@ -53,7 +59,7 @@ const VariablesBlock = withForm({
           className="text-muted-foreground justify-start gap-2 rounded-md px-3 py-2.75 text-left font-semibold group-data-open/section:rounded-b-none"
           variant="ghost"
           type="button"
-          onClick={() => setIsOpen((o) => !o)}
+          onClick={() => setIsOpen(!isOpen)}
         >
           <KeyIcon className="size-4.5 shrink-0 transition group-data-open/button:rotate-90" />
           <p className="min-w-0 shrink">Environment Variables</p>

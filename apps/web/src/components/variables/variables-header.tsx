@@ -1,20 +1,39 @@
 "use client";
 
-import CreateVariablesForm from "@/components/variables/create-variables-form";
+import CreateVariablesForm, {
+  getCreateVariablesPersistenceKey,
+} from "@/components/variables/create-variables-form";
 import RawVariableEditor from "@/components/variables/raw-variable-editor";
 import { useVariables } from "@/components/variables/variables-provider";
 import { Button } from "@/components/ui/button";
 import { FilePenLineIcon, PlusIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { PersistedBooleanSchema, usePersistedState } from "@/lib/hooks/use-persisted-state";
+import { useMemo } from "react";
 import { cn } from "@/components/ui/utils";
 
 export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: boolean }) {
-  const [isOpen, setIsOpen] = useState(false);
   const {
     type,
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
     list: { isPending, error },
     variables,
   } = useVariables();
+
+  const persistenceKey = getCreateVariablesPersistenceKey({
+    type,
+    teamId,
+    projectId,
+    environmentId,
+    serviceId,
+  });
+  const [isOpen, setIsOpen] = usePersistedState({
+    key: `${persistenceKey}:open`,
+    schema: PersistedBooleanSchema,
+    defaultValue: false,
+  });
 
   const title = useMemo(() => {
     if (!isPending && error) {
@@ -82,7 +101,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
             data-open={isOpen || undefined}
             data-closed={!isOpen || undefined}
             className="group/button group-data-pending/header:bg-muted-more-foreground group-data-pending/header:animate-skeleton data-open:after:bg-background data-open:after:border-border data-open:has-hover:hover:after:bg-border data-open:active:after:bg-border relative order-first shrink-0 gap-1.5 px-3 py-2 font-semibold group-data-pending/header:text-transparent data-open:rounded-b-none data-open:after:absolute data-open:after:-bottom-2.5 data-open:after:-left-px data-open:after:h-2.5 data-open:after:w-[calc(100%+2px)] data-open:after:border-r data-open:after:border-l sm:order-0"
-            onClick={() => setIsOpen((o) => !o)}
+            onClick={() => setIsOpen(!isOpen)}
             variant="outline"
           >
             <PlusIcon className="-ml-1 size-5 shrink-0 transition-transform group-data-open/button:rotate-45" />

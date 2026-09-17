@@ -1,6 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { cn } from "@/components/ui/utils";
 import { toStoredVariables } from "@/components/variables/helpers";
+import type { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import {
   VariablesFormField,
@@ -30,6 +31,21 @@ const CreateVariablesDraftSchema = z.object({
   variables: z.array(z.object({ name: z.string(), value: z.string() })),
 });
 
+export function getCreateVariablesPersistenceKey({
+  type,
+  teamId,
+  projectId,
+  environmentId,
+  serviceId,
+}: Pick<
+  TEntityVariableTypeProps,
+  "type" | "teamId" | "projectId" | "environmentId" | "serviceId"
+>) {
+  return ["create-variables", type, teamId, projectId, environmentId, serviceId]
+    .filter(Boolean)
+    .join(":");
+}
+
 export default function CreateVariablesForm({
   afterSuccessfulSubmit,
   className,
@@ -48,16 +64,7 @@ export default function CreateVariablesForm({
     [tokensDisabled, tokens],
   );
 
-  const persistenceKey = [
-    "create-variables",
-    typedProps.type,
-    typedProps.teamId,
-    typedProps.projectId,
-    typedProps.environmentId,
-    typedProps.serviceId,
-  ]
-    .filter(Boolean)
-    .join(":");
+  const persistenceKey = getCreateVariablesPersistenceKey(typedProps);
 
   const form = useAppFormWithPersistence({
     defaultValues: {
