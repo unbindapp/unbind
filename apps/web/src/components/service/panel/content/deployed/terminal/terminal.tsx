@@ -136,7 +136,7 @@ export default function Terminal() {
               }
               value={isPending || !activePod ? "" : activePod.kubernetes_name}
               onChange={setSelectedPod}
-              classNameContent="w-auto"
+              classNameContent="w-3xl sm:w-auto"
               align="start"
             >
               {({ isOpen }) => (
@@ -164,7 +164,7 @@ export default function Terminal() {
               items={containers.map((c) => ({ value: c, label: c }))}
               value={activeContainer}
               onChange={setSelectedContainer}
-              classNameContent="w-auto"
+              classNameContent="w-3xl sm:w-auto"
               align="start"
             >
               {({ isOpen }) => (
