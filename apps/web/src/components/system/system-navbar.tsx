@@ -1,3 +1,4 @@
+import { BreadcrumbLink } from "@/components/navigation/breadcrumb-link";
 import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import {
   Navbar,
@@ -20,9 +21,7 @@ export default function SystemNavbar() {
     <Navbar commandPanelContext={commandPanelContext}>
       <NavbarBreadcrumb>
         <BreadcrumbWrapper>
-          <div className="flex min-w-0 shrink items-center py-3.5 pr-1.5 pl-2.75 text-sm font-medium">
-            <p className="min-w-0 shrink truncate py-0.5 leading-none">System</p>
-          </div>
+          <BreadcrumbLink to="/system">System</BreadcrumbLink>
         </BreadcrumbWrapper>
       </NavbarBreadcrumb>
       <NavbarTabsLg>

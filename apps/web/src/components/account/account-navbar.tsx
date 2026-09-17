@@ -1,4 +1,5 @@
 import AccountTabs from "@/components/account/account-tabs";
+import { BreadcrumbLink } from "@/components/navigation/breadcrumb-link";
 import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import {
   Navbar,
@@ -20,9 +21,7 @@ export default function AccountNavbar() {
     <Navbar commandPanelContext={commandPanelContext}>
       <NavbarBreadcrumb>
         <BreadcrumbWrapper>
-          <div className="flex min-w-0 shrink items-center py-3.5 pr-1.5 pl-2.75 text-sm font-medium">
-            <p className="min-w-0 shrink truncate py-0.5 leading-none">Account</p>
-          </div>
+          <BreadcrumbLink to="/account">Account</BreadcrumbLink>
         </BreadcrumbWrapper>
       </NavbarBreadcrumb>
       <NavbarTabsLg>
