@@ -741,7 +741,7 @@ function AsyncDropdownMenu({
               {dropdownTitle && (
                 <>
                   <DropdownMenuLabel>{dropdownTitle}</DropdownMenuLabel>
-                  <DropdownMenuSeparator className="-mx-1" />
+                  <DropdownMenuSeparator />
                 </>
               )}
               {!items && !isPending && error && (

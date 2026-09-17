@@ -6,6 +6,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -36,9 +37,10 @@ export function AddBackupBucketTrigger({
         <DropdownMenuContent animate={false} className="w-(--anchor-width)">
           <ScrollArea>
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="-mx-1 mb-1 border-b px-3 pb-2 font-normal">
+              <DropdownMenuLabel className="px-3 font-normal">
                 {"You don't have any buckets. Add one first."}
               </DropdownMenuLabel>
+              <DropdownMenuSeparator />
               {/* The dialog lives outside the menu; nested inside the open modal menu it would be inert */}
               <DialogTrigger
                 nativeButton={false}

@@ -206,7 +206,7 @@ export function BreadcrumbItem<T>({
       <DropdownOrDrawerContentForDropdown>
         <DropdownMenuGroup>
           <DropdownMenuLabel>{title}</DropdownMenuLabel>
-          <DropdownMenuSeparator className="-mx-1 my-1" />
+          <DropdownMenuSeparator />
           {items?.map((i) => {
             return (
               <DropdownItem

@@ -73,7 +73,7 @@ export default function DropdownSelect({
             {title && (
               <>
                 <DropdownMenuLabel>{title}</DropdownMenuLabel>
-                <DropdownMenuSeparator className="-mx-1" />
+                <DropdownMenuSeparator />
               </>
             )}
             {!items && !isPending && error && <ErrorCard className="rounded-md" message={error} />}

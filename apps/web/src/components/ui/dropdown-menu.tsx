@@ -283,7 +283,7 @@ function DropdownMenuSeparator({ className, ...props }: MenuPrimitive.Separator.
     <MenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
       className={cn(
-        "bg-border pointer-events-none my-0 h-px shrink-0 rounded-full py-0",
+        "bg-border pointer-events-none h-px shrink-0 rounded-full in-data-[slot=dropdown-menu-group]:-mx-1 in-data-[slot=dropdown-menu-group]:my-1 in-data-[slot=dropdown-menu-sub-content]:-mx-1 in-data-[slot=dropdown-menu-sub-content]:my-1",
         className,
       )}
       {...props}
