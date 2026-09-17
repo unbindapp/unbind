@@ -363,5 +363,10 @@
     "version": "v0.1.72",
     "summary": "Volume connection details improvements, sticky settings tabs, and API key display polish.",
     "breaking": false
+  },
+  "v0.1.73": {
+    "version": "v0.1.73",
+    "summary": "Variable autocomplete improvements, API key expiry status and timeline polish, clickable account and system breadcrumbs, wider terminal dropdowns on mobile, and rendered variable references now win over raw build secrets.",
+    "breaking": false
   }
 }
