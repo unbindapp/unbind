@@ -23,19 +23,25 @@ import { cn } from "@/components/ui/utils";
 import { MountPathSchema } from "@/components/volume/mount-path";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
-import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
+import { TCommandItem } from "@/lib/hooks/use-app-form";
+import {
+  removeFormDraft,
+  useAppFormWithPersistence,
+} from "@/lib/hooks/use-app-form-with-persistence";
 import { TVolumeShallow, updateService } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { BoxIcon, FolderClosedIcon, HardDriveIcon, UnplugIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { z } from "zod";
 
 type TProps = {
   volume: TVolumeShallow;
   className?: string;
 };
+
+const AttachDraftSchema = z.object({ serviceId: z.string(), mountPath: z.string() });
 
 export default function ConnectionSection({ volume }: TProps) {
   if (!volume.mounted_on_service_id) {
@@ -116,11 +122,16 @@ function AttachSection({ volume }: TProps) {
     },
   });
 
-  const form = useAppForm({
+  const persistenceKey = `volume-attach:${volume.id}`;
+
+  const form = useAppFormWithPersistence({
     defaultValues: {
       serviceId: "",
       mountPath: volume.mount_path || "/data",
     },
+    persistenceType: "session",
+    persistenceKey,
+    persistenceSchema: AttachDraftSchema,
     validators: {
       onChange: z
         .object({
@@ -137,8 +148,17 @@ function AttachSection({ volume }: TProps) {
         serviceId: value.serviceId,
         addVolumes: [{ id: volume.id, mount_path: value.mountPath }],
       });
+      removeFormDraft({ persistenceType: "session", persistenceKey });
     },
   });
+
+  // A restored draft can point at a service that no longer exists
+  const selectedServiceId = useStore(form.store, (s) => s.values.serviceId);
+  useEffect(() => {
+    if (!attachableServices || !selectedServiceId) return;
+    if (attachableServices.some((service) => service.id === selectedServiceId)) return;
+    form.setFieldValue("serviceId", "");
+  }, [attachableServices, selectedServiceId, form]);
 
   const changeCount = useStore(form.store, (s) => {
     let count = 0;

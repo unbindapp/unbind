@@ -15,6 +15,10 @@ import {
 import { defaultAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
+import {
+  removeFormDraft,
+  useAppFormWithPersistence,
+} from "@/lib/hooks/use-app-form-with-persistence";
 import { expandVolume as expandVolumeFn, TVolumeType } from "@/lib/queries/storage";
 import { TVolumeShallow } from "@/lib/queries/services";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
@@ -51,10 +55,20 @@ export default function ExpandSection({ volume }: TProps) {
   );
   const storageStepGb = systemData?.data.storage.storage_step_gb || 1;
 
-  const form = useAppForm({
+  const persistenceKey = `volume-expand:${volume.id}`;
+  // The size can't be reduced, so a draft below the current size is stale
+  const persistenceSchema = useMemo(
+    () => z.object({ capacityGb: z.number().min(minStorageGb) }),
+    [minStorageGb],
+  );
+
+  const form = useAppFormWithPersistence({
     defaultValues: {
       capacityGb: minStorageGb,
     },
+    persistenceType: "session",
+    persistenceKey,
+    persistenceSchema,
     validators: {
       onChange: ({ value }) => {
         if (value.capacityGb < minStorageGb) {
@@ -83,14 +97,17 @@ export default function ExpandSection({ volume }: TProps) {
           <ExpandDialogTrigger
             newCapacityGb={newCapacityGb}
             volume={volume}
-            onSuccess={() => form.reset()}
+            onSuccess={() => {
+              form.reset();
+              removeFormDraft({ persistenceType: "session", persistenceKey });
+            }}
           >
             {children}
           </ExpandDialogTrigger>
         )}
       />
     ),
-    [volume, form],
+    [volume, form, persistenceKey],
   );
 
   if (!hasData && isPending) {
