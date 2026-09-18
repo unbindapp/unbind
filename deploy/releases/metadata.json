@@ -373,5 +373,10 @@
     "version": "v0.1.74",
     "summary": "Panel scroll position is remembered per entity and tab, and the raw variable editor and expanded form sections now stay open across refreshes.",
     "breaking": false
+  },
+  "v0.1.75": {
+    "version": "v0.1.75",
+    "summary": "Volume and domain form drafts are kept across refreshes, reset buttons on template storage size inputs, and volume connection details polish.",
+    "breaking": false
   }
 }
