@@ -66,7 +66,7 @@ function Slider<Value extends number | readonly number[]>({
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             key={index}
-            className="bg-foreground shadow-shadow-color/shadow-opacity group-active/slider:ring-foreground/8-10 active:ring-foreground/8-10 ring-foreground/7-10 group-data-staged/root:bg-change group-data-staged/root:ring-change/7-10 group-data-staged/root:active:ring-change/8-10 group-data-staged/root:group-active/slider:ring-change/8-10 block size-4 shrink-0 rounded-full shadow-md transition-[color,box-shadow] select-none group-active/slider:ring-4 focus-visible:ring-6 focus-visible:outline-hidden active:cursor-grabbing active:ring-4 disabled:pointer-events-none disabled:opacity-50 has-hover:group-hover/slider:ring-6 has-hover:group-hover/slider:group-active/slider:ring-4"
+            className="bg-foreground shadow-shadow-color/shadow-opacity group-active/slider:ring-foreground/8-10 active:ring-foreground/8-10 ring-foreground/7-10 group-data-staged/root:bg-change group-data-staged/root:ring-change/7-10 group-data-staged/root:active:ring-change/8-10 group-data-staged/root:group-active/slider:ring-change/8-10 block size-4 shrink-0 rounded-full shadow-md transition-[color,box-shadow] select-none group-active/slider:ring-4 active:cursor-grabbing active:ring-4 disabled:pointer-events-none disabled:opacity-50 has-hover:group-hover/slider:ring-6 has-hover:group-hover/slider:group-active/slider:ring-4 has-focus-visible:ring-6"
           />
         ))}
       </SliderPrimitive.Control>
