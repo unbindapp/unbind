@@ -10,6 +10,7 @@ import {
 } from "@/components/block";
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
+import ServiceIcon from "@/components/service/service-icon";
 import {
   getDuplicateServiceNames,
   getServicePublicHost,
@@ -295,8 +296,13 @@ function AttachedSection({ volume }: TProps) {
               ) : attachedService ? (
                 <>
                   {volume.mount_status === "attaching" ? "Being attached to" : "Mounted on"}{" "}
-                  <span className="text-foreground bg-foreground/2-10 border-foreground/2-10 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
-                    {attachedService.name}
+                  <span className="text-foreground bg-foreground/2-10 border-foreground/2-10 inline-flex max-w-full items-center gap-1 rounded-md border px-1.25 align-bottom leading-tight font-semibold">
+                    <ServiceIcon
+                      service={attachedService}
+                      color="brand"
+                      className="size-3.5 shrink-0"
+                    />
+                    <span className="min-w-0 truncate">{attachedService.name}</span>
                   </span>{" "}
                   at this path.
                 </>
