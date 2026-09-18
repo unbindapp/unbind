@@ -172,7 +172,7 @@ function ClientSummary({
           {client
             ? client.kind === "metadata_document"
               ? `Published by ${client.client_host}`
-              : "Registered automatically, no verified publisher"
+              : "Self-registered, publisher unknown"
             : "Published by loading.example.com"}
         </p>
         <p className={detailClassName}>

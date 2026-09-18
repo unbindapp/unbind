@@ -71,7 +71,7 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
               Verified
             </Chip>
           ) : (
-            <Chip>
+            <Chip className="text-warning bg-warning/4-10 border-warning/4-10 font-medium">
               <CircleAlertIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
               Unverified
             </Chip>
@@ -137,7 +137,7 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
 
 function publisher(connectedApp: TConnectedApp) {
   if (connectedApp.kind === "metadata_document") return connectedApp.client_host;
-  return "Registered automatically";
+  return "Self-registered";
 }
 
 function roleTitle(role: TConnectedApp["role"]) {
