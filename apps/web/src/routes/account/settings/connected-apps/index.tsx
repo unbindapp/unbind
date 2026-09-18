@@ -18,7 +18,7 @@ function AccountConnectedAppsSettings() {
     <ConnectedAppsProvider>
       <SettingsTabTitle>Connected Apps</SettingsTabTitle>
       <p className="text-muted-foreground mt-0.5 w-full px-1">
-        Apps, such as MCP clients, that can access your account.
+        Apps that can access your account, such as MCP clients.
       </p>
       <McpServerUrl className="mt-3" />
       <ConnectedAppsList className="mt-3" />
