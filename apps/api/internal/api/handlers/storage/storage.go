@@ -66,41 +66,41 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	}, handlers.DeleteS3Bucket, oapi.NoMCP("S3 buckets are managed in the UI"))
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "list-pvc",
-		Summary:     "List PVCs",
-		Description: "List persistent volume claims for a team, project, or environment.",
+		OperationID: "list-volumes",
+		Summary:     "List Volumes (PVCs)",
+		Description: "List volumes (persistent volume claims) for a team, project, or environment.",
 		Path:        "/pvc/list",
 		Method:      http.MethodGet,
 	}, handlers.ListPVCs, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "get-pvc",
-		Summary:     "Get PVC",
-		Description: "Get a single persistent volume claim by name.",
+		OperationID: "get-volume",
+		Summary:     "Get Volume (PVC)",
+		Description: "Get a single volume (persistent volume claim) by name.",
 		Path:        "/pvc/get",
 		Method:      http.MethodGet,
 	}, handlers.GetPVC, oapi.MCP)
 
 	oapi.Register(grp, oapi.Create, huma.Operation{
-		OperationID: "create-pvc",
-		Summary:     "Create PVC",
-		Description: "Create a persistent volume claim.",
+		OperationID: "create-volume",
+		Summary:     "Create Volume (PVC)",
+		Description: "Create a volume (persistent volume claim).",
 		Path:        "/pvc/create",
 		Method:      http.MethodPost,
 	}, handlers.CreatePVC, oapi.MCP)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
-		OperationID: "update-pvc",
-		Summary:     "Update PVC",
-		Description: "Update a persistent volume claim, e.g. grow its capacity.",
+		OperationID: "update-volume",
+		Summary:     "Update Volume (PVC)",
+		Description: "Update a volume (persistent volume claim), e.g. grow its capacity.",
 		Path:        "/pvc/update",
 		Method:      http.MethodPut,
 	}, handlers.UpdatePVC, oapi.MCP)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
-		OperationID: "delete-pvc",
-		Summary:     "Delete PVC",
-		Description: "Delete a persistent volume claim and its data. Fails while the volume is mounted by a service.",
+		OperationID: "delete-volume",
+		Summary:     "Delete Volume (PVC)",
+		Description: "Delete a volume (persistent volume claim) and its data. Fails while the volume is mounted by a service.",
 		Path:        "/pvc/delete",
 		Method:      http.MethodDelete,
 	}, handlers.DeletePVC, oapi.MCP)

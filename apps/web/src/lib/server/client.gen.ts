@@ -2646,7 +2646,7 @@ export const UpdateGroupResponseBodySchema = z
 
 export const UpdatePVCInputSchema = z
   .object({
-    capacity_gb: z.number().nullable().optional(), // Size of the PVC in GB (e.g., '10')
+    capacity_gb: z.number().nullable().optional(), // Size of the volume in GB (e.g., '10')
     description: z.string().optional(),
     environment_id: z.string().optional(),
     id: z.string(),
@@ -3516,7 +3516,7 @@ export const list_serviceQuerySchema = z
   })
   .passthrough();
 
-export const get_pvcQuerySchema = z
+export const get_volumeQuerySchema = z
   .object({
     type: PvcScopeSchema,
     team_id: z.string(),
@@ -3526,7 +3526,7 @@ export const get_pvcQuerySchema = z
   })
   .passthrough();
 
-export const list_pvcQuerySchema = z
+export const list_volumesQuerySchema = z
   .object({
     type: PvcScopeSchema,
     team_id: z.string(),
@@ -7261,7 +7261,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
         },
         get: async (
-          params: z.infer<typeof get_pvcQuerySchema>,
+          params: z.infer<typeof get_volumeQuerySchema>,
           fetchOptions?: RequestInit,
         ): Promise<GetPVCResponseBody> => {
           try {
@@ -7272,7 +7272,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               `${apiUrl}/storage/pvc/get`,
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
-            const validatedQuery = get_pvcQuerySchema.parse(params);
+            const validatedQuery = get_volumeQuerySchema.parse(params);
             const queryKeys = ['type', 'team_id', 'project_id', 'environment_id', 'id'];
             queryKeys.forEach((key) => {
               const value = validatedQuery[key as keyof typeof validatedQuery];
@@ -7309,7 +7309,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
         },
         list: async (
-          params: z.infer<typeof list_pvcQuerySchema>,
+          params: z.infer<typeof list_volumesQuerySchema>,
           fetchOptions?: RequestInit,
         ): Promise<ListPVCResponseBody> => {
           try {
@@ -7320,7 +7320,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               `${apiUrl}/storage/pvc/list`,
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
-            const validatedQuery = list_pvcQuerySchema.parse(params);
+            const validatedQuery = list_volumesQuerySchema.parse(params);
             const queryKeys = ['type', 'team_id', 'project_id', 'environment_id'];
             queryKeys.forEach((key) => {
               const value = validatedQuery[key as keyof typeof validatedQuery];

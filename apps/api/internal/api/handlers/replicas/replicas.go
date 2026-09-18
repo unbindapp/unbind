@@ -27,8 +27,8 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-replica-health",
-		Summary:     "Get Replica Health",
-		Description: "Get the aggregated health/status of a service's replicas.",
+		Summary:     "Get Replica (Pod) Health",
+		Description: "Get the aggregated health/status of a service's replicas (pods).",
 		Path:        "/health",
 		Method:      http.MethodGet,
 	}, handlers.GetReplicaHealth, oapi.MCP)

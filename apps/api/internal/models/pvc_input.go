@@ -72,7 +72,7 @@ type UpdatePVCInput struct {
 	ProjectID     uuid.UUID `json:"project_id" required:"false" format:"uuid"`
 	EnvironmentID uuid.UUID `json:"environment_id" required:"false" format:"uuid"`
 	ID            string    `json:"id" required:"true"`
-	CapacityGB    *float64  `json:"capacity_gb" required:"false" doc:"Size of the PVC in GB (e.g., '10')"`
+	CapacityGB    *float64  `json:"capacity_gb" required:"false" doc:"Size of the volume in GB (e.g., '10')"`
 }
 
 // * Delete
