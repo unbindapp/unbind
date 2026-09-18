@@ -25,8 +25,10 @@ const (
 	FieldPasswordHash = "password_hash"
 	// EdgeOauth2Tokens holds the string denoting the oauth2_tokens edge name in mutations.
 	EdgeOauth2Tokens = "oauth2_tokens"
-	// EdgeOauth2Codes holds the string denoting the oauth2_codes edge name in mutations.
-	EdgeOauth2Codes = "oauth2_codes"
+	// EdgeOauthAuthorizationCodes holds the string denoting the oauth_authorization_codes edge name in mutations.
+	EdgeOauthAuthorizationCodes = "oauth_authorization_codes"
+	// EdgeOauthGrants holds the string denoting the oauth_grants edge name in mutations.
+	EdgeOauthGrants = "oauth_grants"
 	// EdgeCreatedBy holds the string denoting the created_by edge name in mutations.
 	EdgeCreatedBy = "created_by"
 	// EdgeGroups holds the string denoting the groups edge name in mutations.
@@ -44,13 +46,20 @@ const (
 	Oauth2TokensInverseTable = "oauth2_tokens"
 	// Oauth2TokensColumn is the table column denoting the oauth2_tokens relation/edge.
 	Oauth2TokensColumn = "user_oauth2_tokens"
-	// Oauth2CodesTable is the table that holds the oauth2_codes relation/edge.
-	Oauth2CodesTable = "oauth2_codes"
-	// Oauth2CodesInverseTable is the table name for the Oauth2Code entity.
-	// It exists in this package in order to avoid circular dependency with the "oauth2code" package.
-	Oauth2CodesInverseTable = "oauth2_codes"
-	// Oauth2CodesColumn is the table column denoting the oauth2_codes relation/edge.
-	Oauth2CodesColumn = "user_oauth2_codes"
+	// OauthAuthorizationCodesTable is the table that holds the oauth_authorization_codes relation/edge.
+	OauthAuthorizationCodesTable = "oauth_authorization_codes"
+	// OauthAuthorizationCodesInverseTable is the table name for the OAuthAuthorizationCode entity.
+	// It exists in this package in order to avoid circular dependency with the "oauthauthorizationcode" package.
+	OauthAuthorizationCodesInverseTable = "oauth_authorization_codes"
+	// OauthAuthorizationCodesColumn is the table column denoting the oauth_authorization_codes relation/edge.
+	OauthAuthorizationCodesColumn = "user_id"
+	// OauthGrantsTable is the table that holds the oauth_grants relation/edge.
+	OauthGrantsTable = "oauth_grants"
+	// OauthGrantsInverseTable is the table name for the OAuthGrant entity.
+	// It exists in this package in order to avoid circular dependency with the "oauthgrant" package.
+	OauthGrantsInverseTable = "oauth_grants"
+	// OauthGrantsColumn is the table column denoting the oauth_grants relation/edge.
+	OauthGrantsColumn = "user_id"
 	// CreatedByTable is the table that holds the created_by relation/edge.
 	CreatedByTable = "github_apps"
 	// CreatedByInverseTable is the table name for the GithubApp entity.
@@ -158,17 +167,31 @@ func ByOauth2Tokens(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByOauth2CodesCount orders the results by oauth2_codes count.
-func ByOauth2CodesCount(opts ...sql.OrderTermOption) OrderOption {
+// ByOauthAuthorizationCodesCount orders the results by oauth_authorization_codes count.
+func ByOauthAuthorizationCodesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newOauth2CodesStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newOauthAuthorizationCodesStep(), opts...)
 	}
 }
 
-// ByOauth2Codes orders the results by oauth2_codes terms.
-func ByOauth2Codes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByOauthAuthorizationCodes orders the results by oauth_authorization_codes terms.
+func ByOauthAuthorizationCodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOauth2CodesStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newOauthAuthorizationCodesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByOauthGrantsCount orders the results by oauth_grants count.
+func ByOauthGrantsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOauthGrantsStep(), opts...)
+	}
+}
+
+// ByOauthGrants orders the results by oauth_grants terms.
+func ByOauthGrants(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOauthGrantsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -234,11 +257,18 @@ func newOauth2TokensStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, Oauth2TokensTable, Oauth2TokensColumn),
 	)
 }
-func newOauth2CodesStep() *sqlgraph.Step {
+func newOauthAuthorizationCodesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(Oauth2CodesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, Oauth2CodesTable, Oauth2CodesColumn),
+		sqlgraph.To(OauthAuthorizationCodesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OauthAuthorizationCodesTable, OauthAuthorizationCodesColumn),
+	)
+}
+func newOauthGrantsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OauthGrantsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OauthGrantsTable, OauthGrantsColumn),
 	)
 }
 func newCreatedByStep() *sqlgraph.Step {

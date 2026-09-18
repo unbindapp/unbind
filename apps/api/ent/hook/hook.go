@@ -105,16 +105,52 @@ func (f JWTKeyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.JWTKeyMutation", m)
 }
 
-// The Oauth2CodeFunc type is an adapter to allow the use of ordinary
-// function as Oauth2Code mutator.
-type Oauth2CodeFunc func(context.Context, *ent.Oauth2CodeMutation) (ent.Value, error)
+// The OAuthAuthorizationCodeFunc type is an adapter to allow the use of ordinary
+// function as OAuthAuthorizationCode mutator.
+type OAuthAuthorizationCodeFunc func(context.Context, *ent.OAuthAuthorizationCodeMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f Oauth2CodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.Oauth2CodeMutation); ok {
+func (f OAuthAuthorizationCodeFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OAuthAuthorizationCodeMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.Oauth2CodeMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OAuthAuthorizationCodeMutation", m)
+}
+
+// The OAuthClientFunc type is an adapter to allow the use of ordinary
+// function as OAuthClient mutator.
+type OAuthClientFunc func(context.Context, *ent.OAuthClientMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OAuthClientFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OAuthClientMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OAuthClientMutation", m)
+}
+
+// The OAuthGrantFunc type is an adapter to allow the use of ordinary
+// function as OAuthGrant mutator.
+type OAuthGrantFunc func(context.Context, *ent.OAuthGrantMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OAuthGrantFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OAuthGrantMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OAuthGrantMutation", m)
+}
+
+// The OAuthGrantTokenFunc type is an adapter to allow the use of ordinary
+// function as OAuthGrantToken mutator.
+type OAuthGrantTokenFunc func(context.Context, *ent.OAuthGrantTokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OAuthGrantTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OAuthGrantTokenMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OAuthGrantTokenMutation", m)
 }
 
 // The Oauth2TokenFunc type is an adapter to allow the use of ordinary

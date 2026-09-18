@@ -34,7 +34,14 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("oauth2_tokens", Oauth2Token.Type),
-		edge.To("oauth2_codes", Oauth2Code.Type),
+		edge.To("oauth_authorization_codes", OAuthAuthorizationCode.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
+		edge.To("oauth_grants", OAuthGrant.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.Cascade,
+			}),
 		// O2M with github_apps
 		edge.To("created_by", GithubApp.Type).
 			Annotations(entsql.Annotation{

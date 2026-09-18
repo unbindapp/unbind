@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/ent/oauth2code"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 )
 
@@ -51,14 +50,6 @@ func (self *OauthRepository) CleanTokenStore(ctx context.Context) (result error)
 			oauth2token.ExpiresAtLT(time.Now()),
 		),
 	).Exec(ctx)
-	if err != nil {
-		result = multierror.Append(result, err)
-	}
-
-	_, err = self.base.DB.Oauth2Code.Delete().Where(
-		oauth2code.ExpiresAtLT(time.Now()),
-	).Exec(ctx)
-
 	if err != nil {
 		result = multierror.Append(result, err)
 	}

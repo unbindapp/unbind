@@ -27,6 +27,15 @@ packages:
           filename: apikey_repository_mock.go
           structname: APIKeyRepositoryMock
           pkgname: mocks_repository_apikey
+  github.com/unbindapp/unbind-api/internal/repositories/oauthserver:
+    config:
+      dir: ./mocks/repository/oauthserver
+    interfaces:
+      OAuthServerRepositoryInterface:
+        config:
+          filename: oauthserver_repository_mock.go
+          structname: OAuthServerRepositoryMock
+          pkgname: mocks_repository_oauthserver
   github.com/unbindapp/unbind-api/internal/repositories/bootstrap:
     config:
       dir: ./mocks/repository/bootstrap

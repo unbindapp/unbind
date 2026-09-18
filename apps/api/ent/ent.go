@@ -20,8 +20,11 @@ import (
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/jwtkey"
-	"github.com/unbindapp/unbind-api/ent/oauth2code"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
+	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
+	"github.com/unbindapp/unbind-api/ent/oauthclient"
+	"github.com/unbindapp/unbind-api/ent/oauthgrant"
+	"github.com/unbindapp/unbind-api/ent/oauthgranttoken"
 	"github.com/unbindapp/unbind-api/ent/permission"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/pvcmetadata"
@@ -96,30 +99,33 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			apikey.Table:             apikey.ValidColumn,
-			bootstrap.Table:          bootstrap.ValidColumn,
-			deployment.Table:         deployment.ValidColumn,
-			environment.Table:        environment.ValidColumn,
-			githubapp.Table:          githubapp.ValidColumn,
-			githubinstallation.Table: githubinstallation.ValidColumn,
-			group.Table:              group.ValidColumn,
-			jwtkey.Table:             jwtkey.ValidColumn,
-			oauth2code.Table:         oauth2code.ValidColumn,
-			oauth2token.Table:        oauth2token.ValidColumn,
-			pvcmetadata.Table:        pvcmetadata.ValidColumn,
-			permission.Table:         permission.ValidColumn,
-			project.Table:            project.ValidColumn,
-			registry.Table:           registry.ValidColumn,
-			s3bucket.Table:           s3bucket.ValidColumn,
-			service.Table:            service.ValidColumn,
-			serviceconfig.Table:      serviceconfig.ValidColumn,
-			servicegroup.Table:       servicegroup.ValidColumn,
-			systemsetting.Table:      systemsetting.ValidColumn,
-			team.Table:               team.ValidColumn,
-			template.Table:           template.ValidColumn,
-			user.Table:               user.ValidColumn,
-			variablereference.Table:  variablereference.ValidColumn,
-			webhook.Table:            webhook.ValidColumn,
+			apikey.Table:                 apikey.ValidColumn,
+			bootstrap.Table:              bootstrap.ValidColumn,
+			deployment.Table:             deployment.ValidColumn,
+			environment.Table:            environment.ValidColumn,
+			githubapp.Table:              githubapp.ValidColumn,
+			githubinstallation.Table:     githubinstallation.ValidColumn,
+			group.Table:                  group.ValidColumn,
+			jwtkey.Table:                 jwtkey.ValidColumn,
+			oauthauthorizationcode.Table: oauthauthorizationcode.ValidColumn,
+			oauthclient.Table:            oauthclient.ValidColumn,
+			oauthgrant.Table:             oauthgrant.ValidColumn,
+			oauthgranttoken.Table:        oauthgranttoken.ValidColumn,
+			oauth2token.Table:            oauth2token.ValidColumn,
+			pvcmetadata.Table:            pvcmetadata.ValidColumn,
+			permission.Table:             permission.ValidColumn,
+			project.Table:                project.ValidColumn,
+			registry.Table:               registry.ValidColumn,
+			s3bucket.Table:               s3bucket.ValidColumn,
+			service.Table:                service.ValidColumn,
+			serviceconfig.Table:          serviceconfig.ValidColumn,
+			servicegroup.Table:           servicegroup.ValidColumn,
+			systemsetting.Table:          systemsetting.ValidColumn,
+			team.Table:                   team.ValidColumn,
+			template.Table:               template.ValidColumn,
+			user.Table:                   user.ValidColumn,
+			variablereference.Table:      variablereference.ValidColumn,
+			webhook.Table:                webhook.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

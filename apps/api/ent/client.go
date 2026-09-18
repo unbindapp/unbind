@@ -24,8 +24,11 @@ import (
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/jwtkey"
-	"github.com/unbindapp/unbind-api/ent/oauth2code"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
+	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
+	"github.com/unbindapp/unbind-api/ent/oauthclient"
+	"github.com/unbindapp/unbind-api/ent/oauthgrant"
+	"github.com/unbindapp/unbind-api/ent/oauthgranttoken"
 	"github.com/unbindapp/unbind-api/ent/permission"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/pvcmetadata"
@@ -65,8 +68,14 @@ type Client struct {
 	Group *GroupClient
 	// JWTKey is the client for interacting with the JWTKey builders.
 	JWTKey *JWTKeyClient
-	// Oauth2Code is the client for interacting with the Oauth2Code builders.
-	Oauth2Code *Oauth2CodeClient
+	// OAuthAuthorizationCode is the client for interacting with the OAuthAuthorizationCode builders.
+	OAuthAuthorizationCode *OAuthAuthorizationCodeClient
+	// OAuthClient is the client for interacting with the OAuthClient builders.
+	OAuthClient *OAuthClientClient
+	// OAuthGrant is the client for interacting with the OAuthGrant builders.
+	OAuthGrant *OAuthGrantClient
+	// OAuthGrantToken is the client for interacting with the OAuthGrantToken builders.
+	OAuthGrantToken *OAuthGrantTokenClient
 	// Oauth2Token is the client for interacting with the Oauth2Token builders.
 	Oauth2Token *Oauth2TokenClient
 	// PVCMetadata is the client for interacting with the PVCMetadata builders.
@@ -116,7 +125,10 @@ func (c *Client) init() {
 	c.GithubInstallation = NewGithubInstallationClient(c.config)
 	c.Group = NewGroupClient(c.config)
 	c.JWTKey = NewJWTKeyClient(c.config)
-	c.Oauth2Code = NewOauth2CodeClient(c.config)
+	c.OAuthAuthorizationCode = NewOAuthAuthorizationCodeClient(c.config)
+	c.OAuthClient = NewOAuthClientClient(c.config)
+	c.OAuthGrant = NewOAuthGrantClient(c.config)
+	c.OAuthGrantToken = NewOAuthGrantTokenClient(c.config)
 	c.Oauth2Token = NewOauth2TokenClient(c.config)
 	c.PVCMetadata = NewPVCMetadataClient(c.config)
 	c.Permission = NewPermissionClient(c.config)
@@ -222,32 +234,35 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		APIKey:             NewAPIKeyClient(cfg),
-		Bootstrap:          NewBootstrapClient(cfg),
-		Deployment:         NewDeploymentClient(cfg),
-		Environment:        NewEnvironmentClient(cfg),
-		GithubApp:          NewGithubAppClient(cfg),
-		GithubInstallation: NewGithubInstallationClient(cfg),
-		Group:              NewGroupClient(cfg),
-		JWTKey:             NewJWTKeyClient(cfg),
-		Oauth2Code:         NewOauth2CodeClient(cfg),
-		Oauth2Token:        NewOauth2TokenClient(cfg),
-		PVCMetadata:        NewPVCMetadataClient(cfg),
-		Permission:         NewPermissionClient(cfg),
-		Project:            NewProjectClient(cfg),
-		Registry:           NewRegistryClient(cfg),
-		S3Bucket:           NewS3BucketClient(cfg),
-		Service:            NewServiceClient(cfg),
-		ServiceConfig:      NewServiceConfigClient(cfg),
-		ServiceGroup:       NewServiceGroupClient(cfg),
-		SystemSetting:      NewSystemSettingClient(cfg),
-		Team:               NewTeamClient(cfg),
-		Template:           NewTemplateClient(cfg),
-		User:               NewUserClient(cfg),
-		VariableReference:  NewVariableReferenceClient(cfg),
-		Webhook:            NewWebhookClient(cfg),
+		ctx:                    ctx,
+		config:                 cfg,
+		APIKey:                 NewAPIKeyClient(cfg),
+		Bootstrap:              NewBootstrapClient(cfg),
+		Deployment:             NewDeploymentClient(cfg),
+		Environment:            NewEnvironmentClient(cfg),
+		GithubApp:              NewGithubAppClient(cfg),
+		GithubInstallation:     NewGithubInstallationClient(cfg),
+		Group:                  NewGroupClient(cfg),
+		JWTKey:                 NewJWTKeyClient(cfg),
+		OAuthAuthorizationCode: NewOAuthAuthorizationCodeClient(cfg),
+		OAuthClient:            NewOAuthClientClient(cfg),
+		OAuthGrant:             NewOAuthGrantClient(cfg),
+		OAuthGrantToken:        NewOAuthGrantTokenClient(cfg),
+		Oauth2Token:            NewOauth2TokenClient(cfg),
+		PVCMetadata:            NewPVCMetadataClient(cfg),
+		Permission:             NewPermissionClient(cfg),
+		Project:                NewProjectClient(cfg),
+		Registry:               NewRegistryClient(cfg),
+		S3Bucket:               NewS3BucketClient(cfg),
+		Service:                NewServiceClient(cfg),
+		ServiceConfig:          NewServiceConfigClient(cfg),
+		ServiceGroup:           NewServiceGroupClient(cfg),
+		SystemSetting:          NewSystemSettingClient(cfg),
+		Team:                   NewTeamClient(cfg),
+		Template:               NewTemplateClient(cfg),
+		User:                   NewUserClient(cfg),
+		VariableReference:      NewVariableReferenceClient(cfg),
+		Webhook:                NewWebhookClient(cfg),
 	}, nil
 }
 
@@ -265,32 +280,35 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		APIKey:             NewAPIKeyClient(cfg),
-		Bootstrap:          NewBootstrapClient(cfg),
-		Deployment:         NewDeploymentClient(cfg),
-		Environment:        NewEnvironmentClient(cfg),
-		GithubApp:          NewGithubAppClient(cfg),
-		GithubInstallation: NewGithubInstallationClient(cfg),
-		Group:              NewGroupClient(cfg),
-		JWTKey:             NewJWTKeyClient(cfg),
-		Oauth2Code:         NewOauth2CodeClient(cfg),
-		Oauth2Token:        NewOauth2TokenClient(cfg),
-		PVCMetadata:        NewPVCMetadataClient(cfg),
-		Permission:         NewPermissionClient(cfg),
-		Project:            NewProjectClient(cfg),
-		Registry:           NewRegistryClient(cfg),
-		S3Bucket:           NewS3BucketClient(cfg),
-		Service:            NewServiceClient(cfg),
-		ServiceConfig:      NewServiceConfigClient(cfg),
-		ServiceGroup:       NewServiceGroupClient(cfg),
-		SystemSetting:      NewSystemSettingClient(cfg),
-		Team:               NewTeamClient(cfg),
-		Template:           NewTemplateClient(cfg),
-		User:               NewUserClient(cfg),
-		VariableReference:  NewVariableReferenceClient(cfg),
-		Webhook:            NewWebhookClient(cfg),
+		ctx:                    ctx,
+		config:                 cfg,
+		APIKey:                 NewAPIKeyClient(cfg),
+		Bootstrap:              NewBootstrapClient(cfg),
+		Deployment:             NewDeploymentClient(cfg),
+		Environment:            NewEnvironmentClient(cfg),
+		GithubApp:              NewGithubAppClient(cfg),
+		GithubInstallation:     NewGithubInstallationClient(cfg),
+		Group:                  NewGroupClient(cfg),
+		JWTKey:                 NewJWTKeyClient(cfg),
+		OAuthAuthorizationCode: NewOAuthAuthorizationCodeClient(cfg),
+		OAuthClient:            NewOAuthClientClient(cfg),
+		OAuthGrant:             NewOAuthGrantClient(cfg),
+		OAuthGrantToken:        NewOAuthGrantTokenClient(cfg),
+		Oauth2Token:            NewOauth2TokenClient(cfg),
+		PVCMetadata:            NewPVCMetadataClient(cfg),
+		Permission:             NewPermissionClient(cfg),
+		Project:                NewProjectClient(cfg),
+		Registry:               NewRegistryClient(cfg),
+		S3Bucket:               NewS3BucketClient(cfg),
+		Service:                NewServiceClient(cfg),
+		ServiceConfig:          NewServiceConfigClient(cfg),
+		ServiceGroup:           NewServiceGroupClient(cfg),
+		SystemSetting:          NewSystemSettingClient(cfg),
+		Team:                   NewTeamClient(cfg),
+		Template:               NewTemplateClient(cfg),
+		User:                   NewUserClient(cfg),
+		VariableReference:      NewVariableReferenceClient(cfg),
+		Webhook:                NewWebhookClient(cfg),
 	}, nil
 }
 
@@ -321,9 +339,10 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIKey, c.Bootstrap, c.Deployment, c.Environment, c.GithubApp,
-		c.GithubInstallation, c.Group, c.JWTKey, c.Oauth2Code, c.Oauth2Token,
-		c.PVCMetadata, c.Permission, c.Project, c.Registry, c.S3Bucket, c.Service,
-		c.ServiceConfig, c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User,
+		c.GithubInstallation, c.Group, c.JWTKey, c.OAuthAuthorizationCode,
+		c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PVCMetadata,
+		c.Permission, c.Project, c.Registry, c.S3Bucket, c.Service, c.ServiceConfig,
+		c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User,
 		c.VariableReference, c.Webhook,
 	} {
 		n.Use(hooks...)
@@ -335,9 +354,10 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIKey, c.Bootstrap, c.Deployment, c.Environment, c.GithubApp,
-		c.GithubInstallation, c.Group, c.JWTKey, c.Oauth2Code, c.Oauth2Token,
-		c.PVCMetadata, c.Permission, c.Project, c.Registry, c.S3Bucket, c.Service,
-		c.ServiceConfig, c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User,
+		c.GithubInstallation, c.Group, c.JWTKey, c.OAuthAuthorizationCode,
+		c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PVCMetadata,
+		c.Permission, c.Project, c.Registry, c.S3Bucket, c.Service, c.ServiceConfig,
+		c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User,
 		c.VariableReference, c.Webhook,
 	} {
 		n.Intercept(interceptors...)
@@ -363,8 +383,14 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Group.mutate(ctx, m)
 	case *JWTKeyMutation:
 		return c.JWTKey.mutate(ctx, m)
-	case *Oauth2CodeMutation:
-		return c.Oauth2Code.mutate(ctx, m)
+	case *OAuthAuthorizationCodeMutation:
+		return c.OAuthAuthorizationCode.mutate(ctx, m)
+	case *OAuthClientMutation:
+		return c.OAuthClient.mutate(ctx, m)
+	case *OAuthGrantMutation:
+		return c.OAuthGrant.mutate(ctx, m)
+	case *OAuthGrantTokenMutation:
+		return c.OAuthGrantToken.mutate(ctx, m)
 	case *Oauth2TokenMutation:
 		return c.Oauth2Token.mutate(ctx, m)
 	case *PVCMetadataMutation:
@@ -1656,107 +1682,107 @@ func (c *JWTKeyClient) mutate(ctx context.Context, m *JWTKeyMutation) (Value, er
 	}
 }
 
-// Oauth2CodeClient is a client for the Oauth2Code schema.
-type Oauth2CodeClient struct {
+// OAuthAuthorizationCodeClient is a client for the OAuthAuthorizationCode schema.
+type OAuthAuthorizationCodeClient struct {
 	config
 }
 
-// NewOauth2CodeClient returns a client for the Oauth2Code from the given config.
-func NewOauth2CodeClient(c config) *Oauth2CodeClient {
-	return &Oauth2CodeClient{config: c}
+// NewOAuthAuthorizationCodeClient returns a client for the OAuthAuthorizationCode from the given config.
+func NewOAuthAuthorizationCodeClient(c config) *OAuthAuthorizationCodeClient {
+	return &OAuthAuthorizationCodeClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `oauth2code.Hooks(f(g(h())))`.
-func (c *Oauth2CodeClient) Use(hooks ...Hook) {
-	c.hooks.Oauth2Code = append(c.hooks.Oauth2Code, hooks...)
+// A call to `Use(f, g, h)` equals to `oauthauthorizationcode.Hooks(f(g(h())))`.
+func (c *OAuthAuthorizationCodeClient) Use(hooks ...Hook) {
+	c.hooks.OAuthAuthorizationCode = append(c.hooks.OAuthAuthorizationCode, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `oauth2code.Intercept(f(g(h())))`.
-func (c *Oauth2CodeClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Oauth2Code = append(c.inters.Oauth2Code, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `oauthauthorizationcode.Intercept(f(g(h())))`.
+func (c *OAuthAuthorizationCodeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OAuthAuthorizationCode = append(c.inters.OAuthAuthorizationCode, interceptors...)
 }
 
-// Create returns a builder for creating a Oauth2Code entity.
-func (c *Oauth2CodeClient) Create() *Oauth2CodeCreate {
-	mutation := newOauth2CodeMutation(c.config, OpCreate)
-	return &Oauth2CodeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a OAuthAuthorizationCode entity.
+func (c *OAuthAuthorizationCodeClient) Create() *OAuthAuthorizationCodeCreate {
+	mutation := newOAuthAuthorizationCodeMutation(c.config, OpCreate)
+	return &OAuthAuthorizationCodeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of Oauth2Code entities.
-func (c *Oauth2CodeClient) CreateBulk(builders ...*Oauth2CodeCreate) *Oauth2CodeCreateBulk {
-	return &Oauth2CodeCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of OAuthAuthorizationCode entities.
+func (c *OAuthAuthorizationCodeClient) CreateBulk(builders ...*OAuthAuthorizationCodeCreate) *OAuthAuthorizationCodeCreateBulk {
+	return &OAuthAuthorizationCodeCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *Oauth2CodeClient) MapCreateBulk(slice any, setFunc func(*Oauth2CodeCreate, int)) *Oauth2CodeCreateBulk {
+func (c *OAuthAuthorizationCodeClient) MapCreateBulk(slice any, setFunc func(*OAuthAuthorizationCodeCreate, int)) *OAuthAuthorizationCodeCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &Oauth2CodeCreateBulk{err: fmt.Errorf("calling to Oauth2CodeClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &OAuthAuthorizationCodeCreateBulk{err: fmt.Errorf("calling to OAuthAuthorizationCodeClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*Oauth2CodeCreate, rv.Len())
+	builders := make([]*OAuthAuthorizationCodeCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &Oauth2CodeCreateBulk{config: c.config, builders: builders}
+	return &OAuthAuthorizationCodeCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for Oauth2Code.
-func (c *Oauth2CodeClient) Update() *Oauth2CodeUpdate {
-	mutation := newOauth2CodeMutation(c.config, OpUpdate)
-	return &Oauth2CodeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for OAuthAuthorizationCode.
+func (c *OAuthAuthorizationCodeClient) Update() *OAuthAuthorizationCodeUpdate {
+	mutation := newOAuthAuthorizationCodeMutation(c.config, OpUpdate)
+	return &OAuthAuthorizationCodeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *Oauth2CodeClient) UpdateOne(_m *Oauth2Code) *Oauth2CodeUpdateOne {
-	mutation := newOauth2CodeMutation(c.config, OpUpdateOne, withOauth2Code(_m))
-	return &Oauth2CodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *OAuthAuthorizationCodeClient) UpdateOne(_m *OAuthAuthorizationCode) *OAuthAuthorizationCodeUpdateOne {
+	mutation := newOAuthAuthorizationCodeMutation(c.config, OpUpdateOne, withOAuthAuthorizationCode(_m))
+	return &OAuthAuthorizationCodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *Oauth2CodeClient) UpdateOneID(id uuid.UUID) *Oauth2CodeUpdateOne {
-	mutation := newOauth2CodeMutation(c.config, OpUpdateOne, withOauth2CodeID(id))
-	return &Oauth2CodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *OAuthAuthorizationCodeClient) UpdateOneID(id uuid.UUID) *OAuthAuthorizationCodeUpdateOne {
+	mutation := newOAuthAuthorizationCodeMutation(c.config, OpUpdateOne, withOAuthAuthorizationCodeID(id))
+	return &OAuthAuthorizationCodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for Oauth2Code.
-func (c *Oauth2CodeClient) Delete() *Oauth2CodeDelete {
-	mutation := newOauth2CodeMutation(c.config, OpDelete)
-	return &Oauth2CodeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for OAuthAuthorizationCode.
+func (c *OAuthAuthorizationCodeClient) Delete() *OAuthAuthorizationCodeDelete {
+	mutation := newOAuthAuthorizationCodeMutation(c.config, OpDelete)
+	return &OAuthAuthorizationCodeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *Oauth2CodeClient) DeleteOne(_m *Oauth2Code) *Oauth2CodeDeleteOne {
+func (c *OAuthAuthorizationCodeClient) DeleteOne(_m *OAuthAuthorizationCode) *OAuthAuthorizationCodeDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *Oauth2CodeClient) DeleteOneID(id uuid.UUID) *Oauth2CodeDeleteOne {
-	builder := c.Delete().Where(oauth2code.ID(id))
+func (c *OAuthAuthorizationCodeClient) DeleteOneID(id uuid.UUID) *OAuthAuthorizationCodeDeleteOne {
+	builder := c.Delete().Where(oauthauthorizationcode.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &Oauth2CodeDeleteOne{builder}
+	return &OAuthAuthorizationCodeDeleteOne{builder}
 }
 
-// Query returns a query builder for Oauth2Code.
-func (c *Oauth2CodeClient) Query() *Oauth2CodeQuery {
-	return &Oauth2CodeQuery{
+// Query returns a query builder for OAuthAuthorizationCode.
+func (c *OAuthAuthorizationCodeClient) Query() *OAuthAuthorizationCodeQuery {
+	return &OAuthAuthorizationCodeQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeOauth2Code},
+		ctx:    &QueryContext{Type: TypeOAuthAuthorizationCode},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a Oauth2Code entity by its id.
-func (c *Oauth2CodeClient) Get(ctx context.Context, id uuid.UUID) (*Oauth2Code, error) {
-	return c.Query().Where(oauth2code.ID(id)).Only(ctx)
+// Get returns a OAuthAuthorizationCode entity by its id.
+func (c *OAuthAuthorizationCodeClient) Get(ctx context.Context, id uuid.UUID) (*OAuthAuthorizationCode, error) {
+	return c.Query().Where(oauthauthorizationcode.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *Oauth2CodeClient) GetX(ctx context.Context, id uuid.UUID) *Oauth2Code {
+func (c *OAuthAuthorizationCodeClient) GetX(ctx context.Context, id uuid.UUID) *OAuthAuthorizationCode {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -1764,15 +1790,15 @@ func (c *Oauth2CodeClient) GetX(ctx context.Context, id uuid.UUID) *Oauth2Code {
 	return obj
 }
 
-// QueryUser queries the user edge of a Oauth2Code.
-func (c *Oauth2CodeClient) QueryUser(_m *Oauth2Code) *UserQuery {
+// QueryUser queries the user edge of a OAuthAuthorizationCode.
+func (c *OAuthAuthorizationCodeClient) QueryUser(_m *OAuthAuthorizationCode) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(oauth2code.Table, oauth2code.FieldID, id),
+			sqlgraph.From(oauthauthorizationcode.Table, oauthauthorizationcode.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, oauth2code.UserTable, oauth2code.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, oauthauthorizationcode.UserTable, oauthauthorizationcode.UserColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1781,27 +1807,474 @@ func (c *Oauth2CodeClient) QueryUser(_m *Oauth2Code) *UserQuery {
 }
 
 // Hooks returns the client hooks.
-func (c *Oauth2CodeClient) Hooks() []Hook {
-	return c.hooks.Oauth2Code
+func (c *OAuthAuthorizationCodeClient) Hooks() []Hook {
+	return c.hooks.OAuthAuthorizationCode
 }
 
 // Interceptors returns the client interceptors.
-func (c *Oauth2CodeClient) Interceptors() []Interceptor {
-	return c.inters.Oauth2Code
+func (c *OAuthAuthorizationCodeClient) Interceptors() []Interceptor {
+	return c.inters.OAuthAuthorizationCode
 }
 
-func (c *Oauth2CodeClient) mutate(ctx context.Context, m *Oauth2CodeMutation) (Value, error) {
+func (c *OAuthAuthorizationCodeClient) mutate(ctx context.Context, m *OAuthAuthorizationCodeMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&Oauth2CodeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&OAuthAuthorizationCodeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&Oauth2CodeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&OAuthAuthorizationCodeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&Oauth2CodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&OAuthAuthorizationCodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&Oauth2CodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&OAuthAuthorizationCodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown Oauth2Code mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown OAuthAuthorizationCode mutation op: %q", m.Op())
+	}
+}
+
+// OAuthClientClient is a client for the OAuthClient schema.
+type OAuthClientClient struct {
+	config
+}
+
+// NewOAuthClientClient returns a client for the OAuthClient from the given config.
+func NewOAuthClientClient(c config) *OAuthClientClient {
+	return &OAuthClientClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `oauthclient.Hooks(f(g(h())))`.
+func (c *OAuthClientClient) Use(hooks ...Hook) {
+	c.hooks.OAuthClient = append(c.hooks.OAuthClient, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `oauthclient.Intercept(f(g(h())))`.
+func (c *OAuthClientClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OAuthClient = append(c.inters.OAuthClient, interceptors...)
+}
+
+// Create returns a builder for creating a OAuthClient entity.
+func (c *OAuthClientClient) Create() *OAuthClientCreate {
+	mutation := newOAuthClientMutation(c.config, OpCreate)
+	return &OAuthClientCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OAuthClient entities.
+func (c *OAuthClientClient) CreateBulk(builders ...*OAuthClientCreate) *OAuthClientCreateBulk {
+	return &OAuthClientCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OAuthClientClient) MapCreateBulk(slice any, setFunc func(*OAuthClientCreate, int)) *OAuthClientCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OAuthClientCreateBulk{err: fmt.Errorf("calling to OAuthClientClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OAuthClientCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OAuthClientCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OAuthClient.
+func (c *OAuthClientClient) Update() *OAuthClientUpdate {
+	mutation := newOAuthClientMutation(c.config, OpUpdate)
+	return &OAuthClientUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OAuthClientClient) UpdateOne(_m *OAuthClient) *OAuthClientUpdateOne {
+	mutation := newOAuthClientMutation(c.config, OpUpdateOne, withOAuthClient(_m))
+	return &OAuthClientUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OAuthClientClient) UpdateOneID(id uuid.UUID) *OAuthClientUpdateOne {
+	mutation := newOAuthClientMutation(c.config, OpUpdateOne, withOAuthClientID(id))
+	return &OAuthClientUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OAuthClient.
+func (c *OAuthClientClient) Delete() *OAuthClientDelete {
+	mutation := newOAuthClientMutation(c.config, OpDelete)
+	return &OAuthClientDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OAuthClientClient) DeleteOne(_m *OAuthClient) *OAuthClientDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OAuthClientClient) DeleteOneID(id uuid.UUID) *OAuthClientDeleteOne {
+	builder := c.Delete().Where(oauthclient.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OAuthClientDeleteOne{builder}
+}
+
+// Query returns a query builder for OAuthClient.
+func (c *OAuthClientClient) Query() *OAuthClientQuery {
+	return &OAuthClientQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOAuthClient},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OAuthClient entity by its id.
+func (c *OAuthClientClient) Get(ctx context.Context, id uuid.UUID) (*OAuthClient, error) {
+	return c.Query().Where(oauthclient.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OAuthClientClient) GetX(ctx context.Context, id uuid.UUID) *OAuthClient {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OAuthClientClient) Hooks() []Hook {
+	return c.hooks.OAuthClient
+}
+
+// Interceptors returns the client interceptors.
+func (c *OAuthClientClient) Interceptors() []Interceptor {
+	return c.inters.OAuthClient
+}
+
+func (c *OAuthClientClient) mutate(ctx context.Context, m *OAuthClientMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OAuthClientCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OAuthClientUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OAuthClientUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OAuthClientDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OAuthClient mutation op: %q", m.Op())
+	}
+}
+
+// OAuthGrantClient is a client for the OAuthGrant schema.
+type OAuthGrantClient struct {
+	config
+}
+
+// NewOAuthGrantClient returns a client for the OAuthGrant from the given config.
+func NewOAuthGrantClient(c config) *OAuthGrantClient {
+	return &OAuthGrantClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `oauthgrant.Hooks(f(g(h())))`.
+func (c *OAuthGrantClient) Use(hooks ...Hook) {
+	c.hooks.OAuthGrant = append(c.hooks.OAuthGrant, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `oauthgrant.Intercept(f(g(h())))`.
+func (c *OAuthGrantClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OAuthGrant = append(c.inters.OAuthGrant, interceptors...)
+}
+
+// Create returns a builder for creating a OAuthGrant entity.
+func (c *OAuthGrantClient) Create() *OAuthGrantCreate {
+	mutation := newOAuthGrantMutation(c.config, OpCreate)
+	return &OAuthGrantCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OAuthGrant entities.
+func (c *OAuthGrantClient) CreateBulk(builders ...*OAuthGrantCreate) *OAuthGrantCreateBulk {
+	return &OAuthGrantCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OAuthGrantClient) MapCreateBulk(slice any, setFunc func(*OAuthGrantCreate, int)) *OAuthGrantCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OAuthGrantCreateBulk{err: fmt.Errorf("calling to OAuthGrantClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OAuthGrantCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OAuthGrantCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OAuthGrant.
+func (c *OAuthGrantClient) Update() *OAuthGrantUpdate {
+	mutation := newOAuthGrantMutation(c.config, OpUpdate)
+	return &OAuthGrantUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OAuthGrantClient) UpdateOne(_m *OAuthGrant) *OAuthGrantUpdateOne {
+	mutation := newOAuthGrantMutation(c.config, OpUpdateOne, withOAuthGrant(_m))
+	return &OAuthGrantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OAuthGrantClient) UpdateOneID(id uuid.UUID) *OAuthGrantUpdateOne {
+	mutation := newOAuthGrantMutation(c.config, OpUpdateOne, withOAuthGrantID(id))
+	return &OAuthGrantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OAuthGrant.
+func (c *OAuthGrantClient) Delete() *OAuthGrantDelete {
+	mutation := newOAuthGrantMutation(c.config, OpDelete)
+	return &OAuthGrantDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OAuthGrantClient) DeleteOne(_m *OAuthGrant) *OAuthGrantDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OAuthGrantClient) DeleteOneID(id uuid.UUID) *OAuthGrantDeleteOne {
+	builder := c.Delete().Where(oauthgrant.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OAuthGrantDeleteOne{builder}
+}
+
+// Query returns a query builder for OAuthGrant.
+func (c *OAuthGrantClient) Query() *OAuthGrantQuery {
+	return &OAuthGrantQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOAuthGrant},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OAuthGrant entity by its id.
+func (c *OAuthGrantClient) Get(ctx context.Context, id uuid.UUID) (*OAuthGrant, error) {
+	return c.Query().Where(oauthgrant.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OAuthGrantClient) GetX(ctx context.Context, id uuid.UUID) *OAuthGrant {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryUser queries the user edge of a OAuthGrant.
+func (c *OAuthGrantClient) QueryUser(_m *OAuthGrant) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oauthgrant.Table, oauthgrant.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, oauthgrant.UserTable, oauthgrant.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTokens queries the tokens edge of a OAuthGrant.
+func (c *OAuthGrantClient) QueryTokens(_m *OAuthGrant) *OAuthGrantTokenQuery {
+	query := (&OAuthGrantTokenClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oauthgrant.Table, oauthgrant.FieldID, id),
+			sqlgraph.To(oauthgranttoken.Table, oauthgranttoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, oauthgrant.TokensTable, oauthgrant.TokensColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *OAuthGrantClient) Hooks() []Hook {
+	return c.hooks.OAuthGrant
+}
+
+// Interceptors returns the client interceptors.
+func (c *OAuthGrantClient) Interceptors() []Interceptor {
+	return c.inters.OAuthGrant
+}
+
+func (c *OAuthGrantClient) mutate(ctx context.Context, m *OAuthGrantMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OAuthGrantCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OAuthGrantUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OAuthGrantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OAuthGrantDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OAuthGrant mutation op: %q", m.Op())
+	}
+}
+
+// OAuthGrantTokenClient is a client for the OAuthGrantToken schema.
+type OAuthGrantTokenClient struct {
+	config
+}
+
+// NewOAuthGrantTokenClient returns a client for the OAuthGrantToken from the given config.
+func NewOAuthGrantTokenClient(c config) *OAuthGrantTokenClient {
+	return &OAuthGrantTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `oauthgranttoken.Hooks(f(g(h())))`.
+func (c *OAuthGrantTokenClient) Use(hooks ...Hook) {
+	c.hooks.OAuthGrantToken = append(c.hooks.OAuthGrantToken, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `oauthgranttoken.Intercept(f(g(h())))`.
+func (c *OAuthGrantTokenClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OAuthGrantToken = append(c.inters.OAuthGrantToken, interceptors...)
+}
+
+// Create returns a builder for creating a OAuthGrantToken entity.
+func (c *OAuthGrantTokenClient) Create() *OAuthGrantTokenCreate {
+	mutation := newOAuthGrantTokenMutation(c.config, OpCreate)
+	return &OAuthGrantTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OAuthGrantToken entities.
+func (c *OAuthGrantTokenClient) CreateBulk(builders ...*OAuthGrantTokenCreate) *OAuthGrantTokenCreateBulk {
+	return &OAuthGrantTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OAuthGrantTokenClient) MapCreateBulk(slice any, setFunc func(*OAuthGrantTokenCreate, int)) *OAuthGrantTokenCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OAuthGrantTokenCreateBulk{err: fmt.Errorf("calling to OAuthGrantTokenClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OAuthGrantTokenCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OAuthGrantTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OAuthGrantToken.
+func (c *OAuthGrantTokenClient) Update() *OAuthGrantTokenUpdate {
+	mutation := newOAuthGrantTokenMutation(c.config, OpUpdate)
+	return &OAuthGrantTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OAuthGrantTokenClient) UpdateOne(_m *OAuthGrantToken) *OAuthGrantTokenUpdateOne {
+	mutation := newOAuthGrantTokenMutation(c.config, OpUpdateOne, withOAuthGrantToken(_m))
+	return &OAuthGrantTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OAuthGrantTokenClient) UpdateOneID(id uuid.UUID) *OAuthGrantTokenUpdateOne {
+	mutation := newOAuthGrantTokenMutation(c.config, OpUpdateOne, withOAuthGrantTokenID(id))
+	return &OAuthGrantTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OAuthGrantToken.
+func (c *OAuthGrantTokenClient) Delete() *OAuthGrantTokenDelete {
+	mutation := newOAuthGrantTokenMutation(c.config, OpDelete)
+	return &OAuthGrantTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OAuthGrantTokenClient) DeleteOne(_m *OAuthGrantToken) *OAuthGrantTokenDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OAuthGrantTokenClient) DeleteOneID(id uuid.UUID) *OAuthGrantTokenDeleteOne {
+	builder := c.Delete().Where(oauthgranttoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OAuthGrantTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for OAuthGrantToken.
+func (c *OAuthGrantTokenClient) Query() *OAuthGrantTokenQuery {
+	return &OAuthGrantTokenQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOAuthGrantToken},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OAuthGrantToken entity by its id.
+func (c *OAuthGrantTokenClient) Get(ctx context.Context, id uuid.UUID) (*OAuthGrantToken, error) {
+	return c.Query().Where(oauthgranttoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OAuthGrantTokenClient) GetX(ctx context.Context, id uuid.UUID) *OAuthGrantToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGrant queries the grant edge of a OAuthGrantToken.
+func (c *OAuthGrantTokenClient) QueryGrant(_m *OAuthGrantToken) *OAuthGrantQuery {
+	query := (&OAuthGrantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oauthgranttoken.Table, oauthgranttoken.FieldID, id),
+			sqlgraph.To(oauthgrant.Table, oauthgrant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, oauthgranttoken.GrantTable, oauthgranttoken.GrantColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *OAuthGrantTokenClient) Hooks() []Hook {
+	return c.hooks.OAuthGrantToken
+}
+
+// Interceptors returns the client interceptors.
+func (c *OAuthGrantTokenClient) Interceptors() []Interceptor {
+	return c.inters.OAuthGrantToken
+}
+
+func (c *OAuthGrantTokenClient) mutate(ctx context.Context, m *OAuthGrantTokenMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OAuthGrantTokenCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OAuthGrantTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OAuthGrantTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OAuthGrantTokenDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OAuthGrantToken mutation op: %q", m.Op())
 	}
 }
 
@@ -3925,15 +4398,31 @@ func (c *UserClient) QueryOauth2Tokens(_m *User) *Oauth2TokenQuery {
 	return query
 }
 
-// QueryOauth2Codes queries the oauth2_codes edge of a User.
-func (c *UserClient) QueryOauth2Codes(_m *User) *Oauth2CodeQuery {
-	query := (&Oauth2CodeClient{config: c.config}).Query()
+// QueryOauthAuthorizationCodes queries the oauth_authorization_codes edge of a User.
+func (c *UserClient) QueryOauthAuthorizationCodes(_m *User) *OAuthAuthorizationCodeQuery {
+	query := (&OAuthAuthorizationCodeClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(oauth2code.Table, oauth2code.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.Oauth2CodesTable, user.Oauth2CodesColumn),
+			sqlgraph.To(oauthauthorizationcode.Table, oauthauthorizationcode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OauthAuthorizationCodesTable, user.OauthAuthorizationCodesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOauthGrants queries the oauth_grants edge of a User.
+func (c *UserClient) QueryOauthGrants(_m *User) *OAuthGrantQuery {
+	query := (&OAuthGrantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(oauthgrant.Table, oauthgrant.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OauthGrantsTable, user.OauthGrantsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -4348,15 +4837,17 @@ func (c *WebhookClient) mutate(ctx context.Context, m *WebhookMutation) (Value, 
 type (
 	hooks struct {
 		APIKey, Bootstrap, Deployment, Environment, GithubApp, GithubInstallation,
-		Group, JWTKey, Oauth2Code, Oauth2Token, PVCMetadata, Permission, Project,
-		Registry, S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team,
-		Template, User, VariableReference, Webhook []ent.Hook
+		Group, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
+		OAuthGrantToken, Oauth2Token, PVCMetadata, Permission, Project, Registry,
+		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template,
+		User, VariableReference, Webhook []ent.Hook
 	}
 	inters struct {
 		APIKey, Bootstrap, Deployment, Environment, GithubApp, GithubInstallation,
-		Group, JWTKey, Oauth2Code, Oauth2Token, PVCMetadata, Permission, Project,
-		Registry, S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team,
-		Template, User, VariableReference, Webhook []ent.Interceptor
+		Group, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
+		OAuthGrantToken, Oauth2Token, PVCMetadata, Permission, Project, Registry,
+		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template,
+		User, VariableReference, Webhook []ent.Interceptor
 	}
 )
 

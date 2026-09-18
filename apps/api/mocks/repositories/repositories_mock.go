@@ -17,6 +17,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/repositories/github"
 	"github.com/unbindapp/unbind-api/internal/repositories/group"
 	"github.com/unbindapp/unbind-api/internal/repositories/oauth"
+	"github.com/unbindapp/unbind-api/internal/repositories/oauthserver"
 	"github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/repositories/project"
 	"github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
@@ -384,6 +385,52 @@ func (_c *RepositoriesMock_Group_Call) Return(groupRepositoryInterface group_rep
 }
 
 func (_c *RepositoriesMock_Group_Call) RunAndReturn(run func() group_repo.GroupRepositoryInterface) *RepositoriesMock_Group_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// OAuthServer provides a mock function for the type RepositoriesMock
+func (_mock *RepositoriesMock) OAuthServer() oauthserver_repo.OAuthServerRepositoryInterface {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for OAuthServer")
+	}
+
+	var r0 oauthserver_repo.OAuthServerRepositoryInterface
+	if returnFunc, ok := ret.Get(0).(func() oauthserver_repo.OAuthServerRepositoryInterface); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(oauthserver_repo.OAuthServerRepositoryInterface)
+		}
+	}
+	return r0
+}
+
+// RepositoriesMock_OAuthServer_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'OAuthServer'
+type RepositoriesMock_OAuthServer_Call struct {
+	*mock.Call
+}
+
+// OAuthServer is a helper method to define mock.On call
+func (_e *RepositoriesMock_Expecter) OAuthServer() *RepositoriesMock_OAuthServer_Call {
+	return &RepositoriesMock_OAuthServer_Call{Call: _e.mock.On("OAuthServer")}
+}
+
+func (_c *RepositoriesMock_OAuthServer_Call) Run(run func()) *RepositoriesMock_OAuthServer_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *RepositoriesMock_OAuthServer_Call) Return(oAuthServerRepositoryInterface oauthserver_repo.OAuthServerRepositoryInterface) *RepositoriesMock_OAuthServer_Call {
+	_c.Call.Return(oAuthServerRepositoryInterface)
+	return _c
+}
+
+func (_c *RepositoriesMock_OAuthServer_Call) RunAndReturn(run func() oauthserver_repo.OAuthServerRepositoryInterface) *RepositoriesMock_OAuthServer_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -21,6 +21,7 @@ import (
 	"github.com/unbindapp/unbind-api/config"
 	entmigrate "github.com/unbindapp/unbind-api/ent/migrate"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	oauthserver_handler "github.com/unbindapp/unbind-api/internal/api/handlers/oauthserver"
 	"github.com/unbindapp/unbind-api/internal/api/middleware"
 	"github.com/unbindapp/unbind-api/internal/api/router"
 	"github.com/unbindapp/unbind-api/internal/api/server"
@@ -38,6 +39,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/registrycache"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/updater"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
+	"github.com/unbindapp/unbind-api/internal/oauthserver"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	apikey_service "github.com/unbindapp/unbind-api/internal/services/apikey"
 	deployments_service "github.com/unbindapp/unbind-api/internal/services/deployments"
@@ -45,6 +47,7 @@ import (
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
 	logs_service "github.com/unbindapp/unbind-api/internal/services/logs"
 	metric_service "github.com/unbindapp/unbind-api/internal/services/metrics"
+	oauthserver_service "github.com/unbindapp/unbind-api/internal/services/oauthserver"
 	project_service "github.com/unbindapp/unbind-api/internal/services/project"
 	replica_service "github.com/unbindapp/unbind-api/internal/services/replicas"
 	servers_service "github.com/unbindapp/unbind-api/internal/services/servers"
@@ -180,6 +183,8 @@ func startAPI(cfg *config.Config) {
 	serviceGroupService := servicegroup_service.NewServiceGroupService(cfg, repo, kubeClient, deploymentController, serviceService, storageService)
 	terminalService := terminal_service.NewTerminalService(repo, kubeClient)
 	apiKeyService := apikey_service.NewAPIKeyService(repo)
+	metadataFetcher := oauthserver.NewMetadataFetcher(oauthserver.DefaultIPPolicy, cache.NewCache[oauthserver.ClientMetadata](redisClient, "unbind:cimd"))
+	oauthServerService := oauthserver_service.NewOAuthServerService(repo, metadataFetcher, oauthserver.Issuer(cfg.ExternalUIUrl))
 
 	stringCache := cache.NewStringCache(redisClient, "unbind")
 
@@ -222,6 +227,7 @@ func startAPI(cfg *config.Config) {
 		ServiceGroupService:  serviceGroupService,
 		TerminalService:      terminalService,
 		APIKeyService:        apiKeyService,
+		OAuthServerService:   oauthServerService,
 		TokenManager:         tokenManager,
 	}
 
@@ -304,6 +310,10 @@ func startAPI(cfg *config.Config) {
 		})
 
 		router.RegisterRoutes(api, srvImpl, mw, allowedOrigins)
+
+		// OAuth authorization server and the MCP resource, at the root so
+		// clients discover them from the issuer origin.
+		oauthserver_handler.NewHandler(oauthServerService).Mount(r, middleware.NewRateLimiter(redisClient))
 	})
 
 	// Serve the embedded SPA for any path the API doesn't claim. In the deployed
@@ -389,6 +399,21 @@ func startAPI(cfg *config.Config) {
 	)
 	if err != nil {
 		log.Fatal("Failed to create longhorn snapshot purge job", "err", err)
+	}
+
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(time.Hour),
+		gocron.NewTask(
+			func(ctx context.Context) {
+				if err := oauthServerService.Cleanup(ctx); err != nil {
+					log.Error("Failed to clean up oauth state", "err", err)
+				}
+			},
+			ctx,
+		),
+	)
+	if err != nil {
+		log.Fatal("Failed to create oauth cleanup job", "err", err)
 	}
 
 	scheduler.Start()

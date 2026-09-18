@@ -4,6 +4,7 @@ import {
   ContainerIcon,
   KeyIcon,
   KeySquareIcon,
+  PlugZapIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
   UsersIcon,
@@ -19,7 +20,8 @@ export type TSettingsTabVariant =
   | "webhooks"
   | "danger-zone"
   | "storage"
-  | "api-keys";
+  | "api-keys"
+  | "connected-apps";
 
 export default function SettingsTabIcon({
   variant,
@@ -48,6 +50,10 @@ export default function SettingsTabIcon({
 
   if (variant === "api-keys") {
     return <KeySquareIcon className={cn("size-5 shrink-0", className)} {...rest} />;
+  }
+
+  if (variant === "connected-apps") {
+    return <PlugZapIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
   if (variant === "storage") {

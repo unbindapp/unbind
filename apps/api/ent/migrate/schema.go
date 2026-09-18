@@ -223,29 +223,152 @@ var (
 		Columns:    JwtKeysColumns,
 		PrimaryKey: []*schema.Column{JwtKeysColumns[0]},
 	}
-	// Oauth2CodesColumns holds the columns for the "oauth2_codes" table.
-	Oauth2CodesColumns = []*schema.Column{
+	// OauthAuthorizationCodesColumns holds the columns for the "oauth_authorization_codes" table.
+	OauthAuthorizationCodesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "auth_code", Type: field.TypeString, Unique: true},
+		{Name: "code_hash", Type: field.TypeString, Unique: true},
 		{Name: "client_id", Type: field.TypeString},
-		{Name: "scope", Type: field.TypeString},
+		{Name: "client_name", Type: field.TypeString},
+		{Name: "client_kind", Type: field.TypeEnum, Enums: []string{"dynamic", "metadata_document"}},
+		{Name: "client_uri", Type: field.TypeString, Nullable: true},
+		{Name: "redirect_uri", Type: field.TypeString},
+		{Name: "code_challenge", Type: field.TypeString},
+		{Name: "resource", Type: field.TypeString},
+		{Name: "scope", Type: field.TypeString, Nullable: true},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "editor", "viewer"}},
+		{Name: "full_access", Type: field.TypeBool, Default: false},
+		{Name: "resources", Type: field.TypeJSON},
 		{Name: "expires_at", Type: field.TypeTime},
-		{Name: "revoked", Type: field.TypeBool, Default: false},
-		{Name: "user_oauth2_codes", Type: field.TypeUUID},
+		{Name: "used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "grant_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
-	// Oauth2CodesTable holds the schema information for the "oauth2_codes" table.
-	Oauth2CodesTable = &schema.Table{
-		Name:       "oauth2_codes",
-		Columns:    Oauth2CodesColumns,
-		PrimaryKey: []*schema.Column{Oauth2CodesColumns[0]},
+	// OauthAuthorizationCodesTable holds the schema information for the "oauth_authorization_codes" table.
+	OauthAuthorizationCodesTable = &schema.Table{
+		Name:       "oauth_authorization_codes",
+		Columns:    OauthAuthorizationCodesColumns,
+		PrimaryKey: []*schema.Column{OauthAuthorizationCodesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "oauth2_codes_users_oauth2_codes",
-				Columns:    []*schema.Column{Oauth2CodesColumns[8]},
+				Symbol:     "oauth_authorization_codes_users_oauth_authorization_codes",
+				Columns:    []*schema.Column{OauthAuthorizationCodesColumns[18]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthauthorizationcode_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{OauthAuthorizationCodesColumns[15]},
+			},
+		},
+	}
+	// OauthClientsColumns holds the columns for the "oauth_clients" table.
+	OauthClientsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "client_id", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "redirect_uris", Type: field.TypeJSON},
+		{Name: "client_uri", Type: field.TypeString, Nullable: true},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+	}
+	// OauthClientsTable holds the schema information for the "oauth_clients" table.
+	OauthClientsTable = &schema.Table{
+		Name:       "oauth_clients",
+		Columns:    OauthClientsColumns,
+		PrimaryKey: []*schema.Column{OauthClientsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthclient_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{OauthClientsColumns[1]},
+			},
+		},
+	}
+	// OauthGrantsColumns holds the columns for the "oauth_grants" table.
+	OauthGrantsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "client_id", Type: field.TypeString},
+		{Name: "client_name", Type: field.TypeString},
+		{Name: "client_kind", Type: field.TypeEnum, Enums: []string{"dynamic", "metadata_document"}},
+		{Name: "client_uri", Type: field.TypeString, Nullable: true},
+		{Name: "redirect_uri", Type: field.TypeString},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "editor", "viewer"}},
+		{Name: "full_access", Type: field.TypeBool, Default: false},
+		{Name: "resources", Type: field.TypeJSON},
+		{Name: "resource", Type: field.TypeString},
+		{Name: "scope", Type: field.TypeString, Nullable: true},
+		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "revoked_at", Type: field.TypeTime, Nullable: true},
+		{Name: "user_id", Type: field.TypeUUID},
+	}
+	// OauthGrantsTable holds the schema information for the "oauth_grants" table.
+	OauthGrantsTable = &schema.Table{
+		Name:       "oauth_grants",
+		Columns:    OauthGrantsColumns,
+		PrimaryKey: []*schema.Column{OauthGrantsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_grants_users_oauth_grants",
+				Columns:    []*schema.Column{OauthGrantsColumns[15]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthgrant_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{OauthGrantsColumns[15]},
+			},
+			{
+				Name:    "oauthgrant_client_id",
+				Unique:  false,
+				Columns: []*schema.Column{OauthGrantsColumns[3]},
+			},
+		},
+	}
+	// OauthGrantTokensColumns holds the columns for the "oauth_grant_tokens" table.
+	OauthGrantTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"access", "refresh"}},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "used_at", Type: field.TypeTime, Nullable: true},
+		{Name: "grant_id", Type: field.TypeUUID},
+	}
+	// OauthGrantTokensTable holds the schema information for the "oauth_grant_tokens" table.
+	OauthGrantTokensTable = &schema.Table{
+		Name:       "oauth_grant_tokens",
+		Columns:    OauthGrantTokensColumns,
+		PrimaryKey: []*schema.Column{OauthGrantTokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oauth_grant_tokens_oauth_grants_tokens",
+				Columns:    []*schema.Column{OauthGrantTokensColumns[7]},
+				RefColumns: []*schema.Column{OauthGrantsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oauthgranttoken_grant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OauthGrantTokensColumns[7]},
+			},
+			{
+				Name:    "oauthgranttoken_expires_at",
+				Unique:  false,
+				Columns: []*schema.Column{OauthGrantTokensColumns[5]},
 			},
 		},
 	}
@@ -781,7 +904,10 @@ var (
 		GithubInstallationsTable,
 		GroupsTable,
 		JwtKeysTable,
-		Oauth2CodesTable,
+		OauthAuthorizationCodesTable,
+		OauthClientsTable,
+		OauthGrantsTable,
+		OauthGrantTokensTable,
 		Oauth2TokensTable,
 		PvcMetadataTable,
 		PermissionsTable,
@@ -833,9 +959,20 @@ func init() {
 	JwtKeysTable.Annotation = &entsql.Annotation{
 		Table: "jwt_keys",
 	}
-	Oauth2CodesTable.ForeignKeys[0].RefTable = UsersTable
-	Oauth2CodesTable.Annotation = &entsql.Annotation{
-		Table: "oauth2_codes",
+	OauthAuthorizationCodesTable.ForeignKeys[0].RefTable = UsersTable
+	OauthAuthorizationCodesTable.Annotation = &entsql.Annotation{
+		Table: "oauth_authorization_codes",
+	}
+	OauthClientsTable.Annotation = &entsql.Annotation{
+		Table: "oauth_clients",
+	}
+	OauthGrantsTable.ForeignKeys[0].RefTable = UsersTable
+	OauthGrantsTable.Annotation = &entsql.Annotation{
+		Table: "oauth_grants",
+	}
+	OauthGrantTokensTable.ForeignKeys[0].RefTable = OauthGrantsTable
+	OauthGrantTokensTable.Annotation = &entsql.Annotation{
+		Table: "oauth_grant_tokens",
 	}
 	Oauth2TokensTable.ForeignKeys[0].RefTable = UsersTable
 	Oauth2TokensTable.Annotation = &entsql.Annotation{

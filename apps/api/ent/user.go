@@ -37,8 +37,10 @@ type User struct {
 type UserEdges struct {
 	// Oauth2Tokens holds the value of the oauth2_tokens edge.
 	Oauth2Tokens []*Oauth2Token `json:"oauth2_tokens,omitempty"`
-	// Oauth2Codes holds the value of the oauth2_codes edge.
-	Oauth2Codes []*Oauth2Code `json:"oauth2_codes,omitempty"`
+	// OauthAuthorizationCodes holds the value of the oauth_authorization_codes edge.
+	OauthAuthorizationCodes []*OAuthAuthorizationCode `json:"oauth_authorization_codes,omitempty"`
+	// OauthGrants holds the value of the oauth_grants edge.
+	OauthGrants []*OAuthGrant `json:"oauth_grants,omitempty"`
 	// CreatedBy holds the value of the created_by edge.
 	CreatedBy []*GithubApp `json:"created_by,omitempty"`
 	// Groups holds the value of the groups edge.
@@ -49,7 +51,7 @@ type UserEdges struct {
 	APIKeys []*APIKey `json:"api_keys,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // Oauth2TokensOrErr returns the Oauth2Tokens value or an error if the edge
@@ -61,19 +63,28 @@ func (e UserEdges) Oauth2TokensOrErr() ([]*Oauth2Token, error) {
 	return nil, &NotLoadedError{edge: "oauth2_tokens"}
 }
 
-// Oauth2CodesOrErr returns the Oauth2Codes value or an error if the edge
+// OauthAuthorizationCodesOrErr returns the OauthAuthorizationCodes value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) Oauth2CodesOrErr() ([]*Oauth2Code, error) {
+func (e UserEdges) OauthAuthorizationCodesOrErr() ([]*OAuthAuthorizationCode, error) {
 	if e.loadedTypes[1] {
-		return e.Oauth2Codes, nil
+		return e.OauthAuthorizationCodes, nil
 	}
-	return nil, &NotLoadedError{edge: "oauth2_codes"}
+	return nil, &NotLoadedError{edge: "oauth_authorization_codes"}
+}
+
+// OauthGrantsOrErr returns the OauthGrants value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) OauthGrantsOrErr() ([]*OAuthGrant, error) {
+	if e.loadedTypes[2] {
+		return e.OauthGrants, nil
+	}
+	return nil, &NotLoadedError{edge: "oauth_grants"}
 }
 
 // CreatedByOrErr returns the CreatedBy value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) CreatedByOrErr() ([]*GithubApp, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.CreatedBy, nil
 	}
 	return nil, &NotLoadedError{edge: "created_by"}
@@ -82,7 +93,7 @@ func (e UserEdges) CreatedByOrErr() ([]*GithubApp, error) {
 // GroupsOrErr returns the Groups value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) GroupsOrErr() ([]*Group, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Groups, nil
 	}
 	return nil, &NotLoadedError{edge: "groups"}
@@ -91,7 +102,7 @@ func (e UserEdges) GroupsOrErr() ([]*Group, error) {
 // TeamsOrErr returns the Teams value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) TeamsOrErr() ([]*Team, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Teams, nil
 	}
 	return nil, &NotLoadedError{edge: "teams"}
@@ -100,7 +111,7 @@ func (e UserEdges) TeamsOrErr() ([]*Team, error) {
 // APIKeysOrErr returns the APIKeys value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) APIKeysOrErr() ([]*APIKey, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.APIKeys, nil
 	}
 	return nil, &NotLoadedError{edge: "api_keys"}
@@ -180,9 +191,14 @@ func (_m *User) QueryOauth2Tokens() *Oauth2TokenQuery {
 	return NewUserClient(_m.config).QueryOauth2Tokens(_m)
 }
 
-// QueryOauth2Codes queries the "oauth2_codes" edge of the User entity.
-func (_m *User) QueryOauth2Codes() *Oauth2CodeQuery {
-	return NewUserClient(_m.config).QueryOauth2Codes(_m)
+// QueryOauthAuthorizationCodes queries the "oauth_authorization_codes" edge of the User entity.
+func (_m *User) QueryOauthAuthorizationCodes() *OAuthAuthorizationCodeQuery {
+	return NewUserClient(_m.config).QueryOauthAuthorizationCodes(_m)
+}
+
+// QueryOauthGrants queries the "oauth_grants" edge of the User entity.
+func (_m *User) QueryOauthGrants() *OAuthGrantQuery {
+	return NewUserClient(_m.config).QueryOauthGrants(_m)
 }
 
 // QueryCreatedBy queries the "created_by" edge of the User entity.

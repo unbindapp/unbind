@@ -29,6 +29,12 @@ func (self *Middleware) Authenticate(ctx huma.Context, next func(huma.Context)) 
 		self.authenticateAPIKey(ctx, next, token)
 		return
 	}
+	// Refused explicitly so a leaked MCP token never falls through to the
+	// refresh cookie path and rides an existing browser session.
+	if ok && fromBearer && auth.IsOAuthToken(token) {
+		_ = huma.WriteErr(self.api, ctx, http.StatusUnauthorized, "OAuth tokens are only accepted by the MCP endpoint")
+		return
+	}
 
 	if ok {
 		if claims, err := self.tokenManager.Verify(token); err == nil {

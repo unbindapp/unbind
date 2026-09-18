@@ -15,8 +15,9 @@ import (
 	"github.com/unbindapp/unbind-api/ent/apikey"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/group"
-	"github.com/unbindapp/unbind-api/ent/oauth2code"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
+	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
+	"github.com/unbindapp/unbind-api/ent/oauthgrant"
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
@@ -85,19 +86,34 @@ func (_u *UserUpdate) AddOauth2Tokens(v ...*Oauth2Token) *UserUpdate {
 	return _u.AddOauth2TokenIDs(ids...)
 }
 
-// AddOauth2CodeIDs adds the "oauth2_codes" edge to the Oauth2Code entity by IDs.
-func (_u *UserUpdate) AddOauth2CodeIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.AddOauth2CodeIDs(ids...)
+// AddOauthAuthorizationCodeIDs adds the "oauth_authorization_codes" edge to the OAuthAuthorizationCode entity by IDs.
+func (_u *UserUpdate) AddOauthAuthorizationCodeIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddOauthAuthorizationCodeIDs(ids...)
 	return _u
 }
 
-// AddOauth2Codes adds the "oauth2_codes" edges to the Oauth2Code entity.
-func (_u *UserUpdate) AddOauth2Codes(v ...*Oauth2Code) *UserUpdate {
+// AddOauthAuthorizationCodes adds the "oauth_authorization_codes" edges to the OAuthAuthorizationCode entity.
+func (_u *UserUpdate) AddOauthAuthorizationCodes(v ...*OAuthAuthorizationCode) *UserUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddOauth2CodeIDs(ids...)
+	return _u.AddOauthAuthorizationCodeIDs(ids...)
+}
+
+// AddOauthGrantIDs adds the "oauth_grants" edge to the OAuthGrant entity by IDs.
+func (_u *UserUpdate) AddOauthGrantIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddOauthGrantIDs(ids...)
+	return _u
+}
+
+// AddOauthGrants adds the "oauth_grants" edges to the OAuthGrant entity.
+func (_u *UserUpdate) AddOauthGrants(v ...*OAuthGrant) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOauthGrantIDs(ids...)
 }
 
 // AddCreatedByIDs adds the "created_by" edge to the GithubApp entity by IDs.
@@ -186,25 +202,46 @@ func (_u *UserUpdate) RemoveOauth2Tokens(v ...*Oauth2Token) *UserUpdate {
 	return _u.RemoveOauth2TokenIDs(ids...)
 }
 
-// ClearOauth2Codes clears all "oauth2_codes" edges to the Oauth2Code entity.
-func (_u *UserUpdate) ClearOauth2Codes() *UserUpdate {
-	_u.mutation.ClearOauth2Codes()
+// ClearOauthAuthorizationCodes clears all "oauth_authorization_codes" edges to the OAuthAuthorizationCode entity.
+func (_u *UserUpdate) ClearOauthAuthorizationCodes() *UserUpdate {
+	_u.mutation.ClearOauthAuthorizationCodes()
 	return _u
 }
 
-// RemoveOauth2CodeIDs removes the "oauth2_codes" edge to Oauth2Code entities by IDs.
-func (_u *UserUpdate) RemoveOauth2CodeIDs(ids ...uuid.UUID) *UserUpdate {
-	_u.mutation.RemoveOauth2CodeIDs(ids...)
+// RemoveOauthAuthorizationCodeIDs removes the "oauth_authorization_codes" edge to OAuthAuthorizationCode entities by IDs.
+func (_u *UserUpdate) RemoveOauthAuthorizationCodeIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveOauthAuthorizationCodeIDs(ids...)
 	return _u
 }
 
-// RemoveOauth2Codes removes "oauth2_codes" edges to Oauth2Code entities.
-func (_u *UserUpdate) RemoveOauth2Codes(v ...*Oauth2Code) *UserUpdate {
+// RemoveOauthAuthorizationCodes removes "oauth_authorization_codes" edges to OAuthAuthorizationCode entities.
+func (_u *UserUpdate) RemoveOauthAuthorizationCodes(v ...*OAuthAuthorizationCode) *UserUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveOauth2CodeIDs(ids...)
+	return _u.RemoveOauthAuthorizationCodeIDs(ids...)
+}
+
+// ClearOauthGrants clears all "oauth_grants" edges to the OAuthGrant entity.
+func (_u *UserUpdate) ClearOauthGrants() *UserUpdate {
+	_u.mutation.ClearOauthGrants()
+	return _u
+}
+
+// RemoveOauthGrantIDs removes the "oauth_grants" edge to OAuthGrant entities by IDs.
+func (_u *UserUpdate) RemoveOauthGrantIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveOauthGrantIDs(ids...)
+	return _u
+}
+
+// RemoveOauthGrants removes "oauth_grants" edges to OAuthGrant entities.
+func (_u *UserUpdate) RemoveOauthGrants(v ...*OAuthGrant) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOauthGrantIDs(ids...)
 }
 
 // ClearCreatedBy clears all "created_by" edges to the GithubApp entity.
@@ -396,28 +433,28 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.Oauth2CodesCleared() {
+	if _u.mutation.OauthAuthorizationCodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.Oauth2CodesTable,
-			Columns: []string{user.Oauth2CodesColumn},
+			Table:   user.OauthAuthorizationCodesTable,
+			Columns: []string{user.OauthAuthorizationCodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oauthauthorizationcode.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedOauth2CodesIDs(); len(nodes) > 0 && !_u.mutation.Oauth2CodesCleared() {
+	if nodes := _u.mutation.RemovedOauthAuthorizationCodesIDs(); len(nodes) > 0 && !_u.mutation.OauthAuthorizationCodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.Oauth2CodesTable,
-			Columns: []string{user.Oauth2CodesColumn},
+			Table:   user.OauthAuthorizationCodesTable,
+			Columns: []string{user.OauthAuthorizationCodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oauthauthorizationcode.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -425,15 +462,60 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.Oauth2CodesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.OauthAuthorizationCodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.Oauth2CodesTable,
-			Columns: []string{user.Oauth2CodesColumn},
+			Table:   user.OauthAuthorizationCodesTable,
+			Columns: []string{user.OauthAuthorizationCodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oauthauthorizationcode.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OauthGrantsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthGrantsTable,
+			Columns: []string{user.OauthGrantsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthgrant.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOauthGrantsIDs(); len(nodes) > 0 && !_u.mutation.OauthGrantsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthGrantsTable,
+			Columns: []string{user.OauthGrantsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthgrant.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OauthGrantsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthGrantsTable,
+			Columns: []string{user.OauthGrantsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthgrant.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -692,19 +774,34 @@ func (_u *UserUpdateOne) AddOauth2Tokens(v ...*Oauth2Token) *UserUpdateOne {
 	return _u.AddOauth2TokenIDs(ids...)
 }
 
-// AddOauth2CodeIDs adds the "oauth2_codes" edge to the Oauth2Code entity by IDs.
-func (_u *UserUpdateOne) AddOauth2CodeIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.AddOauth2CodeIDs(ids...)
+// AddOauthAuthorizationCodeIDs adds the "oauth_authorization_codes" edge to the OAuthAuthorizationCode entity by IDs.
+func (_u *UserUpdateOne) AddOauthAuthorizationCodeIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddOauthAuthorizationCodeIDs(ids...)
 	return _u
 }
 
-// AddOauth2Codes adds the "oauth2_codes" edges to the Oauth2Code entity.
-func (_u *UserUpdateOne) AddOauth2Codes(v ...*Oauth2Code) *UserUpdateOne {
+// AddOauthAuthorizationCodes adds the "oauth_authorization_codes" edges to the OAuthAuthorizationCode entity.
+func (_u *UserUpdateOne) AddOauthAuthorizationCodes(v ...*OAuthAuthorizationCode) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddOauth2CodeIDs(ids...)
+	return _u.AddOauthAuthorizationCodeIDs(ids...)
+}
+
+// AddOauthGrantIDs adds the "oauth_grants" edge to the OAuthGrant entity by IDs.
+func (_u *UserUpdateOne) AddOauthGrantIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddOauthGrantIDs(ids...)
+	return _u
+}
+
+// AddOauthGrants adds the "oauth_grants" edges to the OAuthGrant entity.
+func (_u *UserUpdateOne) AddOauthGrants(v ...*OAuthGrant) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOauthGrantIDs(ids...)
 }
 
 // AddCreatedByIDs adds the "created_by" edge to the GithubApp entity by IDs.
@@ -793,25 +890,46 @@ func (_u *UserUpdateOne) RemoveOauth2Tokens(v ...*Oauth2Token) *UserUpdateOne {
 	return _u.RemoveOauth2TokenIDs(ids...)
 }
 
-// ClearOauth2Codes clears all "oauth2_codes" edges to the Oauth2Code entity.
-func (_u *UserUpdateOne) ClearOauth2Codes() *UserUpdateOne {
-	_u.mutation.ClearOauth2Codes()
+// ClearOauthAuthorizationCodes clears all "oauth_authorization_codes" edges to the OAuthAuthorizationCode entity.
+func (_u *UserUpdateOne) ClearOauthAuthorizationCodes() *UserUpdateOne {
+	_u.mutation.ClearOauthAuthorizationCodes()
 	return _u
 }
 
-// RemoveOauth2CodeIDs removes the "oauth2_codes" edge to Oauth2Code entities by IDs.
-func (_u *UserUpdateOne) RemoveOauth2CodeIDs(ids ...uuid.UUID) *UserUpdateOne {
-	_u.mutation.RemoveOauth2CodeIDs(ids...)
+// RemoveOauthAuthorizationCodeIDs removes the "oauth_authorization_codes" edge to OAuthAuthorizationCode entities by IDs.
+func (_u *UserUpdateOne) RemoveOauthAuthorizationCodeIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveOauthAuthorizationCodeIDs(ids...)
 	return _u
 }
 
-// RemoveOauth2Codes removes "oauth2_codes" edges to Oauth2Code entities.
-func (_u *UserUpdateOne) RemoveOauth2Codes(v ...*Oauth2Code) *UserUpdateOne {
+// RemoveOauthAuthorizationCodes removes "oauth_authorization_codes" edges to OAuthAuthorizationCode entities.
+func (_u *UserUpdateOne) RemoveOauthAuthorizationCodes(v ...*OAuthAuthorizationCode) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveOauth2CodeIDs(ids...)
+	return _u.RemoveOauthAuthorizationCodeIDs(ids...)
+}
+
+// ClearOauthGrants clears all "oauth_grants" edges to the OAuthGrant entity.
+func (_u *UserUpdateOne) ClearOauthGrants() *UserUpdateOne {
+	_u.mutation.ClearOauthGrants()
+	return _u
+}
+
+// RemoveOauthGrantIDs removes the "oauth_grants" edge to OAuthGrant entities by IDs.
+func (_u *UserUpdateOne) RemoveOauthGrantIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveOauthGrantIDs(ids...)
+	return _u
+}
+
+// RemoveOauthGrants removes "oauth_grants" edges to OAuthGrant entities.
+func (_u *UserUpdateOne) RemoveOauthGrants(v ...*OAuthGrant) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOauthGrantIDs(ids...)
 }
 
 // ClearCreatedBy clears all "created_by" edges to the GithubApp entity.
@@ -1033,28 +1151,28 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.Oauth2CodesCleared() {
+	if _u.mutation.OauthAuthorizationCodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.Oauth2CodesTable,
-			Columns: []string{user.Oauth2CodesColumn},
+			Table:   user.OauthAuthorizationCodesTable,
+			Columns: []string{user.OauthAuthorizationCodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oauthauthorizationcode.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedOauth2CodesIDs(); len(nodes) > 0 && !_u.mutation.Oauth2CodesCleared() {
+	if nodes := _u.mutation.RemovedOauthAuthorizationCodesIDs(); len(nodes) > 0 && !_u.mutation.OauthAuthorizationCodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.Oauth2CodesTable,
-			Columns: []string{user.Oauth2CodesColumn},
+			Table:   user.OauthAuthorizationCodesTable,
+			Columns: []string{user.OauthAuthorizationCodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oauthauthorizationcode.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1062,15 +1180,60 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.Oauth2CodesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.OauthAuthorizationCodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.Oauth2CodesTable,
-			Columns: []string{user.Oauth2CodesColumn},
+			Table:   user.OauthAuthorizationCodesTable,
+			Columns: []string{user.OauthAuthorizationCodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oauthauthorizationcode.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OauthGrantsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthGrantsTable,
+			Columns: []string{user.OauthGrantsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthgrant.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOauthGrantsIDs(); len(nodes) > 0 && !_u.mutation.OauthGrantsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthGrantsTable,
+			Columns: []string{user.OauthGrantsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthgrant.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OauthGrantsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthGrantsTable,
+			Columns: []string{user.OauthGrantsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthgrant.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

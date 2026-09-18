@@ -307,14 +307,6 @@ func (suite *OAuth2TokenSuite) TestCleanTokenStore() {
 	suite.NoError(err)
 	suite.DB.Oauth2Token.UpdateOneID(revokedToken.ID).SetRevoked(true).SaveX(suite.Ctx)
 
-	// 4. Valid auth code (should not be cleaned)
-	validCode, err := suite.oauthRepo.CreateAuthCode(suite.Ctx, "valid-code", "client4", "read", suite.testUser, now.Add(10*time.Minute))
-	suite.NoError(err)
-
-	// 5. Expired auth code (should be cleaned)
-	expiredCode, err := suite.oauthRepo.CreateAuthCode(suite.Ctx, "expired-code", "client5", "read", suite.testUser, now.Add(-10*time.Minute))
-	suite.NoError(err)
-
 	// Run cleanup
 	err = suite.oauthRepo.CleanTokenStore(suite.Ctx)
 	suite.NoError(err)
@@ -330,35 +322,18 @@ func (suite *OAuth2TokenSuite) TestCleanTokenStore() {
 	// Verify revoked token was cleaned
 	_, err = suite.DB.Oauth2Token.Get(suite.Ctx, revokedToken.ID)
 	suite.Error(err)
-
-	// Verify valid code still exists
-	_, err = suite.DB.Oauth2Code.Get(suite.Ctx, validCode.ID)
-	suite.NoError(err)
-
-	// Verify expired code was cleaned
-	_, err = suite.DB.Oauth2Code.Get(suite.Ctx, expiredCode.ID)
-	suite.Error(err)
 }
 
 func (suite *OAuth2TokenSuite) TestCleanTokenStoreNoExpiredTokens() {
 	now := time.Now()
 
-	// Create only valid tokens and codes
 	validToken, err := suite.oauthRepo.CreateToken(suite.Ctx, "valid-access", "valid-refresh", "client1", "read", now.Add(1*time.Hour), suite.testUser)
 	suite.NoError(err)
 
-	validCode, err := suite.oauthRepo.CreateAuthCode(suite.Ctx, "valid-code", "client2", "read", suite.testUser, now.Add(10*time.Minute))
-	suite.NoError(err)
-
-	// Run cleanup
 	err = suite.oauthRepo.CleanTokenStore(suite.Ctx)
 	suite.NoError(err)
 
-	// Verify both still exist
 	_, err = suite.DB.Oauth2Token.Get(suite.Ctx, validToken.ID)
-	suite.NoError(err)
-
-	_, err = suite.DB.Oauth2Code.Get(suite.Ctx, validCode.ID)
 	suite.NoError(err)
 }
 

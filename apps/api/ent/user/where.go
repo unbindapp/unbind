@@ -309,21 +309,44 @@ func HasOauth2TokensWith(preds ...predicate.Oauth2Token) predicate.User {
 	})
 }
 
-// HasOauth2Codes applies the HasEdge predicate on the "oauth2_codes" edge.
-func HasOauth2Codes() predicate.User {
+// HasOauthAuthorizationCodes applies the HasEdge predicate on the "oauth_authorization_codes" edge.
+func HasOauthAuthorizationCodes() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, Oauth2CodesTable, Oauth2CodesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, OauthAuthorizationCodesTable, OauthAuthorizationCodesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasOauth2CodesWith applies the HasEdge predicate on the "oauth2_codes" edge with a given conditions (other predicates).
-func HasOauth2CodesWith(preds ...predicate.Oauth2Code) predicate.User {
+// HasOauthAuthorizationCodesWith applies the HasEdge predicate on the "oauth_authorization_codes" edge with a given conditions (other predicates).
+func HasOauthAuthorizationCodesWith(preds ...predicate.OAuthAuthorizationCode) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		step := newOauth2CodesStep()
+		step := newOauthAuthorizationCodesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasOauthGrants applies the HasEdge predicate on the "oauth_grants" edge.
+func HasOauthGrants() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OauthGrantsTable, OauthGrantsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOauthGrantsWith applies the HasEdge predicate on the "oauth_grants" edge with a given conditions (other predicates).
+func HasOauthGrantsWith(preds ...predicate.OAuthGrant) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newOauthGrantsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

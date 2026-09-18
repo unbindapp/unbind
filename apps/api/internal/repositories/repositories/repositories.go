@@ -12,6 +12,7 @@ import (
 	github_repo "github.com/unbindapp/unbind-api/internal/repositories/github"
 	group_repo "github.com/unbindapp/unbind-api/internal/repositories/group"
 	oauth_repo "github.com/unbindapp/unbind-api/internal/repositories/oauth"
+	oauthserver_repo "github.com/unbindapp/unbind-api/internal/repositories/oauthserver"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	project_repo "github.com/unbindapp/unbind-api/internal/repositories/project"
 	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
@@ -49,6 +50,7 @@ type Repositories struct {
 	template     template_repo.TemplateRepositoryInterface
 	serviceGroup servicegroup_repo.ServiceGroupRepositoryInterface
 	apiKey       apikey_repo.APIKeyRepositoryInterface
+	oauthServer  oauthserver_repo.OAuthServerRepositoryInterface
 }
 
 // NewRepositories creates a new Repositories facade
@@ -72,6 +74,7 @@ func NewRepositories(db *ent.Client) *Repositories {
 	templateRepo := template_repo.NewTemplateRepository(db)
 	serviceGroupRepo := servicegroup_repo.NewServiceGroupRepository(db)
 	apiKeyRepo := apikey_repo.NewAPIKeyRepository(db)
+	oauthServerRepo := oauthserver_repo.NewOAuthServerRepository(db)
 	return &Repositories{
 		db:           db,
 		base:         base,
@@ -93,6 +96,7 @@ func NewRepositories(db *ent.Client) *Repositories {
 		template:     templateRepo,
 		serviceGroup: serviceGroupRepo,
 		apiKey:       apiKeyRepo,
+		oauthServer:  oauthServerRepo,
 	}
 }
 
@@ -192,4 +196,9 @@ func (r *Repositories) WithTx(ctx context.Context, fn func(tx repository.TxInter
 // APIKey returns the API key repository
 func (r *Repositories) APIKey() apikey_repo.APIKeyRepositoryInterface {
 	return r.apiKey
+}
+
+// OAuthServer returns the OAuth authorization server repository
+func (r *Repositories) OAuthServer() oauthserver_repo.OAuthServerRepositoryInterface {
+	return r.oauthServer
 }

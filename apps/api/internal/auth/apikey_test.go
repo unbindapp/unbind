@@ -69,3 +69,40 @@ func TestAPIKeyExpired(t *testing.T) {
 		t.Fatal("future expiry should be valid")
 	}
 }
+
+func TestOpaqueTokenPrefixes(t *testing.T) {
+	access, err := NewOpaqueToken(OAuthAccessTokenPrefix)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(access.Token, "unbat_") || !IsOAuthToken(access.Token) || IsAPIKey(access.Token) {
+		t.Fatalf("access token %q must be an oauth token and not an api key", access.Token)
+	}
+	if access.Hash != HashAPIKey(access.Token) {
+		t.Fatal("hash must be the storage form of the token")
+	}
+
+	refresh, err := NewOpaqueToken(OAuthRefreshTokenPrefix)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !IsOAuthToken(refresh.Token) || IsAPIKey(refresh.Token) {
+		t.Fatalf("refresh token %q must be an oauth token and not an api key", refresh.Token)
+	}
+
+	code, err := NewOpaqueToken("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if IsOAuthToken(code.Token) || IsAPIKey(code.Token) || len(code.Token) != 43 {
+		t.Fatalf("bare code %q must carry no prefix", code.Token)
+	}
+
+	key, err := NewAPIKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !IsAPIKey(key.Token) || IsOAuthToken(key.Token) {
+		t.Fatalf("api key %q must not be an oauth token", key.Token)
+	}
+}

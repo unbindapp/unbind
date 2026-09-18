@@ -13,9 +13,6 @@ import (
 // OauthRepositoryInterface ...
 type OauthRepositoryInterface interface {
 	GetOrGenerateJWTPrivateKey(ctx context.Context) (*rsa.PrivateKey, []byte, error)
-	CreateAuthCode(ctx context.Context, code, clientID, scope string, user *ent.User, expiresAt time.Time) (*ent.Oauth2Code, error)
-	DeleteAuthCode(ctx context.Context, code string) error
-	GetAuthCode(ctx context.Context, code string) (*ent.Oauth2Code, error)
 	CreateToken(ctx context.Context, accessToken, refreshToken, clientID, scope string, expiresAt time.Time, user *ent.User) (*ent.Oauth2Token, error)
 	RevokeAccessToken(ctx context.Context, accessToken string) error
 	RevokeRefreshToken(ctx context.Context, refreshToken string) error

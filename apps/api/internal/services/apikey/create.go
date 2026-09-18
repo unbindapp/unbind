@@ -2,18 +2,15 @@ package apikey_service
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
 	apikey_repo "github.com/unbindapp/unbind-api/internal/repositories/apikey"
-	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	"github.com/unbindapp/unbind-api/internal/services/keyaccess"
 )
 
 // Create issues a key for the requester. A scoped key must name resources the
@@ -24,14 +21,12 @@ func (self *APIKeyService) Create(ctx context.Context, requesterUserID uuid.UUID
 	if input.ExpiresAt != nil && !input.ExpiresAt.After(time.Now()) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "expires_at must be in the future")
 	}
-	if err := validateAccess(input); err != nil {
+	spec := keyaccess.Spec{Role: input.Role, FullAccess: input.FullAccess, Resources: input.Resources}
+	if err := keyaccess.Validate(spec); err != nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 	}
-
-	for _, resource := range input.Resources {
-		if err := self.requesterHolds(ctx, requesterUserID, input.Role, resource); err != nil {
-			return nil, err
-		}
+	if err := keyaccess.RequesterHolds(ctx, self.repo.Permissions(), requesterUserID, spec); err != nil {
+		return nil, err
 	}
 
 	generated, err := auth.NewAPIKey()
@@ -57,7 +52,7 @@ func (self *APIKeyService) Create(ctx context.Context, requesterUserID uuid.UUID
 		return nil, err
 	}
 
-	paths, err := self.resourcePaths(ctx, []*ent.APIKey{key})
+	paths, err := keyaccess.ResourcePaths(ctx, self.repo, key.Resources)
 	if err != nil {
 		return nil, err
 	}
@@ -65,48 +60,4 @@ func (self *APIKeyService) Create(ctx context.Context, requesterUserID uuid.UUID
 		APIKeyResponse: *models.TransformAPIKeyEntity(key, paths),
 		Token:          generated.Token,
 	}, nil
-}
-
-func validateAccess(input *models.APIKeyCreateInput) error {
-	switch input.Role {
-	case schema.ActionAdmin, schema.ActionEditor, schema.ActionViewer:
-	default:
-		return fmt.Errorf("unknown role %q", input.Role)
-	}
-
-	if input.FullAccess && len(input.Resources) > 0 {
-		return errors.New("resources must be empty when full_access is true")
-	}
-	if !input.FullAccess && len(input.Resources) == 0 {
-		return errors.New("at least one resource is required unless full_access is true")
-	}
-
-	seen := map[uuid.UUID]struct{}{}
-	for i, resource := range input.Resources {
-		switch resource.ResourceType {
-		case schema.ResourceTypeTeam, schema.ResourceTypeProject, schema.ResourceTypeEnvironment, schema.ResourceTypeService:
-		default:
-			return fmt.Errorf("resources[%d]: resource type must be team, project, environment or service", i)
-		}
-		if resource.ResourceID == uuid.Nil {
-			return fmt.Errorf("resources[%d]: resource_id is required", i)
-		}
-		if _, dup := seen[resource.ResourceID]; dup {
-			return fmt.Errorf("resources[%d]: duplicate resource", i)
-		}
-		seen[resource.ResourceID] = struct{}{}
-	}
-	return nil
-}
-
-func (self *APIKeyService) requesterHolds(ctx context.Context, requesterUserID uuid.UUID, role schema.PermittedAction, resource schema.APIKeyResource) error {
-	err := self.repo.Permissions().Check(ctx, requesterUserID, []permissions_repo.PermissionCheck{{
-		Action:       role,
-		ResourceType: resource.ResourceType,
-		ResourceID:   resource.ResourceID,
-	}})
-	if errors.Is(err, errdefs.ErrUnauthorized) {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("you do not have %s access to %s %s", role, resource.ResourceType, resource.ResourceID))
-	}
-	return err
 }

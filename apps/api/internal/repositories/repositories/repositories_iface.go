@@ -14,6 +14,7 @@ import (
 	github_repo "github.com/unbindapp/unbind-api/internal/repositories/github"
 	group_repo "github.com/unbindapp/unbind-api/internal/repositories/group"
 	oauth_repo "github.com/unbindapp/unbind-api/internal/repositories/oauth"
+	oauthserver_repo "github.com/unbindapp/unbind-api/internal/repositories/oauthserver"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	project_repo "github.com/unbindapp/unbind-api/internal/repositories/project"
 	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
@@ -67,4 +68,6 @@ type RepositoriesInterface interface {
 	WithTx(ctx context.Context, fn func(tx repository.TxInterface) error) error
 	// APIKey returns the API key repository
 	APIKey() apikey_repo.APIKeyRepositoryInterface
+	// OAuthServer returns the OAuth authorization server repository
+	OAuthServer() oauthserver_repo.OAuthServerRepositoryInterface
 }

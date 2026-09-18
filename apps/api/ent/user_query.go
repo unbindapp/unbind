@@ -16,8 +16,9 @@ import (
 	"github.com/unbindapp/unbind-api/ent/apikey"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/group"
-	"github.com/unbindapp/unbind-api/ent/oauth2code"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
+	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
+	"github.com/unbindapp/unbind-api/ent/oauthgrant"
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
@@ -26,17 +27,18 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	ctx              *QueryContext
-	order            []user.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.User
-	withOauth2Tokens *Oauth2TokenQuery
-	withOauth2Codes  *Oauth2CodeQuery
-	withCreatedBy    *GithubAppQuery
-	withGroups       *GroupQuery
-	withTeams        *TeamQuery
-	withAPIKeys      *APIKeyQuery
-	modifiers        []func(*sql.Selector)
+	ctx                         *QueryContext
+	order                       []user.OrderOption
+	inters                      []Interceptor
+	predicates                  []predicate.User
+	withOauth2Tokens            *Oauth2TokenQuery
+	withOauthAuthorizationCodes *OAuthAuthorizationCodeQuery
+	withOauthGrants             *OAuthGrantQuery
+	withCreatedBy               *GithubAppQuery
+	withGroups                  *GroupQuery
+	withTeams                   *TeamQuery
+	withAPIKeys                 *APIKeyQuery
+	modifiers                   []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -95,9 +97,9 @@ func (_q *UserQuery) QueryOauth2Tokens() *Oauth2TokenQuery {
 	return query
 }
 
-// QueryOauth2Codes chains the current query on the "oauth2_codes" edge.
-func (_q *UserQuery) QueryOauth2Codes() *Oauth2CodeQuery {
-	query := (&Oauth2CodeClient{config: _q.config}).Query()
+// QueryOauthAuthorizationCodes chains the current query on the "oauth_authorization_codes" edge.
+func (_q *UserQuery) QueryOauthAuthorizationCodes() *OAuthAuthorizationCodeQuery {
+	query := (&OAuthAuthorizationCodeClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -108,8 +110,30 @@ func (_q *UserQuery) QueryOauth2Codes() *Oauth2CodeQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(oauth2code.Table, oauth2code.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.Oauth2CodesTable, user.Oauth2CodesColumn),
+			sqlgraph.To(oauthauthorizationcode.Table, oauthauthorizationcode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OauthAuthorizationCodesTable, user.OauthAuthorizationCodesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOauthGrants chains the current query on the "oauth_grants" edge.
+func (_q *UserQuery) QueryOauthGrants() *OAuthGrantQuery {
+	query := (&OAuthGrantClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(oauthgrant.Table, oauthgrant.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OauthGrantsTable, user.OauthGrantsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -392,17 +416,18 @@ func (_q *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:           _q.config,
-		ctx:              _q.ctx.Clone(),
-		order:            append([]user.OrderOption{}, _q.order...),
-		inters:           append([]Interceptor{}, _q.inters...),
-		predicates:       append([]predicate.User{}, _q.predicates...),
-		withOauth2Tokens: _q.withOauth2Tokens.Clone(),
-		withOauth2Codes:  _q.withOauth2Codes.Clone(),
-		withCreatedBy:    _q.withCreatedBy.Clone(),
-		withGroups:       _q.withGroups.Clone(),
-		withTeams:        _q.withTeams.Clone(),
-		withAPIKeys:      _q.withAPIKeys.Clone(),
+		config:                      _q.config,
+		ctx:                         _q.ctx.Clone(),
+		order:                       append([]user.OrderOption{}, _q.order...),
+		inters:                      append([]Interceptor{}, _q.inters...),
+		predicates:                  append([]predicate.User{}, _q.predicates...),
+		withOauth2Tokens:            _q.withOauth2Tokens.Clone(),
+		withOauthAuthorizationCodes: _q.withOauthAuthorizationCodes.Clone(),
+		withOauthGrants:             _q.withOauthGrants.Clone(),
+		withCreatedBy:               _q.withCreatedBy.Clone(),
+		withGroups:                  _q.withGroups.Clone(),
+		withTeams:                   _q.withTeams.Clone(),
+		withAPIKeys:                 _q.withAPIKeys.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -421,14 +446,25 @@ func (_q *UserQuery) WithOauth2Tokens(opts ...func(*Oauth2TokenQuery)) *UserQuer
 	return _q
 }
 
-// WithOauth2Codes tells the query-builder to eager-load the nodes that are connected to
-// the "oauth2_codes" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UserQuery) WithOauth2Codes(opts ...func(*Oauth2CodeQuery)) *UserQuery {
-	query := (&Oauth2CodeClient{config: _q.config}).Query()
+// WithOauthAuthorizationCodes tells the query-builder to eager-load the nodes that are connected to
+// the "oauth_authorization_codes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithOauthAuthorizationCodes(opts ...func(*OAuthAuthorizationCodeQuery)) *UserQuery {
+	query := (&OAuthAuthorizationCodeClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withOauth2Codes = query
+	_q.withOauthAuthorizationCodes = query
+	return _q
+}
+
+// WithOauthGrants tells the query-builder to eager-load the nodes that are connected to
+// the "oauth_grants" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithOauthGrants(opts ...func(*OAuthGrantQuery)) *UserQuery {
+	query := (&OAuthGrantClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOauthGrants = query
 	return _q
 }
 
@@ -554,9 +590,10 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			_q.withOauth2Tokens != nil,
-			_q.withOauth2Codes != nil,
+			_q.withOauthAuthorizationCodes != nil,
+			_q.withOauthGrants != nil,
 			_q.withCreatedBy != nil,
 			_q.withGroups != nil,
 			_q.withTeams != nil,
@@ -591,10 +628,19 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
-	if query := _q.withOauth2Codes; query != nil {
-		if err := _q.loadOauth2Codes(ctx, query, nodes,
-			func(n *User) { n.Edges.Oauth2Codes = []*Oauth2Code{} },
-			func(n *User, e *Oauth2Code) { n.Edges.Oauth2Codes = append(n.Edges.Oauth2Codes, e) }); err != nil {
+	if query := _q.withOauthAuthorizationCodes; query != nil {
+		if err := _q.loadOauthAuthorizationCodes(ctx, query, nodes,
+			func(n *User) { n.Edges.OauthAuthorizationCodes = []*OAuthAuthorizationCode{} },
+			func(n *User, e *OAuthAuthorizationCode) {
+				n.Edges.OauthAuthorizationCodes = append(n.Edges.OauthAuthorizationCodes, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOauthGrants; query != nil {
+		if err := _q.loadOauthGrants(ctx, query, nodes,
+			func(n *User) { n.Edges.OauthGrants = []*OAuthGrant{} },
+			func(n *User, e *OAuthGrant) { n.Edges.OauthGrants = append(n.Edges.OauthGrants, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -660,7 +706,7 @@ func (_q *UserQuery) loadOauth2Tokens(ctx context.Context, query *Oauth2TokenQue
 	}
 	return nil
 }
-func (_q *UserQuery) loadOauth2Codes(ctx context.Context, query *Oauth2CodeQuery, nodes []*User, init func(*User), assign func(*User, *Oauth2Code)) error {
+func (_q *UserQuery) loadOauthAuthorizationCodes(ctx context.Context, query *OAuthAuthorizationCodeQuery, nodes []*User, init func(*User), assign func(*User, *OAuthAuthorizationCode)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
 	for i := range nodes {
@@ -670,22 +716,51 @@ func (_q *UserQuery) loadOauth2Codes(ctx context.Context, query *Oauth2CodeQuery
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Oauth2Code(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.Oauth2CodesColumn), fks...))
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(oauthauthorizationcode.FieldUserID)
+	}
+	query.Where(predicate.OAuthAuthorizationCode(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.OauthAuthorizationCodesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.user_oauth2_codes
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "user_oauth2_codes" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.UserID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_oauth2_codes" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *UserQuery) loadOauthGrants(ctx context.Context, query *OAuthGrantQuery, nodes []*User, init func(*User), assign func(*User, *OAuthGrant)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(oauthgrant.FieldUserID)
+	}
+	query.Where(predicate.OAuthGrant(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.OauthGrantsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

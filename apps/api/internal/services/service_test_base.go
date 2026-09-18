@@ -15,6 +15,7 @@ import (
 	mocks_repository_github "github.com/unbindapp/unbind-api/mocks/repository/github"
 	mocks_repository_group "github.com/unbindapp/unbind-api/mocks/repository/group"
 	mocks_repository_oauth "github.com/unbindapp/unbind-api/mocks/repository/oauth"
+	mocks_repository_oauthserver "github.com/unbindapp/unbind-api/mocks/repository/oauthserver"
 	mocks_repository_permissions "github.com/unbindapp/unbind-api/mocks/repository/permissions"
 	mocks_repository_project "github.com/unbindapp/unbind-api/mocks/repository/project"
 	mocks_repository_s3bucket "github.com/unbindapp/unbind-api/mocks/repository/s3bucket"
@@ -53,6 +54,7 @@ type ServiceTestSuite struct {
 	MockBootstrapRepo   *mocks_repository_bootstrap.BootstrapRepositoryMock
 	MockVariablesRepo   *mocks_repository_variables.VariablesRepositoryMock
 	MockAPIKeyRepo      *mocks_repository_apikey.APIKeyRepositoryMock
+	MockOAuthServerRepo *mocks_repository_oauthserver.OAuthServerRepositoryMock
 
 	// Infrastructure mocks
 	MockK8s       *mocks_infrastructure_k8s.KubeClientMock
@@ -82,6 +84,7 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockBootstrapRepo = mocks_repository_bootstrap.NewBootstrapRepositoryMock(suite.T())
 	suite.MockVariablesRepo = mocks_repository_variables.NewVariablesRepositoryMock(suite.T())
 	suite.MockAPIKeyRepo = mocks_repository_apikey.NewAPIKeyRepositoryMock(suite.T())
+	suite.MockOAuthServerRepo = mocks_repository_oauthserver.NewOAuthServerRepositoryMock(suite.T())
 
 	// Initialize infrastructure mocks
 	suite.MockK8s = mocks_infrastructure_k8s.NewKubeClientMock(suite.T())
@@ -104,6 +107,7 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockRepo.EXPECT().Bootstrap().Return(suite.MockBootstrapRepo).Maybe()
 	suite.MockRepo.EXPECT().Variables().Return(suite.MockVariablesRepo).Maybe()
 	suite.MockRepo.EXPECT().APIKey().Return(suite.MockAPIKeyRepo).Maybe()
+	suite.MockRepo.EXPECT().OAuthServer().Return(suite.MockOAuthServerRepo).Maybe()
 }
 
 func (suite *ServiceTestSuite) TearDownTest() {
@@ -125,6 +129,7 @@ func (suite *ServiceTestSuite) TearDownTest() {
 	suite.MockBootstrapRepo.AssertExpectations(suite.T())
 	suite.MockVariablesRepo.AssertExpectations(suite.T())
 	suite.MockAPIKeyRepo.AssertExpectations(suite.T())
+	suite.MockOAuthServerRepo.AssertExpectations(suite.T())
 	suite.MockK8s.AssertExpectations(suite.T())
 	suite.MockDeployCtl.AssertExpectations(suite.T())
 }

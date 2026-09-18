@@ -430,6 +430,68 @@ export const CheckUniqueDomainOutputBodySchema = z
   })
   .strip();
 
+export const ConnectedAppApproveInputSchema = z
+  .object({
+    client_id: z.string(),
+    code_challenge: z.string(),
+    full_access: z.boolean(), // Reach everything you can, capped at role. Resources must be empty.
+    redirect_uri: z.string(),
+    resource: z.string().optional(),
+    resources: z.array(APIKeyResourceSchema), // Resources the app is limited to. Required unless full_access.
+    role: PermittedActionSchema, // Strongest action the app can perform. Never exceeds what you hold on a resource.
+    scope: z.string().optional(),
+    state: z.string().optional(),
+  })
+  .strip();
+
+export const OAuthClientKindSchema = z.enum(['dynamic', 'metadata_document']);
+
+export const ConnectedAppClientResponseSchema = z
+  .object({
+    client_host: z.string().optional(), // Host that published the client metadata document, when the client has one.
+    kind: OAuthClientKindSchema,
+    loopback_only: z.boolean(), // The client only redirects to this device.
+    name: z.string(), // Self reported by the client, unverified.
+    redirect_host: z.string(), // Where the browser is sent after approval.
+  })
+  .strip();
+
+export const ConnectedAppDenyInputSchema = z
+  .object({
+    client_id: z.string(),
+    redirect_uri: z.string(),
+    state: z.string().optional(),
+  })
+  .strip();
+
+export const ConnectedAppRedirectResponseSchema = z
+  .object({
+    redirect_url: z.string(), // Send the browser here to finish the flow.
+  })
+  .strip();
+
+export const ConnectedAppResponseSchema = z
+  .object({
+    client_host: z.string().optional(),
+    client_id: z.string(),
+    client_name: z.string(), // Self reported by the client, unverified.
+    created_at: z.string().datetime({ offset: true }),
+    full_access: z.boolean(),
+    id: z.string(),
+    kind: OAuthClientKindSchema,
+    last_used_at: z.string().datetime({ offset: true }).optional(),
+    redirect_host: z.string(),
+    resources: z.array(APIKeyResourceResponseSchema),
+    role: PermittedActionSchema,
+  })
+  .strip();
+
+export const ConnectedAppRevokeInputSchema = z
+  .object({
+    id: z.string(),
+  })
+  .strip();
+
 export const ContainerStateSchema = z.enum([
   'running',
   'waiting',
@@ -1244,6 +1306,12 @@ export const GeneratorTypeSchema = z.enum([
   'convex_admin_key',
 ]);
 
+export const GetClientResponseBodySchema = z
+  .object({
+    data: ConnectedAppClientResponseSchema,
+  })
+  .strip();
+
 export const GetDatabaseResponseBodySchema = z
   .object({
     data: DatabaseConfigurablesSchema,
@@ -2015,6 +2083,12 @@ export const ListReplicasResponseBodySchema = z
   })
   .strip();
 
+export const ListResponseBodySchema = z
+  .object({
+    data: z.array(ConnectedAppResponseSchema),
+  })
+  .strip();
+
 export const ListS3BucketsOutputBodySchema = z
   .object({
     data: z.array(S3BucketResponseSchema),
@@ -2197,6 +2271,12 @@ export const RedeployOutputBodySchema = z
   })
   .strip();
 
+export const RedirectResponseBodySchema = z
+  .object({
+    data: ConnectedAppRedirectResponseSchema,
+  })
+  .strip();
+
 export const ReferenceableVariablesResponseBodySchema = z
   .object({
     data: z.array(AvailableVariableReferenceSchema),
@@ -2324,6 +2404,12 @@ export const RevokeGroupPermissionInputBodySchema = z
   .strip();
 
 export const RevokeGroupPermissionResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
+export const RevokeResponseBodySchema = z
   .object({
     data: DeletedResponseSchema,
   })
@@ -2819,6 +2905,13 @@ export type Capabilities = z.infer<typeof CapabilitiesSchema>;
 export type CertManagerCondition = z.infer<typeof CertManagerConditionSchema>;
 export type CollisionOutput = z.infer<typeof CollisionOutputSchema>;
 export type CheckUniqueDomainOutputBody = z.infer<typeof CheckUniqueDomainOutputBodySchema>;
+export type ConnectedAppApproveInput = z.infer<typeof ConnectedAppApproveInputSchema>;
+export type OAuthClientKind = z.infer<typeof OAuthClientKindSchema>;
+export type ConnectedAppClientResponse = z.infer<typeof ConnectedAppClientResponseSchema>;
+export type ConnectedAppDenyInput = z.infer<typeof ConnectedAppDenyInputSchema>;
+export type ConnectedAppRedirectResponse = z.infer<typeof ConnectedAppRedirectResponseSchema>;
+export type ConnectedAppResponse = z.infer<typeof ConnectedAppResponseSchema>;
+export type ConnectedAppRevokeInput = z.infer<typeof ConnectedAppRevokeInputSchema>;
 export type ContainerState = z.infer<typeof ContainerStateSchema>;
 export type ContainerStatus = z.infer<typeof ContainerStatusSchema>;
 export type ConvexAdminKeyParams = z.infer<typeof ConvexAdminKeyParamsSchema>;
@@ -2911,6 +3004,7 @@ export type GenerateWildcardDomainOutputBody = z.infer<
   typeof GenerateWildcardDomainOutputBodySchema
 >;
 export type GeneratorType = z.infer<typeof GeneratorTypeSchema>;
+export type GetClientResponseBody = z.infer<typeof GetClientResponseBodySchema>;
 export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySchema>;
 export type GetDeploymentResponseBody = z.infer<typeof GetDeploymentResponseBodySchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
@@ -3019,6 +3113,7 @@ export type ListRegistriesResponseBody = z.infer<typeof ListRegistriesResponseBo
 export type PodPhase = z.infer<typeof PodPhaseSchema>;
 export type PodContainerStatus = z.infer<typeof PodContainerStatusSchema>;
 export type ListReplicasResponseBody = z.infer<typeof ListReplicasResponseBodySchema>;
+export type ListResponseBody = z.infer<typeof ListResponseBodySchema>;
 export type ListS3BucketsOutputBody = z.infer<typeof ListS3BucketsOutputBodySchema>;
 export type ServerResponse = z.infer<typeof ServerResponseSchema>;
 export type ListServersResponseBody = z.infer<typeof ListServersResponseBodySchema>;
@@ -3044,6 +3139,7 @@ export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
 export type RedeployInputBody = z.infer<typeof RedeployInputBodySchema>;
 export type RedeployOutputBody = z.infer<typeof RedeployOutputBodySchema>;
+export type RedirectResponseBody = z.infer<typeof RedirectResponseBodySchema>;
 export type ReferenceableVariablesResponseBody = z.infer<
   typeof ReferenceableVariablesResponseBodySchema
 >;
@@ -3064,6 +3160,7 @@ export type RevokeGroupPermissionInputBody = z.infer<typeof RevokeGroupPermissio
 export type RevokeGroupPermissionResponseBody = z.infer<
   typeof RevokeGroupPermissionResponseBodySchema
 >;
+export type RevokeResponseBody = z.infer<typeof RevokeResponseBodySchema>;
 export type S3BucketCreateInput = z.infer<typeof S3BucketCreateInputSchema>;
 export type S3BucketUpdateInput = z.infer<typeof S3BucketUpdateInputSchema>;
 export type S3TestResult = z.infer<typeof S3TestResultSchema>;
@@ -3129,6 +3226,13 @@ export type WebhookUpdateInput = z.infer<typeof WebhookUpdateInputSchema>;
 export const list_api_keysQuerySchema = z
   .object({
     user_id: z.string().optional(), // List another user's keys. Requires system admin. Defaults to your own.
+  })
+  .passthrough();
+
+export const get_connected_app_clientQuerySchema = z
+  .object({
+    client_id: z.string(),
+    redirect_uri: z.string(),
   })
   .passthrough();
 
@@ -3915,6 +4019,220 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = ApplyChangesResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+    },
+    connectedApps: {
+      approve: async (
+        params: ConnectedAppApproveInput,
+        fetchOptions?: RequestInit,
+      ): Promise<RedirectResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/connected-apps/approve`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = ConnectedAppApproveInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = RedirectResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      client: async (
+        params: z.infer<typeof get_connected_app_clientQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetClientResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/connected-apps/client`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = get_connected_app_clientQuerySchema.parse(params);
+          const queryKeys = ['client_id', 'redirect_uri'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = GetClientResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      deny: async (
+        params: ConnectedAppDenyInput,
+        fetchOptions?: RequestInit,
+      ): Promise<RedirectResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/connected-apps/deny`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = ConnectedAppDenyInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = RedirectResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      list: async (params?: undefined, fetchOptions?: RequestInit): Promise<ListResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/connected-apps/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      revoke: async (
+        params: ConnectedAppRevokeInput,
+        fetchOptions?: RequestInit,
+      ): Promise<RevokeResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/connected-apps/revoke`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = ConnectedAppRevokeInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = RevokeResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

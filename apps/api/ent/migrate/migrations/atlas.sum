@@ -1,4 +1,4 @@
-h1:ZkZxApdbKakQg1f26j2QWyKq2nvcuzYv+NBRIMS/6Gg=
+h1:r1EWxqxtBSbSZ1FIc+UPqCVnmDiX3KXijev5vy1vABc=
 20250519010757_initial_migration.sql h1:94lMwKemoNX/ichD+2Vzb7GmOHXVj4qVTfeBInQAe0g=
 20250519163449_add_init_containers.sql h1:7bt+zCbtmlYr1QDztgka0R5wUxdjD7XYUkrhL9GYYIQ=
 20250521202532_non_nillable_kubernetes_secret.sql h1:eDpMWyeBXh5cG4poavaUMeYs5QXddFBBIyYlxc+nq64=
@@ -24,3 +24,4 @@ h1:ZkZxApdbKakQg1f26j2QWyKq2nvcuzYv+NBRIMS/6Gg=
 20260913150000_clickhouse_native_port.sql h1:eYC0hben28WL5Jl9gk0U2G3+IyC3yDJw2kIIQKjAkzI=
 20260914165939_add_api_keys.sql h1:q+RzpKfqgNraVXODLJX7guf2Kf4KmSZJGELI8+HwtqA=
 20260914203000_api_key_access_and_role_names.sql h1:OVw60e5WwEmzOz1rqnBexQZ8hNxqrMnB0rGPlHmB0cM=
+20260918140241_oauth_server.sql h1:oH6SZqjGb85xZ+J8T/nCIYDB/JiSI/KsvJK05av5ndU=

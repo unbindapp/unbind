@@ -16,8 +16,9 @@ import (
 	"github.com/unbindapp/unbind-api/ent/apikey"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/group"
-	"github.com/unbindapp/unbind-api/ent/oauth2code"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
+	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
+	"github.com/unbindapp/unbind-api/ent/oauthgrant"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 )
@@ -99,19 +100,34 @@ func (_c *UserCreate) AddOauth2Tokens(v ...*Oauth2Token) *UserCreate {
 	return _c.AddOauth2TokenIDs(ids...)
 }
 
-// AddOauth2CodeIDs adds the "oauth2_codes" edge to the Oauth2Code entity by IDs.
-func (_c *UserCreate) AddOauth2CodeIDs(ids ...uuid.UUID) *UserCreate {
-	_c.mutation.AddOauth2CodeIDs(ids...)
+// AddOauthAuthorizationCodeIDs adds the "oauth_authorization_codes" edge to the OAuthAuthorizationCode entity by IDs.
+func (_c *UserCreate) AddOauthAuthorizationCodeIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddOauthAuthorizationCodeIDs(ids...)
 	return _c
 }
 
-// AddOauth2Codes adds the "oauth2_codes" edges to the Oauth2Code entity.
-func (_c *UserCreate) AddOauth2Codes(v ...*Oauth2Code) *UserCreate {
+// AddOauthAuthorizationCodes adds the "oauth_authorization_codes" edges to the OAuthAuthorizationCode entity.
+func (_c *UserCreate) AddOauthAuthorizationCodes(v ...*OAuthAuthorizationCode) *UserCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddOauth2CodeIDs(ids...)
+	return _c.AddOauthAuthorizationCodeIDs(ids...)
+}
+
+// AddOauthGrantIDs adds the "oauth_grants" edge to the OAuthGrant entity by IDs.
+func (_c *UserCreate) AddOauthGrantIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddOauthGrantIDs(ids...)
+	return _c
+}
+
+// AddOauthGrants adds the "oauth_grants" edges to the OAuthGrant entity.
+func (_c *UserCreate) AddOauthGrants(v ...*OAuthGrant) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddOauthGrantIDs(ids...)
 }
 
 // AddCreatedByIDs adds the "created_by" edge to the GithubApp entity by IDs.
@@ -305,15 +321,31 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.Oauth2CodesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.OauthAuthorizationCodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   user.Oauth2CodesTable,
-			Columns: []string{user.Oauth2CodesColumn},
+			Table:   user.OauthAuthorizationCodesTable,
+			Columns: []string{user.OauthAuthorizationCodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oauth2code.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oauthauthorizationcode.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OauthGrantsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.OauthGrantsTable,
+			Columns: []string{user.OauthGrantsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oauthgrant.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

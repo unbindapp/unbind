@@ -8,7 +8,8 @@ import {
   ShieldHalfIcon,
   SquarePenIcon,
 } from "lucide-react";
-import type { FC } from "react";
+import { useCallback, useState, type FC } from "react";
+import { z } from "zod";
 
 export type TAccess = "full" | "scoped";
 
@@ -68,6 +69,69 @@ export function strongestRole(actions: PermittedAction[] | undefined): Permitted
 export function roleAllowedBy(role: PermittedAction, cap: PermittedAction | null) {
   if (cap === null) return false;
   return roleRank[role] <= roleRank[cap];
+}
+
+// Access, rows and role share the picker's column width
+export const accessFieldClassName = "mt-3 w-full lg:w-[calc((100%-0.5rem)/2)]";
+
+export const accessFormShape = {
+  access: z.enum(["full", "scoped"]),
+  rows: z.array(
+    z.object({
+      teamId: z.string(),
+      projectId: z.string(),
+      environmentId: z.string(),
+      serviceId: z.string(),
+    }),
+  ),
+  role: z.enum(["viewer", "editor", "admin"]),
+};
+
+export function hasPickedResource(value: { access: TAccess; rows: TResourceRow[] }) {
+  return value.access === "full" || value.rows.some((row) => row.teamId !== "");
+}
+
+export const pickResourceMessage = { message: "Pick at least one resource.", path: ["rows"] };
+
+export type TResourceCaps = ReturnType<typeof useResourceCaps>;
+
+// Per row, the strongest role the owner holds on its deepest pick
+export function useResourceCaps() {
+  const [caps, setCaps] = useState<(PermittedAction | null)[]>([null]);
+  const setCap = useCallback((index: number, cap: PermittedAction | null) => {
+    setCaps((prev) => {
+      if (prev[index] === cap) return prev;
+      const next = [...prev];
+      next[index] = cap;
+      return next;
+    });
+  }, []);
+  const remove = useCallback(
+    (index: number) => setCaps((prev) => prev.filter((_, i) => i !== index)),
+    [],
+  );
+  const add = useCallback(() => setCaps((prev) => [...prev, null]), []);
+  const reset = useCallback(() => setCaps([null]), []);
+  return { caps, setCap, remove, add, reset };
+}
+
+// The weakest cap across picked rows; undefined until a row is picked, null when a pick grants nothing
+export function scopedCapFrom(rows: TResourceRow[], caps: (PermittedAction | null)[]) {
+  const pickedCaps = rows.map((row, i) => (row.teamId ? caps[i] : undefined));
+  return pickedCaps.reduce<PermittedAction | null | undefined>((weakest, cap) => {
+    if (cap === undefined) return weakest;
+    if (weakest === undefined) return cap;
+    if (weakest === null || cap === null) return null;
+    return roleAllowedBy(cap, weakest) ? cap : weakest;
+  }, undefined);
+}
+
+export function isRoleAllowed(
+  access: TAccess,
+  scopedCap: PermittedAction | null | undefined,
+  role: PermittedAction,
+) {
+  return access === "full" || scopedCap === undefined || roleAllowedBy(role, scopedCap);
 }
 
 export const expiryOptions = [

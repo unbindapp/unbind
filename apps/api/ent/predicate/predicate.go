@@ -30,8 +30,17 @@ type Group func(*sql.Selector)
 // JWTKey is the predicate function for jwtkey builders.
 type JWTKey func(*sql.Selector)
 
-// Oauth2Code is the predicate function for oauth2code builders.
-type Oauth2Code func(*sql.Selector)
+// OAuthAuthorizationCode is the predicate function for oauthauthorizationcode builders.
+type OAuthAuthorizationCode func(*sql.Selector)
+
+// OAuthClient is the predicate function for oauthclient builders.
+type OAuthClient func(*sql.Selector)
+
+// OAuthGrant is the predicate function for oauthgrant builders.
+type OAuthGrant func(*sql.Selector)
+
+// OAuthGrantToken is the predicate function for oauthgranttoken builders.
+type OAuthGrantToken func(*sql.Selector)
 
 // Oauth2Token is the predicate function for oauth2token builders.
 type Oauth2Token func(*sql.Selector)

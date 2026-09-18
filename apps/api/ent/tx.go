@@ -30,8 +30,14 @@ type Tx struct {
 	Group *GroupClient
 	// JWTKey is the client for interacting with the JWTKey builders.
 	JWTKey *JWTKeyClient
-	// Oauth2Code is the client for interacting with the Oauth2Code builders.
-	Oauth2Code *Oauth2CodeClient
+	// OAuthAuthorizationCode is the client for interacting with the OAuthAuthorizationCode builders.
+	OAuthAuthorizationCode *OAuthAuthorizationCodeClient
+	// OAuthClient is the client for interacting with the OAuthClient builders.
+	OAuthClient *OAuthClientClient
+	// OAuthGrant is the client for interacting with the OAuthGrant builders.
+	OAuthGrant *OAuthGrantClient
+	// OAuthGrantToken is the client for interacting with the OAuthGrantToken builders.
+	OAuthGrantToken *OAuthGrantTokenClient
 	// Oauth2Token is the client for interacting with the Oauth2Token builders.
 	Oauth2Token *Oauth2TokenClient
 	// PVCMetadata is the client for interacting with the PVCMetadata builders.
@@ -201,7 +207,10 @@ func (tx *Tx) init() {
 	tx.GithubInstallation = NewGithubInstallationClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
 	tx.JWTKey = NewJWTKeyClient(tx.config)
-	tx.Oauth2Code = NewOauth2CodeClient(tx.config)
+	tx.OAuthAuthorizationCode = NewOAuthAuthorizationCodeClient(tx.config)
+	tx.OAuthClient = NewOAuthClientClient(tx.config)
+	tx.OAuthGrant = NewOAuthGrantClient(tx.config)
+	tx.OAuthGrantToken = NewOAuthGrantTokenClient(tx.config)
 	tx.Oauth2Token = NewOauth2TokenClient(tx.config)
 	tx.PVCMetadata = NewPVCMetadataClient(tx.config)
 	tx.Permission = NewPermissionClient(tx.config)

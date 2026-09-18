@@ -7,7 +7,23 @@ import tailwindcss from "@tailwindcss/vite";
 // `go run ./cmd/api` (http://localhost:8089) for full-stack dev. The merged image
 // serves the API under /api/go and /api/oauth2; the deployed ingress strips those
 // prefixes, so the proxy strips them here too and the API receives root paths.
+// The OAuth authorization server and /mcp live at the root in production, so
+// those paths are proxied as they are. /oauth/consent stays with the SPA.
 const apiTarget = process.env.VITE_DEV_API_PROXY ?? "https://api.unbind.app";
+
+const rootApiPaths = [
+  "/oauth/authorize",
+  "/oauth/token",
+  "/oauth/register",
+  "/.well-known",
+  "/mcp",
+];
+const rootApiProxy = Object.fromEntries(
+  rootApiPaths.map((path) => [
+    path,
+    { target: apiTarget, changeOrigin: true, secure: true, cookieDomainRewrite: "" },
+  ]),
+);
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -35,6 +51,7 @@ export default defineConfig({
         cookieDomainRewrite: "",
         rewrite: (path) => path.replace(/^\/api\/oauth2/, ""),
       },
+      ...rootApiProxy,
     },
   },
   plugins: [

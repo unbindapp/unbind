@@ -682,7 +682,7 @@ function AsyncInputWithItems({
   );
 }
 
-type TAsyncDropdownMenuProps = TFieldProps & {
+export type TAsyncDropdownMenuProps = TFieldProps & {
   items: TCommandItem[] | undefined;
   ItemIcon?: FC<{ className?: string; value: string }>;
   ItemSuffix?: FC<{ className?: string; value: string }>;

@@ -1,6 +1,6 @@
 .PHONY: help dev dev-status dev-start dev-stop dev-reset dev-infra dev-infra-down dev-cluster dev-cluster-down dev-api dev-web web embed app run clean gen-web-types check-web-types \
 	api-ent api-interfaces api-migrate api-migrate-checksum api-test api-fmt api-run \
-	web-build web-dev web-lint web-typecheck web-gen \
+	web-build web-dev web-lint web-fmt web-typecheck web-gen \
 	operator-generate operator-manifests operator-build operator-run operator-test \
 	installer-build installer-run
 
@@ -45,7 +45,7 @@ help:
 	@echo "  make api-run          - Run the API"
 	@echo ""
 	@echo "Web (apps/web):"
-	@echo "  make web-build / web-dev / web-lint / web-typecheck / web-gen"
+	@echo "  make web-build / web-dev / web-lint / web-fmt / web-typecheck / web-gen"
 	@echo ""
 	@echo "Operator (apps/operator):"
 	@echo "  make operator-generate / operator-manifests / operator-build / operator-run / operator-test"
@@ -144,6 +144,9 @@ web-dev:
 
 web-lint:
 	cd $(WEB_DIR) && npm run lint
+
+web-fmt:
+	cd $(WEB_DIR) && npm run format
 
 web-typecheck:
 	cd $(WEB_DIR) && npm run typecheck

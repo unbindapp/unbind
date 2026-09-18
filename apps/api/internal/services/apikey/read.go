@@ -4,10 +4,12 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	"github.com/unbindapp/unbind-api/internal/services/keyaccess"
 )
 
 // List returns the requester's keys, or another user's when the requester is
@@ -28,11 +30,19 @@ func (self *APIKeyService) List(ctx context.Context, requesterUserID uuid.UUID, 
 	if err != nil {
 		return nil, err
 	}
-	paths, err := self.resourcePaths(ctx, keys)
+	paths, err := keyaccess.ResourcePaths(ctx, self.repo, keyResources(keys))
 	if err != nil {
 		return nil, err
 	}
 	return models.TransformAPIKeyEntities(keys, paths), nil
+}
+
+func keyResources(keys []*ent.APIKey) []schema.APIKeyResource {
+	var resources []schema.APIKeyResource
+	for _, key := range keys {
+		resources = append(resources, key.Resources...)
+	}
+	return resources
 }
 
 func (self *APIKeyService) requireSystemAdmin(ctx context.Context, requesterUserID uuid.UUID) error {

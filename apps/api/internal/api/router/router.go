@@ -17,6 +17,7 @@ import (
 	apikeys_handler "github.com/unbindapp/unbind-api/internal/api/handlers/apikeys"
 	auth_handler "github.com/unbindapp/unbind-api/internal/api/handlers/auth"
 	changes_handler "github.com/unbindapp/unbind-api/internal/api/handlers/changes"
+	connectedapps_handler "github.com/unbindapp/unbind-api/internal/api/handlers/connectedapps"
 	deployments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/deployments"
 	docker_handler "github.com/unbindapp/unbind-api/internal/api/handlers/docker"
 	environments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/environments"
@@ -173,6 +174,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/users", "Users", true, user_handler.RegisterHandlers)
 	registerSessionOnly("/groups", "Groups", groups_handler.RegisterHandlers)
 	registerSessionOnly("/api-keys", "API Keys", apikeys_handler.RegisterHandlers)
+	registerSessionOnly("/connected-apps", "Connected Apps", connectedapps_handler.RegisterHandlers)
 	registerSessionOnly("/github", "GitHub", github_handler.RegisterHandlers)
 	register("/teams", "Teams", true, teams_handler.RegisterHandlers)
 	register("/projects", "Projects", true, projects_handler.RegisterHandlers)

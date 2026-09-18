@@ -1,34 +1,38 @@
 "use client";
 
+import AccessField from "@/components/api-key/access-field";
 import ApiKeyCreatedDialog from "@/components/api-key/api-key-created-dialog";
 import { useApiKeysUtils } from "@/components/api-key/api-keys-provider";
 import {
-  accessOptions,
+  accessFieldClassName,
+  accessFormShape,
   defaultExpiry,
   emptyResourceRow,
   expiresAtFrom,
   expiryOptions,
-  roleAllowedBy,
-  roleOptions,
+  hasPickedResource,
+  isRoleAllowed,
+  pickResourceMessage,
   rowToResource,
+  scopedCapFrom,
+  useResourceCaps,
   type TAccess,
   type TExpiryValue,
   type TResourceRow,
 } from "@/components/api-key/helpers";
 import InputSectionWrapper from "@/components/api-key/input-section-wrapper";
-import ResourceRow from "@/components/api-key/resource-row";
+import ResourceRows from "@/components/api-key/resource-rows";
+import RoleField from "@/components/api-key/role-field";
 import { BlockItemButtonLike } from "@/components/block";
-import ErrorLine from "@/components/error-line";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
-import { Button } from "@/components/ui/button";
 import DropdownSelect from "@/components/ui/dropdown-select";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { createApiKey as createApiKeyFn, type TApiKeyCreated } from "@/lib/queries/api-keys";
 import type { PermittedAction } from "@/lib/server/client.gen";
 import { useMutation } from "@tanstack/react-query";
-import { ClockIcon, PlusIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { ClockIcon } from "lucide-react";
+import { useState } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -42,32 +46,16 @@ const FormSchema = z
       .trim()
       .min(1, "Name is required.")
       .max(100, "Keep the name under 100 characters."),
-    access: z.enum(["full", "scoped"]),
-    rows: z.array(
-      z.object({
-        teamId: z.string(),
-        projectId: z.string(),
-        environmentId: z.string(),
-        serviceId: z.string(),
-      }),
-    ),
-    role: z.enum(["viewer", "editor", "admin"]),
+    ...accessFormShape,
     expiry: z.enum(["1d", "7d", "30d", "90d", "1y", "never"]),
   })
-  .refine((v) => v.access === "full" || v.rows.some((row) => row.teamId !== ""), {
-    message: "Pick at least one resource.",
-    path: ["rows"],
-  });
-
-// Name, access, role and expiry share the picker's column width
-const fieldClassName = "mt-3 w-full lg:w-[calc((100%-0.5rem)/2)]";
+  .refine(hasPickedResource, pickResourceMessage);
 
 export default function AddApiKeyForm({ className }: TProps) {
   const { invalidate } = useApiKeysUtils();
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
   const [created, setCreated] = useState<TApiKeyCreated | null>(null);
-  // Per row, the strongest role the owner holds on its deepest pick
-  const [caps, setCaps] = useState<(PermittedAction | null)[]>([null]);
+  const caps = useResourceCaps();
 
   const { mutateAsync: createApiKey } = useMutation({
     mutationFn: createApiKeyFn,
@@ -98,18 +86,9 @@ export default function AddApiKeyForm({ className }: TProps) {
       temporarilyAddNewEntity(res.data.id);
       setCreated(res.data);
       formApi.reset();
-      setCaps([null]);
+      caps.reset();
     },
   });
-
-  const setCap = useCallback((index: number, cap: PermittedAction | null) => {
-    setCaps((prev) => {
-      if (prev[index] === cap) return prev;
-      const next = [...prev];
-      next[index] = cap;
-      return next;
-    });
-  }, []);
 
   return (
     <>
@@ -133,7 +112,7 @@ export default function AddApiKeyForm({ className }: TProps) {
               children={(field) => (
                 <field.TextField
                   dontCheckUntilSubmit
-                  className={fieldClassName}
+                  className={accessFieldClassName}
                   field={field}
                   value={field.state.value}
                   onBlur={field.handleBlur}
@@ -152,101 +131,14 @@ export default function AddApiKeyForm({ className }: TProps) {
           <InputSectionWrapper>
             <form.AppField
               name="access"
-              children={(field) => {
-                const selected = accessOptions.find((o) => o.value === field.state.value);
-                return (
-                  <field.AsyncDropdownMenu
-                    field={field}
-                    className={fieldClassName}
-                    value={field.state.value}
-                    onChange={(v) => field.handleChange(v as TAccess)}
-                    items={accessOptions}
-                    ItemIcon={({ className, value }) => {
-                      const Icon = accessOptions.find((o) => o.value === value)?.Icon;
-                      return Icon ? <Icon className={className} /> : null;
-                    }}
-                    isPending={false}
-                    error={undefined}
-                  >
-                    {({ isOpen }) => (
-                      <BlockItemButtonLike
-                        asElement="button"
-                        text={selected?.label ?? ""}
-                        Icon={({ className }) =>
-                          selected ? <selected.Icon className={className} /> : null
-                        }
-                        open={isOpen}
-                        onBlur={field.handleBlur}
-                      />
-                    )}
-                  </field.AsyncDropdownMenu>
-                );
-              }}
+              children={(field) => <AccessField field={field} className={accessFieldClassName} />}
             />
             <form.Subscribe selector={(state) => ({ access: state.values.access })}>
               {({ access }) =>
                 access === "scoped" && (
                   <form.AppField
                     name="rows"
-                    children={(field) => (
-                      <div className="mt-2 flex w-full flex-col gap-2">
-                        {field.state.value.map((row, index) => (
-                          <ResourceRow
-                            index={index}
-                            key={index}
-                            field={field}
-                            row={row}
-                            onChange={(next) =>
-                              field.handleChange((prev) =>
-                                prev.map((r, i) => (i === index ? next : r)),
-                              )
-                            }
-                            onRemove={() => {
-                              field.handleChange((prev) => prev.filter((_, i) => i !== index));
-                              setCaps((prev) => prev.filter((_, i) => i !== index));
-                            }}
-                            onCapChange={(cap) => setCap(index, cap)}
-                          />
-                        ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={cn(
-                            "text-muted-foreground justify-start gap-1.5 px-3 font-semibold",
-                            // With no rows it stands in for the picker, so it takes the picker's column width
-                            field.state.value.length === 0 && fieldClassName.replace("mt-3", ""),
-                          )}
-                          onClick={() => {
-                            field.handleChange((prev) => [...prev, emptyResourceRow]);
-                            setCaps((prev) => [...prev, null]);
-                          }}
-                        >
-                          <PlusIcon className="-ml-0.5 size-4.5" />
-                          <p className="min-w-0 shrink">
-                            {field.state.value.length === 0 ? "Add Resource" : "Add Another"}
-                          </p>
-                        </Button>
-                        <form.Subscribe
-                          selector={(state) => ({
-                            submissionAttempts: state.submissionAttempts,
-                            allErrors: state.errors,
-                          })}
-                          children={({ submissionAttempts, allErrors }) => {
-                            const errors = allErrors[0]?.rows;
-                            const message =
-                              errors && errors.length > 0 ? errors[0]?.message : undefined;
-                            if (submissionAttempts > 0 && message) {
-                              return (
-                                <ErrorLine
-                                  className="bg-transparent px-1 py-0 leading-tight"
-                                  message={message}
-                                />
-                              );
-                            }
-                          }}
-                        />
-                      </div>
-                    )}
+                    children={(field) => <ResourceRows field={field} caps={caps} />}
                   />
                 )
               }
@@ -263,69 +155,17 @@ export default function AddApiKeyForm({ className }: TProps) {
               selector={(state) => ({ access: state.values.access, rows: state.values.rows })}
             >
               {({ access, rows }) => {
-                const pickedCaps = rows.map((row, i) => (row.teamId ? caps[i] : undefined));
-                const scopedCap = pickedCaps.reduce<PermittedAction | null | undefined>(
-                  (weakest, cap) => {
-                    if (cap === undefined) return weakest;
-                    if (weakest === undefined) return cap;
-                    if (weakest === null || cap === null) return null;
-                    return roleAllowedBy(cap, weakest) ? cap : weakest;
-                  },
-                  undefined,
-                );
-                const isAllowed = (role: PermittedAction) =>
-                  access === "full" || scopedCap === undefined || roleAllowedBy(role, scopedCap);
+                const scopedCap = scopedCapFrom(rows, caps.caps);
                 return (
                   <form.AppField
                     name="role"
-                    children={(field) => {
-                      const selected = roleOptions.find((o) => o.value === field.state.value);
-                      return (
-                        <field.AsyncDropdownMenu
-                          field={field}
-                          className={fieldClassName}
-                          value={field.state.value}
-                          onChange={(v) => {
-                            if (isAllowed(v as PermittedAction)) {
-                              field.handleChange(v as PermittedAction);
-                            }
-                          }}
-                          items={roleOptions.map((o) => ({
-                            value: o.value,
-                            label: o.title,
-                            description: o.description,
-                          }))}
-                          ItemIcon={({ className, value }) => {
-                            const Icon = roleOptions.find((o) => o.value === value)?.Icon;
-                            return Icon ? <Icon className={className} /> : null;
-                          }}
-                          ItemSuffix={({ value }) =>
-                            isAllowed(value as PermittedAction) ? null : (
-                              <p className="bg-border text-muted-foreground rounded-sm px-1.5 py-0.5 text-xs leading-tight">
-                                Above your access
-                              </p>
-                            )
-                          }
-                          classNameItem={({ value }) =>
-                            isAllowed(value as PermittedAction) ? "" : "opacity-50"
-                          }
-                          isPending={false}
-                          error={undefined}
-                        >
-                          {({ isOpen }) => (
-                            <BlockItemButtonLike
-                              asElement="button"
-                              text={selected?.title ?? ""}
-                              Icon={({ className }) =>
-                                selected ? <selected.Icon className={className} /> : null
-                              }
-                              open={isOpen}
-                              onBlur={field.handleBlur}
-                            />
-                          )}
-                        </field.AsyncDropdownMenu>
-                      );
-                    }}
+                    children={(field) => (
+                      <RoleField
+                        field={field}
+                        className={accessFieldClassName}
+                        isAllowed={(role) => isRoleAllowed(access, scopedCap, role)}
+                      />
+                    )}
                   />
                 );
               }}
@@ -345,7 +185,7 @@ export default function AddApiKeyForm({ className }: TProps) {
                   items={expiryOptions.map((o) => ({ value: o.value, label: o.label }))}
                   value={field.state.value}
                   onChange={(v) => field.handleChange(v as TExpiryValue)}
-                  className={fieldClassName}
+                  className={accessFieldClassName}
                 >
                   {({ isOpen }) => (
                     <BlockItemButtonLike

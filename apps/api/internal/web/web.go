@@ -14,6 +14,9 @@ import (
 // Non-HTML requests (e.g. API fetches with Accept: application/json) that match
 // no file get a plain 404 rather than the HTML shell, so unknown API paths still
 // read as errors to clients.
+// consentPath is the OAuth consent page; it must never render inside a frame.
+const consentPath = "/oauth/consent"
+
 func Handler() http.Handler {
 	dist, err := fs.Sub(distFS, "dist")
 	if err != nil {
@@ -34,6 +37,10 @@ func Handler() http.Handler {
 		}
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		if strings.HasPrefix(r.URL.Path, consentPath) {
+			w.Header().Set("Content-Security-Policy", "frame-ancestors 'none'")
+			w.Header().Set("X-Frame-Options", "DENY")
+		}
 		_, _ = w.Write(index)
 	}
 

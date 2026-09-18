@@ -22,6 +22,7 @@ import (
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
 	logs_service "github.com/unbindapp/unbind-api/internal/services/logs"
 	metric_service "github.com/unbindapp/unbind-api/internal/services/metrics"
+	oauthserver_service "github.com/unbindapp/unbind-api/internal/services/oauthserver"
 	project_service "github.com/unbindapp/unbind-api/internal/services/project"
 	replica_service "github.com/unbindapp/unbind-api/internal/services/replicas"
 	servers_service "github.com/unbindapp/unbind-api/internal/services/servers"
@@ -89,6 +90,7 @@ type Server struct {
 	ServiceGroupService *servicegroup_service.ServiceGroupService
 	TerminalService     *terminal_service.TerminalService
 	APIKeyService       *apikey_service.APIKeyService
+	OAuthServerService  *oauthserver_service.OAuthServerService
 }
 
 func (self *Server) GetUserFromContext(ctx context.Context) (user *ent.User, found bool) {

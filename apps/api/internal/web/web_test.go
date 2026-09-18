@@ -49,3 +49,21 @@ func TestHandler(t *testing.T) {
 		})
 	}
 }
+
+func TestConsentPageRefusesFraming(t *testing.T) {
+	h := Handler()
+	for path, framed := range map[string]bool{"/oauth/consent": false, "/oauth/consent/": false, "/sign-in": true} {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		req.Header.Set("Accept", "text/html")
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+
+		csp := rec.Header().Get("Content-Security-Policy")
+		if framed && csp != "" {
+			t.Fatalf("%s: unexpected CSP %q", path, csp)
+		}
+		if !framed && csp != "frame-ancestors 'none'" {
+			t.Fatalf("%s: CSP = %q, want frame-ancestors 'none'", path, csp)
+		}
+	}
+}
