@@ -378,5 +378,10 @@
     "version": "v0.1.75",
     "summary": "Volume and domain form drafts are kept across refreshes, reset buttons on template storage size inputs, and volume connection details polish.",
     "breaking": false
+  },
+  "v0.1.76": {
+    "version": "v0.1.76",
+    "summary": "MCP server for AI agents, connected apps with OAuth consent, and S3 secret keys no longer returned by the API.",
+    "breaking": false
   }
 }
