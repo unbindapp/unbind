@@ -108,6 +108,9 @@ func TestFetchRejectsBadDocuments(t *testing.T) {
 		"confidential": {func(id string) string {
 			return `{"client_id":"` + id + `","redirect_uris":["https://a.com/cb"],"token_endpoint_auth_method":"client_secret_basic"}`
 		}, 200, "public clients"},
+		"confidential only": {func(id string) string {
+			return `{"client_id":"` + id + `","redirect_uris":["https://a.com/cb"],"token_endpoint_auth_method":"private_key_jwt","token_endpoint_auth_methods_supported":["private_key_jwt"]}`
+		}, 200, "public clients"},
 		"not found": {func(string) string { return "" }, 404, "answered 404"},
 		"redirect":  {func(string) string { return "" }, 302, "answered 302"},
 	}
@@ -123,6 +126,20 @@ func TestFetchRejectsBadDocuments(t *testing.T) {
 		assert.ErrorContains(t, err, c.want, name)
 		assert.False(t, mr.Exists("cimd:"+clientID), "%s must not be cached", name)
 	}
+}
+
+func TestFetchAcceptsClientThatAlsoWorksAsPublic(t *testing.T) {
+	ds := newDocumentServer(t)
+	ds.body = func(id string) string {
+		return `{"client_id":"` + id + `","client_name":"ChatGPT","redirect_uris":["https://chatgpt.com/connector_platform_oauth_redirect"],` +
+			`"token_endpoint_auth_method":"private_key_jwt","token_endpoint_auth_methods_supported":["none","private_key_jwt"]}`
+	}
+	fetcher, _ := newTestFetcher(t, ds)
+
+	doc, err := fetcher.Fetch(context.Background(), ds.URL+"/oauth/client.json")
+	require.NoError(t, err)
+	assert.Equal(t, "ChatGPT", doc.ClientName)
+	assert.Equal(t, "none", doc.TokenEndpointAuthMethod)
 }
 
 func TestFetchRejectsNonDocumentClientID(t *testing.T) {

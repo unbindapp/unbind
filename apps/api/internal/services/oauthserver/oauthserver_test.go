@@ -148,6 +148,13 @@ func (suite *OAuthServerServiceSuite) TestClientInfo() {
 	suite.Equal("claude.ai", info.ClientHost)
 	suite.Equal("localhost:3118", info.RedirectHost)
 	suite.True(info.LoopbackOnly)
+	suite.Equal(oauthserver.VerifiedBrandClaude, info.VerifiedBrand)
+
+	suite.dynamicClient()
+	impostor, err := suite.service.ClientInfo(suite.Ctx, &models.ConnectedAppClientInput{ClientID: dynamicID, RedirectURI: hostedCb})
+	suite.Require().NoError(err)
+	suite.Equal("Claude", impostor.Name)
+	suite.Empty(impostor.VerifiedBrand, "a dynamic client proves nothing, whatever it calls itself or redirects to")
 
 	_, err = suite.service.ClientInfo(suite.Ctx, &models.ConnectedAppClientInput{ClientID: claudeCode, RedirectURI: "https://evil.example/cb"})
 	suite.Error(err)

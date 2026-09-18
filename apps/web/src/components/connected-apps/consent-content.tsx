@@ -19,6 +19,7 @@ import RoleField from "@/components/api-key/role-field";
 import { AuthShell } from "@/components/auth-shell";
 import ErrorCard from "@/components/error-card";
 import ErrorLine from "@/components/error-line";
+import BrandIcon from "@/components/icons/brand";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -31,7 +32,14 @@ import {
 import { meQuery } from "@/lib/queries/me";
 import type { PermittedAction } from "@/lib/server/client.gen";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowRightIcon, GlobeIcon, MonitorIcon, ShieldQuestionIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  GlobeIcon,
+  MonitorIcon,
+  ShieldCheckIcon,
+  ShieldQuestionIcon,
+  CircleAlertIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
 
@@ -86,7 +94,7 @@ function ConsentBody({
   return (
     <>
       {data ? (
-        <ClientSummary client={data.client} />
+        <ClientSummary client={data.client} isLoopback={isLoopbackUri(redirectUri)} />
       ) : (
         <ClientSummary isPlaceholder isLoopback={isLoopbackUri(redirectUri)} />
       )}
@@ -122,7 +130,7 @@ function ClientSummary({
   isPlaceholder,
   isLoopback,
 }:
-  | { client: TConnectedAppClient; isPlaceholder?: never; isLoopback?: never }
+  | { client: TConnectedAppClient; isPlaceholder?: never; isLoopback: boolean }
   | { client?: never; isPlaceholder: true; isLoopback: boolean }) {
   return (
     <div
@@ -131,12 +139,24 @@ function ClientSummary({
     >
       <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 leading-tight">
         <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-lg font-semibold group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+          {client?.verified_brand && (
+            <span className="inline-icon mr-[0.4ch]">
+              <BrandIcon brand={client.verified_brand} className="size-5" />
+            </span>
+          )}
           {client ? client.name : "Loading application"}
         </p>
-        <p className="bg-warning/4-10 border-warning/4-10 text-warning group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:border-muted-more-foreground rounded-sm border px-1.5 py-0.5 text-xs font-medium group-data-placeholder/item:text-transparent">
-          <ShieldQuestionIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-          Unverified name
-        </p>
+        {client?.verified_brand ? (
+          <p className="bg-success/4-10 border-success/4-10 text-success rounded-sm border px-1.5 py-0.5 text-xs font-medium">
+            <ShieldCheckIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+            Verified
+          </p>
+        ) : (
+          <p className="bg-warning/4-10 border-warning/4-10 text-warning group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:border-muted-more-foreground rounded-sm border px-1.5 py-0.5 text-xs font-medium group-data-placeholder/item:text-transparent">
+            <ShieldQuestionIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+            Unverified name
+          </p>
+        )}
       </div>
       <div className="text-muted-foreground flex w-full flex-col items-start gap-1.5 text-sm">
         <p className={detailClassName}>
@@ -151,13 +171,16 @@ function ClientSummary({
           <ArrowRightIcon className="mr-1.5 mb-0.5 inline-block size-3.5" />
           {client ? `Redirects to ${client.redirect_host}` : "Redirects to loading.example.com"}
         </p>
-        {(client?.loopback_only || isLoopback) && (
+        {isLoopback && (
           <p className={cn(detailClassName, "text-warning")}>
             <MonitorIcon className="mr-1.5 mb-0.5 inline-block size-3.5" />
-            Redirects to an application running on this device. Only continue if you started this
-            from an app you trust.
+            Redirects to an application running on this device
           </p>
         )}
+        <p className={cn(detailClassName, "text-warning")}>
+          <CircleAlertIcon className="mr-1.5 mb-0.5 inline-block size-3.5" />
+          Only approve if you started this yourself
+        </p>
       </div>
     </div>
   );

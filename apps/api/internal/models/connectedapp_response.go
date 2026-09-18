@@ -7,16 +7,18 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/oauthserver"
 )
 
 // ConnectedAppClientResponse describes the client asking for access. The name is
 // self reported by the client; the hosts are what the consent page can trust.
 type ConnectedAppClientResponse struct {
-	Name         string                 `json:"name" doc:"Self reported by the client, unverified."`
-	Kind         schema.OAuthClientKind `json:"kind"`
-	ClientHost   string                 `json:"client_host,omitempty" required:"false" doc:"Host that published the client metadata document, when the client has one."`
-	RedirectHost string                 `json:"redirect_host" doc:"Where the browser is sent after approval."`
-	LoopbackOnly bool                   `json:"loopback_only" doc:"The client only redirects to this device."`
+	Name          string                    `json:"name" doc:"Self reported by the client, unverified."`
+	Kind          schema.OAuthClientKind    `json:"kind"`
+	ClientHost    string                    `json:"client_host,omitempty" required:"false" doc:"Host that published the client metadata document, when the client has one."`
+	RedirectHost  string                    `json:"redirect_host" doc:"Where the browser is sent after approval."`
+	LoopbackOnly  bool                      `json:"loopback_only" doc:"The client only redirects to this device."`
+	VerifiedBrand oauthserver.VerifiedBrand `json:"verified_brand,omitempty" required:"false" enum:"claude,chatgpt" doc:"Set when the client is proven to be this first party. Its name can then be trusted."`
 }
 
 type ConnectedAppRedirectResponse struct {
@@ -24,17 +26,18 @@ type ConnectedAppRedirectResponse struct {
 }
 
 type ConnectedAppResponse struct {
-	ID           uuid.UUID                `json:"id" format:"uuid"`
-	ClientName   string                   `json:"client_name" doc:"Self reported by the client, unverified."`
-	ClientID     string                   `json:"client_id"`
-	Kind         schema.OAuthClientKind   `json:"kind"`
-	ClientHost   string                   `json:"client_host,omitempty" required:"false"`
-	RedirectHost string                   `json:"redirect_host"`
-	Role         schema.PermittedAction   `json:"role"`
-	FullAccess   bool                     `json:"full_access"`
-	Resources    []APIKeyResourceResponse `json:"resources" nullable:"false"`
-	CreatedAt    time.Time                `json:"created_at"`
-	LastUsedAt   *time.Time               `json:"last_used_at,omitempty" required:"false"`
+	ID            uuid.UUID                 `json:"id" format:"uuid"`
+	ClientName    string                    `json:"client_name" doc:"Self reported by the client, unverified."`
+	ClientID      string                    `json:"client_id"`
+	Kind          schema.OAuthClientKind    `json:"kind"`
+	ClientHost    string                    `json:"client_host,omitempty" required:"false"`
+	RedirectHost  string                    `json:"redirect_host"`
+	VerifiedBrand oauthserver.VerifiedBrand `json:"verified_brand,omitempty" required:"false" enum:"claude,chatgpt" doc:"Set when the client is proven to be this first party."`
+	Role          schema.PermittedAction    `json:"role"`
+	FullAccess    bool                      `json:"full_access"`
+	Resources     []APIKeyResourceResponse  `json:"resources" nullable:"false"`
+	CreatedAt     time.Time                 `json:"created_at"`
+	LastUsedAt    *time.Time                `json:"last_used_at,omitempty" required:"false"`
 }
 
 func TransformOAuthGrantEntity(entity *ent.OAuthGrant, paths map[uuid.UUID][]string) *ConnectedAppResponse {
@@ -50,17 +53,18 @@ func TransformOAuthGrantEntity(entity *ent.OAuthGrant, paths map[uuid.UUID][]str
 		resources = append(resources, APIKeyResourceResponse{APIKeyResource: resource, Path: path})
 	}
 	return &ConnectedAppResponse{
-		ID:           entity.ID,
-		ClientName:   entity.ClientName,
-		ClientID:     entity.ClientID,
-		Kind:         entity.ClientKind,
-		ClientHost:   ClientHost(entity.ClientKind, entity.ClientID, entity.ClientURI),
-		RedirectHost: hostOf(entity.RedirectURI),
-		Role:         entity.Role,
-		FullAccess:   entity.FullAccess,
-		Resources:    resources,
-		CreatedAt:    entity.CreatedAt,
-		LastUsedAt:   entity.LastUsedAt,
+		ID:            entity.ID,
+		ClientName:    entity.ClientName,
+		ClientID:      entity.ClientID,
+		Kind:          entity.ClientKind,
+		ClientHost:    ClientHost(entity.ClientKind, entity.ClientID, entity.ClientURI),
+		RedirectHost:  hostOf(entity.RedirectURI),
+		VerifiedBrand: VerifiedBrand(entity.ClientKind, entity.ClientID, []string{entity.RedirectURI}),
+		Role:          entity.Role,
+		FullAccess:    entity.FullAccess,
+		Resources:     resources,
+		CreatedAt:     entity.CreatedAt,
+		LastUsedAt:    entity.LastUsedAt,
 	}
 }
 
@@ -79,6 +83,14 @@ func ClientHost(kind schema.OAuthClientKind, clientID, clientURI string) string 
 		return hostOf(clientID)
 	}
 	return hostOf(clientURI)
+}
+
+// VerifiedBrand never vouches for a dynamic client: its registration proves nothing.
+func VerifiedBrand(kind schema.OAuthClientKind, clientID string, redirectURIs []string) oauthserver.VerifiedBrand {
+	if kind != schema.OAuthClientKindMetadataDocument {
+		return ""
+	}
+	return oauthserver.VerifiedBrandOf(clientID, redirectURIs)
 }
 
 func hostOf(raw string) string {

@@ -2,6 +2,7 @@
 
 import { describeResource, roleOptions } from "@/components/api-key/helpers";
 import { useConnectedAppsUtils } from "@/components/connected-apps/connected-apps-provider";
+import BrandIcon from "@/components/icons/brand";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
 import { createDialogHandle, DialogTrigger, TDialogHandle } from "@/components/ui/dialog";
@@ -27,6 +28,7 @@ import {
   ListFilterIcon,
   Grid2x2CheckIcon,
   ScrollTextIcon,
+  ShieldCheckIcon,
   ShieldHalfIcon,
   ShieldQuestionIcon,
   SquarePenIcon,
@@ -48,7 +50,11 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
     >
       <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-10 leading-tight">
         <div className="line-icon">
-          <Grid2x2CheckIcon className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-5 group-data-placeholder/item:rounded-full" />
+          {connectedApp?.verified_brand ? (
+            <BrandIcon brand={connectedApp.verified_brand} className="size-5" />
+          ) : (
+            <Grid2x2CheckIcon className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-5 group-data-placeholder/item:rounded-full" />
+          )}
         </div>
         <div className="flex min-w-0 shrink flex-wrap items-center gap-x-2 gap-y-1">
           <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink font-medium group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
@@ -58,10 +64,17 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
             <GlobeIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
             {connectedApp ? publisher(connectedApp) : "example.com"}
           </Chip>
-          <Chip>
-            <ShieldQuestionIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-            Unverified name
-          </Chip>
+          {connectedApp?.verified_brand ? (
+            <Chip className="text-success bg-success/4-10 border-success/4-10 font-medium">
+              <ShieldCheckIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+              Verified
+            </Chip>
+          ) : (
+            <Chip>
+              <ShieldQuestionIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+              Unverified name
+            </Chip>
+          )}
         </div>
       </div>
       <div className="flex w-full flex-wrap items-start justify-start gap-1.5 text-xs">

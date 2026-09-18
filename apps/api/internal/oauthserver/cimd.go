@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -37,6 +38,9 @@ type ClientMetadata struct {
 	ClientURI               string   `json:"client_uri,omitempty"`
 	GrantTypes              []string `json:"grant_types,omitempty"`
 	TokenEndpointAuthMethod string   `json:"token_endpoint_auth_method,omitempty"`
+	// TokenEndpointAuthMethodsSupported is how a client that prefers to
+	// authenticate (ChatGPT) says it also works as a public client.
+	TokenEndpointAuthMethodsSupported []string `json:"token_endpoint_auth_methods_supported,omitempty"`
 }
 
 // IsMetadataDocumentClientID reports whether a client_id is a document URL
@@ -157,13 +161,21 @@ func validateClientMetadata(clientID string, doc *ClientMetadata) *Error {
 			return InvalidClient("client metadata document redirect_uris: " + err.Error())
 		}
 	}
-	if doc.TokenEndpointAuthMethod != "" && doc.TokenEndpointAuthMethod != authMethodNone {
+	if !worksAsPublicClient(doc) {
 		return InvalidClient("only public clients (token_endpoint_auth_method none) are supported")
 	}
+	doc.TokenEndpointAuthMethod = authMethodNone
 	if err := validateClientURI(doc.ClientURI); err != nil {
 		return InvalidClient("client metadata document " + err.Error())
 	}
 	return nil
+}
+
+func worksAsPublicClient(doc *ClientMetadata) bool {
+	if doc.TokenEndpointAuthMethod == "" || doc.TokenEndpointAuthMethod == authMethodNone {
+		return true
+	}
+	return slices.Contains(doc.TokenEndpointAuthMethodsSupported, authMethodNone)
 }
 
 func cacheTTL(cacheControl string) time.Duration {

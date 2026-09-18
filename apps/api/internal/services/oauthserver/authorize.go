@@ -86,10 +86,11 @@ func (self *OAuthServerService) ClientInfo(ctx context.Context, input *models.Co
 		return nil, oauthserver.InvalidRequest("redirect_uri is not registered for this client")
 	}
 	return &models.ConnectedAppClientResponse{
-		Name:         client.Name,
-		Kind:         client.Kind,
-		ClientHost:   models.ClientHost(client.Kind, client.ClientID, client.ClientURI),
-		RedirectHost: oauthserver.HostOf(input.RedirectURI),
-		LoopbackOnly: oauthserver.LoopbackOnly(client.RedirectURIs),
+		Name:          client.Name,
+		Kind:          client.Kind,
+		ClientHost:    models.ClientHost(client.Kind, client.ClientID, client.ClientURI),
+		RedirectHost:  oauthserver.HostOf(input.RedirectURI),
+		LoopbackOnly:  oauthserver.LoopbackOnly(client.RedirectURIs),
+		VerifiedBrand: models.VerifiedBrand(client.Kind, client.ClientID, client.RedirectURIs),
 	}, nil
 }

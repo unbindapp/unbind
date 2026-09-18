@@ -453,6 +453,7 @@ export const ConnectedAppClientResponseSchema = z
     loopback_only: z.boolean(), // The client only redirects to this device.
     name: z.string(), // Self reported by the client, unverified.
     redirect_host: z.string(), // Where the browser is sent after approval.
+    verified_brand: z.enum(['claude', 'chatgpt']).optional(), // Set when the client is proven to be this first party. Its name can then be trusted.
   })
   .strip();
 
@@ -483,6 +484,7 @@ export const ConnectedAppResponseSchema = z
     redirect_host: z.string(),
     resources: z.array(APIKeyResourceResponseSchema),
     role: PermittedActionSchema,
+    verified_brand: z.enum(['claude', 'chatgpt']).optional(), // Set when the client is proven to be this first party.
   })
   .strip();
 
