@@ -1,6 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { useServices, useServicesUtils } from "@/components/service/services-provider";
 import { SettingsSection } from "@/components/settings/settings-section";
+import StorageSizeChip from "@/components/storage-size-chip";
 import { useSystem } from "@/components/system/system-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/toast";
+import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { defaultAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -19,17 +22,14 @@ import {
   removeFormDraft,
   useAppFormWithPersistence,
 } from "@/lib/hooks/use-app-form-with-persistence";
-import { expandVolume as expandVolumeFn, TVolumeType } from "@/lib/queries/storage";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { useVolumesUtils } from "@/components/volume/volumes-provider";
+import { expandVolume as expandVolumeFn, TVolumeType } from "@/lib/queries/storage";
 import { useStore } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { HourglassIcon, ScalingIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactElement, useCallback, useMemo, useRef, useState } from "react";
-import { toast } from "@/components/ui/toast";
 import { z } from "zod";
-import StorageSizeChip from "@/components/storage-size-chip";
 
 type TProps = {
   volume: TVolumeShallow;

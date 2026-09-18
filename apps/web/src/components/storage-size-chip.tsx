@@ -10,7 +10,7 @@ export default function StorageSizeChip({
   return (
     <span
       className={cn(
-        "text-foreground bg-foreground/2-10 border-foreground/2-10 rounded-md border px-1.25 font-mono",
+        "text-foreground bg-input rounded-md border px-1.25 font-mono [word-spacing:-0.5ch]",
         className,
       )}
     >

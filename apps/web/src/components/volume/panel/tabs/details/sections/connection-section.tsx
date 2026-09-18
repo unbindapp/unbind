@@ -1,4 +1,3 @@
-import { volumeSettingsIds } from "@/components/settings/settings-ids";
 import {
   Block,
   BlockItem,
@@ -18,6 +17,7 @@ import {
   ServicePickerTriggerIcon,
 } from "@/components/service/service-picker";
 import { useServices, useServicesUtils } from "@/components/service/services-provider";
+import { volumeSettingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
