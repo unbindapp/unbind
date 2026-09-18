@@ -1,21 +1,24 @@
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
+import {
+  panelScrollKey,
+  usePanelScrollRestoration,
+} from "@/components/panel/use-panel-scroll-state";
 import { useServicesUtils } from "@/components/service/services-provider";
+import StorageSizeChip from "@/components/storage-size-chip";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { useSystem } from "@/components/system/system-provider";
+import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
 import { templateInputValidator } from "@/components/templates/panel/input-validator";
 import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
 import TemplateHeadroomBanner from "@/components/templates/panel/template-headroom-banner";
 import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
-import { useVolumesUtils } from "@/components/volume/volumes-provider";
-import {
-  panelScrollKey,
-  usePanelScrollRestoration,
-} from "@/components/panel/use-panel-scroll-state";
-import { templateDraftPanelTemplateDraftIdKey } from "@/components/templates/panel/constants";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
+import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { drawerAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { generateDomain } from "@/lib/helpers/generate-domain";
@@ -24,8 +27,8 @@ import {
   useAppFormWithPersistence,
 } from "@/lib/hooks/use-app-form-with-persistence";
 import { PersistedBooleanSchema, usePersistedState } from "@/lib/hooks/use-persisted-state";
-import { TemplateInputTypeSchema } from "@/lib/server/client.gen";
 import { deployTemplate as deployTemplateFn } from "@/lib/queries/templates";
+import { TemplateInputTypeSchema } from "@/lib/server/client.gen";
 import { useMutation } from "@tanstack/react-query";
 import {
   ArchiveIcon,
@@ -38,10 +41,7 @@ import {
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { HTMLAttributes, useMemo, useRef } from "react";
-import { toast } from "@/components/ui/toast";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import StorageSizeChip from "@/components/storage-size-chip";
 
 type TProps = {
   templateDraft: TTemplateDraft;
@@ -289,7 +289,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                         key={`field[${i}]`}
                         className="flex w-full flex-col gap-2.5 p-1 py-4 md:w-1/2"
                       >
-                        <div className="flex w-full items-start gap-2 px-1.5">
+                        <div className="flex w-full items-start gap-3 px-1.5">
                           <div className="flex min-w-0 flex-1 flex-col gap-1">
                             <div className="flex w-full items-start gap-2">
                               <TemplateInputIcon input={visibleInputs[i]} />
@@ -317,19 +317,17 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
                               selector={(state) => state.values.inputs[i].value}
                               children={(value) => (
                                 <Button
+                                  disabled={value === defaultInputs[i].value}
                                   type="button"
-                                  variant="ghost"
+                                  variant="outline"
                                   size="icon"
                                   aria-label="Reset to default"
-                                  className={cn(
-                                    "-mt-1.5 -mr-1 -mb-0.5 size-7 rounded-md",
-                                    value === defaultInputs[i].value && "invisible",
-                                  )}
+                                  className="group/button -mt-1 -mr-1.5 disabled:opacity-0"
                                   onClick={() =>
                                     form.setFieldValue(`inputs[${i}].value`, defaultInputs[i].value)
                                   }
                                 >
-                                  <RotateCcwIcon className="size-4" />
+                                  <RotateCcwIcon className="size-4.5 transition group-disabled/button:-rotate-45" />
                                 </Button>
                               )}
                             />
