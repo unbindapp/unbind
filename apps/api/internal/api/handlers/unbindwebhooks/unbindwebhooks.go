@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Register an outbound webhook for a team or project.",
 		Path:        "/create",
 		Method:      http.MethodPost,
-	}, handlers.CreateWebhook)
+	}, handlers.CreateWebhook, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-webhook",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update an existing webhook's URL or events.",
 		Path:        "/update",
 		Method:      http.MethodPut,
-	}, handlers.UpdateWebhook)
+	}, handlers.UpdateWebhook, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-webhook",
@@ -39,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Delete a webhook.",
 		Path:        "/delete",
 		Method:      http.MethodDelete,
-	}, handlers.DeleteWebhook)
+	}, handlers.DeleteWebhook, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-webhooks",
@@ -47,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List webhooks for a team or project.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListWebhooks)
+	}, handlers.ListWebhooks, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-webhook",
@@ -55,5 +55,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single webhook by ID.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetWebhook)
+	}, handlers.GetWebhook, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
 }

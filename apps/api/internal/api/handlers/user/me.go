@@ -12,7 +12,7 @@ import (
 type MeData struct {
 	models.UserResponse
 	SystemPermissions []schema.PermittedAction `json:"system_permissions" nullable:"false" doc:"Actions the current user can perform on system-wide resources"`
-	APIKey            *MeAPIKey                `json:"api_key,omitempty" required:"false" doc:"Present when the request was authenticated with an API key: the limit the key puts on this user"`
+	APIKey            *MeAPIKey                `json:"api_key,omitempty" required:"false" doc:"Present when the request was authenticated with an API key or a connected app: the limit the credential puts on this user"`
 }
 
 // MeAPIKey lets a key holder (a CLI, an MCP server) learn what the key allows

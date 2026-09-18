@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Search public images on Docker Hub. Proxies Docker Hub so the browser avoids cross-origin restrictions.",
 		Path:        "/search",
 		Method:      http.MethodGet,
-	}, handlers.SearchImages, oapi.OpenWorld)
+	}, handlers.SearchImages, oapi.OpenWorld, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-docker-tags",
@@ -31,5 +31,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List tags for a public Docker Hub image. Proxies Docker Hub so the browser avoids cross-origin restrictions.",
 		Path:        "/tags",
 		Method:      http.MethodGet,
-	}, handlers.ListTags, oapi.OpenWorld)
+	}, handlers.ListTags, oapi.OpenWorld, oapi.MCP)
 }

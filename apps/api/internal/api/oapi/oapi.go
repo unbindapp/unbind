@@ -33,6 +33,15 @@ type profile struct {
 	errors      []int
 	hints       map[string]any
 	sessionOnly bool
+	mcp         *MCPChoice
+}
+
+// MCPChoice records whether an operation is offered as an MCP tool. Every
+// operation an API key can reach has to carry one, so the MCP server cannot
+// fall behind the API unnoticed.
+type MCPChoice struct {
+	Exposed bool
+	Reason  string
 }
 
 // Operation metadata read by the auth middleware. Metadata is never serialized
@@ -40,6 +49,7 @@ type profile struct {
 const (
 	metadataAction      = "unbind.action"
 	metadataSessionOnly = "unbind.session_only"
+	metadataMCP         = "unbind.mcp"
 )
 
 func agentHints(readOnly, destructive, idempotent bool, risk string, confirm bool) map[string]any {
@@ -124,6 +134,17 @@ func SessionOnly(p *profile) {
 	p.sessionOnly = true
 }
 
+// MCP offers the operation as an MCP tool. Its summary, description, inputs
+// and hints become the tool definition, so write them for an agent to read.
+func MCP(p *profile) {
+	p.mcp = &MCPChoice{Exposed: true}
+}
+
+// NoMCP keeps the operation out of the MCP server, with the reason why.
+func NoMCP(reason string) Option {
+	return func(p *profile) { p.mcp = &MCPChoice{Reason: reason} }
+}
+
 // MarkSessionOnly is the group-level form of SessionOnly, for route groups
 // that are session only in their entirety.
 func MarkSessionOnly(op *huma.Operation) {
@@ -139,6 +160,15 @@ func IsSessionOnly(op *huma.Operation) bool {
 	}
 	v, _ := op.Metadata[metadataSessionOnly].(bool)
 	return v
+}
+
+// MCPChoiceOf returns the MCP decision the operation was registered with.
+func MCPChoiceOf(op *huma.Operation) (MCPChoice, bool) {
+	if op == nil {
+		return MCPChoice{}, false
+	}
+	choice, ok := op.Metadata[metadataMCP].(MCPChoice)
+	return choice, ok
 }
 
 // ActionOf returns the Action the operation was registered with.
@@ -174,6 +204,9 @@ func Apply(action Action, op *huma.Operation, opts ...Option) {
 	op.Metadata[metadataAction] = action
 	if p.sessionOnly {
 		MarkSessionOnly(op)
+	}
+	if p.mcp != nil {
+		op.Metadata[metadataMCP] = *p.mcp
 	}
 
 	if op.Extensions == nil {

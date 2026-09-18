@@ -489,8 +489,7 @@ function AffectedServices({
 }
 
 type TAffectedServiceChipProps =
-  | { affected: AffectedService; isPlaceholder?: never }
-  | { isPlaceholder: true; affected?: never };
+  { affected: AffectedService; isPlaceholder?: never } | { isPlaceholder: true; affected?: never };
 
 function AffectedServiceChip({ affected, isPlaceholder }: TAffectedServiceChipProps) {
   return (

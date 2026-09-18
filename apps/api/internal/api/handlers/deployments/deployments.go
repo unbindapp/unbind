@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List deployments for a service, newest first.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListDeployments)
+	}, handlers.ListDeployments, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-deployment",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single deployment by ID, including its build/run status.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetDeploymentByID)
+	}, handlers.GetDeploymentByID, oapi.MCP)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "trigger-deployment",
@@ -39,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Build and deploy the service's current source. Queues an asynchronous build; poll the returned deployment for status.",
 		Path:        "/create",
 		Method:      http.MethodPost,
-	}, handlers.CreateDeployment, oapi.OpenWorld)
+	}, handlers.CreateDeployment, oapi.OpenWorld, oapi.MCP)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "redeploy-deployment",
@@ -47,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Re-run an existing deployment's build and roll it out again.",
 		Path:        "/redeploy",
 		Method:      http.MethodPost,
-	}, handlers.CreateNewRedeployment, oapi.OpenWorld)
+	}, handlers.CreateNewRedeployment, oapi.OpenWorld, oapi.MCP)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "cancel-deployment",
@@ -55,7 +55,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Abort a queued or running build. The deployment is marked as cancelled and its build job is deleted.",
 		Path:        "/cancel",
 		Method:      http.MethodPost,
-	}, handlers.CancelDeployment, oapi.OpenWorld)
+	}, handlers.CancelDeployment, oapi.OpenWorld, oapi.MCP)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "remove-deployment",
@@ -63,5 +63,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Remove the active deployment by scaling the service to zero. The service stays offline until a new deployment is created.",
 		Path:        "/remove",
 		Method:      http.MethodPost,
-	}, handlers.RemoveDeployment, oapi.OpenWorld)
+	}, handlers.RemoveDeployment, oapi.OpenWorld, oapi.MCP)
 }

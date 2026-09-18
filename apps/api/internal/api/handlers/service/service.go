@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List all services in an environment.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListServices)
+	}, handlers.ListServices, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-service",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single service by ID, including its config.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetService)
+	}, handlers.GetService, oapi.MCP)
 
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-service",
@@ -39,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Create a service from a git repo, container image, or database. Does not deploy it; trigger a deployment separately.",
 		Path:        "/create",
 		Method:      http.MethodPost,
-	}, handlers.CreateService, oapi.OpenWorld)
+	}, handlers.CreateService, oapi.OpenWorld, oapi.MCP)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-service",
@@ -47,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update a service's config (source, build, runtime, networking). Changes take effect on the next deployment.",
 		Path:        "/update",
 		Method:      http.MethodPut,
-	}, handlers.UpdateService)
+	}, handlers.UpdateService, oapi.MCP)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-service",
@@ -55,7 +55,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Permanently delete a service, its deployments, and its config. Persistent volumes may be retained depending on input.",
 		Path:        "/delete",
 		Method:      http.MethodDelete,
-	}, handlers.DeleteService)
+	}, handlers.DeleteService, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-available-databases",
@@ -63,7 +63,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List the database types that can be created as services.",
 		Path:        "/databases/installable/list",
 		Method:      http.MethodGet,
-	}, handlers.ListDatabases)
+	}, handlers.ListDatabases, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-database-definition",
@@ -71,7 +71,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get the full configuration schema for a database type.",
 		Path:        "/databases/installable/get",
 		Method:      http.MethodGet,
-	}, handlers.GetDatabaseDefinition)
+	}, handlers.GetDatabaseDefinition, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-service-endpoints",
@@ -79,5 +79,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List the internal and external endpoints exposed by a service.",
 		Path:        "/endpoints/list",
 		Method:      http.MethodGet,
-	}, handlers.ListEndpoints)
+	}, handlers.ListEndpoints, oapi.MCP)
 }

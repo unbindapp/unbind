@@ -25,7 +25,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Apply staged variable and service config changes together, rolling out each affected service once. Use dry_run to preview which services would be affected.",
 		Path:        "/apply",
 		Method:      http.MethodPost,
-	}, handlers.ApplyChanges)
+	}, handlers.ApplyChanges, oapi.MCP)
 }
 
 type ApplyChangesInput struct {

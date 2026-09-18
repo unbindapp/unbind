@@ -1,12 +1,16 @@
 package auth
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/base64"
 	"encoding/hex"
 	"strings"
 	"time"
+
+	"github.com/unbindapp/unbind-api/ent"
 )
 
 const (
@@ -61,4 +65,22 @@ func IsOAuthToken(token string) bool {
 
 func APIKeyExpired(expiresAt *time.Time, now time.Time) bool {
 	return expiresAt != nil && !expiresAt.After(now)
+}
+
+type APIKeyLookup interface {
+	GetByTokenHash(ctx context.Context, tokenHash string) (*ent.APIKey, error)
+}
+
+// VerifyAPIKey resolves a presented key to its stored row with the owner
+// loaded. Unknown, ownerless and expired keys all fail the same way.
+func VerifyAPIKey(ctx context.Context, keys APIKeyLookup, token string, now time.Time) (*ent.APIKey, bool) {
+	hash := HashAPIKey(token)
+	key, err := keys.GetByTokenHash(ctx, hash)
+	if err != nil || key.Edges.User == nil {
+		return nil, false
+	}
+	if subtle.ConstantTimeCompare([]byte(key.TokenHash), []byte(hash)) != 1 || APIKeyExpired(key.ExpiresAt, now) {
+		return nil, false
+	}
+	return key, true
 }

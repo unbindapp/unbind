@@ -12,6 +12,8 @@ import (
 	"testing"
 
 	"github.com/alicebob/miniredis/v2"
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
@@ -19,6 +21,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/middleware"
+	"github.com/unbindapp/unbind-api/internal/mcpserver"
 	"github.com/unbindapp/unbind-api/internal/models"
 	"github.com/unbindapp/unbind-api/internal/oauthserver"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
@@ -58,8 +61,20 @@ func (suite *HandlerSuite) SetupTest() {
 	suite.user = suite.DB.User.Create().SetEmail("owner@example.com").SetPasswordHash("x").SaveX(suite.Ctx)
 	suite.service = oauthserver_service.NewOAuthServerService(repositories.NewRepositories(suite.DB), stubFetcher{}, issuer)
 	mr := miniredis.RunT(suite.T())
+	limiter := middleware.NewRateLimiter(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
 	suite.router = chi.NewRouter()
-	NewHandler(suite.service).Mount(suite.router, middleware.NewRateLimiter(redis.NewClient(&redis.Options{Addr: mr.Addr()})))
+	NewHandler(suite.service).Mount(suite.router, limiter)
+
+	repo := repositories.NewRepositories(suite.DB)
+	mcpServer, err := mcpserver.New(mcpserver.Options{
+		API:     humachi.New(chi.NewRouter(), huma.DefaultConfig("test", "1")),
+		Router:  suite.router,
+		OAuth:   suite.service,
+		APIKeys: repo.APIKey(),
+		Issuer:  issuer,
+	})
+	suite.Require().NoError(err)
+	mcpServer.Mount(suite.router, limiter)
 }
 
 func (suite *HandlerSuite) do(req *http.Request) *httptest.ResponseRecorder {
@@ -221,7 +236,7 @@ func (suite *HandlerSuite) TestCodeExchangeRefreshAndRevocation() {
 
 	req := httptest.NewRequest(http.MethodGet, "/mcp", nil)
 	req.Header.Set("Authorization", "Bearer "+access)
-	suite.Equal(http.StatusNotImplemented, suite.do(req).Code)
+	suite.NotEqual(http.StatusUnauthorized, suite.do(req).Code, "a fresh access token is accepted at /mcp")
 
 	rec = suite.postForm("/oauth/token", url.Values{
 		"grant_type": {"authorization_code"}, "client_id": {claudeCode}, "code": {code},

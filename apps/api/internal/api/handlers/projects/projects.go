@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Create a project within a team.",
 		Path:        "/create",
 		Method:      http.MethodPost,
-	}, handlers.CreateProject)
+	}, handlers.CreateProject, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-projects",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List all projects in a team.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListProjects)
+	}, handlers.ListProjects, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-project",
@@ -39,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single project by ID.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetProject)
+	}, handlers.GetProject, oapi.MCP)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-project",
@@ -47,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update a project's name, description, or default environment.",
 		Path:        "/update",
 		Method:      http.MethodPut,
-	}, handlers.UpdateProject)
+	}, handlers.UpdateProject, oapi.MCP)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-project",
@@ -55,5 +55,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Permanently delete a project and every environment, service, and deployment inside it.",
 		Path:        "/delete",
 		Method:      http.MethodDelete,
-	}, handlers.DeleteProject)
+	}, handlers.DeleteProject, oapi.MCP)
 }

@@ -47,9 +47,6 @@ func (self *Handler) Mount(r chi.Router, limiter *middleware.RateLimiter) {
 	r.With(limiter.Limit("register", registerPerMinute, rateWindow)).Post("/oauth/register", self.Register)
 	r.With(limiter.Limit("authorize", authorizePerMin, rateWindow)).Get("/oauth/authorize", self.Authorize)
 	r.With(limiter.Limit("token", tokenPerMinute, rateWindow)).Post("/oauth/token", self.Token)
-	r.With(auth.RequireBearerToken(self.BearerVerifier(), &auth.RequireBearerTokenOptions{
-		ResourceMetadataURL: oauthserver.ResourceMetadataURL(self.issuer),
-	})).Handle("/mcp", http.HandlerFunc(self.MCP))
 }
 
 func (self *Handler) Metadata(w http.ResponseWriter, r *http.Request) {

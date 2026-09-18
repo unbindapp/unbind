@@ -2231,7 +2231,7 @@ export const MeAPIKeySchema = z
 
 export const MeDataSchema = z
   .object({
-    api_key: MeAPIKeySchema.optional(), // Present when the request was authenticated with an API key: the limit the key puts on this user
+    api_key: MeAPIKeySchema.optional(), // Present when the request was authenticated with an API key or a connected app: the limit the credential puts on this user
     created_at: z.string().datetime({ offset: true }),
     email: z.string(),
     id: z.string(),

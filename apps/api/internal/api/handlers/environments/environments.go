@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single environment by ID.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetEnvironment)
+	}, handlers.GetEnvironment, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-environments",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List all environments in a project.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListEnvironments)
+	}, handlers.ListEnvironments, oapi.MCP)
 
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-environment",
@@ -39,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Create a new environment in a project.",
 		Path:        "/create",
 		Method:      http.MethodPost,
-	}, handlers.CreateEnvironment)
+	}, handlers.CreateEnvironment, oapi.MCP)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-environment",
@@ -47,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update an environment's name or description.",
 		Path:        "/update",
 		Method:      http.MethodPut,
-	}, handlers.UpdateEnvironment)
+	}, handlers.UpdateEnvironment, oapi.MCP)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-environment",
@@ -55,5 +55,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Permanently delete an environment and its services. A project's last environment cannot be deleted.",
 		Path:        "/delete",
 		Method:      http.MethodDelete,
-	}, handlers.DeleteEnvironment)
+	}, handlers.DeleteEnvironment, oapi.MCP)
 }

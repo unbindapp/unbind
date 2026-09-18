@@ -39,6 +39,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/registrycache"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/updater"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
+	"github.com/unbindapp/unbind-api/internal/mcpserver"
 	"github.com/unbindapp/unbind-api/internal/oauthserver"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	apikey_service "github.com/unbindapp/unbind-api/internal/services/apikey"
@@ -271,6 +272,7 @@ func startAPI(cfg *config.Config) {
 	r.Get("/.well-known/openid-configuration", oidcHandler.HandleOpenIDConfiguration)
 	r.Get("/.well-known/jwks.json", oidcHandler.HandleJWKS)
 
+	root := r
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.RequestID)
 		r.Use(middleware.RealIP)
@@ -313,7 +315,21 @@ func startAPI(cfg *config.Config) {
 
 		// OAuth authorization server and the MCP resource, at the root so
 		// clients discover them from the issuer origin.
-		oauthserver_handler.NewHandler(oauthServerService).Mount(r, middleware.NewRateLimiter(redisClient))
+		rateLimiter := middleware.NewRateLimiter(redisClient)
+		oauthserver_handler.NewHandler(oauthServerService).Mount(r, rateLimiter)
+
+		mcpServer, err := mcpserver.New(mcpserver.Options{
+			API:     api,
+			Router:  root,
+			OAuth:   oauthServerService,
+			APIKeys: repo.APIKey(),
+			Issuer:  oauthserver.Issuer(cfg.ExternalUIUrl),
+			Version: Version,
+		})
+		if err != nil {
+			log.Fatal("Failed to build the MCP server", "err", err)
+		}
+		mcpServer.Mount(r, rateLimiter)
 	})
 
 	// Serve the embedded SPA for any path the API doesn't claim. In the deployed

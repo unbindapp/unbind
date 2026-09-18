@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List the running replicas (pods) for a service, environment, project, or team, with health status.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListReplicas)
+	}, handlers.ListReplicas, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-replica-health",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get the aggregated health/status of a service's replicas.",
 		Path:        "/health",
 		Method:      http.MethodGet,
-	}, handlers.GetReplicaHealth)
+	}, handlers.GetReplicaHealth, oapi.MCP)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "restart-replicas",
@@ -39,5 +39,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Roll all of a service's replicas (pods). Causes a brief disruption while pods restart.",
 		Path:        "/restart",
 		Method:      http.MethodPut,
-	}, handlers.RestartReplicas)
+	}, handlers.RestartReplicas, oapi.MCP)
 }

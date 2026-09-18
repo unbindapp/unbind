@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List the cluster's servers with their allocatable capacity, what is already requested on each, and pressure conditions.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListServers)
+	}, handlers.ListServers, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-server",
@@ -31,5 +31,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single server with its conditions, taints and hardware details.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetServer)
+	}, handlers.GetServer, oapi.MCP)
 }

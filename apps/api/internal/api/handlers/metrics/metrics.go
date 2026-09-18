@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get CPU, memory, network, and disk metrics for a team, project, environment, or service.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetMetrics)
+	}, handlers.GetMetrics, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-system-metrics",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get cluster-level metrics (node, cluster, region).",
 		Path:        "/get-system",
 		Method:      http.MethodGet,
-	}, handlers.GetNodeMetrics)
+	}, handlers.GetNodeMetrics, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-volume-metrics",
@@ -39,5 +39,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get usage metrics for a persistent volume (PVC).",
 		Path:        "/get-volume",
 		Method:      http.MethodGet,
-	}, handlers.GetVolumeMetrics)
+	}, handlers.GetVolumeMetrics, oapi.MCP)
 }

@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Validate S3 credentials by writing and deleting a probe object in the bucket. Reaches an external endpoint.",
 		Path:        "/s3/test",
 		Method:      http.MethodPost,
-	}, handlers.TestS3Access, oapi.OpenWorld)
+	}, handlers.TestS3Access, oapi.OpenWorld, oapi.NoMCP("S3 credentials should not pass through a model conversation"))
 
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-s3-bucket",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Store an S3 bucket (endpoint, bucket and credentials) for use as a backup target.",
 		Path:        "/s3/create",
 		Method:      http.MethodPost,
-	}, handlers.CreateS3Bucket, oapi.OpenWorld)
+	}, handlers.CreateS3Bucket, oapi.OpenWorld, oapi.NoMCP("S3 credentials should not pass through a model conversation"))
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-s3-bucket",
@@ -39,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update an S3 bucket's name, endpoint, region, bucket or credentials.",
 		Path:        "/s3/update",
 		Method:      http.MethodPost,
-	}, handlers.UpdateS3Bucket, oapi.OpenWorld)
+	}, handlers.UpdateS3Bucket, oapi.OpenWorld, oapi.NoMCP("S3 credentials should not pass through a model conversation"))
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-s3-bucket-by-id",
@@ -47,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single S3 bucket by ID.",
 		Path:        "/s3/get",
 		Method:      http.MethodGet,
-	}, handlers.GetS3BucketByID)
+	}, handlers.GetS3BucketByID, oapi.NoMCP("The response carries the bucket's credentials"))
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-s3-buckets",
@@ -55,7 +55,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List all S3 buckets for a team.",
 		Path:        "/s3/list",
 		Method:      http.MethodGet,
-	}, handlers.ListS3Buckets)
+	}, handlers.ListS3Buckets, oapi.NoMCP("The response carries the bucket's credentials"))
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-s3-bucket",
@@ -63,7 +63,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Delete an S3 bucket.",
 		Path:        "/s3/delete",
 		Method:      http.MethodDelete,
-	}, handlers.DeleteS3Bucket)
+	}, handlers.DeleteS3Bucket, oapi.NoMCP("S3 buckets are managed in the UI"))
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-pvc",
@@ -71,7 +71,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List persistent volume claims for a team, project, or environment.",
 		Path:        "/pvc/list",
 		Method:      http.MethodGet,
-	}, handlers.ListPVCs)
+	}, handlers.ListPVCs, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-pvc",
@@ -79,7 +79,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single persistent volume claim by name.",
 		Path:        "/pvc/get",
 		Method:      http.MethodGet,
-	}, handlers.GetPVC)
+	}, handlers.GetPVC, oapi.MCP)
 
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-pvc",
@@ -87,7 +87,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Create a persistent volume claim.",
 		Path:        "/pvc/create",
 		Method:      http.MethodPost,
-	}, handlers.CreatePVC)
+	}, handlers.CreatePVC, oapi.MCP)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-pvc",
@@ -95,7 +95,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update a persistent volume claim, e.g. grow its capacity.",
 		Path:        "/pvc/update",
 		Method:      http.MethodPut,
-	}, handlers.UpdatePVC)
+	}, handlers.UpdatePVC, oapi.MCP)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-pvc",
@@ -103,5 +103,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Delete a persistent volume claim and its data. Fails while the volume is mounted by a service.",
 		Path:        "/pvc/delete",
 		Method:      http.MethodDelete,
-	}, handlers.DeletePVC)
+	}, handlers.DeletePVC, oapi.MCP)
 }

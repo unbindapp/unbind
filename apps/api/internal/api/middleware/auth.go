@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"crypto/subtle"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/api/apictx"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/auth"
@@ -24,6 +24,11 @@ const (
 )
 
 func (self *Middleware) Authenticate(ctx huma.Context, next func(huma.Context)) {
+	if caller, ok := apictx.MCPCallerFromContext(ctx.Context()); ok {
+		self.authenticateMCPCaller(ctx, next, caller)
+		return
+	}
+
 	token, fromBearer, ok := extractToken(ctx, self.cfg.CookieSecure)
 	if ok && fromBearer && auth.IsAPIKey(token) {
 		self.authenticateAPIKey(ctx, next, token)
@@ -96,21 +101,14 @@ func (self *Middleware) Authenticate(ctx huma.Context, next func(huma.Context)) 
 // access on top of the owner's own grants.
 func (self *Middleware) authenticateAPIKey(ctx huma.Context, next func(huma.Context), token string) {
 	now := time.Now()
-	hash := auth.HashAPIKey(token)
-	key, err := self.repository.APIKey().GetByTokenHash(ctx.Context(), hash)
-	if err != nil || key.Edges.User == nil || subtle.ConstantTimeCompare([]byte(key.TokenHash), []byte(hash)) != 1 || auth.APIKeyExpired(key.ExpiresAt, now) {
+	key, ok := auth.VerifyAPIKey(ctx.Context(), self.repository.APIKey(), token, now)
+	if !ok {
 		_ = huma.WriteErr(self.api, ctx, http.StatusUnauthorized, "Invalid or expired API key")
 		return
 	}
 
-	op := ctx.Operation()
-	if oapi.IsSessionOnly(op) {
-		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, "This endpoint cannot be used with an API key")
-		return
-	}
 	access := permissions_repo.APIKeyAccessOf(key)
-	if action, known := oapi.ActionOf(op); known && action != oapi.Read && !access.AllowsWrites() {
-		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, "This API key is read only")
+	if !self.allowNarrowed(ctx, access, "an API key", "This API key is read only") {
 		return
 	}
 
@@ -118,8 +116,35 @@ func (self *Middleware) authenticateAPIKey(ctx huma.Context, next func(huma.Cont
 		log.Warnf("auth: record api key use: %v", err)
 	}
 
+	self.proceedNarrowed(ctx, next, key.Edges.User, access)
+}
+
+// authenticateMCPCaller handles requests the MCP server dispatches in process.
+// The credential was verified at /mcp, so the caller gets exactly what an API
+// key with the same access would.
+func (self *Middleware) authenticateMCPCaller(ctx huma.Context, next func(huma.Context), caller *apictx.MCPCaller) {
+	if !self.allowNarrowed(ctx, caller.Access, "the MCP server", "This connection is read only") {
+		return
+	}
+	self.proceedNarrowed(ctx, next, caller.User, caller.Access)
+}
+
+func (self *Middleware) allowNarrowed(ctx huma.Context, access permissions_repo.APIKeyAccess, credential, readOnlyMessage string) bool {
+	op := ctx.Operation()
+	if oapi.IsSessionOnly(op) {
+		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, "This endpoint cannot be used with "+credential)
+		return false
+	}
+	if action, known := oapi.ActionOf(op); known && action != oapi.Read && !access.AllowsWrites() {
+		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, readOnlyMessage)
+		return false
+	}
+	return true
+}
+
+func (self *Middleware) proceedNarrowed(ctx huma.Context, next func(huma.Context), user *ent.User, access permissions_repo.APIKeyAccess) {
 	ctx = huma.WithContext(ctx, permissions_repo.WithAPIKeyAccess(ctx.Context(), access))
-	ctx = huma.WithValue(ctx, apictx.UserKey, key.Edges.User)
+	ctx = huma.WithValue(ctx, apictx.UserKey, user)
 	ctx = huma.WithValue(ctx, authMethodKey, authMethodAPIKey)
 	next(ctx)
 }

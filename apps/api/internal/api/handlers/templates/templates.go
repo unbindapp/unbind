@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single template by ID, including its input schema.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetTemplateByID)
+	}, handlers.GetTemplateByID, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-templates",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List all templates that can be deployed.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListTemplates)
+	}, handlers.ListTemplates, oapi.MCP)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "deploy-template",
@@ -39,5 +39,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Create and deploy the services defined by a template into an environment. Queues asynchronous builds.",
 		Path:        "/deploy",
 		Method:      http.MethodPost,
-	}, handlers.DeployTemplate, oapi.OpenWorld)
+	}, handlers.DeployTemplate, oapi.OpenWorld, oapi.MCP)
 }

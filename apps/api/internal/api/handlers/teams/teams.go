@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List all teams the current user belongs to.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListTeams)
+	}, handlers.ListTeams, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-team",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single team by ID.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetTeam)
+	}, handlers.GetTeam, oapi.MCP)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-team",
@@ -39,5 +39,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update a team's name or description.",
 		Path:        "/update",
 		Method:      http.MethodPut,
-	}, handlers.UpdateTeam)
+	}, handlers.UpdateTeam, oapi.NoMCP("Team settings are managed in the UI"))
 }

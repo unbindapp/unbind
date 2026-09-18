@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import ConnectedAppsList from "@/components/connected-apps/connected-apps-list";
 import ConnectedAppsProvider from "@/components/connected-apps/connected-apps-provider";
+import McpServerUrl from "@/components/connected-apps/mcp-server-url";
 import SettingsTabTitle from "@/components/settings/settings-tab-title";
 import { connectedAppsListQuery } from "@/lib/queries/connected-apps";
 
@@ -19,7 +20,8 @@ function AccountConnectedAppsSettings() {
       <p className="text-muted-foreground mt-1.5 w-full px-1 leading-tight">
         Applications you have granted access to your account, such as MCP clients.
       </p>
-      <ConnectedAppsList className="mt-4" />
+      <McpServerUrl className="mt-4" />
+      <ConnectedAppsList className="mt-3" />
     </ConnectedAppsProvider>
   );
 }

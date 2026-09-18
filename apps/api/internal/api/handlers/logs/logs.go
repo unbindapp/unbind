@@ -30,7 +30,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Query historical logs for a team, project, environment, service, or deployment.",
 		Path:        "/query",
 		Method:      http.MethodGet,
-	}, handlers.QueryLogs)
+	}, handlers.QueryLogs, oapi.MCP)
 
 	// SSE doesn't go through huma.Register, so apply the same docs manually.
 	streamOp := huma.Operation{
@@ -40,7 +40,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Summary:     "Stream Logs",
 		Description: "Stream live logs over Server-Sent Events. Errors are delivered as `message` events with an error type, not HTTP status codes.",
 	}
-	oapi.Apply(oapi.Read, &streamOp)
+	oapi.Apply(oapi.Read, &streamOp, oapi.NoMCP("Server-Sent Events stream, query-logs covers the same data"))
 	sse.Register(grp, streamOp, map[string]any{
 		// Mapping of event type name to Go struct for that event.
 		"message": loki.LogEvents{},

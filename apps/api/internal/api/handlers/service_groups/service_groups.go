@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "List all service groups in an environment.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListServiceGroups)
+	}, handlers.ListServiceGroups, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-service-group",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a single service group by ID.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetServiceGroup)
+	}, handlers.GetServiceGroup, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-service-group-info",
@@ -39,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get a template-creation-screen style summary of a deployed service group, with labeled hosts and variables.",
 		Path:        "/info",
 		Method:      http.MethodGet,
-	}, handlers.GetServiceGroupInfo)
+	}, handlers.GetServiceGroupInfo, oapi.NoMCP("Summary screen for the UI, get-service-group and list-variables cover it"))
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-service-group-template-inputs",
@@ -47,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Get the deployed template's inputs in order with current values. Only valid for template-deployed groups.",
 		Path:        "/template-inputs",
 		Method:      http.MethodGet,
-	}, handlers.GetServiceGroupTemplateInputs)
+	}, handlers.GetServiceGroupTemplateInputs, oapi.MCP)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-service-group-template-inputs",
@@ -55,7 +55,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Edit a deployed template's inputs (domains, sizes, variables), re-applying to the underlying services.",
 		Path:        "/template-inputs",
 		Method:      http.MethodPut,
-	}, handlers.UpdateServiceGroupTemplateInputs)
+	}, handlers.UpdateServiceGroupTemplateInputs, oapi.MCP)
 
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-service-group",
@@ -63,7 +63,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Create a service group to organize services within an environment.",
 		Path:        "/create",
 		Method:      http.MethodPost,
-	}, handlers.CreateServiceGroup)
+	}, handlers.CreateServiceGroup, oapi.MCP)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-service-group",
@@ -71,7 +71,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update a service group's name, icon, or members.",
 		Path:        "/update",
 		Method:      http.MethodPut,
-	}, handlers.UpdateServiceGroup)
+	}, handlers.UpdateServiceGroup, oapi.MCP)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-service-group",
@@ -79,5 +79,5 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Delete a service group. Optionally deletes the services it contains.",
 		Path:        "/delete",
 		Method:      http.MethodDelete,
-	}, handlers.DeleteServiceGroup)
+	}, handlers.DeleteServiceGroup, oapi.MCP)
 }

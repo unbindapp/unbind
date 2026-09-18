@@ -22,6 +22,20 @@ This is what installs Unbind on users' machine(s).
 
 The Kubernetes operator. Translates Unbind CRDs into native Kubernetes resources.
 
+## MCP Server
+
+Unbind ships an MCP server inside `apps/api`, served at `/mcp` (code in `apps/api/internal/mcpserver`). It has no tool code of its own: every tool is an API operation, called in process through the API router, so a tool validates, authorizes and answers exactly like its endpoint. Clients authenticate with an OAuth grant (Connected Apps) or an API key, and both are limited to the role and resources the user picked.
+
+Keep it in sync with the API:
+
+- Every operation an API key can reach must be registered with `oapi.MCP` (it becomes a tool) or `oapi.NoMCP("reason")`. `go test ./internal/mcpserver/` fails until a new endpoint picks one. Public and session only operations can never be tools.
+- The tool name, title, description, input schema and hints come from the operation's `OperationID`, `Summary`, `Description`, input struct and `oapi` action. Write them for an agent to read, and use `doc` tags on input fields.
+- A tool takes either query parameters or a JSON body, never both. Path, header and cookie parameters are not supported.
+- Opt out anything that returns or accepts credentials, streams, or only makes sense in the UI.
+- If the way resources relate or get deployed changes, update the `instructions` text in `mcpserver.go`.
+
+In the dev environment the server is at `http://localhost:8089/mcp`. Test it with an API key as the bearer token.
+
 ## General Rules:
 
 - Keep it simple. Do not overcomplicate things.
