@@ -45,9 +45,9 @@ export default function ApiKeyCard({ isPlaceholder, apiKey }: TProps) {
       className="group/item relative flex flex-col items-start justify-start gap-3 rounded-xl border p-3 sm:p-4 sm:pt-3.5"
     >
       {apiKey && <NewEntityIndicator id={apiKey.id} />}
-      <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-10 leading-tight">
+      <div className="flex w-full items-start justify-start gap-1.5 px-0.5 pr-10 leading-tight">
         <div className="line-icon">
-          <KeySquareIcon className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-5 group-data-placeholder/item:rounded-full" />
+          <KeySquareIcon className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-4.5 group-data-placeholder/item:rounded-full" />
         </div>
         <div className="flex min-w-0 shrink flex-wrap items-center gap-x-2 gap-y-1">
           <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink font-medium group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
