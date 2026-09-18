@@ -74,8 +74,8 @@ export default function MetricsChartList({
   // pods on the same server, so the two are not comparable
   const networkDescription =
     scope === "server" || scope === "system"
-      ? "Traffic through the server's network interfaces over time"
-      : "Traffic through the pods' network interfaces over time";
+      ? "Traffic through the servers over time"
+      : "Traffic through the services over time";
   // Servers chart disk throughput, everything else charts the space volumes take up
   const disk = scope === "server" || scope === "system" ? diskIO : volumeUsage;
 
