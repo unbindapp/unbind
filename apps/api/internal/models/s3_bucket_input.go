@@ -23,6 +23,15 @@ type S3BucketUpdateInput struct {
 	SecretKey   *string   `json:"secret_key,omitempty" required:"false" minLength:"1"`
 }
 
+type S3AccessTestInput struct {
+	TeamID      uuid.UUID `json:"team_id" format:"uuid" required:"true"`
+	Endpoint    string    `json:"endpoint" required:"true" minLength:"1"`
+	Region      string    `json:"region" required:"true"`
+	Bucket      string    `json:"bucket" required:"true" minLength:"1"`
+	AccessKeyID string    `json:"access_key_id" required:"true" minLength:"1"`
+	SecretKey   string    `json:"secret_key" required:"true" minLength:"1"`
+}
+
 func (self *S3BucketUpdateInput) HasChanges() bool {
 	return self.Name != nil || self.ConnectionChanged()
 }

@@ -45,7 +45,7 @@ func (self *StorageService) GetS3BucketByID(ctx context.Context, requesterUserID
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Secret not found")
 	}
 
-	return models.TransformS3BucketEntity(s3Bucket, string(secret.Data["access_key_id"]), string(secret.Data["secret_key"])), nil
+	return models.TransformS3BucketEntity(s3Bucket, string(secret.Data["access_key_id"])), nil
 }
 
 func (self *StorageService) ListS3Buckets(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID) ([]*models.S3BucketResponse, error) {
@@ -81,7 +81,6 @@ func (self *StorageService) ListS3Buckets(ctx context.Context, requesterUserID u
 	client := self.k8s.GetInternalClient()
 
 	accessKeyMap := make(map[uuid.UUID]string)
-	secretKeyMap := make(map[uuid.UUID]string)
 	for _, s3Bucket := range s3Buckets {
 		secret, err := self.k8s.GetSecret(ctx, s3Bucket.KubernetesSecret, team.Namespace, client)
 		if err != nil {
@@ -90,10 +89,9 @@ func (self *StorageService) ListS3Buckets(ctx context.Context, requesterUserID u
 		}
 
 		accessKeyMap[s3Bucket.ID] = string(secret.Data["access_key_id"])
-		secretKeyMap[s3Bucket.ID] = string(secret.Data["secret_key"])
 	}
 
-	return models.TransformS3BucketEntities(s3Buckets, accessKeyMap, secretKeyMap), nil
+	return models.TransformS3BucketEntities(s3Buckets, accessKeyMap), nil
 }
 
 func (self *StorageService) getTeamS3Bucket(ctx context.Context, team *ent.Team, id uuid.UUID) (*ent.S3Bucket, error) {

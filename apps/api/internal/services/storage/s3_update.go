@@ -80,7 +80,7 @@ func (self *StorageService) UpdateS3Bucket(ctx context.Context, requesterUserID 
 		}
 	}
 
-	return models.TransformS3BucketEntity(s3Bucket, conn.AccessKeyID, conn.SecretKey), nil
+	return models.TransformS3BucketEntity(s3Bucket, conn.AccessKeyID), nil
 }
 
 func valueOr(value *string, fallback string) string {

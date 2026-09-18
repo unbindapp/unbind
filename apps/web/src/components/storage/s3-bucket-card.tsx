@@ -40,14 +40,15 @@ import {
   deleteS3Bucket as deleteS3BucketFn,
   EditS3BucketFormSchema,
   s3BucketNameMaxLength,
+  queryKeyStorage,
   S3BucketNameSchema,
-  testS3Query,
+  testStoredS3BucketQuery,
   TS3BucketFormValues,
   TS3BucketShallow,
   TUpdateS3BucketInput,
   updateS3Bucket as updateS3BucketFn,
 } from "@/lib/queries/storage";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CylinderIcon,
   EllipsisVerticalIcon,
@@ -167,22 +168,20 @@ function S3BucketDialog({
             </Button>
           </RenameTrigger>
         </DialogHeader>
-        <S3BucketDialogInnerContent s3Bucket={s3Bucket} />
+        <S3BucketDialogInnerContent s3Bucket={s3Bucket} teamId={teamId} />
       </DialogContent>
     </Dialog>
   );
 }
 
-function S3BucketDialogInnerContent({ s3Bucket }: { s3Bucket: TS3BucketShallow }) {
-  const { data, isPending, error } = useQuery(
-    testS3Query({
-      endpoint: s3Bucket.endpoint,
-      region: s3Bucket.region,
-      bucket: s3Bucket.bucket,
-      accessKeyId: s3Bucket.access_key,
-      secretKey: s3Bucket.secret_key,
-    }),
-  );
+function S3BucketDialogInnerContent({
+  s3Bucket,
+  teamId,
+}: {
+  s3Bucket: TS3BucketShallow;
+  teamId: string;
+}) {
+  const { data, isPending, error } = useQuery(testStoredS3BucketQuery({ teamId, id: s3Bucket.id }));
 
   const { connectionStatusString, connectionStatus } = useMemo(() => {
     if (data && data.data.valid) {
@@ -508,6 +507,7 @@ function EditTrigger({
   handle?: TDialogHandle;
   children?: ReactElement;
 }) {
+  const queryClient = useQueryClient();
   const invalidateS3Buckets = useInvalidateS3Buckets(teamId);
   const {
     mutateAsync: updateS3Bucket,
@@ -549,7 +549,12 @@ function EditTrigger({
         if (Object.keys(changes).length === 2) return;
 
         await updateS3Bucket(changes);
-        await invalidateS3Buckets();
+        await Promise.all([
+          invalidateS3Buckets(),
+          queryClient.invalidateQueries({
+            queryKey: queryKeyStorage.s3StoredTest({ teamId, id: s3Bucket.id }),
+          }),
+        ]);
       }}
     >
       {children}

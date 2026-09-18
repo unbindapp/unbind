@@ -2,6 +2,7 @@ package storage_service
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -12,9 +13,11 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
 	"github.com/unbindapp/unbind-api/internal/services"
 	corev1 "k8s.io/api/core/v1"
@@ -151,6 +154,24 @@ func (suite *S3BucketSuite) expectExistingBucketWithSecret() {
 		Once()
 }
 
+func (suite *S3BucketSuite) expectPermissionCheck(action schema.PermittedAction, err error) {
+	suite.MockPermissionsRepo.EXPECT().
+		Check(suite.Ctx, suite.testUserID, mock.MatchedBy(func(checks []permissions_repo.PermissionCheck) bool {
+			return len(checks) == 1 &&
+				checks[0].Action == action &&
+				checks[0].ResourceType == schema.ResourceTypeTeam &&
+				checks[0].ResourceID == suite.testTeamID
+		})).
+		Return(err).
+		Once()
+}
+
+func (suite *S3BucketSuite) assertCarriesNoSecret(response any) {
+	body, err := json.Marshal(response)
+	suite.NoError(err)
+	suite.NotContains(strings.ToLower(string(body)), "secret")
+}
+
 func (suite *S3BucketSuite) TestCreateProbesGivenBucket() {
 	suite.expectPermissionAndTeam()
 
@@ -202,6 +223,7 @@ func (suite *S3BucketSuite) TestCreateProbesGivenBucket() {
 	suite.NoError(err)
 	suite.Equal("my-bucket", result.Bucket)
 	suite.Equal("AKIA", result.AccessKey)
+	suite.assertCarriesNoSecret(result)
 	suite.Equal(1, suite.fake.probesOf("my-bucket"))
 }
 
@@ -292,6 +314,7 @@ func (suite *S3BucketSuite) TestUpdateBucketChangeProbesAndRewritesSecret() {
 
 	suite.NoError(err)
 	suite.Equal(newBucket, result.Bucket)
+	suite.assertCarriesNoSecret(result)
 	suite.Equal(1, suite.fake.probesOf(newBucket))
 	suite.Equal(0, suite.fake.probesOf("old-bucket"))
 }
@@ -317,6 +340,117 @@ func (suite *S3BucketSuite) TestUpdateRejectsBucketOfAnotherTeam() {
 	suite.Nil(result)
 	customErr := err.(*errdefs.CustomError)
 	suite.Equal(errdefs.ErrTypeNotFound, customErr.Type)
+}
+
+func (suite *S3BucketSuite) TestGetReturnsAccessKeyWithoutSecret() {
+	suite.expectPermissionAndTeam()
+	suite.expectExistingBucketWithSecret()
+
+	result, err := suite.service.GetS3BucketByID(suite.Ctx, suite.testUserID, suite.testTeamID, suite.testBucketID)
+
+	suite.NoError(err)
+	suite.Equal("AKIA", result.AccessKey)
+	suite.assertCarriesNoSecret(result)
+}
+
+func (suite *S3BucketSuite) TestListReturnsAccessKeysWithoutSecrets() {
+	suite.expectPermissionAndTeam()
+
+	suite.MockS3BucketRepo.EXPECT().
+		GetByTeam(suite.Ctx, suite.testTeamID).
+		Return([]*ent.S3Bucket{suite.testBucket}, nil).
+		Once()
+
+	suite.MockK8s.EXPECT().
+		GetInternalClient().
+		Return(suite.k8sClient)
+
+	suite.MockK8s.EXPECT().
+		GetSecret(suite.Ctx, suite.testSecret.Name, suite.testTeam.Namespace, suite.k8sClient).
+		Return(suite.testSecret, nil).
+		Once()
+
+	result, err := suite.service.ListS3Buckets(suite.Ctx, suite.testUserID, suite.testTeamID)
+
+	suite.NoError(err)
+	suite.Len(result, 1)
+	suite.Equal("AKIA", result[0].AccessKey)
+	suite.assertCarriesNoSecret(result)
+}
+
+func (suite *S3BucketSuite) TestStoredBucketTestProbesWithSavedCredentials() {
+	suite.expectPermissionCheck(schema.ActionViewer, nil)
+	suite.MockTeamRepo.EXPECT().GetByID(suite.Ctx, suite.testTeamID).Return(suite.testTeam, nil).Once()
+	suite.expectExistingBucketWithSecret()
+
+	result, err := suite.service.TestStoredS3Bucket(suite.Ctx, suite.testUserID, suite.testTeamID, suite.testBucketID)
+
+	suite.NoError(err)
+	suite.True(result.Valid)
+	suite.Empty(result.Error)
+	suite.Equal(1, suite.fake.probesOf("old-bucket"))
+}
+
+func (suite *S3BucketSuite) TestStoredBucketTestReportsFailedProbe() {
+	suite.fake.denyPut = true
+	suite.expectPermissionAndTeam()
+	suite.expectExistingBucketWithSecret()
+
+	result, err := suite.service.TestStoredS3Bucket(suite.Ctx, suite.testUserID, suite.testTeamID, suite.testBucketID)
+
+	suite.NoError(err)
+	suite.False(result.Valid)
+	suite.Contains(result.Error, "not allowed to read and write this bucket")
+}
+
+func (suite *S3BucketSuite) TestStoredBucketTestRejectsBucketOfAnotherTeam() {
+	suite.expectPermissionAndTeam()
+
+	foreign := *suite.testBucket
+	foreign.TeamID = uuid.New()
+	suite.MockS3BucketRepo.EXPECT().
+		GetByID(suite.Ctx, suite.testBucketID).
+		Return(&foreign, nil).
+		Once()
+
+	result, err := suite.service.TestStoredS3Bucket(suite.Ctx, suite.testUserID, suite.testTeamID, suite.testBucketID)
+
+	suite.Error(err)
+	suite.Nil(result)
+	customErr := err.(*errdefs.CustomError)
+	suite.Equal(errdefs.ErrTypeNotFound, customErr.Type)
+	suite.Equal(0, suite.fake.requestCount())
+}
+
+func (suite *S3BucketSuite) TestAccessTestProbesGivenCredentials() {
+	suite.expectPermissionCheck(schema.ActionEditor, nil)
+
+	result, err := suite.service.TestS3Access(suite.Ctx, suite.testUserID, suite.accessTestInput())
+
+	suite.NoError(err)
+	suite.True(result.Valid)
+	suite.Equal(1, suite.fake.probesOf("my-bucket"))
+}
+
+func (suite *S3BucketSuite) TestAccessTestDoesNotProbeWithoutPermission() {
+	suite.expectPermissionCheck(schema.ActionEditor, errdefs.ErrUnauthorized)
+
+	result, err := suite.service.TestS3Access(suite.Ctx, suite.testUserID, suite.accessTestInput())
+
+	suite.ErrorIs(err, errdefs.ErrUnauthorized)
+	suite.Nil(result)
+	suite.Equal(0, suite.fake.requestCount())
+}
+
+func (suite *S3BucketSuite) accessTestInput() *models.S3AccessTestInput {
+	return &models.S3AccessTestInput{
+		TeamID:      suite.testTeamID,
+		Endpoint:    suite.fake.server.URL,
+		Region:      "us-east-1",
+		Bucket:      "my-bucket",
+		AccessKeyID: "AKIA",
+		SecretKey:   "secret",
+	}
 }
 
 func TestS3BucketSuite(t *testing.T) {

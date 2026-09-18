@@ -746,7 +746,6 @@ export const S3BucketResponseSchema = z
     id: z.string(),
     name: z.string(),
     region: z.string(),
-    secret_key: z.string(),
     updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
@@ -2417,6 +2416,17 @@ export const RevokeResponseBodySchema = z
   })
   .strip();
 
+export const S3AccessTestInputSchema = z
+  .object({
+    access_key_id: z.string(),
+    bucket: z.string(),
+    endpoint: z.string(),
+    region: z.string(),
+    secret_key: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
 export const S3BucketCreateInputSchema = z
   .object({
     access_key_id: z.string(),
@@ -2580,19 +2590,16 @@ export const TemplateDeployResponseBodySchema = z
   })
   .strip();
 
-export const TestS3AccessInputBodySchema = z
-  .object({
-    access_key_id: z.string(),
-    bucket: z.string(),
-    endpoint: z.string(),
-    region: z.string(),
-    secret_key: z.string(),
-  })
-  .strip();
-
 export const TestS3OutputBodySchema = z
   .object({
     data: S3TestResultSchema,
+  })
+  .strip();
+
+export const TestStoredS3BucketInputBodySchema = z
+  .object({
+    id: z.string(), // ID of the S3 bucket, from list-s3-buckets
+    team_id: z.string(), // ID of the team that owns the S3 bucket
   })
   .strip();
 
@@ -3163,6 +3170,7 @@ export type RevokeGroupPermissionResponseBody = z.infer<
   typeof RevokeGroupPermissionResponseBodySchema
 >;
 export type RevokeResponseBody = z.infer<typeof RevokeResponseBodySchema>;
+export type S3AccessTestInput = z.infer<typeof S3AccessTestInputSchema>;
 export type S3BucketCreateInput = z.infer<typeof S3BucketCreateInputSchema>;
 export type S3BucketUpdateInput = z.infer<typeof S3BucketUpdateInputSchema>;
 export type S3TestResult = z.infer<typeof S3TestResultSchema>;
@@ -3185,8 +3193,8 @@ export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type TemplateInputValue = z.infer<typeof TemplateInputValueSchema>;
 export type TemplateDeployInput = z.infer<typeof TemplateDeployInputSchema>;
 export type TemplateDeployResponseBody = z.infer<typeof TemplateDeployResponseBodySchema>;
-export type TestS3AccessInputBody = z.infer<typeof TestS3AccessInputBodySchema>;
 export type TestS3OutputBody = z.infer<typeof TestS3OutputBodySchema>;
+export type TestStoredS3BucketInputBody = z.infer<typeof TestStoredS3BucketInputBodySchema>;
 export type UpdatServiceResponseBody = z.infer<typeof UpdatServiceResponseBodySchema>;
 export type UpdateApplyInputBody = z.infer<typeof UpdateApplyInputBodySchema>;
 export type UpdateApplyResponseBody = z.infer<typeof UpdateApplyResponseBodySchema>;
@@ -7581,7 +7589,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
         },
         test: async (
-          params: TestS3AccessInputBody,
+          params: S3AccessTestInput,
           fetchOptions?: RequestInit,
         ): Promise<TestS3OutputBody> => {
           try {
@@ -7601,7 +7609,49 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               },
               ...fetchOptions,
             };
-            const validatedBody = TestS3AccessInputBodySchema.parse(params);
+            const validatedBody = S3AccessTestInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = TestS3OutputBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        testStored: async (
+          params: TestStoredS3BucketInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<TestS3OutputBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/storage/s3/test-stored`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = TestStoredS3BucketInputBodySchema.parse(params);
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {

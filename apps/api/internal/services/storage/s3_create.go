@@ -82,5 +82,5 @@ func (self *StorageService) CreateS3Bucket(ctx context.Context, requesterUserID 
 		return nil, err
 	}
 
-	return models.TransformS3BucketEntity(s3Bucket, input.AccessKeyID, input.SecretKey), nil
+	return models.TransformS3BucketEntity(s3Bucket, input.AccessKeyID), nil
 }

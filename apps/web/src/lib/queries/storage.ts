@@ -14,6 +14,8 @@ export const queryKeyStorage = {
   s3List: (input: { teamId: string }) => ["storage", "s3", "list", input.teamId] as const,
   s3Detail: (input: { teamId: string; id: string }) =>
     ["storage", "s3", "detail", input.teamId, input.id] as const,
+  s3StoredTest: (input: { teamId: string; id: string }) =>
+    ["storage", "s3", "test-stored", input.teamId, input.id] as const,
   volumeList: (input: { teamId: string; projectId: string; environmentId: string }) =>
     ["storage", "volume", "list", input.teamId, input.projectId, input.environmentId] as const,
 };
@@ -84,25 +86,13 @@ export async function deleteS3Bucket(input: { id: string; teamId: string }) {
   return { data: res.data };
 }
 
-export const testS3Query = (input: TS3Connection) =>
+export const testStoredS3BucketQuery = (input: { teamId: string; id: string }) =>
   queryOptions({
-    queryKey: [
-      "storage",
-      "s3",
-      "test",
-      input.endpoint,
-      input.region,
-      input.bucket,
-      input.accessKeyId,
-      input.secretKey,
-    ] as const,
+    queryKey: queryKeyStorage.s3StoredTest(input),
     queryFn: async () => {
-      const res = await getGoClient().storage.s3.test({
-        endpoint: input.endpoint,
-        region: input.region,
-        bucket: input.bucket,
-        access_key_id: input.accessKeyId,
-        secret_key: input.secretKey,
+      const res = await getGoClient().storage.s3.testStored({
+        team_id: input.teamId,
+        id: input.id,
       });
       return { data: res.data };
     },

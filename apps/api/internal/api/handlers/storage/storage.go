@@ -20,10 +20,18 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "test-s3-access",
 		Summary:     "Test S3 Access",
-		Description: "Validate S3 credentials by writing and deleting a probe object in the bucket. Reaches an external endpoint.",
+		Description: "Validate S3 credentials that are not stored yet by writing and deleting a probe object in the bucket. Reaches an external endpoint.",
 		Path:        "/s3/test",
 		Method:      http.MethodPost,
 	}, handlers.TestS3Access, oapi.OpenWorld, oapi.NoMCP("S3 credentials should not pass through a model conversation"))
+
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
+		OperationID: "test-stored-s3-bucket",
+		Summary:     "Test Stored S3 Bucket",
+		Description: "Check that a stored S3 bucket is still reachable with its saved credentials, by writing and deleting a probe object in it. Returns valid=false with the error when it is not. Use it when backups to the bucket fail. Reaches an external endpoint.",
+		Path:        "/s3/test-stored",
+		Method:      http.MethodPost,
+	}, handlers.TestStoredS3Bucket, oapi.OpenWorld, oapi.MCP)
 
 	oapi.Register(grp, oapi.Create, huma.Operation{
 		OperationID: "create-s3-bucket",
@@ -44,18 +52,18 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-s3-bucket-by-id",
 		Summary:     "Get S3 Bucket",
-		Description: "Get a single S3 bucket by ID.",
+		Description: "Get a single S3 bucket by ID: its name, endpoint, region, bucket and access key ID. The secret key is never returned.",
 		Path:        "/s3/get",
 		Method:      http.MethodGet,
-	}, handlers.GetS3BucketByID, oapi.NoMCP("The response carries the bucket's credentials"))
+	}, handlers.GetS3BucketByID, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-s3-buckets",
 		Summary:     "List S3 Buckets",
-		Description: "List all S3 buckets for a team.",
+		Description: "List the S3 buckets stored for a team. Database services back up to one of them, picked by its ID through s3_backup_bucket_id. The secret key is never returned.",
 		Path:        "/s3/list",
 		Method:      http.MethodGet,
-	}, handlers.ListS3Buckets, oapi.NoMCP("The response carries the bucket's credentials"))
+	}, handlers.ListS3Buckets, oapi.MCP)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-s3-bucket",
