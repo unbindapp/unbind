@@ -4,7 +4,7 @@ import {
   ContainerIcon,
   KeyIcon,
   KeySquareIcon,
-  Grid2x2CheckIcon,
+  BlocksIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
   UsersIcon,
@@ -53,7 +53,7 @@ export default function SettingsTabIcon({
   }
 
   if (variant === "connected-apps") {
-    return <Grid2x2CheckIcon className={cn("size-5 shrink-0", className)} {...rest} />;
+    return <BlocksIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
   if (variant === "storage") {

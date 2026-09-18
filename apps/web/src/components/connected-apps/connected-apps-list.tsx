@@ -5,7 +5,7 @@ import { useConnectedApps } from "@/components/connected-apps/connected-apps-pro
 import ErrorCard from "@/components/error-card";
 import NoItemsCard from "@/components/no-items-card";
 import { cn } from "@/components/ui/utils";
-import { Grid2x2CheckIcon } from "lucide-react";
+import { BlocksIcon } from "lucide-react";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -38,7 +38,7 @@ export default function ConnectedAppsList({ className }: TProps) {
   if (data && data.connectedApps.length === 0) {
     return (
       <Wrapper className={className}>
-        <NoItemsCard Icon={Grid2x2CheckIcon}>No connected apps yet</NoItemsCard>
+        <NoItemsCard Icon={BlocksIcon}>No connected apps yet</NoItemsCard>
       </Wrapper>
     );
   }

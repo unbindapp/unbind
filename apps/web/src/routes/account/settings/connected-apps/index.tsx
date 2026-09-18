@@ -17,10 +17,10 @@ function AccountConnectedAppsSettings() {
   return (
     <ConnectedAppsProvider>
       <SettingsTabTitle>Connected Apps</SettingsTabTitle>
-      <p className="text-muted-foreground mt-1.5 w-full px-1">
-        Applications you have granted access to your account, such as MCP clients.
+      <p className="text-muted-foreground mt-0.5 w-full px-1">
+        Apps, such as MCP clients, that can access your account.
       </p>
-      <McpServerUrl className="mt-4" />
+      <McpServerUrl className="mt-3" />
       <ConnectedAppsList className="mt-3" />
     </ConnectedAppsProvider>
   );

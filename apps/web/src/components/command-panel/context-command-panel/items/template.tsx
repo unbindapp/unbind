@@ -9,7 +9,7 @@ import { useTemplateDraftStore } from "@/components/templates/template-draft-sto
 import { useTemplates } from "@/components/templates/templates-provider";
 import { toast } from "@/components/ui/toast";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { BlocksIcon, CpuIcon, MemoryStickIcon } from "lucide-react";
+import { LayersIcon, CpuIcon, MemoryStickIcon } from "lucide-react";
 import { useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -143,7 +143,7 @@ function useTemplateItem() {
       id: mainPageId,
       title: "Template",
       keywords: ["blueprint", "stack", "group", "deploy"],
-      Icon: BlocksIcon,
+      Icon: LayersIcon,
       subpage: {
         id: subpageId,
         title: "Templates",

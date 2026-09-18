@@ -4,7 +4,7 @@ import { useRouter } from "@tanstack/react-router";
 import {
   ChartColumnIcon,
   CircleArrowUpIcon,
-  Grid2x2CheckIcon,
+  BlocksIcon,
   HouseIcon,
   KeySquareIcon,
   MonitorIcon,
@@ -60,7 +60,7 @@ const accountPages = [
   {
     to: "/account/settings/connected-apps",
     title: "Connected Apps",
-    Icon: Grid2x2CheckIcon,
+    Icon: BlocksIcon,
     keywords: [
       "account",
       "connected app",
