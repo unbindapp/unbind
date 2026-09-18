@@ -199,6 +199,7 @@
   --appsmith: hsl(18 100% 59%);
   --flask: hsl(190 100% 30%);
   --gluetun: hsl(120 85% 20%);
+  --claude: hsl(15 63% 60%);
 
   --barrier: hsl(120 30% 4%);
 
@@ -333,6 +334,7 @@
   --appsmith: hsl(18 100% 59%);
   --flask: hsl(190 52% 55%);
   --gluetun: hsl(120 50% 65%);
+  --claude: hsl(15 63% 60%);
 
   --barrier: hsl(120 10% 4%);
 
@@ -646,6 +648,7 @@
   --color-appsmith: var(--appsmith);
   --color-flask: var(--flask);
   --color-gluetun: var(--gluetun);
+  --color-claude: var(--claude);
 
   --color-barrier: var(--barrier);
 
