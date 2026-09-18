@@ -25,7 +25,7 @@ import {
   EyeIcon,
   GlobeIcon,
   ListFilterIcon,
-  PlugZapIcon,
+  Grid2x2CheckIcon,
   ScrollTextIcon,
   ShieldHalfIcon,
   ShieldQuestionIcon,
@@ -48,7 +48,7 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
     >
       <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-10 leading-tight">
         <div className="line-icon">
-          <PlugZapIcon className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-5 group-data-placeholder/item:rounded-full" />
+          <Grid2x2CheckIcon className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-5 group-data-placeholder/item:rounded-full" />
         </div>
         <div className="flex min-w-0 shrink flex-wrap items-center gap-x-2 gap-y-1">
           <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink font-medium group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">

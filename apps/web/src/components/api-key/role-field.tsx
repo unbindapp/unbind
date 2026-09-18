@@ -11,9 +11,10 @@ type TProps = {
   field: AnyFieldApi;
   isAllowed: (role: PermittedAction) => boolean;
   className?: string;
+  isPlaceholder?: boolean;
 };
 
-export default function RoleField({ field, isAllowed, className }: TProps) {
+export default function RoleField({ field, isAllowed, className, isPlaceholder }: TProps) {
   const Dropdown = (field as AnyFieldApi & { AsyncDropdownMenu: FC<TAsyncDropdownMenuProps> })
     .AsyncDropdownMenu;
   const selected = roleOptions.find((o) => o.value === field.state.value);
@@ -53,6 +54,7 @@ export default function RoleField({ field, isAllowed, className }: TProps) {
           text={selected?.title ?? ""}
           Icon={({ className }) => (selected ? <selected.Icon className={className} /> : null)}
           open={isOpen}
+          isPending={isPlaceholder}
           onBlur={field.handleBlur}
         />
       )}

@@ -9,9 +9,10 @@ import { FC } from "react";
 type TProps = {
   field: AnyFieldApi;
   className?: string;
+  isPlaceholder?: boolean;
 };
 
-export default function AccessField({ field, className }: TProps) {
+export default function AccessField({ field, className, isPlaceholder }: TProps) {
   const Dropdown = (field as AnyFieldApi & { AsyncDropdownMenu: FC<TAsyncDropdownMenuProps> })
     .AsyncDropdownMenu;
   const selected = accessOptions.find((o) => o.value === field.state.value);
@@ -35,6 +36,7 @@ export default function AccessField({ field, className }: TProps) {
           text={selected?.label ?? ""}
           Icon={({ className }) => (selected ? <selected.Icon className={className} /> : null)}
           open={isOpen}
+          isPending={isPlaceholder}
           onBlur={field.handleBlur}
         />
       )}

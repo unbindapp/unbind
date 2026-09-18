@@ -4,6 +4,7 @@ import { useRouter } from "@tanstack/react-router";
 import {
   ChartColumnIcon,
   CircleArrowUpIcon,
+  Grid2x2CheckIcon,
   HouseIcon,
   KeySquareIcon,
   MonitorIcon,
@@ -55,6 +56,26 @@ const accountPages = [
     title: "API Keys",
     Icon: KeySquareIcon,
     keywords: ["account", "api key", "token", "access", "cli", "automation"],
+  },
+  {
+    to: "/account/settings/connected-apps",
+    title: "Connected Apps",
+    Icon: Grid2x2CheckIcon,
+    keywords: [
+      "account",
+      "connected app",
+      "connection",
+      "connector",
+      "mcp",
+      "oauth",
+      "integration",
+      "claude",
+      "chatgpt",
+      "ai",
+      "agent",
+      "access",
+      "revoke",
+    ],
   },
 ] as const;
 

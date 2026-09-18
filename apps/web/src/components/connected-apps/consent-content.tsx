@@ -29,10 +29,8 @@ import {
   type TConnectedAppClient,
 } from "@/lib/queries/connected-apps";
 import { meQuery } from "@/lib/queries/me";
-import { getGoClient } from "@/lib/server/client";
 import type { PermittedAction } from "@/lib/server/client.gen";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ArrowRightIcon, GlobeIcon, MonitorIcon, ShieldQuestionIcon } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
@@ -52,7 +50,7 @@ export default function ConsentContent(props: TProps) {
   const { clientId, redirectUri, codeChallenge } = props;
   if (!clientId || !redirectUri || !codeChallenge) {
     return (
-      <AuthShell subtitle={subtitle} className="max-w-lg">
+      <AuthShell subtitle={subtitle} className="max-w-xl">
         <ErrorCard
           className="mt-6"
           message="This authorization request is incomplete. Start again from the application."
@@ -61,7 +59,7 @@ export default function ConsentContent(props: TProps) {
     );
   }
   return (
-    <AuthShell subtitle={subtitle} className="max-w-lg">
+    <AuthShell subtitle={subtitle} className="max-w-xl">
       <ConsentBody
         {...props}
         clientId={clientId}
@@ -85,13 +83,13 @@ function ConsentBody({
   if (!data && !isPending && error) {
     return <ErrorCard className="mt-6" message={error.message} />;
   }
-  if (!data) {
-    return <ClientSummary isPlaceholder />;
-  }
   return (
     <>
-      <ClientSummary client={data.client} />
-      <SignedInAs />
+      {data ? (
+        <ClientSummary client={data.client} />
+      ) : (
+        <ClientSummary isPlaceholder isLoopback={isLoopbackUri(redirectUri)} />
+      )}
       <ConsentForm
         clientId={clientId}
         redirectUri={redirectUri}
@@ -99,24 +97,40 @@ function ConsentBody({
         codeChallenge={codeChallenge}
         resource={resource}
         scope={scope}
+        isPlaceholder={!data}
       />
+      <SignedInAs />
     </>
   );
 }
 
+const loopbackHosts = ["localhost", "127.0.0.1", "[::1]"];
+
+function isLoopbackUri(uri: string) {
+  try {
+    return loopbackHosts.includes(new URL(uri).hostname);
+  } catch {
+    return false;
+  }
+}
+
+const detailClassName =
+  "group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent";
+
 function ClientSummary({
   client,
   isPlaceholder,
+  isLoopback,
 }:
-  | { client: TConnectedAppClient; isPlaceholder?: never }
-  | { client?: never; isPlaceholder: true }) {
+  | { client: TConnectedAppClient; isPlaceholder?: never; isLoopback?: never }
+  | { client?: never; isPlaceholder: true; isLoopback: boolean }) {
   return (
     <div
       data-placeholder={isPlaceholder || undefined}
       className="group/item mt-6 flex w-full flex-col gap-3 rounded-xl border p-4"
     >
       <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 leading-tight">
-        <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-lg font-semibold group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
+        <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-lg font-semibold group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
           {client ? client.name : "Loading application"}
         </p>
         <p className="bg-warning/4-10 border-warning/4-10 text-warning group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:border-muted-more-foreground rounded-sm border px-1.5 py-0.5 text-xs font-medium group-data-placeholder/item:text-transparent">
@@ -124,21 +138,21 @@ function ClientSummary({
           Unverified name
         </p>
       </div>
-      <div className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground flex w-full flex-col gap-1.5 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
-        <p>
+      <div className="text-muted-foreground flex w-full flex-col items-start gap-1.5 text-sm">
+        <p className={detailClassName}>
           <GlobeIcon className="mr-1.5 mb-0.5 inline-block size-3.5" />
           {client
             ? client.kind === "metadata_document"
               ? `Published by ${client.client_host}`
               : "Registered automatically, no verified publisher"
-            : "Loading publisher"}
+            : "Published by loading.example.com"}
         </p>
-        <p>
+        <p className={detailClassName}>
           <ArrowRightIcon className="mr-1.5 mb-0.5 inline-block size-3.5" />
-          {client ? `Redirects to ${client.redirect_host}` : "Loading redirect"}
+          {client ? `Redirects to ${client.redirect_host}` : "Redirects to loading.example.com"}
         </p>
-        {client?.loopback_only && (
-          <p className="text-warning">
+        {(client?.loopback_only || isLoopback) && (
+          <p className={cn(detailClassName, "text-warning")}>
             <MonitorIcon className="mr-1.5 mb-0.5 inline-block size-3.5" />
             Redirects to an application running on this device. Only continue if you started this
             from an app you trust.
@@ -151,34 +165,16 @@ function ClientSummary({
 
 function SignedInAs() {
   const { data: me } = useQuery(meQuery);
-  const queryClient = useQueryClient();
-  const router = useRouter();
-  const { mutate: signOut, isPending } = useMutation({
-    mutationFn: async () => await getGoClient().auth.logout(),
-    onSuccess: () => {
-      queryClient.setQueryData(meQuery.queryKey, null);
-      router.navigate({
-        to: "/sign-in",
-        search: { redirect: window.location.pathname + window.location.search },
-      });
-    },
-  });
   return (
-    <div className="text-muted-foreground mt-3 flex w-full flex-wrap items-center justify-between gap-x-3 gap-y-1 px-1 text-sm leading-tight">
-      <p className="min-w-0 shrink">
-        Signed in as <span className="text-foreground font-medium">{me?.email ?? "…"}</span>
-      </p>
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="-mr-2 h-7 px-2"
-        isPending={isPending}
-        onClick={() => signOut()}
-      >
-        Not you? Sign out
-      </Button>
-    </div>
+    <p
+      data-placeholder={!me || undefined}
+      className="group/item text-muted-foreground mt-4 w-full px-2 text-center text-sm leading-tight"
+    >
+      Signed in as{" "}
+      <span className="text-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground font-medium group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
+        {me ? me.email : "loading@example.com"}
+      </span>
+    </p>
   );
 }
 
@@ -191,7 +187,13 @@ function ConsentForm({
   codeChallenge,
   resource,
   scope,
-}: TProps & { clientId: string; redirectUri: string; codeChallenge: string }) {
+  isPlaceholder,
+}: TProps & {
+  clientId: string;
+  redirectUri: string;
+  codeChallenge: string;
+  isPlaceholder: boolean;
+}) {
   const caps = useResourceCaps();
   const [redirecting, setRedirecting] = useState(false);
 
@@ -208,7 +210,7 @@ function ConsentForm({
     mutationFn: denyConnectedApp,
     onSuccess: (res) => leave(res.data.redirect_url),
   });
-  const busy = redirecting || approve.isPending || deny.isPending;
+  const busy = isPlaceholder || redirecting || approve.isPending || deny.isPending;
   const mutationError = approve.error ?? deny.error;
 
   const form = useAppForm({
@@ -251,7 +253,9 @@ function ConsentForm({
         <InputSectionWrapper>
           <form.AppField
             name="access"
-            children={(field) => <AccessField field={field} className="mt-3 w-full" />}
+            children={(field) => (
+              <AccessField field={field} className="mt-3 w-full" isPlaceholder={isPlaceholder} />
+            )}
           />
           <form.Subscribe selector={(s) => ({ access: s.values.access })}>
             {({ access }) =>
@@ -279,6 +283,7 @@ function ConsentForm({
                     <RoleField
                       field={field}
                       className="mt-3 w-full"
+                      isPlaceholder={isPlaceholder}
                       isAllowed={(role) => isRoleAllowed(access, scopedCap, role)}
                     />
                   )}
