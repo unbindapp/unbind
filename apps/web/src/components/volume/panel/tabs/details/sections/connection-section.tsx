@@ -296,13 +296,13 @@ function AttachedSection({ volume }: TProps) {
               ) : attachedService ? (
                 <>
                   {volume.mount_status === "attaching" ? "Being attached to" : "Mounted on"}{" "}
-                  <span className="text-foreground bg-foreground/2-10 border-foreground/2-10 gap-1 rounded-md border px-1.25 leading-tight font-semibold">
+                  <span className="text-foreground bg-input inline-flex max-w-full items-center gap-1 rounded border px-1.25 align-bottom leading-tight font-semibold">
                     <ServiceIcon
                       service={attachedService}
                       color="brand"
-                      className="mr-[0.35ch] mb-0.75 inline-block size-3.5 shrink-0"
+                      className="-ml-px size-3.5 shrink-0"
                     />
-                    {attachedService.name}
+                    <span className="min-w-0 wrap-break-word">{attachedService.name}</span>
                   </span>{" "}
                   at this path.
                 </>
