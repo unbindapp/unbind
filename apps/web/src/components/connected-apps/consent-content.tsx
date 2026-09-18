@@ -138,10 +138,10 @@ function ClientSummary({
       className="group/item mt-6 flex w-full flex-col gap-3 rounded-xl border p-4"
     >
       <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 leading-tight">
-        <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-lg font-semibold group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+        <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-lg leading-tight font-semibold group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
           {client?.verified_brand && (
             <span className="inline-icon mr-[0.4ch]">
-              <BrandIcon brand={client.verified_brand} className="size-5" />
+              <BrandIcon brand={client.verified_brand} className="size-4.5" />
             </span>
           )}
           {client ? client.name : "Loading application"}
