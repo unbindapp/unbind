@@ -3,13 +3,19 @@ package oauthserver
 import (
 	"errors"
 	"net/url"
+	"slices"
 	"strings"
 )
 
 const maxRedirectURILen = 512
 
-// ValidateRedirectURI allows https anywhere and plain http only on loopback
-// hosts, which is what native clients use (RFC 8252).
+// nativeAppSchemes are the private URI schemes of native clients we know. The
+// list is closed on purpose: the consent page navigates to the redirect URI, so
+// a scheme like javascript: must never get through.
+var nativeAppSchemes = []string{"cursor"}
+
+// ValidateRedirectURI allows https anywhere, plain http only on loopback hosts
+// and the private schemes of known native clients (RFC 8252).
 func ValidateRedirectURI(raw string) error {
 	if raw == "" {
 		return errors.New("redirect uri is required")
@@ -33,8 +39,21 @@ func ValidateRedirectURI(raw string) error {
 		}
 		return errors.New("http redirect uris are only allowed on localhost")
 	default:
+		if IsNativeAppScheme(parsed.Scheme) {
+			return nil
+		}
 		return errors.New("redirect uri must use https")
 	}
+}
+
+func IsNativeAppScheme(scheme string) bool {
+	return slices.Contains(nativeAppSchemes, strings.ToLower(scheme))
+}
+
+// isOnDevice reports whether a redirect lands in an application on the user's
+// own device rather than on a website.
+func isOnDevice(redirect *url.URL) bool {
+	return IsLoopbackHost(redirect.Hostname()) || IsNativeAppScheme(redirect.Scheme)
 }
 
 func IsLoopbackHost(hostname string) bool {
@@ -78,17 +97,22 @@ func LoopbackOnly(redirectURIs []string) bool {
 	}
 	for _, raw := range redirectURIs {
 		parsed, err := url.Parse(raw)
-		if err != nil || !IsLoopbackHost(parsed.Hostname()) {
+		if err != nil || !isOnDevice(parsed) {
 			return false
 		}
 	}
 	return true
 }
 
+// HostOf is what the consent page shows for a URI. A native scheme is kept,
+// since "anysphere.cursor-mcp" alone would read like a website.
 func HostOf(raw string) string {
 	parsed, err := url.Parse(raw)
 	if err != nil {
 		return ""
+	}
+	if IsNativeAppScheme(parsed.Scheme) {
+		return parsed.Scheme + "://" + parsed.Host
 	}
 	return parsed.Host
 }

@@ -16,6 +16,7 @@ func TestValidateRedirectURI(t *testing.T) {
 		"http://localhost:3118/callback",
 		"http://127.0.0.1:52000/callback",
 		"http://[::1]:9/cb",
+		"cursor://anysphere.cursor-mcp/oauth/callback",
 	}
 	for _, uri := range valid {
 		assert.NoError(t, ValidateRedirectURI(uri), uri)
@@ -31,6 +32,10 @@ func TestValidateRedirectURI(t *testing.T) {
 		"/relative",
 		"https://" + strings.Repeat("a", 520) + ".com/",
 		"myapp://callback",
+		"cursor:no-host",
+		"javascript://example.com/%0aalert(1)",
+		"data://example.com/x",
+		"file://host/etc/passwd",
 	}
 	for _, uri := range invalid {
 		assert.Error(t, ValidateRedirectURI(uri), uri)
@@ -64,6 +69,12 @@ func TestLoopbackOnly(t *testing.T) {
 	assert.True(t, LoopbackOnly([]string{"http://localhost/callback", "http://127.0.0.1/callback"}))
 	assert.False(t, LoopbackOnly([]string{"http://localhost/callback", "https://claude.ai/api/mcp/auth_callback"}))
 	assert.False(t, LoopbackOnly(nil))
+	assert.True(t, LoopbackOnly([]string{"http://localhost:8787/callback", "cursor://anysphere.cursor-mcp/oauth/callback"}), "a native app scheme also lands on this device")
+}
+
+func TestHostOfKeepsNativeScheme(t *testing.T) {
+	assert.Equal(t, "localhost:8787", HostOf("http://localhost:8787/callback"))
+	assert.Equal(t, "cursor://anysphere.cursor-mcp", HostOf("cursor://anysphere.cursor-mcp/oauth/callback"))
 }
 
 func TestBuildRedirect(t *testing.T) {

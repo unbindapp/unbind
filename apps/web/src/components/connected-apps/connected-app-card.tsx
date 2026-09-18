@@ -23,6 +23,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import {
   BoxIcon,
+  CircleAlertIcon,
   EllipsisVerticalIcon,
   EyeIcon,
   GlobeIcon,
@@ -30,7 +31,6 @@ import {
   ScrollTextIcon,
   ShieldCheckIcon,
   ShieldHalfIcon,
-  ShieldQuestionIcon,
   SquarePenIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -72,8 +72,8 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
             </Chip>
           ) : (
             <Chip>
-              <ShieldQuestionIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-              Unverified name
+              <CircleAlertIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+              Unverified
             </Chip>
           )}
         </div>

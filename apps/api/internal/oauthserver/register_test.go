@@ -23,6 +23,14 @@ func TestValidateRegistrationFillsDefaults(t *testing.T) {
 	assert.Equal(t, "none", reg.TokenEndpointAuthMethod)
 }
 
+func TestValidateRegistrationAcceptsCursorDesktop(t *testing.T) {
+	reg := &ClientRegistration{
+		ClientName:   "Cursor",
+		RedirectURIs: []string{"http://localhost:8787/callback", "cursor://anysphere.cursor-mcp/oauth/callback"},
+	}
+	require.Nil(t, ValidateRegistration(reg))
+}
+
 func TestValidateRegistrationRejects(t *testing.T) {
 	cases := map[string]struct {
 		mutate func(*ClientRegistration)

@@ -34,11 +34,11 @@ import type { PermittedAction } from "@/lib/server/client.gen";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowRightIcon,
+  BoxIcon,
+  CircleAlertIcon,
   GlobeIcon,
   MonitorIcon,
   ShieldCheckIcon,
-  ShieldQuestionIcon,
-  CircleAlertIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
@@ -94,9 +94,9 @@ function ConsentBody({
   return (
     <>
       {data ? (
-        <ClientSummary client={data.client} isLoopback={isLoopbackUri(redirectUri)} />
+        <ClientSummary client={data.client} isLoopback={isOnDeviceUri(redirectUri)} />
       ) : (
-        <ClientSummary isPlaceholder isLoopback={isLoopbackUri(redirectUri)} />
+        <ClientSummary isPlaceholder isLoopback={isOnDeviceUri(redirectUri)} />
       )}
       <ConsentForm
         clientId={clientId}
@@ -114,9 +114,13 @@ function ConsentBody({
 
 const loopbackHosts = ["localhost", "127.0.0.1", "[::1]"];
 
-function isLoopbackUri(uri: string) {
+// Loopback addresses and native app schemes such as cursor:// both land in an
+// application on this device.
+function isOnDeviceUri(uri: string) {
   try {
-    return loopbackHosts.includes(new URL(uri).hostname);
+    const { protocol, hostname } = new URL(uri);
+    if (protocol !== "http:" && protocol !== "https:") return true;
+    return loopbackHosts.includes(hostname);
   } catch {
     return false;
   }
@@ -138,14 +142,18 @@ function ClientSummary({
       className="group/item mt-6 flex w-full flex-col gap-3 rounded-xl border p-4"
     >
       <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 leading-tight">
-        <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink text-lg leading-tight font-semibold group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
-          {client?.verified_brand && (
-            <span className="inline-icon mr-[0.4ch]">
-              <BrandIcon brand={client.verified_brand} className="size-4.5" />
-            </span>
-          )}
-          {client ? client.name : "Loading application"}
-        </p>
+        <div className="flex min-w-0 shrink items-start gap-1.5 text-lg leading-tight font-semibold">
+          <div className="line-icon">
+            <BrandIcon
+              brand={client?.verified_brand}
+              Fallback={BoxIcon}
+              className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-4.5 group-data-placeholder/item:rounded-full"
+            />
+          </div>
+          <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+            {client ? client.name : "Loading application"}
+          </p>
+        </div>
         {client?.verified_brand ? (
           <p className="bg-success/4-10 border-success/4-10 text-success rounded-sm border px-1.5 py-0.5 text-xs font-medium">
             <ShieldCheckIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
@@ -153,8 +161,8 @@ function ClientSummary({
           </p>
         ) : (
           <p className="bg-warning/4-10 border-warning/4-10 text-warning group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:border-muted-more-foreground rounded-sm border px-1.5 py-0.5 text-xs font-medium group-data-placeholder/item:text-transparent">
-            <ShieldQuestionIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-            Unverified name
+            <CircleAlertIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+            Unverified
           </p>
         )}
       </div>

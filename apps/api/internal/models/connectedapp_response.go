@@ -58,7 +58,7 @@ func TransformOAuthGrantEntity(entity *ent.OAuthGrant, paths map[uuid.UUID][]str
 		ClientID:      entity.ClientID,
 		Kind:          entity.ClientKind,
 		ClientHost:    ClientHost(entity.ClientKind, entity.ClientID, entity.ClientURI),
-		RedirectHost:  hostOf(entity.RedirectURI),
+		RedirectHost:  oauthserver.HostOf(entity.RedirectURI),
 		VerifiedBrand: VerifiedBrand(entity.ClientKind, entity.ClientID, []string{entity.RedirectURI}),
 		Role:          entity.Role,
 		FullAccess:    entity.FullAccess,
