@@ -21,7 +21,7 @@ export default function McpServerUrl({ className }: TProps) {
           <p className="min-w-0 shrink font-semibold">MCP Server</p>
         </div>
         <p className="text-muted-foreground text-sm">
-          Add this URL to an MCP client such as{" "}
+          Use this URL with MCP clients such as{" "}
           <ClientLink brand="claude" href="https://claude.ai/#customize/connectors">
             Claude
           </ClientLink>{" "}
