@@ -85,7 +85,9 @@ export function BlockItemDescription({
   children: ReactNode;
 }) {
   return (
-    <p className={cn("text-muted-foreground min-w-0 shrink leading-snug", className)}>{children}</p>
+    <p className={cn("text-muted-foreground max-w-full min-w-0 shrink leading-snug", className)}>
+      {children}
+    </p>
   );
 }
 
