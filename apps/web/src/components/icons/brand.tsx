@@ -1520,6 +1520,25 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     );
   }
 
+  if (brand === "mcp") {
+    return (
+      <svg
+        className={cn(defaultClassName, className)}
+        {...rest}
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M10.987 2.12a3.825 3.825 0 0 1 6.49 3.244 3.82 3.82 0 0 1 3.246 1.083l.046.045h-.002a3.824 3.824 0 0 1 0 5.408l-7.826 7.827c-.099.1-.1.261 0 .36l1.608 1.607a.765.765 0 0 1-1.082 1.082L11.86 21.17a1.784 1.784 0 0 1 0-2.524l7.826-7.826a2.295 2.295 0 0 0 0-3.245l-.046-.046a2.295 2.295 0 0 0-3.244 0l-6.535 6.535a.765.765 0 0 1-1.082-1.082l6.535-6.535a2.295 2.295 0 0 0-3.245-3.245l-8.653 8.654a.765.765 0 0 1-1.082-1.082l8.653-8.653zm2.163 2.163a.766.766 0 0 1 1.082 1.082l-6.4 6.4a2.296 2.296 0 0 0 3.245 3.245l6.4-6.4a.766.766 0 0 1 1.082 1.081l-6.4 6.4a3.825 3.825 0 0 1-5.408-5.408l6.4-6.4z"
+          fill="currentColor"
+        />
+      </svg>
+    );
+  }
+
   if (brand === "service-group") {
     return <LayoutGridIcon className={cn(defaultClassName, className)} {...rest} />;
   }
