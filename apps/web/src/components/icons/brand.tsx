@@ -1539,6 +1539,25 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     );
   }
 
+  if (brand === "cursor") {
+    return (
+      <svg
+        className={cn(defaultClassName, className)}
+        {...rest}
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M20.913 6.207l-8.807-5.085a.915.915 0 0 0-.915 0L2.385 6.207A.77.77 0 0 0 2 6.873v10.254a.77.77 0 0 0 .385.666l8.807 5.085a.915.915 0 0 0 .914 0l8.807-5.085a.77.77 0 0 0 .385-.666V6.873a.77.77 0 0 0-.385-.666zm-.553 1.077L11.858 22.01c-.058.1-.21.059-.21-.056V12.31a.54.54 0 0 0-.27-.467l-8.35-4.821c-.099-.058-.058-.21.057-.21h17.004c.24 0 .392.262.271.472z"
+          fill="currentColor"
+        />
+      </svg>
+    );
+  }
+
   if (brand === "service-group") {
     return <LayoutGridIcon className={cn(defaultClassName, className)} {...rest} />;
   }
