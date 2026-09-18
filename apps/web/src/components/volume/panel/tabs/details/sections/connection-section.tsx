@@ -300,7 +300,7 @@ function AttachedSection({ volume }: TProps) {
                     <ServiceIcon
                       service={attachedService}
                       color="brand"
-                      className="mr-[0.25ch] mb-0.75 -ml-px inline-block size-3.5 shrink-0"
+                      className="mr-[0.35ch] mb-0.75 -ml-px inline-block size-3.5 shrink-0"
                     />
                     {attachedService.name}
                   </span>{" "}
