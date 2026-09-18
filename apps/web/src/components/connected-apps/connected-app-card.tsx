@@ -22,11 +22,11 @@ import {
 } from "@/lib/queries/connected-apps";
 import { useMutation } from "@tanstack/react-query";
 import {
+  BoxIcon,
   EllipsisVerticalIcon,
   EyeIcon,
   GlobeIcon,
   ListFilterIcon,
-  Grid2x2CheckIcon,
   ScrollTextIcon,
   ShieldCheckIcon,
   ShieldHalfIcon,
@@ -50,11 +50,11 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
     >
       <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-10 leading-tight">
         <div className="line-icon">
-          {connectedApp?.verified_brand ? (
-            <BrandIcon brand={connectedApp.verified_brand} className="size-5" />
-          ) : (
-            <Grid2x2CheckIcon className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-5 group-data-placeholder/item:rounded-full" />
-          )}
+          <BrandIcon
+            brand={connectedApp?.verified_brand}
+            Fallback={BoxIcon}
+            className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-5 group-data-placeholder/item:rounded-full"
+          />
         </div>
         <div className="flex min-w-0 shrink flex-wrap items-center gap-x-2 gap-y-1">
           <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink font-medium group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">

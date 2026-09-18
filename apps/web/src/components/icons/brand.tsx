@@ -1,16 +1,23 @@
 import { cn } from "@/components/ui/utils";
 import { BoxIcon, FolderIcon, LayoutGridIcon, UsersIcon, WebhookIcon } from "lucide-react";
-import { ComponentProps, useId } from "react";
+import { ComponentProps, ComponentType, useId } from "react";
 
 type TProps = ComponentProps<"svg"> & {
   brand: string | unknown;
   className?: string;
   color?: "monochrome" | "brand";
+  Fallback?: ComponentType<ComponentProps<"svg">>;
 };
 
 const defaultClassName = "size-5 shrink-0";
 
-export default function BrandIcon({ color = "monochrome", brand, className, ...rest }: TProps) {
+export default function BrandIcon({
+  color = "monochrome",
+  brand,
+  className,
+  Fallback = BoxIcon,
+  ...rest
+}: TProps) {
   const gradientId1 = useId();
   const gradientId2 = useId();
   const gradientId3 = useId();
@@ -1562,5 +1569,5 @@ export default function BrandIcon({ color = "monochrome", brand, className, ...r
     return <LayoutGridIcon className={cn(defaultClassName, className)} {...rest} />;
   }
 
-  return <BoxIcon className={cn(defaultClassName, className)} {...rest} />;
+  return <Fallback className={cn(defaultClassName, className)} {...rest} />;
 }
