@@ -182,7 +182,7 @@ function ClientSummary({
         {isLoopback && (
           <p className={cn(detailClassName, "text-warning")}>
             <MonitorIcon className="mr-1.5 mb-0.5 inline-block size-3.5" />
-            Redirects to an application running on this device
+            Redirects to an application running on your device
           </p>
         )}
         <p className={cn(detailClassName, "text-warning")}>
