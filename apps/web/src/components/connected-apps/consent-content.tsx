@@ -151,7 +151,7 @@ function ClientSummary({
             />
           </div>
           <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
-            {client ? client.name : "Loading application"}
+            {client ? client.name : "Loading"}
           </p>
         </div>
         {client?.verified_brand ? (
@@ -172,7 +172,7 @@ function ClientSummary({
           {client
             ? client.kind === "metadata_document"
               ? `Published by ${client.client_host}`
-              : "Self-registered, publisher unknown"
+              : "Self-registered, unknown publisher"
             : "Published by loading.example.com"}
         </p>
         <p className={detailClassName}>
