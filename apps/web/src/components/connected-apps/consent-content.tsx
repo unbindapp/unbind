@@ -147,6 +147,7 @@ function ClientSummary({
             <BrandIcon
               brand={client?.verified_brand}
               Fallback={BoxIcon}
+              color="brand"
               className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-4.5 group-data-placeholder/item:rounded-full"
             />
           </div>
