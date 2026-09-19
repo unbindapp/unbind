@@ -22,6 +22,7 @@ import {
   networkAccessFields,
   stagedBoolean,
   useServiceChanges,
+  useStagedNetworking,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
@@ -85,6 +86,15 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     isPublic: service.config.is_public,
   });
 
+  const { staged: stagedLists, unstage: unstageLists } = useStagedNetworking(service);
+  const stagedHosts = stagedLists.filter((change) => change.kind === "host");
+  const stagedPorts = stagedLists.filter((change) => change.kind === "port");
+  const addedHosts = stagedHosts.filter((change) => change.previous === null);
+  const addedPorts = stagedPorts.filter((change) => change.op === "add");
+
+  // The address is the same for every port of the service
+  const privateDomain = endpointsData?.endpoints.internal?.[0]?.dns ?? service.kubernetes_name;
+
   const isDatabase = service.type === "database";
   const subject = isDatabase ? "database" : "service";
   // A database that is staged private loses its public block before it is applied,
@@ -103,9 +113,14 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
       id="networking"
       Icon={NetworkIcon}
       entityId={sectionHighlightId}
-      hasChanges={staged.isPublic !== undefined}
-      isApplying={hasApplying(staged, networkAccessFields)}
-      onDiscard={() => unstage(networkAccessFields)}
+      hasChanges={staged.isPublic !== undefined || stagedLists.length > 0}
+      isApplying={
+        hasApplying(staged, networkAccessFields) || stagedLists.some((change) => change.isApplying)
+      }
+      onDiscard={() => {
+        unstage(networkAccessFields);
+        unstageLists();
+      }}
     >
       {showAccess && (
         <Block>
@@ -164,15 +179,35 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                 )}
                 {endpointsData?.endpoints &&
                   !isDatabase &&
-                  endpointsData.endpoints.external.map((endpoint) => (
+                  endpointsData.endpoints.external.map((endpoint) => {
+                    const change = stagedHosts.find((c) => c.previous?.host === endpoint.host);
+                    const shown = change?.value ?? {
+                      host: endpoint.host,
+                      port: endpoint.target_port?.port,
+                    };
+                    return (
+                      <DomainPortCard
+                        mode="public"
+                        key={`${endpoint.host}:${shown.host}:${shown.port}`}
+                        domain={shown.host}
+                        port={shown.port}
+                        dnsStatus={endpoint.dns_status}
+                        isCloudflare={endpoint.is_cloudflare}
+                        service={service}
+                        staged={change}
+                      />
+                    );
+                  })}
+                {endpointsData?.endpoints &&
+                  !isDatabase &&
+                  addedHosts.map((change) => (
                     <DomainPortCard
                       mode="public"
-                      key={`${endpoint.host}:${endpoint.target_port?.port}`}
-                      domain={endpoint.host}
-                      port={endpoint.target_port?.port}
-                      dnsStatus={endpoint.dns_status}
-                      isCloudflare={endpoint.is_cloudflare}
+                      key={`${change.id}:${change.value?.port}`}
+                      domain={change.value?.host ?? ""}
+                      port={change.value?.port}
                       service={service}
+                      staged={change}
                     />
                   ))}
                 {endpointsData?.endpoints &&
@@ -191,7 +226,11 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     <DatabasePendingEndpointRow isWaiting={isAwaitingAddress} />
                   )}
                 {!isDatabase && (
-                  <AddDomainPortCard service={service} isPending={isPendingEndpoints} />
+                  <AddDomainPortCard
+                    service={service}
+                    staged={stagedLists}
+                    isPending={isPendingEndpoints}
+                  />
                 )}
               </div>
             </BlockItemContent>
@@ -242,13 +281,29 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                         domain={endpoint.dns}
                         port={portObject.port}
                         service={service}
+                        staged={stagedPorts.find(
+                          (c) => c.op === "remove" && c.port === portObject.port,
+                        )}
                       />
                     ),
                   ),
                 )}
+                {endpointsData?.endpoints &&
+                  !isDatabase &&
+                  addedPorts.map((change) => (
+                    <DomainPortCard
+                      mode="private"
+                      key={change.id}
+                      domain={privateDomain}
+                      port={change.port}
+                      service={service}
+                      staged={change}
+                    />
+                  ))}
                 {service.type !== "database" && (
                   <AddDomainPortCard
                     service={service}
+                    staged={stagedLists}
                     isPending={isPendingEndpoints}
                     mode="private"
                   />

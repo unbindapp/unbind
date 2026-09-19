@@ -1,10 +1,13 @@
 // Relative imports so this can run under `node --test`.
-import type {
-  TServiceChangeField,
-  TStagedChangesState,
-  TStagedServiceChange,
-  TStagedValue,
-  TStagedVariableChange,
+import {
+  listChangeValue,
+  type THostTarget,
+  type TServiceChangeField,
+  type TStagedChangesState,
+  type TStagedListChange,
+  type TStagedServiceChange,
+  type TStagedValue,
+  type TStagedVariableChange,
 } from "./types.ts";
 
 // The values each change had when the deploy started, keyed by change id
@@ -24,6 +27,9 @@ export function dropSettledChanges(
     ),
     services: Object.fromEntries(
       Object.entries(state.services).filter(([id, change]) => !isSettled(id, change.value)),
+    ),
+    lists: Object.fromEntries(
+      Object.entries(state.lists).filter(([id, change]) => !isSettled(id, listChangeValue(change))),
     ),
   };
 }
@@ -53,6 +59,38 @@ export function serviceChangesMatchingServer(
   for (const change of Object.values(staged)) {
     if (!(change.field in serverValues)) continue;
     if (change.value === serverValues[change.field]) ids.push(change.id);
+  }
+  return ids;
+}
+
+export type TServerLists = {
+  hosts?: THostTarget[];
+  ports?: number[];
+};
+
+// A list that is left out is unknown, so its changes stay staged. Volumes are not
+// checked here, a mounted volume drops its staged attach on its own
+export function listChangesMatchingServer(
+  staged: Iterable<TStagedListChange>,
+  { hosts, ports }: TServerLists,
+): string[] {
+  const ids: string[] = [];
+  for (const change of staged) {
+    if (change.kind === "port") {
+      if (!ports) continue;
+      if (ports.includes(change.port) === (change.op === "add")) ids.push(change.id);
+      continue;
+    }
+    if (change.kind === "volume") continue;
+    if (!hosts) continue;
+    const { value, previous } = change;
+    if (value === null) {
+      if (!hosts.some((h) => h.host === previous?.host)) ids.push(change.id);
+      continue;
+    }
+    const isRenamed = previous !== null && previous.host !== value.host;
+    if (isRenamed && hosts.some((h) => h.host === previous.host)) continue;
+    if (hosts.some((h) => h.host === value.host && h.port === value.port)) ids.push(change.id);
   }
   return ids;
 }

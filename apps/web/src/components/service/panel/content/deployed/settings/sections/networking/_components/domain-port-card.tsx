@@ -7,19 +7,12 @@ import {
   BlockItemTitle,
 } from "@/components/block";
 import CopyButton from "@/components/copy-button";
-import ErrorLine from "@/components/error-line";
-import DeleteButton from "@/components/service/panel/content/deployed/settings/sections/networking/_components/delete-button";
-import {
-  getNetworkingDisplayUrl,
-  getNetworkingEntityId,
-} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
+import { getNetworkingDisplayUrl } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
 import { TModeAndPort } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
+import { useStageNetworking } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { DomainStatusRow } from "@/components/service/panel/content/undeployed/domain-card";
-import { useServiceEndpointsUtils } from "@/components/service/service-endpoints-provider";
-import { useService } from "@/components/service/service-provider";
-import useUpdateService from "@/components/service/use-update-service";
+import type { TStagedListEntry } from "@/components/staged-changes/staged-changes-provider";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
@@ -35,9 +28,12 @@ import {
   GlobeLockIcon,
   PenIcon,
   PlusIcon,
+  Trash2Icon,
+  Undo2Icon,
 } from "lucide-react";
-import { ResultAsync } from "neverthrow";
 import { useCallback, useMemo } from "react";
+
+type TStagedState = "added" | "edited" | "removed";
 
 export default function DomainPortCard({
   mode,
@@ -46,44 +42,20 @@ export default function DomainPortCard({
   service,
   dnsStatus,
   isCloudflare,
+  staged,
 }: {
   service: TServiceShallow;
+  // What the card shows: the staged domain and port when there are any, the saved ones otherwise
   domain: string;
   dnsStatus?: DNSStatus;
   isCloudflare?: boolean;
+  staged?: TStagedListEntry;
 } & TModeAndPort) {
-  const { teamId, projectId, environmentId, serviceId } = useService();
-  const { refetch: refetchServiceEndpoints } = useServiceEndpointsUtils({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-  });
-  const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
-
-  const {
-    mutateAsync: updateService,
-    isPending: isPendingUpdate,
-    error: errorUpdate,
-    reset: resetUpdate,
-  } = useUpdateService({
-    onSuccess: async () => {
-      const result = await ResultAsync.fromPromise(
-        refetchServiceEndpoints(),
-        () => new Error("Failed to refetch service endpoints"),
-      );
-      if (result.isErr()) {
-        toast.add({
-          type: "error",
-          title: "Failed to refetch service endpoints",
-          description:
-            "Update was successful, but failed to refetch service endpoints. Please refresh the page.",
-        });
-      }
-      form.reset();
-    },
-    idToHighlight: sectionHighlightId,
-  });
+  const { stageHost, stagePort, discard } = useStageNetworking(service);
+  const stagedHost = staged?.kind === "host" ? staged : undefined;
+  const saved = stagedHost ? stagedHost.previous : { host: domain, port };
+  const stagedState = getStagedState(staged);
+  const isApplying = staged?.isApplying === true;
 
   const customPortText = "Custom Port";
 
@@ -96,9 +68,11 @@ export default function DomainPortCard({
       ...currentPorts,
       ...service.detected_ports.map((p) => p.port.toString()),
     ]);
+    // A staged custom port is not on the service yet
+    if (stagedHost && port !== undefined) allPorts.add(port.toString());
 
     return Array.from(allPorts);
-  }, [service.detected_ports, currentPorts]);
+  }, [service.detected_ports, currentPorts, stagedHost, port]);
 
   const detectedPortsMap = useMemo(() => {
     const obj: Record<string, number> = {};
@@ -124,32 +98,35 @@ export default function DomainPortCard({
     defaultValues: {
       host: domain,
       targetPortType:
-        port !== undefined && currentPorts.includes(port.toString()) ? port.toString() : "",
+        port !== undefined && allPortOptions.includes(port.toString()) ? port.toString() : "",
       targetPort: "",
       isEditing: false,
     },
     onSubmit: async ({ value }) => {
-      if (changeCount === 0) {
+      if (changeCount === 0 || mode !== "public") {
         form.reset();
-        resetUpdate();
         return;
       }
-      const port =
-        mode === "public" && value.targetPortType !== customPortText
-          ? value.targetPortType
-          : value.targetPort;
+      const targetPort =
+        value.targetPortType !== customPortText ? value.targetPortType : value.targetPort;
+      const next = { host: value.host, port: Number(targetPort) };
 
-      await updateService({
-        upsertHosts:
-          mode === "public"
-            ? [{ host: value.host, path: "", target_port: Number(port), prev_host: domain }]
-            : undefined,
-        addPorts: service.config.ports.map((p) => p.port).includes(Number(port))
-          ? undefined
-          : [{ port: Number(port) }],
-      });
+      // A staged domain that gets another name is another change
+      const isRenamedAddition = staged && !saved && next.host !== domain;
+      const isBackToSaved = saved?.host === next.host && saved.port === next.port;
+      if (staged && (isRenamedAddition || isBackToSaved)) discard([staged.id]);
+      if (!isBackToSaved) stageHost(saved, next);
+      form.reset();
     },
   });
+
+  const remove = useCallback(() => {
+    if (mode === "private") {
+      stagePort(port, "remove");
+      return;
+    }
+    stageHost({ host: domain, port }, null);
+  }, [mode, stagePort, stageHost, domain, port]);
 
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
@@ -162,7 +139,8 @@ export default function DomainPortCard({
   });
 
   const isEditing = useStore(form.store, (s) => s.values.isEditing);
-  const showDnsStatus = mode === "public" && !isEditing && dnsStatus !== undefined;
+  const showDnsStatus =
+    mode === "public" && !isEditing && dnsStatus !== undefined && stagedState === undefined;
   const savedStatus = useMemo(
     () =>
       mode === "public" && dnsStatus !== undefined
@@ -173,8 +151,6 @@ export default function DomainPortCard({
 
   const SuffixComponent = useCallback(
     ({ className }: { className?: string }) => {
-      const deleteButtonExtraProps: TModeAndPort =
-        mode === "private" ? { mode: "private", port } : { mode: "public", port };
       return (
         <div
           className={cn(
@@ -192,12 +168,13 @@ export default function DomainPortCard({
               port: mode === "public" ? "" : port.toString(),
             })}
           />
-          {mode === "public" && (
+          {mode === "public" && stagedState !== "removed" && (
             <Button
-              disabled={isEditing}
+              disabled={isEditing || isApplying}
               type="button"
               size="icon"
               variant="ghost"
+              aria-label="Edit"
               className="text-muted-more-foreground size-8 rounded-md"
               onClick={() => {
                 form.setFieldValue("isEditing", true);
@@ -206,13 +183,48 @@ export default function DomainPortCard({
               <PenIcon className="size-4" />
             </Button>
           )}
-          {service.type !== "database" && (
-            <DeleteButton {...deleteButtonExtraProps} disabled={isEditing} domain={domain} />
+          {staged && (
+            <Button
+              disabled={isEditing || isApplying}
+              type="button"
+              size="icon"
+              variant="ghost"
+              aria-label={stagedState === "removed" ? "Restore" : "Discard"}
+              className="text-muted-more-foreground size-8 rounded-md"
+              onClick={() => discard([staged.id])}
+            >
+              <Undo2Icon className="size-4" />
+            </Button>
+          )}
+          {!staged && service.type !== "database" && (
+            <Button
+              disabled={isEditing}
+              type="button"
+              size="icon"
+              variant="ghost-destructive"
+              aria-label="Delete"
+              className="text-muted-more-foreground size-8 rounded-md"
+              onClick={remove}
+            >
+              <Trash2Icon className="size-4" />
+            </Button>
           )}
         </div>
       );
     },
-    [isEditing, mode, port, domain, service.type, form],
+    [
+      isEditing,
+      isApplying,
+      mode,
+      port,
+      domain,
+      service.type,
+      form,
+      staged,
+      stagedState,
+      discard,
+      remove,
+    ],
   );
 
   return (
@@ -220,11 +232,14 @@ export default function DomainPortCard({
       <div
         data-editing={isEditing || undefined}
         data-has-dns={showDnsStatus || undefined}
-        className="data-editing:border-change/5-10 group/field flex w-full flex-col overflow-hidden rounded-lg border"
+        data-staged={stagedState}
+        data-applying={isApplying || undefined}
+        className="data-editing:border-change/5-10 group/field data-applying:animate-skeleton-smooth-weaker flex w-full flex-col overflow-hidden rounded-lg border transition-opacity duration-(--skeleton-smooth-lead-in) data-applying:pointer-events-none data-applying:opacity-(--skeleton-smooth-weaker-opacity) data-[staged=removed]:opacity-60"
       >
         <BlockItemButtonLike
           asElement="div"
-          classNameText="whitespace-normal"
+          hasChanges={stagedState !== undefined}
+          classNameText="whitespace-normal group-data-[staged=removed]/field:line-through"
           className="group-data-editing/field:bg-change/2-10 group-data-editing/field:text-change group-data-has-dns/field:ring-border z-1 border-none group-data-editing/field:rounded-b-none group-data-has-dns/field:ring-1"
           text={getNetworkingDisplayUrl({
             host: domain,
@@ -458,14 +473,6 @@ export default function DomainPortCard({
               </div>
             </div>
             <div className="bg-change/2-10 border-change/5-10 mt-1 flex w-full flex-col border-t p-1.5">
-              {errorUpdate && (
-                <div className="w-full p-1.5">
-                  <ErrorLine
-                    message={errorUpdate.message}
-                    className="border-destructive/6-10 border"
-                  />
-                </div>
-              )}
               <form.Subscribe
                 selector={(s) => ({
                   isSubmitting: s.isSubmitting,
@@ -477,21 +484,18 @@ export default function DomainPortCard({
                         type="button"
                         variant="outline-change"
                         className="text-foreground has-hover:hover:text-foreground active:text-foreground w-full"
-                        onClick={() => {
-                          form.reset();
-                          resetUpdate();
-                        }}
+                        onClick={() => form.reset()}
                       >
                         Cancel
                       </Button>
                     </div>
                     <div className="w-1/2 p-1.5">
                       <form.SubmitButton
-                        isPending={isSubmitting || isPendingUpdate}
+                        isPending={isSubmitting}
                         variant="change"
                         className="w-full"
                       >
-                        Apply{changeCount >= 1 ? ` (${changeCount})` : ""}
+                        Done
                       </form.SubmitButton>
                     </div>
                   </div>
@@ -503,4 +507,12 @@ export default function DomainPortCard({
       </div>
     </div>
   );
+}
+
+function getStagedState(staged?: TStagedListEntry): TStagedState | undefined {
+  if (!staged) return undefined;
+  if (staged.kind === "port") return staged.op === "add" ? "added" : "removed";
+  if (staged.kind !== "host") return undefined;
+  if (staged.previous === null) return "added";
+  return staged.value === null ? "removed" : "edited";
 }

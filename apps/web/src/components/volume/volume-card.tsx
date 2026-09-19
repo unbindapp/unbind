@@ -1,3 +1,4 @@
+import { useStagedVolumeAttach } from "@/components/staged-changes/staged-changes-provider";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { getVolumeDisplayName } from "@/components/volume/helpers";
@@ -17,6 +18,7 @@ type TProps = {
 export default function VolumeCard({ volume, className }: TProps) {
   const { getOpenSearch } = useVolumePanel();
   const isDeleting = useIsDeleting(deleteMutationKeys.volume(volume.id)) || volume.is_deleting;
+  const stagedAttach = useStagedVolumeAttach(volume.id);
 
   const bottomLeftTextAndIcon = useMemo(() => {
     if (isDeleting)
@@ -34,18 +36,26 @@ export default function VolumeCard({ volume, className }: TProps) {
         icon: <LoaderIcon className="text-warning size-3.5 shrink-0 animate-spin" />,
         text: "Expanding",
       };
+    if (stagedAttach)
+      return {
+        icon: stagedAttach.isApplying ? (
+          <LoaderIcon className="text-change size-3.5 shrink-0 animate-spin" />
+        ) : null,
+        text: `${stagedAttach.isApplying ? "Attaching" : "Will attach"} to ${stagedAttach.serviceName}`,
+      };
 
     return {
       icon: null,
       text: "Not attached",
     };
-  }, [isDeleting, volume.mount_status, volume.is_pending_resize]);
+  }, [isDeleting, volume.mount_status, volume.is_pending_resize, stagedAttach]);
 
   return (
     <li
       data-detaching={volume.mount_status === "detaching" || undefined}
       data-deleting={isDeleting || undefined}
       data-pending-resize={volume.is_pending_resize || undefined}
+      data-staged={stagedAttach !== undefined || undefined}
       className={cn(
         "group/item data-deleting:animate-skeleton-smooth-weaker flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity)",
         className,
@@ -60,7 +70,7 @@ export default function VolumeCard({ volume, className }: TProps) {
           replace={true}
           resetScroll={false}
           disabled={isDeleting}
-          className="flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold"
+          className="group-data-staged/item:bg-change/2-10 group-data-staged/item:border-change/5-10 group-data-staged/item:has-hover:hover:bg-change/4-10 group-data-staged/item:active:bg-change/4-10 flex w-full flex-1 flex-col items-start gap-6 rounded-xl border px-5 py-3.5 text-left font-semibold"
         >
           <div className="flex w-full items-center justify-start gap-2">
             <HardDriveIcon className="-ml-1 size-5" />
@@ -72,7 +82,7 @@ export default function VolumeCard({ volume, className }: TProps) {
             <div className="text-muted-foreground flex w-full min-w-0 shrink items-center justify-between gap-4 overflow-hidden text-sm font-normal text-ellipsis whitespace-nowrap">
               <div className="flex min-w-0 shrink items-center gap-1.75">
                 {bottomLeftTextAndIcon.icon}
-                <p className="group-data-detaching/item:text-warning group-data-deleting/item:text-destructive group-data-pending-resize/item:text-warning min-w-0 shrink truncate">
+                <p className="group-data-detaching/item:text-warning group-data-deleting/item:text-destructive group-data-pending-resize/item:text-warning group-data-staged/item:text-change min-w-0 shrink truncate">
                   {bottomLeftTextAndIcon.text}
                 </p>
               </div>

@@ -3,10 +3,19 @@ import { test } from "node:test";
 
 import {
   dropSettledChanges,
+  listChangesMatchingServer,
   serviceChangesMatchingServer,
   variableChangesMatchingServer,
 } from "./reconcile.ts";
-import type { TStagedChangesState, TStagedServiceChange, TStagedVariableChange } from "./types.ts";
+import {
+  listChangeId,
+  listChangeValue,
+  type TStageListInput,
+  type TStagedChangesState,
+  type TStagedListChange,
+  type TStagedServiceChange,
+  type TStagedVariableChange,
+} from "./types.ts";
 
 const ids = { teamId: "team", projectId: "project", environmentId: "env" };
 
@@ -44,13 +53,27 @@ function service(
   return change;
 }
 
+type TOwnerKey = "teamId" | "projectId" | "environmentId" | "serviceId" | "serviceName";
+type TListFields = TStageListInput extends infer T
+  ? T extends unknown
+    ? Omit<T, TOwnerKey>
+    : never
+  : never;
+
+function list(fields: TListFields): TStagedListChange {
+  const input: TStageListInput = { ...ids, serviceId: "api", serviceName: "api", ...fields };
+  return { ...input, id: listChangeId(input), createdAt: 1 };
+}
+
 function state(
   variables: TStagedVariableChange[] = [],
   services: TStagedServiceChange[] = [],
+  lists: TStagedListChange[] = [],
 ): TStagedChangesState {
   return {
     variables: Object.fromEntries(variables.map((v) => [v.id, v])),
     services: Object.fromEntries(services.map((s) => [s.id, s])),
+    lists: Object.fromEntries(lists.map((l) => [l.id, l])),
   };
 }
 
@@ -131,4 +154,90 @@ test("serviceChangesMatchingServer compares boolean fields by value", () => {
     stillPrivate.id,
   ]);
   assert.deepEqual(serviceChangesMatchingServer({ isPublic: nowPublic }, { isPublic: false }), []);
+});
+
+test("dropSettledChanges drops a settled list change unless it was re-staged", () => {
+  const port = list({ kind: "port", port: 9000, op: "add" });
+  const deployed = list({
+    kind: "host",
+    previous: null,
+    value: { host: "app.example.com", port: 3000 },
+    addsPort: false,
+  });
+  const restaged = list({
+    kind: "host",
+    previous: null,
+    value: { host: "app.example.com", port: 8080 },
+    addsPort: true,
+  });
+  const applying = { [port.id]: listChangeValue(port), [deployed.id]: listChangeValue(deployed) };
+
+  const result = dropSettledChanges(
+    state([], [], [port, restaged]),
+    applying,
+    new Set([port.id, deployed.id]),
+  );
+
+  assert.deepEqual(Object.keys(result.lists), [restaged.id]);
+});
+
+test("listChangesMatchingServer finds the list changes the server already has", () => {
+  const added = list({
+    kind: "host",
+    previous: null,
+    value: { host: "added.example.com", port: 3000 },
+    addsPort: false,
+  });
+  const otherPort = list({
+    kind: "host",
+    previous: { host: "app.example.com", port: 3000 },
+    value: { host: "app.example.com", port: 8080 },
+    addsPort: true,
+  });
+  const halfRenamed = list({
+    kind: "host",
+    previous: { host: "old.example.com", port: 3000 },
+    value: { host: "renamed.example.com", port: 3000 },
+    addsPort: false,
+  });
+  const removed = list({
+    kind: "host",
+    previous: { host: "gone.example.com", port: 3000 },
+    value: null,
+    addsPort: false,
+  });
+  const portAdded = list({ kind: "port", port: 3000, op: "add" });
+  const portStillThere = list({ kind: "port", port: 8080, op: "remove" });
+  const portRemoved = list({ kind: "port", port: 9000, op: "remove" });
+
+  const settled = listChangesMatchingServer(
+    [added, otherPort, halfRenamed, removed, portAdded, portStillThere, portRemoved],
+    {
+      hosts: [
+        { host: "added.example.com", port: 3000 },
+        { host: "app.example.com", port: 3000 },
+        { host: "old.example.com", port: 3000 },
+        { host: "renamed.example.com", port: 3000 },
+      ],
+      ports: [3000, 8080],
+    },
+  );
+
+  assert.deepEqual(settled, [added.id, removed.id, portAdded.id, portRemoved.id]);
+});
+
+test("listChangesMatchingServer leaves lists it was not given alone", () => {
+  const port = list({ kind: "port", port: 3000, op: "add" });
+  const volume = list({
+    kind: "volume",
+    volumeId: "pvc-1",
+    volumeName: "data",
+    mountPath: "/data",
+  });
+
+  const settled = listChangesMatchingServer([port, volume], {
+    hosts: [{ host: "app.example.com", port: 3000 }],
+  });
+
+  assert.deepEqual(settled, []);
 });

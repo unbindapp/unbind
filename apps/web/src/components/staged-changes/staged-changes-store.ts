@@ -2,8 +2,11 @@ import type { TBarEdge } from "@/components/staged-changes/bar-position";
 import { dropSettledChanges, type TApplyingValues } from "@/components/staged-changes/reconcile";
 import {
   StagedChangesStateSchema,
+  listChangeId,
+  listChangeValue,
   serviceChangeId,
   variableChangeId,
+  type TStageListInput,
   type TStagedChangesState,
   type TStagedServiceChange,
   type TStagedVariableChange,
@@ -33,6 +36,7 @@ export type TStagedChangesActions = {
   endApplying: (settled: Set<string>) => void;
   stageVariables: (changes: TStageVariableInput[]) => void;
   stageService: (change: TStageServiceInput) => void;
+  stageList: (change: TStageListInput) => void;
   discard: (ids: string[]) => void;
   discardService: (serviceId: string) => void;
   discardAll: () => void;
@@ -45,9 +49,10 @@ export type TStagedChangesStore = TStagedChangesState &
 const defaultInitState: TStagedChangesState = {
   variables: {},
   services: {},
+  lists: {},
 };
 
-const version = 0.002;
+const version = 0.003;
 
 export const createStagedChangesStore = (initState: TStagedChangesState = defaultInitState) => {
   return createStore<TStagedChangesStore>()(
@@ -59,11 +64,12 @@ export const createStagedChangesStore = (initState: TStagedChangesState = defaul
         setBarPinnedEdge: (barPinnedEdge) => set({ barPinnedEdge }),
         beginApplying: () =>
           set((state) => ({
-            applying: Object.fromEntries(
-              [...Object.values(state.variables), ...Object.values(state.services)].map(
+            applying: Object.fromEntries([
+              ...[...Object.values(state.variables), ...Object.values(state.services)].map(
                 (change) => [change.id, change.value],
               ),
-            ),
+              ...Object.values(state.lists).map((change) => [change.id, listChangeValue(change)]),
+            ]),
           })),
         endApplying: (settled) =>
           set((state) => ({ ...dropSettledChanges(state, state.applying, settled), applying: {} })),
@@ -103,15 +109,23 @@ export const createStagedChangesStore = (initState: TStagedChangesState = defaul
             services[id] = { ...change, id, createdAt: existing?.createdAt ?? Date.now() };
             return { services };
           }),
+        stageList: (change) =>
+          set((state) => {
+            const id = listChangeId(change);
+            const createdAt = state.lists[id]?.createdAt ?? Date.now();
+            return { lists: { ...state.lists, [id]: { ...change, id, createdAt } } };
+          }),
         discard: (ids) =>
           set((state) => {
             const variables = { ...state.variables };
             const services = { ...state.services };
+            const lists = { ...state.lists };
             for (const id of ids) {
               delete variables[id];
               delete services[id];
+              delete lists[id];
             }
-            return { variables, services };
+            return { variables, services, lists };
           }),
         discardService: (serviceId) =>
           set((state) => ({
@@ -123,13 +137,20 @@ export const createStagedChangesStore = (initState: TStagedChangesState = defaul
             services: Object.fromEntries(
               Object.entries(state.services).filter(([, change]) => change.serviceId !== serviceId),
             ),
+            lists: Object.fromEntries(
+              Object.entries(state.lists).filter(([, change]) => change.serviceId !== serviceId),
+            ),
           })),
-        discardAll: () => set({ variables: {}, services: {} }),
+        discardAll: () => set({ variables: {}, services: {}, lists: {} }),
       }),
       {
         name: "staged_changes_store",
         version,
-        partialize: (state) => ({ variables: state.variables, services: state.services }),
+        partialize: (state) => ({
+          variables: state.variables,
+          services: state.services,
+          lists: state.lists,
+        }),
         migrate: (state): TStagedChangesState => {
           const { error, data } = StagedChangesStateSchema.safeParse(state);
           if (error) {

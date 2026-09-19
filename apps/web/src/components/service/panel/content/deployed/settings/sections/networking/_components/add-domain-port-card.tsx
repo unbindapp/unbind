@@ -6,15 +6,11 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import ErrorLine from "@/components/error-line";
-import { getNetworkingEntityId } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
 import { TMode } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
-import { useServiceEndpointsUtils } from "@/components/service/service-endpoints-provider";
-import { useService } from "@/components/service/service-provider";
-import useUpdateService from "@/components/service/use-update-service";
+import { useStageNetworking } from "@/components/service/panel/content/deployed/settings/use-service-changes";
+import type { TStagedListEntry } from "@/components/staged-changes/staged-changes-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { validateDomain } from "@/lib/helpers/validate-domain";
@@ -30,7 +26,6 @@ import {
   RefreshCwIcon,
 } from "lucide-react";
 import { useStore } from "@tanstack/react-form";
-import { ResultAsync } from "neverthrow";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 
@@ -47,51 +42,28 @@ const DraftSchema = z.object({
 export default function AddDomainPortCard({
   service,
   isPending,
+  staged,
   mode = "public",
 }: {
   isPending: boolean;
   service: TServiceShallow;
+  staged: TStagedListEntry[];
   mode?: TMode;
 }) {
-  const { teamId, projectId, environmentId, serviceId } = useService();
-  const { refetch: refetchServiceEndpoints } = useServiceEndpointsUtils({
-    teamId,
-    projectId,
-    environmentId,
-    serviceId,
-  });
-  const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
+  const { stageHost, stagePort } = useStageNetworking(service);
 
-  const {
-    mutateAsync: updateService,
-    isPending: isPendingUpdate,
-    error: errorUpdate,
-    reset: resetUpdate,
-  } = useUpdateService({
-    onSuccess: async () => {
-      const result = await ResultAsync.fromPromise(
-        refetchServiceEndpoints(),
-        () => new Error("Failed to refetch service endpoints"),
-      );
-      if (result.isErr()) {
-        toast.add({
-          type: "error",
-          title: "Failed to refetch service endpoints",
-          description:
-            "Update was successful, but failed to refetch service endpoints. Please refresh the page.",
-        });
-      }
-      form.reset();
-      setGeneratedDomain(undefined);
-    },
-    idToHighlight: sectionHighlightId,
-  });
+  const takenHosts = useMemo(() => {
+    const hosts = new Set(service.config.hosts.map((h) => h.host));
+    for (const change of staged) {
+      if (change.kind === "host" && change.value) hosts.add(change.value.host);
+    }
+    return hosts;
+  }, [service.config.hosts, staged]);
 
   const { data: systemData } = useSystem();
   const wildcardDomain = systemData?.data.system_settings.wildcard_domain;
   const nextGeneratedDomain = useMemo(() => {
     if (mode !== "public" || !wildcardDomain) return undefined;
-    const takenHosts = new Set(service.config.hosts.map((h) => h.host));
     // The first seed is the one the service was created with, so a deleted domain
     // comes back identical, and every seed after it adds another one
     for (let i = 0; i < maxGeneratedDomains; i++) {
@@ -103,7 +75,7 @@ export default function AddDomainPortCard({
       if (!takenHosts.has(domain)) return domain;
     }
     return undefined;
-  }, [mode, wildcardDomain, service.name, service.id, service.config.hosts]);
+  }, [mode, wildcardDomain, service.name, service.id, takenHosts]);
   const [generatedDomain, setGeneratedDomain] = useState<string | undefined>(undefined);
 
   const defaultTargetPortType =
@@ -127,23 +99,23 @@ export default function AddDomainPortCard({
       // The port select only renders for public domains with at least one known port
       const usesPortSelect =
         mode === "public" && allPortOptions.length >= 1 && value.targetPortType !== customPortText;
-      const port = usesPortSelect ? value.targetPortType : value.targetPort;
+      const port = Number(usesPortSelect ? value.targetPortType : value.targetPort);
 
-      await updateService({
-        upsertHosts:
-          mode === "public"
-            ? [{ host: value.host, path: "", target_port: Number(port) }]
-            : undefined,
-        addPorts: service.config.ports.map((p) => p.port).includes(Number(port))
-          ? undefined
-          : [{ port: Number(port) }],
-      });
+      if (mode === "public") stageHost(null, { host: value.host, port });
+      if (mode === "private") stagePort(port, "add");
+      form.reset();
+      setGeneratedDomain(undefined);
     },
   });
 
   const currentPorts = useMemo(() => {
-    return service.config.ports.map((portObject) => portObject.port.toString());
-  }, [service.config.ports]);
+    const ports = service.config.ports.map((portObject) => portObject.port.toString());
+    if (mode !== "private") return ports;
+    const stagedPorts = staged.flatMap((change) =>
+      change.kind === "port" && change.op === "add" ? [change.port.toString()] : [],
+    );
+    return [...ports, ...stagedPorts];
+  }, [service.config.ports, staged, mode]);
 
   const allPortOptions = useMemo(() => {
     const allPorts = new Set([
@@ -220,7 +192,12 @@ export default function AddDomainPortCard({
                       <form.AppField
                         name="host"
                         validators={{
-                          onChange: ({ value }) => validateDomain({ value, isPublic: true }),
+                          onChange: ({ value }) => {
+                            if (takenHosts.has(value)) {
+                              return { message: "This domain already exists." };
+                            }
+                            return validateDomain({ value, isPublic: true });
+                          },
                         }}
                       >
                         {(field) => {
@@ -430,14 +407,6 @@ export default function AddDomainPortCard({
                   </div>
                 </div>
                 <div className="flex w-full flex-col border-t p-1.5">
-                  {errorUpdate && (
-                    <div className="w-full p-1.5">
-                      <ErrorLine
-                        message={errorUpdate.message}
-                        className="border-destructive/6-10 border"
-                      />
-                    </div>
-                  )}
                   <div className="flex w-full">
                     <div className="w-1/2 p-1.5">
                       <Button
@@ -447,7 +416,6 @@ export default function AddDomainPortCard({
                         variant="outline"
                         onClick={() => {
                           form.reset();
-                          resetUpdate();
                           setGeneratedDomain(undefined);
                         }}
                       >
@@ -455,10 +423,7 @@ export default function AddDomainPortCard({
                       </Button>
                     </div>
                     <div className="w-1/2 p-1.5">
-                      <form.SubmitButton
-                        isPending={isPending || isPendingUpdate}
-                        className="w-full"
-                      >
+                      <form.SubmitButton isPending={isPending} className="w-full">
                         Add
                       </form.SubmitButton>
                     </div>

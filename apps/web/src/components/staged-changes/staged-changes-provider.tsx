@@ -17,8 +17,10 @@ import {
 import {
   countChanges,
   variableScopeKey,
+  volumeChangeId,
   type TServiceChangeField,
   type TStagedChangesState,
+  type TStagedListChange,
   type TStagedServiceChange,
   type TStagedVariableChange,
   type TVariableScope,
@@ -27,6 +29,8 @@ import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-
 import { toast } from "@/components/ui/toast";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
 import { applyChanges, type TApplyChangesResult } from "@/lib/queries/changes";
+import { queryKeyServices } from "@/lib/queries/services";
+import { queryKeyStorage } from "@/lib/queries/storage";
 import { queryKeyVariables } from "@/lib/queries/variables";
 import type { AffectedService } from "@/lib/server/client.gen";
 import {
@@ -72,6 +76,7 @@ export function useStagedChangeCount() {
 // A change is applying from the moment Deploy is pressed until the refetch after it lands
 export type TStagedVariable = TStagedVariableChange & { isApplying: boolean };
 export type TStagedServiceField = TStagedServiceChange & { isApplying: boolean };
+export type TStagedListEntry = TStagedListChange & { isApplying: boolean };
 
 export function useIsApplying() {
   return useStagedChangesStore((s) => Object.keys(s.applying).length > 0);
@@ -105,10 +110,34 @@ export function useStagedServiceChanges(serviceId: string) {
   }, [services, applying, serviceId]);
 }
 
+export function useStagedListChanges(serviceId: string) {
+  const lists = useStagedChangesStore((s) => s.lists);
+  const applying = useStagedChangesStore((s) => s.applying);
+  return useMemo(
+    () =>
+      Object.values(lists)
+        .filter((change) => change.serviceId === serviceId)
+        .sort((a, b) => a.createdAt - b.createdAt)
+        .map((change): TStagedListEntry => ({ ...change, isApplying: change.id in applying })),
+    [lists, applying, serviceId],
+  );
+}
+
+export function useStagedVolumeAttach(volumeId: string) {
+  const id = volumeChangeId(volumeId);
+  const change = useStagedChangesStore((s) => s.lists[id]);
+  const isApplying = useStagedChangesStore((s) => id in s.applying);
+  return useMemo(
+    () => (change?.kind === "volume" ? { ...change, isApplying } : undefined),
+    [change, isApplying],
+  );
+}
+
 export function useServiceChangeCount(serviceId: string) {
   return useStagedChangesStore(
     (s) =>
       Object.values(s.services).filter((c) => c.serviceId === serviceId).length +
+      Object.values(s.lists).filter((c) => c.serviceId === serviceId).length +
       Object.values(s.variables).filter((c) => c.scope.serviceId === serviceId).length,
   );
 }
@@ -117,6 +146,7 @@ export function useIsServiceApplying(serviceId: string) {
   return useStagedChangesStore(
     (s) =>
       Object.values(s.services).some((c) => c.serviceId === serviceId && c.id in s.applying) ||
+      Object.values(s.lists).some((c) => c.serviceId === serviceId && c.id in s.applying) ||
       Object.values(s.variables).some((c) => c.scope.serviceId === serviceId && c.id in s.applying),
   );
 }
@@ -133,7 +163,15 @@ function refetchChangedData(
     Object.values(state.variables).map((c) => [variableScopeKey(c.scope), c.scope]),
   );
   const affectedIds = new Set(affected.map((a) => a.service_id));
+  const lists = Object.values(state.lists);
+  const volumeLists = new Map(
+    lists
+      .filter((c) => c.kind === "volume")
+      .map((c) => [c.environmentId, queryKeyStorage.volumeList(c)]),
+  );
   return Promise.all([
+    ...lists.map((c) => queryClient.refetchQueries({ queryKey: queryKeyServices.endpoints(c) })),
+    ...[...volumeLists.values()].map((queryKey) => queryClient.refetchQueries({ queryKey })),
     ...[...scopes.values()].map((scope) =>
       queryClient.refetchQueries({ queryKey: queryKeyVariables.list(scope), type: "all" }),
     ),
@@ -153,16 +191,17 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
   const store = useChangesStoreContext();
   const variables = useStagedChangesStore((s) => s.variables);
   const services = useStagedChangesStore((s) => s.services);
+  const lists = useStagedChangesStore((s) => s.lists);
   const beginApplying = useStagedChangesStore((s) => s.beginApplying);
   const endApplying = useStagedChangesStore((s) => s.endApplying);
   const queryClient = useQueryClient();
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
   const [lastResult, setLastResult] = useState<TApplyChangesResult | null>(null);
 
-  const count = countChanges({ variables, services });
+  const count = countChanges({ variables, services, lists });
   const payload = useMemo(
-    () => buildApplyChangesPayload({ variables, services }),
-    [variables, services],
+    () => buildApplyChangesPayload({ variables, services, lists }),
+    [variables, services, lists],
   );
   const [debouncedPayload] = useDebounceValue(payload, 500);
 

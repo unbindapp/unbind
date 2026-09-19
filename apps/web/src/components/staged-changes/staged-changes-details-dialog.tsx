@@ -8,7 +8,9 @@ import {
 } from "@/components/staged-changes/staged-changes-provider";
 import {
   variableScopeKey,
+  type THostTarget,
   type TStagedChangesState,
+  type TStagedListChange,
   type TStagedServiceChange,
   type TStagedVariableChange,
 } from "@/components/staged-changes/types";
@@ -128,13 +130,14 @@ function DetailsBody({
 }: TDetailsBodyProps) {
   const variables = useStagedChangesStore((s) => s.variables);
   const services = useStagedChangesStore((s) => s.services);
+  const lists = useStagedChangesStore((s) => s.lists);
   const applying = useStagedChangesStore((s) => s.applying);
   const discard = useStagedChangesStore((s) => s.discard);
   const { plan, deploy, lastResult, count } = useStagedChangesPlan();
 
   const groups = useMemo(
-    () => groupChanges({ variables, services }, applying),
-    [variables, services, applying],
+    () => groupChanges({ variables, services, lists }, applying),
+    [variables, services, lists, applying],
   );
   const failures = lastResult?.failures ?? [];
   const isDrawer = variant === "drawer";
@@ -576,6 +579,15 @@ function groupChanges(state: TStagedChangesState, applying: TApplyingValues): TC
       serviceRow(change, change.id in applying),
     );
   }
+  for (const change of Object.values(state.lists)) {
+    upsert(
+      change.serviceId,
+      change.serviceName,
+      change.serviceIcon ?? "",
+      change.serviceId,
+      listRow(change, change.id in applying),
+    );
+  }
   for (const change of Object.values(state.variables)) {
     const key = change.scope.serviceId ?? variableScopeKey(change.scope);
     const icon = change.scope.serviceId ? (change.scopeIcon ?? "") : change.scope.type;
@@ -604,6 +616,45 @@ function serviceRow(change: TStagedServiceChange, isApplying: boolean): TChangeR
     isApplying,
     createdAt: change.createdAt,
   };
+}
+
+function listRow(change: TStagedListChange, isApplying: boolean): TChangeRow {
+  const row = {
+    id: change.id,
+    kind: "setting" as const,
+    isSecret: false,
+    isApplying,
+    createdAt: change.createdAt,
+  };
+  if (change.kind === "volume") {
+    return {
+      ...row,
+      label: "Volume",
+      previous: null,
+      value: `${change.volumeName}\n${change.mountPath}`,
+    };
+  }
+  if (change.kind === "port") {
+    const port = String(change.port);
+    const isAdd = change.op === "add";
+    return {
+      ...row,
+      label: "Private port",
+      previous: isAdd ? null : port,
+      value: isAdd ? port : null,
+    };
+  }
+  return {
+    ...row,
+    label: "Domain",
+    previous: change.previous && hostTargetLabel(change.previous),
+    value: change.value && hostTargetLabel(change.value),
+  };
+}
+
+function hostTargetLabel({ host, port }: THostTarget) {
+  if (port === undefined) return host;
+  return `${host}\nPort ${port}`;
 }
 
 function variableRow(change: TStagedVariableChange, isApplying: boolean): TChangeRow {

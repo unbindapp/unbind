@@ -37,6 +37,11 @@ func (self *ServiceService) ApplyChanges(ctx context.Context, requesterUserID uu
 		updates = append(updates, update)
 	}
 
+	if err := self.checkHostClaims(ctx, updates); err != nil {
+		return nil, err
+	}
+	sortHostReleasesFirst(updates)
+
 	writes := make([]*variables_service.VariableWrite, 0, len(input.Variables))
 	for _, variableInput := range input.Variables {
 		upserts := make(map[string][]byte, len(variableInput.Upserts))
@@ -139,6 +144,91 @@ func (self *ServiceService) planChanges(ctx context.Context, updates []*serviceU
 	sortAffected(affected)
 
 	return &models.ApplyChangesResponse{DryRun: true, Affected: affected, Failures: []models.ChangeFailure{}}, nil
+}
+
+// checkHostClaims reports a taken domain before anything is written. A domain another
+// service gives up in the same batch is left to the check that runs while applying.
+func (self *ServiceService) checkHostClaims(ctx context.Context, updates []*serviceUpdate) error {
+	inputs := make([]*models.UpdateServiceInput, 0, len(updates))
+	for _, update := range updates {
+		inputs = append(inputs, update.input)
+	}
+	if host, ok := hostClaimedTwice(inputs); ok {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s is added to more than one service", host))
+	}
+
+	for _, update := range updates {
+		released := releasedHosts(inputs, update.input.ServiceID)
+		for _, host := range claimedHosts(update.input) {
+			if _, ok := released[host]; ok {
+				continue
+			}
+			count, err := self.repo.Service().CountDomainCollisons(ctx, nil, host, &update.service.ID)
+			if err != nil {
+				return errdefs.NewInternalError(err, "Failed to check the domain for collisions")
+			}
+			if count > 0 {
+				return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", host))
+			}
+		}
+	}
+	return nil
+}
+
+func claimedHosts(input *models.UpdateServiceInput) []string {
+	hosts := make([]string, 0, len(input.OverwriteHosts)+len(input.UpsertHosts))
+	for _, host := range slices.Concat(input.OverwriteHosts, input.UpsertHosts) {
+		hosts = append(hosts, strings.ToLower(host.Host))
+	}
+	return hosts
+}
+
+func hostClaimedTwice(inputs []*models.UpdateServiceInput) (string, bool) {
+	claimedBy := map[string]uuid.UUID{}
+	for _, input := range inputs {
+		for _, host := range claimedHosts(input) {
+			if owner, ok := claimedBy[host]; ok && owner != input.ServiceID {
+				return host, true
+			}
+			claimedBy[host] = input.ServiceID
+		}
+	}
+	return "", false
+}
+
+// releasedHosts lists the domains the other services in the batch remove or rename away from
+func releasedHosts(inputs []*models.UpdateServiceInput, exceptServiceID uuid.UUID) map[string]struct{} {
+	released := map[string]struct{}{}
+	for _, input := range inputs {
+		if input.ServiceID == exceptServiceID {
+			continue
+		}
+		for _, host := range input.RemoveHosts {
+			released[strings.ToLower(host.Host)] = struct{}{}
+		}
+		for _, host := range input.UpsertHosts {
+			if host.PrevHost != nil && !strings.EqualFold(*host.PrevHost, host.Host) {
+				released[strings.ToLower(*host.PrevHost)] = struct{}{}
+			}
+		}
+	}
+	return released
+}
+
+// A domain moving between two services has to leave the first before the second takes it
+func sortHostReleasesFirst(updates []*serviceUpdate) {
+	releases := func(update *serviceUpdate) bool {
+		return len(releasedHosts([]*models.UpdateServiceInput{update.input}, uuid.Nil)) > 0
+	}
+	slices.SortStableFunc(updates, func(a, b *serviceUpdate) int {
+		if releases(a) == releases(b) {
+			return 0
+		}
+		if releases(a) {
+			return -1
+		}
+		return 1
+	})
 }
 
 func sortAffected(affected []models.AffectedService) {

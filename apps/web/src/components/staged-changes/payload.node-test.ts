@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { buildApplyChangesPayload, idsToKeepAfterFailures } from "./payload.ts";
-import type { TStagedChangesState, TStagedServiceChange, TStagedVariableChange } from "./types.ts";
+import {
+  listChangeId,
+  type TStageListInput,
+  type TStagedChangesState,
+  type TStagedListChange,
+  type TStagedServiceChange,
+  type TStagedVariableChange,
+} from "./types.ts";
 
 const ids = {
   teamId: "team",
@@ -48,13 +55,27 @@ function service(
   };
 }
 
+type TOwnerKey = "teamId" | "projectId" | "environmentId" | "serviceId" | "serviceName";
+type TListFields = TStageListInput extends infer T
+  ? T extends unknown
+    ? Omit<T, TOwnerKey>
+    : never
+  : never;
+
+function list(fields: TListFields, serviceId = "api"): TStagedListChange {
+  const input: TStageListInput = { ...ids, serviceId, serviceName: serviceId, ...fields };
+  return { ...input, id: listChangeId(input), createdAt: 1 };
+}
+
 function state(
   variables: TStagedVariableChange[] = [],
   services: TStagedServiceChange[] = [],
+  lists: TStagedListChange[] = [],
 ): TStagedChangesState {
   return {
     variables: Object.fromEntries(variables.map((v) => [v.id, v])),
     services: Object.fromEntries(services.map((s) => [s.id, s])),
+    lists: Object.fromEntries(lists.map((l) => [l.id, l])),
   };
 }
 
@@ -177,4 +198,72 @@ test("splits staged watch paths into a list", () => {
 
   const cleared = buildApplyChangesPayload(state([], [service("watchPaths", "")]));
   assert.deepEqual(cleared.services[0].watch_paths, []);
+});
+
+test("folds domain, port and volume changes into the update of their service", () => {
+  const payload = buildApplyChangesPayload(
+    state(
+      [],
+      [service("replicaCount", 2)],
+      [
+        list({
+          kind: "host",
+          previous: null,
+          value: { host: "new.example.com", port: 8080 },
+          addsPort: true,
+        }),
+        list({
+          kind: "host",
+          previous: { host: "old.example.com", port: 3000 },
+          value: { host: "renamed.example.com", port: 8080 },
+          addsPort: true,
+        }),
+        list({
+          kind: "host",
+          previous: { host: "gone.example.com", port: 3000 },
+          value: null,
+          addsPort: false,
+        }),
+        list({ kind: "port", port: 9000, op: "add" }),
+        list({ kind: "port", port: 3001, op: "remove" }),
+        list({ kind: "volume", volumeId: "pvc-1", volumeName: "data", mountPath: "/data" }),
+      ],
+    ),
+  );
+
+  assert.equal(payload.services.length, 1);
+  const [update] = payload.services;
+  assert.equal(update.replicas, 2);
+  assert.deepEqual(update.upsert_hosts, [
+    { host: "new.example.com", path: "", target_port: 8080, prev_host: undefined },
+    { host: "renamed.example.com", path: "", target_port: 8080, prev_host: "old.example.com" },
+  ]);
+  assert.deepEqual(update.remove_hosts, [
+    { host: "gone.example.com", path: "", target_port: 3000 },
+  ]);
+  assert.deepEqual(update.add_ports, [{ port: 8080 }, { port: 9000 }]);
+  assert.deepEqual(update.remove_ports, [{ port: 3001 }]);
+  assert.deepEqual(update.add_volumes, [{ id: "pvc-1", mount_path: "/data" }]);
+});
+
+test("a list change alone creates the update of its service", () => {
+  const payload = buildApplyChangesPayload(
+    state([], [], [list({ kind: "port", port: 9000, op: "add" }, "worker")]),
+  );
+
+  assert.deepEqual(
+    payload.services.map((s) => [s.service_id, s.add_ports]),
+    [["worker", [{ port: 9000 }]]],
+  );
+});
+
+test("keeps the list changes of a service that failed", () => {
+  const failed = list({ kind: "port", port: 9000, op: "add" }, "api");
+  const landed = list({ kind: "port", port: 9000, op: "add" }, "worker");
+
+  const keep = idsToKeepAfterFailures(state([], [], [failed, landed]), [
+    { service_id: "api", message: "domain already in use" },
+  ]);
+
+  assert.deepEqual([...keep], [failed.id]);
 });

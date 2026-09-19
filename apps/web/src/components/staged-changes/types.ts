@@ -78,14 +78,82 @@ export const StagedServiceChangeSchema = z.object({
 
 export type TStagedServiceChange = z.infer<typeof StagedServiceChangeSchema>;
 
+const StagedListChangeBaseSchema = z.object({
+  id: z.string(),
+  teamId: z.string(),
+  projectId: z.string(),
+  environmentId: z.string(),
+  serviceId: z.string(),
+  serviceName: z.string(),
+  serviceIcon: z.string().optional(),
+  createdAt: z.number(),
+});
+
+export const HostTargetSchema = z.object({
+  host: z.string(),
+  port: z.number().optional(),
+});
+
+export type THostTarget = z.infer<typeof HostTargetSchema>;
+
+export const StagedHostChangeSchema = StagedListChangeBaseSchema.extend({
+  kind: z.literal("host"),
+  // null means the domain does not exist yet
+  previous: HostTargetSchema.nullable(),
+  // null removes the domain
+  value: HostTargetSchema.nullable(),
+  // The service does not have the port yet, so it is added along with the domain
+  addsPort: z.boolean(),
+});
+
+export type TStagedHostChange = z.infer<typeof StagedHostChangeSchema>;
+
+export const StagedPortChangeSchema = StagedListChangeBaseSchema.extend({
+  kind: z.literal("port"),
+  port: z.number(),
+  op: z.enum(["add", "remove"]),
+});
+
+export type TStagedPortChange = z.infer<typeof StagedPortChangeSchema>;
+
+export const StagedVolumeChangeSchema = StagedListChangeBaseSchema.extend({
+  kind: z.literal("volume"),
+  volumeId: z.string(),
+  volumeName: z.string(),
+  mountPath: z.string(),
+});
+
+export type TStagedVolumeChange = z.infer<typeof StagedVolumeChangeSchema>;
+
+// Changes to the lists a service holds: its domains, its ports and its volumes
+export const StagedListChangeSchema = z.discriminatedUnion("kind", [
+  StagedHostChangeSchema,
+  StagedPortChangeSchema,
+  StagedVolumeChangeSchema,
+]);
+
+export type TStagedListChange = z.infer<typeof StagedListChangeSchema>;
+
+type TOmitFromEach<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+export type TStageListInput = TOmitFromEach<TStagedListChange, "id" | "createdAt">;
+
 export const StagedChangesStateSchema = z.object({
   variables: z.record(z.string(), StagedVariableChangeSchema),
   services: z.record(z.string(), StagedServiceChangeSchema),
+  lists: z.record(z.string(), StagedListChangeSchema),
 });
 
 export type TStagedChangesState = z.infer<typeof StagedChangesStateSchema>;
 
 export type TStagedValue = TStagedVariableChange["value"] | TStagedServiceChange["value"];
+
+// What a list change would leave behind, in a form that can be compared
+export function listChangeValue(change: TStagedListChange): string | null {
+  if (change.kind === "port") return change.op;
+  if (change.kind === "volume") return `${change.serviceId}:${change.mountPath}`;
+  if (change.value === null) return null;
+  return `${change.value.host}:${change.value.port ?? ""}`;
+}
 
 export function variableScopeKey(scope: TVariableScope) {
   return [
@@ -105,6 +173,31 @@ export function serviceChangeId(serviceId: string, field: TServiceChangeField) {
   return `service:${serviceId}:${field}`;
 }
 
+// A domain keeps the id of the host the server has, so an edit and a removal replace each other
+export function hostChangeId(serviceId: string, host: string) {
+  return `host:${serviceId}:${host}`;
+}
+
+export function portChangeId(serviceId: string, port: number) {
+  return `port:${serviceId}:${port}`;
+}
+
+// A volume mounts on one service only, so staging it again replaces the earlier attach
+export function volumeChangeId(volumeId: string) {
+  return `volume:${volumeId}`;
+}
+
+export function listChangeId(change: TStageListInput) {
+  if (change.kind === "port") return portChangeId(change.serviceId, change.port);
+  if (change.kind === "volume") return volumeChangeId(change.volumeId);
+  const host = change.previous?.host ?? change.value?.host ?? "";
+  return hostChangeId(change.serviceId, host);
+}
+
 export function countChanges(state: TStagedChangesState) {
-  return Object.keys(state.variables).length + Object.keys(state.services).length;
+  return (
+    Object.keys(state.variables).length +
+    Object.keys(state.services).length +
+    Object.keys(state.lists).length
+  );
 }

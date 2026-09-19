@@ -1,17 +1,22 @@
-import { serviceChangesMatchingServer } from "@/components/staged-changes/reconcile";
+import {
+  listChangesMatchingServer,
+  serviceChangesMatchingServer,
+} from "@/components/staged-changes/reconcile";
 import {
   useStagedChangesStore,
+  useStagedListChanges,
   useStagedServiceChanges,
   type TStagedServiceField,
 } from "@/components/staged-changes/staged-changes-provider";
 import {
   serviceChangeId,
+  type THostTarget,
   type TServiceChangeField,
   type TStagedServiceChange,
 } from "@/components/staged-changes/types";
 import { useService } from "@/components/service/service-provider";
 import { TServiceShallow } from "@/lib/queries/services";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceField>>;
 
@@ -75,6 +80,66 @@ export function useServiceChanges(service: TServiceShallow, serverValues: TServe
   );
 
   return { staged, stage, unstage };
+}
+
+// Domains and ports are staged one entry at a time, the payload merges them per service
+export function useStageNetworking(service: TServiceShallow) {
+  const { teamId, projectId, environmentId } = useService();
+  const stageList = useStagedChangesStore((s) => s.stageList);
+  const discard = useStagedChangesStore((s) => s.discard);
+  const icon = service.config.icon;
+
+  const owner = useMemo(
+    () => ({
+      teamId,
+      projectId,
+      environmentId,
+      serviceId: service.id,
+      serviceName: service.name,
+      serviceIcon: icon,
+    }),
+    [teamId, projectId, environmentId, service.id, service.name, icon],
+  );
+  const ports = service.config.ports;
+
+  const stageHost = useCallback(
+    (previous: THostTarget | null, value: THostTarget | null) =>
+      stageList({
+        ...owner,
+        kind: "host",
+        previous,
+        value,
+        addsPort: value?.port !== undefined && !ports.some((p) => p.port === value.port),
+      }),
+    [stageList, owner, ports],
+  );
+
+  const stagePort = useCallback(
+    (port: number, op: "add" | "remove") => stageList({ ...owner, kind: "port", port, op }),
+    [stageList, owner],
+  );
+
+  return { stageHost, stagePort, discard };
+}
+
+export function useStagedNetworking(service: TServiceShallow) {
+  const discard = useStagedChangesStore((s) => s.discard);
+  const lists = useStagedListChanges(service.id);
+  const staged = useMemo(() => lists.filter((change) => change.kind !== "volume"), [lists]);
+
+  const { hosts, ports } = service.config;
+  const settledKey = listChangesMatchingServer(staged, {
+    hosts: hosts.map((h) => ({ host: h.host, port: h.target_port })),
+    ports: ports.map((p) => p.port),
+  }).join(",");
+  useEffect(() => {
+    if (!settledKey) return;
+    discard(settledKey.split(","));
+  }, [settledKey, discard]);
+
+  const unstage = useCallback(() => discard(staged.map((change) => change.id)), [discard, staged]);
+
+  return { staged, unstage };
 }
 
 type TFormValues = Record<string, string | number | boolean>;

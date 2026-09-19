@@ -16,24 +16,19 @@ import {
   ServicePickerItem,
   ServicePickerTriggerIcon,
 } from "@/components/service/service-picker";
-import { useServices, useServicesUtils } from "@/components/service/services-provider";
+import { useServices } from "@/components/service/services-provider";
 import { volumeSettingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
-import { toast } from "@/components/ui/toast";
-import { cn } from "@/components/ui/utils";
-import { MountPathSchema } from "@/components/volume/mount-path";
-import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
-import { useVolumesUtils } from "@/components/volume/volumes-provider";
-import { TCommandItem } from "@/lib/hooks/use-app-form";
 import {
-  removeFormDraft,
-  useAppFormWithPersistence,
-} from "@/lib/hooks/use-app-form-with-persistence";
-import { TVolumeShallow, updateService } from "@/lib/queries/services";
-import { useStore } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+  useStagedChangesStore,
+  useStagedVolumeAttach,
+} from "@/components/staged-changes/staged-changes-provider";
+import { cn } from "@/components/ui/utils";
+import { getVolumeDisplayName } from "@/components/volume/helpers";
+import { MountPathSchema } from "@/components/volume/mount-path";
+import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
+import { TVolumeShallow } from "@/lib/queries/services";
 import { BoxIcon, FolderClosedIcon, HardDriveIcon, UnplugIcon } from "lucide-react";
-import { ResultAsync } from "neverthrow";
 import { useCallback, useEffect, useMemo } from "react";
 import { z } from "zod";
 
@@ -42,16 +37,26 @@ type TProps = {
   className?: string;
 };
 
-const AttachDraftSchema = z.object({ serviceId: z.string(), mountPath: z.string() });
-
 export default function ConnectionSection({ volume }: TProps) {
-  if (!volume.mounted_on_service_id) {
+  const staged = useStagedVolumeAttach(volume.id);
+  const discard = useStagedChangesStore((s) => s.discard);
+  const isMounted = !!volume.mounted_on_service_id;
+
+  // The volume got mounted, by the deploy or by another session, so there is nothing left to attach
+  const settledId = isMounted ? staged?.id : undefined;
+  useEffect(() => {
+    if (!settledId) return;
+    discard([settledId]);
+  }, [settledId, discard]);
+
+  if (!isMounted) {
     return <AttachSection volume={volume} />;
   }
   return <AttachedSection volume={volume} />;
 }
 
-// The volume is dangling — offer attaching it to a service in this environment.
+// The volume is dangling, so it can be attached to a service in this environment. The
+// attach is staged as soon as both fields are valid and deploys with the other changes.
 function AttachSection({ volume }: TProps) {
   const {
     query: { data: servicesData, isPending: isPendingServices, error: errorServices },
@@ -59,13 +64,14 @@ function AttachSection({ volume }: TProps) {
     projectId,
     environmentId,
   } = useServices();
-  const { invalidate: invalidateServices } = useServicesUtils({ teamId, projectId, environmentId });
-  const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
-  const { closePanel } = useVolumePanel();
+  const staged = useStagedVolumeAttach(volume.id);
+  const stageList = useStagedChangesStore((s) => s.stageList);
+  const discard = useStagedChangesStore((s) => s.discard);
+  const isLocked = isVolumeLocked(volume) || staged?.isApplying === true;
 
   const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
 
-  // Volumes can't be attached to database services — the database operator
+  // Volumes can't be attached to database services, the database operator
   // manages its own storage.
   const attachableServices = useMemo(
     () => servicesData?.services.filter((service) => service.type !== "database"),
@@ -98,41 +104,13 @@ function AttachSection({ volume }: TProps) {
     [attachableServices],
   );
 
-  const {
-    mutateAsync: attachVolume,
-    isPending: isPendingAttach,
-    error: errorAttach,
-  } = useMutation({
-    mutationFn: updateService,
-    onSuccess: async () => {
-      const result = await ResultAsync.fromPromise(
-        Promise.all([invalidateServices(), invalidateVolumes()]),
-        () => new Error("Attach success callback failed"),
-      );
+  const defaultValues = {
+    serviceId: staged?.serviceId ?? "",
+    mountPath: staged?.mountPath ?? (volume.mount_path || "/data"),
+  };
 
-      if (result.isErr()) {
-        toast.add({
-          type: "error",
-          title: "Data refetch failed",
-          description:
-            "Attach was successful, but couldn't fetch the new data. Refresh the page to see the changes.",
-        });
-      }
-
-      closePanel();
-    },
-  });
-
-  const persistenceKey = `volume-attach:${volume.id}`;
-
-  const form = useAppFormWithPersistence({
-    defaultValues: {
-      serviceId: "",
-      mountPath: volume.mount_path || "/data",
-    },
-    persistenceType: "session",
-    persistenceKey,
-    persistenceSchema: AttachDraftSchema,
+  const form = useAppForm({
+    defaultValues,
     validators: {
       onChange: z
         .object({
@@ -141,32 +119,44 @@ function AttachSection({ volume }: TProps) {
         })
         .strip(),
     },
-    onSubmit: async ({ value }) => {
-      await attachVolume({
-        teamId,
-        projectId,
-        environmentId,
-        serviceId: value.serviceId,
-        addVolumes: [{ id: volume.id, mount_path: value.mountPath }],
-      });
-      removeFormDraft({ persistenceType: "session", persistenceKey });
-    },
   });
 
-  // A restored draft can point at a service that no longer exists
-  const selectedServiceId = useStore(form.store, (s) => s.values.serviceId);
+  // A discard from the deploy bar has to bring the form back to the server state
+  const stagedKey = `${defaultValues.serviceId}:${defaultValues.mountPath}`;
   useEffect(() => {
-    if (!attachableServices || !selectedServiceId) return;
-    if (attachableServices.some((service) => service.id === selectedServiceId)) return;
-    form.setFieldValue("serviceId", "");
-  }, [attachableServices, selectedServiceId, form]);
+    const { serviceId, mountPath } = form.state.values;
+    if (serviceId === defaultValues.serviceId && mountPath === defaultValues.mountPath) return;
+    form.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stagedKey]);
 
-  const changeCount = useStore(form.store, (s) => {
-    let count = 0;
-    if (s.fieldMeta.serviceId?.isDefaultValue === false) count++;
-    if (s.fieldMeta.mountPath?.isDefaultValue === false) count++;
-    return count;
-  });
+  // A staged attach can point at a service that no longer exists
+  const stagedId = staged?.id;
+  const isStagedServiceGone =
+    staged !== undefined &&
+    attachableServices !== undefined &&
+    !attachableServices.some((service) => service.id === staged.serviceId);
+  useEffect(() => {
+    if (!isStagedServiceGone || !stagedId) return;
+    discard([stagedId]);
+  }, [isStagedServiceGone, stagedId, discard]);
+
+  const stageAttach = ({ serviceId, mountPath }: typeof defaultValues) => {
+    const service = attachableServices?.find((s) => s.id === serviceId);
+    if (!service || !MountPathSchema.safeParse(mountPath).success) return;
+    stageList({
+      kind: "volume",
+      teamId,
+      projectId,
+      environmentId,
+      serviceId: service.id,
+      serviceName: service.name,
+      serviceIcon: service.config.icon,
+      volumeId: volume.id,
+      volumeName: getVolumeDisplayName(volume),
+      mountPath,
+    });
+  };
 
   return (
     <SettingsSection
@@ -174,17 +164,9 @@ function AttachSection({ volume }: TProps) {
       id="connection"
       entityId={sectionHighlightId}
       Icon={UnplugIcon}
-      asElement="form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit(e);
-      }}
-      changeCount={changeCount}
-      onClickResetChanges={() => form.reset()}
-      SubmitButton={form.SubmitButton}
-      isPending={isPendingAttach}
-      error={errorAttach?.message}
+      hasChanges={staged !== undefined}
+      isApplying={staged?.isApplying}
+      onDiscard={() => staged && discard([staged.id])}
     >
       <Block>
         <form.AppField
@@ -200,7 +182,10 @@ function AttachSection({ volume }: TProps) {
                   dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
-                  onChange={(v) => field.handleChange(v)}
+                  onChange={(v) => {
+                    field.handleChange(v);
+                    stageAttach({ ...form.state.values, serviceId: v });
+                  }}
                   items={serviceItems}
                   isPending={isPendingServices}
                   error={errorServices?.message}
@@ -222,8 +207,8 @@ function AttachSection({ volume }: TProps) {
                         open={isOpen}
                         onBlur={field.handleBlur}
                         isPending={isPendingServices}
-                        disabled={isVolumeLocked(volume)}
-                        hasChanges={!field.state.meta.isDefaultValue}
+                        disabled={isLocked}
+                        hasChanges={staged !== undefined}
                       />
                     );
                   }}
@@ -246,15 +231,17 @@ function AttachSection({ volume }: TProps) {
               </BlockItemHeader>
               <BlockItemContent>
                 <field.TextField
-                  dontCheckUntilSubmit
                   field={field}
                   value={field.state.value}
-                  onBlur={field.handleBlur}
+                  onBlur={() => {
+                    field.handleBlur();
+                    stageAttach(form.state.values);
+                  }}
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="/data"
                   className="w-full"
-                  disabled={isVolumeLocked(volume)}
-                  hasChanges={!field.state.meta.isDefaultValue}
+                  disabled={isLocked}
+                  hasChanges={staged !== undefined}
                 />
               </BlockItemContent>
             </BlockItem>

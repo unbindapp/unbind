@@ -2,6 +2,7 @@
 import {
   variableScopeKey,
   type TStagedChangesState,
+  type TStagedListChange,
   type TStagedServiceChange,
   type TStagedVariableChange,
 } from "./types.ts";
@@ -23,7 +24,7 @@ export type TApplyChangesPayload = {
 export function buildApplyChangesPayload(state: TStagedChangesState): TApplyChangesPayload {
   return {
     variables: variableChangeSets(Object.values(state.variables)),
-    services: serviceUpdates(Object.values(state.services)),
+    services: serviceUpdates(Object.values(state.services), Object.values(state.lists)),
   };
 }
 
@@ -53,9 +54,12 @@ export function variableChangeSets(changes: TStagedVariableChange[]): ChangeSetV
   return [...byScope.values()];
 }
 
-export function serviceUpdates(changes: TStagedServiceChange[]) {
+export function serviceUpdates(
+  changes: TStagedServiceChange[],
+  listChanges: TStagedListChange[] = [],
+) {
   const byService = new Map<string, TUpdateServiceInput>();
-  for (const change of sortByCreation(changes)) {
+  const inputFor = (change: TStagedServiceChange | TStagedListChange) => {
     let input = byService.get(change.serviceId);
     if (!input) {
       input = {
@@ -66,9 +70,58 @@ export function serviceUpdates(changes: TStagedServiceChange[]) {
       };
       byService.set(change.serviceId, input);
     }
-    Object.assign(input, { [change.field]: change.value });
+    return input;
+  };
+
+  for (const change of sortByCreation(changes)) {
+    Object.assign(inputFor(change), { [change.field]: change.value });
+  }
+  for (const change of sortByCreation(listChanges)) {
+    addListChange(inputFor(change), change);
   }
   return [...byService.values()].map(toUpdateServiceInput);
+}
+
+function addListChange(input: TUpdateServiceInput, change: TStagedListChange) {
+  if (change.kind === "volume") {
+    input.addVolumes = [
+      ...(input.addVolumes ?? []),
+      { id: change.volumeId, mount_path: change.mountPath },
+    ];
+    return;
+  }
+  if (change.kind === "port") {
+    if (change.op === "remove") {
+      input.removePorts = [...(input.removePorts ?? []), { port: change.port }];
+      return;
+    }
+    addPort(input, change.port);
+    return;
+  }
+  if (change.value === null) {
+    if (!change.previous) return;
+    input.removeHosts = [
+      ...(input.removeHosts ?? []),
+      { host: change.previous.host, path: "", target_port: change.previous.port },
+    ];
+    return;
+  }
+  input.upsertHosts = [
+    ...(input.upsertHosts ?? []),
+    {
+      host: change.value.host,
+      path: "",
+      target_port: change.value.port,
+      prev_host: change.previous?.host,
+    },
+  ];
+  if (change.addsPort && change.value.port !== undefined) addPort(input, change.value.port);
+}
+
+// Two domains can bring the same new port
+function addPort(input: TUpdateServiceInput, port: number) {
+  if (input.addPorts?.some((p) => p.port === port)) return;
+  input.addPorts = [...(input.addPorts ?? []), { port }];
 }
 
 function sortByCreation<T extends { createdAt: number }>(changes: T[]) {
@@ -94,7 +147,7 @@ export function idsToKeepAfterFailures(state: TStagedChangesState, failures: Cha
   }
 
   const keep = new Set<string>();
-  for (const change of Object.values(state.services)) {
+  for (const change of [...Object.values(state.services), ...Object.values(state.lists)]) {
     if (failedServices.has(change.serviceId)) keep.add(change.id);
   }
   for (const change of Object.values(state.variables)) {
