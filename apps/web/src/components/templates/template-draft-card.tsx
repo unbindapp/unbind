@@ -6,6 +6,8 @@ import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { LinkButton } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { cn } from "@/components/ui/utils";
+import { deployMutationKeys, useSharedMutation } from "@/lib/hooks/use-shared-mutation";
+import { LoaderIcon } from "lucide-react";
 import { HTMLProps, useMemo } from "react";
 
 type TProps = {
@@ -26,6 +28,9 @@ export default function TemplateDraftCard({
   const serviceIcons = useMemo(
     () => [...new Set(templateDraft.template.definition.services.map((s) => s.icon))],
     [templateDraft.template.definition.services],
+  );
+  const { isPending: isDeploying } = useSharedMutation(
+    deployMutationKeys.template(templateDraft.id),
   );
   const hasIconOverflow = serviceIcons.length > maxIconSlots;
   const visibleIconCount = hasIconOverflow ? maxIconSlots - 1 : maxIconSlots;
@@ -62,11 +67,19 @@ export default function TemplateDraftCard({
           <div className="flex w-full flex-1 flex-col justify-end">
             <div className="text-muted-foreground flex w-full items-end justify-between gap-6">
               <div className="py-0.375 flex min-w-0 shrink flex-col gap-0.75 text-sm font-medium">
-                <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
-                  {serviceCount !== undefined && serviceCount > 0
-                    ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`
-                    : "No services"}
-                </p>
+                {isDeploying && (
+                  <div className="text-process flex w-full items-center justify-start gap-1.75">
+                    <LoaderIcon className="size-3.5 shrink-0 animate-spin" />
+                    <p className="min-w-0 shrink truncate leading-tight">Deploying</p>
+                  </div>
+                )}
+                {!isDeploying && (
+                  <p className="group-data-placeholder/item:bg-muted-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
+                    {serviceCount !== undefined && serviceCount > 0
+                      ? `${serviceCount} service${serviceCount > 1 ? "s" : ""}`
+                      : "No services"}
+                  </p>
+                )}
               </div>
               {serviceIcons !== undefined && serviceIcons.length > 0 && (
                 <div className="-mr-1 flex max-w-2/3 shrink-0 items-center gap-1 overflow-hidden">

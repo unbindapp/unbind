@@ -27,6 +27,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
+import { deployMutationKeys, useSharedMutation } from "@/lib/hooks/use-shared-mutation";
 import { ServiceRenameSchema } from "@/lib/queries/services";
 import { EllipsisVerticalIcon, PenIcon, Trash2Icon, XIcon } from "lucide-react";
 import { ReactElement, useCallback, useRef, useState } from "react";
@@ -132,6 +133,9 @@ function ThreeDotButton({
   const [isOpen, setIsOpen] = useState(false);
   const [deleteHandle] = useState(() => createDialogHandle());
   const { closePanel } = useTemplateDraftPanel();
+  const { isPending: isDeploying } = useSharedMutation(
+    deployMutationKeys.template(templateDraft.id),
+  );
 
   const removeTemplateDraft = useTemplateDraftStore((s) => s.remove);
   const timeout = useRef<NodeJS.Timeout>(undefined);
@@ -151,7 +155,7 @@ function ThreeDotButton({
           render={
             <Button
               data-open={isOpen || undefined}
-              fadeOnDisabled={false}
+              disabled={isDeploying}
               variant="ghost"
               size="icon"
               className={cn(

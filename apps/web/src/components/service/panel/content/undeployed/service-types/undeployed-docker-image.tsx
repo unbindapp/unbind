@@ -73,6 +73,9 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     temporarilyAddNewEntity,
     tokensRef,
     onTokensChanged,
+    mutationKey: createFirstDeploymentMutationKey,
+    isPending: isPendingCreateFirstDeployment,
+    error: errorCreateFirstDeployment,
   } = useCreateFirstDeployment();
 
   const persistenceKey = `undeployed-docker-image:${serviceId}`;
@@ -101,12 +104,8 @@ export function UndeployedContentDockerImage({ image, tag, detectedPort, service
     return items;
   }, [dataTags]);
 
-  const {
-    mutateAsync: createFirstDeployment,
-    error: errorCreateFirstDeployment,
-    isPending: isPendingCreateFirstDeployment,
-  } = useMutation({
-    mutationKey: ["createFirstDeployment", teamId, projectId, environmentId, serviceId],
+  const { mutateAsync: createFirstDeployment } = useMutation({
+    mutationKey: createFirstDeploymentMutationKey,
     mutationFn: async (formValues: TFormValues) => {
       const { validVariables } = softValidateVariables(formValues.variables);
       if (validVariables.length >= 1) {

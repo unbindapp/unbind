@@ -4,6 +4,7 @@ import { useService } from "@/components/service/service-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
 import { useVariablesUtils } from "@/components/variables/variables-provider";
+import { deployMutationKeys, useSharedMutation } from "@/lib/hooks/use-shared-mutation";
 import { createDeployment as createDeploymentFn } from "@/lib/queries/deployments";
 import { updateService as updateServiceFn } from "@/lib/queries/services";
 import { createOrUpdateVariables as createOrUpdateVariablesFn } from "@/lib/queries/variables";
@@ -77,6 +78,9 @@ export default function useCreateFirstDeployment() {
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
 
+  const mutationKey = useMemo(() => deployMutationKeys.firstDeployment(serviceId), [serviceId]);
+  const { isPending, error } = useSharedMutation(mutationKey);
+
   const tokensRef = useRef<TVariableToken<TReferenceExtended>[] | undefined>(undefined);
   const onTokensChanged = useCallback(
     (tokens: TVariableToken<TReferenceExtended>[] | undefined) => {
@@ -101,6 +105,9 @@ export default function useCreateFirstDeployment() {
       temporarilyAddNewEntity,
       tokensRef,
       onTokensChanged,
+      mutationKey,
+      isPending,
+      error,
     }),
     [
       teamId,
@@ -117,6 +124,9 @@ export default function useCreateFirstDeployment() {
       temporarilyAddNewEntity,
       tokensRef,
       onTokensChanged,
+      mutationKey,
+      isPending,
+      error,
     ],
   );
 

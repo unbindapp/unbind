@@ -102,6 +102,9 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     temporarilyAddNewEntity,
     tokensRef,
     onTokensChanged,
+    mutationKey: createFirstDeploymentMutationKey,
+    isPending: isPendingCreateFirstDeployment,
+    error: errorCreateFirstDeployment,
   } = useCreateFirstDeployment();
 
   const persistenceKey = `undeployed-database:${serviceId}`;
@@ -137,12 +140,8 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
 
   const hasNoBuckets = dataS3Buckets ? dataS3Buckets.buckets.length === 0 : false;
 
-  const {
-    mutateAsync: createFirstDeployment,
-    error: errorCreateFirstDeployment,
-    isPending: isPendingCreateFirstDeployment,
-  } = useMutation({
-    mutationKey: ["createFirstDeployment", teamId, projectId, environmentId, serviceId],
+  const { mutateAsync: createFirstDeployment } = useMutation({
+    mutationKey: createFirstDeploymentMutationKey,
     mutationFn: async (formValues: TFormValues) => {
       const { validVariables } = softValidateVariables(formValues.variables);
       if (validVariables.length >= 1) {

@@ -8,7 +8,8 @@ const routeApi = getRouteApi("/$team_id/project/$project_id");
 
 type TTemplateDraftPanelContext = {
   currentTemplateDraftId: string | null;
-  closePanel: () => void;
+  // With an id, only closes when that draft is the one open
+  closePanel: (templateDraftId?: string) => void;
   openPanel: (templateDraftId: string) => void;
 };
 
@@ -22,10 +23,16 @@ export const TemplateDraftPanelProvider: React.FC<{
     select: (s) => s[templateDraftPanelTemplateDraftIdKey] ?? null,
   });
   const setCurrentTemplateDraftId = useCallback(
-    (value: string | null) =>
+    (value: string | null, onlyIfCurrentId?: string) =>
       navigate({
         to: ".",
-        search: (prev) => ({ ...prev, [templateDraftPanelTemplateDraftIdKey]: value ?? undefined }),
+        search: (prev) => {
+          const isOtherDraftOpen =
+            onlyIfCurrentId !== undefined &&
+            prev[templateDraftPanelTemplateDraftIdKey] !== onlyIfCurrentId;
+          if (isOtherDraftOpen) return prev;
+          return { ...prev, [templateDraftPanelTemplateDraftIdKey]: value ?? undefined };
+        },
         replace: true,
         resetScroll: false,
       }),
@@ -38,8 +45,8 @@ export const TemplateDraftPanelProvider: React.FC<{
       openPanel: (templateDraftId: string) => {
         setCurrentTemplateDraftId(templateDraftId);
       },
-      closePanel: () => {
-        setCurrentTemplateDraftId(null);
+      closePanel: (templateDraftId?: string) => {
+        setCurrentTemplateDraftId(null, templateDraftId);
       },
     }),
     [currentTemplateDraftId, setCurrentTemplateDraftId],

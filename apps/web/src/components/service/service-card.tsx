@@ -17,6 +17,7 @@ import VolumeLine from "@/components/volume/volume-usage-line";
 import { sourceToTitle } from "@/lib/constants";
 import { useIntent } from "@/lib/hooks/use-intent";
 import { deleteMutationKeys, useIsDeleting } from "@/lib/hooks/use-is-deleting";
+import { deployMutationKeys, useSharedMutation } from "@/lib/hooks/use-shared-mutation";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TService, TServiceShallow } from "@/lib/queries/services";
 import {
@@ -68,6 +69,9 @@ export default function ServiceCard({
   const { getOpenSearch } = useServicePanel();
   const isOwnDeleting = useIsDeleting(deleteMutationKeys.service(service?.id ?? ""));
   const isDeleting = Boolean(isDeletingProp || isOwnDeleting);
+  const { isPending: isDeploying } = useSharedMutation(
+    deployMutationKeys.firstDeployment(service?.id ?? ""),
+  );
   const panelProps = isPlaceholder
     ? ({ isPlaceholder: true } as const)
     : { teamId, projectId, environmentId, service };
@@ -126,6 +130,7 @@ export default function ServiceCard({
               className="min-w-0 shrink overflow-hidden text-sm font-normal text-ellipsis whitespace-nowrap"
               service={service}
               isDeleting={isDeleting}
+              isDeploying={isDeploying}
             />
           ) : (
             <p className="bg-muted-foreground animate-skeleton min-w-0 shrink overflow-hidden rounded-md text-sm font-normal text-ellipsis whitespace-nowrap text-transparent">
@@ -231,6 +236,7 @@ function ServicePanelOrPlaceholder({
 type TServiceInfoLineProps = {
   service: TService;
   isDeleting: boolean;
+  isDeploying: boolean;
   className?: string;
 };
 
@@ -245,7 +251,7 @@ function getDisplayDeployment(service: TServiceShallow): TDeployment | undefined
   return current ?? undefined;
 }
 
-function ServiceInfoLine({ service, isDeleting, className }: TServiceInfoLineProps) {
+function ServiceInfoLine({ service, isDeleting, isDeploying, className }: TServiceInfoLineProps) {
   const deployment = getDisplayDeployment(service);
   const showOfflineFallback = !deployment && Boolean(service.last_deployment);
 
@@ -259,6 +265,20 @@ function ServiceInfoLine({ service, isDeleting, className }: TServiceInfoLinePro
       >
         <LoaderIcon className="size-3.5 shrink-0 animate-spin" />
         <p className="min-w-0 shrink truncate">Deleting</p>
+      </div>
+    );
+  }
+
+  if (isDeploying) {
+    return (
+      <div
+        className={cn(
+          "text-muted-foreground flex w-full items-center justify-start gap-1.75",
+          className,
+        )}
+      >
+        <LoaderIcon className="size-3.5 shrink-0 animate-spin" />
+        <p className="min-w-0 shrink truncate">Deploying</p>
       </div>
     );
   }
