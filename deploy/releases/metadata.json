@@ -393,5 +393,10 @@
     "version": "v0.1.78",
     "summary": "Database memory settings are now sized automatically from resource limits, with optional PostgreSQL and MySQL overrides.",
     "breaking": false
+  },
+  "v0.1.79": {
+    "version": "v0.1.79",
+    "summary": "Provided variables list improvements with pending database URLs, and deploy state that stays visible on cards after the panel closes.",
+    "breaking": false
   }
 }
