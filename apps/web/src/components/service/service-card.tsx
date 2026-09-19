@@ -11,6 +11,7 @@ import { useServicePanel } from "@/components/service/panel/service-panel-provid
 import ServiceIcon from "@/components/service/service-icon";
 import { usePrefetchService } from "@/components/service/use-prefetch-service";
 import { Button, LinkButton } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { cn } from "@/components/ui/utils";
 import VolumeLine from "@/components/volume/volume-usage-line";
 import { sourceToTitle } from "@/lib/constants";
@@ -113,12 +114,9 @@ export default function ServiceCard({
           </h3>
         </div>
         {changeLabel !== null && (
-          <div className="bg-background -mr-1.5 max-w-1/2 shrink-0 rounded-sm">
-            <p className="text-change bg-change/4-10 border-change/4-10 flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-xs font-medium">
-              {isApplying && <LoaderIcon className="size-3 shrink-0 animate-spin" />}
-              <span className="truncate">{changeLabel}</span>
-            </p>
-          </div>
+          <Chip isLoading={isApplying} className="-my-1 -mr-1.5 max-w-1/2">
+            {changeLabel}
+          </Chip>
         )}
       </div>
       <div className="relative flex w-full flex-1 flex-col justify-end">

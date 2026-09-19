@@ -21,6 +21,7 @@ import ErrorCard from "@/components/error-card";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
@@ -156,15 +157,18 @@ function ClientSummary({
           </p>
         </div>
         {client?.verified_brand ? (
-          <p className="bg-success/4-10 border-success/4-10 text-success rounded-sm border px-1.5 py-0.5 text-xs font-medium">
-            <ShieldCheckIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+          <Chip variant="success" Icon={ShieldCheckIcon} classNameIcon="-ml-0.5">
             Verified
-          </p>
+          </Chip>
         ) : (
-          <p className="bg-warning/4-10 border-warning/4-10 text-warning group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:border-muted-more-foreground rounded-sm border px-1.5 py-0.5 text-xs font-medium group-data-placeholder/item:text-transparent">
-            <CircleAlertIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+          <Chip
+            variant="warning"
+            Icon={CircleAlertIcon}
+            classNameIcon="-ml-0.5"
+            classNameInner="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:border-muted-more-foreground group-data-placeholder/item:text-transparent"
+          >
             Unverified
-          </p>
+          </Chip>
         )}
       </div>
       <div className="text-muted-foreground flex w-full flex-col items-start gap-1.5 text-sm">

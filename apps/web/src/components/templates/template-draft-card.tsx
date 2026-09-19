@@ -4,6 +4,7 @@ import TemplateDraftPanel from "@/components/templates/panel/template-draft-pane
 import TemplateDraftIcon from "@/components/templates/template-draft-icon";
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { LinkButton } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { cn } from "@/components/ui/utils";
 import { HTMLProps, useMemo } from "react";
 
@@ -54,11 +55,9 @@ export default function TemplateDraftCard({
                 {templateDraft.name}
               </h3>
             </div>
-            <div className="bg-background -mr-1.5 max-w-1/2 shrink-0 rounded-sm">
-              <p className="text-process bg-process/4-10 border-process/5-10 truncate rounded-sm border px-1.5 py-0.5 text-xs font-medium">
-                Template
-              </p>
-            </div>
+            <Chip variant="process" className="-my-1 -mr-1.5 max-w-1/2">
+              Template
+            </Chip>
           </div>
           <div className="flex w-full flex-1 flex-col justify-end">
             <div className="text-muted-foreground flex w-full items-end justify-between gap-6">
