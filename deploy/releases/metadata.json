@@ -383,5 +383,10 @@
     "version": "v0.1.76",
     "summary": "MCP server for AI agents, connected apps with OAuth consent, and S3 secret keys no longer returned by the API.",
     "breaking": false
+  },
+  "v0.1.77": {
+    "version": "v0.1.77",
+    "summary": "Staged domain and port changes in networking, locked protected variables with derived secrets reissued on edit, operator apply failures shown as launch errors, and naming new projects from the command panel.",
+    "breaking": false
   }
 }
