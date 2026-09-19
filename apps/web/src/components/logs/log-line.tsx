@@ -153,7 +153,7 @@ export default function LogLine({
               <div className="group-data-wrap/line:max-w-auto flex max-w-full py-1 pr-4 pl-1 group-data-wrap/line:min-w-0 group-data-wrap/line:shrink sm:pr-18 data-[container=page]:min-[87rem]:pr-4">
                 <p className="group-data-placeholder/line:bg-foreground group-data-placeholder/line:animate-skeleton group-data-[level=debug]/line:text-muted-foreground leading-tight whitespace-pre select-text group-data-extra-columns/line:-mt-2 group-data-placeholder/line:rounded group-data-placeholder/line:text-transparent group-data-wrap/line:min-w-0 group-data-wrap/line:shrink group-data-wrap/line:whitespace-pre-wrap lg:group-data-extra-columns/line:mt-0">
                   {isPlaceholder || !messageSegments
-                    ? "Loading the messages..."
+                    ? "We are loading all your log lines right now..."
                     : messageSegments.map((segment, index) =>
                         segment.style ? (
                           <span key={index} style={segment.style}>
