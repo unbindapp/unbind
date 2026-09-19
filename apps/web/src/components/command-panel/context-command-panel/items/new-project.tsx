@@ -6,7 +6,7 @@ import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useCreateAndOpenProject } from "@/components/project/use-create-and-open-project";
 import { toast } from "@/components/ui/toast";
 import { ProjectCreateFormSchema } from "@/lib/queries/projects";
-import { FolderIcon, FolderPlusIcon, TriangleAlertIcon } from "lucide-react";
+import { FolderIcon, FolderPlusIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useEffect, useMemo, useState } from "react";
 
@@ -18,11 +18,18 @@ const mainPageId = "new-project";
 const subpageId = "new-project_subpage";
 const createItemId = `${subpageId}_create`;
 
+function getNameError(name: string) {
+  const parsed = ProjectCreateFormSchema.safeParse({ name });
+  return parsed.success ? null : parsed.error.issues[0].message;
+}
+
 export default function useNewProjectItem({ context }: TProps) {
   const teamId = context.teamId ?? "";
   const isTeamContext = context.contextType === "team";
 
   const [showNameError, setShowNameError] = useState(false);
+  const nameErrorForSearch = useCommandPanelStore((s) => getNameError(s.search));
+  const nameError = showNameError ? nameErrorForSearch : null;
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
   const { closePanel, panelId, setPanelPageId } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
@@ -56,24 +63,11 @@ export default function useNewProjectItem({ context }: TProps) {
         InputIcon: FolderIcon,
         disableCommandFilter: true,
         setSearchDebounceMs: 50,
-        commandEmptyText: "Enter a name for the project",
+        commandEmptyText: nameError ?? "Enter a name for the project",
+        commandEmptyIsError: nameError !== null,
         getItems: ({ search }) => {
           const name = search?.trim();
-          if (!name) return [];
-
-          const parsed = ProjectCreateFormSchema.safeParse({ name });
-          if (!parsed.success && showNameError) {
-            return [
-              {
-                id: createItemId,
-                title: parsed.error.issues[0].message,
-                keywords: [],
-                Icon: TriangleAlertIcon,
-                disabled: true,
-                isError: true,
-              },
-            ];
-          }
+          if (!name || nameError) return [];
           return [
             {
               id: createItemId,
@@ -87,7 +81,7 @@ export default function useNewProjectItem({ context }: TProps) {
               Icon: FolderPlusIcon,
               onSelect: async ({ isPendingId }) => {
                 if (isPendingId !== null) return;
-                if (!parsed.success) {
+                if (getNameError(name)) {
                   setShowNameError(true);
                   return;
                 }
@@ -109,7 +103,7 @@ export default function useNewProjectItem({ context }: TProps) {
         },
       },
     };
-  }, [isTeamContext, showNameError, createAndOpenProject, setIsPendingId]);
+  }, [isTeamContext, nameError, createAndOpenProject, setIsPendingId]);
 
   return useMemo(() => ({ item }), [item]);
 }

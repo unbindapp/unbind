@@ -20,6 +20,7 @@ export type TCommandPanelPage = {
   InputIcon?: FC<{ className?: string }>;
   itemsPinned?: TCommandPanelItem[];
   commandEmptyText?: string;
+  commandEmptyIsError?: boolean;
   disableCommandFilter?: boolean;
   setSearchDebounceMs?: number;
   ExplanationCard?: FC<{ className?: string }>;

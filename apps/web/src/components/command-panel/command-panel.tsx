@@ -283,7 +283,10 @@ function Content({
   return (
     <>
       {!isError && (
-        <CommandEmpty className="text-muted-foreground w-full py-6 text-center text-base">
+        <CommandEmpty
+          data-error={currentPage.commandEmptyIsError || undefined}
+          className="text-muted-foreground data-error:text-destructive w-full py-6 text-center text-base"
+        >
           {currentPage.commandEmptyText || "No matching results"}
         </CommandEmpty>
       )}
