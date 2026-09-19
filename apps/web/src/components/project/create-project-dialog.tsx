@@ -109,7 +109,7 @@ export function CreateProjectDialog({
         <DialogHeader>
           <DialogTitle>Create Project</DialogTitle>
           <DialogDescription>
-            Give your project a name, or leave it empty to use the generated one.
+            Enter a name, or leave it empty to use the generated one.
           </DialogDescription>
         </DialogHeader>
         <form

@@ -27,6 +27,7 @@ import {
   ComponentProps,
   Dispatch,
   FC,
+  KeyboardEvent,
   ReactElement,
   ReactNode,
   SetStateAction,
@@ -122,10 +123,12 @@ export function BreadcrumbItem<T>({
 
   const ConditionalNewItemWrapper = useCallback(
     ({ children }: { children: ReactElement }) => {
-      if (NewItemWrapper) {
-        return <NewItemWrapper>{children}</NewItemWrapper>;
-      }
-      return children;
+      if (!NewItemWrapper) return children;
+      return (
+        <div className="contents" onKeyDown={stopPortaledKeyDown}>
+          <NewItemWrapper>{children}</NewItemWrapper>
+        </div>
+      );
     },
     [NewItemWrapper],
   );
@@ -266,6 +269,12 @@ export function BreadcrumbItem<T>({
       </DropdownOrDrawerContentForDropdown>
     </DropdownOrDrawer>
   );
+}
+
+// Keys typed in a dialog opened from the menu bubble up the React tree, where the menu swallows them
+function stopPortaledKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+  if (e.currentTarget.contains(e.target as Node)) return;
+  e.stopPropagation();
 }
 
 function SheetItem<T>({
