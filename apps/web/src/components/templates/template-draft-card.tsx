@@ -48,14 +48,14 @@ export default function TemplateDraftCard({
             classNameCard,
           )}
         >
-          <div className="flex w-full items-center justify-between gap-4">
+          <div className="flex w-full items-start justify-between gap-4">
             <div className="flex min-w-0 shrink items-center justify-start gap-2">
               <TemplateDraftIcon templateDraft={templateDraft} className="-ml-1 size-5" />
               <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
                 {templateDraft.name}
               </h3>
             </div>
-            <Chip variant="process" className="-my-1 -mr-1.5 max-w-1/2">
+            <Chip variant="process" className="-mt-1.5 -mr-3 max-w-1/2">
               Template
             </Chip>
           </div>

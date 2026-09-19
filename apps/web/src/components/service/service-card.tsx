@@ -102,7 +102,7 @@ export default function ServiceCard({
   const cardContent = (
     <>
       {service && <NewEntityIndicator id={service.id} />}
-      <div className="relative flex w-full items-center justify-between gap-4">
+      <div className="relative flex w-full items-start justify-between gap-4">
         <div className="flex min-w-0 shrink items-center justify-start gap-2">
           {!isPlaceholder ? (
             <ServiceIcon service={service} className="-ml-1 size-5" />
@@ -114,7 +114,7 @@ export default function ServiceCard({
           </h3>
         </div>
         {changeLabel !== null && (
-          <Chip isLoading={isApplying} className="-my-1 -mr-1.5 max-w-1/2">
+          <Chip isLoading={isApplying} className="-mt-1.5 -mr-3 max-w-1/2">
             {changeLabel}
           </Chip>
         )}
