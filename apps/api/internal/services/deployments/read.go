@@ -12,6 +12,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 func (self *DeploymentService) GetDeploymentsForService(ctx context.Context, requesterUserId uuid.UUID, input *models.GetDeploymentsInput) ([]*models.DeploymentResponse, *models.DeploymentResponse, *models.PaginationResponseMetadata, error) {
@@ -121,7 +122,11 @@ func (self *DeploymentService) AttachReplicaDataToCurrent(ctx context.Context, d
 
 	// Use the standard utility to calculate replica data with inferred events
 	replicaData := self.calculateReplicaData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment, service.Type == schema.ServiceTypeDatabase)
-	self.applyDatabaseCRStatus(ctx, service, namespace, replicaData)
+	serviceState, err := self.k8s.GetUnbindServiceState(ctx, namespace, service.KubernetesName)
+	if err != nil && !kerrors.IsNotFound(err) {
+		log.Warn("Failed to read service CR state", "err", err, "service_id", service.ID)
+	}
+	applyServiceState(serviceState, service.Type == schema.ServiceTypeDatabase, replicaData)
 
 	// Attach data to deployment responses using the shared utility
 	self.AttachReplicaDataToDeploymentResponses(deployments, replicaData, service.Edges.CurrentDeployment.ID)

@@ -12,8 +12,8 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
 	unbindv1 "github.com/unbindapp/unbind-operator/api/v1"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const deploymentRolloutGracePeriod = 5 * time.Minute
@@ -63,6 +63,11 @@ func (self *DeploymentService) AttachReplicaDataToServices(ctx context.Context, 
 		}
 	}
 
+	serviceStates, err := self.k8s.ListUnbindServiceStates(ctx, namespace)
+	if err != nil {
+		log.Warn("Failed to list service CR states", "err", err, "namespace", namespace)
+	}
+
 	// Calculate replica data for each service
 	result := make(map[uuid.UUID]*ServiceReplicaData)
 	for _, service := range services {
@@ -73,7 +78,7 @@ func (self *DeploymentService) AttachReplicaDataToServices(ctx context.Context, 
 		statuses := serviceStatuses[service.ID]
 		isDatabase := service.Type == schema.ServiceTypeDatabase
 		replicaData := self.calculateReplicaData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment, isDatabase)
-		self.applyDatabaseCRStatus(ctx, service, namespace, replicaData)
+		applyServiceState(serviceStates[service.KubernetesName], isDatabase, replicaData)
 		result[service.ID] = replicaData
 	}
 
@@ -96,7 +101,7 @@ func (self *DeploymentService) calculateReplicaData(statuses []k8s.PodContainerS
 
 	// gated on the label existing: some database operators don't propagate it to pods,
 	// and those that do never refresh it, so the deployment id goes stale. Database
-	// rollout progress comes from the CR condition in applyDatabaseCRStatus instead.
+	// rollout progress comes from the CR condition in applyServiceState instead.
 	countedStatuses := statuses
 	staleEvents := []models.EventRecord{}
 	noCurrentPods := false
@@ -215,28 +220,30 @@ func (self *DeploymentService) calculateReplicaData(statuses []k8s.PodContainerS
 	}
 }
 
-// pod-derived crashing keeps precedence over the CR condition
-func (self *DeploymentService) applyDatabaseCRStatus(ctx context.Context, service *ent.Service, namespace string, data *ServiceReplicaData) {
-	if service.Type != schema.ServiceTypeDatabase {
+// applyServiceState layers what the operator reports on top of the pod-derived status.
+// Pods only show what is running, which stays the previous deployment when the
+// operator could not apply the current one.
+func applyServiceState(state *k8s.UnbindServiceState, isDatabase bool, data *ServiceReplicaData) {
+	if state == nil || data.Status == schema.DeploymentStatusRemoved {
 		return
 	}
 
-	status, err := self.k8s.GetUnbindServiceStatus(ctx, namespace, service.KubernetesName)
-	if err != nil {
-		if !kerrors.IsNotFound(err) {
-			log.Warn("Failed to read service CR status", "err", err, "service_id", service.ID)
-		}
-		return
-	}
-	if status == nil {
+	reconciled := apimeta.FindStatusCondition(state.Status.Conditions, unbindv1.ConditionTypeReconciled)
+	if reconciled != nil && reconciled.Status == metav1.ConditionFalse && reconciled.ObservedGeneration == state.Generation {
+		data.Status = schema.DeploymentStatusLaunchError
+		data.StatusMessage = fmt.Sprintf("Couldn't apply the deployment: %s", reconciled.Message)
 		return
 	}
 
-	condition := apimeta.FindStatusCondition(status.Conditions, unbindv1.ConditionTypeDatabaseReady)
+	if !isDatabase {
+		return
+	}
+	condition := apimeta.FindStatusCondition(state.Status.Conditions, unbindv1.ConditionTypeDatabaseReady)
 	if condition == nil {
 		return
 	}
 
+	// pod-derived crashing keeps precedence over the database condition
 	switch condition.Reason {
 	case unbindv1.DatabaseReasonFailed:
 		// A running cluster keeps serving through non-fatal sync hiccups (Zalando reports

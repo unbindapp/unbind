@@ -40,6 +40,7 @@ export default function DeployLogs({ deployment }: TProps) {
   return (
     <LogViewer
       error={deployment.error}
+      notice={getLaunchMessage(deployment)}
       containerType="sheet"
       teamId={teamId}
       projectId={projectId}
@@ -53,4 +54,12 @@ export default function DeployLogs({ deployment }: TProps) {
       httpDefaultEndTimestamp={end}
     />
   );
+}
+
+// Why a deployment that never came up, or keeps crashing, is in that state
+function getLaunchMessage(deployment: TDeploymentShallow) {
+  if (deployment.status !== "launch-error" && deployment.status !== "crashing") return undefined;
+  if (deployment.status_message) return deployment.status_message;
+  if (deployment.crashing_reasons.length === 0) return undefined;
+  return deployment.crashing_reasons.join(", ");
 }

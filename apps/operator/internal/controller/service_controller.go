@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"sync"
@@ -131,13 +132,14 @@ func (r *ServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, nil
 	}
 
-	if err := r.reconcileResources(ctx, &service); err != nil {
-		return ctrl.Result{}, err
-	}
-
-	if err := r.updateServiceStatus(ctx, &service); err != nil {
+	// A failed reconcile is written to the status before the retry, the API reads it from there
+	reconcileErr := r.reconcileResources(ctx, &service)
+	if err := r.updateServiceStatus(ctx, &service, reconcileErr); err != nil {
 		logger.Error(err, "Failed to update Service status")
-		return ctrl.Result{}, err
+		return ctrl.Result{}, errors.Join(reconcileErr, err)
+	}
+	if reconcileErr != nil {
+		return ctrl.Result{}, reconcileErr
 	}
 
 	if service.Spec.Type == "database" {
@@ -187,7 +189,7 @@ func (r *ServiceReconciler) reconcileResources(ctx context.Context, service *v1.
 }
 
 // updateServiceStatus refreshes the Service status subresource when it has drifted.
-func (r *ServiceReconciler) updateServiceStatus(ctx context.Context, service *v1.Service) error {
+func (r *ServiceReconciler) updateServiceStatus(ctx context.Context, service *v1.Service, reconcileErr error) error {
 	var newURLs []string
 	if len(service.Spec.Config.Hosts) > 0 && service.Spec.Config.Public && service.Spec.Type != "database" {
 		for _, host := range service.Spec.Config.Hosts {
@@ -195,7 +197,7 @@ func (r *ServiceReconciler) updateServiceStatus(ctx context.Context, service *v1
 		}
 	}
 
-	needsStatusUpdate := false
+	needsStatusUpdate := apimeta.SetStatusCondition(&service.Status.Conditions, reconciledCondition(service.Generation, reconcileErr))
 	deploymentStatus := "Ready"
 	if service.Spec.Type == "database" {
 		condition := r.computeDatabaseCondition(ctx, service)
@@ -203,6 +205,9 @@ func (r *ServiceReconciler) updateServiceStatus(ctx context.Context, service *v1
 			needsStatusUpdate = true
 		}
 		deploymentStatus = condition.Reason
+	}
+	if reconcileErr != nil {
+		deploymentStatus = v1.DeploymentStatusFailed
 	}
 	if service.Status.DeploymentStatus != deploymentStatus {
 		service.Status.DeploymentStatus = deploymentStatus
@@ -217,6 +222,24 @@ func (r *ServiceReconciler) updateServiceStatus(ctx context.Context, service *v1
 		return nil
 	}
 	return r.Status().Update(ctx, service)
+}
+
+// reconciledCondition carries the generation so a failure of an older spec is never
+// read as the state of a newer one
+func reconciledCondition(generation int64, reconcileErr error) metav1.Condition {
+	condition := metav1.Condition{
+		Type:               v1.ConditionTypeReconciled,
+		Status:             metav1.ConditionTrue,
+		Reason:             v1.ReconcileReasonSucceeded,
+		Message:            "Resources are applied",
+		ObservedGeneration: generation,
+	}
+	if reconcileErr != nil {
+		condition.Status = metav1.ConditionFalse
+		condition.Reason = v1.ReconcileReasonFailed
+		condition.Message = reconcileErr.Error()
+	}
+	return condition
 }
 
 // finalizeService handles resource cleanup when the Service CR is being deleted.

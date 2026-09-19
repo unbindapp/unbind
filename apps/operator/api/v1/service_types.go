@@ -155,6 +155,14 @@ const (
 	DatabaseReasonReady       = "Ready"
 	DatabaseReasonProgressing = "Progressing"
 	DatabaseReasonFailed      = "Failed"
+
+	// ConditionTypeReconciled reports whether the spec was turned into cluster resources
+	ConditionTypeReconciled = "Reconciled"
+
+	ReconcileReasonSucceeded = "Succeeded"
+	ReconcileReasonFailed    = "Failed"
+
+	DeploymentStatusFailed = "Failed"
 )
 
 // ServiceStatus defines the observed state of Service

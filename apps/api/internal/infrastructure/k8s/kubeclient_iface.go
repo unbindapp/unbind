@@ -21,8 +21,10 @@ type KubeClientInterface interface {
 	SyncDatabaseSecrets(ctx context.Context) (map[uuid.UUID][]string, error)
 	// SyncDatabaseSecretForServiceID syncs the database secret for a specific service ID
 	SyncDatabaseSecretForServiceID(ctx context.Context, serviceID uuid.UUID) error
-	// SyncDatabaseSecretForService syncs the database secret for a specific service,
-	// returning the keys whose values changed
+	// SyncDatabaseSecretForService fills in credentials the secret is still missing,
+	// returning the keys whose values changed. Stored credentials are left alone: only
+	// SyncDatabaseSecrets replaces them, because its caller redeploys the services that
+	// were rendered with the old values.
 	SyncDatabaseSecretForService(ctx context.Context, service *ent.Service) ([]string, error)
 	// UpdateDeploymentImages retags every unbind image in the system namespace; the app deployment (which runs this API) rolls last.
 	UpdateDeploymentImages(ctx context.Context, newVersion string) error
@@ -183,8 +185,9 @@ type KubeClientInterface interface {
 	// DeployUnbindService creates (or replaces) the service resource in the target namespace,
 	// validating it against the API server with a dry run before any real write.
 	DeployUnbindService(ctx context.Context, service *unbindv1.Service) (*unstructured.Unstructured, *unbindv1.Service, error)
-	// GetUnbindServiceStatus returns nil without error when the CR has no status yet
-	GetUnbindServiceStatus(ctx context.Context, namespace, name string) (*unbindv1.ServiceStatus, error)
+	GetUnbindServiceState(ctx context.Context, namespace, name string) (*UnbindServiceState, error)
+	// ListUnbindServiceStates returns the state of every Service CR in the namespace by name
+	ListUnbindServiceStates(ctx context.Context, namespace string) (map[string]*UnbindServiceState, error)
 	// RunManifestApplyJob applies rendered release manifests through a job running as the
 	// elevated updater service account, and waits for it to finish.
 	RunManifestApplyJob(ctx context.Context, version, image string, manifests []byte) error

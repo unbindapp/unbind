@@ -1,6 +1,7 @@
 package resourcebuilder
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/validation"
 )
 
 var ErrDeploymentNotNeeded = fmt.Errorf("deployment not needed, probably no image configured")
@@ -98,9 +100,10 @@ func (rb *ResourceBuilder) buildVolumes() ([]corev1.Volume, []corev1.VolumeMount
 	mounts := make([]corev1.VolumeMount, 0, totalSize)
 
 	for _, vol := range rb.service.Spec.Config.Volumes {
-		mounts = append(mounts, corev1.VolumeMount{Name: vol.Name, MountPath: vol.MountPath})
+		name := podVolumeName(vol.Name)
+		mounts = append(mounts, corev1.VolumeMount{Name: name, MountPath: vol.MountPath})
 		volumes = append(volumes, corev1.Volume{
-			Name: vol.Name,
+			Name: name,
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: vol.Name},
 			},
@@ -122,6 +125,15 @@ func (rb *ResourceBuilder) buildVolumes() ([]corev1.Volume, []corev1.VolumeMount
 	}
 
 	return volumes, mounts
+}
+
+// podVolumeName keeps the claim name when a pod accepts it as a volume name. Claims can
+// be longer than a volume name and contain dots, those get a short stable name instead.
+func podVolumeName(claimName string) string {
+	if len(validation.IsDNS1123Label(claimName)) == 0 {
+		return claimName
+	}
+	return fmt.Sprintf("vol-%x", sha256.Sum256([]byte(claimName)))[:16]
 }
 
 func (rb *ResourceBuilder) buildResourceRequirements() corev1.ResourceRequirements {

@@ -3028,24 +3028,24 @@ func (_c *KubeClientMock_GetSimpleHealthStatus_Call) RunAndReturn(run func(ctx c
 	return _c
 }
 
-// GetUnbindServiceStatus provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) GetUnbindServiceStatus(ctx context.Context, namespace string, name string) (*v10.ServiceStatus, error) {
+// GetUnbindServiceState provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) GetUnbindServiceState(ctx context.Context, namespace string, name string) (*k8s.UnbindServiceState, error) {
 	ret := _mock.Called(ctx, namespace, name)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetUnbindServiceStatus")
+		panic("no return value specified for GetUnbindServiceState")
 	}
 
-	var r0 *v10.ServiceStatus
+	var r0 *k8s.UnbindServiceState
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*v10.ServiceStatus, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*k8s.UnbindServiceState, error)); ok {
 		return returnFunc(ctx, namespace, name)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *v10.ServiceStatus); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *k8s.UnbindServiceState); ok {
 		r0 = returnFunc(ctx, namespace, name)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*v10.ServiceStatus)
+			r0 = ret.Get(0).(*k8s.UnbindServiceState)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
@@ -3056,20 +3056,20 @@ func (_mock *KubeClientMock) GetUnbindServiceStatus(ctx context.Context, namespa
 	return r0, r1
 }
 
-// KubeClientMock_GetUnbindServiceStatus_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUnbindServiceStatus'
-type KubeClientMock_GetUnbindServiceStatus_Call struct {
+// KubeClientMock_GetUnbindServiceState_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUnbindServiceState'
+type KubeClientMock_GetUnbindServiceState_Call struct {
 	*mock.Call
 }
 
-// GetUnbindServiceStatus is a helper method to define mock.On call
+// GetUnbindServiceState is a helper method to define mock.On call
 //   - ctx context.Context
 //   - namespace string
 //   - name string
-func (_e *KubeClientMock_Expecter) GetUnbindServiceStatus(ctx any, namespace any, name any) *KubeClientMock_GetUnbindServiceStatus_Call {
-	return &KubeClientMock_GetUnbindServiceStatus_Call{Call: _e.mock.On("GetUnbindServiceStatus", ctx, namespace, name)}
+func (_e *KubeClientMock_Expecter) GetUnbindServiceState(ctx any, namespace any, name any) *KubeClientMock_GetUnbindServiceState_Call {
+	return &KubeClientMock_GetUnbindServiceState_Call{Call: _e.mock.On("GetUnbindServiceState", ctx, namespace, name)}
 }
 
-func (_c *KubeClientMock_GetUnbindServiceStatus_Call) Run(run func(ctx context.Context, namespace string, name string)) *KubeClientMock_GetUnbindServiceStatus_Call {
+func (_c *KubeClientMock_GetUnbindServiceState_Call) Run(run func(ctx context.Context, namespace string, name string)) *KubeClientMock_GetUnbindServiceState_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -3092,12 +3092,12 @@ func (_c *KubeClientMock_GetUnbindServiceStatus_Call) Run(run func(ctx context.C
 	return _c
 }
 
-func (_c *KubeClientMock_GetUnbindServiceStatus_Call) Return(serviceStatus *v10.ServiceStatus, err error) *KubeClientMock_GetUnbindServiceStatus_Call {
-	_c.Call.Return(serviceStatus, err)
+func (_c *KubeClientMock_GetUnbindServiceState_Call) Return(unbindServiceState *k8s.UnbindServiceState, err error) *KubeClientMock_GetUnbindServiceState_Call {
+	_c.Call.Return(unbindServiceState, err)
 	return _c
 }
 
-func (_c *KubeClientMock_GetUnbindServiceStatus_Call) RunAndReturn(run func(ctx context.Context, namespace string, name string) (*v10.ServiceStatus, error)) *KubeClientMock_GetUnbindServiceStatus_Call {
+func (_c *KubeClientMock_GetUnbindServiceState_Call) RunAndReturn(run func(ctx context.Context, namespace string, name string) (*k8s.UnbindServiceState, error)) *KubeClientMock_GetUnbindServiceState_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -3368,6 +3368,74 @@ func (_c *KubeClientMock_ListServers_Call) Return(serverResponses []*models.Serv
 }
 
 func (_c *KubeClientMock_ListServers_Call) RunAndReturn(run func(ctx context.Context) ([]*models.ServerResponse, error)) *KubeClientMock_ListServers_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListUnbindServiceStates provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) ListUnbindServiceStates(ctx context.Context, namespace string) (map[string]*k8s.UnbindServiceState, error) {
+	ret := _mock.Called(ctx, namespace)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListUnbindServiceStates")
+	}
+
+	var r0 map[string]*k8s.UnbindServiceState
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (map[string]*k8s.UnbindServiceState, error)); ok {
+		return returnFunc(ctx, namespace)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) map[string]*k8s.UnbindServiceState); ok {
+		r0 = returnFunc(ctx, namespace)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]*k8s.UnbindServiceState)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(ctx, namespace)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_ListUnbindServiceStates_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListUnbindServiceStates'
+type KubeClientMock_ListUnbindServiceStates_Call struct {
+	*mock.Call
+}
+
+// ListUnbindServiceStates is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespace string
+func (_e *KubeClientMock_Expecter) ListUnbindServiceStates(ctx any, namespace any) *KubeClientMock_ListUnbindServiceStates_Call {
+	return &KubeClientMock_ListUnbindServiceStates_Call{Call: _e.mock.On("ListUnbindServiceStates", ctx, namespace)}
+}
+
+func (_c *KubeClientMock_ListUnbindServiceStates_Call) Run(run func(ctx context.Context, namespace string)) *KubeClientMock_ListUnbindServiceStates_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_ListUnbindServiceStates_Call) Return(stringToUnbindServiceState map[string]*k8s.UnbindServiceState, err error) *KubeClientMock_ListUnbindServiceStates_Call {
+	_c.Call.Return(stringToUnbindServiceState, err)
+	return _c
+}
+
+func (_c *KubeClientMock_ListUnbindServiceStates_Call) RunAndReturn(run func(ctx context.Context, namespace string) (map[string]*k8s.UnbindServiceState, error)) *KubeClientMock_ListUnbindServiceStates_Call {
 	_c.Call.Return(run)
 	return _c
 }

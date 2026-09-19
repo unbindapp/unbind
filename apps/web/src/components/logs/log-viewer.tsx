@@ -50,13 +50,17 @@ type TBaseProps = {
   shouldHaveLogs?: boolean;
   httpDefaultStartTimestamp?: number;
   httpDefaultEndTimestamp?: number;
+  // Shown in place of the logs when there are none
   error?: string;
+  // Shown whether there are logs or not
+  notice?: string;
 };
 
 type TProps = TBaseProps &
   (TEnvironmentLogsProps | TServiceLogsProps | TDeploymentLogsProps | TDeploymentBuildLogsProps);
 
 export default function LogViewer({
+  notice,
   hideServiceByDefault,
   teamId,
   projectId,
@@ -93,6 +97,7 @@ export default function LogViewer({
           >
             <Logs
               error={error}
+              notice={notice}
               containerType={containerType}
               type={type}
               shouldHaveLogs={shouldHaveLogs}
@@ -115,11 +120,13 @@ function Logs({
   type,
   shouldHaveLogs,
   error: errorFromProp,
+  notice,
 }: {
   containerType: TContainerType;
   type: TLogType;
   shouldHaveLogs?: boolean;
   error?: string;
+  notice?: string;
 }) {
   const {
     logs,
@@ -156,11 +163,12 @@ function Logs({
   const isShowingPlaceholders = !logs || (!servicesData && !isEmpty);
   const lines = useMemo(() => logs ?? [], [logs]);
 
-  if (isEmpty && errorFromProp) {
+  const emptyMessage = errorFromProp || notice;
+  if (isEmpty && emptyMessage) {
     return (
       <ScrollArea>
         <TabWrapper>
-          <ErrorLine message={errorFromProp} />
+          <ErrorLine message={emptyMessage} />
         </TabWrapper>
       </ScrollArea>
     );
@@ -206,6 +214,17 @@ function Logs({
           />
         </div>
       </div>
+      {notice && (
+        <div className="w-full shrink-0 pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
+          <div className="w-full px-2 sm:px-2.5">
+            <ErrorLine
+              className="border-destructive/3-10 border py-1.25"
+              classNameMessage="pr-20"
+              message={notice}
+            />
+          </div>
+        </div>
+      )}
       {error && logs && logs.length > 0 && (
         <div className="w-full shrink-0 pt-2 group-data-[container=page]/wrapper:px-[max(0px,calc((100%-80rem-1.25rem)/2))]">
           <div className="w-full px-2 sm:px-2.5">

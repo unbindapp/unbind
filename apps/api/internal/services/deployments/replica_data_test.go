@@ -1,7 +1,6 @@
 package deployments_service
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -11,11 +10,8 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
-	mocks_infrastructure_k8s "github.com/unbindapp/unbind-api/mocks/infrastructure/k8s"
 	unbindv1 "github.com/unbindapp/unbind-operator/api/v1"
-	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	k8sschema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func podStatus(deploymentID uuid.UUID, state k8s.ContainerState, ready, crashing bool) k8s.PodContainerStatus {
@@ -176,99 +172,126 @@ func TestCalculateReplicaData(t *testing.T) {
 	}
 }
 
-func TestApplyDatabaseCRStatus(t *testing.T) {
-	ctx := context.Background()
-	namespace := "team-ns"
-	dbService := &ent.Service{ID: uuid.New(), Type: schema.ServiceTypeDatabase, KubernetesName: "my-redis"}
+func TestApplyServiceState(t *testing.T) {
+	const generation = int64(7)
 
-	statusWith := func(reason, message string) *unbindv1.ServiceStatus {
-		return &unbindv1.ServiceStatus{
-			Conditions: []metav1.Condition{
+	database := func(reason, message string) *k8s.UnbindServiceState {
+		return &k8s.UnbindServiceState{
+			Generation: generation,
+			Status: unbindv1.ServiceStatus{Conditions: []metav1.Condition{
 				{Type: unbindv1.ConditionTypeDatabaseReady, Status: metav1.ConditionFalse, Reason: reason, Message: message},
-			},
+			}},
 		}
 	}
+	reconcile := func(status metav1.ConditionStatus, observed int64, message string) *k8s.UnbindServiceState {
+		return &k8s.UnbindServiceState{
+			Generation: generation,
+			Status: unbindv1.ServiceStatus{Conditions: []metav1.Condition{
+				{Type: unbindv1.ConditionTypeReconciled, Status: status, ObservedGeneration: observed, Message: message},
+			}},
+		}
+	}
+	volumeError := "volume name must be no more than 63 characters"
 
 	tests := []struct {
 		name            string
-		service         *ent.Service
-		crStatus        *unbindv1.ServiceStatus
-		crErr           error
+		state           *k8s.UnbindServiceState
+		isDatabase      bool
 		initialStatus   schema.DeploymentStatus
 		expectedStatus  schema.DeploymentStatus
 		expectedMessage string
 	}{
 		{
 			name:            "failed release keeps active running with message",
-			service:         dbService,
-			crStatus:        statusWith(unbindv1.DatabaseReasonFailed, "upgrade retries exhausted"),
+			state:           database(unbindv1.DatabaseReasonFailed, "upgrade retries exhausted"),
+			isDatabase:      true,
 			initialStatus:   schema.DeploymentStatusActive,
 			expectedStatus:  schema.DeploymentStatusActive,
 			expectedMessage: "upgrade retries exhausted",
 		},
 		{
 			name:            "failed release overrides launching",
-			service:         dbService,
-			crStatus:        statusWith(unbindv1.DatabaseReasonFailed, "upgrade retries exhausted"),
+			state:           database(unbindv1.DatabaseReasonFailed, "upgrade retries exhausted"),
+			isDatabase:      true,
 			initialStatus:   schema.DeploymentStatusLaunching,
 			expectedStatus:  schema.DeploymentStatusLaunchError,
 			expectedMessage: "upgrade retries exhausted",
 		},
 		{
 			name:            "failed release does not mask crashing",
-			service:         dbService,
-			crStatus:        statusWith(unbindv1.DatabaseReasonFailed, "upgrade retries exhausted"),
+			state:           database(unbindv1.DatabaseReasonFailed, "upgrade retries exhausted"),
+			isDatabase:      true,
 			initialStatus:   schema.DeploymentStatusCrashing,
 			expectedStatus:  schema.DeploymentStatusCrashing,
 			expectedMessage: "upgrade retries exhausted",
 		},
 		{
 			name:            "progressing release downgrades active",
-			service:         dbService,
-			crStatus:        statusWith(unbindv1.DatabaseReasonProgressing, "helm upgrade in progress"),
+			state:           database(unbindv1.DatabaseReasonProgressing, "helm upgrade in progress"),
+			isDatabase:      true,
 			initialStatus:   schema.DeploymentStatusActive,
 			expectedStatus:  schema.DeploymentStatusLaunching,
 			expectedMessage: "helm upgrade in progress",
 		},
 		{
 			name:           "ready release is a no-op",
-			service:        dbService,
-			crStatus:       statusWith(unbindv1.DatabaseReasonReady, ""),
-			initialStatus:  schema.DeploymentStatusActive,
-			expectedStatus: schema.DeploymentStatusActive,
-		},
-		{
-			name:           "missing status is a no-op",
-			service:        dbService,
-			crStatus:       nil,
+			state:          database(unbindv1.DatabaseReasonReady, ""),
+			isDatabase:     true,
 			initialStatus:  schema.DeploymentStatusActive,
 			expectedStatus: schema.DeploymentStatusActive,
 		},
 		{
 			name:           "missing CR is a no-op",
-			service:        dbService,
-			crErr:          kerrors.NewNotFound(k8sschema.GroupResource{Group: "unbind.unbind.app", Resource: "services"}, "my-redis"),
+			state:          nil,
+			isDatabase:     true,
 			initialStatus:  schema.DeploymentStatusActive,
 			expectedStatus: schema.DeploymentStatusActive,
 		},
 		{
-			name:           "non-database service is a no-op",
-			service:        &ent.Service{ID: uuid.New(), Type: schema.ServiceTypeGithub},
+			name:           "database condition is ignored for other services",
+			state:          database(unbindv1.DatabaseReasonProgressing, "helm upgrade in progress"),
 			initialStatus:  schema.DeploymentStatusActive,
 			expectedStatus: schema.DeploymentStatusActive,
+		},
+		{
+			name:            "spec the operator could not apply fails while the old pod is healthy",
+			state:           reconcile(metav1.ConditionFalse, generation, volumeError),
+			initialStatus:   schema.DeploymentStatusLaunching,
+			expectedStatus:  schema.DeploymentStatusLaunchError,
+			expectedMessage: "Couldn't apply the deployment: " + volumeError,
+		},
+		{
+			name:            "unapplied spec fails a database too",
+			state:           reconcile(metav1.ConditionFalse, generation, volumeError),
+			isDatabase:      true,
+			initialStatus:   schema.DeploymentStatusActive,
+			expectedStatus:  schema.DeploymentStatusLaunchError,
+			expectedMessage: "Couldn't apply the deployment: " + volumeError,
+		},
+		{
+			name:           "failure of an older spec is ignored",
+			state:          reconcile(metav1.ConditionFalse, generation-1, volumeError),
+			initialStatus:  schema.DeploymentStatusLaunching,
+			expectedStatus: schema.DeploymentStatusLaunching,
+		},
+		{
+			name:           "applied spec is a no-op",
+			state:          reconcile(metav1.ConditionTrue, generation, "Resources are applied"),
+			initialStatus:  schema.DeploymentStatusActive,
+			expectedStatus: schema.DeploymentStatusActive,
+		},
+		{
+			name:           "removed deployment stays removed",
+			state:          reconcile(metav1.ConditionFalse, generation, volumeError),
+			initialStatus:  schema.DeploymentStatusRemoved,
+			expectedStatus: schema.DeploymentStatusRemoved,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			k8sMock := mocks_infrastructure_k8s.NewKubeClientMock(t)
-			if tt.service.Type == schema.ServiceTypeDatabase {
-				k8sMock.EXPECT().GetUnbindServiceStatus(ctx, namespace, tt.service.KubernetesName).Return(tt.crStatus, tt.crErr)
-			}
-
-			svc := &DeploymentService{k8s: k8sMock}
 			data := &ServiceReplicaData{Status: tt.initialStatus}
-			svc.applyDatabaseCRStatus(ctx, tt.service, namespace, data)
+			applyServiceState(tt.state, tt.isDatabase, data)
 
 			assert.Equal(t, tt.expectedStatus, data.Status)
 			assert.Equal(t, tt.expectedMessage, data.StatusMessage)
