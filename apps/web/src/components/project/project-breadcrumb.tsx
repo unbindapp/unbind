@@ -6,17 +6,13 @@ import {
 } from "@/components/environment/create-environment-dialog";
 import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbSeparator, BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
-import { useProjects, useProjectsUtils } from "@/components/project/projects-provider";
+import { CreateProjectDialog } from "@/components/project/create-project-dialog";
+import { useProjects } from "@/components/project/projects-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import {
-  createProject as createProjectFn,
-  getProjectDefaultEnvironmentId,
-} from "@/lib/queries/projects";
-import { useMutation } from "@tanstack/react-query";
+import { getProjectDefaultEnvironmentId } from "@/lib/queries/projects";
 import { errAsync, ResultAsync } from "neverthrow";
 import { useLocation, useRouter } from "@tanstack/react-router";
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import { toast } from "@/components/ui/toast";
+import { ReactElement, ReactNode, useCallback, useEffect, useState } from "react";
 
 type TProps = {
   className?: string;
@@ -34,7 +30,6 @@ export default function ProjectBreadcrumb({ className }: TProps) {
   } = useIdsFromPathname();
 
   const { data: projectsData } = useProjects();
-  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId: teamIdFromPathname || "" });
 
   const [selectedProjectId, setSelectedProjectId] = useState(projectIdFromPathname);
   const [selectedEnvironmentId, setSelectedEnvironmentId] = useState(environmentIdFromPathname);
@@ -131,53 +126,22 @@ export default function ProjectBreadcrumb({ className }: TProps) {
     if (nav) void router.preloadRoute(nav);
   }, [getEnvironmentManageItemNav, router]);
 
-  const { mutate: createProject, isPending: isPendingCreateProject } = useMutation({
-    mutationFn: createProjectFn,
-    onSuccess: async (res) => {
-      const projectId = res.data?.id;
-      const environments = res.data.environments;
-      if (environments.length < 1) {
-        toast.add({
-          type: "error",
-          title: "No environments found",
-          description: "There is no environment in this project",
-        });
-        return;
-      }
-      const environmentId = res.data.default_environment_id || environments[0].id;
-      if (!projectId || !environmentId || !teamIdFromPathname) {
-        toast.add({
-          type: "error",
-          title: "Project or environment ID is missing",
-          description: "Project ID or Environment ID is missing",
-        });
-        return;
-      }
-
-      setIsProjectsMenuOpen(false);
-      invalidateProjects();
-
-      const navigateRes = await ResultAsync.fromPromise(
-        router.navigate({
-          to: "/$team_id/project/$project_id",
-          params: { team_id: teamIdFromPathname, project_id: projectId },
-          search: { environment: environmentId },
-        }),
-        () => new Error("Failed to navigate to project"),
+  const CreateProjectDialogMemoized = useCallback(
+    ({ children }: { children: ReactElement }) => {
+      if (!teamIdFromPathname) return children;
+      return (
+        <CreateProjectDialog
+          teamId={teamIdFromPathname}
+          dialogOnOpenChange={(o) => {
+            if (!o) setIsProjectsMenuOpen(false);
+          }}
+        >
+          {children}
+        </CreateProjectDialog>
       );
-
-      if (navigateRes.isErr()) {
-        toast.add({
-          type: "error",
-          title: "Failed to navigate to project",
-          description: navigateRes.error.message,
-        });
-      }
     },
-    onError: (error) => {
-      toast.add({ type: "error", title: "Failed to create project", description: error.message });
-    },
-  });
+    [teamIdFromPathname],
+  );
 
   const CreateEnvironmentDialogMemoized: (
     props: Omit<
@@ -222,14 +186,10 @@ export default function ProjectBreadcrumb({ className }: TProps) {
         onSelect={onProjectIdSelect}
         onIntent={onProjectIdIntent}
         newItemTitle="New Project"
-        newItemIsPending={isPendingCreateProject}
+        newItemIsPending={false}
+        NewItemWrapper={CreateProjectDialogMemoized}
         newItemDontCloseMenuOnSelect={true}
-        onSelectNewItem={() => {
-          if (!teamIdFromPathname) return;
-          createProject({
-            teamId: teamIdFromPathname,
-          });
-        }}
+        onSelectNewItem={() => null}
         showArrow={(project) => {
           const environment = resolveDefaultEnvironmentId(project.id);
           if (!environment || !teamIdFromPathname) return false;

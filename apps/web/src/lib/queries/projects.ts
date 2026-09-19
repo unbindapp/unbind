@@ -103,6 +103,19 @@ export const projectNameMinLength = 2;
 export const projectNameMaxLength = 32;
 export const projectDescriptionMaxLength = 128;
 
+export const ProjectCreateFormSchema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .max(projectNameMaxLength, `Name should be at most ${projectNameMaxLength} characters.`)
+      .refine(
+        (name) => name === "" || name.length >= projectNameMinLength,
+        `Name should be at least ${projectNameMinLength} characters.`,
+      ),
+  })
+  .strip();
+
 export const ProjectUpdateFormSchema = z
   .object({
     name: z

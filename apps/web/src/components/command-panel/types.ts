@@ -67,11 +67,6 @@ export type TContextCommandPanelContext =
       projectId?: never;
     }
   | {
-      contextType: "new-project";
-      teamId: string;
-      projectId?: never;
-    }
-  | {
       contextType: "project";
       teamId: string;
       projectId: string;

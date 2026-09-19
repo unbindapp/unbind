@@ -34,24 +34,17 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const { item: goToItem } = useGoToItem({ context });
   const { item: systemGoToItem } = useSystemGoToItem({ context });
   const { item: accountGoToItem } = useAccountGoToItem({ context });
-  const { item: newProjectItem } = useNewProjectItem({ context });
+  const { item: newProjectItem } = useNewProjectItem();
   const { item: preferencesItem } = usePreferencesItem({ context });
 
   const rootPage: TCommandPanelPage = useMemo(
     () => ({
       id: contextCommandPanelRootPage,
-      title:
-        context.contextType === "new-project"
-          ? "New Project"
-          : context.contextType === "new-service"
-            ? "Add Service"
-            : "Commands",
+      title: context.contextType === "new-service" ? "Add Service" : "Commands",
       parentPageId: null,
       inputPlaceholder: "Search commands...",
       items: [
-        ...(context.contextType === "team" || context.contextType === "new-project"
-          ? [newProjectItem]
-          : []),
+        ...(context.contextType === "team" && newProjectItem ? [newProjectItem] : []),
         ...(gitItem ? [gitItem] : []),
         ...(databaseItem ? [databaseItem] : []),
         ...(templateItem ? [templateItem] : []),
@@ -65,6 +58,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
+      newProjectItem,
       gitItem,
       dockerImageItem,
       databaseItem,

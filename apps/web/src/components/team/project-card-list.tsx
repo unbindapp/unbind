@@ -1,16 +1,13 @@
 "use client";
 
-import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
-import { TContextCommandPanelContext } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
+import { CreateProjectDialog } from "@/components/project/create-project-dialog";
 import { useProjects } from "@/components/project/projects-provider";
-import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
-import PendingProjectCard from "@/components/team/pending-project-card";
 import ProjectCard from "@/components/team/project-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { PlusIcon } from "lucide-react";
-import { ReactNode, useMemo } from "react";
+import { ReactNode } from "react";
 
 type TProps = {
   teamId: string;
@@ -21,12 +18,6 @@ const placeholderArray = Array.from({ length: 6 });
 export default function ProjectCardList({ teamId }: TProps) {
   const { data, isPending, error } = useProjects();
   const projects = data?.projects;
-  const pendingProjects = usePendingEntityStore((s) => s.pendingProjects);
-
-  const context: TContextCommandPanelContext = useMemo(
-    () => ({ contextType: "new-project", teamId }),
-    [teamId],
-  );
 
   if (!projects && !isPending && error) {
     return (
@@ -50,22 +41,12 @@ export default function ProjectCardList({ teamId }: TProps) {
 
   return (
     <Wrapper>
-      {pendingProjects
-        .filter((p) => p.teamId === teamId)
-        .map((p) => (
-          <PendingProjectCard key={p.id} pendingProject={p} className="w-full md:w-1/2 lg:w-1/3" />
-        ))}
       {projects.map((i) => (
         <ProjectCard key={i.id} project={i} className="w-full md:w-1/2 lg:w-1/3" />
       ))}
       {projects.length < 3 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
-          <ContextCommandPanel
-            title="Create New Project"
-            description="Create a new project on Unbind"
-            triggerType="list"
-            context={context}
-          >
+          <CreateProjectDialog teamId={teamId}>
             <Button
               variant="card"
               className="bg-background text-muted-foreground flex min-h-38 w-full items-center justify-center rounded-xl border px-5 py-3.5 text-center font-medium"
@@ -73,7 +54,7 @@ export default function ProjectCardList({ teamId }: TProps) {
               <PlusIcon className="-ml-1.5 size-5 shrink-0" />
               <p className="min-w-0 shrink leading-tight">New Project</p>
             </Button>
-          </ContextCommandPanel>
+          </CreateProjectDialog>
         </li>
       )}
     </Wrapper>

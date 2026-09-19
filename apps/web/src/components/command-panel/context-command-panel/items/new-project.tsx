@@ -1,141 +1,29 @@
 import { contextCommandPanelRootPage } from "@/components/command-panel/constants";
-import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
-import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
+import { TCommandPanelItem } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
-import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
-import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
-import { generateProjectName } from "@/lib/helpers/generate-project-name";
-import { createProject as createProjectFn } from "@/lib/queries/projects";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { useCreateProjectDialog } from "@/components/project/create-project-dialog-provider";
 import { FolderPlusIcon } from "lucide-react";
-import { ResultAsync } from "neverthrow";
-import { v4 as uuidv4 } from "uuid";
 import { useMemo } from "react";
-import { toast } from "@/components/ui/toast";
 
-type TProps = {
-  context: TContextCommandPanelContext;
-};
-
-export default function useNewProjectItem({ context }: TProps) {
-  const teamId = context.teamId ?? "";
-  const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
-
-  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
-  const addPendingProject = usePendingEntityStore((s) => s.addPendingProject);
-  const removePendingProject = usePendingEntityStore((s) => s.removePendingProject);
-
-  const router = useRouter();
-  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
+export default function useNewProjectItem() {
+  const createProjectDialog = useCreateProjectDialog();
   const { closePanel } = useCommandPanel({
     defaultPageId: contextCommandPanelRootPage,
   });
 
-  const { mutate: createProject } = useMutation({
-    mutationFn: createProjectFn,
-    onMutate: ({ name }) => {
-      closePanel();
-      const pendingId = uuidv4();
-      addPendingProject({
-        id: pendingId,
-        teamId,
-        name: name || "",
-        createdAt: new Date().toISOString(),
-      });
-      return { pendingId };
-    },
-    onSuccess: async (res) => {
-      const projectId = res.data.id;
-      temporarilyAddNewEntity(res.data.id);
-
-      const environments = res.data.environments;
-      if (environments.length < 1) {
-        toast.add({
-          type: "error",
-          title: "No environments found",
-          description: "There is no environment in this project",
-        });
-        setIsPendingId(null);
-        return;
-      }
-      const environmentId = res.data.default_environment_id || environments[0].id;
-      if (!projectId || !environmentId) {
-        toast.add({
-          type: "error",
-          title: "Project or environment ID is missing",
-          description: "Project ID or Environment ID is missing",
-        });
-        setIsPendingId(null);
-        return;
-      }
-
-      const invalidateRes = await ResultAsync.fromPromise(
-        invalidateProjects(),
-        () => new Error("Failed to invalidate projects"),
-      );
-      if (invalidateRes.isErr()) {
-        toast.add({
-          type: "error",
-          title: "Failed to invalidate projects",
-          description: invalidateRes.error.message,
-        });
-        setIsPendingId(null);
-        return;
-      }
-
-      const navigateRes = await ResultAsync.fromPromise(
-        router.navigate({
-          to: "/$team_id/project/$project_id",
-          params: { team_id: teamId, project_id: projectId },
-          search: { environment: environmentId },
-        }),
-        () => new Error("Failed to navigate to project"),
-      );
-      if (navigateRes.isErr()) {
-        toast.add({
-          type: "error",
-          title: "Failed to navigate to project",
-          description: navigateRes.error.message,
-        });
-        setIsPendingId(null);
-        return;
-      }
-
-      setIsPendingId(null);
-    },
-    onError: (error) => {
-      toast.add({ type: "error", title: "Failed to create project", description: error.message });
-      setIsPendingId(null);
-    },
-    onSettled: (_data, _error, _variables, context) => {
-      if (!context) return;
-      removePendingProject(context.pendingId);
-    },
-  });
-
-  const item: TCommandPanelItem = useMemo(() => {
-    const id = `new-project`;
+  const item: TCommandPanelItem | null = useMemo(() => {
+    if (!createProjectDialog) return null;
     return {
-      id,
+      id: "new-project",
       title: "New Project",
-      keywords: ["New Project", "Create project...", "Creating project..."],
-      onSelect: (props) => {
-        if (props?.isPendingId === id) return;
-        setIsPendingId(id);
-        createProject({ teamId, name: generateProjectName() });
+      keywords: ["New Project", "Create project..."],
+      onSelect: () => {
+        closePanel();
+        createProjectDialog.openCreateProjectDialog();
       },
       Icon: FolderPlusIcon,
     };
-  }, [setIsPendingId, createProject, teamId]);
+  }, [createProjectDialog, closePanel]);
 
-  const value = useMemo(
-    () => ({
-      item,
-    }),
-    [item],
-  );
-
-  return value;
+  return useMemo(() => ({ item }), [item]);
 }
