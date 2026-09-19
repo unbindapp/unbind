@@ -271,6 +271,36 @@ func DefaultDatabaseResources() *Resources {
 	}
 }
 
+// MergeResources applies an update per field: negative clears, zero keeps, positive sets. Nil when nothing is left.
+func MergeResources(existing, update *Resources) *Resources {
+	if update == nil {
+		return existing
+	}
+	if existing == nil {
+		existing = &Resources{}
+	}
+	merged := Resources{
+		CPURequestsMillicores:   mergeResourceField(update.CPURequestsMillicores, existing.CPURequestsMillicores),
+		CPULimitsMillicores:     mergeResourceField(update.CPULimitsMillicores, existing.CPULimitsMillicores),
+		MemoryRequestsMegabytes: mergeResourceField(update.MemoryRequestsMegabytes, existing.MemoryRequestsMegabytes),
+		MemoryLimitsMegabytes:   mergeResourceField(update.MemoryLimitsMegabytes, existing.MemoryLimitsMegabytes),
+	}
+	if merged == (Resources{}) {
+		return nil
+	}
+	return &merged
+}
+
+func mergeResourceField(update, existing int64) int64 {
+	if update < 0 {
+		return 0
+	}
+	if update == 0 {
+		return existing
+	}
+	return update
+}
+
 func (self *Resources) HasNegative() bool {
 	if self == nil {
 		return false
@@ -512,6 +542,9 @@ type DatabaseConfig struct {
 	MaxReplicationSlots  *int     `json:"maxReplicationSlots,omitempty" required:"false" minimum:"0" maximum:"1000" description:"PostgreSQL max_replication_slots, 0 uses the default"`
 	MaxWalSenders        *int     `json:"maxWalSenders,omitempty" required:"false" minimum:"0" maximum:"1000" description:"PostgreSQL max_wal_senders, 0 uses the default"`
 	MaxSlotWalKeepSizeMB *int     `json:"maxSlotWalKeepSizeMb,omitempty" required:"false" minimum:"0" description:"PostgreSQL max_slot_wal_keep_size in megabytes, 0 is unlimited"`
+	SharedBuffersMB      *int     `json:"sharedBuffersMb,omitempty" required:"false" minimum:"0" doc:"PostgreSQL shared_buffers in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most half of the memory limit. Changing it restarts the database"`
+	// MySQL only
+	InnodbBufferPoolSizeMB *int `json:"innodbBufferPoolSizeMb,omitempty" required:"false" minimum:"0" doc:"MySQL innodb_buffer_pool_size in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most three quarters of the memory limit, and rounded down to whole 128MB chunks. Changing it restarts the database"`
 }
 
 // Update requests carry only the fields they change
@@ -547,7 +580,46 @@ func MergeDatabaseConfig(existing, patch *DatabaseConfig) *DatabaseConfig {
 	if patch.MaxSlotWalKeepSizeMB != nil {
 		merged.MaxSlotWalKeepSizeMB = patch.MaxSlotWalKeepSizeMB
 	}
+	if patch.SharedBuffersMB != nil {
+		merged.SharedBuffersMB = patch.SharedBuffersMB
+	}
+	if patch.InnodbBufferPoolSizeMB != nil {
+		merged.InnodbBufferPoolSizeMB = patch.InnodbBufferPoolSizeMB
+	}
 	return &merged
+}
+
+const minDatabaseCacheMegabytes = 16
+
+// ValidateMemorySettings keeps a cache override inside its engine's share of the memory limit, a larger one gets the database killed on start
+func (self *DatabaseConfig) ValidateMemorySettings(databaseType string, resources *Resources) error {
+	if self == nil {
+		return nil
+	}
+	var memoryLimitMebibytes int64
+	if resources != nil {
+		memoryLimitMebibytes = resources.MemoryLimitsMegabytes * 1000 * 1000 / (1024 * 1024)
+	}
+	if err := validateCacheOverride("sharedBuffersMb", "postgres", intOrZero(self.SharedBuffersMB), databaseType, memoryLimitMebibytes/2); err != nil {
+		return err
+	}
+	return validateCacheOverride("innodbBufferPoolSizeMb", "mysql", intOrZero(self.InnodbBufferPoolSizeMB), databaseType, memoryLimitMebibytes*3/4)
+}
+
+func validateCacheOverride(field, engine string, value int, databaseType string, maxMegabytes int64) error {
+	if value == 0 {
+		return nil
+	}
+	if databaseType != engine {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("%s only applies to %s databases", field, engine))
+	}
+	if value < minDatabaseCacheMegabytes {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("%s must be at least %d, or 0 to size it automatically", field, minDatabaseCacheMegabytes))
+	}
+	if maxMegabytes > 0 && int64(value) > maxMegabytes {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("%s cannot exceed %d with the current memory limit", field, maxMegabytes))
+	}
+	return nil
 }
 
 func (self *DatabaseConfig) AsV1DatabaseConfig() (*v1.DatabaseConfigSpec, error) {
@@ -555,13 +627,15 @@ func (self *DatabaseConfig) AsV1DatabaseConfig() (*v1.DatabaseConfigSpec, error)
 		return nil, nil
 	}
 	dbConfig := &v1.DatabaseConfigSpec{
-		Version:              self.Version,
-		DefaultDatabaseName:  self.DefaultDatabaseName,
-		InitDB:               self.InitDB,
-		WalLevel:             string(self.WalLevel),
-		MaxReplicationSlots:  intOrZero(self.MaxReplicationSlots),
-		MaxWalSenders:        intOrZero(self.MaxWalSenders),
-		MaxSlotWalKeepSizeMB: intOrZero(self.MaxSlotWalKeepSizeMB),
+		Version:                self.Version,
+		DefaultDatabaseName:    self.DefaultDatabaseName,
+		InitDB:                 self.InitDB,
+		WalLevel:               string(self.WalLevel),
+		MaxReplicationSlots:    intOrZero(self.MaxReplicationSlots),
+		MaxWalSenders:          intOrZero(self.MaxWalSenders),
+		MaxSlotWalKeepSizeMB:   intOrZero(self.MaxSlotWalKeepSizeMB),
+		SharedBuffersMB:        intOrZero(self.SharedBuffersMB),
+		InnodbBufferPoolSizeMB: intOrZero(self.InnodbBufferPoolSizeMB),
 	}
 	if self.StorageSize != "" {
 		qty, err := utils.ParseStorageQuantity(self.StorageSize)

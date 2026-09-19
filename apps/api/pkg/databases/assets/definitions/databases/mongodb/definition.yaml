@@ -30,8 +30,8 @@ image:
   # Quote: CloudPirates' schema requires a string (unquoted 8.2 -> YAML number).
   tag: {{ .Parameters.version | default "8.3" | quote }}
   extraArgs:
-    - "--wiredTigerCacheSizeGB=0.25"
-    - "--maxConns=100"
+    - {{ printf "--wiredTigerCacheSizeGB=%s" (.Parameters.wiredTigerCacheSizeGB | default "0.25") | quote }}
+    - {{ printf "--maxConns=%s" (.Parameters.maxConns | default "100") | quote }}
     - "--wiredTigerCollectionBlockCompressor=zstd"
 
 # Authentication - Requires a pre-existing secret

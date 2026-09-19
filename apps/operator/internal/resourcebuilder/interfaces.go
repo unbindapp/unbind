@@ -14,7 +14,7 @@ type ResourceBuilderInterface interface {
 	BuildDeployment() (*appsv1.Deployment, error)
 	BuildServices() ([]*corev1.Service, error)
 	BuildRoutes() ([]client.Object, error)
-	BuildDatabaseObjects(ctx context.Context, logger logr.Logger) ([]runtime.Object, error)
+	BuildDatabaseObjects(ctx context.Context, logger logr.Logger, dataVolumeCapacity string) ([]runtime.Object, error)
 }
 
 // Ensure ResourceBuilder implements ResourceBuilderInterface

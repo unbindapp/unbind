@@ -242,35 +242,16 @@ func (self *ServiceRepository) Update(
 		Exec(ctx)
 }
 
-// applyResourceUpdate merges per field: negative clears, zero keeps, positive sets.
 func applyResourceUpdate(upd *ent.ServiceConfigUpdateOne, res, existing *schema.Resources) {
 	if res == nil {
 		return
 	}
-	if existing == nil {
-		existing = &schema.Resources{}
-	}
-	merged := &schema.Resources{
-		CPURequestsMillicores:   mergeResourceField(res.CPURequestsMillicores, existing.CPURequestsMillicores),
-		CPULimitsMillicores:     mergeResourceField(res.CPULimitsMillicores, existing.CPULimitsMillicores),
-		MemoryRequestsMegabytes: mergeResourceField(res.MemoryRequestsMegabytes, existing.MemoryRequestsMegabytes),
-		MemoryLimitsMegabytes:   mergeResourceField(res.MemoryLimitsMegabytes, existing.MemoryLimitsMegabytes),
-	}
-	if *merged == (schema.Resources{}) {
+	merged := schema.MergeResources(existing, res)
+	if merged == nil {
 		upd.ClearResources()
 		return
 	}
 	upd.SetResources(merged)
-}
-
-func mergeResourceField(update, existing int64) int64 {
-	if update < 0 {
-		return 0
-	}
-	if update == 0 {
-		return existing
-	}
-	return update
 }
 
 func (self *ServiceRepository) UpdateConfig(

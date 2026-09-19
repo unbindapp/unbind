@@ -10,7 +10,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-func (rb *ResourceBuilder) BuildDatabaseObjects(ctx context.Context, logger logr.Logger) ([]runtime.Object, error) {
+// dataVolumeCapacity is the real size of the data volume, empty until its claim is bound
+func (rb *ResourceBuilder) BuildDatabaseObjects(ctx context.Context, logger logr.Logger, dataVolumeCapacity string) ([]runtime.Object, error) {
 	dbProvider := databases.NewDatabaseProvider()
 	dbRenderer := databases.NewDatabaseRenderer()
 
@@ -23,7 +24,7 @@ func (rb *ResourceBuilder) BuildDatabaseObjects(ctx context.Context, logger logr
 		return nil, err
 	}
 
-	dbConfig := rb.buildDatabaseConfig()
+	dbConfig := rb.buildDatabaseConfig(dataVolumeCapacity)
 
 	renderedYaml, err := dbRenderer.Render(fetchedDb, &databases.RenderContext{
 		Name:       rb.service.Name,
@@ -46,11 +47,16 @@ func (rb *ResourceBuilder) BuildDatabaseObjects(ctx context.Context, logger logr
 	return rb.processRenderedObjects(objects, logger), nil
 }
 
-func (rb *ResourceBuilder) buildDatabaseConfig() map[string]any {
+func (rb *ResourceBuilder) buildDatabaseConfig(dataVolumeCapacity string) map[string]any {
 	dbConfig := make(map[string]any)
-	if rb.service.Spec.Config.Database.Config != nil {
-		dbConfig = rb.service.Spec.Config.Database.Config.AsMap()
+	tuning := databaseTuningInput{dbType: rb.service.Spec.Config.Database.Type}
+	if config := rb.service.Spec.Config.Database.Config; config != nil {
+		dbConfig = config.AsMap()
+		tuning.sharedBuffersMB = config.SharedBuffersMB
+		tuning.innodbBufferPoolSizeMB = config.InnodbBufferPoolSizeMB
 	}
+	delete(dbConfig, "sharedBuffersMb")
+	delete(dbConfig, "innodbBufferPoolSizeMb")
 
 	storage, _ := dbConfig["storage"].(string)
 	if storage == "" {
@@ -58,10 +64,20 @@ func (rb *ResourceBuilder) buildDatabaseConfig() map[string]any {
 	}
 	delete(dbConfig, "storage")
 
+	// the recorded size is frozen at creation, resizes only show on the claims
+	tuning.storage = storage
+	if dataVolumeCapacity != "" {
+		tuning.storage = dataVolumeCapacity
+	}
+	if res := rb.service.Spec.Config.Resources; res != nil {
+		tuning.memoryLimitMegabytes = res.MemoryLimitsMegabytes
+	}
+
 	rb.applyDbLabels(dbConfig)
 	rb.applyDbEnvironment(dbConfig)
 	rb.applyDbCommonConfig(dbConfig, storage)
 	rb.applyDbTypeConfig(dbConfig)
+	applyDatabaseTuning(dbConfig, tuning)
 	rb.applyDbS3Config(dbConfig)
 
 	return dbConfig

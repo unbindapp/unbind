@@ -70,6 +70,9 @@ spec:
                             type: string
                           initdb:
                             type: string
+                          innodbBufferPoolSizeMb:
+                            description: MySQL only, 0 sizes it from the memory limit
+                            type: integer
                           maxReplicationSlots:
                             description: PostgreSQL only, 0 leaves the definition
                               default
@@ -77,6 +80,10 @@ spec:
                           maxSlotWalKeepSizeMb:
                             type: integer
                           maxWalSenders:
+                            type: integer
+                          sharedBuffersMb:
+                            description: PostgreSQL only, 0 sizes it from the memory
+                              limit
                             type: integer
                           storage:
                             anyOf:

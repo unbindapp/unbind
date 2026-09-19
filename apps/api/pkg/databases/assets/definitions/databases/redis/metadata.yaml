@@ -29,6 +29,10 @@ schema:
       description: "Redis version"
       default: "8.10"
       enum: ["8.4", "8.6", "8.8", "8.10"]
+    maxMemory:
+      type: "string"
+      description: "Redis maxmemory in bytes, empty leaves it unlimited"
+      default: ""
     common:
       $ref: "#/imports/base"
     labels:

@@ -223,6 +223,10 @@ type DatabaseConfigSpec struct {
 	MaxReplicationSlots  int `json:"maxReplicationSlots,omitempty"`
 	MaxWalSenders        int `json:"maxWalSenders,omitempty"`
 	MaxSlotWalKeepSizeMB int `json:"maxSlotWalKeepSizeMb,omitempty"`
+	// PostgreSQL only, 0 sizes it from the memory limit
+	SharedBuffersMB int `json:"sharedBuffersMb,omitempty"`
+	// MySQL only, 0 sizes it from the memory limit
+	InnodbBufferPoolSizeMB int `json:"innodbBufferPoolSizeMb,omitempty"`
 }
 
 func (self *DatabaseConfigSpec) AsMap() map[string]any {
@@ -250,6 +254,12 @@ func (self *DatabaseConfigSpec) AsMap() map[string]any {
 	}
 	if self.MaxSlotWalKeepSizeMB > 0 {
 		res["maxSlotWalKeepSizeMb"] = self.MaxSlotWalKeepSizeMB
+	}
+	if self.SharedBuffersMB > 0 {
+		res["sharedBuffersMb"] = self.SharedBuffersMB
+	}
+	if self.InnodbBufferPoolSizeMB > 0 {
+		res["innodbBufferPoolSizeMb"] = self.InnodbBufferPoolSizeMB
 	}
 	return res
 }

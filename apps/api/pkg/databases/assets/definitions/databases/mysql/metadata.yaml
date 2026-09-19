@@ -27,6 +27,18 @@ schema:
       description: "MySQL version"
       default: "8.4.10"
       enum: ["8.0.46", "8.4.10"]
+    innodbBufferPoolSize:
+      type: "string"
+      description: "InnoDB buffer pool size in bytes"
+      default: "67108864"
+    innodbBufferPoolInstances:
+      type: "string"
+      description: "InnoDB buffer pool instances, empty lets MySQL decide"
+      default: ""
+    maxConnections:
+      type: "string"
+      description: "MySQL max_connections"
+      default: "50"
     s3:
       $ref: "#/imports/s3Schema"
     restore:

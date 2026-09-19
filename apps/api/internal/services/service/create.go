@@ -109,6 +109,10 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			}
 		}
 
+		if err := input.DatabaseConfig.ValidateMemorySettings(*input.DatabaseType, input.Resources); err != nil {
+			return nil, err
+		}
+
 		if dbVersion == nil {
 			versionProperty, ok := dbDefinition.Schema.Properties["version"]
 			if ok {

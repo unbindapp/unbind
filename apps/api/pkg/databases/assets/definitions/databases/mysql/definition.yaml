@@ -19,9 +19,12 @@ data:
   innodb-dedicated-server: "OFF"
   innodb_redo_log_capacity: "67108864"
   innodb_log_file_size: "16777216"
-  innodb_buffer_pool_size: "67108864"
+  innodb_buffer_pool_size: {{ .Parameters.innodbBufferPoolSize | default "67108864" | quote }}
+{{- if .Parameters.innodbBufferPoolInstances }}
+  innodb_buffer_pool_instances: {{ .Parameters.innodbBufferPoolInstances | quote }}
+{{- end }}
   key_buffer_size: "4194304"
-  max_connections: "50"
+  max_connections: {{ .Parameters.maxConnections | default "50" | quote }}
   performance_schema: "OFF"
   performance_schema_instrument: "'%=OFF'"
   innodb_stats_persistent: "0"

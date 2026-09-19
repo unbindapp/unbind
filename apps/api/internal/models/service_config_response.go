@@ -56,6 +56,9 @@ type DatabaseConfigResponse struct {
 	MaxReplicationSlots  int             `json:"max_replication_slots"`
 	MaxWalSenders        int             `json:"max_wal_senders"`
 	MaxSlotWalKeepSizeMB int             `json:"max_slot_wal_keep_size_mb"`
+	// 0 means sized from the memory limit
+	SharedBuffersMB        int `json:"shared_buffers_mb"`
+	InnodbBufferPoolSizeMB int `json:"innodb_buffer_pool_size_mb"`
 }
 
 func transformDatabaseConfig(config *schema.DatabaseConfig) *DatabaseConfigResponse {
@@ -63,13 +66,15 @@ func transformDatabaseConfig(config *schema.DatabaseConfig) *DatabaseConfigRespo
 		return nil
 	}
 	return &DatabaseConfigResponse{
-		Version:              config.Version,
-		StorageSize:          config.StorageSize,
-		DefaultDatabaseName:  config.DefaultDatabaseName,
-		WalLevel:             config.WalLevel,
-		MaxReplicationSlots:  intOrZero(config.MaxReplicationSlots),
-		MaxWalSenders:        intOrZero(config.MaxWalSenders),
-		MaxSlotWalKeepSizeMB: intOrZero(config.MaxSlotWalKeepSizeMB),
+		Version:                config.Version,
+		StorageSize:            config.StorageSize,
+		DefaultDatabaseName:    config.DefaultDatabaseName,
+		WalLevel:               config.WalLevel,
+		MaxReplicationSlots:    intOrZero(config.MaxReplicationSlots),
+		MaxWalSenders:          intOrZero(config.MaxWalSenders),
+		MaxSlotWalKeepSizeMB:   intOrZero(config.MaxSlotWalKeepSizeMB),
+		SharedBuffersMB:        intOrZero(config.SharedBuffersMB),
+		InnodbBufferPoolSizeMB: intOrZero(config.InnodbBufferPoolSizeMB),
 	}
 }
 

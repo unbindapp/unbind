@@ -56,7 +56,12 @@ func (r *ServiceReconciler) reconcileDatabase(ctx context.Context, rb resourcebu
 		return err
 	}
 
-	runtimeObjects, err := rb.BuildDatabaseObjects(ctx, logger)
+	dataVolumeCapacity, err := r.dataVolumeCapacity(ctx, &service)
+	if err != nil {
+		return fmt.Errorf("failed to read the data volume capacity: %w", err)
+	}
+
+	runtimeObjects, err := rb.BuildDatabaseObjects(ctx, logger, dataVolumeCapacity)
 	if err != nil {
 		return fmt.Errorf("failed to build database objects: %w", err)
 	}

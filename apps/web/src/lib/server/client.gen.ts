@@ -110,9 +110,11 @@ export const DatabaseConfigSchema = z
   .object({
     defaultDatabaseName: z.string().optional(),
     initdb: z.string().optional(),
+    innodbBufferPoolSizeMb: z.number().optional(), // MySQL innodb_buffer_pool_size in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most three quarters of the memory limit, and rounded down to whole 128MB chunks. Changing it restarts the database
     maxReplicationSlots: z.number().optional(),
     maxSlotWalKeepSizeMb: z.number().optional(),
     maxWalSenders: z.number().optional(),
+    sharedBuffersMb: z.number().optional(), // PostgreSQL shared_buffers in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most half of the memory limit. Changing it restarts the database
     storage: z.string().optional(),
     version: z.string().optional(),
     walLevel: WalLevelSchema.optional(),
@@ -825,9 +827,11 @@ export const CreateServiceInputSchema = z
 export const DatabaseConfigResponseSchema = z
   .object({
     default_database_name: z.string().optional(),
+    innodb_buffer_pool_size_mb: z.number(),
     max_replication_slots: z.number(),
     max_slot_wal_keep_size_mb: z.number(),
     max_wal_senders: z.number(),
+    shared_buffers_mb: z.number(),
     storage: z.string().optional(),
     version: z.string().optional(),
     wal_level: WalLevelSchema.optional(),

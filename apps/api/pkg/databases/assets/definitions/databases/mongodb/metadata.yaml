@@ -35,6 +35,14 @@ schema:
     existingSecretName:
       type: "string"
       description: "Name of the existing secret containing MongoDB credentials"
+    wiredTigerCacheSizeGB:
+      type: "string"
+      description: "WiredTiger cache size in gigabytes"
+      default: "0.25"
+    maxConns:
+      type: "string"
+      description: "Maximum number of client connections"
+      default: "100"
     s3:
       $ref: "#/imports/s3Schema"
     restore:

@@ -21,10 +21,19 @@ func NewResourceBuilderMock(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *ResourceBuilderMock {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &ResourceBuilderMock{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -43,8 +52,8 @@ func (_m *ResourceBuilderMock) EXPECT() *ResourceBuilderMock_Expecter {
 }
 
 // BuildDatabaseObjects provides a mock function for the type ResourceBuilderMock
-func (_mock *ResourceBuilderMock) BuildDatabaseObjects(ctx context.Context, logger logr.Logger) ([]runtime.Object, error) {
-	ret := _mock.Called(ctx, logger)
+func (_mock *ResourceBuilderMock) BuildDatabaseObjects(ctx context.Context, logger logr.Logger, dataVolumeCapacity string) ([]runtime.Object, error) {
+	ret := _mock.Called(ctx, logger, dataVolumeCapacity)
 
 	if len(ret) == 0 {
 		panic("no return value specified for BuildDatabaseObjects")
@@ -52,18 +61,18 @@ func (_mock *ResourceBuilderMock) BuildDatabaseObjects(ctx context.Context, logg
 
 	var r0 []runtime.Object
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, logr.Logger) ([]runtime.Object, error)); ok {
-		return returnFunc(ctx, logger)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, logr.Logger, string) ([]runtime.Object, error)); ok {
+		return returnFunc(ctx, logger, dataVolumeCapacity)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, logr.Logger) []runtime.Object); ok {
-		r0 = returnFunc(ctx, logger)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, logr.Logger, string) []runtime.Object); ok {
+		r0 = returnFunc(ctx, logger, dataVolumeCapacity)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]runtime.Object)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, logr.Logger) error); ok {
-		r1 = returnFunc(ctx, logger)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, logr.Logger, string) error); ok {
+		r1 = returnFunc(ctx, logger, dataVolumeCapacity)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -78,11 +87,12 @@ type ResourceBuilderMock_BuildDatabaseObjects_Call struct {
 // BuildDatabaseObjects is a helper method to define mock.On call
 //   - ctx context.Context
 //   - logger logr.Logger
-func (_e *ResourceBuilderMock_Expecter) BuildDatabaseObjects(ctx any, logger any) *ResourceBuilderMock_BuildDatabaseObjects_Call {
-	return &ResourceBuilderMock_BuildDatabaseObjects_Call{Call: _e.mock.On("BuildDatabaseObjects", ctx, logger)}
+//   - dataVolumeCapacity string
+func (_e *ResourceBuilderMock_Expecter) BuildDatabaseObjects(ctx any, logger any, dataVolumeCapacity any) *ResourceBuilderMock_BuildDatabaseObjects_Call {
+	return &ResourceBuilderMock_BuildDatabaseObjects_Call{Call: _e.mock.On("BuildDatabaseObjects", ctx, logger, dataVolumeCapacity)}
 }
 
-func (_c *ResourceBuilderMock_BuildDatabaseObjects_Call) Run(run func(ctx context.Context, logger logr.Logger)) *ResourceBuilderMock_BuildDatabaseObjects_Call {
+func (_c *ResourceBuilderMock_BuildDatabaseObjects_Call) Run(run func(ctx context.Context, logger logr.Logger, dataVolumeCapacity string)) *ResourceBuilderMock_BuildDatabaseObjects_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -92,9 +102,14 @@ func (_c *ResourceBuilderMock_BuildDatabaseObjects_Call) Run(run func(ctx contex
 		if args[1] != nil {
 			arg1 = args[1].(logr.Logger)
 		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
@@ -105,7 +120,7 @@ func (_c *ResourceBuilderMock_BuildDatabaseObjects_Call) Return(objects []runtim
 	return _c
 }
 
-func (_c *ResourceBuilderMock_BuildDatabaseObjects_Call) RunAndReturn(run func(ctx context.Context, logger logr.Logger) ([]runtime.Object, error)) *ResourceBuilderMock_BuildDatabaseObjects_Call {
+func (_c *ResourceBuilderMock_BuildDatabaseObjects_Call) RunAndReturn(run func(ctx context.Context, logger logr.Logger, dataVolumeCapacity string) ([]runtime.Object, error)) *ResourceBuilderMock_BuildDatabaseObjects_Call {
 	_c.Call.Return(run)
 	return _c
 }

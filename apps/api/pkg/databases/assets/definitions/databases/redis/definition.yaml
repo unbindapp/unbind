@@ -89,6 +89,12 @@ resources:
 {{- end }}
 {{- end }}
 
+{{- if .Parameters.maxMemory }}
+# The policy stays noeviction, queues and sessions break when keys are evicted
+extraConfig: |
+  maxmemory {{ .Parameters.maxMemory }}
+{{- end }}
+
 # Disable metrics
 metrics:
   enabled: false

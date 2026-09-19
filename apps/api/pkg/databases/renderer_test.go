@@ -2066,3 +2066,84 @@ func TestPostgresRendersReplicationParameters(t *testing.T) {
 		assert.Contains(t, result, `max_slot_wal_keep_size: "2048MB"`)
 	})
 }
+
+func TestDefinitionsRenderMemoryTuning(t *testing.T) {
+	provider := NewDatabaseProvider()
+	renderer := NewDatabaseRenderer()
+
+	render := func(t *testing.T, dbType string, params map[string]any) string {
+		def, err := provider.FetchDatabaseDefinition(context.Background(), "", dbType)
+		require.NoError(t, err)
+
+		params["existingSecretName"] = "test-secret"
+		params["secretName"] = "test-secret"
+		params["secretKey"] = "password"
+		params["common"] = map[string]any{
+			"namespace": "default",
+			"storage":   "1Gi",
+			"replicas":  int32(1),
+		}
+		result, err := renderer.Render(def, &RenderContext{
+			Name:       "test-" + dbType,
+			Namespace:  "default",
+			Parameters: params,
+		})
+		require.NoError(t, err)
+		return result
+	}
+
+	cases := []struct {
+		dbType     string
+		params     map[string]any
+		defaults   []string
+		configured []string
+		absent     []string
+	}{
+		{
+			dbType: "postgres",
+			params: map[string]any{"postgresql": map[string]any{
+				"sharedBuffers": "488MB",
+				"workMem":       "6MB",
+				"maxWalSize":    "1024MB",
+			}},
+			defaults:   []string{`shared_buffers: "128MB"`, `work_mem: "4MB"`, `max_wal_size: "256MB"`},
+			configured: []string{`shared_buffers: "488MB"`, `work_mem: "6MB"`, `max_wal_size: "1024MB"`},
+		},
+		{
+			dbType:     "mysql",
+			params:     map[string]any{"innodbBufferPoolSize": "939524096", "innodbBufferPoolInstances": "1", "maxConnections": "102"},
+			defaults:   []string{`innodb_buffer_pool_size: "67108864"`, `max_connections: "50"`},
+			configured: []string{`innodb_buffer_pool_size: "939524096"`, `innodb_buffer_pool_instances: "1"`, `max_connections: "102"`},
+			absent:     []string{"innodb_buffer_pool_instances"},
+		},
+		{
+			dbType:     "mongodb",
+			params:     map[string]any{"wiredTigerCacheSizeGB": "0.45", "maxConns": "204"},
+			defaults:   []string{"- --wiredTigerCacheSizeGB=0.25\n", "- --maxConns=100\n"},
+			configured: []string{"- --wiredTigerCacheSizeGB=0.45\n", "- --maxConns=204\n"},
+		},
+		{
+			dbType:     "redis",
+			params:     map[string]any{"maxMemory": "1536000000"},
+			configured: []string{"maxmemory 1536000000"},
+			absent:     []string{"maxmemory", "extraConfig"},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.dbType, func(t *testing.T) {
+			defaults := render(t, tc.dbType, map[string]any{})
+			for _, want := range tc.defaults {
+				assert.Contains(t, defaults, want)
+			}
+			for _, unwanted := range tc.absent {
+				assert.NotContains(t, defaults, unwanted)
+			}
+
+			configured := render(t, tc.dbType, tc.params)
+			for _, want := range tc.configured {
+				assert.Contains(t, configured, want)
+			}
+		})
+	}
+}

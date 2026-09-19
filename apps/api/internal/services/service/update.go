@@ -196,6 +196,17 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		input.DatabaseConfig = schema.MergeDatabaseConfig(service.Edges.ServiceConfig.DatabaseConfig, input.DatabaseConfig)
 	}
 
+	if service.Type == schema.ServiceTypeDatabase && service.Database != nil {
+		databaseConfig := input.DatabaseConfig
+		if databaseConfig == nil {
+			databaseConfig = service.Edges.ServiceConfig.DatabaseConfig
+		}
+		resources := schema.MergeResources(service.Edges.ServiceConfig.Resources, input.Resources)
+		if err := databaseConfig.ValidateMemorySettings(*service.Database, resources); err != nil {
+			return nil, err
+		}
+	}
+
 	client := self.k8s.GetInternalClient()
 
 	// Check if PVC is in use by a service
