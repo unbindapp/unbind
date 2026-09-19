@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   findChangedLockedVariable,
   getVariablesFromRawText,
+  pendingDatabaseUrlNames,
   splitByStoredReferences,
   splitProvidedVariables,
   toReadableValue,
@@ -228,4 +229,34 @@ test("splitProvidedVariables keeps URLs apart from hosts and ports, in order", (
   assert.deepEqual(names(database.extras), ["UNBIND_HOST_PRIVATE", "UNBIND_PORT_PRIVATE_HTTP"]);
 
   assert.deepEqual(splitProvidedVariables([]), { urls: [], extras: [] });
+});
+
+test("pendingDatabaseUrlNames lists the database URLs that have a port but no value yet", () => {
+  const toVariables = (list: string[]) => list.map((name) => ({ name }));
+
+  assert.deepEqual(
+    pendingDatabaseUrlNames(
+      toVariables([
+        "UNBIND_HOST_PRIVATE",
+        "UNBIND_HOST_PUBLIC",
+        "UNBIND_PORT_PRIVATE",
+        "UNBIND_PORT_PRIVATE_HTTP",
+        "UNBIND_PORT_PUBLIC",
+      ]),
+    ),
+    [
+      "UNBIND_DATABASE_URL_PRIVATE",
+      "UNBIND_DATABASE_URL_PRIVATE_HTTP",
+      "UNBIND_DATABASE_URL_PUBLIC",
+    ],
+  );
+
+  assert.deepEqual(
+    pendingDatabaseUrlNames(
+      toVariables(["UNBIND_DATABASE_URL_PRIVATE", "UNBIND_PORT_PRIVATE", "UNBIND_PORT_PUBLIC"]),
+    ),
+    ["UNBIND_DATABASE_URL_PUBLIC"],
+  );
+
+  assert.deepEqual(pendingDatabaseUrlNames([]), []);
 });

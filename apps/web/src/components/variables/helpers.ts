@@ -145,3 +145,16 @@ export function splitProvidedVariables<T extends { name: string }>(provided: rea
   }
   return { urls, extras };
 }
+
+const PROVIDED_PORT_PREFIX = "UNBIND_PORT_";
+const PROVIDED_DATABASE_URL_PREFIX = "UNBIND_DATABASE_URL_";
+
+// A database URL needs the credentials, a port does not, and every port has a URL.
+// So the ports say which URLs are still to come.
+export function pendingDatabaseUrlNames(provided: readonly { name: string }[]) {
+  const existing = new Set(provided.map((v) => v.name));
+  return provided
+    .filter((v) => v.name.startsWith(PROVIDED_PORT_PREFIX))
+    .map((v) => PROVIDED_DATABASE_URL_PREFIX + v.name.slice(PROVIDED_PORT_PREFIX.length))
+    .filter((name) => !existing.has(name));
+}

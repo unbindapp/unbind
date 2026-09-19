@@ -5,7 +5,7 @@ import NoItemsCard from "@/components/no-items-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { providedVariablesKey } from "@/components/variables/constants";
-import { splitProvidedVariables } from "@/components/variables/helpers";
+import { pendingDatabaseUrlNames, splitProvidedVariables } from "@/components/variables/helpers";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import VariableCard from "@/components/variables/variable-card";
 import type { TVariableWithStaged } from "@/components/variables/variables-provider";
@@ -114,6 +114,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
         <ProvidedVariablesSection
           provided={provided}
           variableTypeProps={variableTypeProps}
+          isWaitingForDatabase={showSpecialDbVariablesSection}
           isOpen={isProvidedVariablesOpen}
           setIsOpen={setIsProvidedVariablesOpen}
         />
@@ -147,6 +148,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
       <ProvidedVariablesSection
         provided={provided}
         variableTypeProps={variableTypeProps}
+        isWaitingForDatabase={showSpecialDbVariablesSection}
         className="mt-2"
         isOpen={isProvidedVariablesOpen}
         setIsOpen={setIsProvidedVariablesOpen}
@@ -186,12 +188,14 @@ function useProvidedVariablesOpen() {
 function ProvidedVariablesSection({
   provided,
   variableTypeProps,
+  isWaitingForDatabase,
   className,
   isOpen,
   setIsOpen,
 }: {
   provided: TVariableShallow[] | undefined;
   variableTypeProps: TEntityVariableTypeProps;
+  isWaitingForDatabase: boolean;
   className?: string;
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
@@ -200,6 +204,7 @@ function ProvidedVariablesSection({
 
   const { urls, extras } = splitProvidedVariables(provided);
   const visible = isOpen ? [...urls, ...extras] : urls;
+  const pendingNames = isWaitingForDatabase ? pendingDatabaseUrlNames(provided) : [];
 
   return (
     <>
@@ -210,8 +215,13 @@ function ProvidedVariablesSection({
         )}
       >
         Provided by Unbind{" "}
-        <span className="text-muted-foreground font-normal">({provided.length})</span>
+        <span className="text-muted-foreground font-normal">
+          ({provided.length + pendingNames.length})
+        </span>
       </li>
+      {pendingNames.length > 0 && (
+        <WaitingForDatabaseVariables names={pendingNames} variableTypeProps={variableTypeProps} />
+      )}
       {visible.map((variable) => (
         <VariableCard
           key={variable.name}
@@ -254,6 +264,21 @@ function SpecialDbVariablesSection({
   const expected = specialDbVariablesFor(databaseTypeOf(variableTypeProps) ?? "");
 
   return (
+    <WaitingForDatabaseVariables
+      names={expected.filter((v) => !existingNames.includes(v))}
+      variableTypeProps={variableTypeProps}
+    />
+  );
+}
+
+function WaitingForDatabaseVariables({
+  names,
+  variableTypeProps,
+}: {
+  names: string[];
+  variableTypeProps: TEntityVariableTypeProps;
+}) {
+  return (
     <>
       <div className="bg-process/3-10 border-process/3-10 text-process flex w-full items-start gap-2 rounded-lg border px-3 py-2.5 leading-tight">
         <div className="line-icon">
@@ -263,27 +288,23 @@ function SpecialDbVariablesSection({
           Waiting for database variables to become available...
         </p>
       </div>
-      {expected
-        .filter((v) => !existingNames.includes(v))
-        .map((val) => (
-          <VariableCard
-            key={val}
-            variableTypeProps={variableTypeProps}
-            asElement="li"
-            Icon={({ className }) => (
-              <HourglassIcon className={cn("animate-hourglass", className)} />
-            )}
-            variable={{
-              type: "service",
-              name: val,
-              value: "Waiting...",
-              provided: false,
-              references: [],
-              updates: [],
-            }}
-            hideThreeDotButton
-          />
-        ))}
+      {names.map((name) => (
+        <VariableCard
+          key={name}
+          variableTypeProps={variableTypeProps}
+          asElement="li"
+          Icon={({ className }) => <HourglassIcon className={cn("animate-hourglass", className)} />}
+          variable={{
+            type: "service",
+            name,
+            value: "Waiting...",
+            provided: false,
+            references: [],
+            updates: [],
+          }}
+          hideThreeDotButton
+        />
+      ))}
     </>
   );
 }
