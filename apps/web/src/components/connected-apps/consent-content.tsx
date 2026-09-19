@@ -170,15 +170,27 @@ function ClientSummary({
       <div className="text-muted-foreground flex w-full flex-col items-start gap-1.5 text-sm">
         <p className={detailClassName}>
           <GlobeIcon className="mr-1.5 mb-0.5 inline-block size-3.5" />
-          {client
-            ? client.kind === "metadata_document"
-              ? `Published by ${client.client_host}`
-              : "Self-registered, unknown publisher"
-            : "Published by loading.example.com"}
+          {client ? (
+            client.kind === "metadata_document" ? (
+              <>
+                Published by <span className="text-foreground">{client.client_host}</span>
+              </>
+            ) : (
+              "Self-registered, unknown publisher"
+            )
+          ) : (
+            "Published by loading.example.com"
+          )}
         </p>
         <p className={detailClassName}>
           <ArrowRightIcon className="mr-1.5 mb-0.5 inline-block size-3.5" />
-          {client ? `Redirects to ${client.redirect_host}` : "Redirects to loading.example.com"}
+          {client ? (
+            <>
+              Redirects to <span className="text-foreground">{client.redirect_host}</span>
+            </>
+          ) : (
+            "Redirects to loading.example.com"
+          )}
         </p>
         {isLoopback && (
           <p className={cn(detailClassName, "text-warning")}>
