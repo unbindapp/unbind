@@ -388,5 +388,10 @@
     "version": "v0.1.77",
     "summary": "Staged domain and port changes in networking, locked protected variables with derived secrets reissued on edit, operator apply failures shown as launch errors, and naming new projects from the command panel.",
     "breaking": false
+  },
+  "v0.1.78": {
+    "version": "v0.1.78",
+    "summary": "Database memory settings are now sized automatically from resource limits, with optional PostgreSQL and MySQL overrides.",
+    "breaking": false
   }
 }
