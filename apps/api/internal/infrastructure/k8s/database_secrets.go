@@ -23,7 +23,7 @@ func (self *KubeClient) SyncDatabaseSecrets(ctx context.Context) (map[uuid.UUID]
 
 	changed := make(map[uuid.UUID][]string)
 	for _, service := range databaseServices {
-		changedKeys, err := self.SyncDatabaseSecretForService(ctx, service)
+		changedKeys, err := self.syncDatabaseSecret(ctx, service, true)
 		if err != nil {
 			log.Errorf("Failed to sync secret for service %s: %v", service.ID, err)
 			// Continue with other services even if one fails
@@ -47,9 +47,56 @@ func (self *KubeClient) SyncDatabaseSecretForServiceID(ctx context.Context, serv
 	return err
 }
 
-// SyncDatabaseSecretForService syncs the database secret for a specific service,
-// returning the keys whose values changed
+// SyncDatabaseSecretForService fills in credentials the secret is still missing,
+// returning the keys whose values changed. Stored credentials are left alone: only
+// SyncDatabaseSecrets replaces them, because its caller redeploys the services that
+// were rendered with the old values.
 func (self *KubeClient) SyncDatabaseSecretForService(ctx context.Context, service *ent.Service) ([]string, error) {
+	return self.syncDatabaseSecret(ctx, service, false)
+}
+
+type engineCredentials struct {
+	secretName  string
+	username    string
+	usernameKey string
+	passwordKey string
+}
+
+// engineCredentialsFor locates the credentials the engine generated. Redis has none,
+// its password lives in the service secret itself.
+func engineCredentialsFor(service *ent.Service, postgresDBName string) (engineCredentials, bool) {
+	switch *service.Database {
+	case "postgres":
+		return engineCredentials{
+			secretName:  fmt.Sprintf("%s.%s.credentials.postgresql.acid.zalan.do", postgresDBName, service.KubernetesName),
+			usernameKey: "username",
+			passwordKey: "password",
+		}, true
+	case "mongodb":
+		return engineCredentials{
+			secretName:  fmt.Sprintf("%s-mongo-secret", service.ID.String()),
+			username:    "root",
+			passwordKey: "mongodb-root-password",
+		}, true
+	case "mysql":
+		return engineCredentials{
+			secretName:  fmt.Sprintf("moco-%s", service.KubernetesName),
+			username:    "moco-writable",
+			passwordKey: "WRITABLE_PASSWORD",
+		}, true
+	case "clickhouse":
+		return engineCredentials{
+			secretName:  fmt.Sprintf("%s-clickhouse-secret", service.ID.String()),
+			username:    "default",
+			passwordKey: "password",
+		}, true
+	}
+	return engineCredentials{}, false
+}
+
+// syncDatabaseSecret copies the engine's credentials into the service secret. The
+// engine owns them, so with replaceStored its values win over whatever is stored.
+func (self *KubeClient) syncDatabaseSecret(ctx context.Context, service *ent.Service, replaceStored bool) ([]string, error) {
 	if service.Type != schema.ServiceTypeDatabase {
 		return nil, nil
 	}
@@ -73,68 +120,29 @@ func (self *KubeClient) SyncDatabaseSecretForService(ctx context.Context, servic
 	defaultDBName := string(secret.Data["DATABASE_DEFAULT_DB_NAME"])
 	var staleKeys []string
 
-	// For postgres, we can sync username and password if they are empty
 	postgresDBName := "primarydb"
 	if service.Edges.ServiceConfig.DatabaseConfig != nil {
 		if service.Edges.ServiceConfig.DatabaseConfig.DefaultDatabaseName != "" {
 			postgresDBName = service.Edges.ServiceConfig.DatabaseConfig.DefaultDatabaseName
 		}
 	}
-	if *service.Database == "postgres" && (username == "" || password == "") {
-		zalandoSecretName := fmt.Sprintf("%s.%s.credentials.postgresql.acid.zalan.do", postgresDBName, service.Name)
-		zalandoSecret, err := self.GetSecret(ctx, zalandoSecretName, namespace, self.GetInternalClient())
-		if err != nil {
-			if errors.IsNotFound(err) {
-				return nil, fmt.Errorf("secret %s in namespace %s not found: %w", zalandoSecretName, namespace, err)
-			}
-			return nil, fmt.Errorf("failed to get secret %s in namespace %s: %w", zalandoSecretName, namespace, err)
+
+	stored := username != "" && password != ""
+	if engine, ok := engineCredentialsFor(service, postgresDBName); ok && (replaceStored || !stored) {
+		engineSecret, err := self.GetSecret(ctx, engine.secretName, namespace, self.GetInternalClient())
+		// Stored credentials outlive an engine secret that is gone
+		if err != nil && (!stored || !errors.IsNotFound(err)) {
+			return nil, fmt.Errorf("failed to get secret %s in namespace %s: %w", engine.secretName, namespace, err)
 		}
-		username = string(zalandoSecret.Data["username"])
-		password = string(zalandoSecret.Data["password"])
-	}
-
-	// For mongo we can sync too
-	if *service.Database == "mongodb" && (username == "" || password == "") {
-		mongoSecretName := fmt.Sprintf("%s-mongo-secret", service.ID.String())
-		mongoSecret, err := self.GetSecret(ctx, mongoSecretName, namespace, self.GetInternalClient())
-		if err != nil {
-			if errors.IsNotFound(err) {
-				return nil, fmt.Errorf("secret %s in namespace %s not found: %w", mongoSecretName, namespace, err)
+		if err == nil {
+			engineUsername := engine.username
+			if engine.usernameKey != "" {
+				engineUsername = string(engineSecret.Data[engine.usernameKey])
 			}
-			return nil, fmt.Errorf("failed to get secret %s in namespace %s: %w", mongoSecretName, namespace, err)
-		}
-
-		username = "root"
-		password = string(mongoSecret.Data["mongodb-root-password"])
-	}
-
-	// For mysql we can sync too
-	if *service.Database == "mysql" && (username == "" || password == "") {
-		mysqlSecretName := fmt.Sprintf("moco-%s", service.KubernetesName)
-		mysqlSecret, err := self.GetSecret(ctx, mysqlSecretName, namespace, self.GetInternalClient())
-		if err != nil {
-			if errors.IsNotFound(err) {
-				return nil, fmt.Errorf("secret %s in namespace %s not found: %w", mysqlSecretName, namespace, err)
+			if enginePassword := string(engineSecret.Data[engine.passwordKey]); engineUsername != "" && enginePassword != "" {
+				username, password = engineUsername, enginePassword
 			}
-			return nil, fmt.Errorf("failed to get secret %s in namespace %s: %w", mysqlSecretName, namespace, err)
 		}
-
-		username = "moco-writable"
-		password = string(mysqlSecret.Data["WRITABLE_PASSWORD"])
-	}
-
-	// For clickhouse we can sync too
-	if *service.Database == "clickhouse" && (username == "" || password == "") {
-		clickhouseSecretName := fmt.Sprintf("%s-clickhouse-secret", service.ID.String())
-		clickhouseSecret, err := self.GetSecret(ctx, clickhouseSecretName, namespace, self.GetInternalClient())
-		if err != nil {
-			if errors.IsNotFound(err) {
-				return nil, fmt.Errorf("secret %s in namespace %s not found: %w", clickhouseSecretName, namespace, err)
-			}
-			return nil, fmt.Errorf("failed to get secret %s in namespace %s: %w", clickhouseSecretName, namespace, err)
-		}
-		username = "default"
-		password = string(clickhouseSecret.Data["password"])
 	}
 
 	if username == "" || password == "" {
@@ -149,7 +157,7 @@ func (self *KubeClient) SyncDatabaseSecretForService(ctx context.Context, servic
 		"DATABASE_USERNAME": []byte(username),
 		"DATABASE_PASSWORD": []byte(password),
 	}
-	if defaultDBName == "" {
+	if defaultDBName == "" || replaceStored {
 		name := databases.DefaultDatabaseName(dbType)
 		if dbType == "postgres" {
 			name = postgresDBName

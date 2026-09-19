@@ -11,7 +11,12 @@ import { PersistedBooleanSchema, usePersistedState } from "@/lib/hooks/use-persi
 import { useMemo } from "react";
 import { cn } from "@/components/ui/utils";
 
-export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: boolean }) {
+type TProps = {
+  tokensDisabled?: boolean;
+  lockedVariables?: string[];
+};
+
+export default function VariablesHeader({ tokensDisabled, lockedVariables }: TProps) {
   const {
     type,
     teamId,
@@ -84,7 +89,7 @@ export default function VariablesHeader({ tokensDisabled }: { tokensDisabled?: b
           </h2>
         </div>
         <div className="-mb-1 flex shrink-0 flex-wrap items-center justify-start gap-1.5 pt-1.25 sm:-mt-1.5 sm:justify-end sm:pt-0">
-          <RawVariableEditor>
+          <RawVariableEditor lockedVariables={lockedVariables}>
             <Button
               disabled={isPending}
               fadeOnDisabled={false}

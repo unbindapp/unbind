@@ -66,6 +66,15 @@ func generateConvexAdminKey(instanceName string, secret []byte, issuedS uint64) 
 	return fmt.Sprintf("%s|%s", instanceName, hex.EncodeToString(encrypted)), nil
 }
 
+// GenerateConvexAdminKeyForSecret issues an admin key for an existing hex INSTANCE_SECRET
+func GenerateConvexAdminKeyForSecret(instanceName string, instanceSecretHex string) (string, error) {
+	secret, err := hex.DecodeString(instanceSecretHex)
+	if err != nil || len(secret) != 32 {
+		return "", fmt.Errorf("must be 64 hex characters, generate one with `openssl rand -hex 32`")
+	}
+	return generateConvexAdminKey(instanceName, secret, uint64(time.Now().Unix()))
+}
+
 // GenerateConvexInstanceSecretAndAdminKey returns a fresh hex INSTANCE_SECRET and
 // a matching admin key.
 func GenerateConvexInstanceSecretAndAdminKey(instanceName string) (instanceSecretHex string, adminKey string, err error) {

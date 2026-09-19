@@ -565,3 +565,13 @@ func TestOwnerReferenceKeyGeneration(t *testing.T) {
 func generateOwnerKey(ownerRef metav1.OwnerReference, namespace string) string {
 	return fmt.Sprintf("%s/%s/%s", ownerRef.Kind, namespace, ownerRef.Name)
 }
+
+func TestRestartPatchDiffersWithinTheSameSecond(t *testing.T) {
+	now := time.Date(2026, 9, 19, 0, 17, 29, 0, time.UTC)
+
+	assert.NotEqual(t, restartPatch(now), restartPatch(now.Add(time.Millisecond)))
+	assert.JSONEq(t,
+		`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"2026-09-19T00:17:29.001Z"}}}}}`,
+		restartPatch(now.Add(time.Millisecond)),
+	)
+}

@@ -191,7 +191,6 @@ export const UpdateServiceInputSchema = z
     overwrite_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
     overwrite_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to attach to the service
     project_id: z.string(),
-    protected_variables: z.array(z.string()).optional(), // List of protected variables
     railpack_builder_build_command: z.string().optional(),
     railpack_builder_install_command: z.string().optional(),
     remove_hosts: z.array(HostSpecSchema).nullable().optional(), // Hosts to remove
@@ -2831,6 +2830,7 @@ export const VariableResponseItemSchema = z
     references: z.array(VariableReferenceInfoSchema), // The references found in the value
     resolved_value: z.string().optional(), // The value with references rendered, only present when the value contains references
     type: VariableReferenceSourceTypeSchema,
+    updates: z.array(z.string()), // Variables Unbind rewrites whenever this one changes, such as API keys signed with it or a config file that contains it. This variable cannot be deleted
     value: z.string(), // The stored value, which may contain ${{source.KEY}} references
   })
   .strip();

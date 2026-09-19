@@ -121,7 +121,7 @@ type TemplateService struct {
 	SecurityContext    *SecurityContext            `json:"security_context,omitempty"`           // Security context for the service
 	HealthCheck        *HealthCheck                `json:"health_check,omitempty"`               // Health check configuration
 	VariablesMounts    []*VariableMount            `json:"variables_mounts" nullable:"false"`    // Variables mounts
-	ProtectedVariables []string                    `json:"protected_variables" nullable:"false"` // List of protected variables (can be edited, not deleted)
+	ProtectedVariables []string                    `json:"protected_variables" nullable:"false"` // Variables Unbind manages, cannot be edited or deleted
 	InitDBReplacers    map[string]string           `json:"init_db_replacers,omitempty"`          // Replacers for the init DB, will replace key with value in InitDB string
 	Resources          *Resources                  `json:"resources,omitempty"`                  // Resources for the service
 	VariableDisplays   []TemplateVariableDisplay   `json:"variable_displays,omitempty"`          // Variables (incl. generated) to surface in the service group summary
@@ -325,16 +325,7 @@ func (self *ValueGenerator) Generate(inputs map[string]string) (*GenerateRespons
 		resp[self.JWTParams.SecretOutputKey] = secret
 
 		makeToken := func(role string) (string, error) {
-			claims := jwt.MapClaims{
-				"role": role,
-				"iss":  self.JWTParams.Issuer,
-				"sub":  role,
-				"aud":  "authenticated",
-				"iat":  time.Now().Unix(),
-				"exp":  time.Now().AddDate(10, 0, 0).Unix(), // 10 years
-			}
-			token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-			return token.SignedString([]byte(secret))
+			return SignRoleJWT(secret, self.JWTParams.Issuer, role)
 		}
 
 		anon, err := makeToken("anon")
@@ -426,4 +417,17 @@ type TemplateVolume struct {
 	Name       string `json:"name"`
 	CapacityGB string `json:"capacity_gb"`
 	MountPath  string `json:"mountPath"`
+}
+
+// SignRoleJWT signs the long-lived API key Supabase expects for a role
+func SignRoleJWT(secret, issuer, role string) (string, error) {
+	claims := jwt.MapClaims{
+		"role": role,
+		"iss":  issuer,
+		"sub":  role,
+		"aud":  "authenticated",
+		"iat":  time.Now().Unix(),
+		"exp":  time.Now().AddDate(10, 0, 0).Unix(), // 10 years
+	}
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
 }

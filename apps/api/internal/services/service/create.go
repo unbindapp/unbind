@@ -29,7 +29,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	var err error
 	var dbDefinition *databases.Definition
 	var dbVersion *string
-	var protectedVariables *[]string
 
 	if input.Resources.HasNegative() {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Resource values must be positive")
@@ -55,15 +54,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		}
 		input.Builder = schema.ServiceBuilderDocker
 	case schema.ServiceTypeDatabase:
-		// Fixed protected variables for databases
-		// Only the credentials are stored. Addresses and connection strings are
-		// computed endpoint keys, which have no row to protect in the first place.
-		protectedVariables = &[]string{
-			"DATABASE_USERNAME",
-			"DATABASE_PASSWORD",
-			"DATABASE_DEFAULT_DB_NAME",
-		}
-
 		// Validate that if database is provided, name is set
 		if input.DatabaseType == nil {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
@@ -433,7 +423,6 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			OverwriteVolumes:              input.Volumes,
 			HealthCheck:                   input.HealthCheck,
 			OverwriteVariableMounts:       input.VariableMounts,
-			ProtectedVariables:            protectedVariables,
 			InitContainers:                input.InitContainers,
 			Resources:                     input.Resources,
 		}

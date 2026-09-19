@@ -3,6 +3,7 @@ package service_repo
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -12,6 +13,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer/enum"
+	"github.com/unbindapp/unbind-api/pkg/databases"
 )
 
 type CreateServiceInput struct {
@@ -104,6 +106,23 @@ type MutateConfigInput struct {
 	Resources                     *schema.Resources
 }
 
+// protectedVariablesFor always protects a database's credentials, whichever path creates it
+func protectedVariablesFor(serviceType schema.ServiceType, requested *[]string) []string {
+	var protected []string
+	if serviceType == schema.ServiceTypeDatabase {
+		protected = slices.Clone(databases.CredentialKeys)
+	}
+	if requested == nil {
+		return protected
+	}
+	for _, name := range *requested {
+		if !slices.Contains(protected, name) {
+			protected = append(protected, name)
+		}
+	}
+	return protected
+}
+
 func (self *ServiceRepository) CreateConfig(
 	ctx context.Context,
 	tx repository.TxInterface,
@@ -170,8 +189,8 @@ func (self *ServiceRepository) CreateConfig(
 		c.SetVolumes(input.OverwriteVolumes)
 	}
 
-	if input.ProtectedVariables != nil {
-		c.SetProtectedVariables(*input.ProtectedVariables)
+	if protected := protectedVariablesFor(service.Type, input.ProtectedVariables); len(protected) > 0 {
+		c.SetProtectedVariables(protected)
 	}
 
 	if len(input.VariableMetadata) > 0 {
@@ -290,10 +309,6 @@ func (self *ServiceRepository) UpdateConfig(
 		} else {
 			upd.ClearInitContainers()
 		}
-	}
-
-	if input.ProtectedVariables != nil {
-		upd.SetProtectedVariables(*input.ProtectedVariables)
 	}
 
 	if input.HealthCheck != nil {

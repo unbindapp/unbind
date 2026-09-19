@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/pkg/databases"
 )
 
 func TestMergePorts(t *testing.T) {
@@ -38,4 +39,16 @@ func TestMergeHosts(t *testing.T) {
 	)
 	assert.Equal(t, []schema.HostSpec{{Host: "b.com"}}, MergeHosts(existing, nil, nil, []schema.HostSpec{{Host: "a.com"}}))
 	assert.Empty(t, MergeHosts(existing, nil, nil, existing))
+}
+
+func TestProtectedVariablesFor(t *testing.T) {
+	requested := []string{"INSTANCE_SECRET", "DATABASE_PASSWORD"}
+
+	assert.Nil(t, protectedVariablesFor(schema.ServiceTypeDockerimage, nil))
+	assert.Equal(t, requested, protectedVariablesFor(schema.ServiceTypeDockerimage, &requested))
+	assert.Equal(t, databases.CredentialKeys, protectedVariablesFor(schema.ServiceTypeDatabase, nil))
+	assert.Equal(t,
+		[]string{"DATABASE_USERNAME", "DATABASE_PASSWORD", "DATABASE_DEFAULT_DB_NAME", "INSTANCE_SECRET"},
+		protectedVariablesFor(schema.ServiceTypeDatabase, &requested),
+	)
 }

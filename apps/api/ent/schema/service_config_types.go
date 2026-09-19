@@ -3,6 +3,8 @@ package schema
 import (
 	"fmt"
 	"reflect"
+	"regexp"
+	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
@@ -29,6 +31,89 @@ type VariableMetadata struct {
 	TemplateInputID *string `json:"template_input_id,omitempty"`
 	DisplayName     string  `json:"display_name,omitempty"`
 	Description     string  `json:"description,omitempty"`
+	// Set when Unbind derives this variable from another one and reissues it whenever that one changes
+	DerivedFrom *VariableDerivation `json:"derived_from,omitempty"`
+}
+
+type VariableDerivationType string
+
+const (
+	// The variable is a Convex admin key issued for the instance secret in its source
+	VariableDerivationConvexAdminKey VariableDerivationType = "convex_admin_key"
+	// The variable is a JWT signed with the secret in its source
+	VariableDerivationJWT VariableDerivationType = "jwt"
+	// The values of the sources appear inside the variable and are swapped in place
+	VariableDerivationEmbedded VariableDerivationType = "embedded"
+)
+
+// VariableDerivation names the variables a derived one is computed from
+type VariableDerivation struct {
+	Type               VariableDerivationType `json:"type"`
+	Sources            []string               `json:"sources"`
+	ConvexInstanceName string                 `json:"convex_instance_name,omitempty"`
+	JWTIssuer          string                 `json:"jwt_issuer,omitempty"`
+	JWTRole            string                 `json:"jwt_role,omitempty"`
+}
+
+// VariableChange is the stored and the new value of a source variable
+type VariableChange struct {
+	Old string
+	New string
+}
+
+// Reissued derivations produce a value the user can never type in themselves
+func (self VariableDerivation) Reissued() bool {
+	return self.Type != VariableDerivationEmbedded
+}
+
+const (
+	minJWTSecretLength     = 32
+	minEmbeddedValueLength = 8
+)
+
+var embeddedValuePattern = regexp.MustCompile(`^[A-Za-z0-9._~-]+$`)
+
+// Derive computes the derived value after its sources changed. current is the value
+// the derived variable holds now, changes is keyed by source name.
+func (self VariableDerivation) Derive(derivedName, current string, changes map[string]VariableChange) (string, error) {
+	switch self.Type {
+	case VariableDerivationConvexAdminKey:
+		for source, change := range changes {
+			adminKey, err := GenerateConvexAdminKeyForSecret(self.ConvexInstanceName, change.New)
+			if err != nil {
+				return "", fmt.Errorf("%s %w", source, err)
+			}
+			return adminKey, nil
+		}
+	case VariableDerivationJWT:
+		for source, change := range changes {
+			if len(change.New) < minJWTSecretLength {
+				return "", fmt.Errorf("%s must be at least %d characters", source, minJWTSecretLength)
+			}
+			return SignRoleJWT(change.New, self.JWTIssuer, self.JWTRole)
+		}
+	case VariableDerivationEmbedded:
+		return self.swapEmbedded(derivedName, current, changes)
+	}
+	return "", fmt.Errorf("unknown variable derivation %q", self.Type)
+}
+
+func (self VariableDerivation) swapEmbedded(derivedName, current string, changes map[string]VariableChange) (string, error) {
+	for _, source := range self.Sources {
+		change, changed := changes[source]
+		if !changed || change.Old == "" {
+			continue
+		}
+		if len(change.New) < minEmbeddedValueLength || !embeddedValuePattern.MatchString(change.New) {
+			return "", fmt.Errorf("%s is written into %s, so it needs at least %d characters and only letters, digits and . _ ~ -", source, derivedName, minEmbeddedValueLength)
+		}
+		// A short value can also match unrelated text, so it is only swapped when unambiguous
+		if len(change.Old) < minEmbeddedValueLength && strings.Count(current, change.Old) > 1 {
+			return "", fmt.Errorf("%s is too short to be replaced safely inside %s, edit %s and then this variable", source, derivedName, derivedName)
+		}
+		current = strings.ReplaceAll(current, change.Old, change.New)
+	}
+	return current, nil
 }
 
 // HostProtocol is the application-layer protocol for a domain route.

@@ -224,6 +224,15 @@ string resolved last, after all other vars exist. Available placeholders:
 }
 ```
 
+A placeholder is replaced once, at deploy time, so the result is a plain copy of the value.
+Unbind keeps that copy in sync only for variables of the **same service**: when the user
+later edits one, its old value is swapped for the new one inside the StringReplace variable.
+For that to stay safe, such a value needs at least 8 characters from `A-Z a-z 0-9 . _ ~ -`,
+which every generated password satisfies. A short fixed value like a username can match
+unrelated text, so put it in `ProtectedVariables`. A value copied from **another service**
+or from an input is never updated, so use a `VariableReference` for those instead (the
+example above should be one in a real template).
+
 ## Step 5: Wire services together (VariableReferences)
 
 A reference pulls a variable from another service into this one at deploy time. This is how

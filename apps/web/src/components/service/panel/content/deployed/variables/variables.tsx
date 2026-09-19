@@ -22,7 +22,7 @@ export default function Variables({ service }: { service: TServiceShallow }) {
 
   return (
     <TabWrapper>
-      <VariablesHeader />
+      <VariablesHeader lockedVariables={service.config.protected_variables} />
       <VariablesList variableTypeProps={variableTypeProps} />
     </TabWrapper>
   );

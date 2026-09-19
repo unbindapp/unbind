@@ -8,15 +8,8 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/vartemplate"
+	"github.com/unbindapp/unbind-api/pkg/databases"
 )
-
-// Credentials a database's connection strings are built from. Changing one changes
-// every string derived from it, even though nothing references the credential itself.
-var databaseCredentialKeys = []string{
-	"DATABASE_USERNAME",
-	"DATABASE_PASSWORD",
-	"DATABASE_DEFAULT_DB_NAME",
-}
 
 // changeSentinel stands in for the address an endpoint resolves to, which is a
 // property of the cluster rather than the config being compared
@@ -114,7 +107,7 @@ func DerivedEndpointKeys(service *ent.Service, changedKeys []string) []string {
 		return nil
 	}
 	if !slices.ContainsFunc(changedKeys, func(key string) bool {
-		return slices.Contains(databaseCredentialKeys, key)
+		return slices.Contains(databases.CredentialKeys, key)
 	}) {
 		return nil
 	}

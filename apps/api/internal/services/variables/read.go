@@ -3,6 +3,8 @@ package variables_service
 import (
 	"context"
 	"errors"
+	"maps"
+	"slices"
 	"sync"
 
 	"github.com/google/uuid"
@@ -95,12 +97,17 @@ func (self *VariablesService) buildResponse(ctx context.Context, client kubernet
 	response := &models.VariableResponse{
 		Variables: make([]*models.VariableResponseItem, 0, len(secrets)),
 	}
+	updates := updatedBySource(service)
 	for name, value := range secrets {
 		item := &models.VariableResponseItem{
 			Type:       variableType,
 			Name:       name,
 			Value:      string(value),
 			References: []models.VariableReferenceInfo{},
+			Updates:    updates[name],
+		}
+		if item.Updates == nil {
+			item.Updates = []string{}
 		}
 		if render != nil {
 			if rendered, ok := render.Variables[name]; ok {
@@ -148,7 +155,26 @@ func (self *VariablesService) providedVariables(ctx context.Context, variableTyp
 			Value:      value,
 			Provided:   true,
 			References: []models.VariableReferenceInfo{},
+			Updates:    []string{},
 		})
 	}
 	return items
+}
+
+// updatedBySource maps a variable to the ones Unbind rewrites when it changes
+func updatedBySource(service *ent.Service) map[string][]string {
+	updates := make(map[string][]string)
+	if service == nil || service.Edges.ServiceConfig == nil {
+		return updates
+	}
+	metadata := service.Edges.ServiceConfig.VariableMetadata
+	for _, name := range slices.Sorted(maps.Keys(metadata)) {
+		if metadata[name].DerivedFrom == nil {
+			continue
+		}
+		for _, source := range metadata[name].DerivedFrom.Sources {
+			updates[source] = append(updates[source], name)
+		}
+	}
+	return updates
 }

@@ -84,7 +84,7 @@ type ServiceConfig struct {
 	HealthCheck *schema.HealthCheck `json:"health_check,omitempty"`
 	// Mount variables as volumes
 	VariableMounts []*schema.VariableMount `json:"variable_mounts,omitempty"`
-	// List of protected variables (can be edited, not deleted)
+	// Variables Unbind manages, cannot be edited or deleted
 	ProtectedVariables []string `json:"protected_variables,omitempty"`
 	// Per-variable metadata keyed by variable name, sourced from template inputs
 	VariableMetadata map[string]schema.VariableMetadata `json:"variable_metadata,omitempty"`

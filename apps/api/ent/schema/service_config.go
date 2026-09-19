@@ -64,7 +64,7 @@ func (ServiceConfig) Fields() []ent.Field {
 		field.JSON("health_check", &HealthCheck{}).Optional().Comment("Health check configuration for the service"),
 		// Variable mount
 		field.JSON("variable_mounts", []*VariableMount{}).Optional().Comment("Mount variables as volumes"),
-		field.Strings("protected_variables").Optional().Comment("List of protected variables (can be edited, not deleted)"),
+		field.Strings("protected_variables").Optional().Comment("Variables Unbind manages, cannot be edited or deleted"),
 		field.JSON("variable_metadata", map[string]VariableMetadata{}).Optional().Comment("Per-variable metadata keyed by variable name, sourced from template inputs"),
 		// Init containers
 		field.JSON("init_containers", []*InitContainer{}).Optional().Comment("Init containers to run before the main container"),

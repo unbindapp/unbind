@@ -18,6 +18,15 @@ type Connection struct {
 	Database string
 }
 
+// CredentialKeys are the credentials stored on every database service. The engine
+// generates them, so they are protected from edits and every connection string is
+// built from them.
+var CredentialKeys = []string{
+	"DATABASE_USERNAME",
+	"DATABASE_PASSWORD",
+	"DATABASE_DEFAULT_DB_NAME",
+}
+
 // StoredAddressKeys are the keys Unbind used to store on a database before its
 // addresses became computed. They are removed wherever they are still found.
 var StoredAddressKeys = []string{

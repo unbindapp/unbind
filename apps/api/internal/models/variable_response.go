@@ -54,6 +54,7 @@ type VariableResponseItem struct {
 	ResolvedValue *string                            `json:"resolved_value,omitempty" doc:"The value with references rendered, only present when the value contains references"`
 	References    []VariableReferenceInfo            `json:"references" nullable:"false" doc:"The references found in the value"`
 	Provided      bool                               `json:"provided" doc:"True for values Unbind computes from the service itself, which cannot be edited or deleted"`
+	Updates       []string                           `json:"updates" nullable:"false" doc:"Variables Unbind rewrites whenever this one changes, such as API keys signed with it or a config file that contains it. This variable cannot be deleted"`
 }
 
 type VariableReferenceInfo struct {

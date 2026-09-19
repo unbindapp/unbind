@@ -129,7 +129,7 @@ export default function VariablesList({ variableTypeProps }: TProps) {
         return (
           <VariableCard
             variable={variable}
-            disableDelete={locked}
+            disableDelete={locked || variable.updates.length > 0}
             disableEdit={locked}
             variableTypeProps={variableTypeProps}
             asElement="li"
@@ -264,6 +264,7 @@ function SpecialDbVariablesSection({
               value: "Waiting...",
               provided: false,
               references: [],
+              updates: [],
             }}
             hideThreeDotButton
           />

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  findChangedLockedVariable,
   getVariablesFromRawText,
   splitByStoredReferences,
   toReadableValue,
@@ -156,3 +157,32 @@ function reference(
 ): TVariableReferenceInfo {
   return { token, source_type, source_id, source_name, source_icon: "", key, resolved: true };
 }
+
+test("findChangedLockedVariable flags locked variables that change, appear or disappear", () => {
+  const locked = ["DATABASE_USERNAME", "DATABASE_PASSWORD"];
+  const current = new Map([
+    ["DATABASE_PASSWORD", "real"],
+    ["PLAIN", "1"],
+  ]);
+
+  assert.equal(
+    findChangedLockedVariable(locked, current, new Map([["DATABASE_PASSWORD", "real"]])),
+    null,
+  );
+  assert.equal(
+    findChangedLockedVariable(locked, current, new Map([["DATABASE_PASSWORD", "mine"]])),
+    "DATABASE_PASSWORD",
+  );
+  assert.equal(findChangedLockedVariable(locked, current, new Map()), "DATABASE_PASSWORD");
+  assert.equal(
+    findChangedLockedVariable(
+      locked,
+      current,
+      new Map([
+        ["DATABASE_PASSWORD", "real"],
+        ["DATABASE_USERNAME", "me"],
+      ]),
+    ),
+    "DATABASE_USERNAME",
+  );
+});

@@ -15,7 +15,7 @@ func convexTemplate() *schema.TemplateDefinition {
 		Icon:        "convex",
 		Keywords:    []string{"convex", "backend", "database", "reactive", "realtime", "serverless", "typescript", "baas", "firebase", "supabase"},
 		Description: "Reactive backend with a database, functions, and sync.",
-		Version:     4,
+		Version:     5,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   1,
 			MinimumRecommendedRAMGB: 1,
@@ -117,7 +117,6 @@ func convexTemplate() *schema.TemplateDefinition {
 					HealthTimeoutSeconds:    new(int32(5)),
 					HealthFailureThreshold:  new(int32(5)),
 				},
-				ProtectedVariables: []string{"INSTANCE_SECRET", "CONVEX_SELF_HOSTED_ADMIN_KEY"},
 				VariableDisplays: []schema.TemplateVariableDisplay{
 					{
 						Name:        "CONVEX_SELF_HOSTED_ADMIN_KEY",

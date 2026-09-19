@@ -123,3 +123,12 @@ export function referenceMapForVariables(
   }
   return map;
 }
+
+// The first locked variable whose value would be changed, added or removed
+export function findChangedLockedVariable(
+  locked: string[],
+  current: Map<string, string>,
+  next: Map<string, string>,
+) {
+  return locked.find((name) => current.get(name) !== next.get(name)) ?? null;
+}

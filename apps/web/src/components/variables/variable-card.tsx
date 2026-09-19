@@ -578,6 +578,11 @@ function EditVariableForm({
           )}
         />
       </form>
+      {variable.updates.length > 0 && (
+        <p className="text-muted-foreground px-1 pt-0.5 text-xs">
+          {`Changing this also changes ${variable.updates.join(", ")}. Anything using the current values stops working.`}
+        </p>
+      )}
       {error && (
         <ErrorLine
           message={error.message}

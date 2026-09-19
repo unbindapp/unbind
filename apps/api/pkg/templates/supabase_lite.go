@@ -14,7 +14,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 		Icon:        "supabase",
 		Keywords:    []string{"database", "auth", "storage", "supabase", "postgres", "pocketbase"},
 		Description: "The open source Firebase alternative.",
-		Version:     3,
+		Version:     4,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   2,
 			MinimumRecommendedRAMGB: 4,
@@ -1574,6 +1574,12 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Builder:   schema.ServiceBuilderDocker,
 				Image:     new("postgrest/postgrest:v14.17"),
 				DependsOn: []string{"service_postgresql"},
+				Ports: []schema.PortSpec{
+					{
+						Port:     3000,
+						Protocol: utils.ToPtr(schema.ProtocolTCP),
+					},
+				},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 				},
@@ -1941,6 +1947,8 @@ serve(async () => {
 						Path: "/home/kong/kong.yml",
 					},
 				},
+				// "admin" also names a Kong ACL group in kong.yml, so it cannot be swapped in place
+				ProtectedVariables: []string{"DASHBOARD_USERNAME"},
 				VariableDisplays: []schema.TemplateVariableDisplay{
 					{Name: "DASHBOARD_USERNAME", DisplayName: "Dashboard Username", Description: "Username for the Supabase Studio dashboard."},
 					{Name: "DASHBOARD_PASSWORD", DisplayName: "Dashboard Password", Description: "Password for the Supabase Studio dashboard."},

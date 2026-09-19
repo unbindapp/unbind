@@ -114,6 +114,10 @@ func (self *VariablesService) PrepareVariableWrite(
 			}
 		}
 		protected := service.Edges.ServiceConfig.ProtectedVariables
+		if name, violated := protectedViolation(existing, upserts, deletes, protected); violated {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+				fmt.Sprintf("%s is managed by Unbind and cannot be changed or deleted", name))
+		}
 		if overwrite {
 			for _, name := range protected {
 				if _, ok := upserts[name]; !ok {
@@ -121,9 +125,9 @@ func (self *VariablesService) PrepareVariableWrite(
 				}
 			}
 		}
-		deletes = slices.DeleteFunc(slices.Clone(deletes), func(name string) bool {
-			return slices.Contains(protected, name)
-		})
+		if err := applyDerivations(existing, upserts, deletes, overwrite, service.Edges.ServiceConfig.VariableMetadata); err != nil {
+			return nil, err
+		}
 	}
 
 	write := &VariableWrite{
@@ -186,6 +190,81 @@ func (self *VariablesService) RestartForWrite(ctx context.Context, write *Variab
 	if err := self.k8s.RollingRestartPodsByLabel(ctx, write.team.Namespace, label, write.service.ID.String(), self.k8s.GetInternalClient()); err != nil {
 		log.Error("Failed to restart pods", "err", err, "label", label, "value", write.service.ID.String())
 		return err
+	}
+	return nil
+}
+
+// protectedViolation names the first protected key a write would change or delete.
+// Re-sending the stored value is allowed, since bulk writes carry every variable.
+func protectedViolation(existing, upserts map[string][]byte, deletes, protected []string) (string, bool) {
+	for _, name := range slices.Sorted(slices.Values(protected)) {
+		if slices.Contains(deletes, name) {
+			return name, true
+		}
+		value, upserted := upserts[name]
+		if !upserted {
+			continue
+		}
+		if current, stored := existing[name]; !stored || !bytes.Equal(current, value) {
+			return name, true
+		}
+	}
+	return "", false
+}
+
+// applyDerivations rewrites every derived variable whose sources change, and keeps a
+// source from being removed. A derived variable can itself be a source, so this repeats
+// until nothing new changes. Reissued variables are protected, so this runs after that check.
+func applyDerivations(existing, upserts map[string][]byte, deletes []string, overwrite bool, metadata map[string]schema.VariableMetadata) error {
+	derivedNames := slices.DeleteFunc(slices.Sorted(maps.Keys(metadata)), func(name string) bool {
+		_, stored := existing[name]
+		return metadata[name].DerivedFrom == nil || !stored
+	})
+
+	for _, name := range derivedNames {
+		for _, source := range metadata[name].DerivedFrom.Sources {
+			if slices.Contains(deletes, source) {
+				return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+					fmt.Sprintf("%s cannot be deleted, %s is derived from it", source, name))
+			}
+			current, stored := existing[source]
+			if _, upserted := upserts[source]; overwrite && stored && !upserted {
+				upserts[source] = current
+			}
+		}
+	}
+
+	applied := make(map[string]struct{})
+	for range derivedNames {
+		progressed := false
+		for _, name := range derivedNames {
+			changes := make(map[string]schema.VariableChange)
+			for _, source := range metadata[name].DerivedFrom.Sources {
+				value, upserted := upserts[source]
+				if _, done := applied[name+"\x00"+source]; done || !upserted || bytes.Equal(existing[source], value) {
+					continue
+				}
+				changes[source] = schema.VariableChange{Old: string(existing[source]), New: string(value)}
+				applied[name+"\x00"+source] = struct{}{}
+			}
+			if len(changes) == 0 {
+				continue
+			}
+
+			current := existing[name]
+			if pending, upserted := upserts[name]; upserted {
+				current = pending
+			}
+			derived, err := metadata[name].DerivedFrom.Derive(name, string(current), changes)
+			if err != nil {
+				return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+			}
+			upserts[name] = []byte(derived)
+			progressed = true
+		}
+		if !progressed {
+			break
+		}
 	}
 	return nil
 }

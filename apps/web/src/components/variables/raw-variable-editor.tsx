@@ -26,6 +26,7 @@ import TokenField, { type TTokenFieldHandle } from "@/components/ui/token-field/
 import { cn } from "@/components/ui/utils";
 import { HIDDEN_VARIABLE_VALUE, rawVariableEditorKey } from "@/components/variables/constants";
 import {
+  findChangedLockedVariable,
   getVariablesFromRawText,
   referenceMapForVariables,
   toReadableValue,
@@ -61,12 +62,13 @@ import {
 const routeApi = getRouteApi("__root__");
 
 type TProps = {
+  lockedVariables?: string[];
   children: ReactElement;
 };
 
 type TEditorVariant = "drawer" | "dialog";
 
-export default function RawVariableEditor({ children }: TProps) {
+export default function RawVariableEditor({ lockedVariables, children }: TProps) {
   const {
     list: { data: variablesData, error: variablesError, isPending: variablesIsPending },
     variables: mergedVariables,
@@ -181,9 +183,26 @@ export default function RawVariableEditor({ children }: TProps) {
         value: toStoredValue(res.data.value, referencesByValue),
       });
     }
+    const current = new Map(variables.map((v) => [v.name, v.value]));
+    const parsedByName = new Map(parsedVariables.map((v) => [v.name, v.value]));
+    const changedLocked = findChangedLockedVariable(lockedVariables ?? [], current, parsedByName);
+    if (changedLocked) {
+      setParseError(
+        new Error(`"${changedLocked}" is managed by Unbind. It can't be edited or deleted.`),
+      );
+      return;
+    }
+    const removedSource = variables.find((v) => v.updates.length > 0 && !parsedByName.has(v.name));
+    if (removedSource) {
+      setParseError(
+        new Error(
+          `"${removedSource.name}" can't be deleted, other variables are derived from it: ${removedSource.updates.join(", ")}.`,
+        ),
+      );
+      return;
+    }
     setParseError(null);
 
-    const current = new Map(variables.map((v) => [v.name, v.value]));
     const changed =
       parsedVariables.length !== current.size ||
       parsedVariables.some((v) => current.get(v.name) !== v.value);
@@ -193,7 +212,6 @@ export default function RawVariableEditor({ children }: TProps) {
     }
 
     // Everything the text no longer mentions gets removed, so the editor stays a full picture
-    const parsedByName = new Map(parsedVariables.map((v) => [v.name, v.value]));
     const names = new Set([...variables.map((v) => v.name), ...parsedByName.keys()]);
     stage([...names].map((name) => ({ name, value: parsedByName.get(name) ?? null })));
     showSucceeded();

@@ -186,6 +186,12 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 	}
 
 	templater := templates.NewTemplater(self.cfg)
+	// Read from the unrendered definition, where embedded values are still placeholders
+	derivationsByService := make(map[string]map[string]*schema.VariableDerivation)
+	for _, service := range template.Definition.Services {
+		derivationsByService[service.ID] = templates.VariableDerivations(service)
+	}
+
 	generatedTemplate, err := templater.ResolveTemplate(&template.Definition, validatedInputs, kubeNameMap, project.Edges.Team.Namespace)
 	if err != nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
@@ -337,14 +343,26 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				}
 			}
 
+			// Reissued variables can never be typed in by the user, so they are protected
+			protectedVariables := slices.Clone(templateService.ProtectedVariables)
+			for name, derivation := range derivationsByService[templateService.ID] {
+				metadata := variableMetadata[name]
+				metadata.DerivedFrom = derivation
+				variableMetadata[name] = metadata
+				if derivation.Reissued() && !slices.Contains(protectedVariables, name) {
+					protectedVariables = append(protectedVariables, name)
+				}
+			}
+			slices.Sort(protectedVariables)
+
 			for _, vd := range templateService.VariableDisplays {
 				if _, ok := secretData[vd.Name]; !ok {
 					continue
 				}
-				variableMetadata[vd.Name] = schema.VariableMetadata{
-					DisplayName: vd.DisplayName,
-					Description: vd.Description,
-				}
+				metadata := variableMetadata[vd.Name]
+				metadata.DisplayName = vd.DisplayName
+				metadata.Description = vd.Description
+				variableMetadata[vd.Name] = metadata
 			}
 
 			if _, err := self.k8s.UpsertSecretValues(ctx, secret.Name, project.Edges.Team.Namespace, secretData, client); err != nil {
@@ -492,6 +510,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 				SecurityContext:         templateService.SecurityContext,
 				HealthCheck:             templateService.HealthCheck,
 				OverwriteVariableMounts: templateService.VariablesMounts,
+				ProtectedVariables:      &protectedVariables,
 				VariableMetadata:        variableMetadata,
 				InitContainers:          templateService.InitContainers,
 				Resources:               templateService.Resources,

@@ -94,3 +94,22 @@ func TestConvexAdminKey_RoundTrip(t *testing.T) {
 		t.Fatalf("member_id = %d, want 0", member)
 	}
 }
+
+func TestGenerateConvexAdminKeyForSecret(t *testing.T) {
+	secretHex := strings.Repeat("ab", 32)
+
+	adminKey, err := GenerateConvexAdminKeyForSecret("convex", secretHex)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(adminKey, "convex|") {
+		t.Fatalf("admin key missing instance prefix: %s", adminKey)
+	}
+	decryptConvexAdminKey(t, adminKey, secretHex)
+
+	for _, invalid := range []string{"", "not-hex", strings.Repeat("ab", 16), secretHex + "ab", "${{team.SECRET}}"} {
+		if _, err := GenerateConvexAdminKeyForSecret("convex", invalid); err == nil {
+			t.Fatalf("secret %q was accepted", invalid)
+		}
+	}
+}

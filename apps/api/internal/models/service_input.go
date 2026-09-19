@@ -105,9 +105,6 @@ type UpdateServiceInput struct {
 	AddVariableMounts       []*schema.VariableMount `json:"add_variable_mounts,omitempty" doc:"Additional variable mounts to add, will not remove existing mounts"`
 	RemoveVariableMounts    []*schema.VariableMount `json:"remove_variable_mounts,omitempty" doc:"Variable mounts to remove"`
 
-	// Protected variables
-	ProtectedVariables *[]string `json:"protected_variables,omitempty" doc:"List of protected variables"`
-
 	// Init containers
 	InitContainers []*schema.InitContainer `json:"init_containers,omitempty" doc:"List of init containers"`
 

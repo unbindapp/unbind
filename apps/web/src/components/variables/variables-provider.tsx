@@ -206,6 +206,7 @@ export function mergeStagedVariables(
       value: change.value,
       provided: false,
       references: referencesInStoredValue(change.value),
+      updates: [],
       staged: "new",
       isApplying: change.isApplying,
     });

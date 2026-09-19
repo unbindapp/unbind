@@ -422,7 +422,6 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			OverwriteVariableMounts:       input.OverwriteVariableMounts,
 			AddVariableMounts:             input.AddVariableMounts,
 			RemoveVariableMounts:          input.RemoveVariableMounts,
-			ProtectedVariables:            input.ProtectedVariables,
 			InitContainers:                input.InitContainers,
 			Resources:                     input.Resources,
 		}

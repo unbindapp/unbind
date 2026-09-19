@@ -140,10 +140,16 @@ func getTopLevelOwner(ctx context.Context, pod corev1.Pod, client kubernetes.Int
 	return &ownerRef
 }
 
+// restartPatch changes the pod template so the workload rolls. Nanoseconds keep two
+// restarts within the same second from producing the same annotation, which is no restart.
+func restartPatch(now time.Time) string {
+	return fmt.Sprintf(`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"%s"}}}}}`, now.Format(time.RFC3339Nano))
+}
+
 // Restart a Deployment by patching it with a restart annotation
 func (k *KubeClient) restartDeployment(ctx context.Context, namespace, name string, client kubernetes.Interface) error {
 	// Adding this annotation triggers pod restarts
-	patchData := fmt.Sprintf(`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"%s"}}}}}`, time.Now().Format(time.RFC3339))
+	patchData := restartPatch(time.Now())
 
 	_, err := client.AppsV1().Deployments(namespace).Patch(ctx, name, types.StrategicMergePatchType, []byte(patchData), metav1.PatchOptions{})
 	return err
@@ -152,7 +158,7 @@ func (k *KubeClient) restartDeployment(ctx context.Context, namespace, name stri
 // Restart a StatefulSet by patching it with a restart annotation
 func (k *KubeClient) restartStatefulSet(ctx context.Context, namespace, name string, client kubernetes.Interface) error {
 	// Adding this annotation triggers pod restarts
-	patchData := fmt.Sprintf(`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"%s"}}}}}`, time.Now().Format(time.RFC3339))
+	patchData := restartPatch(time.Now())
 
 	_, err := client.AppsV1().StatefulSets(namespace).Patch(ctx, name, types.StrategicMergePatchType, []byte(patchData), metav1.PatchOptions{})
 	return err
@@ -161,7 +167,7 @@ func (k *KubeClient) restartStatefulSet(ctx context.Context, namespace, name str
 // Restart a DaemonSet by patching it with a restart annotation
 func (k *KubeClient) restartDaemonSet(ctx context.Context, namespace, name string, client kubernetes.Interface) error {
 	// Adding this annotation triggers pod restarts
-	patchData := fmt.Sprintf(`{"spec":{"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"%s"}}}}}`, time.Now().Format(time.RFC3339))
+	patchData := restartPatch(time.Now())
 
 	_, err := client.AppsV1().DaemonSets(namespace).Patch(ctx, name, types.StrategicMergePatchType, []byte(patchData), metav1.PatchOptions{})
 	return err
