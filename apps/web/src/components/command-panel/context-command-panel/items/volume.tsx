@@ -182,6 +182,7 @@ function useVolumeItem() {
                   keywords: [],
                   Icon: TriangleAlertIcon,
                   disabled: true,
+                  isError: true,
                 },
               ];
             }

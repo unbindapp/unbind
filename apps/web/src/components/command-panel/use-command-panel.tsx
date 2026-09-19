@@ -44,7 +44,7 @@ export default function useCommandPanel({ defaultPageId }: { defaultPageId: stri
       // Closing after an action skips focus restore, the trigger would sit visibly focused
       closePanel: () => {
         setClosedByAction(true);
-        setPanelId(null);
+        const closed = setPanelId(null);
         if (timeout.current) {
           clearTimeout(timeout.current);
         }
@@ -52,6 +52,7 @@ export default function useCommandPanel({ defaultPageId }: { defaultPageId: stri
           setPanelPageId(null);
           clearInputValue(panelPageId);
         }, defaultAnimationMs);
+        return closed;
       },
     }),
     [panelId, setPanelId, panelPageId, setPanelPageId, clearInputValue, setClosedByAction],

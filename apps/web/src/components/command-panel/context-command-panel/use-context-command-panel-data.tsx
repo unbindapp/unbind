@@ -34,7 +34,7 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
   const { item: goToItem } = useGoToItem({ context });
   const { item: systemGoToItem } = useSystemGoToItem({ context });
   const { item: accountGoToItem } = useAccountGoToItem({ context });
-  const { item: newProjectItem } = useNewProjectItem();
+  const { item: newProjectItem } = useNewProjectItem({ context });
   const { item: preferencesItem } = usePreferencesItem({ context });
 
   const rootPage: TCommandPanelPage = useMemo(
@@ -56,7 +56,6 @@ export default function useContextCommandPanelData(context: TContextCommandPanel
         ...(accountGoToItem ? [accountGoToItem] : []),
       ],
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       newProjectItem,
       gitItem,

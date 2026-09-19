@@ -1,8 +1,7 @@
 "use client";
 
 import ErrorLine from "@/components/error-line";
-import { useProjectsUtils } from "@/components/project/projects-provider";
-import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
+import { useCreateAndOpenProject } from "@/components/project/use-create-and-open-project";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,60 +14,29 @@ import {
 } from "@/components/ui/dialog";
 import { generateProjectName } from "@/lib/helpers/generate-project-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import {
-  createProject as createProjectFn,
-  ProjectCreateFormSchema,
-  projectNameMaxLength,
-} from "@/lib/queries/projects";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "@tanstack/react-router";
+import { ProjectCreateFormSchema, projectNameMaxLength } from "@/lib/queries/projects";
 import { ResultAsync } from "neverthrow";
 import { ReactElement, useState } from "react";
 
 export type TCreateProjectDialogProps = {
   teamId: string;
+  children: ReactElement;
   dialogOnOpenChange?: (open: boolean) => void;
-} & (
-  | { children: ReactElement; open?: never; onOpenChange?: never }
-  | { children?: never; open: boolean; onOpenChange: (open: boolean) => void }
-);
+};
 
 export function CreateProjectDialog({
   teamId,
-  dialogOnOpenChange,
   children,
-  open: openProp,
-  onOpenChange: onOpenChangeProp,
+  dialogOnOpenChange,
 }: TCreateProjectDialogProps) {
-  const router = useRouter();
-  const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
-  const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
-
-  const [openLocal, setOpenLocal] = useState(false);
-  const open = openProp !== undefined ? openProp : openLocal;
-  const setOpen = onOpenChangeProp !== undefined ? onOpenChangeProp : setOpenLocal;
-
+  const [open, setOpen] = useState(false);
   const [generatedName, setGeneratedName] = useState(generateProjectName);
 
   const {
     mutateAsync: createAndOpenProject,
     error: createProjectError,
     reset: createProjectReset,
-  } = useMutation({
-    mutationFn: async (name: string) => {
-      const { data: project } = await createProjectFn({ teamId, name });
-      const environmentId = project.default_environment_id || project.environments[0]?.id;
-      if (!environmentId) throw new Error("There is no environment in the new project");
-
-      temporarilyAddNewEntity(project.id);
-      await invalidateProjects();
-      await router.navigate({
-        to: "/$team_id/project/$project_id",
-        params: { team_id: teamId, project_id: project.id },
-        search: { environment: environmentId },
-      });
-    },
-  });
+  } = useCreateAndOpenProject({ teamId });
 
   const onOpenChange = (o: boolean) => {
     setOpen(o);
@@ -104,7 +72,7 @@ export function CreateProjectDialog({
         setGeneratedName(generateProjectName());
       }}
     >
-      {children && <DialogTrigger render={children} />}
+      <DialogTrigger render={children} />
       <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
         <DialogHeader>
           <DialogTitle>Create Project</DialogTitle>

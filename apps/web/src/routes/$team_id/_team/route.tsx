@@ -5,7 +5,6 @@ import { systemQuery } from "@/lib/queries/system";
 import { teamQuery, teamsListQuery } from "@/lib/queries/teams";
 import { templatesListQuery } from "@/lib/queries/templates";
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
-import CreateProjectDialogProvider from "@/components/project/create-project-dialog-provider";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import SystemProvider from "@/components/system/system-provider";
 import TeamNavbar from "@/components/team/team-navbar";
@@ -42,17 +41,15 @@ function TeamLayout() {
         <UpdateToastProvider>
           <TeamsProvider initialData={teamsData}>
             <TeamProvider teamId={teamId}>
-              <CreateProjectDialogProvider teamId={teamId}>
-                <TeamNavbar />
-                <Outlet />
-                <NavbarSafeAreaInsetBottom className="sm:hidden" />
-                <ContextCommandPanel
-                  title="Team Command Panel"
-                  description="Team command panel"
-                  context={{ contextType: "team", teamId }}
-                  triggerType="layout"
-                />
-              </CreateProjectDialogProvider>
+              <TeamNavbar />
+              <Outlet />
+              <NavbarSafeAreaInsetBottom className="sm:hidden" />
+              <ContextCommandPanel
+                title="Team Command Panel"
+                description="Team command panel"
+                context={{ contextType: "team", teamId }}
+                triggerType="layout"
+              />
             </TeamProvider>
           </TeamsProvider>
         </UpdateToastProvider>

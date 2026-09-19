@@ -532,12 +532,13 @@ function Item({
       data-placeholder={isPlaceholder || undefined}
       data-pending={isItemPending || undefined}
       data-has-description={item.description || undefined}
+      data-error={item.isError || undefined}
       value={item.id}
       keywords={[item.title, ...item.keywords]}
-      className="group/item active:bg-border flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-has-description:py-2.75 data-placeholder:text-transparent"
+      className="group/item active:bg-border data-error:text-destructive data-error:data-[selected=true]:text-destructive flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-has-description:py-2.75 data-placeholder:text-transparent"
       onSelect={onSelect}
       disabled={disabled || item.disabled}
-      fadeOnDisabled={item.disabled === true ? "default" : fadeOnDisabled}
+      fadeOnDisabled={item.isError ? false : item.disabled === true ? "default" : fadeOnDisabled}
     >
       {isItemPending && (
         <div className="bg-background border-top-loader/7-10 absolute top-0 left-0 h-full w-full items-center justify-center overflow-hidden rounded-lg border">
