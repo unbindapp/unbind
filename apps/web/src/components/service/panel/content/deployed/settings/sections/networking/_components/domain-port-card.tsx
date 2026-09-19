@@ -11,6 +11,7 @@ import { getNetworkingDisplayUrl } from "@/components/service/panel/content/depl
 import { TModeAndPort } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
 import { useStageNetworking } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { DomainStatusRow } from "@/components/service/panel/content/undeployed/domain-card";
+import { StagedChip, type TStagedState } from "@/components/staged-changes/staged-chip";
 import type { TStagedListEntry } from "@/components/staged-changes/staged-changes-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -32,8 +33,6 @@ import {
   Undo2Icon,
 } from "lucide-react";
 import { useCallback, useMemo } from "react";
-
-type TStagedState = "added" | "edited" | "removed";
 
 export default function DomainPortCard({
   mode,
@@ -151,6 +150,7 @@ export default function DomainPortCard({
 
   const SuffixComponent = useCallback(
     ({ className }: { className?: string }) => {
+      const buttonVariant = stagedState !== undefined ? "ghost-change-foreground" : "ghost";
       return (
         <div
           className={cn(
@@ -159,21 +159,25 @@ export default function DomainPortCard({
             className,
           )}
         >
+          {stagedState && (
+            <StagedChip staged={stagedState} isApplying={isApplying} className="mt-1.25 mr-1" />
+          )}
           <CopyButton
             disabled={isEditing}
             className="size-8"
             classNameIcon="size-4"
+            variant={buttonVariant}
             valueToCopy={getNetworkingDisplayUrl({
               host: domain,
               port: mode === "public" ? "" : port.toString(),
             })}
           />
-          {mode === "public" && stagedState !== "removed" && (
+          {mode === "public" && stagedState !== "deleted" && (
             <Button
               disabled={isEditing || isApplying}
               type="button"
               size="icon"
-              variant="ghost"
+              variant={buttonVariant}
               aria-label="Edit"
               className="text-muted-more-foreground size-8 rounded-md"
               onClick={() => {
@@ -188,8 +192,8 @@ export default function DomainPortCard({
               disabled={isEditing || isApplying}
               type="button"
               size="icon"
-              variant="ghost"
-              aria-label={stagedState === "removed" ? "Restore" : "Discard"}
+              variant={buttonVariant}
+              aria-label={stagedState === "deleted" ? "Restore" : "Discard"}
               className="text-muted-more-foreground size-8 rounded-md"
               onClick={() => discard([staged.id])}
             >
@@ -234,13 +238,12 @@ export default function DomainPortCard({
         data-has-dns={showDnsStatus || undefined}
         data-staged={stagedState}
         data-applying={isApplying || undefined}
-        className="data-editing:border-change/5-10 group/field data-applying:animate-skeleton-smooth-weaker flex w-full flex-col overflow-hidden rounded-lg border transition-opacity duration-(--skeleton-smooth-lead-in) data-applying:pointer-events-none data-applying:opacity-(--skeleton-smooth-weaker-opacity) data-[staged=removed]:opacity-60"
+        className="data-editing:border-change/5-10 data-staged:border-change/5-10 group/field data-applying:animate-skeleton-smooth-weaker flex w-full flex-col overflow-hidden rounded-lg border transition-opacity duration-(--skeleton-smooth-lead-in) data-applying:pointer-events-none data-applying:opacity-(--skeleton-smooth-weaker-opacity) data-[staged=deleted]:opacity-60"
       >
         <BlockItemButtonLike
           asElement="div"
-          hasChanges={stagedState !== undefined}
-          classNameText="whitespace-normal group-data-[staged=removed]/field:line-through"
-          className="group-data-editing/field:bg-change/2-10 group-data-editing/field:text-change group-data-has-dns/field:ring-border z-1 border-none group-data-editing/field:rounded-b-none group-data-has-dns/field:ring-1"
+          classNameText="whitespace-normal group-data-[staged=deleted]/field:line-through"
+          className="group-data-editing/field:bg-change/2-10 group-data-editing/field:text-change group-data-staged/field:bg-change/2-10 group-data-staged/field:text-change group-data-has-dns/field:ring-border z-1 border-none group-data-editing/field:rounded-b-none group-data-has-dns/field:ring-1"
           text={getNetworkingDisplayUrl({
             host: domain,
             port: mode === "public" ? "" : port?.toString(),
@@ -251,7 +254,7 @@ export default function DomainPortCard({
               <div className="flex w-full flex-col">
                 <div
                   className={cn(
-                    "text-muted-foreground group-data-editing/field:text-change/9-10 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
+                    "text-muted-foreground group-data-editing/field:text-change/9-10 group-data-staged/field:text-change/9-10 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
                     className,
                   )}
                 >
@@ -511,8 +514,8 @@ export default function DomainPortCard({
 
 function getStagedState(staged?: TStagedListEntry): TStagedState | undefined {
   if (!staged) return undefined;
-  if (staged.kind === "port") return staged.op === "add" ? "added" : "removed";
+  if (staged.kind === "port") return staged.op === "add" ? "new" : "deleted";
   if (staged.kind !== "host") return undefined;
-  if (staged.previous === null) return "added";
-  return staged.value === null ? "removed" : "edited";
+  if (staged.previous === null) return "new";
+  return staged.value === null ? "deleted" : "updated";
 }

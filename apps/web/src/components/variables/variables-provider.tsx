@@ -1,5 +1,6 @@
 "use client";
 
+import type { TStagedState } from "@/components/staged-changes/staged-chip";
 import { variableChangesMatchingServer } from "@/components/staged-changes/reconcile";
 import {
   useStagedChangesStore,
@@ -17,8 +18,6 @@ import {
 } from "@/lib/queries/variables";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
-
-export type TStagedState = "new" | "updated" | "deleted";
 
 export type TVariableWithStaged = TVariableShallow & {
   staged?: TStagedState;

@@ -1,5 +1,6 @@
 "use client";
 
+import { StagedChip } from "@/components/staged-changes/staged-chip";
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import { IconCache } from "@/components/icons/icon-cache";
@@ -40,7 +41,6 @@ import {
   EyeOffIcon,
   InfoIcon,
   KeyIcon,
-  LoaderIcon,
   LockIcon,
   PenIcon,
   Trash2Icon,
@@ -270,31 +270,6 @@ export default function VariableCard({
 
 export function getNewEntityIdForVariable({ name, value }: { name: string; value: string }) {
   return `${name}|${value}`;
-}
-
-const stagedLabels: Record<NonNullable<TVariableWithStaged["staged"]>, string> = {
-  new: "New",
-  updated: "Changed",
-  deleted: "Removed",
-};
-
-function StagedChip({
-  staged,
-  isApplying,
-  className,
-}: {
-  staged: NonNullable<TVariableWithStaged["staged"]>;
-  isApplying: boolean;
-  className?: string;
-}) {
-  return (
-    <div className={cn("bg-background shrink-0 rounded-sm", className)}>
-      <p className="text-change bg-change/5-10 border-change/5-10 flex items-center gap-1 rounded-sm border px-1.5 py-0.5 text-xs font-medium">
-        {isApplying && <LoaderIcon className="size-3 shrink-0 animate-spin" />}
-        <span className="truncate">{isApplying ? "Applying" : stagedLabels[staged]}</span>
-      </p>
-    </div>
-  );
 }
 
 // Reference segments are colored so what came from where stays visible in the rendered text
