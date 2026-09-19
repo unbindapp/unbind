@@ -132,3 +132,16 @@ export function findChangedLockedVariable(
 ) {
   return locked.find((name) => current.get(name) !== next.get(name)) ?? null;
 }
+
+const PROVIDED_URL_PREFIXES = ["UNBIND_URL_", "UNBIND_DATABASE_URL_"];
+
+// URLs are what people come for, so they are split from the hosts and ports
+export function splitProvidedVariables<T extends { name: string }>(provided: readonly T[]) {
+  const urls: T[] = [];
+  const extras: T[] = [];
+  for (const variable of provided) {
+    const isUrl = PROVIDED_URL_PREFIXES.some((prefix) => variable.name.startsWith(prefix));
+    (isUrl ? urls : extras).push(variable);
+  }
+  return { urls, extras };
+}

@@ -67,7 +67,7 @@ const searchSchema = z.object({
   [metricsSearchParamKeys.environment.view]: MetricsViewEnum.optional(),
   [metricsSearchParamKeys.environment.selection]: z.string().optional(),
   [metricsSearchParamKeys.service.interval]: MetricsIntervalEnum.optional(),
-  // Variables ("Provided Variables" section)
+  // Variables (the extras of the "Provided by Unbind" section)
   [providedVariablesKey]: z.boolean().optional(),
   // Logs (one namespace per log scope, see components/logs/constants)
   ...Object.fromEntries(projectRouteLogSearchParamKeys.map((key) => [key, z.string().optional()])),

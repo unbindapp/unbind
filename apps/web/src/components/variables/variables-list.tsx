@@ -5,13 +5,21 @@ import NoItemsCard from "@/components/no-items-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { providedVariablesKey } from "@/components/variables/constants";
+import { splitProvidedVariables } from "@/components/variables/helpers";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import VariableCard from "@/components/variables/variable-card";
 import type { TVariableWithStaged } from "@/components/variables/variables-provider";
 import { useVariables } from "@/components/variables/variables-provider";
 import { TVariableShallow } from "@/lib/queries/variables";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { ChevronDown, HourglassIcon, KeyIcon, LoaderIcon, WandSparklesIcon } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronUp,
+  HourglassIcon,
+  KeyIcon,
+  LoaderIcon,
+  WandSparklesIcon,
+} from "lucide-react";
 import { ReactNode, useCallback } from "react";
 import { z } from "zod";
 
@@ -148,8 +156,9 @@ export default function VariablesList({ variableTypeProps }: TProps) {
   );
 }
 
-// Collapsed is the default, so writing false drops the key (see the project route's
-// search middleware) and the service panel clears it when it closes.
+// Open means the hosts and ports are listed under the URLs. Collapsed is the default,
+// so writing false drops the key (see the project route's search middleware) and the
+// service panel clears it when it closes.
 function useProvidedVariablesOpen() {
   const navigate = useNavigate();
 
@@ -190,36 +199,38 @@ function ProvidedVariablesSection({
 }) {
   if (!provided || provided.length === 0) return null;
 
+  const { urls, extras } = splitProvidedVariables(provided);
+  const visible = isOpen ? [...urls, ...extras] : urls;
+  const ToggleIcon = isOpen ? ChevronUp : ChevronDown;
+
   return (
     <>
-      <Button
-        data-open={isOpen || undefined}
-        onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          "text-muted-foreground data-open:text-foreground group/button -mx-2 -mb-0.5 w-[calc(100%+1rem)] max-w-[calc(100%+1rem)] justify-between px-3 text-left font-medium",
-          className,
-        )}
-        variant="ghost"
-      >
-        <span className="min-w-0 shrink truncate">
-          Provided by Unbind{" "}
-          <span className="text-muted-more-foreground group-data-open/button:text-muted-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground font-normal">
-            ({provided.length})
+      <li className={cn("text-muted-foreground px-1 pt-1 leading-tight font-medium", className)}>
+        Provided by Unbind{" "}
+        <span className="text-muted-more-foreground font-normal">({provided.length})</span>
+      </li>
+      {visible.map((variable) => (
+        <VariableCard
+          key={variable.name}
+          variable={variable}
+          variableTypeProps={variableTypeProps}
+          asElement="li"
+          hideThreeDotButton
+          Icon={({ className }) => <WandSparklesIcon className={className} />}
+        />
+      ))}
+      {extras.length > 0 && (
+        <Button
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-muted-foreground group/button -mx-2 -mb-0.5 w-[calc(100%+1rem)] max-w-[calc(100%+1rem)] justify-between px-3 text-left font-medium"
+          variant="ghost"
+        >
+          <span className="min-w-0 shrink truncate">
+            {isOpen ? "Show less" : `Show ${extras.length} more`}
           </span>
-        </span>
-        <ChevronDown className="text-muted-more-foreground group-data-open/button:text-muted-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground -mr-0.5 size-5 shrink-0 transition-transform group-data-open/button:rotate-180" />
-      </Button>
-      {isOpen &&
-        provided.map((variable) => (
-          <VariableCard
-            key={variable.name}
-            variable={variable}
-            variableTypeProps={variableTypeProps}
-            asElement="li"
-            hideThreeDotButton
-            Icon={({ className }) => <WandSparklesIcon className={className} />}
-          />
-        ))}
+          <ToggleIcon className="text-muted-more-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground -mr-0.5 size-5 shrink-0" />
+        </Button>
+      )}
     </>
   );
 }

@@ -5,6 +5,7 @@ import {
   findChangedLockedVariable,
   getVariablesFromRawText,
   splitByStoredReferences,
+  splitProvidedVariables,
   toReadableValue,
   toStoredVariables,
 } from "./helpers.ts";
@@ -185,4 +186,46 @@ test("findChangedLockedVariable flags locked variables that change, appear or di
     ),
     "DATABASE_USERNAME",
   );
+});
+
+test("splitProvidedVariables keeps URLs apart from hosts and ports, in order", () => {
+  const names = (list: { name: string }[]) => list.map((v) => v.name);
+  const toVariables = (list: string[]) => list.map((name) => ({ name }));
+
+  const service = splitProvidedVariables(
+    toVariables([
+      "UNBIND_HOST_PRIVATE",
+      "UNBIND_HOST_PUBLIC",
+      "UNBIND_PORT_PRIVATE_8080",
+      "UNBIND_URL_PRIVATE",
+      "UNBIND_URL_PRIVATE_8080",
+      "UNBIND_URL_PUBLIC",
+    ]),
+  );
+  assert.deepEqual(names(service.urls), [
+    "UNBIND_URL_PRIVATE",
+    "UNBIND_URL_PRIVATE_8080",
+    "UNBIND_URL_PUBLIC",
+  ]);
+  assert.deepEqual(names(service.extras), [
+    "UNBIND_HOST_PRIVATE",
+    "UNBIND_HOST_PUBLIC",
+    "UNBIND_PORT_PRIVATE_8080",
+  ]);
+
+  const database = splitProvidedVariables(
+    toVariables([
+      "UNBIND_DATABASE_URL_PRIVATE",
+      "UNBIND_DATABASE_URL_PRIVATE_HTTP",
+      "UNBIND_HOST_PRIVATE",
+      "UNBIND_PORT_PRIVATE_HTTP",
+    ]),
+  );
+  assert.deepEqual(names(database.urls), [
+    "UNBIND_DATABASE_URL_PRIVATE",
+    "UNBIND_DATABASE_URL_PRIVATE_HTTP",
+  ]);
+  assert.deepEqual(names(database.extras), ["UNBIND_HOST_PRIVATE", "UNBIND_PORT_PRIVATE_HTTP"]);
+
+  assert.deepEqual(splitProvidedVariables([]), { urls: [], extras: [] });
 });
