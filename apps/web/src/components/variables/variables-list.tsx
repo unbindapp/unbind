@@ -13,8 +13,7 @@ import { useVariables } from "@/components/variables/variables-provider";
 import { TVariableShallow } from "@/lib/queries/variables";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
-  ChevronDown,
-  ChevronUp,
+  ChevronDownIcon,
   HourglassIcon,
   KeyIcon,
   LoaderIcon,
@@ -201,13 +200,17 @@ function ProvidedVariablesSection({
 
   const { urls, extras } = splitProvidedVariables(provided);
   const visible = isOpen ? [...urls, ...extras] : urls;
-  const ToggleIcon = isOpen ? ChevronUp : ChevronDown;
 
   return (
     <>
-      <li className={cn("text-muted-foreground px-1 pt-1 leading-tight font-medium", className)}>
+      <li
+        className={cn(
+          "w-full px-1 pt-2.5 pb-2 leading-tight font-medium wrap-break-word",
+          className,
+        )}
+      >
         Provided by Unbind{" "}
-        <span className="text-muted-more-foreground font-normal">({provided.length})</span>
+        <span className="text-muted-foreground font-normal">({provided.length})</span>
       </li>
       {visible.map((variable) => (
         <VariableCard
@@ -222,13 +225,14 @@ function ProvidedVariablesSection({
       {extras.length > 0 && (
         <Button
           onClick={() => setIsOpen(!isOpen)}
-          className="text-muted-foreground group/button -mx-2 -mb-0.5 w-[calc(100%+1rem)] max-w-[calc(100%+1rem)] justify-between px-3 text-left font-medium"
+          className="text-muted-foreground group/button w-full px-4 text-left font-medium"
           variant="ghost"
+          data-open={isOpen ? "true" : undefined}
         >
           <span className="min-w-0 shrink truncate">
             {isOpen ? "Show less" : `Show ${extras.length} more`}
           </span>
-          <ToggleIcon className="text-muted-more-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground -mr-0.5 size-5 shrink-0" />
+          <ChevronDownIcon className="text-muted-more-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground -mr-0.5 size-5 shrink-0 transition-transform group-data-open/button:rotate-180" />
         </Button>
       )}
     </>
