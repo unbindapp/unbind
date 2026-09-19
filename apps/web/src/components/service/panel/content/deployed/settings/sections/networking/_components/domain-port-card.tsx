@@ -242,7 +242,7 @@ export default function DomainPortCard({
       >
         <BlockItemButtonLike
           asElement="div"
-          classNameText="whitespace-normal group-data-[staged=deleted]/field:line-through"
+          classNameText="whitespace-normal"
           className="group-data-editing/field:bg-change/2-10 group-data-editing/field:text-change group-data-staged/field:bg-change/2-10 group-data-staged/field:text-change group-data-has-dns/field:ring-border z-1 border-none group-data-editing/field:rounded-b-none group-data-has-dns/field:ring-1"
           text={getNetworkingDisplayUrl({
             host: domain,

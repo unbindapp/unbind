@@ -258,7 +258,7 @@ export function BlockItemButtonLike({
       )}
       {...(isLink ? { href, target: "_blank", rel: "noopener noreferrer" } : {})}
       {...(asElement === "button"
-        ? { type: "button", disabled: isPending, fadeOnDisabled: !isPending }
+        ? { type: "button", disabled: isPending, fadeOnDisabled: isPending ? false : "default" }
         : {})}
       {...props}
     >
