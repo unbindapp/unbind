@@ -296,7 +296,7 @@ function ConsentForm({
       <div className="flex w-full flex-col px-4 pt-3 pb-4">
         <h2 className="w-full text-lg leading-tight font-semibold">Access</h2>
         <p className="text-muted-foreground mt-1.5 leading-tight">
-          What the application can reach. Never more than you can.
+          What the application can access, never more than you can.
         </p>
         <InputSectionWrapper>
           <form.AppField
