@@ -18,16 +18,24 @@ import { useQuery } from "@tanstack/react-query";
 import { BoxIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
+type TUsable = {
+  databaseType: string;
+  // The readable ${Database.KEY} token, what the variable's value becomes
+  value: string;
+  // Protocol of a secondary endpoint, part of the variable's name
+  label?: string;
+  isPlaceholder?: never;
+  isDisabled?: never;
+};
+
+type TUnusable = { databaseType?: never; value?: never; label?: never };
+
 type TProps = { className?: string } & (
-  | { isPlaceholder: true; databaseType?: never; value?: never; label?: never }
-  | {
-      isPlaceholder?: never;
-      databaseType: string;
-      // The readable ${Database.KEY} token, what the variable's value becomes
-      value: string;
-      // Protocol of a secondary endpoint, part of the variable's name
-      label?: string;
-    }
+  | TUsable
+  // Nothing is known yet, the row is still loading
+  | ({ isPlaceholder: true; isDisabled?: never } & TUnusable)
+  // There is no URL to add yet, so the controls are shown but cannot be used
+  | ({ isDisabled: true; isPlaceholder?: never } & TUnusable)
 );
 
 // Points another service at this database: it fills that service's variable form and
@@ -37,6 +45,7 @@ export default function AddToService({
   value,
   label,
   isPlaceholder,
+  isDisabled,
   className,
 }: TProps) {
   const { teamId, projectId, environmentId } = useService();
@@ -123,6 +132,7 @@ export default function AddToService({
                   )}
                   open={isOpen}
                   isPending={isPending || isPlaceholder}
+                  disabled={isDisabled}
                 />
               );
             }}
@@ -136,7 +146,7 @@ export default function AddToService({
             type="button"
             variant="outline"
             data-pending={isPlaceholder || undefined}
-            disabled={isPlaceholder || serviceId === ""}
+            disabled={isPlaceholder || isDisabled || serviceId === ""}
             fadeOnDisabled={isPlaceholder ? false : "default"}
             onClick={() => add(serviceId)}
             className="data-pending:bg-muted-more-foreground data-pending:animate-skeleton shrink-0 data-pending:text-transparent"

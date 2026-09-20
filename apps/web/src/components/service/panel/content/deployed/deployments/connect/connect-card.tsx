@@ -115,7 +115,7 @@ export default function ConnectCard({ service }: TProps) {
                   {error ? error.message : "The variable will be shown once the database is ready"}
                 </ConnectRow>
                 {/* An error means nothing is on its way, so there is nothing to reserve room for */}
-                {!error && <AddToService isPlaceholder className="lg:max-w-xs lg:flex-1" />}
+                {!error && <AddToService isDisabled className="lg:max-w-xs lg:flex-1" />}
               </PrivateRow>
             )}
 
