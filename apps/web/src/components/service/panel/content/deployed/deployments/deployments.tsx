@@ -22,6 +22,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Button, LinkButton } from "@/components/ui/button";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { shouldDeploySectionHaveReplicas } from "@/components/service/panel/content/deployed/settings/helpers";
+import ConnectCard from "@/components/service/panel/content/deployed/deployments/connect/connect-card";
 
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
@@ -76,6 +77,11 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         isPending={isPendingDeployments}
       >
         {shouldDeploySectionHaveReplicas(service) && <InfoRow />}
+        {service.type === "database" && (
+          <div className="w-full pb-3">
+            <ConnectCard service={service} />
+          </div>
+        )}
         <DeploymentPanel service={service} />
         {hasData && showNoActiveDeploymentCard && (
           <div className="w-full pb-3">
