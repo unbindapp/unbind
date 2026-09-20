@@ -18,6 +18,7 @@ import {
 import { projectRouteLogSearchParamKeys } from "@/components/logs/constants";
 import { metricsSearchParamKeys, MetricsViewEnum } from "@/components/metrics/constants";
 import {
+  servicePanelConnectKey,
   servicePanelDefaultTabId,
   servicePanelServiceIdKey,
   servicePanelTabKey,
@@ -54,6 +55,7 @@ const searchSchema = z.object({
   // Service panel
   [servicePanelServiceIdKey]: z.string().optional(),
   [servicePanelTabKey]: ServicePanelTabEnum.optional(),
+  [servicePanelConnectKey]: z.boolean().optional(),
   // Volume panel
   [volumePanelVolumeIdKey]: z.string().optional(),
   [volumePanelTabKey]: VolumePanelTabEnum.optional(),
@@ -83,6 +85,7 @@ export const Route = createFileRoute("/$team_id/project/$project_id")({
         [servicePanelTabKey]: servicePanelDefaultTabId,
         [volumePanelTabKey]: volumePanelDefaultTabId,
         [deploymentPanelTabKey]: deploymentPanelDefaultTabId,
+        [servicePanelConnectKey]: false,
         [providedVariablesKey]: false,
       }),
     ],

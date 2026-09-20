@@ -19,6 +19,8 @@ export type TServicePanelTabEnum = z.infer<typeof ServicePanelTabEnum>;
 export const servicePanelDefaultTabId = ServicePanelTabEnum.options[0];
 
 export const servicePanelTabKey = "service_tab";
+// Open state of a database's Connect card, collapsed by default
+export const servicePanelConnectKey = "connect";
 export const servicePanelServiceIdKey = "service";
 
 // Everything the panel writes to the URL for the service it is open for, including the
@@ -26,6 +28,7 @@ export const servicePanelServiceIdKey = "service";
 // service is opened again, so anything new the panel puts in the URL belongs here.
 export const servicePanelOwnedSearchKeys = [
   servicePanelTabKey,
+  servicePanelConnectKey,
   providedVariablesKey,
   rawVariableEditorKey,
   metricsSearchParamKeys.service.interval,

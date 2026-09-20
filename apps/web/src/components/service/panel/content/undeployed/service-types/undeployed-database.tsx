@@ -25,6 +25,7 @@ import {
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";
 import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";
+import { useConnectOpen } from "@/components/service/panel/content/deployed/deployments/connect/use-connect-open";
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useService } from "@/components/service/service-provider";
@@ -106,6 +107,8 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     isPending: isPendingCreateFirstDeployment,
     error: errorCreateFirstDeployment,
   } = useCreateFirstDeployment();
+
+  const { setIsOpen: setIsConnectOpen } = useConnectOpen();
 
   const persistenceKey = `undeployed-database:${serviceId}`;
 
@@ -203,6 +206,9 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
     },
     onSuccess: async () => {
       removeFormDraft({ persistenceType: "session", persistenceKey });
+      // The tabs replace this form once the database is deployed, so this is the first
+      // time the user can see how to connect to it
+      setIsConnectOpen(true);
       const result = await ResultAsync.fromPromise(
         Promise.all([
           refetchService(),
