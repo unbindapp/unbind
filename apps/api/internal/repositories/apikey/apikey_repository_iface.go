@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
+	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
 
 // APIKeyRepositoryInterface ...
@@ -20,4 +21,5 @@ type APIKeyRepositoryInterface interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.APIKey, error)
 	GetByTokenHash(ctx context.Context, tokenHash string) (*ent.APIKey, error)
 	ListByUser(ctx context.Context, userID uuid.UUID) ([]*ent.APIKey, error)
+	GetNamesByUser(ctx context.Context, tx repository.TxInterface, userID uuid.UUID) ([]string, error)
 }

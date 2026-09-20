@@ -8,7 +8,9 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	v1 "k8s.io/api/core/v1"
@@ -47,6 +49,11 @@ func (self *StorageService) CreatePVC(ctx context.Context, requesterUserID uuid.
 	case models.PvcScopeEnvironment:
 		labels["unbind-project"] = input.ProjectID.String()
 		labels["unbind-environment"] = input.EnvironmentID.String()
+	}
+
+	input.Name, err = self.uniqueVolumeName(ctx, team.Namespace, input, client)
+	if err != nil {
+		return nil, err
 	}
 
 	kubernetesName, err := utils.GenerateSlug(input.Name)
@@ -90,6 +97,28 @@ func (self *StorageService) CreatePVC(ctx context.Context, requesterUserID uuid.
 	createdPvc.Name = input.Name
 	createdPvc.Description = input.Description
 	return createdPvc, nil
+}
+
+func (self *StorageService) uniqueVolumeName(ctx context.Context, namespace string, input *models.CreatePVCInput, client kubernetes.Interface) (string, error) {
+	name, err := names.Clean(input.Name)
+	if err != nil {
+		return "", err
+	}
+
+	scope := &models.PVCInfo{TeamID: input.TeamID}
+	switch input.Type {
+	case models.PvcScopeProject:
+		scope.ProjectID = &input.ProjectID
+	case models.PvcScopeEnvironment:
+		scope.ProjectID = &input.ProjectID
+		scope.EnvironmentID = &input.EnvironmentID
+	}
+
+	takenNames, err := dbvolumes.TakenNames(ctx, nil, self.repo, self.k8s, namespace, scope, client)
+	if err != nil {
+		return "", err
+	}
+	return names.Unique(name, takenNames, names.MaxLength)
 }
 
 // Runs before anything is created so a rejected attach never leaves a volume behind

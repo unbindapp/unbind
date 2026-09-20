@@ -1,6 +1,7 @@
 import ErrorLine from "@/components/error-line";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { getTakenNameError, TUniqueAmong } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { LoaderIcon, RotateCcwIcon, SaveIcon } from "lucide-react";
 import { ZodObject, ZodString, ZodTypeAny } from "zod";
@@ -15,6 +16,7 @@ type TProps = {
   descriptionMaxLength: number;
   onSubmit: (value: { name: string; description: string }) => Promise<void>;
   schema: TFormSchema;
+  uniqueAmong?: TUniqueAmong;
   error: {
     message: string;
   } | null;
@@ -45,6 +47,7 @@ export default function RenameCard({
   descriptionMaxLength,
   onSubmit,
   schema,
+  uniqueAmong,
   error,
   className,
 }: TProps) {
@@ -75,6 +78,9 @@ export default function RenameCard({
       >
         <form.AppField
           name="name"
+          validators={{
+            onChange: ({ value }) => getTakenNameError(value, uniqueAmong, name),
+          }}
           children={(field) => (
             <field.TextField
               field={field}

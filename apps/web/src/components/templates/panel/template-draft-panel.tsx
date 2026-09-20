@@ -4,6 +4,7 @@ import { useTemplateDraftPanel } from "@/components/templates/panel/template-dra
 import TemplateDraftIcon from "@/components/templates/template-draft-icon";
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
+import { useTakenGroupNames } from "@/components/templates/use-taken-group-names";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,12 @@ export default function TemplateDraftPanel({ templateDraft, children }: TProps) 
 
 function TitleButton({ templateDraft }: { templateDraft: TTemplateDraft }) {
   const updateTemplateDraft = useTemplateDraftStore((s) => s.update);
+  const { groupAndDraftNames } = useTakenGroupNames({
+    teamId: templateDraft.teamId,
+    projectId: templateDraft.projectId,
+    environmentId: templateDraft.environmentId,
+    excludeDraftId: templateDraft.id,
+  });
 
   return (
     <RenameEntityTrigger
@@ -97,6 +104,7 @@ function TitleButton({ templateDraft }: { templateDraft: TTemplateDraft }) {
       dialogTitle="Rename Group"
       dialogDescription="Give a new name and description to the group."
       formSchema={ServiceRenameSchema}
+      uniqueAmong={{ names: groupAndDraftNames, entity: "a service group" }}
       error={null}
       onSubmit={async (value) => {
         await updateTemplateDraft(templateDraft.id, {

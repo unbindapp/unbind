@@ -1382,6 +1382,21 @@ func (suite *ServiceQueriesSuite) TestNeedsDeploymentBackupConfig() {
 	})
 }
 
+func (suite *ServiceQueriesSuite) TestNameIsUniqueInEnvironment() {
+	names, err := suite.serviceRepo.GetNamesByEnvironment(suite.Ctx, nil, suite.testEnvironment.ID)
+	suite.NoError(err)
+	suite.Contains(names, "Test Service")
+
+	_, err = suite.serviceRepo.Create(suite.Ctx, nil, &CreateServiceInput{
+		KubernetesName:   "test-service-duplicate",
+		Name:             "Test Service",
+		ServiceType:      schema.ServiceTypeDockerimage,
+		EnvironmentID:    suite.testEnvironment.ID,
+		KubernetesSecret: "duplicate-secret",
+	})
+	suite.True(ent.IsConstraintError(err))
+}
+
 func TestServiceQueriesSuite(t *testing.T) {
 	suite.Run(t, new(ServiceQueriesSuite))
 }

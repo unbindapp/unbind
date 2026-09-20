@@ -4,7 +4,7 @@ import "github.com/google/uuid"
 
 type S3BucketCreateInput struct {
 	TeamID      uuid.UUID `json:"team_id" format:"uuid" required:"true"`
-	Name        string    `json:"name" required:"true" minLength:"1"`
+	Name        string    `json:"name" required:"true" minLength:"1" maxLength:"32" doc:"Has to be unique in the team"`
 	Endpoint    string    `json:"endpoint" required:"true" minLength:"1"`
 	Region      string    `json:"region" required:"true"`
 	Bucket      string    `json:"bucket" required:"true" minLength:"1"`
@@ -15,7 +15,7 @@ type S3BucketCreateInput struct {
 type S3BucketUpdateInput struct {
 	ID          uuid.UUID `json:"id" format:"uuid" required:"true"`
 	TeamID      uuid.UUID `json:"team_id" format:"uuid" required:"true"`
-	Name        *string   `json:"name,omitempty" required:"false" minLength:"1"`
+	Name        *string   `json:"name,omitempty" required:"false" minLength:"1" maxLength:"32" doc:"Has to be unique in the team"`
 	Endpoint    *string   `json:"endpoint,omitempty" required:"false" minLength:"1"`
 	Region      *string   `json:"region,omitempty" required:"false"`
 	Bucket      *string   `json:"bucket,omitempty" required:"false" minLength:"1"`

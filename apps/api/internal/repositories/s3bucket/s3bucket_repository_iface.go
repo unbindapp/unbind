@@ -17,4 +17,5 @@ type S3BucketRepositoryInterface interface {
 	Delete(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.S3Bucket, error)
 	GetByTeam(ctx context.Context, teamID uuid.UUID) ([]*ent.S3Bucket, error)
+	GetNamesByTeam(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) ([]string, error)
 }

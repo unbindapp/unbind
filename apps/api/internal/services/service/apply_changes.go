@@ -40,6 +40,9 @@ func (self *ServiceService) ApplyChanges(ctx context.Context, requesterUserID uu
 	if err := self.checkHostClaims(ctx, updates); err != nil {
 		return nil, err
 	}
+	if name, ok := nameClaimedTwice(updates); ok {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeConflict, fmt.Sprintf("More than one service is renamed to \"%s\"", name))
+	}
 	sortHostReleasesFirst(updates)
 
 	writes := make([]*variables_service.VariableWrite, 0, len(input.Variables))
@@ -173,6 +176,22 @@ func (self *ServiceService) checkHostClaims(ctx context.Context, updates []*serv
 		}
 	}
 	return nil
+}
+
+// each rename was only checked against the saved names, not against the other renames
+func nameClaimedTwice(updates []*serviceUpdate) (string, bool) {
+	claimed := map[string]struct{}{}
+	for _, update := range updates {
+		if update.input.Name == nil || *update.input.Name == update.service.Name {
+			continue
+		}
+		key := update.service.EnvironmentID.String() + "/" + *update.input.Name
+		if _, ok := claimed[key]; ok {
+			return *update.input.Name, true
+		}
+		claimed[key] = struct{}{}
+	}
+	return "", false
 }
 
 func claimedHosts(input *models.UpdateServiceInput) []string {

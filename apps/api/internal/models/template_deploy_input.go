@@ -9,7 +9,7 @@ type TemplateInputValue struct {
 }
 
 type TemplateDeployInput struct {
-	GroupName        string               `json:"group_name" required:"true" minLength:"1"`
+	GroupName        string               `json:"group_name" required:"true" minLength:"1" maxLength:"32" doc:"Has to be unique in the environment. A taken name gets a short suffix, and so do the services and volumes of the template"`
 	GroupDescription *string              `json:"group_description,omitempty" required:"false"`
 	TemplateID       uuid.UUID            `json:"template_id" format:"uuid" required:"true"`
 	TeamID           uuid.UUID            `json:"team_id" format:"uuid" required:"true"`

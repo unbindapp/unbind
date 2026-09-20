@@ -22,7 +22,7 @@ export default function GeneralTabContent({ teamId, projectId, className }: TPro
   const {
     query: { data, refetch: refetchProject },
   } = useProject();
-  const { refetch: refetchProjects } = useProjects();
+  const { data: projectsData, refetch: refetchProjects } = useProjects();
 
   const { mutateAsync: updateProject, error } = useMutation({ mutationFn: updateProjectFn });
 
@@ -45,6 +45,10 @@ export default function GeneralTabContent({ teamId, projectId, className }: TPro
         descriptionMaxLength={projectDescriptionMaxLength}
         error={error}
         schema={ProjectUpdateFormSchema}
+        uniqueAmong={{
+          names: projectsData?.projects.map((p) => p.name) ?? [],
+          entity: "a project",
+        }}
       />
     </div>
   );

@@ -25,4 +25,5 @@ type ProjectRepositoryInterface interface {
 	// environment predicate allows so a caller who can see a project through one
 	// environment does not learn its siblings.
 	GetByTeam(ctx context.Context, teamID uuid.UUID, authPredicate predicate.Project, environmentPredicate predicate.Environment, sortField models.SortByField, sortOrder models.SortOrder) ([]*ent.Project, error)
+	GetNamesByTeam(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) ([]string, error)
 }

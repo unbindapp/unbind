@@ -99,7 +99,6 @@ export function getProjectLinkProps(project: TProjectShallow): TProjectLinkProps
   };
 }
 
-export const projectNameMinLength = 2;
 export const projectNameMaxLength = 32;
 export const projectDescriptionMaxLength = 128;
 
@@ -108,11 +107,7 @@ export const ProjectCreateFormSchema = z
     name: z
       .string()
       .trim()
-      .max(projectNameMaxLength, `Name should be at most ${projectNameMaxLength} characters.`)
-      .refine(
-        (name) => name === "" || name.length >= projectNameMinLength,
-        `Name should be at least ${projectNameMinLength} characters.`,
-      ),
+      .max(projectNameMaxLength, `Name should be at most ${projectNameMaxLength} characters.`),
   })
   .strip();
 
@@ -120,7 +115,8 @@ export const ProjectUpdateFormSchema = z
   .object({
     name: z
       .string()
-      .min(projectNameMinLength, `Name should be at least ${projectNameMinLength} characters.`)
+      .trim()
+      .min(1, "Name is required.")
       .max(projectNameMaxLength, `Name should be at most ${projectNameMaxLength} characters.`),
     description: z
       .string()

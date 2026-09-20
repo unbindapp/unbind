@@ -7,6 +7,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/ent/servicegroup"
+	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
 
 func (self *ServiceGroupRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.ServiceGroup, error) {
@@ -44,4 +45,12 @@ func (self *ServiceGroupRepository) GetServicesWithDetails(ctx context.Context, 
 			ent.Desc(service.FieldCreatedAt),
 		).
 		All(ctx)
+}
+
+func (self *ServiceGroupRepository) GetNamesByEnvironment(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID) ([]string, error) {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+	return db.ServiceGroup.Query().Where(servicegroup.EnvironmentID(environmentID)).Select(servicegroup.FieldName).Strings(ctx)
 }

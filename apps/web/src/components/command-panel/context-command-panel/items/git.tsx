@@ -8,6 +8,7 @@ import BrandIcon from "@/components/icons/brand";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
+import { useUniqueServiceName } from "@/components/service/use-unique-service-name";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
@@ -23,7 +24,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { v4 as uuidv4 } from "uuid";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 
 type TProps = {
@@ -85,9 +86,15 @@ function useGitItem({ context }: TProps) {
     environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
 
-  const { mutateAsync: createService } = useMutation({
+  const getUniqueServiceName = useUniqueServiceName({
+    teamId,
+    projectId,
+    environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
+  });
+
+  const { mutateAsync: createServiceWithName } = useMutation({
     mutationKey: ["create-service", "git"],
-    mutationFn: async ({ repository }: { repository: TGitRepository }) => {
+    mutationFn: async ({ repository, name }: { repository: TGitRepository; name: string }) => {
       const owner = repository.full_name.split("/")[0];
       const repoName = repository.full_name.split("/")[1];
       const installationId = repository.installation_id;
@@ -102,7 +109,7 @@ function useGitItem({ context }: TProps) {
         builder: defaultGitServiceBuilder,
         repository_owner: owner,
         repository_name: repoName,
-        name: repoName,
+        name,
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
@@ -116,7 +123,7 @@ function useGitItem({ context }: TProps) {
 
       return result;
     },
-    onMutate: ({ repository }) => {
+    onMutate: ({ name }) => {
       closeCommandPanel();
       const pendingId = uuidv4();
       addPendingService({
@@ -124,7 +131,7 @@ function useGitItem({ context }: TProps) {
         teamId,
         projectId,
         environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
-        name: repository.full_name.split("/")[1],
+        name,
         icon: "github",
         createdAt: new Date().toISOString(),
       });
@@ -161,6 +168,14 @@ function useGitItem({ context }: TProps) {
       removePendingService(context.pendingId);
     },
   });
+  const createService = useCallback(
+    ({ repository }: { repository: TGitRepository }) =>
+      createServiceWithName({
+        repository,
+        name: getUniqueServiceName(repository.full_name.split("/")[1]),
+      }),
+    [createServiceWithName, getUniqueServiceName],
+  );
 
   const gitHubRedirectPathname = `/${teamId}/connect-git/connected/github`;
   const queryClient = useQueryClient();

@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema/mixin"
 )
@@ -38,6 +39,12 @@ func (APIKey) Fields() []ent.Field {
 func (APIKey) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("user", User.Type).Ref("api_keys").Field("user_id").Unique().Required(),
+	}
+}
+
+func (APIKey) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("user_id", "name").Unique(),
 	}
 }
 

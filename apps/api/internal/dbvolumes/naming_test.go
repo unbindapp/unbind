@@ -1,7 +1,9 @@
 package dbvolumes
 
 import (
+	"regexp"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -137,4 +139,72 @@ func TestResolveNamesEmptyMetadataName(t *testing.T) {
 	)
 
 	assert.Equal(t, "unb304-pg-volume", pvc.Name)
+}
+
+func TestResolveNamesKeepsDefaultsUnique(t *testing.T) {
+	environmentID := uuid.New()
+	otherEnvironmentID := uuid.New()
+	upper, lower, elsewhere := uuid.New(), uuid.New(), uuid.New()
+	serviceNames := map[uuid.UUID]string{upper: "Redis", lower: "redis", elsewhere: "redis"}
+	created := time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
+	suffixed := regexp.MustCompile(`^redis-volume-[a-z0-9]{4}$`)
+
+	volumes := func() (older, newer, other *models.PVCInfo) {
+		older = &models.PVCInfo{ID: "data-redis-aaa-0", IsDatabase: true, MountedOnServiceID: &upper, EnvironmentID: &environmentID, CreatedAt: created}
+		newer = &models.PVCInfo{ID: "data-redis-bbb-0", IsDatabase: true, MountedOnServiceID: &lower, EnvironmentID: &environmentID, CreatedAt: created.Add(time.Hour)}
+		other = &models.PVCInfo{ID: "data-redis-ccc-0", IsDatabase: true, MountedOnServiceID: &elsewhere, EnvironmentID: &otherEnvironmentID, CreatedAt: created.Add(2 * time.Hour)}
+		return older, newer, other
+	}
+
+	t.Run("services that slugify the same", func(t *testing.T) {
+		older, newer, other := volumes()
+		ResolveNames([]*models.PVCInfo{newer, other, older}, nil, serviceNames)
+
+		assert.Equal(t, "redis-volume", older.Name, "the older volume keeps the plain default")
+		assert.Regexp(t, suffixed, newer.Name)
+		assert.Equal(t, "redis-volume", other.Name, "another environment is another scope")
+	})
+
+	t.Run("same name on every read, whatever the order", func(t *testing.T) {
+		_, first, _ := volumes()
+		older, second, _ := volumes()
+		ResolveNames([]*models.PVCInfo{first, older}, nil, serviceNames)
+		older, _, _ = volumes()
+		ResolveNames([]*models.PVCInfo{older, second}, nil, serviceNames)
+
+		assert.Equal(t, first.Name, second.Name)
+	})
+
+	t.Run("a name someone typed wins over a default", func(t *testing.T) {
+		older, newer, _ := volumes()
+		typed := "redis-volume"
+		ResolveNames([]*models.PVCInfo{older, newer}, map[string]*ent.PVCMetadata{newer.ID: {Name: &typed}}, serviceNames)
+
+		assert.Equal(t, "redis-volume", newer.Name)
+		assert.Regexp(t, suffixed, older.Name)
+	})
+
+	t.Run("suffixed default stays within the limit", func(t *testing.T) {
+		older, newer, _ := volumes()
+		long := map[uuid.UUID]string{upper: "An Extremely Long Database Service Name", lower: "an extremely long database service name"}
+		ResolveNames([]*models.PVCInfo{older, newer}, nil, long)
+
+		assert.NotEqual(t, older.Name, newer.Name)
+		assert.LessOrEqual(t, len(newer.Name), nameMaxLength)
+	})
+}
+
+func TestScopeKeyAndLabels(t *testing.T) {
+	teamID, projectID, environmentID := uuid.New(), uuid.New(), uuid.New()
+
+	team := &models.PVCInfo{TeamID: teamID}
+	project := &models.PVCInfo{TeamID: teamID, ProjectID: &projectID}
+	environment := &models.PVCInfo{TeamID: teamID, ProjectID: &projectID, EnvironmentID: &environmentID}
+
+	assert.NotEqual(t, ScopeKey(team), ScopeKey(project))
+	assert.NotEqual(t, ScopeKey(project), ScopeKey(environment))
+
+	assert.Equal(t, map[string]string{"unbind-team": teamID.String()}, ScopeLabels(team))
+	assert.Equal(t, map[string]string{"unbind-team": teamID.String(), "unbind-project": projectID.String()}, ScopeLabels(project))
+	assert.Equal(t, map[string]string{"unbind-team": teamID.String(), "unbind-environment": environmentID.String()}, ScopeLabels(environment))
 }

@@ -28,7 +28,7 @@ func (suite *APIKeyRepositorySuite) SetupTest() {
 func (suite *APIKeyRepositorySuite) create(userID uuid.UUID, hash string, expiresAt *time.Time) *ent.APIKey {
 	key, err := suite.repo.Create(suite.Ctx, &CreateAPIKeyInput{
 		UserID:      userID,
-		Name:        "ci",
+		Name:        "ci-" + hash,
 		TokenPrefix: "unb_abcdefgh",
 		TokenHash:   hash,
 		Role:        schema.ActionViewer,

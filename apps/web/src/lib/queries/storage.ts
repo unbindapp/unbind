@@ -1,11 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
-import {
-  volumeDescriptionMaxLength,
-  volumeNameMaxLength,
-  volumeNameMinLength,
-} from "@/components/volume/limits";
+import { volumeDescriptionMaxLength, volumeNameMaxLength } from "@/components/volume/limits";
 import { getGoClient } from "@/lib/server/client";
 import { PvcScopeSchema } from "@/lib/server/client.gen";
 import type { PvcScope, S3BucketResponse } from "@/lib/server/client.gen";
@@ -191,12 +187,12 @@ export async function renameVolume(input: TVolumeRef & { name: string; descripti
 
 export type TS3BucketShallow = S3BucketResponse;
 
-export const s3BucketNameMinLength = 2;
 export const s3BucketNameMaxLength = 32;
 
 export const S3BucketNameSchema = z
   .string()
-  .min(s3BucketNameMinLength, `Name should be at least ${s3BucketNameMinLength} characters.`)
+  .trim()
+  .min(1, "Name is required.")
   .max(s3BucketNameMaxLength, `Name should be at most ${s3BucketNameMaxLength} characters.`);
 
 export const CreateS3BucketFormSchema = z.object({
@@ -225,7 +221,8 @@ export type TVolumeType = z.infer<typeof PvcScopeSchema>;
 export const VolumeRenameSchema = z.object({
   name: z
     .string()
-    .min(volumeNameMinLength, `Name should be at least ${volumeNameMinLength} characters.`)
+    .trim()
+    .min(1, "Name is required.")
     .max(volumeNameMaxLength, `Name should be at most ${volumeNameMaxLength} characters.`),
   description: z
     .string()

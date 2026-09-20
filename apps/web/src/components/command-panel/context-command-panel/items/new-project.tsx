@@ -5,7 +5,9 @@ import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/com
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useCreateAndOpenProject } from "@/components/project/use-create-and-open-project";
 import { toast } from "@/components/ui/toast";
-import { ProjectCreateFormSchema } from "@/lib/queries/projects";
+import { getTakenNameError, TUniqueAmong } from "@/lib/helpers/unique-name";
+import { ProjectCreateFormSchema, projectsListQuery } from "@/lib/queries/projects";
+import { useQuery } from "@tanstack/react-query";
 import { FolderIcon, FolderPlusIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { useEffect, useMemo, useState } from "react";
@@ -18,17 +20,27 @@ const mainPageId = "new-project";
 const subpageId = "new-project_subpage";
 const createItemId = `${subpageId}_create`;
 
-function getNameError(name: string) {
+function getNameError(name: string, uniqueAmong: TUniqueAmong) {
   const parsed = ProjectCreateFormSchema.safeParse({ name });
-  return parsed.success ? null : parsed.error.issues[0].message;
+  if (!parsed.success) return parsed.error.issues[0].message;
+  return getTakenNameError(name, uniqueAmong)?.message ?? null;
 }
 
 export default function useNewProjectItem({ context }: TProps) {
   const teamId = context.teamId ?? "";
   const isTeamContext = context.contextType === "team";
 
+  const { data: projectsData } = useQuery({
+    ...projectsListQuery({ teamId }),
+    enabled: isTeamContext && teamId !== "",
+  });
+  const uniqueAmong = useMemo(
+    () => ({ names: projectsData?.projects.map((p) => p.name) ?? [], entity: "a project" }),
+    [projectsData],
+  );
+
   const [showNameError, setShowNameError] = useState(false);
-  const nameErrorForSearch = useCommandPanelStore((s) => getNameError(s.search));
+  const nameErrorForSearch = useCommandPanelStore((s) => getNameError(s.search, uniqueAmong));
   const nameError = showNameError ? nameErrorForSearch : null;
   const setIsPendingId = useCommandPanelStore((s) => s.setIsPendingId);
   const { closePanel, panelId, setPanelPageId } = useCommandPanel({
@@ -81,7 +93,7 @@ export default function useNewProjectItem({ context }: TProps) {
               Icon: FolderPlusIcon,
               onSelect: async ({ isPendingId }) => {
                 if (isPendingId !== null) return;
-                if (getNameError(name)) {
+                if (getNameError(name, uniqueAmong)) {
                   setShowNameError(true);
                   return;
                 }
@@ -103,7 +115,7 @@ export default function useNewProjectItem({ context }: TProps) {
         },
       },
     };
-  }, [isTeamContext, nameError, createAndOpenProject, setIsPendingId]);
+  }, [isTeamContext, nameError, uniqueAmong, createAndOpenProject, setIsPendingId]);
 
   return useMemo(() => ({ item }), [item]);
 }

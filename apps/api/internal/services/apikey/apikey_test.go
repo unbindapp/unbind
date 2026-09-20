@@ -31,6 +31,9 @@ func (suite *APIKeyServiceSuite) SetupTest() {
 	suite.service = NewAPIKeyService(suite.MockRepo)
 	suite.requester = uuid.New()
 	suite.projectID = uuid.New()
+
+	suite.MockAPIKeyRepo.EXPECT().GetNamesByUser(mock.Anything, mock.Anything, suite.requester).
+		Return([]string{"taken"}, nil).Maybe()
 }
 
 func (suite *APIKeyServiceSuite) project() schema.APIKeyResource {
@@ -118,6 +121,12 @@ func (suite *APIKeyServiceSuite) TestCreateFullAccessNeedsNoCheck() {
 	suite.Equal(schema.ActionAdmin, stored.Role)
 	suite.NotNil(stored.Resources, "resources are stored as an empty list, never null")
 	suite.Empty(resp.Resources)
+}
+
+func (suite *APIKeyServiceSuite) TestCreateRejectsTakenName() {
+	_, err := suite.service.Create(suite.Ctx, suite.requester, &models.APIKeyCreateInput{Name: " taken ", Role: schema.ActionAdmin, FullAccess: true})
+	suite.ErrorIs(err, errdefs.ErrConflict)
+	suite.ErrorContains(err, `An API key named "taken" already exists`)
 }
 
 func (suite *APIKeyServiceSuite) TestCreateRejectsMalformedInput() {

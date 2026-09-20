@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
@@ -28,7 +29,20 @@ func (self *ServiceGroupService) CreateServiceGroup(ctx context.Context, request
 		return nil, err
 	}
 
-	grp, err := self.repo.ServiceGroup().Create(ctx, nil, input.Name, input.Icon, input.Description, input.EnvironmentID, nil)
+	name, err := names.Clean(input.Name)
+	if err != nil {
+		return nil, err
+	}
+	takenNames, err := self.repo.ServiceGroup().GetNamesByEnvironment(ctx, nil, input.EnvironmentID)
+	if err != nil {
+		return nil, err
+	}
+	name, err = names.Unique(name, takenNames, names.MaxLength)
+	if err != nil {
+		return nil, err
+	}
+
+	grp, err := self.repo.ServiceGroup().Create(ctx, nil, name, input.Icon, input.Description, input.EnvironmentID, nil)
 	if err != nil {
 		return nil, err
 	}

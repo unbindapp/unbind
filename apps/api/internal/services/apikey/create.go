@@ -8,6 +8,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/models"
 	apikey_repo "github.com/unbindapp/unbind-api/internal/repositories/apikey"
 	"github.com/unbindapp/unbind-api/internal/services/keyaccess"
@@ -29,6 +30,18 @@ func (self *APIKeyService) Create(ctx context.Context, requesterUserID uuid.UUID
 		return nil, err
 	}
 
+	name, err := names.Clean(input.Name)
+	if err != nil {
+		return nil, err
+	}
+	takenNames, err := self.repo.APIKey().GetNamesByUser(ctx, nil, requesterUserID)
+	if err != nil {
+		return nil, err
+	}
+	if err := names.EnsureFree(name, takenNames, "API key", ""); err != nil {
+		return nil, err
+	}
+
 	generated, err := auth.NewAPIKey()
 	if err != nil {
 		return nil, errdefs.NewInternalError(err, "Failed to generate the API key")
@@ -40,7 +53,7 @@ func (self *APIKeyService) Create(ctx context.Context, requesterUserID uuid.UUID
 	}
 	key, err := self.repo.APIKey().Create(ctx, &apikey_repo.CreateAPIKeyInput{
 		UserID:      requesterUserID,
-		Name:        input.Name,
+		Name:        name,
 		TokenPrefix: generated.Prefix,
 		TokenHash:   generated.Hash,
 		Role:        input.Role,

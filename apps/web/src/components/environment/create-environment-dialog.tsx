@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
+import { getTakenNameError } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
   createEnvironment as createEnvironmentFn,
@@ -52,7 +53,15 @@ export function CreateEnvironmentDialog({
   dialogOnOpenChange,
   ...rest
 }: TCreateEnvironmentDialogProps) {
-  const { teamId, projectId } = useProject();
+  const {
+    teamId,
+    projectId,
+    query: { data: projectData },
+  } = useProject();
+  const uniqueAmong = {
+    names: projectData?.project.environments.map((e) => e.name) ?? [],
+    entity: "an environment",
+  };
   const {
     mutateAsync: createEnvironment,
     error: createEnvironmentError,
@@ -160,6 +169,9 @@ export function CreateEnvironmentDialog({
         >
           <form.AppField
             name="name"
+            validators={{
+              onChange: ({ value }) => getTakenNameError(value, uniqueAmong),
+            }}
             children={(field) => (
               <field.TextField
                 autoCapitalize="none"

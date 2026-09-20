@@ -35,7 +35,8 @@ func TestResolveInputs(t *testing.T) {
 		},
 	}
 
-	backend := &ent.Service{ID: uuid.New(), Name: "Backend", KubernetesSecret: "sec-backend"}
+	// renamed since the deploy, so only the template service ID still ties it to the definition
+	backend := &ent.Service{ID: uuid.New(), Name: "Backend-rEc4", TemplateServiceID: new("service_backend"), KubernetesSecret: "sec-backend"}
 	backend.Edges.ServiceConfig = &ent.ServiceConfig{
 		Hosts: []schema.HostSpec{
 			{Host: "cloud.example.com", TemplateInputID: new("input_api_domain")},
@@ -46,7 +47,7 @@ func TestResolveInputs(t *testing.T) {
 			"ADMIN_KEY":  {DisplayName: "Admin Key", Description: "Login key"},
 		},
 	}
-	db := &ent.Service{ID: uuid.New(), Name: "Postgres"}
+	db := &ent.Service{ID: uuid.New(), Name: "Postgres", TemplateServiceID: new("service_db")}
 	db.Edges.ServiceConfig = &ent.ServiceConfig{DatabaseConfig: &schema.DatabaseConfig{StorageSize: "5Gi"}}
 
 	secrets := map[uuid.UUID]map[string][]byte{backend.ID: {"SECRET_VAR": []byte("mysecret"), "ADMIN_KEY": []byte("key123")}}

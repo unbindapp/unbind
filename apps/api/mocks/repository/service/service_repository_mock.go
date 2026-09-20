@@ -1252,6 +1252,80 @@ func (_c *ServiceRepositoryMock_GetGithubPrivateKey_Call) RunAndReturn(run func(
 	return _c
 }
 
+// GetNamesByEnvironment provides a mock function for the type ServiceRepositoryMock
+func (_mock *ServiceRepositoryMock) GetNamesByEnvironment(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID) ([]string, error) {
+	ret := _mock.Called(ctx, tx, environmentID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNamesByEnvironment")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) ([]string, error)); ok {
+		return returnFunc(ctx, tx, environmentID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) []string); ok {
+		r0 = returnFunc(ctx, tx, environmentID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, environmentID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ServiceRepositoryMock_GetNamesByEnvironment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNamesByEnvironment'
+type ServiceRepositoryMock_GetNamesByEnvironment_Call struct {
+	*mock.Call
+}
+
+// GetNamesByEnvironment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - environmentID uuid.UUID
+func (_e *ServiceRepositoryMock_Expecter) GetNamesByEnvironment(ctx any, tx any, environmentID any) *ServiceRepositoryMock_GetNamesByEnvironment_Call {
+	return &ServiceRepositoryMock_GetNamesByEnvironment_Call{Call: _e.mock.On("GetNamesByEnvironment", ctx, tx, environmentID)}
+}
+
+func (_c *ServiceRepositoryMock_GetNamesByEnvironment_Call) Run(run func(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID)) *ServiceRepositoryMock_GetNamesByEnvironment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetNamesByEnvironment_Call) Return(strings []string, err error) *ServiceRepositoryMock_GetNamesByEnvironment_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_GetNamesByEnvironment_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID) ([]string, error)) *ServiceRepositoryMock_GetNamesByEnvironment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetNamesByIDs provides a mock function for the type ServiceRepositoryMock
 func (_mock *ServiceRepositoryMock) GetNamesByIDs(ctx context.Context, serviceIDs []uuid.UUID) (map[uuid.UUID]string, error) {
 	ret := _mock.Called(ctx, serviceIDs)

@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema/mixin"
 )
@@ -46,6 +47,13 @@ func (Environment) Edges() []ent.Edge {
 		edge.To("project_default", Project.Type),
 		// O2M with service_groups
 		edge.To("service_groups", ServiceGroup.Type),
+	}
+}
+
+// Indexes of the Environment.
+func (Environment) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("project_id", "name").Unique(),
 	}
 }
 

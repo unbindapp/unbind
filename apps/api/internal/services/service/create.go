@@ -13,6 +13,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -29,6 +30,11 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	var err error
 	var dbDefinition *databases.Definition
 	var dbVersion *string
+
+	input.Name, err = names.Clean(input.Name)
+	if err != nil {
+		return nil, err
+	}
 
 	if input.Resources.HasNegative() {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Resource values must be positive")
@@ -303,6 +309,15 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			if err := input.HealthCheck.Validate(); err != nil {
 				return err
 			}
+		}
+
+		takenNames, err := self.repo.Service().GetNamesByEnvironment(ctx, tx, input.EnvironmentID)
+		if err != nil {
+			return err
+		}
+		input.Name, err = names.Unique(input.Name, takenNames, names.MaxLength)
+		if err != nil {
+			return err
 		}
 
 		// Generate unique name

@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -35,6 +36,18 @@ func (self *StorageService) CreateS3Bucket(ctx context.Context, requesterUserID 
 		if ent.IsNotFound(err) {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Team not found")
 		}
+		return nil, err
+	}
+
+	input.Name, err = names.Clean(input.Name)
+	if err != nil {
+		return nil, err
+	}
+	takenNames, err := self.repo.S3Bucket().GetNamesByTeam(ctx, nil, input.TeamID)
+	if err != nil {
+		return nil, err
+	}
+	if err := names.EnsureFree(input.Name, takenNames, "bucket", "team"); err != nil {
 		return nil, err
 	}
 

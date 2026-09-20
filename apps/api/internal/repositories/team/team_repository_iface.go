@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
 
 // TeamRepositoryInterface ...
@@ -17,4 +18,5 @@ type TeamRepositoryInterface interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Team, error)
 	GetNamespace(ctx context.Context, id uuid.UUID) (string, error)
 	HasUserWithID(ctx context.Context, teamID uuid.UUID, userID uuid.UUID) (bool, error)
+	GetNames(ctx context.Context, tx repository.TxInterface) ([]string, error)
 }

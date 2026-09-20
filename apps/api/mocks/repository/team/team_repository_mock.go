@@ -11,6 +11,7 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/internal/repositories"
 )
 
 // NewTeamRepositoryMock creates a new instance of TeamRepositoryMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -181,6 +182,74 @@ func (_c *TeamRepositoryMock_GetByID_Call) Return(team *ent.Team, err error) *Te
 }
 
 func (_c *TeamRepositoryMock_GetByID_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.Team, error)) *TeamRepositoryMock_GetByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetNames provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) GetNames(ctx context.Context, tx repository.TxInterface) ([]string, error) {
+	ret := _mock.Called(ctx, tx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNames")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface) ([]string, error)); ok {
+		return returnFunc(ctx, tx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface) []string); ok {
+		r0 = returnFunc(ctx, tx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface) error); ok {
+		r1 = returnFunc(ctx, tx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TeamRepositoryMock_GetNames_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNames'
+type TeamRepositoryMock_GetNames_Call struct {
+	*mock.Call
+}
+
+// GetNames is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+func (_e *TeamRepositoryMock_Expecter) GetNames(ctx any, tx any) *TeamRepositoryMock_GetNames_Call {
+	return &TeamRepositoryMock_GetNames_Call{Call: _e.mock.On("GetNames", ctx, tx)}
+}
+
+func (_c *TeamRepositoryMock_GetNames_Call) Run(run func(ctx context.Context, tx repository.TxInterface)) *TeamRepositoryMock_GetNames_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_GetNames_Call) Return(strings []string, err error) *TeamRepositoryMock_GetNames_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_GetNames_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface) ([]string, error)) *TeamRepositoryMock_GetNames_Call {
 	_c.Call.Return(run)
 	return _c
 }

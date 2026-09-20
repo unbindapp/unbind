@@ -360,6 +360,27 @@ func (suite *ProjectQueriesSuite) TestGetByTeamDBClosed() {
 	suite.ErrorContains(err, "database is closed")
 }
 
+func (suite *ProjectQueriesSuite) TestGetNamesByTeam() {
+	names, err := suite.projectRepo.GetNamesByTeam(suite.Ctx, nil, suite.testTeam.ID)
+	suite.NoError(err)
+	suite.ElementsMatch([]string{"Test Project 1", "Test Project 2"}, names)
+
+	names, err = suite.projectRepo.GetNamesByTeam(suite.Ctx, nil, uuid.New())
+	suite.NoError(err)
+	suite.Empty(names)
+}
+
+func (suite *ProjectQueriesSuite) TestNameIsUniqueInTeamOnly() {
+	_, err := suite.projectRepo.Create(suite.Ctx, nil, suite.testTeam.ID, "duplicate-k8s", "Test Project 1", nil, "secret")
+	suite.True(ent.IsConstraintError(err))
+
+	_, err = suite.projectRepo.Create(suite.Ctx, nil, suite.testTeam.ID, "case-k8s", "test project 1", nil, "secret")
+	suite.NoError(err, "names are case sensitive")
+
+	_, err = suite.projectRepo.Create(suite.Ctx, nil, suite.testTeam2.ID, "other-team-k8s", "Test Project 1", nil, "secret")
+	suite.NoError(err)
+}
+
 func TestProjectQueriesSuite(t *testing.T) {
 	suite.Run(t, new(ProjectQueriesSuite))
 }

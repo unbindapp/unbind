@@ -119,6 +119,9 @@ func (suite *S3BucketSuite) SetupTest() {
 		KubernetesSecret: suite.testSecret.Name,
 	}
 	suite.k8sClient = &kubernetes.Clientset{}
+
+	suite.MockS3BucketRepo.EXPECT().GetNamesByTeam(mock.Anything, mock.Anything, suite.testTeamID).
+		Return([]string{"Taken"}, nil).Maybe()
 }
 
 func (suite *S3BucketSuite) TearDownTest() {
@@ -247,6 +250,38 @@ func (suite *S3BucketSuite) TestCreateRejectsBucketWithoutWriteAccess() {
 	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
 	suite.Contains(customErr.Message, "not allowed to read and write this bucket")
 	suite.Equal(1, suite.fake.probesOf("locked-bucket"))
+}
+
+func (suite *S3BucketSuite) TestCreateRejectsTakenNameBeforeProbing() {
+	suite.expectPermissionAndTeam()
+
+	result, err := suite.service.CreateS3Bucket(suite.Ctx, suite.testUserID, &models.S3BucketCreateInput{
+		TeamID:      suite.testTeamID,
+		Name:        "Taken",
+		Endpoint:    suite.fake.server.URL,
+		Region:      "us-east-1",
+		Bucket:      "my-bucket",
+		AccessKeyID: "AKIA",
+		SecretKey:   "secret",
+	})
+
+	suite.ErrorIs(err, errdefs.ErrConflict)
+	suite.Nil(result)
+	suite.Equal(0, suite.fake.probesOf("my-bucket"))
+}
+
+func (suite *S3BucketSuite) TestUpdateRejectsTakenName() {
+	suite.expectPermissionAndTeam()
+	suite.MockS3BucketRepo.EXPECT().GetByID(suite.Ctx, suite.testBucketID).Return(suite.testBucket, nil).Once()
+
+	result, err := suite.service.UpdateS3Bucket(suite.Ctx, suite.testUserID, &models.S3BucketUpdateInput{
+		ID:     suite.testBucketID,
+		TeamID: suite.testTeamID,
+		Name:   new("Taken"),
+	})
+
+	suite.ErrorIs(err, errdefs.ErrConflict)
+	suite.Nil(result)
 }
 
 func (suite *S3BucketSuite) TestUpdateRejectsEmptyInput() {

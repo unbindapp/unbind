@@ -37,6 +37,13 @@ var (
 				OnDelete:   schema.Cascade,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "apikey_user_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{APIKeysColumns[11], APIKeysColumns[3]},
+			},
+		},
 	}
 	// BootstrapFlagColumns holds the columns for the "bootstrap_flag" table.
 	BootstrapFlagColumns = []*schema.Column{
@@ -136,6 +143,13 @@ var (
 				Columns:    []*schema.Column{EnvironmentsColumns[8]},
 				RefColumns: []*schema.Column{ProjectsColumns[0]},
 				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "environment_project_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{EnvironmentsColumns[8], EnvironmentsColumns[4]},
 			},
 		},
 	}
@@ -463,6 +477,13 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "project_team_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{ProjectsColumns[10], ProjectsColumns[4]},
+			},
+		},
 	}
 	// RegistriesColumns holds the columns for the "registries" table.
 	RegistriesColumns = []*schema.Column{
@@ -505,6 +526,13 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "s3bucket_team_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{S3BucketsColumns[8], S3BucketsColumns[3]},
+			},
+		},
 	}
 	// ServicesColumns holds the columns for the "services" table.
 	ServicesColumns = []*schema.Column{
@@ -522,6 +550,7 @@ var (
 		{Name: "git_repository", Type: field.TypeString, Nullable: true},
 		{Name: "kubernetes_secret", Type: field.TypeString},
 		{Name: "template_instance_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "template_service_id", Type: field.TypeString, Nullable: true},
 		{Name: "environment_id", Type: field.TypeUUID},
 		{Name: "github_installation_id", Type: field.TypeInt64, Nullable: true},
 		{Name: "current_deployment_id", Type: field.TypeUUID, Nullable: true},
@@ -536,45 +565,50 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "services_environments_services",
-				Columns:    []*schema.Column{ServicesColumns[14]},
+				Columns:    []*schema.Column{ServicesColumns[15]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "services_github_installations_services",
-				Columns:    []*schema.Column{ServicesColumns[15]},
+				Columns:    []*schema.Column{ServicesColumns[16]},
 				RefColumns: []*schema.Column{GithubInstallationsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "services_deployments_current_deployment",
-				Columns:    []*schema.Column{ServicesColumns[16]},
+				Columns:    []*schema.Column{ServicesColumns[17]},
 				RefColumns: []*schema.Column{DeploymentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "services_service_groups_services",
-				Columns:    []*schema.Column{ServicesColumns[17]},
+				Columns:    []*schema.Column{ServicesColumns[18]},
 				RefColumns: []*schema.Column{ServiceGroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "services_templates_services",
-				Columns:    []*schema.Column{ServicesColumns[18]},
+				Columns:    []*schema.Column{ServicesColumns[19]},
 				RefColumns: []*schema.Column{TemplatesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
+				Name:    "service_environment_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{ServicesColumns[15], ServicesColumns[5]},
+			},
+			{
 				Name:    "service_environment_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{ServicesColumns[14], ServicesColumns[1]},
+				Columns: []*schema.Column{ServicesColumns[15], ServicesColumns[1]},
 			},
 			{
 				Name:    "service_service_group_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{ServicesColumns[17], ServicesColumns[1]},
+				Columns: []*schema.Column{ServicesColumns[18], ServicesColumns[1]},
 			},
 			{
 				Name:    "service_created_at",
@@ -665,6 +699,13 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "servicegroup_environment_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{ServiceGroupsColumns[7], ServiceGroupsColumns[3]},
+			},
+		},
 	}
 	// SystemSettingsColumns holds the columns for the "system_settings" table.
 	SystemSettingsColumns = []*schema.Column{
@@ -697,6 +738,13 @@ var (
 		Name:       "teams",
 		Columns:    TeamsColumns,
 		PrimaryKey: []*schema.Column{TeamsColumns[0]},
+		Indexes: []*schema.Index{
+			{
+				Name:    "team_name",
+				Unique:  true,
+				Columns: []*schema.Column{TeamsColumns[4]},
+			},
+		},
 	}
 	// TemplatesColumns holds the columns for the "templates" table.
 	TemplatesColumns = []*schema.Column{

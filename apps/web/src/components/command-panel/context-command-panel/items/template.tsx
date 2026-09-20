@@ -6,8 +6,10 @@ import { useProject } from "@/components/project/project-provider";
 import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
+import { useTakenGroupNames } from "@/components/templates/use-taken-group-names";
 import { useTemplates } from "@/components/templates/templates-provider";
 import { toast } from "@/components/ui/toast";
+import { getUniqueName } from "@/lib/helpers/unique-name";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { LayersIcon, CpuIcon, MemoryStickIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -54,6 +56,11 @@ function useTemplateItem() {
   } = useTemplates();
 
   const createTemplateDraft = useTemplateDraftStore((s) => s.add);
+  const { groupAndDraftNames } = useTakenGroupNames({
+    teamId,
+    projectId,
+    environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
+  });
   const { openPanel: openTemplateDraftPanel } = useTemplateDraftPanel();
 
   const templateItems: TCommandPanelItem[] = useMemo(() => {
@@ -112,7 +119,7 @@ function useTemplateItem() {
             teamId: teamId,
             projectId: projectId,
             environmentId: environmentId,
-            name: template.name,
+            name: getUniqueName(template.name, groupAndDraftNames),
             description: template.description,
             template: template,
             createdAt: new Date().toISOString(),
@@ -134,6 +141,7 @@ function useTemplateItem() {
     createTemplateDraft,
     environmentIdFromPathname,
     defaultEnvironmentId,
+    groupAndDraftNames,
     teamId,
     projectId,
   ]);

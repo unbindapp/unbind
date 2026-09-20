@@ -70,7 +70,7 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 			return err
 		}
 
-		if err := self.retainDatabaseVolumeNames(ctx, tx, service, released); err != nil {
+		if err := self.retainDatabaseVolumeNames(ctx, tx, team.Namespace, service, released, client); err != nil {
 			return err
 		}
 

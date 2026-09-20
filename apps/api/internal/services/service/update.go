@@ -10,6 +10,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -115,6 +116,10 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		if ent.IsNotFound(err) {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service not found")
 		}
+		return nil, err
+	}
+
+	if err := self.cleanServiceRename(ctx, input, service); err != nil {
 		return nil, err
 	}
 
@@ -588,4 +593,25 @@ func (self *ServiceService) updatedServiceResponse(ctx context.Context, requeste
 	}
 
 	return resp, nil
+}
+
+func (self *ServiceService) cleanServiceRename(ctx context.Context, input *models.UpdateServiceInput, service *ent.Service) error {
+	if input.Name == nil {
+		return nil
+	}
+
+	name, err := names.Clean(*input.Name)
+	if err != nil {
+		return err
+	}
+	input.Name = &name
+	if name == service.Name {
+		return nil
+	}
+
+	takenNames, err := self.repo.Service().GetNamesByEnvironment(ctx, nil, service.EnvironmentID)
+	if err != nil {
+		return err
+	}
+	return names.EnsureFree(name, takenNames, "service", "environment")
 }

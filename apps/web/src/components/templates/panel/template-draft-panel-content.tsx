@@ -14,6 +14,7 @@ import { useTemplateDraftPanel } from "@/components/templates/panel/template-dra
 import TemplateHeadroomBanner from "@/components/templates/panel/template-headroom-banner";
 import { TTemplateDraft, TTemplateInput } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
+import { useTakenGroupNames } from "@/components/templates/use-taken-group-names";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/toast";
@@ -22,6 +23,7 @@ import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { drawerAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { generateDomain } from "@/lib/helpers/generate-domain";
+import { getUniqueName } from "@/lib/helpers/unique-name";
 import {
   removeFormDraft,
   useAppFormWithPersistence,
@@ -120,6 +122,11 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
   const hideTemplateDraft = useTemplateDraftStore((s) => s.hide);
   const { closePanel } = useTemplateDraftPanel();
   const { invalidate: invalidateServices } = useServicesUtils({
+    teamId: templateDraft.teamId,
+    projectId: templateDraft.projectId,
+    environmentId: templateDraft.environmentId,
+  });
+  const { groupNames } = useTakenGroupNames({
     teamId: templateDraft.teamId,
     projectId: templateDraft.projectId,
     environmentId: templateDraft.environmentId,
@@ -233,7 +240,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         value: input.value !== "" ? input.value : visibleInputs[i].default || "",
       }));
       const res = await deployTemplate({
-        groupName: templateDraft.name,
+        groupName: getUniqueName(templateDraft.name, groupNames),
         groupDescription: templateDraft.description,
         teamId: templateDraft.teamId,
         projectId: templateDraft.projectId,

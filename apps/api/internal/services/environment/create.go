@@ -8,6 +8,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -17,7 +18,7 @@ import (
 type CreateEnvironmentInput struct {
 	TeamID      uuid.UUID `json:"team_id" format:"uuid" required:"true"`
 	ProjectID   uuid.UUID `json:"project_id" format:"uuid" required:"true"`
-	Name        string    `json:"name" required:"true"`
+	Name        string    `json:"name" required:"true" minLength:"1" maxLength:"32" doc:"Has to be unique in the project"`
 	Description *string   `json:"description"`
 }
 
@@ -32,6 +33,11 @@ func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requester
 	}
 
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+		return nil, err
+	}
+
+	name, err := names.Clean(input.Name)
+	if err != nil {
 		return nil, err
 	}
 
@@ -50,7 +56,15 @@ func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requester
 	// Create the environment
 	var environment *ent.Environment
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		kubernetesName, err := utils.GenerateSlug(input.Name)
+		takenNames, err := self.repo.Environment().GetNamesByProject(ctx, tx, project.ID)
+		if err != nil {
+			return err
+		}
+		if err := names.EnsureFree(name, takenNames, "environment", "project"); err != nil {
+			return err
+		}
+
+		kubernetesName, err := utils.GenerateSlug(name)
 		if err != nil {
 			return err
 		}
@@ -60,7 +74,7 @@ func (self *EnvironmentService) CreateEnvironment(ctx context.Context, requester
 			return err
 		}
 
-		environment, err = self.repo.Environment().Create(ctx, tx, kubernetesName, input.Name, secret.Name, input.Description, project.ID)
+		environment, err = self.repo.Environment().Create(ctx, tx, kubernetesName, name, secret.Name, input.Description, project.ID)
 		if err != nil {
 			return err
 		}

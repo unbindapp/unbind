@@ -34,3 +34,11 @@ func (self *EnvironmentRepository) GetForProject(ctx context.Context, tx reposit
 
 	return q.All(ctx)
 }
+
+func (self *EnvironmentRepository) GetNamesByProject(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) ([]string, error) {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+	return db.Environment.Query().Where(environment.ProjectID(projectID)).Select(environment.FieldName).Strings(ctx)
+}

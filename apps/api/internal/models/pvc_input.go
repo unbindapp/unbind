@@ -52,7 +52,7 @@ type GetPVCInput struct {
 // * Create
 type CreatePVCInput struct {
 	Type          PvcScope  `json:"type" required:"true"`
-	Name          string    `json:"name" required:"true" minLength:"1"`
+	Name          string    `json:"name" required:"true" minLength:"1" maxLength:"32" doc:"Has to be unique among the volumes of the same scope. A taken name gets a short suffix, so read the name from the response"`
 	Description   *string   `json:"description,omitempty" required:"false"`
 	TeamID        uuid.UUID `json:"team_id" required:"true" format:"uuid"`
 	ProjectID     uuid.UUID `json:"project_id" required:"false" format:"uuid"`
@@ -65,7 +65,7 @@ type CreatePVCInput struct {
 
 // * Update
 type UpdatePVCInput struct {
-	Name          *string   `json:"name" required:"false" minLength:"1"`
+	Name          *string   `json:"name" required:"false" minLength:"1" maxLength:"32" doc:"Has to be unique among the volumes of the same scope"`
 	Description   *string   `json:"description,omitempty" required:"false"`
 	Type          PvcScope  `json:"type" required:"true"`
 	TeamID        uuid.UUID `json:"team_id" required:"true" format:"uuid"`

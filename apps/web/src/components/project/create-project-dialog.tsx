@@ -13,8 +13,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { generateProjectName } from "@/lib/helpers/generate-project-name";
+import { getTakenNameError, getUniqueName } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { ProjectCreateFormSchema, projectNameMaxLength } from "@/lib/queries/projects";
+import {
+  ProjectCreateFormSchema,
+  projectNameMaxLength,
+  projectsListQuery,
+} from "@/lib/queries/projects";
+import { useQuery } from "@tanstack/react-query";
 import { ResultAsync } from "neverthrow";
 import { ReactElement, useState } from "react";
 
@@ -38,6 +44,12 @@ export function CreateProjectDialog({
     reset: createProjectReset,
   } = useCreateAndOpenProject({ teamId });
 
+  const { data: projectsData } = useQuery(projectsListQuery({ teamId }));
+  const uniqueAmong = {
+    names: projectsData?.projects.map((p) => p.name) ?? [],
+    entity: "a project",
+  };
+
   const onOpenChange = (o: boolean) => {
     setOpen(o);
     dialogOnOpenChange?.(o);
@@ -52,7 +64,10 @@ export function CreateProjectDialog({
     },
     onSubmit: async ({ value }) => {
       const res = await ResultAsync.fromPromise(
-        createAndOpenProject(value.name.trim() || generatedName),
+        createAndOpenProject(
+          value.name.trim() ||
+            getUniqueName(generatedName, uniqueAmong.names, projectNameMaxLength),
+        ),
         () => null,
       );
       if (res.isErr()) return;
@@ -90,6 +105,9 @@ export function CreateProjectDialog({
         >
           <form.AppField
             name="name"
+            validators={{
+              onChange: ({ value }) => getTakenNameError(value, uniqueAmong),
+            }}
             children={(field) => (
               <field.TextField
                 autoCapitalize="none"

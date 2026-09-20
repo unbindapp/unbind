@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/internal/repositories"
 	"github.com/unbindapp/unbind-api/internal/repositories/apikey"
 )
 
@@ -307,6 +308,80 @@ func (_c *APIKeyRepositoryMock_GetByTokenHash_Call) Return(aPIKey *ent.APIKey, e
 }
 
 func (_c *APIKeyRepositoryMock_GetByTokenHash_Call) RunAndReturn(run func(ctx context.Context, tokenHash string) (*ent.APIKey, error)) *APIKeyRepositoryMock_GetByTokenHash_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetNamesByUser provides a mock function for the type APIKeyRepositoryMock
+func (_mock *APIKeyRepositoryMock) GetNamesByUser(ctx context.Context, tx repository.TxInterface, userID uuid.UUID) ([]string, error) {
+	ret := _mock.Called(ctx, tx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNamesByUser")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) ([]string, error)); ok {
+		return returnFunc(ctx, tx, userID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) []string); ok {
+		r0 = returnFunc(ctx, tx, userID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, userID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// APIKeyRepositoryMock_GetNamesByUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNamesByUser'
+type APIKeyRepositoryMock_GetNamesByUser_Call struct {
+	*mock.Call
+}
+
+// GetNamesByUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - userID uuid.UUID
+func (_e *APIKeyRepositoryMock_Expecter) GetNamesByUser(ctx any, tx any, userID any) *APIKeyRepositoryMock_GetNamesByUser_Call {
+	return &APIKeyRepositoryMock_GetNamesByUser_Call{Call: _e.mock.On("GetNamesByUser", ctx, tx, userID)}
+}
+
+func (_c *APIKeyRepositoryMock_GetNamesByUser_Call) Run(run func(ctx context.Context, tx repository.TxInterface, userID uuid.UUID)) *APIKeyRepositoryMock_GetNamesByUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *APIKeyRepositoryMock_GetNamesByUser_Call) Return(strings []string, err error) *APIKeyRepositoryMock_GetNamesByUser_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *APIKeyRepositoryMock_GetNamesByUser_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, userID uuid.UUID) ([]string, error)) *APIKeyRepositoryMock_GetNamesByUser_Call {
 	_c.Call.Return(run)
 	return _c
 }

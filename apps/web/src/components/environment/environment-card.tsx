@@ -30,6 +30,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
+import { getTakenNameError } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import {
@@ -342,6 +343,7 @@ function RenameTrigger({
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
   const {
+    query: { data: environmentsData },
     utils: { invalidate: invalidateEnvironments },
   } = useEnvironments();
 
@@ -356,6 +358,10 @@ function RenameTrigger({
       dialogDescription="Give a new name and description to the environment."
       error={updateEnvironmentError}
       formSchema={EnvironmentRenameSchema}
+      uniqueAmong={{
+        names: environmentsData?.environments.map((e) => e.name) ?? [],
+        entity: "an environment",
+      }}
       handle={handle}
       onDialogClose={() => {
         updateEnvironmentReset();
@@ -407,8 +413,13 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
   const { invalidate: invalidateProjects } = useProjectsUtils({ teamId });
   const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
   const {
+    query: { data: environmentsData },
     utils: { invalidate: invalidateEnvironments },
   } = useEnvironments();
+  const uniqueAmong = {
+    names: environmentsData?.environments.map((e) => e.name) ?? [],
+    entity: "an environment",
+  };
 
   const [open, setOpen] = useState(false);
 
@@ -515,6 +526,9 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
           <div className="flex w-full flex-col gap-2">
             <form.AppField
               name="name"
+              validators={{
+                onChange: ({ value }) => getTakenNameError(value, uniqueAmong),
+              }}
               children={(field) => (
                 <field.TextField
                   autoCapitalize="none"

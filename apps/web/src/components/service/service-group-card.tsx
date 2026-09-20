@@ -2,6 +2,7 @@ import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import ServiceCard from "@/components/service/service-card";
 import { TServiceGroup } from "@/components/service/service-card-list";
 import { useServicesUtils } from "@/components/service/services-provider";
+import { useTakenServiceNames } from "@/components/service/use-taken-service-names";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import ServiceGroupIcon from "@/components/service/service-group-icon";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
@@ -230,6 +231,7 @@ function RenameTrigger({
   children,
 }: TRenameTriggerProps) {
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
+  const { groupNames } = useTakenServiceNames({ teamId, projectId, environmentId });
 
   const {
     mutateAsync: updateServiceGroup,
@@ -264,6 +266,7 @@ function RenameTrigger({
       name={serviceGroup.group.name}
       description={serviceGroup.group.description || ""}
       formSchema={ServiceRenameSchema}
+      uniqueAmong={{ names: groupNames, entity: "a service group" }}
       error={error}
       handle={handle}
       onDialogClose={() => reset()}

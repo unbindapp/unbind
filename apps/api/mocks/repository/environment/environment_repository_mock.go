@@ -359,6 +359,80 @@ func (_c *EnvironmentRepositoryMock_GetForProject_Call) RunAndReturn(run func(ct
 	return _c
 }
 
+// GetNamesByProject provides a mock function for the type EnvironmentRepositoryMock
+func (_mock *EnvironmentRepositoryMock) GetNamesByProject(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) ([]string, error) {
+	ret := _mock.Called(ctx, tx, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNamesByProject")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) ([]string, error)); ok {
+		return returnFunc(ctx, tx, projectID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID) []string); ok {
+		r0 = returnFunc(ctx, tx, projectID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// EnvironmentRepositoryMock_GetNamesByProject_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNamesByProject'
+type EnvironmentRepositoryMock_GetNamesByProject_Call struct {
+	*mock.Call
+}
+
+// GetNamesByProject is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - projectID uuid.UUID
+func (_e *EnvironmentRepositoryMock_Expecter) GetNamesByProject(ctx any, tx any, projectID any) *EnvironmentRepositoryMock_GetNamesByProject_Call {
+	return &EnvironmentRepositoryMock_GetNamesByProject_Call{Call: _e.mock.On("GetNamesByProject", ctx, tx, projectID)}
+}
+
+func (_c *EnvironmentRepositoryMock_GetNamesByProject_Call) Run(run func(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID)) *EnvironmentRepositoryMock_GetNamesByProject_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *EnvironmentRepositoryMock_GetNamesByProject_Call) Return(strings []string, err error) *EnvironmentRepositoryMock_GetNamesByProject_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *EnvironmentRepositoryMock_GetNamesByProject_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) ([]string, error)) *EnvironmentRepositoryMock_GetNamesByProject_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function for the type EnvironmentRepositoryMock
 func (_mock *EnvironmentRepositoryMock) Update(ctx context.Context, environmentID uuid.UUID, name *string, description *string) (*ent.Environment, error) {
 	ret := _mock.Called(ctx, environmentID, name, description)

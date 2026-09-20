@@ -18,7 +18,7 @@ type UpdateTeamInput struct {
 	server.BaseAuthInput
 	Body struct {
 		TeamID      uuid.UUID `json:"team_id" required:"true"`
-		Name        string    `json:"name"`
+		Name        string    `json:"name" minLength:"1" maxLength:"32" doc:"Has to be unique"`
 		Description *string   `json:"description"`
 	}
 }
@@ -50,6 +50,9 @@ func (self *HandlerGroup) UpdateTeam(ctx context.Context, input *UpdateTeamInput
 		}
 		if errors.Is(err, errdefs.ErrUnauthorized) {
 			return nil, huma.Error403Forbidden("Unauthorized")
+		}
+		if errors.Is(err, errdefs.ErrConflict) {
+			return nil, oapi.MapError(err)
 		}
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to update the team"))
 	}

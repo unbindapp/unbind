@@ -12,13 +12,13 @@ import {
 } from "../server/client.gen.ts";
 import { splitWatchPaths } from "../watch-paths.ts";
 
-export const serviceNameMinLength = 2;
 export const serviceNameMaxLength = 32;
 export const serviceDescriptionMaxLength = 128;
 
 export const ServiceNameSchema = z
   .string()
-  .min(serviceNameMinLength, `Name should be at least ${serviceNameMinLength} characters.`)
+  .trim()
+  .min(1, "Name is required.")
   .max(serviceNameMaxLength, `Name should be at most ${serviceNameMaxLength} characters.`);
 
 export const ServiceDescriptionSchema = z

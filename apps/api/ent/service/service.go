@@ -51,6 +51,8 @@ const (
 	FieldTemplateID = "template_id"
 	// FieldTemplateInstanceID holds the string denoting the template_instance_id field in the database.
 	FieldTemplateInstanceID = "template_instance_id"
+	// FieldTemplateServiceID holds the string denoting the template_service_id field in the database.
+	FieldTemplateServiceID = "template_service_id"
 	// FieldServiceGroupID holds the string denoting the service_group_id field in the database.
 	FieldServiceGroupID = "service_group_id"
 	// EdgeEnvironment holds the string denoting the environment edge name in mutations.
@@ -149,6 +151,7 @@ var Columns = []string{
 	FieldCurrentDeploymentID,
 	FieldTemplateID,
 	FieldTemplateInstanceID,
+	FieldTemplateServiceID,
 	FieldServiceGroupID,
 }
 
@@ -271,6 +274,11 @@ func ByTemplateID(opts ...sql.OrderTermOption) OrderOption {
 // ByTemplateInstanceID orders the results by the template_instance_id field.
 func ByTemplateInstanceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTemplateInstanceID, opts...).ToFunc()
+}
+
+// ByTemplateServiceID orders the results by the template_service_id field.
+func ByTemplateServiceID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTemplateServiceID, opts...).ToFunc()
 }
 
 // ByServiceGroupID orders the results by the service_group_id field.

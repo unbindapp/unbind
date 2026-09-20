@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/models"
@@ -88,7 +89,7 @@ func (self *ServiceService) detachDatabaseVolumes(ctx context.Context, tx reposi
 // a released claim outlives the service it belonged to, so the name it was shown under has to be
 // recorded before the service row is gone. Only databases need this: every other volume was
 // created by name and already has one.
-func (self *ServiceService) retainDatabaseVolumeNames(ctx context.Context, tx repository.TxInterface, service *ent.Service, claims []string) error {
+func (self *ServiceService) retainDatabaseVolumeNames(ctx context.Context, tx repository.TxInterface, namespace string, service *ent.Service, claims []string, client kubernetes.Interface) error {
 	if service.Type != schema.ServiceTypeDatabase || len(claims) == 0 {
 		return nil
 	}
@@ -102,7 +103,16 @@ func (self *ServiceService) retainDatabaseVolumeNames(ctx context.Context, tx re
 		if entry, ok := metadata[claim]; ok && entry.Name != nil && *entry.Name != "" {
 			continue
 		}
-		name := dbvolumes.DefaultNameForClaim(service.Name, claim)
+		pvc, err := self.k8s.GetPersistentVolumeClaim(ctx, namespace, claim, client)
+		if err != nil {
+			return err
+		}
+		takenNames, err := dbvolumes.TakenNames(ctx, tx, self.repo, self.k8s, namespace, pvc, client)
+		if err != nil {
+			return err
+		}
+		// same seed as ResolveNames, so the volume keeps the name it was shown under
+		name := names.UniqueSeeded(dbvolumes.DefaultNameForClaim(service.Name, claim), takenNames, names.MaxLength, claim)
 		if err := self.repo.System().UpsertPVCMetadata(ctx, tx, claim, &name, nil); err != nil {
 			return err
 		}

@@ -20,6 +20,7 @@ import (
 	mocks_repository_project "github.com/unbindapp/unbind-api/mocks/repository/project"
 	mocks_repository_s3bucket "github.com/unbindapp/unbind-api/mocks/repository/s3bucket"
 	mocks_repository_service "github.com/unbindapp/unbind-api/mocks/repository/service"
+	mocks_repository_service_group "github.com/unbindapp/unbind-api/mocks/repository/service_group"
 	mocks_repository_system "github.com/unbindapp/unbind-api/mocks/repository/system"
 	mocks_repository_team "github.com/unbindapp/unbind-api/mocks/repository/team"
 	mocks_repository_tx "github.com/unbindapp/unbind-api/mocks/repository/tx"
@@ -38,23 +39,24 @@ type ServiceTestSuite struct {
 	MockRepo *mocks_repositories.RepositoriesMock
 
 	// Individual repository mocks
-	MockPermissionsRepo *mocks_repository_permissions.PermissionsRepositoryMock
-	MockProjectRepo     *mocks_repository_project.ProjectRepositoryMock
-	MockEnvironmentRepo *mocks_repository_environment.EnvironmentRepositoryMock
-	MockServiceRepo     *mocks_repository_service.ServiceRepositoryMock
-	MockDeploymentRepo  *mocks_repository_deployment.DeploymentRepositoryMock
-	MockTeamRepo        *mocks_repository_team.TeamRepositoryMock
-	MockUserRepo        *mocks_repository_user.UserRepositoryMock
-	MockGithubRepo      *mocks_repository_github.GithubRepositoryMock
-	MockWebhookRepo     *mocks_repository_webhook.WebhookRepositoryMock
-	MockSystemRepo      *mocks_repository_system.SystemRepositoryMock
-	MockS3BucketRepo    *mocks_repository_s3bucket.S3BucketRepositoryMock
-	MockOauthRepo       *mocks_repository_oauth.OauthRepositoryMock
-	MockGroupRepo       *mocks_repository_group.GroupRepositoryMock
-	MockBootstrapRepo   *mocks_repository_bootstrap.BootstrapRepositoryMock
-	MockVariablesRepo   *mocks_repository_variables.VariablesRepositoryMock
-	MockAPIKeyRepo      *mocks_repository_apikey.APIKeyRepositoryMock
-	MockOAuthServerRepo *mocks_repository_oauthserver.OAuthServerRepositoryMock
+	MockPermissionsRepo  *mocks_repository_permissions.PermissionsRepositoryMock
+	MockProjectRepo      *mocks_repository_project.ProjectRepositoryMock
+	MockEnvironmentRepo  *mocks_repository_environment.EnvironmentRepositoryMock
+	MockServiceRepo      *mocks_repository_service.ServiceRepositoryMock
+	MockDeploymentRepo   *mocks_repository_deployment.DeploymentRepositoryMock
+	MockTeamRepo         *mocks_repository_team.TeamRepositoryMock
+	MockUserRepo         *mocks_repository_user.UserRepositoryMock
+	MockGithubRepo       *mocks_repository_github.GithubRepositoryMock
+	MockWebhookRepo      *mocks_repository_webhook.WebhookRepositoryMock
+	MockSystemRepo       *mocks_repository_system.SystemRepositoryMock
+	MockS3BucketRepo     *mocks_repository_s3bucket.S3BucketRepositoryMock
+	MockServiceGroupRepo *mocks_repository_service_group.ServiceGroupRepositoryMock
+	MockOauthRepo        *mocks_repository_oauth.OauthRepositoryMock
+	MockGroupRepo        *mocks_repository_group.GroupRepositoryMock
+	MockBootstrapRepo    *mocks_repository_bootstrap.BootstrapRepositoryMock
+	MockVariablesRepo    *mocks_repository_variables.VariablesRepositoryMock
+	MockAPIKeyRepo       *mocks_repository_apikey.APIKeyRepositoryMock
+	MockOAuthServerRepo  *mocks_repository_oauthserver.OAuthServerRepositoryMock
 
 	// Infrastructure mocks
 	MockK8s       *mocks_infrastructure_k8s.KubeClientMock
@@ -79,6 +81,7 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockWebhookRepo = mocks_repository_webhook.NewWebhookRepositoryMock(suite.T())
 	suite.MockSystemRepo = mocks_repository_system.NewSystemRepositoryMock(suite.T())
 	suite.MockS3BucketRepo = mocks_repository_s3bucket.NewS3BucketRepositoryMock(suite.T())
+	suite.MockServiceGroupRepo = mocks_repository_service_group.NewServiceGroupRepositoryMock(suite.T())
 	suite.MockOauthRepo = mocks_repository_oauth.NewOauthRepositoryMock(suite.T())
 	suite.MockGroupRepo = mocks_repository_group.NewGroupRepositoryMock(suite.T())
 	suite.MockBootstrapRepo = mocks_repository_bootstrap.NewBootstrapRepositoryMock(suite.T())
@@ -102,6 +105,7 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockRepo.EXPECT().Webhooks().Return(suite.MockWebhookRepo).Maybe()
 	suite.MockRepo.EXPECT().System().Return(suite.MockSystemRepo).Maybe()
 	suite.MockRepo.EXPECT().S3Bucket().Return(suite.MockS3BucketRepo).Maybe()
+	suite.MockRepo.EXPECT().ServiceGroup().Return(suite.MockServiceGroupRepo).Maybe()
 	suite.MockRepo.EXPECT().Oauth().Return(suite.MockOauthRepo).Maybe()
 	suite.MockRepo.EXPECT().Group().Return(suite.MockGroupRepo).Maybe()
 	suite.MockRepo.EXPECT().Bootstrap().Return(suite.MockBootstrapRepo).Maybe()
@@ -124,6 +128,7 @@ func (suite *ServiceTestSuite) TearDownTest() {
 	suite.MockWebhookRepo.AssertExpectations(suite.T())
 	suite.MockSystemRepo.AssertExpectations(suite.T())
 	suite.MockS3BucketRepo.AssertExpectations(suite.T())
+	suite.MockServiceGroupRepo.AssertExpectations(suite.T())
 	suite.MockOauthRepo.AssertExpectations(suite.T())
 	suite.MockGroupRepo.AssertExpectations(suite.T())
 	suite.MockBootstrapRepo.AssertExpectations(suite.T())

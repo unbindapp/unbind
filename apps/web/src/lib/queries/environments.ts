@@ -86,13 +86,13 @@ export async function deleteEnvironment(input: { id: string; teamId: string; pro
 
 export type TEnvironmentShallow = EnvironmentResponse;
 
-export const environmentNameMinLength = 2;
 export const environmentNameMaxLength = 32;
 export const environmentDescriptionMaxLength = 128;
 
 export const EnvironmentNameSchema = z
   .string()
-  .min(environmentNameMinLength, `Name should be at least ${environmentNameMinLength} characters.`)
+  .trim()
+  .min(1, "Name is required.")
   .max(environmentNameMaxLength, `Name should be at most ${environmentNameMaxLength} characters.`);
 
 export const EnvironmentDescriptionSchema = z

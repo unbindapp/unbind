@@ -187,7 +187,7 @@ export const UpdateServiceInputSchema = z
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
     is_public: z.boolean().optional(),
-    name: z.string().nullable().optional(),
+    name: z.string().nullable().optional(), // Has to be unique in the environment
     overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
     overwrite_ports: z.array(PortSpecSchema).nullable().optional(),
     overwrite_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
@@ -577,7 +577,7 @@ export const CreateBuildOutputBodySchema = z
 export const CreateEnvironmentInputSchema = z
   .object({
     description: z.string().nullable(),
-    name: z.string(),
+    name: z.string(), // Has to be unique in the project
     project_id: z.string(),
     team_id: z.string(),
   })
@@ -633,7 +633,7 @@ export const CreatePVCInputSchema = z
     description: z.string().optional(),
     environment_id: z.string().optional(),
     mount_path: z.string().optional(), // Path to mount the volume at on the service, requires service_id
-    name: z.string(),
+    name: z.string(), // Has to be unique among the volumes of the same scope. A taken name gets a short suffix, so read the name from the response
     project_id: z.string().optional(),
     service_id: z.string().optional(), // Service to attach the volume to, requires mount_path
     team_id: z.string(),
@@ -685,7 +685,7 @@ export const CreatePVCResponseBodySchema = z
 export const CreateProjectInputSchema = z
   .object({
     description: z.string().nullable().optional(),
-    name: z.string(),
+    name: z.string(), // Has to be unique in the team
     team_id: z.string(),
   })
   .strip();
@@ -762,7 +762,7 @@ export const CreateServiceGroupInputSchema = z
     description: z.string().optional(), // The description of the service group
     environment_id: z.string(),
     icon: z.string().optional(), // The icon of the service group
-    name: z.string(), // The name of the service group
+    name: z.string(), // Has to be unique in the environment. A taken name gets a short suffix, so read the name from the response
     project_id: z.string(),
     team_id: z.string(),
   })
@@ -806,7 +806,7 @@ export const CreateServiceInputSchema = z
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema).nullable().optional(), // Init containers to run before the main container
     is_public: z.boolean().optional(),
-    name: z.string(),
+    name: z.string(), // Has to be unique in the environment. A taken name gets a short suffix, so read the name from the response
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
     railpack_builder_build_command: z.string().optional(),
@@ -2435,7 +2435,7 @@ export const S3BucketCreateInputSchema = z
     access_key_id: z.string(),
     bucket: z.string(),
     endpoint: z.string(),
-    name: z.string(),
+    name: z.string(), // Has to be unique in the team
     region: z.string(),
     secret_key: z.string(),
     team_id: z.string(),
@@ -2448,7 +2448,7 @@ export const S3BucketUpdateInputSchema = z
     bucket: z.string().optional(),
     endpoint: z.string().optional(),
     id: z.string(),
-    name: z.string().optional(),
+    name: z.string().optional(), // Has to be unique in the team
     region: z.string().optional(),
     secret_key: z.string().optional(),
     team_id: z.string(),
@@ -2579,7 +2579,7 @@ export const TemplateDeployInputSchema = z
   .object({
     environment_id: z.string(),
     group_description: z.string().optional(),
-    group_name: z.string(),
+    group_name: z.string(), // Has to be unique in the environment. A taken name gets a short suffix, and so do the services and volumes of the template
     inputs: z.array(TemplateInputValueSchema).nullable().optional(),
     project_id: z.string(),
     team_id: z.string(),
@@ -2628,7 +2628,7 @@ export const UpdateEnvironmentInputSchema = z
   .object({
     description: z.string().nullable(),
     environment_id: z.string(),
-    name: z.string().nullable(),
+    name: z.string().nullable(), // Has to be unique in the project
     project_id: z.string(),
     team_id: z.string(),
   })
@@ -2660,7 +2660,7 @@ export const UpdatePVCInputSchema = z
     description: z.string().optional(),
     environment_id: z.string().optional(),
     id: z.string(),
-    name: z.string().nullable().optional(),
+    name: z.string().nullable().optional(), // Has to be unique among the volumes of the same scope
     project_id: z.string().optional(),
     team_id: z.string(),
     type: PvcScopeSchema,
@@ -2691,7 +2691,7 @@ export const UpdateProjectInputSchema = z
   .object({
     default_environment_id: z.string().optional(),
     description: z.string().nullable().optional(),
-    name: z.string().optional(),
+    name: z.string().optional(), // Has to be unique in the team
     project_id: z.string(),
     team_id: z.string(),
   })
@@ -2724,7 +2724,7 @@ export const UpdateServiceGroupInputSchema = z
     environment_id: z.string(),
     icon: z.string().optional(), // The icon of the service group
     id: z.string(),
-    name: z.string().nullable().optional(), // The name of the service group
+    name: z.string().nullable().optional(), // Has to be unique in the environment
     project_id: z.string(),
     remove_service_ids: z.array(z.string()).nullable().optional(), // The IDs of the services to remove from the service group
     team_id: z.string(),
@@ -2770,7 +2770,7 @@ export const UpdateStatusResponseBodySchema = z
 export const UpdateTeamInputBodySchema = z
   .object({
     description: z.string().nullable(),
-    name: z.string(),
+    name: z.string(), // Has to be unique
     team_id: z.string(),
   })
   .strip();

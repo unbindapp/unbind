@@ -8,6 +8,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
@@ -42,6 +43,26 @@ func (self *ServiceGroupService) UpdateServiceGroup(ctx context.Context, request
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service group not found")
 		}
 		return nil, err
+	}
+	if existingGroup.EnvironmentID != input.EnvironmentID {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service group not found")
+	}
+
+	if input.Name != nil {
+		name, err := names.Clean(*input.Name)
+		if err != nil {
+			return nil, err
+		}
+		input.Name = &name
+	}
+	if input.Name != nil && *input.Name != existingGroup.Name {
+		takenNames, err := self.repo.ServiceGroup().GetNamesByEnvironment(ctx, nil, existingGroup.EnvironmentID)
+		if err != nil {
+			return nil, err
+		}
+		if err := names.EnsureFree(*input.Name, takenNames, "service group", "environment"); err != nil {
+			return nil, err
+		}
 	}
 
 	// Make sure input.AddServiceIDs and RemoveServiceIDs don't collide

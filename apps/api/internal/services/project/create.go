@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -18,7 +19,7 @@ import (
 
 type CreateProjectInput struct {
 	TeamID      uuid.UUID `json:"team_id" format:"uuid" required:"true"`
-	Name        string    `json:"name" required:"true"`
+	Name        string    `json:"name" required:"true" minLength:"1" maxLength:"32" doc:"Has to be unique in the team"`
 	Description *string   `json:"description" required:"false"`
 }
 
@@ -36,6 +37,11 @@ func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
+	projectName, err := names.Clean(input.Name)
+	if err != nil {
+		return nil, err
+	}
+
 	team, err := self.repo.Team().GetByID(ctx, input.TeamID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -49,9 +55,17 @@ func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID u
 	var project *ent.Project
 	var environment *ent.Environment
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		kubernetesName, err := utils.GenerateSlug(input.Name)
+		takenNames, err := self.repo.Project().GetNamesByTeam(ctx, tx, input.TeamID)
 		if err != nil {
-			log.Errorf("Failed to generate kubernetes name for project %s: %v", input.Name, err)
+			return err
+		}
+		if err := names.EnsureFree(projectName, takenNames, "project", "team"); err != nil {
+			return err
+		}
+
+		kubernetesName, err := utils.GenerateSlug(projectName)
+		if err != nil {
+			log.Errorf("Failed to generate kubernetes name for project %s: %v", projectName, err)
 			return err
 		}
 
@@ -60,7 +74,7 @@ func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID u
 			return err
 		}
 
-		project, err = self.repo.Project().Create(ctx, tx, input.TeamID, kubernetesName, input.Name, input.Description, secret.Name)
+		project, err = self.repo.Project().Create(ctx, tx, input.TeamID, kubernetesName, projectName, input.Description, secret.Name)
 		if err != nil {
 			return err
 		}
@@ -83,7 +97,7 @@ func (self *ProjectService) CreateProject(ctx context.Context, requesterUserID u
 			return err
 		}
 
-		project, err = self.repo.Project().Update(ctx, tx, project.ID, new(environment.ID), input.Name, nil)
+		project, err = self.repo.Project().Update(ctx, tx, project.ID, new(environment.ID), projectName, nil)
 		if err != nil {
 			return err
 		}

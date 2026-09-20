@@ -44,6 +44,9 @@ func (self *HandlerGroup) UpdateProject(ctx context.Context, input *UpdateProjec
 		if ent.IsNotFound(err) || errors.Is(err, errdefs.ErrNotFound) {
 			return nil, huma.Error404NotFound(err.Error())
 		}
+		if errors.Is(err, errdefs.ErrConflict) {
+			return nil, oapi.MapError(err)
+		}
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to update the project"))
 	}
 

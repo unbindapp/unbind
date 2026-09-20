@@ -7,6 +7,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
@@ -41,6 +42,23 @@ func (self *StorageService) UpdateS3Bucket(ctx context.Context, requesterUserID 
 	s3Bucket, err := self.getTeamS3Bucket(ctx, team, input.ID)
 	if err != nil {
 		return nil, err
+	}
+
+	if input.Name != nil {
+		name, err := names.Clean(*input.Name)
+		if err != nil {
+			return nil, err
+		}
+		input.Name = &name
+	}
+	if input.Name != nil && *input.Name != s3Bucket.Name {
+		takenNames, err := self.repo.S3Bucket().GetNamesByTeam(ctx, nil, input.TeamID)
+		if err != nil {
+			return nil, err
+		}
+		if err := names.EnsureFree(*input.Name, takenNames, "bucket", "team"); err != nil {
+			return nil, err
+		}
 	}
 
 	client := self.k8s.GetInternalClient()

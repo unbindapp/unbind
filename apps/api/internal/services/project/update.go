@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
@@ -51,6 +52,22 @@ func (self *ProjectService) UpdateProject(ctx context.Context, requesterUserID u
 	}
 	if project.TeamID != input.TeamID {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Project not in team")
+	}
+
+	if input.Name != "" {
+		input.Name, err = names.Clean(input.Name)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if input.Name != "" && input.Name != project.Name {
+		takenNames, err := self.repo.Project().GetNamesByTeam(ctx, nil, input.TeamID)
+		if err != nil {
+			return nil, err
+		}
+		if err := names.EnsureFree(input.Name, takenNames, "project", "team"); err != nil {
+			return nil, err
+		}
 	}
 
 	project, err = self.repo.Project().Update(ctx, nil, input.ProjectID, input.DefaultEnvironmentID, input.Name, input.Description)

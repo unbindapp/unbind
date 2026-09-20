@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema/mixin"
 )
@@ -42,6 +43,13 @@ func (S3Bucket) Edges() []ent.Edge {
 		edge.From("team", Team.Type).Ref("s3_buckets").Field("team_id").Unique().Required(),
 		// O2M to service_configs
 		edge.To("service_backup_configs", ServiceConfig.Type),
+	}
+}
+
+// Indexes of the S3Bucket.
+func (S3Bucket) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("team_id", "name").Unique(),
 	}
 }
 

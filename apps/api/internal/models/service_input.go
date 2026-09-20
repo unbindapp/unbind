@@ -10,7 +10,7 @@ type CreateServiceInput struct {
 	TeamID        uuid.UUID `format:"uuid" required:"true" json:"team_id"`
 	ProjectID     uuid.UUID `format:"uuid" required:"true" json:"project_id"`
 	EnvironmentID uuid.UUID `format:"uuid" required:"true" json:"environment_id"`
-	Name          string    `required:"true" json:"name"`
+	Name          string    `required:"true" json:"name" minLength:"1" maxLength:"32" doc:"Has to be unique in the environment. A taken name gets a short suffix, so read the name from the response"`
 	Description   string    `json:"description,omitempty"`
 
 	// GitHub integration
@@ -62,7 +62,7 @@ type UpdateServiceInput struct {
 	ProjectID     uuid.UUID `format:"uuid" required:"true" json:"project_id"`
 	EnvironmentID uuid.UUID `format:"uuid" required:"true" json:"environment_id"`
 	ServiceID     uuid.UUID `format:"uuid" required:"true" json:"service_id"`
-	Name          *string   `required:"false" json:"name"`
+	Name          *string   `required:"false" json:"name" minLength:"1" maxLength:"32" doc:"Has to be unique in the environment"`
 	Description   *string   `required:"false" json:"description"`
 
 	// Configuration

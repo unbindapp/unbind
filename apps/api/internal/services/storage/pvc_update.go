@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/models"
@@ -46,6 +47,10 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 		if pvc.TeamID != input.TeamID || (pvc.ProjectID == nil || *pvc.ProjectID != input.ProjectID) || (pvc.EnvironmentID == nil || *pvc.EnvironmentID != input.EnvironmentID) {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "PVC not found")
 		}
+	}
+
+	if err := self.cleanVolumeRename(ctx, team.Namespace, input, pvc, client); err != nil {
+		return nil, err
 	}
 
 	var newCapacity *string
@@ -102,7 +107,7 @@ func (self *StorageService) UpdatePVC(ctx context.Context, requesterUserID uuid.
 			updatedPvc = resized
 		}
 
-		return self.resolveNames(ctx, tx, []*models.PVCInfo{updatedPvc})
+		return dbvolumes.LoadName(ctx, tx, self.repo, self.k8s, team.Namespace, updatedPvc, client)
 	}); err != nil {
 		return nil, err
 	}
@@ -174,4 +179,32 @@ func (self *StorageService) resizeOperatorOwned(ctx context.Context, namespace s
 		return nil, err
 	}
 	return updated, nil
+}
+
+func (self *StorageService) cleanVolumeRename(ctx context.Context, namespace string, input *models.UpdatePVCInput, pvc *models.PVCInfo, client kubernetes.Interface) error {
+	if input.Name == nil {
+		return nil
+	}
+
+	name, err := names.Clean(*input.Name)
+	if err != nil {
+		return err
+	}
+	input.Name = &name
+
+	takenNames, err := dbvolumes.TakenNames(ctx, nil, self.repo, self.k8s, namespace, pvc, client)
+	if err != nil {
+		return err
+	}
+	return names.EnsureFree(name, takenNames, "volume", scopeNoun(pvc))
+}
+
+func scopeNoun(pvc *models.PVCInfo) string {
+	if pvc.EnvironmentID != nil {
+		return "environment"
+	}
+	if pvc.ProjectID != nil {
+		return "project"
+	}
+	return "team"
 }

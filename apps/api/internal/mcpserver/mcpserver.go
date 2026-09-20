@@ -23,6 +23,8 @@ const (
 
 Resources nest as team > project > environment > service, and most tools need the IDs of every level above the resource they act on. Find them with list-teams, list-projects, list-environments and list-service.
 
+Names are unique among siblings and case sensitive: projects in a team, environments in a project, services, service groups and volumes in an environment. Creating or renaming into a taken name answers "conflict", except create-service, create-service-group, create-volume and deploy-template, which keep going with a short suffix added to the name. Read the name from their response instead of assuming the one you sent.
+
 Call "me" first: when api_key is present, this connection is limited to the listed role and resources, and anything outside them answers "not found" or "forbidden".
 
 Creating or updating a service does not roll it out. Call trigger-deployment, then poll get-deployment until it finishes, and read query-logs when a build or a replica fails. Variable changes are rolled out by the next deployment.`

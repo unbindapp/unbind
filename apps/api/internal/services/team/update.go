@@ -6,13 +6,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 type TeamUpdateInput struct {
 	ID          uuid.UUID `json:"id" format:"uuid" required:"true"`
-	Name        string    `json:"name"`
+	Name        string    `json:"name" minLength:"1" maxLength:"32"`
 	Description *string   `json:"description"`
 }
 
@@ -39,6 +40,22 @@ func (self *TeamService) UpdateTeam(ctx context.Context, userID uuid.UUID, input
 		return nil, err
 	}
 
+	if input.Name != "" {
+		name, err := names.Clean(input.Name)
+		if err != nil {
+			return nil, err
+		}
+		input.Name = name
+
+		team, err := self.repo.Team().GetByID(ctx, input.ID)
+		if err != nil {
+			return nil, err
+		}
+		if err := self.ensureNameIsFree(ctx, team.Name, input.Name); err != nil {
+			return nil, err
+		}
+	}
+
 	updatedTeam, err := self.repo.Team().Update(ctx, input.ID, input.Name, input.Description)
 	if err != nil {
 		// May be ent.NotFound
@@ -54,4 +71,16 @@ func (self *TeamService) UpdateTeam(ctx context.Context, userID uuid.UUID, input
 	resp.Permissions = permSet.TeamActions(input.ID)
 
 	return resp, nil
+}
+
+func (self *TeamService) ensureNameIsFree(ctx context.Context, currentName, name string) error {
+	if name == currentName {
+		return nil
+	}
+
+	takenNames, err := self.repo.Team().GetNames(ctx, nil)
+	if err != nil {
+		return err
+	}
+	return names.EnsureFree(name, takenNames, "team", "")
 }

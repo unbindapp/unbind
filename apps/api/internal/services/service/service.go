@@ -303,10 +303,9 @@ func (self *ServiceService) GetVolumesForServices(ctx context.Context, namespace
 		}
 	}
 
-	// 4) Get PVC metadata for all volumes
-	pvcMetadata, err := self.repo.System().GetPVCMetadata(ctx, nil, pvcNames)
-	if err != nil {
-		log.Errorf("Failed to get PVC metadata: %v", err)
+	// 4) Name the volumes, which takes every volume of their scope and not only the relevant ones
+	if err := dbvolumes.LoadNames(ctx, nil, self.repo, allPVCs); err != nil {
+		log.Errorf("Failed to resolve PVC names: %v", err)
 		return nil, err
 	}
 
@@ -352,12 +351,6 @@ func (self *ServiceService) GetVolumesForServices(ctx context.Context, namespace
 		// Add to result
 		result[serviceID] = append(result[serviceID], pvc)
 	}
-
-	serviceNames := make(map[uuid.UUID]string, len(serviceMap))
-	for id, service := range serviceMap {
-		serviceNames[id] = service.Name
-	}
-	dbvolumes.ResolveNames(relevantPVCs, pvcMetadata, serviceNames)
 
 	return result, nil
 }

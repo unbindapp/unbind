@@ -7,6 +7,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/prometheus"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
@@ -40,7 +41,7 @@ func (self *StorageService) ListPVCs(ctx context.Context, requesterUserID uuid.U
 	}
 
 	// before the enrichment below, which gives up on its own errors and would leave volumes nameless
-	if err := self.resolveNames(ctx, nil, pvcs); err != nil {
+	if err := dbvolumes.LoadNames(ctx, nil, self.repo, pvcs); err != nil {
 		log.Errorf("Failed to resolve PVC names: %v", err)
 		return nil, err
 	}
@@ -107,7 +108,7 @@ func (self *StorageService) GetPVC(ctx context.Context, requesterUserID uuid.UUI
 		}
 	}
 
-	if err := self.resolveNames(ctx, nil, []*models.PVCInfo{pvc}); err != nil {
+	if err := dbvolumes.LoadName(ctx, nil, self.repo, self.k8s, team.Namespace, pvc, client); err != nil {
 		log.Errorf("Failed to resolve PVC name: %v", err)
 		return nil, err
 	}

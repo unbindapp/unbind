@@ -19,4 +19,5 @@ type EnvironmentRepositoryInterface interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Environment, error)
 	// Return all environments for a project with service edge populated
 	GetForProject(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID, authPredicate predicate.Environment) ([]*ent.Environment, error)
+	GetNamesByProject(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID) ([]string, error)
 }

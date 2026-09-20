@@ -47,6 +47,9 @@ func (suite *CreateEnvironmentSuite) SetupTest() {
 	suite.MockPermissionsRepo.EXPECT().GetUserPermissionSet(mock.Anything, mock.Anything).
 		Return(&permissions_repo.UserPermissionSet{}, nil).Maybe()
 
+	suite.MockEnvironmentRepo.EXPECT().GetNamesByProject(mock.Anything, mock.Anything, mock.Anything).
+		Return([]string{"production"}, nil).Maybe()
+
 	// Test data
 	suite.testUserID = uuid.New()
 	suite.testTeamID = uuid.New()
@@ -448,4 +451,39 @@ func (suite *CreateEnvironmentSuite) TestCreateEnvironment_SuccessAsFirstEnviron
 
 func TestCreateEnvironmentSuite(t *testing.T) {
 	suite.Run(t, new(CreateEnvironmentSuite))
+}
+
+func (suite *CreateEnvironmentSuite) TestCreateEnvironment_NameTaken() {
+	input := &CreateEnvironmentInput{
+		TeamID:    suite.testTeamID,
+		ProjectID: suite.testProjectID,
+		Name:      " production ",
+	}
+
+	suite.MockPermissionsRepo.EXPECT().
+		Check(suite.Ctx, suite.testUserID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
+		Return(nil).
+		Once()
+
+	suite.MockProjectRepo.EXPECT().
+		GetByID(suite.Ctx, suite.testProjectID).
+		Return(suite.testProject, nil).
+		Once()
+
+	suite.MockK8s.EXPECT().
+		GetInternalClient().
+		Return(&kubernetes.Clientset{})
+
+	suite.MockRepo.EXPECT().
+		WithTx(suite.Ctx, mock.AnythingOfType("func(repository.TxInterface) error")).
+		RunAndReturn(func(ctx context.Context, fn func(repository.TxInterface) error) error {
+			return fn(suite.NewTxMockTyped())
+		}).
+		Once()
+
+	result, err := suite.service.CreateEnvironment(suite.Ctx, suite.testUserID, input)
+
+	suite.ErrorIs(err, errdefs.ErrConflict)
+	suite.ErrorContains(err, `An environment named "production" already exists in this project`)
+	suite.Nil(result)
 }

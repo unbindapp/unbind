@@ -1,6 +1,7 @@
 import { useServicesUtils } from "@/components/service/services-provider";
 import ServiceIcon from "@/components/service/service-icon";
 import { useServiceUtils } from "@/components/service/service-provider";
+import { useTakenServiceNames } from "@/components/service/use-taken-service-names";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ export default function TitleButton({ service, teamId, projectId, environmentId 
     serviceId: service.id,
   });
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
+  const { serviceNames } = useTakenServiceNames({ teamId, projectId, environmentId });
 
   return (
     <RenameEntityTrigger
@@ -40,6 +42,7 @@ export default function TitleButton({ service, teamId, projectId, environmentId 
       name={service.name}
       description={service.description}
       formSchema={ServiceRenameSchema}
+      uniqueAmong={{ names: serviceNames, entity: "a service" }}
       error={error}
       onDialogClose={() => reset()}
       onSubmit={async (value) => {

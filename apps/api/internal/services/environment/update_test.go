@@ -40,6 +40,9 @@ func (suite *UpdateEnvironmentSuite) SetupTest() {
 	suite.MockPermissionsRepo.EXPECT().GetUserPermissionSet(mock.Anything, mock.Anything).
 		Return(&permissions_repo.UserPermissionSet{}, nil).Maybe()
 
+	suite.MockEnvironmentRepo.EXPECT().GetNamesByProject(mock.Anything, mock.Anything, mock.Anything).
+		Return([]string{"production", "Test Environment"}, nil).Maybe()
+
 	// Test data
 	suite.testUserID = uuid.New()
 	suite.testTeamID = uuid.New()
@@ -463,4 +466,63 @@ func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_ServiceSummaryFails()
 
 func TestUpdateEnvironmentSuite(t *testing.T) {
 	suite.Run(t, new(UpdateEnvironmentSuite))
+}
+
+func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_NameTaken() {
+	input := &UpdateEnvironmentInput{
+		TeamID:        suite.testTeamID,
+		ProjectID:     suite.testProjectID,
+		EnvironmentID: suite.testEnvironmentID,
+		Name:          new("production"),
+	}
+
+	suite.MockPermissionsRepo.EXPECT().
+		Check(suite.Ctx, suite.testUserID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
+		Return(nil).
+		Once()
+
+	suite.MockTeamRepo.EXPECT().
+		GetByID(suite.Ctx, suite.testTeamID).
+		Return(suite.testTeam, nil).
+		Once()
+
+	result, err := suite.service.UpdateEnvironment(suite.Ctx, suite.testUserID, input)
+
+	suite.ErrorIs(err, errdefs.ErrConflict)
+	suite.Nil(result)
+}
+
+func (suite *UpdateEnvironmentSuite) TestUpdateEnvironment_KeepsItsOwnName() {
+	input := &UpdateEnvironmentInput{
+		TeamID:        suite.testTeamID,
+		ProjectID:     suite.testProjectID,
+		EnvironmentID: suite.testEnvironmentID,
+		Name:          new("Test Environment"),
+		Description:   new("New description"),
+	}
+
+	suite.MockPermissionsRepo.EXPECT().
+		Check(suite.Ctx, suite.testUserID, mock.AnythingOfType("[]permissions_repo.PermissionCheck")).
+		Return(nil).
+		Once()
+
+	suite.MockTeamRepo.EXPECT().
+		GetByID(suite.Ctx, suite.testTeamID).
+		Return(suite.testTeam, nil).
+		Once()
+
+	suite.MockEnvironmentRepo.EXPECT().
+		Update(suite.Ctx, suite.testEnvironmentID, input.Name, input.Description).
+		Return(suite.testEnvironment, nil).
+		Once()
+
+	suite.MockServiceRepo.EXPECT().
+		SummarizeServices(suite.Ctx, []uuid.UUID{suite.testEnvironmentID}, mock.Anything).
+		Return(map[uuid.UUID]int{}, map[uuid.UUID][]string{}, nil).
+		Once()
+
+	result, err := suite.service.UpdateEnvironment(suite.Ctx, suite.testUserID, input)
+
+	suite.NoError(err)
+	suite.NotNil(result)
 }

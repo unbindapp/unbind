@@ -132,6 +132,11 @@ func TemplateInstanceID(v uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldEQ(FieldTemplateInstanceID, v))
 }
 
+// TemplateServiceID applies equality check predicate on the "template_service_id" field. It's identical to TemplateServiceIDEQ.
+func TemplateServiceID(v string) predicate.Service {
+	return predicate.Service(sql.FieldEQ(FieldTemplateServiceID, v))
+}
+
 // ServiceGroupID applies equality check predicate on the "service_group_id" field. It's identical to ServiceGroupIDEQ.
 func ServiceGroupID(v uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldEQ(FieldServiceGroupID, v))
@@ -985,6 +990,81 @@ func TemplateInstanceIDIsNil() predicate.Service {
 // TemplateInstanceIDNotNil applies the NotNil predicate on the "template_instance_id" field.
 func TemplateInstanceIDNotNil() predicate.Service {
 	return predicate.Service(sql.FieldNotNull(FieldTemplateInstanceID))
+}
+
+// TemplateServiceIDEQ applies the EQ predicate on the "template_service_id" field.
+func TemplateServiceIDEQ(v string) predicate.Service {
+	return predicate.Service(sql.FieldEQ(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDNEQ applies the NEQ predicate on the "template_service_id" field.
+func TemplateServiceIDNEQ(v string) predicate.Service {
+	return predicate.Service(sql.FieldNEQ(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDIn applies the In predicate on the "template_service_id" field.
+func TemplateServiceIDIn(vs ...string) predicate.Service {
+	return predicate.Service(sql.FieldIn(FieldTemplateServiceID, vs...))
+}
+
+// TemplateServiceIDNotIn applies the NotIn predicate on the "template_service_id" field.
+func TemplateServiceIDNotIn(vs ...string) predicate.Service {
+	return predicate.Service(sql.FieldNotIn(FieldTemplateServiceID, vs...))
+}
+
+// TemplateServiceIDGT applies the GT predicate on the "template_service_id" field.
+func TemplateServiceIDGT(v string) predicate.Service {
+	return predicate.Service(sql.FieldGT(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDGTE applies the GTE predicate on the "template_service_id" field.
+func TemplateServiceIDGTE(v string) predicate.Service {
+	return predicate.Service(sql.FieldGTE(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDLT applies the LT predicate on the "template_service_id" field.
+func TemplateServiceIDLT(v string) predicate.Service {
+	return predicate.Service(sql.FieldLT(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDLTE applies the LTE predicate on the "template_service_id" field.
+func TemplateServiceIDLTE(v string) predicate.Service {
+	return predicate.Service(sql.FieldLTE(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDContains applies the Contains predicate on the "template_service_id" field.
+func TemplateServiceIDContains(v string) predicate.Service {
+	return predicate.Service(sql.FieldContains(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDHasPrefix applies the HasPrefix predicate on the "template_service_id" field.
+func TemplateServiceIDHasPrefix(v string) predicate.Service {
+	return predicate.Service(sql.FieldHasPrefix(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDHasSuffix applies the HasSuffix predicate on the "template_service_id" field.
+func TemplateServiceIDHasSuffix(v string) predicate.Service {
+	return predicate.Service(sql.FieldHasSuffix(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDIsNil applies the IsNil predicate on the "template_service_id" field.
+func TemplateServiceIDIsNil() predicate.Service {
+	return predicate.Service(sql.FieldIsNull(FieldTemplateServiceID))
+}
+
+// TemplateServiceIDNotNil applies the NotNil predicate on the "template_service_id" field.
+func TemplateServiceIDNotNil() predicate.Service {
+	return predicate.Service(sql.FieldNotNull(FieldTemplateServiceID))
+}
+
+// TemplateServiceIDEqualFold applies the EqualFold predicate on the "template_service_id" field.
+func TemplateServiceIDEqualFold(v string) predicate.Service {
+	return predicate.Service(sql.FieldEqualFold(FieldTemplateServiceID, v))
+}
+
+// TemplateServiceIDContainsFold applies the ContainsFold predicate on the "template_service_id" field.
+func TemplateServiceIDContainsFold(v string) predicate.Service {
+	return predicate.Service(sql.FieldContainsFold(FieldTemplateServiceID, v))
 }
 
 // ServiceGroupIDEQ applies the EQ predicate on the "service_group_id" field.

@@ -222,6 +222,20 @@ func (_c *ServiceCreate) SetNillableTemplateInstanceID(v *uuid.UUID) *ServiceCre
 	return _c
 }
 
+// SetTemplateServiceID sets the "template_service_id" field.
+func (_c *ServiceCreate) SetTemplateServiceID(v string) *ServiceCreate {
+	_c.mutation.SetTemplateServiceID(v)
+	return _c
+}
+
+// SetNillableTemplateServiceID sets the "template_service_id" field if the given value is not nil.
+func (_c *ServiceCreate) SetNillableTemplateServiceID(v *string) *ServiceCreate {
+	if v != nil {
+		_c.SetTemplateServiceID(*v)
+	}
+	return _c
+}
+
 // SetServiceGroupID sets the "service_group_id" field.
 func (_c *ServiceCreate) SetServiceGroupID(v uuid.UUID) *ServiceCreate {
 	_c.mutation.SetServiceGroupID(v)
@@ -496,6 +510,10 @@ func (_c *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.TemplateInstanceID(); ok {
 		_spec.SetField(service.FieldTemplateInstanceID, field.TypeUUID, value)
 		_node.TemplateInstanceID = &value
+	}
+	if value, ok := _c.mutation.TemplateServiceID(); ok {
+		_spec.SetField(service.FieldTemplateServiceID, field.TypeString, value)
+		_node.TemplateServiceID = &value
 	}
 	if nodes := _c.mutation.EnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -934,6 +952,24 @@ func (u *ServiceUpsert) ClearTemplateInstanceID() *ServiceUpsert {
 	return u
 }
 
+// SetTemplateServiceID sets the "template_service_id" field.
+func (u *ServiceUpsert) SetTemplateServiceID(v string) *ServiceUpsert {
+	u.Set(service.FieldTemplateServiceID, v)
+	return u
+}
+
+// UpdateTemplateServiceID sets the "template_service_id" field to the value that was provided on create.
+func (u *ServiceUpsert) UpdateTemplateServiceID() *ServiceUpsert {
+	u.SetExcluded(service.FieldTemplateServiceID)
+	return u
+}
+
+// ClearTemplateServiceID clears the value of the "template_service_id" field.
+func (u *ServiceUpsert) ClearTemplateServiceID() *ServiceUpsert {
+	u.SetNull(service.FieldTemplateServiceID)
+	return u
+}
+
 // SetServiceGroupID sets the "service_group_id" field.
 func (u *ServiceUpsert) SetServiceGroupID(v uuid.UUID) *ServiceUpsert {
 	u.Set(service.FieldServiceGroupID, v)
@@ -1294,6 +1330,27 @@ func (u *ServiceUpsertOne) UpdateTemplateInstanceID() *ServiceUpsertOne {
 func (u *ServiceUpsertOne) ClearTemplateInstanceID() *ServiceUpsertOne {
 	return u.Update(func(s *ServiceUpsert) {
 		s.ClearTemplateInstanceID()
+	})
+}
+
+// SetTemplateServiceID sets the "template_service_id" field.
+func (u *ServiceUpsertOne) SetTemplateServiceID(v string) *ServiceUpsertOne {
+	return u.Update(func(s *ServiceUpsert) {
+		s.SetTemplateServiceID(v)
+	})
+}
+
+// UpdateTemplateServiceID sets the "template_service_id" field to the value that was provided on create.
+func (u *ServiceUpsertOne) UpdateTemplateServiceID() *ServiceUpsertOne {
+	return u.Update(func(s *ServiceUpsert) {
+		s.UpdateTemplateServiceID()
+	})
+}
+
+// ClearTemplateServiceID clears the value of the "template_service_id" field.
+func (u *ServiceUpsertOne) ClearTemplateServiceID() *ServiceUpsertOne {
+	return u.Update(func(s *ServiceUpsert) {
+		s.ClearTemplateServiceID()
 	})
 }
 
@@ -1827,6 +1884,27 @@ func (u *ServiceUpsertBulk) UpdateTemplateInstanceID() *ServiceUpsertBulk {
 func (u *ServiceUpsertBulk) ClearTemplateInstanceID() *ServiceUpsertBulk {
 	return u.Update(func(s *ServiceUpsert) {
 		s.ClearTemplateInstanceID()
+	})
+}
+
+// SetTemplateServiceID sets the "template_service_id" field.
+func (u *ServiceUpsertBulk) SetTemplateServiceID(v string) *ServiceUpsertBulk {
+	return u.Update(func(s *ServiceUpsert) {
+		s.SetTemplateServiceID(v)
+	})
+}
+
+// UpdateTemplateServiceID sets the "template_service_id" field to the value that was provided on create.
+func (u *ServiceUpsertBulk) UpdateTemplateServiceID() *ServiceUpsertBulk {
+	return u.Update(func(s *ServiceUpsert) {
+		s.UpdateTemplateServiceID()
+	})
+}
+
+// ClearTemplateServiceID clears the value of the "template_service_id" field.
+func (u *ServiceUpsertBulk) ClearTemplateServiceID() *ServiceUpsertBulk {
+	return u.Update(func(s *ServiceUpsert) {
+		s.ClearTemplateServiceID()
 	})
 }
 

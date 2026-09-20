@@ -691,3 +691,11 @@ func derefString(value *string) string {
 	}
 	return *value
 }
+
+func (self *ServiceRepository) GetNamesByEnvironment(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID) ([]string, error) {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+	return db.Service.Query().Where(service.EnvironmentID(environmentID)).Select(service.FieldName).Strings(ctx)
+}

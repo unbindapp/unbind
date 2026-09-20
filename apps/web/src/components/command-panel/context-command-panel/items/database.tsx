@@ -6,6 +6,7 @@ import BrandIcon from "@/components/icons/brand";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
+import { useUniqueServiceName } from "@/components/service/use-unique-service-name";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
@@ -16,7 +17,7 @@ import { useMutation } from "@tanstack/react-query";
 import { DatabaseIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { v4 as uuidv4 } from "uuid";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 
 type TProps = {
@@ -80,9 +81,21 @@ function useDatabaseItem() {
   });
 
   const { mutateAsync: createServiceViaApi } = useMutation({ mutationFn: createServiceFn });
-  const { mutateAsync: createService } = useMutation({
+  const getUniqueServiceName = useUniqueServiceName({
+    teamId,
+    projectId,
+    environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
+  });
+
+  const { mutateAsync: createServiceWithName } = useMutation({
     mutationKey: ["create-service", "database"],
-    mutationFn: async ({ databaseType }: { databaseType: TAvailableDatabase }) => {
+    mutationFn: async ({
+      databaseType,
+      name,
+    }: {
+      databaseType: TAvailableDatabase;
+      name: string;
+    }) => {
       const environmentId = environmentIdFromPathname || defaultEnvironmentId;
       if (!environmentId) {
         throw new Error("Environment ID is missing");
@@ -92,7 +105,7 @@ function useDatabaseItem() {
         type: "database",
         builder: "database",
         database_type: databaseType,
-        name: databaseTypeToName(databaseType),
+        name,
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
@@ -113,7 +126,7 @@ function useDatabaseItem() {
         teamId,
         projectId,
         environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
-        name: databaseTypeToName(data.databaseType),
+        name: data.name,
         icon: data.databaseType,
         createdAt: new Date().toISOString(),
       });
@@ -151,6 +164,14 @@ function useDatabaseItem() {
       removePendingService(context.pendingId);
     },
   });
+  const createService = useCallback(
+    ({ databaseType }: { databaseType: TAvailableDatabase }) =>
+      createServiceWithName({
+        databaseType,
+        name: getUniqueServiceName(databaseTypeToName(databaseType)),
+      }),
+    [createServiceWithName, getUniqueServiceName],
+  );
 
   const item: TCommandPanelItem = useMemo(() => {
     return {

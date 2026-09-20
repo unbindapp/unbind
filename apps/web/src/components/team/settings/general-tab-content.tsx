@@ -21,7 +21,7 @@ export default function GeneralTabContent({ teamId, className }: TProps) {
   const {
     query: { data, refetch: refetchTeam },
   } = useTeam();
-  const { refetch: refetchTeams } = useTeams();
+  const { data: teamsData, refetch: refetchTeams } = useTeams();
 
   const { mutateAsync: updateTeam, error } = useMutation({ mutationFn: updateTeamFn });
 
@@ -43,6 +43,7 @@ export default function GeneralTabContent({ teamId, className }: TProps) {
         descriptionMaxLength={teamDescriptionMaxLength}
         error={error}
         schema={TeamUpdateFormSchema}
+        uniqueAmong={{ names: teamsData?.teams.map((t) => t.name) ?? [], entity: "a team" }}
       />
     </div>
   );

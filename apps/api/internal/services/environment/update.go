@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
@@ -13,7 +14,7 @@ type UpdateEnvironmentInput struct {
 	TeamID        uuid.UUID `json:"team_id" format:"uuid" required:"true"`
 	ProjectID     uuid.UUID `json:"project_id" format:"uuid" required:"true"`
 	EnvironmentID uuid.UUID `json:"environment_id" format:"uuid" required:"true"`
-	Name          *string   `json:"name"`
+	Name          *string   `json:"name" minLength:"1" maxLength:"32" doc:"Has to be unique in the project"`
 	Description   *string   `json:"description"`
 }
 
@@ -34,6 +35,23 @@ func (self *EnvironmentService) UpdateEnvironment(ctx context.Context, requester
 	_, environment, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
 		return nil, err
+	}
+
+	if input.Name != nil {
+		name, err := names.Clean(*input.Name)
+		if err != nil {
+			return nil, err
+		}
+		input.Name = &name
+	}
+	if input.Name != nil && *input.Name != environment.Name {
+		takenNames, err := self.repo.Environment().GetNamesByProject(ctx, nil, input.ProjectID)
+		if err != nil {
+			return nil, err
+		}
+		if err := names.EnsureFree(*input.Name, takenNames, "environment", "project"); err != nil {
+			return nil, err
+		}
 	}
 
 	updated, err := self.repo.Environment().Update(ctx, environment.ID, input.Name, input.Description)

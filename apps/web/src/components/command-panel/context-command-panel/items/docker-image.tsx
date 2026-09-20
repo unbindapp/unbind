@@ -6,6 +6,7 @@ import BrandIcon from "@/components/icons/brand";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
+import { useUniqueServiceName } from "@/components/service/use-unique-service-name";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
@@ -18,7 +19,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DownloadIcon, PackageIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { v4 as uuidv4 } from "uuid";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { toast } from "@/components/ui/toast";
 import { z } from "zod";
 
@@ -92,11 +93,15 @@ function useDockerImageItem() {
   });
 
   const { mutateAsync: createServiceViaApi } = useMutation({ mutationFn: createServiceFn });
-  const { mutateAsync: createService } = useMutation({
-    mutationKey: ["create-service", "docker-image"],
-    mutationFn: async ({ image }: { image: string }) => {
-      const imageNameWithoutTag = getImageName(image);
+  const getUniqueServiceName = useUniqueServiceName({
+    teamId,
+    projectId,
+    environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
+  });
 
+  const { mutateAsync: createServiceWithName } = useMutation({
+    mutationKey: ["create-service", "docker-image"],
+    mutationFn: async ({ image, name }: { image: string; name: string }) => {
       const environmentId = environmentIdFromPathname || defaultEnvironmentId;
       if (!environmentId) {
         throw new Error("Environment ID is missing");
@@ -105,7 +110,7 @@ function useDockerImageItem() {
       const result = await createServiceViaApi({
         type: "docker-image",
         builder: "docker",
-        name: imageNameWithoutTag,
+        name,
         team_id: teamId,
         project_id: projectId,
         environment_id: environmentId,
@@ -128,7 +133,7 @@ function useDockerImageItem() {
         teamId,
         projectId,
         environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
-        name: getImageName(data.image),
+        name: data.name,
         icon: "docker",
         createdAt: new Date().toISOString(),
       });
@@ -165,6 +170,11 @@ function useDockerImageItem() {
       removePendingService(context.pendingId);
     },
   });
+  const createService = useCallback(
+    ({ image }: { image: string }) =>
+      createServiceWithName({ image, name: getUniqueServiceName(getImageName(image)) }),
+    [createServiceWithName, getUniqueServiceName],
+  );
 
   const item: TCommandPanelItem = useMemo(() => {
     const item: TCommandPanelItem = {

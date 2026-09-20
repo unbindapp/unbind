@@ -14,6 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/names"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
@@ -223,7 +224,21 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 	templateInstanceID := uuid.New()
 
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
-		serviceGroup, err := self.repo.ServiceGroup().Create(ctx, tx, input.GroupName, new(generatedTemplate.Icon), input.GroupDescription, input.EnvironmentID, &input.TemplateID)
+		groupName, err := self.uniqueGroupName(ctx, tx, input)
+		if err != nil {
+			return err
+		}
+		takenServiceNames, err := self.repo.Service().GetNamesByEnvironment(ctx, tx, input.EnvironmentID)
+		if err != nil {
+			return err
+		}
+		environmentScope := &models.PVCInfo{TeamID: input.TeamID, ProjectID: &input.ProjectID, EnvironmentID: &input.EnvironmentID}
+		takenVolumeNames, err := dbvolumes.TakenNames(ctx, tx, self.repo, self.k8s, project.Edges.Team.Namespace, environmentScope, client)
+		if err != nil {
+			return err
+		}
+
+		serviceGroup, err := self.repo.ServiceGroup().Create(ctx, tx, groupName, new(generatedTemplate.Icon), input.GroupDescription, input.EnvironmentID, &input.TemplateID)
 		if err != nil {
 			return fmt.Errorf("failed to create service group: %w", err)
 		}
@@ -235,6 +250,12 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 		}
 
 		for _, templateService := range generatedTemplate.Services {
+			templateService.Name, err = names.Unique(templateService.Name, takenServiceNames, names.MaxLength)
+			if err != nil {
+				return err
+			}
+			takenServiceNames = append(takenServiceNames, templateService.Name)
+
 			// Fetch DB metadata (if a database)
 			var dbVersion *string
 			if templateService.Type == schema.ServiceTypeDatabase {
@@ -380,6 +401,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					DatabaseVersion:    dbVersion,
 					TemplateID:         new(template.ID),
 					TemplateInstanceID: new(templateInstanceID),
+					TemplateServiceID:  new(templateService.ID),
 					ServiceGroupID:     new(serviceGroup.ID),
 					DetectedPorts:      templateService.Ports,
 				})
@@ -402,6 +424,12 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					"unbind-environment": input.EnvironmentID.String(),
 					"unbind-service":     createService.ID.String(),
 				}
+
+				volume.Name, err = names.Unique(volume.Name, takenVolumeNames, names.MaxLength)
+				if err != nil {
+					return err
+				}
+				takenVolumeNames = append(takenVolumeNames, volume.Name)
 
 				pvcName, err := utils.GenerateSlug(volume.Name)
 				if err != nil {
@@ -818,4 +846,17 @@ func hostReferenceKey(source *ent.Service) string {
 		return vartemplate.KeyHostPrivate
 	}
 	return vartemplate.KeyURLPrivate
+}
+
+func (self *TemplatesService) uniqueGroupName(ctx context.Context, tx repository.TxInterface, input *models.TemplateDeployInput) (string, error) {
+	name, err := names.Clean(input.GroupName)
+	if err != nil {
+		return "", err
+	}
+
+	takenNames, err := self.repo.ServiceGroup().GetNamesByEnvironment(ctx, tx, input.EnvironmentID)
+	if err != nil {
+		return "", err
+	}
+	return names.Unique(name, takenNames, names.MaxLength)
 }

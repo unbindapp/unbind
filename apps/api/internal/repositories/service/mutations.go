@@ -30,6 +30,7 @@ type CreateServiceInput struct {
 	DatabaseVersion      *string
 	TemplateID           *uuid.UUID
 	TemplateInstanceID   *uuid.UUID
+	TemplateServiceID    *string
 	ServiceGroupID       *uuid.UUID
 	DetectedPorts        []schema.PortSpec // This is used to store detected ports, not for creation
 }
@@ -57,6 +58,7 @@ func (self *ServiceRepository) Create(
 		SetNillableDatabase(input.Database).
 		SetNillableTemplateID(input.TemplateID).
 		SetNillableTemplateInstanceID(input.TemplateInstanceID).
+		SetNillableTemplateServiceID(input.TemplateServiceID).
 		SetNillableServiceGroupID(input.ServiceGroupID).
 		SetDetectedPorts(input.DetectedPorts).
 		SetNillableDatabaseVersion(input.DatabaseVersion).Save(ctx)

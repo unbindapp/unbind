@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema/mixin"
 )
@@ -41,6 +42,13 @@ func (ServiceGroup) Edges() []ent.Edge {
 		edge.From("environment", Environment.Type).Ref("service_groups").Field("environment_id").Unique().Required(),
 		// O2M with service
 		edge.To("services", Service.Type),
+	}
+}
+
+// Indexes of the ServiceGroup.
+func (ServiceGroup) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("environment_id", "name").Unique(),
 	}
 }
 

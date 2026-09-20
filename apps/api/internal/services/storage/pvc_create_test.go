@@ -1,6 +1,8 @@
 package storage_service
 
 import (
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/google/uuid"
@@ -192,6 +194,49 @@ func (suite *CreatePVCSuite) TestRejectsServiceWithExistingVolume() {
 
 	suite.Nil(result)
 	suite.assertInvalidInput(err)
+}
+
+func (suite *CreatePVCSuite) TestTakenNameGetsASuffix() {
+	suite.expectScopeReads()
+
+	takenName := "bio-volume"
+	sibling := &models.PVCInfo{ID: "bio-volume-abc123def456", TeamID: suite.testTeamID, ProjectID: &suite.testProjectID, EnvironmentID: &suite.testEnvironmentID}
+	suite.MockK8s.EXPECT().
+		ListPersistentVolumeClaims(suite.Ctx, "unbind-team", map[string]string{
+			"unbind-team":        suite.testTeamID.String(),
+			"unbind-environment": suite.testEnvironmentID.String(),
+		}, suite.mockK8sClient).
+		Return([]*models.PVCInfo{sibling}, nil).
+		Once()
+	suite.MockSystemRepo.EXPECT().
+		GetPVCMetadata(suite.Ctx, nil, []string{sibling.ID}).
+		Return(map[string]*ent.PVCMetadata{sibling.ID: {Name: &takenName}}, nil).
+		Once()
+
+	suffixed := mock.MatchedBy(func(name *string) bool {
+		return regexp.MustCompile(`^bio-volume-[a-zA-Z0-9]{4}$`).MatchString(*name)
+	})
+	suite.MockSystemRepo.EXPECT().
+		UpsertPVCMetadata(suite.Ctx, nil, mock.Anything, suffixed, (*string)(nil)).
+		Return(nil).
+		Once()
+	suite.MockK8s.EXPECT().
+		CreatePersistentVolumeClaim(suite.Ctx, "unbind-team", mock.Anything, mock.Anything, "1Gi", mock.Anything, mock.Anything, suite.mockK8sClient).
+		Return(&models.PVCInfo{ID: "bio-volume-created"}, nil).
+		Once()
+
+	created, err := suite.service.CreatePVC(suite.Ctx, suite.testUserID, &models.CreatePVCInput{
+		Type:          models.PvcScopeEnvironment,
+		Name:          takenName,
+		TeamID:        suite.testTeamID,
+		ProjectID:     suite.testProjectID,
+		EnvironmentID: suite.testEnvironmentID,
+		CapacityGB:    1,
+	})
+
+	suite.Require().NoError(err)
+	suite.NotEqual(takenName, created.Name)
+	suite.True(strings.HasPrefix(created.Name, takenName+"-"))
 }
 
 func TestCreatePVCSuite(t *testing.T) {

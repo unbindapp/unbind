@@ -149,7 +149,6 @@ export {
   serviceDescriptionMaxLength,
   ServiceDescriptionSchema,
   serviceNameMaxLength,
-  serviceNameMinLength,
   ServiceNameSchema,
   toUpdateServiceInput,
   UpdateServiceInputSchema,

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
@@ -31,6 +32,17 @@ func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, request
 		return err
 	}
 	if env.ID != input.EnvironmentID {
+		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service group not found")
+	}
+
+	group, err := self.repo.ServiceGroup().GetByID(ctx, input.ID)
+	if err != nil {
+		if ent.IsNotFound(err) {
+			return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service group not found")
+		}
+		return err
+	}
+	if group.EnvironmentID != input.EnvironmentID {
 		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service group not found")
 	}
 

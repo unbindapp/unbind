@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/internal/models"
+	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
 
 func (self *ProjectRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.Project, error) {
@@ -58,4 +59,12 @@ func (self *ProjectRepository) GetByTeam(ctx context.Context, teamID uuid.UUID, 
 	}
 
 	return q.All(ctx)
+}
+
+func (self *ProjectRepository) GetNamesByTeam(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) ([]string, error) {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+	return db.Project.Query().Where(project.TeamID(teamID)).Select(project.FieldName).Strings(ctx)
 }

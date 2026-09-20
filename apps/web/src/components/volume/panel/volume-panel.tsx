@@ -19,8 +19,12 @@ import { volumeDescriptionMaxLength, volumeNameMaxLength } from "@/components/vo
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { renameVolume as renameVolumeFn, VolumeRenameSchema } from "@/lib/queries/storage";
-import { useMutation } from "@tanstack/react-query";
+import {
+  renameVolume as renameVolumeFn,
+  VolumeRenameSchema,
+  volumesListQuery,
+} from "@/lib/queries/storage";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { HardDriveIcon, PenIcon, XIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { ReactElement } from "react";
@@ -81,6 +85,7 @@ function TitleButton({ volume }: { volume: TVolumeShallow }) {
   const { mutateAsync: renameVolume, error, reset } = useMutation({ mutationFn: renameVolumeFn });
   const { refetch: refetchVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
+  const { data: volumesData } = useQuery(volumesListQuery({ teamId, projectId, environmentId }));
 
   return (
     <RenameEntityTrigger
@@ -94,6 +99,10 @@ function TitleButton({ volume }: { volume: TVolumeShallow }) {
       nameMaxLength={volumeNameMaxLength}
       descriptionMaxLength={volumeDescriptionMaxLength}
       formSchema={VolumeRenameSchema}
+      uniqueAmong={{
+        names: volumesData?.volumes.map(getVolumeDisplayName) ?? [],
+        entity: "a volume",
+      }}
       error={error}
       onDialogClose={() => reset()}
       onSubmit={async (value) => {

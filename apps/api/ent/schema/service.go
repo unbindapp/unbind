@@ -85,6 +85,7 @@ func (Service) Fields() []ent.Field {
 		field.UUID("current_deployment_id", uuid.UUID{}).Optional().Nillable().Comment("Reference the current active deployment"),
 		field.UUID("template_id", uuid.UUID{}).Optional().Nillable().Comment("Reference to the template this service was created from"),
 		field.UUID("template_instance_id", uuid.UUID{}).Optional().Nillable().Comment("Group reference of all services launched together from a template."),
+		field.String("template_service_id").Optional().Nillable().Comment("ID of the service in the template definition, which the name stops matching after a rename"),
 		field.UUID("service_group_id", uuid.UUID{}).Optional().Nillable().Comment("The group this service belongs to"),
 	}
 }
@@ -129,6 +130,8 @@ func (Service) Edges() []ent.Edge {
 // Indexes of the Service.
 func (Service) Indexes() []ent.Index {
 	return []ent.Index{
+		index.Fields("environment_id", "name").Unique(),
+
 		// Composite indexe
 		index.Fields("environment_id", "created_at"),
 		index.Fields("service_group_id", "created_at"),

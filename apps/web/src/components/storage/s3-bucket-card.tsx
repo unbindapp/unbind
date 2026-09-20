@@ -29,6 +29,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/components/ui/utils";
 import { defaultAnimationMs } from "@/lib/constants";
+import { getTakenNameError, TUniqueAmong } from "@/lib/helpers/unique-name";
 import {
   removeFormDraft,
   TFormPersistenceProps,
@@ -40,6 +41,7 @@ import {
   deleteS3Bucket as deleteS3BucketFn,
   EditS3BucketFormSchema,
   s3BucketNameMaxLength,
+  s3BucketsListQuery,
   queryKeyStorage,
   S3BucketNameSchema,
   testStoredS3BucketQuery,
@@ -406,6 +408,11 @@ function useInvalidateS3Buckets(teamId: string) {
   };
 }
 
+function useS3BucketUniqueAmong(teamId: string): TUniqueAmong {
+  const { data } = useQuery(s3BucketsListQuery({ teamId }));
+  return { names: data?.buckets.map((b) => b.name) ?? [], entity: "a bucket" };
+}
+
 function RenameTrigger({
   s3Bucket,
   teamId,
@@ -424,10 +431,12 @@ function RenameTrigger({
   } = useMutation({ mutationFn: updateS3BucketFn });
 
   const invalidateS3Buckets = useInvalidateS3Buckets(teamId);
+  const uniqueAmong = useS3BucketUniqueAmong(teamId);
 
   return (
     <RenameEntityTrigger
       type="name-only"
+      uniqueAmong={uniqueAmong}
       name={s3Bucket.name}
       nameInputTitle="Bucket Name"
       dialogTitle="Rename S3 Bucket"
@@ -517,10 +526,13 @@ function EditTrigger({
 
   const [internalHandle] = useState(() => createDialogHandle());
   const dialogHandle = handle ?? internalHandle;
+  const uniqueAmong = useS3BucketUniqueAmong(teamId);
 
   return (
     <S3BucketFormDialog
       handle={dialogHandle}
+      uniqueAmong={uniqueAmong}
+      currentName={s3Bucket.name}
       title="Edit S3 Bucket"
       description="Change the display name, bucket, endpoint, region or credentials."
       submitText="Save"
@@ -602,10 +614,12 @@ export function AddS3BucketTrigger({
 
   const [internalHandle] = useState(() => createDialogHandle());
   const dialogHandle = handle ?? internalHandle;
+  const uniqueAmong = useS3BucketUniqueAmong(teamId);
 
   return (
     <S3BucketFormDialog
       handle={dialogHandle}
+      uniqueAmong={uniqueAmong}
       title="Add S3 Bucket"
       description="Connect an S3-compatible bucket. It can be used for backups."
       submitText="Add"
@@ -636,6 +650,8 @@ export function AddS3BucketTrigger({
 
 function S3BucketFormDialog({
   handle,
+  uniqueAmong,
+  currentName,
   title,
   description,
   submitText,
@@ -650,6 +666,9 @@ function S3BucketFormDialog({
   children,
 }: {
   handle: TDialogHandle;
+  uniqueAmong: TUniqueAmong;
+  // the bucket being edited may keep its name
+  currentName?: string;
   title: string;
   description: string;
   submitText: string;
@@ -723,6 +742,9 @@ function S3BucketFormDialog({
               <Label htmlFor="name">Display Name</Label>
               <form.AppField
                 name="name"
+                validators={{
+                  onChange: ({ value }) => getTakenNameError(value, uniqueAmong, currentName),
+                }}
                 children={(field) => (
                   <field.TextField
                     id="name"

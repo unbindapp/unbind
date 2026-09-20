@@ -155,15 +155,18 @@ func newDeployedInput(in schema.TemplateInput) *models.DeployedTemplateInput {
 }
 
 func resolveInputs(def schema.TemplateDefinition, services []*ent.Service, secretsByService map[uuid.UUID]map[string][]byte, volumesByService map[uuid.UUID][]*models.PVCInfo) []*resolvedInput {
-	serviceByName := make(map[string]*ent.Service, len(services))
+	// keyed by the definition's service ID, since a deployed service can carry any name
+	serviceByTemplateID := make(map[string]*ent.Service, len(services))
 	for _, svc := range services {
-		serviceByName[svc.Name] = svc
+		if svc.TemplateServiceID != nil {
+			serviceByTemplateID[*svc.TemplateServiceID] = svc
+		}
 	}
 
 	// Generator-input fan-out: input id -> variables (incl. the variable input itself) derived from it.
 	fanout := make(map[string][]fanoutTarget)
 	for _, tsvc := range def.Services {
-		owner := serviceByName[tsvc.Name]
+		owner := serviceByTemplateID[tsvc.ID]
 		if owner == nil {
 			continue
 		}
@@ -203,7 +206,7 @@ func resolveInputs(def schema.TemplateDefinition, services []*ent.Service, secre
 				r.state.Editable = true
 			}
 		case schema.InputTypeVolumeSize:
-			svc := ownerForInput(def, serviceByName, in.ID)
+			svc := ownerForInput(def, serviceByTemplateID, in.ID)
 			if svc == nil || in.Volume == nil {
 				break
 			}
@@ -218,7 +221,7 @@ func resolveInputs(def schema.TemplateDefinition, services []*ent.Service, secre
 			r.state.CurrentValueGB = new(pvc.CapacityGB)
 			r.state.Editable = true
 		case schema.InputTypeDatabaseSize:
-			svc := ownerForInput(def, serviceByName, in.ID)
+			svc := ownerForInput(def, serviceByTemplateID, in.ID)
 			if svc == nil {
 				break
 			}
@@ -259,15 +262,15 @@ func resolveInputs(def schema.TemplateDefinition, services []*ent.Service, secre
 		resolved = append(resolved, r)
 	}
 
-	resolved = append(resolved, displayVariables(def, serviceByName, secretsByService)...)
+	resolved = append(resolved, displayVariables(def, serviceByTemplateID, secretsByService)...)
 	return resolved
 }
 
 // displayVariables surfaces annotated generated variables (e.g. admin keys) as read-only login hints.
-func displayVariables(def schema.TemplateDefinition, serviceByName map[string]*ent.Service, secretsByService map[uuid.UUID]map[string][]byte) []*resolvedInput {
+func displayVariables(def schema.TemplateDefinition, serviceByTemplateID map[string]*ent.Service, secretsByService map[uuid.UUID]map[string][]byte) []*resolvedInput {
 	var out []*resolvedInput
 	for _, tsvc := range def.Services {
-		svc := serviceByName[tsvc.Name]
+		svc := serviceByTemplateID[tsvc.ID]
 		if svc == nil || svc.Edges.ServiceConfig == nil {
 			continue
 		}
@@ -358,10 +361,10 @@ func findVarByInput(services []*ent.Service, inputID string) (*ent.Service, stri
 	return nil, ""
 }
 
-func ownerForInput(def schema.TemplateDefinition, serviceByName map[string]*ent.Service, inputID string) *ent.Service {
+func ownerForInput(def schema.TemplateDefinition, serviceByTemplateID map[string]*ent.Service, inputID string) *ent.Service {
 	for _, tsvc := range def.Services {
 		if slices.Contains(tsvc.InputIDs, inputID) {
-			return serviceByName[tsvc.Name]
+			return serviceByTemplateID[tsvc.ID]
 		}
 	}
 	return nil

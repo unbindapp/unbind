@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema/mixin"
 )
@@ -55,6 +56,13 @@ func (Project) Edges() []ent.Edge {
 		edge.To("project_webhooks", Webhook.Type).Annotations(
 			entsql.Annotation{OnDelete: entsql.Cascade},
 		),
+	}
+}
+
+// Indexes of the Project.
+func (Project) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("team_id", "name").Unique(),
 	}
 }
 

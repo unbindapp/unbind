@@ -12,6 +12,7 @@ import {
   TDialogHandle,
 } from "@/components/ui/dialog";
 import { defaultAnimationMs } from "@/lib/constants";
+import { getTakenNameError, TUniqueAmong } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { serviceDescriptionMaxLength, serviceNameMaxLength } from "@/lib/queries/services";
 import { ReactElement, useCallback, useRef, useState } from "react";
@@ -29,6 +30,7 @@ type TPropsShared = {
   onSubmit: (props: { name: string; description: string }) => Promise<void>;
   nameMaxLength?: number;
   descriptionMaxLength?: number;
+  uniqueAmong?: TUniqueAmong;
 };
 
 type TPropsNameAndDescription = {
@@ -66,6 +68,7 @@ export default function RenameEntityTrigger({
   children,
   nameMaxLength = serviceNameMaxLength,
   descriptionMaxLength = serviceDescriptionMaxLength,
+  uniqueAmong,
 }: TProps) {
   const [internalHandle] = useState(() => createDialogHandle());
   const dialogHandle = handle ?? internalHandle;
@@ -121,6 +124,9 @@ export default function RenameEntityTrigger({
           <div className="flex w-full flex-col gap-2">
             <form.AppField
               name="name"
+              validators={{
+                onChange: ({ value }) => getTakenNameError(value, uniqueAmong, name),
+              }}
               children={(field) => (
                 <field.TextField
                   field={field}

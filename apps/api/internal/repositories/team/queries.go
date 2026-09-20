@@ -8,6 +8,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
+	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
 
 func (self *TeamRepository) GetAll(ctx context.Context, authPredicate predicate.Team) ([]*ent.Team, error) {
@@ -57,4 +58,12 @@ func (self *TeamRepository) HasUserWithID(ctx context.Context, teamID uuid.UUID,
 		QueryTeams().
 		Where(team.ID(teamID)).
 		Exist(ctx)
+}
+
+func (self *TeamRepository) GetNames(ctx context.Context, tx repository.TxInterface) ([]string, error) {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+	return db.Team.Query().Select(team.FieldName).Strings(ctx)
 }

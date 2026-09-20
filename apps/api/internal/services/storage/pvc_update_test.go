@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	"github.com/unbindapp/unbind-api/internal/services"
@@ -48,7 +49,7 @@ func (suite *UpdatePVCSuite) SetupTest() {
 	suite.mockK8sClient = &kubernetes.Clientset{}
 }
 
-func (suite *UpdatePVCSuite) expectCommonReads(pvc *models.PVCInfo) {
+func (suite *UpdatePVCSuite) expectCommonReads(pvc *models.PVCInfo, siblings ...*models.PVCInfo) {
 	suite.MockPermissionsRepo.EXPECT().
 		Check(suite.Ctx, suite.testUserID, mock.Anything).
 		Return(nil).
@@ -67,6 +68,18 @@ func (suite *UpdatePVCSuite) expectCommonReads(pvc *models.PVCInfo) {
 		GetPersistentVolumeClaim(suite.Ctx, suite.testTeam.Namespace, suite.testPVCID, suite.mockK8sClient).
 		Return(pvc, nil).
 		Once()
+
+	// naming a volume takes every volume of its scope
+	listed := *pvc
+	suite.MockK8s.EXPECT().
+		ListPersistentVolumeClaims(suite.Ctx, suite.testTeam.Namespace, map[string]string{"unbind-team": suite.testTeamID.String()}, suite.mockK8sClient).
+		Return(append([]*models.PVCInfo{&listed}, siblings...), nil).
+		Maybe()
+
+	suite.MockServiceRepo.EXPECT().
+		GetNamesByIDs(suite.Ctx, []uuid.UUID{suite.testServiceID}).
+		Return(map[uuid.UUID]string{suite.testServiceID: "My DB"}, nil).
+		Maybe()
 }
 
 func (suite *UpdatePVCSuite) TestRejectsEmptyInput() {
@@ -125,6 +138,12 @@ func (suite *UpdatePVCSuite) TestRenameOnlyDoesNotTouchKubernetes() {
 		Description: &newDescription,
 	}
 
+	// the rename is checked against the names in use before anything is written
+	suite.MockSystemRepo.EXPECT().
+		GetPVCMetadata(suite.Ctx, nil, []string{suite.testPVCID}).
+		Return(map[string]*ent.PVCMetadata{}, nil).
+		Once()
+
 	suite.MockRepo.EXPECT().
 		WithTx(suite.Ctx, mock.AnythingOfType("func(repository.TxInterface) error")).
 		Run(func(ctx context.Context, fn func(repository.TxInterface) error) {
@@ -157,6 +176,28 @@ func (suite *UpdatePVCSuite) TestRenameOnlyDoesNotTouchKubernetes() {
 
 // Sending the current size is not a resize — the update must skip the PVC
 // patch and the rolling pod restart.
+func (suite *UpdatePVCSuite) TestRejectsTakenName() {
+	takenName := "Search Data"
+	other := &models.PVCInfo{ID: "other-volume-abc123def456", TeamID: suite.testTeamID}
+	suite.expectCommonReads(&models.PVCInfo{ID: suite.testPVCID, TeamID: suite.testTeamID, CapacityGB: 10}, other)
+
+	suite.MockSystemRepo.EXPECT().
+		GetPVCMetadata(suite.Ctx, nil, []string{suite.testPVCID, other.ID}).
+		Return(map[string]*ent.PVCMetadata{other.ID: {Name: &takenName}}, nil).
+		Once()
+
+	result, err := suite.service.UpdatePVC(suite.Ctx, suite.testUserID, &models.UpdatePVCInput{
+		Type:   models.PvcScopeTeam,
+		TeamID: suite.testTeamID,
+		ID:     suite.testPVCID,
+		Name:   &takenName,
+	})
+
+	suite.ErrorIs(err, errdefs.ErrConflict)
+	suite.ErrorContains(err, `A volume named "Search Data" already exists in this team`)
+	suite.Nil(result)
+}
+
 func (suite *UpdatePVCSuite) TestSameSizeSkipsResizeMachinery() {
 	suite.expectCommonReads(&models.PVCInfo{
 		ID:                 suite.testPVCID,

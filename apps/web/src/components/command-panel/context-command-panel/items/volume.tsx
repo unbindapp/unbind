@@ -16,9 +16,10 @@ import { getDefaultVolumeName } from "@/components/volume/default-volume-name";
 import { getMountPathError } from "@/components/volume/mount-path";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
+import { getUniqueName } from "@/lib/helpers/unique-name";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { servicesListQuery, TServiceShallow } from "@/lib/queries/services";
-import { createVolume as createVolumeFn } from "@/lib/queries/storage";
+import { createVolume as createVolumeFn, volumesListQuery } from "@/lib/queries/storage";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { FolderClosedIcon, HardDriveIcon, TriangleAlertIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
@@ -100,6 +101,11 @@ function useVolumeItem() {
     enabled: environmentId !== "",
   });
 
+  const { data: volumesData } = useQuery({
+    ...volumesListQuery({ teamId, projectId, environmentId }),
+    enabled: environmentId !== "",
+  });
+
   const eligibleServices = useMemo(
     () => servicesData?.services.filter(canAttachVolume) ?? [],
     [servicesData],
@@ -118,7 +124,10 @@ function useVolumeItem() {
         teamId,
         projectId,
         environmentId,
-        name: getDefaultVolumeName(service.name),
+        name: getUniqueName(
+          getDefaultVolumeName(service.name),
+          volumesData?.volumes.map((v) => v.name) ?? [],
+        ),
         capacityGb: getDefaultCapacityGb(minimumStorageGb),
         serviceId: service.id,
         mountPath,

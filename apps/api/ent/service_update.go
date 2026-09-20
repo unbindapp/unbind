@@ -313,6 +313,26 @@ func (_u *ServiceUpdate) ClearTemplateInstanceID() *ServiceUpdate {
 	return _u
 }
 
+// SetTemplateServiceID sets the "template_service_id" field.
+func (_u *ServiceUpdate) SetTemplateServiceID(v string) *ServiceUpdate {
+	_u.mutation.SetTemplateServiceID(v)
+	return _u
+}
+
+// SetNillableTemplateServiceID sets the "template_service_id" field if the given value is not nil.
+func (_u *ServiceUpdate) SetNillableTemplateServiceID(v *string) *ServiceUpdate {
+	if v != nil {
+		_u.SetTemplateServiceID(*v)
+	}
+	return _u
+}
+
+// ClearTemplateServiceID clears the value of the "template_service_id" field.
+func (_u *ServiceUpdate) ClearTemplateServiceID() *ServiceUpdate {
+	_u.mutation.ClearTemplateServiceID()
+	return _u
+}
+
 // SetServiceGroupID sets the "service_group_id" field.
 func (_u *ServiceUpdate) SetServiceGroupID(v uuid.UUID) *ServiceUpdate {
 	_u.mutation.SetServiceGroupID(v)
@@ -623,6 +643,12 @@ func (_u *ServiceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.TemplateInstanceIDCleared() {
 		_spec.ClearField(service.FieldTemplateInstanceID, field.TypeUUID)
+	}
+	if value, ok := _u.mutation.TemplateServiceID(); ok {
+		_spec.SetField(service.FieldTemplateServiceID, field.TypeString, value)
+	}
+	if _u.mutation.TemplateServiceIDCleared() {
+		_spec.ClearField(service.FieldTemplateServiceID, field.TypeString)
 	}
 	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1184,6 +1210,26 @@ func (_u *ServiceUpdateOne) ClearTemplateInstanceID() *ServiceUpdateOne {
 	return _u
 }
 
+// SetTemplateServiceID sets the "template_service_id" field.
+func (_u *ServiceUpdateOne) SetTemplateServiceID(v string) *ServiceUpdateOne {
+	_u.mutation.SetTemplateServiceID(v)
+	return _u
+}
+
+// SetNillableTemplateServiceID sets the "template_service_id" field if the given value is not nil.
+func (_u *ServiceUpdateOne) SetNillableTemplateServiceID(v *string) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetTemplateServiceID(*v)
+	}
+	return _u
+}
+
+// ClearTemplateServiceID clears the value of the "template_service_id" field.
+func (_u *ServiceUpdateOne) ClearTemplateServiceID() *ServiceUpdateOne {
+	_u.mutation.ClearTemplateServiceID()
+	return _u
+}
+
 // SetServiceGroupID sets the "service_group_id" field.
 func (_u *ServiceUpdateOne) SetServiceGroupID(v uuid.UUID) *ServiceUpdateOne {
 	_u.mutation.SetServiceGroupID(v)
@@ -1524,6 +1570,12 @@ func (_u *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err er
 	}
 	if _u.mutation.TemplateInstanceIDCleared() {
 		_spec.ClearField(service.FieldTemplateInstanceID, field.TypeUUID)
+	}
+	if value, ok := _u.mutation.TemplateServiceID(); ok {
+		_spec.SetField(service.FieldTemplateServiceID, field.TypeString, value)
+	}
+	if _u.mutation.TemplateServiceIDCleared() {
+		_spec.ClearField(service.FieldTemplateServiceID, field.TypeString)
 	}
 	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{

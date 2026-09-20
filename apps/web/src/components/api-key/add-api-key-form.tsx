@@ -2,7 +2,7 @@
 
 import AccessField from "@/components/api-key/access-field";
 import ApiKeyCreatedDialog from "@/components/api-key/api-key-created-dialog";
-import { useApiKeysUtils } from "@/components/api-key/api-keys-provider";
+import { useApiKeys, useApiKeysUtils } from "@/components/api-key/api-keys-provider";
 import {
   accessFieldClassName,
   accessFormShape,
@@ -24,9 +24,11 @@ import InputSectionWrapper from "@/components/api-key/input-section-wrapper";
 import ResourceRows from "@/components/api-key/resource-rows";
 import RoleField from "@/components/api-key/role-field";
 import { BlockItemButtonLike } from "@/components/block";
+import ErrorLine from "@/components/error-line";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import DropdownSelect from "@/components/ui/dropdown-select";
 import { cn } from "@/components/ui/utils";
+import { getTakenNameError } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { createApiKey as createApiKeyFn, type TApiKeyCreated } from "@/lib/queries/api-keys";
 import type { PermittedAction } from "@/lib/server/client.gen";
@@ -57,7 +59,13 @@ export default function AddApiKeyForm({ className }: TProps) {
   const [created, setCreated] = useState<TApiKeyCreated | null>(null);
   const caps = useResourceCaps();
 
-  const { mutateAsync: createApiKey } = useMutation({
+  const { data: apiKeysData } = useApiKeys();
+  const uniqueAmong = {
+    names: apiKeysData?.apiKeys.map((k) => k.name) ?? [],
+    entity: "an API key",
+  };
+
+  const { mutateAsync: createApiKey, error: createApiKeyError } = useMutation({
     mutationFn: createApiKeyFn,
     onSuccess: () => {
       invalidate();
@@ -109,6 +117,9 @@ export default function AddApiKeyForm({ className }: TProps) {
           <InputSectionWrapper>
             <form.AppField
               name="name"
+              validators={{
+                onChange: ({ value }) => getTakenNameError(value, uniqueAmong),
+              }}
               children={(field) => (
                 <field.TextField
                   dontCheckUntilSubmit
@@ -201,10 +212,11 @@ export default function AddApiKeyForm({ className }: TProps) {
             />
           </InputSectionWrapper>
         </div>
-        <div className="bg-card flex w-full items-center justify-end rounded-b-xl border-t p-2 sm:p-2.5">
+        <div className="bg-card flex w-full flex-col gap-2 rounded-b-xl border-t p-2 sm:p-2.5">
+          {createApiKeyError && <ErrorLine message={createApiKeyError.message} />}
           <form.Subscribe selector={(state) => ({ isSubmitting: state.isSubmitting })}>
             {({ isSubmitting }) => (
-              <form.SubmitButton className="px-4" isPending={isSubmitting}>
+              <form.SubmitButton className="self-end px-4" isPending={isSubmitting}>
                 Create Key
               </form.SubmitButton>
             )}
