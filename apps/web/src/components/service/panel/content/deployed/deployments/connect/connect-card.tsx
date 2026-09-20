@@ -81,7 +81,7 @@ export default function ConnectCard({ service }: TProps) {
             <p className="text-foreground text-base leading-tight">Connect</p>
             {!isOpen ? (
               <p className="text-muted-foreground max-w-full min-w-0 shrink text-sm font-normal wrap-break-word">
-                Instructions on how to connect to your database
+                Show instructions on how to connect to your database
               </p>
             ) : null}
           </div>
