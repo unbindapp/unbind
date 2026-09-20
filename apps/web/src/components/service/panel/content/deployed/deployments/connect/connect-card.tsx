@@ -8,6 +8,7 @@ import {
 import { useConnectOpen } from "@/components/service/panel/content/deployed/deployments/connect/use-connect-open";
 import { useService } from "@/components/service/service-provider";
 import { Button, LinkButton } from "@/components/ui/button";
+import { cn } from "@/components/ui/utils";
 import { providedVariablesKey } from "@/components/variables/constants";
 import { readableToken } from "@/components/variables/tokens";
 import { arrayHasAllSpecialDbVariables } from "@/components/variables/variables-list";
@@ -25,9 +26,10 @@ import {
   HourglassIcon,
   LockIcon,
   LucideIcon,
+  TriangleAlertIcon,
   UnplugIcon,
 } from "lucide-react";
-import { ReactNode, useMemo, useState } from "react";
+import { FC, ReactNode, useMemo, useState } from "react";
 
 const refetchIntervalMs = 3000;
 
@@ -88,30 +90,29 @@ export default function ConnectCard({ service }: TProps) {
         <div className="flex w-full flex-col gap-5 px-3.5 pt-3.5 sm:px-4">
           <Section
             title="From your services"
-            description="Set a variable to this value in the service that will use the database."
+            description="Add this as a variable on any service that needs the database."
             Icon={BoxIcon}
           >
-            {isPending && <ValueRow isPlaceholder />}
+            {isPending && <ConnectRow isPlaceholder />}
             {!isPending && isWaitingForPrivate && (
-              <NoteRow
-                type={error ? "error" : "waiting"}
-                text={error ? error.message : "Will be available once the database is ready"}
-              />
+              <ConnectRow Icon={error ? TriangleAlertIcon : WaitingIcon} isError={!!error}>
+                {error ? error.message : "Will be available once the database is ready"}
+              </ConnectRow>
             )}
 
             {!isPending &&
               !isWaitingForPrivate &&
               referenceRows(service.name, urls.private).map((row) => (
-                <ValueRow key={row.key} label={row.label} value={row.value}>
+                <ConnectRow key={row.key} label={row.label} value={row.value}>
                   <ReferenceToken sourceName={service.name} referenceKey={row.key} />
-                </ValueRow>
+                </ConnectRow>
               ))}
           </Section>
           <Section
             title="From the internet"
             description={
               isPublic ? (
-                "For connecting from outside Unbind. The connection is not encrypted."
+                "For connecting from outside Unbind."
               ) : (
                 <>
                   This database is private. Make it public in{" "}
@@ -133,20 +134,19 @@ export default function ConnectCard({ service }: TProps) {
             }
             Icon={GlobeIcon}
           >
-            {isPublic && isPending && <ValueRow isPlaceholder />}
+            {isPublic && isPending && <ConnectRow isPlaceholder isSecret />}
             {isPublic && isRedacted && (
-              <NoteRow type="locked" text="Editor access is needed to see credentials" />
+              <ConnectRow Icon={LockIcon}>Editor access is needed to see credentials</ConnectRow>
             )}
             {isPublic && !isPending && isWaitingForPublic && (
-              <NoteRow
-                type={error ? "error" : "waiting"}
-                text={error ? error.message : "Public address will show up here"}
-              />
+              <ConnectRow Icon={error ? TriangleAlertIcon : WaitingIcon} isError={!!error}>
+                {error ? error.message : "Public address will show up here"}
+              </ConnectRow>
             )}
             {isPublic &&
               !isRedacted &&
               urls.public.map((url) => (
-                <ValueRow key={url.key} label={url.label} value={url.value} isSecret />
+                <ConnectRow key={url.key} label={url.label} value={url.value} isSecret />
               ))}
           </Section>
           <div className="-mx-3.5 flex flex-wrap border-t px-1.5 py-1.5 sm:-mx-4">
@@ -243,34 +243,61 @@ function Section({
   );
 }
 
-type TValueRowProps =
-  | { isPlaceholder: true; label?: never; value?: never; isSecret?: never; children?: never }
-  | {
-      isPlaceholder?: never;
-      label?: string;
-      value: string;
-      isSecret?: boolean;
-      // Replaces how the value is shown, what gets copied is still the value
-      children?: ReactNode;
-    };
+type TConnectRowProps = {
+  // A row with a value gets the buttons, a row without one is a note
+  value?: string;
+  label?: string;
+  Icon?: FC<{ className?: string }>;
+  isSecret?: boolean;
+  isPlaceholder?: boolean;
+  isError?: boolean;
+  // Replaces how the value is shown, what gets copied is still the value
+  children?: ReactNode;
+};
 
-function ValueRow({ label, value, isSecret, isPlaceholder, children }: TValueRowProps) {
+function rowContent({
+  value,
+  isSecret,
+  isVisible,
+  isPlaceholder,
+  children,
+}: Pick<TConnectRowProps, "value" | "isSecret" | "isPlaceholder" | "children"> & {
+  isVisible: boolean;
+}) {
+  if (isPlaceholder) return "Loading connection";
+  if (children !== undefined) return children;
+  if (value === undefined) return null;
+  if (isSecret && !isVisible) return maskUrlPassword(value);
+  return value;
+}
+
+function ConnectRow({
+  value,
+  label,
+  Icon,
+  isSecret,
+  isPlaceholder,
+  isError,
+  children,
+}: TConnectRowProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const shown = isPlaceholder
-    ? "Loading connection"
-    : isSecret && !isVisible
-      ? maskUrlPassword(value)
-      : (children ?? value);
+  const isNote = value === undefined && !isPlaceholder;
 
   return (
     <div
       data-placeholder={isPlaceholder || undefined}
-      className="group/card bg-input flex w-full items-start rounded-lg border p-0.5"
+      data-tone={isError ? "error" : isNote ? "note" : undefined}
+      className="group/card bg-input data-[tone=error]:text-destructive data-[tone=note]:text-muted-foreground flex w-full items-start rounded-lg border p-0.5"
     >
       <p className="min-w-0 flex-1 px-2.5 py-1.75 font-mono text-sm leading-normal wrap-anywhere">
+        {Icon && (
+          <span className="inline-icon mr-1.5">
+            <Icon className="size-4 shrink-0" />
+          </span>
+        )}
         {label && <span className="text-muted-foreground mr-2 font-sans font-medium">{label}</span>}
         <span className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-          {shown}
+          {rowContent({ value, isSecret, isVisible, isPlaceholder, children })}
         </span>
       </p>
       {isSecret && (
@@ -282,33 +309,31 @@ function ValueRow({ label, value, isSecret, isPlaceholder, children }: TValueRow
           variant="ghost"
           forceMinSize="medium"
           size="icon"
-          className="text-muted-more-foreground group/button size-8.75 shrink-0 rounded-md"
+          disabled={isPlaceholder}
+          fadeOnDisabled={false}
+          className="text-muted-more-foreground group/button size-8.75 shrink-0 rounded-md group-data-placeholder/card:text-transparent"
         >
           <div className="relative size-4">
             <EyeIcon className="size-full group-data-visible/button:opacity-0" />
             <EyeOffIcon className="absolute top-0 left-0 size-full opacity-0 group-data-visible/button:opacity-100" />
+            {isPlaceholder && (
+              <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
+            )}
           </div>
         </Button>
       )}
-      <CopyButton
-        valueToCopy={value}
-        isPlaceholder={isPlaceholder}
-        className="size-8.75 shrink-0 rounded-md"
-        classNameIcon="size-4"
-      />
+      {!isNote && (
+        <CopyButton
+          valueToCopy={value}
+          isPlaceholder={isPlaceholder}
+          className="size-8.75 shrink-0 rounded-md"
+          classNameIcon="size-4"
+        />
+      )}
     </div>
   );
 }
 
-function NoteRow({ type, text }: { type: "waiting" | "locked" | "error"; text: string }) {
-  return (
-    <div
-      data-error={type === "error" || undefined}
-      className="text-muted-foreground data-error:text-destructive flex w-full items-center gap-2 rounded-lg border px-3 py-2.75 font-mono text-sm"
-    >
-      {type === "waiting" && <HourglassIcon className="animate-hourglass size-4 shrink-0" />}
-      {type === "locked" && <LockIcon className="size-4 shrink-0" />}
-      <p className="min-w-0 shrink leading-tight">{text}</p>
-    </div>
-  );
+function WaitingIcon({ className }: { className?: string }) {
+  return <HourglassIcon className={cn("animate-hourglass", className)} />;
 }
