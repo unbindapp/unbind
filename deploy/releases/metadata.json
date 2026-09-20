@@ -398,5 +398,10 @@
     "version": "v0.1.79",
     "summary": "Provided variables list improvements with pending database URLs, and deploy state that stays visible on cards after the panel closes.",
     "breaking": false
+  },
+  "v0.1.80": {
+    "version": "v0.1.80",
+    "summary": "Database connect card with connection details, adding database URLs to a service, unique resource names per scope, stable database volume names, and deployment card polish.",
+    "breaking": false
   }
 }
