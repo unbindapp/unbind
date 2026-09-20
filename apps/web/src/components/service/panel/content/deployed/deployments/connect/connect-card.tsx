@@ -99,17 +99,30 @@ export default function ConnectCard({ service }: TProps) {
             }
             Icon={BoxIcon}
           >
-            {isPending && <ConnectRow isPlaceholder />}
+            {isPending && (
+              <PrivateRow>
+                <ConnectRow isPlaceholder className="lg:min-w-0 lg:flex-1" />
+                <AddToService isPlaceholder className="lg:max-w-xs lg:flex-1" />
+              </PrivateRow>
+            )}
             {!isPending && isWaitingForPrivate && (
-              <ConnectRow Icon={error ? TriangleAlertIcon : WaitingIcon} isError={!!error}>
-                {error ? error.message : "The variable will be shown once the database is ready"}
-              </ConnectRow>
+              <PrivateRow>
+                <ConnectRow
+                  Icon={error ? TriangleAlertIcon : WaitingIcon}
+                  isError={!!error}
+                  className="lg:min-w-0 lg:flex-1"
+                >
+                  {error ? error.message : "The variable will be shown once the database is ready"}
+                </ConnectRow>
+                {/* An error means nothing is on its way, so there is nothing to reserve room for */}
+                {!error && <AddToService isPlaceholder className="lg:max-w-xs lg:flex-1" />}
+              </PrivateRow>
             )}
 
             {!isPending &&
               !isWaitingForPrivate &&
               referenceRows(service.name, urls.private).map((row) => (
-                <div key={row.key} className="flex w-full flex-col gap-1.5 lg:flex-row">
+                <PrivateRow key={row.key}>
                   <ConnectRow label={row.label} value={row.value} className="lg:min-w-0 lg:flex-1">
                     <ReferenceToken sourceName={service.name} referenceKey={row.key} />
                   </ConnectRow>
@@ -119,7 +132,7 @@ export default function ConnectCard({ service }: TProps) {
                     value={row.value}
                     className="lg:max-w-xs lg:flex-1"
                   />
-                </div>
+                </PrivateRow>
               ))}
           </Section>
           <Section
@@ -178,6 +191,11 @@ export default function ConnectCard({ service }: TProps) {
       )}
     </div>
   );
+}
+
+// The URL and the service it can be added to, side by side once there is room
+function PrivateRow({ children }: { children: ReactNode }) {
+  return <div className="flex w-full flex-col gap-1.5 lg:flex-row">{children}</div>;
 }
 
 // A private URL is reached by reference, so the row shows the token to type instead

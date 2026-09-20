@@ -18,18 +18,27 @@ import { useQuery } from "@tanstack/react-query";
 import { BoxIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
-type TProps = {
-  databaseType: string;
-  // The readable ${Database.KEY} token, what the variable's value becomes
-  value: string;
-  // Protocol of a secondary endpoint, part of the variable's name
-  label?: string;
-  className?: string;
-};
+type TProps = { className?: string } & (
+  | { isPlaceholder: true; databaseType?: never; value?: never; label?: never }
+  | {
+      isPlaceholder?: never;
+      databaseType: string;
+      // The readable ${Database.KEY} token, what the variable's value becomes
+      value: string;
+      // Protocol of a secondary endpoint, part of the variable's name
+      label?: string;
+    }
+);
 
 // Points another service at this database: it fills that service's variable form and
 // opens it, so the name can be edited there and staged like any other variable.
-export default function AddToService({ databaseType, value, label, className }: TProps) {
+export default function AddToService({
+  databaseType,
+  value,
+  label,
+  isPlaceholder,
+  className,
+}: TProps) {
   const { teamId, projectId, environmentId } = useService();
   const { openPanel } = useServicePanel();
 
@@ -73,9 +82,10 @@ export default function AddToService({ databaseType, value, label, className }: 
 
   const add = useCallback(
     (serviceId: string) => {
+      if (value === undefined) return;
       prefillCreateVariablesForm(
         { type: "service", teamId, projectId, environmentId, serviceId },
-        { name: variableNameFor(databaseType, label), value },
+        { name: variableNameFor(databaseType ?? "", label), value },
       );
       form.reset();
       openPanel(serviceId, "variables");
@@ -112,7 +122,7 @@ export default function AddToService({ databaseType, value, label, className }: 
                     <ServicePickerTriggerIcon service={selected} className={className} />
                   )}
                   open={isOpen}
-                  isPending={isPending}
+                  isPending={isPending || isPlaceholder}
                 />
               );
             }}
@@ -125,9 +135,11 @@ export default function AddToService({ databaseType, value, label, className }: 
           <Button
             type="button"
             variant="outline"
-            disabled={serviceId === ""}
+            data-pending={isPlaceholder || undefined}
+            disabled={isPlaceholder || serviceId === ""}
+            fadeOnDisabled={isPlaceholder ? false : "default"}
             onClick={() => add(serviceId)}
-            className="shrink-0"
+            className="data-pending:bg-muted-more-foreground data-pending:animate-skeleton shrink-0 data-pending:text-transparent"
           >
             Add
           </Button>
