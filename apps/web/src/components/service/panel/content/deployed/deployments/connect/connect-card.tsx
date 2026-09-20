@@ -94,8 +94,8 @@ export default function ConnectCard({ service }: TProps) {
             title="From your services"
             description={
               hasMultipleUrls(service.database_type || "")
-                ? "Add one of these as a variable on any service that needs the database."
-                : "Add this as a variable on any service that needs the database."
+                ? "Add one of these as a variable on any service that will connect to the database."
+                : "Add this as a variable on any service that will connect to the database."
             }
             Icon={BoxIcon}
           >
