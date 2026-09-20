@@ -52,7 +52,7 @@ func (self *DeploymentService) redeployExistingImage(ctx context.Context, servic
 		return nil, err
 	}
 
-	if err := dbvolumes.Ensure(ctx, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
+	if err := dbvolumes.Ensure(ctx, self.repo, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
 		return nil, err
 	}
 

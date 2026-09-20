@@ -100,7 +100,7 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 		return nil, nil
 	}
 
-	if err := dbvolumes.Ensure(ctx, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
+	if err := dbvolumes.Ensure(ctx, self.repo, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
 		return nil, err
 	}
 

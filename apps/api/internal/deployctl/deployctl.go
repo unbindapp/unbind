@@ -348,7 +348,7 @@ func (self *DeploymentController) populateDatabaseEnv(ctx context.Context, env m
 	}
 
 	// the builder applies the CR but has no rights over storage
-	if err := dbvolumes.Ensure(ctx, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
+	if err := dbvolumes.Ensure(ctx, self.repo, self.k8s, service, self.k8s.GetInternalClient()); err != nil {
 		return err
 	}
 

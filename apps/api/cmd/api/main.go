@@ -180,6 +180,7 @@ func startAPI(cfg *config.Config) {
 	serversService := servers_service.NewServersService(kubeClient, repo)
 	replicaService := replica_service.NewReplicaService(cfg, repo, kubeClient)
 	storageService := storage_service.NewStorageService(cfg, repo, kubeClient, promClient, serviceService)
+	go storageService.StoreDatabaseVolumeNames(ctx)
 	templateService := templates_service.NewTemplatesService(cfg, repo, kubeClient, dbProvider, deploymentController)
 	serviceGroupService := servicegroup_service.NewServiceGroupService(cfg, repo, kubeClient, deploymentController, serviceService, storageService)
 	terminalService := terminal_service.NewTerminalService(repo, kubeClient)

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -13,6 +14,11 @@ import (
 
 // LoadNames is ResolveNames with the names read from the database
 func LoadNames(ctx context.Context, tx repository.TxInterface, repo repositories.RepositoriesInterface, pvcs []*models.PVCInfo) error {
+	_, err := loadNames(ctx, tx, repo, pvcs)
+	return err
+}
+
+func loadNames(ctx context.Context, tx repository.TxInterface, repo repositories.RepositoriesInterface, pvcs []*models.PVCInfo) (map[string]*ent.PVCMetadata, error) {
 	ids := make([]string, len(pvcs))
 	for i, pvc := range pvcs {
 		ids[i] = pvc.ID
@@ -20,18 +26,41 @@ func LoadNames(ctx context.Context, tx repository.TxInterface, repo repositories
 
 	metadata, err := repo.System().GetPVCMetadata(ctx, tx, ids)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var serviceNames map[uuid.UUID]string
 	if serviceIDs := ServiceIDsNeedingNames(pvcs, metadata); len(serviceIDs) > 0 {
 		serviceNames, err = repo.Service().GetNamesByIDs(ctx, serviceIDs)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
 	ResolveNames(pvcs, metadata, serviceNames)
+	return metadata, nil
+}
+
+// StoreDefaultNames puts the default name of every database volume on record. A default is only
+// unique among the volumes that are around when it is worked out, so left unrecorded it changes
+// as they come and go. pvcs has to hold every volume of each scope it touches, like ResolveNames.
+func StoreDefaultNames(ctx context.Context, repo repositories.RepositoriesInterface, pvcs []*models.PVCInfo) error {
+	metadata, err := loadNames(ctx, nil, repo, pvcs)
+	if err != nil {
+		return err
+	}
+
+	for _, pvc := range pvcs {
+		if !pvc.IsDatabase {
+			continue
+		}
+		if entry, ok := metadata[pvc.ID]; ok && !needsDefaultName(entry) {
+			continue
+		}
+		if err := repo.System().UpsertPVCMetadata(ctx, nil, pvc.ID, &pvc.Name, nil); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

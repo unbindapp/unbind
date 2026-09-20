@@ -10,6 +10,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
+	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	"github.com/unbindapp/unbind-api/pkg/databases"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -88,7 +89,7 @@ func claimNames(service *ent.Service, replicas int) []string {
 }
 
 // idempotent, runs before every deploy; replica scale-ups get their claims here
-func Ensure(ctx context.Context, kube k8s.KubeClientInterface, service *ent.Service, client kubernetes.Interface) error {
+func Ensure(ctx context.Context, repo repositories.RepositoriesInterface, kube k8s.KubeClientInterface, service *ent.Service, client kubernetes.Interface) error {
 	if !Managed(service) {
 		return nil
 	}
@@ -134,7 +135,16 @@ func Ensure(ctx context.Context, kube k8s.KubeClientInterface, service *ent.Serv
 			return err
 		}
 	}
-	return nil
+
+	// a volume is named once, as it is created
+	siblings, err := kube.ListPersistentVolumeClaims(ctx, namespace, map[string]string{
+		"unbind-team":        labels["unbind-team"],
+		"unbind-environment": labels["unbind-environment"],
+	}, client)
+	if err != nil {
+		return err
+	}
+	return StoreDefaultNames(ctx, repo, siblings)
 }
 
 func largestClaimRequest(ctx context.Context, namespace string, claims []string, fallback string, client kubernetes.Interface) (string, error) {
