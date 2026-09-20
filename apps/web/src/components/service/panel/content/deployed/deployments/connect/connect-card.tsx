@@ -124,7 +124,7 @@ export default function ConnectCard({ service }: TProps) {
                       service_tab: "settings",
                     })}
                     hash="networking_access"
-                    className="text-foreground font-medium active:underline has-hover:hover:underline"
+                    className="text-foreground active:bg-process/3-10 ring-process/5-10 has-hover:hover:text-process active:text-process has-hover:hover:bg-process/3-10 -mx-0.5 rounded-sm px-0.5 font-medium active:ring-1 has-hover:hover:ring-1"
                   >
                     Network Access
                   </Link>{" "}
