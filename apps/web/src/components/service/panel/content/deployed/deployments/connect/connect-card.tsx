@@ -102,14 +102,14 @@ export default function ConnectCard({ service }: TProps) {
             {isPending && <ConnectRow isPlaceholder />}
             {!isPending && isWaitingForPrivate && (
               <ConnectRow Icon={error ? TriangleAlertIcon : WaitingIcon} isError={!!error}>
-                {error ? error.message : "Will be available once the database is ready"}
+                {error ? error.message : "The variable will be shown once the database is ready"}
               </ConnectRow>
             )}
 
             {!isPending &&
               !isWaitingForPrivate &&
               referenceRows(service.name, urls.private).map((row) => (
-                <div key={row.key} className="flex w-full flex-col gap-2 lg:flex-row">
+                <div key={row.key} className="flex w-full flex-col gap-1.5 lg:flex-row">
                   <ConnectRow label={row.label} value={row.value} className="lg:min-w-0 lg:flex-1">
                     <ReferenceToken sourceName={service.name} referenceKey={row.key} />
                   </ConnectRow>
@@ -117,7 +117,7 @@ export default function ConnectCard({ service }: TProps) {
                     databaseType={service.database_type || ""}
                     label={row.label}
                     value={row.value}
-                    className="lg:max-w-md lg:flex-1"
+                    className="lg:max-w-xs lg:flex-1"
                   />
                 </div>
               ))}
@@ -154,7 +154,9 @@ export default function ConnectCard({ service }: TProps) {
             )}
             {isPublic && !isPending && isWaitingForPublic && (
               <ConnectRow Icon={error ? TriangleAlertIcon : WaitingIcon} isError={!!error}>
-                {error ? error.message : "Public address will show up here"}
+                {error
+                  ? error.message
+                  : "The public address will be shown once the database is ready"}
               </ConnectRow>
             )}
             {isPublic &&

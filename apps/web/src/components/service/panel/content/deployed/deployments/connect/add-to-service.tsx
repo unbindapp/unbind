@@ -84,7 +84,7 @@ export default function AddToService({ databaseType, value, label, className }: 
   );
 
   return (
-    <div className={cn("flex w-full min-w-0 items-start gap-2", className)}>
+    <div className={cn("flex w-full min-w-0 items-start gap-1.5", className)}>
       <form.AppField
         name="serviceId"
         children={(field) => (
