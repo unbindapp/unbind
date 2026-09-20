@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { connectionUrls, maskUrlPassword } from "./helpers.ts";
+import { connectionUrls, hasMultipleUrls, maskUrlPassword, variableNameFor } from "./helpers.ts";
 
 const provided = (name: string, value: string) => ({ name, value, provided: true });
 
@@ -42,4 +42,24 @@ test("only the password of a connection url is masked", () => {
 test("a value without a recognizable password is masked entirely", () => {
   assert.equal(maskUrlPassword("not a url with secret"), "••••••••");
   assert.equal(maskUrlPassword("postgresql://host:5432/db"), "••••••••");
+});
+
+test("only engines with more than one protocol offer a choice of urls", () => {
+  assert.equal(hasMultipleUrls("clickhouse"), true);
+  assert.equal(hasMultipleUrls("postgres"), false);
+  assert.equal(hasMultipleUrls(""), false);
+});
+
+test("the variable name follows the engine and carries the protocol", () => {
+  assert.equal(variableNameFor("postgres"), "DATABASE_URL");
+  assert.equal(variableNameFor("mysql"), "DATABASE_URL");
+  assert.equal(variableNameFor("redis"), "REDIS_URL");
+  assert.equal(variableNameFor("mongodb"), "MONGO_URL");
+  assert.equal(variableNameFor("clickhouse"), "CLICKHOUSE_URL");
+  assert.equal(variableNameFor("clickhouse", "HTTP"), "CLICKHOUSE_HTTP_URL");
+});
+
+test("an unknown engine still gets a usable name", () => {
+  assert.equal(variableNameFor("cockroach"), "DATABASE_URL");
+  assert.equal(variableNameFor("cockroach", "grpc web"), "DATABASE_GRPC_WEB_URL");
 });

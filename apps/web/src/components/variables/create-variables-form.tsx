@@ -8,6 +8,7 @@ import {
   type TReferenceProps,
 } from "@/components/variables/variables-form-field";
 import { useVariables } from "@/components/variables/variables-provider";
+import { readDraft, writeDraft } from "@/lib/form-draft-storage";
 import { useAppFormWithPersistence } from "@/lib/hooks/use-app-form-with-persistence";
 import { TVariableForCreate, VariableForCreateSchema } from "@/lib/queries/variables";
 import { useMemo } from "react";
@@ -31,16 +32,32 @@ const CreateVariablesDraftSchema = z.object({
   variables: z.array(z.object({ name: z.string(), value: z.string() })),
 });
 
+type TCreateVariablesScope = Pick<
+  TEntityVariableTypeProps,
+  "type" | "teamId" | "projectId" | "environmentId" | "serviceId"
+>;
+
+// Fills the form for a scope that is not on screen yet, through the draft it already
+// persists, so the user lands on an open form and can edit the name before staging it.
+// A draft they were in the middle of writing is kept, the new row goes after it.
+export function prefillCreateVariablesForm(
+  scope: TCreateVariablesScope,
+  variable: TVariableForCreate,
+) {
+  const key = getCreateVariablesPersistenceKey(scope);
+  const draft = readDraft({ type: "session", key, schema: CreateVariablesDraftSchema });
+  const written = (draft?.variables ?? []).filter((v) => v.name !== "" || v.value !== "");
+  writeDraft({ type: "session", key }, { variables: [...written, variable] });
+  writeDraft({ type: "session", key: `${key}:open` }, true);
+}
+
 export function getCreateVariablesPersistenceKey({
   type,
   teamId,
   projectId,
   environmentId,
   serviceId,
-}: Pick<
-  TEntityVariableTypeProps,
-  "type" | "teamId" | "projectId" | "environmentId" | "serviceId"
->) {
+}: TCreateVariablesScope) {
   return ["create-variables", type, teamId, projectId, environmentId, serviceId]
     .filter(Boolean)
     .join(":");

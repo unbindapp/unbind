@@ -1,6 +1,8 @@
 import CopyButton from "@/components/copy-button";
+import AddToService from "@/components/service/panel/content/deployed/deployments/connect/add-to-service";
 import {
   connectionUrls,
+  hasMultipleUrls,
   maskUrlPassword,
   PRIVATE_URL_KEY,
   TConnectionUrl,
@@ -90,7 +92,11 @@ export default function ConnectCard({ service }: TProps) {
         <div className="flex w-full flex-col gap-5 px-3.5 pt-3.5 sm:px-4">
           <Section
             title="From your services"
-            description="Add this as a variable on any service that needs the database."
+            description={
+              hasMultipleUrls(service.database_type || "")
+                ? "Add one of these as a variable on any service that needs the database."
+                : "Add this as a variable on any service that needs the database."
+            }
             Icon={BoxIcon}
           >
             {isPending && <ConnectRow isPlaceholder />}
@@ -103,9 +109,17 @@ export default function ConnectCard({ service }: TProps) {
             {!isPending &&
               !isWaitingForPrivate &&
               referenceRows(service.name, urls.private).map((row) => (
-                <ConnectRow key={row.key} label={row.label} value={row.value}>
-                  <ReferenceToken sourceName={service.name} referenceKey={row.key} />
-                </ConnectRow>
+                <div key={row.key} className="flex w-full flex-col gap-2 lg:flex-row">
+                  <ConnectRow label={row.label} value={row.value} className="lg:min-w-0 lg:flex-1">
+                    <ReferenceToken sourceName={service.name} referenceKey={row.key} />
+                  </ConnectRow>
+                  <AddToService
+                    databaseType={service.database_type || ""}
+                    label={row.label}
+                    value={row.value}
+                    className="lg:max-w-md lg:flex-1"
+                  />
+                </div>
               ))}
           </Section>
           <Section
@@ -247,6 +261,7 @@ type TConnectRowProps = {
   // A row with a value gets the buttons, a row without one is a note
   value?: string;
   label?: string;
+  className?: string;
   Icon?: FC<{ className?: string }>;
   isSecret?: boolean;
   isPlaceholder?: boolean;
@@ -278,6 +293,7 @@ function ConnectRow({
   isSecret,
   isPlaceholder,
   isError,
+  className,
   children,
 }: TConnectRowProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -287,49 +303,58 @@ function ConnectRow({
     <div
       data-placeholder={isPlaceholder || undefined}
       data-tone={isError ? "error" : isNote ? "note" : undefined}
-      className="group/card bg-input data-[tone=error]:text-destructive data-[tone=note]:text-muted-foreground flex w-full items-start rounded-lg border p-0.5"
+      className={cn(
+        "group/card bg-input data-[tone=error]:text-destructive data-[tone=note]:text-muted-foreground flex w-full items-stretch rounded-lg border p-0.5",
+        className,
+      )}
     >
-      <p className="min-w-0 flex-1 px-2.5 py-1.75 font-mono text-sm leading-normal wrap-anywhere">
+      {label && (
+        <p className="text-muted-foreground shrink-0 border-r px-2.5 py-2 font-mono text-sm leading-5">
+          {label}
+        </p>
+      )}
+      <p className="min-w-0 flex-1 px-2.5 py-2 font-mono text-sm leading-5 wrap-anywhere">
         {Icon && (
           <span className="inline-icon mr-1.5">
             <Icon className="size-4 shrink-0" />
           </span>
         )}
-        {label && <span className="text-muted-foreground mr-2 font-sans font-medium">{label}</span>}
         <span className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {rowContent({ value, isSecret, isVisible, isPlaceholder, children })}
         </span>
       </p>
-      {isSecret && (
-        <Button
-          type="button"
-          aria-label={isVisible ? "Hide password" : "Show password"}
-          data-visible={isVisible || undefined}
-          onClick={() => setIsVisible((prev) => !prev)}
-          variant="ghost"
-          forceMinSize="medium"
-          size="icon"
-          disabled={isPlaceholder}
-          fadeOnDisabled={false}
-          className="text-muted-more-foreground group/button size-8.75 shrink-0 rounded-md group-data-placeholder/card:text-transparent"
-        >
-          <div className="relative size-4">
-            <EyeIcon className="size-full group-data-visible/button:opacity-0" />
-            <EyeOffIcon className="absolute top-0 left-0 size-full opacity-0 group-data-visible/button:opacity-100" />
-            {isPlaceholder && (
-              <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
-            )}
-          </div>
-        </Button>
-      )}
-      {!isNote && (
-        <CopyButton
-          valueToCopy={value}
-          isPlaceholder={isPlaceholder}
-          className="size-8.75 shrink-0 rounded-md"
-          classNameIcon="size-4"
-        />
-      )}
+      <div className="flex shrink-0 items-start self-start">
+        {isSecret && (
+          <Button
+            type="button"
+            aria-label={isVisible ? "Hide password" : "Show password"}
+            data-visible={isVisible || undefined}
+            onClick={() => setIsVisible((prev) => !prev)}
+            variant="ghost"
+            forceMinSize="medium"
+            size="icon"
+            disabled={isPlaceholder}
+            fadeOnDisabled={false}
+            className="text-muted-more-foreground group/button size-9 shrink-0 rounded-md group-data-placeholder/card:text-transparent"
+          >
+            <div className="relative size-4">
+              <EyeIcon className="size-full group-data-visible/button:opacity-0" />
+              <EyeOffIcon className="absolute top-0 left-0 size-full opacity-0 group-data-visible/button:opacity-100" />
+              {isPlaceholder && (
+                <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
+              )}
+            </div>
+          </Button>
+        )}
+        {!isNote && (
+          <CopyButton
+            valueToCopy={value}
+            isPlaceholder={isPlaceholder}
+            className="size-9 shrink-0 rounded-md"
+            classNameIcon="size-4"
+          />
+        )}
+      </div>
     </div>
   );
 }

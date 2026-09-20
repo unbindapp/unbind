@@ -42,3 +42,28 @@ export function maskUrlPassword(url: string) {
   if (!URL_PASSWORD_REGEX.test(url)) return MASK;
   return url.replace(URL_PASSWORD_REGEX, `$1${MASK}$2`);
 }
+
+// Engines that speak more than one protocol, so the section offers a choice of URLs
+const MULTI_URL_DATABASE_TYPES = ["clickhouse"];
+
+export function hasMultipleUrls(databaseType: string) {
+  return MULTI_URL_DATABASE_TYPES.includes(databaseType);
+}
+
+const VARIABLE_NAME_BY_DATABASE_TYPE: Record<string, string> = {
+  postgres: "DATABASE_URL",
+  mysql: "DATABASE_URL",
+  redis: "REDIS_URL",
+  mongodb: "MONGO_URL",
+  clickhouse: "CLICKHOUSE_URL",
+};
+
+// The name the variable gets on the service that is being pointed at the database. The
+// protocol of a secondary endpoint goes in the middle, so ClickHouse's HTTP URL becomes
+// CLICKHOUSE_HTTP_URL. The user can rename it before staging it.
+export function variableNameFor(databaseType: string, label?: string) {
+  const base = VARIABLE_NAME_BY_DATABASE_TYPE[databaseType] ?? "DATABASE_URL";
+  if (!label) return base;
+  const protocol = label.toUpperCase().replaceAll(" ", "_");
+  return base.replace(/_URL$/, `_${protocol}_URL`);
+}
