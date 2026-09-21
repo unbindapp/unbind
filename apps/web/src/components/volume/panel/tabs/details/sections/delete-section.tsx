@@ -56,7 +56,7 @@ export default function DeleteSection({ volume, className }: TProps) {
           paragraph="This action cannot be undone. All data inside the volume will be permanently deleted."
           buttonText="Delete Volume"
           error={error}
-          deletingEntityName="this volume"
+          deletingEntityName={volume.name}
           onDialogClose={reset}
           onSubmit={async () => {
             await deleteVolume({

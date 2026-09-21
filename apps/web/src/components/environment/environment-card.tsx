@@ -254,7 +254,14 @@ function DeleteTrigger({
   return (
     <DeleteEntityTrigger
       dialogTitle="Delete Environment"
-      dialogDescription="Are you sure you want to delete this environment? This action cannot be undone. All the services and volumes inside this environment will be permanently deleted."
+      dialogDescription={
+        <>
+          Are you sure you want to delete this environment? This action cannot be undone.{" "}
+          <span className="text-foreground font-semibold">
+            All services, volumes, and data inside this environment will be permanently deleted.
+          </span>
+        </>
+      }
       error={deleteEnvironmentError}
       deletingEntityName={environment.name}
       handle={handle}
