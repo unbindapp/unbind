@@ -36,10 +36,10 @@ import (
 	teams_handler "github.com/unbindapp/unbind-api/internal/api/handlers/teams"
 	template_handler "github.com/unbindapp/unbind-api/internal/api/handlers/templates"
 	terminal_handler "github.com/unbindapp/unbind-api/internal/api/handlers/terminal"
-	unbindwebhooks_handler "github.com/unbindapp/unbind-api/internal/api/handlers/unbindwebhooks"
 	user_handler "github.com/unbindapp/unbind-api/internal/api/handlers/user"
 	variables_handler "github.com/unbindapp/unbind-api/internal/api/handlers/variables"
 	webhook_handler "github.com/unbindapp/unbind-api/internal/api/handlers/webhook"
+	webhooks_handler "github.com/unbindapp/unbind-api/internal/api/handlers/webhooks"
 )
 
 // Adding a format for form data
@@ -186,7 +186,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/logs", "Logs", true, logs_handler.RegisterHandlers)
 	register("/deployments", "Deployments", true, deployments_handler.RegisterHandlers)
 	register("/metrics", "Metrics", true, metrics_handler.RegisterHandlers)
-	register("/unbindwebhooks", "Unbind Webhooks", true, unbindwebhooks_handler.RegisterHandlers)
+	register("/webhooks", "Webhooks", true, webhooks_handler.RegisterHandlers)
 	register("/replicas", "Replicas", true, replicas_handler.RegisterHandlers)
 	register("/storage", "Storage", true, storage_handler.RegisterHandlers)
 	register("/templates", "Templates", true, template_handler.RegisterHandlers)

@@ -3591,22 +3591,6 @@ export const exec_terminalQuerySchema = z
   })
   .passthrough();
 
-export const get_webhookQuerySchema = z
-  .object({
-    id: z.string(),
-    team_id: z.string(),
-    project_id: z.string().optional(),
-  })
-  .passthrough();
-
-export const list_webhooksQuerySchema = z
-  .object({
-    type: WebhookTypeSchema,
-    team_id: z.string(),
-    project_id: z.string().optional(),
-  })
-  .passthrough();
-
 export const list_user_groupsQuerySchema = z
   .object({
     user_id: z.string().optional(), // Defaults to the authenticated user when omitted
@@ -3636,6 +3620,22 @@ export const app_saveQuerySchema = z
   .object({
     code: z.string(),
     state: z.string(),
+  })
+  .passthrough();
+
+export const get_webhookQuerySchema = z
+  .object({
+    id: z.string(),
+    team_id: z.string(),
+    project_id: z.string().optional(),
+  })
+  .passthrough();
+
+export const list_webhooksQuerySchema = z
+  .object({
+    type: WebhookTypeSchema,
+    team_id: z.string(),
+    project_id: z.string().optional(),
   })
   .passthrough();
 
@@ -8685,230 +8685,6 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         }
       },
     },
-    unbindwebhooks: {
-      create: async (
-        params: WebhookCreateInput,
-        fetchOptions?: RequestInit,
-      ): Promise<CreateWebhookResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/unbindwebhooks/create`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-
-          const options: RequestInit = {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-          const validatedBody = WebhookCreateInputSchema.parse(params);
-          options.body = JSON.stringify(validatedBody);
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = CreateWebhookResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
-      delete: async (
-        params: DeleteWebhookInputBody,
-        fetchOptions?: RequestInit,
-      ): Promise<DeleteWebhookResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/unbindwebhooks/delete`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-
-          const options: RequestInit = {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-          const validatedBody = DeleteWebhookInputBodySchema.parse(params);
-          options.body = JSON.stringify(validatedBody);
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = DeleteWebhookResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
-      get: async (
-        params: z.infer<typeof get_webhookQuerySchema>,
-        fetchOptions?: RequestInit,
-      ): Promise<GetWebhookResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/unbindwebhooks/get`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-          const validatedQuery = get_webhookQuerySchema.parse(params);
-          const queryKeys = ['id', 'team_id', 'project_id'];
-          queryKeys.forEach((key) => {
-            const value = validatedQuery[key as keyof typeof validatedQuery];
-            if (value !== undefined && value !== null) {
-              url.searchParams.append(key, String(value));
-            }
-          });
-          const options: RequestInit = {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = GetWebhookResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
-      list: async (
-        params: z.infer<typeof list_webhooksQuerySchema>,
-        fetchOptions?: RequestInit,
-      ): Promise<ListWebhooksResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/unbindwebhooks/list`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-          const validatedQuery = list_webhooksQuerySchema.parse(params);
-          const queryKeys = ['type', 'team_id', 'project_id'];
-          queryKeys.forEach((key) => {
-            const value = validatedQuery[key as keyof typeof validatedQuery];
-            if (value !== undefined && value !== null) {
-              url.searchParams.append(key, String(value));
-            }
-          });
-          const options: RequestInit = {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = ListWebhooksResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
-      update: async (
-        params: WebhookUpdateInput,
-        fetchOptions?: RequestInit,
-      ): Promise<UpdateWebhookResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/unbindwebhooks/update`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-
-          const options: RequestInit = {
-            method: 'PUT',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-          const validatedBody = WebhookUpdateInputSchema.parse(params);
-          options.body = JSON.stringify(validatedBody);
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = UpdateWebhookResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
-    },
     users: {
       create: async (
         params: UserCreateInputBody,
@@ -9430,6 +9206,230 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           },
         },
       ),
+    },
+    webhooks: {
+      create: async (
+        params: WebhookCreateInput,
+        fetchOptions?: RequestInit,
+      ): Promise<CreateWebhookResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/webhooks/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = WebhookCreateInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = CreateWebhookResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      delete: async (
+        params: DeleteWebhookInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<DeleteWebhookResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/webhooks/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = DeleteWebhookInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = DeleteWebhookResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      get: async (
+        params: z.infer<typeof get_webhookQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetWebhookResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/webhooks/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = get_webhookQuerySchema.parse(params);
+          const queryKeys = ['id', 'team_id', 'project_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = GetWebhookResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      list: async (
+        params: z.infer<typeof list_webhooksQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListWebhooksResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/webhooks/list`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = list_webhooksQuerySchema.parse(params);
+          const queryKeys = ['type', 'team_id', 'project_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListWebhooksResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      update: async (
+        params: WebhookUpdateInput,
+        fetchOptions?: RequestInit,
+      ): Promise<UpdateWebhookResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/webhooks/update`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = WebhookUpdateInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = UpdateWebhookResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
     },
   };
 }

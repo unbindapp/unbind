@@ -23,7 +23,7 @@ export const webhooksListQuery = (input: TWebhooksListInput) =>
   queryOptions({
     queryKey: queryKeyWebhooks.list(input),
     queryFn: async () => {
-      const res = await getGoClient().unbindwebhooks.list(
+      const res = await getGoClient().webhooks.list(
         input.type === "project"
           ? { type: "project", team_id: input.teamId, project_id: input.projectId }
           : { type: "team", team_id: input.teamId },
@@ -37,7 +37,7 @@ export type TCreateWebhookInput =
   | { type: "team"; teamId: string; url: string; events: WebhookEvent[] };
 
 export async function createWebhook(input: TCreateWebhookInput) {
-  const res = await getGoClient().unbindwebhooks.create(
+  const res = await getGoClient().webhooks.create(
     input.type === "project"
       ? {
           type: "project",
@@ -56,7 +56,7 @@ export type TDeleteWebhookInput =
   | { type: "team"; id: string; teamId: string };
 
 export async function deleteWebhook(input: TDeleteWebhookInput) {
-  const res = await getGoClient().unbindwebhooks.delete(
+  const res = await getGoClient().webhooks.delete(
     input.type === "project"
       ? { type: "project", id: input.id, team_id: input.teamId, project_id: input.projectId }
       : { type: "team", id: input.id, team_id: input.teamId },

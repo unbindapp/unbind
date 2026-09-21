@@ -1,4 +1,4 @@
-package unbindwebhooks_handler
+package webhooks_handler
 
 import (
 	"net/http"

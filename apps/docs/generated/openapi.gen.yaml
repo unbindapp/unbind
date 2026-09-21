@@ -10893,490 +10893,6 @@ paths:
         readOnlyHint: true
         requiresConfirmation: false
         risk: low
-  /unbindwebhooks/create:
-    post:
-      description: Register an outbound webhook for a team or project.
-      operationId: create-webhook
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WebhookCreateInput"
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateWebhookResponseBody"
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Request
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unauthorized
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Not Found
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Conflict
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unprocessable Entity
-        "429":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Too Many Requests
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Internal Server Error
-        "502":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Gateway
-        "503":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Service Unavailable
-        "504":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Gateway Timeout
-      security:
-        - bearerAuth: []
-      summary: Create Webhook
-      tags:
-        - Unbind Webhooks
-      x-agent:
-        destructiveHint: false
-        idempotentHint: false
-        openWorldHint: false
-        readOnlyHint: false
-        requiresConfirmation: false
-        risk: medium
-  /unbindwebhooks/delete:
-    delete:
-      description: Delete a webhook.
-      operationId: delete-webhook
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DeleteWebhookInputBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DeleteWebhookResponseBody"
-          description: OK
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unauthorized
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Not Found
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Conflict
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unprocessable Entity
-        "429":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Too Many Requests
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Internal Server Error
-        "502":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Gateway
-        "503":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Service Unavailable
-        "504":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Gateway Timeout
-      security:
-        - bearerAuth: []
-      summary: Delete Webhook
-      tags:
-        - Unbind Webhooks
-      x-agent:
-        destructiveHint: true
-        idempotentHint: false
-        openWorldHint: false
-        readOnlyHint: false
-        requiresConfirmation: true
-        risk: high
-  /unbindwebhooks/get:
-    get:
-      description: Get a single webhook by ID.
-      operationId: get-webhook
-      parameters:
-        - explode: false
-          in: query
-          name: id
-          required: true
-          schema:
-            format: uuid
-            type: string
-        - explode: false
-          in: query
-          name: team_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-        - explode: false
-          in: query
-          name: project_id
-          schema:
-            format: uuid
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetWebhookResponseBody"
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Request
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unauthorized
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unprocessable Entity
-        "429":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Too Many Requests
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Internal Server Error
-        "502":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Gateway
-        "503":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Service Unavailable
-        "504":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Gateway Timeout
-      security:
-        - bearerAuth: []
-      summary: Get Webhook
-      tags:
-        - Unbind Webhooks
-      x-agent:
-        destructiveHint: false
-        idempotentHint: true
-        openWorldHint: false
-        readOnlyHint: true
-        requiresConfirmation: false
-        risk: low
-  /unbindwebhooks/list:
-    get:
-      description: List webhooks for a team or project.
-      operationId: list-webhooks
-      parameters:
-        - explode: false
-          in: query
-          name: type
-          required: true
-          schema:
-            $ref: "#/components/schemas/WebhookType"
-        - explode: false
-          in: query
-          name: team_id
-          required: true
-          schema:
-            format: uuid
-            type: string
-        - explode: false
-          in: query
-          name: project_id
-          schema:
-            format: uuid
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListWebhooksResponseBody"
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Request
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unauthorized
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Not Found
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unprocessable Entity
-        "429":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Too Many Requests
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Internal Server Error
-        "502":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Gateway
-        "503":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Service Unavailable
-        "504":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Gateway Timeout
-      security:
-        - bearerAuth: []
-      summary: List Webhooks
-      tags:
-        - Unbind Webhooks
-      x-agent:
-        destructiveHint: false
-        idempotentHint: true
-        openWorldHint: false
-        readOnlyHint: true
-        requiresConfirmation: false
-        risk: low
-  /unbindwebhooks/update:
-    put:
-      description: Update an existing webhook's URL or events.
-      operationId: update-webhook
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WebhookUpdateInput"
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateWebhookResponseBody"
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Request
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unauthorized
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Not Found
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Conflict
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unprocessable Entity
-        "429":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Too Many Requests
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Internal Server Error
-        "502":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Gateway
-        "503":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Service Unavailable
-        "504":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Gateway Timeout
-      security:
-        - bearerAuth: []
-      summary: Update Webhook
-      tags:
-        - Unbind Webhooks
-      x-agent:
-        destructiveHint: false
-        idempotentHint: true
-        openWorldHint: false
-        readOnlyHint: false
-        requiresConfirmation: false
-        risk: medium
   /users/me:
     get:
       description: Get the authenticated user. For an API key or a connected app it also returns the role and the resources the credential is limited to.
@@ -11864,6 +11380,490 @@ paths:
       summary: Create or Update Variables
       tags:
         - Variables
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: false
+        risk: medium
+  /webhooks/create:
+    post:
+      description: Register an outbound webhook for a team or project.
+      operationId: create-webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookCreateInput"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateWebhookResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Create Webhook
+      tags:
+        - Webhooks
+      x-agent:
+        destructiveHint: false
+        idempotentHint: false
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: false
+        risk: medium
+  /webhooks/delete:
+    delete:
+      description: Delete a webhook.
+      operationId: delete-webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteWebhookInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteWebhookResponseBody"
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Delete Webhook
+      tags:
+        - Webhooks
+      x-agent:
+        destructiveHint: true
+        idempotentHint: false
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: true
+        risk: high
+  /webhooks/get:
+    get:
+      description: Get a single webhook by ID.
+      operationId: get-webhook
+      parameters:
+        - explode: false
+          in: query
+          name: id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: team_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: project_id
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetWebhookResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Get Webhook
+      tags:
+        - Webhooks
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: true
+        requiresConfirmation: false
+        risk: low
+  /webhooks/list:
+    get:
+      description: List webhooks for a team or project.
+      operationId: list-webhooks
+      parameters:
+        - explode: false
+          in: query
+          name: type
+          required: true
+          schema:
+            $ref: "#/components/schemas/WebhookType"
+        - explode: false
+          in: query
+          name: team_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: project_id
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListWebhooksResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: List Webhooks
+      tags:
+        - Webhooks
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: true
+        requiresConfirmation: false
+        risk: low
+  /webhooks/update:
+    put:
+      description: Update an existing webhook's URL or events.
+      operationId: update-webhook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookUpdateInput"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateWebhookResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Update Webhook
+      tags:
+        - Webhooks
       x-agent:
         destructiveHint: false
         idempotentHint: true

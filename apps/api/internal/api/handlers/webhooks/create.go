@@ -1,4 +1,4 @@
-package unbindwebhooks_handler
+package webhooks_handler
 
 import (
 	"context"
@@ -8,29 +8,29 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-type UpdateWebhookInput struct {
+type CreateWebhookInput struct {
 	server.BaseAuthInput
-	Body *models.WebhookUpdateInput
+	Body *models.WebhookCreateInput
 }
 
-type UpdateWebhookResponse struct {
+type CreateWebhookResponse struct {
 	Body struct {
 		Data *models.WebhookResponse `json:"data"`
 	}
 }
 
-func (self *HandlerGroup) UpdateWebhook(ctx context.Context, input *UpdateWebhookInput) (*UpdateWebhookResponse, error) {
+func (self *HandlerGroup) CreateWebhook(ctx context.Context, input *CreateWebhookInput) (*CreateWebhookResponse, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	webhook, err := self.srv.WebhooksService.UpdateWebhook(ctx, user.ID, input.Body)
+	webhook, err := self.srv.WebhooksService.CreateWebhook(ctx, user.ID, input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
 
-	resp := &UpdateWebhookResponse{}
+	resp := &CreateWebhookResponse{}
 	resp.Body.Data = webhook
 	return resp, nil
 }

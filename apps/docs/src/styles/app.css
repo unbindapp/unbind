@@ -4,7 +4,7 @@
 @import "fumadocs-openapi/css/preset.css";
 
 /* Every Fumadocs token points at an Unbind token. Nothing here has a color of its own. */
-@theme inline {
+@theme inline static {
   /* Drop Tailwind's stock palette first, so no color that is not ours can be used. */
   --color-*: initial;
 

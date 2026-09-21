@@ -20,7 +20,7 @@ const groupOrder = [
   "metrics",
   "servers",
   "docker",
-  "unbind-webhooks",
+  "webhooks",
 ];
 const verbOrder = ["list", "get", "create", "update", "delete"];
 
