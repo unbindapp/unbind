@@ -121,11 +121,11 @@ function AttachSection({ volume }: TProps) {
     },
   });
 
-  // A discard from the deploy bar has to bring the form back to the server state
+  // A discard has to bring the form back to the server state. Deselecting the
+  // service keeps the typed path for the next service that gets picked.
   const stagedKey = `${defaultValues.serviceId}:${defaultValues.mountPath}`;
   useEffect(() => {
-    const { serviceId, mountPath } = form.state.values;
-    if (serviceId === defaultValues.serviceId && mountPath === defaultValues.mountPath) return;
+    if (form.state.values.serviceId === defaultValues.serviceId) return;
     form.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stagedKey]);
