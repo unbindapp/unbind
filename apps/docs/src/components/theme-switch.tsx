@@ -14,10 +14,7 @@ export function ThemeSwitch({ className, ...props }: ComponentProps<"div">) {
   const current = mounted ? resolvedTheme : undefined;
 
   return (
-    <div
-      className={cn("bg-input flex items-center gap-0.5 rounded-lg border p-0.5", className)}
-      {...props}
-    >
+    <div className={cn("flex items-center gap-0.5", className)} {...props}>
       <button
         type="button"
         aria-label="Light theme"

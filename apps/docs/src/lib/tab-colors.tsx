@@ -2,14 +2,14 @@ import type { LoaderPlugin } from "fumadocs-core/source";
 import { cn } from "@/lib/cn";
 
 const colorClasses = {
-  success: "text-success bg-success/5-10 border-success/5-10",
-  process: "text-process bg-process/5-10 border-process/5-10",
-  warning: "text-warning bg-warning/5-10 border-warning/5-10",
+  success: "text-success",
+  process: "text-process",
+  warning: "text-warning",
 };
 
 export type TabColor = keyof typeof colorClasses;
 
-// Wraps a root folder's icon in a tinted box, colored by the `color` field of its meta.json.
+// Colors a root folder's icon by the `color` field of its meta.json.
 export function tabColorsPlugin(): LoaderPlugin {
   return {
     name: "unbind:tab-colors",
@@ -27,12 +27,7 @@ export function tabColorsPlugin(): LoaderPlugin {
         return {
           ...node,
           icon: (
-            <span
-              className={cn(
-                "flex size-full items-center justify-center rounded-md border [&_svg]:size-4",
-                colorClasses[color],
-              )}
-            >
+            <span className={cn("flex size-full items-center justify-center", colorClasses[color])}>
               {node.icon}
             </span>
           ),

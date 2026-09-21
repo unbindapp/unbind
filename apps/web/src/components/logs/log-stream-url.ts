@@ -16,7 +16,7 @@ export function buildLogStreamUrl(
     project_id: input.projectId ?? "",
     environment_id: input.environmentId ?? "",
   });
-  if (input.type === "service" || input.type === "deployment") {
+  if (input.type === "service" || input.type === "deployment" || input.type === "build") {
     params.set("service_id", input.serviceId ?? "");
   }
   if (input.type === "deployment" || input.type === "build") {

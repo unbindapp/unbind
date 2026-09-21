@@ -32,7 +32,7 @@ test("sends service_id only for the scopes that use it", () => {
   );
   assert.equal(
     paramsOf(buildLogStreamUrl(apiUrl, { ...base, type: "build" }, null)).get("service_id"),
-    null,
+    "service-1",
   );
   assert.equal(
     paramsOf(buildLogStreamUrl(apiUrl, { ...base, type: "environment" }, null)).get("service_id"),
