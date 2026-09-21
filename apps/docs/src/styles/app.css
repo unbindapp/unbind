@@ -119,42 +119,53 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Fumadocs pieces restyled after apps/web/src/components/ui. The tab dropdown and
-   popovers give no props for this, so the selectors follow what Fumadocs renders. */
-@layer components {
-  /* Tab dropdown trigger reads as an input-like dropdown trigger */
-  #nd-sidebar button.bg-fd-secondary\/50 {
-    background-color: var(--input);
-    color: var(--foreground);
-    font-weight: 500;
-    transition: box-shadow 150ms;
-  }
-  #nd-sidebar button.bg-fd-secondary\/50:hover,
-  #nd-sidebar button.bg-fd-secondary\/50[data-popup-open] {
-    background-color: var(--input);
-    box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) var(--opacity-6-10), transparent);
-  }
+/* Fumadocs pieces restyled after apps/web/src/components/ui. These stay unlayered so
+   they win over the utility classes Fumadocs renders, which give no props for this. */
 
-  /* Popovers are solid like the app's, not blurred glass */
-  [data-side].backdrop-blur-lg {
-    background-color: var(--popover);
-    backdrop-filter: none;
-    border-radius: var(--radius);
-    box-shadow: 0 10px 15px -3px
-      color-mix(in oklab, var(--shadow-color) var(--opacity-shadow), transparent);
-  }
+/* Tab dropdown trigger reads as an input-like dropdown trigger */
+#nd-sidebar button.bg-fd-secondary\/50 {
+  background-color: var(--input);
+  color: var(--foreground);
+  font-weight: 500;
+  transition: box-shadow 150ms;
+}
+#nd-sidebar button.bg-fd-secondary\/50:hover,
+#nd-sidebar button.bg-fd-secondary\/50[data-popup-open] {
+  background-color: var(--input);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) var(--opacity-6-10), transparent);
+}
 
-  /* Search dialog: app popover surface and shadow, input row like Command */
-  [data-fd-search-dialog-input] {
-    font-size: 1rem;
-    font-weight: 500;
-  }
-  .prose table {
-    border-radius: var(--radius);
-  }
+/* Popovers are solid like the app's, not blurred glass */
+[data-side].backdrop-blur-lg {
+  background-color: var(--popover);
+  backdrop-filter: none;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 15px -3px
+    color-mix(in oklab, var(--shadow-color) var(--opacity-shadow), transparent);
+}
 
-  /* Sidebar section titles */
-  #nd-sidebar p.inline-flex.mt-6 {
-    font-weight: 600;
-  }
+/* Search dialog input row like Command */
+[data-fd-search-dialog-input] {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.prose table {
+  border-radius: var(--radius);
+}
+
+/* Sidebar section titles */
+#nd-sidebar p.inline-flex.mt-6 {
+  font-weight: 600;
+}
+
+/* Code blocks inside tabs: the tab strip is the tinted bar, the body is a card like
+   every other block. Fumadocs gives the body bg-fd-secondary, which equals our border. */
+.shiki.bg-fd-secondary {
+  background-color: var(--card);
+}
+.bg-fd-card.rounded-xl.border > .flex.flex-row.px-2 {
+  background-color: var(--secondary);
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }

@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, type ComponentProps } from "react";
 
 const buttonClass =
-  "flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors has-hover:hover:bg-border has-hover:hover:text-foreground data-active:bg-border data-active:text-foreground";
+  "flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors has-hover:hover:bg-foreground/3-10 has-hover:hover:text-foreground data-active:bg-foreground/6-10 data-active:text-foreground";
 
 export function ThemeSwitch({ className, ...props }: ComponentProps<"div">) {
   const { resolvedTheme, setTheme } = useTheme();
@@ -14,7 +14,7 @@ export function ThemeSwitch({ className, ...props }: ComponentProps<"div">) {
   const current = mounted ? resolvedTheme : undefined;
 
   return (
-    <div className={cn("flex items-center gap-0.5", className)} {...props}>
+    <div className={cn(className, "flex items-center gap-0.5 p-0 pe-0.5")} {...props}>
       <button
         type="button"
         aria-label="Light theme"
