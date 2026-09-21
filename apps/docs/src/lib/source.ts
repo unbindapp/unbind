@@ -2,16 +2,17 @@ import { llms, loader } from "fumadocs-core/source";
 import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
 import { docs } from "./docs";
 import { openapi } from "./openapi";
+import { orderReference } from "./reference-order";
 import { docsRoute } from "./shared";
 import { tabColorsPlugin } from "./tab-colors";
 
 export const source = loader(
   {
     docs: docs.toFumadocsSource(),
-    openapi: await openapi.staticSource({
-      baseDir: "api/reference",
-      groupBy: "tag",
-    }),
+    openapi: orderReference(
+      await openapi.staticSource({ baseDir: "api/reference", groupBy: "tag", meta: true }),
+      "api/reference",
+    ),
   },
   {
     baseUrl: docsRoute,
