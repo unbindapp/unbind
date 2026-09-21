@@ -193,8 +193,34 @@ handle_add_node() {
         echo "$registries_content"
         echo -e "REGEOF${NC}"
         echo ""
-        step=2
+        step=$((step + 1))
     fi
+
+    echo -e "${BOLD}${step}. Keep multipathd off Longhorn devices:${NC}"
+    echo ""
+    echo -e "${CYAN}sudo bash <<'MPEOF'"
+    cat <<'MPSCRIPT'
+command -v multipathd >/dev/null 2>&1 || exit 0
+if [ -n "$(multipath -ll 2>/dev/null)" ]; then
+    echo "this host uses multipath, leaving /etc/multipath.conf alone: https://longhorn.io/kb/troubleshooting-volume-with-multipath/"
+    exit 0
+fi
+touch /etc/multipath.conf
+if grep -qE 'vendor[[:space:]]+"IET"' /etc/multipath.conf && grep -qE 'product[[:space:]]+"VIRTUAL-DISK"' /etc/multipath.conf; then
+    exit 0
+fi
+if grep -qE '^[[:space:]]*blacklist[[:space:]]*\{' /etc/multipath.conf; then
+    sed -i -E '0,/^[[:space:]]*blacklist[[:space:]]*\{/s//&\n    device {\n        vendor "IET"\n        product "VIRTUAL-DISK"\n    }/' /etc/multipath.conf
+else
+    printf '\nblacklist {\n    device {\n        vendor "IET"\n        product "VIRTUAL-DISK"\n    }\n}\n' >> /etc/multipath.conf
+fi
+if systemctl is-active --quiet multipathd; then
+    systemctl restart multipathd
+fi
+MPSCRIPT
+    echo -e "MPEOF${NC}"
+    echo ""
+    step=$((step + 1))
 
     echo -e "${BOLD}${step}. Join the cluster:${NC}"
     echo ""

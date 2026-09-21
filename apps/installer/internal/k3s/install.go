@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/unbindapp/unbind-installer/internal/system"
 )
 
 const K3S_VERSION = "v1.36.1+k3s1"
@@ -320,6 +322,16 @@ fs.inotify.max_user_instances = 512`
 					self.log(fmt.Sprintf("Warning: Could not apply sysctl settings: %v, output: %s", err, string(output)))
 				}
 
+				return nil
+			},
+		},
+		{
+			Description: "Blacklisting Longhorn devices from multipathd",
+			Progress:    0.03,
+			Action: func(ctx context.Context) error {
+				if err := system.ConfigureMultipathBlacklist(self.LogChan); err != nil {
+					self.log(fmt.Sprintf("Warning: Could not configure multipathd blacklist: %v", err))
+				}
 				return nil
 			},
 		},
