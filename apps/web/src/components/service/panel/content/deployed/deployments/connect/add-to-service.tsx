@@ -15,7 +15,7 @@ import { prefillCreateVariablesForm } from "@/components/variables/create-variab
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { servicesListQuery } from "@/lib/queries/services";
 import { useQuery } from "@tanstack/react-query";
-import { BoxIcon } from "lucide-react";
+import { ArrowRightIcon, BoxIcon } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
 type TUsable = {
@@ -149,9 +149,10 @@ export default function AddToService({
             disabled={isPlaceholder || isDisabled || serviceId === ""}
             fadeOnDisabled={isPlaceholder ? false : "default"}
             onClick={() => add(serviceId)}
-            className="data-pending:bg-muted-more-foreground data-pending:animate-skeleton shrink-0 data-pending:text-transparent"
+            className="data-pending:bg-muted-more-foreground data-pending:animate-skeleton max-w-1/2 shrink-0 gap-1 px-4 data-pending:text-transparent"
           >
-            Add
+            <span className="min-w-0 shrink truncate">Add</span>
+            <ArrowRightIcon className="-mr-1.5 size-4.5" />
           </Button>
         )}
       />

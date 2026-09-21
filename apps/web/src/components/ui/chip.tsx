@@ -44,7 +44,7 @@ export function Chip({
       <p className={cn(chipVariants({ variant }), classNameInner)}>
         {VisibleIcon && (
           <VisibleIcon
-            className={cn("size-3 shrink-0", isLoading && "animate-spin", classNameIcon)}
+            className={cn("-ml-px size-3 shrink-0", isLoading && "animate-spin", classNameIcon)}
           />
         )}
         <span className="truncate">{children}</span>
