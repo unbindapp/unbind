@@ -202,7 +202,7 @@ export const UpdateServiceInputSchema = z
     replicas: z.number().optional(),
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
-    s3_backup_bucket_id: z.string().optional(),
+    s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for databases that support backups, Redis does not
     service_id: z.string(),
     team_id: z.string(),
     upsert_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
@@ -816,7 +816,7 @@ export const CreateServiceInputSchema = z
     repository_owner: z.string().optional(),
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
-    s3_backup_bucket_id: z.string().optional(),
+    s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for databases that support backups, Redis does not
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
     variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes

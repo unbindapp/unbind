@@ -43,6 +43,11 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
+	backupsRequested := hasBackupInput(input.S3BackupBucketID, input.BackupSchedule, input.BackupRetentionCount)
+	if backupsRequested && input.Type != schema.ServiceTypeDatabase {
+		return nil, validateBackupsSupported(input.Type, nil)
+	}
+
 	switch input.Type {
 	case schema.ServiceTypeGithub:
 		// Validate that if GitHub info is provided, all fields are set
@@ -73,6 +78,12 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 					fmt.Sprintf("Database %s not found", *input.DatabaseType))
 			}
 			return nil, err
+		}
+
+		if backupsRequested {
+			if err := validateBackupsSupported(input.Type, dbDefinition); err != nil {
+				return nil, err
+			}
 		}
 
 		// Nuke whatever they tell us for ports. The primary protocol comes first, so

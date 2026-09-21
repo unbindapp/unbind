@@ -1,3 +1,4 @@
+import { databaseSupportsBackups } from "@/components/service/backups/backup-config";
 import { TServiceShallow } from "@/lib/queries/services";
 
 export function shouldServiceSettingsHaveDeploySection(service: TServiceShallow) {
@@ -17,7 +18,9 @@ export function shouldServiceSettingsHaveHealthSection(service: TServiceShallow)
 }
 
 export function shouldServiceSettingsHaveBackupsSection(service: TServiceShallow) {
-  return service.type === "database";
+  if (service.type !== "database") return false;
+  if (!service.database_type) return false;
+  return databaseSupportsBackups(service.database_type);
 }
 
 export function shouldServiceSettingsHaveBuildSection(service: TServiceShallow) {

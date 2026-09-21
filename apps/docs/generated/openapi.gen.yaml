@@ -601,6 +601,7 @@ components:
         run_command:
           type: string
         s3_backup_bucket_id:
+          description: S3 bucket to store database backups in. Only for databases that support backups, Redis does not
           format: uuid
           type: string
         team_id:
@@ -4076,6 +4077,7 @@ components:
         run_command:
           type: string
         s3_backup_bucket_id:
+          description: S3 bucket to store database backups in. Only for databases that support backups, Redis does not
           format: uuid
           type: string
         service_id:

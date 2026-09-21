@@ -65,3 +65,8 @@ type Definition struct {
 	Content     string                    `json:"-"`
 	Chart       *HelmChartInfo            `json:"chart,omitempty"`
 }
+
+func (self *Definition) SupportsBackups() bool {
+	_, ok := self.Schema.Properties["s3"]
+	return ok
+}

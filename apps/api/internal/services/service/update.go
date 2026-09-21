@@ -127,6 +127,12 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Watch paths only apply to git services")
 	}
 
+	if hasBackupInput(input.S3BackupBucketID, input.BackupSchedule, input.BackupRetentionCount) {
+		if err := self.validateServiceSupportsBackups(ctx, service); err != nil {
+			return nil, err
+		}
+	}
+
 	if input.Builder != nil && (service.Type == schema.ServiceTypeDockerimage || service.Type == schema.ServiceTypeDatabase) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot update builder for docker image or database service")
 	}

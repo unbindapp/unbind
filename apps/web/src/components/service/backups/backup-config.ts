@@ -1,4 +1,12 @@
+import { TAvailableDatabase } from "@/lib/server/client.gen";
+
 export const customScheduleValue = "custom";
+
+const databaseTypesWithoutBackups: TAvailableDatabase[] = ["redis"];
+
+export function databaseSupportsBackups(type: string) {
+  return !databaseTypesWithoutBackups.some((t) => t === type);
+}
 
 export const backupSchedulePresets = [
   { value: "0 * * * *", label: "Every hour" },

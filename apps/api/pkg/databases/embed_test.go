@@ -18,6 +18,23 @@ func TestEmbeddedDatabaseList(t *testing.T) {
 	assert.ElementsMatch(t, []string{"postgres", "redis", "mysql", "mongodb", "clickhouse"}, list)
 }
 
+func TestEmbeddedDefinitionsSupportsBackups(t *testing.T) {
+	provider := NewDatabaseProvider()
+
+	expected := map[string]bool{
+		"postgres":   true,
+		"mysql":      true,
+		"mongodb":    true,
+		"clickhouse": true,
+		"redis":      false,
+	}
+	for dbType, supportsBackups := range expected {
+		def, err := provider.FetchDatabaseDefinition(context.Background(), "", dbType)
+		require.NoError(t, err)
+		assert.Equal(t, supportsBackups, def.SupportsBackups(), dbType)
+	}
+}
+
 func TestEmbeddedPostgresDefinitionPG18(t *testing.T) {
 	provider := NewDatabaseProvider()
 

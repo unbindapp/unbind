@@ -36,7 +36,7 @@ type CreateServiceInput struct {
 	// Databases (special case)
 	DatabaseType         *string                `json:"database_type,omitempty"`
 	DatabaseConfig       *schema.DatabaseConfig `json:"database_config,omitempty"`
-	S3BackupBucketID     *uuid.UUID             `json:"s3_backup_bucket_id,omitempty" format:"uuid"`
+	S3BackupBucketID     *uuid.UUID             `json:"s3_backup_bucket_id,omitempty" format:"uuid" doc:"S3 bucket to store database backups in. Only for databases that support backups, Redis does not"`
 	BackupSchedule       *string                `json:"backup_schedule,omitempty" required:"false" doc:"Cron expression for the backup schedule, e.g. '0 0 * * *'"`
 	BackupRetentionCount *int                   `json:"backup_retention_count,omitempty" required:"false" minimum:"1" doc:"Number of base backups to retain, e.g. 3"`
 
@@ -88,7 +88,7 @@ type UpdateServiceInput struct {
 
 	// Databases
 	DatabaseConfig       *schema.DatabaseConfig `json:"database_config,omitempty"`
-	S3BackupBucketID     *uuid.UUID             `json:"s3_backup_bucket_id,omitempty" format:"uuid"`
+	S3BackupBucketID     *uuid.UUID             `json:"s3_backup_bucket_id,omitempty" format:"uuid" doc:"S3 bucket to store database backups in. Only for databases that support backups, Redis does not"`
 	BackupSchedule       *string                `json:"backup_schedule,omitempty" required:"false" doc:"Cron expression for the backup schedule, e.g. '0 0 * * *'"`
 	BackupRetentionCount *int                   `json:"backup_retention_count,omitempty" required:"false" minimum:"1" doc:"Number of base backups to retain, e.g. 3"`
 

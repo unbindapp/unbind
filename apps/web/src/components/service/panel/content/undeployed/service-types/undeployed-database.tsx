@@ -12,6 +12,7 @@ import BrandIcon from "@/components/icons/brand";
 import {
   backupSchedulePresets,
   customScheduleValue,
+  databaseSupportsBackups,
   validateBackupRetentionCount,
   validateCronExpression,
 } from "@/components/service/backups/backup-config";
@@ -112,7 +113,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
 
   const persistenceKey = `undeployed-database:${serviceId}`;
 
-  const backupsDisabled = type === "redis";
+  const backupsDisabled = !databaseSupportsBackups(type);
 
   const {
     query: { data: dataS3Buckets, isPending: isPendingS3Buckets, error: errorS3Buckets },
@@ -174,16 +175,17 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
         );
       }
 
-      const s3Props = formValues.s3BucketId
-        ? {
-            s3BackupBucketId: formValues.s3BucketId,
-            backupSchedule:
-              formValues.backupSchedulePreset === customScheduleValue
-                ? formValues.backupScheduleCustom
-                : formValues.backupSchedulePreset,
-            backupRetentionCount: Number(formValues.backupRetentionCount),
-          }
-        : {};
+      const s3Props =
+        !backupsDisabled && formValues.s3BucketId
+          ? {
+              s3BackupBucketId: formValues.s3BucketId,
+              backupSchedule:
+                formValues.backupSchedulePreset === customScheduleValue
+                  ? formValues.backupScheduleCustom
+                  : formValues.backupSchedulePreset,
+              backupRetentionCount: Number(formValues.backupRetentionCount),
+            }
+          : {};
 
       await updateService({
         teamId,

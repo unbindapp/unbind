@@ -167,6 +167,32 @@ func (self *ServiceService) prepareDatabaseExposure(ctx context.Context, tx repo
 	return hosts, nodePorts, nil
 }
 
+// The zero UUID clears the stored bucket, so it does not count as backup input
+func hasBackupInput(bucketID *uuid.UUID, schedule *string, retentionCount *int) bool {
+	return bucketID != nil && *bucketID != uuid.Nil || schedule != nil || retentionCount != nil
+}
+
+func validateBackupsSupported(serviceType schema.ServiceType, dbDefinition *databases.Definition) error {
+	if serviceType != schema.ServiceTypeDatabase || dbDefinition == nil {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Backups only apply to database services")
+	}
+	if !dbDefinition.SupportsBackups() {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("%s does not support backups", dbDefinition.Name))
+	}
+	return nil
+}
+
+func (self *ServiceService) validateServiceSupportsBackups(ctx context.Context, service *ent.Service) error {
+	if service.Type != schema.ServiceTypeDatabase || service.Database == nil {
+		return validateBackupsSupported(service.Type, nil)
+	}
+	dbDefinition, err := self.dbProvider.FetchDatabaseDefinition(ctx, self.cfg.UnbindServiceDefVersion, *service.Database)
+	if err != nil {
+		return err
+	}
+	return validateBackupsSupported(service.Type, dbDefinition)
+}
+
 func (self *ServiceService) verifyS3BackupBucket(ctx context.Context, s3BucketID uuid.UUID, team *ent.Team, client kubernetes.Interface) error {
 	s3Bucket, err := self.repo.S3Bucket().GetByID(ctx, s3BucketID)
 	if err != nil {
