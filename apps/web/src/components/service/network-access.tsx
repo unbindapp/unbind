@@ -7,12 +7,12 @@ export const publicValue = "public";
 export const privateValue = "private";
 
 export const networkAccessItems: TCommandItem[] = [
-  { value: publicValue, label: "Public", description: "Reachable from the internet" },
   {
     value: privateValue,
     label: "Private",
     description: "Reachable only by your services",
   },
+  { value: publicValue, label: "Public", description: "Reachable from the internet" },
 ];
 
 export function networkAccessValue(isPublic: boolean) {

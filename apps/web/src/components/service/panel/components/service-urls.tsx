@@ -30,7 +30,7 @@ export default function ServiceUrls({ service }: TProps) {
   const endpoints = useMemo(() => collapseEndpoints(data?.endpoints.external), [data]);
 
   // An undeployed service has no endpoint yet, only the domain its deploy form
-  // will use. Databases have none, they get their address once they are deployed.
+  // will use. Databases have none, a public one gets its address once it is deployed.
   if (!service.last_deployment) {
     if (!draftDomain) return null;
     return (
@@ -43,13 +43,17 @@ export default function ServiceUrls({ service }: TProps) {
   if (!service.config.is_public) return null;
 
   const hosts = service.config.hosts || [];
-  // A database is reached at an allocated port, so it has no host to gate on
-  if (service.type !== "database" && hosts.length < 1) return null;
+  const isDatabase = service.type === "database";
+  // A public database is reached at an allocated port, so it has no host to gate on
+  if (!isDatabase && hosts.length < 1) return null;
+
+  // A database made public after its first deploy has no address until the port is discovered
+  const isAwaitingEndpoints = !endpoints || (isDatabase && endpoints.length === 0);
 
   return (
     <Row>
-      {/* A database has no host to key the placeholder on, but it still has an address */}
-      {!endpoints &&
+      {/* A public database has no host to key the placeholder on, but it still has an address */}
+      {isAwaitingEndpoints &&
         (hosts.length > 0 ? hosts.map((h) => `${h.host}${h.path}${h.target_port}`) : [""]).map(
           (key) => (
             <ServiceUrl

@@ -231,7 +231,7 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
   const form = useAppFormWithPersistence({
     defaultValues: {
       version: version,
-      isPublic: true,
+      isPublic: false,
       variables: [{ name: "", value: "" }] as TVariableForCreate[],
       s3BucketId: "",
       backupSchedulePreset: defaultBackupSchedule,

@@ -28,7 +28,7 @@ type CreateServiceInput struct {
 	RailpackBuilderInstallCommand *string               `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string               `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string               `json:"run_command,omitempty"`
-	IsPublic                      *bool                 `json:"is_public,omitempty"`
+	IsPublic                      *bool                 `json:"is_public,omitempty" doc:"Whether the service is reachable from the internet. Defaults to true for a service with a port and to false for a database"`
 	Image                         *string               `json:"image,omitempty"`
 	DockerBuilderDockerfilePath   *string               `json:"docker_builder_dockerfile_path,omitempty" required:"false" doc:"Optional path to Dockerfile, if using docker builder"`
 	DockerBuilderBuildContext     *string               `json:"docker_builder_build_context,omitempty" required:"false" doc:"Optional path to Dockerfile context, if using docker builder"`
@@ -81,7 +81,7 @@ type UpdateServiceInput struct {
 	RailpackBuilderInstallCommand *string                `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string                `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string                `json:"run_command,omitempty" required:"false"`
-	IsPublic                      *bool                  `json:"is_public,omitempty" required:"false"`
+	IsPublic                      *bool                  `json:"is_public,omitempty" required:"false" doc:"Whether the service is reachable from the internet. A database gets a public address when true and loses it when false"`
 	Image                         *string                `json:"image,omitempty" required:"false"`
 	DockerBuilderDockerfilePath   *string                `json:"docker_builder_dockerfile_path,omitempty" required:"false" doc:"Optional path to Dockerfile, if using docker builder - set empty string to reset to default"`
 	DockerBuilderBuildContext     *string                `json:"docker_builder_build_context,omitempty" required:"false" doc:"Optional path to Dockerfile context, if using docker builder - set empty string to reset to default"`

@@ -326,7 +326,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			return err
 		}
 
-		isPublic := resolveIsPublic(input.IsPublic, ports)
+		isPublic := resolveIsPublic(input.IsPublic, input.Type, ports)
 
 		if len(hosts) == 0 && isPublic != nil && *isPublic && input.Type != schema.ServiceTypeDatabase && len(ports) > 0 {
 			generatedHost, err := self.generateWildcardHost(ctx, tx, kubernetesName, ports)
@@ -340,9 +340,8 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			}
 		}
 
-		// Databases are public by default when a wildcard domain is configured,
-		// exposed over L4 on a unique allocated port. Gateway clusters also get a
-		// routable host; NodePort clusters are reached at node IP:port.
+		// A public database is exposed over L4 on a unique allocated port. Gateway
+		// clusters also get a routable host; NodePort clusters are reached at node IP:port.
 		if input.Type == schema.ServiceTypeDatabase && len(hosts) == 0 && isPublic != nil && *isPublic && len(ports) > 0 {
 			databaseHosts, nodePorts, err := self.prepareDatabaseExposure(ctx, tx, kubernetesName, ports)
 			if err != nil {
@@ -535,11 +534,13 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 }
 
 // A service that listens on a port is public unless the caller says otherwise.
-// Databases rely on this too: they always carry the port their engine answers on,
-// so a database is public by default and exposed on an allocated node port.
-func resolveIsPublic(requested *bool, ports []schema.PortSpec) *bool {
+// A database is private unless the caller asks for a public one.
+func resolveIsPublic(requested *bool, serviceType schema.ServiceType, ports []schema.PortSpec) *bool {
 	if requested != nil {
 		return requested
+	}
+	if serviceType == schema.ServiceTypeDatabase {
+		return new(false)
 	}
 	if len(ports) == 0 {
 		return nil

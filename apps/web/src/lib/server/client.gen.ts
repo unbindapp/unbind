@@ -186,7 +186,7 @@ export const UpdateServiceInputSchema = z
     health_check: HealthCheckSchema.optional(),
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
-    is_public: z.boolean().optional(),
+    is_public: z.boolean().optional(), // Whether the service is reachable from the internet. A database gets a public address when true and loses it when false
     name: z.string().nullable().optional(), // Has to be unique in the environment
     overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
     overwrite_ports: z.array(PortSpecSchema).nullable().optional(),
@@ -805,7 +805,7 @@ export const CreateServiceInputSchema = z
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema).nullable().optional(), // Init containers to run before the main container
-    is_public: z.boolean().optional(),
+    is_public: z.boolean().optional(), // Whether the service is reachable from the internet. Defaults to true for a service with a port and to false for a database
     name: z.string(), // Has to be unique in the environment. A taken name gets a short suffix, so read the name from the response
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
