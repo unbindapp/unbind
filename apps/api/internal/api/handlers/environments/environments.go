@@ -52,7 +52,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-environment",
 		Summary:     "Delete Environment",
-		Description: "Permanently delete an environment and its services. A project's last environment cannot be deleted.",
+		Description: "Permanently delete an environment and its services and volumes. A project's last environment cannot be deleted.",
 		Path:        "/delete",
 		Method:      http.MethodDelete,
 	}, handlers.DeleteEnvironment, oapi.MCP)

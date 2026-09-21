@@ -47,42 +47,7 @@ func (self *EnvironmentService) DeleteEnvironmentByID(ctx context.Context, reque
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot delete the last environment in a project")
 		}
 
-		for _, service := range services {
-			if err := self.deployCtl.CancelExistingJobs(ctx, service.ID); err != nil {
-				log.Warnf("Error cancelling jobs for service %s: %v", service.KubernetesName, err)
-			}
-
-			if err := self.k8s.DeleteUnbindService(ctx, team.Namespace, service.KubernetesName); err != nil {
-				log.Error("Error deleting service from k8s", "svc", service.KubernetesName, "err", err)
-
-				return err
-			}
-
-			if err := self.k8s.DeleteSecret(ctx, service.KubernetesSecret, team.Namespace, client); err != nil {
-				log.Error("Error deleting secret from k8s", "secret", service.KubernetesSecret, "err", err)
-				return err
-			}
-
-			if _, err := self.k8s.ReleasePersistentVolumeClaimsForService(ctx, team.Namespace, service.ID, client); err != nil {
-				log.Error("Error releasing volumes from k8s", "svc", service.KubernetesName, "err", err)
-				return err
-			}
-
-			if err := self.repo.Service().Delete(ctx, tx, service.ID); err != nil {
-				return err
-			}
-		}
-
-		// Delete any service groups in this environment
-		if err := self.repo.ServiceGroup().DeleteByEnvironmentID(ctx, tx, environmentID); err != nil {
-			return err
-		}
-
-		if err := self.k8s.DeleteSecret(ctx, environment.KubernetesSecret, team.Namespace, client); err != nil {
-			log.Error("Error deleting secret", "secret", environment.KubernetesSecret, "err", err)
-		}
-
-		if err := self.repo.Environment().Delete(ctx, tx, environmentID); err != nil {
+		if err := Teardown(ctx, tx, self.repo, self.k8s, self.deployCtl, client, team.Namespace, environment, services); err != nil {
 			return err
 		}
 

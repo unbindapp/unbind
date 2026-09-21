@@ -37,8 +37,8 @@ export default function DeleteProjectSection({ className }: Props) {
   return (
     <DeleteCard
       dialogTitle="Delete Project"
-      dialogDescription="Are you sure you want to delete this project? This action cannot be undone. All environments, services, and data inside this project will be permanently deleted."
-      paragraph="This action cannot be undone. All environments, services, and data inside this project will be permanently deleted."
+      dialogDescription="Are you sure you want to delete this project? This action cannot be undone. All environments, services, volumes, and data inside this project will be permanently deleted."
+      paragraph="This action cannot be undone. All environments, services, volumes, and data inside this project will be permanently deleted."
       buttonText="Delete Project"
       error={error}
       deletingEntityName={data?.project?.name || "the project"}

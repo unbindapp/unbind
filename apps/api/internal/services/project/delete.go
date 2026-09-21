@@ -12,7 +12,9 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	environment_service "github.com/unbindapp/unbind-api/internal/services/environment"
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
+	"k8s.io/apimachinery/pkg/api/errors"
 )
 
 type DeleteProjectInput struct {
@@ -54,8 +56,6 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Project not found")
 	}
 
-	k8sClient := self.k8s.GetInternalClient()
-
 	environments, err := self.repo.Environment().GetForProject(ctx, nil, input.ProjectID, nil)
 	if err != nil {
 		return err
@@ -66,48 +66,13 @@ func (self *ProjectService) DeleteProject(ctx context.Context, requesterUserID u
 	// Delete the project in cascading fashion
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		for _, environment := range environments {
-			for _, service := range environment.Edges.Services {
-				if err := self.deployCtl.CancelExistingJobs(ctx, service.ID); err != nil {
-					log.Warnf("Error cancelling jobs for service %s: %v", service.KubernetesName, err)
-				}
-
-				if err := self.k8s.DeleteUnbindService(ctx, team.Namespace, service.KubernetesName); err != nil {
-					log.Error("Error deleting service from k8s", "svc", service.KubernetesName, "err", err)
-
-					return err
-				}
-
-				if err := self.k8s.DeleteSecret(ctx, service.KubernetesSecret, team.Namespace, client); err != nil {
-					log.Error("Error deleting secret from k8s", "secret", service.KubernetesSecret, "err", err)
-					return err
-				}
-
-				if _, err := self.k8s.ReleasePersistentVolumeClaimsForService(ctx, team.Namespace, service.ID, client); err != nil {
-					log.Error("Error releasing volumes from k8s", "svc", service.KubernetesName, "err", err)
-					return err
-				}
-
-				if err := self.repo.Service().Delete(ctx, tx, service.ID); err != nil {
-					return err
-				}
-			}
-
-			// Delete any service groups in this environment
-			if err := self.repo.ServiceGroup().DeleteByEnvironmentID(ctx, tx, environment.ID); err != nil {
-				return err
-			}
-
-			if err := self.k8s.DeleteSecret(ctx, environment.KubernetesSecret, team.Namespace, client); err != nil {
-				log.Error("Error deleting secret", "secret", environment.KubernetesSecret, "err", err)
-			}
-
-			if err := self.repo.Environment().Delete(ctx, tx, environment.ID); err != nil {
+			if err := environment_service.Teardown(ctx, tx, self.repo, self.k8s, self.deployCtl, client, team.Namespace, environment, environment.Edges.Services); err != nil {
 				return err
 			}
 		}
 
 		// Delete project secret
-		if err := self.k8s.DeleteSecret(ctx, project.KubernetesSecret, team.Namespace, k8sClient); err != nil {
+		if err := self.k8s.DeleteSecret(ctx, project.KubernetesSecret, team.Namespace, client); err != nil && !errors.IsNotFound(err) {
 			return err
 		}
 

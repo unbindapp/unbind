@@ -97,6 +97,9 @@ type KubeClientInterface interface {
 	ListPersistentVolumeClaims(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) ([]*models.PVCInfo, error)
 	// DeletePersistentVolumeClaim deletes a specific PersistentVolumeClaim by its name and namespace.
 	DeletePersistentVolumeClaim(ctx context.Context, namespace string, pvcName string, client kubernetes.Interface) error
+	// DeletePersistentVolumeClaimsForEnvironment deletes every claim of an environment that is
+	// being torn down. Pods may still be terminating, pvc-protection holds a claim until they are gone.
+	DeletePersistentVolumeClaimsForEnvironment(ctx context.Context, namespace string, environmentID uuid.UUID, client kubernetes.Interface) ([]string, error)
 	// GetPodsUsingPVC finds all pods in a given namespace that are mounting the specified PVC.
 	// This one reads through to the cluster on purpose: it guards detaches and deletes,
 	// where acting on a pod list that is even a second old is how a mounted volume gets

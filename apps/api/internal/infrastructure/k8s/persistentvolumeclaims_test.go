@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -621,4 +622,78 @@ func TestDeletePVCMapsForbiddenToUnauthorized(t *testing.T) {
 	err := kubeClient.DeletePersistentVolumeClaim(context.Background(), "default", "test-pvc", userClient)
 	require.Error(t, err)
 	assert.ErrorIs(t, err, errdefs.ErrUnauthorized)
+}
+
+func TestDeletePVCsForEnvironment(t *testing.T) {
+	environmentID := uuid.New()
+	otherEnvironmentID := uuid.New()
+
+	mounted, mountedPV := newBoundPVCAndPV("default", "mounted", "pv-mounted", corev1.PersistentVolumeReclaimRetain)
+	mounted.Labels = map[string]string{environmentLabel: environmentID.String(), serviceLabel: uuid.NewString()}
+	unattached, unattachedPV := newBoundPVCAndPV("default", "unattached", "pv-unattached", corev1.PersistentVolumeReclaimRetain)
+	unattached.Labels = map[string]string{environmentLabel: environmentID.String()}
+	owned, ownedPV := newBoundPVCAndPV("default", "owned", "pv-owned", corev1.PersistentVolumeReclaimRetain)
+	owned.Labels = map[string]string{environmentLabel: environmentID.String()}
+	owned.OwnerReferences = []metav1.OwnerReference{{Kind: "StatefulSet", Name: "db"}}
+	other, otherPV := newBoundPVCAndPV("default", "other", "pv-other", corev1.PersistentVolumeReclaimRetain)
+	other.Labels = map[string]string{environmentLabel: otherEnvironmentID.String()}
+
+	terminatingPod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{Name: "app", Namespace: "default"},
+		Spec: corev1.PodSpec{Volumes: []corev1.Volume{{
+			Name:         "data",
+			VolumeSource: corev1.VolumeSource{PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{ClaimName: "mounted"}},
+		}}},
+		Status: corev1.PodStatus{Phase: corev1.PodRunning},
+	}
+
+	userClient := fake.NewSimpleClientset(mounted, unattached, owned, other, terminatingPod)
+	internalClient := fake.NewSimpleClientset(mountedPV, unattachedPV, ownedPV, otherPV)
+	kubeClient := &KubeClient{clientset: internalClient}
+
+	deleted, err := kubeClient.DeletePersistentVolumeClaimsForEnvironment(context.Background(), "default", environmentID, userClient)
+	require.NoError(t, err)
+	assert.ElementsMatch(t, []string{"mounted", "unattached"}, deleted)
+
+	remaining, err := userClient.CoreV1().PersistentVolumeClaims("default").List(context.Background(), metav1.ListOptions{})
+	require.NoError(t, err)
+	remainingNames := make([]string, 0, len(remaining.Items))
+	for _, pvc := range remaining.Items {
+		remainingNames = append(remainingNames, pvc.Name)
+	}
+	assert.ElementsMatch(t, []string{"owned", "other"}, remainingNames)
+
+	expectedPolicies := map[string]corev1.PersistentVolumeReclaimPolicy{
+		"pv-mounted":    corev1.PersistentVolumeReclaimDelete,
+		"pv-unattached": corev1.PersistentVolumeReclaimDelete,
+		"pv-owned":      corev1.PersistentVolumeReclaimRetain,
+		"pv-other":      corev1.PersistentVolumeReclaimRetain,
+	}
+	for pvName, expected := range expectedPolicies {
+		pv, err := internalClient.CoreV1().PersistentVolumes().Get(context.Background(), pvName, metav1.GetOptions{})
+		require.NoError(t, err)
+		assert.Equal(t, expected, pv.Spec.PersistentVolumeReclaimPolicy, pvName)
+	}
+}
+
+func TestDeletePVCsForEnvironmentToleratesVanishedClaim(t *testing.T) {
+	environmentID := uuid.New()
+	pvc, pv := newBoundPVCAndPV("default", "test-pvc", "pv-1", corev1.PersistentVolumeReclaimRetain)
+	pvc.Labels = map[string]string{environmentLabel: environmentID.String()}
+	userClient := fake.NewSimpleClientset(pvc)
+	userClient.PrependReactor("delete", "persistentvolumeclaims", func(action k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewNotFound(corev1.Resource("persistentvolumeclaims"), "test-pvc")
+	})
+	kubeClient := &KubeClient{clientset: fake.NewSimpleClientset(pv)}
+
+	deleted, err := kubeClient.DeletePersistentVolumeClaimsForEnvironment(context.Background(), "default", environmentID, userClient)
+	require.NoError(t, err)
+	assert.Equal(t, []string{"test-pvc"}, deleted)
+}
+
+func TestDeletePVCsForEnvironmentRejectsEmptyEnvironment(t *testing.T) {
+	kubeClient := &KubeClient{clientset: fake.NewSimpleClientset()}
+
+	_, err := kubeClient.DeletePersistentVolumeClaimsForEnvironment(context.Background(), "default", uuid.Nil, fake.NewSimpleClientset())
+	require.Error(t, err)
 }

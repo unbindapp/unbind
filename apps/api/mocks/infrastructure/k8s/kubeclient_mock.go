@@ -1045,6 +1045,86 @@ func (_c *KubeClientMock_DeletePersistentVolumeClaim_Call) RunAndReturn(run func
 	return _c
 }
 
+// DeletePersistentVolumeClaimsForEnvironment provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) DeletePersistentVolumeClaimsForEnvironment(ctx context.Context, namespace string, environmentID uuid.UUID, client kubernetes.Interface) ([]string, error) {
+	ret := _mock.Called(ctx, namespace, environmentID, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeletePersistentVolumeClaimsForEnvironment")
+	}
+
+	var r0 []string
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, kubernetes.Interface) ([]string, error)); ok {
+		return returnFunc(ctx, namespace, environmentID, client)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, kubernetes.Interface) []string); ok {
+		r0 = returnFunc(ctx, namespace, environmentID, client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID, kubernetes.Interface) error); ok {
+		r1 = returnFunc(ctx, namespace, environmentID, client)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeletePersistentVolumeClaimsForEnvironment'
+type KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call struct {
+	*mock.Call
+}
+
+// DeletePersistentVolumeClaimsForEnvironment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespace string
+//   - environmentID uuid.UUID
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) DeletePersistentVolumeClaimsForEnvironment(ctx any, namespace any, environmentID any, client any) *KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call {
+	return &KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call{Call: _e.mock.On("DeletePersistentVolumeClaimsForEnvironment", ctx, namespace, environmentID, client)}
+}
+
+func (_c *KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call) Run(run func(ctx context.Context, namespace string, environmentID uuid.UUID, client kubernetes.Interface)) *KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 kubernetes.Interface
+		if args[3] != nil {
+			arg3 = args[3].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call) Return(strings []string, err error) *KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call {
+	_c.Call.Return(strings, err)
+	return _c
+}
+
+func (_c *KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call) RunAndReturn(run func(ctx context.Context, namespace string, environmentID uuid.UUID, client kubernetes.Interface) ([]string, error)) *KubeClientMock_DeletePersistentVolumeClaimsForEnvironment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteSecret provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) DeleteSecret(ctx context.Context, name string, namespace string, client kubernetes.Interface) error {
 	ret := _mock.Called(ctx, name, namespace, client)

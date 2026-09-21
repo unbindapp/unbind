@@ -150,7 +150,7 @@ function ConditionalButton({
     return (
       <DeleteEntityTrigger
         dialogTitle="Delete Project"
-        dialogDescription="Are you sure you want to delete this project? This action cannot be undone. All environments, services, and data inside this project will be permanently deleted."
+        dialogDescription="Are you sure you want to delete this project? This action cannot be undone. All environments, services, volumes, and data inside this project will be permanently deleted."
         deletingEntityName={project?.name || "Project"}
         onDialogClose={reset}
         onSubmit={async () => {

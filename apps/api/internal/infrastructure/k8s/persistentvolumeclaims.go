@@ -612,11 +612,49 @@ func (self *KubeClient) DeletePersistentVolumeClaim(ctx context.Context, namespa
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Cannot delete PVC '%s' as it is currently in use by %d pod(s)", pvcName, len(blocking)))
 	}
 
-	// The default storage class retains PVs, so an explicit volume delete must
-	// switch the bound PV to Delete or the underlying storage is never freed.
-	// PersistentVolumes are cluster-scoped and users only have namespace RBAC,
-	// so this plumbing runs on the API's own ServiceAccount; the ClaimRef check
-	// keeps it limited to the PV backing exactly this PVC.
+	return self.deleteClaimAndBackingVolume(ctx, namespace, pvc, client)
+}
+
+// DeletePersistentVolumeClaimsForEnvironment deletes every claim of an environment that is
+// being torn down. Pods may still be terminating, pvc-protection holds a claim until they are gone.
+func (self *KubeClient) DeletePersistentVolumeClaimsForEnvironment(ctx context.Context, namespace string, environmentID uuid.UUID, client kubernetes.Interface) ([]string, error) {
+	defer self.invalidateCache()
+
+	if namespace == "" {
+		return nil, fmt.Errorf("namespace cannot be empty")
+	}
+	if environmentID == uuid.Nil {
+		return nil, fmt.Errorf("environmentID cannot be empty")
+	}
+
+	pvcList, err := client.CoreV1().PersistentVolumeClaims(namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("%s=%s", environmentLabel, environmentID.String()),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list PersistentVolumeClaims for environment '%s': %w", environmentID, err)
+	}
+
+	deleted := make([]string, 0, len(pvcList.Items))
+	for i := range pvcList.Items {
+		pvc := &pvcList.Items[i]
+		if len(pvc.OwnerReferences) > 0 {
+			log.Infof("Leaving PersistentVolumeClaim '%s' to its owner", pvc.Name)
+			continue
+		}
+		if err := self.deleteClaimAndBackingVolume(ctx, namespace, pvc, client); err != nil {
+			return nil, err
+		}
+		deleted = append(deleted, pvc.Name)
+	}
+	return deleted, nil
+}
+
+// The default storage class retains PVs, so a volume delete must switch the bound PV
+// to Delete or the underlying storage is never freed. PersistentVolumes are
+// cluster-scoped and users only have namespace RBAC, so this runs on the API's own
+// ServiceAccount; the ClaimRef check keeps it limited to the PV backing exactly this PVC.
+func (self *KubeClient) deleteClaimAndBackingVolume(ctx context.Context, namespace string, pvc *corev1.PersistentVolumeClaim, client kubernetes.Interface) error {
+	pvcName := pvc.Name
 	pvName := pvc.Spec.VolumeName
 	var originalPolicy corev1.PersistentVolumeReclaimPolicy
 	patchedPV := false
@@ -638,16 +676,16 @@ func (self *KubeClient) DeletePersistentVolumeClaim(ctx context.Context, namespa
 		}
 	}
 
-	err = client.CoreV1().PersistentVolumeClaims(namespace).Delete(ctx, pvcName, metav1.DeleteOptions{})
-	if err != nil {
-		if patchedPV {
-			if revertErr := patchPVReclaimPolicy(ctx, self.clientset, pvName, originalPolicy); revertErr != nil {
-				log.Errorf("failed to restore reclaim policy '%s' on PersistentVolume '%s' after failed PVC deletion: %v", originalPolicy, pvName, revertErr)
-			}
-		}
-		return wrapForbidden(err, fmt.Sprintf("failed to delete PersistentVolumeClaim '%s' in namespace '%s'", pvcName, namespace))
+	err := client.CoreV1().PersistentVolumeClaims(namespace).Delete(ctx, pvcName, metav1.DeleteOptions{})
+	if err == nil || errors.IsNotFound(err) {
+		return nil
 	}
-	return nil
+	if patchedPV {
+		if revertErr := patchPVReclaimPolicy(ctx, self.clientset, pvName, originalPolicy); revertErr != nil {
+			log.Errorf("failed to restore reclaim policy '%s' on PersistentVolume '%s' after failed PVC deletion: %v", originalPolicy, pvName, revertErr)
+		}
+	}
+	return wrapForbidden(err, fmt.Sprintf("failed to delete PersistentVolumeClaim '%s' in namespace '%s'", pvcName, namespace))
 }
 
 // wrapForbidden surfaces Kubernetes RBAC rejections as typed unauthorized errors
