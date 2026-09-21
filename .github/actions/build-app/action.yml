@@ -18,10 +18,10 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-go@v5
+    - uses: ./.github/actions/setup-go
       with:
-        go-version-file: ./apps/api/go.mod
-        cache-dependency-path: ./apps/api/go.sum
+        module: apps/api
+        cache-name: app-build
 
     - uses: actions/setup-node@v4
       with:

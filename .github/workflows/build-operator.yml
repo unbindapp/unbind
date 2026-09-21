@@ -8,6 +8,8 @@ on:
       - "apps/api/**"
       - "go.work"
       - ".github/workflows/build-operator.yml"
+      - ".github/actions/build-operator/**"
+      - ".github/actions/setup-go/**"
 
 concurrency:
   group: build-operator-${{ github.ref }}
@@ -17,20 +19,13 @@ permissions:
   contents: read
   packages: write # push images to ghcr.io
 
-jobs:
-  setup_env:
-    name: ⚙️ Setup environment
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Get branch name
-        shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
-    outputs:
-      branch_name: ${{ env.BRANCH_NAME }}
+env:
+  IMAGE: ghcr.io/unbindapp/unbind-operator
+  REF: ${{ github.ref_name }}-${{ github.run_id }}
 
+jobs:
   build:
     name: 🔨 Build and Push Operator
-    needs: setup_env
     strategy:
       matrix:
         include:
@@ -41,8 +36,6 @@ jobs:
             runs-on: ubuntu-24.04-arm
             arch: arm64
     runs-on: ${{ matrix.runs-on }}
-    env:
-      GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
 
@@ -69,15 +62,15 @@ jobs:
           platforms: ${{ matrix.platform }}
           provenance: false
           push: true
-          tags: ghcr.io/unbindapp/unbind-operator:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}-${{ matrix.arch }}
+          tags: ${{ env.IMAGE }}:${{ env.REF }}-${{ matrix.arch }}
 
-  create_manifest:
-    name: 📦 Create Multi-Arch Manifest
+  deploy_prod:
+    name: 🚀 Publish and Deploy Operator (PROD)
     runs-on: ubuntu-24.04
-    needs: [setup_env, build]
-    env:
-      GITHUB_RUN_ID: ${{ github.run_id }}
+    needs: build
     steps:
+      - uses: actions/checkout@v4
+
       - name: Login to registry
         uses: docker/login-action@v3
         with:
@@ -86,9 +79,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create and push manifest
-        env:
-          IMAGE: ghcr.io/unbindapp/unbind-operator
-          REF: ${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}
         run: |
           for TAG in "$REF" latest; do
             docker manifest create "$IMAGE:$TAG" \
@@ -98,17 +88,6 @@ jobs:
             docker manifest annotate --arch arm64 --os linux "$IMAGE:$TAG" "$IMAGE:$REF-arm64"
             docker manifest push "$IMAGE:$TAG"
           done
-
-  deploy_prod:
-    name: 🚀 Deploy Operator (PROD)
-    runs-on: ubuntu-24.04
-    needs:
-      - setup_env
-      - create_manifest
-    env:
-      GITHUB_RUN_ID: ${{ github.run_id }}
-    steps:
-      - uses: actions/checkout@v4
 
       # kubebuilder v4 config/ requires kustomize v5 (the v3 action used elsewhere
       # cannot parse it).
@@ -121,7 +100,7 @@ jobs:
       # kubebuilder config so generated manifests (e.g. updated RBAC) ship too.
       - name: Set operator image
         working-directory: ./apps/operator/config/manager
-        run: kustomize edit set image controller=ghcr.io/unbindapp/unbind-operator:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}
+        run: kustomize edit set image controller=${{ env.IMAGE }}:${{ env.REF }}
 
       - name: Render manifests
         run: kustomize build ./apps/operator/config/default > ./apps/operator/operator-ci.yaml
@@ -129,8 +108,10 @@ jobs:
       # Server-side apply: the Service CRD is large and RBAC was previously applied
       # client-side, so force-conflicts adopts ownership cleanly.
       - name: Deploy operator to k8s cluster
-        uses: bbedward/kubectl@master
         env:
           KUBE_CONFIG_DATA: ${{ secrets.K3S_KUBE_CONFIG }}
-        with:
-          args: apply -f ./apps/operator/operator-ci.yaml --server-side --force-conflicts
+        run: |
+          export KUBECONFIG="$RUNNER_TEMP/kubeconfig"
+          trap 'rm -f "$KUBECONFIG"' EXIT
+          (umask 077 && echo "$KUBE_CONFIG_DATA" | base64 -d > "$KUBECONFIG")
+          kubectl apply -f ./apps/operator/operator-ci.yaml --server-side --force-conflicts

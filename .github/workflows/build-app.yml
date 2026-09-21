@@ -8,7 +8,10 @@ on:
       - "apps/api/**"
       - "Dockerfile"
       - "Dockerfile.builder"
+      - "docker-bake.hcl"
       - ".github/workflows/build-app.yml"
+      - ".github/actions/build-app/**"
+      - ".github/actions/setup-go/**"
       - ".github/actions/k8s-deploy/**"
       - "deploy/k8s/**"
 
@@ -20,25 +23,12 @@ permissions:
   contents: read
   packages: write # push images to ghcr.io
 
+env:
+  REF: ${{ github.ref_name }}-${{ github.run_id }}
+
 jobs:
-  setup_env:
-    name: ⚙️ Setup environment
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Add SHORT_SHA env property
-        run: echo "SHORT_SHA=`echo ${GITHUB_SHA::7}`" >> $GITHUB_ENV
-
-      - name: Get branch name
-        shell: bash
-        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
-
-    outputs:
-      short_sha: ${{ env.SHORT_SHA }}
-      branch_name: ${{ env.BRANCH_NAME }}
-
   build:
     name: 🔨 Build and Push Images
-    needs: setup_env
     strategy:
       matrix:
         include:
@@ -49,17 +39,19 @@ jobs:
             runs-on: ubuntu-24.04-arm
             arch: arm64
     runs-on: ${{ matrix.runs-on }}
-    env:
-      GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Get short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Build app artifacts
         id: artifacts
         uses: ./.github/actions/build-app
         with:
           arch: ${{ matrix.arch }}
-          version: ${{ needs.setup_env.outputs.short_sha }}
+          version: ${{ steps.sha.outputs.short }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -71,35 +63,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push app image (SPA + API)
-        uses: docker/build-push-action@v6
+      # Bake builds the app and builder images at the same time.
+      - name: Build and push app and builder images
+        uses: docker/bake-action@v6
+        env:
+          TAG: ${{ env.REF }}-${{ matrix.arch }}
+          MISE_VERSION: ${{ steps.artifacts.outputs.mise_version }}
         with:
-          context: .
-          file: ./Dockerfile
-          platforms: ${{ matrix.platform }}
-          provenance: false
+          source: .
+          files: ./docker-bake.hcl
           push: true
-          build-args: |
-            MISE_VERSION=${{ steps.artifacts.outputs.mise_version }}
-          tags: ghcr.io/unbindapp/unbind:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}-${{ matrix.arch }}
-
-      - name: Build and push builder image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile.builder
-          platforms: ${{ matrix.platform }}
           provenance: false
-          push: true
-          tags: ghcr.io/unbindapp/unbind-builder:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}-${{ matrix.arch }}
+          set: |
+            *.platform=${{ matrix.platform }}
 
-  create_manifest:
-    name: 📦 Create Multi-Arch Manifest
+  deploy_prod:
+    name: 🚀 Publish and Deploy App (PROD)
     runs-on: ubuntu-24.04
-    needs: [setup_env, build]
-    env:
-      GITHUB_RUN_ID: ${{ github.run_id }}
+    needs: build
     steps:
+      - uses: actions/checkout@v4
+
       - name: Login to registry
         uses: docker/login-action@v3
         with:
@@ -108,8 +92,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create and push manifests
-        env:
-          REF: ${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}
         run: |
           for IMAGE in ghcr.io/unbindapp/unbind ghcr.io/unbindapp/unbind-builder; do
             for TAG in "$REF" latest; do
@@ -122,19 +104,8 @@ jobs:
             done
           done
 
-  deploy_prod:
-    name: 🚀 Deploy App (PROD)
-    runs-on: ubuntu-24.04
-    needs:
-      - setup_env
-      - create_manifest
-    env:
-      GITHUB_RUN_ID: ${{ github.run_id }}
-    steps:
-      - uses: actions/checkout@v4
-
       - name: Deploy
         uses: ./.github/actions/k8s-deploy
         with:
-          image: ghcr.io/unbindapp/unbind:${{ needs.setup_env.outputs.branch_name }}-${{ env.GITHUB_RUN_ID }}
+          image: ghcr.io/unbindapp/unbind:${{ env.REF }}
           kube_config: ${{ secrets.K3S_KUBE_CONFIG }}

@@ -7,9 +7,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-go@v5
+    - uses: ./.github/actions/setup-go
       with:
-        go-version-file: ./apps/operator/go.mod
+        module: apps/operator
+        cache-name: operator-build
 
     # GOWORK=off so the `replace => ../api` directive drives resolution, matching
     # the in-Docker build (go.work would otherwise override it).

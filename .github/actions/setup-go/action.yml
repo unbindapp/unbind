@@ -1,0 +1,39 @@
+name: Set up Go
+description: Install Go and restore a build cache that follows master commit by commit
+inputs:
+  module:
+    description: Module directory holding go.mod and go.sum
+    required: true
+  cache-name:
+    description: Keeps jobs that compile with different flags in separate caches
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@v5
+      with:
+        go-version-file: ${{ inputs.module }}/go.mod
+        cache: false
+
+    # setup-go keys its cache on go.sum alone, so it is written once and goes stale.
+    # Keying on the commit lets every master run start from the previous one.
+    - uses: actions/cache@v4
+      if: github.ref == 'refs/heads/master'
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-${{ inputs.cache-name }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/go.sum', inputs.module)) }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ inputs.cache-name }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/go.sum', inputs.module)) }}-
+
+    # Caches saved outside master are not visible to other refs, so only restore.
+    - uses: actions/cache/restore@v4
+      if: github.ref != 'refs/heads/master'
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: go-${{ inputs.cache-name }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/go.sum', inputs.module)) }}-${{ github.sha }}
+        restore-keys: |
+          go-${{ inputs.cache-name }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/go.sum', inputs.module)) }}-

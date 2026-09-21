@@ -22,8 +22,11 @@ runs:
         kustomize build . > ../ci.yaml
 
     - name: Deploy image to k8s cluster
-      uses: bbedward/kubectl@master
+      shell: bash
       env:
         KUBE_CONFIG_DATA: ${{ inputs.kube_config }}
-      with:
-        args: apply -f ./deploy/k8s/ci.yaml
+      run: |
+        export KUBECONFIG="$RUNNER_TEMP/kubeconfig"
+        trap 'rm -f "$KUBECONFIG"' EXIT
+        (umask 077 && echo "$KUBE_CONFIG_DATA" | base64 -d > "$KUBECONFIG")
+        kubectl apply -f ./deploy/k8s/ci.yaml

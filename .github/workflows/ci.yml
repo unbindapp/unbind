@@ -39,10 +39,10 @@ jobs:
         working-directory: ./apps/api
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: ./.github/actions/setup-go
         with:
-          go-version-file: ./apps/api/go.mod
-          cache-dependency-path: ./apps/api/go.sum
+          module: apps/api
+          cache-name: api-test
       - run: go test ./...
 
   web:
