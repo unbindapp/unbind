@@ -39,6 +39,10 @@ schema:
       type: "string"
       description: "MySQL max_connections"
       default: "50"
+    innodbRedoLogCapacity:
+      type: "string"
+      description: "InnoDB redo log capacity in bytes"
+      default: "67108864"
     s3:
       $ref: "#/imports/s3Schema"
     restore:

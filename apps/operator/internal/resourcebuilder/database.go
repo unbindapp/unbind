@@ -71,6 +71,7 @@ func (rb *ResourceBuilder) buildDatabaseConfig(dataVolumeCapacity string) map[st
 	}
 	if res := rb.service.Spec.Config.Resources; res != nil {
 		tuning.memoryLimitMegabytes = res.MemoryLimitsMegabytes
+		tuning.cpuLimitMillicores = res.CPULimitsMillicores
 	}
 
 	rb.applyDbLabels(dbConfig)

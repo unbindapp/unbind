@@ -17,13 +17,14 @@ const (
 type databaseTuningInput struct {
 	dbType                 string
 	memoryLimitMegabytes   int64
+	cpuLimitMillicores     int64
 	storage                string
 	sharedBuffersMB        int
 	innodbBufferPoolSizeMB int
 }
 
-// Sizes each engine from its memory limit. Without a limit nothing is set and the definition
-// defaults apply, since the engines would otherwise size themselves from the whole server.
+// Sizes each engine from its memory and CPU limits. Without a limit nothing is set and the
+// definition defaults apply, since the engines would otherwise size themselves from the whole server.
 func applyDatabaseTuning(dbConfig map[string]any, input databaseTuningInput) {
 	limitBytes := input.memoryLimitMegabytes * megabyte
 
@@ -32,6 +33,7 @@ func applyDatabaseTuning(dbConfig map[string]any, input databaseTuningInput) {
 		applyPostgresTuning(ensureMapKey(dbConfig, "postgresql"), limitBytes, input)
 	case "mysql":
 		applyMySQLTuning(dbConfig, limitBytes, input)
+		applyMySQLRedoLog(dbConfig, input.storage)
 	case "mongodb":
 		applyMongoDBTuning(dbConfig, limitBytes)
 	case "redis":
@@ -43,6 +45,7 @@ func applyPostgresTuning(params map[string]any, limitBytes int64, input database
 	if maxWalSizeMB := postgresMaxWalSizeMB(input.storage); maxWalSizeMB > 0 {
 		params["maxWalSize"] = postgresMegabytes(maxWalSizeMB)
 	}
+	parallelWorkers := applyPostgresParallelism(params, input.cpuLimitMillicores)
 
 	limitMB := limitBytes / mebibyte
 	sharedBuffersMB := int64(input.sharedBuffersMB)
@@ -61,9 +64,24 @@ func applyPostgresTuning(params map[string]any, limitBytes int64, input database
 	params["effectiveCacheSize"] = postgresMegabytes(limitMB * 3 / 4)
 	params["maintenanceWorkMem"] = postgresMegabytes(clamp(limitMB/20, 64, 1024))
 
-	// Spilo sizes max_connections the same way, and a query can use work_mem several times
+	// Spilo sizes max_connections the same way, a query can use work_mem several times and
+	// every parallel worker is one more process with its own work_mem
 	maxConnections := clamp(limitMB/30, 100, 1000)
-	params["workMem"] = postgresMegabytes(clamp((limitMB-sharedBuffersMB)/(maxConnections*3), 4, 64))
+	processes := maxConnections + parallelWorkers
+	params["workMem"] = postgresMegabytes(clamp((limitMB-sharedBuffersMB)/(processes*3), 4, 64))
+}
+
+// Parallel query stays off below two whole cores, so the default 1 CPU limit renders as before.
+// The four worker slots the definition ships stay reserved for extensions and logical replication.
+func applyPostgresParallelism(params map[string]any, cpuLimitMillicores int64) int64 {
+	cores := cpuLimitMillicores / 1000
+	if cores < 2 {
+		return 0
+	}
+	params["maxParallelWorkers"] = fmt.Sprintf("%d", cores)
+	params["maxParallelWorkersPerGather"] = fmt.Sprintf("%d", min(cores/2, 4))
+	params["maxWorkerProcesses"] = fmt.Sprintf("%d", 4+cores)
+	return cores
 }
 
 // WAL lives on the data volume, so it follows the volume and not the memory limit
@@ -93,6 +111,16 @@ func applyMySQLTuning(dbConfig map[string]any, limitBytes int64, input databaseT
 		return
 	}
 	dbConfig["maxConnections"] = fmt.Sprintf("%d", clamp(input.memoryLimitMegabytes/20, 50, 1000))
+}
+
+// The redo log is preallocated on the data volume, so it follows the volume like max_wal_size
+func applyMySQLRedoLog(dbConfig map[string]any, storage string) {
+	quantity, err := resource.ParseQuantity(storage)
+	if err != nil {
+		return
+	}
+	capacityBytes := clamp(quantity.Value()/20, 64*mebibyte, 2*gibibyte)
+	dbConfig["innodbRedoLogCapacity"] = fmt.Sprintf("%d", capacityBytes)
 }
 
 // MySQL rounds the pool up to whole 128MB chunks per instance and picks the instances from the

@@ -17,8 +17,7 @@ metadata:
 {{- end }}
 data:
   innodb-dedicated-server: "OFF"
-  innodb_redo_log_capacity: "67108864"
-  innodb_log_file_size: "16777216"
+  innodb_redo_log_capacity: {{ .Parameters.innodbRedoLogCapacity | default "67108864" | quote }}
   innodb_buffer_pool_size: {{ .Parameters.innodbBufferPoolSize | default "67108864" | quote }}
 {{- if .Parameters.innodbBufferPoolInstances }}
   innodb_buffer_pool_instances: {{ .Parameters.innodbBufferPoolInstances | quote }}
@@ -30,8 +29,6 @@ data:
   innodb_stats_persistent: "0"
 
   # Additional memory optimizations
-  table_open_cache: "64"
-  table_definition_cache: "64"
   thread_cache_size: "8"
   sort_buffer_size: "1048576"
   read_buffer_size: "1048576"
@@ -40,11 +37,8 @@ data:
   tmp_table_size: "16777216"
   max_heap_table_size: "16777216"
   innodb_log_buffer_size: "8388608"
-  innodb_flush_log_at_trx_commit: "2"
   innodb_flush_method: "O_DIRECT"
   innodb_fast_shutdown: "1"
-  innodb_doublewrite: "OFF"
-  sync_binlog: "0"
   skip_name_resolve: "ON"
 ---
 apiVersion: moco.cybozu.com/v1beta2

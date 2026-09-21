@@ -52,23 +52,8 @@ spec:
 
       config.d/99-low-resources.xml: |
         <clickhouse>
-          <!-- 500 MB mark-cache -->
+          <!-- 500 MB mark-cache. Profile settings are ignored here, they belong in users.d -->
           <mark_cache_size>524288000</mark_cache_size>
-
-          <profile>
-            <default>
-              <!-- Conservative single thread usage -->
-              <max_threads>1</max_threads>
-              <!-- Small block sizes to reduce memory pressure -->
-              <max_block_size>4096</max_block_size>
-              <!-- Single download thread -->
-              <max_download_threads>1</max_download_threads>
-              <!-- Longer timeouts for slower operations -->
-              <connect_timeout>30</connect_timeout>
-              <receive_timeout>600</receive_timeout>
-              <send_timeout>600</send_timeout>
-            </default>
-          </profile>
 
           <!-- Conservative merge tree settings -->
           <merge_tree>
@@ -95,9 +80,6 @@ spec:
           secretKeyRef:
             name: {{ .Parameters.existingSecretName }}
             key: backup-password
-    settings:
-      # Reduce concurrent queries for low resource usage
-      default/max_concurrent_queries: 25
 
     {{- if gt (.Parameters.common.replicas | default 1) 1 }}
     # Auto-configure ZooKeeper when replicas > 1

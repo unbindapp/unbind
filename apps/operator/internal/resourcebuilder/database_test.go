@@ -76,6 +76,58 @@ func TestApplyDatabaseTuning(t *testing.T) {
 			}},
 		},
 		{
+			name:  "postgres below two cores keeps parallel query off",
+			input: databaseTuningInput{dbType: "postgres", memoryLimitMegabytes: 2048, cpuLimitMillicores: 1500, storage: "10Gi"},
+			expected: map[string]any{"postgresql": map[string]any{
+				"sharedBuffers":      "488MB",
+				"effectiveCacheSize": "1464MB",
+				"maintenanceWorkMem": "97MB",
+				"walBuffers":         "15MB",
+				"workMem":            "4MB",
+				"maxWalSize":         "1024MB",
+			}},
+		},
+		{
+			name:  "postgres with four cores runs parallel queries",
+			input: databaseTuningInput{dbType: "postgres", memoryLimitMegabytes: 2048, cpuLimitMillicores: 4000, storage: "10Gi"},
+			expected: map[string]any{"postgresql": map[string]any{
+				"sharedBuffers":               "488MB",
+				"effectiveCacheSize":          "1464MB",
+				"maintenanceWorkMem":          "97MB",
+				"walBuffers":                  "15MB",
+				"workMem":                     "4MB",
+				"maxWalSize":                  "1024MB",
+				"maxParallelWorkers":          "4",
+				"maxParallelWorkersPerGather": "2",
+				"maxWorkerProcesses":          "8",
+			}},
+		},
+		{
+			name:  "postgres with many cores caps the workers per gather and pays for them in work_mem",
+			input: databaseTuningInput{dbType: "postgres", memoryLimitMegabytes: 16384, cpuLimitMillicores: 16000, storage: "100Gi"},
+			expected: map[string]any{"postgresql": map[string]any{
+				"sharedBuffers":               "3906MB",
+				"effectiveCacheSize":          "11718MB",
+				"maintenanceWorkMem":          "781MB",
+				"walBuffers":                  "16MB",
+				"workMem":                     "7MB",
+				"maxWalSize":                  "8192MB",
+				"maxParallelWorkers":          "16",
+				"maxParallelWorkersPerGather": "4",
+				"maxWorkerProcesses":          "20",
+			}},
+		},
+		{
+			name:  "postgres cores without a memory limit only set the workers",
+			input: databaseTuningInput{dbType: "postgres", cpuLimitMillicores: 2000, storage: "1Gi"},
+			expected: map[string]any{"postgresql": map[string]any{
+				"maxWalSize":                  "256MB",
+				"maxParallelWorkers":          "2",
+				"maxParallelWorkersPerGather": "1",
+				"maxWorkerProcesses":          "6",
+			}},
+		},
+		{
 			name:  "postgres override wins over the derived value",
 			input: databaseTuningInput{dbType: "postgres", memoryLimitMegabytes: 8192, storage: "1Gi", sharedBuffersMB: 3072},
 			expected: map[string]any{"postgresql": map[string]any{
@@ -109,6 +161,26 @@ func TestApplyDatabaseTuning(t *testing.T) {
 				"innodbBufferPoolInstances": "1",
 				"maxConnections":            "102",
 			},
+		},
+		{
+			name:     "mysql redo log keeps the floor on the default volume",
+			input:    databaseTuningInput{dbType: "mysql", storage: "1Gi"},
+			expected: map[string]any{"innodbRedoLogCapacity": "67108864"},
+		},
+		{
+			name:     "mysql redo log follows the volume",
+			input:    databaseTuningInput{dbType: "mysql", storage: "30Gi"},
+			expected: map[string]any{"innodbRedoLogCapacity": "1610612736"},
+		},
+		{
+			name:     "mysql redo log hits the cap on a large volume",
+			input:    databaseTuningInput{dbType: "mysql", storage: "500Gi"},
+			expected: map[string]any{"innodbRedoLogCapacity": "2147483648"},
+		},
+		{
+			name:     "mysql cores change nothing",
+			input:    databaseTuningInput{dbType: "mysql", cpuLimitMillicores: 8000},
+			expected: map[string]any{},
 		},
 		{
 			name:  "mysql with a tiny limit keeps the floors",
@@ -169,7 +241,7 @@ func TestApplyDatabaseTuning(t *testing.T) {
 		},
 		{
 			name:     "clickhouse is left alone",
-			input:    databaseTuningInput{dbType: "clickhouse", memoryLimitMegabytes: 2048},
+			input:    databaseTuningInput{dbType: "clickhouse", memoryLimitMegabytes: 2048, cpuLimitMillicores: 4000, storage: "10Gi"},
 			expected: map[string]any{},
 		},
 	}
@@ -194,6 +266,28 @@ func TestBuildDatabaseConfigKeepsOverridesOutOfTheParameters(t *testing.T) {
 
 	assert.NotContains(t, dbConfig, "sharedBuffersMb")
 	assert.Equal(t, "300MB", dbConfig["postgresql"].(map[string]any)["sharedBuffers"])
+}
+
+func TestBuildDatabaseConfigSizesParallelismFromTheCPULimit(t *testing.T) {
+	service := &v1.Service{}
+	service.Spec.Config.Database.Type = "postgres"
+	service.Spec.Config.Resources = &v1.ResourceSpec{CPULimitsMillicores: 4000}
+	rb := NewResourceBuilder(service, nil, nil)
+
+	params := rb.buildDatabaseConfig("")["postgresql"].(map[string]any)
+
+	assert.Equal(t, "4", params["maxParallelWorkers"])
+	assert.Equal(t, "2", params["maxParallelWorkersPerGather"])
+	assert.Equal(t, "8", params["maxWorkerProcesses"])
+}
+
+func TestBuildDatabaseConfigSizesRedoLogFromTheRealVolume(t *testing.T) {
+	service := &v1.Service{}
+	service.Spec.Config.Database.Type = "mysql"
+	rb := NewResourceBuilder(service, nil, nil)
+
+	assert.Equal(t, "67108864", rb.buildDatabaseConfig("")["innodbRedoLogCapacity"])
+	assert.Equal(t, "1610612736", rb.buildDatabaseConfig("30Gi")["innodbRedoLogCapacity"])
 }
 
 func TestBuildDatabaseConfigSizesWalFromTheRealVolume(t *testing.T) {

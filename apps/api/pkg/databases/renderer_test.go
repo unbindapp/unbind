@@ -2111,10 +2111,24 @@ func TestDefinitionsRenderMemoryTuning(t *testing.T) {
 		},
 		{
 			dbType:     "mysql",
-			params:     map[string]any{"innodbBufferPoolSize": "939524096", "innodbBufferPoolInstances": "1", "maxConnections": "102"},
-			defaults:   []string{`innodb_buffer_pool_size: "67108864"`, `max_connections: "50"`},
-			configured: []string{`innodb_buffer_pool_size: "939524096"`, `innodb_buffer_pool_instances: "1"`, `max_connections: "102"`},
-			absent:     []string{"innodb_buffer_pool_instances"},
+			params:     map[string]any{"innodbBufferPoolSize": "939524096", "innodbBufferPoolInstances": "1", "maxConnections": "102", "innodbRedoLogCapacity": "1610612736"},
+			defaults:   []string{`innodb_buffer_pool_size: "67108864"`, `max_connections: "50"`, `innodb_redo_log_capacity: "67108864"`},
+			configured: []string{`innodb_buffer_pool_size: "939524096"`, `innodb_buffer_pool_instances: "1"`, `max_connections: "102"`, `innodb_redo_log_capacity: "1610612736"`},
+			absent: []string{
+				"innodb_buffer_pool_instances",
+				"innodb_log_file_size",
+				"innodb_doublewrite",
+				"sync_binlog",
+				"innodb_flush_log_at_trx_commit",
+				"table_open_cache",
+				"table_definition_cache",
+			},
+		},
+		{
+			dbType:   "clickhouse",
+			params:   map[string]any{"clusterName": "test"},
+			defaults: []string{"<mark_cache_size>524288000</mark_cache_size>"},
+			absent:   []string{"<profile>", "max_threads", "max_block_size", "max_download_threads", "max_concurrent_queries"},
 		},
 		{
 			dbType:     "mongodb",
