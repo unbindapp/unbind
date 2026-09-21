@@ -76,7 +76,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-volumes",
 		Summary:     "List Volumes (PVCs)",
-		Description: "List volumes (persistent volume claims) for a team, project, or environment.",
+		Description: "List volumes (persistent volume claims) for a team, project, or environment. Send the ID of the level named by type along with the IDs of every level above it.",
 		Path:        "/pvc/list",
 		Method:      http.MethodGet,
 	}, handlers.ListPVCs, oapi.MCP)

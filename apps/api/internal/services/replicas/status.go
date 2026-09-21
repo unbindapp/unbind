@@ -35,7 +35,7 @@ func (self *ReplicaService) GetReplicaStatuses(ctx context.Context, requesterUse
 
 	return self.k8s.GetPodContainerStatusByLabels(
 		ctx,
-		project.Edges.Team.Namespace,
+		team.Namespace,
 		labels,
 		client,
 	)

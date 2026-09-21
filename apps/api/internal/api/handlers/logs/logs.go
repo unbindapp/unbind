@@ -27,7 +27,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "query-logs",
 		Summary:     "Query Logs",
-		Description: "Query historical logs for a team, project, environment, service, or deployment.",
+		Description: "Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id.",
 		Path:        "/query",
 		Method:      http.MethodGet,
 	}, handlers.QueryLogs, oapi.MCP)

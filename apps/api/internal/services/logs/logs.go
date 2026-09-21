@@ -33,31 +33,12 @@ func NewLogsService(repo repositories.RepositoriesInterface, k8sClient k8s.KubeC
 }
 
 func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, requesterUserID uuid.UUID, logType models.LogType, teamID, projectID, environmentID, serviceID uuid.UUID) (*ent.Team, *ent.Project, *ent.Environment, *ent.Service, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		//Can read team, project, environmnent, or service depending on inputs
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   teamID,
-		},
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeProject,
-			ResourceID:   projectID,
-		},
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeEnvironment,
-			ResourceID:   environmentID,
-		},
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeService,
-			ResourceID:   serviceID,
-		},
+	permissionCheck, err := permissionCheckForType(logType, teamID, projectID, environmentID, serviceID)
+	if err != nil {
+		return nil, nil, nil, nil, err
 	}
 
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+	if err := self.repo.Permissions().Check(ctx, requesterUserID, []permissions_repo.PermissionCheck{permissionCheck}); err != nil {
 		return nil, nil, nil, nil, errdefs.MaskAsNotFound(err, "Resource not found")
 	}
 
@@ -73,7 +54,8 @@ func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, 
 	if logType == models.LogTypeProject ||
 		logType == models.LogTypeEnvironment ||
 		logType == models.LogTypeService ||
-		logType == models.LogTypeDeployment {
+		logType == models.LogTypeDeployment ||
+		logType == models.LogTypeBuild {
 		// validate project ID
 		project, err = self.repo.Project().GetByID(ctx, projectID)
 		if err != nil {
@@ -90,7 +72,8 @@ func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, 
 	var environment *ent.Environment
 	if logType == models.LogTypeEnvironment ||
 		logType == models.LogTypeService ||
-		logType == models.LogTypeDeployment {
+		logType == models.LogTypeDeployment ||
+		logType == models.LogTypeBuild {
 		// validate environment ID
 		environment, err = self.repo.Environment().GetByID(ctx, environmentID)
 		if err != nil {
@@ -105,7 +88,9 @@ func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, 
 	}
 
 	var service *ent.Service
-	if logType == models.LogTypeService || logType == models.LogTypeDeployment {
+	if logType == models.LogTypeService ||
+		logType == models.LogTypeDeployment ||
+		logType == models.LogTypeBuild {
 		service, err = self.repo.Service().GetByID(ctx, serviceID)
 		if err != nil {
 			if ent.IsNotFound(err) {
@@ -119,6 +104,36 @@ func (self *LogsService) validatePermissionsAndParseInputs(ctx context.Context, 
 	}
 
 	return team, project, environment, service, nil
+}
+
+// Parent permissions flow down through the hierarchy, so only the requested level is checked.
+func permissionCheckForType(logType models.LogType, teamID, projectID, environmentID, serviceID uuid.UUID) (permissions_repo.PermissionCheck, error) {
+	check := permissions_repo.PermissionCheck{Action: schema.ActionViewer}
+	idName := string(logType)
+
+	switch logType {
+	case models.LogTypeTeam:
+		check.ResourceType = schema.ResourceTypeTeam
+		check.ResourceID = teamID
+	case models.LogTypeProject:
+		check.ResourceType = schema.ResourceTypeProject
+		check.ResourceID = projectID
+	case models.LogTypeEnvironment:
+		check.ResourceType = schema.ResourceTypeEnvironment
+		check.ResourceID = environmentID
+	case models.LogTypeService, models.LogTypeDeployment, models.LogTypeBuild:
+		check.ResourceType = schema.ResourceTypeService
+		check.ResourceID = serviceID
+		idName = "service"
+	default:
+		return check, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid log type")
+	}
+
+	if check.ResourceID == uuid.Nil {
+		return check, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("%s_id is required for type %s", idName, logType))
+	}
+
+	return check, nil
 }
 
 type logFilters struct {

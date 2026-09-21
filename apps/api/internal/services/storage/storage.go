@@ -2,6 +2,7 @@ package storage_service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/config"
@@ -36,26 +37,12 @@ func NewStorageService(cfg *config.Config, repo repositories.RepositoriesInterfa
 }
 
 func (self *StorageService) validatePermissionsAndParseInputs(ctx context.Context, action schema.PermittedAction, requesterUserID uuid.UUID, pvcScope models.PvcScope, teamID, projectID, environmentID uuid.UUID) (*ent.Team, *ent.Project, *ent.Environment, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		//Can read team, project, environmnent depending on inputs
-		{
-			Action:       action,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   teamID,
-		},
-		{
-			Action:       action,
-			ResourceType: schema.ResourceTypeProject,
-			ResourceID:   projectID,
-		},
-		{
-			Action:       action,
-			ResourceType: schema.ResourceTypeEnvironment,
-			ResourceID:   environmentID,
-		},
+	permissionCheck, err := permissionCheckForScope(action, pvcScope, teamID, projectID, environmentID)
+	if err != nil {
+		return nil, nil, nil, err
 	}
 
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+	if err := self.repo.Permissions().Check(ctx, requesterUserID, []permissions_repo.PermissionCheck{permissionCheck}); err != nil {
 		if action == schema.ActionViewer {
 			return nil, nil, nil, errdefs.MaskAsNotFound(err, "Resource not found")
 		}
@@ -102,4 +89,29 @@ func (self *StorageService) validatePermissionsAndParseInputs(ctx context.Contex
 	}
 
 	return team, project, environment, nil
+}
+
+// Parent permissions flow down through the hierarchy, so only the requested level is checked.
+func permissionCheckForScope(action schema.PermittedAction, pvcScope models.PvcScope, teamID, projectID, environmentID uuid.UUID) (permissions_repo.PermissionCheck, error) {
+	check := permissions_repo.PermissionCheck{Action: action}
+
+	switch pvcScope {
+	case models.PvcScopeTeam:
+		check.ResourceType = schema.ResourceTypeTeam
+		check.ResourceID = teamID
+	case models.PvcScopeProject:
+		check.ResourceType = schema.ResourceTypeProject
+		check.ResourceID = projectID
+	case models.PvcScopeEnvironment:
+		check.ResourceType = schema.ResourceTypeEnvironment
+		check.ResourceID = environmentID
+	default:
+		return check, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid volume type")
+	}
+
+	if check.ResourceID == uuid.Nil {
+		return check, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("%s_id is required for type %s", pvcScope, pvcScope))
+	}
+
+	return check, nil
 }

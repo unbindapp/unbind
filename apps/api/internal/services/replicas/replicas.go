@@ -2,6 +2,7 @@ package replica_service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/config"
@@ -30,31 +31,12 @@ func NewReplicaService(cfg *config.Config, repo repositories.RepositoriesInterfa
 }
 
 func (self *ReplicaService) validatePermissionsAndParseInputs(ctx context.Context, requesterUserID uuid.UUID, replicaType models.ReplicaType, teamID, projectID, environmentID, serviceID uuid.UUID) (*ent.Team, *ent.Project, *ent.Environment, *ent.Service, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		//Can read team, project, environmnent, or service depending on inputs
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   teamID,
-		},
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeProject,
-			ResourceID:   projectID,
-		},
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeEnvironment,
-			ResourceID:   environmentID,
-		},
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeService,
-			ResourceID:   serviceID,
-		},
+	permissionCheck, err := permissionCheckForType(replicaType, teamID, projectID, environmentID, serviceID)
+	if err != nil {
+		return nil, nil, nil, nil, err
 	}
 
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+	if err := self.repo.Permissions().Check(ctx, requesterUserID, []permissions_repo.PermissionCheck{permissionCheck}); err != nil {
 		return nil, nil, nil, nil, errdefs.MaskAsNotFound(err, "Resource not found")
 	}
 
@@ -112,4 +94,32 @@ func (self *ReplicaService) validatePermissionsAndParseInputs(ctx context.Contex
 	}
 
 	return team, project, environment, service, nil
+}
+
+// Parent permissions flow down through the hierarchy, so only the requested level is checked.
+func permissionCheckForType(replicaType models.ReplicaType, teamID, projectID, environmentID, serviceID uuid.UUID) (permissions_repo.PermissionCheck, error) {
+	check := permissions_repo.PermissionCheck{Action: schema.ActionViewer}
+
+	switch replicaType {
+	case models.ReplicaTypeTeam:
+		check.ResourceType = schema.ResourceTypeTeam
+		check.ResourceID = teamID
+	case models.ReplicaTypeProject:
+		check.ResourceType = schema.ResourceTypeProject
+		check.ResourceID = projectID
+	case models.ReplicaTypeEnvironment:
+		check.ResourceType = schema.ResourceTypeEnvironment
+		check.ResourceID = environmentID
+	case models.ReplicaTypeService:
+		check.ResourceType = schema.ResourceTypeService
+		check.ResourceID = serviceID
+	default:
+		return check, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid replica type")
+	}
+
+	if check.ResourceID == uuid.Nil {
+		return check, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("%s_id is required for type %s", replicaType, replicaType))
+	}
+
+	return check, nil
 }

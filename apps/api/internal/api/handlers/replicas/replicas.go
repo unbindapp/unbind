@@ -20,7 +20,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-replicas",
 		Summary:     "List Replicas (Pods)",
-		Description: "List the running replicas (pods) for a service, environment, project, or team, with health status.",
+		Description: "List the running replicas (pods) for a service, environment, project, or team, with health status. Send the ID of the level named by type along with the IDs of every level above it.",
 		Path:        "/list",
 		Method:      http.MethodGet,
 	}, handlers.ListReplicas, oapi.MCP)
