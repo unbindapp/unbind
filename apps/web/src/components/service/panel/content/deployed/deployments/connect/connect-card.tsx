@@ -94,8 +94,8 @@ export default function ConnectCard({ service }: TProps) {
             title="From your services"
             description={
               hasMultipleUrls(service.database_type || "")
-                ? "Add one of these as a variable on any service that will connect to the database."
-                : "Add this as a variable on any service that will connect to the database."
+                ? "Add one of these as a variable value on any service that will connect to the database."
+                : "Add this as a variable value on any service that will connect to the database."
             }
             Icon={BoxIcon}
           >
@@ -142,19 +142,14 @@ export default function ConnectCard({ service }: TProps) {
                 "For connecting from outside Unbind."
               ) : (
                 <>
-                  This database is private. Make it public in{" "}
-                  <Link
-                    to="/$team_id/project/$project_id"
-                    params={{ team_id: teamId, project_id: projectId }}
-                    search={(prev) => ({
-                      ...prev,
-                      service_tab: "settings",
-                    })}
-                    hash="networking_access"
-                    className="text-foreground active:bg-process/3-10 ring-process/5-10 has-hover:hover:text-process active:text-process has-hover:hover:bg-process/3-10 -mx-0.5 rounded-sm px-0.5 font-medium active:ring-1 has-hover:hover:ring-1"
-                  >
+                  This database is{" "}
+                  <NetworkAccessLink teamId={teamId} projectId={projectId}>
+                    private
+                  </NetworkAccessLink>
+                  . Make it public in{" "}
+                  <NetworkAccessLink teamId={teamId} projectId={projectId}>
                     Network Access
-                  </Link>{" "}
+                  </NetworkAccessLink>{" "}
                   to connect from outside Unbind.
                 </>
               )
@@ -191,6 +186,31 @@ export default function ConnectCard({ service }: TProps) {
         </div>
       )}
     </div>
+  );
+}
+
+function NetworkAccessLink({
+  teamId,
+  projectId,
+  children,
+}: {
+  teamId: string;
+  projectId: string;
+  children: ReactNode;
+}) {
+  return (
+    <Link
+      to="/$team_id/project/$project_id"
+      params={{ team_id: teamId, project_id: projectId }}
+      search={(prev) => ({
+        ...prev,
+        service_tab: "settings",
+      })}
+      hash="networking_access"
+      className="text-foreground active:bg-process/3-10 ring-process/5-10 has-hover:hover:text-process active:text-process has-hover:hover:bg-process/3-10 -mx-0.5 rounded-sm px-0.5 font-medium active:ring-1 has-hover:hover:ring-1"
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -245,7 +265,7 @@ function FooterLink({
       params={{ team_id: teamId, project_id: projectId }}
       search={(prev) => ({ ...prev, ...search })}
       variant="ghost"
-      className="text-muted-foreground gap-0.5 rounded-md px-2 py-1.5 text-sm font-medium"
+      className="text-muted-foreground gap-0.5 rounded-md px-2.5 py-1.5 text-sm font-medium"
     >
       <span className="min-w-0 shrink">{children}</span>
       <ChevronRightIcon className="-mr-1 size-4 shrink-0" />
@@ -271,7 +291,7 @@ function Section({
           <Icon className="mt-0.5 size-4 shrink-0" />
           <h4 className="min-w-0 shrink leading-tight font-medium wrap-break-word">{title}</h4>
         </div>
-        <p className="text-muted-foreground text-sm">{description}</p>
+        <p className="text-muted-foreground">{description}</p>
       </div>
       {children}
     </div>
