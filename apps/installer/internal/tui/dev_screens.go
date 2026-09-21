@@ -11,6 +11,8 @@ import (
 var DevScreens = []string{
 	"welcome",
 	"k3s-confirm",
+	"k3s-existing",
+	"node-updated",
 	"dns-config",
 	"registry-type",
 	"registry-input",
@@ -28,6 +30,11 @@ func NewDevModel(version, screen, domain string) (Model, error) {
 		m.state = StateWelcome
 	case "k3s-confirm":
 		m.state = StateConfirmUninstallK3s
+	case "k3s-existing":
+		m.state = StateConfirmUninstallK3s
+		m.k3sIsUnbindServer = true
+	case "node-updated":
+		m.state = StateNodeUpdated
 	case "dns-config":
 		m.state = StateDNSConfig
 		m.domainInput.SetValue(domain)

@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
       - id: v
         run: echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-      - name: Require release manifests when chart RBAC changed
+      - name: Require release manifests when charts changed
         env:
           VERSION: ${{ steps.v.outputs.version }}
         run: |
@@ -35,22 +35,21 @@ jobs:
           git fetch --tags origin
           PREV=$(git tag -l 'v*.*.*' --sort=v:refname | grep -x -B1 "$VERSION" | head -1)
           if [ -z "$PREV" ] || [ "$PREV" = "$VERSION" ]; then
-            echo "No previous release tag; skipping RBAC guard"
+            echo "No previous release tag; skipping chart guard"
             exit 0
           fi
-          CHANGED=$(git diff --name-only "$PREV" "$VERSION" -- 'deploy/charts/charts/*/templates/**' \
-            | grep -iE '(rbac|role|sa|serviceaccount)[^/]*\.yaml$' || true)
+          CHANGED=$(git diff --name-only "$PREV" "$VERSION" -- deploy/charts/charts/)
           if [ -z "$CHANGED" ]; then
-            echo "No chart RBAC changes since $PREV"
+            echo "No chart changes since $PREV"
             exit 0
           fi
           if git ls-tree -d "$VERSION" "deploy/releases/$VERSION" | grep -q .; then
-            echo "Chart RBAC changed and deploy/releases/$VERSION/ exists"
+            echo "Charts changed and deploy/releases/$VERSION/ exists"
             exit 0
           fi
-          echo "::error::Chart RBAC templates changed since $PREV but deploy/releases/$VERSION/ is missing:"
+          echo "::error::Charts changed since $PREV but deploy/releases/$VERSION/ is missing:"
           echo "$CHANGED" | while read -r f; do echo "::error::  $f"; done
-          echo "::error::Existing installs only receive release manifests. Ship the change under deploy/releases/$VERSION/, or add an empty kustomization.yaml there to acknowledge it is fresh-install-only."
+          echo "::error::The in-app updater never applies charts, so existing installs only receive release manifests. Ship the equivalent change under deploy/releases/$VERSION/, or add an empty kustomization.yaml there to acknowledge it is fresh-install-only."
           exit 1
       - name: Require an annotated tag with a summary
         id: summary

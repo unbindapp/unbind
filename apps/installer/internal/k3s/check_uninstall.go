@@ -15,11 +15,14 @@ import (
 const (
 	// K3sUninstallScriptPath is the default location of the K3s uninstall script.
 	K3sUninstallScriptPath = "/usr/local/bin/k3s-uninstall.sh"
+
+	UnbindHostConfigPath = "/etc/unbind/config"
 )
 
 // CheckResult holds the result of the K3s check.
 type CheckResult struct {
 	IsInstalled     bool
+	IsUnbindServer  bool
 	UninstallScript string // Path to the uninstall script if found
 }
 
@@ -31,6 +34,8 @@ func CheckInstalled() (*CheckResult, error) {
 	if _, err := os.Stat(K3sUninstallScriptPath); err == nil {
 		result.IsInstalled = true
 		result.UninstallScript = K3sUninstallScriptPath
+		_, hostConfigErr := os.Stat(UnbindHostConfigPath)
+		result.IsUnbindServer = hostConfigErr == nil
 		return result, nil
 	} else if !os.IsNotExist(err) {
 		// Other error (e.g., permissions)
@@ -42,8 +47,8 @@ func CheckInstalled() (*CheckResult, error) {
 	return result, nil
 }
 
-// runCommand executes an external command and logs its output.
-func runCommand(logChan chan<- string, command string, args ...string) error {
+// RunCommand executes an external command and logs its output.
+func RunCommand(logChan chan<- string, command string, args ...string) error {
 	cmdStr := command + " " + strings.Join(args, " ")
 	nbSend(logChan, fmt.Sprintf("Executing: %s", cmdStr))
 
@@ -88,13 +93,13 @@ func Uninstall(uninstallScriptPath string, logChan chan<- string) error {
 	os.Setenv("KUBECONFIG", "/etc/rancher/k3s/k3s.yaml")
 
 	// Set flag to allow uninstall
-	err = runCommand(logChan, "kubectl", "patch", "-n", "longhorn-system", "settings.longhorn.io", "deleting-confirmation-flag", "-p", `{"value":"true"}`, "--type=merge")
+	err = RunCommand(logChan, "kubectl", "patch", "-n", "longhorn-system", "settings.longhorn.io", "deleting-confirmation-flag", "-p", `{"value":"true"}`, "--type=merge")
 	if err != nil {
 		nbSend(logChan, "Warning: Failed to set Longhorn deleting-confirmation-flag, continuing anyway")
 	}
 
 	// Create Longhorn uninstall job
-	err = runCommand(logChan, "kubectl", "create", "-f", "https://raw.githubusercontent.com/longhorn/longhorn/v1.12.1/uninstall/uninstall.yaml")
+	err = RunCommand(logChan, "kubectl", "create", "-f", "https://raw.githubusercontent.com/longhorn/longhorn/v1.12.1/uninstall/uninstall.yaml")
 	if err != nil {
 		nbSend(logChan, "Warning: Failed to create Longhorn uninstall job, continuing anyway")
 	}
@@ -121,12 +126,12 @@ cleanup:
 	time.Sleep(10 * time.Second)
 
 	// 1. Log out of any leftover iSCSI sessions
-	err = runCommand(logChan, "sh", "-c", "iscsiadm -m session | grep 'io.longhorn' | awk '{print $2}' | sed 's/\\[\\([0-9]*\\)\\]/\\1/' | xargs -r -I{} iscsiadm -m session -u -r {}")
+	err = RunCommand(logChan, "sh", "-c", "iscsiadm -m session | grep 'io.longhorn' | awk '{print $2}' | sed 's/\\[\\([0-9]*\\)\\]/\\1/' | xargs -r -I{} iscsiadm -m session -u -r {}")
 	if err != nil {
 		nbSend(logChan, "Warning: Failed to logout of iSCSI sessions, continuing anyway")
 	}
 
-	err = runCommand(logChan, "iscsiadm", "-m", "node", "--targetname", "iqn.*.longhorn*", "-o", "delete")
+	err = RunCommand(logChan, "iscsiadm", "-m", "node", "--targetname", "iqn.*.longhorn*", "-o", "delete")
 	if err != nil {
 		nbSend(logChan, "Warning: Failed to delete iSCSI nodes, continuing anyway")
 	}
@@ -140,7 +145,7 @@ cleanup:
 			line := scanner.Text()
 			if strings.Contains(line, "longhorn") {
 				dev := strings.Fields(line)[0]
-				err = runCommand(logChan, "dmsetup", "remove", dev)
+				err = RunCommand(logChan, "dmsetup", "remove", dev)
 				if err != nil {
 					nbSend(logChan, fmt.Sprintf("Warning: Failed to remove device-mapper entry %s, continuing anyway", dev))
 				}
@@ -159,7 +164,7 @@ cleanup:
 				fields := strings.Fields(line)
 				if len(fields) >= 3 {
 					mountpoint := fields[2]
-					err = runCommand(logChan, "umount", mountpoint)
+					err = RunCommand(logChan, "umount", mountpoint)
 					if err != nil {
 						nbSend(logChan, fmt.Sprintf("Warning: Failed to unmount %s, continuing anyway", mountpoint))
 					}
@@ -226,7 +231,7 @@ cleanup:
 	}
 
 	for _, cmdArgs := range iptablesCommands {
-		err := runCommand(logChan, cmdArgs[0], cmdArgs[1:]...)
+		err := RunCommand(logChan, cmdArgs[0], cmdArgs[1:]...)
 		if err != nil {
 			// Log the error but continue trying other cleanup commands
 			nbSend(logChan, fmt.Sprintf("Warning: Failed iptables cleanup command '%s': %v", strings.Join(cmdArgs, " "), err))

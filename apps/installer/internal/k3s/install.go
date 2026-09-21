@@ -18,10 +18,10 @@ import (
 
 const K3S_VERSION = "v1.36.1+k3s1"
 
-const kubeletConfigPath = "/etc/rancher/k3s/kubelet-config.yaml"
+const KubeletConfigPath = "/etc/rancher/k3s/kubelet-config.yaml"
 
 // Setting evictionHard replaces every kubelet default, so disk signals must be listed alongside memory.
-const kubeletConfig = `apiVersion: kubelet.config.k8s.io/v1beta1
+const KubeletConfig = `apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 failSwapOn: false
 featureGates:
@@ -45,6 +45,33 @@ imageGCHighThresholdPercent: 75
 imageGCLowThresholdPercent: 65
 imageMaximumGCAge: 72h
 `
+
+const (
+	KubeletArgs = "--kubelet-arg=fail-swap-on=false " +
+		"--kubelet-arg=config=" + KubeletConfigPath + " " +
+		"--kubelet-arg=system-reserved=memory=512Mi,cpu=400m " +
+		"--kubelet-arg=kube-reserved=memory=256Mi,cpu=200m"
+
+	ServerInstallFlags = "--disable=traefik --disable=local-storage " +
+		KubeletArgs + " " +
+		"--kube-controller-manager-arg=terminated-pod-gc-threshold=10 " +
+		"--kube-apiserver-arg=max-requests-inflight=100 " +
+		"--kube-apiserver-arg=max-mutating-requests-inflight=50 " +
+		"--kube-apiserver-arg=watch-cache=true " +
+		"--kube-apiserver-arg=default-watch-cache-size=100 " +
+		"--kube-apiserver-arg=event-ttl=10m " +
+		"--kube-apiserver-arg=audit-log-maxage=7 " +
+		"--kube-apiserver-arg=audit-log-maxbackup=3 " +
+		"--kube-apiserver-arg=audit-log-maxsize=50 " +
+		"--datastore-endpoint=sqlite:///var/lib/rancher/k3s/server/db/state.db?" +
+		"_journal_mode=WAL&" +
+		"_synchronous=NORMAL&" +
+		"_cache_size=20000&" +
+		"_temp_store=MEMORY&" +
+		"_mmap_size=134217728&" +
+		"_page_size=4096&" +
+		"_wal_checkpoint=PASSIVE"
+)
 
 const (
 	// RegistryInternalHost is the in-cluster address of the self-hosted registry.
@@ -259,29 +286,6 @@ func (self *Installer) sendFact(fact string) {
 
 // Install sets up k3s and returns the kubeconfig path
 func (self *Installer) Install(ctx context.Context, selfHostedRegistry bool) (string, error) {
-	k3sInstallFlags := "--disable=traefik --disable=local-storage " +
-		"--kubelet-arg=fail-swap-on=false " +
-		"--kubelet-arg=config=" + kubeletConfigPath + " " +
-		"--kubelet-arg=system-reserved=memory=512Mi,cpu=400m " +
-		"--kubelet-arg=kube-reserved=memory=256Mi,cpu=200m " +
-		"--kube-controller-manager-arg=terminated-pod-gc-threshold=10 " +
-		"--kube-apiserver-arg=max-requests-inflight=100 " +
-		"--kube-apiserver-arg=max-mutating-requests-inflight=50 " +
-		"--kube-apiserver-arg=watch-cache=true " +
-		"--kube-apiserver-arg=default-watch-cache-size=100 " +
-		"--kube-apiserver-arg=event-ttl=10m " +
-		"--kube-apiserver-arg=audit-log-maxage=7 " +
-		"--kube-apiserver-arg=audit-log-maxbackup=3 " +
-		"--kube-apiserver-arg=audit-log-maxsize=50 " +
-		"--datastore-endpoint=sqlite:///var/lib/rancher/k3s/server/db/state.db?" +
-		"_journal_mode=WAL&" +
-		"_synchronous=NORMAL&" +
-		"_cache_size=20000&" +
-		"_temp_store=MEMORY&" +
-		"_mmap_size=134217728&" +
-		"_page_size=4096&" +
-		"_wal_checkpoint=PASSIVE"
-
 	var kubeconfigPath string
 
 	// Start the installation process and initialize state
@@ -339,10 +343,10 @@ fs.inotify.max_user_instances = 512`
 			Description: "Creating kubelet configuration file",
 			Progress:    0.04,
 			Action: func(ctx context.Context) error {
-				if err := os.MkdirAll(filepath.Dir(kubeletConfigPath), 0755); err != nil {
+				if err := os.MkdirAll(filepath.Dir(KubeletConfigPath), 0755); err != nil {
 					return fmt.Errorf("failed to create kubelet config directory: %w", err)
 				}
-				if err := os.WriteFile(kubeletConfigPath, []byte(kubeletConfig), 0644); err != nil {
+				if err := os.WriteFile(KubeletConfigPath, []byte(KubeletConfig), 0644); err != nil {
 					return fmt.Errorf("failed to write kubelet config file: %w", err)
 				}
 				return nil
@@ -414,7 +418,7 @@ fs.inotify.max_user_instances = 512`
 			Description: "Running K3S installer",
 			Progress:    0.35, // Much larger allocation since this takes 2-3 minutes
 			Action: func(ctx context.Context) error {
-				self.log(fmt.Sprintf("Running K3S installer with flags: %s", k3sInstallFlags))
+				self.log(fmt.Sprintf("Running K3S installer with flags: %s", ServerInstallFlags))
 
 				// Start a goroutine to show educational facts during installation
 				factsDone := make(chan struct{})
@@ -441,7 +445,7 @@ fs.inotify.max_user_instances = 512`
 
 				installCmd := exec.CommandContext(ctx, "/bin/sh", "/tmp/k3s-installer.sh")
 				installCmd.Env = append(os.Environ(),
-					fmt.Sprintf("INSTALL_K3S_EXEC=%s", k3sInstallFlags),
+					fmt.Sprintf("INSTALL_K3S_EXEC=%s", ServerInstallFlags),
 					fmt.Sprintf("INSTALL_K3S_VERSION=%s", K3S_VERSION),
 				)
 

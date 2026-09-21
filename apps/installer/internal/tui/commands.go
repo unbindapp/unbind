@@ -41,6 +41,12 @@ func (m Model) uninstallK3sCommand(scriptPath string) tea.Cmd {
 	}
 }
 
+func (m Model) updateNodeCommand() tea.Cmd {
+	return func() tea.Msg {
+		return nodeUpdateCompleteMsg{err: unbindInstaller.UpdateNode(m.logChan)}
+	}
+}
+
 func detectOSInfo() tea.Msg {
 	if os.Geteuid() != 0 {
 		return errMsg{err: errdefs.ErrNotRoot}

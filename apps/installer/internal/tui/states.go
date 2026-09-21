@@ -9,6 +9,8 @@ const (
 	StateCheckK3s
 	StateConfirmUninstallK3s
 	StateUninstallingK3s
+	StateUpdatingNode
+	StateNodeUpdated
 	StateLoading
 	StateOSInfo
 	StateCheckingSwap

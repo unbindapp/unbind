@@ -21,6 +21,7 @@ type Model struct {
 	osInfo                 *osinfo.OSInfo
 	err                    error
 	k3sUninstallScriptPath string
+	k3sIsUnbindServer      bool
 	swapSizeGB             int
 
 	spinner   spinner.Model
@@ -139,6 +140,10 @@ func (m Model) updateState(msg tea.Msg) (Model, tea.Cmd) {
 		return m.updateConfirmUninstallK3sState(msg)
 	case StateUninstallingK3s:
 		return m.updateUninstallingK3sState(msg)
+	case StateUpdatingNode:
+		return m.updateUpdatingNodeState(msg)
+	case StateNodeUpdated:
+		return m.updateNodeUpdatedState(msg)
 	case StateLoading:
 		return m.updateLoadingState(msg)
 	case StateOSInfo:
@@ -202,6 +207,10 @@ func (m Model) viewState() string {
 		return viewConfirmUninstallK3s(m)
 	case StateUninstallingK3s:
 		return viewUninstallingK3s(m)
+	case StateUpdatingNode:
+		return viewUpdatingNode(m)
+	case StateNodeUpdated:
+		return viewNodeUpdated(m)
 	case StateLoading:
 		return viewLoading(m)
 	case StateError:

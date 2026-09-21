@@ -92,6 +92,10 @@ type k3sUninstallCompleteMsg struct {
 	err error
 }
 
+type nodeUpdateCompleteMsg struct {
+	err error
+}
+
 type k3sInstallCompleteMsg struct {
 	unbindInstaller *installer.UnbindInstaller
 }

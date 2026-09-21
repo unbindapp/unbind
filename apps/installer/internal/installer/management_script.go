@@ -4,9 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/unbindapp/unbind-installer/internal/k3s"
 )
 
-const managementScriptContent = `#!/bin/bash
+const managementScriptPath = "/usr/local/bin/unbind"
+
+const managementScriptTemplate = `#!/bin/bash
 
 # ANSI color codes
 RED='\033[0;31m'
@@ -38,7 +43,10 @@ print_banner() {
 # This script provides management functions for Unbind
 
 # Configuration file location
-CONFIG_FILE="/etc/unbind/config"
+CONFIG_FILE="__HOST_CONFIG_PATH__"
+KUBELET_CONFIG_PATH="__KUBELET_CONFIG_PATH__"
+KUBELET_ARGS="__KUBELET_ARGS__"
+SERVER_FLAGS="__SERVER_FLAGS__"
 
 # Function to print a boxed message
 print_box() {
@@ -68,8 +76,15 @@ show_usage() {
     echo -e "${BOLD}Commands:${NC}"
     echo -e "  ${CYAN}uninstall${NC}    - Uninstall Unbind (${RED}WARNING: This will permanently delete all data${NC})"
     echo -e "  ${CYAN}add-node${NC}     - Show instructions for adding a new node"
+    echo -e "  ${CYAN}update-node${NC}  - Apply the current k3s and kubelet settings to this server"
     # echo ""
     # echo -e "${MAGENTA}For more information, visit https://unbind.app/docs${NC}"
+}
+
+print_kubelet_config() {
+    cat <<'KUBELETEOF'
+__KUBELET_CONFIG__
+KUBELETEOF
 }
 
 # Function to handle uninstallation
@@ -222,18 +237,74 @@ MPSCRIPT
     echo ""
     step=$((step + 1))
 
+    echo -e "${BOLD}${step}. Configure the kubelet:${NC}"
+    echo ""
+    echo -e "${CYAN}sudo mkdir -p $(dirname "$KUBELET_CONFIG_PATH") && sudo tee $KUBELET_CONFIG_PATH > /dev/null <<'KUBELETEOF'"
+    print_kubelet_config
+    echo -e "KUBELETEOF${NC}"
+    echo ""
+    step=$((step + 1))
+
     echo -e "${BOLD}${step}. Join the cluster:${NC}"
     echo ""
     if [ -n "$k3s_version" ]; then
-        echo -e "${CYAN}curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=$k3s_version K3S_URL=$server_url K3S_TOKEN=$token sh -${NC}"
+        echo -e "${CYAN}curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=$k3s_version K3S_URL=$server_url K3S_TOKEN=$token INSTALL_K3S_EXEC=\"$KUBELET_ARGS\" sh -${NC}"
         echo ""
         echo -e "${GREEN}This will install K3s version: $k3s_version${NC}"
     else
-        echo -e "${CYAN}curl -sfL https://get.k3s.io | K3S_URL=$server_url K3S_TOKEN=$token sh -${NC}"
+        echo -e "${CYAN}curl -sfL https://get.k3s.io | K3S_URL=$server_url K3S_TOKEN=$token INSTALL_K3S_EXEC=\"$KUBELET_ARGS\" sh -${NC}"
     fi
 
     echo ""
     echo -e "${YELLOW}Note:${NC} Make sure the new server can reach this server on port 6443"
+    echo -e "${YELLOW}Note:${NC} Rerun steps $((step - 1)) and ${step} on a node that already joined to bring its kubelet settings up to date"
+}
+
+# The kubelet config adds hard eviction at 15% free image space and 10% free node space,
+# so a nearly full disk must be pruned before the restart or pods get evicted immediately.
+prune_images_if_full() {
+    local image_dir=/var/lib/rancher/k3s/agent/containerd
+    [ -d "$image_dir" ] || image_dir=/var/lib/rancher
+    local used
+    used=$(df --output=pcent "$image_dir" 2>/dev/null | tail -n1 | tr -dc '0-9')
+    if [ -z "$used" ] || [ "$used" -lt 80 ]; then
+        return 0
+    fi
+    echo -e "${YELLOW}Disk holding container images is ${used}% full, pruning unused images first...${NC}"
+    k3s crictl rmi --prune || true
+}
+
+# Rerunning the k3s installer with the current flags regenerates the systemd unit and
+# restarts k3s. Flags baked into an older unit override the config file, so the file
+# alone is not enough. Workloads keep running through the restart.
+handle_update_node() {
+    check_installation
+
+    if [ ! -f "$CONFIG_FILE" ]; then
+        print_banner
+        print_box "Error: This host was not set up as an Unbind server." "$RED"
+        echo -e "${RED}Run 'unbind add-node' on the server and repeat the printed steps on this node instead.${NC}"
+        exit 1
+    fi
+
+    print_banner
+    print_box "Updating this server's k3s configuration" "$BLUE"
+
+    mkdir -p "$(dirname "$KUBELET_CONFIG_PATH")"
+    print_kubelet_config > "$KUBELET_CONFIG_PATH"
+    echo -e "${GREEN}Wrote ${KUBELET_CONFIG_PATH}${NC}"
+
+    prune_images_if_full
+
+    echo -e "${YELLOW}Regenerating the k3s service and restarting it...${NC}"
+    if ! curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_DOWNLOAD=true INSTALL_K3S_EXEC="$SERVER_FLAGS" sh -; then
+        print_box "Error: k3s installer failed, see the output above." "$RED"
+        exit 1
+    fi
+
+    print_box "This server now runs the current k3s configuration." "$GREEN"
+    echo -e "Verify with: ${CYAN}kubectl get --raw \"/api/v1/nodes/$(hostname | tr 'A-Z' 'a-z')/proxy/configz\"${NC}"
+    echo -e "Other nodes: run ${CYAN}unbind add-node${NC} and repeat the kubelet and join steps on each of them."
 }
 
 # Main script logic
@@ -244,6 +315,9 @@ case "$1" in
     "add-node")
         handle_add_node
         ;;
+    "update-node")
+        handle_update_node
+        ;;
     *)
         show_usage
         exit 1
@@ -251,26 +325,42 @@ case "$1" in
 esac
 `
 
-// InstallManagementScript installs the management script to the system
+func renderManagementScript() string {
+	return strings.NewReplacer(
+		"__HOST_CONFIG_PATH__", k3s.UnbindHostConfigPath,
+		"__KUBELET_CONFIG_PATH__", k3s.KubeletConfigPath,
+		"__KUBELET_CONFIG__", strings.TrimRight(k3s.KubeletConfig, "\n"),
+		"__KUBELET_ARGS__", k3s.KubeletArgs,
+		"__SERVER_FLAGS__", k3s.ServerInstallFlags,
+	).Replace(managementScriptTemplate)
+}
+
+// WriteManagementScript installs or refreshes the management script on the host
+func WriteManagementScript() error {
+	if err := os.WriteFile(managementScriptPath, []byte(renderManagementScript()), 0755); err != nil {
+		return fmt.Errorf("failed to write management script: %w", err)
+	}
+	return nil
+}
+
+// InstallManagementScript installs the management script and the host config to the system
 func InstallManagementScript(clusterIP string) error {
-	// Create config directory if it doesn't exist
-	configDir := "/etc/unbind"
-	if err := os.MkdirAll(configDir, 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(k3s.UnbindHostConfigPath), 0755); err != nil {
 		return fmt.Errorf("failed to create config directory: %w", err)
 	}
 
-	// Create config file with cluster IP
-	configPath := filepath.Join(configDir, "config")
 	configContent := fmt.Sprintf("CLUSTER_IP=%s\n", clusterIP)
-	if err := os.WriteFile(configPath, []byte(configContent), 0644); err != nil {
+	if err := os.WriteFile(k3s.UnbindHostConfigPath, []byte(configContent), 0644); err != nil {
 		return fmt.Errorf("failed to write config file: %w", err)
 	}
 
-	// Create the script file
-	scriptPath := "/usr/local/bin/unbind"
-	if err := os.WriteFile(scriptPath, []byte(managementScriptContent), 0755); err != nil {
-		return fmt.Errorf("failed to write management script: %w", err)
-	}
+	return WriteManagementScript()
+}
 
-	return nil
+// UpdateNode refreshes the management script and applies the current k3s configuration to this server
+func UpdateNode(logChan chan<- string) error {
+	if err := WriteManagementScript(); err != nil {
+		return err
+	}
+	return k3s.RunCommand(logChan, managementScriptPath, "update-node")
 }

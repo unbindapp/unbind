@@ -67,8 +67,14 @@ service account may not grant itself. The applier server-side-applies every docu
 (field manager `unbind-updater`) after a full dry-run pass, so an invalid bundle is
 rejected before anything lands.
 
-`release.yml` fails a tag whose chart RBAC templates changed since the previous release but
-that ships no `deploy/releases/<tag>/` directory — the in-app updater never applies chart
-templates, so such a change would silently miss existing installs. Ship the equivalent
-grant as release manifests, or add an empty `kustomization.yaml` (no job is run for an
-empty render) to acknowledge the change is fresh-install-only.
+`release.yml` fails a tag whose charts under `deploy/charts/charts/` changed since the
+previous release but that ships no `deploy/releases/<tag>/` directory — the in-app updater
+never applies charts, so such a change would silently miss existing installs. Ship the
+equivalent resources or patches as release manifests, or add an empty `kustomization.yaml`
+(no job is run for an empty render) to acknowledge the change is fresh-install-only.
+
+Node-level settings (the kubelet config and k3s flags in `apps/installer/internal/k3s`)
+have no in-cluster delivery at all. They reach a node only through the installer: fresh
+installs, the join steps printed by `unbind add-node`, and `unbind update-node` (also
+offered by the installer when it finds an Unbind server on the host), which regenerates
+the k3s unit from the current flags.

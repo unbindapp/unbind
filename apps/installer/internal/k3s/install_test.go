@@ -15,7 +15,7 @@ func TestKubeletConfigKeepsDiskEvictionSignals(t *testing.T) {
 		ImageGCLowThresholdPercent  int               `json:"imageGCLowThresholdPercent"`
 		ImageMaximumGCAge           string            `json:"imageMaximumGCAge"`
 	}
-	require.NoError(t, yaml.Unmarshal([]byte(kubeletConfig), &parsed))
+	require.NoError(t, yaml.Unmarshal([]byte(KubeletConfig), &parsed))
 
 	for _, signal := range []string{"memory.available", "nodefs.available", "nodefs.inodesFree", "imagefs.available"} {
 		require.Contains(t, parsed.EvictionHard, signal)
