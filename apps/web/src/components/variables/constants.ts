@@ -6,3 +6,5 @@ export const providedVariablesKey = "provided_variables";
 // so its open state is validated on the root route, their only common ancestor.
 export const rawVariableEditorKey = "raw_editor";
 export const HIDDEN_VARIABLE_VALUE = "••••••••";
+// DOM id of the variables section in the service panel, for links that jump to it
+export const variablesSectionId = "variables_section";

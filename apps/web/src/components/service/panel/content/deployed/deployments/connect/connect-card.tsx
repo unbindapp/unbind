@@ -11,7 +11,7 @@ import { useConnectOpen } from "@/components/service/panel/content/deployed/depl
 import { useService } from "@/components/service/service-provider";
 import { Button, LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { providedVariablesKey } from "@/components/variables/constants";
+import { providedVariablesKey, variablesSectionId } from "@/components/variables/constants";
 import { readableToken } from "@/components/variables/tokens";
 import { arrayHasAllSpecialDbVariables } from "@/components/variables/variables-list";
 import { TServiceShallow } from "@/lib/queries/services";
@@ -182,9 +182,10 @@ export default function ConnectCard({ service }: TProps) {
             <FooterLink
               teamId={teamId}
               projectId={projectId}
+              hash={variablesSectionId}
               search={{ service_tab: "variables", [providedVariablesKey]: true }}
             >
-              Host, port and credentials
+              Credentials, host, and port
             </FooterLink>
           </div>
         </div>

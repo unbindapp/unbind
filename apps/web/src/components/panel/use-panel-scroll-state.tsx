@@ -1,6 +1,7 @@
 "use client";
 
 import { settleScroll } from "@/lib/helpers/settle-scroll";
+import { useRouter } from "@tanstack/react-router";
 import { createContext, ReactNode, useCallback, useContext } from "react";
 
 // Keyed by panel, entity and tab, so a reopened panel comes back where the user
@@ -37,6 +38,8 @@ export function usePanelScrollKey() {
 }
 
 export function usePanelScrollRestoration(scrollKey: string | null) {
+  const router = useRouter();
+
   return useCallback(
     (viewport: HTMLDivElement | null) => {
       if (!viewport || !scrollKey) return;
@@ -52,7 +55,10 @@ export function usePanelScrollRestoration(scrollKey: string | null) {
       };
       viewport.addEventListener("scroll", save, { passive: true });
 
-      const target = savedScrollByKey.get(scrollKey) ?? 0;
+      // A hash is a link asking for a place in the tab, so it outranks where it was left.
+      // The router's location is read instead of the URL because the history write that
+      // puts the hash in the URL is deferred, and this runs as the tab mounts.
+      const target = router.latestLocation.hash ? 0 : (savedScrollByKey.get(scrollKey) ?? 0);
       isRestoring = target > 0;
       const cancelRestore = settleScroll(
         viewport,
@@ -74,6 +80,6 @@ export function usePanelScrollRestoration(scrollKey: string | null) {
         cancelRestore();
       };
     },
-    [scrollKey],
+    [scrollKey, router],
   );
 }

@@ -1,5 +1,6 @@
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import { useService } from "@/components/service/service-provider";
+import { variablesSectionId } from "@/components/variables/constants";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import VariablesHeader from "@/components/variables/variables-header";
 import VariablesList from "@/components/variables/variables-list";
@@ -21,7 +22,7 @@ export default function Variables({ service }: { service: TServiceShallow }) {
   );
 
   return (
-    <TabWrapper>
+    <TabWrapper id={variablesSectionId}>
       <VariablesHeader lockedVariables={service.config.protected_variables} />
       <VariablesList variableTypeProps={variableTypeProps} />
     </TabWrapper>
