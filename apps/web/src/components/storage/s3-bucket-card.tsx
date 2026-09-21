@@ -40,10 +40,10 @@ import {
   CreateS3BucketFormSchema,
   deleteS3Bucket as deleteS3BucketFn,
   EditS3BucketFormSchema,
-  s3BucketNameMaxLength,
-  s3BucketsListQuery,
   queryKeyStorage,
+  s3BucketNameMaxLength,
   S3BucketNameSchema,
+  s3BucketsListQuery,
   testStoredS3BucketQuery,
   TS3BucketFormValues,
   TS3BucketShallow,
@@ -54,7 +54,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CylinderIcon,
   EllipsisVerticalIcon,
+  FileKeyIcon,
   GlobeIcon,
+  MapIcon,
   PenIcon,
   PlusIcon,
   SettingsIcon,
@@ -230,9 +232,14 @@ function S3BucketDialogInnerContent({
       </div>
       <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-wrap px-4.25 pt-3.5 pb-4">
         <Detail label="Bucket" value={s3Bucket.bucket} Icon={CylinderIcon} />
-        <Detail label="Region" value={s3Bucket.region || "Not set"} />
+        <Detail label="Region" value={s3Bucket.region || "Not set"} Icon={MapIcon} />
         <Detail label="Endpoint" value={s3Bucket.endpoint} Icon={GlobeIcon} className="sm:w-full" />
-        <Detail label="Access Key ID" value={s3Bucket.access_key} className="sm:w-full" />
+        <Detail
+          label="Access Key ID"
+          value={s3Bucket.access_key}
+          className="sm:w-full"
+          Icon={FileKeyIcon}
+        />
       </ol>
       <div className="bg-border h-px w-full" />
       <div className="flex w-full items-center justify-end px-1 py-2">
@@ -258,17 +265,17 @@ function Detail({
 }: {
   label: string;
   value: string;
-  Icon?: FC<{ className?: string }>;
+  Icon: FC<{ className?: string }>;
   className?: string;
 }) {
   return (
     <li className={cn("w-full p-1 sm:w-1/2", className)}>
       <div className="flex w-full flex-col gap-1.5 rounded-lg border px-3 py-2.5">
-        <p className="text-muted-foreground text-sm leading-tight font-normal">{label}</p>
-        <div className="flex w-full items-center justify-start gap-2">
-          {Icon && <Icon className="size-4 shrink-0" />}
-          <p className="min-w-0 shrink leading-tight font-medium wrap-break-word">{value}</p>
+        <div className="text-muted-foreground flex w-full items-start justify-start gap-1.5">
+          {Icon && <Icon className="mt-0.5 size-3.5 shrink-0" />}
+          <p className="min-w-0 shrink text-sm leading-tight font-normal">{label}</p>
         </div>
+        <p className="min-w-0 shrink leading-tight font-medium wrap-break-word">{value}</p>
       </div>
     </li>
   );
@@ -888,10 +895,24 @@ function S3BucketFormDialog({
   );
 }
 
-function Label({ children, className, ...rest }: LabelHTMLAttributes<HTMLLabelElement>) {
+function Label({
+  children,
+  className,
+  Icon,
+  ...rest
+}: LabelHTMLAttributes<HTMLLabelElement> & {
+  Icon?: FC<{ className?: string }>;
+}) {
   return (
-    <label {...rest} className={cn("max-w-full px-1.5 leading-tight font-medium", className)}>
-      {children}
+    <label
+      {...rest}
+      className={cn(
+        "flex max-w-full items-start gap-1.5 px-1.5 leading-tight font-medium",
+        className,
+      )}
+    >
+      {Icon && <Icon className="mt-0.5 inline-block size-4 shrink-0" />}
+      <span className="min-w-0 shrink wrap-break-word">{children}</span>
     </label>
   );
 }
