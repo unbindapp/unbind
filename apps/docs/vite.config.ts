@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { fumadocsMdx } from "fumadocs-mdx/vite";
 import { nitro } from "nitro/vite";
 import { globSync } from "node:fs";
+import { shikiThemes } from "./src/lib/theme/shiki-theme";
 
 const contentPaths = globSync("**/*.mdx", { cwd: "content" }).map(contentFileToPath);
 
@@ -21,7 +22,13 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [
-    fumadocsMdx(),
+    fumadocsMdx({
+      globalOptions: {
+        mdxOptions: {
+          rehypeCodeOptions: { themes: shikiThemes, defaultColor: false },
+        },
+      },
+    }),
     tailwindcss(),
     tanstackStart({
       prerender: {
