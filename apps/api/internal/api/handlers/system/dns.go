@@ -14,7 +14,7 @@ import (
 
 type DnsCheckInput struct {
 	server.BaseAuthInput
-	Domain string `query:"domain" required:"true" description:"Domain to check DNS for"`
+	Domain string `query:"domain" required:"true" doc:"Domain to check DNS for"`
 }
 
 type DnsCheck struct {

@@ -8,13 +8,13 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
-	system_repo "github.com/unbindapp/unbind-api/internal/repositories/system"
+	"github.com/unbindapp/unbind-api/internal/common/log"
 	system_service "github.com/unbindapp/unbind-api/internal/services/system"
 )
 
 type SettingsUpdateInput struct {
 	server.BaseAuthInput
-	Body *system_repo.SystemSettingUpdateInput
+	Body *system_service.SystemSettingsUpdateInput
 }
 
 type SettingsResponse struct {
@@ -23,45 +23,18 @@ type SettingsResponse struct {
 	}
 }
 
-func (self *HandlerGroup) UpdateBuildkitSettings(ctx context.Context, input *SettingsUpdateInput) (*SettingsResponse, error) {
+func (self *HandlerGroup) UpdateSettings(ctx context.Context, input *SettingsUpdateInput) (*SettingsResponse, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if input.Body.WildcardDomain != nil {
-		// Validate the domain
-		baseDomain := strings.ReplaceAll(*input.Body.WildcardDomain, "https://", "")
-		baseDomain = strings.ReplaceAll(baseDomain, "http://", "")
-		baseDomain = strings.ReplaceAll(baseDomain, "*.", "")
-
-		ips, err := self.srv.KubeClient.GetIngressNginxIP(ctx)
+	if domain := input.Body.WildcardDomain; domain != nil && *domain != "" {
+		baseDomain, err := self.verifyWildcardDomainDNS(ctx, *domain)
 		if err != nil {
-			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to look up the ingress IP"))
+			return nil, err
 		}
-
-		resolved, err := self.srv.DNSChecker.IsPointingToIP(baseDomain, ips.IPv4)
-		if err != nil {
-			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain's DNS records"))
-		}
-		if !resolved {
-			resolved, err = self.srv.DNSChecker.IsPointingToIP(baseDomain, ips.IPv6)
-			if err != nil {
-				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain's DNS records"))
-			}
-		}
-		if !resolved {
-			resolved, err = self.srv.DNSChecker.IsUsingCloudflareProxy(baseDomain)
-			if err != nil {
-				return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check whether the domain uses Cloudflare"))
-			}
-		}
-
-		if !resolved {
-			return nil, huma.Error400BadRequest("Wildcard domain does not have DNS configured")
-		}
-
-		input.Body.WildcardDomain = new(baseDomain)
+		input.Body.WildcardDomain = &baseDomain
 	}
 
 	settings, err := self.srv.SystemService.UpdateSettings(ctx, user.ID, input.Body)
@@ -71,4 +44,37 @@ func (self *HandlerGroup) UpdateBuildkitSettings(ctx context.Context, input *Set
 	resp := &SettingsResponse{}
 	resp.Body.Data = settings
 	return resp, nil
+}
+
+func (self *HandlerGroup) verifyWildcardDomainDNS(ctx context.Context, domain string) (string, error) {
+	baseDomain := strings.ReplaceAll(domain, "https://", "")
+	baseDomain = strings.ReplaceAll(baseDomain, "http://", "")
+	baseDomain = strings.ReplaceAll(baseDomain, "*.", "")
+
+	ips, err := self.srv.KubeClient.GetIngressNginxIP(ctx)
+	if err != nil {
+		return "", oapi.MapError(errdefs.NewInternalError(err, "Failed to look up the ingress IP"))
+	}
+
+	resolved, err := self.srv.DNSChecker.IsPointingToIP(baseDomain, ips.IPv4)
+	if err != nil {
+		return "", oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain's DNS records"))
+	}
+	if !resolved {
+		resolved, err = self.srv.DNSChecker.IsPointingToIP(baseDomain, ips.IPv6)
+		if err != nil {
+			return "", oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain's DNS records"))
+		}
+	}
+	if !resolved {
+		resolved, err = self.srv.DNSChecker.IsUsingCloudflareProxy(baseDomain)
+		if err != nil {
+			log.Warnf("Error checking Cloudflare for wildcard domain %s: %v", baseDomain, err)
+		}
+	}
+	if !resolved {
+		return "", huma.Error400BadRequest("Wildcard domain does not have DNS configured")
+	}
+
+	return baseDomain, nil
 }

@@ -2315,14 +2315,6 @@ export const RegistryCacheConfigResponseBodySchema = z
   })
   .strip();
 
-export const RegistryCacheSettingsSchema = z
-  .object({
-    cleanup_schedule: z.string(),
-    cleanup_threshold_gb: z.number(),
-    pvc_capacity_gb: z.number(),
-  })
-  .strip();
-
 export const RegistryCacheStatsSchema = z
   .object({
     cleanup_threshold_gb: z.number(),
@@ -2554,11 +2546,10 @@ export const SystemMetaResponseBodySchema = z
   })
   .strip();
 
-export const SystemSettingUpdateInputSchema = z
+export const SystemSettingsUpdateInputSchema = z
   .object({
-    buildkit_settings: BuildkitSettingsSchema, // Buildkit settings
-    registry_cache_settings: RegistryCacheSettingsSchema, // Registry cache cleanup settings
-    wildcard_domain: z.string().nullable(), // Wildcard domain for the system
+    buildkit_settings: BuildkitSettingsSchema.optional(), // Buildkit settings
+    wildcard_domain: z.string().nullable().optional(), // Wildcard domain for the system, an empty string clears it
   })
   .strip();
 
@@ -3159,7 +3150,6 @@ export type ReferenceableVariablesResponseBody = z.infer<
 export type RegistryCacheCleanupRun = z.infer<typeof RegistryCacheCleanupRunSchema>;
 export type RegistryCacheConfig = z.infer<typeof RegistryCacheConfigSchema>;
 export type RegistryCacheConfigResponseBody = z.infer<typeof RegistryCacheConfigResponseBodySchema>;
-export type RegistryCacheSettings = z.infer<typeof RegistryCacheSettingsSchema>;
 export type RegistryCacheStats = z.infer<typeof RegistryCacheStatsSchema>;
 export type RegistryCacheStatsResponseBody = z.infer<typeof RegistryCacheStatsResponseBodySchema>;
 export type RemoveDeploymentInputBody = z.infer<typeof RemoveDeploymentInputBodySchema>;
@@ -3192,7 +3182,7 @@ export type SortOrder = z.infer<typeof SortOrderSchema>;
 export type StorageMetadata = z.infer<typeof StorageMetadataSchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
-export type SystemSettingUpdateInput = z.infer<typeof SystemSettingUpdateInputSchema>;
+export type SystemSettingsUpdateInput = z.infer<typeof SystemSettingsUpdateInputSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type TemplateInputValue = z.infer<typeof TemplateInputValueSchema>;
 export type TemplateDeployInput = z.infer<typeof TemplateDeployInputSchema>;
@@ -3562,7 +3552,13 @@ export const list_s3_bucketsQuerySchema = z
 
 export const check_dns_resolutionQuerySchema = z
   .object({
-    domain: z.string(),
+    domain: z.string(), // Domain to check DNS for
+  })
+  .passthrough();
+
+export const check_unique_domainQuerySchema = z
+  .object({
+    domain: z.string(), // Domain to check for uniqueness
   })
   .passthrough();
 
@@ -7904,7 +7900,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
       },
       domain: {
         check: async (
-          params?: undefined,
+          params: z.infer<typeof check_unique_domainQuerySchema>,
           fetchOptions?: RequestInit,
         ): Promise<CheckUniqueDomainOutputBody> => {
           try {
@@ -7915,7 +7911,14 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               `${apiUrl}/system/domain/check`,
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
-
+            const validatedQuery = check_unique_domainQuerySchema.parse(params);
+            const queryKeys = ['domain'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
             const options: RequestInit = {
               method: 'GET',
               credentials: 'include',
@@ -8240,7 +8243,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
       },
       settings: {
         update: async (
-          params: SystemSettingUpdateInput,
+          params: SystemSettingsUpdateInput,
           fetchOptions?: RequestInit,
         ): Promise<SettingsResponseBody> => {
           try {
@@ -8260,7 +8263,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               },
               ...fetchOptions,
             };
-            const validatedBody = SystemSettingUpdateInputSchema.parse(params);
+            const validatedBody = SystemSettingsUpdateInputSchema.parse(params);
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {

@@ -70,7 +70,7 @@ func (self *HandlerGroup) GenerateWildcardDomain(ctx context.Context, input *Gen
 // * Check collision
 type CheckUniqueDomainInput struct {
 	server.BaseAuthInput
-	domain string `query:"domain" required:"true" description:"Domain to check for uniqueness"`
+	Domain string `query:"domain" required:"true" doc:"Domain to check for uniqueness"`
 }
 
 type CollisionOutput struct {
@@ -85,7 +85,7 @@ type CheckUniqueDomainOutput struct {
 
 func (self *HandlerGroup) CheckForDomainCollision(ctx context.Context, input *CheckUniqueDomainInput) (output *CheckUniqueDomainOutput, err error) {
 	// Sanitize and clean
-	cleanedDomain, err := utils.CleanAndValidateHost(input.domain)
+	cleanedDomain, err := utils.CleanAndValidateHost(input.Domain)
 	if err != nil {
 		return nil, huma.Error400BadRequest("Invalid domain")
 	}

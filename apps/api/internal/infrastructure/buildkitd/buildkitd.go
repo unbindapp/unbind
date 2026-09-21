@@ -44,10 +44,10 @@ enabled = true
 type BuildkitSettingsManager struct {
 	cfg  *config.Config
 	Repo repositories.RepositoriesInterface
-	k8s  *k8s.KubeClient
+	k8s  k8s.KubeClientInterface
 }
 
-func NewBuildkitSettingsManager(cfg *config.Config, repo repositories.RepositoriesInterface, k8sClient *k8s.KubeClient) *BuildkitSettingsManager {
+func NewBuildkitSettingsManager(cfg *config.Config, repo repositories.RepositoriesInterface, k8sClient k8s.KubeClientInterface) *BuildkitSettingsManager {
 	return &BuildkitSettingsManager{
 		cfg:  cfg,
 		Repo: repo,

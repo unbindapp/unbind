@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update system-wide settings such as the wildcard domain and buildkit configuration.",
 		Path:        "/settings/update",
 		Method:      http.MethodPut,
-	}, handlers.UpdateBuildkitSettings)
+	}, handlers.UpdateSettings)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "check-dns-resolution",
