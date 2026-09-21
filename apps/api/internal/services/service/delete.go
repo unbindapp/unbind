@@ -77,7 +77,11 @@ func (self *ServiceService) DeleteServiceByID(ctx context.Context, requesterUser
 		if err := self.repo.Service().Delete(ctx, tx, serviceID); err != nil {
 			return err
 		}
-		return nil
+
+		if service.ServiceGroupID == nil {
+			return nil
+		}
+		return self.repo.ServiceGroup().DeleteIfEmpty(ctx, tx, *service.ServiceGroupID)
 	}); err != nil {
 		return err
 	}

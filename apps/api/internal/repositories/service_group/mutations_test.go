@@ -436,6 +436,57 @@ func (suite *ServiceGroupMutationsSuite) TestDelete() {
 	})
 }
 
+func (suite *ServiceGroupMutationsSuite) TestDeleteIfEmpty() {
+	suite.Run("Keeps Group With Services", func() {
+		err := suite.serviceGroupRepo.DeleteIfEmpty(suite.Ctx, nil, suite.testServiceGroup.ID)
+		suite.NoError(err)
+
+		_, err = suite.DB.ServiceGroup.Get(suite.Ctx, suite.testServiceGroup.ID)
+		suite.NoError(err)
+	})
+
+	suite.Run("Deletes Group After Last Service Is Gone", func() {
+		suite.DB.Service.DeleteOneID(suite.testService1.ID).ExecX(suite.Ctx)
+
+		err := suite.serviceGroupRepo.DeleteIfEmpty(suite.Ctx, nil, suite.testServiceGroup.ID)
+		suite.NoError(err)
+
+		_, err = suite.DB.ServiceGroup.Get(suite.Ctx, suite.testServiceGroup.ID)
+		suite.True(ent.IsNotFound(err))
+
+		_, err = suite.DB.Service.Get(suite.Ctx, suite.testService2.ID)
+		suite.NoError(err)
+	})
+
+	suite.Run("Missing Group Is Not An Error", func() {
+		err := suite.serviceGroupRepo.DeleteIfEmpty(suite.Ctx, nil, uuid.New())
+		suite.NoError(err)
+	})
+
+	suite.Run("Runs Inside A Transaction", func() {
+		group := suite.DB.ServiceGroup.Create().
+			SetName("Empty Group").
+			SetEnvironmentID(suite.testEnvironment.ID).
+			SaveX(suite.Ctx)
+
+		tx, err := suite.DB.Tx(suite.Ctx)
+		suite.NoError(err)
+		err = suite.serviceGroupRepo.DeleteIfEmpty(suite.Ctx, tx, group.ID)
+		suite.NoError(err)
+		suite.NoError(tx.Commit())
+
+		_, err = suite.DB.ServiceGroup.Get(suite.Ctx, group.ID)
+		suite.True(ent.IsNotFound(err))
+	})
+
+	suite.Run("Error when DB closed", func() {
+		suite.DB.Close()
+		err := suite.serviceGroupRepo.DeleteIfEmpty(suite.Ctx, nil, suite.testServiceGroup.ID)
+		suite.Error(err)
+		suite.ErrorContains(err, "database is closed")
+	})
+}
+
 func (suite *ServiceGroupMutationsSuite) TestDeleteByEnvironmentID() {
 	suite.Run("DeleteByEnvironmentID Success", func() {
 		// Create additional service groups in the same environment

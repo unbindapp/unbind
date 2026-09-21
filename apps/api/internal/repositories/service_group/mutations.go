@@ -2,6 +2,7 @@ package servicegroup_repo
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -65,6 +66,37 @@ func (self *ServiceGroupRepository) Delete(ctx context.Context, tx repository.Tx
 		Exec(ctx)
 	if err != nil {
 		return err
+	}
+
+	return db.ServiceGroup.DeleteOneID(id).Exec(ctx)
+}
+
+func (self *ServiceGroupRepository) DeleteIfEmpty(ctx context.Context, tx repository.TxInterface, id uuid.UUID) error {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+
+	// Locks the group row so concurrent service deletions check one at a time
+	lockedCount, err := db.ServiceGroup.Update().
+		Where(servicegroup.ID(id)).
+		SetUpdatedAt(time.Now()).
+		Save(ctx)
+	if err != nil {
+		return err
+	}
+	if lockedCount == 0 {
+		return nil
+	}
+
+	hasServices, err := db.Service.Query().
+		Where(service.ServiceGroupID(id)).
+		Exist(ctx)
+	if err != nil {
+		return err
+	}
+	if hasServices {
+		return nil
 	}
 
 	return db.ServiceGroup.DeleteOneID(id).Exec(ctx)

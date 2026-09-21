@@ -52,7 +52,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-service",
 		Summary:     "Delete Service",
-		Description: "Permanently delete a service, its deployments, and its config. Persistent volumes may be retained depending on input.",
+		Description: "Permanently delete a service, its deployments, and its config. Persistent volumes may be retained depending on input. If it was the last service in its service group, the group is deleted too.",
 		Path:        "/delete",
 		Method:      http.MethodDelete,
 	}, handlers.DeleteService, oapi.MCP)
