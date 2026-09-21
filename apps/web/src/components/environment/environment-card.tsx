@@ -399,13 +399,7 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
     mutateAsync: createEnvironment,
     error: createEnvironmentError,
     reset: createEnvironmentReset,
-  } = useMutation({
-    mutationFn: createEnvironmentFn,
-    onSuccess: () => {
-      invalidateProject();
-      invalidateProjects();
-    },
-  });
+  } = useMutation({ mutationFn: createEnvironmentFn });
   const router = useRouter();
 
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
@@ -446,8 +440,10 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
 
       const newEnvironmentId = res.data.id;
 
+      // The project route guard redirects to the default environment when the
+      // `environment` search param isn't in the project query's cache yet.
       const invalidateRes = await ResultAsync.fromPromise(
-        invalidateEnvironments(),
+        Promise.all([invalidateProject(), invalidateProjects(), invalidateEnvironments()]),
         () => new Error("Failed to fetch environments"),
       );
 
@@ -457,6 +453,9 @@ export function NewEnvironmentCard({ teamId, projectId }: { teamId: string; proj
           title: "Failed to fetch environments",
           description: invalidateRes.error.message,
         });
+        setOpen(false);
+        formApi.reset();
+        return;
       }
 
       const navigateRes = await ResultAsync.fromPromise(
