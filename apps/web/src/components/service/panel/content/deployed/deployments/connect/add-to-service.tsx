@@ -153,7 +153,7 @@ export default function AddToService({
             className="data-pending:bg-muted-more-foreground data-pending:animate-skeleton max-w-1/2 shrink-0 gap-1 px-4 data-pending:text-transparent"
           >
             <span className="min-w-0 shrink truncate">Add</span>
-            <ArrowRightIcon className="-mr-1.5 size-4.5" />
+            <ArrowRightIcon className="-mr-1.25 size-4.5" />
           </Button>
         )}
       />
