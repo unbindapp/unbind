@@ -16,7 +16,6 @@ import (
 
 	apikeys_handler "github.com/unbindapp/unbind-api/internal/api/handlers/apikeys"
 	auth_handler "github.com/unbindapp/unbind-api/internal/api/handlers/auth"
-	changes_handler "github.com/unbindapp/unbind-api/internal/api/handlers/changes"
 	connectedapps_handler "github.com/unbindapp/unbind-api/internal/api/handlers/connectedapps"
 	deployments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/deployments"
 	docker_handler "github.com/unbindapp/unbind-api/internal/api/handlers/docker"
@@ -31,6 +30,7 @@ import (
 	service_handler "github.com/unbindapp/unbind-api/internal/api/handlers/service"
 	servicegroups_handler "github.com/unbindapp/unbind-api/internal/api/handlers/service_groups"
 	setup_handler "github.com/unbindapp/unbind-api/internal/api/handlers/setup"
+	stagedchanges_handler "github.com/unbindapp/unbind-api/internal/api/handlers/staged_changes"
 	storage_handler "github.com/unbindapp/unbind-api/internal/api/handlers/storage"
 	system_handler "github.com/unbindapp/unbind-api/internal/api/handlers/system"
 	teams_handler "github.com/unbindapp/unbind-api/internal/api/handlers/teams"
@@ -182,7 +182,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/service_groups", "Service Groups", true, servicegroups_handler.RegisterHandlers)
 	register("/services", "Services", true, service_handler.RegisterHandlers)
 	register("/variables", "Variables", true, variables_handler.RegisterHandlers)
-	register("/changes", "Changes", true, changes_handler.RegisterHandlers)
+	register("/staged-changes", "Staged Changes", true, stagedchanges_handler.RegisterHandlers)
 	register("/logs", "Logs", true, logs_handler.RegisterHandlers)
 	register("/deployments", "Deployments", true, deployments_handler.RegisterHandlers)
 	register("/metrics", "Metrics", true, metrics_handler.RegisterHandlers)

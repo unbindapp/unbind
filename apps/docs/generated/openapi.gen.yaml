@@ -45,7 +45,7 @@ components:
         - action
         - reasons
       type: object
-    ApplyChangesInput:
+    ApplyStagedChangesInput:
       additionalProperties: false
       properties:
         dry_run:
@@ -61,12 +61,12 @@ components:
         variables:
           description: Variable changes grouped by scope
           items:
-            $ref: "#/components/schemas/ChangeSetVariables"
+            $ref: "#/components/schemas/StagedVariables"
           type:
             - array
             - "null"
       type: object
-    ApplyChangesResponse:
+    ApplyStagedChangesResponse:
       additionalProperties: false
       properties:
         affected:
@@ -84,11 +84,11 @@ components:
         - affected
         - failures
       type: object
-    ApplyChangesResponseBody:
+    ApplyStagedChangesResponseBody:
       additionalProperties: false
       properties:
         data:
-          $ref: "#/components/schemas/ApplyChangesResponse"
+          $ref: "#/components/schemas/ApplyStagedChangesResponse"
       required:
         - data
       type: object
@@ -219,45 +219,6 @@ components:
           description: Set when a variable change failed
       required:
         - message
-      type: object
-    ChangeSetVariables:
-      additionalProperties: false
-      properties:
-        deletes:
-          description: Variables to remove
-          items:
-            type: string
-          type:
-            - array
-            - "null"
-        environment_id:
-          description: If present without service_id, mutate environment variables - requires project_id
-          format: uuid
-          type: string
-        project_id:
-          description: If present without environment_id, mutate team variables
-          format: uuid
-          type: string
-        service_id:
-          description: If present, mutate service variables - requires project_id and environment_id
-          format: uuid
-          type: string
-        team_id:
-          format: uuid
-          type: string
-        type:
-          $ref: "#/components/schemas/VariableReferenceSourceType"
-          description: The type of variable
-        upserts:
-          description: Variables to create or update
-          items:
-            $ref: "#/components/schemas/VariableUpsertInput"
-          type:
-            - array
-            - "null"
-      required:
-        - type
-        - team_id
       type: object
     ContainerState:
       enum:
@@ -3200,6 +3161,45 @@ components:
         - desc
       title: SortOrder
       type: string
+    StagedVariables:
+      additionalProperties: false
+      properties:
+        deletes:
+          description: Variables to remove
+          items:
+            type: string
+          type:
+            - array
+            - "null"
+        environment_id:
+          description: If present without service_id, mutate environment variables - requires project_id
+          format: uuid
+          type: string
+        project_id:
+          description: If present without environment_id, mutate team variables
+          format: uuid
+          type: string
+        service_id:
+          description: If present, mutate service variables - requires project_id and environment_id
+          format: uuid
+          type: string
+        team_id:
+          format: uuid
+          type: string
+        type:
+          $ref: "#/components/schemas/VariableReferenceSourceType"
+          description: The type of variable
+        upserts:
+          description: Variables to create or update
+          items:
+            $ref: "#/components/schemas/VariableUpsertInput"
+          type:
+            - array
+            - "null"
+      required:
+        - type
+        - team_id
+      type: object
     TeamResponse:
       additionalProperties: false
       properties:
@@ -4495,101 +4495,6 @@ info:
   version: 1.0.0
 openapi: 3.1.0
 paths:
-  /changes/apply:
-    post:
-      description: Apply staged variable and service config changes together, rolling out each affected service once. Use dry_run to preview which services would be affected.
-      operationId: apply-changes
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApplyChangesInput"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApplyChangesResponseBody"
-          description: OK
-        "400":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Request
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unauthorized
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Forbidden
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Not Found
-        "409":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Conflict
-        "422":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Unprocessable Entity
-        "429":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Too Many Requests
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Internal Server Error
-        "502":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Bad Gateway
-        "503":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Service Unavailable
-        "504":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ResponseError"
-          description: Gateway Timeout
-      security:
-        - bearerAuth: []
-      summary: Apply Changes
-      tags:
-        - Changes
-      x-agent:
-        destructiveHint: false
-        idempotentHint: false
-        openWorldHint: false
-        readOnlyHint: false
-        requiresConfirmation: false
-        risk: medium
   /deployments/cancel:
     post:
       description: Abort a queued or running build. The deployment is marked as cancelled and its build job is deleted.
@@ -9198,6 +9103,101 @@ paths:
       x-agent:
         destructiveHint: false
         idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: false
+        risk: medium
+  /staged-changes/apply:
+    post:
+      description: Apply staged variable and service config changes together, rolling out each affected service once. Use dry_run to preview which services would be affected.
+      operationId: apply-staged-changes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplyStagedChangesInput"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplyStagedChangesResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Apply Staged Changes
+      tags:
+        - Staged Changes
+      x-agent:
+        destructiveHint: false
+        idempotentHint: false
         openWorldHint: false
         readOnlyHint: false
         requiresConfirmation: false

@@ -1,4 +1,4 @@
-package changes_handler
+package staged_changes_handler
 
 import (
 	"context"
@@ -20,37 +20,37 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	}
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
-		OperationID: "apply-changes",
-		Summary:     "Apply Changes",
+		OperationID: "apply-staged-changes",
+		Summary:     "Apply Staged Changes",
 		Description: "Apply staged variable and service config changes together, rolling out each affected service once. Use dry_run to preview which services would be affected.",
 		Path:        "/apply",
 		Method:      http.MethodPost,
-	}, handlers.ApplyChanges, oapi.MCP)
+	}, handlers.ApplyStagedChanges, oapi.MCP)
 }
 
-type ApplyChangesInput struct {
+type ApplyStagedChangesInput struct {
 	server.BaseAuthInput
-	Body models.ApplyChangesInput
+	Body models.ApplyStagedChangesInput
 }
 
-type ApplyChangesResponse struct {
+type ApplyStagedChangesResponse struct {
 	Body struct {
-		Data *models.ApplyChangesResponse `json:"data"`
+		Data *models.ApplyStagedChangesResponse `json:"data"`
 	}
 }
 
-func (self *HandlerGroup) ApplyChanges(ctx context.Context, input *ApplyChangesInput) (*ApplyChangesResponse, error) {
+func (self *HandlerGroup) ApplyStagedChanges(ctx context.Context, input *ApplyStagedChangesInput) (*ApplyStagedChangesResponse, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result, err := self.srv.ServiceService.ApplyChanges(ctx, user.ID, &input.Body)
+	result, err := self.srv.ServiceService.ApplyStagedChanges(ctx, user.ID, &input.Body)
 	if err != nil {
 		return nil, oapi.MapError(err)
 	}
 
-	resp := &ApplyChangesResponse{}
+	resp := &ApplyStagedChangesResponse{}
 	resp.Body.Data = result
 	return resp, nil
 }

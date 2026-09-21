@@ -11,7 +11,7 @@ import {
   type TStagedChangesStore,
 } from "@/components/staged-changes/staged-changes-store";
 import {
-  buildApplyChangesPayload,
+  buildApplyStagedChangesPayload,
   idsToKeepAfterFailures,
 } from "@/components/staged-changes/payload";
 import {
@@ -28,7 +28,7 @@ import {
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { toast } from "@/components/ui/toast";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
-import { applyChanges, type TApplyChangesResult } from "@/lib/queries/changes";
+import { applyStagedChanges, type TApplyStagedChangesResult } from "@/lib/queries/staged-changes";
 import { queryKeyServices } from "@/lib/queries/services";
 import { queryKeyStorage } from "@/lib/queries/storage";
 import { queryKeyVariables } from "@/lib/queries/variables";
@@ -196,11 +196,11 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
   const endApplying = useStagedChangesStore((s) => s.endApplying);
   const queryClient = useQueryClient();
   const temporarilyAddNewEntity = useTemporarilyAddNewEntity();
-  const [lastResult, setLastResult] = useState<TApplyChangesResult | null>(null);
+  const [lastResult, setLastResult] = useState<TApplyStagedChangesResult | null>(null);
 
   const count = countChanges({ variables, services, lists });
   const payload = useMemo(
-    () => buildApplyChangesPayload({ variables, services, lists }),
+    () => buildApplyStagedChangesPayload({ variables, services, lists }),
     [variables, services, lists],
   );
   const [debouncedPayload] = useDebounceValue(payload, 500);
@@ -209,7 +209,7 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
 
   const plan = useQuery({
     queryKey: ["changes", "plan", debouncedPayload],
-    queryFn: () => applyChanges({ ...debouncedPayload, dry_run: true }),
+    queryFn: () => applyStagedChanges({ ...debouncedPayload, dry_run: true }),
     enabled: debouncedCount > 0,
     staleTime: Infinity,
     gcTime: 0,
@@ -218,7 +218,7 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
   });
 
   const deploy = useMutation({
-    mutationFn: () => applyChanges(buildApplyChangesPayload(store.getState())),
+    mutationFn: () => applyStagedChanges(buildApplyStagedChangesPayload(store.getState())),
     onMutate: () => beginApplying(),
     onError: () => endApplying(new Set()),
     onSuccess: async (result) => {

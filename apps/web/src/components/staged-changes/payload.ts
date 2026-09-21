@@ -12,24 +12,26 @@ import {
 } from "../../lib/queries/update-service-input.ts";
 import type {
   ChangeFailure,
-  ChangeSetVariables,
+  StagedVariables,
   UpdateServiceInput,
 } from "../../lib/server/client.gen.ts";
 
-export type TApplyChangesPayload = {
-  variables: ChangeSetVariables[];
+export type TApplyStagedChangesPayload = {
+  variables: StagedVariables[];
   services: UpdateServiceInput[];
 };
 
-export function buildApplyChangesPayload(state: TStagedChangesState): TApplyChangesPayload {
+export function buildApplyStagedChangesPayload(
+  state: TStagedChangesState,
+): TApplyStagedChangesPayload {
   return {
     variables: variableChangeSets(Object.values(state.variables)),
     services: serviceUpdates(Object.values(state.services), Object.values(state.lists)),
   };
 }
 
-export function variableChangeSets(changes: TStagedVariableChange[]): ChangeSetVariables[] {
-  const byScope = new Map<string, ChangeSetVariables>();
+export function variableChangeSets(changes: TStagedVariableChange[]): StagedVariables[] {
+  const byScope = new Map<string, StagedVariables>();
   for (const change of sortByCreation(changes)) {
     const key = variableScopeKey(change.scope);
     let set = byScope.get(key);

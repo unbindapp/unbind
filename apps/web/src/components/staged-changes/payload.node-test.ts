@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { buildApplyChangesPayload, idsToKeepAfterFailures } from "./payload.ts";
+import { buildApplyStagedChangesPayload, idsToKeepAfterFailures } from "./payload.ts";
 import {
   listChangeId,
   type TStageListInput,
@@ -80,7 +80,7 @@ function state(
 }
 
 test("groups variable changes by scope with upserts and deletes", () => {
-  const payload = buildApplyChangesPayload(
+  const payload = buildApplyStagedChangesPayload(
     state([
       variable("A", "1"),
       variable("B", null),
@@ -112,7 +112,7 @@ test("groups variable changes by scope with upserts and deletes", () => {
 });
 
 test("merges service field changes into one update per service", () => {
-  const payload = buildApplyChangesPayload(
+  const payload = buildApplyStagedChangesPayload(
     state(
       [],
       [
@@ -141,7 +141,7 @@ test("merges service field changes into one update per service", () => {
 });
 
 test("carries a boolean field through as a boolean", () => {
-  const payload = buildApplyChangesPayload(
+  const payload = buildApplyStagedChangesPayload(
     state([], [service("isPublic", false), service("isPublic", true, { serviceId: "web" })]),
   );
 
@@ -152,7 +152,7 @@ test("carries a boolean field through as a boolean", () => {
 });
 
 test("nests database settings into database_config", () => {
-  const payload = buildApplyChangesPayload(
+  const payload = buildApplyStagedChangesPayload(
     state(
       [],
       [
@@ -191,17 +191,17 @@ test("keeps only the changes that failed to apply", () => {
 });
 
 test("splits staged watch paths into a list", () => {
-  const payload = buildApplyChangesPayload(
+  const payload = buildApplyStagedChangesPayload(
     state([], [service("watchPaths", "apps/api/**\n!apps/api/**/*.md")]),
   );
   assert.deepEqual(payload.services[0].watch_paths, ["apps/api/**", "!apps/api/**/*.md"]);
 
-  const cleared = buildApplyChangesPayload(state([], [service("watchPaths", "")]));
+  const cleared = buildApplyStagedChangesPayload(state([], [service("watchPaths", "")]));
   assert.deepEqual(cleared.services[0].watch_paths, []);
 });
 
 test("folds domain, port and volume changes into the update of their service", () => {
-  const payload = buildApplyChangesPayload(
+  const payload = buildApplyStagedChangesPayload(
     state(
       [],
       [service("replicaCount", 2)],
@@ -247,7 +247,7 @@ test("folds domain, port and volume changes into the update of their service", (
 });
 
 test("a list change alone creates the update of its service", () => {
-  const payload = buildApplyChangesPayload(
+  const payload = buildApplyStagedChangesPayload(
     state([], [], [list({ kind: "port", port: 9000, op: "add" }, "worker")]),
   );
 

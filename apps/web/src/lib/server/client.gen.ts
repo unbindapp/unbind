@@ -224,7 +224,7 @@ export const VariableUpsertInputSchema = z
   })
   .strip();
 
-export const ChangeSetVariablesSchema = z
+export const StagedVariablesSchema = z
   .object({
     deletes: z.array(z.string()).nullable().optional(), // Variables to remove
     environment_id: z.string().optional(), // If present without service_id, mutate environment variables - requires project_id
@@ -236,11 +236,11 @@ export const ChangeSetVariablesSchema = z
   })
   .strip();
 
-export const ApplyChangesInputSchema = z
+export const ApplyStagedChangesInputSchema = z
   .object({
     dry_run: z.boolean().optional(), // Validate the changes and report the affected services without applying anything
     services: z.array(UpdateServiceInputSchema).nullable().optional(), // Config changes, one entry per service
-    variables: z.array(ChangeSetVariablesSchema).nullable().optional(), // Variable changes grouped by scope
+    variables: z.array(StagedVariablesSchema).nullable().optional(), // Variable changes grouped by scope
   })
   .strip();
 
@@ -262,7 +262,7 @@ export const ChangeFailureSchema = z
   })
   .strip();
 
-export const ApplyChangesResponseSchema = z
+export const ApplyStagedChangesResponseSchema = z
   .object({
     affected: z.array(AffectedServiceSchema),
     dry_run: z.boolean(),
@@ -270,9 +270,9 @@ export const ApplyChangesResponseSchema = z
   })
   .strip();
 
-export const ApplyChangesResponseBodySchema = z
+export const ApplyStagedChangesResponseBodySchema = z
   .object({
-    data: ApplyChangesResponseSchema,
+    data: ApplyStagedChangesResponseSchema,
   })
   .strip();
 
@@ -2887,12 +2887,12 @@ export type Resources = z.infer<typeof ResourcesSchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSourceTypeSchema>;
 export type VariableUpsertInput = z.infer<typeof VariableUpsertInputSchema>;
-export type ChangeSetVariables = z.infer<typeof ChangeSetVariablesSchema>;
-export type ApplyChangesInput = z.infer<typeof ApplyChangesInputSchema>;
+export type StagedVariables = z.infer<typeof StagedVariablesSchema>;
+export type ApplyStagedChangesInput = z.infer<typeof ApplyStagedChangesInputSchema>;
 export type BaseVariablesJSONInput = z.infer<typeof BaseVariablesJSONInputSchema>;
 export type ChangeFailure = z.infer<typeof ChangeFailureSchema>;
-export type ApplyChangesResponse = z.infer<typeof ApplyChangesResponseSchema>;
-export type ApplyChangesResponseBody = z.infer<typeof ApplyChangesResponseBodySchema>;
+export type ApplyStagedChangesResponse = z.infer<typeof ApplyStagedChangesResponseSchema>;
+export type ApplyStagedChangesResponseBody = z.infer<typeof ApplyStagedChangesResponseBodySchema>;
 export type VariableReferenceType = z.infer<typeof VariableReferenceTypeSchema>;
 export type AvailableVariableReference = z.infer<typeof AvailableVariableReferenceSchema>;
 export type Change = z.infer<typeof ChangeSchema>;
@@ -3985,50 +3985,6 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = LogoutResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
-    },
-    changes: {
-      apply: async (
-        params: ApplyChangesInput,
-        fetchOptions?: RequestInit,
-      ): Promise<ApplyChangesResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/changes/apply`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-
-          const options: RequestInit = {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-          const validatedBody = ApplyChangesInputSchema.parse(params);
-          options.body = JSON.stringify(validatedBody);
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = ApplyChangesResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);
@@ -7168,6 +7124,50 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = SetupStatusResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+    },
+    stagedChanges: {
+      apply: async (
+        params: ApplyStagedChangesInput,
+        fetchOptions?: RequestInit,
+      ): Promise<ApplyStagedChangesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/staged-changes/apply`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = ApplyStagedChangesInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ApplyStagedChangesResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

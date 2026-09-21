@@ -1,5 +1,5 @@
 import type { createStagedChangesStore } from "@/components/staged-changes/staged-changes-store";
-import type { TApplyChangesResult } from "@/lib/queries/changes";
+import type { TApplyStagedChangesResult } from "@/lib/queries/staged-changes";
 import type { AffectedService } from "@/lib/server/client.gen";
 import type { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 import { createContext } from "react";
@@ -14,10 +14,10 @@ export const StagedChangesStoreContext = createContext<TStagedChangesStoreContex
 
 export type TStagedChangesPlanContext = {
   count: number;
-  plan: UseQueryResult<TApplyChangesResult, Error>;
+  plan: UseQueryResult<TApplyStagedChangesResult, Error>;
   affectedByService: Map<string, AffectedService>;
-  deploy: UseMutationResult<TApplyChangesResult, Error, void>;
-  lastResult: TApplyChangesResult | null;
+  deploy: UseMutationResult<TApplyStagedChangesResult, Error, void>;
+  lastResult: TApplyStagedChangesResult | null;
 };
 
 export const StagedChangesPlanContext = createContext<TStagedChangesPlanContext | undefined>(

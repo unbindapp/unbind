@@ -15,9 +15,9 @@ import (
 	variables_service "github.com/unbindapp/unbind-api/internal/services/variables"
 )
 
-// ApplyChanges validates every staged change up front, persists them, and rolls out
+// ApplyStagedChanges validates every staged change up front, persists them, and rolls out
 // each affected service exactly once. With DryRun it stops after reporting the plan.
-func (self *ServiceService) ApplyChanges(ctx context.Context, requesterUserID uuid.UUID, input *models.ApplyChangesInput) (*models.ApplyChangesResponse, error) {
+func (self *ServiceService) ApplyStagedChanges(ctx context.Context, requesterUserID uuid.UUID, input *models.ApplyStagedChangesInput) (*models.ApplyStagedChangesResponse, error) {
 	if len(input.Services) == 0 && len(input.Variables) == 0 {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "No changes to apply")
 	}
@@ -108,11 +108,11 @@ func (self *ServiceService) ApplyChanges(ctx context.Context, requesterUserID uu
 	}
 	sortAffected(affected)
 
-	return &models.ApplyChangesResponse{Affected: affected, Failures: failures}, nil
+	return &models.ApplyStagedChangesResponse{Affected: affected, Failures: failures}, nil
 }
 
 // planChanges reports what applying the prepared changes would do
-func (self *ServiceService) planChanges(ctx context.Context, updates []*serviceUpdate, writes []*variables_service.VariableWrite) (*models.ApplyChangesResponse, error) {
+func (self *ServiceService) planChanges(ctx context.Context, updates []*serviceUpdate, writes []*variables_service.VariableWrite) (*models.ApplyStagedChangesResponse, error) {
 	touched := touchedServices{}
 	estimates := make(map[uuid.UUID]service_repo.NeedsDeploymentResponse, len(updates))
 	for _, update := range updates {
@@ -146,7 +146,7 @@ func (self *ServiceService) planChanges(ctx context.Context, updates []*serviceU
 	}
 	sortAffected(affected)
 
-	return &models.ApplyChangesResponse{DryRun: true, Affected: affected, Failures: []models.ChangeFailure{}}, nil
+	return &models.ApplyStagedChangesResponse{DryRun: true, Affected: affected, Failures: []models.ChangeFailure{}}, nil
 }
 
 // checkHostClaims reports a taken domain before anything is written. A domain another

@@ -1,4 +1,4 @@
-import { TAvailableDatabase } from "@/lib/server/client.gen";
+import type { TAvailableDatabase } from "@/lib/server/client.gen";
 
 export const customScheduleValue = "custom";
 

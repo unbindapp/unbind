@@ -9,16 +9,16 @@ type VariableUpsertInput struct {
 	Value string `json:"value" required:"true" doc:"May contain ${{source.KEY}} references"`
 }
 
-// ChangeSetVariables holds the staged variable changes for one scope
-type ChangeSetVariables struct {
+// StagedVariables holds the variable changes for one scope
+type StagedVariables struct {
 	BaseVariablesJSONInput
 	Upserts []VariableUpsertInput `json:"upserts,omitempty" doc:"Variables to create or update"`
 	Deletes []string              `json:"deletes,omitempty" doc:"Variables to remove"`
 }
 
-type ApplyChangesInput struct {
+type ApplyStagedChangesInput struct {
 	DryRun    bool                  `json:"dry_run,omitempty" doc:"Validate the changes and report the affected services without applying anything"`
-	Variables []ChangeSetVariables  `json:"variables,omitempty" doc:"Variable changes grouped by scope"`
+	Variables []StagedVariables     `json:"variables,omitempty" doc:"Variable changes grouped by scope"`
 	Services  []*UpdateServiceInput `json:"services,omitempty" doc:"Config changes, one entry per service"`
 }
 
@@ -59,7 +59,7 @@ type ChangeFailure struct {
 	Message   string                  `json:"message"`
 }
 
-type ApplyChangesResponse struct {
+type ApplyStagedChangesResponse struct {
 	DryRun   bool              `json:"dry_run"`
 	Affected []AffectedService `json:"affected" nullable:"false"`
 	Failures []ChangeFailure   `json:"failures" nullable:"false"`
