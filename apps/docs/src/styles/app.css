@@ -152,4 +152,9 @@ body {
   .prose table {
     border-radius: var(--radius);
   }
+
+  /* Sidebar section titles */
+  #nd-sidebar p.inline-flex.mt-6 {
+    font-weight: 600;
+  }
 }

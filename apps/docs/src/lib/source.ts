@@ -3,6 +3,7 @@ import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
 import { docs } from "./docs";
 import { openapi } from "./openapi";
 import { docsRoute } from "./shared";
+import { tabColorsPlugin } from "./tab-colors";
 
 export const source = loader(
   {
@@ -14,7 +15,7 @@ export const source = loader(
   },
   {
     baseUrl: docsRoute,
-    plugins: [lucideIconsPlugin(), openapi.loaderPlugin()],
+    plugins: [lucideIconsPlugin(), tabColorsPlugin(), openapi.loaderPlugin()],
   },
 );
 

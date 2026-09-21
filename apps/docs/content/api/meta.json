@@ -14,5 +14,6 @@
     "...guides",
     "---Reference---",
     "...reference"
-  ]
+  ],
+  "color": "warning"
 }

@@ -9,8 +9,8 @@ import {
   DocsPage,
   DocsTitle,
   MarkdownCopyButton,
-  ViewOptionsPopover,
 } from "fumadocs-ui/layouts/docs/page";
+import { ViewOptionsPopover } from "@/components/page-actions";
 import { baseOptions } from "@/lib/layout.shared";
 import { appName, contentDir, getPageMarkdownUrl, gitConfig, siteUrl } from "@/lib/shared";
 import { staticFunctionMiddleware } from "@tanstack/start-static-server-functions";

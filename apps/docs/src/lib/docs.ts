@@ -1,4 +1,4 @@
-import { frontmatterSchema } from "fumadocs-mdx/config";
+import { frontmatterSchema, metaSchema } from "fumadocs-mdx/config";
 import { defineDocs } from "fumadocs-mdx/macro";
 import { z } from "zod";
 
@@ -12,5 +12,10 @@ export const docs = defineDocs({
     postprocess: {
       includeProcessedMarkdown: true,
     },
+  },
+  meta: {
+    schema: metaSchema.extend({
+      color: z.enum(["success", "process", "warning"]).optional(),
+    }),
   },
 });

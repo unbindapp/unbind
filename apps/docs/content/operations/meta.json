@@ -22,5 +22,6 @@
     "---Advanced---",
     "bring-your-own-kubernetes",
     "how-unbind-works"
-  ]
+  ],
+  "color": "process"
 }
