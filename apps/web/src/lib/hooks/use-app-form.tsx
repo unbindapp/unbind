@@ -351,6 +351,7 @@ export type TAsyncAndSearchableSelectProps = TFieldProps & {
   commandInputValue?: string;
   commandInputValueOnChange?: (value: string) => void;
   commandShouldntFilter?: boolean;
+  isDeselectable?: boolean;
 };
 
 const placeholderArray = Array.from({ length: 10 }, (_, index) => index);
@@ -376,6 +377,7 @@ function AsyncAndSearchableSelect({
   commandInputValue,
   commandInputValueOnChange,
   commandShouldntFilter,
+  isDeselectable,
 }: TAsyncAndSearchableSelectProps) {
   const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
 
@@ -454,7 +456,7 @@ function AsyncAndSearchableSelect({
                       items.map((item) => (
                         <CommandItem
                           onSelect={(v) => {
-                            onChange(v);
+                            onChange(isDeselectable && v === value ? "" : v);
                             setIsOpen(false);
                           }}
                           value={item.value}

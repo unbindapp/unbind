@@ -110,6 +110,7 @@ export default function AddToService({
           <field.AsyncAndSearchableSelect
             field={field}
             hideError
+            isDeselectable
             className="min-w-0 flex-1"
             value={field.state.value}
             onChange={(v: string) => field.handleChange(v)}

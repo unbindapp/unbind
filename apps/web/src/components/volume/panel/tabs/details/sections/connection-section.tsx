@@ -180,10 +180,15 @@ function AttachSection({ volume }: TProps) {
               <BlockItemContent>
                 <field.AsyncAndSearchableSelect
                   dontCheckUntilSubmit
+                  isDeselectable
                   field={field}
                   value={field.state.value}
                   onChange={(v) => {
                     field.handleChange(v);
+                    if (v === "") {
+                      if (staged) discard([staged.id]);
+                      return;
+                    }
                     stageAttach({ ...form.state.values, serviceId: v });
                   }}
                   items={serviceItems}
