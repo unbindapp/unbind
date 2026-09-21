@@ -78,7 +78,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
       >
         {shouldDeploySectionHaveReplicas(service) && <InfoRow />}
         {service.type === "database" && (
-          <div className="w-full pb-3">
+          <div className="w-full pb-1">
             <ConnectCard service={service} />
           </div>
         )}
