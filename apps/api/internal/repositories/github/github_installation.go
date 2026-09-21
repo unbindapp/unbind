@@ -3,9 +3,7 @@ package github_repo
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
 )
@@ -14,11 +12,8 @@ func (self *GithubRepository) GetInstallationByID(ctx context.Context, ID int64)
 	return self.base.DB.GithubInstallation.Query().Where(githubinstallation.ID(ID)).WithGithubApp().Only(ctx)
 }
 
-func (self *GithubRepository) GetInstallationsByCreator(ctx context.Context, createdBy uuid.UUID) ([]*ent.GithubInstallation, error) {
-	return self.base.DB.GithubApp.Query().
-		Where(githubapp.CreatedByEQ(createdBy)).
-		QueryInstallations().
-		WithGithubApp().All(ctx)
+func (self *GithubRepository) GetInstallations(ctx context.Context) ([]*ent.GithubInstallation, error) {
+	return self.base.DB.GithubInstallation.Query().WithGithubApp().All(ctx)
 }
 
 func (self *GithubRepository) GetInstallationsByAppID(ctx context.Context, appID int64) ([]*ent.GithubInstallation, error) {

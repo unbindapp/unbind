@@ -1782,7 +1782,7 @@ export const GithubInstallationAPIResponseSchema = z
 export const GithubAppAPIResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
-    created_by: z.string(),
+    created_by: z.string().optional(),
     id: z.number(),
     installations: z.array(GithubInstallationAPIResponseSchema),
     name: z.string(),

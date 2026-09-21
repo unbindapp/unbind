@@ -241,6 +241,16 @@ func CreatedByNotIn(vs ...uuid.UUID) predicate.GithubApp {
 	return predicate.GithubApp(sql.FieldNotIn(FieldCreatedBy, vs...))
 }
 
+// CreatedByIsNil applies the IsNil predicate on the "created_by" field.
+func CreatedByIsNil() predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldIsNull(FieldCreatedBy))
+}
+
+// CreatedByNotNil applies the NotNil predicate on the "created_by" field.
+func CreatedByNotNil() predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNotNull(FieldCreatedBy))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.GithubApp {
 	return predicate.GithubApp(sql.FieldEQ(FieldName, v))

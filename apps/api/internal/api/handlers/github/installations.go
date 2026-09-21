@@ -20,13 +20,11 @@ type GithubAppInstallationListResponse struct {
 }
 
 func (self *HandlerGroup) HandleListGithubAppInstallations(ctx context.Context, input *server.BaseAuthInput) (*GithubAppInstallationListResponse, error) {
-	user, _, err := self.srv.AuthenticatedUser(ctx)
-	if err != nil {
+	if _, err := self.systemUser(ctx, schema.ActionViewer); err != nil {
 		return nil, err
 	}
 
-	// ! TODO - RBAC
-	installations, err := self.srv.Repository.Github().GetInstallationsByCreator(ctx, user.ID)
+	installations, err := self.srv.Repository.Github().GetInstallations(ctx)
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the GitHub installations"))
 	}

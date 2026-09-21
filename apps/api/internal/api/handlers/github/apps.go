@@ -13,6 +13,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
@@ -34,7 +35,7 @@ type GithubAppCreateResponse struct {
 
 // Handler to render GitHub page with form submission
 func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitHubAppCreateInput) (*GithubAppCreateResponse, error) {
-	user, _, err := self.srv.AuthenticatedUser(ctx)
+	user, err := self.systemUser(ctx, schema.ActionEditor)
 	if err != nil {
 		return nil, err
 	}
@@ -164,6 +165,10 @@ type GithubAppListResponse struct {
 }
 
 func (self *HandlerGroup) HandleListGithubApps(ctx context.Context, input *GithubAppListInput) (*GithubAppListResponse, error) {
+	if _, err := self.systemUser(ctx, schema.ActionViewer); err != nil {
+		return nil, err
+	}
+
 	apps, err := self.srv.Repository.Github().GetApps(ctx, input.WithInstallations)
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to list the GitHub apps"))
@@ -187,6 +192,10 @@ type GithubAppGetResponse struct {
 }
 
 func (self *HandlerGroup) HandleGetGithubApp(ctx context.Context, input *GithubAppGetInput) (*GithubAppGetResponse, error) {
+	if _, err := self.systemUser(ctx, schema.ActionViewer); err != nil {
+		return nil, err
+	}
+
 	app, err := self.srv.Repository.Github().GetGithubAppByUUID(ctx, input.UUID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -237,8 +246,8 @@ type GithubAppAPIResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	// The time at which the entity was last updated.
 	UpdatedAt time.Time `json:"updated_at"`
-	// The user that created this github app.
-	CreatedBy uuid.UUID `json:"created_by"`
+	// The user that created this github app, unset once that user is deleted.
+	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
 	// Name of the GitHub App
 	Name          string                           `json:"name"`
 	Installations []*GithubInstallationAPIResponse `json:"installations" nullable:"false"`

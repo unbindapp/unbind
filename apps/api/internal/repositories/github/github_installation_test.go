@@ -101,19 +101,14 @@ func (suite *GithubInstallationSuite) TestGetInstallationByID() {
 	})
 }
 
-func (suite *GithubInstallationSuite) TestGetInstallationsByCreator() {
-	suite.Run("GetInstallationsByCreator Success", func() {
-		installations, err := suite.githubRepo.GetInstallationsByCreator(suite.Ctx, suite.testUser.ID)
-		suite.NoError(err)
-		suite.Len(installations, 1)
-		suite.Equal(suite.testInstallation.ID, installations[0].ID)
-		// GithubApp edge should be loaded
-		suite.NotNil(installations[0].Edges.GithubApp)
-		suite.Equal(suite.testApp.ID, installations[0].Edges.GithubApp.ID)
-	})
+func (suite *GithubInstallationSuite) TestGetInstallations() {
+	suite.Run("GetInstallations spans apps of every creator", func() {
+		pwd, _ := bcrypt.GenerateFromPassword([]byte("another-password"), 1)
+		anotherUser := suite.DB.User.Create().
+			SetEmail("another@example.com").
+			SetPasswordHash(string(pwd)).
+			SaveX(suite.Ctx)
 
-	suite.Run("GetInstallationsByCreator Multiple Installations", func() {
-		// Create another app by the same user
 		anotherApp := suite.DB.GithubApp.Create().
 			SetID(54321).
 			SetUUID(uuid.New()).
@@ -122,10 +117,9 @@ func (suite *GithubInstallationSuite) TestGetInstallationsByCreator() {
 			SetWebhookSecret("another-webhook-secret").
 			SetPrivateKey("another-private-key").
 			SetName("Another App").
-			SetCreatedBy(suite.testUser.ID).
+			SetCreatedBy(anotherUser.ID).
 			SaveX(suite.Ctx)
 
-		// Create installation for the other app
 		anotherInstallation := suite.DB.GithubInstallation.Create().
 			SetID(11111).
 			SetGithubAppID(anotherApp.ID).
@@ -134,50 +128,31 @@ func (suite *GithubInstallationSuite) TestGetInstallationsByCreator() {
 			SetAccountType(githubinstallation.AccountTypeOrganization).
 			SetAccountURL("https://github.com/another-org").
 			SetRepositorySelection(githubinstallation.RepositorySelectionAll).
-			SetSuspended(false).
-			SetActive(true).
-			SetPermissions(schema.GithubInstallationPermissions{
-				Contents: "write",
-			}).
-			SetEvents([]string{"push"}).
 			SaveX(suite.Ctx)
 
-		installations, err := suite.githubRepo.GetInstallationsByCreator(suite.Ctx, suite.testUser.ID)
+		installations, err := suite.githubRepo.GetInstallations(suite.Ctx)
 		suite.NoError(err)
 		suite.Len(installations, 2)
 
-		// Verify both installations are returned
-		installationIDs := make([]int64, len(installations))
-		for i, installation := range installations {
-			installationIDs[i] = installation.ID
+		appIDs := make(map[int64]int64, len(installations))
+		for _, installation := range installations {
+			suite.NotNil(installation.Edges.GithubApp)
+			appIDs[installation.ID] = installation.Edges.GithubApp.ID
 		}
-		suite.Contains(installationIDs, suite.testInstallation.ID)
-		suite.Contains(installationIDs, anotherInstallation.ID)
+		suite.Equal(suite.testApp.ID, appIDs[suite.testInstallation.ID])
+		suite.Equal(anotherApp.ID, appIDs[anotherInstallation.ID])
 	})
 
-	suite.Run("GetInstallationsByCreator Different Creator", func() {
-		// Create another user
-		pwd, _ := bcrypt.GenerateFromPassword([]byte("another-password"), 1)
-		anotherUser := suite.DB.User.Create().
-			SetEmail("another@example.com").
-			SetPasswordHash(string(pwd)).
-			SaveX(suite.Ctx)
-
-		installations, err := suite.githubRepo.GetInstallationsByCreator(suite.Ctx, anotherUser.ID)
+	suite.Run("GetInstallations Empty", func() {
+		suite.DB.GithubInstallation.Delete().ExecX(suite.Ctx)
+		installations, err := suite.githubRepo.GetInstallations(suite.Ctx)
 		suite.NoError(err)
 		suite.Len(installations, 0)
 	})
 
-	suite.Run("GetInstallationsByCreator Non-existent Creator", func() {
-		nonExistentUserID := uuid.New()
-		installations, err := suite.githubRepo.GetInstallationsByCreator(suite.Ctx, nonExistentUserID)
-		suite.NoError(err)
-		suite.Len(installations, 0)
-	})
-
-	suite.Run("GetInstallationsByCreator Error when DB closed", func() {
+	suite.Run("GetInstallations Error when DB closed", func() {
 		suite.DB.Close()
-		installations, err := suite.githubRepo.GetInstallationsByCreator(suite.Ctx, suite.testUser.ID)
+		installations, err := suite.githubRepo.GetInstallations(suite.Ctx)
 		suite.Error(err)
 		suite.Nil(installations)
 		suite.ErrorContains(err, "database is closed")

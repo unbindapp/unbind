@@ -4673,7 +4673,7 @@ func (m *GithubAppMutation) CreatedBy() (r uuid.UUID, exists bool) {
 // OldCreatedBy returns the old "created_by" field's value of the GithubApp entity.
 // If the GithubApp object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GithubAppMutation) OldCreatedBy(ctx context.Context) (v uuid.UUID, err error) {
+func (m *GithubAppMutation) OldCreatedBy(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedBy is only allowed on UpdateOne operations")
 	}
@@ -4687,9 +4687,22 @@ func (m *GithubAppMutation) OldCreatedBy(ctx context.Context) (v uuid.UUID, err 
 	return oldValue.CreatedBy, nil
 }
 
+// ClearCreatedBy clears the value of the "created_by" field.
+func (m *GithubAppMutation) ClearCreatedBy() {
+	m.users = nil
+	m.clearedFields[githubapp.FieldCreatedBy] = struct{}{}
+}
+
+// CreatedByCleared returns if the "created_by" field was cleared in this mutation.
+func (m *GithubAppMutation) CreatedByCleared() bool {
+	_, ok := m.clearedFields[githubapp.FieldCreatedBy]
+	return ok
+}
+
 // ResetCreatedBy resets all changes to the "created_by" field.
 func (m *GithubAppMutation) ResetCreatedBy() {
 	m.users = nil
+	delete(m.clearedFields, githubapp.FieldCreatedBy)
 }
 
 // SetName sets the "name" field.
@@ -4939,7 +4952,7 @@ func (m *GithubAppMutation) ClearUsers() {
 
 // UsersCleared reports if the "users" edge to the User entity was cleared.
 func (m *GithubAppMutation) UsersCleared() bool {
-	return m.clearedusers
+	return m.CreatedByCleared() || m.clearedusers
 }
 
 // UsersID returns the "users" edge ID in the mutation.
@@ -5182,7 +5195,11 @@ func (m *GithubAppMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *GithubAppMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(githubapp.FieldCreatedBy) {
+		fields = append(fields, githubapp.FieldCreatedBy)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -5195,6 +5212,11 @@ func (m *GithubAppMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *GithubAppMutation) ClearField(name string) error {
+	switch name {
+	case githubapp.FieldCreatedBy:
+		m.ClearCreatedBy()
+		return nil
+	}
 	return fmt.Errorf("unknown GithubApp nullable field %s", name)
 }
 

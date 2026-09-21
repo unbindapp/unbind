@@ -15,12 +15,13 @@ import { usePendingEntityStore } from "@/components/stores/pending/pending-entit
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { getGoClient } from "@/lib/server/client";
 import { gitRepositoriesQuery, type TGitRepository } from "@/lib/queries/git";
+import { isSystemEditor, meQuery } from "@/lib/queries/me";
 import {
   createService as createServiceFn,
   type TBuilderEnum,
   type TGitServiceBuilder,
 } from "@/lib/queries/services";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { v4 as uuidv4 } from "uuid";
@@ -179,6 +180,8 @@ function useGitItem({ context }: TProps) {
 
   const gitHubRedirectPathname = `/${teamId}/connect-git/connected/github`;
   const queryClient = useQueryClient();
+  const { data: me } = useQuery(meQuery);
+  const canConnectGitHub = isSystemEditor(me);
   const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
 
   const { mutateAsync: createGitHubAppMutate } = useMutation({
@@ -200,161 +203,160 @@ function useGitItem({ context }: TProps) {
   });
 
   const item: TCommandPanelItem = useMemo(() => {
-    const itemsPinned: TCommandPanelItem[] = [
-      {
-        id: "git_configure_github",
-        title: "Configure GitHub App",
-        keywords: ["connect", "configure", "github", "gitlab", "bitbucket"],
-        Icon: CogIcon,
-        subpage: {
-          id: "git_configure_github_options",
-          title: "GitHub App",
-          inputPlaceholder: "Select GitHub account type...",
-          parentPageId: subpageId,
-          items: [
-            {
-              id: "git_configure_github_options_personal",
-              keywords: ["personal", "github"],
-              title: "Personal",
-              Icon: UserIcon,
-              onSelect: async ({ isPendingId, setCurrentPageId }) => {
-                if (isPendingId !== null) return;
-                setIsPendingId("git_configure_github_options_personal");
-                const res = await ResultAsync.fromPromise(
-                  createGitHubAppMutate({
-                    redirectUrl: window.location.origin + gitHubRedirectPathname,
-                    onSuccess: () => {
-                      const environmentId = environmentIdFromPathname || defaultEnvironmentId;
-                      if (!environmentId) {
-                        return;
-                      }
-                      const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
-                        getContextCommandPaneItemsQueryKey({
-                          teamId,
-                          projectId,
-                          context,
-                          hasItems: false,
-                          searchKey: null,
-                          pageId: subpageId,
-                          triggerType,
-                          environmentId,
-                        }),
-                      );
-                      queryClient.resetQueries({ queryKey: gitRepositoriesQuery().queryKey });
-                      queryKeys.forEach((queryKey) => {
-                        queryClient.resetQueries({ queryKey });
-                      });
-                      setCurrentPageId(subpageId);
-                      toast.add({
-                        type: "success",
-                        title: "GitHub app connected",
-                        description: "GitHub app has been connected successfully.",
-                        timeout: 5000,
-                      });
-                    },
-                  }),
-                  () => new Error("Failed to create GitHub app"),
-                );
-                if (res.isErr()) {
-                  toast.add({
-                    type: "error",
-                    title: "Failed to create GitHub app",
-                    description: res.error.message,
-                  });
-                  setIsPendingId(null);
-                  return;
-                }
+    const configureGitHubItem: TCommandPanelItem = {
+      id: "git_configure_github",
+      title: "Configure GitHub App",
+      keywords: ["connect", "configure", "github", "gitlab", "bitbucket"],
+      Icon: CogIcon,
+      subpage: {
+        id: "git_configure_github_options",
+        title: "GitHub App",
+        inputPlaceholder: "Select GitHub account type...",
+        parentPageId: subpageId,
+        items: [
+          {
+            id: "git_configure_github_options_personal",
+            keywords: ["personal", "github"],
+            title: "Personal",
+            Icon: UserIcon,
+            onSelect: async ({ isPendingId, setCurrentPageId }) => {
+              if (isPendingId !== null) return;
+              setIsPendingId("git_configure_github_options_personal");
+              const res = await ResultAsync.fromPromise(
+                createGitHubAppMutate({
+                  redirectUrl: window.location.origin + gitHubRedirectPathname,
+                  onSuccess: () => {
+                    const environmentId = environmentIdFromPathname || defaultEnvironmentId;
+                    if (!environmentId) {
+                      return;
+                    }
+                    const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
+                      getContextCommandPaneItemsQueryKey({
+                        teamId,
+                        projectId,
+                        context,
+                        hasItems: false,
+                        searchKey: null,
+                        pageId: subpageId,
+                        triggerType,
+                        environmentId,
+                      }),
+                    );
+                    queryClient.resetQueries({ queryKey: gitRepositoriesQuery().queryKey });
+                    queryKeys.forEach((queryKey) => {
+                      queryClient.resetQueries({ queryKey });
+                    });
+                    setCurrentPageId(subpageId);
+                    toast.add({
+                      type: "success",
+                      title: "GitHub app connected",
+                      description: "GitHub app has been connected successfully.",
+                      timeout: 5000,
+                    });
+                  },
+                }),
+                () => new Error("Failed to create GitHub app"),
+              );
+              if (res.isErr()) {
+                toast.add({
+                  type: "error",
+                  title: "Failed to create GitHub app",
+                  description: res.error.message,
+                });
                 setIsPendingId(null);
-              },
+                return;
+              }
+              setIsPendingId(null);
             },
-            {
-              id: "git_configure_github_options_organization",
-              keywords: ["organization", "github"],
-              title: "Organization",
-              Icon: BuildingIcon,
-              subpage: {
-                id: "git_configure_github_options_organization_enter_name",
-                title: "GitHub Organization",
-                inputPlaceholder: "Organization name",
-                parentPageId: "git_configure_github_options",
-                disableCommandFilter: true,
-                setSearchDebounceMs: 50,
-                InputIcon: BuildingIcon,
-                commandEmptyText: "Enter the organization name above",
-                getItems: ({ search }) =>
-                  !search
-                    ? []
-                    : [
-                        {
-                          id: "git_configure_github_options_organization_connect",
-                          title: search ? `Connect "${search}"` : "Enter organization name",
-                          Icon: !search ? HourglassIcon : UnplugIcon,
-                          keywords: ["connect", "organization", "github"],
-                          disabled: !search,
-                          onSelect: async ({ isPendingId, setCurrentPageId }) => {
-                            if (isPendingId !== null) return;
-                            setIsPendingId("git_configure_github_options_organization_connect");
-                            const res = await ResultAsync.fromPromise(
-                              createGitHubAppMutate({
-                                redirectUrl: window.location.origin + gitHubRedirectPathname,
-                                organizationName: search,
-                                onSuccess: () => {
-                                  const environmentId =
-                                    environmentIdFromPathname || defaultEnvironmentId;
-                                  if (!environmentId) {
-                                    return;
-                                  }
-                                  const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
-                                    getContextCommandPaneItemsQueryKey({
-                                      teamId,
-                                      projectId,
-                                      context,
-                                      hasItems: false,
-                                      searchKey: null,
-                                      pageId: subpageId,
-                                      triggerType,
-                                      environmentId,
-                                    }),
-                                  );
-                                  queryClient.resetQueries({
-                                    queryKey: gitRepositoriesQuery().queryKey,
-                                  });
-                                  queryKeys.forEach((queryKey) => {
-                                    queryClient.resetQueries({ queryKey });
-                                  });
-                                  clearInputValue(
-                                    "git_configure_github_options_organization_enter_name",
-                                  );
-                                  setCurrentPageId(subpageId);
-                                  toast.add({
-                                    type: "success",
-                                    title: "GitHub app connected",
-                                    description: "GitHub app has been connected successfully.",
-                                    timeout: 5000,
-                                  });
-                                },
-                              }),
-                              () => new Error("Failed to create GitHub app"),
-                            );
-                            if (res.isErr()) {
-                              toast.add({
-                                type: "error",
-                                title: "Failed to create GitHub app",
-                                description: res.error.message,
-                              });
-                              setIsPendingId(null);
-                              return;
-                            }
+          },
+          {
+            id: "git_configure_github_options_organization",
+            keywords: ["organization", "github"],
+            title: "Organization",
+            Icon: BuildingIcon,
+            subpage: {
+              id: "git_configure_github_options_organization_enter_name",
+              title: "GitHub Organization",
+              inputPlaceholder: "Organization name",
+              parentPageId: "git_configure_github_options",
+              disableCommandFilter: true,
+              setSearchDebounceMs: 50,
+              InputIcon: BuildingIcon,
+              commandEmptyText: "Enter the organization name above",
+              getItems: ({ search }) =>
+                !search
+                  ? []
+                  : [
+                      {
+                        id: "git_configure_github_options_organization_connect",
+                        title: search ? `Connect "${search}"` : "Enter organization name",
+                        Icon: !search ? HourglassIcon : UnplugIcon,
+                        keywords: ["connect", "organization", "github"],
+                        disabled: !search,
+                        onSelect: async ({ isPendingId, setCurrentPageId }) => {
+                          if (isPendingId !== null) return;
+                          setIsPendingId("git_configure_github_options_organization_connect");
+                          const res = await ResultAsync.fromPromise(
+                            createGitHubAppMutate({
+                              redirectUrl: window.location.origin + gitHubRedirectPathname,
+                              organizationName: search,
+                              onSuccess: () => {
+                                const environmentId =
+                                  environmentIdFromPathname || defaultEnvironmentId;
+                                if (!environmentId) {
+                                  return;
+                                }
+                                const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
+                                  getContextCommandPaneItemsQueryKey({
+                                    teamId,
+                                    projectId,
+                                    context,
+                                    hasItems: false,
+                                    searchKey: null,
+                                    pageId: subpageId,
+                                    triggerType,
+                                    environmentId,
+                                  }),
+                                );
+                                queryClient.resetQueries({
+                                  queryKey: gitRepositoriesQuery().queryKey,
+                                });
+                                queryKeys.forEach((queryKey) => {
+                                  queryClient.resetQueries({ queryKey });
+                                });
+                                clearInputValue(
+                                  "git_configure_github_options_organization_enter_name",
+                                );
+                                setCurrentPageId(subpageId);
+                                toast.add({
+                                  type: "success",
+                                  title: "GitHub app connected",
+                                  description: "GitHub app has been connected successfully.",
+                                  timeout: 5000,
+                                });
+                              },
+                            }),
+                            () => new Error("Failed to create GitHub app"),
+                          );
+                          if (res.isErr()) {
+                            toast.add({
+                              type: "error",
+                              title: "Failed to create GitHub app",
+                              description: res.error.message,
+                            });
                             setIsPendingId(null);
-                          },
+                            return;
+                          }
+                          setIsPendingId(null);
                         },
-                      ],
-              },
+                      },
+                    ],
             },
-          ],
-        },
+          },
+        ],
       },
-    ];
+    };
+    const itemsPinned = canConnectGitHub ? [configureGitHubItem] : [];
 
     return {
       id: mainPageId,
@@ -403,6 +405,7 @@ function useGitItem({ context }: TProps) {
     projectId,
     context,
     clearInputValue,
+    canConnectGitHub,
   ]);
 
   const value = useMemo(

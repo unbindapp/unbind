@@ -2,6 +2,7 @@ package user_repo
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
@@ -96,6 +97,24 @@ func (suite *UserMutationsSuite) TestDelete() {
 		suite.NoError(err)
 
 		_, err = suite.userRepo.GetByID(suite.Ctx, suite.testUser.ID)
+		suite.True(ent.IsNotFound(err))
+	})
+
+	suite.Run("Delete removes the user's sessions", func() {
+		pwd, _ := bcrypt.GenerateFromPassword([]byte("pw"), 1)
+		user := suite.DB.User.Create().SetEmail("session@example.com").SetPasswordHash(string(pwd)).SaveX(suite.Ctx)
+		token := suite.DB.Oauth2Token.Create().
+			SetUserID(user.ID).
+			SetAccessToken("access").
+			SetRefreshToken("refresh").
+			SetClientID("web").
+			SetScope("openid").
+			SetExpiresAt(time.Now().Add(time.Hour)).
+			SaveX(suite.Ctx)
+
+		suite.NoError(suite.userRepo.Delete(suite.Ctx, user.ID))
+
+		_, err := suite.DB.Oauth2Token.Get(suite.Ctx, token.ID)
 		suite.True(ent.IsNotFound(err))
 	})
 

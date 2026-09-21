@@ -27,7 +27,7 @@ type GithubApp struct {
 	// UUID holds the value of the "uuid" field.
 	UUID uuid.UUID `json:"uuid,omitempty"`
 	// The user that created this github app.
-	CreatedBy uuid.UUID `json:"created_by,omitempty"`
+	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
 	// Name of the GitHub App
 	Name string `json:"name,omitempty"`
 	// OAuth client ID of the GitHub App
@@ -80,13 +80,15 @@ func (*GithubApp) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case githubapp.FieldCreatedBy:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case githubapp.FieldID:
 			values[i] = new(sql.NullInt64)
 		case githubapp.FieldName, githubapp.FieldClientID, githubapp.FieldClientSecret, githubapp.FieldWebhookSecret, githubapp.FieldPrivateKey:
 			values[i] = new(sql.NullString)
 		case githubapp.FieldCreatedAt, githubapp.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case githubapp.FieldUUID, githubapp.FieldCreatedBy:
+		case githubapp.FieldUUID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -128,10 +130,11 @@ func (_m *GithubApp) assignValues(columns []string, values []any) error {
 				_m.UUID = *value
 			}
 		case githubapp.FieldCreatedBy:
-			if value, ok := values[i].(*uuid.UUID); !ok {
+			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field created_by", values[i])
-			} else if value != nil {
-				_m.CreatedBy = *value
+			} else if value.Valid {
+				_m.CreatedBy = new(uuid.UUID)
+				*_m.CreatedBy = *value.S.(*uuid.UUID)
 			}
 		case githubapp.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -218,8 +221,10 @@ func (_m *GithubApp) String() string {
 	builder.WriteString("uuid=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UUID))
 	builder.WriteString(", ")
-	builder.WriteString("created_by=")
-	builder.WriteString(fmt.Sprintf("%v", _m.CreatedBy))
+	if v := _m.CreatedBy; v != nil {
+		builder.WriteString("created_by=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)

@@ -65,6 +65,14 @@ func (_c *GithubAppCreate) SetCreatedBy(v uuid.UUID) *GithubAppCreate {
 	return _c
 }
 
+// SetNillableCreatedBy sets the "created_by" field if the given value is not nil.
+func (_c *GithubAppCreate) SetNillableCreatedBy(v *uuid.UUID) *GithubAppCreate {
+	if v != nil {
+		_c.SetCreatedBy(*v)
+	}
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *GithubAppCreate) SetName(v string) *GithubAppCreate {
 	_c.mutation.SetName(v)
@@ -119,6 +127,14 @@ func (_c *GithubAppCreate) AddInstallations(v ...*GithubInstallation) *GithubApp
 // SetUsersID sets the "users" edge to the User entity by ID.
 func (_c *GithubAppCreate) SetUsersID(id uuid.UUID) *GithubAppCreate {
 	_c.mutation.SetUsersID(id)
+	return _c
+}
+
+// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
+func (_c *GithubAppCreate) SetNillableUsersID(id *uuid.UUID) *GithubAppCreate {
+	if id != nil {
+		_c = _c.SetUsersID(*id)
+	}
 	return _c
 }
 
@@ -183,9 +199,6 @@ func (_c *GithubAppCreate) check() error {
 	if _, ok := _c.mutation.UUID(); !ok {
 		return &ValidationError{Name: "uuid", err: errors.New(`ent: missing required field "GithubApp.uuid"`)}
 	}
-	if _, ok := _c.mutation.CreatedBy(); !ok {
-		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "GithubApp.created_by"`)}
-	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "GithubApp.name"`)}
 	}
@@ -210,9 +223,6 @@ func (_c *GithubAppCreate) check() error {
 		if err := githubapp.IDValidator(v); err != nil {
 			return &ValidationError{Name: "id", err: fmt.Errorf(`ent: validator failed for field "GithubApp.id": %w`, err)}
 		}
-	}
-	if len(_c.mutation.UsersIDs()) == 0 {
-		return &ValidationError{Name: "users", err: errors.New(`ent: missing required edge "GithubApp.users"`)}
 	}
 	return nil
 }
@@ -309,7 +319,7 @@ func (_c *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.CreatedBy = nodes[0]
+		_node.CreatedBy = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -385,6 +395,12 @@ func (u *GithubAppUpsert) SetCreatedBy(v uuid.UUID) *GithubAppUpsert {
 // UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
 func (u *GithubAppUpsert) UpdateCreatedBy() *GithubAppUpsert {
 	u.SetExcluded(githubapp.FieldCreatedBy)
+	return u
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (u *GithubAppUpsert) ClearCreatedBy() *GithubAppUpsert {
+	u.SetNull(githubapp.FieldCreatedBy)
 	return u
 }
 
@@ -527,6 +543,13 @@ func (u *GithubAppUpsertOne) SetCreatedBy(v uuid.UUID) *GithubAppUpsertOne {
 func (u *GithubAppUpsertOne) UpdateCreatedBy() *GithubAppUpsertOne {
 	return u.Update(func(s *GithubAppUpsert) {
 		s.UpdateCreatedBy()
+	})
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (u *GithubAppUpsertOne) ClearCreatedBy() *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.ClearCreatedBy()
 	})
 }
 
@@ -845,6 +868,13 @@ func (u *GithubAppUpsertBulk) SetCreatedBy(v uuid.UUID) *GithubAppUpsertBulk {
 func (u *GithubAppUpsertBulk) UpdateCreatedBy() *GithubAppUpsertBulk {
 	return u.Update(func(s *GithubAppUpsert) {
 		s.UpdateCreatedBy()
+	})
+}
+
+// ClearCreatedBy clears the value of the "created_by" field.
+func (u *GithubAppUpsertBulk) ClearCreatedBy() *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.ClearCreatedBy()
 	})
 }
 

@@ -788,9 +788,12 @@ func (_q *UserQuery) loadCreatedBy(ctx context.Context, query *GithubAppQuery, n
 	}
 	for _, n := range neighbors {
 		fk := n.CreatedBy
-		node, ok := nodeids[fk]
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "created_by" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "created_by" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

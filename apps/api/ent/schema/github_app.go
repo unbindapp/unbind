@@ -34,6 +34,8 @@ func (GithubApp) Fields() []ent.Field {
 			Immutable().
 			Unique(),
 		field.UUID("created_by", uuid.UUID{}).
+			Optional().
+			Nillable().
 			Comment("The user that created this github app."),
 		field.String("name").
 			NotEmpty().
@@ -64,7 +66,6 @@ func (GithubApp) Edges() []ent.Edge {
 		edge.From("users", User.Type).
 			Ref("created_by").
 			Field("created_by").
-			Required().
 			Unique(),
 	}
 }

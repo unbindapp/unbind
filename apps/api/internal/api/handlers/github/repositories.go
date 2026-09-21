@@ -19,13 +19,7 @@ type GithubRepositoryListResponse struct {
 }
 
 func (self *HandlerGroup) HandleListGithubRepositories(ctx context.Context, input *server.BaseAuthInput) (*GithubRepositoryListResponse, error) {
-	user, _, err := self.srv.AuthenticatedUser(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// ! TODO - group RBAC
-	installations, err := self.srv.Repository.Github().GetInstallationsByCreator(ctx, user.ID)
+	installations, err := self.srv.Repository.Github().GetInstallations(ctx)
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub installation"))
 	}

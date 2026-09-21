@@ -164,7 +164,7 @@ var (
 		{Name: "client_secret", Type: field.TypeString},
 		{Name: "webhook_secret", Type: field.TypeString},
 		{Name: "private_key", Type: field.TypeString, Size: 2147483647},
-		{Name: "created_by", Type: field.TypeUUID},
+		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 	}
 	// GithubAppsTable holds the schema information for the "github_apps" table.
 	GithubAppsTable = &schema.Table{
@@ -176,7 +176,7 @@ var (
 				Symbol:     "github_apps_users_created_by",
 				Columns:    []*schema.Column{GithubAppsColumns[9]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -410,7 +410,7 @@ var (
 				Symbol:     "oauth2_tokens_users_oauth2_tokens",
 				Columns:    []*schema.Column{Oauth2TokensColumns[10]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}

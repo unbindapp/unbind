@@ -52,6 +52,12 @@ func (_u *GithubAppUpdate) SetNillableCreatedBy(v *uuid.UUID) *GithubAppUpdate {
 	return _u
 }
 
+// ClearCreatedBy clears the value of the "created_by" field.
+func (_u *GithubAppUpdate) ClearCreatedBy() *GithubAppUpdate {
+	_u.mutation.ClearCreatedBy()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *GithubAppUpdate) SetName(v string) *GithubAppUpdate {
 	_u.mutation.SetName(v)
@@ -143,6 +149,14 @@ func (_u *GithubAppUpdate) SetUsersID(id uuid.UUID) *GithubAppUpdate {
 	return _u
 }
 
+// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
+func (_u *GithubAppUpdate) SetNillableUsersID(id *uuid.UUID) *GithubAppUpdate {
+	if id != nil {
+		_u = _u.SetUsersID(*id)
+	}
+	return _u
+}
+
 // SetUsers sets the "users" edge to the User entity.
 func (_u *GithubAppUpdate) SetUsers(v *User) *GithubAppUpdate {
 	return _u.SetUsersID(v.ID)
@@ -222,9 +236,6 @@ func (_u *GithubAppUpdate) check() error {
 		if err := githubapp.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
-	}
-	if _u.mutation.UsersCleared() && len(_u.mutation.UsersIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "GithubApp.users"`)
 	}
 	return nil
 }
@@ -381,6 +392,12 @@ func (_u *GithubAppUpdateOne) SetNillableCreatedBy(v *uuid.UUID) *GithubAppUpdat
 	return _u
 }
 
+// ClearCreatedBy clears the value of the "created_by" field.
+func (_u *GithubAppUpdateOne) ClearCreatedBy() *GithubAppUpdateOne {
+	_u.mutation.ClearCreatedBy()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *GithubAppUpdateOne) SetName(v string) *GithubAppUpdateOne {
 	_u.mutation.SetName(v)
@@ -469,6 +486,14 @@ func (_u *GithubAppUpdateOne) AddInstallations(v ...*GithubInstallation) *Github
 // SetUsersID sets the "users" edge to the User entity by ID.
 func (_u *GithubAppUpdateOne) SetUsersID(id uuid.UUID) *GithubAppUpdateOne {
 	_u.mutation.SetUsersID(id)
+	return _u
+}
+
+// SetNillableUsersID sets the "users" edge to the User entity by ID if the given value is not nil.
+func (_u *GithubAppUpdateOne) SetNillableUsersID(id *uuid.UUID) *GithubAppUpdateOne {
+	if id != nil {
+		_u = _u.SetUsersID(*id)
+	}
 	return _u
 }
 
@@ -564,9 +589,6 @@ func (_u *GithubAppUpdateOne) check() error {
 		if err := githubapp.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
-	}
-	if _u.mutation.UsersCleared() && len(_u.mutation.UsersIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "GithubApp.users"`)
 	}
 	return nil
 }

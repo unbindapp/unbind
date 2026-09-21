@@ -486,7 +486,10 @@ func (_q *GithubAppQuery) loadUsers(ctx context.Context, query *UserQuery, nodes
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*GithubApp)
 	for i := range nodes {
-		fk := nodes[i].CreatedBy
+		if nodes[i].CreatedBy == nil {
+			continue
+		}
+		fk := *nodes[i].CreatedBy
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}

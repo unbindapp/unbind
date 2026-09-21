@@ -465,6 +465,68 @@ func (_c *GithubRepositoryMock_GetInstallationByID_Call) RunAndReturn(run func(c
 	return _c
 }
 
+// GetInstallations provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) GetInstallations(ctx context.Context) ([]*ent.GithubInstallation, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInstallations")
+	}
+
+	var r0 []*ent.GithubInstallation
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]*ent.GithubInstallation, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []*ent.GithubInstallation); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.GithubInstallation)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_GetInstallations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInstallations'
+type GithubRepositoryMock_GetInstallations_Call struct {
+	*mock.Call
+}
+
+// GetInstallations is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *GithubRepositoryMock_Expecter) GetInstallations(ctx any) *GithubRepositoryMock_GetInstallations_Call {
+	return &GithubRepositoryMock_GetInstallations_Call{Call: _e.mock.On("GetInstallations", ctx)}
+}
+
+func (_c *GithubRepositoryMock_GetInstallations_Call) Run(run func(ctx context.Context)) *GithubRepositoryMock_GetInstallations_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetInstallations_Call) Return(githubInstallations []*ent.GithubInstallation, err error) *GithubRepositoryMock_GetInstallations_Call {
+	_c.Call.Return(githubInstallations, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetInstallations_Call) RunAndReturn(run func(ctx context.Context) ([]*ent.GithubInstallation, error)) *GithubRepositoryMock_GetInstallations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetInstallationsByAppID provides a mock function for the type GithubRepositoryMock
 func (_mock *GithubRepositoryMock) GetInstallationsByAppID(ctx context.Context, appID int64) ([]*ent.GithubInstallation, error) {
 	ret := _mock.Called(ctx, appID)
@@ -529,74 +591,6 @@ func (_c *GithubRepositoryMock_GetInstallationsByAppID_Call) Return(githubInstal
 }
 
 func (_c *GithubRepositoryMock_GetInstallationsByAppID_Call) RunAndReturn(run func(ctx context.Context, appID int64) ([]*ent.GithubInstallation, error)) *GithubRepositoryMock_GetInstallationsByAppID_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetInstallationsByCreator provides a mock function for the type GithubRepositoryMock
-func (_mock *GithubRepositoryMock) GetInstallationsByCreator(ctx context.Context, createdBy uuid.UUID) ([]*ent.GithubInstallation, error) {
-	ret := _mock.Called(ctx, createdBy)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetInstallationsByCreator")
-	}
-
-	var r0 []*ent.GithubInstallation
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) ([]*ent.GithubInstallation, error)); ok {
-		return returnFunc(ctx, createdBy)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) []*ent.GithubInstallation); ok {
-		r0 = returnFunc(ctx, createdBy)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*ent.GithubInstallation)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, createdBy)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// GithubRepositoryMock_GetInstallationsByCreator_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInstallationsByCreator'
-type GithubRepositoryMock_GetInstallationsByCreator_Call struct {
-	*mock.Call
-}
-
-// GetInstallationsByCreator is a helper method to define mock.On call
-//   - ctx context.Context
-//   - createdBy uuid.UUID
-func (_e *GithubRepositoryMock_Expecter) GetInstallationsByCreator(ctx any, createdBy any) *GithubRepositoryMock_GetInstallationsByCreator_Call {
-	return &GithubRepositoryMock_GetInstallationsByCreator_Call{Call: _e.mock.On("GetInstallationsByCreator", ctx, createdBy)}
-}
-
-func (_c *GithubRepositoryMock_GetInstallationsByCreator_Call) Run(run func(ctx context.Context, createdBy uuid.UUID)) *GithubRepositoryMock_GetInstallationsByCreator_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 uuid.UUID
-		if args[1] != nil {
-			arg1 = args[1].(uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *GithubRepositoryMock_GetInstallationsByCreator_Call) Return(githubInstallations []*ent.GithubInstallation, err error) *GithubRepositoryMock_GetInstallationsByCreator_Call {
-	_c.Call.Return(githubInstallations, err)
-	return _c
-}
-
-func (_c *GithubRepositoryMock_GetInstallationsByCreator_Call) RunAndReturn(run func(ctx context.Context, createdBy uuid.UUID) ([]*ent.GithubInstallation, error)) *GithubRepositoryMock_GetInstallationsByCreator_Call {
 	_c.Call.Return(run)
 	return _c
 }

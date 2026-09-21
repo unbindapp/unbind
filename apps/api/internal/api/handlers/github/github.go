@@ -1,15 +1,34 @@
 package github_handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
+	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 type HandlerGroup struct {
 	srv *server.Server
+}
+
+func (self *HandlerGroup) systemUser(ctx context.Context, action schema.PermittedAction) (*ent.User, error) {
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	checks := []permissions_repo.PermissionCheck{
+		{Action: action, ResourceType: schema.ResourceTypeSystem},
+	}
+	if err := self.srv.Repository.Permissions().Check(ctx, user.ID, checks); err != nil {
+		return nil, oapi.MapError(err)
+	}
+	return user, nil
 }
 
 func RegisterHandlers(server *server.Server, grp *huma.Group) {
@@ -20,7 +39,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "app-create",
 		Summary:     "Create App",
-		Description: "Begin the GitHub app creation flow, returning the manifest to POST to GitHub.",
+		Description: "Begin the GitHub app creation flow, returning the manifest to POST to GitHub. Requires system editor access.",
 		Path:        "/app/create",
 		Method:      http.MethodGet,
 	}, handlers.HandleGithubAppCreate, oapi.OpenWorld)
@@ -28,7 +47,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-github-app",
 		Summary:     "Get App",
-		Description: "Get a connected GitHub app's details.",
+		Description: "Get a connected GitHub app's details. Requires system viewer access.",
 		Path:        "/app/get",
 		Method:      http.MethodGet,
 	}, handlers.HandleGetGithubApp)
@@ -36,7 +55,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-apps",
 		Summary:     "List Apps",
-		Description: "List the GitHub apps connected to this instance.",
+		Description: "List the GitHub apps connected to this instance. Requires system viewer access.",
 		Path:        "/apps",
 		Method:      http.MethodGet,
 	}, handlers.HandleListGithubApps)
@@ -44,7 +63,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-app-installations",
 		Summary:     "List Installations",
-		Description: "List installations across all connected GitHub apps.",
+		Description: "List installations across all connected GitHub apps. Requires system viewer access.",
 		Path:        "/installations",
 		Method:      http.MethodGet,
 	}, handlers.HandleListGithubAppInstallations)
@@ -52,7 +71,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-repositories",
 		Summary:     "List Repositories",
-		Description: "List all repositories accessible to the user's GitHub app installations. Per-user repository permissions are not verified.",
+		Description: "List all repositories accessible through the GitHub app installations connected to this instance. Per-user repository permissions are not verified.",
 		Path:        "/repositories",
 		Method:      http.MethodGet,
 	}, handlers.HandleListGithubRepositories, oapi.OpenWorld)

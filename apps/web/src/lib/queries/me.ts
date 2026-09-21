@@ -10,6 +10,10 @@ export function isSystemAdmin(me: Me | null | undefined): boolean {
   return me?.system_permissions.includes("admin") ?? false;
 }
 
+export function isSystemEditor(me: Me | null | undefined): boolean {
+  return me?.system_permissions.includes("editor") ?? false;
+}
+
 export const queryKeyMe = ["me"] as const;
 
 /**

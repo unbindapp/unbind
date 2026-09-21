@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	"golang.org/x/crypto/bcrypt"
@@ -48,6 +49,27 @@ func (suite *GithubAppSuite) TearDownTest() {
 	suite.githubRepo = nil
 	suite.testUser = nil
 	suite.testApp = nil
+}
+
+func (suite *GithubAppSuite) TestDeletingCreatorKeepsApp() {
+	installation := suite.DB.GithubInstallation.Create().
+		SetID(67890).
+		SetGithubAppID(suite.testApp.ID).
+		SetAccountID(11111).
+		SetAccountLogin("test-org").
+		SetAccountType(githubinstallation.AccountTypeOrganization).
+		SetAccountURL("https://github.com/test-org").
+		SaveX(suite.Ctx)
+
+	suite.DB.User.DeleteOneID(suite.testUser.ID).ExecX(suite.Ctx)
+
+	app, err := suite.githubRepo.GetGithubAppByID(suite.Ctx, suite.testApp.ID)
+	suite.NoError(err)
+	suite.Nil(app.CreatedBy)
+
+	kept, err := suite.githubRepo.GetInstallationByID(suite.Ctx, installation.ID)
+	suite.NoError(err)
+	suite.Equal(suite.testApp.ID, kept.GithubAppID)
 }
 
 func (suite *GithubAppSuite) TestGetApp() {
@@ -197,7 +219,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 		suite.Equal("new-webhook-secret", app.WebhookSecret)
 		suite.Equal("new-private-key", app.PrivateKey)
 		suite.Equal("New App", app.Name)
-		suite.Equal(suite.testUser.ID, app.CreatedBy)
+		suite.Equal(suite.testUser.ID, *app.CreatedBy)
 		suite.NotZero(app.CreatedAt)
 		suite.NotZero(app.UpdatedAt)
 	})
