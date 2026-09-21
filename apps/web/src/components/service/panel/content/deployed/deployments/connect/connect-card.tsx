@@ -89,91 +89,105 @@ export default function ConnectCard({ service }: TProps) {
         <ChevronDownIcon className="text-muted-more-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground -mr-0.5 size-5 shrink-0 transition-transform group-data-open/button:rotate-180" />
       </Button>
       {isOpen && (
-        <div className="flex w-full flex-col gap-5 px-3.5 pt-3.5 sm:px-4">
-          <Section
-            title="From your services"
-            description={
-              hasMultipleUrls(service.database_type || "")
-                ? "Add one of these as a variable value on any service that will connect to the database."
-                : "Add this as a variable value on any service that will connect to the database."
-            }
-            Icon={BoxIcon}
-          >
-            {isPending && (
-              <PrivateRow>
-                <ConnectRow isPlaceholder className="lg:min-w-0 lg:flex-1" />
-                <AddToService isPlaceholder className="lg:max-w-xs lg:flex-1" />
-              </PrivateRow>
-            )}
-            {!isPending && isWaitingForPrivate && (
-              <PrivateRow>
-                <ConnectRow
-                  Icon={error ? TriangleAlertIcon : WaitingIcon}
-                  isError={!!error}
-                  className="lg:min-w-0 lg:flex-1"
-                >
-                  {error ? error.message : "The variable will be shown once the database is ready"}
-                </ConnectRow>
-                {/* An error means nothing is on its way, so there is nothing to reserve room for */}
-                {!error && <AddToService isDisabled className="lg:max-w-xs lg:flex-1" />}
-              </PrivateRow>
-            )}
-
-            {!isPending &&
-              !isWaitingForPrivate &&
-              referenceRows(service.name, urls.private).map((row) => (
-                <PrivateRow key={row.key}>
-                  <ConnectRow label={row.label} value={row.value} className="lg:min-w-0 lg:flex-1">
-                    <ReferenceToken sourceName={service.name} referenceKey={row.key} />
-                  </ConnectRow>
-                  <AddToService
-                    databaseType={service.database_type || ""}
-                    label={row.label}
-                    value={row.value}
-                    className="lg:max-w-xs lg:flex-1"
-                  />
+        <div className="flex w-full flex-col">
+          <div className="flex w-full flex-col gap-6 px-3.5 pt-3.5 pb-4 sm:px-4">
+            <Section
+              title="From your services"
+              description={
+                hasMultipleUrls(service.database_type || "")
+                  ? "Add one of these as a variable value on any service that will connect to the database."
+                  : "Add this as a variable value on any service that will connect to the database."
+              }
+              Icon={BoxIcon}
+            >
+              {isPending && (
+                <PrivateRow>
+                  <ConnectRow isPlaceholder className="lg:min-w-0 lg:flex-1" />
+                  <AddToService isPlaceholder className="lg:max-w-xs lg:flex-1" />
                 </PrivateRow>
-              ))}
-          </Section>
-          <Section
-            title="From the internet"
-            description={
-              isPublic ? (
-                "For connecting from outside Unbind."
-              ) : (
+              )}
+              {!isPending && isWaitingForPrivate && (
+                <PrivateRow>
+                  <ConnectRow
+                    Icon={error ? TriangleAlertIcon : WaitingIcon}
+                    isError={!!error}
+                    className="lg:min-w-0 lg:flex-1"
+                  >
+                    {error
+                      ? error.message
+                      : "The variable will be shown once the database is ready"}
+                  </ConnectRow>
+                  {/* An error means nothing is on its way, so there is nothing to reserve room for */}
+                  {!error && <AddToService isDisabled className="lg:max-w-xs lg:flex-1" />}
+                </PrivateRow>
+              )}
+
+              {!isPending &&
+                !isWaitingForPrivate &&
+                referenceRows(service.name, urls.private).map((row) => (
+                  <PrivateRow key={row.key}>
+                    <ConnectRow
+                      label={row.label}
+                      value={row.value}
+                      className="lg:min-w-0 lg:flex-1"
+                    >
+                      <ReferenceToken sourceName={service.name} referenceKey={row.key} />
+                    </ConnectRow>
+                    <AddToService
+                      databaseType={service.database_type || ""}
+                      label={row.label}
+                      value={row.value}
+                      className="lg:max-w-xs lg:flex-1"
+                    />
+                  </PrivateRow>
+                ))}
+            </Section>
+            <Section
+              title="From the internet"
+              description={
+                isPublic ? (
+                  "For connecting from outside Unbind."
+                ) : (
+                  <>
+                    This database is{" "}
+                    <NetworkAccessLink teamId={teamId} projectId={projectId}>
+                      private
+                    </NetworkAccessLink>
+                    . Make it public in{" "}
+                    <NetworkAccessLink teamId={teamId} projectId={projectId}>
+                      Network Access
+                    </NetworkAccessLink>{" "}
+                    to connect from outside Unbind.
+                  </>
+                )
+              }
+              Icon={GlobeIcon}
+            >
+              {isPublic ? (
                 <>
-                  This database is{" "}
-                  <NetworkAccessLink teamId={teamId} projectId={projectId}>
-                    private
-                  </NetworkAccessLink>
-                  . Make it public in{" "}
-                  <NetworkAccessLink teamId={teamId} projectId={projectId}>
-                    Network Access
-                  </NetworkAccessLink>{" "}
-                  to connect from outside Unbind.
+                  {isPublic && isPending && <ConnectRow isPlaceholder isSecret />}
+                  {isPublic && isRedacted && (
+                    <ConnectRow Icon={LockIcon}>
+                      Editor access is needed to see credentials
+                    </ConnectRow>
+                  )}
+                  {isPublic && !isPending && isWaitingForPublic && (
+                    <ConnectRow Icon={error ? TriangleAlertIcon : WaitingIcon} isError={!!error}>
+                      {error
+                        ? error.message
+                        : "The public address will be shown once the database is ready"}
+                    </ConnectRow>
+                  )}
+                  {isPublic &&
+                    !isRedacted &&
+                    urls.public.map((url) => (
+                      <ConnectRow key={url.key} label={url.label} value={url.value} isSecret />
+                    ))}
                 </>
-              )
-            }
-            Icon={GlobeIcon}
-          >
-            {isPublic && isPending && <ConnectRow isPlaceholder isSecret />}
-            {isPublic && isRedacted && (
-              <ConnectRow Icon={LockIcon}>Editor access is needed to see credentials</ConnectRow>
-            )}
-            {isPublic && !isPending && isWaitingForPublic && (
-              <ConnectRow Icon={error ? TriangleAlertIcon : WaitingIcon} isError={!!error}>
-                {error
-                  ? error.message
-                  : "The public address will be shown once the database is ready"}
-              </ConnectRow>
-            )}
-            {isPublic &&
-              !isRedacted &&
-              urls.public.map((url) => (
-                <ConnectRow key={url.key} label={url.label} value={url.value} isSecret />
-              ))}
-          </Section>
-          <div className="-mx-3.5 flex flex-wrap border-t px-1.5 py-1.5 sm:-mx-4">
+              ) : null}
+            </Section>
+          </div>
+          <div className="flex flex-wrap border-t px-1.5 py-1.5">
             <FooterLink
               teamId={teamId}
               projectId={projectId}
@@ -285,15 +299,15 @@ function Section({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex w-full flex-col gap-3">
-      <div className="flex w-full flex-col gap-1.5 px-1">
+    <div className="flex w-full flex-col gap-2.5">
+      <div className="flex w-full flex-col gap-1 px-1">
         <div className="flex w-full items-start gap-1.5">
           <Icon className="mt-0.5 size-4 shrink-0" />
           <h4 className="min-w-0 shrink leading-tight font-medium wrap-break-word">{title}</h4>
         </div>
         <p className="text-muted-foreground">{description}</p>
       </div>
-      {children}
+      {children && <div className="flex w-full flex-col gap-4 lg:gap-2.5">{children}</div>}
     </div>
   );
 }
