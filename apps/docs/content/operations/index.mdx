@@ -2,3 +2,29 @@
 title: Overview
 description: What it takes to run an Unbind instance.
 ---
+
+This part of the docs is for the person who owns the servers. If you only deploy apps on an instance someone else runs, you want [Platform](/) instead.
+
+Running Unbind is meant to be boring. One command installs it, the UI updates it, and you add servers when you need more room.
+
+## The short version
+
+1. Get a Linux server and a domain. See [Requirements](/operations/requirements).
+2. Run the installer. See [Install](/operations/install).
+3. Add the DNS records it asks for. See [DNS Setup](/operations/dns-setup).
+4. Open your domain and create your account.
+
+## Day to day
+
+- **More capacity**: [add a server](/operations/servers).
+- **New version**: [update from the UI](/operations/updating-unbind).
+- **Something is off**: [Troubleshooting](/operations/troubleshooting).
+
+## What you are responsible for
+
+Unbind takes care of deploying, routing, certificates, logs and metrics. It does not take care of the machine underneath. That part is yours:
+
+- **Operating system updates** and reboots.
+- **A firewall** that leaves ports 80 and 443 open.
+- **Backups.** Turn on [database backups](/services/databases#backups) to a bucket outside your servers. Volumes are not backed up for you.
+- **Disk space.** Watch it under [System Metrics](/operations/system-metrics).

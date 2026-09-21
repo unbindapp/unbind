@@ -5,7 +5,7 @@ description: Install Unbind, create your user and deploy your first service.
 
 You need two things:
 
-- **A Linux server** with at least 2 CPU cores and 4 GB of memory, and root access to it.
+- **A Linux server** you have root access to, with ports 80 and 443 open. 2 CPU cores and 4 GB of memory is a comfortable start.
 - **A domain** where you can add DNS records.
 
 [Requirements](/operations/requirements) has the full list of supported systems.
@@ -18,7 +18,7 @@ You need two things:
 Connect to your server and run:
 
 ```bash
-curl -fsSL https://unbind.app | sudo sh
+curl -fsSL https://raw.githubusercontent.com/unbindapp/unbind/master/apps/installer/install.sh | sudo sh
 ```
 
 The installer checks your system and sets everything up. It only stops for the things it cannot decide for you, like your domain.
@@ -28,24 +28,24 @@ The installer checks your system and sets everything up. It only stops for the t
 
 ### Point your domain at the server
 
-The installer tells you which DNS records to add and waits until they resolve. A wildcard record is the easiest option, because every new service then gets a working domain with no extra DNS work. [DNS Setup](/operations/dns-setup) walks through it.
+The installer shows the DNS records to add and checks them until they resolve. Add the wildcard record too. It is optional, but with it every new service gets a working domain with no extra DNS work. [DNS Setup](/operations/dns-setup) walks through it.
 
 </Step>
 <Step>
 
 ### Create your user
 
-Open the domain you picked. The first visit asks you to create the admin user. After that, sign in.
+Open the domain you picked. The first visit asks you to create your account, with an email and a password of at least 8 characters.
 
 </Step>
 <Step>
 
 ### Deploy something
 
-Create a project, then press **Add**. Pick one:
+Create a project, then add a service. Pick one:
 
-- **GitHub**: Connect your account and choose a repository. See [Deploy from GitHub](/services/deploy-from-github).
-- **Docker image**: Type an image name like `nginx`. See [Deploy a Docker Image](/services/deploy-a-docker-image).
+- **GitHub Repo**: Connect your account and choose a repository. See [Deploy from GitHub](/services/deploy-from-github).
+- **Docker Image**: Search for an image like `nginx`. See [Deploy a Docker Image](/services/deploy-a-docker-image).
 - **Database**: Pick a database and a size. See [Databases](/services/databases).
 - **Template**: Pick an app from the [templates](/templates).
 

@@ -1,13 +1,34 @@
 ---
 title: Meilisearch
 heading: Self-host Meilisearch with Unbind
-description: Deploy Meilisearch on your own servers with the Unbind template.
+description: Deploy Meilisearch on your own servers with Unbind. A fast, typo-tolerant search engine with a simple API.
 ---
+
+[Meilisearch](https://www.meilisearch.com) is a fast, typo-tolerant search engine with a simple HTTP API.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Meilisearch" />
 
+Indexes are kept on a volume mounted at `/meili_data`.
+
 ## What you fill in
 
 <TemplateInputs name="Meilisearch" />
+
+## After it deploys
+
+Open the **Meilisearch** service and copy the value of `MEILI_MASTER_KEY` from its variables. Check that it works:
+
+```bash
+curl https://your-domain/keys -H "Authorization: Bearer your-master-key"
+```
+
+The response lists the default search and admin API keys.
+
+## Good to know
+
+- **Do not ship the master key**: use it only to manage keys. Give your backend the admin key and your frontend the search key.
+- **Connect another service**: [reference](/services/variables) `MEILI_MASTER_KEY` and the Meilisearch address from the service that needs them, instead of copying the values.

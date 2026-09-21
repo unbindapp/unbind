@@ -1,4 +1,80 @@
 ---
 title: Servers
-description: Add, update and remove servers.
+description: Add servers and see how they are doing.
 ---
+
+Unbind starts on one server. Add more when you need more room. Services are spread across all of them, and you change nothing in your projects.
+
+## See your servers
+
+**System** > **Servers** lists every server with its status, and its vCPU, memory and replica counts. Open one for details: IP addresses, operating system, health and resource use.
+
+| Status                 | What it means                                   |
+| ---------------------- | ----------------------------------------------- |
+| **Ready**              | Working normally                                |
+| **Not ready**          | Unbind cannot reach it, or it is still starting |
+| **Unschedulable**      | Marked to receive no new work                   |
+| **Low disk space**     | Free some space or grow the disk                |
+| **Low memory**         | Too much is running on it                       |
+| **Too many processes** | The process limit is nearly reached             |
+| **No network**         | Its network is not set up correctly             |
+
+The System pages are for people who can manage the instance.
+
+## Add a server
+
+The new server needs a [supported operating system](/operations/requirements#operating-system) and has to reach the first server on port 6443.
+
+<Steps>
+<Step>
+
+### Get the instructions
+
+On your **first** server, run:
+
+```bash
+sudo unbind add-node
+```
+
+It prints a few blocks of commands, made for your instance, with the join token already filled in.
+
+</Step>
+<Step>
+
+### Run them on the new server
+
+Connect to the **new** server as root and run the printed blocks in order. They configure access to your registry, prepare storage, write the settings and join the server to your instance.
+
+</Step>
+<Step>
+
+### Check
+
+After a minute the server shows up under **System** > **Servers** as **Ready**. New deployments start landing on it right away.
+
+</Step>
+</Steps>
+
+<Callout type="warn" title="The join token is a secret">
+  Anyone who has it can add a machine to your instance. Do not paste the output anywhere public.
+</Callout>
+
+## Good to know
+
+- **Traffic still enters through the first server.** Your DNS records keep pointing at it. If it goes down, the instance is unreachable even when other servers are fine.
+- **Volumes live on one server.** A service with a [volume](/services/volumes) runs where its volume is.
+- **Keep servers close.** Put them in the same data center or region. High latency between servers causes odd problems.
+
+## Apply new settings to a server
+
+After an Unbind update that changes server settings, run this on each server:
+
+```bash
+sudo unbind update-node
+```
+
+It restarts the server's agent once. Your services keep running.
+
+## Remove a server
+
+There is no command for this yet. If you need to remove one, ask in the community first, because removing a server that holds volumes loses their data.

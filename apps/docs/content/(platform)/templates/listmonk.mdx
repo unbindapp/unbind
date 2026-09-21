@@ -1,13 +1,28 @@
 ---
 title: Listmonk
 heading: Self-host Listmonk with Unbind
-description: Deploy Listmonk on your own servers with the Unbind template.
+description: Deploy Listmonk on your own servers with Unbind. A fast newsletter and mailing list manager that you fully own.
 ---
+
+[Listmonk](https://listmonk.app) is a newsletter and mailing list manager. It handles subscribers, lists, campaigns and templates, and sends through any SMTP server you give it.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Listmonk" />
 
+Uploaded media is kept on a volume mounted at `/listmonk/uploads`. Subscribers and campaigns live in the PostgreSQL service.
+
 ## What you fill in
 
 <TemplateInputs name="Listmonk" />
+
+## After it deploys
+
+Open `https://your-domain/admin`. Listmonk asks you to create the admin user on the first visit.
+
+## Good to know
+
+- **Set up sending first**: Listmonk cannot send anything until you add an SMTP server under **Settings** > **SMTP** in its own admin.
+- **Upgrades run on start**: the service runs Listmonk's install and upgrade steps every time it starts, so moving to a newer image needs no manual migration.

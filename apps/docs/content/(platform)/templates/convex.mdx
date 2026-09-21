@@ -1,13 +1,38 @@
 ---
 title: Convex
 heading: Self-host Convex with Unbind
-description: Deploy Convex on your own servers with the Unbind template.
+description: Deploy a self-hosted Convex backend on your own servers with Unbind. Database, server functions and realtime sync in one place.
 ---
+
+[Convex](https://www.convex.dev) is a reactive backend: a database, server functions and realtime sync that your frontend subscribes to. This template runs the open-source self-hosted version.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Convex" />
 
+Convex keeps its files on a volume mounted at `/convex/data`. The data itself lives in the PostgreSQL service.
+
 ## What you fill in
 
 <TemplateInputs name="Convex" />
+
+## After it deploys
+
+Open the **Convex Backend** service and copy the value of `CONVEX_SELF_HOSTED_ADMIN_KEY` from its variables. You need it in two places:
+
+- **Dashboard**: open your dashboard domain and paste the key to sign in.
+- **CLI**: point the Convex CLI at your instance from your project folder.
+
+```bash title=".env.local"
+CONVEX_SELF_HOSTED_URL=https://your-cloud-domain
+CONVEX_SELF_HOSTED_ADMIN_KEY=your-admin-key
+```
+
+After that, `npx convex dev` and `npx convex deploy` talk to your instance.
+
+## Good to know
+
+- **Three domains**: the dashboard, the cloud API your app connects to, and HTTP actions each get their own domain. Your app uses the cloud domain as its Convex URL.
+- **Treat the admin key like a password**: anyone who has it can read and change everything in the deployment.

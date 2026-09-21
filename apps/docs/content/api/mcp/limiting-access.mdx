@@ -2,3 +2,48 @@
 title: Limiting Access
 description: Keep an agent inside the teams and projects you pick.
 ---
+
+An agent is a program that makes its own decisions, some of them wrong. Give it the access you would give a new colleague on their first day, not your own.
+
+## The two controls
+
+Whether you connect with OAuth or an API key, you pick the same two things:
+
+- **Role**: what the agent can do.
+- **Access**: where it can do it.
+
+### Role
+
+| Role       | Good for                                                                                                                                 |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Viewer** | Questions and debugging: "why did this deployment fail?". The agent gets no tools that change anything, and cannot read variable values. |
+| **Editor** | Real work: deploy, change settings, set variables. **Cannot delete.**                                                                    |
+| **Admin**  | Also deletes. Rarely needed.                                                                                                             |
+
+Start with viewer. Move to editor when you want the agent to fix what it finds. With a viewer connection the changing tools are not even offered, so the agent cannot try them.
+
+### Access
+
+Pick **Only specific resources** and choose the project, environment or service the agent works on. Everything else does not exist as far as the agent can tell: other projects answer "not found".
+
+A good default is editor on one project's `staging` environment.
+
+## Things an agent can never do
+
+No matter the role, a connected agent cannot:
+
+- Create API keys or approve other apps.
+- Change system settings or update Unbind.
+- Open a terminal in a service.
+- Read or change webhook URLs and S3 credentials.
+- Do more than you can.
+
+## Secrets
+
+An editor can read variable values, because deploying needs them. Those values then pass through the model's provider. If that is not acceptable for a project, keep the agent at viewer there, or point it at an environment that holds no production secrets.
+
+## Check what an agent has
+
+Ask it to call `me`. The answer shows the role and the exact resources of the connection.
+
+Your avatar > **Account Settings** > **Connected Apps** shows every app, what it may do and when it was last used. **Revoke** cuts it off at once. API keys work the same way under **API Keys**.

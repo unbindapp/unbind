@@ -2,3 +2,67 @@
 title: Errors
 description: What error responses look like and what they mean.
 ---
+
+Every error has the same shape:
+
+```json
+{
+  "type": "not_found",
+  "status": 404,
+  "message": "Project not found",
+  "details": ["..."],
+  "request_id": "api-7f9c4d2b-000042"
+}
+```
+
+| Field        | What it holds                                                                     |
+| ------------ | --------------------------------------------------------------------------------- |
+| `type`       | A stable name for the kind of error. Use this in code.                            |
+| `status`     | The HTTP status, repeated.                                                        |
+| `message`    | A sentence for people. It may change between versions.                            |
+| `details`    | More specifics, when there are any. Mostly on validation errors.                  |
+| `request_id` | Identifies the request. Also sent as the `X-Request-Id` header on every response. |
+
+Include the `request_id` when you report a problem. It lets whoever runs the instance find the request in the logs.
+
+## Types
+
+| `type`             | Status        | What it means                                              |
+| ------------------ | ------------- | ---------------------------------------------------------- |
+| `bad_request`      | 400           | The request makes no sense as sent.                        |
+| `unauthorized`     | 401           | The key or token is missing, invalid, expired or revoked.  |
+| `forbidden`        | 403           | The credential is not allowed to do this.                  |
+| `not_found`        | 404           | It does not exist, or your credential cannot see it.       |
+| `conflict`         | 409           | Usually a name that is already taken among its siblings.   |
+| `validation_error` | 422           | A field is missing or invalid.                             |
+| `rate_limited`     | 429           | Too many requests.                                         |
+| `internal_error`   | 500           | Something went wrong in Unbind.                            |
+| `error`            | 502, 503, 504 | The servers underneath did not answer properly. Try again. |
+
+### Not found also means "not yours"
+
+Anything outside your credential's limits answers `not_found`, exactly as if it did not exist. If you get a 404 for an ID you know is right, check the key's access with `GET /users/me`.
+
+### Validation errors
+
+`details` says which field and why:
+
+```json
+{
+  "type": "validation_error",
+  "status": 422,
+  "message": "validation failed",
+  "details": ["expected required property name to be present (body.name: <nil>)"]
+}
+```
+
+## Retrying
+
+- **Safe to retry**: 429, 502, 503, 504, and network errors. Wait a little longer each time.
+- **Do not retry**: 400, 401, 403, 404, 409 and 422. The same request will fail the same way.
+
+Be careful when retrying a `POST` that creates something after a network error. The first attempt may have worked. List first, then decide.
+
+## Rate limits
+
+The HTTP API has no rate limit of its own. The MCP endpoint allows 600 requests per minute per IP address, and the [OAuth endpoints](/api/connected-apps#for-app-developers) have lower limits. Going over answers 429 with a `Retry-After` header.

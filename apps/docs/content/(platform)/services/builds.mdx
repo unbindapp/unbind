@@ -2,3 +2,56 @@
 title: Builds
 description: How Unbind turns your code into something it can run.
 ---
+
+A service created from GitHub is built before it runs. You pick the builder under **Build** in the service settings, or under **Advanced Settings** before the first deployment.
+
+## Railpack
+
+Railpack is the default. It reads your repository, works out the language and framework, and builds it with no Dockerfile. It handles most Node.js, Python, Go, PHP, Ruby, Java and Rust apps, and static sites.
+
+When it guesses wrong, override it:
+
+| Setting             | What it is            | Example                          |
+| ------------------- | --------------------- | -------------------------------- |
+| **Install Command** | Installs dependencies | `pnpm install --frozen-lockfile` |
+| **Build Command**   | Builds the app        | `pnpm --filter web build`        |
+| **Start Command**   | Starts the app        | `pnpm --filter web start`        |
+
+[Railpack's docs](https://railpack.com) cover what it detects and how to configure it from inside the repository.
+
+## Docker
+
+If your repository has a Dockerfile, pick **Docker**.
+
+| Setting             | What it is                    | Default        |
+| ------------------- | ----------------------------- | -------------- |
+| **Dockerfile Path** | Where the Dockerfile is       | `./Dockerfile` |
+| **Build Context**   | The folder the build can see  | `./`           |
+| **Start Command**   | Overrides the image's command | none           |
+
+In a monorepo, point **Dockerfile Path** at `apps/api/Dockerfile` and leave **Build Context** at the root if the Dockerfile copies files from other folders.
+
+## Variables during the build
+
+The service's [variables](/services/variables) are available while it builds, not only while it runs. Frameworks that bake values into the bundle at build time, like `VITE_*` or `NEXT_PUBLIC_*` variables, work without extra setup on Railpack.
+
+With the Docker builder, a variable reaches the build only if the Dockerfile declares it:
+
+```dockerfile
+ARG VITE_API_URL
+RUN npm run build
+```
+
+## The build queue
+
+Builds run on your servers, and by default two run at a time. The rest wait in a queue. While a service has a build waiting, a newer one for the same service replaces it, so only the latest push gets built.
+
+Someone who manages the instance can raise the limits under [System Settings](/operations/system-settings).
+
+## Build cache
+
+Builds reuse layers from earlier builds, which makes them much faster. If a build behaves strangely and you suspect the cache, redeploy with **Skip cache** turned on. See [Deployments](/services/deployments#redeploy).
+
+## Build logs
+
+Open a deployment and choose **Build Logs** to see the full output. When a build fails, the reason is almost always in the last lines.

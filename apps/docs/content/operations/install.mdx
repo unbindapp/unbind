@@ -2,3 +2,77 @@
 title: Install
 description: Install Unbind on your first server.
 ---
+
+Connect to your server as root, or as a user with `sudo`, and run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/unbindapp/unbind/master/apps/installer/install.sh | sudo sh
+```
+
+The script downloads the installer for your architecture, verifies its checksum and starts it. The installer guides you through the rest.
+
+## What it asks
+
+<Steps>
+<Step>
+
+### Domain
+
+Type the domain for the Unbind UI, like `unbind.example.com`. The installer shows your server's IP address and the DNS records to create.
+
+</Step>
+<Step>
+
+### Registry
+
+Built images have to be stored somewhere.
+
+- **Self-hosted registry** keeps them on your server. Nothing to configure, and the right choice for almost everyone.
+- **External registry** pushes them to Docker Hub, GitHub Container Registry, Quay or a custom registry. You enter the host, a username and a password or token.
+
+</Step>
+<Step>
+
+### DNS check
+
+The installer checks your DNS records and keeps checking until they resolve. `Ctrl+r` checks again right away, `Ctrl+e` lets you change the domain. See [DNS Setup](/operations/dns-setup).
+
+</Step>
+<Step>
+
+### Swap
+
+If the server has no swap and less than 8 GB of memory, the installer offers to create a swap file. Say yes unless you know you do not want it.
+
+</Step>
+</Steps>
+
+Everything after that is automatic and takes several minutes. At the end you see:
+
+```text
+✓ Unbind Installation Complete!
+Unbind is ready. Visit the link below to start using it:
+https://unbind.example.com
+```
+
+## Create your account
+
+Open the link. The first visit asks for an email and a password of at least 8 characters. That account owns the instance.
+
+Do this right away. Until the first account exists, anyone who finds the address can create it.
+
+## What got installed
+
+The installer sets up [k3s](https://k3s.io), a small Kubernetes distribution, and installs Unbind on top of it, along with storage, a build service, a registry, certificates, logs and metrics. [How Unbind Works](/operations/how-unbind-works) lists all of it. You do not need to know any of it to use Unbind.
+
+It also installs the `unbind` command on the server:
+
+| Command                   | What it does                                                   |
+| ------------------------- | -------------------------------------------------------------- |
+| `sudo unbind add-node`    | Shows how to [add a server](/operations/servers)               |
+| `sudo unbind update-node` | Applies the current settings to this server                    |
+| `sudo unbind uninstall`   | [Removes Unbind](/operations/uninstalling) and all of its data |
+
+## Running the installer again
+
+If the installer finds an existing Unbind on the server, it offers to update this server's configuration, to uninstall and start over, or to quit. It never wipes anything without asking.

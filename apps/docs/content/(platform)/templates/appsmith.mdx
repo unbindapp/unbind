@@ -1,13 +1,27 @@
 ---
 title: Appsmith
 heading: Self-host Appsmith with Unbind
-description: Deploy Appsmith on your own servers with the Unbind template.
+description: Deploy Appsmith on your own servers with Unbind. Build admin panels, internal tools and dashboards on top of your own data.
 ---
+
+[Appsmith](https://www.appsmith.com) is an open-source builder for admin panels, internal tools and dashboards. You drag widgets onto a page and connect them to your databases and APIs.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Appsmith" />
 
+Everything Appsmith stores is kept on a volume mounted at `/appsmith-stacks`, so it survives redeploys.
+
 ## What you fill in
 
 <TemplateInputs name="Appsmith" />
+
+## After it deploys
+
+Open your domain. Appsmith asks you to create the first account, and that account becomes the admin.
+
+## Good to know
+
+- **Email is off**: `APPSMITH_MAIL_ENABLED` is set to `false`. To send invites and password resets, add your SMTP settings to the service variables and redeploy. The [Appsmith email docs](https://docs.appsmith.com/getting-started/setup/instance-configuration/email) list them.

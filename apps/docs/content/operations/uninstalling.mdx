@@ -2,3 +2,47 @@
 title: Uninstalling
 description: Remove Unbind from your servers.
 ---
+
+<Callout type="error" title="This deletes everything">
+  Uninstalling permanently deletes every service, database and volume on the instance. Download
+  anything you need first, and make sure your database backups are somewhere else.
+</Callout>
+
+## Uninstall
+
+On the server, run:
+
+```bash
+sudo unbind uninstall
+```
+
+It asks you to confirm. Then it removes the storage system and its data, removes k3s and everything running on it, and cleans up what they left on disk.
+
+If you added more servers, remove k3s on each of them as well:
+
+```bash
+sudo /usr/local/bin/k3s-agent-uninstall.sh
+```
+
+## Clean up the firewall rules
+
+Leftover network rules can get in the way of whatever you install next. Flush them:
+
+```bash
+sudo iptables -F
+sudo iptables -t nat -F
+sudo iptables -t mangle -F
+sudo iptables -X
+```
+
+Or reboot the server, which has the same effect.
+
+## What is not removed
+
+- **Packages** the installer added, like `git`, `curl` and the iSCSI tools.
+- **The swap file**, if the installer created one: `/swapfile` and its line in `/etc/fstab`.
+- **DNS records** at your DNS provider.
+- **The GitHub App** Unbind created in your GitHub account. Delete it under GitHub > **Settings** > **Developer settings** > **GitHub Apps**.
+- **Backups** in your S3 buckets.
+
+The cleanest way to leave is still to delete the server.

@@ -2,3 +2,27 @@
 title: System Settings
 description: Settings that apply to the whole instance.
 ---
+
+**System** > **Settings** holds the settings that apply to every team. It is for people who can manage the instance.
+
+## Wildcard Domain
+
+Services get their generated domains under this domain. With `unbind.example.com` here, a new service gets something like `api-k3x9pa.unbind.example.com`.
+
+Point a wildcard DNS record at your server **before** saving. The page shows the IP address to use. See [DNS Setup](/operations/dns-setup#the-wildcard-record).
+
+Changing it affects new generated domains only. Domains that services already have stay as they are.
+
+## Builds
+
+| Setting         | What it is                                             | Range   |
+| --------------- | ------------------------------------------------------ | ------- |
+| **Replicas**    | How many build workers run at once                     | 1 to 10 |
+| **Parallelism** | How many build steps each worker runs at the same time | 1 to 32 |
+
+Builds are the heaviest thing Unbind does. They compete with your running services for CPU and memory.
+
+- **One small server**: keep both low. A build that takes a little longer beats a site that slows down.
+- **Several servers**: raise **Replicas**, but not above the number of servers.
+
+If the build service is managed outside Unbind, these settings are shown but cannot be changed.

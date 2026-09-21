@@ -2,3 +2,28 @@
 title: Updating Unbind
 description: Move your instance to a newer version.
 ---
+
+Updates are started by you. Unbind never updates on its own.
+
+## Update
+
+Go to **System** > **Updates**. It shows your current version and, when there is a newer one, what changed in it.
+
+Press **Update Now**. The update takes a few minutes.
+
+- **Your services keep running** the whole time.
+- **The Unbind UI and API go down** for a short while. Deployments cannot start during that window.
+- You can close the page and come back.
+
+When it is done the page says **Updated to** and the new version. If it fails, Unbind rolls back to the version you had and offers **Retry Update**.
+
+## Before you update
+
+- Read what changed. Breaking changes are called out in the release notes on [GitHub](https://github.com/unbindapp/unbind/releases).
+- Do not update in the middle of a deployment you care about.
+
+## Servers
+
+Updating Unbind does not touch the operating system or the settings of your servers. When a release asks for it, run `sudo unbind update-node` on each server. See [Servers](/operations/servers#apply-new-settings-to-a-server).
+
+Operating system updates are yours to do. Reboot one server at a time.

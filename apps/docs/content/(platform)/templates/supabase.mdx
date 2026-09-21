@@ -1,13 +1,41 @@
 ---
 title: Supabase
 heading: Self-host Supabase with Unbind
-description: Deploy Supabase on your own servers with the Unbind template.
+description: Deploy Supabase on your own servers with Unbind. Postgres, auth, storage, edge functions and the Studio dashboard from one template.
 ---
+
+[Supabase](https://supabase.com) is an open-source Firebase alternative built on Postgres. This template gives you the database, auth, the REST API, storage, edge functions and the Studio dashboard.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Supabase" />
 
+Your data lives in the PostgreSQL service. Files uploaded through Supabase Storage go to the MinIO service, on a volume mounted at `/data`.
+
 ## What you fill in
 
 <TemplateInputs name="Supabase" />
+
+## After it deploys
+
+Everything you need is on the **Kong** service. Open it and look at its variables:
+
+| Variable               | What it is for                                                                    |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `DASHBOARD_USERNAME`   | Studio sign in. It is `admin`.                                                    |
+| `DASHBOARD_PASSWORD`   | Studio sign in.                                                                   |
+| `SUPABASE_ANON_KEY`    | The public key your frontend uses.                                                |
+| `SUPABASE_SERVICE_KEY` | The service role key. It bypasses row level security, so keep it on your backend. |
+| `JWT_SECRET`           | Signs the two keys above.                                                         |
+
+Open your domain and sign in to Studio. In your app, use `https://your-domain` as the Supabase URL with the anon key.
+
+## Good to know
+
+- **One domain**: Kong sits in front of every other service, so Studio, the APIs and storage all share the domain you picked.
+- **What is left out**: Realtime, image transformations and the analytics stack are not part of this template.
+- **Do not rename the dashboard user**: `DASHBOARD_USERNAME` is protected because the Kong configuration depends on it.
+- **Email**: auth emails need a mail server. Add the `GOTRUE_SMTP_*` variables to the Auth service and redeploy.
+- **It is a big template**: nine services. Give it the recommended resources or more.

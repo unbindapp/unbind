@@ -2,3 +2,57 @@
 title: Databases
 description: Create and manage databases next to your services.
 ---
+
+Unbind creates and runs databases for you. Open the command panel, pick **Database** and choose one:
+
+| Database   | Versions                      | Default |
+| ---------- | ----------------------------- | ------- |
+| PostgreSQL | 14, 15, 16, 17, 18            | 18      |
+| MySQL      | 8.0, 8.4                      | 8.4     |
+| Redis      | 8.4, 8.6, 8.8, 8.10           | 8.10    |
+| MongoDB    | 7.0, 8.0, 8.2, 8.3            | 8.3     |
+| ClickHouse | 24.12, 25.5, 26.3, 26.5, 26.7 | 26.3    |
+
+Pick the version and the storage size, then press **Deploy**. Storage starts at 1 GB. You can grow it later, but not shrink it.
+
+## Connect a service to it
+
+A database publishes its connection details as variables that other services can reference. You never copy a password by hand.
+
+On the service that needs the database, add a variable, type `$` in the value and pick the database's URL from the list:
+
+```bash
+DATABASE_URL=${Postgres.UNBIND_DATABASE_URL_PRIVATE}
+```
+
+Use the private URL. It works only from inside your Unbind instance and never leaves it. See [Variables](/services/variables) for how references work.
+
+The username, password and default database name are managed by Unbind. They show up on the database service as protected variables, and they cannot be edited or deleted.
+
+## Reach it from outside
+
+Databases are private by default. To connect from your laptop or an outside tool, open the database's settings and set **Network Access** to **Public**. The database then also gets a public address and a public URL variable.
+
+<Callout type="warn" title="Public means public">
+  Anyone on the internet can try to connect. Only the password protects the data. Switch back to
+  **Private** when you are done.
+</Callout>
+
+## Backups
+
+Backups go to an S3 compatible bucket. First [add a bucket](/teams/s3-storage) to the team. Then, in the database's settings under **Backups**:
+
+- **Backup Bucket**: where backups are stored.
+- **Backup Schedule**: every hour, every 6 or 12 hours, daily, weekly, or a custom cron expression like `0 3 * * *`.
+- **Backup Retention**: how many backups to keep. Older ones are deleted.
+
+Backups are available for PostgreSQL, MySQL, MongoDB and ClickHouse. Redis has none.
+
+<Callout title="Restoring">
+  There is no restore button in the UI yet. The backups are standard files in your bucket, written
+  by the backup tools of each database. Test a restore before you need one.
+</Callout>
+
+## PostgreSQL replication settings
+
+PostgreSQL has a **Database** section in its settings with **WAL Level**. Leave it on `replica` unless a tool asks for logical replication, such as change data capture. With `logical` you can also set **Replication Slots**, **WAL Senders** and **Slot WAL keep size**.

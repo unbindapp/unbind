@@ -1,13 +1,33 @@
 ---
 title: Ghost
 heading: Self-host Ghost with Unbind
-description: Deploy Ghost on your own servers with the Unbind template.
+description: Deploy Ghost on your own servers with Unbind. A blog and newsletter platform with memberships and paid subscriptions built in.
 ---
+
+[Ghost](https://ghost.org) is a publishing platform for blogs and newsletters, with memberships and paid subscriptions built in.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Ghost" />
 
+Posts, members and settings live in the MySQL service.
+
+<Callout type="warn" title="Images and themes are not kept yet">
+  The template does not create a volume for Ghost's content folder. Uploaded images and themes are
+  lost when the service is redeployed. Until that changes, [create a volume](/services/volumes) and
+  mount it on the Ghost service at `/var/lib/ghost/content`.
+</Callout>
+
 ## What you fill in
 
 <TemplateInputs name="Ghost" />
+
+## After it deploys
+
+Open `https://your-domain/ghost/`. Ghost asks you to create the owner account and name your site.
+
+## Good to know
+
+- **Email**: Ghost needs a mail service to send newsletters and sign-in links. Add the `mail__*` variables from the [Ghost mail docs](https://docs.ghost.org/config#mail) to the service and redeploy.

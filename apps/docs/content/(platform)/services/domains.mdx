@@ -2,3 +2,63 @@
 title: Domains
 description: Give a service a generated domain or your own.
 ---
+
+A service is reachable from the internet once it has a domain. Domains are managed under **Public Networking** in the service settings.
+
+## Generated domains
+
+Press **Add domain**, then **Generate**. You get a domain like `web-k3x9pa.your-domain.com` that works right away, with HTTPS.
+
+Generated domains need a wildcard DNS record on your instance. If **Generate** is not offered, the person who runs the instance has to set the **Wildcard Domain**. See [DNS Setup](/operations/dns-setup).
+
+## Your own domain
+
+<Steps>
+<Step>
+
+### Add the domain
+
+Press **Add domain** and type the domain, like `app.example.com`. Pick the **Port** your app listens on. Ports that Unbind detected are marked **Detected**.
+
+</Step>
+<Step>
+
+### Create the DNS record
+
+Unbind shows the record to create at your DNS provider:
+
+| Type | Name              | Content                  |
+| ---- | ----------------- | ------------------------ |
+| A    | `app.example.com` | your server's IP address |
+
+The status changes from **Waiting for DNS record** to **DNS record detected** once it resolves. You can save before that and add the record later.
+
+</Step>
+<Step>
+
+### Deploy
+
+Press **Deploy** on the changes bar. The certificate is requested from [Let's Encrypt](https://letsencrypt.org) on the first request and renewed for you. It can take a minute, and browsers may show a certificate warning until it is ready.
+
+</Step>
+</Steps>
+
+A service can have several domains, and each one can point at a different port.
+
+### Cloudflare
+
+If the record is proxied through Cloudflare (orange cloud), Unbind shows **Cloudflare detected**. That works for a normal domain. Set Cloudflare's SSL mode to **Full (strict)** so traffic between Cloudflare and your server stays encrypted.
+
+## Private networking
+
+Your services reach each other without going through the internet. Every service has a private address, shown under **Private Networking**. You rarely need to type it: [reference it from a variable](/services/variables) instead.
+
+```bash
+API_URL=${API.UNBIND_URL_PRIVATE}
+```
+
+A service with no domain is private. Workers, queues and internal APIs never need one.
+
+## Databases and other TCP services
+
+Domains are for HTTP. Databases are exposed with **Network Access** instead, which gives them a public address and port. See [Databases](/services/databases#reach-it-from-outside).

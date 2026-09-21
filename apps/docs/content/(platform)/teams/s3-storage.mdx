@@ -1,4 +1,34 @@
 ---
 title: S3 Storage
-description: Connect S3 compatible buckets for backups.
+description: Connect S3 compatible buckets for database backups.
 ---
+
+Unbind stores [database backups](/services/databases#backups) in a bucket you own. Any S3 compatible provider works: [AWS S3](https://aws.amazon.com/s3/), [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/), [Backblaze B2](https://www.backblaze.com/cloud-storage), [DigitalOcean Spaces](https://www.digitalocean.com/products/spaces), [Hetzner Object Storage](https://www.hetzner.com/storage/object-storage/), [MinIO](/templates/minio) and others.
+
+## Add a bucket
+
+Create the bucket and an access key at your provider first. Then go to **Team** > **Settings** > **Storage** and press **Add S3 Bucket**.
+
+| Field                 | Example                    |
+| --------------------- | -------------------------- |
+| **Display Name**      | `Backup Bucket`            |
+| **Endpoint**          | `https://s3.amazonaws.com` |
+| **Region**            | `us-east-1`                |
+| **Bucket**            | `my-backups`               |
+| **Access Key ID**     | from your provider         |
+| **Secret Access Key** | from your provider         |
+
+Some providers have no regions. Leave **Region** empty, or use what their docs say, which is often `auto`.
+
+Open the bucket after adding it. Unbind tests the connection and shows **Connected successfully** or the error it got.
+
+## Use it
+
+Buckets belong to the team, so every database in the team can use them. Pick one under **Backups** in a database's settings.
+
+## Good to know
+
+- **Give the key as little as possible.** It needs to read and write that one bucket, nothing more.
+- **Keep backups somewhere else.** A bucket on the same servers as the database does not help when those servers are gone.
+- **Editing keeps the secret.** When you edit a bucket, leave the key fields empty to keep the stored ones.
+- **Buckets cannot be managed through the API or MCP**, because their credentials should not pass through a model conversation.

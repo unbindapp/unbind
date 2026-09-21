@@ -2,3 +2,84 @@
 title: Troubleshooting
 description: Find out what is wrong and fix it.
 ---
+
+Start by working out which of two things is broken: one of **your services**, or **Unbind itself**.
+
+## A service is not working
+
+Everything you need is in the UI.
+
+- **The build failed**: open the deployment > **Build Logs**. The reason is in the last lines. See [Builds](/services/builds).
+- **It built but shows ERROR or CRASHING**: open **Deploy Logs**. Unbind puts the reason at the top.
+  - `OOMKilled`: it ran out of memory. Raise the [memory limit](/services/replicas-and-health#resource-limits).
+  - It exits right away: usually a missing [variable](/services/variables) or a wrong start command.
+  - It never becomes healthy: the [health check](/services/replicas-and-health#health-checks) path or port is wrong, or the app listens on `127.0.0.1` instead of `0.0.0.0`.
+- **The domain shows an error page**: the port on the [domain](/services/domains) does not match the port the app listens on.
+- **Certificate warning**: the certificate is issued after the DNS record resolves. Check the record, wait a minute and reload.
+- **A deployment stays QUEUED**: other builds are ahead of it. Two run at a time by default. See [System Settings](/operations/system-settings#builds).
+
+## Unbind itself is not working
+
+Connect to the first server. See [Cluster Access](/operations/cluster-access).
+
+### Quick health check
+
+```bash
+sudo kubectl get nodes
+sudo kubectl get pods -n unbind-system
+```
+
+Every server should be `Ready`, and every pod `Running` or `Completed`. Look closer at anything else:
+
+```bash
+sudo kubectl describe pod -n unbind-system <pod-name>
+sudo kubectl logs -n unbind-system <pod-name> --tail 100
+```
+
+### The UI does not load
+
+```bash
+sudo kubectl logs -n unbind-system deploy/unbind-api-deployment --tail 100
+sudo systemctl status k3s
+```
+
+- If `k3s` is not running, start it with `sudo systemctl start k3s` and read `sudo journalctl -u k3s -n 100`.
+- If the server was just rebooted, give it a few minutes. Everything starts on its own.
+- Check that ports 80 and 443 are open and that your DNS record still points at the server.
+
+### Deployments never start
+
+```bash
+sudo kubectl logs -n unbind-system deploy/unbind-operator-controller-manager --tail 100
+sudo kubectl get events -n unbind-system --sort-by=.lastTimestamp | tail -20
+```
+
+### A server is out of disk space
+
+A full disk is the most common cause of strange behavior: replicas that will not start, builds that fail halfway, a server shown as **Low disk space**.
+
+```bash
+df -h
+sudo k3s crictl rmi --prune
+```
+
+The second command removes images nothing uses. `sudo unbind update-node` does the same when the disk is more than 80% full. If the disk is still full, grow it or move [volumes](/services/volumes) and services to a bigger server.
+
+### Pods stuck in Pending
+
+```bash
+sudo kubectl describe pod -n <namespace> <pod-name>
+```
+
+The **Events** at the bottom say why. `Insufficient memory` or `Insufficient cpu` means the servers are full: [add a server](/operations/servers) or lower limits elsewhere.
+
+## Collect details before asking
+
+When you ask for help on [Discord](https://discord.gg/unbind) or [GitHub](https://github.com/unbindapp/unbind/issues), include:
+
+- The Unbind version, from **System** > **Updates**.
+- Your operating system and how many servers you have.
+- The output of the quick health check.
+- The logs of whatever is failing.
+
+Remove secrets and IP addresses before you post.

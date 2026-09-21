@@ -1,13 +1,23 @@
 ---
 title: NocoDB
 heading: Self-host NocoDB with Unbind
-description: Deploy NocoDB on your own servers with the Unbind template.
+description: Deploy NocoDB on your own servers with Unbind. Turn a database into a spreadsheet your whole team can use.
 ---
+
+[NocoDB](https://nocodb.com) puts a spreadsheet interface on top of a database. It is often used as an open-source Airtable alternative.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="NocoDB" />
 
+Attachments are kept on a volume mounted at `/usr/app/data/`. Tables and records live in the PostgreSQL service.
+
 ## What you fill in
 
 <TemplateInputs name="NocoDB" />
+
+## After it deploys
+
+Open your domain and sign up. The first account becomes the super admin.

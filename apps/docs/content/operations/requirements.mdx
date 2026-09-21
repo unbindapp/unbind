@@ -2,3 +2,47 @@
 title: Requirements
 description: The servers, operating systems and domain you need.
 ---
+
+## A server
+
+Any Linux server you have root access to: a VPS, a dedicated machine or something under your desk with a public IP address.
+
+|                    |                                                                                                    |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| **Architecture**   | x86_64 (Intel, AMD) or ARM64                                                                       |
+| **CPU and memory** | Not enforced. 2 cores and 4 GB is a comfortable start, 4 cores and 8 GB leaves real room for apps. |
+| **Disk**           | 40 GB or more. Images, build caches, logs and volumes all live here.                               |
+| **Ports**          | 80 and 443 open to the internet                                                                    |
+
+Unbind itself needs part of the first server: roughly a core and 2 GB of memory for the platform, builds, logs and metrics. Servers you add later do not carry that overhead.
+
+On servers with less than 8 GB of memory, the installer offers to create a swap file.
+
+Use a fresh server. The installer sets up the machine the way it needs it and expects not to share it with other software.
+
+## Operating system
+
+| Distribution      | Versions            |
+| ----------------- | ------------------- |
+| **Ubuntu**        | 24.04, 25.10, 26.04 |
+| **Debian**        | 12, 13              |
+| **Fedora**        | 43, 44              |
+| **CentOS Stream** | 9, 10               |
+| **Rocky Linux**   | 9 and later         |
+| **AlmaLinux**     | 9 and later         |
+| **openSUSE Leap** | 15 and later        |
+
+The installer stops on anything else. Ubuntu 24.04 is the most used and the safest pick.
+
+## A domain
+
+You need a domain, or a subdomain of one, where you can add DNS records. For example:
+
+- `unbind.example.com` for the Unbind UI.
+- `*.unbind.example.com` so that every service can get a domain like `api-k3x9pa.unbind.example.com` on its own.
+
+The wildcard record is optional but strongly recommended. [DNS Setup](/operations/dns-setup) has the details.
+
+## For more than one server
+
+Every server has to reach the first one on port 6443, and the servers should be able to talk to each other freely on a private network or through the firewall. See [Servers](/operations/servers).

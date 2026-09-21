@@ -2,3 +2,46 @@
 title: What an Agent Can Do
 description: The tools an agent gets and how they map to the API.
 ---
+
+The MCP server has no logic of its own. Every tool is an operation of the HTTP API, called the same way, with the same validation and the same permissions. If the [reference](/api/reference/teams/list-teams) says an operation does something, the tool with that name does exactly that.
+
+There are about 60 tools, and more than half of them only read.
+
+## What is covered
+
+| Area                          | Examples                                                                           |
+| ----------------------------- | ---------------------------------------------------------------------------------- |
+| Teams, projects, environments | `list-teams`, `create-project`, `create-environment`                               |
+| Services                      | `create-service`, `update-service`, `list-available-databases`                     |
+| Deployments                   | `trigger-deployment`, `get-deployment`, `redeploy-deployment`, `cancel-deployment` |
+| Variables                     | `list-variables`, `update-variables`, `list-available-references`                  |
+| Volumes                       | `create-volume`, `update-volume`, `get-volume-metrics`                             |
+| Templates                     | `list-templates`, `deploy-template`                                                |
+| Service groups                | `create-service-group`, `update-service-group-template-inputs`                     |
+| Logs and metrics              | `query-logs`, `get-metrics`, `get-system-metrics`                                  |
+| Replicas                      | `list-replicas`, `get-replica-health`, `restart-replicas`                          |
+| Docker Hub                    | `search-docker-images`, `list-docker-tags`                                         |
+| Servers                       | `list-servers`, `get-server`                                                       |
+| Changes                       | `apply-changes`, with a dry run that shows what would be affected                  |
+| You                           | `me`                                                                               |
+
+## What is left out, and why
+
+- **Webhooks**: their URLs carry secrets.
+- **S3 buckets**: creating or editing one means sending credentials, and those should not pass through a model conversation. Agents can list buckets and pick one for backups.
+- **Team settings**: managed in the UI.
+- **Live log streaming**: `query-logs` returns the same data.
+- **Anything that needs a browser session**: API keys, connected apps, the GitHub connection, system settings, users and the terminal.
+
+## How an agent finds its way
+
+The server gives every client a short set of instructions. They are worth knowing, because they describe how Unbind behaves through the API in general:
+
+- Resources nest as team > project > environment > service, and most tools need the IDs of every level above. Agents find them with `list-teams`, `list-projects`, `list-environments` and `list-service`.
+- Names are unique among siblings and case sensitive. A taken name answers "conflict", except for `create-service`, `create-service-group`, `create-volume` and `deploy-template`, which add a short suffix and keep going.
+- Agents call `me` first to learn their role and limits.
+- Creating or updating a service does not roll it out. The agent calls `trigger-deployment`, polls `get-deployment` until it finishes, and reads `query-logs` when a build or a replica fails.
+
+## Hints for the client
+
+Each tool tells the client whether it only reads, whether it destroys something, and whether calling it twice is safe. Good clients use these hints to ask you before a destructive call. Every delete is marked destructive.

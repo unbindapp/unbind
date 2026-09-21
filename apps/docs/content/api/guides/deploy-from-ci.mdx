@@ -1,0 +1,83 @@
+---
+title: Deploy from CI
+description: Trigger a deployment from a pipeline and wait for the result.
+---
+
+Services created from GitHub already deploy on every push. Use this when you want your pipeline to decide instead: deploy only after the tests pass, deploy an image you built elsewhere, or deploy on a schedule.
+
+## What you need
+
+- An [API key](/api/authentication) with the **editor** role, limited to the service.
+- The IDs of the team, project, environment and service. Open the service in the UI and copy them from the address bar, or use the list operations.
+
+Store the key as a secret in your CI system.
+
+## Trigger and wait
+
+```bash title="deploy.sh"
+#!/usr/bin/env bash
+set -euo pipefail
+
+API="https://unbind.example.com/api/go"
+AUTH="Authorization: Bearer $UNBIND_API_KEY"
+IDS="team_id=$TEAM_ID&project_id=$PROJECT_ID&environment_id=$ENVIRONMENT_ID&service_id=$SERVICE_ID"
+
+deployment_id=$(curl -fsS -X POST "$API/deployments/create" \
+  -H "$AUTH" -H "Content-Type: application/json" \
+  -d "{\"team_id\":\"$TEAM_ID\",\"project_id\":\"$PROJECT_ID\",\"environment_id\":\"$ENVIRONMENT_ID\",\"service_id\":\"$SERVICE_ID\"}" \
+  | jq -r '.data.id')
+
+echo "Deployment $deployment_id started"
+
+while true; do
+  status=$(curl -fsS "$API/deployments/get?$IDS&deployment_id=$deployment_id" -H "$AUTH" | jq -r '.data.status')
+  echo "Status: $status"
+
+  case "$status" in
+    active) exit 0 ;;
+    build-failed | build-cancelled | launch-error | crashing | removed) exit 1 ;;
+  esac
+
+  sleep 10
+done
+```
+
+`build-succeeded` is not the end. It means the image is ready and the new version is still starting. Wait for `active`.
+
+## Statuses
+
+| Status                            | Meaning                    |
+| --------------------------------- | -------------------------- |
+| `build-pending`, `build-queued`   | Waiting for a build slot   |
+| `build-running`                   | Building                   |
+| `build-succeeded`, `launching`    | Built, starting            |
+| `active`                          | Done, serving traffic      |
+| `build-failed`, `build-cancelled` | The build did not finish   |
+| `launch-error`, `crashing`        | Built, but it does not run |
+
+## Show the build logs when it fails
+
+```bash
+curl -fsS "$API/logs/query?type=build&$IDS&deployment_id=$deployment_id&limit=200" \
+  -H "$AUTH" | jq -r '.data[].message'
+```
+
+Use `type=deployment` for what the app printed while starting.
+
+## Options
+
+The body of `POST /deployments/create` also takes:
+
+- `git_sha`: deploy a specific commit instead of the newest one.
+- `disable_build_cache`: build from scratch.
+
+## Deploying an image you built yourself
+
+For a service created from a Docker image, update the image first and then deploy:
+
+```bash
+curl -fsS -X PUT "$API/services/update" -H "$AUTH" -H "Content-Type: application/json" \
+  -d "{\"team_id\":\"$TEAM_ID\",\"project_id\":\"$PROJECT_ID\",\"environment_id\":\"$ENVIRONMENT_ID\",\"service_id\":\"$SERVICE_ID\",\"image\":\"ghcr.io/acme/api:$GIT_SHA\"}"
+```
+
+Then run the script above.

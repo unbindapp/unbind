@@ -34,6 +34,7 @@ export default defineConfig({
         { path: "/llms-full.txt" },
         { path: "/llms.txt" },
         { path: "/sitemap.xml" },
+        { path: "/404" },
       ],
     }),
     react(),

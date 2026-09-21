@@ -1,13 +1,33 @@
 ---
 title: Umami
 heading: Self-host Umami with Unbind
-description: Deploy Umami on your own servers with the Unbind template.
+description: Deploy Umami on your own servers with Unbind. Simple, privacy focused web analytics that you own.
 ---
+
+[Umami](https://umami.is) is simple, privacy focused web analytics. It is often used as a Google Analytics alternative.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Umami" />
 
+Everything lives in the PostgreSQL service. The template creates no volume.
+
 ## What you fill in
 
 <TemplateInputs name="Umami" />
+
+## After it deploys
+
+Open your domain and sign in with Umami's default account:
+
+- **Username**: `admin`
+- **Password**: `umami`
+
+<Callout type="warn" title="Change the password right away">
+  Every Umami install starts with the same login. Change it under **Profile** before you do anything
+  else.
+</Callout>
+
+Then add your website and put the tracking script Umami shows you on your pages.

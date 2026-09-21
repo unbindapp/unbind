@@ -1,13 +1,29 @@
 ---
 title: n8n
 heading: Self-host n8n with Unbind
-description: Deploy n8n on your own servers with the Unbind template.
+description: Deploy n8n on your own servers with Unbind. Workflow automation with a worker, a queue and a database already wired up.
 ---
+
+[n8n](https://n8n.io) is a workflow automation tool. You connect apps, APIs and AI models with a visual editor, and drop into code when you need to.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="n8n" />
 
+Workflows, credentials and execution history live in the PostgreSQL service. The template creates no volume.
+
 ## What you fill in
 
 <TemplateInputs name="n8n" />
+
+## After it deploys
+
+Open your domain. n8n asks you to create the owner account.
+
+## Good to know
+
+- **Runs in queue mode**: the n8n service serves the editor and receives webhooks, and the n8n Worker service runs the executions, with Redis as the queue between them. Manual runs from the editor go to the worker too.
+- **More throughput**: raise the [replicas](/services/replicas-and-health) of the n8n Worker service.
+- **Keep the encryption key**: `N8N_ENCRYPTION_KEY` on the n8n service encrypts your saved credentials. If you lose it, those credentials cannot be read again.

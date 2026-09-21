@@ -1,4 +1,36 @@
 ---
 title: Members and Permissions
-description: Invite people and decide what they can see and change.
+description: Who can see and change what, and how roles work.
 ---
+
+<Callout title="Member management is on the way">
+  Inviting people and managing their access from the UI is not available yet. The **Members** tabs
+  in team and project settings say **Coming Soon**. This page explains the roles that already apply
+  everywhere else, including API keys and connected apps.
+</Callout>
+
+## Roles
+
+Unbind has three roles. Each one includes everything the one before it can do.
+
+| Role       | Can do                                                                       |
+| ---------- | ---------------------------------------------------------------------------- |
+| **Viewer** | Read configuration, logs and metrics. Sees variable names, not their values. |
+| **Editor** | Also deploy, change settings and read variable values.                       |
+| **Admin**  | Also delete things and manage access.                                        |
+
+Editors cannot delete. If a delete is refused, that is why.
+
+## Where a role applies
+
+A role is given on something: the whole instance, a team, a project, an environment or a single service. It covers everything underneath. An editor on a project is an editor on all of its environments and services.
+
+## Roles for API keys and apps
+
+You already use this model when you create an [API key](/api/authentication) or approve a [connected app](/api/connected-apps). You pick a role and, if you want, the specific teams, projects, environments or services it can reach. A key can never do more than you can.
+
+This is the right way to give a CI pipeline or an AI agent access: an editor key limited to one project, not a key that can reach everything.
+
+## Your account
+
+Your account settings, under your avatar, have your email, your password, your API keys and your connected apps. Changing your password does not sign out other sessions and does not revoke API keys.

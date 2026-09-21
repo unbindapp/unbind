@@ -2,3 +2,80 @@
 title: Deployments
 description: Follow, cancel and redeploy deployments.
 ---
+
+Every time a service is built or rolled out, Unbind creates a deployment. The service's **Deployments** tab lists them, newest first, with the commit that caused each one.
+
+## Statuses
+
+| Status        | What it means                                              |
+| ------------- | ---------------------------------------------------------- |
+| **QUEUED**    | Waiting for a free build slot.                             |
+| **BUILDING**  | The build is running.                                      |
+| **LAUNCHING** | The build is done and the new version is starting.         |
+| **ACTIVE**    | This version is running and serving traffic.               |
+| **FAILED**    | The build failed. Open **Build Logs**.                     |
+| **ERROR**     | The build worked, but the new version could not start.     |
+| **CRASHING**  | It started and keeps stopping. Open **Deploy Logs**.       |
+| **CANCELLED** | Someone aborted the build.                                 |
+| **REMOVED**   | An older deployment that was replaced, or one you removed. |
+
+A failed deployment does not take your service down. The last working version keeps running until a new one is ready.
+
+## What starts a deployment
+
+- **A push to GitHub**, for services created from a repository. See [Deploy from GitHub](/services/deploy-from-github).
+- **The Deploy button** on the changes bar, after you change settings or variables.
+- **Redeploy** or **Rollback** on an existing deployment.
+- **The API**. See [API & MCP](/api).
+
+## Staged changes
+
+Changing a setting or a variable does not touch the running service. The change is staged, and a bar appears at the bottom: **Apply 3 changes**.
+
+- **Details** shows every change with its current and new value, and which services are affected.
+- **Deploy** rolls everything out at once.
+- **Discard All** throws the changes away.
+
+Unbind does the least work that makes the change take effect. Each affected service shows what will happen to it:
+
+| Action         | When                                                                                      |
+| -------------- | ----------------------------------------------------------------------------------------- |
+| **Rebuild**    | The source or a build setting changed, like the branch or the build command.              |
+| **Redeploy**   | A runtime setting changed, like replicas, ports or a volume. The current image is reused. |
+| **Restart**    | Only variables changed.                                                                   |
+| **No rollout** | Nothing running is affected.                                                              |
+
+Because variables can reference other services, one change can affect several services. They all show up in the list before you confirm.
+
+Creating or deleting a service, and the actions below, happen right away. They are not staged.
+
+## Actions on a deployment
+
+Open the menu on a deployment.
+
+### Redeploy
+
+Runs the deployment again. Two options:
+
+- **Skip cache** builds from scratch. Use it when the cache seems to be the problem.
+- **Skip build if possible** reuses the existing image and only rolls it out again.
+
+### Rollback
+
+Available on older deployments. It brings that version back using the image that was already built, so it is fast and needs no build.
+
+### Restart
+
+Restarts the running version without building or changing anything.
+
+### Abort
+
+Stops a build that is queued or running.
+
+### Remove
+
+Takes the current deployment down. **The service goes offline** until you deploy again. Databases cannot be removed this way.
+
+## Logs
+
+Each deployment has **Build Logs** and **Deploy Logs**. The second one is what your app prints while it runs. See [Logs](/monitoring/logs) for searching.

@@ -1,13 +1,23 @@
 ---
 title: Teable
 heading: Self-host Teable with Unbind
-description: Deploy Teable on your own servers with the Unbind template.
+description: Deploy Teable on your own servers with Unbind. A fast, open-source Airtable alternative built on Postgres.
 ---
+
+[Teable](https://github.com/teableio/teable) is an open-source Airtable alternative built on Postgres. It stays fast with large tables.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Teable" />
 
+Attachments are kept on a volume mounted at `/app/.assets`. Tables and records live in the PostgreSQL service.
+
 ## What you fill in
 
 <TemplateInputs name="Teable" />
+
+## After it deploys
+
+Open your domain and sign up. The first account becomes the admin.

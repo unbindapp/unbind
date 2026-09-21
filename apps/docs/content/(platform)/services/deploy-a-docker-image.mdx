@@ -1,4 +1,32 @@
 ---
 title: Deploy a Docker Image
-description: Run any public or private image as a service.
+description: Run any public image as a service.
 ---
+
+If your app already ships as an image, or you want to run someone else's software, deploy the image directly. There is no build step.
+
+## Create the service
+
+Open the command panel, pick **Docker Image** and search. Results come from Docker Hub. You can also type an image from another registry:
+
+```text
+ghcr.io/imgproxy/imgproxy
+quay.io/keycloak/keycloak
+registry.gitlab.com/group/project
+```
+
+Unbind reads the ports the image exposes and suggests them for the domain. Check the domain, the port and the [variables](/services/variables), then press **Deploy**.
+
+## Pick a version
+
+Under **Source** > **Tag** in the service settings you can search the image's tags. Pin a specific version like `nginx:1.29` rather than `latest`, so a redeploy never surprises you with a new major version.
+
+The tag search works for Docker Hub images. For other registries, type the tag as part of the image name.
+
+## Updating
+
+Image services do not redeploy on their own. To move to a new version, change the tag and press **Deploy** on the changes bar.
+
+## Private images
+
+There is no place in the UI yet to add credentials for a private registry, so images have to be publicly pullable. If your image is private, [deploy from GitHub](/services/deploy-from-github) with a Dockerfile instead. The image Unbind builds stays inside your instance.

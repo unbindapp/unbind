@@ -1,4 +1,48 @@
 ---
 title: Logs
-description: Search and follow logs from a service, an environment or a whole project.
+description: Search and follow logs from a service, an environment or a single deployment.
 ---
+
+Unbind collects everything your services print to standard output and standard error. There is nothing to set up.
+
+## Where to find them
+
+- **A whole environment**: the **Logs** tab of a project shows every service in the current environment together.
+- **One service**: the **Logs** tab of the service.
+- **One deployment**: open a deployment for **Deploy Logs**, what the app printed, and **Build Logs**, what the build printed.
+
+Logs are **Live** by default and new lines appear as they happen. Scroll up to load older ones. Picking a time range that ends in the past switches to **Historical**.
+
+## Search
+
+Type in the search bar. Plain words are enough most of the time.
+
+| You type               | You get                                        |
+| ---------------------- | ---------------------------------------------- |
+| `timeout`              | Lines containing "timeout", in any letter case |
+| `"Connection refused"` | That exact phrase, matching case               |
+| `timeout database`     | Lines with both words                          |
+| `timeout OR refused`   | Lines with either                              |
+| `-healthcheck`         | Lines without "healthcheck"                    |
+| `@level:error`         | Only errors                                    |
+| `@service:API`         | Only one service, in the environment view      |
+| `@range:1h`            | The last hour                                  |
+| `@status:500`          | JSON logs where the `status` field matches     |
+
+The last one works for any field if your app logs JSON, like `@user_id:42` or `@path:/checkout`. Logging JSON is worth it for this alone.
+
+You can combine them: `@level:error @service:API -timeout`.
+
+## Filters
+
+The filter menu has the same options as clickable choices:
+
+- **Levels**: Debug, Info, Warning, Error.
+- **Time Range**: from 5 minutes to 30 days, or a custom **From** and **Until**.
+- **Services**: which services to include, in the environment view.
+
+The view menu lets you hide the timestamp and service name columns, toggle **Line Wrapping** and **Auto Follow**, and **Download Logs** as a file.
+
+## How long logs are kept
+
+Three days by default. The person who runs the instance can change it. If you need logs for longer, ship them from your app to a service built for that.

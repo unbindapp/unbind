@@ -2,3 +2,46 @@
 title: Volumes
 description: Keep data around between deployments.
 ---
+
+A service's filesystem is thrown away on every deployment. Anything your app writes to disk and needs later belongs on a volume: uploads, SQLite files, caches you want to keep.
+
+Databases you create through Unbind manage their own storage. You do not add volumes to them.
+
+## Create a volume
+
+Open the command panel and pick **Volume**. Choose the service to attach it to, then the path where it should appear inside the service. The default is `/data`.
+
+Press **Deploy** on the changes bar. The volume is created and the service restarts with it mounted.
+
+- **One volume per service.**
+- **The path has to match your app.** If your app writes uploads to `/app/uploads`, mount the volume there.
+
+## Size
+
+A new volume starts small. Open it to see **Usage**: how much is used out of the total. Unbind warns you at 75% and again at 85%.
+
+To grow it, use **Expand**, pick the new size and confirm. It takes a couple of minutes and the data stays in place.
+
+<Callout type="warn" title="Volumes only grow">
+  A volume cannot be made smaller. Start small and expand when you need to.
+</Callout>
+
+## Replicas
+
+A volume can be attached to one replica at a time. A service with a volume should run a single [replica](/services/replicas-and-health), and during a deployment the old version stops before the new one starts, so expect a short gap.
+
+If you need several replicas, keep the state somewhere shared instead: a database, or [S3 compatible storage](/templates/minio).
+
+## Move a volume
+
+Open the volume and change the **Service** or the **Mount Path** under **Connection**. The data moves with it.
+
+## Delete
+
+- **Deleting a service keeps its volume.** The volume stays in the environment, unattached, and can be attached to another service.
+- **Deleting an environment or a project deletes its volumes**, with everything in them.
+- **A volume can be deleted only when nothing is attached.** Open it and use **Delete Volume**. This cannot be undone.
+
+## Backups
+
+Volumes are not backed up by Unbind. [Database backups](/services/databases#backups) cover databases only. If the files matter, copy them somewhere else on a schedule.

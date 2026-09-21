@@ -18,16 +18,14 @@ Names are unique among siblings. Two projects in the same team cannot share a na
 
 ## Team
 
-A team is the top level. It holds projects, members and the settings they share, like S3 storage and webhooks.
-
-- **Members**: People are invited to a team and can be limited to certain projects or environments. See [Members and Permissions](/teams/members-and-permissions).
+A team is the top level. It holds projects and the settings they share, like [S3 storage](/teams/s3-storage), variables and [webhooks](/monitoring/webhooks).
 
 ## Project
 
 A project is one product or one codebase. A web app, its worker and its database usually belong in the same project.
 
 - **Environments**: Every project starts with a `production` environment. Add more for staging or previews.
-- **Shared settings**: A project has its own variables, webhooks and members.
+- **Shared settings**: A project has its own variables and webhooks.
 
 ## Environment
 
@@ -46,8 +44,9 @@ A service is one thing that runs. It can be:
 Each service has its own [variables](/services/variables), [domains](/services/domains), [volumes](/services/volumes) and [deployments](/services/deployments).
 
 <Callout title="Changing a service does not roll it out">
-  When you edit a service, the change waits until the next deployment. This lets you change several
-  things and roll them out together.
+  When you edit a service, the change is staged. Nothing happens until you press **Deploy** on the
+  changes bar, so you can change several things and roll them out together. See
+  [Deployments](/services/deployments#staged-changes).
 </Callout>
 
 ## Service group

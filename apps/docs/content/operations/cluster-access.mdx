@@ -2,3 +2,45 @@
 title: Cluster Access
 description: Reach the cluster underneath Unbind when you need to.
 ---
+
+Unbind runs on [Kubernetes](https://kubernetes.io), installed as [k3s](https://k3s.io). You never need to touch it for normal work. When you are debugging the instance itself, direct access helps.
+
+## On the server
+
+`kubectl` is already installed. Run it as root:
+
+```bash
+sudo kubectl get nodes
+sudo kubectl get pods -n unbind-system
+```
+
+The configuration file is `/etc/rancher/k3s/k3s.yaml`, readable by root only.
+
+## From your own machine
+
+Copy that file to your machine and replace `127.0.0.1` in it with your server's IP address. Port 6443 has to be reachable from where you are.
+
+```bash
+scp root@203.0.113.10:/etc/rancher/k3s/k3s.yaml ~/.kube/unbind.yaml
+sed -i 's/127.0.0.1/203.0.113.10/' ~/.kube/unbind.yaml
+KUBECONFIG=~/.kube/unbind.yaml kubectl get nodes
+```
+
+<Callout type="warn" title="This file is full admin access">
+  Whoever has it controls every team, every service and every secret on the instance. Do not open
+  port 6443 to the whole internet. Allow your own IP address, or use an SSH tunnel.
+</Callout>
+
+## Where things are
+
+| Namespace         | What is in it                                                                                               |
+| ----------------- | ----------------------------------------------------------------------------------------------------------- |
+| `unbind-system`   | Unbind itself: the API and UI, the operator, builds, the registry, logs, metrics, and Unbind's own database |
+| `longhorn-system` | Storage                                                                                                     |
+| One per team      | Everything that team runs                                                                                   |
+
+Inside a team's namespace, every resource carries labels for its team, project, environment and service, so you can filter by them.
+
+## Look, do not touch
+
+Unbind manages what it creates. If you edit or delete one of its resources by hand, Unbind puts it back on the next deployment, or gets confused. Make changes through the UI or the [API](/api), and use `kubectl` to look.

@@ -8,6 +8,10 @@ function findTemplate(name: string): Template {
   return template;
 }
 
+function formatDefault(input: Template["inputs"][number]) {
+  return input.type.endsWith("-size") ? `${input.default} GB` : input.default;
+}
+
 function formatAmount(amount: number, unit: string) {
   return `${amount} ${unit}`;
 }
@@ -65,7 +69,7 @@ export function TemplateInputs({ name }: { name: string }) {
               {input.required ? "" : " (optional)"}
             </td>
             <td>{input.description}</td>
-            <td>{input.default ? <code>{input.default}</code> : null}</td>
+            <td>{input.default ? <code>{formatDefault(input)}</code> : null}</td>
           </tr>
         ))}
       </tbody>

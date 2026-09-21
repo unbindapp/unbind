@@ -2,3 +2,76 @@
 title: Deploy from GitHub
 description: Connect a repository and deploy it on every push.
 ---
+
+Unbind can build a repository and deploy it again every time you push.
+
+## Connect GitHub
+
+This is done once per GitHub account or organization, by someone who can change system settings.
+
+<Steps>
+<Step>
+
+### Start the connection
+
+Open the command panel, pick **GitHub Repo**, then **Configure GitHub App**. Choose **Personal** for your own account or **Organization** and type the organization's name.
+
+</Step>
+<Step>
+
+### Create the GitHub App
+
+A GitHub window opens with everything filled in. Confirm it. This creates a private GitHub App that belongs to you, not to us. It can read code and metadata, and it receives push events.
+
+</Step>
+<Step>
+
+### Pick the repositories
+
+GitHub asks where to install the app. Choose all repositories or only some. Private repositories work the same as public ones.
+
+</Step>
+</Steps>
+
+When the window closes you see **GitHub app connected**.
+
+<Callout title="One connection per account">
+  A connection made for your personal account cannot see an organization's repositories. Connect the
+  organization as well.
+</Callout>
+
+## Create the service
+
+Open the command panel, pick **GitHub Repo** and choose a repository. Unbind creates the service right away and looks at the code to work out the framework and the port it listens on.
+
+Before the first deployment you can check:
+
+- **Repository** and **Branch**: the default branch is selected. Pick another one if you need to.
+- **Domain and port**: a generated domain is suggested. See [Domains](/services/domains).
+- **Variables**: add what the app needs. See [Variables](/services/variables).
+- **Advanced Settings**: the builder and its commands. See [Builds](/services/builds).
+
+Press **Deploy**.
+
+## Deploy on every push
+
+Services created from GitHub deploy on every push to their branch. You can change the branch later under **Source** in the service settings.
+
+### Watch paths
+
+In a monorepo you do not want every push to redeploy every service. Under **Build** > **Watch Paths**, add gitignore-style patterns. A push then deploys only when one of the changed files matches.
+
+```text
+apps/web/**
+packages/ui/**
+!**/*.md
+```
+
+- **Empty list**: every push deploys.
+- **Order matters**: the last pattern that matches a file wins, so put `!` exclusions at the end.
+- **Limits**: up to 100 patterns, 256 characters each.
+
+<Callout type="warn" title="Some pushes always deploy">
+  GitHub does not list changed files for force pushes, for a branch that was just created, or for
+  very large pushes. Those deploy no matter what the watch paths say.
+</Callout>

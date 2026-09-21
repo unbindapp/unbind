@@ -2,3 +2,56 @@
 title: How Unbind Works
 description: What runs under the hood, for the curious.
 ---
+
+You do not need any of this to use Unbind. It is here for when you want to know what is on your server, or when you are debugging the instance itself.
+
+Unbind is a layer on top of [Kubernetes](https://kubernetes.io). The UI talks about services, replicas and servers on purpose, so you never have to think in Kubernetes terms. Underneath, everything is a standard Kubernetes resource that you can inspect. See [Cluster Access](/operations/cluster-access).
+
+## What a deployment does
+
+1. **You push, or press Deploy.** The Unbind API records a deployment and puts it in the build queue.
+2. **A build runs.** The code is built into an image with [Railpack](https://railpack.com) or your Dockerfile, using [BuildKit](https://github.com/moby/buildkit).
+3. **The image is pushed** to the registry, by default one that runs inside your instance.
+4. **The API describes the service** as a custom resource: image, ports, domains, variables, volumes, health checks.
+5. **The Unbind operator turns that into Kubernetes resources**, and the new version starts next to the old one.
+6. **Traffic switches** once the new version is healthy. Certificates for new domains are requested from [Let's Encrypt](https://letsencrypt.org).
+
+## How Unbind's words map to Kubernetes
+
+| In Unbind            | Underneath                                                        |
+| -------------------- | ----------------------------------------------------------------- |
+| Server               | Node                                                              |
+| Team                 | Namespace. Roles are enforced here as well.                       |
+| Project, Environment | Labels on everything inside                                       |
+| Service              | A custom resource, turned into a Deployment, a Service and routes |
+| Replica              | Pod                                                               |
+| Variables            | Secret                                                            |
+| Volume               | PersistentVolumeClaim                                             |
+| Database             | A resource managed by a database operator                         |
+
+## What is installed
+
+Everything lives in the `unbind-system` namespace, except storage.
+
+| Part                         | What does it                                                                                               |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Kubernetes                   | [k3s](https://k3s.io)                                                                                      |
+| Storage                      | [Longhorn](https://longhorn.io)                                                                            |
+| Traffic and routing          | [Envoy Gateway](https://gateway.envoyproxy.io). Older installs use ingress-nginx.                          |
+| Certificates                 | [cert-manager](https://cert-manager.io) with Let's Encrypt                                                 |
+| Builds                       | BuildKit and Railpack                                                                                      |
+| Image storage                | A Docker registry, unless you chose an external one                                                        |
+| Logs                         | [Loki](https://grafana.com/oss/loki/) with [Alloy](https://grafana.com/oss/alloy/), kept 3 days by default |
+| Metrics                      | [VictoriaMetrics](https://victoriametrics.com), kept 7 days by default                                     |
+| Unbind's own data            | PostgreSQL and Redis                                                                                       |
+| Installing Redis and MongoDB | [Flux](https://fluxcd.io)                                                                                  |
+
+The Unbind UI and API are a single program in a single image. The operator is a second one.
+
+## Databases
+
+Databases you create are run by operators that specialize in them: [Zalando's operator](https://github.com/zalando/postgres-operator) for PostgreSQL, [MOCO](https://github.com/cybozu-go/moco) for MySQL, [Altinity's operator](https://github.com/Altinity/clickhouse-operator) for ClickHouse, and Helm charts for Redis and MongoDB. That is where backups and version handling come from.
+
+## Open source all the way down
+
+Every part of this is open source, and so is Unbind, under the MIT license. The code is on [GitHub](https://github.com/unbindapp/unbind).

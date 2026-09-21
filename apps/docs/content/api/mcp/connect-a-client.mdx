@@ -1,4 +1,66 @@
 ---
 title: Connect a Client
-description: Add the Unbind MCP server to Claude, Cursor and other clients.
+description: Add the Unbind MCP server to Claude, ChatGPT, Cursor and other clients.
 ---
+
+Unbind has an [MCP](https://modelcontextprotocol.io) server built in. Connect an AI agent to it and the agent can deploy services, read logs, change variables and debug failed deployments for you, within the limits you set.
+
+## The URL
+
+```text
+https://unbind.example.com/mcp
+```
+
+Your own URL is shown under your avatar > **Account Settings** > **Connected Apps**.
+
+## Connect with OAuth
+
+Most clients support this, and it is the easiest way. Add the URL as a custom connector or remote MCP server in your client. The client sends you to Unbind, where you pick what it may access and press **Approve**. See [Connected Apps](/api/connected-apps#approving-an-app).
+
+- **Claude**: **Settings** > **Connectors** > **Add custom connector**, and paste the URL.
+- **ChatGPT**: **Settings** > **Connectors**, with developer mode on, and add the URL.
+- **Claude Code**:
+
+```bash
+claude mcp add --transport http unbind https://unbind.example.com/mcp
+```
+
+Then run `/mcp` inside Claude Code to sign in.
+
+## Connect with an API key
+
+For clients without OAuth, or for agents that run unattended, use an [API key](/api/authentication) as a bearer token.
+
+```bash
+claude mcp add --transport http unbind https://unbind.example.com/mcp \
+  --header "Authorization: Bearer unb_your_key"
+```
+
+Clients configured with JSON, like Cursor, look like this:
+
+```json
+{
+  "mcpServers": {
+    "unbind": {
+      "url": "https://unbind.example.com/mcp",
+      "headers": { "Authorization": "Bearer unb_your_key" }
+    }
+  }
+}
+```
+
+## Try it
+
+Ask something that only needs reading:
+
+> List my Unbind projects and tell me if any service is crashing.
+
+Then something real:
+
+> The last deployment of the API service failed. Find out why.
+
+The agent reads the deployment, pulls the build logs and tells you what broke.
+
+## Before you hand over the keys
+
+Read [Limiting Access](/api/mcp/limiting-access). An agent with editor access to everything can redeploy anything you can.

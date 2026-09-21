@@ -1,13 +1,27 @@
 ---
 title: Formbricks
 heading: Self-host Formbricks with Unbind
-description: Deploy Formbricks on your own servers with the Unbind template.
+description: Deploy Formbricks on your own servers with Unbind. Run surveys and collect feedback with an open-source Typeform alternative.
 ---
+
+[Formbricks](https://formbricks.com) is an open-source survey and feedback tool, often used as a Typeform alternative. It does link surveys, website surveys and in-app surveys.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Formbricks" />
 
+Uploaded files are kept on a volume mounted at `/home/nextjs/apps/web/uploads/`. Surveys and responses live in the PostgreSQL service.
+
 ## What you fill in
 
 <TemplateInputs name="Formbricks" />
+
+## After it deploys
+
+Open your domain and sign up. The first account becomes the owner of the instance.
+
+## Good to know
+
+- **Email is off**: email verification and password reset are disabled because no mail server is set up. To turn them on, add your SMTP settings to the service variables, remove `EMAIL_VERIFICATION_DISABLED` and `PASSWORD_RESET_DISABLED`, and redeploy. The [Formbricks docs](https://formbricks.com/docs/self-hosting/configuration/smtp) list the variables.

@@ -2,3 +2,27 @@
 title: Service Groups
 description: Keep services that belong together in one group.
 ---
+
+A service group is a labelled box around services that belong together. It has a name, an icon and a description, and it keeps an environment readable once it holds more than a handful of services.
+
+## Where groups come from
+
+Deploying a [template](/templates) creates a group with all of the template's services inside. Supabase arrives as one group of nine services, not nine loose cards.
+
+Creating a group by hand, or moving services in and out of one, is not in the UI yet. Both are available through the [API and the MCP server](/api).
+
+## Rename
+
+Open the menu on the group and choose **Rename** to change its name and description.
+
+## Delete
+
+**Delete** on a group deletes **every service inside it**. This cannot be undone.
+
+The [volumes](/services/volumes) of those services are kept. They stay in the environment, unattached, until you delete them or attach them somewhere else.
+
+Deleting the last service of a group removes the group as well.
+
+## Template settings
+
+A group that came from a template remembers what you filled in when you deployed it. Domains, storage sizes and other visible inputs can be changed later through the API, and the template updates every setting that depends on them. Storage can only grow.

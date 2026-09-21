@@ -2,3 +2,56 @@
 title: Authentication
 description: Create an API key and limit what it can reach.
 ---
+
+Send your API key as a bearer token with every request:
+
+```bash
+curl https://unbind.example.com/api/go/users/me \
+  -H "Authorization: Bearer unb_your_key"
+```
+
+Keys start with `unb_`. `GET /users/me` is a good first call: it returns your user, and for a key it also returns the role and the resources the key is limited to.
+
+## Create a key
+
+Go to your avatar > **Account Settings** > **API Keys**.
+
+| Field       | What to pick                                                                                                        |
+| ----------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Name**    | Where the key is used, like `CI Pipeline`.                                                                          |
+| **Access**  | **Everything I can access**, or **Only specific resources**: one or more teams, projects, environments or services. |
+| **Role**    | The most the key can do on those resources.                                                                         |
+| **Expires** | From 1 day to 1 year, or never. The default is 90 days.                                                             |
+
+The key is shown once, right after you create it. Copy it then. Unbind stores only a hash and cannot show it again.
+
+## Roles
+
+| Role       | Can do                                                             |
+| ---------- | ------------------------------------------------------------------ |
+| **Viewer** | Read configuration, logs and metrics. Cannot read variable values. |
+| **Editor** | Also deploy, change settings and read variable values.             |
+| **Admin**  | Also delete things and manage access.                              |
+
+A key never has more access than you do. Roles above your own are shown as **Above your access**, and if your own access is reduced later, the key's is too.
+
+## Give a key as little as it needs
+
+A key that can reach everything is convenient, and a bad idea for anything that runs unattended.
+
+- **A CI pipeline that deploys one app**: editor, limited to that service or its environment.
+- **A dashboard that reads metrics**: viewer.
+- **An AI agent**: editor on the one project it works on. Editors cannot delete, which is a useful safety net.
+
+## What happens outside a key's limits
+
+- A resource outside the key's limits answers **404 not found**, as if it did not exist. A limited key cannot even learn what else is there.
+- A viewer key that tries to change something gets **403** with `This API key is read only`.
+- Operations that only work from a browser session get **403** with `This endpoint cannot be used with an API key`.
+- An expired or revoked key gets **401**.
+
+## Revoke a key
+
+Open the key's menu under **API Keys** and choose **Revoke**. It stops working right away. Each key shows when it was last used, which helps you find the ones nobody needs anymore.
+
+Changing your password does not revoke your keys.

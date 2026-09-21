@@ -1,4 +1,102 @@
 ---
-title: Templates
-description: Deploy popular open source apps with a few clicks.
+title: Overview
+heading: Templates
+description: Deploy popular open source apps by filling in a short form.
 ---
+
+A template deploys a whole app in one go: the app itself, the databases it needs, generated passwords, and the wiring between them.
+
+## Deploy a template
+
+<Steps>
+<Step>
+
+### Pick one
+
+Open the command panel in a project, choose **Template** and pick an app.
+
+</Step>
+<Step>
+
+### Fill in the form
+
+Most templates ask for a domain and a storage size. A generated domain is suggested, or type your own. Less common inputs sit behind **more inputs**.
+
+</Step>
+<Step>
+
+### Deploy
+
+Press **Deploy**. Unbind creates a [service group](/services/service-groups) with everything inside and starts the services in the right order. Databases come up first, and the app waits for them.
+
+</Step>
+</Steps>
+
+Each template's page says how to sign in afterwards. Generated passwords and keys are always in the [variables](/services/variables) of the service named there.
+
+## Available templates
+
+<Cards>
+  <Card title="Appsmith" href="/templates/appsmith">
+    Admin panels and internal tools
+  </Card>
+  <Card title="Convex" href="/templates/convex">
+    Reactive backend with realtime sync
+  </Card>
+  <Card title="Flowise" href="/templates/flowise">
+    Visual builder for LLM apps
+  </Card>
+  <Card title="Formbricks" href="/templates/formbricks">
+    Surveys and feedback
+  </Card>
+  <Card title="Ghost" href="/templates/ghost">
+    Blog and newsletter platform
+  </Card>
+  <Card title="Gluetun" href="/templates/gluetun">
+    VPN client with an HTTP proxy
+  </Card>
+  <Card title="Listmonk" href="/templates/listmonk">
+    Newsletters and mailing lists
+  </Card>
+  <Card title="Meilisearch" href="/templates/meilisearch">
+    Fast search engine
+  </Card>
+  <Card title="MinIO" href="/templates/minio">
+    S3 compatible object storage
+  </Card>
+  <Card title="n8n" href="/templates/n8n">
+    Workflow automation
+  </Card>
+  <Card title="NocoDB" href="/templates/nocodb">
+    Databases as spreadsheets
+  </Card>
+  <Card title="Plausible" href="/templates/plausible">
+    Privacy friendly analytics
+  </Card>
+  <Card title="PocketBase" href="/templates/pocketbase">
+    Backend in a single service
+  </Card>
+  <Card title="Supabase" href="/templates/supabase">
+    Open-source Firebase alternative
+  </Card>
+  <Card title="Teable" href="/templates/teable">
+    Airtable alternative on Postgres
+  </Card>
+  <Card title="Umami" href="/templates/umami">
+    Simple web analytics
+  </Card>
+  <Card title="WireGuard" href="/templates/wireguard">
+    Your own VPN
+  </Card>
+  <Card title="WordPress" href="/templates/wordpress">
+    The most used CMS
+  </Card>
+</Cards>
+
+## After deploying
+
+A deployed template is a set of normal services. You can change variables, add domains, resize volumes and read logs like anywhere else.
+
+- **Updates**: templates pin a version of the app. To move to a newer one, change the image tag on the service. Read the app's release notes first, because some upgrades need manual steps.
+- **Existing deployments stay as they are.** When a template changes in a new Unbind release, only new deployments use the new version.
+- **Storage only grows.** Pick sizes that fit now and expand later.

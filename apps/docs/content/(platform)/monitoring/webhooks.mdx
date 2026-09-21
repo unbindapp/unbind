@@ -1,4 +1,52 @@
 ---
 title: Webhooks
-description: Get notified in Slack, Discord or anywhere else when something happens.
+description: Get notified in Discord, Slack, Telegram or your own endpoint when something happens.
 ---
+
+A webhook sends a message to a URL when something happens in Unbind, like a deployment failing.
+
+## Add a webhook
+
+Webhooks exist at two levels, and each level has its own events:
+
+| Where                                     | Events                                                                                       |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Team** > **Settings** > **Webhooks**    | Project created, updated, deleted                                                            |
+| **Project** > **Settings** > **Webhooks** | Service created, updated, deleted. Deployment queued, building, succeeded, failed, cancelled |
+
+Pick the events, paste the URL and press **Create Webhook**.
+
+Most people want one project webhook for **Deployment Failed**, pointed at the team chat.
+
+## Discord, Slack and Telegram
+
+Paste a webhook URL from one of these and Unbind formats the message for it. Nothing else to configure.
+
+- **Discord**: channel settings > **Integrations** > **Webhooks**.
+- **Slack**: create an [incoming webhook](https://api.slack.com/messaging/webhooks).
+- **Telegram**: create a bot with [@BotFather](https://t.me/BotFather), then use `https://api.telegram.org/bot<token>/sendMessage?chat_id=<chat id>`.
+
+## Your own endpoint
+
+Any other URL receives a `POST` with a JSON body:
+
+```json
+{
+  "level": "failed",
+  "event": "deployment.failed",
+  "data": {
+    "title": "Deployment Failed",
+    "url": "https://unbind.example.com/...",
+    "description": "...",
+    "fields": [{ "name": "Service", "value": "API" }]
+  }
+}
+```
+
+`level` is one of `info`, `warning`, `error`, `queued`, `building`, `succeeded` or `failed`. Answer with status 200. Anything else counts as a failure.
+
+## Good to know
+
+- **Treat the URL as a secret.** Anyone who has it can post to your channel.
+- **There is no test button.** Subscribe to **Service Updated**, change something small and check that the message arrives.
+- **Webhooks cannot be managed through the API or MCP**, because their URLs are secrets.

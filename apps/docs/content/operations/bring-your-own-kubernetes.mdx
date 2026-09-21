@@ -2,3 +2,45 @@
 title: Bring Your Own Kubernetes
 description: Install Unbind on a cluster you already run.
 ---
+
+<Callout type="warn" title="For people who run Kubernetes already">
+  This path is not covered by the installer and gets less testing. If you do not already operate a
+  cluster, use the [installer](/operations/install). It is faster and everything is set up to match.
+</Callout>
+
+Unbind is installed with [Helmfile](https://helmfile.readthedocs.io) from the charts in the repository. They work on managed clusters such as EKS, GKE, AKS and DOKS, and on your own.
+
+## Before you start
+
+- **Use a new cluster.** Unbind installs an ingress layer, cert-manager, a logging stack and a metrics stack. They will collide with ones you already have.
+- **A default storage class** has to exist. Most managed clusters have one.
+- **A wildcard domain** pointing at the cluster's load balancer, like `*.unbind.example.com`.
+- **Helm**, the `helm-diff` plugin and **Helmfile** on your machine.
+
+## Install
+
+```bash
+git clone https://github.com/unbindapp/unbind.git
+cd unbind
+
+helmfile --file deploy/charts/helmfile.yaml.gotmpl \
+  --state-values-set unbindDomain=unbind.example.com \
+  --state-values-set wildcardBaseDomain=unbind.example.com \
+  --state-values-set unbindVersion=v0.1.81 \
+  sync
+```
+
+Use the latest version from the [releases page](https://github.com/unbindapp/unbind/releases). Everything lands in the `unbind-system` namespace.
+
+## Things that differ from the installer
+
+`deploy/charts/README.md` in the repository is the reference. The points that matter most:
+
+- **Registry**: the built-in registry is reached from every node at a fixed cluster IP, which each node's container runtime has to trust. On k3s that is `/etc/rancher/k3s/registries.yaml`. On managed clusters, use an external registry instead and set the `externalRegistry` values.
+- **Networking**: `networkingProvider` picks how traffic gets in. The default is the Gateway API with Envoy Gateway. A cluster that already uses ingress-nginx has to set it to `nginx`.
+- **Build workers** run one per node, so their replica count cannot exceed the number of nodes.
+- **Bringing your own logging or metrics**: you can turn components off, but then Unbind cannot configure them from the UI, and they have to be set up the way Unbind expects. Logs need the `unbind-team`, `unbind-project`, `unbind-environment`, `unbind-service` and `unbind-deployment` labels indexed. Metrics need kube-state-metrics started with `--metric-labels-allowlist=pods=[*]`.
+
+## What you do not get
+
+The `unbind` command on the server, adding servers through it, and the storage setup are all part of the installer. On your own cluster, nodes and storage are yours to manage.

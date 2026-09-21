@@ -2,3 +2,47 @@
 title: Connected Apps
 description: Let an app act for you with OAuth.
 ---
+
+A connected app is a program you allowed to use Unbind as you, without giving it an API key. Today that mostly means MCP clients like Claude and ChatGPT. See [Connect a Client](/api/mcp/connect-a-client).
+
+Apps connect with OAuth. You do not create anything first: the app sends you to Unbind, you decide what it may do, and it receives its own tokens.
+
+## Approving an app
+
+When an app asks for access, Unbind shows a consent page with the app's name and where it will send you back to. You choose the same two things as for an [API key](/api/authentication):
+
+- **Access**: everything you can access, or only specific teams, projects, environments or services.
+- **Role**: viewer, editor or admin. The default is viewer.
+
+Then press **Approve** or **Deny**.
+
+<Callout type="warn" title="Only approve if you started this yourself">
+  Any app can register itself, so most show as **Unverified** and **Self-registered**. That is
+  normal for MCP clients. What matters is that the request came from something you just did. If a
+  consent page appears out of nowhere, deny it.
+</Callout>
+
+## Managing apps
+
+Your avatar > **Account Settings** > **Connected Apps** lists every app with its role, its resources and when it was last used. **Revoke** cuts it off right away. The app has to ask again to get back in.
+
+## For app developers
+
+Unbind implements OAuth 2.1 with PKCE. Discovery and the endpoints are at the root of the instance, not under `/api/go`:
+
+|                             |                                               |
+| --------------------------- | --------------------------------------------- |
+| Metadata                    | `GET /.well-known/oauth-authorization-server` |
+| Protected resource metadata | `GET /.well-known/oauth-protected-resource`   |
+| Register a client           | `POST /oauth/register`                        |
+| Authorize                   | `GET /oauth/authorize`                        |
+| Token                       | `POST /oauth/token`                           |
+
+- **Clients are public.** There are no client secrets. PKCE with `S256` is required.
+- **Registration is dynamic**, and client ID metadata documents are supported as well.
+- **Grant types**: `authorization_code` and `refresh_token`.
+- **No scopes.** The person picks the access on the consent page, so there is nothing to request.
+- **Lifetimes**: authorization codes last 1 minute, access tokens 1 hour, refresh tokens 30 days.
+- **Rate limits** per IP address: 10 registrations, 30 authorizations and 60 token requests per minute.
+
+Access tokens are bearer tokens for the [MCP server](/api/mcp/connect-a-client). For the HTTP API, use an [API key](/api/authentication).

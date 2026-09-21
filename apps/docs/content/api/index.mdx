@@ -2,3 +2,87 @@
 title: Overview
 description: Automate Unbind from your own code or from an AI agent.
 ---
+
+Everything the Unbind UI does goes through the same HTTP API you can call yourself. There are two ways to use it:
+
+- **The HTTP API**, for scripts, CI pipelines and your own tools.
+- **The MCP server**, for AI agents like Claude and ChatGPT. It exposes the same operations as tools. See [Connect a Client](/api/mcp/connect-a-client).
+
+Both use the same permissions. A key or an app can never do more than the person who created it.
+
+## Base URL
+
+The API lives on your own instance, under `/api/go`:
+
+```text
+https://unbind.example.com/api/go
+```
+
+Your instance also serves an interactive reference for its exact version at `https://unbind.example.com/docs`, and the OpenAPI document at `/api/go/openapi.json`.
+
+## Your first request
+
+Create an [API key](/api/authentication), then:
+
+```bash
+curl https://unbind.example.com/api/go/teams/list \
+  -H "Authorization: Bearer unb_your_key"
+```
+
+```json
+{
+  "data": [
+    {
+      "id": "9e4d3b2b-30e0-4f71-bfca-f14c97781035",
+      "name": "Acme",
+      "created_at": "2026-08-21T02:11:38.662332Z"
+    }
+  ]
+}
+```
+
+## Conventions
+
+The API is consistent, so once you have used one operation you know them all.
+
+- **Paths end in a verb**: `/services/list`, `/services/get`, `/services/create`, `/services/update`, `/services/delete`.
+- **Reads are `GET` with query parameters.** There are no path parameters anywhere.
+- **Writes are `POST`, `PUT` or `DELETE` with a JSON body.** That includes `DELETE`.
+- **Responses are wrapped in `data`**: `{"data": ...}`.
+- **IDs are UUIDs**, and timestamps are RFC 3339 in UTC.
+
+### Resources are nested
+
+Resources nest as team > project > environment > service, and most operations need the ID of every level above the one they act on:
+
+```bash
+curl "https://unbind.example.com/api/go/services/list?team_id=$TEAM&project_id=$PROJECT&environment_id=$ENV" \
+  -H "Authorization: Bearer $UNBIND_API_KEY"
+```
+
+Find the IDs with `/teams/list`, `/projects/list`, `/environments/list` and `/services/list`.
+
+### Pagination
+
+Lists that can grow take `per_page`, from 1 to 100, and a `cursor`. The cursor is a timestamp. Pass the `next` value from the previous response to get the following page:
+
+```json
+{
+  "data": {
+    "deployments": [],
+    "metadata": { "has_next": true, "next": "2026-09-17T20:33:27.950294Z" }
+  }
+}
+```
+
+### Changing a service does not roll it out
+
+Creating or updating a service only saves its configuration. Call `POST /deployments/create` to build and deploy it. Variable changes ship with the next deployment as well. [Deploy from CI](/api/guides/deploy-from-ci) shows the whole flow.
+
+### Names
+
+Names are unique among siblings and case sensitive. Creating or renaming into a taken name answers `409 conflict`. Four operations keep going instead and add a short suffix to the name: `create-service`, `create-service-group`, `create-volume` and `deploy-template`. Read the name from the response instead of assuming the one you sent.
+
+## What is in the reference
+
+The [reference](/api/reference/teams/list-teams) lists every operation an API key can call. A few areas are left out because they only work from a signed-in browser session: managing API keys and connected apps, connecting GitHub, system settings, users and groups, and the terminal.

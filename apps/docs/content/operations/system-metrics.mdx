@@ -2,3 +2,19 @@
 title: System Metrics
 description: See how much of your servers is in use.
 ---
+
+**System** > **Metrics** shows the same kind of charts as [service metrics](/monitoring/metrics), for the machines themselves:
+
+- **CPU** and **Memory** per server.
+- **Network**: traffic through the servers.
+- **Disk I/O**: read and write throughput.
+
+Use **Filter** to pick the time range and the servers, and to switch between one line per server and a combined total. Each server's own page under **System** > **Servers** has a **Metrics** tab too.
+
+## What to watch
+
+- **Memory that stays above 85%**: add a server, or set [resource limits](/services/replicas-and-health#resource-limits) on the services that use the most.
+- **CPU spikes during builds** are normal. If they hurt your services, lower the [build settings](/operations/system-settings#builds).
+- **Disk space** is the one that catches people. Images, build cache, logs and volumes all grow. A server that runs out of disk stops starting new replicas. Check with `df -h` on the server, and see [Troubleshooting](/operations/troubleshooting#a-server-is-out-of-disk-space).
+
+Metrics are kept for 7 days.

@@ -2,3 +2,68 @@
 title: Variables
 description: Set variables and reference values from other services.
 ---
+
+Variables are the environment variables your service sees, both while it builds and while it runs. Values are hidden in the UI until you reveal them.
+
+## Add variables
+
+Open a service and go to **Variables**. Press **New Variable**, type a name and a value, and save.
+
+To add many at once, paste your `.env` content into the name field. Every `KEY=value` line becomes its own row. The **Raw Editor** shows all variables as text, which is the quickest way to edit a lot of them or copy them somewhere else.
+
+Changes are staged. Press **Deploy** on the changes bar to roll them out. See [Staged changes](/services/deployments#staged-changes).
+
+## References
+
+A value can point at a value that lives somewhere else. Type `$` in the value field and pick from the list:
+
+```bash
+DATABASE_URL=${Postgres.UNBIND_DATABASE_URL_PRIVATE}
+```
+
+You never copy a password, and the value stays correct if the database's address or password changes.
+
+References can be mixed with text, and a value can hold more than one:
+
+```bash
+REDIS_URL=redis://default:${Redis.DATABASE_PASSWORD}@${Redis.UNBIND_HOST_PRIVATE}:${Redis.UNBIND_PORT_PRIVATE}/0
+```
+
+### What you can reference
+
+- **Another service in the same project**: any of its variables, plus its addresses.
+- **Team and project variables**: values you keep in one place for many services.
+
+Every service offers these, under **Provided by Unbind**:
+
+| Key                                          | What it holds                                                     |
+| -------------------------------------------- | ----------------------------------------------------------------- |
+| `UNBIND_URL_PRIVATE`                         | Address other services use to reach it, from inside your instance |
+| `UNBIND_HOST_PRIVATE`, `UNBIND_PORT_PRIVATE` | The same, as separate host and port                               |
+| `UNBIND_URL_PUBLIC`                          | Its public URL, if it has a domain                                |
+| `UNBIND_HOST_PUBLIC`, `UNBIND_PORT_PUBLIC`   | The same, as separate host and port                               |
+
+Databases offer `UNBIND_DATABASE_URL_PRIVATE` and `UNBIND_DATABASE_URL_PUBLIC` instead of the URL keys. A service with several ports gets one key per port, like `UNBIND_URL_PUBLIC_8080`.
+
+### When a referenced value changes
+
+Services that reference it are redeployed, so they pick up the new value. You see them under **Affected Services** before you confirm.
+
+If a reference cannot be resolved, for example because the other service was deleted, the text is kept as it is and the variable is marked: **Couldn't resolve a reference, kept as literal text.**
+
+## Team and project variables
+
+Set these under **Settings** > **Variables** of a team or a project. They are a place to keep a value once, like an API key that five services need.
+
+<Callout title="Shared variables are not injected automatically">
+  A service only sees a team or project variable if one of its own variables references it, like
+  `SENTRY_DSN=${Project.SENTRY_DSN}`. This keeps every service's environment explicit.
+</Callout>
+
+## Protected variables
+
+Some variables are managed by Unbind and show a lock, like a database's username and password. They can be read and referenced, but not changed or deleted.
+
+## Who can see values
+
+People with the viewer role see variable names but not values. Editors and admins see both.

@@ -2,3 +2,42 @@
 title: DNS Setup
 description: Point your domain at Unbind.
 ---
+
+Unbind needs two DNS records. The examples use `unbind.example.com` as the Unbind domain and `203.0.113.10` as the server's IP address.
+
+| Type | Name       | Content        | For                                 |
+| ---- | ---------- | -------------- | ----------------------------------- |
+| A    | `unbind`   | `203.0.113.10` | The Unbind UI                       |
+| A    | `*.unbind` | `203.0.113.10` | Generated domains for your services |
+
+If you use the root of a domain instead of a subdomain, the names are `@` and `*`.
+
+The installer shows these records with your real values and checks them for you. DNS changes usually show up within minutes. Occasionally they take hours.
+
+## The wildcard record
+
+The second record is optional. Without it Unbind still works, but services do not get generated domains, and every service needs its own DNS record.
+
+With it, a new service gets a working HTTPS domain the moment it is created. Add it.
+
+You can set or change the wildcard domain later under [System Settings](/operations/system-settings).
+
+## Cloudflare
+
+Cloudflare's proxy, the orange cloud, works for the main record.
+
+<Callout type="warn" title="Do not proxy the wildcard record">
+  Cloudflare's free certificate covers `*.example.com` but not `*.unbind.example.com`. If the
+  wildcard record under a subdomain is proxied, HTTPS fails for every generated domain. Set that
+  record to **DNS only**, the grey cloud, or buy Cloudflare's Advanced Certificate Manager.
+</Callout>
+
+The installer detects this and tells you before it continues.
+
+## Custom domains for services
+
+Domains you add to a service later each need their own A record pointing at the same IP address. Unbind shows the exact record when you add the domain. See [Domains](/services/domains#your-own-domain).
+
+## No domain for the registry
+
+The self-hosted registry is only used inside your instance and needs no DNS record.

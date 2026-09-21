@@ -1,13 +1,29 @@
 ---
 title: Plausible
 heading: Self-host Plausible with Unbind
-description: Deploy Plausible on your own servers with the Unbind template.
+description: Deploy Plausible Analytics on your own servers with Unbind. Privacy friendly web analytics without cookies.
 ---
+
+[Plausible](https://plausible.io) is privacy friendly web analytics. No cookies, a small script, and one dashboard that fits on a screen. This template runs the Community Edition.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Plausible" />
 
+Accounts and sites live in the PostgreSQL service, and the visit data lives in the ClickHouse service. The template creates no other volume.
+
 ## What you fill in
 
 <TemplateInputs name="Plausible" />
+
+## After it deploys
+
+Open your domain and register. After that, add your site and put the tracking script Plausible shows you on your pages.
+
+## Good to know
+
+- **Lock registration**: by default anyone who finds the domain can register. Once your account exists, set `DISABLE_REGISTRATION` to `true` on the Plausible service and redeploy.
+- **Email**: reports and password resets need a mail server. The [Community Edition docs](https://github.com/plausible/community-edition/wiki/configuration#email) list the variables.
+- **ClickHouse grows with traffic**: watch the [volume usage](/services/volumes) of the ClickHouse service on busy sites.

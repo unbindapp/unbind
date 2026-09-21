@@ -2,3 +2,42 @@
 title: Projects and Environments
 description: Split your work into projects and environments.
 ---
+
+[How Things Are Organized](/how-things-are-organized) explains what projects and environments are. This page is about managing them.
+
+## Projects
+
+Create one from the team page. Give it a name, or leave the field empty and Unbind makes one up. Names are unique within a team and can be up to 32 characters.
+
+Every new project starts with an environment called `production`.
+
+**Project** > **Settings** has:
+
+- **General**: rename the project and change its description.
+- **Environments**: add, rename and delete environments.
+- **Variables**: values shared by the project's services. See [Variables](/services/variables#team-and-project-variables).
+- **Webhooks**: notifications about services and deployments. See [Webhooks](/monitoring/webhooks).
+- **Danger Zone**: delete the project.
+
+## Environments
+
+Add one under **Settings** > **Environments**. It starts empty. There is no way to copy an environment yet, so you add its services again, or script it through the [API](/api).
+
+Switch between environments with the environment picker at the top of the project. The **Services**, **Logs** and **Metrics** tabs always show the one you picked.
+
+A common setup:
+
+- `production`: deploys from `main`.
+- `staging`: the same services, deploying from a `staging` branch, with their own database and their own variables.
+
+Environments share nothing. Each has its own services, databases, volumes and variables, which is what makes `staging` safe to break.
+
+## Deleting
+
+<Callout type="warn" title="Deleting takes the data with it">
+  Deleting an environment permanently deletes its services, databases and volumes. Deleting a
+  project does that for every environment inside it. Neither can be undone.
+</Callout>
+
+- A project's last environment cannot be deleted. Delete the project instead.
+- Deleting needs the admin role.

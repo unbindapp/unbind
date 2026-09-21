@@ -2,3 +2,49 @@
 title: Replicas and Health
 description: Run more than one copy of a service and check that each one is healthy.
 ---
+
+These settings live under **Deploy** and **Health** in the service settings. Changes are staged until you press **Deploy**.
+
+## Replicas
+
+A replica is one running copy of your service. With more than one, traffic is spread across them, and a deployment replaces them one by one so there is no gap.
+
+Set **Replicas** from 1 to 10. Your app has to be fine with running as several copies: no state in memory or on local disk that other copies need. Services with a [volume](/services/volumes) should stay at 1.
+
+Databases have no replica setting.
+
+## Resource limits
+
+**Resource Limits** caps the vCPU and memory of each replica. Drag a slider to the end for **Unlimited**.
+
+- **Memory**: a replica that goes over its limit is stopped and restarted. If you see `OOMKilled` in the deploy logs, raise the limit or fix the leak.
+- **vCPU**: a replica that goes over is slowed down, not stopped.
+
+Limits protect the other services on your servers from one that misbehaves. Set them on anything you do not fully trust.
+
+## Health checks
+
+A health check tells Unbind whether a replica is working. Without one, a replica counts as healthy as soon as its process starts, even if the app inside is still booting or is stuck.
+
+Pick a **Health Check Type**:
+
+- **Endpoint**: Unbind requests a path like `/health` on one of the service's ports. Any successful response counts as healthy.
+- **Command**: Unbind runs a command inside the replica, like `test -f /app/ready.txt`. Exit code 0 counts as healthy.
+- **None**: no checks.
+
+Two checks use it:
+
+| Check             | What it does                                                                                      | Defaults                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **Startup Check** | A new replica gets traffic after its first successful check. If it never passes, it is restarted. | Try every 3 seconds, restart after 30 errors   |
+| **Health Check**  | Watches running replicas. One that keeps failing stops getting traffic and is restarted.          | Check every 10 seconds, restart after 3 errors |
+
+Slow starters, like large Java apps, need a more patient startup check. With the defaults a replica has about 90 seconds to come up.
+
+Keep the endpoint cheap. It should answer quickly and should not depend on other services, or one slow dependency restarts your whole app.
+
+## When something is wrong
+
+A deployment that keeps restarting shows **CRASHING**. Open it and look at **Deploy Logs**. Unbind puts the reason at the top, such as `OOMKilled` or the number of restarts.
+
+To restart a healthy service by hand, open the menu on the current deployment and choose **Restart**.

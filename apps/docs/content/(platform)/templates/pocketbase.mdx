@@ -1,13 +1,28 @@
 ---
 title: PocketBase
 heading: Self-host PocketBase with Unbind
-description: Deploy PocketBase on your own servers with the Unbind template.
+description: Deploy PocketBase on your own servers with Unbind. A backend with a database, auth and file storage in a single service.
 ---
+
+[PocketBase](https://pocketbase.io) is a backend in one service: an embedded database with realtime subscriptions, user auth, file storage and an admin dashboard.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="PocketBase" />
 
+Everything PocketBase stores is kept on a volume mounted at `/pb_data`.
+
 ## What you fill in
 
 <TemplateInputs name="PocketBase" />
+
+## After it deploys
+
+Open the **PocketBase** service and look at its variables. The admin email is in `PB_ADMIN_EMAIL` and the generated password is in `PB_ADMIN_PASSWORD`. Sign in with those at `https://your-domain/_/`.
+
+## Good to know
+
+- **One replica only**: PocketBase keeps its database in a file on the volume, so it cannot run as more than one replica.
+- **Back up the volume**: there is no separate database service to back up here. The data is the volume.

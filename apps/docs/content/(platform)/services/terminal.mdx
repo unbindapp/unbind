@@ -2,3 +2,17 @@
 title: Terminal
 description: Open a shell inside a running service.
 ---
+
+Open a service and go to **Terminal**. You get a shell inside the running service, in your browser. Use it to look around, check a file, run a migration by hand or test a connection to another service.
+
+## Pick a replica
+
+With several replicas, choose which one with the **Replica** picker. Unbind picks a healthy one by default.
+
+## Good to know
+
+- **The service has to be running.** With nothing running you see **No replica running**.
+- **The image needs a shell.** Unbind starts `bash` if it exists and falls back to `sh`. Minimal images with no shell at all cannot be opened.
+- **Changes do not last.** Anything you change outside a [volume](/services/volumes) is gone on the next deployment. Do not fix things here. Fix them in the repository and deploy.
+- **You need the editor role** on the service.
+- **It only works signed in, from the UI.** API keys cannot open a terminal.

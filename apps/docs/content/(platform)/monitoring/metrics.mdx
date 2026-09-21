@@ -2,3 +2,29 @@
 title: Metrics
 description: See CPU, memory, network and disk usage over time.
 ---
+
+Unbind records how much your services use, with nothing to install. Every metrics page has the same four charts:
+
+- **CPU**: usage over time.
+- **Memory**: usage over time.
+- **Network**: traffic in and out.
+- **Volumes**: space used by [volumes](/services/volumes).
+
+## Where to find them
+
+- **One service**: the **Metrics** tab of the service.
+- **A project**: the **Metrics** tab of the project shows the services of the current environment.
+- **A team**: **Metrics** on the team page compares its projects.
+- **The servers**: see [System Metrics](/operations/system-metrics).
+
+## Reading them
+
+Use **Filter** to change the time range, from 5 minutes to 30 days. On project and team pages you can also pick which services or projects to show, and switch between **Separate**, one line each, and **Combined**, one line for the total.
+
+A few patterns worth knowing:
+
+- **Memory that climbs and then drops to zero** is a service hitting its [memory limit](/services/replicas-and-health#resource-limits) and restarting. Look for `OOMKilled` in the deploy logs.
+- **Memory that only climbs** is usually a leak.
+- **CPU that sits flat at its limit** means the service is being slowed down. Raise the limit or add replicas.
+
+Metrics are kept for 7 days by default.

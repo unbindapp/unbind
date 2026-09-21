@@ -1,13 +1,36 @@
 ---
 title: Gluetun
 heading: Self-host Gluetun with Unbind
-description: Deploy Gluetun on your own servers with the Unbind template.
+description: Deploy Gluetun on your own servers with Unbind. Route the traffic of your other services through a VPN with a built-in HTTP proxy.
 ---
+
+[Gluetun](https://github.com/qdm12/gluetun) is a VPN client with a built-in HTTP proxy. Deploy it next to your other services and send their outgoing traffic through your VPN provider.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Gluetun" />
 
+Gluetun keeps its state on a volume mounted at `/gluetun`. It has no domain, because only your other services talk to it.
+
 ## What you fill in
 
 <TemplateInputs name="Gluetun" />
+
+## After it deploys
+
+Open the **Gluetun** service and copy the value of `HTTP_PROXY_URL` from its variables. On every service that should go through the VPN, set:
+
+```bash
+HTTP_PROXY=<the HTTP_PROXY_URL value>
+HTTPS_PROXY=<the HTTP_PROXY_URL value>
+```
+
+Better, [reference the variable](/services/variables) instead of pasting it, so the value follows Gluetun if it ever changes. Redeploy those services afterwards.
+
+## Good to know
+
+- **WireGuard only**: the template asks for a WireGuard private key and address. Get both from your VPN provider. The [Gluetun wiki](https://github.com/qdm12/gluetun-wiki/tree/main/setup/providers) has a page per provider, and the provider name you type must match the one used there.
+- **Only proxy-aware traffic is routed**: most runtimes and HTTP libraries respect `HTTP_PROXY` and `HTTPS_PROXY`, but not all do. Check from inside the service before you rely on it.
+- **You can change the VPN settings later**: the provider, key and address stay editable on the service group.

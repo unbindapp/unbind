@@ -1,13 +1,23 @@
 ---
 title: Flowise
 heading: Self-host Flowise with Unbind
-description: Deploy Flowise on your own servers with the Unbind template.
+description: Deploy Flowise on your own servers with Unbind. Build LLM apps and agents visually, with your data staying on your hardware.
 ---
+
+[Flowise](https://flowiseai.com) is a visual builder for LLM apps and agents. You connect models, prompts, tools and data sources on a canvas instead of writing the glue code.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
 
 ## What gets deployed
 
 <TemplateServices name="Flowise" />
 
+Flowise keeps uploads and local files on a volume mounted at `/home/node/.flowise`. Flows and credentials live in the PostgreSQL service.
+
 ## What you fill in
 
 <TemplateInputs name="Flowise" />
+
+## After it deploys
+
+Open the **Flowise** service and look at its variables. The username is in `FLOWISE_USERNAME` (it is `admin`) and the generated password is in `FLOWISE_PASSWORD`. Sign in with those at your domain.
