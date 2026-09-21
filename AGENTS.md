@@ -4,7 +4,7 @@ Unbind is an open-source, MIT-licensed self-hosting platform based on Kubernetes
 
 ## Repo Structure:
 
-There are 4 main apps in the repo:
+There are 5 main apps in the repo:
 
 ### 1- apps/web:
 
@@ -21,6 +21,10 @@ This is what installs Unbind on users' machine(s).
 ### 4- apps/operator
 
 The Kubernetes operator. Translates Unbind CRDs into native Kubernetes resources.
+
+### 5- apps/docs
+
+The docs site at docs.unbind.app. Fumadocs on TanStack Start, prerendered to static files. Content is MDX under `apps/docs/content`, split into three tabs: Platform, Operations, and API & MCP. It takes its colors and fonts from `apps/web/src/styles/tokens.css`, so a token change in the app shows up in the docs too. Docs use the words the UI uses (servers, services, replicas), not Kubernetes terms.
 
 ## MCP Server
 

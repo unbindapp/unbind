@@ -1,0 +1,48 @@
+{
+  "name": "unbind-docs",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "sync-assets": "mkdir -p public/fonts && cp ../web/public/fonts/*.woff2 public/fonts/ && cp ../web/public/favicon* ../web/public/apple-touch-icon.png public/",
+    "predev": "npm run sync-assets",
+    "dev": "vite dev",
+    "prebuild": "npm run sync-assets",
+    "build": "vite build",
+    "start": "serve .output/public",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "1.170.38",
+    "@tanstack/react-router-devtools": "1.167.2",
+    "@tanstack/react-start": "1.168.56",
+    "@tanstack/start-static-server-functions": "1.167.37",
+    "cn": "^0.3.0",
+    "fumadocs-core": "16.15.12",
+    "fumadocs-mdx": "15.4.3",
+    "fumadocs-openapi": "^12.0.1",
+    "fumadocs-ui": "npm:@fumadocs/base-ui@16.15.12",
+    "lucide-react": "^1.47.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "shiki": "^4.4.3",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^26.6.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "nitro": "3.0.260903-beta",
+    "prettier": "^3.5.3",
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "serve": "^14.2.6",
+    "srvx": "^1.0.5",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "title": "Templates",
+  "defaultOpen": false,
+  "pages": [
+    "index",
+    "appsmith",
+    "convex",
+    "flowise",
+    "formbricks",
+    "ghost",
+    "gluetun",
+    "listmonk",
+    "meilisearch",
+    "minio",
+    "n8n",
+    "nocodb",
+    "plausible",
+    "pocketbase",
+    "supabase",
+    "teable",
+    "umami",
+    "wireguard",
+    "wordpress"
+  ]
+}

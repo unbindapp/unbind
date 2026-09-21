@@ -1,0 +1,61 @@
+---
+title: How Things Are Organized
+description: Teams, projects, environments and services, and how they fit together.
+---
+
+Everything in Unbind lives in a simple tree:
+
+```text
+Team
+└── Project
+    └── Environment
+        ├── Service
+        ├── Service group
+        └── Volume
+```
+
+Names are unique among siblings. Two projects in the same team cannot share a name, but two different projects can both have an environment called `production`.
+
+## Team
+
+A team is the top level. It holds projects, members and the settings they share, like S3 storage and webhooks.
+
+- **Members**: People are invited to a team and can be limited to certain projects or environments. See [Members and Permissions](/teams/members-and-permissions).
+
+## Project
+
+A project is one product or one codebase. A web app, its worker and its database usually belong in the same project.
+
+- **Environments**: Every project starts with a `production` environment. Add more for staging or previews.
+- **Shared settings**: A project has its own variables, webhooks and members.
+
+## Environment
+
+An environment is a full copy of your project's services that runs on its own. What you change in `staging` does not touch `production`.
+
+Services, service groups and volumes all live inside an environment.
+
+## Service
+
+A service is one thing that runs. It can be:
+
+- **A GitHub repository** that Unbind builds and deploys on every push.
+- **A Docker image** from any registry.
+- **A database** that Unbind creates and manages.
+
+Each service has its own [variables](/services/variables), [domains](/services/domains), [volumes](/services/volumes) and [deployments](/services/deployments).
+
+<Callout title="Changing a service does not roll it out">
+  When you edit a service, the change waits until the next deployment. This lets you change several
+  things and roll them out together.
+</Callout>
+
+## Service group
+
+A service group keeps services that belong together side by side. Templates use them: deploying [Supabase](/templates/supabase) creates one group with all of its services inside.
+
+## Variable
+
+Variables are the environment variables your service sees when it builds and when it runs. You set them on a service.
+
+A variable can reference a value from somewhere else, such as the URL of a database service, or a value you keep on the team, project or environment so that many services can share it. When the value changes, the services that reference it pick it up on their next deployment. See [Variables](/services/variables).

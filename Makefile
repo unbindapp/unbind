@@ -1,10 +1,12 @@
-.PHONY: help dev dev-status dev-start dev-stop dev-reset dev-infra dev-infra-down dev-cluster dev-cluster-down dev-api dev-web web embed app run clean gen-web-types check-web-types \
+.PHONY: help dev dev-status dev-start dev-stop dev-reset dev-infra dev-infra-down dev-cluster dev-cluster-down dev-api dev-web web embed app run clean gen-web-types check-web-types gen-docs-data check-docs-data \
 	api-ent api-interfaces api-migrate api-migrate-checksum api-test api-fmt api-run \
 	web-build web-dev web-lint web-fmt web-typecheck web-gen \
+	docs-build docs-dev docs-fmt docs-typecheck \
 	operator-generate operator-manifests operator-build operator-run operator-test \
 	installer-build installer-run
 
 WEB_DIR := apps/web
+DOCS_DIR := apps/docs
 API_DIR := apps/api
 OPERATOR_DIR := apps/operator
 INSTALLER_DIR := apps/installer
@@ -34,6 +36,8 @@ help:
 	@echo "Web client types (generated from the API's OpenAPI spec, no server needed):"
 	@echo "  make gen-web-types    - Regenerate apps/web client types from the local API code"
 	@echo "  make check-web-types  - Fail if the committed web types are out of sync with the API"
+	@echo "  make gen-docs-data    - Regenerate the OpenAPI spec and template facts the docs render"
+	@echo "  make check-docs-data  - Fail if the committed docs data is out of sync with the API"
 	@echo ""
 	@echo "API (apps/api):"
 	@echo "  make api-ent          - Generate ent entities"
@@ -46,6 +50,9 @@ help:
 	@echo ""
 	@echo "Web (apps/web):"
 	@echo "  make web-build / web-dev / web-lint / web-fmt / web-typecheck / web-gen"
+	@echo ""
+	@echo "Docs (apps/docs):"
+	@echo "  make docs-build / docs-dev / docs-fmt / docs-typecheck"
 	@echo ""
 	@echo "Operator (apps/operator):"
 	@echo "  make operator-generate / operator-manifests / operator-build / operator-run / operator-test"
@@ -113,6 +120,12 @@ gen-web-types:
 check-web-types:
 	./scripts/check-web-types.sh
 
+gen-docs-data:
+	./scripts/gen-docs-data.sh
+
+check-docs-data:
+	./scripts/check-docs-data.sh
+
 # --- API (apps/api) ---
 api-ent:
 	$(MAKE) -C $(API_DIR) ent
@@ -153,6 +166,19 @@ web-typecheck:
 
 web-gen:
 	cd $(WEB_DIR) && npm run generate-sdk
+
+# --- Docs (apps/docs) ---
+docs-build:
+	cd $(DOCS_DIR) && npm run build
+
+docs-dev:
+	cd $(DOCS_DIR) && npm run dev
+
+docs-fmt:
+	cd $(DOCS_DIR) && npm run format
+
+docs-typecheck:
+	cd $(DOCS_DIR) && npm run typecheck
 
 # --- Operator (apps/operator) ---
 operator-generate:

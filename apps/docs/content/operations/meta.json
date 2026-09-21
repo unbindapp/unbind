@@ -1,0 +1,26 @@
+{
+  "title": "Operations",
+  "description": "Install, update and manage your instance",
+  "icon": "Server",
+  "root": true,
+  "pages": [
+    "index",
+    "---Install---",
+    "requirements",
+    "install",
+    "dns-setup",
+    "---Manage---",
+    "servers",
+    "updating-unbind",
+    "system-settings",
+    "system-metrics",
+    "cluster-access",
+    "reset-password",
+    "---Fix---",
+    "troubleshooting",
+    "uninstalling",
+    "---Advanced---",
+    "bring-your-own-kubernetes",
+    "how-unbind-works"
+  ]
+}

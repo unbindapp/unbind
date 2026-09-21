@@ -12,6 +12,7 @@ jobs:
     outputs:
       api: ${{ steps.filter.outputs.api }}
       web: ${{ steps.filter.outputs.web }}
+      docs: ${{ steps.filter.outputs.docs }}
       operator: ${{ steps.filter.outputs.operator }}
       installer: ${{ steps.filter.outputs.installer }}
     steps:
@@ -24,6 +25,10 @@ jobs:
               - 'apps/api/**'
             web:
               - 'apps/web/**'
+            docs:
+              - 'apps/docs/**'
+              - 'apps/web/src/styles/tokens.css'
+              - 'apps/web/public/fonts/**'
             operator:
               - 'apps/operator/**'
             installer:
@@ -45,6 +50,19 @@ jobs:
           cache-name: api-test
       - run: go test ./...
 
+  docs-data:
+    name: Docs data
+    needs: changes
+    if: ${{ needs.changes.outputs.api == 'true' || needs.changes.outputs.docs == 'true' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-go
+        with:
+          module: apps/api
+          cache-name: api-test
+      - run: ./scripts/check-docs-data.sh
+
   web:
     name: Web
     needs: changes
@@ -63,6 +81,25 @@ jobs:
       - run: npm ci
       # `npm run build` (eslint + vite build) also generates src/routeTree.gen.ts,
       # which typecheck needs — it's gitignored and produced at build time.
+      - run: npm run build
+      - run: npm run typecheck
+
+  docs:
+    name: Docs
+    needs: changes
+    if: ${{ needs.changes.outputs.docs == 'true' }}
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./apps/docs
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: apps/docs/package-lock.json
+      - run: npm ci
       - run: npm run build
       - run: npm run typecheck
 

@@ -1,0 +1,42 @@
+---
+title: Introduction
+description: What Unbind is and what you can do with it.
+---
+
+Unbind is an open-source platform for running your apps on your own servers. You bring a server and a domain. Unbind gives you the workflow of [Railway](https://railway.com) or [Heroku](https://www.heroku.com), and you keep the hardware, the data and the bill.
+
+It is MIT licensed and the code is on [GitHub](https://github.com/unbindapp/unbind).
+
+## What you can do
+
+- **Deploy from GitHub**: Connect a repository and Unbind builds and deploys it on every push. Most apps need no Dockerfile.
+- **Run Docker images**: Point a service at any image, public or private.
+- **Create databases**: PostgreSQL, MySQL, Redis, ClickHouse and others run next to your services, with backups to S3 compatible storage.
+- **Start from a template**: Deploy apps like [Supabase](/templates/supabase), [n8n](/templates/n8n), [Plausible](/templates/plausible) and [WordPress](/templates/wordpress) by filling in a short form.
+- **Use your own domains**: Every service can get a generated domain or a custom one. Certificates are issued and renewed for you.
+- **See what is happening**: Logs and metrics are built in, for one service or a whole project.
+- **Work as a team**: Invite people and decide which teams, projects and environments they can reach.
+- **Automate it**: Everything you can do in the UI is also in the [API](/api), and AI agents can use it through the [MCP server](/api/mcp/connect-a-client).
+
+## How it scales
+
+Start with one server. When you need more room, [add servers](/operations/servers) and Unbind spreads your services across them. You do not reinstall or migrate anything.
+
+Under the hood Unbind runs on [Kubernetes](https://kubernetes.io). You never have to touch it, but it is there if you want it. [How Unbind Works](/operations/how-unbind-works) has the details.
+
+## Where to go next
+
+<Cards>
+  <Card title="Quick Start" href="/quick-start">
+    Install Unbind and deploy your first service.
+  </Card>
+  <Card title="How Things Are Organized" href="/how-things-are-organized">
+    Teams, projects, environments and services.
+  </Card>
+  <Card title="Operations" href="/operations">
+    Requirements, DNS, servers and updates.
+  </Card>
+  <Card title="API & MCP" href="/api">
+    Automate Unbind from code and agents.
+  </Card>
+</Cards>

@@ -1,0 +1,16 @@
+{
+  "title": "Services",
+  "pages": [
+    "deploy-from-github",
+    "deploy-a-docker-image",
+    "databases",
+    "builds",
+    "deployments",
+    "domains",
+    "variables",
+    "volumes",
+    "replicas-and-health",
+    "service-groups",
+    "terminal"
+  ]
+}

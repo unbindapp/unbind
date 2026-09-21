@@ -1,0 +1,61 @@
+---
+title: Quick Start
+description: Install Unbind, create your user and deploy your first service.
+---
+
+You need two things:
+
+- **A Linux server** with at least 2 CPU cores and 4 GB of memory, and root access to it.
+- **A domain** where you can add DNS records.
+
+[Requirements](/operations/requirements) has the full list of supported systems.
+
+<Steps>
+<Step>
+
+### Run the installer
+
+Connect to your server and run:
+
+```bash
+curl -fsSL https://unbind.app | sudo sh
+```
+
+The installer checks your system and sets everything up. It only stops for the things it cannot decide for you, like your domain.
+
+</Step>
+<Step>
+
+### Point your domain at the server
+
+The installer tells you which DNS records to add and waits until they resolve. A wildcard record is the easiest option, because every new service then gets a working domain with no extra DNS work. [DNS Setup](/operations/dns-setup) walks through it.
+
+</Step>
+<Step>
+
+### Create your user
+
+Open the domain you picked. The first visit asks you to create the admin user. After that, sign in.
+
+</Step>
+<Step>
+
+### Deploy something
+
+Create a project, then press **Add**. Pick one:
+
+- **GitHub**: Connect your account and choose a repository. See [Deploy from GitHub](/services/deploy-from-github).
+- **Docker image**: Type an image name like `nginx`. See [Deploy a Docker Image](/services/deploy-a-docker-image).
+- **Database**: Pick a database and a size. See [Databases](/services/databases).
+- **Template**: Pick an app from the [templates](/templates).
+
+Unbind builds the service, starts it and gives it a domain. Follow along in the deployment logs.
+
+</Step>
+</Steps>
+
+## Next
+
+- [How Things Are Organized](/how-things-are-organized) explains teams, projects and environments.
+- [Variables](/services/variables) shows how to connect a service to a database.
+- [Servers](/operations/servers) shows how to add more capacity.

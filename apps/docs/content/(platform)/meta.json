@@ -1,0 +1,19 @@
+{
+  "title": "Platform",
+  "description": "Deploy and run your apps",
+  "icon": "Boxes",
+  "root": true,
+  "pages": [
+    "index",
+    "quick-start",
+    "how-things-are-organized",
+    "---Services---",
+    "...services",
+    "---Monitoring---",
+    "...monitoring",
+    "---Teams---",
+    "...teams",
+    "---Templates---",
+    "templates"
+  ]
+}

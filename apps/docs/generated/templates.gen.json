@@ -1,0 +1,891 @@
+[
+  {
+    "name": "WordPress",
+    "description": "The open source publishing platform \u0026 CMS.",
+    "icon": "wordpress",
+    "keywords": [
+      "bloggin",
+      "cms",
+      "content management system",
+      "WooCommerce",
+      "ecommerce",
+      "website",
+      "publishing platform",
+      "php",
+      "mysql"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 1,
+      "minimum_recommended_ram_gb": 1
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the WordPress instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the MySQL database.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "MySQL",
+        "database_type": "mysql"
+      },
+      {
+        "name": "WordPress",
+        "image": "wordpress:7.1"
+      }
+    ]
+  },
+  {
+    "name": "Ghost",
+    "description": "Open source blog and newsletter platform.",
+    "icon": "ghost",
+    "keywords": [
+      "blogging",
+      "cms",
+      "mysql"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 1,
+      "minimum_recommended_ram_gb": 1
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Ghost instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the MySQL database.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "MySQL",
+        "database_type": "mysql"
+      },
+      {
+        "name": "Ghost",
+        "image": "ghost:6.60.0"
+      }
+    ]
+  },
+  {
+    "name": "MinIO",
+    "description": "S3-compatible object storage.",
+    "icon": "minio",
+    "keywords": [
+      "object storage",
+      "file storage",
+      "s3",
+      "s3 compatible",
+      "r2",
+      "aws",
+      "cloudflare"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 0.5,
+      "minimum_recommended_ram_gb": 0.5
+    },
+    "inputs": [
+      {
+        "name": "API Domain",
+        "type": "host",
+        "description": "The domain for the MinIO API.",
+        "required": true
+      },
+      {
+        "name": "Dashboard Domain",
+        "type": "host",
+        "description": "The domain for the MinIO dashboard.",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for the MinIO data.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "MinIO",
+        "image": "minio/minio:RELEASE.2025-09-07T16-13-09Z"
+      }
+    ]
+  },
+  {
+    "name": "Meilisearch",
+    "description": "Fast \u0026 open source search engine.",
+    "icon": "meilisearch",
+    "keywords": [
+      "full text search",
+      "elasticsearch",
+      "search engine",
+      "ram"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 0.5,
+      "minimum_recommended_ram_gb": 0.5
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Meilisearch API.",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for the Meilisearch data.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "Meilisearch",
+        "image": "getmeili/meilisearch:v1.53.1"
+      }
+    ]
+  },
+  {
+    "name": "Plausible",
+    "description": "Privacy-friendly Google Analytics alternative.",
+    "icon": "plausible",
+    "keywords": [
+      "analytics",
+      "privacy-friendly",
+      "open source",
+      "Google Analytics",
+      "umami"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 1,
+      "minimum_recommended_ram_gb": 2
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Plausible instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the PostgreSQL database.",
+        "default": "1",
+        "required": true
+      },
+      {
+        "name": "Clickhouse Size",
+        "type": "database-size",
+        "description": "Size of the storage for the Clickhouse database.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "ClickHouse",
+        "database_type": "clickhouse"
+      },
+      {
+        "name": "Plausible",
+        "image": "ghcr.io/plausible/community-edition:v3.2.1"
+      }
+    ]
+  },
+  {
+    "name": "Umami",
+    "description": "Privacy-focused Google Analytics alternative.",
+    "icon": "umami",
+    "keywords": [
+      "analytics",
+      "open source",
+      "privacy-friendly",
+      "Google Analytics",
+      "plausible"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 0.5,
+      "minimum_recommended_ram_gb": 0.5
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Umami instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the PostgreSQL database.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "Umami",
+        "image": "ghcr.io/umami-software/umami:3.3.1"
+      }
+    ]
+  },
+  {
+    "name": "WireGuard",
+    "description": "Fast, modern, and open source VPN.",
+    "icon": "wireguard",
+    "keywords": [
+      "wireguard",
+      "vpn",
+      "tcp tunnel",
+      "udp2raw",
+      "openvpn"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 0.5,
+      "minimum_recommended_ram_gb": 0.25
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "Domain for the WireGuard instance.",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for the WireGuard config data.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "WireGuard",
+        "image": "ghcr.io/wg-easy/wg-easy:15.4.0"
+      }
+    ]
+  },
+  {
+    "name": "Gluetun",
+    "description": "VPN client with a built-in HTTP proxy.",
+    "icon": "gluetun",
+    "keywords": [
+      "gluetun",
+      "vpn",
+      "proxy",
+      "http proxy",
+      "wireguard",
+      "mullvad",
+      "nordvpn",
+      "protonvpn"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 0.5,
+      "minimum_recommended_ram_gb": 0.25
+    },
+    "inputs": [
+      {
+        "name": "VPN Provider",
+        "type": "variable",
+        "description": "VPN service provider (e.g. \"protonvpn\").",
+        "required": true
+      },
+      {
+        "name": "WireGuard Private Key",
+        "type": "variable",
+        "description": "WireGuard private key from your VPN provider.",
+        "required": true
+      },
+      {
+        "name": "WireGuard Addresses",
+        "type": "variable",
+        "description": "Tunnel IP(s) assigned by your provider (e.g. \"10.0.0.1/32\").",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for Gluetun server data.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "Gluetun",
+        "image": "qmcgaw/gluetun:v3.41.3"
+      }
+    ]
+  },
+  {
+    "name": "Supabase",
+    "description": "The open source Firebase alternative.",
+    "icon": "supabase",
+    "keywords": [
+      "database",
+      "auth",
+      "storage",
+      "supabase",
+      "postgres",
+      "pocketbase"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 2,
+      "minimum_recommended_ram_gb": 4
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Supabase instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the PostgreSQL database.",
+        "default": "1",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for the Supabase storage service.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "Studio",
+        "image": "supabase/studio:2026.08.24-sha-8ec45b2"
+      },
+      {
+        "name": "Storage",
+        "image": "supabase/storage-api:v1.71.0"
+      },
+      {
+        "name": "MinIO",
+        "image": "minio/minio:RELEASE.2025-09-07T16-13-09Z"
+      },
+      {
+        "name": "PostgREST",
+        "image": "postgrest/postgrest:v14.17"
+      },
+      {
+        "name": "Auth",
+        "image": "supabase/gotrue:v2.196.0"
+      },
+      {
+        "name": "Postgres Meta",
+        "image": "supabase/postgres-meta:v0.98.0"
+      },
+      {
+        "name": "Functions",
+        "image": "supabase/edge-runtime:v1.74.3"
+      },
+      {
+        "name": "Kong",
+        "image": "kong:3.9.3"
+      }
+    ]
+  },
+  {
+    "name": "n8n",
+    "description": "Powerful AI workflow automation tools.",
+    "icon": "n8n",
+    "keywords": [
+      "workflow",
+      "automation",
+      "n8n",
+      "queue",
+      "low code",
+      "low-code",
+      "no code",
+      "no-code",
+      "chatbot",
+      "ai",
+      "llm"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 1,
+      "minimum_recommended_ram_gb": 1.5
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the n8n instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the PostgreSQL database.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "Redis",
+        "database_type": "redis"
+      },
+      {
+        "name": "n8n Worker",
+        "image": "n8nio/n8n:2.37.1"
+      },
+      {
+        "name": "n8n",
+        "image": "n8nio/n8n:2.37.1"
+      }
+    ]
+  },
+  {
+    "name": "PocketBase",
+    "description": "Open source backend in 1 file.",
+    "icon": "pocketbase",
+    "keywords": [
+      "pocketbase",
+      "database",
+      "backend",
+      "supabase",
+      "firebase"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 0.5,
+      "minimum_recommended_ram_gb": 0.5
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the PocketBase instance.",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for the PocketBase data.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PocketBase",
+        "image": "ghcr.io/unbindapp/pocketbase:v0.39.4"
+      }
+    ]
+  },
+  {
+    "name": "Flowise",
+    "description": "Low code tool for building LLM flows.",
+    "icon": "flowise",
+    "keywords": [
+      "llm",
+      "ai",
+      "chatbot",
+      "langchain",
+      "flow",
+      "workflow",
+      "automation",
+      "low code",
+      "low-code",
+      "no code",
+      "no-code",
+      "chatbot",
+      "ai"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 1,
+      "minimum_recommended_ram_gb": 1.5
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Flowise instance.",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for the Flowise app data.",
+        "default": "1",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the PostgreSQL database.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "Flowise",
+        "image": "flowiseai/flowise:3.1.4"
+      }
+    ]
+  },
+  {
+    "name": "Listmonk",
+    "description": "Newsletter and mailing list manager.",
+    "icon": "listmonk",
+    "keywords": [
+      "newsletter",
+      "email",
+      "mailing list",
+      "campaign",
+      "marketing",
+      "smtp"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 0.5,
+      "minimum_recommended_ram_gb": 0.5
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Listmonk instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the PostgreSQL database.",
+        "default": "1",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for the Listmonk uploads.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "Listmonk",
+        "image": "listmonk/listmonk:v6.2.0"
+      }
+    ]
+  },
+  {
+    "name": "Appsmith",
+    "description": "Build admin panels, internal tools, and dashboards.",
+    "icon": "appsmith",
+    "keywords": [
+      "low code",
+      "no code",
+      "app builder",
+      "internal tools",
+      "dashboard",
+      "automation"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 2,
+      "minimum_recommended_ram_gb": 4
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Appsmith instance.",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for the Appsmith data.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "Appsmith",
+        "image": "appsmith/appsmith-ee:v2.3.1"
+      }
+    ]
+  },
+  {
+    "name": "NocoDB",
+    "description": "Build databases as spreadsheets.",
+    "icon": "nocodb",
+    "keywords": [
+      "low code",
+      "no code",
+      "no-code",
+      "database",
+      "spreadsheet",
+      "airtable alternative",
+      "api builder",
+      "sql",
+      "postgresql"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 1,
+      "minimum_recommended_ram_gb": 1.5
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the NocoDB instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the PostgreSQL database.",
+        "default": "1",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for NocoDB data.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "NocoDB",
+        "image": "nocodb/nocodb:2026.08.1"
+      }
+    ]
+  },
+  {
+    "name": "Teable",
+    "description": "The next-gen Airtable alternative.",
+    "icon": "teable",
+    "keywords": [
+      "airtable",
+      "teable",
+      "no-code",
+      "database",
+      "visual",
+      "interface",
+      "relational",
+      "sql",
+      "postgresql"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 2,
+      "minimum_recommended_ram_gb": 3
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Teable instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the PostgreSQL database.",
+        "default": "1",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for Teable assets.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "Redis",
+        "database_type": "redis"
+      },
+      {
+        "name": "Teable",
+        "image": "ghcr.io/teableio/teable:release.2026-08-25T14-19-49Z.2796"
+      }
+    ]
+  },
+  {
+    "name": "Formbricks",
+    "description": "Typeform alternative for user feedback and surveys.",
+    "icon": "formbricks",
+    "keywords": [
+      "forms",
+      "surveys",
+      "feedback",
+      "analytics",
+      "open source",
+      "typeform alternative"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 1,
+      "minimum_recommended_ram_gb": 2
+    },
+    "inputs": [
+      {
+        "name": "Domain",
+        "type": "host",
+        "description": "The domain for the Formbricks instance.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "Size of the storage for the PostgreSQL database.",
+        "default": "1",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Size of the storage for Formbricks uploads.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "Redis",
+        "database_type": "redis"
+      },
+      {
+        "name": "Formbricks",
+        "image": "ghcr.io/formbricks/formbricks:5.3.4"
+      }
+    ]
+  },
+  {
+    "name": "Convex",
+    "description": "Reactive backend with a database, functions, and sync.",
+    "icon": "convex",
+    "keywords": [
+      "convex",
+      "backend",
+      "database",
+      "reactive",
+      "realtime",
+      "serverless",
+      "typescript",
+      "baas",
+      "firebase",
+      "supabase"
+    ],
+    "resource_recommendations": {
+      "minimum_recommended_cpu": 1,
+      "minimum_recommended_ram_gb": 1
+    },
+    "inputs": [
+      {
+        "name": "Dashboard Domain",
+        "type": "host",
+        "description": "Domain for the Convex dashboard.",
+        "required": true
+      },
+      {
+        "name": "Cloud Domain",
+        "type": "host",
+        "description": "Domain for the Convex cloud API and sync.",
+        "required": true
+      },
+      {
+        "name": "HTTP Actions Domain",
+        "type": "host",
+        "description": "Domain for Convex HTTP actions.",
+        "required": true
+      },
+      {
+        "name": "Database Size",
+        "type": "database-size",
+        "description": "PostgreSQL storage size.",
+        "default": "1",
+        "required": true
+      },
+      {
+        "name": "Storage Size",
+        "type": "volume-size",
+        "description": "Disk for file storage, exports, and indexes.",
+        "default": "1",
+        "required": true
+      }
+    ],
+    "services": [
+      {
+        "name": "PostgreSQL",
+        "database_type": "postgres"
+      },
+      {
+        "name": "Convex Backend",
+        "image": "ghcr.io/get-convex/convex-backend@sha256:1f2044e3eac463ac78973b136c0baf72d4ada602611d853d6f99f280e29e0a98"
+      },
+      {
+        "name": "Convex Dashboard",
+        "image": "ghcr.io/get-convex/convex-dashboard@sha256:284a2638e0c1a4ec0c2327d8219776f3a426ca5824b81686ae4d9454dc0ce8ed"
+      }
+    ]
+  }
+]

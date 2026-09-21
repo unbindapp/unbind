@@ -1,0 +1,12 @@
+node_modules
+.DS_Store
+.output
+.nitro
+.tanstack
+.source
+src/routeTree.gen.ts
+
+# Copied from apps/web by `npm run sync-assets`
+public/fonts
+public/favicon*
+public/apple-touch-icon.png

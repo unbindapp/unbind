@@ -1,0 +1,16 @@
+{
+  "title": "API & MCP",
+  "description": "Automate Unbind from code and agents",
+  "icon": "Braces",
+  "root": true,
+  "pages": [
+    "index",
+    "authentication",
+    "connected-apps",
+    "errors",
+    "---MCP---",
+    "...mcp",
+    "---Reference---",
+    "...reference"
+  ]
+}
