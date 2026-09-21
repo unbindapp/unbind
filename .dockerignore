@@ -5,6 +5,10 @@ deploy
 **/node_modules
 apps/web/dist
 apps/web/.tanstack
+apps/docs/.output
+apps/docs/.nitro
+apps/docs/.tanstack
+apps/docs/.source
 apps/api/internal/web/dist
 **/*.out
 **/.data

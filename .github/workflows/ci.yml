@@ -51,7 +51,7 @@ jobs:
       - run: go test ./...
 
   docs-data:
-    name: Docs data
+    name: Docs Data
     needs: changes
     if: ${{ needs.changes.outputs.api == 'true' || needs.changes.outputs.docs == 'true' }}
     runs-on: ubuntu-24.04

@@ -6,4 +6,4 @@ node_modules/
 public/
 package-lock.json
 src/routeTree.gen.ts
-*.gen.json
+generated/

@@ -5931,12 +5931,12 @@ paths:
           name: deployment_id
           schema:
             type: string
-        - description: 'Search expression: bare words (case-insensitive), "quoted phrases", AND/OR, -negation, @key:value for JSON fields'
+        - description: "Search expression: bare words (case-insensitive), \"quoted phrases\", AND/OR, -negation, @key:value for JSON fields"
           explode: false
           in: query
           name: search
           schema:
-            description: 'Search expression: bare words (case-insensitive), "quoted phrases", AND/OR, -negation, @key:value for JSON fields'
+            description: "Search expression: bare words (case-insensitive), \"quoted phrases\", AND/OR, -negation, @key:value for JSON fields"
             type: string
         - description: Comma-separated log levels to include (debug, info, warning, error)
           explode: false
@@ -6141,12 +6141,12 @@ paths:
             maximum: 2000
             minimum: 1
             type: integer
-        - description: 'Search expression: bare words (case-insensitive), "quoted phrases", AND/OR, -negation, @key:value for JSON fields'
+        - description: "Search expression: bare words (case-insensitive), \"quoted phrases\", AND/OR, -negation, @key:value for JSON fields"
           explode: false
           in: query
           name: search
           schema:
-            description: 'Search expression: bare words (case-insensitive), "quoted phrases", AND/OR, -negation, @key:value for JSON fields'
+            description: "Search expression: bare words (case-insensitive), \"quoted phrases\", AND/OR, -negation, @key:value for JSON fields"
             type: string
         - description: Comma-separated log levels to include (debug, info, warning, error)
           explode: false
