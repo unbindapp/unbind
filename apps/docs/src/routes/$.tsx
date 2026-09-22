@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, isNotFound, Link, notFound } from "@tanstack/react-router";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { Sidebar, SidebarProvider, useSidebar } from "fumadocs-ui/layouts/docs/slots/sidebar";
 import { createServerFn } from "@tanstack/react-start";
@@ -18,17 +18,18 @@ import { TabSelect } from "@/components/tab-select";
 import { sidebarComponents } from "@/components/sidebar-items";
 import { SidebarTrigger } from "@/components/sidebar-trigger";
 import { PageFooter } from "@/components/page-footer";
+import { notFoundHead } from "@/components/not-found";
 
 export const Route = createFileRoute("/$")({
   component: Page,
   loader: async ({ params }) => {
     const slugs = params._splat?.split("/") ?? [];
-    const data = await loader({ data: slugs });
+    const data = await loadPage(slugs);
     if (data.type === "docs") await docs.getPage(data.path)?.preload();
     return data;
   },
   head: ({ loaderData }) => {
-    if (!loaderData) return {};
+    if (!loaderData) return notFoundHead;
 
     const title = `${loaderData.title} | ${appName} Docs`;
     const url = `${siteUrl}${loaderData.url === "/" ? "" : loaderData.url}`;
@@ -46,6 +47,19 @@ export const Route = createFileRoute("/$")({
     };
   },
 });
+
+// In the static build the browser reads the loader result from a prerendered JSON file.
+// Unknown pages have no file, so the fetch fails; that failure is the not found signal.
+const staticCacheOnly = import.meta.env.PROD && typeof document !== "undefined";
+
+async function loadPage(slugs: string[]) {
+  try {
+    return await loader({ data: slugs });
+  } catch (error) {
+    if (isNotFound(error) || !staticCacheOnly) throw error;
+    throw notFound();
+  }
+}
 
 const loader = createServerFn({
   method: "GET",
