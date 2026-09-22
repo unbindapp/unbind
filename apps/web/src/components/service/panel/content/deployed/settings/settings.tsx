@@ -44,12 +44,12 @@ export default function Settings({ service }: { service: TServiceShallow }) {
             <TabWrapper className="gap-6 pt-4 sm:pt-5">
               <SourceSection service={service} />
               <NetworkingSection service={service} />
-              {shouldServiceSettingsHaveBackupsSection(service) && (
-                <BackupsSection service={service} />
-              )}
               {shouldServiceSettingsHaveBuildSection(service) && <BuildSection service={service} />}
               {shouldServiceSettingsHaveDeploySection(service) && (
                 <DeploySection service={service} />
+              )}
+              {shouldServiceSettingsHaveBackupsSection(service) && (
+                <BackupsSection service={service} />
               )}
               {shouldServiceSettingsHaveHealthSection(service) && (
                 <HealthSection service={service} />

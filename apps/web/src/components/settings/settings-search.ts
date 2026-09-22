@@ -105,31 +105,6 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
     ],
   },
   {
-    id: "backups",
-    title: "Backups",
-    keywords: ["backup", "snapshot", "restore", "s3"],
-    items: [
-      {
-        id: settingsIds.backups.bucket,
-        title: "Backup Bucket",
-        description: "S3-compatible bucket to store the database backups.",
-        keywords: ["s3", "storage", "bucket", "enable", "disable"],
-      },
-      {
-        id: settingsIds.backups.schedule,
-        title: "Backup Schedule",
-        description: "How often the database is backed up.",
-        keywords: ["cron", "frequency", "interval", "daily", "weekly", "hourly"],
-      },
-      {
-        id: settingsIds.backups.retention,
-        title: "Backup Retention",
-        description: "How many backups to keep. Older backups are deleted.",
-        keywords: ["keep", "count", "history", "cleanup"],
-      },
-    ],
-  },
-  {
     id: "build",
     title: "Build",
     keywords: ["compile", "ci"],
@@ -194,6 +169,31 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
         title: "Resource Limits",
         description: "The maximum vCPU and memory to allocate for each replica.",
         keywords: ["cpu", "vcpu", "memory", "ram", "limits", "resources", "size"],
+      },
+    ],
+  },
+  {
+    id: "backups",
+    title: "Backups",
+    keywords: ["backup", "snapshot", "restore", "s3"],
+    items: [
+      {
+        id: settingsIds.backups.bucket,
+        title: "Backup Bucket",
+        description: "S3-compatible bucket to store the database backups.",
+        keywords: ["s3", "storage", "bucket", "enable", "disable"],
+      },
+      {
+        id: settingsIds.backups.schedule,
+        title: "Backup Schedule",
+        description: "How often the database is backed up.",
+        keywords: ["cron", "frequency", "interval", "daily", "weekly", "hourly"],
+      },
+      {
+        id: settingsIds.backups.retention,
+        title: "Backup Retention",
+        description: "How many backups to keep. Older backups are deleted.",
+        keywords: ["keep", "count", "history", "cleanup"],
       },
     ],
   },

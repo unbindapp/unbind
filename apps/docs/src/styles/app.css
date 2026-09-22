@@ -157,6 +157,12 @@ div[data-state]:has(+ #nd-sidebar-mobile) {
   background-color: var(--color-fd-overlay);
 }
 
+/* Buttons Fumadocs renders itself (the playground's Send, the JSON editor toggles, the
+   OAuth dialog) use its own medium weight variants. Our buttons are bold. */
+.rounded-md.font-medium.transition-colors.duration-100 {
+  font-weight: 700;
+}
+
 /* API reference pieces from fumadocs-openapi. They have no props for this, so the rules
    key on the data attribute and element shape they render. */
 
