@@ -8,7 +8,8 @@ import type { DynamicCodeblockProps } from "fumadocs-ui/components/dynamic-codeb
 import { useRef, type ComponentProps, type ReactNode } from "react";
 
 // Fumadocs' own copy button uses a clipboard icon and cannot be swapped, so the block
-// renders ours through its Actions slot instead.
+// renders ours through its Actions slot instead. The button is 36px and sits 6px from
+// the edges of a one-line block, so its top, right and bottom gaps match.
 function CodeActions({ className }: { className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -21,9 +22,18 @@ function CodeActions({ className }: { className?: string }) {
     return clone.textContent ?? "";
   }
 
+  const floating = className?.includes("absolute");
+
   return (
-    <div ref={ref} className={cn(className, "bg-card flex items-center")}>
-      <CopyButton valueToCopy={codeText} className="size-8 rounded-md" />
+    <div
+      ref={ref}
+      className={cn(
+        className,
+        "bg-card flex items-center",
+        floating ? "top-1.5 right-1.5" : "-me-2.5",
+      )}
+    >
+      <CopyButton valueToCopy={codeText} className="size-9 rounded-md" />
     </div>
   );
 }

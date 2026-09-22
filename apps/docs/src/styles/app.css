@@ -369,6 +369,12 @@ p.inline-flex.mt-6 {
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
+/* A code block's title bar is as tall as a one-line block, so the copy button keeps
+   the same gaps there. Fumadocs renders the bar at h-9.5 with no prop for it. */
+.shiki > div:has(> figcaption) {
+  height: calc(var(--spacing) * 12 + 1px);
+}
+
 /* The logo link at the top of the desktop sidebar. Fumadocs renders it flush with the
    search field below, so it gets the inset the sidebar items have. */
 #nd-sidebar > div:first-child > div:first-child > a {
