@@ -3929,13 +3929,19 @@ components:
           format: uuid
           type: string
         git_branch:
+          description: Branch to build from, must exist in the repository. Defaults to the default branch when the repository changes
           type: string
         git_tag:
           description: Tag to build from, supports glob patterns
           type: string
+        github_installation_id:
+          description: Moves a git service to another repository, together with repository_owner and repository_name. The service is rebuilt from it
+          format: int64
+          type: integer
         health_check:
           $ref: "#/components/schemas/HealthCheck"
         image:
+          description: Image to run, with an optional tag. Only for an image service
           type: string
         init_containers:
           description: List of init containers
@@ -4020,6 +4026,12 @@ components:
           maximum: 10
           minimum: 1
           type: integer
+        repository_name:
+          description: Must be a repository the GitHub installation has access to
+          type: string
+        repository_owner:
+          description: Must be the account the GitHub installation belongs to
+          type: string
         resources:
           $ref: "#/components/schemas/Resources"
           description: Resource limits and requests for the service containers
