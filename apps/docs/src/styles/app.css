@@ -135,10 +135,25 @@ body {
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) var(--opacity-6-10), transparent);
 }
 
-/* Popovers are solid like the app's, not blurred glass */
-[data-side].backdrop-blur-lg {
-  background-color: var(--popover);
+/* The app uses no frosted glass. Fumadocs blurs popovers, the mobile header and
+   table of contents bar, drawer overlays and the code copy button. Every one of them
+   is a utility class with no prop, so they are switched off here and their
+   translucent surfaces made solid. */
+.backdrop-blur-xs,
+.backdrop-blur-sm,
+.backdrop-blur-md,
+.backdrop-blur-lg {
   backdrop-filter: none;
+}
+.bg-fd-background\/80,
+[data-transparent="false"].data-\[transparent\=false\]\:bg-fd-background\/80 {
+  background-color: var(--background);
+}
+.bg-fd-popover\/60,
+.bg-fd-popover\/80 {
+  background-color: var(--popover);
+}
+[data-side].backdrop-blur-lg {
   border-radius: var(--radius);
   box-shadow: 0 10px 15px -3px
     color-mix(in oklab, var(--shadow-color) var(--opacity-shadow), transparent);

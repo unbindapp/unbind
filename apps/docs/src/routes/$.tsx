@@ -3,14 +3,8 @@ import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { createServerFn } from "@tanstack/react-start";
 import { docs } from "@/lib/docs";
 import { source } from "@/lib/source";
-import {
-  DocsBody,
-  DocsDescription,
-  DocsPage,
-  DocsTitle,
-  MarkdownCopyButton,
-} from "fumadocs-ui/layouts/docs/page";
-import { ViewOptionsPopover } from "@/components/page-actions";
+import { DocsBody, DocsDescription, DocsPage, DocsTitle } from "fumadocs-ui/layouts/docs/page";
+import { CopyMarkdownButton, ViewOptionsPopover } from "@/components/page-actions";
 import { baseOptions } from "@/lib/layout.shared";
 import { appName, contentDir, getPageMarkdownUrl, gitConfig, siteUrl } from "@/lib/shared";
 import { staticFunctionMiddleware } from "@tanstack/start-static-server-functions";
@@ -88,10 +82,13 @@ const loader = createServerFn({
     };
   });
 
+const repoUrl = `https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}`;
+const specGithubUrl = `${repoUrl}/apps/docs/generated/openapi.gen.yaml`;
+
 function PageActions({ markdownUrl, githubUrl }: { markdownUrl: string; githubUrl?: string }) {
   return (
     <div className="-mt-4 flex flex-row items-center gap-2 border-b pb-6">
-      <MarkdownCopyButton markdownUrl={markdownUrl} />
+      <CopyMarkdownButton markdownUrl={markdownUrl} />
       <ViewOptionsPopover markdownUrl={markdownUrl} githubUrl={githubUrl} />
     </div>
   );
@@ -108,10 +105,7 @@ function Content({ path, markdownUrl }: { path: string; markdownUrl: string }) {
     <DocsPage toc={toc}>
       <DocsTitle>{page.heading ?? page.title}</DocsTitle>
       <DocsDescription>{page.description}</DocsDescription>
-      <PageActions
-        markdownUrl={markdownUrl}
-        githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/${contentDir}/${path}`}
-      />
+      <PageActions markdownUrl={markdownUrl} githubUrl={`${repoUrl}/${contentDir}/${path}`} />
       <DocsBody>
         <MDX components={useMDXComponents()} />
       </DocsBody>
@@ -129,7 +123,7 @@ function Page() {
         <DocsPage full>
           <DocsTitle>{page.title}</DocsTitle>
           <DocsDescription>{page.description}</DocsDescription>
-          <PageActions markdownUrl={page.markdownUrl} />
+          <PageActions markdownUrl={page.markdownUrl} githubUrl={specGithubUrl} />
           <DocsBody>
             <OpenAPIPage {...page.props} />
           </DocsBody>

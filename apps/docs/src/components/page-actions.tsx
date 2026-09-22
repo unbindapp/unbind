@@ -1,8 +1,38 @@
 import { cn } from "@/lib/cn";
 import { Popover } from "@base-ui/react/popover";
 import { usePathname } from "fumadocs-core/framework";
-import { ChevronDownIcon, ExternalLinkIcon, TextIcon } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { CheckIcon, ChevronDownIcon, CopyIcon, ExternalLinkIcon, TextIcon } from "lucide-react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
+
+// Both page action buttons share the app's small secondary button look.
+const buttonClass =
+  "bg-secondary text-secondary-foreground has-hover:hover:bg-border data-[popup-open]:bg-border inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.25 text-sm font-bold transition-colors disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
+
+export function CopyMarkdownButton({ markdownUrl }: { markdownUrl: string }) {
+  const [copied, setCopied] = useState(false);
+  const [pending, setPending] = useState(false);
+  const timeout = useRef<number>(undefined);
+
+  async function copy() {
+    setPending(true);
+    try {
+      const text = fetch(markdownUrl).then((res) => res.text());
+      await navigator.clipboard.write([new ClipboardItem({ "text/plain": text })]);
+      setCopied(true);
+      window.clearTimeout(timeout.current);
+      timeout.current = window.setTimeout(() => setCopied(false), 1500);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <button type="button" disabled={pending} onClick={copy} className={buttonClass}>
+      {copied ? <CheckIcon /> : <CopyIcon />}
+      Copy Markdown
+    </button>
+  );
+}
 
 function GitHubIcon() {
   return (
@@ -66,14 +96,9 @@ export function ViewOptionsPopover({
 
   return (
     <Popover.Root>
-      <Popover.Trigger
-        className={cn(
-          "bg-secondary has-hover:hover:bg-border data-[popup-open]:bg-border inline-flex items-center gap-1.5 rounded-md border px-3 py-1.25 text-sm font-medium transition-colors",
-          className,
-        )}
-      >
+      <Popover.Trigger className={cn(buttonClass, className)}>
         Open
-        <ChevronDownIcon className="text-muted-foreground size-3.5" />
+        <ChevronDownIcon className="text-muted-foreground size-3.5!" />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Positioner sideOffset={4} align="start" className="z-50">
