@@ -140,6 +140,17 @@ test("merges service field changes into one update per service", () => {
   assert.equal(web.replicas, undefined);
 });
 
+test("splits a staged repository into installation, owner and name", () => {
+  const payload = buildApplyStagedChangesPayload(
+    state([], [service("gitRepository", "42:yekta/bio"), service("gitBranch", "main")]),
+  );
+  const [web] = payload.services;
+  assert.equal(web.github_installation_id, 42);
+  assert.equal(web.repository_owner, "yekta");
+  assert.equal(web.repository_name, "bio");
+  assert.equal(web.git_branch, "main");
+});
+
 test("carries a boolean field through as a boolean", () => {
   const payload = buildApplyStagedChangesPayload(
     state([], [service("isPublic", false), service("isPublic", true, { serviceId: "web" })]),

@@ -18,6 +18,8 @@ type ServiceRepositoryInterface interface {
 	Create(ctx context.Context, tx repository.TxInterface, input *CreateServiceInput) (*ent.Service, error)
 	CreateConfig(ctx context.Context, tx repository.TxInterface, input *MutateConfigInput) (*ent.ServiceConfig, error)
 	Update(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, name *string, description *string) error
+	// UpdateGitSource points a git service at another repository
+	UpdateGitSource(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, installationID int64, owner string, repo string, detectedPorts []schema.PortSpec) error
 	UpdateConfig(ctx context.Context, tx repository.TxInterface, input *MutateConfigInput) error
 	Delete(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID) error
 	SetCurrentDeployment(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, deploymentID uuid.UUID) error

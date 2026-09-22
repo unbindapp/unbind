@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
@@ -50,12 +49,9 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 
 	switch input.Type {
 	case schema.ServiceTypeGithub:
-		// Validate that if GitHub info is provided, all fields are set
-		if input.GitHubInstallationID != nil {
-			if input.RepositoryOwner == nil || input.RepositoryName == nil {
-				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-					"GitHub repository owner, name must be provided together")
-			}
+		if input.GitHubInstallationID == nil || input.RepositoryOwner == nil || input.RepositoryName == nil {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+				"GitHub installation, repository owner and repository name must be provided together")
 		}
 	case schema.ServiceTypeDockerimage:
 		// Validate that if Docker image is provided, all fields are set
@@ -195,39 +191,12 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	// Only ad metadata if user is not providing ports
 	addDetectedPorts := len(input.Ports) == 0
 	if input.Type == schema.ServiceTypeGithub {
-		installation, err := self.repo.Github().GetInstallationByID(ctx, *input.GitHubInstallationID)
+		source, err := self.verifyGithubRepository(ctx, *input.GitHubInstallationID, *input.RepositoryOwner, *input.RepositoryName)
 		if err != nil {
-			if ent.IsNotFound(err) {
-				return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "GitHub installation not found")
-			}
 			return nil, err
 		}
-
-		canAccess, cloneUrl, defaultBranch, ownerLogin, err := self.githubClient.VerifyRepositoryAccess(ctx, installation, *input.RepositoryOwner, *input.RepositoryName)
-		if err != nil {
-			log.Error("Error verifying repository access", "err", err)
-			return nil, err
-		}
-		if canAccess {
-			canAccess, err = self.githubClient.IsRepositoryInInstallation(ctx, installation, ownerLogin, *input.RepositoryName)
-			if err != nil {
-				log.Error("Error verifying repository installation", "err", err)
-				return nil, err
-			}
-		}
-		if !canAccess {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-				"Repository not accessible with the specified GitHub installation")
-		}
-		gitOwnerName = new(ownerLogin)
-		gitBranch = new(defaultBranch)
-
-		tmpDir, err := self.githubClient.CloneRepository(ctx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey, cloneUrl, fmt.Sprintf("refs/heads/%s", defaultBranch), "")
-		if err != nil {
-			log.Error("Error cloning repository", "err", err)
-			return nil, err
-		}
-		defer os.RemoveAll(tmpDir)
+		gitOwnerName = new(source.ownerLogin)
+		gitBranch = new(source.defaultBranch)
 
 		target := sourceanalyzer.AnalysisTarget{}
 		if input.DockerBuilderDockerfilePath != nil {
@@ -239,9 +208,8 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		if input.RunCommand != nil {
 			target.RunCommand = *input.RunCommand
 		}
-		analysisResult, err = sourceanalyzer.AnalyzeSourceCodeAnchored(tmpDir, target)
+		analysisResult, err = self.analyzeGithubSource(ctx, source, source.defaultBranch, target)
 		if err != nil {
-			log.Error("Error analyzing source code", "err", err)
 			return nil, err
 		}
 	} else if input.Type == schema.ServiceTypeDockerimage && len(input.Ports) == 0 {

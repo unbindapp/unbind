@@ -31,6 +31,8 @@ type GithubClientInterface interface {
 	VerifyRepositoryAccess(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (canAccess bool, repoUrl, defaultBranch, ownerLogin string, err error)
 	// IsRepositoryInInstallation checks that the installation covers the repository, it may be limited to selected repositories of the account
 	IsRepositoryInInstallation(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (bool, error)
+	// BranchExists reports whether the repository has the branch
+	BranchExists(ctx context.Context, installation *ent.GithubInstallation, owner, repo, branch string) (bool, error)
 	// Get branch head summary - sha, message, author
 	// GetCommitSummary - get summary for a specific commit or branch head
 	GetCommitSummary(ctx context.Context, installation *ent.GithubInstallation, owner, repo string, branchOrSHA string, isCommitSHA bool) (commitSHA, commitMessage string, committer *schema.GitCommitter, err error)

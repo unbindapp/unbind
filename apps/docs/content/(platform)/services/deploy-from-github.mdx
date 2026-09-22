@@ -57,6 +57,10 @@ Press **Deploy**.
 
 Services created from GitHub deploy on every push to their branch. You can change the branch later under **Source** in the service settings.
 
+## Change the repository
+
+Under **Source** > **Repository** in the service settings you can pick any repository the GitHub app can reach. The branch resets to the new repository's default branch, so check it before you deploy. Unbind rebuilds the service from the new repository, looks at the code again to work out the framework and the port, and from then on deploys on pushes to the new repository. Earlier deployments stay in the history, but they cannot be rebuilt since their commits belong to the old repository.
+
 ### Watch paths
 
 In a monorepo you do not want every push to redeploy every service. Under **Build** > **Watch Paths**, add gitignore-style patterns. A push then deploys only when one of the changed files matches.

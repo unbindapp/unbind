@@ -181,10 +181,11 @@ export const UpdateServiceInputSchema = z
     docker_builder_build_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
     docker_builder_dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder - set empty string to reset to default
     environment_id: z.string(),
-    git_branch: z.string().optional(),
+    git_branch: z.string().optional(), // Branch to build from, must exist in the repository. Defaults to the default branch when the repository changes
     git_tag: z.string().optional(), // Tag to build from, supports glob patterns
+    github_installation_id: z.number().optional(), // Moves a git service to another repository, together with repository_owner and repository_name. The service is rebuilt from it
     health_check: HealthCheckSchema.optional(),
-    image: z.string().optional(),
+    image: z.string().optional(), // Image to run, with an optional tag. Only for an image service
     init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
     is_public: z.boolean().optional(), // Whether the service is reachable from the internet. A database gets a public address when true and loses it when false
     name: z.string().nullable().optional(), // Has to be unique in the environment
@@ -200,6 +201,8 @@ export const UpdateServiceInputSchema = z
     remove_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Variable mounts to remove
     remove_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to remove from the service
     replicas: z.number().optional(),
+    repository_name: z.string().optional(), // Must be a repository the GitHub installation has access to
+    repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
     s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for databases that support backups, Redis does not

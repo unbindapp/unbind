@@ -27,6 +27,8 @@ The tag search works for Docker Hub images. For other registries, type the tag a
 
 Image services do not redeploy on their own. To move to a new version, change the tag and press **Deploy** on the changes bar.
 
+To run a different image altogether, search under **Source** > **Image** the same way you did when creating the service. The tag starts over at `latest`, so pick a version right after.
+
 ## Private images
 
 There is no place in the UI yet to add credentials for a private registry, so images have to be publicly pullable. If your image is private, [deploy from GitHub](/services/deploy-from-github) with a Dockerfile instead. The image Unbind builds stays inside your instance.

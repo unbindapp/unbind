@@ -244,6 +244,28 @@ func (self *ServiceRepository) Update(
 		Exec(ctx)
 }
 
+// UpdateGitSource points a git service at another repository
+func (self *ServiceRepository) UpdateGitSource(
+	ctx context.Context,
+	tx repository.TxInterface,
+	serviceID uuid.UUID,
+	installationID int64,
+	owner string,
+	repo string,
+	detectedPorts []schema.PortSpec,
+) error {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+	return db.Service.UpdateOneID(serviceID).
+		SetGithubInstallationID(installationID).
+		SetGitRepositoryOwner(owner).
+		SetGitRepository(repo).
+		SetDetectedPorts(detectedPorts).
+		Exec(ctx)
+}
+
 func applyResourceUpdate(upd *ent.ServiceConfigUpdateOne, res, existing *schema.Resources) {
 	if res == nil {
 		return

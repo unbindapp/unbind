@@ -46,7 +46,7 @@ export function isNonDockerHubImage(image: string) {
   return SupportedDockerRegistriesEnum.options.some((registry) => image.startsWith(`${registry}/`));
 }
 
-function cleanSearch(search: string | undefined) {
+export function cleanSearch(search: string | undefined) {
   if (!search) return "";
   if (search.startsWith("https://")) {
     return search.slice(8);

@@ -7,7 +7,10 @@ import {
   BlockItemTitle,
 } from "@/components/block";
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
-import { isNonDockerHubImage } from "@/components/command-panel/context-command-panel/items/docker-image";
+import {
+  cleanSearch,
+  isNonDockerHubImage,
+} from "@/components/command-panel/context-command-panel/items/docker-image";
 import BrandIcon from "@/components/icons/brand";
 import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
@@ -24,12 +27,15 @@ import {
   TDockerImageSectionProps,
   TGitSectionProps,
 } from "@/components/settings/types";
+import { TServiceChangeField } from "@/components/staged-changes/types";
 import { defaultDebounceMs } from "@/lib/constants";
+import { formatKMBT } from "@/lib/helpers/format-kmbt";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
-import { dockerTagsQuery } from "@/lib/queries/docker";
-import { gitRepositoryQuery } from "@/lib/queries/git";
+import { dockerSearchQuery, dockerTagsQuery } from "@/lib/queries/docker";
+import { gitRepositoriesQuery, gitRepositoryQuery } from "@/lib/queries/git";
 import { TServiceShallow } from "@/lib/queries/services";
-import { useQuery } from "@tanstack/react-query";
+import { gitRepositoryValue, parseGitRepositoryValue } from "@/lib/queries/update-service-input";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
@@ -65,12 +71,8 @@ export default function SourceSection({ service }: TProps) {
   }
 
   if (service.type === "docker-image") {
-    const arr = service.config.image?.split(":");
-    const image = arr?.[0];
-    const tag = arr && arr.length > 1 ? arr?.[1] : "latest";
-
-    if (!image || !tag) return <ErrorWithWrapper message="Image or tag is not found." />;
-
+    if (!service.config.image) return <ErrorWithWrapper message="Image is not found." />;
+    const { image, tag } = splitImage(service.config.image);
     return <DockerImageSection image={image} tag={tag} service={service} />;
   }
 
@@ -91,19 +93,60 @@ export default function SourceSection({ service }: TProps) {
   return <ErrorWithWrapper message="Unsupported service type" />;
 }
 
+function formatRepository(value: string) {
+  const repository = parseGitRepositoryValue(value);
+  return repository ? `${repository.owner}/${repository.name}` : value;
+}
+
 function GitSection({ owner, repo, branch, installationId, service }: TGitSectionProps) {
   const { isItemVisible } = useSettingsSectionSearch("source");
-  const { staged, stage, unstage } = useServiceChanges(service, { gitBranch: branch });
+  const queryClient = useQueryClient();
+  const serverRepository = gitRepositoryValue({ installationId, owner, name: repo });
+  const { staged, stage, unstage } = useServiceChanges(service, {
+    gitRepository: serverRepository,
+    gitBranch: branch,
+  });
+  const selectedRepository = parseGitRepositoryValue(
+    stagedString(staged.gitRepository, serverRepository),
+  ) ?? { installationId, owner, name: repo };
+
+  const {
+    data: dataRepositories,
+    isPending: isPendingRepositories,
+    error: errorRepositories,
+  } = useQuery(gitRepositoriesQuery());
 
   const {
     data: dataRepository,
     isPending: isPendingRepository,
     error: errorRepository,
-  } = useQuery(gitRepositoryQuery({ installationId, owner, repoName: repo }));
+  } = useQuery(
+    gitRepositoryQuery({
+      installationId: selectedRepository.installationId,
+      owner: selectedRepository.owner,
+      repoName: selectedRepository.name,
+    }),
+  );
 
-  const defaultValues = { branch: stagedString(staged.gitBranch, branch) };
+  const defaultValues = {
+    repository: stagedString(staged.gitRepository, serverRepository),
+    branch: stagedString(staged.gitBranch, branch),
+  };
   const form = useAppForm({ defaultValues });
-  useResetFormOnStagedChange(form, defaultValues, staged, ["gitBranch"]);
+  useResetFormOnStagedChange(form, defaultValues, staged, ["gitRepository", "gitBranch"]);
+
+  const repositoryItems: TCommandItem[] | undefined = useMemo(
+    () =>
+      dataRepositories?.repositories.map((r) => ({
+        value: gitRepositoryValue({
+          installationId: r.installation_id,
+          owner: r.owner.login,
+          name: r.name,
+        }),
+        label: r.full_name,
+      })),
+    [dataRepositories],
+  );
 
   const branchItems: TCommandItem[] | undefined = useMemo(() => {
     const items: TCommandItem[] | undefined = dataRepository?.repository.branches?.map((b) => ({
@@ -113,16 +156,42 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     return items;
   }, [dataRepository]);
 
+  const changeRepository = async (value: string) => {
+    const repository = parseGitRepositoryValue(value);
+    if (!repository) return;
+    stage({
+      field: "gitRepository",
+      label: "Repository",
+      value,
+      previous: serverRepository,
+      format: formatRepository,
+    });
+    if (value === serverRepository) {
+      form.setFieldValue("branch", branch);
+      unstage(["gitBranch"]);
+      return;
+    }
+    // The branch belongs to the old repository, the new one starts from its default branch
+    try {
+      const { repository: detail } = await queryClient.fetchQuery(
+        gitRepositoryQuery({
+          installationId: repository.installationId,
+          owner: repository.owner,
+          repoName: repository.name,
+        }),
+      );
+      form.setFieldValue("branch", detail.defaultBranch);
+      stage({ field: "gitBranch", label: "Branch", value: detail.defaultBranch, previous: branch });
+    } catch {
+      // The branch select shows the error from its own query
+    }
+  };
+
   const showRepository = isItemVisible(settingsIds.source.repository);
   const showBranch = isItemVisible(settingsIds.source.branch);
   if (!showRepository && !showBranch) return null;
 
-  const repositoryBlockProps = dataRepository?.repository.htmlUrl
-    ? ({
-        asElement: "LinkButton",
-        href: dataRepository.repository.htmlUrl,
-      } as const)
-    : ({ asElement: "div" } as const);
+  const fields: TServiceChangeField[] = ["gitRepository", "gitBranch"];
 
   return (
     <SettingsSection
@@ -131,26 +200,56 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       entityId={`source-${service.id}`}
       Icon={CodeIcon}
       classNameContent="gap-5"
-      hasChanges={staged.gitBranch !== undefined}
-      isApplying={hasApplying(staged, ["gitBranch"])}
-      onDiscard={() => unstage(["gitBranch"])}
+      hasChanges={fields.some((field) => staged[field] !== undefined)}
+      isApplying={hasApplying(staged, fields)}
+      onDiscard={() => unstage(fields)}
     >
       {showRepository && (
         <Block>
-          <BlockItem id={settingsIds.source.repository} className="w-full md:w-full">
-            <BlockItemHeader>
-              <BlockItemTitle>Repository</BlockItemTitle>
-            </BlockItemHeader>
-            <BlockItemContent>
-              <BlockItemButtonLike
-                {...repositoryBlockProps}
-                text={`${owner}/${repo}`}
-                Icon={({ className }) => (
-                  <BrandIcon brand="github" color="brand" className={className} />
-                )}
-              />
-            </BlockItemContent>
-          </BlockItem>
+          <form.AppField
+            name="repository"
+            children={(field) => (
+              <BlockItem id={settingsIds.source.repository} className="w-full md:w-full">
+                <BlockItemHeader>
+                  <BlockItemTitle>Repository</BlockItemTitle>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <field.AsyncAndSearchableSelect
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onChange={(v) => {
+                      if (v === field.state.value) return;
+                      field.handleChange(v);
+                      changeRepository(v);
+                    }}
+                    items={repositoryItems}
+                    isPending={isPendingRepositories}
+                    error={errorRepositories?.message}
+                    commandInputPlaceholder="Search repositories..."
+                    CommandEmptyText="No repositories found"
+                    CommandEmptyIcon={({ className }) => (
+                      <BrandIcon brand="github" className={className} />
+                    )}
+                  >
+                    {({ isOpen }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        text={formatRepository(field.state.value)}
+                        Icon={({ className }) => (
+                          <BrandIcon brand="github" color="brand" className={className} />
+                        )}
+                        variant="outline"
+                        open={isOpen}
+                        onBlur={field.handleBlur}
+                        hasChanges={staged.gitRepository !== undefined}
+                      />
+                    )}
+                  </field.AsyncAndSearchableSelect>
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
         </Block>
       )}
       {showBranch && (
@@ -202,16 +301,30 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
 
 function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
   const { isItemVisible } = useSettingsSectionSearch("source");
-  const [commandInputValue, setCommandInputValue] = useState("");
-  const imageIsNonDockerHub = isNonDockerHubImage(image);
-  const [search] = useDebounceValue(commandInputValue, defaultDebounceMs);
   const serverImage = `${image}:${tag}`;
   const { staged, stage, unstage } = useServiceChanges(service, { image: serverImage });
-  const stagedImage = stagedString(staged.image, serverImage);
+  const selected = splitImage(stagedString(staged.image, serverImage));
+  const selectedIsNonDockerHub = isNonDockerHubImage(selected.image);
 
-  const defaultValues = { tag: stagedImage.split(":")[1] ?? tag };
+  const [imageInputValue, setImageInputValue] = useState("");
+  const [imageSearch] = useDebounceValue(imageInputValue, defaultDebounceMs);
+  const [tagInputValue, setTagInputValue] = useState("");
+  const [tagSearch] = useDebounceValue(tagInputValue, defaultDebounceMs);
+
+  const defaultValues = { image: selected.image, tag: selected.tag };
   const form = useAppForm({ defaultValues });
   useResetFormOnStagedChange(form, defaultValues, staged, ["image"]);
+
+  const cleanedImageSearch = cleanSearch(imageInputValue ? imageSearch : imageInputValue);
+  const typedRegistryImage = isNonDockerHubImage(cleanedImageSearch) ? cleanedImageSearch : null;
+  const {
+    data: dataImages,
+    isPending: isPendingImages,
+    error: errorImages,
+  } = useQuery({
+    ...dockerSearchQuery({ search: cleanedImageSearch }),
+    enabled: typedRegistryImage === null,
+  });
 
   const {
     data: dataTags,
@@ -219,11 +332,22 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     error: errorTags,
   } = useQuery({
     ...dockerTagsQuery({
-      repository: image,
-      search: commandInputValue ? search : commandInputValue,
+      repository: selected.image,
+      search: tagInputValue ? tagSearch : tagInputValue,
     }),
-    enabled: !imageIsNonDockerHub,
+    enabled: !selectedIsNonDockerHub,
   });
+
+  const imageItems: TCommandItem[] | undefined = useMemo(() => {
+    if (typedRegistryImage !== null) {
+      return [{ value: typedRegistryImage, label: typedRegistryImage }];
+    }
+    return dataImages?.repositories.map((r) => ({
+      value: r.repo_name,
+      label: r.repo_name,
+      description: `${formatKMBT(r.pull_count)} pulls`,
+    }));
+  }, [dataImages, typedRegistryImage]);
 
   const tagItems: TCommandItem[] | undefined = useMemo(() => {
     const items: TCommandItem[] | undefined = dataTags?.tags?.map((b) => ({
@@ -250,26 +374,58 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     >
       {showImage && (
         <Block>
-          <BlockItem id={settingsIds.source.image} className="w-full md:w-full">
-            <BlockItemHeader>
-              <BlockItemTitle>Image</BlockItemTitle>
-            </BlockItemHeader>
-            <BlockItemContent>
-              <BlockItemButtonLike
-                asElement="LinkButton"
-                href={
-                  imageIsNonDockerHub ? `https://${image}` : `https://hub.docker.com/r/${image}`
-                }
-                text={image}
-                Icon={({ className }) => {
-                  if (imageIsNonDockerHub) {
-                    return <PackageIcon className={className} />;
-                  }
-                  return <BrandIcon brand="docker" color="brand" className={className} />;
-                }}
-              />
-            </BlockItemContent>
-          </BlockItem>
+          <form.AppField
+            name="image"
+            children={(field) => (
+              <BlockItem id={settingsIds.source.image} className="w-full md:w-full">
+                <BlockItemHeader>
+                  <BlockItemTitle>Image</BlockItemTitle>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <field.AsyncAndSearchableSelect
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onChange={(v) => {
+                      if (!v || v === field.state.value) return;
+                      field.handleChange(v);
+                      // A new image starts from latest, the server image keeps its tag
+                      const next = v === image ? serverImage : `${v}:latest`;
+                      form.setFieldValue("tag", splitImage(next).tag);
+                      setTagInputValue("");
+                      stage({ field: "image", label: "Image", value: next, previous: serverImage });
+                    }}
+                    items={imageItems}
+                    isPending={typedRegistryImage === null && isPendingImages}
+                    error={errorImages?.message}
+                    commandInputPlaceholder="Search Docker images..."
+                    CommandEmptyText="No images found"
+                    CommandEmptyIcon={PackageIcon}
+                    commandShouldntFilter={true}
+                    commandInputValue={imageInputValue}
+                    commandInputValueOnChange={(v) => setImageInputValue(v)}
+                  >
+                    {({ isOpen }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        text={field.state.value}
+                        Icon={({ className }) => {
+                          if (isNonDockerHubImage(field.state.value)) {
+                            return <PackageIcon className={className} />;
+                          }
+                          return <BrandIcon brand="docker" color="brand" className={className} />;
+                        }}
+                        variant="outline"
+                        open={isOpen}
+                        onBlur={field.handleBlur}
+                        hasChanges={staged.image !== undefined}
+                      />
+                    )}
+                  </field.AsyncAndSearchableSelect>
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
         </Block>
       )}
       {showTag && (
@@ -291,7 +447,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                       stage({
                         field: "image",
                         label: "Image",
-                        value: `${image}:${v}`,
+                        value: `${selected.image}:${v}`,
                         previous: serverImage,
                       });
                     }}
@@ -302,8 +458,8 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                     CommandEmptyText="No tags found"
                     CommandEmptyIcon={TagIcon}
                     commandShouldntFilter={true}
-                    commandInputValue={commandInputValue}
-                    commandInputValueOnChange={(v) => setCommandInputValue(v)}
+                    commandInputValue={tagInputValue}
+                    commandInputValueOnChange={(v) => setTagInputValue(v)}
                   >
                     {({ isOpen }) => (
                       <BlockItemButtonLike
@@ -313,8 +469,8 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                         variant="outline"
                         open={isOpen}
                         onBlur={field.handleBlur}
-                        disabled={imageIsNonDockerHub}
-                        hideChevron={imageIsNonDockerHub}
+                        disabled={selectedIsNonDockerHub}
+                        hideChevron={selectedIsNonDockerHub}
                         fadeOnDisabled={false}
                         hasChanges={staged.image !== undefined}
                       />
@@ -388,4 +544,13 @@ function DatabaseSection({ type, version, service }: TDatabaseSectionProps) {
 
 function getEntityId(service: TServiceShallow): string {
   return `source_${service.id}`;
+}
+
+// The tag follows the last colon after the last slash, so registries with a port keep theirs
+function splitImage(ref: string) {
+  const colon = ref.lastIndexOf(":");
+  if (colon > ref.lastIndexOf("/")) {
+    return { image: ref.slice(0, colon), tag: ref.slice(colon + 1) || "latest" };
+  }
+  return { image: ref, tag: "latest" };
 }

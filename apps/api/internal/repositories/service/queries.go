@@ -346,7 +346,9 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	}
 	existingCrd := &v1.Service{
 		Spec: v1.ServiceSpec{
-			Builder: service.Edges.CurrentDeployment.ResourceDefinition.Spec.Builder,
+			Builder:              service.Edges.CurrentDeployment.ResourceDefinition.Spec.Builder,
+			GitRepository:        service.Edges.CurrentDeployment.ResourceDefinition.Spec.GitRepository,
+			GitHubInstallationID: service.Edges.CurrentDeployment.ResourceDefinition.Spec.GitHubInstallationID,
 			Config: v1.ServiceConfigSpec{
 				GitBranch:      service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.GitBranch,
 				Hosts:          service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Hosts,
@@ -384,9 +386,15 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	if err != nil {
 		return NoDeploymentNeeded, err
 	}
+	var gitRepository string
+	if service.GitRepositoryOwner != nil && service.GitRepository != nil {
+		gitRepository = *service.GitRepositoryOwner + "/" + *service.GitRepository
+	}
 	newCrd := &v1.Service{
 		Spec: v1.ServiceSpec{
-			Builder: string(service.Edges.ServiceConfig.Builder),
+			Builder:              string(service.Edges.ServiceConfig.Builder),
+			GitRepository:        gitRepository,
+			GitHubInstallationID: service.GithubInstallationID,
 			Config: v1.ServiceConfigSpec{
 				GitBranch:      gitBranch,
 				Hosts:          schema.AsV1HostSpecs(service.Edges.ServiceConfig.Hosts),
@@ -408,8 +416,10 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 		return NeedsBuildAndDeployment, nil
 	}
 
-	// Branch needs a new build
-	if existingCrd.Spec.Config.GitBranch != newCrd.Spec.Config.GitBranch {
+	// Repository and branch need a new build
+	if existingCrd.Spec.GitRepository != newCrd.Spec.GitRepository ||
+		!reflect.DeepEqual(existingCrd.Spec.GitHubInstallationID, newCrd.Spec.GitHubInstallationID) ||
+		existingCrd.Spec.Config.GitBranch != newCrd.Spec.Config.GitBranch {
 		return NeedsBuildAndDeployment, nil
 	}
 

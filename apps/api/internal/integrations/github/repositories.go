@@ -12,6 +12,7 @@ import (
 	"github.com/google/go-github/v69/github"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"golang.org/x/sync/errgroup"
 )
@@ -460,14 +461,21 @@ func (self *GithubClient) GetCommitSummary(ctx context.Context, installation *en
 
 	if isCommitSHA {
 		commitSHA = branchOrSHA
-		repoCommit, _, err = authenticatedClient.Repositories.GetCommit(ctx, owner, repo, branchOrSHA, nil)
+		var resp *github.Response
+		repoCommit, resp, err = authenticatedClient.Repositories.GetCommit(ctx, owner, repo, branchOrSHA, nil)
 		if err != nil {
+			if isMissing(resp) {
+				return "", "", nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Commit %s not found in %s/%s, it may belong to a repository the service no longer builds from", branchOrSHA, owner, repo))
+			}
 			return "", "", nil, fmt.Errorf("error getting commit %s for repository %s/%s: %v", branchOrSHA, owner, repo, err)
 		}
 	} else {
 		// Get branch information (which includes the head commit SHA)
-		branchInfo, _, err := authenticatedClient.Repositories.GetBranch(ctx, owner, repo, branchOrSHA, 3)
+		branchInfo, resp, err := authenticatedClient.Repositories.GetBranch(ctx, owner, repo, branchOrSHA, 3)
 		if err != nil {
+			if isMissing(resp) {
+				return "", "", nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Branch %s not found in %s/%s", branchOrSHA, owner, repo))
+			}
 			return "", "", nil, fmt.Errorf("error getting branch %s for repository %s/%s: %v", branchOrSHA, owner, repo, err)
 		}
 		commitSHA = branchInfo.GetCommit().GetSHA()
@@ -490,6 +498,11 @@ func (self *GithubClient) GetCommitSummary(ctx context.Context, installation *en
 	}
 
 	return commitSHA, commitMessage, committer, nil
+}
+
+// isMissing reports whether GitHub answered that the ref does not exist
+func isMissing(resp *github.Response) bool {
+	return resp != nil && (resp.StatusCode == http.StatusNotFound || resp.StatusCode == http.StatusUnprocessableEntity)
 }
 
 // GetRepositoryFiles lists every file path at a branch or tag, truncated when GitHub caps the tree
@@ -556,4 +569,29 @@ func (self *GithubClient) GetChangedFiles(ctx context.Context, installation *ent
 		}
 	}
 	return files, nil
+}
+
+// BranchExists reports whether the repository has the branch
+func (self *GithubClient) BranchExists(ctx context.Context, installation *ent.GithubInstallation, owner, repo, branch string) (bool, error) {
+	if installation == nil || installation.Edges.GithubApp == nil {
+		return false, fmt.Errorf("invalid installation: missing app edge or nil")
+	}
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	authenticatedClient, err := self.GetAuthenticatedClient(timeoutCtx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey)
+	if err != nil {
+		return false, fmt.Errorf("error getting authenticated client for %s: %v", installation.AccountLogin, err)
+	}
+	defer authenticatedClient.Client().CloseIdleConnections()
+
+	_, resp, err := authenticatedClient.Repositories.GetBranch(timeoutCtx, owner, repo, branch, 0)
+	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+		return false, fmt.Errorf("error getting branch %s for repository %s/%s: %v", branch, owner, repo, err)
+	}
+	return true, nil
 }

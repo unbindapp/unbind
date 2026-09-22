@@ -143,6 +143,7 @@ func resolveChangeAction(active bool, needs service_repo.NeedsDeploymentResponse
 // estimateConfigChange guesses what an update would need without applying it
 func estimateConfigChange(config *ent.ServiceConfig, input *models.UpdateServiceInput) service_repo.NeedsDeploymentResponse {
 	if input.Builder != nil && *input.Builder != config.Builder ||
+		input.RepositoryName != nil ||
 		stringChanged(input.GitBranch, config.GitBranch) ||
 		stringChanged(input.RailpackBuilderInstallCommand, config.RailpackBuilderInstallCommand) ||
 		stringChanged(input.RailpackBuilderBuildCommand, config.RailpackBuilderBuildCommand) ||

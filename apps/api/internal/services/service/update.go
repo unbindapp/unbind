@@ -40,6 +40,8 @@ func databasePortsWithNodePorts(ports []schema.PortSpec, nodePorts []int32) []sc
 type serviceUpdate struct {
 	input   *models.UpdateServiceInput
 	service *ent.Service
+	// source is set when the service moves to another repository
+	source *githubSource
 }
 
 // UpdateService updates a service and its configuration, rolling it out when needed
@@ -123,8 +125,12 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		return nil, err
 	}
 
-	if input.WatchPaths != nil && service.Type != schema.ServiceTypeGithub {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Watch paths only apply to git services")
+	if err := validateSourceUpdate(service.Type, input); err != nil {
+		return nil, err
+	}
+	source, err := self.prepareSourceChange(ctx, service, input)
+	if err != nil {
+		return nil, err
 	}
 
 	if hasBackupInput(input.S3BackupBucketID, input.BackupSchedule, input.BackupRetentionCount) {
@@ -243,7 +249,7 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		}
 	}
 
-	return &serviceUpdate{input: input, service: service}, nil
+	return &serviceUpdate{input: input, service: service, source: source}, nil
 }
 
 // applyServiceUpdate persists a prepared update without rolling it out and returns
@@ -256,9 +262,23 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 		return nil, err
 	}
 
+	var detected *detectedSource
+	if update.source != nil {
+		result, err := self.analyzeGithubSource(ctx, update.source, *input.GitBranch, analysisTarget(service.Edges.ServiceConfig, input))
+		if err != nil {
+			return nil, err
+		}
+		detected = new(summarizeAnalysis(service.Type, result))
+	}
+
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
 		if err := self.repo.Service().Update(ctx, tx, input.ServiceID, input.Name, input.Description); err != nil {
 			return errdefs.NewInternalError(err, "Failed to save the service")
+		}
+		if update.source != nil {
+			if err := self.repo.Service().UpdateGitSource(ctx, tx, input.ServiceID, update.source.installation.ID, update.source.ownerLogin, update.source.repoName, detected.ports); err != nil {
+				return errdefs.NewInternalError(err, "Failed to save the service's repository")
+			}
 		}
 
 		// Toggling a database public/private manages its L4 host and allocated port.
@@ -447,6 +467,11 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			InitContainers:                input.InitContainers,
 			Resources:                     input.Resources,
 		}
+		if detected != nil {
+			updateInput.Provider = new(detected.provider)
+			updateInput.Framework = new(detected.framework)
+			updateInput.Icon = new(detected.icon)
+		}
 		if err := self.repo.Service().UpdateConfig(ctx, tx, updateInput); err != nil {
 			return errdefs.NewInternalError(err, "Failed to save the service configuration")
 		}
@@ -500,6 +525,13 @@ func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, inpu
 					Value: user.Email,
 				},
 			},
+		}
+
+		if input.RepositoryName != nil {
+			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
+				Name:  "Repository",
+				Value: *input.RepositoryOwner + "/" + *input.RepositoryName,
+			})
 		}
 
 		if input.GitBranch != nil {

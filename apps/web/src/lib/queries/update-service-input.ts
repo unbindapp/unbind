@@ -36,6 +36,8 @@ export const UpdateServiceInputSchema = z
     serviceId: z.string().uuid(),
     name: ServiceNameSchema.optional(),
     description: ServiceDescriptionSchema.optional(),
+    // "<installation id>:<owner>/<name>", see gitRepositoryValue
+    gitRepository: z.string().optional(),
     gitBranch: z.string().optional(),
     // Newline-separated patterns, see splitWatchPaths
     watchPaths: z.string().optional(),
@@ -88,6 +90,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     serviceId,
     name,
     description,
+    gitRepository,
     gitBranch,
     watchPaths,
     image,
@@ -182,6 +185,9 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
   if (maxSlotWalKeepSizeMb !== undefined && databaseConfigInput)
     databaseConfigInput.maxSlotWalKeepSizeMb = maxSlotWalKeepSizeMb;
 
+  const repository =
+    gitRepository === undefined ? undefined : parseGitRepositoryValue(gitRepository);
+
   return {
     team_id: teamId,
     project_id: projectId,
@@ -189,6 +195,9 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     service_id: serviceId,
     name,
     description,
+    github_installation_id: repository?.installationId,
+    repository_owner: repository?.owner,
+    repository_name: repository?.name,
     git_branch: gitBranch,
     watch_paths: watchPaths === undefined ? undefined : splitWatchPaths(watchPaths),
     image,
@@ -215,4 +224,22 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     add_volumes: addVolumes,
     remove_volumes: removeVolumes,
   };
+}
+
+export type TGitRepositoryValue = { installationId: number; owner: string; name: string };
+
+// Staged values are strings, so the repository travels as "<installation id>:<owner>/<name>"
+export function gitRepositoryValue({ installationId, owner, name }: TGitRepositoryValue) {
+  return `${installationId}:${owner}/${name}`;
+}
+
+export function parseGitRepositoryValue(value: string): TGitRepositoryValue | undefined {
+  const separator = value.indexOf(":");
+  const slash = value.indexOf("/", separator + 1);
+  if (separator < 1 || slash < 0) return undefined;
+  const installationId = Number(value.slice(0, separator));
+  const owner = value.slice(separator + 1, slash);
+  const name = value.slice(slash + 1);
+  if (!Number.isInteger(installationId) || !owner || !name) return undefined;
+  return { installationId, owner, name };
 }

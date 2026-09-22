@@ -65,8 +65,13 @@ type UpdateServiceInput struct {
 	Name          *string   `required:"false" json:"name" minLength:"1" maxLength:"32" doc:"Has to be unique in the environment"`
 	Description   *string   `required:"false" json:"description"`
 
+	// GitHub integration
+	GitHubInstallationID *int64  `json:"github_installation_id,omitempty" required:"false" doc:"Moves a git service to another repository, together with repository_owner and repository_name. The service is rebuilt from it"`
+	RepositoryOwner      *string `json:"repository_owner,omitempty" required:"false" doc:"Must be the account the GitHub installation belongs to"`
+	RepositoryName       *string `json:"repository_name,omitempty" required:"false" doc:"Must be a repository the GitHub installation has access to"`
+
 	// Configuration
-	GitBranch                     *string                `json:"git_branch,omitempty" required:"false"`
+	GitBranch                     *string                `json:"git_branch,omitempty" required:"false" doc:"Branch to build from, must exist in the repository. Defaults to the default branch when the repository changes"`
 	GitTag                        *string                `json:"git_tag,omitempty" required:"false" doc:"Tag to build from, supports glob patterns"`
 	WatchPaths                    *[]string              `json:"watch_paths,omitempty" required:"false" doc:"Gitignore-style patterns, a push deploys only when a changed file matches. Empty deploys on every push"`
 	Builder                       *schema.ServiceBuilder `json:"builder,omitempty" required:"false"`
@@ -82,7 +87,7 @@ type UpdateServiceInput struct {
 	RailpackBuilderBuildCommand   *string                `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string                `json:"run_command,omitempty" required:"false"`
 	IsPublic                      *bool                  `json:"is_public,omitempty" required:"false" doc:"Whether the service is reachable from the internet. A database gets a public address when true and loses it when false"`
-	Image                         *string                `json:"image,omitempty" required:"false"`
+	Image                         *string                `json:"image,omitempty" required:"false" doc:"Image to run, with an optional tag. Only for an image service"`
 	DockerBuilderDockerfilePath   *string                `json:"docker_builder_dockerfile_path,omitempty" required:"false" doc:"Optional path to Dockerfile, if using docker builder - set empty string to reset to default"`
 	DockerBuilderBuildContext     *string                `json:"docker_builder_build_context,omitempty" required:"false" doc:"Optional path to Dockerfile context, if using docker builder - set empty string to reset to default"`
 
