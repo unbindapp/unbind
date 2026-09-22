@@ -28,6 +28,7 @@ import {
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { toast } from "@/components/ui/toast";
 import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
+import { defaultDebounceMs } from "@/lib/constants";
 import { applyStagedChanges, type TApplyStagedChangesResult } from "@/lib/queries/staged-changes";
 import { queryKeyServices } from "@/lib/queries/services";
 import { queryKeyStorage } from "@/lib/queries/storage";
@@ -203,7 +204,7 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
     () => buildApplyStagedChangesPayload({ variables, services, lists }),
     [variables, services, lists],
   );
-  const [debouncedPayload] = useDebounceValue(payload, 500);
+  const [debouncedPayload] = useDebounceValue(payload, defaultDebounceMs);
 
   const debouncedCount = debouncedPayload.variables.length + debouncedPayload.services.length;
 

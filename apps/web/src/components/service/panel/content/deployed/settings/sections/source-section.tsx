@@ -36,7 +36,11 @@ import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { dockerSearchQuery, dockerTagsQuery } from "@/lib/queries/docker";
 import { gitRepositoriesQuery, gitRepositoryQuery } from "@/lib/queries/git";
 import { TServiceShallow } from "@/lib/queries/services";
-import { gitRepositoryValue, parseGitRepositoryValue } from "@/lib/queries/update-service-input";
+import {
+  gitRepositoryValue,
+  parseGitRepositoryValue,
+  type TGitRepositoryValue,
+} from "@/lib/queries/update-service-input";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CodeIcon,
@@ -46,7 +50,7 @@ import {
   PackageIcon,
   TagIcon,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 type TProps = {
@@ -115,6 +119,8 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     gitRepository: serverRepository,
     gitBranch: branch,
   });
+  const stagedRef = useRef(staged);
+  stagedRef.current = staged;
   const selectedRepository = parseGitRepositoryValue(
     stagedString(staged.gitRepository, serverRepository),
   ) ?? { installationId, owner, name: repo };
@@ -165,22 +171,21 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     return items;
   }, [dataRepository]);
 
-  // Nothing is staged until the new repository's default branch is known, so a deploy
-  // can't go out with the old branch. The latest pick wins over a slower earlier one.
+  // The repository is staged at once and the branch follows when the new repository's
+  // default branch is known, so a stale branch never goes out. A deploy sent before then
+  // carries no branch and the server picks the default one, the same value the lookup
+  // would have staged. The latest pick wins over a slower earlier one.
   const [isResolvingBranch, setIsResolvingBranch] = useState(false);
   const resolveCounter = useRef(0);
-  const changeRepository = async (value: string) => {
-    const repository = parseGitRepositoryValue(value);
-    if (!repository) return;
-    const resolved = defaultValues.repository;
-    if (value === serverRepository) {
-      resolveCounter.current++;
-      setIsResolvingBranch(false);
-      form.setFieldValue("branch", branch);
-      unstage(["gitRepository", "gitBranch"]);
-      return;
-    }
-
+  const stageRepository = (value: string) =>
+    stage({
+      field: "gitRepository",
+      label: "Repository",
+      value,
+      previous: serverRepository,
+      format: formatRepository,
+    });
+  const resolveBranch = async (repository: TGitRepositoryValue) => {
     const request = ++resolveCounter.current;
     setIsResolvingBranch(true);
     try {
@@ -192,18 +197,12 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
         }),
       );
       if (request !== resolveCounter.current) return;
+      if (stagedRef.current.gitRepository?.isApplying) return;
       form.setFieldValue("branch", detail.defaultBranch);
-      stage({
-        field: "gitRepository",
-        label: "Repository",
-        value,
-        previous: serverRepository,
-        format: formatRepository,
-      });
       stage({ field: "gitBranch", label: "Branch", value: detail.defaultBranch, previous: branch });
     } catch (error) {
       if (request !== resolveCounter.current) return;
-      form.setFieldValue("repository", resolved);
+      unstage(["gitRepository"]);
       toast.add({
         type: "error",
         title: "Could not read the repository",
@@ -214,6 +213,32 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       if (request === resolveCounter.current) setIsResolvingBranch(false);
     }
   };
+  const changeRepository = (value: string) => {
+    const repository = parseGitRepositoryValue(value);
+    if (!repository) return;
+    if (value === serverRepository) {
+      resolveCounter.current++;
+      setIsResolvingBranch(false);
+      form.setFieldValue("branch", branch);
+      unstage(["gitRepository", "gitBranch"]);
+      return;
+    }
+    stageRepository(value);
+    unstage(["gitBranch"]);
+    resolveBranch(repository);
+  };
+
+  // A reload inside the lookup leaves the repository staged without a branch, so the
+  // lookup runs once more for it
+  const stagedRepository = staged.gitRepository?.value;
+  const hasStagedBranch = staged.gitBranch !== undefined;
+  useEffect(() => {
+    if (typeof stagedRepository !== "string" || hasStagedBranch || isResolvingBranch) return;
+    const repository = parseGitRepositoryValue(stagedRepository);
+    if (!repository) return;
+    resolveBranch(repository);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stagedRepository]);
 
   const showRepository = isItemVisible(settingsIds.source.repository);
   const showBranch = isItemVisible(settingsIds.source.branch);
@@ -350,6 +375,8 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
   const [tagSearch] = useDebounceValue(tagInputValue, defaultDebounceMs);
   const [isResolvingTag, setIsResolvingTag] = useState(false);
   const resolveCounter = useRef(0);
+  const stagedRef = useRef(staged);
+  stagedRef.current = staged;
 
   const defaultValues = { image: selected.image, tag: selected.tag };
   const form = useAppForm({ defaultValues });
@@ -402,10 +429,9 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
     stage({ field: "image", label: "Image", value: next, previous: serverImage });
   };
 
-  // A Docker Hub image is staged once its tags are known, latest when it has one and the
-  // newest tag otherwise. Other registries have no tag list and start from latest.
+  // An image is staged at once with latest. A Docker Hub image then moves to its newest
+  // tag when it has no latest tag. Other registries have no tag list and stay on latest.
   const changeImage = async (next: string) => {
-    const resolved = defaultValues.image;
     if (next === image) {
       resolveCounter.current++;
       setIsResolvingTag(false);
@@ -413,10 +439,10 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
       unstage(["image"]);
       return;
     }
+    stageImage(`${next}:latest`);
     if (isNonDockerHubImage(next)) {
       resolveCounter.current++;
       setIsResolvingTag(false);
-      stageImage(`${next}:latest`);
       return;
     }
 
@@ -427,12 +453,13 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
         dockerTagsQuery({ repository: next, search: "" }),
       );
       if (request !== resolveCounter.current) return;
+      if (stagedRef.current.image?.isApplying) return;
       const resolvedTag = tags.find((t) => t.name === "latest")?.name ?? tags[0]?.name;
       if (!resolvedTag) throw new Error("The image has no tags.");
       stageImage(`${next}:${resolvedTag}`);
     } catch (error) {
       if (request !== resolveCounter.current) return;
-      form.setFieldValue("image", resolved);
+      unstage(["image"]);
       toast.add({
         type: "error",
         title: "Could not read the image's tags",

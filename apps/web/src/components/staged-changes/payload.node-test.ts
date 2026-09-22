@@ -151,6 +151,15 @@ test("splits a staged repository into installation, owner and name", () => {
   assert.equal(web.git_branch, "main");
 });
 
+test("a staged repository without a branch leaves the branch to the server", () => {
+  const payload = buildApplyStagedChangesPayload(
+    state([], [service("gitRepository", "42:yekta/bio")]),
+  );
+  const [web] = payload.services;
+  assert.equal(web.repository_name, "bio");
+  assert.equal(web.git_branch, undefined);
+});
+
 test("carries a boolean field through as a boolean", () => {
   const payload = buildApplyStagedChangesPayload(
     state([], [service("isPublic", false), service("isPublic", true, { serviceId: "web" })]),
