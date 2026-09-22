@@ -66,7 +66,7 @@ function FooterItem({ item, direction }: { item: Item; direction: "previous" | "
     <Link
       href={item.url}
       className={cn(
-        "bg-card has-hover:hover:bg-card-hover active:bg-card-hover focus-visible:ring-primary/8-10 flex flex-col gap-2 rounded-xl border p-4 text-sm focus-visible:ring-1 focus-visible:outline-hidden @max-lg:col-span-full",
+        "bg-card has-hover:hover:bg-card-hover active:bg-card-hover focus-visible:ring-primary/8-10 flex flex-col gap-1 rounded-xl border p-4 text-sm focus-visible:ring-1 focus-visible:outline-hidden @max-lg:col-span-full",
         isNext && "text-end",
       )}
     >
