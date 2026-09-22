@@ -812,8 +812,8 @@ export const CreateServiceInputSchema = z
     railpack_builder_build_command: z.string().optional(),
     railpack_builder_install_command: z.string().optional(),
     replicas: z.number().optional(),
-    repository_name: z.string().optional(),
-    repository_owner: z.string().optional(),
+    repository_name: z.string().optional(), // Must be a repository the GitHub installation has access to
+    repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
     s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for databases that support backups, Redis does not

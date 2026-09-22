@@ -553,8 +553,10 @@ components:
           minimum: 1
           type: integer
         repository_name:
+          description: Must be a repository the GitHub installation has access to
           type: string
         repository_owner:
+          description: Must be the account the GitHub installation belongs to
           type: string
         resources:
           $ref: "#/components/schemas/Resources"
