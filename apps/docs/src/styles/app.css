@@ -230,3 +230,23 @@ p.inline-flex.mt-6 {
   border-bottom: 1px solid var(--border);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
+
+/* The desktop sidebar footer bar holds the GitHub link and the theme switch. Fumadocs
+   renders the bar and the link itself, so it gets the search field's background here
+   and the link gets the theme buttons' hover and active colors. */
+#nd-sidebar .bg-fd-secondary\/50 {
+  background-color: var(--input);
+}
+#nd-sidebar .bg-fd-secondary\/50 > a {
+  transition: none;
+}
+@media (hover: hover) {
+  #nd-sidebar .bg-fd-secondary\/50 > a:hover {
+    color: var(--foreground);
+    background-color: color-mix(in oklab, var(--foreground) var(--opacity-2-10), transparent);
+  }
+}
+#nd-sidebar .bg-fd-secondary\/50 > a:active {
+  color: var(--foreground);
+  background-color: color-mix(in oklab, var(--foreground) var(--opacity-2-10), transparent);
+}
