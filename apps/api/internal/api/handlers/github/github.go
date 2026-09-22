@@ -115,19 +115,3 @@ func RegisterPublicHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 	}, handlers.HandleGithubAppSave, oapi.Public, oapi.OpenWorld)
 }
-
-// RegisterLegacyWebhookHandler keeps the pre-rename receiver path alive for one release,
-// for apps whose hook URL could not be updated at startup
-func RegisterLegacyWebhookHandler(server *server.Server, grp *huma.Group) {
-	handlers := &HandlerGroup{
-		srv: server,
-	}
-
-	oapi.Register(grp, oapi.Invoke, huma.Operation{
-		OperationID: "github-webhook-legacy",
-		Summary:     "GitHub Webhook (legacy path)",
-		Path:        "/github",
-		Method:      http.MethodPost,
-		Hidden:      true,
-	}, handlers.HandleGithubWebhook, oapi.Public)
-}

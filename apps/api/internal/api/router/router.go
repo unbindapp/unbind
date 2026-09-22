@@ -175,7 +175,6 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	registerSessionOnly("/connected-apps", "Connected Apps", connectedapps_handler.RegisterHandlers)
 	registerSessionOnly("/github", "GitHub", github_handler.RegisterHandlers)
 	register("/github", "GitHub", false, github_handler.RegisterPublicHandlers)
-	register("/webhook", "GitHub", false, github_handler.RegisterLegacyWebhookHandler)
 	register("/teams", "Teams", true, teams_handler.RegisterHandlers)
 	register("/projects", "Projects", true, projects_handler.RegisterHandlers)
 	register("/environments", "Environments", true, environments_handler.RegisterHandlers)
