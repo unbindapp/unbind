@@ -253,3 +253,50 @@ p.inline-flex.mt-6 {
   color: var(--foreground);
   background-color: color-mix(in oklab, var(--foreground) var(--opacity-2-10), transparent);
 }
+
+/* The "Copy" button of the TypeScript definitions panels, styled and animated like the
+   Copy Markdown button. Fumadocs swaps the icon on copy, so the check animates in. */
+.not-prose.rounded-xl > button:has(> svg.lucide-copy),
+.not-prose.rounded-xl > button:has(> svg.lucide-check) {
+  gap: calc(var(--spacing) * 1.5);
+  padding: calc(var(--spacing) * 1.25) calc(var(--spacing) * 2.5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--background);
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  font-weight: 700;
+  transition: none;
+}
+@media (hover: hover) {
+  .not-prose.rounded-xl > button:has(> svg.lucide-copy):hover,
+  .not-prose.rounded-xl > button:has(> svg.lucide-check):hover {
+    background-color: var(--border);
+    color: var(--foreground);
+  }
+}
+.not-prose.rounded-xl > button:has(> svg.lucide-copy):active,
+.not-prose.rounded-xl > button:has(> svg.lucide-check):active {
+  background-color: var(--border);
+  color: var(--foreground);
+}
+.not-prose.rounded-xl > button > svg.lucide-copy,
+.not-prose.rounded-xl > button > svg.lucide-check {
+  width: calc(var(--spacing) * 4);
+  height: calc(var(--spacing) * 4);
+  margin-inline-start: calc(var(--spacing) * -0.5);
+}
+.not-prose.rounded-xl > button > svg.lucide-check {
+  color: var(--success);
+  stroke-width: 3;
+  animation: docs-check-in 150ms var(--default-transition-timing-function);
+}
+@keyframes docs-check-in {
+  from {
+    transform: rotate(-45deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
