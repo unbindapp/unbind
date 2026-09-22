@@ -55,7 +55,7 @@ function SignIn() {
       setError(null);
       try {
         await getGoClient().auth.login({ email: value.email, password: value.password });
-        // Drop the stale "not signed in" cache and fetch /users/me fresh with the new
+        // Drop the stale "not signed in" cache and fetch /users/whoami fresh with the new
         // session cookie before navigating, so the root guard sees the signed-in user.
         queryClient.removeQueries({ queryKey: meQuery.queryKey });
         await queryClient.ensureQueryData(meQuery);

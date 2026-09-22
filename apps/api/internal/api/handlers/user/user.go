@@ -18,12 +18,12 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	}
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "me",
-		Summary:     "Get Current User",
+		OperationID: "whoami",
+		Summary:     "Who Am I",
 		Description: "Get the authenticated user. For an API key or a connected app it also returns the role and the resources the credential is limited to.",
-		Path:        "/me",
+		Path:        "/whoami",
 		Method:      http.MethodGet,
-	}, handlers.Me, oapi.MCP)
+	}, handlers.Whoami, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-users",

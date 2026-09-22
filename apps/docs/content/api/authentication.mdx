@@ -6,11 +6,11 @@ description: Create an API key and limit what it can reach.
 Send your API key as a bearer token with every request:
 
 ```bash
-curl https://unbind.example.com/api/go/users/me \
+curl https://unbind.example.com/api/go/users/whoami \
   -H "Authorization: Bearer unb_your_key"
 ```
 
-Keys start with `unb_`. `GET /users/me` is a good first call: it returns your user, and for a key it also returns the role and the resources the key is limited to.
+Keys start with `unb_`. `GET /users/whoami` is a good first call: it returns your user, and for a key it also returns the role and the resources the key is limited to.
 
 ## Create a key
 

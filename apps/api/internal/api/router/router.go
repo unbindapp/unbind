@@ -170,7 +170,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/webhook", "Webhook", false, webhook_handler.RegisterHandlers)
 	registerSessionOnly("/system", "System", system_handler.RegisterHandlers)
 	register("/servers", "Servers", true, servers_handler.RegisterHandlers)
-	// Users marks its own operations session-only and keeps /me open for keys.
+	// Users marks its own operations session-only and keeps /whoami open for keys.
 	register("/users", "Users", true, user_handler.RegisterHandlers)
 	registerSessionOnly("/groups", "Groups", groups_handler.RegisterHandlers)
 	registerSessionOnly("/api-keys", "API Keys", apikeys_handler.RegisterHandlers)

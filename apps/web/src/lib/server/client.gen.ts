@@ -2225,31 +2225,6 @@ export const LogoutResponseBodySchema = z
 
 export const LokiDirectionSchema = z.enum(['forward', 'backward']);
 
-export const MeAPIKeySchema = z
-  .object({
-    full_access: z.boolean(),
-    resources: z.array(APIKeyResourceSchema),
-    role: PermittedActionSchema,
-  })
-  .strip();
-
-export const MeDataSchema = z
-  .object({
-    api_key: MeAPIKeySchema.optional(), // Present when the request was authenticated with an API key or a connected app: the limit the credential puts on this user
-    created_at: z.string().datetime({ offset: true }),
-    email: z.string(),
-    id: z.string(),
-    system_permissions: z.array(PermittedActionSchema), // Actions the current user can perform on system-wide resources
-    updated_at: z.string().datetime({ offset: true }),
-  })
-  .strip();
-
-export const MeResponseBodySchema = z
-  .object({
-    data: MeDataSchema,
-  })
-  .strip();
-
 export const QueryLogsResponseBodySchema = z
   .object({
     data: z.array(LogEventSchema),
@@ -2863,6 +2838,31 @@ export const WebhookUpdateInputSchema = z
   })
   .strip();
 
+export const WhoamiAPIKeySchema = z
+  .object({
+    full_access: z.boolean(),
+    resources: z.array(APIKeyResourceSchema),
+    role: PermittedActionSchema,
+  })
+  .strip();
+
+export const WhoamiDataSchema = z
+  .object({
+    api_key: WhoamiAPIKeySchema.optional(), // Present when the request was authenticated with an API key or a connected app: the limit the credential puts on this user
+    created_at: z.string().datetime({ offset: true }),
+    email: z.string(),
+    id: z.string(),
+    system_permissions: z.array(PermittedActionSchema), // Actions the current user can perform on system-wide resources
+    updated_at: z.string().datetime({ offset: true }),
+  })
+  .strip();
+
+export const WhoamiResponseBodySchema = z
+  .object({
+    data: WhoamiDataSchema,
+  })
+  .strip();
+
 export type ResourceType = z.infer<typeof ResourceTypeSchema>;
 export type APIKeyResource = z.infer<typeof APIKeyResourceSchema>;
 export type PermittedAction = z.infer<typeof PermittedActionSchema>;
@@ -3137,9 +3137,6 @@ export type LogType = z.infer<typeof LogTypeSchema>;
 export type LoginInputBody = z.infer<typeof LoginInputBodySchema>;
 export type LogoutResponseBody = z.infer<typeof LogoutResponseBodySchema>;
 export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
-export type MeAPIKey = z.infer<typeof MeAPIKeySchema>;
-export type MeData = z.infer<typeof MeDataSchema>;
-export type MeResponseBody = z.infer<typeof MeResponseBodySchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
 export type RedeployInputBody = z.infer<typeof RedeployInputBodySchema>;
 export type RedeployOutputBody = z.infer<typeof RedeployOutputBodySchema>;
@@ -3226,6 +3223,9 @@ export type VariableResponse = z.infer<typeof VariableResponseSchema>;
 export type VariablesResponseBody = z.infer<typeof VariablesResponseBodySchema>;
 export type WebhookCreateInput = z.infer<typeof WebhookCreateInputSchema>;
 export type WebhookUpdateInput = z.infer<typeof WebhookUpdateInputSchema>;
+export type WhoamiAPIKey = z.infer<typeof WhoamiAPIKeySchema>;
+export type WhoamiData = z.infer<typeof WhoamiDataSchema>;
+export type WhoamiResponseBody = z.infer<typeof WhoamiResponseBodySchema>;
 
 export const list_api_keysQuerySchema = z
   .object({
@@ -8859,44 +8859,6 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           throw error;
         }
       },
-      me: async (params?: undefined, fetchOptions?: RequestInit): Promise<MeResponseBody> => {
-        try {
-          if (!apiUrl || typeof apiUrl !== 'string') {
-            throw new Error('API URL is undefined or not a string');
-          }
-          const url = new URL(
-            `${apiUrl}/users/me`,
-            typeof window !== 'undefined' ? window.location.origin : undefined,
-          );
-
-          const options: RequestInit = {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            ...fetchOptions,
-          };
-
-          const response = await fetchFn(url.toString(), options);
-          if (!response.ok) {
-            throw await parseApiError(response, url.toString());
-          }
-          const data = await response.json();
-          const { data: parsedData, error } = MeResponseBodySchema.safeParse(data);
-          if (error) {
-            console.error('Response validation error:', error);
-            console.error('Response data:', data);
-            throw new Error(error.message);
-          }
-          return parsedData;
-        } catch (error) {
-          if (import.meta.env.DEV) {
-            console.error('Error in API request:', error);
-          }
-          throw error;
-        }
-      },
       updatePassword: async (
         params: UpdatePasswordInputBody,
         fetchOptions?: RequestInit,
@@ -8926,6 +8888,47 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdatePasswordResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      whoami: async (
+        params?: undefined,
+        fetchOptions?: RequestInit,
+      ): Promise<WhoamiResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/users/whoami`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = WhoamiResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

@@ -1767,59 +1767,6 @@ components:
         - backward
       title: LokiDirection
       type: string
-    MeAPIKey:
-      additionalProperties: false
-      properties:
-        full_access:
-          type: boolean
-        resources:
-          items:
-            $ref: "#/components/schemas/APIKeyResource"
-          type: array
-        role:
-          $ref: "#/components/schemas/PermittedAction"
-      required:
-        - role
-        - full_access
-        - resources
-      type: object
-    MeData:
-      additionalProperties: false
-      properties:
-        api_key:
-          $ref: "#/components/schemas/MeAPIKey"
-          description: "Present when the request was authenticated with an API key or a connected app: the limit the credential puts on this user"
-        created_at:
-          format: date-time
-          type: string
-        email:
-          type: string
-        id:
-          format: uuid
-          type: string
-        system_permissions:
-          description: Actions the current user can perform on system-wide resources
-          items:
-            $ref: "#/components/schemas/PermittedAction"
-          type: array
-        updated_at:
-          format: date-time
-          type: string
-      required:
-        - system_permissions
-        - id
-        - email
-        - created_at
-        - updated_at
-      type: object
-    MeResponseBody:
-      additionalProperties: false
-      properties:
-        data:
-          $ref: "#/components/schemas/MeData"
-      required:
-        - data
-      type: object
     MetricDetail:
       additionalProperties: false
       properties:
@@ -4485,6 +4432,59 @@ components:
       required:
         - id
         - team_id
+      type: object
+    WhoamiAPIKey:
+      additionalProperties: false
+      properties:
+        full_access:
+          type: boolean
+        resources:
+          items:
+            $ref: "#/components/schemas/APIKeyResource"
+          type: array
+        role:
+          $ref: "#/components/schemas/PermittedAction"
+      required:
+        - role
+        - full_access
+        - resources
+      type: object
+    WhoamiData:
+      additionalProperties: false
+      properties:
+        api_key:
+          $ref: "#/components/schemas/WhoamiAPIKey"
+          description: "Present when the request was authenticated with an API key or a connected app: the limit the credential puts on this user"
+        created_at:
+          format: date-time
+          type: string
+        email:
+          type: string
+        id:
+          format: uuid
+          type: string
+        system_permissions:
+          description: Actions the current user can perform on system-wide resources
+          items:
+            $ref: "#/components/schemas/PermittedAction"
+          type: array
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - system_permissions
+        - id
+        - email
+        - created_at
+        - updated_at
+      type: object
+    WhoamiResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          $ref: "#/components/schemas/WhoamiData"
+      required:
+        - data
       type: object
   securitySchemes:
     bearerAuth:
@@ -10895,16 +10895,16 @@ paths:
         readOnlyHint: true
         requiresConfirmation: false
         risk: low
-  /users/me:
+  /users/whoami:
     get:
       description: Get the authenticated user. For an API key or a connected app it also returns the role and the resources the credential is limited to.
-      operationId: me
+      operationId: whoami
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MeResponseBody"
+                $ref: "#/components/schemas/WhoamiResponseBody"
           description: OK
         "400":
           content:
@@ -10968,7 +10968,7 @@ paths:
           description: Gateway Timeout
       security:
         - bearerAuth: []
-      summary: Get Current User
+      summary: Who Am I
       tags:
         - Users
       x-agent:

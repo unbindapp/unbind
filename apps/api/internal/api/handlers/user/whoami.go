@@ -9,28 +9,28 @@ import (
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
-type MeData struct {
+type WhoamiData struct {
 	models.UserResponse
 	SystemPermissions []schema.PermittedAction `json:"system_permissions" nullable:"false" doc:"Actions the current user can perform on system-wide resources"`
-	APIKey            *MeAPIKey                `json:"api_key,omitempty" required:"false" doc:"Present when the request was authenticated with an API key or a connected app: the limit the credential puts on this user"`
+	APIKey            *WhoamiAPIKey            `json:"api_key,omitempty" required:"false" doc:"Present when the request was authenticated with an API key or a connected app: the limit the credential puts on this user"`
 }
 
-// MeAPIKey lets a key holder (a CLI, an MCP server) learn what the key allows
+// WhoamiAPIKey lets a key holder (a CLI, an MCP server) learn what the key allows
 // before trying.
-type MeAPIKey struct {
+type WhoamiAPIKey struct {
 	Role       schema.PermittedAction  `json:"role"`
 	FullAccess bool                    `json:"full_access"`
 	Resources  []schema.APIKeyResource `json:"resources" nullable:"false"`
 }
 
-type MeResponse struct {
+type WhoamiResponse struct {
 	Body struct {
-		Data *MeData `json:"data"`
+		Data *WhoamiData `json:"data"`
 	}
 }
 
-// Me handles GET /me
-func (self *HandlerGroup) Me(ctx context.Context, _ *server.BaseAuthInput) (*MeResponse, error) {
+// Whoami handles GET /whoami
+func (self *HandlerGroup) Whoami(ctx context.Context, _ *server.BaseAuthInput) (*WhoamiResponse, error) {
 	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
@@ -41,8 +41,8 @@ func (self *HandlerGroup) Me(ctx context.Context, _ *server.BaseAuthInput) (*MeR
 		return nil, err
 	}
 
-	resp := &MeResponse{}
-	resp.Body.Data = &MeData{
+	resp := &WhoamiResponse{}
+	resp.Body.Data = &WhoamiData{
 		UserResponse:      *models.TransformUserEntity(user),
 		SystemPermissions: permSet.SystemActions(),
 	}
@@ -51,7 +51,7 @@ func (self *HandlerGroup) Me(ctx context.Context, _ *server.BaseAuthInput) (*MeR
 		if resources == nil {
 			resources = []schema.APIKeyResource{}
 		}
-		resp.Body.Data.APIKey = &MeAPIKey{Role: access.Role, FullAccess: access.FullAccess, Resources: resources}
+		resp.Body.Data.APIKey = &WhoamiAPIKey{Role: access.Role, FullAccess: access.FullAccess, Resources: resources}
 	}
 	return resp, nil
 }
