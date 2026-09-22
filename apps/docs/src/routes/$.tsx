@@ -101,7 +101,7 @@ const pageSlots = { footer: PageFooter };
 
 function PageActions({ markdownUrl, githubUrl }: { markdownUrl: string; githubUrl?: string }) {
   return (
-    <div className="-mt-4 flex flex-row items-center gap-2 border-b pb-6">
+    <div className="-mt-8 flex flex-row items-center gap-2 border-b pb-6">
       <CopyMarkdownButton markdownUrl={markdownUrl} />
       <ViewOptionsPopover markdownUrl={markdownUrl} githubUrl={githubUrl} />
     </div>
