@@ -418,5 +418,10 @@
     "version": "v0.1.83",
     "summary": "Git services can change their repository and branch, whoami replaces the me operation, and a polished API reference with a playground on the docs site.",
     "breaking": false
+  },
+  "v0.1.84": {
+    "version": "v0.1.84",
+    "summary": "Updates keep running while you navigate the app, repository and image picks are staged right away, the legacy GitHub webhook path is removed, and docs site code block polish.",
+    "breaking": false
   }
 }
