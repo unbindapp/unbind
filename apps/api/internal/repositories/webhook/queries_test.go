@@ -285,112 +285,78 @@ func (suite *WebhookQueriesSuite) TestGetByProject() {
 	})
 }
 
-func (suite *WebhookQueriesSuite) TestGetWebhooksForEvent() {
-	suite.Run("Get Webhooks for Event Success", func() {
-		// Clean up any existing webhooks
+func (suite *WebhookQueriesSuite) createTeam(name string) *ent.Team {
+	return suite.DB.Team.Create().
+		SetKubernetesName(name).
+		SetName(name).
+		SetNamespace(name).
+		SetKubernetesSecret(name + "-secret").
+		AddMemberIDs(suite.testUser.ID).
+		SaveX(suite.Ctx)
+}
+
+func (suite *WebhookQueriesSuite) createProject(teamID uuid.UUID, name string) *ent.Project {
+	return suite.DB.Project.Create().
+		SetKubernetesName(name).
+		SetName(name).
+		SetTeamID(teamID).
+		SetKubernetesSecret(name + "-secret").
+		SaveX(suite.Ctx)
+}
+
+func (suite *WebhookQueriesSuite) createWebhook(teamID uuid.UUID, projectID *uuid.UUID, url string, events ...schema.WebhookEvent) *ent.Webhook {
+	create := suite.DB.Webhook.Create().
+		SetTeamID(teamID).
+		SetType(schema.WebhookTypeTeam).
+		SetURL(url).
+		SetEvents(events)
+	if projectID != nil {
+		create.SetProjectID(*projectID).SetType(schema.WebhookTypeProject)
+	}
+	return create.SaveX(suite.Ctx)
+}
+
+func webhookIDs(webhooks []*ent.Webhook) []uuid.UUID {
+	ids := make([]uuid.UUID, 0, len(webhooks))
+	for _, wh := range webhooks {
+		ids = append(ids, wh.ID)
+	}
+	return ids
+}
+
+func (suite *WebhookQueriesSuite) TestGetByTeamForEvent() {
+	suite.Run("Returns every team webhook subscribed to the event", func() {
 		suite.DB.Webhook.Delete().ExecX(suite.Ctx)
 
-		// Create webhooks with the target event
-		webhook1 := suite.DB.Webhook.Create().
-			SetTeamID(suite.testTeam.ID).
-			SetType(schema.WebhookTypeTeam).
-			SetURL("https://discord.com/api/webhooks/123456/abcdef").
-			SetEvents([]schema.WebhookEvent{
-				schema.WebhookEventProjectCreated,
-				schema.WebhookEventProjectDeleted,
-			}).
-			SaveX(suite.Ctx)
+		webhook1 := suite.createWebhook(suite.testTeam.ID, nil, "https://example.com/1", schema.WebhookEventProjectCreated, schema.WebhookEventProjectDeleted)
+		webhook2 := suite.createWebhook(suite.testTeam.ID, nil, "https://example.com/2", schema.WebhookEventProjectCreated)
+		suite.createWebhook(suite.testTeam.ID, nil, "https://example.com/3", schema.WebhookEventProjectUpdated)
 
-		webhook2 := suite.DB.Webhook.Create().
-			SetTeamID(suite.testTeam.ID).
-			SetProjectID(suite.testProject.ID).
-			SetType(schema.WebhookTypeProject).
-			SetURL("https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX").
-			SetEvents([]schema.WebhookEvent{
-				schema.WebhookEventServiceCreated,
-				schema.WebhookEventProjectCreated, // Same event as target
-			}).
-			SaveX(suite.Ctx)
-
-		// Create webhook without the target event (should not be returned)
-		suite.DB.Webhook.Create().
-			SetTeamID(suite.testTeam.ID).
-			SetType(schema.WebhookTypeTeam).
-			SetURL("https://example.com/other-webhook").
-			SetEvents([]schema.WebhookEvent{schema.WebhookEventServiceDeleted}).
-			SaveX(suite.Ctx)
-
-		// Get webhooks for specific event
-		webhooks, err := suite.webhookRepo.GetWebhooksForEvent(suite.Ctx, schema.WebhookEventProjectCreated)
-
-		// Note: This test may fail due to SQLite JSON query limitations in test environment
-		// In production, this would work with PostgreSQL
-		if err != nil {
-			suite.T().Skipf("GetWebhooksForEvent may not work in test environment due to JSON query limitations: %v", err)
-			return
-		}
+		webhooks, err := suite.webhookRepo.GetByTeamForEvent(suite.Ctx, suite.testTeam.ID, schema.WebhookEventProjectCreated)
 
 		suite.NoError(err)
-		if len(webhooks) > 0 {
-			// Verify webhooks are ordered by created_at desc (newer first)
-			suite.True(webhooks[0].CreatedAt.After(webhooks[1].CreatedAt) || webhooks[0].CreatedAt.Equal(webhooks[1].CreatedAt))
-
-			// Find specific webhooks
-			var foundWebhook1, foundWebhook2 bool
-			for _, wh := range webhooks {
-				if wh.ID == webhook1.ID {
-					foundWebhook1 = true
-					suite.Contains(wh.Events, schema.WebhookEventProjectCreated)
-				} else if wh.ID == webhook2.ID {
-					foundWebhook2 = true
-					suite.Contains(wh.Events, schema.WebhookEventProjectCreated)
-				}
-			}
-
-			// Both webhooks should be found since they contain the target event
-			suite.True(foundWebhook1 || foundWebhook2, "At least one webhook should contain the target event")
-		}
+		suite.ElementsMatch([]uuid.UUID{webhook1.ID, webhook2.ID}, webhookIDs(webhooks))
 	})
 
-	suite.Run("Get Webhooks for Event No Results", func() {
-		// Clean up any existing webhooks
+	suite.Run("Ignores webhooks of other teams", func() {
 		suite.DB.Webhook.Delete().ExecX(suite.Ctx)
 
-		// Create webhook without the target event
-		suite.DB.Webhook.Create().
-			SetTeamID(suite.testTeam.ID).
-			SetType(schema.WebhookTypeTeam).
-			SetURL("https://example.com/webhook").
-			SetEvents([]schema.WebhookEvent{schema.WebhookEventServiceCreated}).
-			SaveX(suite.Ctx)
+		otherTeam := suite.createTeam("team-b")
+		suite.createWebhook(otherTeam.ID, nil, "https://example.com/other", schema.WebhookEventProjectCreated)
+		mine := suite.createWebhook(suite.testTeam.ID, nil, "https://example.com/mine", schema.WebhookEventProjectCreated)
 
-		// Search for event not in any webhook
-		webhooks, err := suite.webhookRepo.GetWebhooksForEvent(suite.Ctx, schema.WebhookEventDeploymentCancelled)
-
-		// Skip if JSON query not supported in test environment
-		if err != nil && (err.Error() == "sql: converting argument $1 type: unsupported type []map[string]interface {}, a slice of map" ||
-			err.Error() == "sqlite3: SQL logic error: incomplete input") {
-			suite.T().Skipf("GetWebhooksForEvent may not work in test environment due to JSON query limitations: %v", err)
-			return
-		}
+		webhooks, err := suite.webhookRepo.GetByTeamForEvent(suite.Ctx, suite.testTeam.ID, schema.WebhookEventProjectCreated)
 
 		suite.NoError(err)
-		suite.Len(webhooks, 0)
+		suite.Equal([]uuid.UUID{mine.ID}, webhookIDs(webhooks))
 	})
 
-	suite.Run("Get Webhooks for Event Empty Database", func() {
-		// Clean up any existing webhooks
+	suite.Run("Ignores project webhooks of the same team", func() {
 		suite.DB.Webhook.Delete().ExecX(suite.Ctx)
 
-		// Search for event in empty database
-		webhooks, err := suite.webhookRepo.GetWebhooksForEvent(suite.Ctx, schema.WebhookEventProjectCreated)
+		suite.createWebhook(suite.testTeam.ID, &suite.testProject.ID, "https://example.com/project", schema.WebhookEventProjectCreated)
 
-		// Skip if JSON query not supported in test environment
-		if err != nil && (err.Error() == "sql: converting argument $1 type: unsupported type []map[string]interface {}, a slice of map" ||
-			err.Error() == "sqlite3: SQL logic error: incomplete input") {
-			suite.T().Skipf("GetWebhooksForEvent may not work in test environment due to JSON query limitations: %v", err)
-			return
-		}
+		webhooks, err := suite.webhookRepo.GetByTeamForEvent(suite.Ctx, suite.testTeam.ID, schema.WebhookEventProjectCreated)
 
 		suite.NoError(err)
 		suite.Len(webhooks, 0)
@@ -398,7 +364,66 @@ func (suite *WebhookQueriesSuite) TestGetWebhooksForEvent() {
 
 	suite.Run("Error when DB closed", func() {
 		suite.DB.Close()
-		_, err := suite.webhookRepo.GetWebhooksForEvent(suite.Ctx, schema.WebhookEventProjectCreated)
+		_, err := suite.webhookRepo.GetByTeamForEvent(suite.Ctx, suite.testTeam.ID, schema.WebhookEventProjectCreated)
+		suite.Error(err)
+		suite.ErrorContains(err, "database is closed")
+	})
+}
+
+func (suite *WebhookQueriesSuite) TestGetByProjectForEvent() {
+	suite.Run("Returns every project webhook subscribed to the event", func() {
+		suite.DB.Webhook.Delete().ExecX(suite.Ctx)
+
+		webhook1 := suite.createWebhook(suite.testTeam.ID, &suite.testProject.ID, "https://example.com/1", schema.WebhookEventDeploymentFailed, schema.WebhookEventServiceCreated)
+		webhook2 := suite.createWebhook(suite.testTeam.ID, &suite.testProject.ID, "https://example.com/2", schema.WebhookEventDeploymentFailed)
+		suite.createWebhook(suite.testTeam.ID, &suite.testProject.ID, "https://example.com/3", schema.WebhookEventDeploymentSucceeded)
+
+		webhooks, err := suite.webhookRepo.GetByProjectForEvent(suite.Ctx, suite.testProject.ID, schema.WebhookEventDeploymentFailed)
+
+		suite.NoError(err)
+		suite.ElementsMatch([]uuid.UUID{webhook1.ID, webhook2.ID}, webhookIDs(webhooks))
+	})
+
+	suite.Run("Ignores webhooks of other projects in the same team", func() {
+		suite.DB.Webhook.Delete().ExecX(suite.Ctx)
+
+		otherProject := suite.createProject(suite.testTeam.ID, "project-b")
+		suite.createWebhook(suite.testTeam.ID, &otherProject.ID, "https://example.com/other", schema.WebhookEventDeploymentFailed)
+		mine := suite.createWebhook(suite.testTeam.ID, &suite.testProject.ID, "https://example.com/mine", schema.WebhookEventDeploymentFailed)
+
+		webhooks, err := suite.webhookRepo.GetByProjectForEvent(suite.Ctx, suite.testProject.ID, schema.WebhookEventDeploymentFailed)
+
+		suite.NoError(err)
+		suite.Equal([]uuid.UUID{mine.ID}, webhookIDs(webhooks))
+	})
+
+	suite.Run("Ignores webhooks of other teams", func() {
+		suite.DB.Webhook.Delete().ExecX(suite.Ctx)
+
+		otherTeam := suite.createTeam("team-c")
+		otherProject := suite.createProject(otherTeam.ID, "project-c")
+		suite.createWebhook(otherTeam.ID, &otherProject.ID, "https://example.com/other", schema.WebhookEventDeploymentFailed)
+
+		webhooks, err := suite.webhookRepo.GetByProjectForEvent(suite.Ctx, suite.testProject.ID, schema.WebhookEventDeploymentFailed)
+
+		suite.NoError(err)
+		suite.Len(webhooks, 0)
+	})
+
+	suite.Run("Ignores team webhooks", func() {
+		suite.DB.Webhook.Delete().ExecX(suite.Ctx)
+
+		suite.createWebhook(suite.testTeam.ID, nil, "https://example.com/team", schema.WebhookEventDeploymentFailed)
+
+		webhooks, err := suite.webhookRepo.GetByProjectForEvent(suite.Ctx, suite.testProject.ID, schema.WebhookEventDeploymentFailed)
+
+		suite.NoError(err)
+		suite.Len(webhooks, 0)
+	})
+
+	suite.Run("Error when DB closed", func() {
+		suite.DB.Close()
+		_, err := suite.webhookRepo.GetByProjectForEvent(suite.Ctx, suite.testProject.ID, schema.WebhookEventDeploymentFailed)
 		suite.Error(err)
 		suite.ErrorContains(err, "database is closed")
 	})

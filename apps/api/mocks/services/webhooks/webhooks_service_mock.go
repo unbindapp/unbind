@@ -414,16 +414,16 @@ func (_c *WebhooksServiceMock_ListWebhooks_Call) RunAndReturn(run func(ctx conte
 }
 
 // TriggerWebhooks provides a mock function for the type WebhooksServiceMock
-func (_mock *WebhooksServiceMock) TriggerWebhooks(ctx context.Context, level webhooks_service.WebhookLevel, event schema.WebhookEvent, message webhooks_service.WebhookData) error {
-	ret := _mock.Called(ctx, level, event, message)
+func (_mock *WebhooksServiceMock) TriggerWebhooks(ctx context.Context, level webhooks_service.WebhookLevel, event schema.WebhookEvent, message webhooks_service.WebhookData, teamID uuid.UUID, projectID uuid.UUID) error {
+	ret := _mock.Called(ctx, level, event, message, teamID, projectID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for TriggerWebhooks")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, webhooks_service.WebhookLevel, schema.WebhookEvent, webhooks_service.WebhookData) error); ok {
-		r0 = returnFunc(ctx, level, event, message)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, webhooks_service.WebhookLevel, schema.WebhookEvent, webhooks_service.WebhookData, uuid.UUID, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, level, event, message, teamID, projectID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -440,11 +440,13 @@ type WebhooksServiceMock_TriggerWebhooks_Call struct {
 //   - level webhooks_service.WebhookLevel
 //   - event schema.WebhookEvent
 //   - message webhooks_service.WebhookData
-func (_e *WebhooksServiceMock_Expecter) TriggerWebhooks(ctx any, level any, event any, message any) *WebhooksServiceMock_TriggerWebhooks_Call {
-	return &WebhooksServiceMock_TriggerWebhooks_Call{Call: _e.mock.On("TriggerWebhooks", ctx, level, event, message)}
+//   - teamID uuid.UUID
+//   - projectID uuid.UUID
+func (_e *WebhooksServiceMock_Expecter) TriggerWebhooks(ctx any, level any, event any, message any, teamID any, projectID any) *WebhooksServiceMock_TriggerWebhooks_Call {
+	return &WebhooksServiceMock_TriggerWebhooks_Call{Call: _e.mock.On("TriggerWebhooks", ctx, level, event, message, teamID, projectID)}
 }
 
-func (_c *WebhooksServiceMock_TriggerWebhooks_Call) Run(run func(ctx context.Context, level webhooks_service.WebhookLevel, event schema.WebhookEvent, message webhooks_service.WebhookData)) *WebhooksServiceMock_TriggerWebhooks_Call {
+func (_c *WebhooksServiceMock_TriggerWebhooks_Call) Run(run func(ctx context.Context, level webhooks_service.WebhookLevel, event schema.WebhookEvent, message webhooks_service.WebhookData, teamID uuid.UUID, projectID uuid.UUID)) *WebhooksServiceMock_TriggerWebhooks_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -462,11 +464,21 @@ func (_c *WebhooksServiceMock_TriggerWebhooks_Call) Run(run func(ctx context.Con
 		if args[3] != nil {
 			arg3 = args[3].(webhooks_service.WebhookData)
 		}
+		var arg4 uuid.UUID
+		if args[4] != nil {
+			arg4 = args[4].(uuid.UUID)
+		}
+		var arg5 uuid.UUID
+		if args[5] != nil {
+			arg5 = args[5].(uuid.UUID)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
+			arg5,
 		)
 	})
 	return _c
@@ -477,7 +489,7 @@ func (_c *WebhooksServiceMock_TriggerWebhooks_Call) Return(err error) *WebhooksS
 	return _c
 }
 
-func (_c *WebhooksServiceMock_TriggerWebhooks_Call) RunAndReturn(run func(ctx context.Context, level webhooks_service.WebhookLevel, event schema.WebhookEvent, message webhooks_service.WebhookData) error) *WebhooksServiceMock_TriggerWebhooks_Call {
+func (_c *WebhooksServiceMock_TriggerWebhooks_Call) RunAndReturn(run func(ctx context.Context, level webhooks_service.WebhookLevel, event schema.WebhookEvent, message webhooks_service.WebhookData, teamID uuid.UUID, projectID uuid.UUID) error) *WebhooksServiceMock_TriggerWebhooks_Call {
 	_c.Call.Return(run)
 	return _c
 }

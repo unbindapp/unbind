@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 )
@@ -81,73 +84,81 @@ func (level WebhookLevel) Emoji() string {
 	return levelBar
 }
 
-func (self *WebhooksService) TriggerWebhooks(ctx context.Context, level WebhookLevel, event schema.WebhookEvent, message WebhookData) error {
-	// Get all webhooks matching event
-	webhooks, err := self.repo.Webhooks().GetWebhooksForEvent(ctx, event)
+func (self *WebhooksService) TriggerWebhooks(ctx context.Context, level WebhookLevel, event schema.WebhookEvent, message WebhookData, teamID uuid.UUID, projectID uuid.UUID) error {
+	webhooks, err := self.webhooksForEvent(ctx, event, teamID, projectID)
 	if err != nil {
 		return err
 	}
 
+	var errs []error
 	for _, webhook := range webhooks {
-		target, err := self.DetectTargetFromURL(webhook.URL)
-		if err != nil {
-			log.Errorf("Failed to detect target from webhook URL %s: %v", webhook.URL, err)
-		}
-
-		switch target {
-		case schema.WebhookTargetDiscord:
-			return self.sendDiscordWebhook(level, event, message, webhook.URL)
-		case schema.WebhookTargetSlack:
-			return self.sendSlackWebhook(level, event, message, webhook.URL)
-		case schema.WebhookTargetTelegram:
-			return self.sendTelegramWebhook(level, event, message, webhook.URL)
-		default:
-			// Just encode our payload
-			msg := DefaultPayload{
-				Level: level,
-				Event: event,
-				Data:  message,
-			}
-
-			payload := new(bytes.Buffer)
-			err := json.NewEncoder(payload).Encode(msg)
-			if err != nil {
-				log.Errorf("Failed to encode slack webhook payload: %v", err)
-				return err
-			}
-
-			req, err := http.NewRequest(http.MethodPost, webhook.URL, payload)
-			if err != nil {
-				log.Errorf("Failed to create slack webhook request: %v", err)
-				return err
-			}
-			req.Header.Set("Content-Type", "application/json")
-
-			resp, err := self.httpClient.Do(req)
-			if err != nil {
-				log.Errorf("Failed to send slack webhook: %v", err)
-				return err
-			}
-			defer resp.Body.Close()
-
-			if resp.StatusCode != http.StatusOK {
-				bodyBytes, readErr := io.ReadAll(resp.Body)
-				if readErr != nil {
-					log.Errorf("Failed to send slack webhook: status=%d, error reading body: %v",
-						resp.StatusCode, readErr)
-					return fmt.Errorf("failed to send slack webhook: %s, couldn't read response", resp.Status)
-				}
-
-				// Log both status code and response body
-				bodyString := string(bodyBytes)
-				log.Errorf("Failed to send slack webhook: status=%d",
-					resp.StatusCode)
-				return fmt.Errorf("failed to send slack webhook: %s, response: %s", resp.Status, bodyString)
-			}
+		if err := self.send(level, event, message, webhook.URL); err != nil {
+			log.Errorf("Failed to send webhook %s to %s: %v", event, webhook.URL, err)
+			errs = append(errs, err)
 		}
 	}
 
-	return nil
+	return errors.Join(errs...)
+}
+
+func (self *WebhooksService) webhooksForEvent(ctx context.Context, event schema.WebhookEvent, teamID uuid.UUID, projectID uuid.UUID) ([]*ent.Webhook, error) {
+	if event.WebhookType() == schema.WebhookTypeTeam {
+		return self.repo.Webhooks().GetByTeamForEvent(ctx, teamID, event)
+	}
+	return self.repo.Webhooks().GetByProjectForEvent(ctx, projectID, event)
+}
+
+func (self *WebhooksService) send(level WebhookLevel, event schema.WebhookEvent, message WebhookData, url string) error {
+	target, err := self.DetectTargetFromURL(url)
+	if err != nil {
+		return err
+	}
+
+	switch target {
+	case schema.WebhookTargetDiscord:
+		return self.sendDiscordWebhook(level, event, message, url)
+	case schema.WebhookTargetSlack:
+		return self.sendSlackWebhook(level, event, message, url)
+	case schema.WebhookTargetTelegram:
+		return self.sendTelegramWebhook(level, event, message, url)
+	default:
+		return self.sendDefaultWebhook(level, event, message, url)
+	}
+}
+
+func (self *WebhooksService) sendDefaultWebhook(level WebhookLevel, event schema.WebhookEvent, message WebhookData, url string) error {
+	msg := DefaultPayload{
+		Level: level,
+		Event: event,
+		Data:  message,
+	}
+
+	payload := new(bytes.Buffer)
+	if err := json.NewEncoder(payload).Encode(msg); err != nil {
+		return fmt.Errorf("failed to encode webhook payload: %w", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, payload)
+	if err != nil {
+		return fmt.Errorf("failed to create webhook request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := self.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send webhook: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+
+	bodyBytes, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		return fmt.Errorf("failed to send webhook: %s, couldn't read response", resp.Status)
+	}
+	return fmt.Errorf("failed to send webhook: %s, response: %s", resp.Status, string(bodyBytes))
 }
 
 type DefaultPayload struct {

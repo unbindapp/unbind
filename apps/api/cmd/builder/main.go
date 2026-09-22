@@ -68,7 +68,7 @@ func markDeploymentSuccessful(ctx context.Context, cfg *config.Config, webhooksS
 		},
 	}
 
-	if err := webhooksService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
+	if err := webhooksService.TriggerWebhooks(context.Background(), level, event, data, service.Edges.Environment.Edges.Project.TeamID, service.Edges.Environment.Edges.Project.ID); err != nil {
 		log.Warnf("Failed to trigger webhook %s: %v", event, err)
 	}
 
@@ -119,7 +119,7 @@ func markDeploymentFailed(ctx context.Context, cfg *config.Config, webhooksServi
 		},
 	}
 
-	if err := webhooksService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
+	if err := webhooksService.TriggerWebhooks(context.Background(), level, event, data, service.Edges.Environment.Edges.Project.TeamID, service.Edges.Environment.Edges.Project.ID); err != nil {
 		log.Warnf("Failed to trigger webhook %s: %v", event, err)
 	}
 
@@ -204,7 +204,7 @@ func main() {
 			},
 		}
 
-		if err := webhooksService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
+		if err := webhooksService.TriggerWebhooks(context.Background(), level, event, data, service.Edges.Environment.Edges.Project.TeamID, service.Edges.Environment.Edges.Project.ID); err != nil {
 			log.Errorf("Failed to trigger webhook %s: %v", event, err)
 		}
 	}()

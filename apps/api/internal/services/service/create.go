@@ -523,7 +523,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			})
 		}
 
-		if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
+		if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data, project.TeamID, project.ID); err != nil {
 			log.Errorf("Failed to trigger webhook %s: %v", event, err)
 		}
 	}()

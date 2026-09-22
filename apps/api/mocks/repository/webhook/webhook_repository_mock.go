@@ -311,6 +311,80 @@ func (_c *WebhookRepositoryMock_GetByProject_Call) RunAndReturn(run func(ctx con
 	return _c
 }
 
+// GetByProjectForEvent provides a mock function for the type WebhookRepositoryMock
+func (_mock *WebhookRepositoryMock) GetByProjectForEvent(ctx context.Context, projectID uuid.UUID, event schema.WebhookEvent) ([]*ent.Webhook, error) {
+	ret := _mock.Called(ctx, projectID, event)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByProjectForEvent")
+	}
+
+	var r0 []*ent.Webhook
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.WebhookEvent) ([]*ent.Webhook, error)); ok {
+		return returnFunc(ctx, projectID, event)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.WebhookEvent) []*ent.Webhook); ok {
+		r0 = returnFunc(ctx, projectID, event)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Webhook)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, schema.WebhookEvent) error); ok {
+		r1 = returnFunc(ctx, projectID, event)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// WebhookRepositoryMock_GetByProjectForEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByProjectForEvent'
+type WebhookRepositoryMock_GetByProjectForEvent_Call struct {
+	*mock.Call
+}
+
+// GetByProjectForEvent is a helper method to define mock.On call
+//   - ctx context.Context
+//   - projectID uuid.UUID
+//   - event schema.WebhookEvent
+func (_e *WebhookRepositoryMock_Expecter) GetByProjectForEvent(ctx any, projectID any, event any) *WebhookRepositoryMock_GetByProjectForEvent_Call {
+	return &WebhookRepositoryMock_GetByProjectForEvent_Call{Call: _e.mock.On("GetByProjectForEvent", ctx, projectID, event)}
+}
+
+func (_c *WebhookRepositoryMock_GetByProjectForEvent_Call) Run(run func(ctx context.Context, projectID uuid.UUID, event schema.WebhookEvent)) *WebhookRepositoryMock_GetByProjectForEvent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 schema.WebhookEvent
+		if args[2] != nil {
+			arg2 = args[2].(schema.WebhookEvent)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_GetByProjectForEvent_Call) Return(webhooks []*ent.Webhook, err error) *WebhookRepositoryMock_GetByProjectForEvent_Call {
+	_c.Call.Return(webhooks, err)
+	return _c
+}
+
+func (_c *WebhookRepositoryMock_GetByProjectForEvent_Call) RunAndReturn(run func(ctx context.Context, projectID uuid.UUID, event schema.WebhookEvent) ([]*ent.Webhook, error)) *WebhookRepositoryMock_GetByProjectForEvent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetByTeam provides a mock function for the type WebhookRepositoryMock
 func (_mock *WebhookRepositoryMock) GetByTeam(ctx context.Context, teamID uuid.UUID) ([]*ent.Webhook, error) {
 	ret := _mock.Called(ctx, teamID)
@@ -379,70 +453,76 @@ func (_c *WebhookRepositoryMock_GetByTeam_Call) RunAndReturn(run func(ctx contex
 	return _c
 }
 
-// GetWebhooksForEvent provides a mock function for the type WebhookRepositoryMock
-func (_mock *WebhookRepositoryMock) GetWebhooksForEvent(ctx context.Context, event schema.WebhookEvent) ([]*ent.Webhook, error) {
-	ret := _mock.Called(ctx, event)
+// GetByTeamForEvent provides a mock function for the type WebhookRepositoryMock
+func (_mock *WebhookRepositoryMock) GetByTeamForEvent(ctx context.Context, teamID uuid.UUID, event schema.WebhookEvent) ([]*ent.Webhook, error) {
+	ret := _mock.Called(ctx, teamID, event)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetWebhooksForEvent")
+		panic("no return value specified for GetByTeamForEvent")
 	}
 
 	var r0 []*ent.Webhook
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, schema.WebhookEvent) ([]*ent.Webhook, error)); ok {
-		return returnFunc(ctx, event)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.WebhookEvent) ([]*ent.Webhook, error)); ok {
+		return returnFunc(ctx, teamID, event)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, schema.WebhookEvent) []*ent.Webhook); ok {
-		r0 = returnFunc(ctx, event)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, schema.WebhookEvent) []*ent.Webhook); ok {
+		r0 = returnFunc(ctx, teamID, event)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*ent.Webhook)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, schema.WebhookEvent) error); ok {
-		r1 = returnFunc(ctx, event)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, schema.WebhookEvent) error); ok {
+		r1 = returnFunc(ctx, teamID, event)
 	} else {
 		r1 = ret.Error(1)
 	}
 	return r0, r1
 }
 
-// WebhookRepositoryMock_GetWebhooksForEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetWebhooksForEvent'
-type WebhookRepositoryMock_GetWebhooksForEvent_Call struct {
+// WebhookRepositoryMock_GetByTeamForEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByTeamForEvent'
+type WebhookRepositoryMock_GetByTeamForEvent_Call struct {
 	*mock.Call
 }
 
-// GetWebhooksForEvent is a helper method to define mock.On call
+// GetByTeamForEvent is a helper method to define mock.On call
 //   - ctx context.Context
+//   - teamID uuid.UUID
 //   - event schema.WebhookEvent
-func (_e *WebhookRepositoryMock_Expecter) GetWebhooksForEvent(ctx any, event any) *WebhookRepositoryMock_GetWebhooksForEvent_Call {
-	return &WebhookRepositoryMock_GetWebhooksForEvent_Call{Call: _e.mock.On("GetWebhooksForEvent", ctx, event)}
+func (_e *WebhookRepositoryMock_Expecter) GetByTeamForEvent(ctx any, teamID any, event any) *WebhookRepositoryMock_GetByTeamForEvent_Call {
+	return &WebhookRepositoryMock_GetByTeamForEvent_Call{Call: _e.mock.On("GetByTeamForEvent", ctx, teamID, event)}
 }
 
-func (_c *WebhookRepositoryMock_GetWebhooksForEvent_Call) Run(run func(ctx context.Context, event schema.WebhookEvent)) *WebhookRepositoryMock_GetWebhooksForEvent_Call {
+func (_c *WebhookRepositoryMock_GetByTeamForEvent_Call) Run(run func(ctx context.Context, teamID uuid.UUID, event schema.WebhookEvent)) *WebhookRepositoryMock_GetByTeamForEvent_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 schema.WebhookEvent
+		var arg1 uuid.UUID
 		if args[1] != nil {
-			arg1 = args[1].(schema.WebhookEvent)
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 schema.WebhookEvent
+		if args[2] != nil {
+			arg2 = args[2].(schema.WebhookEvent)
 		}
 		run(
 			arg0,
 			arg1,
+			arg2,
 		)
 	})
 	return _c
 }
 
-func (_c *WebhookRepositoryMock_GetWebhooksForEvent_Call) Return(webhooks []*ent.Webhook, err error) *WebhookRepositoryMock_GetWebhooksForEvent_Call {
+func (_c *WebhookRepositoryMock_GetByTeamForEvent_Call) Return(webhooks []*ent.Webhook, err error) *WebhookRepositoryMock_GetByTeamForEvent_Call {
 	_c.Call.Return(webhooks, err)
 	return _c
 }
 
-func (_c *WebhookRepositoryMock_GetWebhooksForEvent_Call) RunAndReturn(run func(ctx context.Context, event schema.WebhookEvent) ([]*ent.Webhook, error)) *WebhookRepositoryMock_GetWebhooksForEvent_Call {
+func (_c *WebhookRepositoryMock_GetByTeamForEvent_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, event schema.WebhookEvent) ([]*ent.Webhook, error)) *WebhookRepositoryMock_GetByTeamForEvent_Call {
 	_c.Call.Return(run)
 	return _c
 }

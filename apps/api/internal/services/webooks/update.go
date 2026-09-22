@@ -49,6 +49,12 @@ func (self *WebhooksService) UpdateWebhook(ctx context.Context, requesterUserID 
 	if webhook.Type == schema.WebhookTypeProject && (input.ProjectID == nil || webhook.ProjectID == nil || *input.ProjectID != *webhook.ProjectID) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Webhook not found")
 	}
+	if input.Events != nil {
+		if err := validateEvents(webhook.Type, *input.Events); err != nil {
+			return nil, err
+		}
+	}
+
 	webhook, err = self.repo.Webhooks().Update(ctx, input)
 	if err != nil {
 		return nil, err

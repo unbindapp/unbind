@@ -19,5 +19,6 @@ type WebhookRepositoryInterface interface {
 	GetByID(ctx context.Context, id uuid.UUID) (*ent.Webhook, error)
 	GetByTeam(ctx context.Context, teamID uuid.UUID) ([]*ent.Webhook, error)
 	GetByProject(ctx context.Context, projectID uuid.UUID) ([]*ent.Webhook, error)
-	GetWebhooksForEvent(ctx context.Context, event schema.WebhookEvent) ([]*ent.Webhook, error)
+	GetByTeamForEvent(ctx context.Context, teamID uuid.UUID, event schema.WebhookEvent) ([]*ent.Webhook, error)
+	GetByProjectForEvent(ctx context.Context, projectID uuid.UUID, event schema.WebhookEvent) ([]*ent.Webhook, error)
 }

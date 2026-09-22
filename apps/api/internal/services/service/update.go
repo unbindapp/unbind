@@ -573,7 +573,7 @@ func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, inpu
 			})
 		}
 
-		if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
+		if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data, input.TeamID, input.ProjectID); err != nil {
 			log.Errorf("Failed to trigger webhook %s: %v", event, err)
 		}
 	}

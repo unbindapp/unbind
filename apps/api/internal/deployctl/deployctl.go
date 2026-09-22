@@ -560,7 +560,7 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 			},
 		}
 
-		if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
+		if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data, service.Edges.Environment.Edges.Project.TeamID, service.Edges.Environment.Edges.Project.ID); err != nil {
 			log.Errorf("Failed to trigger webhook %s: %v", event, err)
 		}
 	}()
@@ -656,7 +656,7 @@ func (self *DeploymentController) sendDeploymentCancelledWebhook(serviceID uuid.
 		},
 	}
 
-	if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data); err != nil {
+	if err := self.webhookService.TriggerWebhooks(context.Background(), level, event, data, service.Edges.Environment.Edges.Project.TeamID, service.Edges.Environment.Edges.Project.ID); err != nil {
 		log.Errorf("Failed to trigger webhook %s: %v", event, err)
 	}
 }

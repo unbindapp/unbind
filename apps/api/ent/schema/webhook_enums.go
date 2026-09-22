@@ -2,6 +2,7 @@ package schema
 
 import (
 	"reflect"
+	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
 )
@@ -109,6 +110,14 @@ var allWebhookEvents = []WebhookEvent{
 	WebhookEventDeploymentSucceeded,
 	WebhookEventDeploymentFailed,
 	WebhookEventDeploymentCancelled,
+}
+
+// WebhookType tells which webhook level receives the event.
+func (s WebhookEvent) WebhookType() WebhookType {
+	if strings.HasPrefix(string(s), "project.") {
+		return WebhookTypeTeam
+	}
+	return WebhookTypeProject
 }
 
 // Values provides list valid values for Enum.

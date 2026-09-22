@@ -2,6 +2,7 @@ package webhooks_service
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
@@ -37,10 +38,23 @@ func (self *WebhooksService) CreateWebhook(ctx context.Context, requesterUserID 
 		return nil, err
 	}
 
+	if err := validateEvents(input.Type, input.Events); err != nil {
+		return nil, err
+	}
+
 	webhook, err := self.repo.Webhooks().Create(ctx, input)
 	if err != nil {
 		return nil, err
 	}
 
 	return models.TransformWebhookEntity(webhook), nil
+}
+
+func validateEvents(webhookType schema.WebhookType, events []schema.WebhookEvent) error {
+	for _, event := range events {
+		if event.WebhookType() != webhookType {
+			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Event %s is not available for %s webhooks", event, webhookType))
+		}
+	}
+	return nil
 }

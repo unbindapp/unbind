@@ -39,13 +39,28 @@ func (self *WebhookRepository) GetByProject(ctx context.Context, projectID uuid.
 		All(ctx)
 }
 
-func (self *WebhookRepository) GetWebhooksForEvent(ctx context.Context, event schema.WebhookEvent) ([]*ent.Webhook, error) {
+func (self *WebhookRepository) GetByTeamForEvent(ctx context.Context, teamID uuid.UUID, event schema.WebhookEvent) ([]*ent.Webhook, error) {
 	return self.base.DB.Webhook.Query().
-		Where(func(s *sql.Selector) {
-			s.Where(sqljson.ValueContains(s.C(webhook.FieldEvents), event))
-		}).
-		Order(
-			ent.Desc(webhook.FieldCreatedAt),
+		Where(
+			webhook.TeamID(teamID),
+			webhook.TypeEQ(schema.WebhookTypeTeam),
+			hasEvent(event),
 		).
 		All(ctx)
+}
+
+func (self *WebhookRepository) GetByProjectForEvent(ctx context.Context, projectID uuid.UUID, event schema.WebhookEvent) ([]*ent.Webhook, error) {
+	return self.base.DB.Webhook.Query().
+		Where(
+			webhook.ProjectID(projectID),
+			webhook.TypeEQ(schema.WebhookTypeProject),
+			hasEvent(event),
+		).
+		All(ctx)
+}
+
+func hasEvent(event schema.WebhookEvent) func(s *sql.Selector) {
+	return func(s *sql.Selector) {
+		s.Where(sqljson.ValueContains(s.C(webhook.FieldEvents), event))
+	}
 }

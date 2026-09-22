@@ -17,6 +17,6 @@ type WebhooksServiceInterface interface {
 	DetectTargetFromURL(urlStr string) (schema.WebhookTarget, error)
 	GetWebhookByID(ctx context.Context, requesterUserID uuid.UUID, input *models.WebhookGetInput) (*models.WebhookResponse, error)
 	ListWebhooks(ctx context.Context, requesterUserID uuid.UUID, input *models.WebhookListInput) ([]*models.WebhookResponse, error)
-	TriggerWebhooks(ctx context.Context, level WebhookLevel, event schema.WebhookEvent, message WebhookData) error
+	TriggerWebhooks(ctx context.Context, level WebhookLevel, event schema.WebhookEvent, message WebhookData, teamID uuid.UUID, projectID uuid.UUID) error
 	UpdateWebhook(ctx context.Context, requesterUserID uuid.UUID, input *models.WebhookUpdateInput) (*models.WebhookResponse, error)
 }
