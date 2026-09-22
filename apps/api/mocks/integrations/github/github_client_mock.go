@@ -966,8 +966,86 @@ func (_c *GithubClientMock_ReadInstallationRepositories_Call) RunAndReturn(run f
 	return _c
 }
 
+// IsRepositoryInInstallation provides a mock function for the type GithubClientMock
+func (_mock *GithubClientMock) IsRepositoryInInstallation(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string) (bool, error) {
+	ret := _mock.Called(ctx, installation, owner, repo)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IsRepositoryInInstallation")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation, string, string) (bool, error)); ok {
+		return returnFunc(ctx, installation, owner, repo)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation, string, string) bool); ok {
+		r0 = returnFunc(ctx, installation, owner, repo)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.GithubInstallation, string, string) error); ok {
+		r1 = returnFunc(ctx, installation, owner, repo)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubClientMock_IsRepositoryInInstallation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IsRepositoryInInstallation'
+type GithubClientMock_IsRepositoryInInstallation_Call struct {
+	*mock.Call
+}
+
+// IsRepositoryInInstallation is a helper method to define mock.On call
+//   - ctx context.Context
+//   - installation *ent.GithubInstallation
+//   - owner string
+//   - repo string
+func (_e *GithubClientMock_Expecter) IsRepositoryInInstallation(ctx any, installation any, owner any, repo any) *GithubClientMock_IsRepositoryInInstallation_Call {
+	return &GithubClientMock_IsRepositoryInInstallation_Call{Call: _e.mock.On("IsRepositoryInInstallation", ctx, installation, owner, repo)}
+}
+
+func (_c *GithubClientMock_IsRepositoryInInstallation_Call) Run(run func(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string)) *GithubClientMock_IsRepositoryInInstallation_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *ent.GithubInstallation
+		if args[1] != nil {
+			arg1 = args[1].(*ent.GithubInstallation)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubClientMock_IsRepositoryInInstallation_Call) Return(b bool, err error) *GithubClientMock_IsRepositoryInInstallation_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *GithubClientMock_IsRepositoryInInstallation_Call) RunAndReturn(run func(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string) (bool, error)) *GithubClientMock_IsRepositoryInInstallation_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // VerifyRepositoryAccess provides a mock function for the type GithubClientMock
-func (_mock *GithubClientMock) VerifyRepositoryAccess(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string) (bool, string, string, error) {
+func (_mock *GithubClientMock) VerifyRepositoryAccess(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string) (bool, string, string, string, error) {
 	ret := _mock.Called(ctx, installation, owner, repo)
 
 	if len(ret) == 0 {
@@ -977,8 +1055,9 @@ func (_mock *GithubClientMock) VerifyRepositoryAccess(ctx context.Context, insta
 	var r0 bool
 	var r1 string
 	var r2 string
-	var r3 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation, string, string) (bool, string, string, error)); ok {
+	var r3 string
+	var r4 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation, string, string) (bool, string, string, string, error)); ok {
 		return returnFunc(ctx, installation, owner, repo)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubInstallation, string, string) bool); ok {
@@ -996,12 +1075,17 @@ func (_mock *GithubClientMock) VerifyRepositoryAccess(ctx context.Context, insta
 	} else {
 		r2 = ret.Get(2).(string)
 	}
-	if returnFunc, ok := ret.Get(3).(func(context.Context, *ent.GithubInstallation, string, string) error); ok {
+	if returnFunc, ok := ret.Get(3).(func(context.Context, *ent.GithubInstallation, string, string) string); ok {
 		r3 = returnFunc(ctx, installation, owner, repo)
 	} else {
-		r3 = ret.Error(3)
+		r3 = ret.Get(3).(string)
 	}
-	return r0, r1, r2, r3
+	if returnFunc, ok := ret.Get(4).(func(context.Context, *ent.GithubInstallation, string, string) error); ok {
+		r4 = returnFunc(ctx, installation, owner, repo)
+	} else {
+		r4 = ret.Error(4)
+	}
+	return r0, r1, r2, r3, r4
 }
 
 // GithubClientMock_VerifyRepositoryAccess_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'VerifyRepositoryAccess'
@@ -1046,12 +1130,12 @@ func (_c *GithubClientMock_VerifyRepositoryAccess_Call) Run(run func(ctx context
 	return _c
 }
 
-func (_c *GithubClientMock_VerifyRepositoryAccess_Call) Return(canAccess bool, repoUrl string, defaultBranch string, err error) *GithubClientMock_VerifyRepositoryAccess_Call {
-	_c.Call.Return(canAccess, repoUrl, defaultBranch, err)
+func (_c *GithubClientMock_VerifyRepositoryAccess_Call) Return(canAccess bool, repoUrl string, defaultBranch string, ownerLogin string, err error) *GithubClientMock_VerifyRepositoryAccess_Call {
+	_c.Call.Return(canAccess, repoUrl, defaultBranch, ownerLogin, err)
 	return _c
 }
 
-func (_c *GithubClientMock_VerifyRepositoryAccess_Call) RunAndReturn(run func(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string) (bool, string, string, error)) *GithubClientMock_VerifyRepositoryAccess_Call {
+func (_c *GithubClientMock_VerifyRepositoryAccess_Call) RunAndReturn(run func(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string) (bool, string, string, string, error)) *GithubClientMock_VerifyRepositoryAccess_Call {
 	_c.Call.Return(run)
 	return _c
 }

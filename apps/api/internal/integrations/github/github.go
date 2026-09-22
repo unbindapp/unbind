@@ -54,19 +54,27 @@ func NewGithubClient(githubURL string, cfg *config.Config) *GithubClient {
 	}
 }
 
-// Get the token we can use to authenticate with GitHub
-func (self *GithubClient) GetInstallationToken(ctx context.Context, appID int64, installationID int64, appPrivateKey string) (string, error) {
+// getAppClient authenticates as the app itself with a JWT
+func (self *GithubClient) getAppClient(appID int64, appPrivateKey string) (*github.Client, error) {
 	privateKey, err := utils.DecodePrivateKey(appPrivateKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	bearerToken, err := utils.GenerateGithubJWT(appID, privateKey)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	client := self.client.WithAuthToken(bearerToken)
+	return self.client.WithAuthToken(bearerToken), nil
+}
+
+// Get the token we can use to authenticate with GitHub
+func (self *GithubClient) GetInstallationToken(ctx context.Context, appID int64, installationID int64, appPrivateKey string) (string, error) {
+	client, err := self.getAppClient(appID, appPrivateKey)
+	if err != nil {
+		return "", err
+	}
 
 	token, _, err := client.Apps.CreateInstallationToken(ctx, installationID, nil)
 	if err != nil {

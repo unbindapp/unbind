@@ -15,8 +15,8 @@ type CreateServiceInput struct {
 
 	// GitHub integration
 	GitHubInstallationID *int64  `json:"github_installation_id,omitempty"`
-	RepositoryOwner      *string `json:"repository_owner,omitempty"`
-	RepositoryName       *string `json:"repository_name,omitempty"`
+	RepositoryOwner      *string `json:"repository_owner,omitempty" doc:"Must be the account the GitHub installation belongs to"`
+	RepositoryName       *string `json:"repository_name,omitempty" doc:"Must be a repository the GitHub installation has access to"`
 
 	// Configuration
 	Type                          schema.ServiceType    `required:"true" doc:"Type of service, e.g. 'github', 'docker-image'" json:"type"`

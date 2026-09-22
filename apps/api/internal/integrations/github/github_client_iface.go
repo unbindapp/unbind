@@ -27,8 +27,10 @@ type GithubClientInterface interface {
 	ReadInstallationRepositories(ctx context.Context, installations []*ent.GithubInstallation) ([]*GithubRepository, error)
 	// Get details for a repository
 	GetRepositoryDetail(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (*GithubRepositoryDetail, error)
-	// VerifyRepositoryAccess with resource cleanup
-	VerifyRepositoryAccess(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (canAccess bool, repoUrl, defaultBranch string, err error)
+	// VerifyRepositoryAccess checks that the repository belongs to the installation, a public repository answers any installation token
+	VerifyRepositoryAccess(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (canAccess bool, repoUrl, defaultBranch, ownerLogin string, err error)
+	// IsRepositoryInInstallation checks that the installation covers the repository, it may be limited to selected repositories of the account
+	IsRepositoryInInstallation(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (bool, error)
 	// Get branch head summary - sha, message, author
 	// GetCommitSummary - get summary for a specific commit or branch head
 	GetCommitSummary(ctx context.Context, installation *ent.GithubInstallation, owner, repo string, branchOrSHA string, isCommitSHA bool) (commitSHA, commitMessage string, committer *schema.GitCommitter, err error)

@@ -202,19 +202,25 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			}
 			return nil, err
 		}
-		gitOwnerName = new(installation.AccountLogin)
 
-		canAccess, cloneUrl, defaultBranch, err := self.githubClient.VerifyRepositoryAccess(ctx, installation, *input.RepositoryOwner, *input.RepositoryName)
+		canAccess, cloneUrl, defaultBranch, ownerLogin, err := self.githubClient.VerifyRepositoryAccess(ctx, installation, *input.RepositoryOwner, *input.RepositoryName)
 		if err != nil {
 			log.Error("Error verifying repository access", "err", err)
 			return nil, err
 		}
-		gitBranch = new(defaultBranch)
-
+		if canAccess {
+			canAccess, err = self.githubClient.IsRepositoryInInstallation(ctx, installation, ownerLogin, *input.RepositoryName)
+			if err != nil {
+				log.Error("Error verifying repository installation", "err", err)
+				return nil, err
+			}
+		}
 		if !canAccess {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
 				"Repository not accessible with the specified GitHub installation")
 		}
+		gitOwnerName = new(ownerLogin)
+		gitBranch = new(defaultBranch)
 
 		tmpDir, err := self.githubClient.CloneRepository(ctx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey, cloneUrl, fmt.Sprintf("refs/heads/%s", defaultBranch), "")
 		if err != nil {

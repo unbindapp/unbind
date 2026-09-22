@@ -3,7 +3,9 @@ package github
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -378,10 +380,10 @@ func (self *GithubClient) getRepositoryTags(ctx context.Context, client *github.
 	return allTags, nil
 }
 
-// VerifyRepositoryAccess with resource cleanup
-func (self *GithubClient) VerifyRepositoryAccess(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (canAccess bool, repoUrl, defaultBranch string, err error) {
+// VerifyRepositoryAccess checks that the repository belongs to the installation, a public repository answers any installation token
+func (self *GithubClient) VerifyRepositoryAccess(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (canAccess bool, repoUrl, defaultBranch, ownerLogin string, err error) {
 	if installation == nil || installation.Edges.GithubApp == nil {
-		return false, "", "", fmt.Errorf("invalid installation: missing app edge or nil")
+		return false, "", "", "", fmt.Errorf("invalid installation: missing app edge or nil")
 	}
 
 	// Use a short timeout for this simple verification
@@ -390,22 +392,51 @@ func (self *GithubClient) VerifyRepositoryAccess(ctx context.Context, installati
 
 	authenticatedClient, err := self.GetAuthenticatedClient(timeoutCtx, installation.GithubAppID, installation.ID, installation.Edges.GithubApp.PrivateKey)
 	if err != nil {
-		return false, "", "", fmt.Errorf("error getting authenticated client for %s: %v", installation.AccountLogin, err)
+		return false, "", "", "", fmt.Errorf("error getting authenticated client for %s: %v", installation.AccountLogin, err)
 	}
 	defer authenticatedClient.Client().CloseIdleConnections()
 
-	repoResult, resp, err := authenticatedClient.Repositories.Get(ctx, owner, repo)
-	if err == nil {
-		return true, repoResult.GetCloneURL(), repoResult.GetDefaultBranch(), nil
+	repoResult, resp, err := authenticatedClient.Repositories.Get(timeoutCtx, owner, repo)
+	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			return false, "", "", "", nil
+		}
+		log.Errorf("Error verifying repository access: %v", err)
+		return false, "", "", "", nil
 	}
 
-	if resp != nil && resp.StatusCode == 404 {
-		// Repository either doesn't exist or installation doesn't have access
-		return false, "", "", nil
+	ownerLogin = repoResult.GetOwner().GetLogin()
+	if !strings.EqualFold(ownerLogin, installation.AccountLogin) {
+		return false, "", "", "", nil
 	}
 
-	log.Errorf("Error verifying repository access: %v", err)
-	return false, "", "", nil
+	return true, repoResult.GetCloneURL(), repoResult.GetDefaultBranch(), ownerLogin, nil
+}
+
+// IsRepositoryInInstallation checks that the installation covers the repository, it may be limited to selected repositories of the account
+func (self *GithubClient) IsRepositoryInInstallation(ctx context.Context, installation *ent.GithubInstallation, owner, repo string) (bool, error) {
+	if installation == nil || installation.Edges.GithubApp == nil {
+		return false, fmt.Errorf("invalid installation: missing app edge or nil")
+	}
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+
+	appClient, err := self.getAppClient(installation.GithubAppID, installation.Edges.GithubApp.PrivateKey)
+	if err != nil {
+		return false, err
+	}
+	defer appClient.Client().CloseIdleConnections()
+
+	repoInstallation, resp, err := appClient.Apps.FindRepositoryInstallation(timeoutCtx, owner, repo)
+	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+		return false, fmt.Errorf("error getting installation for repository %s/%s: %v", owner, repo, err)
+	}
+
+	return repoInstallation.GetID() == installation.ID, nil
 }
 
 // Get branch head summary - sha, message, author

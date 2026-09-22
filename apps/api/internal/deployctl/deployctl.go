@@ -400,7 +400,7 @@ func (self *DeploymentController) populateGithubEnv(ctx context.Context, env map
 	}
 	env["GITHUB_APP_ID"] = strconv.Itoa(int(installation.GithubAppID))
 
-	canAccess, cloneUrl, _, err := self.githubClient.VerifyRepositoryAccess(ctx, installation, installation.AccountLogin, *service.GitRepository)
+	canAccess, cloneUrl, _, _, err := self.githubClient.VerifyRepositoryAccess(ctx, installation, installation.AccountLogin, *service.GitRepository)
 	if err != nil {
 		return fmt.Errorf("failed to verify repository access: %w", err)
 	}

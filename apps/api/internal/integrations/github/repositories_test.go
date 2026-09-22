@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -319,83 +320,156 @@ func (suite *RepositoriesTestSuite) TestGetRepositoryDetail_Success() {
 	suite.Equal("testowner", detail.Owner.Login)
 }
 
-func (suite *RepositoriesTestSuite) TestVerifyRepositoryAccess_Success() {
-	// Create a mock server
+type verifyRepositoryAccessFixture struct {
+	ownerLogin         string
+	repoStatus         int
+	installationID     int64
+	installationStatus int
+}
+
+func (suite *RepositoriesTestSuite) newVerifyRepositoryAccessClient(fixture verifyRepositoryAccessFixture) (*GithubClient, func()) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/api/v3/app/installations/123/access_tokens":
-			// Return mock token response
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusCreated)
 			w.Write([]byte(`{"token": "ghs_test_token", "expires_at": "2024-01-01T00:00:00Z"}`))
 		case "/api/v3/repos/testowner/testrepo":
-			// Return mock repository response
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{
+			w.WriteHeader(fixture.repoStatus)
+			if fixture.repoStatus != http.StatusOK {
+				w.Write([]byte(`{"message": "Not Found"}`))
+				return
+			}
+			w.Write([]byte(fmt.Sprintf(`{
 				"id": 12345,
 				"name": "testrepo",
-				"full_name": "testowner/testrepo",
-				"clone_url": "https://github.com/testowner/testrepo.git",
+				"full_name": "%[1]s/testrepo",
+				"owner": {"login": "%[1]s"},
+				"clone_url": "https://github.com/%[1]s/testrepo.git",
 				"default_branch": "main"
-			}`))
+			}`, fixture.ownerLogin)))
+		case fmt.Sprintf("/api/v3/repos/%s/testrepo/installation", fixture.ownerLogin):
+			w.WriteHeader(fixture.installationStatus)
+			if fixture.installationStatus != http.StatusOK {
+				w.Write([]byte(`{"message": "Not Found"}`))
+				return
+			}
+			w.Write([]byte(fmt.Sprintf(`{"id": %d}`, fixture.installationID)))
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))
-	defer server.Close()
 
-	// Create client with mock server
-	httpClient := &http.Client{}
-	githubClient := github.NewClient(httpClient)
+	githubClient := github.NewClient(&http.Client{})
 	githubClient, _ = githubClient.WithEnterpriseURLs(server.URL+"/api/v3/", server.URL+"/api/uploads/")
-	client := &GithubClient{
-		cfg:    suite.cfg,
-		client: githubClient,
-	}
+	return &GithubClient{cfg: suite.cfg, client: githubClient}, server.Close
+}
 
-	canAccess, repoUrl, defaultBranch, err := client.VerifyRepositoryAccess(suite.ctx, suite.testInstallation, "testowner", "testrepo")
+func (suite *RepositoriesTestSuite) TestVerifyRepositoryAccess_Success() {
+	client, closeServer := suite.newVerifyRepositoryAccessClient(verifyRepositoryAccessFixture{
+		ownerLogin: "testowner",
+		repoStatus: http.StatusOK,
+	})
+	defer closeServer()
+	suite.testInstallation.AccountLogin = "testowner"
+
+	canAccess, repoUrl, defaultBranch, ownerLogin, err := client.VerifyRepositoryAccess(suite.ctx, suite.testInstallation, "testowner", "testrepo")
 
 	suite.NoError(err)
 	suite.True(canAccess)
 	suite.Equal("https://github.com/testowner/testrepo.git", repoUrl)
 	suite.Equal("main", defaultBranch)
+	suite.Equal("testowner", ownerLogin)
 }
 
-func (suite *RepositoriesTestSuite) TestVerifyRepositoryAccess_NotFound() {
-	// Create a mock server
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/api/v3/app/installations/123/access_tokens":
-			// Return mock token response
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(`{"token": "ghs_test_token", "expires_at": "2024-01-01T00:00:00Z"}`))
-		case "/api/v3/repos/testowner/testrepo":
-			// Return 404
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"message": "Not Found"}`))
-		default:
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
-	defer server.Close()
+func (suite *RepositoriesTestSuite) TestVerifyRepositoryAccess_OwnerCaseInsensitive() {
+	client, closeServer := suite.newVerifyRepositoryAccessClient(verifyRepositoryAccessFixture{
+		ownerLogin: "TestOwner",
+		repoStatus: http.StatusOK,
+	})
+	defer closeServer()
+	suite.testInstallation.AccountLogin = "testowner"
 
-	// Create client with mock server
-	httpClient := &http.Client{}
-	githubClient := github.NewClient(httpClient)
-	githubClient, _ = githubClient.WithEnterpriseURLs(server.URL+"/api/v3/", server.URL+"/api/uploads/")
-	client := &GithubClient{
-		cfg:    suite.cfg,
-		client: githubClient,
-	}
+	canAccess, _, _, ownerLogin, err := client.VerifyRepositoryAccess(suite.ctx, suite.testInstallation, "testowner", "testrepo")
 
-	canAccess, repoUrl, defaultBranch, err := client.VerifyRepositoryAccess(suite.ctx, suite.testInstallation, "testowner", "testrepo")
+	suite.NoError(err)
+	suite.True(canAccess)
+	suite.Equal("TestOwner", ownerLogin)
+}
+
+func (suite *RepositoriesTestSuite) TestVerifyRepositoryAccess_OwnerMismatch() {
+	client, closeServer := suite.newVerifyRepositoryAccessClient(verifyRepositoryAccessFixture{
+		ownerLogin: "testowner",
+		repoStatus: http.StatusOK,
+	})
+	defer closeServer()
+	suite.testInstallation.AccountLogin = "someoneelse"
+
+	canAccess, repoUrl, defaultBranch, ownerLogin, err := client.VerifyRepositoryAccess(suite.ctx, suite.testInstallation, "testowner", "testrepo")
 
 	suite.NoError(err)
 	suite.False(canAccess)
 	suite.Empty(repoUrl)
 	suite.Empty(defaultBranch)
+	suite.Empty(ownerLogin)
+}
+
+func (suite *RepositoriesTestSuite) TestIsRepositoryInInstallation_Match() {
+	client, closeServer := suite.newVerifyRepositoryAccessClient(verifyRepositoryAccessFixture{
+		ownerLogin:         "testowner",
+		installationID:     123,
+		installationStatus: http.StatusOK,
+	})
+	defer closeServer()
+
+	inInstallation, err := client.IsRepositoryInInstallation(suite.ctx, suite.testInstallation, "testowner", "testrepo")
+
+	suite.NoError(err)
+	suite.True(inInstallation)
+}
+
+func (suite *RepositoriesTestSuite) TestIsRepositoryInInstallation_OtherInstallation() {
+	client, closeServer := suite.newVerifyRepositoryAccessClient(verifyRepositoryAccessFixture{
+		ownerLogin:         "testowner",
+		installationID:     999,
+		installationStatus: http.StatusOK,
+	})
+	defer closeServer()
+
+	inInstallation, err := client.IsRepositoryInInstallation(suite.ctx, suite.testInstallation, "testowner", "testrepo")
+
+	suite.NoError(err)
+	suite.False(inInstallation)
+}
+
+func (suite *RepositoriesTestSuite) TestIsRepositoryInInstallation_NotInstalled() {
+	client, closeServer := suite.newVerifyRepositoryAccessClient(verifyRepositoryAccessFixture{
+		ownerLogin:         "testowner",
+		installationStatus: http.StatusNotFound,
+	})
+	defer closeServer()
+
+	inInstallation, err := client.IsRepositoryInInstallation(suite.ctx, suite.testInstallation, "testowner", "testrepo")
+
+	suite.NoError(err)
+	suite.False(inInstallation)
+}
+
+func (suite *RepositoriesTestSuite) TestVerifyRepositoryAccess_NotFound() {
+	client, closeServer := suite.newVerifyRepositoryAccessClient(verifyRepositoryAccessFixture{
+		ownerLogin: "testowner",
+		repoStatus: http.StatusNotFound,
+	})
+	defer closeServer()
+	suite.testInstallation.AccountLogin = "testowner"
+
+	canAccess, repoUrl, defaultBranch, ownerLogin, err := client.VerifyRepositoryAccess(suite.ctx, suite.testInstallation, "testowner", "testrepo")
+
+	suite.NoError(err)
+	suite.False(canAccess)
+	suite.Empty(repoUrl)
+	suite.Empty(defaultBranch)
+	suite.Empty(ownerLogin)
 }
 
 func (suite *RepositoriesTestSuite) TestGetCommitSummary_BranchSuccess() {
