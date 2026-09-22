@@ -92,3 +92,42 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 	}, handlers.HandleGetGithubWatchPathSuggestions, oapi.OpenWorld)
 }
+
+// RegisterPublicHandlers serves the routes GitHub itself calls, so they carry no session
+func RegisterPublicHandlers(server *server.Server, grp *huma.Group) {
+	handlers := &HandlerGroup{
+		srv: server,
+	}
+
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
+		OperationID: "github-webhook",
+		Summary:     "GitHub Webhook",
+		Description: "Receive GitHub webhook events. Authenticated by GitHub's signature header, not a session.",
+		Path:        "/webhook",
+		Method:      http.MethodPost,
+	}, handlers.HandleGithubWebhook, oapi.Public)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "app-save",
+		Summary:     "Save GitHub App",
+		Description: "GitHub app creation callback: exchanges the code, stores the app, and redirects to installation.",
+		Path:        "/app/save",
+		Method:      http.MethodGet,
+	}, handlers.HandleGithubAppSave, oapi.Public, oapi.OpenWorld)
+}
+
+// RegisterLegacyWebhookHandler keeps the pre-rename receiver path alive for one release,
+// for apps whose hook URL could not be updated at startup
+func RegisterLegacyWebhookHandler(server *server.Server, grp *huma.Group) {
+	handlers := &HandlerGroup{
+		srv: server,
+	}
+
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
+		OperationID: "github-webhook-legacy",
+		Summary:     "GitHub Webhook (legacy path)",
+		Path:        "/github",
+		Method:      http.MethodPost,
+		Hidden:      true,
+	}, handlers.HandleGithubWebhook, oapi.Public)
+}

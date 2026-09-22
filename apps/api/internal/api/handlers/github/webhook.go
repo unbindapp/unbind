@@ -1,4 +1,4 @@
-package webhook_handler
+package github_handler
 
 import (
 	"context"

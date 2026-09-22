@@ -68,7 +68,7 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 </body>
 </html>`
 
-	redirect, err := utils.JoinURLPaths(self.srv.Cfg.ExternalAPIURL, "/webhook/github/app/save")
+	redirect, err := utils.JoinURLPaths(self.srv.Cfg.ExternalAPIURL, "/github/app/save")
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to build the GitHub redirect URL"))
 	}

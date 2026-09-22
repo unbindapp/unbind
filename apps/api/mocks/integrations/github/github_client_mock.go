@@ -1128,6 +1128,52 @@ func (_c *GithubClientMock_ReadInstallationRepositories_Call) RunAndReturn(run f
 	return _c
 }
 
+// SyncWebhookURLs provides a mock function for the type GithubClientMock
+func (_mock *GithubClientMock) SyncWebhookURLs(ctx context.Context, apps []*ent.GithubApp) {
+	_mock.Called(ctx, apps)
+	return
+}
+
+// GithubClientMock_SyncWebhookURLs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SyncWebhookURLs'
+type GithubClientMock_SyncWebhookURLs_Call struct {
+	*mock.Call
+}
+
+// SyncWebhookURLs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - apps []*ent.GithubApp
+func (_e *GithubClientMock_Expecter) SyncWebhookURLs(ctx any, apps any) *GithubClientMock_SyncWebhookURLs_Call {
+	return &GithubClientMock_SyncWebhookURLs_Call{Call: _e.mock.On("SyncWebhookURLs", ctx, apps)}
+}
+
+func (_c *GithubClientMock_SyncWebhookURLs_Call) Run(run func(ctx context.Context, apps []*ent.GithubApp)) *GithubClientMock_SyncWebhookURLs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []*ent.GithubApp
+		if args[1] != nil {
+			arg1 = args[1].([]*ent.GithubApp)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubClientMock_SyncWebhookURLs_Call) Return() *GithubClientMock_SyncWebhookURLs_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *GithubClientMock_SyncWebhookURLs_Call) RunAndReturn(run func(ctx context.Context, apps []*ent.GithubApp)) *GithubClientMock_SyncWebhookURLs_Call {
+	_c.Run(run)
+	return _c
+}
+
 // VerifyRepositoryAccess provides a mock function for the type GithubClientMock
 func (_mock *GithubClientMock) VerifyRepositoryAccess(ctx context.Context, installation *ent.GithubInstallation, owner string, repo string) (bool, string, string, string, error) {
 	ret := _mock.Called(ctx, installation, owner, repo)

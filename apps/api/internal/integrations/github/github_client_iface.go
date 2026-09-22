@@ -18,6 +18,9 @@ type GithubClientInterface interface {
 	CloneRepository(ctx context.Context, appID, installationID int64, appPrivateKey string, repoURL string, refName string, commitSHA string) (string, error)
 	// Get the token we can use to authenticate with GitHub
 	GetInstallationToken(ctx context.Context, appID int64, installationID int64, appPrivateKey string) (string, error)
+	// SyncWebhookURLs points every app's webhook at this instance's receiver. GitHub stores
+	// the URL when the app is created, so a path change has to be written back.
+	SyncWebhookURLs(ctx context.Context, apps []*ent.GithubApp)
 	GetAuthenticatedClient(ctx context.Context, appID int64, installationID int64, appPrivateKey string) (*github.Client, error)
 	// CreateAppManifest generates the GitHub App manifest
 	CreateAppManifest(redirectUrl string, setupUrl string, forOrganization bool) (manifest *GitHubAppManifest, appName string, err error)

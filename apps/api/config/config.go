@@ -204,7 +204,7 @@ func NewConfig() *Config {
 
 	// Parse github callback URL
 	baseURL, _ := url.Parse(cfg.ExternalAPIURL)
-	baseURL.Path = path.Join(baseURL.Path, "webhook/github")
+	baseURL.Path = path.Join(baseURL.Path, "github/webhook")
 	cfg.GithubWebhookURL = baseURL.String()
 
 	return &cfg

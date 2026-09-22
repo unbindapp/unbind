@@ -122,6 +122,11 @@ func startAPI(cfg *config.Config) {
 	kubeClient := k8s.NewKubeClient(cfg, repo)
 
 	githubClient := github.NewGithubClient(cfg.GithubURL, cfg)
+	githubApps, err := repo.Github().GetApps(ctx, false)
+	if err != nil {
+		log.Errorf("Failed to list the GitHub apps to update their webhook URL: %v", err)
+	}
+	githubClient.SyncWebhookURLs(ctx, githubApps)
 
 	buildkitSettings := buildkitd.NewBuildkitSettingsManager(cfg, repo, kubeClient)
 

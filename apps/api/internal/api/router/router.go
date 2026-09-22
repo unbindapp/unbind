@@ -38,7 +38,6 @@ import (
 	terminal_handler "github.com/unbindapp/unbind-api/internal/api/handlers/terminal"
 	user_handler "github.com/unbindapp/unbind-api/internal/api/handlers/user"
 	variables_handler "github.com/unbindapp/unbind-api/internal/api/handlers/variables"
-	webhook_handler "github.com/unbindapp/unbind-api/internal/api/handlers/webhook"
 	webhooks_handler "github.com/unbindapp/unbind-api/internal/api/handlers/webhooks"
 )
 
@@ -167,7 +166,6 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 
 	register("/setup", "Setup", false, setup_handler.RegisterHandlers)
 	register("/auth", "Auth", false, auth_handler.RegisterHandlers)
-	register("/webhook", "Webhook", false, webhook_handler.RegisterHandlers)
 	registerSessionOnly("/system", "System", system_handler.RegisterHandlers)
 	register("/servers", "Servers", true, servers_handler.RegisterHandlers)
 	// Users marks its own operations session-only and keeps /whoami open for keys.
@@ -176,6 +174,8 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	registerSessionOnly("/api-keys", "API Keys", apikeys_handler.RegisterHandlers)
 	registerSessionOnly("/connected-apps", "Connected Apps", connectedapps_handler.RegisterHandlers)
 	registerSessionOnly("/github", "GitHub", github_handler.RegisterHandlers)
+	register("/github", "GitHub", false, github_handler.RegisterPublicHandlers)
+	register("/webhook", "GitHub", false, github_handler.RegisterLegacyWebhookHandler)
 	register("/teams", "Teams", true, teams_handler.RegisterHandlers)
 	register("/projects", "Projects", true, projects_handler.RegisterHandlers)
 	register("/environments", "Environments", true, environments_handler.RegisterHandlers)

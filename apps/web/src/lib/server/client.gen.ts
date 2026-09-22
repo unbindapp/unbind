@@ -3306,6 +3306,13 @@ export const get_github_appQuerySchema = z
   })
   .passthrough();
 
+export const app_saveQuerySchema = z
+  .object({
+    code: z.string(),
+    state: z.string(),
+  })
+  .passthrough();
+
 export const list_appsQuerySchema = z
   .object({
     with_installations: z.boolean().optional(),
@@ -3616,13 +3623,6 @@ export const list_available_referencesQuerySchema = z
     project_id: z.string(),
     environment_id: z.string(),
     service_id: z.string(),
-  })
-  .passthrough();
-
-export const app_saveQuerySchema = z
-  .object({
-    code: z.string(),
-    state: z.string(),
   })
   .passthrough();
 
@@ -4916,6 +4916,45 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             throw error;
           }
         },
+        save: async (params: z.infer<typeof app_saveQuerySchema>, fetchOptions?: RequestInit) => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/github/app/save`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = app_saveQuerySchema.parse(params);
+            const queryKeys = ['code', 'state'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            return data;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
       },
       apps: async (
         params: z.infer<typeof list_appsQuerySchema>,
@@ -5151,6 +5190,38 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           },
         },
       ),
+      webhook: async (params?: undefined, fetchOptions?: RequestInit) => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/github/webhook`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
     },
     groups: {
       create: async (
@@ -9130,88 +9201,6 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           throw error;
         }
       },
-    },
-    webhook: {
-      github: Object.assign(
-        async (params?: undefined, fetchOptions?: RequestInit) => {
-          try {
-            if (!apiUrl || typeof apiUrl !== 'string') {
-              throw new Error('API URL is undefined or not a string');
-            }
-            const url = new URL(
-              `${apiUrl}/webhook/github`,
-              typeof window !== 'undefined' ? window.location.origin : undefined,
-            );
-
-            const options: RequestInit = {
-              method: 'POST',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              ...fetchOptions,
-            };
-
-            const response = await fetchFn(url.toString(), options);
-            if (!response.ok) {
-              throw await parseApiError(response, url.toString());
-            }
-            const data = await response.json();
-            return data;
-          } catch (error) {
-            if (import.meta.env.DEV) {
-              console.error('Error in API request:', error);
-            }
-            throw error;
-          }
-        },
-        {
-          app: {
-            save: async (
-              params: z.infer<typeof app_saveQuerySchema>,
-              fetchOptions?: RequestInit,
-            ) => {
-              try {
-                if (!apiUrl || typeof apiUrl !== 'string') {
-                  throw new Error('API URL is undefined or not a string');
-                }
-                const url = new URL(
-                  `${apiUrl}/webhook/github/app/save`,
-                  typeof window !== 'undefined' ? window.location.origin : undefined,
-                );
-                const validatedQuery = app_saveQuerySchema.parse(params);
-                const queryKeys = ['code', 'state'];
-                queryKeys.forEach((key) => {
-                  const value = validatedQuery[key as keyof typeof validatedQuery];
-                  if (value !== undefined && value !== null) {
-                    url.searchParams.append(key, String(value));
-                  }
-                });
-                const options: RequestInit = {
-                  method: 'GET',
-                  credentials: 'include',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  ...fetchOptions,
-                };
-
-                const response = await fetchFn(url.toString(), options);
-                if (!response.ok) {
-                  throw await parseApiError(response, url.toString());
-                }
-                const data = await response.json();
-                return data;
-              } catch (error) {
-                if (import.meta.env.DEV) {
-                  console.error('Error in API request:', error);
-                }
-                throw error;
-              }
-            },
-          },
-        },
-      ),
     },
     webhooks: {
       create: async (
