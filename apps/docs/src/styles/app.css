@@ -231,6 +231,12 @@ p.inline-flex.mt-6 {
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
+/* The logo link at the top of the desktop sidebar. Fumadocs renders it flush with the
+   search field below, so it gets the inset the sidebar items have. */
+#nd-sidebar > div:first-child > div:first-child > a {
+  padding-inline: calc(var(--spacing) * 1);
+}
+
 /* The desktop sidebar footer bar holds the GitHub link and the theme switch. Fumadocs
    renders the bar and the link itself, so it gets the search field's background here
    and the link gets the theme buttons' size, hover and active colors. */
