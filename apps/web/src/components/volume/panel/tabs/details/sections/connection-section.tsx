@@ -205,8 +205,12 @@ function AttachSection({ volume }: TProps) {
                       <BlockItemButtonLike
                         asElement="button"
                         text={selected?.name ?? "Select a service"}
-                        Icon={({ className }) => (
-                          <ServicePickerTriggerIcon service={selected} className={className} />
+                        Icon={({ className, hasChanges }) => (
+                          <ServicePickerTriggerIcon
+                            service={selected}
+                            color={hasChanges ? "monochrome" : "brand"}
+                            className={className}
+                          />
                         )}
                         variant="outline"
                         open={isOpen}

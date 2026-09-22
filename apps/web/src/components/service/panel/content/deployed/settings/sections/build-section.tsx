@@ -323,11 +323,11 @@ function GitSection({ service }: TGitSectionProps) {
                       <BlockItemButtonLike
                         asElement="button"
                         text={builderEnumToName(field.state.value)}
-                        Icon={({ className }) => (
+                        Icon={({ className, hasChanges }) => (
                           <BrandIcon
                             brand={field.state.value}
                             className={className}
-                            color="brand"
+                            color={hasChanges ? "monochrome" : "brand"}
                           />
                         )}
                         variant="outline"

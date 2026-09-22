@@ -236,8 +236,12 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                       <BlockItemButtonLike
                         asElement="button"
                         text={formatRepository(field.state.value)}
-                        Icon={({ className }) => (
-                          <BrandIcon brand="github" color="brand" className={className} />
+                        Icon={({ className, hasChanges }) => (
+                          <BrandIcon
+                            brand="github"
+                            color={hasChanges ? "monochrome" : "brand"}
+                            className={className}
+                          />
                         )}
                         variant="outline"
                         open={isOpen}
@@ -409,11 +413,17 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
                       <BlockItemButtonLike
                         asElement="button"
                         text={field.state.value}
-                        Icon={({ className }) => {
+                        Icon={({ className, hasChanges }) => {
                           if (isNonDockerHubImage(field.state.value)) {
                             return <PackageIcon className={className} />;
                           }
-                          return <BrandIcon brand="docker" color="brand" className={className} />;
+                          return (
+                            <BrandIcon
+                              brand="docker"
+                              color={hasChanges ? "monochrome" : "brand"}
+                              className={className}
+                            />
+                          );
                         }}
                         variant="outline"
                         open={isOpen}

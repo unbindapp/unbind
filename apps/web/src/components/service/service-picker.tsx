@@ -66,10 +66,12 @@ export function ServicePickerItem({
 export function ServicePickerTriggerIcon({
   service,
   className,
+  color,
 }: {
   service: TServiceShallow | undefined;
   className?: string;
+  color?: Parameters<typeof ServiceIcon>["0"]["color"];
 }) {
   if (!service) return <BoxIcon className={className} />;
-  return <ServiceIcon service={service} className={className} />;
+  return <ServiceIcon service={service} color={color} className={className} />;
 }

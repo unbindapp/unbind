@@ -191,7 +191,7 @@ export function BlockItemContentHighlightable({
 withChildRole(BlockItemContentHighlightable, BLOCK_ROLE.content);
 
 type TBlockItemButtonLikeProps = {
-  Icon?: FC<{ className?: string; isEditing?: boolean }>;
+  Icon?: FC<{ className?: string; isEditing?: boolean; hasChanges?: boolean }>;
   text: string | ReactNode;
   description?: string | FC<{ className?: string }>;
   isPending?: boolean;
@@ -289,6 +289,7 @@ export function BlockItemButtonLike({
                   classNameIcon,
                 )}
                 isEditing={isEditing}
+                hasChanges={hasChanges}
               />
             </div>
           )
