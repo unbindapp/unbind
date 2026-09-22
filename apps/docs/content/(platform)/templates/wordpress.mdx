@@ -12,13 +12,7 @@ Deploy it from the [template list](/templates#deploy-a-template). It takes a min
 
 <TemplateServices name="WordPress" />
 
-Posts, pages and settings live in the MySQL service.
-
-<Callout type="warn" title="Uploads, themes and plugins are not kept yet">
-  The template does not create a volume for the WordPress files. Uploaded media and any theme or
-  plugin you install are lost when the service is redeployed. Until that changes, [create a
-  volume](/services/volumes) and mount it on the WordPress service at `/var/www/html`.
-</Callout>
+WordPress keeps its files, uploads, themes and plugins on a volume mounted at `/var/www/html`. Posts, pages and settings live in the MySQL service.
 
 ## What you fill in
 
@@ -27,3 +21,8 @@ Posts, pages and settings live in the MySQL service.
 ## After it deploys
 
 Open your domain. WordPress asks for a site title and the admin account.
+
+## Good to know
+
+- **Updates**: WordPress lives on the volume and updates itself, its themes and its plugins from the admin, the same as the official Docker image. Changing the image tag on the service does not update an existing site.
+- **Deployed before the volume was added?** Older versions of the template did not create one, so uploads, themes and plugins were lost on redeploy. [Create a volume](/services/volumes) and mount it on the WordPress service at `/var/www/html`.

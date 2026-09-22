@@ -12,13 +12,7 @@ Deploy it from the [template list](/templates#deploy-a-template). It takes a min
 
 <TemplateServices name="Ghost" />
 
-Posts, members and settings live in the MySQL service.
-
-<Callout type="warn" title="Images and themes are not kept yet">
-  The template does not create a volume for Ghost's content folder. Uploaded images and themes are
-  lost when the service is redeployed. Until that changes, [create a volume](/services/volumes) and
-  mount it on the Ghost service at `/var/lib/ghost/content`.
-</Callout>
+Ghost keeps uploaded images and themes on a volume mounted at `/var/lib/ghost/content`. Posts, members and settings live in the MySQL service.
 
 ## What you fill in
 
@@ -31,3 +25,4 @@ Open `https://your-domain/ghost/`. Ghost asks you to create the owner account an
 ## Good to know
 
 - **Email**: Ghost needs a mail service to send newsletters and sign-in links. Add the `mail__*` variables from the [Ghost mail docs](https://docs.ghost.org/config#mail) to the service and redeploy.
+- **Deployed before the volume was added?** Older versions of the template did not create one, so images and themes were lost on redeploy. [Create a volume](/services/volumes) and mount it on the Ghost service at `/var/lib/ghost/content`.

@@ -13,7 +13,7 @@ func wordPressTemplate() *schema.TemplateDefinition {
 		Icon:        "wordpress",
 		Keywords:    []string{"bloggin", "cms", "content management system", "WooCommerce", "ecommerce", "website", "publishing platform", "php", "mysql"},
 		Description: "The open source publishing platform & CMS.",
-		Version:     2,
+		Version:     3,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   1,
 			MinimumRecommendedRAMGB: 1,
@@ -27,12 +27,26 @@ func wordPressTemplate() *schema.TemplateDefinition {
 				Required:    true,
 			},
 			{
+				ID:   "input_storage_size",
+				Name: "Storage Size",
+				Type: schema.InputTypeVolumeSize,
+				Volume: &schema.TemplateVolume{
+					Name:      "wordpress-volume",
+					MountPath: "/var/www/html",
+				},
+				Description: "Size of the storage for the WordPress files.",
+				Required:    true,
+				Default:     new("1"),
+				Collapsed:   true,
+			},
+			{
 				ID:          "input_database_size",
 				Name:        "Database Size",
 				Type:        schema.InputTypeDatabaseSize,
 				Description: "Size of the storage for the MySQL database.",
 				Required:    true,
 				Default:     new("1"),
+				Collapsed:   true,
 			},
 		},
 		Services: []schema.TemplateService{
@@ -48,7 +62,7 @@ func wordPressTemplate() *schema.TemplateDefinition {
 			{
 				ID:        "service_wordpress",
 				DependsOn: []string{"service_mysql"},
-				InputIDs:  []string{"input_domain"},
+				InputIDs:  []string{"input_domain", "input_storage_size"},
 				Name:      "WordPress",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
