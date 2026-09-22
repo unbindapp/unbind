@@ -209,7 +209,128 @@ div:has(> [data-object-search-input]):not([class*="sticky"]):focus-within {
    into the row's start padding, so its gap to the edge matches the vertical one. */
 button:has(> code + svg) > span:first-child {
   margin-inline-start: calc(var(--spacing) * -1);
+  border-radius: var(--radius-md);
   background-color: var(--background);
+}
+
+/* The playground's text and number fields, styled like the property filter above. */
+form fieldset input:is([type="text"], [type="number"]) {
+  height: auto;
+  padding: calc(var(--spacing) * 2) calc(var(--spacing) * 3);
+  border-radius: var(--radius);
+  border-color: var(--border);
+  background-color: var(--input);
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+  font-weight: 500;
+  transition: none;
+}
+form fieldset input:is([type="text"], [type="number"])::placeholder {
+  color: color-mix(in oklab, var(--muted-foreground) var(--opacity-9-10), transparent);
+}
+@media (hover: hover) {
+  form fieldset input:is([type="text"], [type="number"]):hover {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) var(--opacity-6-10), transparent);
+  }
+}
+form fieldset input:is([type="text"], [type="number"]):focus-visible {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) var(--opacity-8-10), transparent);
+}
+
+/* The playground's selects (the authorization scheme, enums, booleans) are Base UI
+   selects. The trigger is styled like the sidebar tab dropdown trigger, the popup
+   and its options like the app's dropdown menu. */
+form button[role="combobox"] {
+  gap: calc(var(--spacing) * 2);
+  padding: calc(var(--spacing) * 2) calc(var(--spacing) * 3);
+  border-radius: var(--radius);
+  border-color: var(--border);
+  background-color: var(--input);
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  line-height: 1.25;
+  font-weight: 500;
+  transition: none;
+}
+@media (hover: hover) {
+  form button[role="combobox"]:hover {
+    background-color: var(--border);
+    color: var(--foreground);
+  }
+}
+form button[role="combobox"]:active {
+  background-color: var(--border);
+  color: var(--foreground);
+}
+form button[role="combobox"]:focus {
+  box-shadow: none;
+}
+form button[role="combobox"]:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 3px color-mix(in oklab, var(--primary) var(--opacity-8-10), transparent);
+}
+form button[role="combobox"] > span:first-child {
+  min-width: 0;
+  flex: 1;
+}
+form button[role="combobox"] p + p {
+  margin-top: calc(var(--spacing) * 1);
+  font-size: var(--text-sm);
+  line-height: 1.25;
+  font-weight: 400;
+}
+form button[role="combobox"] > span:last-child > svg {
+  width: calc(var(--spacing) * 5);
+  height: calc(var(--spacing) * 5);
+  margin-inline-end: calc(var(--spacing) * -0.75);
+  transition: rotate 150ms var(--default-transition-timing-function);
+}
+form button[role="combobox"][data-popup-open] > span:last-child > svg {
+  rotate: 180deg;
+}
+.bg-fd-popover.shadow-md:has(> [role="listbox"]) {
+  width: var(--anchor-width);
+  min-width: 0;
+  max-height: min(30rem, var(--available-height));
+  transform-origin: var(--transform-origin);
+  box-shadow:
+    0 10px 15px -3px color-mix(in oklab, var(--shadow-color) var(--opacity-shadow), transparent),
+    0 4px 6px -4px color-mix(in oklab, var(--shadow-color) var(--opacity-shadow), transparent);
+}
+.bg-fd-popover.shadow-md:has(> [role="listbox"])[data-open] {
+  animation: var(--animate-fd-popover-in);
+}
+.bg-fd-popover.shadow-md:has(> [role="listbox"])[data-closed] {
+  animation: var(--animate-fd-popover-out);
+}
+.bg-fd-popover.shadow-md [role="option"] {
+  align-items: flex-start;
+  gap: calc(var(--spacing) * 2.5);
+  padding: calc(var(--spacing) * 2.5) calc(var(--spacing) * 3);
+  line-height: 1.25;
+  font-weight: 500;
+}
+.bg-fd-popover.shadow-md [role="option"]:active {
+  background-color: var(--accent);
+}
+.bg-fd-popover.shadow-md [role="option"] > span:first-child {
+  min-width: 0;
+  flex: 1;
+}
+.bg-fd-popover.shadow-md [role="option"] p + p {
+  margin-top: calc(var(--spacing) * 1);
+  font-size: var(--text-xs);
+  line-height: 1.25;
+  font-weight: 400;
+}
+.bg-fd-popover.shadow-md [role="option"] > span:last-child > svg {
+  width: calc(var(--spacing) * 4.5);
+  height: calc(var(--spacing) * 4.5);
+  margin-inline-end: calc(var(--spacing) * -0.5);
+  color: currentColor;
+  stroke-width: 2.5;
 }
 
 /* Search dialog input row like Command */
