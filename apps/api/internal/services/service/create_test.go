@@ -37,3 +37,29 @@ func TestResolveIsPublic(t *testing.T) {
 		})
 	}
 }
+
+func TestResolveAutoDeploy(t *testing.T) {
+	tests := []struct {
+		name        string
+		requested   *bool
+		serviceType schema.ServiceType
+		want        *bool
+	}{
+		{name: "github defaults to on", requested: nil, serviceType: schema.ServiceTypeGithub, want: new(true)},
+		{name: "github turned off on request", requested: new(false), serviceType: schema.ServiceTypeGithub, want: new(false)},
+		{name: "image stays undecided", requested: nil, serviceType: schema.ServiceTypeDockerimage, want: nil},
+		{name: "database stays undecided", requested: nil, serviceType: schema.ServiceTypeDatabase, want: nil},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			autoDeploy := resolveAutoDeploy(tt.requested, tt.serviceType)
+			if tt.want == nil {
+				assert.Nil(t, autoDeploy)
+				return
+			}
+			assert.NotNil(t, autoDeploy)
+			assert.Equal(t, *tt.want, *autoDeploy)
+		})
+	}
+}

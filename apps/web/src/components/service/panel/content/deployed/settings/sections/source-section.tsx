@@ -5,6 +5,7 @@ import {
   BlockItemContent,
   BlockItemHeader,
   BlockItemTitle,
+  BlockItemToggle,
 } from "@/components/block";
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import {
@@ -15,6 +16,7 @@ import BrandIcon from "@/components/icons/brand";
 import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
   hasApplying,
+  stagedBoolean,
   stagedString,
   useResetFormOnStagedChange,
   useServiceChanges,
@@ -49,6 +51,7 @@ import {
   MilestoneIcon,
   PackageIcon,
   TagIcon,
+  ZapIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
@@ -115,9 +118,11 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
   const { isItemVisible } = useSettingsSectionSearch("source");
   const queryClient = useQueryClient();
   const serverRepository = gitRepositoryValue({ installationId, owner, name: repo });
+  const serverAutoDeploy = service.config.auto_deploy;
   const { staged, stage, unstage } = useServiceChanges(service, {
     gitRepository: serverRepository,
     gitBranch: branch,
+    autoDeploy: serverAutoDeploy,
   });
   const stagedRef = useRef(staged);
   stagedRef.current = staged;
@@ -240,11 +245,14 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stagedRepository]);
 
+  const autoDeploy = stagedBoolean(staged.autoDeploy, serverAutoDeploy);
+
   const showRepository = isItemVisible(settingsIds.source.repository);
   const showBranch = isItemVisible(settingsIds.source.branch);
-  if (!showRepository && !showBranch) return null;
+  const showAutoDeploy = isItemVisible(settingsIds.source.autoDeploy);
+  if (!showRepository && !showBranch && !showAutoDeploy) return null;
 
-  const fields: TServiceChangeField[] = ["gitRepository", "gitBranch"];
+  const fields: TServiceChangeField[] = ["gitRepository", "gitBranch", "autoDeploy"];
 
   return (
     <SettingsSection
@@ -357,8 +365,38 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
           />
         </Block>
       )}
+      {showAutoDeploy && (
+        <Block>
+          <BlockItem id={settingsIds.source.autoDeploy} className="w-full md:w-full">
+            <BlockItemHeader>
+              <BlockItemTitle>Auto Deploy</BlockItemTitle>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <BlockItemToggle
+                text="Auto deploy on push"
+                Icon={ZapIcon}
+                checked={autoDeploy}
+                hasChanges={staged.autoDeploy !== undefined}
+                onCheckedChange={(checked) =>
+                  stage({
+                    field: "autoDeploy",
+                    label: "Auto deploy",
+                    value: checked,
+                    previous: serverAutoDeploy,
+                    format: autoDeployLabel,
+                  })
+                }
+              />
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
     </SettingsSection>
   );
+}
+
+function autoDeployLabel(value: boolean) {
+  return value ? "On" : "Off";
 }
 
 function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {

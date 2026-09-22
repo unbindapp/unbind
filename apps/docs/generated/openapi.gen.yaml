@@ -478,6 +478,7 @@ components:
       additionalProperties: false
       properties:
         auto_deploy:
+          description: Deploy on every push to the branch. Only for a GitHub service, defaults to true
           type: boolean
         backup_retention_count:
           description: Number of base backups to retain, e.g. 3
@@ -3902,6 +3903,7 @@ components:
             - array
             - "null"
         auto_deploy:
+          description: Deploy on every push to the branch. Only for a GitHub service
           type: boolean
         backup_retention_count:
           description: Number of base backups to retain, e.g. 3

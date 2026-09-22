@@ -39,6 +39,7 @@ export const UpdateServiceInputSchema = z
     // "<installation id>:<owner>/<name>", see gitRepositoryValue
     gitRepository: z.string().optional(),
     gitBranch: z.string().optional(),
+    autoDeploy: z.boolean().optional(),
     // Newline-separated patterns, see splitWatchPaths
     watchPaths: z.string().optional(),
     image: z.string().optional(),
@@ -92,6 +93,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     description,
     gitRepository,
     gitBranch,
+    autoDeploy,
     watchPaths,
     image,
     isPublic,
@@ -199,6 +201,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     repository_owner: repository?.owner,
     repository_name: repository?.name,
     git_branch: gitBranch,
+    auto_deploy: autoDeploy,
     watch_paths: watchPaths === undefined ? undefined : splitWatchPaths(watchPaths),
     image,
     is_public: isPublic,

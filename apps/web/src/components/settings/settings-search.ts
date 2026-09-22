@@ -44,6 +44,11 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
         keywords: ["git", "github", "ref", "main", "master"],
       },
       {
+        id: settingsIds.source.autoDeploy,
+        title: "Auto Deploy",
+        keywords: ["push", "webhook", "automatic", "continuous", "ci", "git", "github"],
+      },
+      {
         id: settingsIds.source.image,
         title: "Image",
         keywords: ["docker", "container", "registry", "docker hub"],

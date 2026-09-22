@@ -1,5 +1,6 @@
 import { Button, buttonVariants, TButtonProps } from "@/components/ui/button";
 import { hasChildRole, withChildRole } from "@/components/ui/child-role";
+import { ToggleKnob } from "@/components/ui/toggle-knob";
 import { cn } from "@/components/ui/utils";
 import { getRouteApi, useRouter } from "@tanstack/react-router";
 import { ChevronDownIcon, ExternalLinkIcon } from "lucide-react";
@@ -205,6 +206,7 @@ type TBlockItemButtonLikeProps = {
   classNameContent?: string;
   classNameIcon?: string;
   SuffixComponent?: FC<{ className?: string }>;
+  trailing?: ReactNode;
 } & (
   | ({
       asElement: "button";
@@ -234,6 +236,7 @@ export function BlockItemButtonLike({
   hideChevron,
   href,
   SuffixComponent,
+  trailing,
   isEditing,
   hasChanges,
   ...props
@@ -336,6 +339,45 @@ export function BlockItemButtonLike({
           )}
         />
       )}
+      {!isPending && trailing}
     </Element>
+  );
+}
+
+type TBlockItemToggleProps = {
+  Icon: FC<{ className?: string }>;
+  text: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  hasChanges?: boolean;
+  disabled?: boolean;
+  onBlur?: () => void;
+  className?: string;
+};
+
+export function BlockItemToggle({
+  Icon,
+  text,
+  checked,
+  onCheckedChange,
+  hasChanges,
+  disabled,
+  onBlur,
+  className,
+}: TBlockItemToggleProps) {
+  return (
+    <BlockItemButtonLike
+      asElement="button"
+      role="switch"
+      aria-checked={checked}
+      text={text}
+      Icon={Icon}
+      hasChanges={hasChanges}
+      disabled={disabled}
+      onBlur={onBlur}
+      onClick={() => onCheckedChange(!checked)}
+      className={cn("cursor-pointer", className)}
+      trailing={<ToggleKnob checked={checked} hasChanges={hasChanges} className="-mr-0.5" />}
+    />
   );
 }

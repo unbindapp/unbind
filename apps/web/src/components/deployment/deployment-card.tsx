@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { ToggleKnob } from "@/components/ui/toggle-knob";
 import { defaultAnimationMs, sourceToTitle } from "@/lib/constants";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
@@ -693,14 +694,13 @@ function RedeployToggle({
     <Button
       type="button"
       variant="ghost"
+      role="switch"
+      aria-checked={checked}
       onClick={onToggle}
-      data-checked={checked || undefined}
-      className="group/button has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-center justify-between gap-6 border py-2.75 pr-2.75 pl-3.5 text-left font-normal"
+      className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-center justify-between gap-6 border py-2.75 pr-2.75 pl-3.5 text-left font-normal"
     >
       <p className="min-w-0 shrink">{label}</p>
-      <div className="bg-muted-more-foreground group-data-checked/button:bg-foreground relative h-5 w-9 shrink-0 rounded-full transition">
-        <div className="bg-background absolute top-0.5 left-0.5 size-4 rounded-full transition group-data-checked/button:translate-x-4" />
-      </div>
+      <ToggleKnob checked={checked} />
     </Button>
   );
 }

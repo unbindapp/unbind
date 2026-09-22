@@ -24,7 +24,7 @@ type CreateServiceInput struct {
 	Hosts                         []schema.HostSpec     `json:"hosts,omitempty"`
 	Ports                         []schema.PortSpec     `json:"ports,omitempty"`
 	Replicas                      *int32                `minimum:"1" maximum:"10" json:"replicas,omitempty"`
-	AutoDeploy                    *bool                 `json:"auto_deploy,omitempty"`
+	AutoDeploy                    *bool                 `json:"auto_deploy,omitempty" doc:"Deploy on every push to the branch. Only for a GitHub service, defaults to true"`
 	RailpackBuilderInstallCommand *string               `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string               `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string               `json:"run_command,omitempty"`
@@ -82,7 +82,7 @@ type UpdateServiceInput struct {
 	RemovePorts                   []schema.PortSpec      `json:"remove_ports,omitempty" required:"false" doc:"Ports to remove"`
 	OverwritePorts                []schema.PortSpec      `json:"overwrite_ports,omitempty" required:"false"`
 	Replicas                      *int32                 `json:"replicas,omitempty" required:"false" minimum:"1" maximum:"10"`
-	AutoDeploy                    *bool                  `json:"auto_deploy,omitempty" required:"false"`
+	AutoDeploy                    *bool                  `json:"auto_deploy,omitempty" required:"false" doc:"Deploy on every push to the branch. Only for a GitHub service"`
 	RailpackBuilderInstallCommand *string                `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string                `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string                `json:"run_command,omitempty" required:"false"`

@@ -410,7 +410,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			OverwritePorts:                ports,
 			OverwriteHosts:                hosts,
 			Replicas:                      input.Replicas,
-			AutoDeploy:                    input.AutoDeploy,
+			AutoDeploy:                    resolveAutoDeploy(input.AutoDeploy, input.Type),
 			RailpackBuilderInstallCommand: input.RailpackBuilderInstallCommand,
 			RailpackBuilderBuildCommand:   input.RailpackBuilderBuildCommand,
 			RunCommand:                    input.RunCommand,
@@ -520,6 +520,16 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 
 // A service that listens on a port is public unless the caller says otherwise.
 // A database is private unless the caller asks for a public one.
+func resolveAutoDeploy(requested *bool, serviceType schema.ServiceType) *bool {
+	if requested != nil {
+		return requested
+	}
+	if serviceType == schema.ServiceTypeGithub {
+		return new(true)
+	}
+	return nil
+}
+
 func resolveIsPublic(requested *bool, serviceType schema.ServiceType, ports []schema.PortSpec) *bool {
 	if requested != nil {
 		return requested

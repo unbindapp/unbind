@@ -5,7 +5,7 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import PublicPrivateToggle from "@/components/service/public-private-toggle";
+import HeaderToggle from "@/components/service/header-toggle";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { withForm } from "@/lib/hooks/use-app-form";
@@ -30,9 +30,11 @@ const DomainPortBlock = withForm({
             <form.AppField
               name="isPublic"
               children={(field) => (
-                <PublicPrivateToggle
-                  isPublic={field.state.value}
-                  onChange={(isPublic) => {
+                <HeaderToggle
+                  label="Private"
+                  checked={!field.state.value}
+                  onChange={(isPrivate) => {
+                    const isPublic = !isPrivate;
                     if (!isPublic) {
                       form.setErrorMap({
                         onChange: { fields: { domain: undefined, targetPort: undefined } },

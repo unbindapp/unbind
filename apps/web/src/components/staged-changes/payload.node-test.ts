@@ -220,6 +220,14 @@ test("splits staged watch paths into a list", () => {
   assert.deepEqual(cleared.services[0].watch_paths, []);
 });
 
+test("sends a staged auto deploy toggle as auto_deploy", () => {
+  const payload = buildApplyStagedChangesPayload(state([], [service("autoDeploy", false)]));
+  assert.equal(payload.services[0].auto_deploy, false);
+
+  const untouched = buildApplyStagedChangesPayload(state([], [service("gitBranch", "main")]));
+  assert.equal(untouched.services[0].auto_deploy, undefined);
+});
+
 test("folds domain, port and volume changes into the update of their service", () => {
   const payload = buildApplyStagedChangesPayload(
     state(

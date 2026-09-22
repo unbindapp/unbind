@@ -55,7 +55,7 @@ Press **Deploy**.
 
 ## Deploy on every push
 
-Services created from GitHub deploy on every push to their branch. You can change the branch later under **Source** in the service settings.
+Services created from GitHub deploy on every push to their branch. The **Auto deploy** switch next to the branch on the first deploy turns this off, and so does **Source** > **Auto Deploy** in the service settings later. With auto deploy off, pushes are ignored and the service only deploys when you trigger it. You can change the branch later under **Source** as well.
 
 ## Change the repository
 
@@ -63,7 +63,7 @@ Under **Source** > **Repository** in the service settings you can pick any repos
 
 ### Watch paths
 
-In a monorepo you do not want every push to redeploy every service. Under **Build** > **Watch Paths**, add gitignore-style patterns. A push then deploys only when one of the changed files matches.
+In a monorepo you do not want every push to redeploy every service. Under **Build** > **Watch Paths**, add gitignore-style patterns. A push then deploys only when one of the changed files matches. Watch paths only apply while auto deploy is on.
 
 ```text
 apps/web/**
