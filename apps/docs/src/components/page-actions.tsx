@@ -1,36 +1,44 @@
-import { cn } from "@/lib/cn";
-import { Popover } from "@base-ui/react/popover";
+import { CopyStateIcon } from "@/components/copy-button";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useCopyToClipboard } from "@/lib/use-copy";
 import { usePathname } from "fumadocs-core/framework";
-import { CheckIcon, ChevronDownIcon, CopyIcon, ExternalLinkIcon, TextIcon } from "lucide-react";
-import { useMemo, useRef, useState, type ReactNode } from "react";
-
-// Both page action buttons share the app's small secondary button look.
-const buttonClass =
-  "bg-secondary text-secondary-foreground has-hover:hover:bg-border data-[popup-open]:bg-border inline-flex items-center gap-1.5 rounded-md px-3.5 py-1.25 text-sm font-bold transition-colors disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0";
+import { ChevronDownIcon, ExternalLinkIcon, TextIcon } from "lucide-react";
+import { useMemo, useRef, type ReactNode } from "react";
 
 export function CopyMarkdownButton({ markdownUrl }: { markdownUrl: string }) {
-  const [copied, setCopied] = useState(false);
-  const [pending, setPending] = useState(false);
-  const timeout = useRef<number>(undefined);
+  const { markCopied, isRecentlyCopied } = useCopyToClipboard();
+  const pending = useRef(false);
 
   async function copy() {
-    setPending(true);
+    if (pending.current) return;
+    pending.current = true;
     try {
       const text = fetch(markdownUrl).then((res) => res.text());
       await navigator.clipboard.write([new ClipboardItem({ "text/plain": text })]);
-      setCopied(true);
-      window.clearTimeout(timeout.current);
-      timeout.current = window.setTimeout(() => setCopied(false), 1500);
+      markCopied();
     } finally {
-      setPending(false);
+      pending.current = false;
     }
   }
 
   return (
-    <button type="button" disabled={pending} onClick={copy} className={buttonClass}>
-      {copied ? <CheckIcon /> : <CopyIcon />}
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      data-copied={isRecentlyCopied || undefined}
+      onClick={copy}
+    >
+      <CopyStateIcon className="-ml-1.5 size-4" />
       Copy Markdown
-    </button>
+    </Button>
   );
 }
 
@@ -63,11 +71,9 @@ type Item = { title: string; href: string; icon: ReactNode };
 export function ViewOptionsPopover({
   markdownUrl,
   githubUrl,
-  className,
 }: {
   markdownUrl: string;
   githubUrl?: string;
-  className?: string;
 }) {
   const pathname = usePathname();
 
@@ -95,30 +101,26 @@ export function ViewOptionsPopover({
   }, [githubUrl, markdownUrl, pathname]);
 
   return (
-    <Popover.Root>
-      <Popover.Trigger className={cn(buttonClass, className)}>
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
         Open
-        <ChevronDownIcon className="text-muted-foreground size-3.5!" />
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Positioner sideOffset={4} align="start" className="z-50">
-          <Popover.Popup className="bg-popover text-foreground shadow-shadow-color/shadow-opacity data-closed:animate-fd-popover-out data-open:animate-fd-popover-in flex min-w-52 origin-(--transform-origin) flex-col rounded-lg border p-1 shadow-lg outline-none">
-            {items.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                rel="noreferrer noopener"
-                target="_blank"
-                className="has-hover:hover:bg-accent flex items-center gap-2.5 rounded-md px-3 py-2.5 text-sm leading-tight font-medium [&_svg]:size-4 [&_svg]:shrink-0"
-              >
-                {item.icon}
-                {item.title}
-                <ExternalLinkIcon className="text-muted-foreground ms-auto size-3.5" />
-              </a>
-            ))}
-          </Popover.Popup>
-        </Popover.Positioner>
-      </Popover.Portal>
-    </Popover.Root>
+        <ChevronDownIcon className="text-muted-foreground -mr-1 size-4 transition group-data-popup-open/button:rotate-180" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="min-w-52">
+        <DropdownMenuGroup>
+          {items.map((item) => (
+            <DropdownMenuItem
+              key={item.href}
+              className="text-sm [&_svg]:size-4"
+              render={<a href={item.href} rel="noreferrer noopener" target="_blank" />}
+            >
+              {item.icon}
+              {item.title}
+              <ExternalLinkIcon className="text-muted-foreground ml-auto size-3.5" />
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

@@ -1,18 +1,19 @@
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
-import { useSearchContext } from "fumadocs-ui/contexts/search";
-import { SearchIcon } from "lucide-react";
 import { Dialog } from "@base-ui/react/dialog";
+import { useSearchContext } from "fumadocs-ui/contexts/search";
 import type {
-  SearchTriggerProps,
   FullSearchTriggerProps,
+  SearchTriggerProps,
 } from "fumadocs-ui/layouts/shared/slots/search-trigger";
+import { SearchIcon } from "lucide-react";
 
 export function SearchTrigger({
   className,
-  hideIfDisabled,
-  size,
-  color,
-  variant,
+  hideIfDisabled: _hideIfDisabled,
+  size: _size,
+  color: _color,
+  variant: _variant,
   ...props
 }: SearchTriggerProps) {
   const { dialogHandle } = useSearchContext();
@@ -20,12 +21,9 @@ export function SearchTrigger({
   return (
     <Dialog.Trigger
       handle={dialogHandle}
-      type="button"
+      render={<Button type="button" variant="ghost" size="icon" />}
       aria-label="Open search"
-      className={cn(
-        "text-muted-foreground has-hover:hover:bg-border has-hover:hover:text-foreground flex size-9 items-center justify-center rounded-lg transition-colors",
-        className,
-      )}
+      className={cn("text-muted-foreground", className)}
       {...props}
     >
       <SearchIcon className="size-5" />
@@ -33,21 +31,25 @@ export function SearchTrigger({
   );
 }
 
-export function FullSearchTrigger({ className, hideIfDisabled, ...props }: FullSearchTriggerProps) {
+export function FullSearchTrigger({
+  className,
+  hideIfDisabled: _hideIfDisabled,
+  ...props
+}: FullSearchTriggerProps) {
   const { dialogHandle, hotKey } = useSearchContext();
 
   return (
     <Dialog.Trigger
       handle={dialogHandle}
-      type="button"
+      render={<Button type="button" variant="outline" size="sm" forceMinSize={false} />}
       className={cn(
-        "bg-input text-muted-foreground/9-10 has-hover:hover:ring-primary/6-10 flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-start font-medium transition-shadow has-hover:hover:ring-1",
+        "text-muted-foreground/9-10 bg-input w-full justify-start gap-2 rounded-lg px-3 py-2 font-medium",
         className,
       )}
       {...props}
     >
       <SearchIcon className="size-4.5 shrink-0" />
-      <span className="min-w-0 flex-1 truncate">Search</span>
+      <span className="min-w-0 flex-1 truncate text-start">Search</span>
       <span className="text-muted-more-foreground flex shrink-0 items-center gap-0.5 font-mono text-xs">
         {hotKey.map((key, i) => (
           <kbd key={i} className="bg-background rounded-sm border px-1.5 py-0.5">

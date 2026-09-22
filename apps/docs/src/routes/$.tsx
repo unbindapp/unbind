@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
+import { Sidebar, SidebarProvider, useSidebar } from "fumadocs-ui/layouts/docs/slots/sidebar";
 import { createServerFn } from "@tanstack/react-start";
 import { docs } from "@/lib/docs";
 import { source } from "@/lib/source";
@@ -13,6 +14,10 @@ import { Suspense, use } from "react";
 import { useMDXComponents } from "@/components/mdx";
 import { OpenAPIPage } from "@/components/api-page";
 import { pruneSpec } from "@/lib/prune-spec";
+import { TabSelect } from "@/components/tab-select";
+import { sidebarComponents } from "@/components/sidebar-items";
+import { SidebarTrigger } from "@/components/sidebar-trigger";
+import { PageFooter } from "@/components/page-footer";
 
 export const Route = createFileRoute("/$")({
   component: Page,
@@ -85,6 +90,15 @@ const loader = createServerFn({
 const repoUrl = `https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}`;
 const specGithubUrl = `${repoUrl}/apps/docs/generated/openapi.gen.yaml`;
 
+const base = baseOptions();
+const sidebarSlot = {
+  provider: SidebarProvider,
+  root: Sidebar,
+  trigger: SidebarTrigger,
+  useSidebar,
+};
+const pageSlots = { footer: PageFooter };
+
 function PageActions({ markdownUrl, githubUrl }: { markdownUrl: string; githubUrl?: string }) {
   return (
     <div className="-mt-4 flex flex-row items-center gap-2 border-b pb-6">
@@ -102,7 +116,7 @@ function Content({ path, markdownUrl }: { path: string; markdownUrl: string }) {
   const MDX = page.body;
 
   return (
-    <DocsPage toc={toc}>
+    <DocsPage toc={toc} slots={pageSlots}>
       <DocsTitle>{page.heading ?? page.title}</DocsTitle>
       <DocsDescription>{page.description}</DocsDescription>
       <PageActions markdownUrl={markdownUrl} githubUrl={`${repoUrl}/${contentDir}/${path}`} />
@@ -117,10 +131,16 @@ function Page() {
   const page = useFumadocsLoader(Route.useLoaderData());
 
   return (
-    <DocsLayout {...baseOptions()} tree={page.pageTree}>
+    <DocsLayout
+      {...base}
+      tree={page.pageTree}
+      tabs={false}
+      sidebar={{ collapsible: false, banner: <TabSelect />, components: sidebarComponents }}
+      slots={{ ...base.slots, sidebar: sidebarSlot }}
+    >
       <Link to={page.markdownUrl} hidden />
       {page.type === "openapi" ? (
-        <DocsPage full>
+        <DocsPage full slots={pageSlots}>
           <DocsTitle>{page.title}</DocsTitle>
           <DocsDescription>{page.description}</DocsDescription>
           <PageActions markdownUrl={page.markdownUrl} githubUrl={specGithubUrl} />

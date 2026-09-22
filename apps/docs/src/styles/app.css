@@ -122,20 +122,6 @@ body {
 /* Fumadocs pieces restyled after apps/web/src/components/ui. These stay unlayered so
    they win over the utility classes Fumadocs renders, which give no props for this. */
 
-/* The mobile drawer is a separate element without the sidebar id, so these match
-   on class alone. Tab dropdown trigger reads as an input-like dropdown trigger. */
-button.bg-fd-secondary\/50 {
-  background-color: var(--input);
-  color: var(--foreground);
-  font-weight: 500;
-  transition: box-shadow 150ms;
-}
-button.bg-fd-secondary\/50:hover,
-button.bg-fd-secondary\/50[data-popup-open] {
-  background-color: var(--input);
-  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) var(--opacity-6-10), transparent);
-}
-
 /* The app uses no frosted glass. Fumadocs blurs popovers, the mobile header and
    table of contents bar, drawer overlays and the code copy button. Every one of them
    is a utility class with no prop, so they are switched off here and their

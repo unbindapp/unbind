@@ -3,11 +3,13 @@ import { Step, Steps } from "fumadocs-ui/components/steps";
 import type { MDXComponents } from "mdx/types";
 import { TemplateInputs, TemplateServices } from "@/components/template-facts";
 import { CodeBlock } from "@/components/code-block";
+import { Card } from "@/components/card";
 
 export function getMDXComponents(components?: MDXComponents) {
   return {
     ...defaultMdxComponents,
     pre: CodeBlock,
+    Card,
     Step,
     Steps,
     TemplateInputs,
