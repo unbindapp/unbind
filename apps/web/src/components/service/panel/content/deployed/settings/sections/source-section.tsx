@@ -28,6 +28,7 @@ import {
   TGitSectionProps,
 } from "@/components/settings/types";
 import { TServiceChangeField } from "@/components/staged-changes/types";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
 import { defaultDebounceMs } from "@/lib/constants";
 import { formatKMBT } from "@/lib/helpers/format-kmbt";
@@ -37,7 +38,14 @@ import { gitRepositoriesQuery, gitRepositoryQuery } from "@/lib/queries/git";
 import { TServiceShallow } from "@/lib/queries/services";
 import { gitRepositoryValue, parseGitRepositoryValue } from "@/lib/queries/update-service-input";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CodeIcon, GitBranchIcon, MilestoneIcon, PackageIcon, TagIcon } from "lucide-react";
+import {
+  CodeIcon,
+  ExternalLink,
+  GitBranchIcon,
+  MilestoneIcon,
+  PackageIcon,
+  TagIcon,
+} from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
@@ -232,6 +240,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
               <BlockItem id={settingsIds.source.repository} className="w-full md:w-full">
                 <BlockItemHeader>
                   <BlockItemTitle>Repository</BlockItemTitle>
+                  <SuffixExternalLink href={"/"} label="Open repository on GitHub" />
                 </BlockItemHeader>
                 <BlockItemContent>
                   <field.AsyncAndSearchableSelect
@@ -455,6 +464,7 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
               <BlockItem id={settingsIds.source.image} className="w-full md:w-full">
                 <BlockItemHeader>
                   <BlockItemTitle>Image</BlockItemTitle>
+                  <SuffixExternalLink href={"/"} label="Open repository on GitHub" />
                 </BlockItemHeader>
                 <BlockItemContent>
                   <field.AsyncAndSearchableSelect
@@ -632,4 +642,18 @@ function splitImage(ref: string) {
     return { image: ref.slice(0, colon), tag: ref.slice(colon + 1) || "latest" };
   }
   return { image: ref, tag: "latest" };
+}
+
+function SuffixExternalLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={label}
+      className="text-muted-foreground -my-1.5 -mr-0.5 ml-auto size-8 self-end rounded-md"
+      render={<a href={href} rel="noreferrer noopener" target="_blank" />}
+    >
+      <ExternalLink className="size-4.5" />
+    </Button>
+  );
 }
