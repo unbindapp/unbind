@@ -413,5 +413,10 @@
     "version": "v0.1.82",
     "summary": "New docs site at docs.unbind.app, GitHub repository access checks, webhooks scoped to their team or project, backups only on databases that support them, and persistent volumes for the WordPress and Ghost templates.",
     "breaking": false
+  },
+  "v0.1.83": {
+    "version": "v0.1.83",
+    "summary": "Git services can change their repository and branch, whoami replaces the me operation, and a polished API reference with a playground on the docs site.",
+    "breaking": false
   }
 }
