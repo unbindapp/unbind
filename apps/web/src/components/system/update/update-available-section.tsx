@@ -12,13 +12,8 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toast";
-import UpdateStatusProvider, {
-  useUpdateStatus,
-  useUpdateStatusUtils,
-} from "@/components/system/update/update-status-provider";
-import { applyUpdate as applyUpdateFn } from "@/lib/queries/system";
+import { useUpdateStatus } from "@/components/system/update/update-status-provider";
 import type { Change } from "@/lib/server/client.gen";
-import { useMutation } from "@tanstack/react-query";
 import {
   CircleArrowUpIcon,
   CircleCheckBigIcon,
@@ -28,7 +23,7 @@ import {
   HourglassIcon,
   RotateCcwIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 const longUpdateThresholdMs = 15 * 60 * 1000;
 
@@ -38,117 +33,34 @@ type TProps = {
   currentVersion: string;
 };
 
-export default function UpdateAvailableSection(props: TProps) {
-  const { data } = useUpdateStatus();
+export default function UpdateAvailableSection({
+  latestVersion,
+  latestVersionUrl,
+  currentVersion,
+}: TProps) {
+  const now = useNow();
   const setLastDismissedVersion = useMainStore((s) => s.setLastDismissedVersion);
 
-  // Fast polling only runs while an update is being watched; starts on when the
-  // page loads into an update already in progress on the server.
-  const [isWatchingUpdate, setIsWatchingUpdate] = useState(() => !!data?.data.in_progress);
+  const {
+    data: updateStatusData,
+    latestVersionSummary,
+    latestVersionChanges,
+    phase: updatePhase,
+    targetVersion: flowTargetVersion,
+    startedAt: updateStartTimestamp,
+    startUpdate,
+    isStartingUpdate,
+    startUpdateError,
+  } = useUpdateStatus();
+  const updateStatus = updateStatusData?.data;
 
-  const { latestVersion } = props;
   useEffect(() => {
     setLastDismissedVersion(latestVersion);
     toast.close("update_toast");
   }, [latestVersion, setLastDismissedVersion]);
 
-  return (
-    <UpdateStatusProvider refetchInterval={isWatchingUpdate ? 5000 : undefined}>
-      <UpdateSectionInner {...props} setIsWatchingUpdate={setIsWatchingUpdate} />
-    </UpdateStatusProvider>
-  );
-}
-
-type TPropsInner = TProps & {
-  setIsWatchingUpdate: (watching: boolean) => void;
-};
-
-type TUpdatePhases = "idle" | "updating" | "succeeded" | "failed";
-
-function UpdateSectionInner({
-  latestVersion,
-  latestVersionUrl,
-  currentVersion,
-  setIsWatchingUpdate,
-}: TPropsInner) {
-  const now = useNow();
-
-  const {
-    data: updateStatusData,
-    dataUpdatedAt,
-    latestVersionSummary,
-    latestVersionChanges,
-  } = useUpdateStatus();
-  const { refetch: refetchUpdateStatus } = useUpdateStatusUtils();
-  const setLastUpdatedAndDismissedVersion = useMainStore(
-    (s) => s.setLastUpdatedAndDismissedVersion,
-  );
-  const updateStatus = updateStatusData?.data;
-
-  const [updatePhase, setUpdatePhase] = useState<TUpdatePhases>(() => {
-    if (updateStatus?.in_progress) return "updating";
-    if (updateStatus?.failed) return "failed";
-    return "idle";
-  });
-  const [updateStartTimestamp, setUpdateStartTimestamp] = useState<number | null>(() =>
-    updateStatus?.in_progress ? Date.now() : null,
-  );
-
-  const {
-    mutate: applyUpdate,
-    error: errorApplyUpdate,
-    isPending: isPendingApplyUpdate,
-  } = useMutation({
-    mutationFn: applyUpdateFn,
-    onSuccess: () => {
-      setIsWatchingUpdate(true);
-      setUpdatePhase("updating");
-      setUpdateStartTimestamp(Date.now());
-      refetchUpdateStatus();
-    },
-  });
-
   // On a resumed update the server's target is the truth, not the latest release.
-  const targetVersion = updateStatus?.target_version || latestVersion;
-
-  // Pick up an update started elsewhere (another tab or admin) while idling here.
-  useEffect(() => {
-    if (updatePhase !== "idle") return;
-    if (!updateStatus?.in_progress) return;
-
-    setUpdatePhase("updating");
-    setIsWatchingUpdate(true);
-    setUpdateStartTimestamp((t) => t ?? Date.now());
-  }, [updatePhase, updateStatus, setIsWatchingUpdate]);
-
-  // `ready` can come from a status snapshot cached before the update started, so only
-  // trust it when the server binary already runs the version we're updating to.
-  useEffect(() => {
-    if (updatePhase !== "updating") return;
-    if (!updateStatus?.ready) return;
-    if (updateStatus.current_version !== targetVersion) return;
-
-    setUpdatePhase("succeeded");
-    setIsWatchingUpdate(false);
-    // The person who ran the update saw the changelog already; skip the updated toast.
-    setLastUpdatedAndDismissedVersion(targetVersion);
-  }, [
-    updatePhase,
-    updateStatus,
-    targetVersion,
-    setIsWatchingUpdate,
-    setLastUpdatedAndDismissedVersion,
-  ]);
-
-  // The timestamp guard skips failed snapshots fetched before a retry started.
-  useEffect(() => {
-    if (updatePhase === "succeeded" || updatePhase === "failed") return;
-    if (!updateStatus?.failed) return;
-    if (updateStartTimestamp !== null && dataUpdatedAt <= updateStartTimestamp) return;
-
-    setUpdatePhase("failed");
-    setIsWatchingUpdate(false);
-  }, [updatePhase, updateStatus, dataUpdatedAt, updateStartTimestamp, setIsWatchingUpdate]);
+  const targetVersion = flowTargetVersion ?? latestVersion;
 
   const isTakingLong =
     updatePhase === "updating" &&
@@ -218,8 +130,8 @@ function UpdateSectionInner({
           <div className="flex w-full flex-wrap items-center justify-center">
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
               <Button
-                isPending={isPendingApplyUpdate}
-                onClick={() => applyUpdate(latestVersion)}
+                isPending={isStartingUpdate}
+                onClick={() => startUpdate(latestVersion)}
                 className="w-full"
               >
                 <CircleArrowUpIcon className="size-4.5 shrink-0" />
@@ -255,8 +167,8 @@ function UpdateSectionInner({
           <div className="flex w-full flex-wrap items-center justify-center">
             <div className="flex w-full px-1 py-1.5 sm:w-1/2">
               <Button
-                isPending={isPendingApplyUpdate}
-                onClick={() => applyUpdate(targetVersion)}
+                isPending={isStartingUpdate}
+                onClick={() => startUpdate(targetVersion)}
                 className="w-full"
               >
                 <RotateCcwIcon className="size-4.5 shrink-0" />
@@ -277,9 +189,9 @@ function UpdateSectionInner({
             </Button>
           </div>
         )}
-        {errorApplyUpdate && (
+        {startUpdateError && (
           <div className="flex w-full px-1 py-1.5">
-            <ErrorLine className="w-full" message={errorApplyUpdate.message} />
+            <ErrorLine className="w-full" message={startUpdateError.message} />
           </div>
         )}
       </div>

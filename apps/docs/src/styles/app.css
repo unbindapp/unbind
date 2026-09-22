@@ -141,6 +141,16 @@ body {
 .bg-fd-popover\/80 {
   background-color: var(--popover);
 }
+/* Fumadocs sets code blocks, the endpoint path, the playground's server select and
+   inline code at 13px. The app has no 13px text, so they all get text-sm. Heading
+   code keeps the heading's size. */
+.text-\[0\.8125rem\] {
+  font-size: var(--text-sm);
+}
+.prose :where(code):not(:where(h1, h2, h3, h4, h5, h6) *) {
+  font-size: var(--text-sm);
+}
+
 /* The API playground dialogs dim the page with bg-black/30, and black is mapped to the
    foreground above. Use the app's overlay instead. */
 .bg-black\/30 {

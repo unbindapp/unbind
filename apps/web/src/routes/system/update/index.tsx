@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CircleArrowUpIcon } from "lucide-react";
-import { ReactNode, useRef } from "react";
+import { ReactNode } from "react";
 
 import { cn } from "@/components/ui/utils";
 import UpdateAvailableSection from "@/components/system/update/update-available-section";
@@ -12,13 +12,16 @@ export const Route = createFileRoute("/system/update/")({
 });
 
 function SystemUpdatePage() {
-  const { data, isPending, error, hasUpdateAvailable, latestVersion, latestVersionUrl } =
-    useUpdateStatus();
-
-  // Once the update flow is on screen, keep it there: a background refetch after a
-  // successful update flips has_update_available to false, and swapping to
-  // "No updates available" would eat the success screen.
-  const showedUpdateFlowRef = useRef(false);
+  const {
+    data,
+    isPending,
+    error,
+    hasUpdateAvailable,
+    latestVersion,
+    latestVersionUrl,
+    phase,
+    targetVersion,
+  } = useUpdateStatus();
 
   const isHardError = !data && !isPending && error;
 
@@ -47,11 +50,10 @@ function SystemUpdatePage() {
   }
 
   const status = data.data;
-  if (hasUpdateAvailable || status.in_progress || status.failed) {
-    showedUpdateFlowRef.current = true;
-  }
+  const showUpdateFlow =
+    hasUpdateAvailable || phase !== "idle" || status.in_progress || status.failed;
 
-  if (!showedUpdateFlowRef.current) {
+  if (!showUpdateFlow) {
     return (
       <Wrapper className="group/wrapper">
         <UpdateNotAvailableSection isPending={false} currentVersion={status.current_version} />
@@ -62,7 +64,7 @@ function SystemUpdatePage() {
   return (
     <Wrapper>
       <UpdateAvailableSection
-        latestVersion={latestVersion ?? status.target_version ?? status.current_version}
+        latestVersion={latestVersion ?? targetVersion ?? status.current_version}
         latestVersionUrl={latestVersionUrl}
         currentVersion={status.current_version}
       />
