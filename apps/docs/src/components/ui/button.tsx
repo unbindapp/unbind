@@ -18,8 +18,6 @@ const buttonVariants = cva(
         ghost:
           "has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground",
         card: "bg-card text-foreground has-hover:hover:bg-card-hover active:bg-card-hover",
-        input:
-          "border bg-input font-medium has-hover:hover:ring-1 has-hover:hover:ring-primary/6-10 active:ring-1 active:ring-primary/6-10 data-popup-open:ring-1 data-popup-open:ring-primary/6-10",
       },
       size: {
         default: "px-5 py-2.5",

@@ -23,7 +23,7 @@
   --color-fd-secondary-foreground: var(--secondary-foreground);
   --color-fd-accent: var(--accent);
   --color-fd-accent-foreground: var(--accent-foreground);
-  --color-fd-ring: var(--ring);
+  --color-fd-ring: color-mix(in oklab, var(--primary) var(--opacity-8-10), transparent);
   --color-fd-overlay: color-mix(in oklab, var(--barrier) var(--opacity-barrier), transparent);
   --color-fd-article: var(--card);
   --color-fd-info: var(--process);
@@ -140,10 +140,67 @@ body {
 .bg-fd-popover\/80 {
   background-color: var(--popover);
 }
+/* The API playground dialogs dim the page with bg-black/30, and black is mapped to the
+   foreground above. Use the app's overlay instead. */
+.bg-black\/30 {
+  background-color: var(--color-fd-overlay);
+}
 [data-side].backdrop-blur-lg {
   border-radius: var(--radius);
   box-shadow: 0 10px 15px -3px
     color-mix(in oklab, var(--shadow-color) var(--opacity-shadow), transparent);
+}
+
+/* The drawer overlay has no color of its own, only the blur that is off above. It is
+   the element right before the drawer, which carries a stable id. */
+div[data-state]:has(+ #nd-sidebar-mobile) {
+  background-color: var(--color-fd-overlay);
+}
+
+/* API reference pieces from fumadocs-openapi. They have no props for this, so the rules
+   key on the data attribute and element shape they render. */
+
+/* Cards never have a shadow in the app. */
+.shadow-sm,
+.shadow-md {
+  box-shadow: none;
+}
+
+/* The property filter, styled like the app's Input. The popover variant is sticky and
+   keeps its own layout. */
+div:has(> [data-object-search-input]):not([class*="sticky"]) {
+  margin-block: 0.75rem;
+  gap: 0.5rem;
+  padding-inline-start: 0.75rem;
+  border-radius: var(--radius);
+  background-color: var(--input);
+  color: var(--foreground);
+  transition: none;
+}
+div:has(> [data-object-search-input]):not([class*="sticky"]) > svg {
+  color: var(--muted-foreground);
+  width: calc(var(--spacing) * 4);
+  height: calc(var(--spacing) * 4);
+}
+div:has(> [data-object-search-input]):not([class*="sticky"]) > input {
+  padding: calc(var(--spacing) * 2) calc(var(--spacing) * 3) calc(var(--spacing) * 2) 0;
+  font-weight: 500;
+}
+div:has(> [data-object-search-input]):not([class*="sticky"]) > input::placeholder {
+  color: color-mix(in oklab, var(--muted-foreground) var(--opacity-9-10), transparent);
+}
+@media (hover: hover) {
+  div:has(> [data-object-search-input]):not([class*="sticky"]):hover {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) var(--opacity-6-10), transparent);
+  }
+}
+div:has(> [data-object-search-input]):not([class*="sticky"]):focus-within {
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) var(--opacity-8-10), transparent);
+}
+
+/* The Server URL chip sits on a muted row and is muted itself. */
+button:has(> code + svg) > span:first-child {
+  background-color: var(--background);
 }
 
 /* Search dialog input row like Command */

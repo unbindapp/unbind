@@ -10,7 +10,7 @@ import {
 import { useCopyToClipboard } from "@/lib/use-copy";
 import { usePathname } from "fumadocs-core/framework";
 import { ChevronDownIcon, ExternalLinkIcon, TextIcon } from "lucide-react";
-import { useMemo, useRef, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 
 export function CopyMarkdownButton({ markdownUrl }: { markdownUrl: string }) {
   const { markCopied, isRecentlyCopied } = useCopyToClipboard();
@@ -76,6 +76,7 @@ export function ViewOptionsPopover({
   githubUrl?: string;
 }) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   const items = useMemo<Item[]>(() => {
     const pageUrl =
@@ -101,10 +102,14 @@ export function ViewOptionsPopover({
   }, [githubUrl, markdownUrl, pathname]);
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" size="sm" />}>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="outline" size="sm" data-open={open || undefined} className="gap-1" />
+        }
+      >
         Open
-        <ChevronDownIcon className="text-muted-foreground -mr-1 size-4 transition group-data-popup-open/button:rotate-180" />
+        <ChevronDownIcon className="text-muted-foreground -mr-0.75 size-4 transition group-data-open/button:rotate-180" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-52">
         <DropdownMenuGroup>

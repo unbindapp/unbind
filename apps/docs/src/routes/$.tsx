@@ -135,7 +135,12 @@ function Page() {
       {...base}
       tree={page.pageTree}
       tabs={false}
-      sidebar={{ collapsible: false, banner: <TabSelect />, components: sidebarComponents }}
+      sidebar={{
+        className: "bg-background",
+        collapsible: false,
+        banner: <TabSelect />,
+        components: sidebarComponents,
+      }}
       slots={{ ...base.slots, sidebar: sidebarSlot }}
     >
       <Link to={page.markdownUrl} hidden />

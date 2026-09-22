@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, type ComponentProps } from "react";
 
 const buttonClass =
-  "size-8 rounded-md text-muted-foreground data-active:bg-foreground/3-10 data-active:text-foreground";
+  "size-8 rounded-md text-muted-foreground has-hover:hover:bg-foreground/2-10 active:bg-foreground/2-10 data-active:bg-foreground/3-10 data-active:text-foreground data-active:has-hover:hover:bg-foreground/4-10 data-active:active:bg-foreground/4-10";
 
 export function ThemeSwitch({ className, ...props }: ComponentProps<"div">) {
   const { resolvedTheme, setTheme } = useTheme();

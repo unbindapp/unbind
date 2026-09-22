@@ -46,18 +46,17 @@ function TabDropdown({ options }: { options: LayoutTab[] }) {
       <DropdownMenuTrigger
         render={
           <Button
-            variant="input"
-            focusVariant="input-like"
-            forceMinSize={false}
-            className="w-full justify-start gap-2 px-2.5 py-2 text-sm"
+            variant="outline"
+            data-open={open || undefined}
+            className="bg-input flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left"
           />
         }
       >
-        <span className="flex size-5 shrink-0 items-center justify-center [&_svg]:size-full">
+        <span className="flex size-4.5 shrink-0 items-center justify-center [&_svg]:size-full">
           {selected.icon}
         </span>
-        <span className="min-w-0 flex-1 truncate text-start">{selected.title}</span>
-        <ChevronDownIcon className="text-muted-foreground -mr-0.5 size-4.5 shrink-0 transition group-data-popup-open/button:rotate-180" />
+        <p className="min-w-0 flex-1 truncate font-medium">{selected.title}</p>
+        <ChevronDownIcon className="text-muted-foreground -mr-0.75 size-5 transition group-data-open/button:rotate-180" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-(--anchor-width)">
         <DropdownMenuGroup>
@@ -71,7 +70,7 @@ function TabDropdown({ options }: { options: LayoutTab[] }) {
                 className="group/item items-start"
                 render={<Link href={item.url} onClick={onSelect} {...item.props} />}
               >
-                <span className="flex size-5 shrink-0 items-center justify-center [&_svg]:size-full">
+                <span className="flex size-4.5 shrink-0 items-center justify-center [&_svg]:size-full">
                   {item.icon}
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-1">

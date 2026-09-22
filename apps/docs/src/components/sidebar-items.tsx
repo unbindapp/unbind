@@ -22,7 +22,7 @@ const itemClass =
   "relative flex flex-row items-center gap-2 rounded-lg p-2 text-start text-muted-foreground wrap-anywhere focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/8-10 [&_svg]:size-4 [&_svg]:shrink-0";
 const idleClass =
   "has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground";
-const activeClass = "bg-success/1-10 text-success";
+const activeClass = "bg-success/2-10 text-success";
 const highlightClass =
   "before:content-[''] before:bg-success before:absolute before:w-px before:inset-y-2.5 before:inset-s-2.5";
 
