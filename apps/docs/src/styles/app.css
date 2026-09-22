@@ -233,11 +233,14 @@ p.inline-flex.mt-6 {
 
 /* The desktop sidebar footer bar holds the GitHub link and the theme switch. Fumadocs
    renders the bar and the link itself, so it gets the search field's background here
-   and the link gets the theme buttons' hover and active colors. */
+   and the link gets the theme buttons' size, hover and active colors. */
 #nd-sidebar .bg-fd-secondary\/50 {
   background-color: var(--input);
 }
 #nd-sidebar .bg-fd-secondary\/50 > a {
+  width: calc(var(--spacing) * 8);
+  height: calc(var(--spacing) * 8);
+  padding: 0;
   transition: none;
 }
 @media (hover: hover) {
