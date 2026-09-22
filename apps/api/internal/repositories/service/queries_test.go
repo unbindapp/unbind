@@ -154,7 +154,9 @@ func (suite *ServiceQueriesSuite) SetupTest() {
 				APIVersion: "unbind.app/v1",
 			},
 			Spec: v1.ServiceSpec{
-				Builder: "railpack",
+				Builder:              "railpack",
+				GitRepository:        "test-org/test-repo",
+				GitHubInstallationID: &suite.testGithubInstallation.ID,
 				Config: v1.ServiceConfigSpec{
 					GitBranch: "refs/heads/main",
 					Hosts: []v1.HostSpec{
