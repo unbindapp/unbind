@@ -36,6 +36,20 @@ repos:
         language: system
         files: ^apps/api/.*\.go$
         pass_filenames: false
+      # Generated from the API code and committed: the docs data and the web
+      # client types. Same checks as CI.
+      - id: api-docs-data
+        name: "api: docs data in sync"
+        entry: ./scripts/check-docs-data.sh
+        language: system
+        files: ^apps/api/.*\.go$
+        pass_filenames: false
+      - id: api-web-types
+        name: "api: web client types in sync"
+        entry: bash -c '[ -d apps/web/node_modules ] || { echo "apps/web/node_modules missing, skipping"; exit 0; }; ./scripts/check-web-types.sh'
+        language: system
+        files: ^apps/api/.*\.go$
+        pass_filenames: false
 
       # --- apps/operator ---
       - id: operator-go-mod-tidy
