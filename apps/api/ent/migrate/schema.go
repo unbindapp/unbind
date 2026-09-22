@@ -788,54 +788,6 @@ var (
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
 	}
-	// VariableReferencesColumns holds the columns for the "variable_references" table.
-	VariableReferencesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "target_name", Type: field.TypeString},
-		{Name: "sources", Type: field.TypeJSON},
-		{Name: "value_template", Type: field.TypeString},
-		{Name: "error", Type: field.TypeString, Nullable: true},
-		{Name: "migrated_at", Type: field.TypeTime, Nullable: true},
-		{Name: "target_service_id", Type: field.TypeUUID},
-	}
-	// VariableReferencesTable holds the schema information for the "variable_references" table.
-	VariableReferencesTable = &schema.Table{
-		Name:       "variable_references",
-		Columns:    VariableReferencesColumns,
-		PrimaryKey: []*schema.Column{VariableReferencesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "variable_references_services_variable_references",
-				Columns:    []*schema.Column{VariableReferencesColumns[8]},
-				RefColumns: []*schema.Column{ServicesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "variablereference_target_service_id_target_name",
-				Unique:  true,
-				Columns: []*schema.Column{VariableReferencesColumns[8], VariableReferencesColumns[3]},
-			},
-			{
-				Name:    "variablereference_target_service_id",
-				Unique:  false,
-				Columns: []*schema.Column{VariableReferencesColumns[8]},
-			},
-			{
-				Name:    "variablereference_target_service_id_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{VariableReferencesColumns[8], VariableReferencesColumns[1]},
-			},
-			{
-				Name:    "variablereference_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{VariableReferencesColumns[1]},
-			},
-		},
-	}
 	// WebhooksColumns holds the columns for the "webhooks" table.
 	WebhooksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -969,7 +921,6 @@ var (
 		TeamsTable,
 		TemplatesTable,
 		UsersTable,
-		VariableReferencesTable,
 		WebhooksTable,
 		GroupPermissionsTable,
 		UserGroupsTable,
@@ -1072,10 +1023,6 @@ func init() {
 	}
 	UsersTable.Annotation = &entsql.Annotation{
 		Table: "users",
-	}
-	VariableReferencesTable.ForeignKeys[0].RefTable = ServicesTable
-	VariableReferencesTable.Annotation = &entsql.Annotation{
-		Table: "variable_references",
 	}
 	WebhooksTable.ForeignKeys[0].RefTable = ProjectsTable
 	WebhooksTable.ForeignKeys[1].RefTable = TeamsTable

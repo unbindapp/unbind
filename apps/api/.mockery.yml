@@ -162,15 +162,6 @@ packages:
           filename: user_repository_mock.go
           structname: UserRepositoryMock
           pkgname: mocks_repository_user
-  github.com/unbindapp/unbind-api/internal/repositories/variables:
-    config:
-      dir: ./mocks/repository/variables
-    interfaces:
-      VariableRepositoryInterface:
-        config:
-          filename: variables_repository_mock.go
-          structname: VariablesRepositoryMock
-          pkgname: mocks_repository_variables
   github.com/unbindapp/unbind-api/internal/repositories/webhook:
     config:
       dir: ./mocks/repository/webhook

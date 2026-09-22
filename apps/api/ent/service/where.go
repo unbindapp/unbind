@@ -1258,29 +1258,6 @@ func HasServiceGroupWith(preds ...predicate.ServiceGroup) predicate.Service {
 	})
 }
 
-// HasVariableReferences applies the HasEdge predicate on the "variable_references" edge.
-func HasVariableReferences() predicate.Service {
-	return predicate.Service(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, VariableReferencesTable, VariableReferencesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasVariableReferencesWith applies the HasEdge predicate on the "variable_references" edge with a given conditions (other predicates).
-func HasVariableReferencesWith(preds ...predicate.VariableReference) predicate.Service {
-	return predicate.Service(func(s *sql.Selector) {
-		step := newVariableReferencesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Service) predicate.Service {
 	return predicate.Service(sql.AndPredicates(predicates...))

@@ -309,18 +309,6 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
 }
 
-// The VariableReferenceFunc type is an adapter to allow the use of ordinary
-// function as VariableReference mutator.
-type VariableReferenceFunc func(context.Context, *ent.VariableReferenceMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f VariableReferenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.VariableReferenceMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.VariableReferenceMutation", m)
-}
-
 // The WebhookFunc type is an adapter to allow the use of ordinary
 // function as Webhook mutator.
 type WebhookFunc func(context.Context, *ent.WebhookMutation) (ent.Value, error)

@@ -22,7 +22,6 @@ import (
 	team_repo "github.com/unbindapp/unbind-api/internal/repositories/team"
 	template_repo "github.com/unbindapp/unbind-api/internal/repositories/template"
 	user_repo "github.com/unbindapp/unbind-api/internal/repositories/user"
-	variable_repo "github.com/unbindapp/unbind-api/internal/repositories/variables"
 	webhook_repo "github.com/unbindapp/unbind-api/internal/repositories/webhook"
 )
 
@@ -44,7 +43,6 @@ type Repositories struct {
 	deployment   deployment_repo.DeploymentRepositoryInterface
 	system       system_repo.SystemRepositoryInterface
 	webhooks     webhook_repo.WebhookRepositoryInterface
-	variables    variable_repo.VariableRepositoryInterface
 	bootstrap    bootstrap_repo.BootstrapRepositoryInterface
 	s3Bucket     s3bucket_repo.S3BucketRepositoryInterface
 	template     template_repo.TemplateRepositoryInterface
@@ -68,7 +66,6 @@ func NewRepositories(db *ent.Client) *Repositories {
 	groupRepo := group_repo.NewGroupRepository(db, permissionsRepo)
 	systemRepo := system_repo.NewSystemRepository(db)
 	webhooksRepo := webhook_repo.NewWebhookRepository(db)
-	variablesRepo := variable_repo.NewVariableRepository(db)
 	bootstrapRepo := bootstrap_repo.NewBootstrapRepository(db)
 	s3BucketRepo := s3bucket_repo.NewS3BucketRepository(db)
 	templateRepo := template_repo.NewTemplateRepository(db)
@@ -90,7 +87,6 @@ func NewRepositories(db *ent.Client) *Repositories {
 		deployment:   deploymentRepo,
 		system:       systemRepo,
 		webhooks:     webhooksRepo,
-		variables:    variablesRepo,
 		bootstrap:    bootstrapRepo,
 		s3Bucket:     s3BucketRepo,
 		template:     templateRepo,
@@ -163,11 +159,6 @@ func (r *Repositories) System() system_repo.SystemRepositoryInterface {
 // Webhooks returns the Webhook repository
 func (r *Repositories) Webhooks() webhook_repo.WebhookRepositoryInterface {
 	return r.webhooks
-}
-
-// Variables returns the Variable repository
-func (r *Repositories) Variables() variable_repo.VariableRepositoryInterface {
-	return r.variables
 }
 
 // Bootstrap returns the Bootstrap repository

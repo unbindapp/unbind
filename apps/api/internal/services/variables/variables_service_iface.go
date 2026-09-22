@@ -21,13 +21,12 @@ type VariablesServiceInterface interface {
 	// keys Unbind used to store on a database, and the port-suffixed keys that now name a
 	// protocol. Old keys still resolve, so a failure here is not fatal.
 	MigrateEndpointKeys(ctx context.Context) error
-	// MigrateLegacyReferences writes rows of the old variable_references table into the
-	// target service's secret as ${{...}} templates. Rows are kept and marked so the
-	// step is idempotent and an older release can still read them.
-	MigrateLegacyReferences(ctx context.Context) error
 	// UpdateVariables writes variables in bulk. The returned bool is true when a rendered
 	// value changed, meaning the service needs a new deployment rather than a pod restart.
 	UpdateVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, bool, error)
+	// GetVariables lists the scope's variables. Viewers get names only; values
+	// are for editors, because a stored secret is as good as write access to
+	// whatever it unlocks.
 	GetVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error)
 	// GetAvailableVariableReferences lists the sources and keys a service's variables can reference
 	GetAvailableVariableReferences(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID, serviceID uuid.UUID) ([]models.AvailableVariableReference, error)

@@ -502,57 +502,6 @@ func (_c *VariablesServiceMock_MigrateEndpointKeys_Call) RunAndReturn(run func(c
 	return _c
 }
 
-// MigrateLegacyReferences provides a mock function for the type VariablesServiceMock
-func (_mock *VariablesServiceMock) MigrateLegacyReferences(ctx context.Context) error {
-	ret := _mock.Called(ctx)
-
-	if len(ret) == 0 {
-		panic("no return value specified for MigrateLegacyReferences")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
-		r0 = returnFunc(ctx)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// VariablesServiceMock_MigrateLegacyReferences_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MigrateLegacyReferences'
-type VariablesServiceMock_MigrateLegacyReferences_Call struct {
-	*mock.Call
-}
-
-// MigrateLegacyReferences is a helper method to define mock.On call
-//   - ctx context.Context
-func (_e *VariablesServiceMock_Expecter) MigrateLegacyReferences(ctx any) *VariablesServiceMock_MigrateLegacyReferences_Call {
-	return &VariablesServiceMock_MigrateLegacyReferences_Call{Call: _e.mock.On("MigrateLegacyReferences", ctx)}
-}
-
-func (_c *VariablesServiceMock_MigrateLegacyReferences_Call) Run(run func(ctx context.Context)) *VariablesServiceMock_MigrateLegacyReferences_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *VariablesServiceMock_MigrateLegacyReferences_Call) Return(err error) *VariablesServiceMock_MigrateLegacyReferences_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *VariablesServiceMock_MigrateLegacyReferences_Call) RunAndReturn(run func(ctx context.Context) error) *VariablesServiceMock_MigrateLegacyReferences_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // PrepareVariableWrite provides a mock function for the type VariablesServiceMock
 func (_mock *VariablesServiceMock) PrepareVariableWrite(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, upserts map[string][]byte, deletes []string) (*variables_service.VariableWrite, error) {
 	ret := _mock.Called(ctx, userID, input, behavior, upserts, deletes)

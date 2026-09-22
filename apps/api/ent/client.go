@@ -41,7 +41,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/template"
 	"github.com/unbindapp/unbind-api/ent/user"
-	"github.com/unbindapp/unbind-api/ent/variablereference"
 	"github.com/unbindapp/unbind-api/ent/webhook"
 
 	stdsql "database/sql"
@@ -102,8 +101,6 @@ type Client struct {
 	Template *TemplateClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
-	// VariableReference is the client for interacting with the VariableReference builders.
-	VariableReference *VariableReferenceClient
 	// Webhook is the client for interacting with the Webhook builders.
 	Webhook *WebhookClient
 }
@@ -142,7 +139,6 @@ func (c *Client) init() {
 	c.Team = NewTeamClient(c.config)
 	c.Template = NewTemplateClient(c.config)
 	c.User = NewUserClient(c.config)
-	c.VariableReference = NewVariableReferenceClient(c.config)
 	c.Webhook = NewWebhookClient(c.config)
 }
 
@@ -261,7 +257,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Team:                   NewTeamClient(cfg),
 		Template:               NewTemplateClient(cfg),
 		User:                   NewUserClient(cfg),
-		VariableReference:      NewVariableReferenceClient(cfg),
 		Webhook:                NewWebhookClient(cfg),
 	}, nil
 }
@@ -307,7 +302,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Team:                   NewTeamClient(cfg),
 		Template:               NewTemplateClient(cfg),
 		User:                   NewUserClient(cfg),
-		VariableReference:      NewVariableReferenceClient(cfg),
 		Webhook:                NewWebhookClient(cfg),
 	}, nil
 }
@@ -342,8 +336,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.GithubInstallation, c.Group, c.JWTKey, c.OAuthAuthorizationCode,
 		c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PVCMetadata,
 		c.Permission, c.Project, c.Registry, c.S3Bucket, c.Service, c.ServiceConfig,
-		c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User,
-		c.VariableReference, c.Webhook,
+		c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User, c.Webhook,
 	} {
 		n.Use(hooks...)
 	}
@@ -357,8 +350,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.GithubInstallation, c.Group, c.JWTKey, c.OAuthAuthorizationCode,
 		c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PVCMetadata,
 		c.Permission, c.Project, c.Registry, c.S3Bucket, c.Service, c.ServiceConfig,
-		c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User,
-		c.VariableReference, c.Webhook,
+		c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User, c.Webhook,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -417,8 +409,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Template.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
-	case *VariableReferenceMutation:
-		return c.VariableReference.mutate(ctx, m)
 	case *WebhookMutation:
 		return c.Webhook.mutate(ctx, m)
 	default:
@@ -3424,22 +3414,6 @@ func (c *ServiceClient) QueryServiceGroup(_m *Service) *ServiceGroupQuery {
 	return query
 }
 
-// QueryVariableReferences queries the variable_references edge of a Service.
-func (c *ServiceClient) QueryVariableReferences(_m *Service) *VariableReferenceQuery {
-	query := (&VariableReferenceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(service.Table, service.FieldID, id),
-			sqlgraph.To(variablereference.Table, variablereference.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, service.VariableReferencesTable, service.VariableReferencesColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *ServiceClient) Hooks() []Hook {
 	return c.hooks.Service
@@ -4519,155 +4493,6 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
-// VariableReferenceClient is a client for the VariableReference schema.
-type VariableReferenceClient struct {
-	config
-}
-
-// NewVariableReferenceClient returns a client for the VariableReference from the given config.
-func NewVariableReferenceClient(c config) *VariableReferenceClient {
-	return &VariableReferenceClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `variablereference.Hooks(f(g(h())))`.
-func (c *VariableReferenceClient) Use(hooks ...Hook) {
-	c.hooks.VariableReference = append(c.hooks.VariableReference, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `variablereference.Intercept(f(g(h())))`.
-func (c *VariableReferenceClient) Intercept(interceptors ...Interceptor) {
-	c.inters.VariableReference = append(c.inters.VariableReference, interceptors...)
-}
-
-// Create returns a builder for creating a VariableReference entity.
-func (c *VariableReferenceClient) Create() *VariableReferenceCreate {
-	mutation := newVariableReferenceMutation(c.config, OpCreate)
-	return &VariableReferenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of VariableReference entities.
-func (c *VariableReferenceClient) CreateBulk(builders ...*VariableReferenceCreate) *VariableReferenceCreateBulk {
-	return &VariableReferenceCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *VariableReferenceClient) MapCreateBulk(slice any, setFunc func(*VariableReferenceCreate, int)) *VariableReferenceCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &VariableReferenceCreateBulk{err: fmt.Errorf("calling to VariableReferenceClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*VariableReferenceCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &VariableReferenceCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for VariableReference.
-func (c *VariableReferenceClient) Update() *VariableReferenceUpdate {
-	mutation := newVariableReferenceMutation(c.config, OpUpdate)
-	return &VariableReferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *VariableReferenceClient) UpdateOne(_m *VariableReference) *VariableReferenceUpdateOne {
-	mutation := newVariableReferenceMutation(c.config, OpUpdateOne, withVariableReference(_m))
-	return &VariableReferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *VariableReferenceClient) UpdateOneID(id uuid.UUID) *VariableReferenceUpdateOne {
-	mutation := newVariableReferenceMutation(c.config, OpUpdateOne, withVariableReferenceID(id))
-	return &VariableReferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for VariableReference.
-func (c *VariableReferenceClient) Delete() *VariableReferenceDelete {
-	mutation := newVariableReferenceMutation(c.config, OpDelete)
-	return &VariableReferenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *VariableReferenceClient) DeleteOne(_m *VariableReference) *VariableReferenceDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *VariableReferenceClient) DeleteOneID(id uuid.UUID) *VariableReferenceDeleteOne {
-	builder := c.Delete().Where(variablereference.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &VariableReferenceDeleteOne{builder}
-}
-
-// Query returns a query builder for VariableReference.
-func (c *VariableReferenceClient) Query() *VariableReferenceQuery {
-	return &VariableReferenceQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeVariableReference},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a VariableReference entity by its id.
-func (c *VariableReferenceClient) Get(ctx context.Context, id uuid.UUID) (*VariableReference, error) {
-	return c.Query().Where(variablereference.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *VariableReferenceClient) GetX(ctx context.Context, id uuid.UUID) *VariableReference {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryService queries the service edge of a VariableReference.
-func (c *VariableReferenceClient) QueryService(_m *VariableReference) *ServiceQuery {
-	query := (&ServiceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(variablereference.Table, variablereference.FieldID, id),
-			sqlgraph.To(service.Table, service.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, variablereference.ServiceTable, variablereference.ServiceColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *VariableReferenceClient) Hooks() []Hook {
-	return c.hooks.VariableReference
-}
-
-// Interceptors returns the client interceptors.
-func (c *VariableReferenceClient) Interceptors() []Interceptor {
-	return c.inters.VariableReference
-}
-
-func (c *VariableReferenceClient) mutate(ctx context.Context, m *VariableReferenceMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&VariableReferenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&VariableReferenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&VariableReferenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&VariableReferenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown VariableReference mutation op: %q", m.Op())
-	}
-}
-
 // WebhookClient is a client for the Webhook schema.
 type WebhookClient struct {
 	config
@@ -4840,14 +4665,14 @@ type (
 		Group, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
 		OAuthGrantToken, Oauth2Token, PVCMetadata, Permission, Project, Registry,
 		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template,
-		User, VariableReference, Webhook []ent.Hook
+		User, Webhook []ent.Hook
 	}
 	inters struct {
 		APIKey, Bootstrap, Deployment, Environment, GithubApp, GithubInstallation,
 		Group, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
 		OAuthGrantToken, Oauth2Token, PVCMetadata, Permission, Project, Registry,
 		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template,
-		User, VariableReference, Webhook []ent.Interceptor
+		User, Webhook []ent.Interceptor
 	}
 )
 

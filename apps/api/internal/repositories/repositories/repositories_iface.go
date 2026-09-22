@@ -24,7 +24,6 @@ import (
 	team_repo "github.com/unbindapp/unbind-api/internal/repositories/team"
 	template_repo "github.com/unbindapp/unbind-api/internal/repositories/template"
 	user_repo "github.com/unbindapp/unbind-api/internal/repositories/user"
-	variable_repo "github.com/unbindapp/unbind-api/internal/repositories/variables"
 	webhook_repo "github.com/unbindapp/unbind-api/internal/repositories/webhook"
 )
 
@@ -56,8 +55,6 @@ type RepositoriesInterface interface {
 	System() system_repo.SystemRepositoryInterface
 	// Webhooks returns the Webhook repository
 	Webhooks() webhook_repo.WebhookRepositoryInterface
-	// Variables returns the Variable repository
-	Variables() variable_repo.VariableRepositoryInterface
 	// Bootstrap returns the Bootstrap repository
 	Bootstrap() bootstrap_repo.BootstrapRepositoryInterface
 	// S3Bucket returns the S3 bucket repository

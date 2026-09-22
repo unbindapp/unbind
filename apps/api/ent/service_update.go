@@ -22,7 +22,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
 	"github.com/unbindapp/unbind-api/ent/servicegroup"
 	"github.com/unbindapp/unbind-api/ent/template"
-	"github.com/unbindapp/unbind-api/ent/variablereference"
 )
 
 // ServiceUpdate is the builder for updating Service entities.
@@ -412,21 +411,6 @@ func (_u *ServiceUpdate) SetServiceGroup(v *ServiceGroup) *ServiceUpdate {
 	return _u.SetServiceGroupID(v.ID)
 }
 
-// AddVariableReferenceIDs adds the "variable_references" edge to the VariableReference entity by IDs.
-func (_u *ServiceUpdate) AddVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdate {
-	_u.mutation.AddVariableReferenceIDs(ids...)
-	return _u
-}
-
-// AddVariableReferences adds the "variable_references" edges to the VariableReference entity.
-func (_u *ServiceUpdate) AddVariableReferences(v ...*VariableReference) *ServiceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddVariableReferenceIDs(ids...)
-}
-
 // Mutation returns the ServiceMutation object of the builder.
 func (_u *ServiceUpdate) Mutation() *ServiceMutation {
 	return _u.mutation
@@ -487,27 +471,6 @@ func (_u *ServiceUpdate) ClearTemplate() *ServiceUpdate {
 func (_u *ServiceUpdate) ClearServiceGroup() *ServiceUpdate {
 	_u.mutation.ClearServiceGroup()
 	return _u
-}
-
-// ClearVariableReferences clears all "variable_references" edges to the VariableReference entity.
-func (_u *ServiceUpdate) ClearVariableReferences() *ServiceUpdate {
-	_u.mutation.ClearVariableReferences()
-	return _u
-}
-
-// RemoveVariableReferenceIDs removes the "variable_references" edge to VariableReference entities by IDs.
-func (_u *ServiceUpdate) RemoveVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdate {
-	_u.mutation.RemoveVariableReferenceIDs(ids...)
-	return _u
-}
-
-// RemoveVariableReferences removes "variable_references" edges to VariableReference entities.
-func (_u *ServiceUpdate) RemoveVariableReferences(v ...*VariableReference) *ServiceUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveVariableReferenceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -862,51 +825,6 @@ func (_u *ServiceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(servicegroup.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.VariableReferencesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   service.VariableReferencesTable,
-			Columns: []string{service.VariableReferencesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedVariableReferencesIDs(); len(nodes) > 0 && !_u.mutation.VariableReferencesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   service.VariableReferencesTable,
-			Columns: []string{service.VariableReferencesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.VariableReferencesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   service.VariableReferencesTable,
-			Columns: []string{service.VariableReferencesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1309,21 +1227,6 @@ func (_u *ServiceUpdateOne) SetServiceGroup(v *ServiceGroup) *ServiceUpdateOne {
 	return _u.SetServiceGroupID(v.ID)
 }
 
-// AddVariableReferenceIDs adds the "variable_references" edge to the VariableReference entity by IDs.
-func (_u *ServiceUpdateOne) AddVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdateOne {
-	_u.mutation.AddVariableReferenceIDs(ids...)
-	return _u
-}
-
-// AddVariableReferences adds the "variable_references" edges to the VariableReference entity.
-func (_u *ServiceUpdateOne) AddVariableReferences(v ...*VariableReference) *ServiceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddVariableReferenceIDs(ids...)
-}
-
 // Mutation returns the ServiceMutation object of the builder.
 func (_u *ServiceUpdateOne) Mutation() *ServiceMutation {
 	return _u.mutation
@@ -1384,27 +1287,6 @@ func (_u *ServiceUpdateOne) ClearTemplate() *ServiceUpdateOne {
 func (_u *ServiceUpdateOne) ClearServiceGroup() *ServiceUpdateOne {
 	_u.mutation.ClearServiceGroup()
 	return _u
-}
-
-// ClearVariableReferences clears all "variable_references" edges to the VariableReference entity.
-func (_u *ServiceUpdateOne) ClearVariableReferences() *ServiceUpdateOne {
-	_u.mutation.ClearVariableReferences()
-	return _u
-}
-
-// RemoveVariableReferenceIDs removes the "variable_references" edge to VariableReference entities by IDs.
-func (_u *ServiceUpdateOne) RemoveVariableReferenceIDs(ids ...uuid.UUID) *ServiceUpdateOne {
-	_u.mutation.RemoveVariableReferenceIDs(ids...)
-	return _u
-}
-
-// RemoveVariableReferences removes "variable_references" edges to VariableReference entities.
-func (_u *ServiceUpdateOne) RemoveVariableReferences(v ...*VariableReference) *ServiceUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveVariableReferenceIDs(ids...)
 }
 
 // Where appends a list predicates to the ServiceUpdate builder.
@@ -1789,51 +1671,6 @@ func (_u *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(servicegroup.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.VariableReferencesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   service.VariableReferencesTable,
-			Columns: []string{service.VariableReferencesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedVariableReferencesIDs(); len(nodes) > 0 && !_u.mutation.VariableReferencesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   service.VariableReferencesTable,
-			Columns: []string{service.VariableReferencesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.VariableReferencesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   service.VariableReferencesTable,
-			Columns: []string{service.VariableReferencesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(variablereference.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

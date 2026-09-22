@@ -37,7 +37,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/template"
 	"github.com/unbindapp/unbind-api/ent/user"
-	"github.com/unbindapp/unbind-api/ent/variablereference"
 	"github.com/unbindapp/unbind-api/ent/webhook"
 )
 
@@ -124,7 +123,6 @@ func checkColumn(t, c string) error {
 			team.Table:                   team.ValidColumn,
 			template.Table:               template.ValidColumn,
 			user.Table:                   user.ValidColumn,
-			variablereference.Table:      variablereference.ValidColumn,
 			webhook.Table:                webhook.ValidColumn,
 		})
 	})

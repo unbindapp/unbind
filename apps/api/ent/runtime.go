@@ -30,7 +30,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/template"
 	"github.com/unbindapp/unbind-api/ent/user"
-	"github.com/unbindapp/unbind-api/ent/variablereference"
 	"github.com/unbindapp/unbind-api/ent/webhook"
 )
 
@@ -641,27 +640,6 @@ func init() {
 	userDescID := userMixinFields0[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
-	variablereferenceMixin := schema.VariableReference{}.Mixin()
-	variablereferenceMixinFields0 := variablereferenceMixin[0].Fields()
-	_ = variablereferenceMixinFields0
-	variablereferenceMixinFields1 := variablereferenceMixin[1].Fields()
-	_ = variablereferenceMixinFields1
-	variablereferenceFields := schema.VariableReference{}.Fields()
-	_ = variablereferenceFields
-	// variablereferenceDescCreatedAt is the schema descriptor for created_at field.
-	variablereferenceDescCreatedAt := variablereferenceMixinFields1[0].Descriptor()
-	// variablereference.DefaultCreatedAt holds the default value on creation for the created_at field.
-	variablereference.DefaultCreatedAt = variablereferenceDescCreatedAt.Default.(func() time.Time)
-	// variablereferenceDescUpdatedAt is the schema descriptor for updated_at field.
-	variablereferenceDescUpdatedAt := variablereferenceMixinFields1[1].Descriptor()
-	// variablereference.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	variablereference.DefaultUpdatedAt = variablereferenceDescUpdatedAt.Default.(func() time.Time)
-	// variablereference.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	variablereference.UpdateDefaultUpdatedAt = variablereferenceDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// variablereferenceDescID is the schema descriptor for id field.
-	variablereferenceDescID := variablereferenceMixinFields0[0].Descriptor()
-	// variablereference.DefaultID holds the default value on creation for the id field.
-	variablereference.DefaultID = variablereferenceDescID.Default.(func() uuid.UUID)
 	webhookMixin := schema.Webhook{}.Mixin()
 	webhookMixinFields0 := webhookMixin[0].Fields()
 	_ = webhookMixinFields0

@@ -64,8 +64,6 @@ type Tx struct {
 	Template *TemplateClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
-	// VariableReference is the client for interacting with the VariableReference builders.
-	VariableReference *VariableReferenceClient
 	// Webhook is the client for interacting with the Webhook builders.
 	Webhook *WebhookClient
 
@@ -224,7 +222,6 @@ func (tx *Tx) init() {
 	tx.Team = NewTeamClient(tx.config)
 	tx.Template = NewTemplateClient(tx.config)
 	tx.User = NewUserClient(tx.config)
-	tx.VariableReference = NewVariableReferenceClient(tx.config)
 	tx.Webhook = NewWebhookClient(tx.config)
 }
 

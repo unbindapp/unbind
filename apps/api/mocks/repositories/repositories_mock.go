@@ -27,7 +27,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/repositories/team"
 	"github.com/unbindapp/unbind-api/internal/repositories/template"
 	"github.com/unbindapp/unbind-api/internal/repositories/user"
-	"github.com/unbindapp/unbind-api/internal/repositories/variables"
 	"github.com/unbindapp/unbind-api/internal/repositories/webhook"
 )
 
@@ -891,52 +890,6 @@ func (_c *RepositoriesMock_User_Call) Return(userRepositoryInterface user_repo.U
 }
 
 func (_c *RepositoriesMock_User_Call) RunAndReturn(run func() user_repo.UserRepositoryInterface) *RepositoriesMock_User_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// Variables provides a mock function for the type RepositoriesMock
-func (_mock *RepositoriesMock) Variables() variable_repo.VariableRepositoryInterface {
-	ret := _mock.Called()
-
-	if len(ret) == 0 {
-		panic("no return value specified for Variables")
-	}
-
-	var r0 variable_repo.VariableRepositoryInterface
-	if returnFunc, ok := ret.Get(0).(func() variable_repo.VariableRepositoryInterface); ok {
-		r0 = returnFunc()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(variable_repo.VariableRepositoryInterface)
-		}
-	}
-	return r0
-}
-
-// RepositoriesMock_Variables_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Variables'
-type RepositoriesMock_Variables_Call struct {
-	*mock.Call
-}
-
-// Variables is a helper method to define mock.On call
-func (_e *RepositoriesMock_Expecter) Variables() *RepositoriesMock_Variables_Call {
-	return &RepositoriesMock_Variables_Call{Call: _e.mock.On("Variables")}
-}
-
-func (_c *RepositoriesMock_Variables_Call) Run(run func()) *RepositoriesMock_Variables_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run()
-	})
-	return _c
-}
-
-func (_c *RepositoriesMock_Variables_Call) Return(variableRepositoryInterface variable_repo.VariableRepositoryInterface) *RepositoriesMock_Variables_Call {
-	_c.Call.Return(variableRepositoryInterface)
-	return _c
-}
-
-func (_c *RepositoriesMock_Variables_Call) RunAndReturn(run func() variable_repo.VariableRepositoryInterface) *RepositoriesMock_Variables_Call {
 	_c.Call.Return(run)
 	return _c
 }

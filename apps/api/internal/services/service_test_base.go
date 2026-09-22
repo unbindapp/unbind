@@ -25,7 +25,6 @@ import (
 	mocks_repository_team "github.com/unbindapp/unbind-api/mocks/repository/team"
 	mocks_repository_tx "github.com/unbindapp/unbind-api/mocks/repository/tx"
 	mocks_repository_user "github.com/unbindapp/unbind-api/mocks/repository/user"
-	mocks_repository_variables "github.com/unbindapp/unbind-api/mocks/repository/variables"
 	mocks_repository_webhook "github.com/unbindapp/unbind-api/mocks/repository/webhook"
 )
 
@@ -54,7 +53,6 @@ type ServiceTestSuite struct {
 	MockOauthRepo        *mocks_repository_oauth.OauthRepositoryMock
 	MockGroupRepo        *mocks_repository_group.GroupRepositoryMock
 	MockBootstrapRepo    *mocks_repository_bootstrap.BootstrapRepositoryMock
-	MockVariablesRepo    *mocks_repository_variables.VariablesRepositoryMock
 	MockAPIKeyRepo       *mocks_repository_apikey.APIKeyRepositoryMock
 	MockOAuthServerRepo  *mocks_repository_oauthserver.OAuthServerRepositoryMock
 
@@ -85,7 +83,6 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockOauthRepo = mocks_repository_oauth.NewOauthRepositoryMock(suite.T())
 	suite.MockGroupRepo = mocks_repository_group.NewGroupRepositoryMock(suite.T())
 	suite.MockBootstrapRepo = mocks_repository_bootstrap.NewBootstrapRepositoryMock(suite.T())
-	suite.MockVariablesRepo = mocks_repository_variables.NewVariablesRepositoryMock(suite.T())
 	suite.MockAPIKeyRepo = mocks_repository_apikey.NewAPIKeyRepositoryMock(suite.T())
 	suite.MockOAuthServerRepo = mocks_repository_oauthserver.NewOAuthServerRepositoryMock(suite.T())
 
@@ -109,7 +106,6 @@ func (suite *ServiceTestSuite) SetupTest() {
 	suite.MockRepo.EXPECT().Oauth().Return(suite.MockOauthRepo).Maybe()
 	suite.MockRepo.EXPECT().Group().Return(suite.MockGroupRepo).Maybe()
 	suite.MockRepo.EXPECT().Bootstrap().Return(suite.MockBootstrapRepo).Maybe()
-	suite.MockRepo.EXPECT().Variables().Return(suite.MockVariablesRepo).Maybe()
 	suite.MockRepo.EXPECT().APIKey().Return(suite.MockAPIKeyRepo).Maybe()
 	suite.MockRepo.EXPECT().OAuthServer().Return(suite.MockOAuthServerRepo).Maybe()
 }
@@ -132,7 +128,6 @@ func (suite *ServiceTestSuite) TearDownTest() {
 	suite.MockOauthRepo.AssertExpectations(suite.T())
 	suite.MockGroupRepo.AssertExpectations(suite.T())
 	suite.MockBootstrapRepo.AssertExpectations(suite.T())
-	suite.MockVariablesRepo.AssertExpectations(suite.T())
 	suite.MockAPIKeyRepo.AssertExpectations(suite.T())
 	suite.MockOAuthServerRepo.AssertExpectations(suite.T())
 	suite.MockK8s.AssertExpectations(suite.T())

@@ -21,7 +21,6 @@ import (
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
 	"github.com/unbindapp/unbind-api/ent/servicegroup"
 	"github.com/unbindapp/unbind-api/ent/template"
-	"github.com/unbindapp/unbind-api/ent/variablereference"
 )
 
 // ServiceQuery is the builder for querying Service entities.
@@ -38,7 +37,6 @@ type ServiceQuery struct {
 	withCurrentDeployment  *DeploymentQuery
 	withTemplate           *TemplateQuery
 	withServiceGroup       *ServiceGroupQuery
-	withVariableReferences *VariableReferenceQuery
 	modifiers              []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -223,28 +221,6 @@ func (_q *ServiceQuery) QueryServiceGroup() *ServiceGroupQuery {
 			sqlgraph.From(service.Table, service.FieldID, selector),
 			sqlgraph.To(servicegroup.Table, servicegroup.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, service.ServiceGroupTable, service.ServiceGroupColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryVariableReferences chains the current query on the "variable_references" edge.
-func (_q *ServiceQuery) QueryVariableReferences() *VariableReferenceQuery {
-	query := (&VariableReferenceClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(service.Table, service.FieldID, selector),
-			sqlgraph.To(variablereference.Table, variablereference.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, service.VariableReferencesTable, service.VariableReferencesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -451,7 +427,6 @@ func (_q *ServiceQuery) Clone() *ServiceQuery {
 		withCurrentDeployment:  _q.withCurrentDeployment.Clone(),
 		withTemplate:           _q.withTemplate.Clone(),
 		withServiceGroup:       _q.withServiceGroup.Clone(),
-		withVariableReferences: _q.withVariableReferences.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -536,17 +511,6 @@ func (_q *ServiceQuery) WithServiceGroup(opts ...func(*ServiceGroupQuery)) *Serv
 	return _q
 }
 
-// WithVariableReferences tells the query-builder to eager-load the nodes that are connected to
-// the "variable_references" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ServiceQuery) WithVariableReferences(opts ...func(*VariableReferenceQuery)) *ServiceQuery {
-	query := (&VariableReferenceClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withVariableReferences = query
-	return _q
-}
-
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -625,7 +589,7 @@ func (_q *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serv
 	var (
 		nodes       = []*Service{}
 		_spec       = _q.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [7]bool{
 			_q.withEnvironment != nil,
 			_q.withGithubInstallation != nil,
 			_q.withServiceConfig != nil,
@@ -633,7 +597,6 @@ func (_q *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serv
 			_q.withCurrentDeployment != nil,
 			_q.withTemplate != nil,
 			_q.withServiceGroup != nil,
-			_q.withVariableReferences != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -697,15 +660,6 @@ func (_q *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serv
 	if query := _q.withServiceGroup; query != nil {
 		if err := _q.loadServiceGroup(ctx, query, nodes, nil,
 			func(n *Service, e *ServiceGroup) { n.Edges.ServiceGroup = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withVariableReferences; query != nil {
-		if err := _q.loadVariableReferences(ctx, query, nodes,
-			func(n *Service) { n.Edges.VariableReferences = []*VariableReference{} },
-			func(n *Service, e *VariableReference) {
-				n.Edges.VariableReferences = append(n.Edges.VariableReferences, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -923,36 +877,6 @@ func (_q *ServiceQuery) loadServiceGroup(ctx context.Context, query *ServiceGrou
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
-	}
-	return nil
-}
-func (_q *ServiceQuery) loadVariableReferences(ctx context.Context, query *VariableReferenceQuery, nodes []*Service, init func(*Service), assign func(*Service, *VariableReference)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Service)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(variablereference.FieldTargetServiceID)
-	}
-	query.Where(predicate.VariableReference(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(service.VariableReferencesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.TargetServiceID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "target_service_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

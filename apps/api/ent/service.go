@@ -87,11 +87,9 @@ type ServiceEdges struct {
 	Template *Template `json:"template,omitempty"`
 	// ServiceGroup holds the value of the service_group edge.
 	ServiceGroup *ServiceGroup `json:"service_group,omitempty"`
-	// VariableReferences holds the value of the variable_references edge.
-	VariableReferences []*VariableReference `json:"variable_references,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [7]bool
 }
 
 // EnvironmentOrErr returns the Environment value or an error if the edge
@@ -167,15 +165,6 @@ func (e ServiceEdges) ServiceGroupOrErr() (*ServiceGroup, error) {
 		return nil, &NotFoundError{label: servicegroup.Label}
 	}
 	return nil, &NotLoadedError{edge: "service_group"}
-}
-
-// VariableReferencesOrErr returns the VariableReferences value or an error if the edge
-// was not loaded in eager-loading.
-func (e ServiceEdges) VariableReferencesOrErr() ([]*VariableReference, error) {
-	if e.loadedTypes[7] {
-		return e.VariableReferences, nil
-	}
-	return nil, &NotLoadedError{edge: "variable_references"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -388,11 +377,6 @@ func (_m *Service) QueryTemplate() *TemplateQuery {
 // QueryServiceGroup queries the "service_group" edge of the Service entity.
 func (_m *Service) QueryServiceGroup() *ServiceGroupQuery {
 	return NewServiceClient(_m.config).QueryServiceGroup(_m)
-}
-
-// QueryVariableReferences queries the "variable_references" edge of the Service entity.
-func (_m *Service) QueryVariableReferences() *VariableReferenceQuery {
-	return NewServiceClient(_m.config).QueryVariableReferences(_m)
 }
 
 // Update returns a builder for updating this Service.
