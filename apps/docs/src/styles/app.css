@@ -234,7 +234,8 @@ p.inline-flex.mt-6 {
 /* The logo link at the top of the desktop sidebar. Fumadocs renders it flush with the
    search field below, so it gets the inset the sidebar items have. */
 #nd-sidebar > div:first-child > div:first-child > a {
-  padding-inline: calc(var(--spacing) * 1);
+  padding-inline: calc(var(--spacing) * 2);
+  padding-bottom: calc(var(--spacing) * 0.5);
 }
 
 /* The desktop sidebar footer bar holds the GitHub link and the theme switch. Fumadocs
