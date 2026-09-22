@@ -78,6 +78,7 @@
   --color-warning: var(--warning);
   --color-destructive: var(--destructive);
   --color-shadow-color: var(--shadow-color);
+  --color-top-loader: var(--top-loader);
 
   --opacity-barrier: var(--opacity-barrier);
   --opacity-shadow-opacity: var(--opacity-shadow);
