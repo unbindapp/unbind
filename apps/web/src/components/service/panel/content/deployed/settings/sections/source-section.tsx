@@ -240,7 +240,10 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
               <BlockItem id={settingsIds.source.repository} className="w-full md:w-full">
                 <BlockItemHeader>
                   <BlockItemTitle>Repository</BlockItemTitle>
-                  <SuffixExternalLink href={"/"} label="Open repository on GitHub" />
+                  <SuffixExternalLink
+                    href={`https://github.com/${selectedRepository.owner}/${selectedRepository.name}`}
+                    label="Open repository on GitHub"
+                  />
                 </BlockItemHeader>
                 <BlockItemContent>
                   <field.AsyncAndSearchableSelect
@@ -464,7 +467,16 @@ function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {
               <BlockItem id={settingsIds.source.image} className="w-full md:w-full">
                 <BlockItemHeader>
                   <BlockItemTitle>Image</BlockItemTitle>
-                  <SuffixExternalLink href={"/"} label="Open repository on GitHub" />
+                  <SuffixExternalLink
+                    href={
+                      selectedIsNonDockerHub
+                        ? `https://${selected.image}`
+                        : `https://hub.docker.com/r/${selected.image}`
+                    }
+                    label={
+                      selectedIsNonDockerHub ? "Open image registry" : "Open image on Docker Hub"
+                    }
+                  />
                 </BlockItemHeader>
                 <BlockItemContent>
                   <field.AsyncAndSearchableSelect

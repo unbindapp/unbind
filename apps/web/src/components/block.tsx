@@ -252,19 +252,26 @@ export function BlockItemButtonLike({
         // External anchors apply the button styling here since a plain <a> can't
         // take the `variant` prop.
         isLink && buttonVariants({ variant: "outline" }),
-        "group/button bg-input flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left data-pending:text-transparent",
+        "group/button bg-input flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left",
         "data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:has-hover:hover:bg-change/4-10 data-staged:has-hover:hover:text-change data-staged:active:bg-change/4-10 data-staged:active:text-change",
         className,
       )}
       {...(isLink ? { href, target: "_blank", rel: "noopener noreferrer" } : {})}
-      {...(asElement === "button"
-        ? { type: "button", disabled: isPending, fadeOnDisabled: isPending ? false : "default" }
-        : {})}
+      {...(asElement === "button" ? { type: "button" } : {})}
       {...props}
+      {...(asElement === "button"
+        ? {
+            // Pending wins over the caller's disabled state and never fades
+            disabled: isPending || ("disabled" in props && props.disabled),
+            fadeOnDisabled: isPending
+              ? false
+              : (("fadeOnDisabled" in props ? props.fadeOnDisabled : undefined) ?? "default"),
+          }
+        : {})}
     >
       <div
         className={cn(
-          "group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2 leading-tight",
+          "group-data-pending/button:animate-skeleton flex min-w-0 flex-1 items-start justify-start gap-2 leading-tight group-data-pending/button:text-transparent",
           classNameContent,
         )}
       >
@@ -285,7 +292,7 @@ export function BlockItemButtonLike({
             <div className="line-icon">
               <Icon
                 className={cn(
-                  "group-data-pending/button:bg-foreground size-4.5 shrink-0 group-data-pending/button:rounded-full",
+                  "group-data-pending/button:bg-foreground group-data-pending/button:group-data-staged/button:bg-change size-4.5 shrink-0 group-data-pending/button:rounded-full",
                   classNameIcon,
                 )}
                 isEditing={isEditing}
@@ -298,7 +305,7 @@ export function BlockItemButtonLike({
           <div className="flex w-full flex-row">
             <p
               className={cn(
-                "group-data-pending/button:bg-foreground max-w-full min-w-0 font-medium select-text group-data-pending/button:rounded-md",
+                "group-data-pending/button:bg-foreground group-data-pending/button:group-data-staged/button:bg-change max-w-full min-w-0 font-medium select-text group-data-pending/button:rounded-md",
                 // A node brings its own layout, clipping it here cuts anything that paints
                 // outside the line box, like a chip's border
                 typeof text === "string" && "truncate",
@@ -313,7 +320,7 @@ export function BlockItemButtonLike({
             <Description />
           ) : (
             Description && (
-              <p className="text-muted-foreground group-data-pending/button:bg-muted-foreground group-data-staged/button:text-change/9-10 min-w-0 shrink text-sm leading-tight group-data-pending/button:rounded-md">
+              <p className="text-muted-foreground group-data-pending/button:bg-muted-foreground group-data-pending/button:group-data-staged/button:bg-change/7-10 group-data-staged/button:text-change/9-10 min-w-0 shrink text-sm leading-tight group-data-pending/button:rounded-md group-data-pending/button:text-transparent group-data-pending/button:group-data-staged/button:text-transparent">
                 {Description}
               </p>
             )
