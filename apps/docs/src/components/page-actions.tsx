@@ -37,7 +37,7 @@ export function CopyMarkdownButton({ markdownUrl }: { markdownUrl: string }) {
       onClick={copy}
       className="px-2.5"
     >
-      <CopyStateIcon className="-ml-0.5 size-4" />
+      <CopyStateIcon className="-ml-px size-4" />
       Copy Markdown
     </Button>
   );
@@ -115,7 +115,7 @@ export function ViewOptionsPopover({
         }
       >
         Open
-        <ChevronDownIcon className="text-muted-foreground -mr-0.5 size-4 transition group-data-open/button:rotate-180" />
+        <ChevronDownIcon className="text-muted-foreground -mr-px size-4 transition group-data-open/button:rotate-180" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-52">
         <DropdownMenuGroup>

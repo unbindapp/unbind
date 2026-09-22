@@ -299,7 +299,7 @@ p.inline-flex.mt-6 {
 .not-prose.rounded-xl > button > svg.lucide-check {
   width: calc(var(--spacing) * 4);
   height: calc(var(--spacing) * 4);
-  margin-inline-start: calc(var(--spacing) * -0.5);
+  margin-inline-start: -1px;
 }
 .not-prose.rounded-xl > button > svg.lucide-check {
   color: var(--success);
