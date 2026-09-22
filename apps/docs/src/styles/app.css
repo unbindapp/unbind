@@ -198,8 +198,10 @@ div:has(> [data-object-search-input]):not([class*="sticky"]):focus-within {
   box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) var(--opacity-8-10), transparent);
 }
 
-/* The Server URL chip sits on a muted row and is muted itself. */
+/* The Server URL chip sits on a muted row and is muted itself, and it hangs 8px
+   into the row's start padding, so its gap to the edge matches the vertical one. */
 button:has(> code + svg) > span:first-child {
+  margin-inline-start: calc(var(--spacing) * -1);
   background-color: var(--background);
 }
 

@@ -35,8 +35,9 @@ export function CopyMarkdownButton({ markdownUrl }: { markdownUrl: string }) {
       size="sm"
       data-copied={isRecentlyCopied || undefined}
       onClick={copy}
+      className="px-2.5"
     >
-      <CopyStateIcon className="-ml-1.5 size-4" />
+      <CopyStateIcon className="-ml-0.5 size-4" />
       Copy Markdown
     </Button>
   );
@@ -105,11 +106,16 @@ export function ViewOptionsPopover({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         render={
-          <Button variant="outline" size="sm" data-open={open || undefined} className="gap-1" />
+          <Button
+            variant="outline"
+            size="sm"
+            data-open={open || undefined}
+            className="gap-1 px-2.5"
+          />
         }
       >
         Open
-        <ChevronDownIcon className="text-muted-foreground -mr-0.75 size-4 transition group-data-open/button:rotate-180" />
+        <ChevronDownIcon className="text-muted-foreground -mr-0.5 size-4 transition group-data-open/button:rotate-180" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-52">
         <DropdownMenuGroup>

@@ -48,7 +48,7 @@ function TabDropdown({ options }: { options: LayoutTab[] }) {
           <Button
             variant="outline"
             data-open={open || undefined}
-            className="bg-input flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left"
+            className="bg-input flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2 text-left"
           />
         }
       >

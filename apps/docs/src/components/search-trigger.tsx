@@ -52,7 +52,7 @@ export function FullSearchTrigger({
       <span className="min-w-0 flex-1 truncate text-start">Search</span>
       <span className="text-muted-more-foreground flex shrink-0 items-center gap-0.5 font-mono text-xs">
         {hotKey.map((key, i) => (
-          <kbd key={i} className="bg-background rounded-sm border px-1.5 py-0.5">
+          <kbd key={i} className="bg-background -my-0.5 rounded-sm border px-1.5 py-0.5">
             {key.display}
           </kbd>
         ))}
