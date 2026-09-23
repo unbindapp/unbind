@@ -120,6 +120,17 @@ body {
   font-family: var(--font-sans);
 }
 
+@layer base {
+  button,
+  [role="button"] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [role="button"]:disabled {
+    cursor: default;
+  }
+}
+
 /* Fumadocs pieces restyled after apps/web/src/components/ui. These stay unlayered so
    they win over the utility classes Fumadocs renders, which give no props for this. */
 
@@ -351,6 +362,11 @@ form button[role="combobox"][data-popup-open] > span:last-child > svg {
 
 .prose table {
   border-radius: var(--radius);
+}
+/* Markdown tables cannot be written without a header row, so key and value tables
+   leave it blank. Hide the header when every cell is empty. */
+.prose thead:not(:has(th:not(:empty))) {
+  display: none;
 }
 
 /* Sidebar section titles */
