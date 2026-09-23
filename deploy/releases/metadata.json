@@ -423,5 +423,10 @@
     "version": "v0.1.84",
     "summary": "Updates keep running while you navigate the app, repository and image picks are staged right away, the legacy GitHub webhook path is removed, and docs site code block polish.",
     "breaking": false
+  },
+  "v0.1.85": {
+    "version": "v0.1.85",
+    "summary": "Privileges for API keys and connected apps that gate variable values, logs and webhook URLs, an auto deploy on push toggle for GitHub services, and brand icons on the docs site.",
+    "breaking": false
   }
 }
