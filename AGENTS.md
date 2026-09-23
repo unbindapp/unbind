@@ -59,6 +59,7 @@ In the dev environment the server is at `http://localhost:8089/mcp`. Test it wit
 - After you make code changes, run precommit and fix any lint issues that arise from it.
 - If you are asked to work on a Linear issue and Linear is availabe in the environment, mark the issue as "In Progress".
 - If you are asked to work on the repo, check if there are uncommited or unpushed local code changes. If not, pull the latest changes from the remote repository before starting.
+- Always keep the info in apps/docs in sync with other apps in the repo. If you make changes in apps/api, apps/installer, apps/operator or apps/web, make sure to update the docs accordingly.
 
 ## Commit Messages
 
