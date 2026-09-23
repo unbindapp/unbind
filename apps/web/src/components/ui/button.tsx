@@ -14,13 +14,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground has-hover:hover:bg-primary active:bg-primary",
+        default:
+          "bg-primary text-primary-foreground has-hover:hover:bg-primary/85 active:bg-primary/85",
         destructive:
-          "bg-destructive text-destructive-foreground has-hover:hover:bg-destructive active:bg-destructive",
-        warning: "bg-warning text-warning-foreground has-hover:hover:bg-warning active:bg-warning",
-        success: "bg-success text-success-foreground has-hover:hover:bg-success active:bg-success",
-        process: "bg-process text-process-foreground has-hover:hover:bg-process active:bg-process",
-        change: "bg-change text-change-foreground has-hover:hover:bg-change active:bg-change",
+          "bg-destructive text-destructive-foreground has-hover:hover:bg-destructive/85 active:bg-destructive/85",
+        warning:
+          "bg-warning text-warning-foreground has-hover:hover:bg-warning/85 active:bg-warning/85",
+        success:
+          "bg-success text-success-foreground has-hover:hover:bg-success/85 active:bg-success/85",
+        process:
+          "bg-process text-process-foreground has-hover:hover:bg-process/85 active:bg-process/85",
+        change: "bg-change text-change-foreground has-hover:hover:bg-change/85 active:bg-change/85",
         outline:
           "border border-border bg-background has-hover:hover:bg-border active:bg-border has-hover:hover:text-foreground active:text-foreground",
         "outline-muted":
