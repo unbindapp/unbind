@@ -241,10 +241,10 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
       const rolledOut = result.affected.filter((a) => a.action !== "none").length;
       toast.add({
         type: "success",
-        title: "Changes deployed",
+        title: rolledOut === 0 ? "Changes saved" : "Changes deployed",
         description:
           rolledOut === 0
-            ? "Nothing was running, the changes apply on the next deployment."
+            ? "No service needed a rollout."
             : `${rolledOut} ${rolledOut === 1 ? "service is" : "services are"} rolling out.`,
       });
     },
