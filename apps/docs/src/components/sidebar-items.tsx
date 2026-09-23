@@ -19,7 +19,7 @@ import type { SidebarPageTreeComponents } from "fumadocs-ui/components/sidebar/p
 // offsets are the same as the Fumadocs defaults.
 
 const itemClass =
-  "relative flex flex-row items-center gap-2 rounded-lg p-2 text-start text-muted-foreground wrap-anywhere focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/8-10 [&_svg]:size-4 [&_svg]:shrink-0";
+  "relative flex flex-row items-center gap-1.5 rounded-lg p-2 text-start text-muted-foreground wrap-anywhere focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-primary/8-10 [&_svg]:size-4 [&_svg]:shrink-0";
 const idleClass =
   "has-hover:hover:bg-border has-hover:hover:text-foreground active:bg-border active:text-foreground";
 const activeClass = "bg-success/3-10 text-success";

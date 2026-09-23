@@ -1,13 +1,11 @@
 @import "tailwindcss";
+@import "./reset-colors.css";
 @import "../../../web/src/styles/tokens.css";
 @import "fumadocs-ui/css/preset.css";
 @import "fumadocs-openapi/css/preset.css";
 
 /* Every Fumadocs token points at an Unbind token. Nothing here has a color of its own. */
 @theme inline static {
-  /* Drop Tailwind's stock palette first, so no color that is not ours can be used. */
-  --color-*: initial;
-
   --color-fd-background: var(--background);
   --color-fd-foreground: var(--foreground);
   --color-fd-muted: var(--muted);
@@ -57,28 +55,6 @@
   --color-orange-400: var(--warning);
   --color-orange-500: var(--warning);
   --color-orange-600: var(--warning);
-
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-hover: var(--card-hover);
-  --color-popover: var(--popover);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted-more-foreground: var(--muted-more-foreground);
-  --color-accent: var(--accent);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-success: var(--success);
-  --color-process: var(--process);
-  --color-warning: var(--warning);
-  --color-destructive: var(--destructive);
-  --color-shadow-color: var(--shadow-color);
-  --color-top-loader: var(--top-loader);
 
   --opacity-barrier: var(--opacity-barrier);
   --opacity-shadow-opacity: var(--opacity-shadow);

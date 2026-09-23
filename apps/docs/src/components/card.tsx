@@ -1,10 +1,12 @@
+import BrandIcon from "@/components/icons/brand";
 import { cn } from "@/lib/cn";
 import Link from "fumadocs-core/link";
 import type { ComponentProps, ReactNode } from "react";
 
-// Fumadocs' Card with the app's card hover and active states.
+// Fumadocs' Card with the app's card hover and active states. A brand puts its icon
+// in brand color before the title, like the template cards in the app.
 export function Card({
-  icon,
+  brand,
   title,
   description,
   href,
@@ -12,7 +14,7 @@ export function Card({
   children,
   ...props
 }: Omit<ComponentProps<"a">, "title"> & {
-  icon?: ReactNode;
+  brand?: string;
   title: ReactNode;
   description?: ReactNode;
 }) {
@@ -24,12 +26,10 @@ export function Card({
   );
   const content = (
     <>
-      {icon && (
-        <div className="not-prose text-muted-foreground bg-muted mb-2 w-fit rounded-lg border p-1.5 [&_svg]:size-4">
-          {icon}
-        </div>
-      )}
-      <h3 className="not-prose mb-1 text-sm font-medium">{title}</h3>
+      <h3 className="not-prose mb-1 flex items-center gap-1.5 text-sm font-medium">
+        {brand && <BrandIcon brand={brand} color="brand" className="size-4.5" />}
+        <span className="min-w-0 truncate">{title}</span>
+      </h3>
       {description && <p className="text-muted-foreground my-0! text-sm">{description}</p>}
       <div className="text-muted-foreground prose-no-margin text-sm empty:hidden">{children}</div>
     </>

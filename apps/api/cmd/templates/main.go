@@ -9,6 +9,7 @@ import (
 
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/models"
 	"github.com/unbindapp/unbind-api/pkg/templates"
 )
 
@@ -32,6 +33,7 @@ type inputFacts struct {
 
 type serviceFacts struct {
 	Name         string  `json:"name"`
+	Icon         string  `json:"icon"`
 	Image        *string `json:"image,omitempty"`
 	DatabaseType *string `json:"database_type,omitempty"`
 }
@@ -71,6 +73,7 @@ func toTemplateFacts(definition *schema.TemplateDefinition) templateFacts {
 	for _, service := range definition.Services {
 		services = append(services, serviceFacts{
 			Name:         service.Name,
+			Icon:         models.ResolveTemplateServiceIcon(service),
 			Image:        service.Image,
 			DatabaseType: service.DatabaseType,
 		})

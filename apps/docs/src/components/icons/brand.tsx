@@ -1,4 +1,4 @@
-import { cn } from "@/components/ui/utils";
+import { cn } from "@/lib/cn";
 import { BoxIcon, FolderIcon, LayoutGridIcon, UsersIcon, WebhookIcon } from "lucide-react";
 import { ComponentProps, ComponentType, useId } from "react";
 
@@ -9,6 +9,7 @@ type TProps = ComponentProps<"svg"> & {
   Fallback?: ComponentType<ComponentProps<"svg">>;
 };
 
+// Copy of apps/web/src/components/icons/brand.tsx.
 const defaultClassName = "size-5 shrink-0";
 
 export default function BrandIcon({

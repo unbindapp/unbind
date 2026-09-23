@@ -19,6 +19,8 @@ import { sidebarComponents } from "@/components/sidebar-items";
 import { SidebarTrigger } from "@/components/sidebar-trigger";
 import { PageFooter } from "@/components/page-footer";
 import { notFoundHead } from "@/components/not-found";
+import BrandIcon from "@/components/icons/brand";
+import { templateBrands } from "@/lib/brand-icons";
 
 export const Route = createFileRoute("/$")({
   component: Page,
@@ -131,7 +133,12 @@ function Content({ path, markdownUrl }: { path: string; markdownUrl: string }) {
 
   return (
     <DocsPage toc={toc} slots={pageSlots}>
-      <DocsTitle>{page.heading ?? page.title}</DocsTitle>
+      <DocsTitle className="flex items-center gap-2">
+        {page.icon && templateBrands.has(page.icon) && (
+          <BrandIcon brand={page.icon} color="brand" className="size-8" />
+        )}
+        <span className="min-w-0">{page.heading ?? page.title}</span>
+      </DocsTitle>
       <DocsDescription>{page.description}</DocsDescription>
       <PageActions markdownUrl={markdownUrl} githubUrl={`${repoUrl}/${contentDir}/${path}`} />
       <DocsBody>

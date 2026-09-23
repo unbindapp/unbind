@@ -1,3 +1,4 @@
+import BrandIcon from "@/components/icons/brand";
 import templates from "../../generated/templates.gen.json";
 
 type Template = (typeof templates)[number];
@@ -33,7 +34,12 @@ export function TemplateServices({ name }: { name: string }) {
         <tbody>
           {template.services.map((service) => (
             <tr key={service.name}>
-              <td>{service.name}</td>
+              <td>
+                <span className="flex items-center gap-2">
+                  <BrandIcon brand={service.icon} color="brand" className="size-4.5" />
+                  {service.name}
+                </span>
+              </td>
               <td>
                 <code>{service.image ?? service.database_type}</code>
               </td>

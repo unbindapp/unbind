@@ -1,0 +1,5 @@
+/* Drop Tailwind's stock palette before the tokens load, so no color that is not ours
+   can be used and every token color, brand colors included, comes through. */
+@theme inline static {
+  --color-*: initial;
+}

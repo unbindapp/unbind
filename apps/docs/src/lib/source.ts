@@ -1,5 +1,6 @@
 import { llms, loader } from "fumadocs-core/source";
 import { lucideIconsPlugin } from "fumadocs-core/source/lucide-icons";
+import { brandIconsPlugin } from "./brand-icons";
 import { docs } from "./docs";
 import { openapi } from "./openapi";
 import { orderReference } from "./reference-order";
@@ -16,7 +17,7 @@ export const source = loader(
   },
   {
     baseUrl: docsRoute,
-    plugins: [lucideIconsPlugin(), tabColorsPlugin(), openapi.loaderPlugin()],
+    plugins: [brandIconsPlugin(), lucideIconsPlugin(), tabColorsPlugin(), openapi.loaderPlugin()],
   },
 );
 
