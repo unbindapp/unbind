@@ -14,7 +14,9 @@ export function ToggleKnob({ checked, hasChanges, size = "md", className }: TPro
       data-staged={hasChanges || undefined}
       data-size={size}
       className={cn(
-        "group/knob bg-muted-more-foreground data-checked:bg-foreground data-staged:bg-change/7-10 data-staged:data-checked:bg-change relative h-5 w-9 shrink-0 rounded-full transition data-[size=sm]:h-4.5 data-[size=sm]:w-8",
+        // The color is animated through currentColor: Chrome runs background-color transitions
+        // on the compositor and can paint the start color for a frame when they end
+        "group/knob text-muted-more-foreground data-checked:text-foreground data-staged:text-change/7-10 data-staged:data-checked:text-change relative h-5 w-9 shrink-0 rounded-full bg-current transition data-[size=sm]:h-4.5 data-[size=sm]:w-8",
         className,
       )}
     >
