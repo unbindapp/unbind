@@ -36,6 +36,7 @@ import { queryKeyVariables } from "@/lib/queries/variables";
 import type { AffectedService } from "@/lib/server/client.gen";
 import {
   keepPreviousData,
+  notifyManager,
   useMutation,
   useQuery,
   useQueryClient,
@@ -186,6 +187,13 @@ function refetchChangedData(
   ]);
 }
 
+// React Query tells its subscribers about refetched data on the next tick. Settled changes
+// leave the stage after that, or a section renders unstaged with the old server value for
+// a frame and its inputs jump back and forth
+function queryNotificationsFlushed() {
+  return new Promise<void>((resolve) => notifyManager.schedule(resolve));
+}
+
 // The plan is a dry run of the staged changes: it validates them and lists the
 // services that would roll out, including ones only affected through references
 function ChangesPlanProvider({ children }: { children: ReactNode }) {
@@ -235,6 +243,7 @@ function ChangesPlanProvider({ children }: { children: ReactNode }) {
         );
       }
       await refetchChangedData(queryClient, state, result.affected);
+      await queryNotificationsFlushed();
       endApplying(settled);
       queryClient.invalidateQueries();
       if (result.failures.length > 0) return;
