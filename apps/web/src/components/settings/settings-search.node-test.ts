@@ -51,6 +51,9 @@ test("keywords match", () => {
   assert.ok(visibleItems("url").includes(settingsIds.networking.private));
   assert.ok(visibleItems("ram").includes(settingsIds.deploy.resourceLimits));
   assert.ok(visibleItems("cron").includes(settingsIds.backups.schedule));
+  assert.ok(visibleItems("auto deploy").includes(settingsIds.source.branch));
+  assert.ok(visibleItems("push").includes(settingsIds.source.branch));
+  assert.ok(visibleItems("webhook").includes(settingsIds.source.branch));
   assert.ok(matchSettings("remove")?.sections.has("danger"));
 });
 

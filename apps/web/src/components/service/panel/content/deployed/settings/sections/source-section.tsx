@@ -5,7 +5,6 @@ import {
   BlockItemContent,
   BlockItemHeader,
   BlockItemTitle,
-  BlockItemToggle,
 } from "@/components/block";
 import { databaseTypeToName } from "@/components/command-panel/context-command-panel/items/database";
 import {
@@ -13,6 +12,7 @@ import {
   isNonDockerHubImage,
 } from "@/components/command-panel/context-command-panel/items/docker-image";
 import BrandIcon from "@/components/icons/brand";
+import HeaderToggle from "@/components/service/header-toggle";
 import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
   hasApplying,
@@ -45,7 +45,6 @@ import {
 } from "@/lib/queries/update-service-input";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  CircleArrowUpIcon,
   CodeIcon,
   ExternalLink,
   GitBranchIcon,
@@ -249,8 +248,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
 
   const showRepository = isItemVisible(settingsIds.source.repository);
   const showBranch = isItemVisible(settingsIds.source.branch);
-  const showAutoDeploy = isItemVisible(settingsIds.source.autoDeploy);
-  if (!showRepository && !showBranch && !showAutoDeploy) return null;
+  if (!showRepository && !showBranch) return null;
 
   const fields: TServiceChangeField[] = ["gitRepository", "gitBranch", "autoDeploy"];
 
@@ -329,6 +327,20 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
               <BlockItem id={settingsIds.source.branch} className="w-full md:w-full">
                 <BlockItemHeader>
                   <BlockItemTitle>Branch</BlockItemTitle>
+                  <HeaderToggle
+                    label="Auto Deploy"
+                    checked={autoDeploy}
+                    hasChanges={staged.autoDeploy !== undefined}
+                    onChange={(checked) =>
+                      stage({
+                        field: "autoDeploy",
+                        label: "Auto Deploy",
+                        value: checked,
+                        previous: serverAutoDeploy,
+                        format: autoDeployLabel,
+                      })
+                    }
+                  />
                 </BlockItemHeader>
                 <BlockItemContent>
                   <field.AsyncAndSearchableSelect
@@ -363,32 +375,6 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
               </BlockItem>
             )}
           />
-        </Block>
-      )}
-      {showAutoDeploy && (
-        <Block>
-          <BlockItem id={settingsIds.source.autoDeploy} className="w-full md:w-full">
-            <BlockItemHeader>
-              <BlockItemTitle>Auto Deploy</BlockItemTitle>
-            </BlockItemHeader>
-            <BlockItemContent>
-              <BlockItemToggle
-                text="Deploy on every push"
-                Icon={CircleArrowUpIcon}
-                checked={autoDeploy}
-                hasChanges={staged.autoDeploy !== undefined}
-                onCheckedChange={(checked) =>
-                  stage({
-                    field: "autoDeploy",
-                    label: "Auto deploy",
-                    value: checked,
-                    previous: serverAutoDeploy,
-                    format: autoDeployLabel,
-                  })
-                }
-              />
-            </BlockItemContent>
-          </BlockItem>
         </Block>
       )}
     </SettingsSection>

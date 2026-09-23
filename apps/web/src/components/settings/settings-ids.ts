@@ -3,7 +3,6 @@ export const settingsIds = {
   source: {
     repository: "source_repository",
     branch: "source_branch",
-    autoDeploy: "source_auto-deploy",
     image: "source_image",
     tag: "source_tag",
     database: "source_database",
