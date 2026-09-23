@@ -13,7 +13,7 @@ import {
 } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { FolderIcon, LoaderIcon } from "lucide-react";
+import { LoaderIcon } from "lucide-react";
 import { ReactNode } from "react";
 
 type TProps = {
@@ -56,11 +56,6 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
       >
         {project && <NewEntityIndicator id={project.id} />}
         <div className="flex w-full items-center justify-start gap-2">
-          {!isPlaceholder ? (
-            <FolderIcon className="-ml-1 size-5" />
-          ) : (
-            <div className="animate-skeleton bg-foreground -ml-1 size-5 rounded-full" />
-          )}
           <h3 className="group-data-placeholder/item:bg-foreground group-data-placeholder/item:animate-skeleton min-w-0 shrink overflow-hidden leading-tight text-ellipsis whitespace-nowrap group-data-placeholder/item:rounded-md group-data-placeholder/item:text-transparent">
             {!isPlaceholder ? project.name : "Loading"}
           </h3>
