@@ -28,4 +28,6 @@ export type TServiceVariableTypeProps = {
 };
 
 export type TEntityVariableTypeProps =
-  TTeamVariableTypeProps | TProjectVariableTypeProps | TServiceVariableTypeProps;
+  | TTeamVariableTypeProps
+  | TProjectVariableTypeProps
+  | TServiceVariableTypeProps;

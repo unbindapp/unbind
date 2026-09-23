@@ -29,7 +29,8 @@ import {
 import { useState } from "react";
 
 type TProps =
-  { apiKey: TApiKeyShallow; isPlaceholder?: never } | { apiKey?: never; isPlaceholder: true };
+  | { apiKey: TApiKeyShallow; isPlaceholder?: never }
+  | { apiKey?: never; isPlaceholder: true };
 
 export default function ApiKeyCard({ isPlaceholder, apiKey }: TProps) {
   return (

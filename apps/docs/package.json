@@ -1,6 +1,7 @@
 {
   "name": "unbind-docs",
   "private": true,
+  "packageManager": "npm@11.19.0",
   "type": "module",
   "sideEffects": false,
   "scripts": {
