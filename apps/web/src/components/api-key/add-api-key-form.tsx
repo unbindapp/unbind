@@ -1,7 +1,6 @@
 "use client";
 
-import AccessField from "@/components/api-key/access-field";
-import PrivilegesField from "@/components/api-key/privileges-field";
+import { AccessSections } from "@/components/api-key/access-sections";
 import ApiKeyCreatedDialog from "@/components/api-key/api-key-created-dialog";
 import { useApiKeys, useApiKeysUtils } from "@/components/api-key/api-keys-provider";
 import {
@@ -12,18 +11,14 @@ import {
   expiresAtFrom,
   expiryOptions,
   hasPickedResource,
-  isRoleAllowed,
   pickResourceMessage,
   rowToResource,
-  scopedCapFrom,
   useResourceCaps,
   type TAccess,
   type TExpiryValue,
   type TResourceRow,
 } from "@/components/api-key/helpers";
 import InputSectionWrapper from "@/components/api-key/input-section-wrapper";
-import ResourceRows from "@/components/api-key/resource-rows";
-import RoleField from "@/components/api-key/role-field";
 import { BlockItemButtonLike } from "@/components/block";
 import ErrorLine from "@/components/error-line";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
@@ -136,69 +131,16 @@ export default function AddApiKeyForm({ className }: TProps) {
               )}
             />
           </InputSectionWrapper>
-          <h2 className="mt-6 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
-            Access
-          </h2>
-          <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
-            You can narrow down a key's permissions.
-          </p>
-          <InputSectionWrapper>
-            <form.AppField
-              name="access"
-              children={(field) => <AccessField field={field} className={accessFieldClassName} />}
-            />
-            <form.Subscribe selector={(state) => ({ access: state.values.access })}>
-              {({ access }) =>
-                access === "scoped" && (
-                  <form.AppField
-                    name="rows"
-                    children={(field) => <ResourceRows field={field} caps={caps} />}
-                  />
-                )
-              }
-            </form.Subscribe>
-          </InputSectionWrapper>
-          <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
-            Role
-          </h2>
-          <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
-            The most a key can do on the resources above.
-          </p>
-          <InputSectionWrapper>
-            <form.Subscribe
-              selector={(state) => ({ access: state.values.access, rows: state.values.rows })}
-            >
-              {({ access, rows }) => {
-                const scopedCap = scopedCapFrom(rows, caps.caps);
-                return (
-                  <form.AppField
-                    name="role"
-                    children={(field) => (
-                      <RoleField
-                        field={field}
-                        className={accessFieldClassName}
-                        isAllowed={(role) => isRoleAllowed(access, scopedCap, role)}
-                      />
-                    )}
-                  />
-                );
-              }}
-            </form.Subscribe>
-          </InputSectionWrapper>
-          <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
-            Privileges
-          </h2>
-          <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
-            Capabilities not covered by the role.
-          </p>
-          <InputSectionWrapper>
-            <form.AppField
-              name="privileges"
-              children={(field) => (
-                <PrivilegesField field={field} className={accessFieldClassName} />
-              )}
-            />
-          </InputSectionWrapper>
+          <AccessSections
+            form={form}
+            fields={{ access: "access", rows: "rows", role: "role", privileges: "privileges" }}
+            subject="key"
+            caps={caps}
+            classNameField={accessFieldClassName}
+            classNameText="lg:w-[calc((100%-0.5rem)/2)]"
+            classNameFirstSection="mt-6"
+            classNameSection="mt-8"
+          />
           <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
             Expires
           </h2>

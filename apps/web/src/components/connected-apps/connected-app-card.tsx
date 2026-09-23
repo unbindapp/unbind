@@ -1,6 +1,6 @@
 "use client";
 
-import { privilegeOptions, describeResource, roleOptions } from "@/components/api-key/helpers";
+import { AccessChips, Chip } from "@/components/api-key/access-chips";
 import { useConnectedAppsUtils } from "@/components/connected-apps/connected-apps-provider";
 import BrandIcon from "@/components/icons/brand";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
@@ -25,18 +25,11 @@ import {
   BoxIcon,
   CircleAlertIcon,
   EllipsisVerticalIcon,
-  EyeIcon,
   GlobeIcon,
-  ListFilterIcon,
-  ScrollTextIcon,
   ShieldCheckIcon,
-  ShieldHalfIcon,
-  SquarePenIcon,
   Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
-
-const placeholderChips = Array.from({ length: 2 }, (_, i) => i);
 
 type TProps =
   | { connectedApp: TConnectedApp; isPlaceholder?: never }
@@ -78,44 +71,7 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
           )}
         </div>
       </div>
-      <div className="flex w-full flex-wrap items-start justify-start gap-1.5 text-xs">
-        <Chip
-          data-variant={connectedApp?.role}
-          className="text-foreground bg-foreground/6-10 data-[variant=admin]:text-destructive data-[variant=admin]:bg-destructive/4-10 data-[variant=admin]:border-destructive/4-10 data-[variant=editor]:text-warning data-[variant=editor]:bg-warning/4-10 data-[variant=editor]:border-warning/4-10 data-[variant=viewer]:text-process data-[variant=viewer]:bg-process/4-10 data-[variant=viewer]:border-process/4-10 font-medium"
-        >
-          {connectedApp?.role === "admin" && (
-            <ShieldHalfIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-          )}
-          {connectedApp?.role === "editor" && (
-            <SquarePenIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-          )}
-          {connectedApp?.role === "viewer" && (
-            <EyeIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-          )}
-          {connectedApp ? roleTitle(connectedApp.role) : "Viewer"}
-        </Chip>
-        {connectedApp ? (
-          connectedApp.full_access ? (
-            <Chip>
-              <ScrollTextIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-              Everything I can access
-            </Chip>
-          ) : (
-            connectedApp.resources.map((resource) => (
-              <Chip
-                key={resource.resource_id}
-                className={resource.path.length === 0 ? "text-destructive" : undefined}
-              >
-                <ListFilterIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-                {describeResource(resource)}
-              </Chip>
-            ))
-          )
-        ) : (
-          placeholderChips.map((i) => <Chip key={i}>Loading loading</Chip>)
-        )}
-        {connectedApp && <PrivilegeChips privileges={connectedApp.privileges} />}
-      </div>
+      <AccessChips access={connectedApp} />
       <p className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full min-w-0 shrink px-0.75 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
         <Timeline {...(isPlaceholder ? { isPlaceholder: true } : { connectedApp })} />
       </p>
@@ -136,38 +92,9 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
   );
 }
 
-function PrivilegeChips({ privileges }: { privileges: TConnectedApp["privileges"] }) {
-  return privilegeOptions
-    .filter((option) => privileges.includes(option.value))
-    .map((option) => (
-      <Chip key={option.value}>
-        <option.Icon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-        {option.title}
-      </Chip>
-    ));
-}
-
 function publisher(connectedApp: TConnectedApp) {
   if (connectedApp.kind === "metadata_document") return connectedApp.client_host;
   return "Self-registered";
-}
-
-function roleTitle(role: TConnectedApp["role"]) {
-  return roleOptions.find((option) => option.value === role)?.title ?? role;
-}
-
-function Chip({ className, children, ...rest }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p
-      className={cn(
-        "bg-foreground/2-10 border-foreground/2-10 text-muted-foreground group-data-placeholder/item:border-muted-more-foreground group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:animate-skeleton max-w-full rounded-sm border px-1.5 py-0.5 text-xs leading-tight group-data-placeholder/item:text-transparent",
-        className,
-      )}
-      {...rest}
-    >
-      {children}
-    </p>
-  );
 }
 
 const placeholderTime = new Date("2020-01-01T00:00:00Z");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useApiKeysUtils } from "@/components/api-key/api-keys-provider";
-import { privilegeOptions, describeResource, roleOptions } from "@/components/api-key/helpers";
+import { AccessChips, Chip } from "@/components/api-key/access-chips";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -22,18 +22,11 @@ import { differenceInDays, formatDistanceToNowStrict, isPast } from "date-fns";
 import {
   CircleAlertIcon,
   EllipsisVerticalIcon,
-  EyeIcon,
   KeySquareIcon,
-  ListFilterIcon,
-  ScrollTextIcon,
-  ShieldHalfIcon,
-  SquarePenIcon,
   TriangleAlertIcon,
   Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
-
-const placeholderChips = Array.from({ length: 2 }, (_, i) => i);
 
 type TProps =
   { apiKey: TApiKeyShallow; isPlaceholder?: never } | { apiKey?: never; isPlaceholder: true };
@@ -56,44 +49,7 @@ export default function ApiKeyCard({ isPlaceholder, apiKey }: TProps) {
           <Chip className="font-mono">{apiKey ? `${apiKey.token_prefix}...` : "unb_1234..."}</Chip>
         </div>
       </div>
-      <div className="flex w-full flex-wrap items-start justify-start gap-1.5 text-xs">
-        <Chip
-          data-variant={apiKey?.role}
-          className="text-foreground bg-foreground/6-10 data-[variant=admin]:text-destructive data-[variant=admin]:bg-destructive/4-10 data-[variant=admin]:border-destructive/4-10 data-[variant=editor]:text-warning data-[variant=editor]:bg-warning/4-10 data-[variant=editor]:border-warning/4-10 data-[variant=viewer]:text-process data-[variant=viewer]:bg-process/4-10 data-[variant=viewer]:border-process/4-10 font-medium"
-        >
-          {apiKey?.role === "admin" && (
-            <ShieldHalfIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-          )}
-          {apiKey?.role === "editor" && (
-            <SquarePenIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-          )}
-          {apiKey?.role === "viewer" && (
-            <EyeIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-          )}
-          {apiKey ? roleTitle(apiKey.role) : "Viewer"}
-        </Chip>
-        {apiKey ? (
-          apiKey.full_access ? (
-            <Chip>
-              <ScrollTextIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-              Everything I can access
-            </Chip>
-          ) : (
-            apiKey.resources.map((resource) => (
-              <Chip
-                key={resource.resource_id}
-                className={resource.path.length === 0 ? "text-destructive" : undefined}
-              >
-                <ListFilterIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-                {describeResource(resource)}
-              </Chip>
-            ))
-          )
-        ) : (
-          placeholderChips.map((i) => <Chip key={i}>Loading loading</Chip>)
-        )}
-        {apiKey && <PrivilegeChips privileges={apiKey.privileges} />}
-      </div>
+      <AccessChips access={apiKey} />
       <p className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full min-w-0 shrink px-0.75 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
         <Timeline {...(isPlaceholder ? { isPlaceholder: true } : { apiKey })} />
       </p>
@@ -111,35 +67,6 @@ export default function ApiKeyCard({ isPlaceholder, apiKey }: TProps) {
         <ThreeDotButton apiKey={apiKey} className="absolute top-1 right-1" />
       )}
     </div>
-  );
-}
-
-function PrivilegeChips({ privileges }: { privileges: TApiKeyShallow["privileges"] }) {
-  return privilegeOptions
-    .filter((option) => privileges.includes(option.value))
-    .map((option) => (
-      <Chip key={option.value}>
-        <option.Icon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-        {option.title}
-      </Chip>
-    ));
-}
-
-function roleTitle(role: TApiKeyShallow["role"]) {
-  return roleOptions.find((option) => option.value === role)?.title ?? role;
-}
-
-function Chip({ className, children, ...rest }: React.HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p
-      className={cn(
-        "bg-foreground/2-10 border-foreground/2-10 text-muted-foreground group-data-placeholder/item:border-muted-more-foreground group-data-placeholder/item:bg-muted-more-foreground group-data-placeholder/item:animate-skeleton max-w-full rounded-sm border px-1.5 py-0.5 text-xs leading-tight group-data-placeholder/item:text-transparent",
-        className,
-      )}
-      {...rest}
-    >
-      {children}
-    </p>
   );
 }
 

@@ -813,7 +813,11 @@ function AsyncDropdownMenu({
   );
 }
 
-const { useAppForm: useAppFormBase, withForm } = createFormHook({
+const {
+  useAppForm: useAppFormBase,
+  withForm,
+  withFieldGroup,
+} = createFormHook({
   fieldComponents: {
     TextField: InputWithInfo,
     AsyncInputWithItems,
@@ -870,6 +874,6 @@ export function useAppForm<
   return form;
 }
 
-export { withForm };
+export { withFieldGroup, withForm };
 
 export const DomainFieldSchema = z.string().url();

@@ -1,22 +1,16 @@
 "use client";
 
-import AccessField from "@/components/api-key/access-field";
-import PrivilegesField from "@/components/api-key/privileges-field";
+import { AccessSections } from "@/components/api-key/access-sections";
 import {
   accessFormShape,
   emptyResourceRow,
   hasPickedResource,
-  isRoleAllowed,
   pickResourceMessage,
   rowToResource,
-  scopedCapFrom,
   useResourceCaps,
   type TAccess,
   type TResourceRow,
 } from "@/components/api-key/helpers";
-import InputSectionWrapper from "@/components/api-key/input-section-wrapper";
-import ResourceRows from "@/components/api-key/resource-rows";
-import RoleField from "@/components/api-key/role-field";
 import { AuthShell } from "@/components/auth-shell";
 import ErrorCard from "@/components/error-card";
 import ErrorLine from "@/components/error-line";
@@ -297,68 +291,15 @@ function ConsentForm({
       className="mt-3 flex w-full flex-col rounded-xl border"
     >
       <div className="flex w-full flex-col px-4 pt-3 pb-4">
-        <h2 className="w-full text-lg leading-tight font-semibold">Access</h2>
-        <p className="text-muted-foreground mt-1.5 leading-tight">
-          What the application can access, never more than you can.
-        </p>
-        <InputSectionWrapper>
-          <form.AppField
-            name="access"
-            children={(field) => (
-              <AccessField field={field} className="mt-3 w-full" isPlaceholder={isPlaceholder} />
-            )}
-          />
-          <form.Subscribe selector={(s) => ({ access: s.values.access })}>
-            {({ access }) =>
-              access === "scoped" && (
-                <form.AppField
-                  name="rows"
-                  children={(field) => <ResourceRows field={field} caps={caps} />}
-                />
-              )
-            }
-          </form.Subscribe>
-        </InputSectionWrapper>
-        <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Role</h2>
-        <p className="text-muted-foreground mt-1.5 leading-tight">
-          The most the application can do on the resources above.
-        </p>
-        <InputSectionWrapper>
-          <form.Subscribe selector={(s) => ({ access: s.values.access, rows: s.values.rows })}>
-            {({ access, rows }) => {
-              const scopedCap = scopedCapFrom(rows, caps.caps);
-              return (
-                <form.AppField
-                  name="role"
-                  children={(field) => (
-                    <RoleField
-                      field={field}
-                      className="mt-3 w-full"
-                      isPlaceholder={isPlaceholder}
-                      isAllowed={(role) => isRoleAllowed(access, scopedCap, role)}
-                    />
-                  )}
-                />
-              );
-            }}
-          </form.Subscribe>
-        </InputSectionWrapper>
-        <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Privileges</h2>
-        <p className="text-muted-foreground mt-1.5 leading-tight">
-          Capabilities not covered by the role.
-        </p>
-        <InputSectionWrapper>
-          <form.AppField
-            name="privileges"
-            children={(field) => (
-              <PrivilegesField
-                field={field}
-                className="mt-3 w-full"
-                isPlaceholder={isPlaceholder}
-              />
-            )}
-          />
-        </InputSectionWrapper>
+        <AccessSections
+          form={form}
+          fields={{ access: "access", rows: "rows", role: "role", privileges: "privileges" }}
+          subject="application"
+          caps={caps}
+          classNameField="mt-3 w-full"
+          classNameSection="mt-6"
+          isPlaceholder={isPlaceholder}
+        />
         {mutationError && <ErrorLine className="mt-4" message={mutationError.message} />}
       </div>
       <div
