@@ -7,7 +7,6 @@ import { useApiKeys, useApiKeysUtils } from "@/components/api-key/api-keys-provi
 import {
   accessFieldClassName,
   accessFormShape,
-  capabilitiesFor,
   defaultExpiry,
   emptyResourceRow,
   expiresAtFrom,
@@ -92,7 +91,7 @@ export default function AddApiKeyForm({ className }: TProps) {
         role: value.role,
         full_access: value.access === "full",
         resources,
-        capabilities: capabilitiesFor(value.role, value.capabilities),
+        capabilities: value.capabilities,
         expires_at: expiresAtFrom(value.expiry),
       });
       temporarilyAddNewEntity(res.data.id);
@@ -190,19 +189,15 @@ export default function AddApiKeyForm({ className }: TProps) {
             Capabilities
           </h2>
           <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
-            What the key can see beyond its role. All off by default, for every role.
+            What the key can read beyond its role. All off by default, for every role.
           </p>
           <InputSectionWrapper>
-            <form.Subscribe selector={(state) => ({ role: state.values.role })}>
-              {({ role }) => (
-                <form.AppField
-                  name="capabilities"
-                  children={(field) => (
-                    <CapabilitiesField field={field} role={role} className={accessFieldClassName} />
-                  )}
-                />
+            <form.AppField
+              name="capabilities"
+              children={(field) => (
+                <CapabilitiesField field={field} className={accessFieldClassName} />
               )}
-            </form.Subscribe>
+            />
           </InputSectionWrapper>
           <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
             Expires

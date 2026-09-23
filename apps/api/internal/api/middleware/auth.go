@@ -149,8 +149,8 @@ func (self *Middleware) allowNarrowed(ctx huma.Context, access permissions_repo.
 
 func capabilityMessage(credential string, capability schema.KeyCapability) string {
 	switch capability {
-	case schema.CapabilityLogs:
-		return "Reading logs needs the logs capability on " + credential
+	case schema.CapabilityReadLogs:
+		return "Reading logs needs the read_logs capability on " + credential
 	default:
 		return "This needs the " + string(capability) + " capability on " + credential
 	}

@@ -65,43 +65,12 @@ export const roleOptions: {
 export const capabilityOptions: {
   value: KeyCapability;
   title: string;
-  description: string;
   Icon: FC<{ className?: string }>;
-  minRole: PermittedAction;
 }[] = [
-  {
-    value: "variable_values",
-    title: "Variable values",
-    description: "See what variables hold, not just their names.",
-    Icon: KeyRoundIcon,
-    minRole: "editor",
-  },
-  {
-    value: "logs",
-    title: "Logs",
-    description: "Read build and runtime logs.",
-    Icon: LogsIcon,
-    minRole: "viewer",
-  },
-  {
-    value: "webhook_urls",
-    title: "Webhook URLs",
-    description: "See webhook URLs, which carry secrets.",
-    Icon: WebhookIcon,
-    minRole: "viewer",
-  },
+  { value: "read_variable_values", title: "Read variable values", Icon: KeyRoundIcon },
+  { value: "read_logs", title: "Read logs", Icon: LogsIcon },
+  { value: "read_webhook_urls", title: "Read webhook URLs", Icon: WebhookIcon },
 ];
-
-export function isCapabilityAllowed(role: PermittedAction, capability: KeyCapability) {
-  const option = capabilityOptions.find((o) => o.value === capability);
-  if (!option) return false;
-  return roleAllowedBy(option.minRole, role);
-}
-
-// A capability the role cannot use is dropped, so the API never sees it
-export function capabilitiesFor(role: PermittedAction, capabilities: KeyCapability[]) {
-  return capabilities.filter((capability) => isCapabilityAllowed(role, capability));
-}
 
 const roleRank: Record<PermittedAction, number> = { viewer: 1, editor: 2, admin: 3 };
 
@@ -129,7 +98,7 @@ export const accessFormShape = {
     }),
   ),
   role: z.enum(["viewer", "editor", "admin"]),
-  capabilities: z.array(z.enum(["variable_values", "logs", "webhook_urls"])),
+  capabilities: z.array(z.enum(["read_variable_values", "read_logs", "read_webhook_urls"])),
 };
 
 export function hasPickedResource(value: { access: TAccess; rows: TResourceRow[] }) {

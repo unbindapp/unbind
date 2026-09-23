@@ -13,8 +13,8 @@ func TestValidate(t *testing.T) {
 
 	assert.NoError(t, Validate(Spec{Role: schema.ActionViewer, FullAccess: true}))
 	assert.NoError(t, Validate(Spec{Role: schema.ActionEditor, Resources: []schema.APIKeyResource{project}}))
-	assert.NoError(t, Validate(Spec{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityVariableValues, schema.CapabilityLogs, schema.CapabilityWebhookURLs}}))
-	assert.NoError(t, Validate(Spec{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs, schema.CapabilityWebhookURLs}}))
+	assert.NoError(t, Validate(Spec{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadVariableValues, schema.CapabilityReadLogs, schema.CapabilityReadWebhookURLs}}))
+	assert.NoError(t, Validate(Spec{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadVariableValues}}), "capabilities do not depend on the role")
 
 	cases := map[string]Spec{
 		"unknown role":         {Role: "owner", FullAccess: true},
@@ -24,8 +24,7 @@ func TestValidate(t *testing.T) {
 		"nil id":               {Role: schema.ActionAdmin, Resources: []schema.APIKeyResource{{ResourceType: schema.ResourceTypeTeam}}},
 		"duplicate":            {Role: schema.ActionAdmin, Resources: []schema.APIKeyResource{project, project}},
 		"unknown capability":   {Role: schema.ActionAdmin, FullAccess: true, Capabilities: []schema.KeyCapability{"terminal"}},
-		"duplicate capability": {Role: schema.ActionAdmin, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs, schema.CapabilityLogs}},
-		"viewer with values":   {Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityVariableValues}},
+		"duplicate capability": {Role: schema.ActionAdmin, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs, schema.CapabilityReadLogs}},
 	}
 	for name, spec := range cases {
 		assert.Error(t, Validate(spec), name)

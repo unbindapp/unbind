@@ -55,13 +55,11 @@ func Validate(spec Spec) error {
 	return validateCapabilities(spec)
 }
 
-// validateCapabilities rejects what could never take effect: variable values
-// stay names only below editor, whatever the credential says.
 func validateCapabilities(spec Spec) error {
 	seen := map[schema.KeyCapability]struct{}{}
 	for i, capability := range spec.Capabilities {
 		switch capability {
-		case schema.CapabilityVariableValues, schema.CapabilityLogs, schema.CapabilityWebhookURLs:
+		case schema.CapabilityReadVariableValues, schema.CapabilityReadLogs, schema.CapabilityReadWebhookURLs:
 		default:
 			return fmt.Errorf("capabilities[%d]: unknown capability %q", i, capability)
 		}
@@ -69,9 +67,6 @@ func validateCapabilities(spec Spec) error {
 			return fmt.Errorf("capabilities[%d]: duplicate capability", i)
 		}
 		seen[capability] = struct{}{}
-		if capability == schema.CapabilityVariableValues && spec.Role == schema.ActionViewer {
-			return errors.New("variable_values needs the editor or admin role")
-		}
 	}
 	return nil
 }

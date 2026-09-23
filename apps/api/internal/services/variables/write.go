@@ -182,7 +182,7 @@ func (self *VariablesService) ApplyVariableWrite(ctx context.Context, write *Var
 	if err != nil {
 		return nil, err
 	}
-	if !permissions_repo.HasCapability(ctx, schema.CapabilityVariableValues) {
+	if !permissions_repo.HasCapability(ctx, schema.CapabilityReadVariableValues) {
 		response.Redact()
 	}
 	return response, nil

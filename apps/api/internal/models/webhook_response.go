@@ -11,7 +11,7 @@ import (
 type WebhookResponse struct {
 	ID          uuid.UUID             `json:"id" format:"uuid"`
 	URL         string                `json:"url" doc:"Blank when url_redacted is true"`
-	URLRedacted bool                  `json:"url_redacted" doc:"True when the caller may not see the URL. It needs the webhook_urls capability."`
+	URLRedacted bool                  `json:"url_redacted" doc:"True when the caller may not see the URL. It needs the read_webhook_urls capability."`
 	Type        schema.WebhookType    `json:"type"`
 	Events      []schema.WebhookEvent `json:"events" nullable:"false"`
 	TeamID      uuid.UUID             `json:"team_id" format:"uuid"`

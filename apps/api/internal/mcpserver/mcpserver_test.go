@@ -139,7 +139,7 @@ func newHarness(t *testing.T) *harness {
 		func(ctx context.Context, _ *struct{}) (*output, error) {
 			record(ctx)
 			return &output{}, nil
-		}, oapi.MCP, oapi.Needs(schema.CapabilityLogs))
+		}, oapi.MCP, oapi.Needs(schema.CapabilityReadLogs))
 	oapi.Register(grp, oapi.Read, huma.Operation{OperationID: "hidden-thing", Description: "Not a tool.", Method: http.MethodGet, Path: "/hidden"},
 		func(ctx context.Context, _ *struct{}) (*output, error) {
 			record(ctx)
@@ -156,7 +156,7 @@ func newHarness(t *testing.T) *harness {
 
 	h.viewer = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true}, nil)
 	h.editor = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionEditor, Resources: []schema.APIKeyResource{{ResourceType: schema.ResourceTypeProject, ResourceID: uuid.New()}}}, nil)
-	h.logReader = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs}}, nil)
+	h.logReader = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs}}, nil)
 
 	grantToken, _ := auth.NewOpaqueToken(auth.OAuthAccessTokenPrefix)
 	h.grant = grantToken.Token
@@ -287,10 +287,10 @@ func TestToolsFollowTheCredentialsCapabilities(t *testing.T) {
 	h := newHarness(t)
 
 	if names := toolNames(t, h.connect(h.editor)); slices.Contains(names, "log-things") {
-		t.Fatalf("editor key without the logs capability sees %v", names)
+		t.Fatalf("editor key without the read_logs capability sees %v", names)
 	}
 	if names := toolNames(t, h.connect(h.logReader)); !slices.Equal(names, []string{"list-things", "log-things"}) {
-		t.Fatalf("viewer key with the logs capability sees %v, want list-things and log-things", names)
+		t.Fatalf("viewer key with the read_logs capability sees %v, want list-things and log-things", names)
 	}
 
 	if _, err := h.call(h.connect(h.editor), "log-things", nil); err == nil {

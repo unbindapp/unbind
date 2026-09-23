@@ -21,7 +21,7 @@ type WhoamiAPIKey struct {
 	Role         schema.PermittedAction  `json:"role"`
 	FullAccess   bool                    `json:"full_access"`
 	Resources    []schema.APIKeyResource `json:"resources" nullable:"false"`
-	Capabilities []schema.KeyCapability  `json:"capabilities" nullable:"false" doc:"What the credential may see beyond its role. Without variable_values, variable values come back blank; without logs, query-logs is refused; without webhook_urls, webhook URLs come back blank."`
+	Capabilities []schema.KeyCapability  `json:"capabilities" nullable:"false" doc:"What the credential may see beyond its role. Without read_variable_values, variable values come back blank; without read_logs, query-logs is refused; without read_webhook_urls, webhook URLs come back blank."`
 }
 
 type WhoamiResponse struct {

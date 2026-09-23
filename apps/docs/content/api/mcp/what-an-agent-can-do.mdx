@@ -18,7 +18,7 @@ There are about 60 tools, and more than half of them only read.
 | Volumes                       | `create-volume`, `update-volume`, `get-volume-metrics`                             |
 | Templates                     | `list-templates`, `deploy-template`                                                |
 | Service groups                | `create-service-group`, `update-service-group-template-inputs`                     |
-| Logs and metrics              | `query-logs` (needs the logs capability), `get-metrics`, `get-system-metrics`      |
+| Logs and metrics              | `query-logs` (needs **Read logs**), `get-metrics`, `get-system-metrics`            |
 | Replicas                      | `list-replicas`, `get-replica-health`, `restart-replicas`                          |
 | Docker Hub                    | `search-docker-images`, `list-docker-tags`                                         |
 | Servers                       | `list-servers`, `get-server`                                                       |
@@ -30,10 +30,10 @@ There are about 60 tools, and more than half of them only read.
 
 Two tools answer with a blank where a secret would be, unless the connection has the matching [capability](/api/mcp/limiting-access#capabilities):
 
-- **Variable values**: `list-variables` returns names and references, with `values_redacted` true.
-- **Webhook URLs**: the webhook tools return `url_redacted` true.
+- **Read variable values**: without it, `list-variables` returns names and references, with `values_redacted` true.
+- **Read webhook URLs**: without it, the webhook tools return `url_redacted` true.
 
-`query-logs` is not offered at all without the logs capability, because a log line has no harmless part.
+`query-logs` is not offered at all without **Read logs**, because a log line has no harmless part.
 
 ## What is left out, and why
 

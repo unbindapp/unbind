@@ -11,7 +11,7 @@ Whether you connect with OAuth or an API key, you pick the same three things:
 
 - **Role**: what the agent can do.
 - **Access**: where it can do it.
-- **Capabilities**: what it can see.
+- **Capabilities**: what it can read.
 
 ### Role
 
@@ -27,11 +27,11 @@ Start with viewer. Move to editor when you want the agent to fix what it finds. 
 
 Every capability is off by default, whatever the role. Switch one on only when the agent's job needs it.
 
-| Capability          | What the agent gets                                                                                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Variable values** | The values behind variable names. Without it, `list-variables` returns names and references only, and the agent can still set values and wire references. Editor or admin only. |
-| **Logs**            | The `query-logs` tool. Without it the tool is not offered at all. Debugging a failed deployment needs this one.                                                                 |
-| **Webhook URLs**    | The URLs of webhooks. Without it the webhook tools work but return the URL blank.                                                                                               |
+| Capability               | What the agent gets                                                                                                                                       |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Read variable values** | The values behind variable names. Without it, `list-variables` returns names and references only, and the agent can still set values and wire references. |
+| **Read logs**            | The `query-logs` tool. Without it the tool is not offered at all. Debugging a failed deployment needs this one.                                           |
+| **Read webhook URLs**    | The URLs of webhooks. Without it the webhook tools work but return the URL blank.                                                                         |
 
 ### Access
 
@@ -51,7 +51,7 @@ No matter the role, a connected agent cannot:
 
 ## Secrets
 
-Deploying does not need to read secrets, so leave **Variable values** off unless the agent has to inspect what a variable holds. With it on, values pass through the model's provider. Logs often carry the same secrets, and user data, so treat the **Logs** capability the same way.
+Deploying does not need to read secrets, so leave **Read variable values** off unless the agent has to inspect what a variable holds. With it on, values pass through the model's provider. Logs often carry the same secrets, and user data, so treat **Read logs** the same way.
 
 Hiding values is not a wall. An editor can still write a reference to another service's variable, deploy, and read the result. For anything that must not reach a model, point the agent at an environment that holds no production secrets.
 

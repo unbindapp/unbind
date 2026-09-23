@@ -13,7 +13,7 @@ type APIKeyCreateInput struct {
 	Role         schema.PermittedAction  `json:"role" required:"true" doc:"Strongest action the key can perform. Never exceeds what you hold on a resource."`
 	FullAccess   bool                    `json:"full_access" required:"true" doc:"Reach everything you can, capped at role. Resources must be empty."`
 	Resources    []schema.APIKeyResource `json:"resources" required:"true" nullable:"false" doc:"Resources the key is limited to, each reaching everything below it. Required unless full_access."`
-	Capabilities []schema.KeyCapability  `json:"capabilities,omitempty" required:"false" nullable:"false" doc:"What the key may see beyond its role: variable_values, logs, webhook_urls. All off when omitted."`
+	Capabilities []schema.KeyCapability  `json:"capabilities,omitempty" required:"false" nullable:"false" doc:"What the key may see beyond its role: read_variable_values, read_logs, read_webhook_urls. All off when omitted."`
 }
 
 type APIKeyListInput struct {

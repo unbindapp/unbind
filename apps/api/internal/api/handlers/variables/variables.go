@@ -20,7 +20,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-variables",
 		Summary:     "List Variables",
-		Description: "List variables for a service, environment, project, or team. Service variables include their rendered values. Values are blank and values_redacted is true unless the connection has the variable_values capability; names and references are always listed.",
+		Description: "List variables for a service, environment, project, or team. Service variables include their rendered values. Values are blank and values_redacted is true unless the connection has the read_variable_values capability; names and references are always listed.",
 		Path:        "/list",
 		Method:      http.MethodGet,
 	}, handlers.ListVariables, oapi.MCP)

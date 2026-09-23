@@ -94,21 +94,21 @@ func TestAPIKeyAccessWritesAndContext(t *testing.T) {
 	_, ok := APIKeyAccessFromContext(context.Background())
 	assert.False(t, ok, "sessions carry no key access")
 
-	key := &ent.APIKey{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs}}
+	key := &ent.APIKey{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs}}
 	got, ok := APIKeyAccessFromContext(WithAPIKeyAccess(context.Background(), APIKeyAccessOf(key)))
 	assert.True(t, ok)
-	assert.Equal(t, APIKeyAccess{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs}}, got)
+	assert.Equal(t, APIKeyAccess{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs}}, got)
 }
 
 func TestHasCapability(t *testing.T) {
-	assert.True(t, HasCapability(context.Background(), schema.CapabilityVariableValues), "sessions hold every capability")
+	assert.True(t, HasCapability(context.Background(), schema.CapabilityReadVariableValues), "sessions hold every capability")
 
 	none := WithAPIKeyAccess(context.Background(), APIKeyAccess{Role: schema.ActionAdmin, FullAccess: true})
-	assert.False(t, HasCapability(none, schema.CapabilityVariableValues), "admin alone grants nothing")
-	assert.False(t, HasCapability(none, schema.CapabilityLogs))
-	assert.False(t, HasCapability(none, schema.CapabilityWebhookURLs))
+	assert.False(t, HasCapability(none, schema.CapabilityReadVariableValues), "admin alone grants nothing")
+	assert.False(t, HasCapability(none, schema.CapabilityReadLogs))
+	assert.False(t, HasCapability(none, schema.CapabilityReadWebhookURLs))
 
-	logs := WithAPIKeyAccess(context.Background(), APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs}})
-	assert.True(t, HasCapability(logs, schema.CapabilityLogs))
-	assert.False(t, HasCapability(logs, schema.CapabilityWebhookURLs))
+	logs := WithAPIKeyAccess(context.Background(), APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs}})
+	assert.True(t, HasCapability(logs, schema.CapabilityReadLogs))
+	assert.False(t, HasCapability(logs, schema.CapabilityReadWebhookURLs))
 }

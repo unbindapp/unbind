@@ -104,18 +104,18 @@ func (u PermittedAction) Schema(r huma.Registry) *huma.Schema {
 type KeyCapability string
 
 const (
-	// CapabilityVariableValues reveals variable values instead of names only
-	CapabilityVariableValues KeyCapability = "variable_values"
-	// CapabilityLogs allows reading logs
-	CapabilityLogs KeyCapability = "logs"
-	// CapabilityWebhookURLs reveals webhook URLs, which carry secrets
-	CapabilityWebhookURLs KeyCapability = "webhook_urls"
+	// CapabilityReadVariableValues reveals variable values instead of names only
+	CapabilityReadVariableValues KeyCapability = "read_variable_values"
+	// CapabilityReadLogs allows reading logs
+	CapabilityReadLogs KeyCapability = "read_logs"
+	// CapabilityReadWebhookURLs reveals webhook URLs, which carry secrets
+	CapabilityReadWebhookURLs KeyCapability = "read_webhook_urls"
 )
 
 var allCapabilities = []KeyCapability{
-	CapabilityVariableValues,
-	CapabilityLogs,
-	CapabilityWebhookURLs,
+	CapabilityReadVariableValues,
+	CapabilityReadLogs,
+	CapabilityReadWebhookURLs,
 }
 
 func (c KeyCapability) Values() (kinds []string) {

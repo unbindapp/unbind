@@ -4,7 +4,6 @@ import AccessField from "@/components/api-key/access-field";
 import CapabilitiesField from "@/components/api-key/capabilities-field";
 import {
   accessFormShape,
-  capabilitiesFor,
   emptyResourceRow,
   hasPickedResource,
   isRoleAllowed,
@@ -284,7 +283,7 @@ function ConsentForm({
         role: value.role,
         full_access: value.access === "full",
         resources,
-        capabilities: capabilitiesFor(value.role, value.capabilities),
+        capabilities: value.capabilities,
       });
     },
   });
@@ -346,24 +345,19 @@ function ConsentForm({
         </InputSectionWrapper>
         <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Capabilities</h2>
         <p className="text-muted-foreground mt-1.5 leading-tight">
-          What the application can see beyond its role. All off by default, for every role.
+          What the application can read beyond its role. All off by default, for every role.
         </p>
         <InputSectionWrapper>
-          <form.Subscribe selector={(s) => ({ role: s.values.role })}>
-            {({ role }) => (
-              <form.AppField
-                name="capabilities"
-                children={(field) => (
-                  <CapabilitiesField
-                    field={field}
-                    role={role}
-                    className="mt-3 w-full"
-                    isPlaceholder={isPlaceholder}
-                  />
-                )}
+          <form.AppField
+            name="capabilities"
+            children={(field) => (
+              <CapabilitiesField
+                field={field}
+                className="mt-3 w-full"
+                isPlaceholder={isPlaceholder}
               />
             )}
-          </form.Subscribe>
+          />
         </InputSectionWrapper>
         {mutationError && <ErrorLine className="mt-4" message={mutationError.message} />}
       </div>

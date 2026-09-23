@@ -17,19 +17,18 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// GetVariables lists the scope's variables. Viewers get names only; values
-// are for editors, because a stored secret is as good as write access to
-// whatever it unlocks. A key or connected app also needs the variable_values
-// capability.
+// GetVariables lists the scope's variables. A session sees values with the
+// editor role, because a stored secret is as good as write access to whatever
+// it unlocks. A key or connected app sees them with the read_variable_values
+// capability, whatever its role, as long as its owner holds editor.
 func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error) {
 	if err := self.checkScopePermission(ctx, userID, schema.ActionViewer, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Resource not found")
 	}
-	canReadValues, err := self.holdsScopePermission(ctx, userID, schema.ActionEditor, input)
+	canReadValues, err := self.canReadValues(ctx, userID, input)
 	if err != nil {
 		return nil, err
 	}
-	canReadValues = canReadValues && permissions_repo.HasCapability(ctx, schema.CapabilityVariableValues)
 
 	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
@@ -58,6 +57,20 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 		response.Redact()
 	}
 	return response, nil
+}
+
+func (self *VariablesService) canReadValues(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (bool, error) {
+	access, limited := permissions_repo.APIKeyAccessFromContext(ctx)
+	if !limited {
+		return self.holdsScopePermission(ctx, userID, schema.ActionEditor, input)
+	}
+	if !access.Has(schema.CapabilityReadVariableValues) {
+		return false, nil
+	}
+	// The credential's role is lifted so only its resources and the owner's
+	// own grants decide.
+	access.Role = schema.ActionEditor
+	return self.holdsScopePermission(permissions_repo.WithAPIKeyAccess(ctx, access), userID, schema.ActionEditor, input)
 }
 
 func (self *VariablesService) holdsScopePermission(ctx context.Context, userID uuid.UUID, action schema.PermittedAction, input models.BaseVariablesInput) (bool, error) {

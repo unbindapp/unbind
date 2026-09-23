@@ -108,9 +108,9 @@ func (self *WebhooksService) ListWebhooks(ctx context.Context, requesterUserID u
 }
 
 // redactURL blanks the URL for keys and connected apps without the
-// webhook_urls capability. Sessions always see it.
+// read_webhook_urls capability. Sessions always see it.
 func (self *WebhooksService) redactURL(ctx context.Context, response *models.WebhookResponse) *models.WebhookResponse {
-	if permissions_repo.HasCapability(ctx, schema.CapabilityWebhookURLs) {
+	if permissions_repo.HasCapability(ctx, schema.CapabilityReadWebhookURLs) {
 		return response
 	}
 	response.Redact()
