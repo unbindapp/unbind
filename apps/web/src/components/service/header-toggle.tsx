@@ -33,7 +33,7 @@ export default function HeaderToggle({
         className,
       )}
     >
-      <p className="text-muted-foreground has-hover:group-hover/button:text-foreground group-data-staged/button:text-change/9-10 has-hover:group-hover/button:group-data-staged/button:text-change min-w-0 shrink text-sm">
+      <p className="text-muted-foreground has-hover:group-hover/button:text-foreground group-data-staged/button:text-change has-hover:group-hover/button:group-data-staged/button:text-change min-w-0 shrink text-sm">
         {label}
       </p>
       <ToggleKnob checked={checked} hasChanges={hasChanges} size="sm" />
