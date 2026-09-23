@@ -1,5 +1,5 @@
 # Build context is the repo root: the docs take their tokens, fonts and favicons from apps/web.
-FROM node:24-alpine AS build
+FROM node:24.21-alpine AS build
 WORKDIR /repo/apps/docs
 COPY apps/docs/package.json apps/docs/package-lock.json ./
 RUN npm ci
