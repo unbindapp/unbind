@@ -15,12 +15,12 @@ type TProps = {
 export default function PrivilegesField({ field, className, isPlaceholder }: TProps) {
   const selected: KeyPrivilege[] = field.state.value;
   return (
-    <div className={cn("bg-input flex w-full flex-col rounded-lg border p-1", className)}>
+    <div className={cn("bg-input flex w-full flex-col rounded-lg border p-0.5", className)}>
       {privilegeOptions.map((option) => (
         <label
           key={option.value}
           data-disabled={isPlaceholder || undefined}
-          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-start gap-2.5 rounded-md px-2.5 py-2.25 data-disabled:cursor-not-allowed data-disabled:opacity-50"
+          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-start gap-2.5 rounded-md px-3 py-2.25 data-disabled:cursor-not-allowed data-disabled:opacity-50"
         >
           <div className="line-icon">
             <Checkbox
