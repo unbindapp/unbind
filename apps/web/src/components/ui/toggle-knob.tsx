@@ -12,7 +12,7 @@ export function ToggleKnob({ checked, hasChanges, className }: TProps) {
       data-checked={checked || undefined}
       data-staged={hasChanges || undefined}
       className={cn(
-        "group/knob bg-muted-more-foreground data-checked:bg-foreground data-staged:bg-change/5-10 data-staged:data-checked:bg-change relative h-5 w-9 shrink-0 rounded-full transition",
+        "group/knob bg-muted-more-foreground data-checked:bg-foreground data-staged:bg-change/7-10 data-staged:data-checked:bg-change relative h-5 w-9 shrink-0 rounded-full transition",
         className,
       )}
     >
