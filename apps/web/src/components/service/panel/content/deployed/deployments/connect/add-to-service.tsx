@@ -55,9 +55,11 @@ export default function AddToService({
     servicesListQuery({ teamId, projectId, environmentId }),
   );
 
-  // A database consuming another database's URL is not a thing, same as volume mounts
+  // A database consuming another database's URL is not a thing, and an undeployed
+  // service has no variables page for the value to land on
   const services = useMemo(
-    () => data?.services.filter((service) => service.type !== "database"),
+    () =>
+      data?.services.filter((service) => service.type !== "database" && service.last_deployment),
     [data],
   );
 
@@ -118,7 +120,7 @@ export default function AddToService({
             isPending={isPending}
             error={error?.message}
             commandInputPlaceholder="Search services..."
-            CommandEmptyText="No services found"
+            CommandEmptyText="No deployed services"
             CommandEmptyIcon={BoxIcon}
             CommandItemElement={ServiceItemElement}
           >
