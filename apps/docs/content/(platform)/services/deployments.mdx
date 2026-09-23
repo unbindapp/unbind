@@ -43,7 +43,7 @@ Unbind does the least work that makes the change take effect. Each affected serv
 | **Rebuild**    | The source or a build setting changed, like the branch or the build command.              |
 | **Redeploy**   | A runtime setting changed, like replicas, ports or a volume. The current image is reused. |
 | **Restart**    | Only variables changed.                                                                   |
-| **No rollout** | Nothing running is affected.                                                              |
+| **No rollout** | The change does not need a rollout, or the service is not running.                        |
 
 Because variables can reference other services, one change can affect several services. They all show up in the list before you confirm.
 
