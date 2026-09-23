@@ -26,12 +26,14 @@ export function Card({
   );
   const content = (
     <>
-      <h3 className="not-prose mb-1 flex items-center gap-1.5 text-sm font-medium">
+      <h3 className="not-prose -mt-0.5 mb-1.5 flex items-center gap-2 text-base leading-tight font-medium">
         {brand && <BrandIcon brand={brand} color="brand" className="size-4.5" />}
         <span className="min-w-0 truncate">{title}</span>
       </h3>
       {description && <p className="text-muted-foreground my-0! text-sm">{description}</p>}
-      <div className="text-muted-foreground prose-no-margin text-sm empty:hidden">{children}</div>
+      <div className="text-muted-foreground prose-no-margin -mb-0.5 text-sm empty:hidden">
+        {children}
+      </div>
     </>
   );
 
