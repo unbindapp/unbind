@@ -29,11 +29,11 @@ export default function HeaderToggle({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
-        "group/button has-hover:hover:bg-border data-staged:has-hover:hover:bg-change/4-10 -my-1 -mr-0.75 ml-auto flex cursor-pointer items-center justify-center gap-2.5 self-end rounded-full py-1 pr-1.25 pl-2.5 font-medium",
+        "group/button has-hover:hover:bg-border active:bg-border data-staged:has-hover:hover:bg-change/4-10 data-staged:active:bg-change/4-10 -my-1 -mr-0.75 ml-auto flex cursor-pointer items-center justify-center gap-2.5 self-end rounded-full py-1 pr-1.25 pl-2.5 font-medium",
         className,
       )}
     >
-      <p className="text-muted-foreground has-hover:group-hover/button:text-foreground group-data-staged/button:text-change has-hover:group-hover/button:group-data-staged/button:text-change min-w-0 shrink text-sm">
+      <p className="text-muted-foreground has-hover:group-hover/button:text-foreground group-active/button:text-foreground group-data-staged/button:text-change has-hover:group-hover/button:group-data-staged/button:text-change group-active/button:group-data-staged/button:text-change min-w-0 shrink text-sm">
         {label}
       </p>
       <ToggleKnob checked={checked} hasChanges={hasChanges} size="sm" />
