@@ -45,13 +45,13 @@ import {
 } from "@/lib/queries/update-service-input";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  CircleArrowUpIcon,
   CodeIcon,
   ExternalLink,
   GitBranchIcon,
   MilestoneIcon,
   PackageIcon,
   TagIcon,
-  ZapIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
@@ -374,7 +374,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
             <BlockItemContent>
               <BlockItemToggle
                 text="Auto deploy on push"
-                Icon={ZapIcon}
+                Icon={CircleArrowUpIcon}
                 checked={autoDeploy}
                 hasChanges={staged.autoDeploy !== undefined}
                 onCheckedChange={(checked) =>
