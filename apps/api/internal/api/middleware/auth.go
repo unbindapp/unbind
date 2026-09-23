@@ -140,19 +140,19 @@ func (self *Middleware) allowNarrowed(ctx huma.Context, access permissions_repo.
 		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, readOnlyMessage)
 		return false
 	}
-	if capability, needed := oapi.CapabilityOf(op); needed && !access.Has(capability) {
-		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, capabilityMessage(credential, capability))
+	if privilege, needed := oapi.PrivilegeOf(op); needed && !access.Has(privilege) {
+		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, privilegeMessage(credential, privilege))
 		return false
 	}
 	return true
 }
 
-func capabilityMessage(credential string, capability schema.KeyCapability) string {
-	switch capability {
-	case schema.CapabilityReadLogs:
-		return "Reading logs needs the read_logs capability on " + credential
+func privilegeMessage(credential string, privilege schema.KeyPrivilege) string {
+	switch privilege {
+	case schema.PrivilegeReadLogs:
+		return "Reading logs needs the read_logs privilege on " + credential
 	default:
-		return "This needs the " + string(capability) + " capability on " + credential
+		return "This needs the " + string(privilege) + " privilege on " + credential
 	}
 }
 

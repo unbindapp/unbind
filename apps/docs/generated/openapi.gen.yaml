@@ -1534,12 +1534,12 @@ components:
         - AnonOutputKey
         - ServiceOutputKey
       type: object
-    KeyCapability:
+    KeyPrivilege:
       enum:
         - read_variable_values
         - read_logs
         - read_webhook_urls
-      title: KeyCapability
+      title: KeyPrivilege
       type: string
     ListDatabasesResponseBody:
       additionalProperties: false
@@ -4244,7 +4244,7 @@ components:
       additionalProperties: false
       properties:
         values_redacted:
-          description: True when the caller may only see names. Every value and resolved value is blank. A session needs the editor role; a key or connected app needs the read_variable_values capability.
+          description: True when the caller may only see names. Every value and resolved value is blank. A session needs the editor role; a key or connected app needs the read_variable_values privilege.
           type: boolean
         variables:
           items:
@@ -4407,7 +4407,7 @@ components:
           description: Blank when url_redacted is true
           type: string
         url_redacted:
-          description: True when the caller may not see the URL. It needs the read_webhook_urls capability.
+          description: True when the caller may not see the URL. It needs the read_webhook_urls privilege.
           type: boolean
       required:
         - id
@@ -4462,13 +4462,13 @@ components:
     WhoamiAPIKey:
       additionalProperties: false
       properties:
-        capabilities:
-          description: What the credential may see beyond its role. Without read_variable_values, variable values come back blank; without read_logs, query-logs is refused; without read_webhook_urls, webhook URLs come back blank.
-          items:
-            $ref: "#/components/schemas/KeyCapability"
-          type: array
         full_access:
           type: boolean
+        privileges:
+          description: What the credential may see beyond its role. Without read_variable_values, variable values come back blank; without read_logs, query-logs is refused; without read_webhook_urls, webhook URLs come back blank.
+          items:
+            $ref: "#/components/schemas/KeyPrivilege"
+          type: array
         resources:
           items:
             $ref: "#/components/schemas/APIKeyResource"
@@ -4479,7 +4479,7 @@ components:
         - role
         - full_access
         - resources
-        - capabilities
+        - privileges
       type: object
     WhoamiData:
       additionalProperties: false
@@ -5837,7 +5837,7 @@ paths:
         risk: medium
   /logs/query:
     get:
-      description: Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id. Needs the read_logs capability.
+      description: Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id. Needs the read_logs privilege.
       operationId: query-logs
       parameters:
         - explode: false
@@ -6022,7 +6022,7 @@ paths:
         risk: low
   /logs/stream:
     get:
-      description: Stream live logs over Server-Sent Events. Errors are delivered as `message` events with an error type, not HTTP status codes. Needs the read_logs capability.
+      description: Stream live logs over Server-Sent Events. Errors are delivered as `message` events with an error type, not HTTP status codes. Needs the read_logs privilege.
       operationId: stream-logs
       parameters:
         - explode: false
@@ -11101,7 +11101,7 @@ paths:
         risk: high
   /variables/list:
     get:
-      description: List variables for a service, environment, project, or team. Service variables include their rendered values. Values are blank and values_redacted is true unless the connection has the read_variable_values capability; names and references are always listed.
+      description: List variables for a service, environment, project, or team. Service variables include their rendered values. Values are blank and values_redacted is true unless the connection has the read_variable_values privilege; names and references are always listed.
       operationId: list-variables
       parameters:
         - description: The type of variable
@@ -11606,7 +11606,7 @@ paths:
         risk: high
   /webhooks/get:
     get:
-      description: Get a single webhook by ID. The URL is blank and url_redacted is true unless the connection has the read_webhook_urls capability.
+      description: Get a single webhook by ID. The URL is blank and url_redacted is true unless the connection has the read_webhook_urls privilege.
       operationId: get-webhook
       parameters:
         - explode: false
@@ -11710,7 +11710,7 @@ paths:
         risk: low
   /webhooks/list:
     get:
-      description: List webhooks for a team or project. The URL is blank and url_redacted is true unless the connection has the read_webhook_urls capability.
+      description: List webhooks for a team or project. The URL is blank and url_redacted is true unless the connection has the read_webhook_urls privilege.
       operationId: list-webhooks
       parameters:
         - explode: false

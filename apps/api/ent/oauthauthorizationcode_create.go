@@ -150,9 +150,9 @@ func (_c *OAuthAuthorizationCodeCreate) SetResources(v []schema.APIKeyResource) 
 	return _c
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (_c *OAuthAuthorizationCodeCreate) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeCreate {
-	_c.mutation.SetCapabilities(v)
+// SetPrivileges sets the "privileges" field.
+func (_c *OAuthAuthorizationCodeCreate) SetPrivileges(v []schema.KeyPrivilege) *OAuthAuthorizationCodeCreate {
+	_c.mutation.SetPrivileges(v)
 	return _c
 }
 
@@ -262,9 +262,9 @@ func (_c *OAuthAuthorizationCodeCreate) defaults() {
 		v := oauthauthorizationcode.DefaultFullAccess
 		_c.mutation.SetFullAccess(v)
 	}
-	if _, ok := _c.mutation.Capabilities(); !ok {
-		v := oauthauthorizationcode.DefaultCapabilities
-		_c.mutation.SetCapabilities(v)
+	if _, ok := _c.mutation.Privileges(); !ok {
+		v := oauthauthorizationcode.DefaultPrivileges
+		_c.mutation.SetPrivileges(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := oauthauthorizationcode.DefaultID()
@@ -320,8 +320,8 @@ func (_c *OAuthAuthorizationCodeCreate) check() error {
 	if _, ok := _c.mutation.Resources(); !ok {
 		return &ValidationError{Name: "resources", err: errors.New(`ent: missing required field "OAuthAuthorizationCode.resources"`)}
 	}
-	if _, ok := _c.mutation.Capabilities(); !ok {
-		return &ValidationError{Name: "capabilities", err: errors.New(`ent: missing required field "OAuthAuthorizationCode.capabilities"`)}
+	if _, ok := _c.mutation.Privileges(); !ok {
+		return &ValidationError{Name: "privileges", err: errors.New(`ent: missing required field "OAuthAuthorizationCode.privileges"`)}
 	}
 	if _, ok := _c.mutation.ExpiresAt(); !ok {
 		return &ValidationError{Name: "expires_at", err: errors.New(`ent: missing required field "OAuthAuthorizationCode.expires_at"`)}
@@ -424,9 +424,9 @@ func (_c *OAuthAuthorizationCodeCreate) createSpec() (*OAuthAuthorizationCode, *
 		_spec.SetField(oauthauthorizationcode.FieldResources, field.TypeJSON, value)
 		_node.Resources = value
 	}
-	if value, ok := _c.mutation.Capabilities(); ok {
-		_spec.SetField(oauthauthorizationcode.FieldCapabilities, field.TypeJSON, value)
-		_node.Capabilities = value
+	if value, ok := _c.mutation.Privileges(); ok {
+		_spec.SetField(oauthauthorizationcode.FieldPrivileges, field.TypeJSON, value)
+		_node.Privileges = value
 	}
 	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(oauthauthorizationcode.FieldExpiresAt, field.TypeTime, value)
@@ -677,15 +677,15 @@ func (u *OAuthAuthorizationCodeUpsert) UpdateResources() *OAuthAuthorizationCode
 	return u
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (u *OAuthAuthorizationCodeUpsert) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpsert {
-	u.Set(oauthauthorizationcode.FieldCapabilities, v)
+// SetPrivileges sets the "privileges" field.
+func (u *OAuthAuthorizationCodeUpsert) SetPrivileges(v []schema.KeyPrivilege) *OAuthAuthorizationCodeUpsert {
+	u.Set(oauthauthorizationcode.FieldPrivileges, v)
 	return u
 }
 
-// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
-func (u *OAuthAuthorizationCodeUpsert) UpdateCapabilities() *OAuthAuthorizationCodeUpsert {
-	u.SetExcluded(oauthauthorizationcode.FieldCapabilities)
+// UpdatePrivileges sets the "privileges" field to the value that was provided on create.
+func (u *OAuthAuthorizationCodeUpsert) UpdatePrivileges() *OAuthAuthorizationCodeUpsert {
+	u.SetExcluded(oauthauthorizationcode.FieldPrivileges)
 	return u
 }
 
@@ -996,17 +996,17 @@ func (u *OAuthAuthorizationCodeUpsertOne) UpdateResources() *OAuthAuthorizationC
 	})
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (u *OAuthAuthorizationCodeUpsertOne) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpsertOne {
+// SetPrivileges sets the "privileges" field.
+func (u *OAuthAuthorizationCodeUpsertOne) SetPrivileges(v []schema.KeyPrivilege) *OAuthAuthorizationCodeUpsertOne {
 	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
-		s.SetCapabilities(v)
+		s.SetPrivileges(v)
 	})
 }
 
-// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
-func (u *OAuthAuthorizationCodeUpsertOne) UpdateCapabilities() *OAuthAuthorizationCodeUpsertOne {
+// UpdatePrivileges sets the "privileges" field to the value that was provided on create.
+func (u *OAuthAuthorizationCodeUpsertOne) UpdatePrivileges() *OAuthAuthorizationCodeUpsertOne {
 	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
-		s.UpdateCapabilities()
+		s.UpdatePrivileges()
 	})
 }
 
@@ -1494,17 +1494,17 @@ func (u *OAuthAuthorizationCodeUpsertBulk) UpdateResources() *OAuthAuthorization
 	})
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (u *OAuthAuthorizationCodeUpsertBulk) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpsertBulk {
+// SetPrivileges sets the "privileges" field.
+func (u *OAuthAuthorizationCodeUpsertBulk) SetPrivileges(v []schema.KeyPrivilege) *OAuthAuthorizationCodeUpsertBulk {
 	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
-		s.SetCapabilities(v)
+		s.SetPrivileges(v)
 	})
 }
 
-// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
-func (u *OAuthAuthorizationCodeUpsertBulk) UpdateCapabilities() *OAuthAuthorizationCodeUpsertBulk {
+// UpdatePrivileges sets the "privileges" field to the value that was provided on create.
+func (u *OAuthAuthorizationCodeUpsertBulk) UpdatePrivileges() *OAuthAuthorizationCodeUpsertBulk {
 	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
-		s.UpdateCapabilities()
+		s.UpdatePrivileges()
 	})
 }
 

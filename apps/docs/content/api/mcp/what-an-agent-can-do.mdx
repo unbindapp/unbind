@@ -28,7 +28,7 @@ There are about 60 tools, and more than half of them only read.
 
 ## What is redacted, and why
 
-Two tools answer with a blank where a secret would be, unless the connection has the matching [capability](/api/mcp/limiting-access#capabilities):
+Two tools answer with a blank where a secret would be, unless the connection has the matching [privilege](/api/mcp/limiting-access#privileges):
 
 - **Read variable values**: without it, `list-variables` returns names and references, with `values_redacted` true.
 - **Read webhook URLs**: without it, the webhook tools return `url_redacted` true.
@@ -48,7 +48,7 @@ The server gives every client a short set of instructions. They are worth knowin
 
 - Resources nest as team > project > environment > service, and most tools need the IDs of every level above. Agents find them with `list-teams`, `list-projects`, `list-environments` and `list-service`.
 - Names are unique among siblings and case sensitive. A taken name answers "conflict", except for `create-service`, `create-service-group`, `create-volume` and `deploy-template`, which add a short suffix and keep going.
-- Agents call `whoami` first to learn their role, limits and capabilities, and not to retry for values that come back redacted.
+- Agents call `whoami` first to learn their role, limits and privileges, and not to retry for values that come back redacted.
 - Creating or updating a service does not roll it out. The agent calls `trigger-deployment`, polls `get-deployment` until it finishes, and reads `query-logs` when a build or a replica fails.
 
 ## Hints for the client

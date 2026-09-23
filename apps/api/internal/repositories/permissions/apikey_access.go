@@ -13,16 +13,16 @@ import (
 // decision made with a key is the intersection of the owner's grants and this.
 // The auth middleware attaches it for key callers, never for sessions.
 type APIKeyAccess struct {
-	Role         entSchema.PermittedAction
-	FullAccess   bool
-	Resources    []entSchema.APIKeyResource
-	Capabilities []entSchema.KeyCapability
+	Role       entSchema.PermittedAction
+	FullAccess bool
+	Resources  []entSchema.APIKeyResource
+	Privileges []entSchema.KeyPrivilege
 }
 
 type apiKeyAccessKey struct{}
 
 func APIKeyAccessOf(key *ent.APIKey) APIKeyAccess {
-	return APIKeyAccess{Role: key.Role, FullAccess: key.FullAccess, Resources: key.Resources, Capabilities: key.Capabilities}
+	return APIKeyAccess{Role: key.Role, FullAccess: key.FullAccess, Resources: key.Resources, Privileges: key.Privileges}
 }
 
 func WithAPIKeyAccess(ctx context.Context, access APIKeyAccess) context.Context {
@@ -38,18 +38,18 @@ func (a APIKeyAccess) AllowsWrites() bool {
 	return a.Role == entSchema.ActionEditor || a.Role == entSchema.ActionAdmin
 }
 
-func (a APIKeyAccess) Has(capability entSchema.KeyCapability) bool {
-	return slices.Contains(a.Capabilities, capability)
+func (a APIKeyAccess) Has(privilege entSchema.KeyPrivilege) bool {
+	return slices.Contains(a.Privileges, privilege)
 }
 
-// HasCapability is true for sessions, which hold every capability, and for
+// HasPrivilege is true for sessions, which hold every privilege, and for
 // credentials that were given this one.
-func HasCapability(ctx context.Context, capability entSchema.KeyCapability) bool {
+func HasPrivilege(ctx context.Context, privilege entSchema.KeyPrivilege) bool {
 	access, limited := APIKeyAccessFromContext(ctx)
 	if !limited {
 		return true
 	}
-	return access.Has(capability)
+	return access.Has(privilege)
 }
 
 func (a APIKeyAccess) satisfies(action entSchema.PermittedAction) bool {

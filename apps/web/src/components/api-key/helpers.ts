@@ -1,5 +1,5 @@
 import type { TApiKeyShallow } from "@/lib/queries/api-keys";
-import type { KeyCapability, PermittedAction, ResourceType } from "@/lib/server/client.gen";
+import type { KeyPrivilege, PermittedAction, ResourceType } from "@/lib/server/client.gen";
 import { addDays } from "date-fns";
 import {
   EyeIcon,
@@ -62,8 +62,8 @@ export const roleOptions: {
   },
 ];
 
-export const capabilityOptions: {
-  value: KeyCapability;
+export const privilegeOptions: {
+  value: KeyPrivilege;
   title: string;
   Icon: FC<{ className?: string }>;
 }[] = [
@@ -98,7 +98,7 @@ export const accessFormShape = {
     }),
   ),
   role: z.enum(["viewer", "editor", "admin"]),
-  capabilities: z.array(z.enum(["read_variable_values", "read_logs", "read_webhook_urls"])),
+  privileges: z.array(z.enum(["read_variable_values", "read_logs", "read_webhook_urls"])),
 };
 
 export function hasPickedResource(value: { access: TAccess; rows: TResourceRow[] }) {

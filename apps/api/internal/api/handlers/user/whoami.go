@@ -18,10 +18,10 @@ type WhoamiData struct {
 // WhoamiAPIKey lets a key holder (a CLI, an MCP server) learn what the key allows
 // before trying.
 type WhoamiAPIKey struct {
-	Role         schema.PermittedAction  `json:"role"`
-	FullAccess   bool                    `json:"full_access"`
-	Resources    []schema.APIKeyResource `json:"resources" nullable:"false"`
-	Capabilities []schema.KeyCapability  `json:"capabilities" nullable:"false" doc:"What the credential may see beyond its role. Without read_variable_values, variable values come back blank; without read_logs, query-logs is refused; without read_webhook_urls, webhook URLs come back blank."`
+	Role       schema.PermittedAction  `json:"role"`
+	FullAccess bool                    `json:"full_access"`
+	Resources  []schema.APIKeyResource `json:"resources" nullable:"false"`
+	Privileges []schema.KeyPrivilege   `json:"privileges" nullable:"false" doc:"What the credential may see beyond its role. Without read_variable_values, variable values come back blank; without read_logs, query-logs is refused; without read_webhook_urls, webhook URLs come back blank."`
 }
 
 type WhoamiResponse struct {
@@ -52,11 +52,11 @@ func (self *HandlerGroup) Whoami(ctx context.Context, _ *server.BaseAuthInput) (
 		if resources == nil {
 			resources = []schema.APIKeyResource{}
 		}
-		capabilities := access.Capabilities
-		if capabilities == nil {
-			capabilities = []schema.KeyCapability{}
+		privileges := access.Privileges
+		if privileges == nil {
+			privileges = []schema.KeyPrivilege{}
 		}
-		resp.Body.Data.APIKey = &WhoamiAPIKey{Role: access.Role, FullAccess: access.FullAccess, Resources: resources, Capabilities: capabilities}
+		resp.Body.Data.APIKey = &WhoamiAPIKey{Role: access.Role, FullAccess: access.FullAccess, Resources: resources, Privileges: privileges}
 	}
 	return resp, nil
 }

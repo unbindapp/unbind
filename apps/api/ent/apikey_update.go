@@ -121,15 +121,15 @@ func (_u *APIKeyUpdate) AppendResources(v []schema.APIKeyResource) *APIKeyUpdate
 	return _u
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (_u *APIKeyUpdate) SetCapabilities(v []schema.KeyCapability) *APIKeyUpdate {
-	_u.mutation.SetCapabilities(v)
+// SetPrivileges sets the "privileges" field.
+func (_u *APIKeyUpdate) SetPrivileges(v []schema.KeyPrivilege) *APIKeyUpdate {
+	_u.mutation.SetPrivileges(v)
 	return _u
 }
 
-// AppendCapabilities appends value to the "capabilities" field.
-func (_u *APIKeyUpdate) AppendCapabilities(v []schema.KeyCapability) *APIKeyUpdate {
-	_u.mutation.AppendCapabilities(v)
+// AppendPrivileges appends value to the "privileges" field.
+func (_u *APIKeyUpdate) AppendPrivileges(v []schema.KeyPrivilege) *APIKeyUpdate {
+	_u.mutation.AppendPrivileges(v)
 	return _u
 }
 
@@ -301,12 +301,12 @@ func (_u *APIKeyUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			sqljson.Append(u, apikey.FieldResources, value)
 		})
 	}
-	if value, ok := _u.mutation.Capabilities(); ok {
-		_spec.SetField(apikey.FieldCapabilities, field.TypeJSON, value)
+	if value, ok := _u.mutation.Privileges(); ok {
+		_spec.SetField(apikey.FieldPrivileges, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+	if value, ok := _u.mutation.AppendedPrivileges(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, apikey.FieldCapabilities, value)
+			sqljson.Append(u, apikey.FieldPrivileges, value)
 		})
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
@@ -460,15 +460,15 @@ func (_u *APIKeyUpdateOne) AppendResources(v []schema.APIKeyResource) *APIKeyUpd
 	return _u
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (_u *APIKeyUpdateOne) SetCapabilities(v []schema.KeyCapability) *APIKeyUpdateOne {
-	_u.mutation.SetCapabilities(v)
+// SetPrivileges sets the "privileges" field.
+func (_u *APIKeyUpdateOne) SetPrivileges(v []schema.KeyPrivilege) *APIKeyUpdateOne {
+	_u.mutation.SetPrivileges(v)
 	return _u
 }
 
-// AppendCapabilities appends value to the "capabilities" field.
-func (_u *APIKeyUpdateOne) AppendCapabilities(v []schema.KeyCapability) *APIKeyUpdateOne {
-	_u.mutation.AppendCapabilities(v)
+// AppendPrivileges appends value to the "privileges" field.
+func (_u *APIKeyUpdateOne) AppendPrivileges(v []schema.KeyPrivilege) *APIKeyUpdateOne {
+	_u.mutation.AppendPrivileges(v)
 	return _u
 }
 
@@ -670,12 +670,12 @@ func (_u *APIKeyUpdateOne) sqlSave(ctx context.Context) (_node *APIKey, err erro
 			sqljson.Append(u, apikey.FieldResources, value)
 		})
 	}
-	if value, ok := _u.mutation.Capabilities(); ok {
-		_spec.SetField(apikey.FieldCapabilities, field.TypeJSON, value)
+	if value, ok := _u.mutation.Privileges(); ok {
+		_spec.SetField(apikey.FieldPrivileges, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+	if value, ok := _u.mutation.AppendedPrivileges(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, apikey.FieldCapabilities, value)
+			sqljson.Append(u, apikey.FieldPrivileges, value)
 		})
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {

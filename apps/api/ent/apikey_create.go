@@ -98,9 +98,9 @@ func (_c *APIKeyCreate) SetResources(v []schema.APIKeyResource) *APIKeyCreate {
 	return _c
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (_c *APIKeyCreate) SetCapabilities(v []schema.KeyCapability) *APIKeyCreate {
-	_c.mutation.SetCapabilities(v)
+// SetPrivileges sets the "privileges" field.
+func (_c *APIKeyCreate) SetPrivileges(v []schema.KeyPrivilege) *APIKeyCreate {
+	_c.mutation.SetPrivileges(v)
 	return _c
 }
 
@@ -204,9 +204,9 @@ func (_c *APIKeyCreate) defaults() {
 		v := apikey.DefaultFullAccess
 		_c.mutation.SetFullAccess(v)
 	}
-	if _, ok := _c.mutation.Capabilities(); !ok {
-		v := apikey.DefaultCapabilities
-		_c.mutation.SetCapabilities(v)
+	if _, ok := _c.mutation.Privileges(); !ok {
+		v := apikey.DefaultPrivileges
+		_c.mutation.SetPrivileges(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := apikey.DefaultID()
@@ -250,8 +250,8 @@ func (_c *APIKeyCreate) check() error {
 	if _, ok := _c.mutation.Resources(); !ok {
 		return &ValidationError{Name: "resources", err: errors.New(`ent: missing required field "APIKey.resources"`)}
 	}
-	if _, ok := _c.mutation.Capabilities(); !ok {
-		return &ValidationError{Name: "capabilities", err: errors.New(`ent: missing required field "APIKey.capabilities"`)}
+	if _, ok := _c.mutation.Privileges(); !ok {
+		return &ValidationError{Name: "privileges", err: errors.New(`ent: missing required field "APIKey.privileges"`)}
 	}
 	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "APIKey.user_id"`)}
@@ -327,9 +327,9 @@ func (_c *APIKeyCreate) createSpec() (*APIKey, *sqlgraph.CreateSpec) {
 		_spec.SetField(apikey.FieldResources, field.TypeJSON, value)
 		_node.Resources = value
 	}
-	if value, ok := _c.mutation.Capabilities(); ok {
-		_spec.SetField(apikey.FieldCapabilities, field.TypeJSON, value)
-		_node.Capabilities = value
+	if value, ok := _c.mutation.Privileges(); ok {
+		_spec.SetField(apikey.FieldPrivileges, field.TypeJSON, value)
+		_node.Privileges = value
 	}
 	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(apikey.FieldExpiresAt, field.TypeTime, value)
@@ -492,15 +492,15 @@ func (u *APIKeyUpsert) UpdateResources() *APIKeyUpsert {
 	return u
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (u *APIKeyUpsert) SetCapabilities(v []schema.KeyCapability) *APIKeyUpsert {
-	u.Set(apikey.FieldCapabilities, v)
+// SetPrivileges sets the "privileges" field.
+func (u *APIKeyUpsert) SetPrivileges(v []schema.KeyPrivilege) *APIKeyUpsert {
+	u.Set(apikey.FieldPrivileges, v)
 	return u
 }
 
-// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
-func (u *APIKeyUpsert) UpdateCapabilities() *APIKeyUpsert {
-	u.SetExcluded(apikey.FieldCapabilities)
+// UpdatePrivileges sets the "privileges" field to the value that was provided on create.
+func (u *APIKeyUpsert) UpdatePrivileges() *APIKeyUpsert {
+	u.SetExcluded(apikey.FieldPrivileges)
 	return u
 }
 
@@ -701,17 +701,17 @@ func (u *APIKeyUpsertOne) UpdateResources() *APIKeyUpsertOne {
 	})
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (u *APIKeyUpsertOne) SetCapabilities(v []schema.KeyCapability) *APIKeyUpsertOne {
+// SetPrivileges sets the "privileges" field.
+func (u *APIKeyUpsertOne) SetPrivileges(v []schema.KeyPrivilege) *APIKeyUpsertOne {
 	return u.Update(func(s *APIKeyUpsert) {
-		s.SetCapabilities(v)
+		s.SetPrivileges(v)
 	})
 }
 
-// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
-func (u *APIKeyUpsertOne) UpdateCapabilities() *APIKeyUpsertOne {
+// UpdatePrivileges sets the "privileges" field to the value that was provided on create.
+func (u *APIKeyUpsertOne) UpdatePrivileges() *APIKeyUpsertOne {
 	return u.Update(func(s *APIKeyUpsert) {
-		s.UpdateCapabilities()
+		s.UpdatePrivileges()
 	})
 }
 
@@ -1087,17 +1087,17 @@ func (u *APIKeyUpsertBulk) UpdateResources() *APIKeyUpsertBulk {
 	})
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (u *APIKeyUpsertBulk) SetCapabilities(v []schema.KeyCapability) *APIKeyUpsertBulk {
+// SetPrivileges sets the "privileges" field.
+func (u *APIKeyUpsertBulk) SetPrivileges(v []schema.KeyPrivilege) *APIKeyUpsertBulk {
 	return u.Update(func(s *APIKeyUpsert) {
-		s.SetCapabilities(v)
+		s.SetPrivileges(v)
 	})
 }
 
-// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
-func (u *APIKeyUpsertBulk) UpdateCapabilities() *APIKeyUpsertBulk {
+// UpdatePrivileges sets the "privileges" field to the value that was provided on create.
+func (u *APIKeyUpsertBulk) UpdatePrivileges() *APIKeyUpsertBulk {
 	return u.Update(func(s *APIKeyUpsert) {
-		s.UpdateCapabilities()
+		s.UpdatePrivileges()
 	})
 }
 

@@ -1,4 +1,4 @@
-h1:uYVRn3itzsHEKUUVsXdSWg0dZJYPenHnzmE9KaF0jJw=
+h1:0Lg4m0BDEgmlNiPHaNAgqFIbVmP3POZc7aLM/ZzR8qI=
 20250519010757_initial_migration.sql h1:94lMwKemoNX/ichD+2Vzb7GmOHXVj4qVTfeBInQAe0g=
 20250519163449_add_init_containers.sql h1:7bt+zCbtmlYr1QDztgka0R5wUxdjD7XYUkrhL9GYYIQ=
 20250521202532_non_nillable_kubernetes_secret.sql h1:eDpMWyeBXh5cG4poavaUMeYs5QXddFBBIyYlxc+nq64=
@@ -30,4 +30,4 @@ h1:uYVRn3itzsHEKUUVsXdSWg0dZJYPenHnzmE9KaF0jJw=
 20260921145145_github_app_created_by_set_null.sql h1:qdra95WX7YGR7BWORhAdkwtTmXGztuSQCSio/jGryTs=
 20260921151541_user_delete_cascades_sessions.sql h1:TOSE7BklYtWAtGHkxTKbn9e5OH0icPvBz03BUTo4TM4=
 20260922205811_drop_variable_references.sql h1:zjrzqkQ3zSA+yJipI2Yvn8W2ji08QtZNer1/Mg+y9w0=
-20260923090803_credential_capabilities.sql h1:0PvA9Xc3n7Cemb1hDF1kPhl8rVtLEJT8nu6Voyx9VLA=
+20260923090803_credential_privileges.sql h1:ebqEDPDsrpk6P+oduESBLjlNsMJSPJtmpNZgD+Ig+xY=

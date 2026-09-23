@@ -30,7 +30,7 @@ Resources nest as team > project > environment > service, and most tools need th
 
 Names are unique among siblings and case sensitive: projects in a team, environments in a project, services, service groups and volumes in an environment. Creating or renaming into a taken name answers "conflict", except create-service, create-service-group, create-volume and deploy-template, which keep going with a short suffix added to the name. Read the name from their response instead of assuming the one you sent.
 
-Call whoami first: when api_key is present, this connection is limited to the listed role, resources and capabilities. Anything outside the role or resources answers "not found" or "forbidden". Without the read_variable_values capability, variable values come back blank but names and references are listed; without read_webhook_urls, webhook URLs come back blank; without read_logs, there is no query-logs tool. Do not retry for values that are redacted.
+Call whoami first: when api_key is present, this connection is limited to the listed role, resources and privileges. Anything outside the role or resources answers "not found" or "forbidden". Without the read_variable_values privilege, variable values come back blank but names and references are listed; without read_webhook_urls, webhook URLs come back blank; without read_logs, there is no query-logs tool. Do not retry for values that are redacted.
 
 Creating or updating a service does not roll it out. Call trigger-deployment, then poll get-deployment until it finishes, and read query-logs when a build or a replica fails. Variable changes are rolled out by the next deployment.`
 )
@@ -91,14 +91,14 @@ func (self *Server) Mount(r chi.Router, limiter *middleware.RateLimiter) {
 // everything is the access of a caller nothing narrows, which only the
 // verifier's own failures leave us with; the auth middleware still decides.
 var everything = permissions_repo.APIKeyAccess{
-	Role:         entSchema.ActionAdmin,
-	FullAccess:   true,
-	Capabilities: []entSchema.KeyCapability{entSchema.CapabilityReadVariableValues, entSchema.CapabilityReadLogs, entSchema.CapabilityReadWebhookURLs},
+	Role:       entSchema.ActionAdmin,
+	FullAccess: true,
+	Privileges: []entSchema.KeyPrivilege{entSchema.PrivilegeReadVariableValues, entSchema.PrivilegeReadLogs, entSchema.PrivilegeReadWebhookURLs},
 }
 
 // serverSet keeps one server per distinct set of offered tools. A connection
 // is not offered tools the auth middleware would refuse anyway: writes for
-// read only credentials, and tools needing a capability it lacks.
+// read only credentials, and tools needing a privilege it lacks.
 type serverSet struct {
 	version  string
 	tools    []*tool

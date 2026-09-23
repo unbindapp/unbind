@@ -1,7 +1,7 @@
 "use client";
 
 import AccessField from "@/components/api-key/access-field";
-import CapabilitiesField from "@/components/api-key/capabilities-field";
+import PrivilegesField from "@/components/api-key/privileges-field";
 import ApiKeyCreatedDialog from "@/components/api-key/api-key-created-dialog";
 import { useApiKeys, useApiKeysUtils } from "@/components/api-key/api-keys-provider";
 import {
@@ -32,7 +32,7 @@ import { cn } from "@/components/ui/utils";
 import { getTakenNameError } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { createApiKey as createApiKeyFn, type TApiKeyCreated } from "@/lib/queries/api-keys";
-import type { KeyCapability, PermittedAction } from "@/lib/server/client.gen";
+import type { KeyPrivilege, PermittedAction } from "@/lib/server/client.gen";
 import { useMutation } from "@tanstack/react-query";
 import { ClockIcon } from "lucide-react";
 import { useState } from "react";
@@ -79,7 +79,7 @@ export default function AddApiKeyForm({ className }: TProps) {
       access: "full" as TAccess,
       rows: [emptyResourceRow] as TResourceRow[],
       role: "viewer" as PermittedAction,
-      capabilities: [] as KeyCapability[],
+      privileges: [] as KeyPrivilege[],
       expiry: defaultExpiry as TExpiryValue,
     },
     validators: { onChange: FormSchema },
@@ -91,7 +91,7 @@ export default function AddApiKeyForm({ className }: TProps) {
         role: value.role,
         full_access: value.access === "full",
         resources,
-        capabilities: value.capabilities,
+        privileges: value.privileges,
         expires_at: expiresAtFrom(value.expiry),
       });
       temporarilyAddNewEntity(res.data.id);
@@ -186,16 +186,16 @@ export default function AddApiKeyForm({ className }: TProps) {
             </form.Subscribe>
           </InputSectionWrapper>
           <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
-            Capabilities
+            Privileges
           </h2>
           <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
-            Operations not covered by the role.
+            Capabilities not covered by the role.
           </p>
           <InputSectionWrapper>
             <form.AppField
-              name="capabilities"
+              name="privileges"
               children={(field) => (
-                <CapabilitiesField field={field} className={accessFieldClassName} />
+                <PrivilegesField field={field} className={accessFieldClassName} />
               )}
             />
           </InputSectionWrapper>

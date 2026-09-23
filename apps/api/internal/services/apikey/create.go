@@ -22,7 +22,7 @@ func (self *APIKeyService) Create(ctx context.Context, requesterUserID uuid.UUID
 	if input.ExpiresAt != nil && !input.ExpiresAt.After(time.Now()) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "expires_at must be in the future")
 	}
-	spec := keyaccess.Spec{Role: input.Role, FullAccess: input.FullAccess, Resources: input.Resources, Capabilities: input.Capabilities}
+	spec := keyaccess.Spec{Role: input.Role, FullAccess: input.FullAccess, Resources: input.Resources, Privileges: input.Privileges}
 	if err := keyaccess.Validate(spec); err != nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 	}
@@ -52,15 +52,15 @@ func (self *APIKeyService) Create(ctx context.Context, requesterUserID uuid.UUID
 		resources = []schema.APIKeyResource{}
 	}
 	key, err := self.repo.APIKey().Create(ctx, &apikey_repo.CreateAPIKeyInput{
-		UserID:       requesterUserID,
-		Name:         name,
-		TokenPrefix:  generated.Prefix,
-		TokenHash:    generated.Hash,
-		Role:         input.Role,
-		FullAccess:   input.FullAccess,
-		Resources:    resources,
-		Capabilities: keyaccess.Capabilities(spec),
-		ExpiresAt:    input.ExpiresAt,
+		UserID:      requesterUserID,
+		Name:        name,
+		TokenPrefix: generated.Prefix,
+		TokenHash:   generated.Hash,
+		Role:        input.Role,
+		FullAccess:  input.FullAccess,
+		Resources:   resources,
+		Privileges:  keyaccess.Privileges(spec),
+		ExpiresAt:   input.ExpiresAt,
 	})
 	if err != nil {
 		return nil, err

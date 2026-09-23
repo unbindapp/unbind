@@ -10,19 +10,19 @@ curl https://unbind.example.com/api/go/users/whoami \
   -H "Authorization: Bearer unb_your_key"
 ```
 
-Keys start with `unb_`. `GET /users/whoami` is a good first call: it returns your user, and for a key it also returns the role, the resources and the capabilities the key is limited to.
+Keys start with `unb_`. `GET /users/whoami` is a good first call: it returns your user, and for a key it also returns the role, the resources and the privileges the key is limited to.
 
 ## Create a key
 
 Go to your avatar > **Account Settings** > **API Keys**.
 
-| Field            | What to pick                                                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **Name**         | Where the key is used, like `CI Pipeline`.                                                                          |
-| **Access**       | **Everything I can access**, or **Only specific resources**: one or more teams, projects, environments or services. |
-| **Role**         | The most the key can do on those resources.                                                                         |
-| **Capabilities** | What the key can read beyond its role: variable values, logs and webhook URLs. All off by default.                  |
-| **Expires**      | From 1 day to 1 year, or never. The default is 90 days.                                                             |
+| Field          | What to pick                                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Name**       | Where the key is used, like `CI Pipeline`.                                                                          |
+| **Access**     | **Everything I can access**, or **Only specific resources**: one or more teams, projects, environments or services. |
+| **Role**       | The most the key can do on those resources.                                                                         |
+| **Privileges** | What the key can read beyond its role: variable values, logs and webhook URLs. All off by default.                  |
+| **Expires**    | From 1 day to 1 year, or never. The default is 90 days.                                                             |
 
 The key is shown once, right after you create it. Copy it then. Unbind stores only a hash and cannot show it again.
 
@@ -36,23 +36,23 @@ The key is shown once, right after you create it. Copy it then. Unbind stores on
 
 A key never has more access than you do. Roles above your own are shown as **Above your access**, and if your own access is reduced later, the key's is too.
 
-## Capabilities
+## Privileges
 
-A role says what a key can change. Capabilities say what it can read, and every one of them is off until you switch it on, for admin keys too. They do not depend on the role: a viewer key with **Read variable values** reads them.
+A role says what a key can change. Privileges say what it can read, and every one of them is off until you switch it on, for admin keys too. They do not depend on the role: a viewer key with **Read variable values** reads them.
 
-| Capability               | Value                  | Without it                                                                                                                      |
+| Privilege                | Value                  | Without it                                                                                                                      |
 | ------------------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | **Read variable values** | `read_variable_values` | `list-variables` returns names and references with every value blank and `values_redacted` true. Writing variables still works. |
 | **Read logs**            | `read_logs`            | `query-logs` and `stream-logs` answer **403**.                                                                                  |
 | **Read webhook URLs**    | `read_webhook_urls`    | Webhooks come back with the URL blank and `url_redacted` true. Creating and editing still works.                                |
 
-Keys created before capabilities existed have none. Recreate a key if it needs one.
+Keys created before privileges existed have none. Recreate a key if it needs one.
 
 ## Give a key as little as it needs
 
 A key that can reach everything is convenient, and a bad idea for anything that runs unattended.
 
-- **A CI pipeline that deploys one app**: editor, limited to that service or its environment, with no capabilities. Deploying does not need to read anything.
+- **A CI pipeline that deploys one app**: editor, limited to that service or its environment, with no privileges. Deploying does not need to read anything.
 - **A dashboard that reads metrics**: viewer.
 - **An AI agent**: editor on the one project it works on, with **Read logs** so it can debug. Editors cannot delete, which is a useful safety net.
 
@@ -60,7 +60,7 @@ A key that can reach everything is convenient, and a bad idea for anything that 
 
 - A resource outside the key's limits answers **404 not found**, as if it did not exist. A limited key cannot even learn what else is there.
 - A viewer key that tries to change something gets **403** with `This API key is read only`.
-- A key without **Read logs** that reads logs gets **403** with `Reading logs needs the read_logs capability on an API key`.
+- A key without **Read logs** that reads logs gets **403** with `Reading logs needs the read_logs privilege on an API key`.
 - Operations that only work from a browser session get **403** with `This endpoint cannot be used with an API key`.
 - An expired or revoked key gets **401**.
 

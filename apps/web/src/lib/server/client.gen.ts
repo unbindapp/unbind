@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const KeyCapabilitySchema = z.enum([
+export const KeyPrivilegeSchema = z.enum([
   'read_variable_values',
   'read_logs',
   'read_webhook_urls',
@@ -19,10 +19,10 @@ export const PermittedActionSchema = z.enum(['admin', 'editor', 'viewer']);
 
 export const APIKeyCreateInputSchema = z
   .object({
-    capabilities: z.array(KeyCapabilitySchema).optional(), // What the key may see beyond its role: read_variable_values, read_logs, read_webhook_urls. All off when omitted.
     expires_at: z.string().datetime({ offset: true }).optional(), // When the key stops working. Omit for a key that never expires.
     full_access: z.boolean(), // Reach everything you can, capped at role. Resources must be empty.
     name: z.string(),
+    privileges: z.array(KeyPrivilegeSchema).optional(), // What the key may see beyond its role: read_variable_values, read_logs, read_webhook_urls. All off when omitted.
     resources: z.array(APIKeyResourceSchema), // Resources the key is limited to, each reaching everything below it. Required unless full_access.
     role: PermittedActionSchema, // Strongest action the key can perform. Never exceeds what you hold on a resource.
   })
@@ -38,13 +38,13 @@ export const APIKeyResourceResponseSchema = z
 
 export const APIKeyCreatedResponseSchema = z
   .object({
-    capabilities: z.array(KeyCapabilitySchema),
     created_at: z.string().datetime({ offset: true }),
     expires_at: z.string().datetime({ offset: true }).optional(),
     full_access: z.boolean(),
     id: z.string(),
     last_used_at: z.string().datetime({ offset: true }).optional(),
     name: z.string(),
+    privileges: z.array(KeyPrivilegeSchema),
     resources: z.array(APIKeyResourceResponseSchema),
     role: PermittedActionSchema,
     token: z.string(), // The full API key. Shown once, store it now.
@@ -61,13 +61,13 @@ export const APIKeyDeleteInputSchema = z
 
 export const APIKeyResponseSchema = z
   .object({
-    capabilities: z.array(KeyCapabilitySchema),
     created_at: z.string().datetime({ offset: true }),
     expires_at: z.string().datetime({ offset: true }).optional(),
     full_access: z.boolean(),
     id: z.string(),
     last_used_at: z.string().datetime({ offset: true }).optional(),
     name: z.string(),
+    privileges: z.array(KeyPrivilegeSchema),
     resources: z.array(APIKeyResourceResponseSchema),
     role: PermittedActionSchema,
     token_prefix: z.string(), // First characters of the token, for recognizing the key. Never the full token.
@@ -445,10 +445,10 @@ export const CheckUniqueDomainOutputBodySchema = z
 
 export const ConnectedAppApproveInputSchema = z
   .object({
-    capabilities: z.array(KeyCapabilitySchema).optional(), // What the app may see beyond its role: read_variable_values, read_logs, read_webhook_urls. All off when omitted.
     client_id: z.string(),
     code_challenge: z.string(),
     full_access: z.boolean(), // Reach everything you can, capped at role. Resources must be empty.
+    privileges: z.array(KeyPrivilegeSchema).optional(), // What the app may see beyond its role: read_variable_values, read_logs, read_webhook_urls. All off when omitted.
     redirect_uri: z.string(),
     resource: z.string().optional(),
     resources: z.array(APIKeyResourceSchema), // Resources the app is limited to. Required unless full_access.
@@ -487,7 +487,6 @@ export const ConnectedAppRedirectResponseSchema = z
 
 export const ConnectedAppResponseSchema = z
   .object({
-    capabilities: z.array(KeyCapabilitySchema),
     client_host: z.string().optional(),
     client_id: z.string(),
     client_name: z.string(), // Self reported by the client, unverified.
@@ -496,6 +495,7 @@ export const ConnectedAppResponseSchema = z
     id: z.string(),
     kind: OAuthClientKindSchema,
     last_used_at: z.string().datetime({ offset: true }).optional(),
+    privileges: z.array(KeyPrivilegeSchema),
     redirect_host: z.string(),
     resources: z.array(APIKeyResourceResponseSchema),
     role: PermittedActionSchema,
@@ -995,7 +995,7 @@ export const WebhookResponseSchema = z
     team_id: z.string(),
     type: WebhookTypeSchema,
     url: z.string(), // Blank when url_redacted is true
-    url_redacted: z.boolean(), // True when the caller may not see the URL. It needs the read_webhook_urls capability.
+    url_redacted: z.boolean(), // True when the caller may not see the URL. It needs the read_webhook_urls privilege.
   })
   .strip();
 
@@ -2822,7 +2822,7 @@ export const VariableResponseItemSchema = z
 
 export const VariableResponseSchema = z
   .object({
-    values_redacted: z.boolean(), // True when the caller may only see names. Every value and resolved value is blank. A session needs the editor role; a key or connected app needs the read_variable_values capability.
+    values_redacted: z.boolean(), // True when the caller may only see names. Every value and resolved value is blank. A session needs the editor role; a key or connected app needs the read_variable_values privilege.
     variables: z.array(VariableResponseItemSchema),
   })
   .strip();
@@ -2855,8 +2855,8 @@ export const WebhookUpdateInputSchema = z
 
 export const WhoamiAPIKeySchema = z
   .object({
-    capabilities: z.array(KeyCapabilitySchema), // What the credential may see beyond its role. Without read_variable_values, variable values come back blank; without read_logs, query-logs is refused; without read_webhook_urls, webhook URLs come back blank.
     full_access: z.boolean(),
+    privileges: z.array(KeyPrivilegeSchema), // What the credential may see beyond its role. Without read_variable_values, variable values come back blank; without read_logs, query-logs is refused; without read_webhook_urls, webhook URLs come back blank.
     resources: z.array(APIKeyResourceSchema),
     role: PermittedActionSchema,
   })
@@ -2879,7 +2879,7 @@ export const WhoamiResponseBodySchema = z
   })
   .strip();
 
-export type KeyCapability = z.infer<typeof KeyCapabilitySchema>;
+export type KeyPrivilege = z.infer<typeof KeyPrivilegeSchema>;
 export type ResourceType = z.infer<typeof ResourceTypeSchema>;
 export type APIKeyResource = z.infer<typeof APIKeyResourceSchema>;
 export type PermittedAction = z.infer<typeof PermittedActionSchema>;

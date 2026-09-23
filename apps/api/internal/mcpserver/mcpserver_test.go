@@ -139,7 +139,7 @@ func newHarness(t *testing.T) *harness {
 		func(ctx context.Context, _ *struct{}) (*output, error) {
 			record(ctx)
 			return &output{}, nil
-		}, oapi.MCP, oapi.Needs(schema.CapabilityReadLogs))
+		}, oapi.MCP, oapi.Needs(schema.PrivilegeReadLogs))
 	oapi.Register(grp, oapi.Read, huma.Operation{OperationID: "hidden-thing", Description: "Not a tool.", Method: http.MethodGet, Path: "/hidden"},
 		func(ctx context.Context, _ *struct{}) (*output, error) {
 			record(ctx)
@@ -156,7 +156,7 @@ func newHarness(t *testing.T) *harness {
 
 	h.viewer = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true}, nil)
 	h.editor = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionEditor, Resources: []schema.APIKeyResource{{ResourceType: schema.ResourceTypeProject, ResourceID: uuid.New()}}}, nil)
-	h.logReader = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs}}, nil)
+	h.logReader = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Privileges: []schema.KeyPrivilege{schema.PrivilegeReadLogs}}, nil)
 
 	grantToken, _ := auth.NewOpaqueToken(auth.OAuthAccessTokenPrefix)
 	h.grant = grantToken.Token
@@ -175,14 +175,14 @@ func newHarness(t *testing.T) *harness {
 func (h *harness) addKey(access permissions_repo.APIKeyAccess, expiresAt *time.Time) string {
 	key, _ := auth.NewAPIKey()
 	h.keys.keys[key.Hash] = &ent.APIKey{
-		ID:           uuid.New(),
-		TokenHash:    key.Hash,
-		Role:         access.Role,
-		FullAccess:   access.FullAccess,
-		Resources:    access.Resources,
-		Capabilities: access.Capabilities,
-		ExpiresAt:    expiresAt,
-		Edges:        ent.APIKeyEdges{User: h.user},
+		ID:         uuid.New(),
+		TokenHash:  key.Hash,
+		Role:       access.Role,
+		FullAccess: access.FullAccess,
+		Resources:  access.Resources,
+		Privileges: access.Privileges,
+		ExpiresAt:  expiresAt,
+		Edges:      ent.APIKeyEdges{User: h.user},
 	}
 	return key.Token
 }
@@ -283,25 +283,25 @@ func TestToolsFollowTheCredentialsRole(t *testing.T) {
 	}
 }
 
-func TestToolsFollowTheCredentialsCapabilities(t *testing.T) {
+func TestToolsFollowTheCredentialsPrivileges(t *testing.T) {
 	h := newHarness(t)
 
 	if names := toolNames(t, h.connect(h.editor)); slices.Contains(names, "log-things") {
-		t.Fatalf("editor key without the read_logs capability sees %v", names)
+		t.Fatalf("editor key without the read_logs privilege sees %v", names)
 	}
 	if names := toolNames(t, h.connect(h.logReader)); !slices.Equal(names, []string{"list-things", "log-things"}) {
-		t.Fatalf("viewer key with the read_logs capability sees %v, want list-things and log-things", names)
+		t.Fatalf("viewer key with the read_logs privilege sees %v, want list-things and log-things", names)
 	}
 
 	if _, err := h.call(h.connect(h.editor), "log-things", nil); err == nil {
-		t.Fatal("a key without the capability called a hidden tool")
+		t.Fatal("a key without the privilege called a hidden tool")
 	}
 	if h.last != nil {
-		t.Fatal("the logs handler ran for a key without the capability")
+		t.Fatal("the logs handler ran for a key without the privilege")
 	}
 	result, err := h.call(h.connect(h.logReader), "log-things", nil)
 	if err != nil || result.IsError {
-		t.Fatalf("key with the capability: err %v, result %s", err, resultText(result))
+		t.Fatalf("key with the privilege: err %v, result %s", err, resultText(result))
 	}
 }
 

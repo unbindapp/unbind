@@ -84,28 +84,28 @@ const (
 // APIKeyMutation represents an operation that mutates the APIKey nodes in the graph.
 type APIKeyMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	created_at         *time.Time
-	updated_at         *time.Time
-	name               *string
-	token_prefix       *string
-	token_hash         *string
-	role               *schema.PermittedAction
-	full_access        *bool
-	resources          *[]schema.APIKeyResource
-	appendresources    []schema.APIKeyResource
-	capabilities       *[]schema.KeyCapability
-	appendcapabilities []schema.KeyCapability
-	expires_at         *time.Time
-	last_used_at       *time.Time
-	clearedFields      map[string]struct{}
-	user               *uuid.UUID
-	cleareduser        bool
-	done               bool
-	oldValue           func(context.Context) (*APIKey, error)
-	predicates         []predicate.APIKey
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	created_at       *time.Time
+	updated_at       *time.Time
+	name             *string
+	token_prefix     *string
+	token_hash       *string
+	role             *schema.PermittedAction
+	full_access      *bool
+	resources        *[]schema.APIKeyResource
+	appendresources  []schema.APIKeyResource
+	privileges       *[]schema.KeyPrivilege
+	appendprivileges []schema.KeyPrivilege
+	expires_at       *time.Time
+	last_used_at     *time.Time
+	clearedFields    map[string]struct{}
+	user             *uuid.UUID
+	cleareduser      bool
+	done             bool
+	oldValue         func(context.Context) (*APIKey, error)
+	predicates       []predicate.APIKey
 }
 
 var _ ent.Mutation = (*APIKeyMutation)(nil)
@@ -515,55 +515,55 @@ func (m *APIKeyMutation) ResetResources() {
 	m.appendresources = nil
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (m *APIKeyMutation) SetCapabilities(sc []schema.KeyCapability) {
-	m.capabilities = &sc
-	m.appendcapabilities = nil
+// SetPrivileges sets the "privileges" field.
+func (m *APIKeyMutation) SetPrivileges(sp []schema.KeyPrivilege) {
+	m.privileges = &sp
+	m.appendprivileges = nil
 }
 
-// Capabilities returns the value of the "capabilities" field in the mutation.
-func (m *APIKeyMutation) Capabilities() (r []schema.KeyCapability, exists bool) {
-	v := m.capabilities
+// Privileges returns the value of the "privileges" field in the mutation.
+func (m *APIKeyMutation) Privileges() (r []schema.KeyPrivilege, exists bool) {
+	v := m.privileges
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCapabilities returns the old "capabilities" field's value of the APIKey entity.
+// OldPrivileges returns the old "privileges" field's value of the APIKey entity.
 // If the APIKey object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *APIKeyMutation) OldCapabilities(ctx context.Context) (v []schema.KeyCapability, err error) {
+func (m *APIKeyMutation) OldPrivileges(ctx context.Context) (v []schema.KeyPrivilege, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCapabilities is only allowed on UpdateOne operations")
+		return v, errors.New("OldPrivileges is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCapabilities requires an ID field in the mutation")
+		return v, errors.New("OldPrivileges requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCapabilities: %w", err)
+		return v, fmt.Errorf("querying old value for OldPrivileges: %w", err)
 	}
-	return oldValue.Capabilities, nil
+	return oldValue.Privileges, nil
 }
 
-// AppendCapabilities adds sc to the "capabilities" field.
-func (m *APIKeyMutation) AppendCapabilities(sc []schema.KeyCapability) {
-	m.appendcapabilities = append(m.appendcapabilities, sc...)
+// AppendPrivileges adds sp to the "privileges" field.
+func (m *APIKeyMutation) AppendPrivileges(sp []schema.KeyPrivilege) {
+	m.appendprivileges = append(m.appendprivileges, sp...)
 }
 
-// AppendedCapabilities returns the list of values that were appended to the "capabilities" field in this mutation.
-func (m *APIKeyMutation) AppendedCapabilities() ([]schema.KeyCapability, bool) {
-	if len(m.appendcapabilities) == 0 {
+// AppendedPrivileges returns the list of values that were appended to the "privileges" field in this mutation.
+func (m *APIKeyMutation) AppendedPrivileges() ([]schema.KeyPrivilege, bool) {
+	if len(m.appendprivileges) == 0 {
 		return nil, false
 	}
-	return m.appendcapabilities, true
+	return m.appendprivileges, true
 }
 
-// ResetCapabilities resets all changes to the "capabilities" field.
-func (m *APIKeyMutation) ResetCapabilities() {
-	m.capabilities = nil
-	m.appendcapabilities = nil
+// ResetPrivileges resets all changes to the "privileges" field.
+func (m *APIKeyMutation) ResetPrivileges() {
+	m.privileges = nil
+	m.appendprivileges = nil
 }
 
 // SetExpiresAt sets the "expires_at" field.
@@ -786,8 +786,8 @@ func (m *APIKeyMutation) Fields() []string {
 	if m.resources != nil {
 		fields = append(fields, apikey.FieldResources)
 	}
-	if m.capabilities != nil {
-		fields = append(fields, apikey.FieldCapabilities)
+	if m.privileges != nil {
+		fields = append(fields, apikey.FieldPrivileges)
 	}
 	if m.expires_at != nil {
 		fields = append(fields, apikey.FieldExpiresAt)
@@ -822,8 +822,8 @@ func (m *APIKeyMutation) Field(name string) (ent.Value, bool) {
 		return m.FullAccess()
 	case apikey.FieldResources:
 		return m.Resources()
-	case apikey.FieldCapabilities:
-		return m.Capabilities()
+	case apikey.FieldPrivileges:
+		return m.Privileges()
 	case apikey.FieldExpiresAt:
 		return m.ExpiresAt()
 	case apikey.FieldLastUsedAt:
@@ -855,8 +855,8 @@ func (m *APIKeyMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldFullAccess(ctx)
 	case apikey.FieldResources:
 		return m.OldResources(ctx)
-	case apikey.FieldCapabilities:
-		return m.OldCapabilities(ctx)
+	case apikey.FieldPrivileges:
+		return m.OldPrivileges(ctx)
 	case apikey.FieldExpiresAt:
 		return m.OldExpiresAt(ctx)
 	case apikey.FieldLastUsedAt:
@@ -928,12 +928,12 @@ func (m *APIKeyMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetResources(v)
 		return nil
-	case apikey.FieldCapabilities:
-		v, ok := value.([]schema.KeyCapability)
+	case apikey.FieldPrivileges:
+		v, ok := value.([]schema.KeyPrivilege)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCapabilities(v)
+		m.SetPrivileges(v)
 		return nil
 	case apikey.FieldExpiresAt:
 		v, ok := value.(time.Time)
@@ -1044,8 +1044,8 @@ func (m *APIKeyMutation) ResetField(name string) error {
 	case apikey.FieldResources:
 		m.ResetResources()
 		return nil
-	case apikey.FieldCapabilities:
-		m.ResetCapabilities()
+	case apikey.FieldPrivileges:
+		m.ResetPrivileges()
 		return nil
 	case apikey.FieldExpiresAt:
 		m.ResetExpiresAt()
@@ -7732,35 +7732,35 @@ func (m *JWTKeyMutation) ResetEdge(name string) error {
 // OAuthAuthorizationCodeMutation represents an operation that mutates the OAuthAuthorizationCode nodes in the graph.
 type OAuthAuthorizationCodeMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	created_at         *time.Time
-	updated_at         *time.Time
-	code_hash          *string
-	client_id          *string
-	client_name        *string
-	client_kind        *schema.OAuthClientKind
-	client_uri         *string
-	redirect_uri       *string
-	code_challenge     *string
-	resource           *string
-	scope              *string
-	role               *schema.PermittedAction
-	full_access        *bool
-	resources          *[]schema.APIKeyResource
-	appendresources    []schema.APIKeyResource
-	capabilities       *[]schema.KeyCapability
-	appendcapabilities []schema.KeyCapability
-	expires_at         *time.Time
-	used_at            *time.Time
-	grant_id           *uuid.UUID
-	clearedFields      map[string]struct{}
-	user               *uuid.UUID
-	cleareduser        bool
-	done               bool
-	oldValue           func(context.Context) (*OAuthAuthorizationCode, error)
-	predicates         []predicate.OAuthAuthorizationCode
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	created_at       *time.Time
+	updated_at       *time.Time
+	code_hash        *string
+	client_id        *string
+	client_name      *string
+	client_kind      *schema.OAuthClientKind
+	client_uri       *string
+	redirect_uri     *string
+	code_challenge   *string
+	resource         *string
+	scope            *string
+	role             *schema.PermittedAction
+	full_access      *bool
+	resources        *[]schema.APIKeyResource
+	appendresources  []schema.APIKeyResource
+	privileges       *[]schema.KeyPrivilege
+	appendprivileges []schema.KeyPrivilege
+	expires_at       *time.Time
+	used_at          *time.Time
+	grant_id         *uuid.UUID
+	clearedFields    map[string]struct{}
+	user             *uuid.UUID
+	cleareduser      bool
+	done             bool
+	oldValue         func(context.Context) (*OAuthAuthorizationCode, error)
+	predicates       []predicate.OAuthAuthorizationCode
 }
 
 var _ ent.Mutation = (*OAuthAuthorizationCodeMutation)(nil)
@@ -8412,55 +8412,55 @@ func (m *OAuthAuthorizationCodeMutation) ResetResources() {
 	m.appendresources = nil
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (m *OAuthAuthorizationCodeMutation) SetCapabilities(sc []schema.KeyCapability) {
-	m.capabilities = &sc
-	m.appendcapabilities = nil
+// SetPrivileges sets the "privileges" field.
+func (m *OAuthAuthorizationCodeMutation) SetPrivileges(sp []schema.KeyPrivilege) {
+	m.privileges = &sp
+	m.appendprivileges = nil
 }
 
-// Capabilities returns the value of the "capabilities" field in the mutation.
-func (m *OAuthAuthorizationCodeMutation) Capabilities() (r []schema.KeyCapability, exists bool) {
-	v := m.capabilities
+// Privileges returns the value of the "privileges" field in the mutation.
+func (m *OAuthAuthorizationCodeMutation) Privileges() (r []schema.KeyPrivilege, exists bool) {
+	v := m.privileges
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCapabilities returns the old "capabilities" field's value of the OAuthAuthorizationCode entity.
+// OldPrivileges returns the old "privileges" field's value of the OAuthAuthorizationCode entity.
 // If the OAuthAuthorizationCode object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OAuthAuthorizationCodeMutation) OldCapabilities(ctx context.Context) (v []schema.KeyCapability, err error) {
+func (m *OAuthAuthorizationCodeMutation) OldPrivileges(ctx context.Context) (v []schema.KeyPrivilege, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCapabilities is only allowed on UpdateOne operations")
+		return v, errors.New("OldPrivileges is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCapabilities requires an ID field in the mutation")
+		return v, errors.New("OldPrivileges requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCapabilities: %w", err)
+		return v, fmt.Errorf("querying old value for OldPrivileges: %w", err)
 	}
-	return oldValue.Capabilities, nil
+	return oldValue.Privileges, nil
 }
 
-// AppendCapabilities adds sc to the "capabilities" field.
-func (m *OAuthAuthorizationCodeMutation) AppendCapabilities(sc []schema.KeyCapability) {
-	m.appendcapabilities = append(m.appendcapabilities, sc...)
+// AppendPrivileges adds sp to the "privileges" field.
+func (m *OAuthAuthorizationCodeMutation) AppendPrivileges(sp []schema.KeyPrivilege) {
+	m.appendprivileges = append(m.appendprivileges, sp...)
 }
 
-// AppendedCapabilities returns the list of values that were appended to the "capabilities" field in this mutation.
-func (m *OAuthAuthorizationCodeMutation) AppendedCapabilities() ([]schema.KeyCapability, bool) {
-	if len(m.appendcapabilities) == 0 {
+// AppendedPrivileges returns the list of values that were appended to the "privileges" field in this mutation.
+func (m *OAuthAuthorizationCodeMutation) AppendedPrivileges() ([]schema.KeyPrivilege, bool) {
+	if len(m.appendprivileges) == 0 {
 		return nil, false
 	}
-	return m.appendcapabilities, true
+	return m.appendprivileges, true
 }
 
-// ResetCapabilities resets all changes to the "capabilities" field.
-func (m *OAuthAuthorizationCodeMutation) ResetCapabilities() {
-	m.capabilities = nil
-	m.appendcapabilities = nil
+// ResetPrivileges resets all changes to the "privileges" field.
+func (m *OAuthAuthorizationCodeMutation) ResetPrivileges() {
+	m.privileges = nil
+	m.appendprivileges = nil
 }
 
 // SetExpiresAt sets the "expires_at" field.
@@ -8737,8 +8737,8 @@ func (m *OAuthAuthorizationCodeMutation) Fields() []string {
 	if m.resources != nil {
 		fields = append(fields, oauthauthorizationcode.FieldResources)
 	}
-	if m.capabilities != nil {
-		fields = append(fields, oauthauthorizationcode.FieldCapabilities)
+	if m.privileges != nil {
+		fields = append(fields, oauthauthorizationcode.FieldPrivileges)
 	}
 	if m.expires_at != nil {
 		fields = append(fields, oauthauthorizationcode.FieldExpiresAt)
@@ -8788,8 +8788,8 @@ func (m *OAuthAuthorizationCodeMutation) Field(name string) (ent.Value, bool) {
 		return m.FullAccess()
 	case oauthauthorizationcode.FieldResources:
 		return m.Resources()
-	case oauthauthorizationcode.FieldCapabilities:
-		return m.Capabilities()
+	case oauthauthorizationcode.FieldPrivileges:
+		return m.Privileges()
 	case oauthauthorizationcode.FieldExpiresAt:
 		return m.ExpiresAt()
 	case oauthauthorizationcode.FieldUsedAt:
@@ -8835,8 +8835,8 @@ func (m *OAuthAuthorizationCodeMutation) OldField(ctx context.Context, name stri
 		return m.OldFullAccess(ctx)
 	case oauthauthorizationcode.FieldResources:
 		return m.OldResources(ctx)
-	case oauthauthorizationcode.FieldCapabilities:
-		return m.OldCapabilities(ctx)
+	case oauthauthorizationcode.FieldPrivileges:
+		return m.OldPrivileges(ctx)
 	case oauthauthorizationcode.FieldExpiresAt:
 		return m.OldExpiresAt(ctx)
 	case oauthauthorizationcode.FieldUsedAt:
@@ -8952,12 +8952,12 @@ func (m *OAuthAuthorizationCodeMutation) SetField(name string, value ent.Value) 
 		}
 		m.SetResources(v)
 		return nil
-	case oauthauthorizationcode.FieldCapabilities:
-		v, ok := value.([]schema.KeyCapability)
+	case oauthauthorizationcode.FieldPrivileges:
+		v, ok := value.([]schema.KeyPrivilege)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCapabilities(v)
+		m.SetPrivileges(v)
 		return nil
 	case oauthauthorizationcode.FieldExpiresAt:
 		v, ok := value.(time.Time)
@@ -9105,8 +9105,8 @@ func (m *OAuthAuthorizationCodeMutation) ResetField(name string) error {
 	case oauthauthorizationcode.FieldResources:
 		m.ResetResources()
 		return nil
-	case oauthauthorizationcode.FieldCapabilities:
-		m.ResetCapabilities()
+	case oauthauthorizationcode.FieldPrivileges:
+		m.ResetPrivileges()
 		return nil
 	case oauthauthorizationcode.FieldExpiresAt:
 		m.ResetExpiresAt()
@@ -9914,35 +9914,35 @@ func (m *OAuthClientMutation) ResetEdge(name string) error {
 // OAuthGrantMutation represents an operation that mutates the OAuthGrant nodes in the graph.
 type OAuthGrantMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	created_at         *time.Time
-	updated_at         *time.Time
-	client_id          *string
-	client_name        *string
-	client_kind        *schema.OAuthClientKind
-	client_uri         *string
-	redirect_uri       *string
-	role               *schema.PermittedAction
-	full_access        *bool
-	resources          *[]schema.APIKeyResource
-	appendresources    []schema.APIKeyResource
-	capabilities       *[]schema.KeyCapability
-	appendcapabilities []schema.KeyCapability
-	resource           *string
-	scope              *string
-	last_used_at       *time.Time
-	revoked_at         *time.Time
-	clearedFields      map[string]struct{}
-	user               *uuid.UUID
-	cleareduser        bool
-	tokens             map[uuid.UUID]struct{}
-	removedtokens      map[uuid.UUID]struct{}
-	clearedtokens      bool
-	done               bool
-	oldValue           func(context.Context) (*OAuthGrant, error)
-	predicates         []predicate.OAuthGrant
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	created_at       *time.Time
+	updated_at       *time.Time
+	client_id        *string
+	client_name      *string
+	client_kind      *schema.OAuthClientKind
+	client_uri       *string
+	redirect_uri     *string
+	role             *schema.PermittedAction
+	full_access      *bool
+	resources        *[]schema.APIKeyResource
+	appendresources  []schema.APIKeyResource
+	privileges       *[]schema.KeyPrivilege
+	appendprivileges []schema.KeyPrivilege
+	resource         *string
+	scope            *string
+	last_used_at     *time.Time
+	revoked_at       *time.Time
+	clearedFields    map[string]struct{}
+	user             *uuid.UUID
+	cleareduser      bool
+	tokens           map[uuid.UUID]struct{}
+	removedtokens    map[uuid.UUID]struct{}
+	clearedtokens    bool
+	done             bool
+	oldValue         func(context.Context) (*OAuthGrant, error)
+	predicates       []predicate.OAuthGrant
 }
 
 var _ ent.Mutation = (*OAuthGrantMutation)(nil)
@@ -10437,55 +10437,55 @@ func (m *OAuthGrantMutation) ResetResources() {
 	m.appendresources = nil
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (m *OAuthGrantMutation) SetCapabilities(sc []schema.KeyCapability) {
-	m.capabilities = &sc
-	m.appendcapabilities = nil
+// SetPrivileges sets the "privileges" field.
+func (m *OAuthGrantMutation) SetPrivileges(sp []schema.KeyPrivilege) {
+	m.privileges = &sp
+	m.appendprivileges = nil
 }
 
-// Capabilities returns the value of the "capabilities" field in the mutation.
-func (m *OAuthGrantMutation) Capabilities() (r []schema.KeyCapability, exists bool) {
-	v := m.capabilities
+// Privileges returns the value of the "privileges" field in the mutation.
+func (m *OAuthGrantMutation) Privileges() (r []schema.KeyPrivilege, exists bool) {
+	v := m.privileges
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCapabilities returns the old "capabilities" field's value of the OAuthGrant entity.
+// OldPrivileges returns the old "privileges" field's value of the OAuthGrant entity.
 // If the OAuthGrant object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OAuthGrantMutation) OldCapabilities(ctx context.Context) (v []schema.KeyCapability, err error) {
+func (m *OAuthGrantMutation) OldPrivileges(ctx context.Context) (v []schema.KeyPrivilege, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCapabilities is only allowed on UpdateOne operations")
+		return v, errors.New("OldPrivileges is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCapabilities requires an ID field in the mutation")
+		return v, errors.New("OldPrivileges requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCapabilities: %w", err)
+		return v, fmt.Errorf("querying old value for OldPrivileges: %w", err)
 	}
-	return oldValue.Capabilities, nil
+	return oldValue.Privileges, nil
 }
 
-// AppendCapabilities adds sc to the "capabilities" field.
-func (m *OAuthGrantMutation) AppendCapabilities(sc []schema.KeyCapability) {
-	m.appendcapabilities = append(m.appendcapabilities, sc...)
+// AppendPrivileges adds sp to the "privileges" field.
+func (m *OAuthGrantMutation) AppendPrivileges(sp []schema.KeyPrivilege) {
+	m.appendprivileges = append(m.appendprivileges, sp...)
 }
 
-// AppendedCapabilities returns the list of values that were appended to the "capabilities" field in this mutation.
-func (m *OAuthGrantMutation) AppendedCapabilities() ([]schema.KeyCapability, bool) {
-	if len(m.appendcapabilities) == 0 {
+// AppendedPrivileges returns the list of values that were appended to the "privileges" field in this mutation.
+func (m *OAuthGrantMutation) AppendedPrivileges() ([]schema.KeyPrivilege, bool) {
+	if len(m.appendprivileges) == 0 {
 		return nil, false
 	}
-	return m.appendcapabilities, true
+	return m.appendprivileges, true
 }
 
-// ResetCapabilities resets all changes to the "capabilities" field.
-func (m *OAuthGrantMutation) ResetCapabilities() {
-	m.capabilities = nil
-	m.appendcapabilities = nil
+// ResetPrivileges resets all changes to the "privileges" field.
+func (m *OAuthGrantMutation) ResetPrivileges() {
+	m.privileges = nil
+	m.appendprivileges = nil
 }
 
 // SetResource sets the "resource" field.
@@ -10853,8 +10853,8 @@ func (m *OAuthGrantMutation) Fields() []string {
 	if m.resources != nil {
 		fields = append(fields, oauthgrant.FieldResources)
 	}
-	if m.capabilities != nil {
-		fields = append(fields, oauthgrant.FieldCapabilities)
+	if m.privileges != nil {
+		fields = append(fields, oauthgrant.FieldPrivileges)
 	}
 	if m.resource != nil {
 		fields = append(fields, oauthgrant.FieldResource)
@@ -10899,8 +10899,8 @@ func (m *OAuthGrantMutation) Field(name string) (ent.Value, bool) {
 		return m.FullAccess()
 	case oauthgrant.FieldResources:
 		return m.Resources()
-	case oauthgrant.FieldCapabilities:
-		return m.Capabilities()
+	case oauthgrant.FieldPrivileges:
+		return m.Privileges()
 	case oauthgrant.FieldResource:
 		return m.Resource()
 	case oauthgrant.FieldScope:
@@ -10940,8 +10940,8 @@ func (m *OAuthGrantMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldFullAccess(ctx)
 	case oauthgrant.FieldResources:
 		return m.OldResources(ctx)
-	case oauthgrant.FieldCapabilities:
-		return m.OldCapabilities(ctx)
+	case oauthgrant.FieldPrivileges:
+		return m.OldPrivileges(ctx)
 	case oauthgrant.FieldResource:
 		return m.OldResource(ctx)
 	case oauthgrant.FieldScope:
@@ -11031,12 +11031,12 @@ func (m *OAuthGrantMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetResources(v)
 		return nil
-	case oauthgrant.FieldCapabilities:
-		v, ok := value.([]schema.KeyCapability)
+	case oauthgrant.FieldPrivileges:
+		v, ok := value.([]schema.KeyPrivilege)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCapabilities(v)
+		m.SetPrivileges(v)
 		return nil
 	case oauthgrant.FieldResource:
 		v, ok := value.(string)
@@ -11179,8 +11179,8 @@ func (m *OAuthGrantMutation) ResetField(name string) error {
 	case oauthgrant.FieldResources:
 		m.ResetResources()
 		return nil
-	case oauthgrant.FieldCapabilities:
-		m.ResetCapabilities()
+	case oauthgrant.FieldPrivileges:
+		m.ResetPrivileges()
 		return nil
 	case oauthgrant.FieldResource:
 		m.ResetResource()

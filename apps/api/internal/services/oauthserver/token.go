@@ -70,18 +70,18 @@ func (self *OAuthServerService) ExchangeCode(ctx context.Context, input *CodeExc
 	}
 
 	grant, err := self.repo.OAuthServer().CreateGrant(ctx, &oauthserver_repo.CreateGrantInput{
-		UserID:       code.UserID,
-		ClientID:     code.ClientID,
-		ClientName:   code.ClientName,
-		ClientKind:   code.ClientKind,
-		ClientURI:    code.ClientURI,
-		RedirectURI:  code.RedirectURI,
-		Role:         code.Role,
-		FullAccess:   code.FullAccess,
-		Resources:    code.Resources,
-		Capabilities: code.Capabilities,
-		Resource:     code.Resource,
-		Scope:        code.Scope,
+		UserID:      code.UserID,
+		ClientID:    code.ClientID,
+		ClientName:  code.ClientName,
+		ClientKind:  code.ClientKind,
+		ClientURI:   code.ClientURI,
+		RedirectURI: code.RedirectURI,
+		Role:        code.Role,
+		FullAccess:  code.FullAccess,
+		Resources:   code.Resources,
+		Privileges:  code.Privileges,
+		Resource:    code.Resource,
+		Scope:       code.Scope,
 	})
 	if err != nil {
 		return nil, err

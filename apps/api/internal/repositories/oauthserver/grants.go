@@ -11,18 +11,18 @@ import (
 )
 
 type CreateGrantInput struct {
-	UserID       uuid.UUID
-	ClientID     string
-	ClientName   string
-	ClientKind   schema.OAuthClientKind
-	ClientURI    string
-	RedirectURI  string
-	Role         schema.PermittedAction
-	FullAccess   bool
-	Resources    []schema.APIKeyResource
-	Capabilities []schema.KeyCapability
-	Resource     string
-	Scope        string
+	UserID      uuid.UUID
+	ClientID    string
+	ClientName  string
+	ClientKind  schema.OAuthClientKind
+	ClientURI   string
+	RedirectURI string
+	Role        schema.PermittedAction
+	FullAccess  bool
+	Resources   []schema.APIKeyResource
+	Privileges  []schema.KeyPrivilege
+	Resource    string
+	Scope       string
 }
 
 func (self *OAuthServerRepository) CreateGrant(ctx context.Context, input *CreateGrantInput) (*ent.OAuthGrant, error) {
@@ -36,7 +36,7 @@ func (self *OAuthServerRepository) CreateGrant(ctx context.Context, input *Creat
 		SetRole(input.Role).
 		SetFullAccess(input.FullAccess).
 		SetResources(input.Resources).
-		SetCapabilities(input.Capabilities).
+		SetPrivileges(input.Privileges).
 		SetResource(input.Resource).
 		SetScope(input.Scope).
 		Save(ctx)

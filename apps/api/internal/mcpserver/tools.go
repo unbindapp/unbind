@@ -27,17 +27,17 @@ type tool struct {
 	// string. Operations with a JSON body take the tool arguments as that body.
 	queryParams map[string]*huma.Param
 	hasBody     bool
-	// readOnly and capability mirror the checks the auth middleware applies
+	// readOnly and privilege mirror the checks the auth middleware applies
 	// to credentials, so a connection is not offered tools it cannot call.
-	readOnly   bool
-	capability entSchema.KeyCapability
+	readOnly  bool
+	privilege entSchema.KeyPrivilege
 }
 
 func (self *tool) offeredTo(access permissions_repo.APIKeyAccess) bool {
 	if !self.readOnly && !access.AllowsWrites() {
 		return false
 	}
-	if self.capability != "" && !access.Has(self.capability) {
+	if self.privilege != "" && !access.Has(self.privilege) {
 		return false
 	}
 	return true
@@ -79,8 +79,8 @@ func buildTools(api huma.API) ([]*tool, error) {
 
 func buildTool(op *huma.Operation, registry huma.Registry) (*tool, error) {
 	action, known := oapi.ActionOf(op)
-	capability, _ := oapi.CapabilityOf(op)
-	t := &tool{method: op.Method, path: op.Path, readOnly: known && action == oapi.Read, capability: capability}
+	privilege, _ := oapi.PrivilegeOf(op)
+	t := &tool{method: op.Method, path: op.Path, readOnly: known && action == oapi.Read, privilege: privilege}
 
 	var (
 		schema map[string]any

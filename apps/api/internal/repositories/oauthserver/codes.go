@@ -24,7 +24,7 @@ type CreateCodeInput struct {
 	Role          schema.PermittedAction
 	FullAccess    bool
 	Resources     []schema.APIKeyResource
-	Capabilities  []schema.KeyCapability
+	Privileges    []schema.KeyPrivilege
 	ExpiresAt     time.Time
 }
 
@@ -43,7 +43,7 @@ func (self *OAuthServerRepository) CreateCode(ctx context.Context, input *Create
 		SetRole(input.Role).
 		SetFullAccess(input.FullAccess).
 		SetResources(input.Resources).
-		SetCapabilities(input.Capabilities).
+		SetPrivileges(input.Privileges).
 		SetExpiresAt(input.ExpiresAt).
 		Save(ctx)
 }

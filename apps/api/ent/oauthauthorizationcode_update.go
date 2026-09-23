@@ -217,15 +217,15 @@ func (_u *OAuthAuthorizationCodeUpdate) AppendResources(v []schema.APIKeyResourc
 	return _u
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (_u *OAuthAuthorizationCodeUpdate) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpdate {
-	_u.mutation.SetCapabilities(v)
+// SetPrivileges sets the "privileges" field.
+func (_u *OAuthAuthorizationCodeUpdate) SetPrivileges(v []schema.KeyPrivilege) *OAuthAuthorizationCodeUpdate {
+	_u.mutation.SetPrivileges(v)
 	return _u
 }
 
-// AppendCapabilities appends value to the "capabilities" field.
-func (_u *OAuthAuthorizationCodeUpdate) AppendCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpdate {
-	_u.mutation.AppendCapabilities(v)
+// AppendPrivileges appends value to the "privileges" field.
+func (_u *OAuthAuthorizationCodeUpdate) AppendPrivileges(v []schema.KeyPrivilege) *OAuthAuthorizationCodeUpdate {
+	_u.mutation.AppendPrivileges(v)
 	return _u
 }
 
@@ -435,12 +435,12 @@ func (_u *OAuthAuthorizationCodeUpdate) sqlSave(ctx context.Context) (_node int,
 			sqljson.Append(u, oauthauthorizationcode.FieldResources, value)
 		})
 	}
-	if value, ok := _u.mutation.Capabilities(); ok {
-		_spec.SetField(oauthauthorizationcode.FieldCapabilities, field.TypeJSON, value)
+	if value, ok := _u.mutation.Privileges(); ok {
+		_spec.SetField(oauthauthorizationcode.FieldPrivileges, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+	if value, ok := _u.mutation.AppendedPrivileges(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, oauthauthorizationcode.FieldCapabilities, value)
+			sqljson.Append(u, oauthauthorizationcode.FieldPrivileges, value)
 		})
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
@@ -693,15 +693,15 @@ func (_u *OAuthAuthorizationCodeUpdateOne) AppendResources(v []schema.APIKeyReso
 	return _u
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (_u *OAuthAuthorizationCodeUpdateOne) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpdateOne {
-	_u.mutation.SetCapabilities(v)
+// SetPrivileges sets the "privileges" field.
+func (_u *OAuthAuthorizationCodeUpdateOne) SetPrivileges(v []schema.KeyPrivilege) *OAuthAuthorizationCodeUpdateOne {
+	_u.mutation.SetPrivileges(v)
 	return _u
 }
 
-// AppendCapabilities appends value to the "capabilities" field.
-func (_u *OAuthAuthorizationCodeUpdateOne) AppendCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpdateOne {
-	_u.mutation.AppendCapabilities(v)
+// AppendPrivileges appends value to the "privileges" field.
+func (_u *OAuthAuthorizationCodeUpdateOne) AppendPrivileges(v []schema.KeyPrivilege) *OAuthAuthorizationCodeUpdateOne {
+	_u.mutation.AppendPrivileges(v)
 	return _u
 }
 
@@ -941,12 +941,12 @@ func (_u *OAuthAuthorizationCodeUpdateOne) sqlSave(ctx context.Context) (_node *
 			sqljson.Append(u, oauthauthorizationcode.FieldResources, value)
 		})
 	}
-	if value, ok := _u.mutation.Capabilities(); ok {
-		_spec.SetField(oauthauthorizationcode.FieldCapabilities, field.TypeJSON, value)
+	if value, ok := _u.mutation.Privileges(); ok {
+		_spec.SetField(oauthauthorizationcode.FieldPrivileges, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+	if value, ok := _u.mutation.AppendedPrivileges(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, oauthauthorizationcode.FieldCapabilities, value)
+			sqljson.Append(u, oauthauthorizationcode.FieldPrivileges, value)
 		})
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {

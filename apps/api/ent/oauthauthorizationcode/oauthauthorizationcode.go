@@ -45,8 +45,8 @@ const (
 	FieldFullAccess = "full_access"
 	// FieldResources holds the string denoting the resources field in the database.
 	FieldResources = "resources"
-	// FieldCapabilities holds the string denoting the capabilities field in the database.
-	FieldCapabilities = "capabilities"
+	// FieldPrivileges holds the string denoting the privileges field in the database.
+	FieldPrivileges = "privileges"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
 	// FieldUsedAt holds the string denoting the used_at field in the database.
@@ -85,7 +85,7 @@ var Columns = []string{
 	FieldRole,
 	FieldFullAccess,
 	FieldResources,
-	FieldCapabilities,
+	FieldPrivileges,
 	FieldExpiresAt,
 	FieldUsedAt,
 	FieldGrantID,
@@ -111,8 +111,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultFullAccess holds the default value on creation for the "full_access" field.
 	DefaultFullAccess bool
-	// DefaultCapabilities holds the default value on creation for the "capabilities" field.
-	DefaultCapabilities []schema.KeyCapability
+	// DefaultPrivileges holds the default value on creation for the "privileges" field.
+	DefaultPrivileges []schema.KeyPrivilege
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

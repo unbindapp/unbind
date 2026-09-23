@@ -1,7 +1,7 @@
 "use client";
 
 import AccessField from "@/components/api-key/access-field";
-import CapabilitiesField from "@/components/api-key/capabilities-field";
+import PrivilegesField from "@/components/api-key/privileges-field";
 import {
   accessFormShape,
   emptyResourceRow,
@@ -32,7 +32,7 @@ import {
   type TConnectedAppClient,
 } from "@/lib/queries/connected-apps";
 import { meQuery } from "@/lib/queries/me";
-import type { KeyCapability, PermittedAction } from "@/lib/server/client.gen";
+import type { KeyPrivilege, PermittedAction } from "@/lib/server/client.gen";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowRightIcon,
@@ -267,7 +267,7 @@ function ConsentForm({
       access: "full" as TAccess,
       rows: [emptyResourceRow] as TResourceRow[],
       role: "viewer" as PermittedAction,
-      capabilities: [] as KeyCapability[],
+      privileges: [] as KeyPrivilege[],
     },
     validators: { onChange: FormSchema },
     onSubmit: async ({ value }) => {
@@ -283,7 +283,7 @@ function ConsentForm({
         role: value.role,
         full_access: value.access === "full",
         resources,
-        capabilities: value.capabilities,
+        privileges: value.privileges,
       });
     },
   });
@@ -343,15 +343,15 @@ function ConsentForm({
             }}
           </form.Subscribe>
         </InputSectionWrapper>
-        <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Capabilities</h2>
+        <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Privileges</h2>
         <p className="text-muted-foreground mt-1.5 leading-tight">
-          Operations not covered by the role.
+          Capabilities not covered by the role.
         </p>
         <InputSectionWrapper>
           <form.AppField
-            name="capabilities"
+            name="privileges"
             children={(field) => (
-              <CapabilitiesField
+              <PrivilegesField
                 field={field}
                 className="mt-3 w-full"
                 isPlaceholder={isPlaceholder}

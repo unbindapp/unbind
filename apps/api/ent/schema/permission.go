@@ -98,43 +98,43 @@ func (u PermittedAction) Schema(r huma.Registry) *huma.Schema {
 	return &huma.Schema{Ref: "#/components/schemas/PermittedAction"}
 }
 
-// * KeyCapability enum
-// KeyCapability is something a key or connected app may see beyond its role.
-// Sessions hold every capability; credentials hold none until switched on.
-type KeyCapability string
+// * KeyPrivilege enum
+// KeyPrivilege is something a key or connected app may see beyond its role.
+// Sessions hold every privilege; credentials hold none until switched on.
+type KeyPrivilege string
 
 const (
-	// CapabilityReadVariableValues reveals variable values instead of names only
-	CapabilityReadVariableValues KeyCapability = "read_variable_values"
-	// CapabilityReadLogs allows reading logs
-	CapabilityReadLogs KeyCapability = "read_logs"
-	// CapabilityReadWebhookURLs reveals webhook URLs, which carry secrets
-	CapabilityReadWebhookURLs KeyCapability = "read_webhook_urls"
+	// PrivilegeReadVariableValues reveals variable values instead of names only
+	PrivilegeReadVariableValues KeyPrivilege = "read_variable_values"
+	// PrivilegeReadLogs allows reading logs
+	PrivilegeReadLogs KeyPrivilege = "read_logs"
+	// PrivilegeReadWebhookURLs reveals webhook URLs, which carry secrets
+	PrivilegeReadWebhookURLs KeyPrivilege = "read_webhook_urls"
 )
 
-var allCapabilities = []KeyCapability{
-	CapabilityReadVariableValues,
-	CapabilityReadLogs,
-	CapabilityReadWebhookURLs,
+var allPrivileges = []KeyPrivilege{
+	PrivilegeReadVariableValues,
+	PrivilegeReadLogs,
+	PrivilegeReadWebhookURLs,
 }
 
-func (c KeyCapability) Values() (kinds []string) {
-	for _, c := range allCapabilities {
+func (c KeyPrivilege) Values() (kinds []string) {
+	for _, c := range allPrivileges {
 		kinds = append(kinds, string(c))
 	}
 	return
 }
 
-func (c KeyCapability) Schema(r huma.Registry) *huma.Schema {
-	if r.Map()["KeyCapability"] == nil {
-		schemaRef := r.Schema(reflect.TypeOf(""), true, "KeyCapability")
-		schemaRef.Title = "KeyCapability"
-		for _, v := range allCapabilities {
+func (c KeyPrivilege) Schema(r huma.Registry) *huma.Schema {
+	if r.Map()["KeyPrivilege"] == nil {
+		schemaRef := r.Schema(reflect.TypeOf(""), true, "KeyPrivilege")
+		schemaRef.Title = "KeyPrivilege"
+		for _, v := range allPrivileges {
 			schemaRef.Enum = append(schemaRef.Enum, string(v))
 		}
-		r.Map()["KeyCapability"] = schemaRef
+		r.Map()["KeyPrivilege"] = schemaRef
 	}
-	return &huma.Schema{Ref: "#/components/schemas/KeyCapability"}
+	return &huma.Schema{Ref: "#/components/schemas/KeyPrivilege"}
 }
 
 // * ResourceType enum

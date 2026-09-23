@@ -20,7 +20,7 @@ import (
 // GetVariables lists the scope's variables. A session sees values with the
 // editor role, because a stored secret is as good as write access to whatever
 // it unlocks. A key or connected app sees them with the read_variable_values
-// capability, whatever its role, as long as its owner holds editor.
+// privilege, whatever its role, as long as its owner holds editor.
 func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error) {
 	if err := self.checkScopePermission(ctx, userID, schema.ActionViewer, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Resource not found")
@@ -64,7 +64,7 @@ func (self *VariablesService) canReadValues(ctx context.Context, userID uuid.UUI
 	if !limited {
 		return self.holdsScopePermission(ctx, userID, schema.ActionEditor, input)
 	}
-	if !access.Has(schema.CapabilityReadVariableValues) {
+	if !access.Has(schema.PrivilegeReadVariableValues) {
 		return false, nil
 	}
 	// The credential's role is lifted so only its resources and the owner's

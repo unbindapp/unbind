@@ -51,7 +51,7 @@ type OAuthAuthorizationCode struct {
 	// Resources holds the value of the "resources" field.
 	Resources []schema.APIKeyResource `json:"resources,omitempty"`
 	// What the credential may see beyond its role; empty by default
-	Capabilities []schema.KeyCapability `json:"capabilities,omitempty"`
+	Privileges []schema.KeyPrivilege `json:"privileges,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
 	// UsedAt holds the value of the "used_at" field.
@@ -93,7 +93,7 @@ func (*OAuthAuthorizationCode) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case oauthauthorizationcode.FieldGrantID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case oauthauthorizationcode.FieldResources, oauthauthorizationcode.FieldCapabilities:
+		case oauthauthorizationcode.FieldResources, oauthauthorizationcode.FieldPrivileges:
 			values[i] = new([]byte)
 		case oauthauthorizationcode.FieldFullAccess:
 			values[i] = new(sql.NullBool)
@@ -210,12 +210,12 @@ func (_m *OAuthAuthorizationCode) assignValues(columns []string, values []any) e
 					return fmt.Errorf("unmarshal field resources: %w", err)
 				}
 			}
-		case oauthauthorizationcode.FieldCapabilities:
+		case oauthauthorizationcode.FieldPrivileges:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field capabilities", values[i])
+				return fmt.Errorf("unexpected type %T for field privileges", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Capabilities); err != nil {
-					return fmt.Errorf("unmarshal field capabilities: %w", err)
+				if err := json.Unmarshal(*value, &_m.Privileges); err != nil {
+					return fmt.Errorf("unmarshal field privileges: %w", err)
 				}
 			}
 		case oauthauthorizationcode.FieldExpiresAt:
@@ -326,8 +326,8 @@ func (_m *OAuthAuthorizationCode) String() string {
 	builder.WriteString("resources=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Resources))
 	builder.WriteString(", ")
-	builder.WriteString("capabilities=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Capabilities))
+	builder.WriteString("privileges=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Privileges))
 	builder.WriteString(", ")
 	builder.WriteString("expires_at=")
 	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))

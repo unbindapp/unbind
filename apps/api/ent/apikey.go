@@ -39,7 +39,7 @@ type APIKey struct {
 	// Resources the key is limited to; empty when full_access
 	Resources []schema.APIKeyResource `json:"resources,omitempty"`
 	// What the credential may see beyond its role; empty by default
-	Capabilities []schema.KeyCapability `json:"capabilities,omitempty"`
+	Privileges []schema.KeyPrivilege `json:"privileges,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// LastUsedAt holds the value of the "last_used_at" field.
@@ -77,7 +77,7 @@ func (*APIKey) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case apikey.FieldResources, apikey.FieldCapabilities:
+		case apikey.FieldResources, apikey.FieldPrivileges:
 			values[i] = new([]byte)
 		case apikey.FieldFullAccess:
 			values[i] = new(sql.NullBool)
@@ -158,12 +158,12 @@ func (_m *APIKey) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field resources: %w", err)
 				}
 			}
-		case apikey.FieldCapabilities:
+		case apikey.FieldPrivileges:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field capabilities", values[i])
+				return fmt.Errorf("unexpected type %T for field privileges", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Capabilities); err != nil {
-					return fmt.Errorf("unmarshal field capabilities: %w", err)
+				if err := json.Unmarshal(*value, &_m.Privileges); err != nil {
+					return fmt.Errorf("unmarshal field privileges: %w", err)
 				}
 			}
 		case apikey.FieldExpiresAt:
@@ -250,8 +250,8 @@ func (_m *APIKey) String() string {
 	builder.WriteString("resources=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Resources))
 	builder.WriteString(", ")
-	builder.WriteString("capabilities=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Capabilities))
+	builder.WriteString("privileges=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Privileges))
 	builder.WriteString(", ")
 	if v := _m.ExpiresAt; v != nil {
 		builder.WriteString("expires_at=")

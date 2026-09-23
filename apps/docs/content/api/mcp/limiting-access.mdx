@@ -11,7 +11,7 @@ Whether you connect with OAuth or an API key, you pick the same three things:
 
 - **Role**: what the agent can do.
 - **Access**: where it can do it.
-- **Capabilities**: what it can read.
+- **Privileges**: what it can read.
 
 ### Role
 
@@ -23,11 +23,11 @@ Whether you connect with OAuth or an API key, you pick the same three things:
 
 Start with viewer. Move to editor when you want the agent to fix what it finds. With a viewer connection the changing tools are not even offered, so the agent cannot try them.
 
-### Capabilities
+### Privileges
 
-Every capability is off by default, whatever the role. Switch one on only when the agent's job needs it.
+Every privilege is off by default, whatever the role. Switch one on only when the agent's job needs it.
 
-| Capability               | What the agent gets                                                                                                                                       |
+| Privilege                | What the agent gets                                                                                                                                       |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Read variable values** | The values behind variable names. Without it, `list-variables` returns names and references only, and the agent can still set values and wire references. |
 | **Read logs**            | The `query-logs` tool. Without it the tool is not offered at all. Debugging a failed deployment needs this one.                                           |
@@ -57,6 +57,6 @@ Hiding values is not a wall. An editor can still write a reference to another se
 
 ## Check what an agent has
 
-Ask it to call `whoami`. The answer shows the role, the exact resources and the capabilities of the connection.
+Ask it to call `whoami`. The answer shows the role, the exact resources and the privileges of the connection.
 
 Your avatar > **Account Settings** > **Connected Apps** shows every app, what it may do and when it was last used. **Revoke** cuts it off at once. API keys work the same way under **API Keys**.

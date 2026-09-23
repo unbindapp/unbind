@@ -1,9 +1,9 @@
 "use client";
 
-import { capabilityOptions } from "@/components/api-key/helpers";
+import { privilegeOptions } from "@/components/api-key/helpers";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/components/ui/utils";
-import type { KeyCapability } from "@/lib/server/client.gen";
+import type { KeyPrivilege } from "@/lib/server/client.gen";
 import { AnyFieldApi } from "@tanstack/react-form";
 
 type TProps = {
@@ -12,11 +12,11 @@ type TProps = {
   isPlaceholder?: boolean;
 };
 
-export default function CapabilitiesField({ field, className, isPlaceholder }: TProps) {
-  const selected: KeyCapability[] = field.state.value;
+export default function PrivilegesField({ field, className, isPlaceholder }: TProps) {
+  const selected: KeyPrivilege[] = field.state.value;
   return (
     <div className={cn("bg-input flex w-full flex-col rounded-lg border p-1", className)}>
-      {capabilityOptions.map((option) => (
+      {privilegeOptions.map((option) => (
         <label
           key={option.value}
           data-disabled={isPlaceholder || undefined}
@@ -28,7 +28,7 @@ export default function CapabilitiesField({ field, className, isPlaceholder }: T
               onBlur={field.handleBlur}
               checked={selected.includes(option.value)}
               onCheckedChange={(checked) => {
-                field.handleChange((prev: KeyCapability[]) => {
+                field.handleChange((prev: KeyPrivilege[]) => {
                   const without = prev.filter((c) => c !== option.value);
                   return checked ? [...without, option.value] : without;
                 });

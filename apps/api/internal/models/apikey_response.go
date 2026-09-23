@@ -9,17 +9,17 @@ import (
 )
 
 type APIKeyResponse struct {
-	ID           uuid.UUID                `json:"id" format:"uuid"`
-	UserID       uuid.UUID                `json:"user_id" format:"uuid"`
-	Name         string                   `json:"name"`
-	TokenPrefix  string                   `json:"token_prefix" doc:"First characters of the token, for recognizing the key. Never the full token."`
-	Role         schema.PermittedAction   `json:"role"`
-	FullAccess   bool                     `json:"full_access"`
-	Resources    []APIKeyResourceResponse `json:"resources" nullable:"false"`
-	Capabilities []schema.KeyCapability   `json:"capabilities" nullable:"false"`
-	ExpiresAt    *time.Time               `json:"expires_at,omitempty" required:"false"`
-	LastUsedAt   *time.Time               `json:"last_used_at,omitempty" required:"false"`
-	CreatedAt    time.Time                `json:"created_at"`
+	ID          uuid.UUID                `json:"id" format:"uuid"`
+	UserID      uuid.UUID                `json:"user_id" format:"uuid"`
+	Name        string                   `json:"name"`
+	TokenPrefix string                   `json:"token_prefix" doc:"First characters of the token, for recognizing the key. Never the full token."`
+	Role        schema.PermittedAction   `json:"role"`
+	FullAccess  bool                     `json:"full_access"`
+	Resources   []APIKeyResourceResponse `json:"resources" nullable:"false"`
+	Privileges  []schema.KeyPrivilege    `json:"privileges" nullable:"false"`
+	ExpiresAt   *time.Time               `json:"expires_at,omitempty" required:"false"`
+	LastUsedAt  *time.Time               `json:"last_used_at,omitempty" required:"false"`
+	CreatedAt   time.Time                `json:"created_at"`
 }
 
 // APIKeyResourceResponse is a key resource with the names leading to it, so a
@@ -49,25 +49,25 @@ func TransformAPIKeyEntity(entity *ent.APIKey, paths map[uuid.UUID][]string) *AP
 		resources = append(resources, APIKeyResourceResponse{APIKeyResource: resource, Path: path})
 	}
 	return &APIKeyResponse{
-		ID:           entity.ID,
-		UserID:       entity.UserID,
-		Name:         entity.Name,
-		TokenPrefix:  entity.TokenPrefix,
-		Role:         entity.Role,
-		FullAccess:   entity.FullAccess,
-		Resources:    resources,
-		Capabilities: capabilitiesOf(entity.Capabilities),
-		ExpiresAt:    entity.ExpiresAt,
-		LastUsedAt:   entity.LastUsedAt,
-		CreatedAt:    entity.CreatedAt,
+		ID:          entity.ID,
+		UserID:      entity.UserID,
+		Name:        entity.Name,
+		TokenPrefix: entity.TokenPrefix,
+		Role:        entity.Role,
+		FullAccess:  entity.FullAccess,
+		Resources:   resources,
+		Privileges:  privilegesOf(entity.Privileges),
+		ExpiresAt:   entity.ExpiresAt,
+		LastUsedAt:  entity.LastUsedAt,
+		CreatedAt:   entity.CreatedAt,
 	}
 }
 
-func capabilitiesOf(capabilities []schema.KeyCapability) []schema.KeyCapability {
-	if capabilities == nil {
-		return []schema.KeyCapability{}
+func privilegesOf(privileges []schema.KeyPrivilege) []schema.KeyPrivilege {
+	if privileges == nil {
+		return []schema.KeyPrivilege{}
 	}
-	return capabilities
+	return privileges
 }
 
 func TransformAPIKeyEntities(entities []*ent.APIKey, paths map[uuid.UUID][]string) []*APIKeyResponse {

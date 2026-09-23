@@ -94,21 +94,21 @@ func TestAPIKeyAccessWritesAndContext(t *testing.T) {
 	_, ok := APIKeyAccessFromContext(context.Background())
 	assert.False(t, ok, "sessions carry no key access")
 
-	key := &ent.APIKey{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs}}
+	key := &ent.APIKey{Role: schema.ActionEditor, FullAccess: true, Privileges: []schema.KeyPrivilege{schema.PrivilegeReadLogs}}
 	got, ok := APIKeyAccessFromContext(WithAPIKeyAccess(context.Background(), APIKeyAccessOf(key)))
 	assert.True(t, ok)
-	assert.Equal(t, APIKeyAccess{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs}}, got)
+	assert.Equal(t, APIKeyAccess{Role: schema.ActionEditor, FullAccess: true, Privileges: []schema.KeyPrivilege{schema.PrivilegeReadLogs}}, got)
 }
 
-func TestHasCapability(t *testing.T) {
-	assert.True(t, HasCapability(context.Background(), schema.CapabilityReadVariableValues), "sessions hold every capability")
+func TestHasPrivilege(t *testing.T) {
+	assert.True(t, HasPrivilege(context.Background(), schema.PrivilegeReadVariableValues), "sessions hold every privilege")
 
 	none := WithAPIKeyAccess(context.Background(), APIKeyAccess{Role: schema.ActionAdmin, FullAccess: true})
-	assert.False(t, HasCapability(none, schema.CapabilityReadVariableValues), "admin alone grants nothing")
-	assert.False(t, HasCapability(none, schema.CapabilityReadLogs))
-	assert.False(t, HasCapability(none, schema.CapabilityReadWebhookURLs))
+	assert.False(t, HasPrivilege(none, schema.PrivilegeReadVariableValues), "admin alone grants nothing")
+	assert.False(t, HasPrivilege(none, schema.PrivilegeReadLogs))
+	assert.False(t, HasPrivilege(none, schema.PrivilegeReadWebhookURLs))
 
-	logs := WithAPIKeyAccess(context.Background(), APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs}})
-	assert.True(t, HasCapability(logs, schema.CapabilityReadLogs))
-	assert.False(t, HasCapability(logs, schema.CapabilityReadWebhookURLs))
+	logs := WithAPIKeyAccess(context.Background(), APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Privileges: []schema.KeyPrivilege{schema.PrivilegeReadLogs}})
+	assert.True(t, HasPrivilege(logs, schema.PrivilegeReadLogs))
+	assert.False(t, HasPrivilege(logs, schema.PrivilegeReadWebhookURLs))
 }

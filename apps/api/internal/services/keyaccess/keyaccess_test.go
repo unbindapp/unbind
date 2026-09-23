@@ -13,8 +13,8 @@ func TestValidate(t *testing.T) {
 
 	assert.NoError(t, Validate(Spec{Role: schema.ActionViewer, FullAccess: true}))
 	assert.NoError(t, Validate(Spec{Role: schema.ActionEditor, Resources: []schema.APIKeyResource{project}}))
-	assert.NoError(t, Validate(Spec{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadVariableValues, schema.CapabilityReadLogs, schema.CapabilityReadWebhookURLs}}))
-	assert.NoError(t, Validate(Spec{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadVariableValues}}), "capabilities do not depend on the role")
+	assert.NoError(t, Validate(Spec{Role: schema.ActionEditor, FullAccess: true, Privileges: []schema.KeyPrivilege{schema.PrivilegeReadVariableValues, schema.PrivilegeReadLogs, schema.PrivilegeReadWebhookURLs}}))
+	assert.NoError(t, Validate(Spec{Role: schema.ActionViewer, FullAccess: true, Privileges: []schema.KeyPrivilege{schema.PrivilegeReadVariableValues}}), "privileges do not depend on the role")
 
 	cases := map[string]Spec{
 		"unknown role":         {Role: "owner", FullAccess: true},
@@ -23,12 +23,12 @@ func TestValidate(t *testing.T) {
 		"system resource":      {Role: schema.ActionAdmin, Resources: []schema.APIKeyResource{{ResourceType: schema.ResourceTypeSystem, ResourceID: uuid.New()}}},
 		"nil id":               {Role: schema.ActionAdmin, Resources: []schema.APIKeyResource{{ResourceType: schema.ResourceTypeTeam}}},
 		"duplicate":            {Role: schema.ActionAdmin, Resources: []schema.APIKeyResource{project, project}},
-		"unknown capability":   {Role: schema.ActionAdmin, FullAccess: true, Capabilities: []schema.KeyCapability{"terminal"}},
-		"duplicate capability": {Role: schema.ActionAdmin, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityReadLogs, schema.CapabilityReadLogs}},
+		"unknown privilege":    {Role: schema.ActionAdmin, FullAccess: true, Privileges: []schema.KeyPrivilege{"terminal"}},
+		"duplicate privilege":  {Role: schema.ActionAdmin, FullAccess: true, Privileges: []schema.KeyPrivilege{schema.PrivilegeReadLogs, schema.PrivilegeReadLogs}},
 	}
 	for name, spec := range cases {
 		assert.Error(t, Validate(spec), name)
 	}
 
-	assert.Equal(t, []schema.KeyCapability{}, Capabilities(Spec{}), "stored and returned as a list, never null")
+	assert.Equal(t, []schema.KeyPrivilege{}, Privileges(Spec{}), "stored and returned as a list, never null")
 }

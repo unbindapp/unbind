@@ -44,7 +44,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-webhooks",
 		Summary:     "List Webhooks",
-		Description: "List webhooks for a team or project. The URL is blank and url_redacted is true unless the connection has the read_webhook_urls capability.",
+		Description: "List webhooks for a team or project. The URL is blank and url_redacted is true unless the connection has the read_webhook_urls privilege.",
 		Path:        "/list",
 		Method:      http.MethodGet,
 	}, handlers.ListWebhooks, oapi.MCP)
@@ -52,7 +52,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-webhook",
 		Summary:     "Get Webhook",
-		Description: "Get a single webhook by ID. The URL is blank and url_redacted is true unless the connection has the read_webhook_urls capability.",
+		Description: "Get a single webhook by ID. The URL is blank and url_redacted is true unless the connection has the read_webhook_urls privilege.",
 		Path:        "/get",
 		Method:      http.MethodGet,
 	}, handlers.GetWebhook, oapi.MCP)

@@ -156,15 +156,15 @@ func (_u *OAuthGrantUpdate) AppendResources(v []schema.APIKeyResource) *OAuthGra
 	return _u
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (_u *OAuthGrantUpdate) SetCapabilities(v []schema.KeyCapability) *OAuthGrantUpdate {
-	_u.mutation.SetCapabilities(v)
+// SetPrivileges sets the "privileges" field.
+func (_u *OAuthGrantUpdate) SetPrivileges(v []schema.KeyPrivilege) *OAuthGrantUpdate {
+	_u.mutation.SetPrivileges(v)
 	return _u
 }
 
-// AppendCapabilities appends value to the "capabilities" field.
-func (_u *OAuthGrantUpdate) AppendCapabilities(v []schema.KeyCapability) *OAuthGrantUpdate {
-	_u.mutation.AppendCapabilities(v)
+// AppendPrivileges appends value to the "privileges" field.
+func (_u *OAuthGrantUpdate) AppendPrivileges(v []schema.KeyPrivilege) *OAuthGrantUpdate {
+	_u.mutation.AppendPrivileges(v)
 	return _u
 }
 
@@ -415,12 +415,12 @@ func (_u *OAuthGrantUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 			sqljson.Append(u, oauthgrant.FieldResources, value)
 		})
 	}
-	if value, ok := _u.mutation.Capabilities(); ok {
-		_spec.SetField(oauthgrant.FieldCapabilities, field.TypeJSON, value)
+	if value, ok := _u.mutation.Privileges(); ok {
+		_spec.SetField(oauthgrant.FieldPrivileges, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+	if value, ok := _u.mutation.AppendedPrivileges(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, oauthgrant.FieldCapabilities, value)
+			sqljson.Append(u, oauthgrant.FieldPrivileges, value)
 		})
 	}
 	if value, ok := _u.mutation.Resource(); ok {
@@ -662,15 +662,15 @@ func (_u *OAuthGrantUpdateOne) AppendResources(v []schema.APIKeyResource) *OAuth
 	return _u
 }
 
-// SetCapabilities sets the "capabilities" field.
-func (_u *OAuthGrantUpdateOne) SetCapabilities(v []schema.KeyCapability) *OAuthGrantUpdateOne {
-	_u.mutation.SetCapabilities(v)
+// SetPrivileges sets the "privileges" field.
+func (_u *OAuthGrantUpdateOne) SetPrivileges(v []schema.KeyPrivilege) *OAuthGrantUpdateOne {
+	_u.mutation.SetPrivileges(v)
 	return _u
 }
 
-// AppendCapabilities appends value to the "capabilities" field.
-func (_u *OAuthGrantUpdateOne) AppendCapabilities(v []schema.KeyCapability) *OAuthGrantUpdateOne {
-	_u.mutation.AppendCapabilities(v)
+// AppendPrivileges appends value to the "privileges" field.
+func (_u *OAuthGrantUpdateOne) AppendPrivileges(v []schema.KeyPrivilege) *OAuthGrantUpdateOne {
+	_u.mutation.AppendPrivileges(v)
 	return _u
 }
 
@@ -951,12 +951,12 @@ func (_u *OAuthGrantUpdateOne) sqlSave(ctx context.Context) (_node *OAuthGrant, 
 			sqljson.Append(u, oauthgrant.FieldResources, value)
 		})
 	}
-	if value, ok := _u.mutation.Capabilities(); ok {
-		_spec.SetField(oauthgrant.FieldCapabilities, field.TypeJSON, value)
+	if value, ok := _u.mutation.Privileges(); ok {
+		_spec.SetField(oauthgrant.FieldPrivileges, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+	if value, ok := _u.mutation.AppendedPrivileges(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
-			sqljson.Append(u, oauthgrant.FieldCapabilities, value)
+			sqljson.Append(u, oauthgrant.FieldPrivileges, value)
 		})
 	}
 	if value, ok := _u.mutation.Resource(); ok {

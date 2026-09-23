@@ -28,10 +28,10 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "query-logs",
 		Summary:     "Query Logs",
-		Description: "Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id. Needs the read_logs capability.",
+		Description: "Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id. Needs the read_logs privilege.",
 		Path:        "/query",
 		Method:      http.MethodGet,
-	}, handlers.QueryLogs, oapi.MCP, oapi.Needs(schema.CapabilityReadLogs))
+	}, handlers.QueryLogs, oapi.MCP, oapi.Needs(schema.PrivilegeReadLogs))
 
 	// SSE doesn't go through huma.Register, so apply the same docs manually.
 	streamOp := huma.Operation{
@@ -39,9 +39,9 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 		Path:        "/stream",
 		Summary:     "Stream Logs",
-		Description: "Stream live logs over Server-Sent Events. Errors are delivered as `message` events with an error type, not HTTP status codes. Needs the read_logs capability.",
+		Description: "Stream live logs over Server-Sent Events. Errors are delivered as `message` events with an error type, not HTTP status codes. Needs the read_logs privilege.",
 	}
-	oapi.Apply(oapi.Read, &streamOp, oapi.NoMCP("Server-Sent Events stream, query-logs covers the same data"), oapi.Needs(schema.CapabilityReadLogs))
+	oapi.Apply(oapi.Read, &streamOp, oapi.NoMCP("Server-Sent Events stream, query-logs covers the same data"), oapi.Needs(schema.PrivilegeReadLogs))
 	sse.Register(grp, streamOp, map[string]any{
 		// Mapping of event type name to Go struct for that event.
 		"message": loki.LogEvents{},

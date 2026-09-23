@@ -16,10 +16,10 @@ import (
 )
 
 type Spec struct {
-	Role         schema.PermittedAction
-	FullAccess   bool
-	Resources    []schema.APIKeyResource
-	Capabilities []schema.KeyCapability
+	Role       schema.PermittedAction
+	FullAccess bool
+	Resources  []schema.APIKeyResource
+	Privileges []schema.KeyPrivilege
 }
 
 func Validate(spec Spec) error {
@@ -52,31 +52,31 @@ func Validate(spec Spec) error {
 		seen[resource.ResourceID] = struct{}{}
 	}
 
-	return validateCapabilities(spec)
+	return validatePrivileges(spec)
 }
 
-func validateCapabilities(spec Spec) error {
-	seen := map[schema.KeyCapability]struct{}{}
-	for i, capability := range spec.Capabilities {
-		switch capability {
-		case schema.CapabilityReadVariableValues, schema.CapabilityReadLogs, schema.CapabilityReadWebhookURLs:
+func validatePrivileges(spec Spec) error {
+	seen := map[schema.KeyPrivilege]struct{}{}
+	for i, privilege := range spec.Privileges {
+		switch privilege {
+		case schema.PrivilegeReadVariableValues, schema.PrivilegeReadLogs, schema.PrivilegeReadWebhookURLs:
 		default:
-			return fmt.Errorf("capabilities[%d]: unknown capability %q", i, capability)
+			return fmt.Errorf("privileges[%d]: unknown privilege %q", i, privilege)
 		}
-		if _, dup := seen[capability]; dup {
-			return fmt.Errorf("capabilities[%d]: duplicate capability", i)
+		if _, dup := seen[privilege]; dup {
+			return fmt.Errorf("privileges[%d]: duplicate privilege", i)
 		}
-		seen[capability] = struct{}{}
+		seen[privilege] = struct{}{}
 	}
 	return nil
 }
 
-// Capabilities never comes back nil, so responses and stored rows hold a list.
-func Capabilities(spec Spec) []schema.KeyCapability {
-	if spec.Capabilities == nil {
-		return []schema.KeyCapability{}
+// Privileges never comes back nil, so responses and stored rows hold a list.
+func Privileges(spec Spec) []schema.KeyPrivilege {
+	if spec.Privileges == nil {
+		return []schema.KeyPrivilege{}
 	}
-	return spec.Capabilities
+	return spec.Privileges
 }
 
 // RequesterHolds checks that the requester already has the role on every named
