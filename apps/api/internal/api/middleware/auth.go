@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/apictx"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/auth"
@@ -139,7 +140,20 @@ func (self *Middleware) allowNarrowed(ctx huma.Context, access permissions_repo.
 		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, readOnlyMessage)
 		return false
 	}
+	if capability, needed := oapi.CapabilityOf(op); needed && !access.Has(capability) {
+		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, capabilityMessage(credential, capability))
+		return false
+	}
 	return true
+}
+
+func capabilityMessage(credential string, capability schema.KeyCapability) string {
+	switch capability {
+	case schema.CapabilityLogs:
+		return "Reading logs needs the logs capability on " + credential
+	default:
+		return "This needs the " + string(capability) + " capability on " + credential
+	}
 }
 
 func (self *Middleware) proceedNarrowed(ctx huma.Context, next func(huma.Context), user *ent.User, access permissions_repo.APIKeyAccess) {

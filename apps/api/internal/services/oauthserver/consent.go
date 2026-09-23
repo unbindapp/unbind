@@ -33,7 +33,7 @@ func (self *OAuthServerService) Approve(ctx context.Context, userID uuid.UUID, i
 		return nil, asInputError(err)
 	}
 
-	spec := keyaccess.Spec{Role: input.Role, FullAccess: input.FullAccess, Resources: input.Resources}
+	spec := keyaccess.Spec{Role: input.Role, FullAccess: input.FullAccess, Resources: input.Resources, Capabilities: input.Capabilities}
 	if err := keyaccess.Validate(spec); err != nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 	}
@@ -63,6 +63,7 @@ func (self *OAuthServerService) Approve(ctx context.Context, userID uuid.UUID, i
 		Role:          input.Role,
 		FullAccess:    input.FullAccess,
 		Resources:     resources,
+		Capabilities:  keyaccess.Capabilities(spec),
 		ExpiresAt:     self.now().Add(CodeTTL),
 	})
 	if err != nil {

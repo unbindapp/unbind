@@ -156,6 +156,18 @@ func (_u *OAuthGrantUpdate) AppendResources(v []schema.APIKeyResource) *OAuthGra
 	return _u
 }
 
+// SetCapabilities sets the "capabilities" field.
+func (_u *OAuthGrantUpdate) SetCapabilities(v []schema.KeyCapability) *OAuthGrantUpdate {
+	_u.mutation.SetCapabilities(v)
+	return _u
+}
+
+// AppendCapabilities appends value to the "capabilities" field.
+func (_u *OAuthGrantUpdate) AppendCapabilities(v []schema.KeyCapability) *OAuthGrantUpdate {
+	_u.mutation.AppendCapabilities(v)
+	return _u
+}
+
 // SetResource sets the "resource" field.
 func (_u *OAuthGrantUpdate) SetResource(v string) *OAuthGrantUpdate {
 	_u.mutation.SetResource(v)
@@ -403,6 +415,14 @@ func (_u *OAuthGrantUpdate) sqlSave(ctx context.Context) (_node int, err error) 
 			sqljson.Append(u, oauthgrant.FieldResources, value)
 		})
 	}
+	if value, ok := _u.mutation.Capabilities(); ok {
+		_spec.SetField(oauthgrant.FieldCapabilities, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, oauthgrant.FieldCapabilities, value)
+		})
+	}
 	if value, ok := _u.mutation.Resource(); ok {
 		_spec.SetField(oauthgrant.FieldResource, field.TypeString, value)
 	}
@@ -639,6 +659,18 @@ func (_u *OAuthGrantUpdateOne) SetResources(v []schema.APIKeyResource) *OAuthGra
 // AppendResources appends value to the "resources" field.
 func (_u *OAuthGrantUpdateOne) AppendResources(v []schema.APIKeyResource) *OAuthGrantUpdateOne {
 	_u.mutation.AppendResources(v)
+	return _u
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (_u *OAuthGrantUpdateOne) SetCapabilities(v []schema.KeyCapability) *OAuthGrantUpdateOne {
+	_u.mutation.SetCapabilities(v)
+	return _u
+}
+
+// AppendCapabilities appends value to the "capabilities" field.
+func (_u *OAuthGrantUpdateOne) AppendCapabilities(v []schema.KeyCapability) *OAuthGrantUpdateOne {
+	_u.mutation.AppendCapabilities(v)
 	return _u
 }
 
@@ -917,6 +949,14 @@ func (_u *OAuthGrantUpdateOne) sqlSave(ctx context.Context) (_node *OAuthGrant, 
 	if value, ok := _u.mutation.AppendedResources(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, oauthgrant.FieldResources, value)
+		})
+	}
+	if value, ok := _u.mutation.Capabilities(); ok {
+		_spec.SetField(oauthgrant.FieldCapabilities, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, oauthgrant.FieldCapabilities, value)
 		})
 	}
 	if value, ok := _u.mutation.Resource(); ok {

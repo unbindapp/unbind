@@ -150,6 +150,12 @@ func (_c *OAuthAuthorizationCodeCreate) SetResources(v []schema.APIKeyResource) 
 	return _c
 }
 
+// SetCapabilities sets the "capabilities" field.
+func (_c *OAuthAuthorizationCodeCreate) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeCreate {
+	_c.mutation.SetCapabilities(v)
+	return _c
+}
+
 // SetExpiresAt sets the "expires_at" field.
 func (_c *OAuthAuthorizationCodeCreate) SetExpiresAt(v time.Time) *OAuthAuthorizationCodeCreate {
 	_c.mutation.SetExpiresAt(v)
@@ -256,6 +262,10 @@ func (_c *OAuthAuthorizationCodeCreate) defaults() {
 		v := oauthauthorizationcode.DefaultFullAccess
 		_c.mutation.SetFullAccess(v)
 	}
+	if _, ok := _c.mutation.Capabilities(); !ok {
+		v := oauthauthorizationcode.DefaultCapabilities
+		_c.mutation.SetCapabilities(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := oauthauthorizationcode.DefaultID()
 		_c.mutation.SetID(v)
@@ -309,6 +319,9 @@ func (_c *OAuthAuthorizationCodeCreate) check() error {
 	}
 	if _, ok := _c.mutation.Resources(); !ok {
 		return &ValidationError{Name: "resources", err: errors.New(`ent: missing required field "OAuthAuthorizationCode.resources"`)}
+	}
+	if _, ok := _c.mutation.Capabilities(); !ok {
+		return &ValidationError{Name: "capabilities", err: errors.New(`ent: missing required field "OAuthAuthorizationCode.capabilities"`)}
 	}
 	if _, ok := _c.mutation.ExpiresAt(); !ok {
 		return &ValidationError{Name: "expires_at", err: errors.New(`ent: missing required field "OAuthAuthorizationCode.expires_at"`)}
@@ -410,6 +423,10 @@ func (_c *OAuthAuthorizationCodeCreate) createSpec() (*OAuthAuthorizationCode, *
 	if value, ok := _c.mutation.Resources(); ok {
 		_spec.SetField(oauthauthorizationcode.FieldResources, field.TypeJSON, value)
 		_node.Resources = value
+	}
+	if value, ok := _c.mutation.Capabilities(); ok {
+		_spec.SetField(oauthauthorizationcode.FieldCapabilities, field.TypeJSON, value)
+		_node.Capabilities = value
 	}
 	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(oauthauthorizationcode.FieldExpiresAt, field.TypeTime, value)
@@ -657,6 +674,18 @@ func (u *OAuthAuthorizationCodeUpsert) SetResources(v []schema.APIKeyResource) *
 // UpdateResources sets the "resources" field to the value that was provided on create.
 func (u *OAuthAuthorizationCodeUpsert) UpdateResources() *OAuthAuthorizationCodeUpsert {
 	u.SetExcluded(oauthauthorizationcode.FieldResources)
+	return u
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (u *OAuthAuthorizationCodeUpsert) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpsert {
+	u.Set(oauthauthorizationcode.FieldCapabilities, v)
+	return u
+}
+
+// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
+func (u *OAuthAuthorizationCodeUpsert) UpdateCapabilities() *OAuthAuthorizationCodeUpsert {
+	u.SetExcluded(oauthauthorizationcode.FieldCapabilities)
 	return u
 }
 
@@ -964,6 +993,20 @@ func (u *OAuthAuthorizationCodeUpsertOne) SetResources(v []schema.APIKeyResource
 func (u *OAuthAuthorizationCodeUpsertOne) UpdateResources() *OAuthAuthorizationCodeUpsertOne {
 	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
 		s.UpdateResources()
+	})
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (u *OAuthAuthorizationCodeUpsertOne) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpsertOne {
+	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
+		s.SetCapabilities(v)
+	})
+}
+
+// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
+func (u *OAuthAuthorizationCodeUpsertOne) UpdateCapabilities() *OAuthAuthorizationCodeUpsertOne {
+	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
+		s.UpdateCapabilities()
 	})
 }
 
@@ -1448,6 +1491,20 @@ func (u *OAuthAuthorizationCodeUpsertBulk) SetResources(v []schema.APIKeyResourc
 func (u *OAuthAuthorizationCodeUpsertBulk) UpdateResources() *OAuthAuthorizationCodeUpsertBulk {
 	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
 		s.UpdateResources()
+	})
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (u *OAuthAuthorizationCodeUpsertBulk) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpsertBulk {
+	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
+		s.SetCapabilities(v)
+	})
+}
+
+// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
+func (u *OAuthAuthorizationCodeUpsertBulk) UpdateCapabilities() *OAuthAuthorizationCodeUpsertBulk {
+	return u.Update(func(s *OAuthAuthorizationCodeUpsert) {
+		s.UpdateCapabilities()
 	})
 }
 

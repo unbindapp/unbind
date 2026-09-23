@@ -8,7 +8,9 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+	entSchema "github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
+	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 const (
@@ -25,9 +27,20 @@ type tool struct {
 	// string. Operations with a JSON body take the tool arguments as that body.
 	queryParams map[string]*huma.Param
 	hasBody     bool
-	// readOnly mirrors the check the auth middleware applies to read only
-	// credentials.
-	readOnly bool
+	// readOnly and capability mirror the checks the auth middleware applies
+	// to credentials, so a connection is not offered tools it cannot call.
+	readOnly   bool
+	capability entSchema.KeyCapability
+}
+
+func (self *tool) offeredTo(access permissions_repo.APIKeyAccess) bool {
+	if !self.readOnly && !access.AllowsWrites() {
+		return false
+	}
+	if self.capability != "" && !access.Has(self.capability) {
+		return false
+	}
+	return true
 }
 
 // Operations lists every registered operation, ordered by operation ID.
@@ -66,7 +79,8 @@ func buildTools(api huma.API) ([]*tool, error) {
 
 func buildTool(op *huma.Operation, registry huma.Registry) (*tool, error) {
 	action, known := oapi.ActionOf(op)
-	t := &tool{method: op.Method, path: op.Path, readOnly: known && action == oapi.Read}
+	capability, _ := oapi.CapabilityOf(op)
+	t := &tool{method: op.Method, path: op.Path, readOnly: known && action == oapi.Read, capability: capability}
 
 	var (
 		schema map[string]any

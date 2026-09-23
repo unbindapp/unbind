@@ -30,6 +30,7 @@ func (APIKey) Fields() []ent.Field {
 		field.Enum("role").GoType(PermittedAction("")).Comment("Strongest action the key can perform anywhere"),
 		field.Bool("full_access").Default(false).Comment("Reach everything the owner can, capped at role"),
 		field.JSON("resources", []APIKeyResource{}).Comment("Resources the key is limited to; empty when full_access"),
+		field.JSON("capabilities", []KeyCapability{}).Default([]KeyCapability{}).Comment("What the credential may see beyond its role; empty by default"),
 		field.Time("expires_at").Optional().Nillable(),
 		field.Time("last_used_at").Optional().Nillable(),
 		field.UUID("user_id", uuid.UUID{}),

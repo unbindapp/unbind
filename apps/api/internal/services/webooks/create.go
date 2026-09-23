@@ -47,7 +47,7 @@ func (self *WebhooksService) CreateWebhook(ctx context.Context, requesterUserID 
 		return nil, err
 	}
 
-	return models.TransformWebhookEntity(webhook), nil
+	return self.redactURL(ctx, models.TransformWebhookEntity(webhook)), nil
 }
 
 func validateEvents(webhookType schema.WebhookType, events []schema.WebhookEvent) error {

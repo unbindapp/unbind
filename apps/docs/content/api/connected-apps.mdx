@@ -9,10 +9,11 @@ Apps connect with OAuth. You do not create anything first: the app sends you to 
 
 ## Approving an app
 
-When an app asks for access, Unbind shows a consent page with the app's name and where it will send you back to. You choose the same two things as for an [API key](/api/authentication):
+When an app asks for access, Unbind shows a consent page with the app's name and where it will send you back to. You choose the same three things as for an [API key](/api/authentication):
 
 - **Access**: everything you can access, or only specific teams, projects, environments or services.
 - **Role**: viewer, editor or admin. The default is viewer.
+- **Capabilities**: variable values, logs and webhook URLs. All off by default. See [Capabilities](/api/authentication#capabilities).
 
 Then press **Approve** or **Deny**.
 
@@ -24,7 +25,7 @@ Then press **Approve** or **Deny**.
 
 ## Managing apps
 
-Your avatar > **Account Settings** > **Connected Apps** lists every app with its role, its resources and when it was last used. **Revoke** cuts it off right away. The app has to ask again to get back in.
+Your avatar > **Account Settings** > **Connected Apps** lists every app with its role, its resources, its capabilities and when it was last used. **Revoke** cuts it off right away. The app has to ask again to get back in.
 
 ## For app developers
 

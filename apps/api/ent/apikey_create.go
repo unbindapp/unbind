@@ -98,6 +98,12 @@ func (_c *APIKeyCreate) SetResources(v []schema.APIKeyResource) *APIKeyCreate {
 	return _c
 }
 
+// SetCapabilities sets the "capabilities" field.
+func (_c *APIKeyCreate) SetCapabilities(v []schema.KeyCapability) *APIKeyCreate {
+	_c.mutation.SetCapabilities(v)
+	return _c
+}
+
 // SetExpiresAt sets the "expires_at" field.
 func (_c *APIKeyCreate) SetExpiresAt(v time.Time) *APIKeyCreate {
 	_c.mutation.SetExpiresAt(v)
@@ -198,6 +204,10 @@ func (_c *APIKeyCreate) defaults() {
 		v := apikey.DefaultFullAccess
 		_c.mutation.SetFullAccess(v)
 	}
+	if _, ok := _c.mutation.Capabilities(); !ok {
+		v := apikey.DefaultCapabilities
+		_c.mutation.SetCapabilities(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := apikey.DefaultID()
 		_c.mutation.SetID(v)
@@ -239,6 +249,9 @@ func (_c *APIKeyCreate) check() error {
 	}
 	if _, ok := _c.mutation.Resources(); !ok {
 		return &ValidationError{Name: "resources", err: errors.New(`ent: missing required field "APIKey.resources"`)}
+	}
+	if _, ok := _c.mutation.Capabilities(); !ok {
+		return &ValidationError{Name: "capabilities", err: errors.New(`ent: missing required field "APIKey.capabilities"`)}
 	}
 	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "APIKey.user_id"`)}
@@ -313,6 +326,10 @@ func (_c *APIKeyCreate) createSpec() (*APIKey, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Resources(); ok {
 		_spec.SetField(apikey.FieldResources, field.TypeJSON, value)
 		_node.Resources = value
+	}
+	if value, ok := _c.mutation.Capabilities(); ok {
+		_spec.SetField(apikey.FieldCapabilities, field.TypeJSON, value)
+		_node.Capabilities = value
 	}
 	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(apikey.FieldExpiresAt, field.TypeTime, value)
@@ -472,6 +489,18 @@ func (u *APIKeyUpsert) SetResources(v []schema.APIKeyResource) *APIKeyUpsert {
 // UpdateResources sets the "resources" field to the value that was provided on create.
 func (u *APIKeyUpsert) UpdateResources() *APIKeyUpsert {
 	u.SetExcluded(apikey.FieldResources)
+	return u
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (u *APIKeyUpsert) SetCapabilities(v []schema.KeyCapability) *APIKeyUpsert {
+	u.Set(apikey.FieldCapabilities, v)
+	return u
+}
+
+// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
+func (u *APIKeyUpsert) UpdateCapabilities() *APIKeyUpsert {
+	u.SetExcluded(apikey.FieldCapabilities)
 	return u
 }
 
@@ -669,6 +698,20 @@ func (u *APIKeyUpsertOne) SetResources(v []schema.APIKeyResource) *APIKeyUpsertO
 func (u *APIKeyUpsertOne) UpdateResources() *APIKeyUpsertOne {
 	return u.Update(func(s *APIKeyUpsert) {
 		s.UpdateResources()
+	})
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (u *APIKeyUpsertOne) SetCapabilities(v []schema.KeyCapability) *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetCapabilities(v)
+	})
+}
+
+// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
+func (u *APIKeyUpsertOne) UpdateCapabilities() *APIKeyUpsertOne {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateCapabilities()
 	})
 }
 
@@ -1041,6 +1084,20 @@ func (u *APIKeyUpsertBulk) SetResources(v []schema.APIKeyResource) *APIKeyUpsert
 func (u *APIKeyUpsertBulk) UpdateResources() *APIKeyUpsertBulk {
 	return u.Update(func(s *APIKeyUpsert) {
 		s.UpdateResources()
+	})
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (u *APIKeyUpsertBulk) SetCapabilities(v []schema.KeyCapability) *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.SetCapabilities(v)
+	})
+}
+
+// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
+func (u *APIKeyUpsertBulk) UpdateCapabilities() *APIKeyUpsertBulk {
+	return u.Update(func(s *APIKeyUpsert) {
+		s.UpdateCapabilities()
 	})
 }
 

@@ -1534,6 +1534,13 @@ components:
         - AnonOutputKey
         - ServiceOutputKey
       type: object
+    KeyCapability:
+      enum:
+        - variable_values
+        - logs
+        - webhook_urls
+      title: KeyCapability
+      type: string
     ListDatabasesResponseBody:
       additionalProperties: false
       properties:
@@ -4237,7 +4244,7 @@ components:
       additionalProperties: false
       properties:
         values_redacted:
-          description: True when the caller may only see names. Every value and resolved value is blank; editing needs the editor role.
+          description: True when the caller may only see names. Every value and resolved value is blank. Values need the editor role, and for a key or connected app the variable_values capability too.
           type: boolean
         variables:
           items:
@@ -4397,10 +4404,15 @@ components:
         type:
           $ref: "#/components/schemas/WebhookType"
         url:
+          description: Blank when url_redacted is true
           type: string
+        url_redacted:
+          description: True when the caller may not see the URL. It needs the webhook_urls capability.
+          type: boolean
       required:
         - id
         - url
+        - url_redacted
         - type
         - events
         - team_id
@@ -4450,6 +4462,11 @@ components:
     WhoamiAPIKey:
       additionalProperties: false
       properties:
+        capabilities:
+          description: What the credential may see beyond its role. Without variable_values, variable values come back blank; without logs, query-logs is refused; without webhook_urls, webhook URLs come back blank.
+          items:
+            $ref: "#/components/schemas/KeyCapability"
+          type: array
         full_access:
           type: boolean
         resources:
@@ -4462,6 +4479,7 @@ components:
         - role
         - full_access
         - resources
+        - capabilities
       type: object
     WhoamiData:
       additionalProperties: false
@@ -5819,7 +5837,7 @@ paths:
         risk: medium
   /logs/query:
     get:
-      description: Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id.
+      description: Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id. Needs the logs capability.
       operationId: query-logs
       parameters:
         - explode: false
@@ -6004,7 +6022,7 @@ paths:
         risk: low
   /logs/stream:
     get:
-      description: Stream live logs over Server-Sent Events. Errors are delivered as `message` events with an error type, not HTTP status codes.
+      description: Stream live logs over Server-Sent Events. Errors are delivered as `message` events with an error type, not HTTP status codes. Needs the logs capability.
       operationId: stream-logs
       parameters:
         - explode: false
@@ -11083,7 +11101,7 @@ paths:
         risk: high
   /variables/list:
     get:
-      description: List variables for a service, environment, project, or team. Service variables include their rendered values.
+      description: List variables for a service, environment, project, or team. Service variables include their rendered values. Values are blank and values_redacted is true unless the connection has the variable_values capability; names and references are always listed.
       operationId: list-variables
       parameters:
         - description: The type of variable
@@ -11588,7 +11606,7 @@ paths:
         risk: high
   /webhooks/get:
     get:
-      description: Get a single webhook by ID.
+      description: Get a single webhook by ID. The URL is blank and url_redacted is true unless the connection has the webhook_urls capability.
       operationId: get-webhook
       parameters:
         - explode: false
@@ -11692,7 +11710,7 @@ paths:
         risk: low
   /webhooks/list:
     get:
-      description: List webhooks for a team or project.
+      description: List webhooks for a team or project. The URL is blank and url_redacted is true unless the connection has the webhook_urls capability.
       operationId: list-webhooks
       parameters:
         - explode: false

@@ -37,6 +37,7 @@ func (OAuthGrant) Fields() []ent.Field {
 		field.Enum("role").GoType(PermittedAction("")),
 		field.Bool("full_access").Default(false),
 		field.JSON("resources", []APIKeyResource{}),
+		field.JSON("capabilities", []KeyCapability{}).Default([]KeyCapability{}).Comment("What the credential may see beyond its role; empty by default"),
 		field.String("resource"),
 		field.String("scope").Optional(),
 		field.Time("last_used_at").Optional().Nillable(),

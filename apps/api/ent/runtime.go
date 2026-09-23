@@ -62,6 +62,10 @@ func init() {
 	apikeyDescFullAccess := apikeyFields[4].Descriptor()
 	// apikey.DefaultFullAccess holds the default value on creation for the full_access field.
 	apikey.DefaultFullAccess = apikeyDescFullAccess.Default.(bool)
+	// apikeyDescCapabilities is the schema descriptor for capabilities field.
+	apikeyDescCapabilities := apikeyFields[6].Descriptor()
+	// apikey.DefaultCapabilities holds the default value on creation for the capabilities field.
+	apikey.DefaultCapabilities = apikeyDescCapabilities.Default.([]schema.KeyCapability)
 	// apikeyDescID is the schema descriptor for id field.
 	apikeyDescID := apikeyMixinFields0[0].Descriptor()
 	// apikey.DefaultID holds the default value on creation for the id field.
@@ -224,6 +228,10 @@ func init() {
 	oauthauthorizationcodeDescFullAccess := oauthauthorizationcodeFields[10].Descriptor()
 	// oauthauthorizationcode.DefaultFullAccess holds the default value on creation for the full_access field.
 	oauthauthorizationcode.DefaultFullAccess = oauthauthorizationcodeDescFullAccess.Default.(bool)
+	// oauthauthorizationcodeDescCapabilities is the schema descriptor for capabilities field.
+	oauthauthorizationcodeDescCapabilities := oauthauthorizationcodeFields[12].Descriptor()
+	// oauthauthorizationcode.DefaultCapabilities holds the default value on creation for the capabilities field.
+	oauthauthorizationcode.DefaultCapabilities = oauthauthorizationcodeDescCapabilities.Default.([]schema.KeyCapability)
 	// oauthauthorizationcodeDescID is the schema descriptor for id field.
 	oauthauthorizationcodeDescID := oauthauthorizationcodeMixinFields0[0].Descriptor()
 	// oauthauthorizationcode.DefaultID holds the default value on creation for the id field.
@@ -274,6 +282,10 @@ func init() {
 	oauthgrantDescFullAccess := oauthgrantFields[6].Descriptor()
 	// oauthgrant.DefaultFullAccess holds the default value on creation for the full_access field.
 	oauthgrant.DefaultFullAccess = oauthgrantDescFullAccess.Default.(bool)
+	// oauthgrantDescCapabilities is the schema descriptor for capabilities field.
+	oauthgrantDescCapabilities := oauthgrantFields[8].Descriptor()
+	// oauthgrant.DefaultCapabilities holds the default value on creation for the capabilities field.
+	oauthgrant.DefaultCapabilities = oauthgrantDescCapabilities.Default.([]schema.KeyCapability)
 	// oauthgrantDescID is the schema descriptor for id field.
 	oauthgrantDescID := oauthgrantMixinFields0[0].Descriptor()
 	// oauthgrant.DefaultID holds the default value on creation for the id field.

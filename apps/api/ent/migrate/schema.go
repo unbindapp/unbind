@@ -20,6 +20,7 @@ var (
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "editor", "viewer"}},
 		{Name: "full_access", Type: field.TypeBool, Default: false},
 		{Name: "resources", Type: field.TypeJSON},
+		{Name: "capabilities", Type: field.TypeJSON},
 		{Name: "expires_at", Type: field.TypeTime, Nullable: true},
 		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID},
@@ -32,7 +33,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "api_keys_users_api_keys",
-				Columns:    []*schema.Column{APIKeysColumns[11]},
+				Columns:    []*schema.Column{APIKeysColumns[12]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -41,7 +42,7 @@ var (
 			{
 				Name:    "apikey_user_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{APIKeysColumns[11], APIKeysColumns[3]},
+				Columns: []*schema.Column{APIKeysColumns[12], APIKeysColumns[3]},
 			},
 		},
 	}
@@ -254,6 +255,7 @@ var (
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "editor", "viewer"}},
 		{Name: "full_access", Type: field.TypeBool, Default: false},
 		{Name: "resources", Type: field.TypeJSON},
+		{Name: "capabilities", Type: field.TypeJSON},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "used_at", Type: field.TypeTime, Nullable: true},
 		{Name: "grant_id", Type: field.TypeUUID, Nullable: true},
@@ -267,7 +269,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "oauth_authorization_codes_users_oauth_authorization_codes",
-				Columns:    []*schema.Column{OauthAuthorizationCodesColumns[18]},
+				Columns:    []*schema.Column{OauthAuthorizationCodesColumns[19]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -276,7 +278,7 @@ var (
 			{
 				Name:    "oauthauthorizationcode_expires_at",
 				Unique:  false,
-				Columns: []*schema.Column{OauthAuthorizationCodesColumns[15]},
+				Columns: []*schema.Column{OauthAuthorizationCodesColumns[16]},
 			},
 		},
 	}
@@ -317,6 +319,7 @@ var (
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "editor", "viewer"}},
 		{Name: "full_access", Type: field.TypeBool, Default: false},
 		{Name: "resources", Type: field.TypeJSON},
+		{Name: "capabilities", Type: field.TypeJSON},
 		{Name: "resource", Type: field.TypeString},
 		{Name: "scope", Type: field.TypeString, Nullable: true},
 		{Name: "last_used_at", Type: field.TypeTime, Nullable: true},
@@ -331,7 +334,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "oauth_grants_users_oauth_grants",
-				Columns:    []*schema.Column{OauthGrantsColumns[15]},
+				Columns:    []*schema.Column{OauthGrantsColumns[16]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -340,7 +343,7 @@ var (
 			{
 				Name:    "oauthgrant_user_id",
 				Unique:  false,
-				Columns: []*schema.Column{OauthGrantsColumns[15]},
+				Columns: []*schema.Column{OauthGrantsColumns[16]},
 			},
 			{
 				Name:    "oauthgrant_client_id",

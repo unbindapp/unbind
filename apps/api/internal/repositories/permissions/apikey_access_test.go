@@ -94,8 +94,21 @@ func TestAPIKeyAccessWritesAndContext(t *testing.T) {
 	_, ok := APIKeyAccessFromContext(context.Background())
 	assert.False(t, ok, "sessions carry no key access")
 
-	key := &ent.APIKey{Role: schema.ActionEditor, FullAccess: true}
+	key := &ent.APIKey{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs}}
 	got, ok := APIKeyAccessFromContext(WithAPIKeyAccess(context.Background(), APIKeyAccessOf(key)))
 	assert.True(t, ok)
-	assert.Equal(t, APIKeyAccess{Role: schema.ActionEditor, FullAccess: true}, got)
+	assert.Equal(t, APIKeyAccess{Role: schema.ActionEditor, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs}}, got)
+}
+
+func TestHasCapability(t *testing.T) {
+	assert.True(t, HasCapability(context.Background(), schema.CapabilityVariableValues), "sessions hold every capability")
+
+	none := WithAPIKeyAccess(context.Background(), APIKeyAccess{Role: schema.ActionAdmin, FullAccess: true})
+	assert.False(t, HasCapability(none, schema.CapabilityVariableValues), "admin alone grants nothing")
+	assert.False(t, HasCapability(none, schema.CapabilityLogs))
+	assert.False(t, HasCapability(none, schema.CapabilityWebhookURLs))
+
+	logs := WithAPIKeyAccess(context.Background(), APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs}})
+	assert.True(t, HasCapability(logs, schema.CapabilityLogs))
+	assert.False(t, HasCapability(logs, schema.CapabilityWebhookURLs))
 }

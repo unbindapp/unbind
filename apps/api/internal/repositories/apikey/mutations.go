@@ -11,14 +11,15 @@ import (
 )
 
 type CreateAPIKeyInput struct {
-	UserID      uuid.UUID
-	Name        string
-	TokenPrefix string
-	TokenHash   string
-	Role        schema.PermittedAction
-	FullAccess  bool
-	Resources   []schema.APIKeyResource
-	ExpiresAt   *time.Time
+	UserID       uuid.UUID
+	Name         string
+	TokenPrefix  string
+	TokenHash    string
+	Role         schema.PermittedAction
+	FullAccess   bool
+	Resources    []schema.APIKeyResource
+	Capabilities []schema.KeyCapability
+	ExpiresAt    *time.Time
 }
 
 func (self *APIKeyRepository) Create(ctx context.Context, input *CreateAPIKeyInput) (*ent.APIKey, error) {
@@ -30,6 +31,7 @@ func (self *APIKeyRepository) Create(ctx context.Context, input *CreateAPIKeyInp
 		SetRole(input.Role).
 		SetFullAccess(input.FullAccess).
 		SetResources(input.Resources).
+		SetCapabilities(input.Capabilities).
 		SetNillableExpiresAt(input.ExpiresAt).
 		Save(ctx)
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/vartemplate"
 )
 
@@ -177,7 +178,14 @@ func (self *VariablesService) ApplyVariableWrite(ctx context.Context, write *Var
 		return nil, err
 	}
 
-	return self.buildResponse(ctx, client, write.Input.Type, write.team.Namespace, write.service, secrets)
+	response, err := self.buildResponse(ctx, client, write.Input.Type, write.team.Namespace, write.service, secrets)
+	if err != nil {
+		return nil, err
+	}
+	if !permissions_repo.HasCapability(ctx, schema.CapabilityVariableValues) {
+		response.Redact()
+	}
+	return response, nil
 }
 
 // RestartForWrite restarts pods that read changed values straight from the secret.

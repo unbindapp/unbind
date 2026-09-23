@@ -42,6 +42,8 @@ type OAuthGrant struct {
 	FullAccess bool `json:"full_access,omitempty"`
 	// Resources holds the value of the "resources" field.
 	Resources []schema.APIKeyResource `json:"resources,omitempty"`
+	// What the credential may see beyond its role; empty by default
+	Capabilities []schema.KeyCapability `json:"capabilities,omitempty"`
 	// Resource holds the value of the "resource" field.
 	Resource string `json:"resource,omitempty"`
 	// Scope holds the value of the "scope" field.
@@ -94,7 +96,7 @@ func (*OAuthGrant) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oauthgrant.FieldResources:
+		case oauthgrant.FieldResources, oauthgrant.FieldCapabilities:
 			values[i] = new([]byte)
 		case oauthgrant.FieldFullAccess:
 			values[i] = new(sql.NullBool)
@@ -185,6 +187,14 @@ func (_m *OAuthGrant) assignValues(columns []string, values []any) error {
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &_m.Resources); err != nil {
 					return fmt.Errorf("unmarshal field resources: %w", err)
+				}
+			}
+		case oauthgrant.FieldCapabilities:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field capabilities", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Capabilities); err != nil {
+					return fmt.Errorf("unmarshal field capabilities: %w", err)
 				}
 			}
 		case oauthgrant.FieldResource:
@@ -294,6 +304,9 @@ func (_m *OAuthGrant) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("resources=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Resources))
+	builder.WriteString(", ")
+	builder.WriteString("capabilities=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Capabilities))
 	builder.WriteString(", ")
 	builder.WriteString("resource=")
 	builder.WriteString(_m.Resource)

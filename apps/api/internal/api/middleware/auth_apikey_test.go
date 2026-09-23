@@ -81,6 +81,7 @@ func newAPIKeyHarness(t *testing.T) *apiKeyHarness {
 	oapi.Register(grp, oapi.Read, huma.Operation{OperationID: "read", Method: http.MethodGet, Path: "/read"}, handler)
 	oapi.Register(grp, oapi.Create, huma.Operation{OperationID: "write", Method: http.MethodPost, Path: "/write"}, handler)
 	oapi.Register(grp, oapi.Read, huma.Operation{OperationID: "secret", Method: http.MethodGet, Path: "/secret"}, handler, oapi.SessionOnly)
+	oapi.Register(grp, oapi.Read, huma.Operation{OperationID: "logs", Method: http.MethodGet, Path: "/logs"}, handler, oapi.Needs(schema.CapabilityLogs))
 
 	h.viewKey, _ = auth.NewAPIKey()
 	h.editKey, _ = auth.NewAPIKey()
@@ -89,14 +90,15 @@ func newAPIKeyHarness(t *testing.T) *apiKeyHarness {
 
 func (h *apiKeyHarness) stub(key *auth.GeneratedAPIKey, access permissions_repo.APIKeyAccess, expiresAt *time.Time) {
 	h.keys.EXPECT().GetByTokenHash(mock.Anything, key.Hash).Return(&ent.APIKey{
-		ID:         uuid.New(),
-		UserID:     h.user.ID,
-		TokenHash:  key.Hash,
-		Role:       access.Role,
-		FullAccess: access.FullAccess,
-		Resources:  access.Resources,
-		ExpiresAt:  expiresAt,
-		Edges:      ent.APIKeyEdges{User: h.user},
+		ID:           uuid.New(),
+		UserID:       h.user.ID,
+		TokenHash:    key.Hash,
+		Role:         access.Role,
+		FullAccess:   access.FullAccess,
+		Resources:    access.Resources,
+		Capabilities: access.Capabilities,
+		ExpiresAt:    expiresAt,
+		Edges:        ent.APIKeyEdges{User: h.user},
 	}, nil).Maybe()
 	h.keys.EXPECT().TouchLastUsed(mock.Anything, mock.Anything, mock.Anything, apiKeyLastUsedInterval).Return(nil).Maybe()
 }
@@ -179,6 +181,28 @@ func TestReadOnlyAPIKeyCannotWrite(t *testing.T) {
 	}
 	if h.last == nil {
 		t.Fatal("handler did not run for the edit key")
+	}
+}
+
+func TestAPIKeyNeedsTheCapabilityOfTheOperation(t *testing.T) {
+	h := newAPIKeyHarness(t)
+	h.stub(h.editKey, permissions_repo.APIKeyAccess{Role: schema.ActionAdmin, FullAccess: true}, nil)
+	h.stub(h.viewKey, permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs}}, nil)
+
+	resp := h.api.Get("/v1/logs", bearer(h.editKey.Token))
+	if resp.Code != http.StatusForbidden {
+		t.Fatalf("admin key without the logs capability: status = %d, want 403", resp.Code)
+	}
+	if h.last != nil {
+		t.Fatal("handler ran for a key without the capability")
+	}
+
+	resp = h.api.Get("/v1/logs", bearer(h.viewKey.Token))
+	if resp.Code != http.StatusOK {
+		t.Fatalf("viewer key with the logs capability: status = %d, body %s", resp.Code, resp.Body.String())
+	}
+	if h.last == nil || !h.last.scoped || !h.last.access.Has(schema.CapabilityLogs) {
+		t.Fatal("the capability did not reach the handler's access")
 	}
 }
 

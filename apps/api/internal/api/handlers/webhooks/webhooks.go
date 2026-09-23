@@ -23,7 +23,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Register an outbound webhook for a team or project.",
 		Path:        "/create",
 		Method:      http.MethodPost,
-	}, handlers.CreateWebhook, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
+	}, handlers.CreateWebhook, oapi.MCP)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-webhook",
@@ -31,7 +31,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Update an existing webhook's URL or events.",
 		Path:        "/update",
 		Method:      http.MethodPut,
-	}, handlers.UpdateWebhook, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
+	}, handlers.UpdateWebhook, oapi.MCP)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-webhook",
@@ -39,21 +39,21 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Delete a webhook.",
 		Path:        "/delete",
 		Method:      http.MethodDelete,
-	}, handlers.DeleteWebhook, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
+	}, handlers.DeleteWebhook, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-webhooks",
 		Summary:     "List Webhooks",
-		Description: "List webhooks for a team or project.",
+		Description: "List webhooks for a team or project. The URL is blank and url_redacted is true unless the connection has the webhook_urls capability.",
 		Path:        "/list",
 		Method:      http.MethodGet,
-	}, handlers.ListWebhooks, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
+	}, handlers.ListWebhooks, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-webhook",
 		Summary:     "Get Webhook",
-		Description: "Get a single webhook by ID.",
+		Description: "Get a single webhook by ID. The URL is blank and url_redacted is true unless the connection has the webhook_urls capability.",
 		Path:        "/get",
 		Method:      http.MethodGet,
-	}, handlers.GetWebhook, oapi.NoMCP("Webhook URLs carry secrets, webhooks are managed in the UI"))
+	}, handlers.GetWebhook, oapi.MCP)
 }

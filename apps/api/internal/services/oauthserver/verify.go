@@ -41,5 +41,5 @@ func (self *OAuthServerService) VerifyAccessToken(ctx context.Context, token str
 
 // AccessOf is the narrowing an OAuth grant applies, identical to an API key's.
 func AccessOf(grant *ent.OAuthGrant) permissions_repo.APIKeyAccess {
-	return permissions_repo.APIKeyAccess{Role: grant.Role, FullAccess: grant.FullAccess, Resources: grant.Resources}
+	return permissions_repo.APIKeyAccess{Role: grant.Role, FullAccess: grant.FullAccess, Resources: grant.Resources, Capabilities: grant.Capabilities}
 }

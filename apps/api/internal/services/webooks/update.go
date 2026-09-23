@@ -60,5 +60,5 @@ func (self *WebhooksService) UpdateWebhook(ctx context.Context, requesterUserID 
 		return nil, err
 	}
 
-	return models.TransformWebhookEntity(webhook), nil
+	return self.redactURL(ctx, models.TransformWebhookEntity(webhook)), nil
 }

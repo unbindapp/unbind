@@ -5,22 +5,33 @@ description: Keep an agent inside the teams and projects you pick.
 
 An agent is a program that makes its own decisions, some of them wrong. Give it the access you would give a new colleague on their first day, not your own.
 
-## The two controls
+## The three controls
 
-Whether you connect with OAuth or an API key, you pick the same two things:
+Whether you connect with OAuth or an API key, you pick the same three things:
 
 - **Role**: what the agent can do.
 - **Access**: where it can do it.
+- **Capabilities**: what it can see.
 
 ### Role
 
-| Role       | Good for                                                                                                                                 |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Viewer** | Questions and debugging: "why did this deployment fail?". The agent gets no tools that change anything, and cannot read variable values. |
-| **Editor** | Real work: deploy, change settings, set variables. **Cannot delete.**                                                                    |
-| **Admin**  | Also deletes. Rarely needed.                                                                                                             |
+| Role       | Good for                                                                            |
+| ---------- | ----------------------------------------------------------------------------------- |
+| **Viewer** | Questions: "what is deployed where?". The agent gets no tools that change anything. |
+| **Editor** | Real work: deploy, change settings, set variables. **Cannot delete.**               |
+| **Admin**  | Also deletes. Rarely needed.                                                        |
 
 Start with viewer. Move to editor when you want the agent to fix what it finds. With a viewer connection the changing tools are not even offered, so the agent cannot try them.
+
+### Capabilities
+
+Every capability is off by default, whatever the role. Switch one on only when the agent's job needs it.
+
+| Capability          | What the agent gets                                                                                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Variable values** | The values behind variable names. Without it, `list-variables` returns names and references only, and the agent can still set values and wire references. Editor or admin only. |
+| **Logs**            | The `query-logs` tool. Without it the tool is not offered at all. Debugging a failed deployment needs this one.                                                                 |
+| **Webhook URLs**    | The URLs of webhooks. Without it the webhook tools work but return the URL blank.                                                                                               |
 
 ### Access
 
@@ -40,10 +51,12 @@ No matter the role, a connected agent cannot:
 
 ## Secrets
 
-An editor can read variable values, because deploying needs them. Those values then pass through the model's provider. If that is not acceptable for a project, keep the agent at viewer there, or point it at an environment that holds no production secrets.
+Deploying does not need to read secrets, so leave **Variable values** off unless the agent has to inspect what a variable holds. With it on, values pass through the model's provider. Logs often carry the same secrets, and user data, so treat the **Logs** capability the same way.
+
+Hiding values is not a wall. An editor can still write a reference to another service's variable, deploy, and read the result. For anything that must not reach a model, point the agent at an environment that holds no production secrets.
 
 ## Check what an agent has
 
-Ask it to call `whoami`. The answer shows the role and the exact resources of the connection.
+Ask it to call `whoami`. The answer shows the role, the exact resources and the capabilities of the connection.
 
 Your avatar > **Account Settings** > **Connected Apps** shows every app, what it may do and when it was last used. **Revoke** cuts it off at once. API keys work the same way under **API Keys**.

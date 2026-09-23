@@ -119,6 +119,12 @@ func (_c *OAuthGrantCreate) SetResources(v []schema.APIKeyResource) *OAuthGrantC
 	return _c
 }
 
+// SetCapabilities sets the "capabilities" field.
+func (_c *OAuthGrantCreate) SetCapabilities(v []schema.KeyCapability) *OAuthGrantCreate {
+	_c.mutation.SetCapabilities(v)
+	return _c
+}
+
 // SetResource sets the "resource" field.
 func (_c *OAuthGrantCreate) SetResource(v string) *OAuthGrantCreate {
 	_c.mutation.SetResource(v)
@@ -254,6 +260,10 @@ func (_c *OAuthGrantCreate) defaults() {
 		v := oauthgrant.DefaultFullAccess
 		_c.mutation.SetFullAccess(v)
 	}
+	if _, ok := _c.mutation.Capabilities(); !ok {
+		v := oauthgrant.DefaultCapabilities
+		_c.mutation.SetCapabilities(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := oauthgrant.DefaultID()
 		_c.mutation.SetID(v)
@@ -298,6 +308,9 @@ func (_c *OAuthGrantCreate) check() error {
 	}
 	if _, ok := _c.mutation.Resources(); !ok {
 		return &ValidationError{Name: "resources", err: errors.New(`ent: missing required field "OAuthGrant.resources"`)}
+	}
+	if _, ok := _c.mutation.Capabilities(); !ok {
+		return &ValidationError{Name: "capabilities", err: errors.New(`ent: missing required field "OAuthGrant.capabilities"`)}
 	}
 	if _, ok := _c.mutation.Resource(); !ok {
 		return &ValidationError{Name: "resource", err: errors.New(`ent: missing required field "OAuthGrant.resource"`)}
@@ -383,6 +396,10 @@ func (_c *OAuthGrantCreate) createSpec() (*OAuthGrant, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Resources(); ok {
 		_spec.SetField(oauthgrant.FieldResources, field.TypeJSON, value)
 		_node.Resources = value
+	}
+	if value, ok := _c.mutation.Capabilities(); ok {
+		_spec.SetField(oauthgrant.FieldCapabilities, field.TypeJSON, value)
+		_node.Capabilities = value
 	}
 	if value, ok := _c.mutation.Resource(); ok {
 		_spec.SetField(oauthgrant.FieldResource, field.TypeString, value)
@@ -596,6 +613,18 @@ func (u *OAuthGrantUpsert) SetResources(v []schema.APIKeyResource) *OAuthGrantUp
 // UpdateResources sets the "resources" field to the value that was provided on create.
 func (u *OAuthGrantUpsert) UpdateResources() *OAuthGrantUpsert {
 	u.SetExcluded(oauthgrant.FieldResources)
+	return u
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (u *OAuthGrantUpsert) SetCapabilities(v []schema.KeyCapability) *OAuthGrantUpsert {
+	u.Set(oauthgrant.FieldCapabilities, v)
+	return u
+}
+
+// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
+func (u *OAuthGrantUpsert) UpdateCapabilities() *OAuthGrantUpsert {
+	u.SetExcluded(oauthgrant.FieldCapabilities)
 	return u
 }
 
@@ -858,6 +887,20 @@ func (u *OAuthGrantUpsertOne) SetResources(v []schema.APIKeyResource) *OAuthGran
 func (u *OAuthGrantUpsertOne) UpdateResources() *OAuthGrantUpsertOne {
 	return u.Update(func(s *OAuthGrantUpsert) {
 		s.UpdateResources()
+	})
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (u *OAuthGrantUpsertOne) SetCapabilities(v []schema.KeyCapability) *OAuthGrantUpsertOne {
+	return u.Update(func(s *OAuthGrantUpsert) {
+		s.SetCapabilities(v)
+	})
+}
+
+// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
+func (u *OAuthGrantUpsertOne) UpdateCapabilities() *OAuthGrantUpsertOne {
+	return u.Update(func(s *OAuthGrantUpsert) {
+		s.UpdateCapabilities()
 	})
 }
 
@@ -1300,6 +1343,20 @@ func (u *OAuthGrantUpsertBulk) SetResources(v []schema.APIKeyResource) *OAuthGra
 func (u *OAuthGrantUpsertBulk) UpdateResources() *OAuthGrantUpsertBulk {
 	return u.Update(func(s *OAuthGrantUpsert) {
 		s.UpdateResources()
+	})
+}
+
+// SetCapabilities sets the "capabilities" field.
+func (u *OAuthGrantUpsertBulk) SetCapabilities(v []schema.KeyCapability) *OAuthGrantUpsertBulk {
+	return u.Update(func(s *OAuthGrantUpsert) {
+		s.SetCapabilities(v)
+	})
+}
+
+// UpdateCapabilities sets the "capabilities" field to the value that was provided on create.
+func (u *OAuthGrantUpsertBulk) UpdateCapabilities() *OAuthGrantUpsertBulk {
+	return u.Update(func(s *OAuthGrantUpsert) {
+		s.UpdateCapabilities()
 	})
 }
 

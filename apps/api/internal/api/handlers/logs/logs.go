@@ -8,6 +8,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/sse"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
@@ -27,10 +28,10 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "query-logs",
 		Summary:     "Query Logs",
-		Description: "Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id.",
+		Description: "Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id. Needs the logs capability.",
 		Path:        "/query",
 		Method:      http.MethodGet,
-	}, handlers.QueryLogs, oapi.MCP)
+	}, handlers.QueryLogs, oapi.MCP, oapi.Needs(schema.CapabilityLogs))
 
 	// SSE doesn't go through huma.Register, so apply the same docs manually.
 	streamOp := huma.Operation{
@@ -38,9 +39,9 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 		Path:        "/stream",
 		Summary:     "Stream Logs",
-		Description: "Stream live logs over Server-Sent Events. Errors are delivered as `message` events with an error type, not HTTP status codes.",
+		Description: "Stream live logs over Server-Sent Events. Errors are delivered as `message` events with an error type, not HTTP status codes. Needs the logs capability.",
 	}
-	oapi.Apply(oapi.Read, &streamOp, oapi.NoMCP("Server-Sent Events stream, query-logs covers the same data"))
+	oapi.Apply(oapi.Read, &streamOp, oapi.NoMCP("Server-Sent Events stream, query-logs covers the same data"), oapi.Needs(schema.CapabilityLogs))
 	sse.Register(grp, streamOp, map[string]any{
 		// Mapping of event type name to Go struct for that event.
 		"message": loki.LogEvents{},

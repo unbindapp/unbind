@@ -217,6 +217,18 @@ func (_u *OAuthAuthorizationCodeUpdate) AppendResources(v []schema.APIKeyResourc
 	return _u
 }
 
+// SetCapabilities sets the "capabilities" field.
+func (_u *OAuthAuthorizationCodeUpdate) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpdate {
+	_u.mutation.SetCapabilities(v)
+	return _u
+}
+
+// AppendCapabilities appends value to the "capabilities" field.
+func (_u *OAuthAuthorizationCodeUpdate) AppendCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpdate {
+	_u.mutation.AppendCapabilities(v)
+	return _u
+}
+
 // SetExpiresAt sets the "expires_at" field.
 func (_u *OAuthAuthorizationCodeUpdate) SetExpiresAt(v time.Time) *OAuthAuthorizationCodeUpdate {
 	_u.mutation.SetExpiresAt(v)
@@ -421,6 +433,14 @@ func (_u *OAuthAuthorizationCodeUpdate) sqlSave(ctx context.Context) (_node int,
 	if value, ok := _u.mutation.AppendedResources(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, oauthauthorizationcode.FieldResources, value)
+		})
+	}
+	if value, ok := _u.mutation.Capabilities(); ok {
+		_spec.SetField(oauthauthorizationcode.FieldCapabilities, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, oauthauthorizationcode.FieldCapabilities, value)
 		})
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
@@ -673,6 +693,18 @@ func (_u *OAuthAuthorizationCodeUpdateOne) AppendResources(v []schema.APIKeyReso
 	return _u
 }
 
+// SetCapabilities sets the "capabilities" field.
+func (_u *OAuthAuthorizationCodeUpdateOne) SetCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpdateOne {
+	_u.mutation.SetCapabilities(v)
+	return _u
+}
+
+// AppendCapabilities appends value to the "capabilities" field.
+func (_u *OAuthAuthorizationCodeUpdateOne) AppendCapabilities(v []schema.KeyCapability) *OAuthAuthorizationCodeUpdateOne {
+	_u.mutation.AppendCapabilities(v)
+	return _u
+}
+
 // SetExpiresAt sets the "expires_at" field.
 func (_u *OAuthAuthorizationCodeUpdateOne) SetExpiresAt(v time.Time) *OAuthAuthorizationCodeUpdateOne {
 	_u.mutation.SetExpiresAt(v)
@@ -907,6 +939,14 @@ func (_u *OAuthAuthorizationCodeUpdateOne) sqlSave(ctx context.Context) (_node *
 	if value, ok := _u.mutation.AppendedResources(); ok {
 		_spec.AddModifier(func(u *sql.UpdateBuilder) {
 			sqljson.Append(u, oauthauthorizationcode.FieldResources, value)
+		})
+	}
+	if value, ok := _u.mutation.Capabilities(); ok {
+		_spec.SetField(oauthauthorizationcode.FieldCapabilities, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedCapabilities(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, oauthauthorizationcode.FieldCapabilities, value)
 		})
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {

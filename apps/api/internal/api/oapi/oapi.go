@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
 // Action classifies an operation by its effect. It drives the documented error
@@ -33,6 +34,7 @@ type profile struct {
 	errors      []int
 	hints       map[string]any
 	sessionOnly bool
+	capability  schema.KeyCapability
 	mcp         *MCPChoice
 }
 
@@ -49,6 +51,7 @@ type MCPChoice struct {
 const (
 	metadataAction      = "unbind.action"
 	metadataSessionOnly = "unbind.session_only"
+	metadataCapability  = "unbind.capability"
 	metadataMCP         = "unbind.mcp"
 )
 
@@ -134,6 +137,13 @@ func SessionOnly(p *profile) {
 	p.sessionOnly = true
 }
 
+// Needs refuses credentials without the capability. Sessions always pass. Use
+// it where nothing useful is left once the secret is taken out; where names
+// or structure still help, redact in the service instead.
+func Needs(capability schema.KeyCapability) Option {
+	return func(p *profile) { p.capability = capability }
+}
+
 // MCP offers the operation as an MCP tool. Its summary, description, inputs
 // and hints become the tool definition, so write them for an agent to read.
 func MCP(p *profile) {
@@ -160,6 +170,15 @@ func IsSessionOnly(op *huma.Operation) bool {
 	}
 	v, _ := op.Metadata[metadataSessionOnly].(bool)
 	return v
+}
+
+// CapabilityOf returns the capability the operation needs, if any.
+func CapabilityOf(op *huma.Operation) (schema.KeyCapability, bool) {
+	if op == nil {
+		return "", false
+	}
+	capability, ok := op.Metadata[metadataCapability].(schema.KeyCapability)
+	return capability, ok && capability != ""
 }
 
 // MCPChoiceOf returns the MCP decision the operation was registered with.
@@ -204,6 +223,9 @@ func Apply(action Action, op *huma.Operation, opts ...Option) {
 	op.Metadata[metadataAction] = action
 	if p.sessionOnly {
 		MarkSessionOnly(op)
+	}
+	if p.capability != "" {
+		op.Metadata[metadataCapability] = p.capability
 	}
 	if p.mcp != nil {
 		op.Metadata[metadataMCP] = *p.mcp

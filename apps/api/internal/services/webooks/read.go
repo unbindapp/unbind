@@ -57,7 +57,7 @@ func (self *WebhooksService) GetWebhookByID(ctx context.Context, requesterUserID
 		return nil, err
 	}
 
-	return models.TransformWebhookEntity(webhook), nil
+	return self.redactURL(ctx, models.TransformWebhookEntity(webhook)), nil
 }
 
 func (self *WebhooksService) ListWebhooks(ctx context.Context, requesterUserID uuid.UUID, input *models.WebhookListInput) ([]*models.WebhookResponse, error) {
@@ -100,5 +100,19 @@ func (self *WebhooksService) ListWebhooks(ctx context.Context, requesterUserID u
 		return nil, err
 	}
 
-	return models.TransformWebhookEntities(webhooks), nil
+	responses := models.TransformWebhookEntities(webhooks)
+	for _, response := range responses {
+		self.redactURL(ctx, response)
+	}
+	return responses, nil
+}
+
+// redactURL blanks the URL for keys and connected apps without the
+// webhook_urls capability. Sessions always see it.
+func (self *WebhooksService) redactURL(ctx context.Context, response *models.WebhookResponse) *models.WebhookResponse {
+	if permissions_repo.HasCapability(ctx, schema.CapabilityWebhookURLs) {
+		return response
+	}
+	response.Redact()
+	return response
 }

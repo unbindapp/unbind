@@ -45,6 +45,9 @@ func TestMCPCallerIsHeldToAPIKeyRules(t *testing.T) {
 	if resp := h.api.PostCtx(mcpContext(h, viewer), "/v1/write"); resp.Code != http.StatusForbidden {
 		t.Fatalf("read only caller on a write: status = %d, want 403", resp.Code)
 	}
+	if resp := h.api.GetCtx(mcpContext(h, admin), "/v1/logs"); resp.Code != http.StatusForbidden {
+		t.Fatalf("caller without the logs capability: status = %d, want 403", resp.Code)
+	}
 	if h.last != nil {
 		t.Fatal("a handler ran for a refused MCP caller")
 	}

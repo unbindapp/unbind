@@ -22,6 +22,7 @@ type ConnectedAppApproveInput struct {
 	Role          schema.PermittedAction  `json:"role" required:"true" doc:"Strongest action the app can perform. Never exceeds what you hold on a resource."`
 	FullAccess    bool                    `json:"full_access" required:"true" doc:"Reach everything you can, capped at role. Resources must be empty."`
 	Resources     []schema.APIKeyResource `json:"resources" required:"true" nullable:"false" doc:"Resources the app is limited to. Required unless full_access."`
+	Capabilities  []schema.KeyCapability  `json:"capabilities,omitempty" required:"false" nullable:"false" doc:"What the app may see beyond its role: variable_values, logs, webhook_urls. All off when omitted."`
 }
 
 type ConnectedAppDenyInput struct {

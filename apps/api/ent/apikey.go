@@ -38,6 +38,8 @@ type APIKey struct {
 	FullAccess bool `json:"full_access,omitempty"`
 	// Resources the key is limited to; empty when full_access
 	Resources []schema.APIKeyResource `json:"resources,omitempty"`
+	// What the credential may see beyond its role; empty by default
+	Capabilities []schema.KeyCapability `json:"capabilities,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// LastUsedAt holds the value of the "last_used_at" field.
@@ -75,7 +77,7 @@ func (*APIKey) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case apikey.FieldResources:
+		case apikey.FieldResources, apikey.FieldCapabilities:
 			values[i] = new([]byte)
 		case apikey.FieldFullAccess:
 			values[i] = new(sql.NullBool)
@@ -154,6 +156,14 @@ func (_m *APIKey) assignValues(columns []string, values []any) error {
 			} else if value != nil && len(*value) > 0 {
 				if err := json.Unmarshal(*value, &_m.Resources); err != nil {
 					return fmt.Errorf("unmarshal field resources: %w", err)
+				}
+			}
+		case apikey.FieldCapabilities:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field capabilities", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Capabilities); err != nil {
+					return fmt.Errorf("unmarshal field capabilities: %w", err)
 				}
 			}
 		case apikey.FieldExpiresAt:
@@ -239,6 +249,9 @@ func (_m *APIKey) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("resources=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Resources))
+	builder.WriteString(", ")
+	builder.WriteString("capabilities=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Capabilities))
 	builder.WriteString(", ")
 	if v := _m.ExpiresAt; v != nil {
 		builder.WriteString("expires_at=")

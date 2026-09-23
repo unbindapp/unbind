@@ -36,6 +36,7 @@ type ConnectedAppResponse struct {
 	Role          schema.PermittedAction    `json:"role"`
 	FullAccess    bool                      `json:"full_access"`
 	Resources     []APIKeyResourceResponse  `json:"resources" nullable:"false"`
+	Capabilities  []schema.KeyCapability    `json:"capabilities" nullable:"false"`
 	CreatedAt     time.Time                 `json:"created_at"`
 	LastUsedAt    *time.Time                `json:"last_used_at,omitempty" required:"false"`
 }
@@ -63,6 +64,7 @@ func TransformOAuthGrantEntity(entity *ent.OAuthGrant, paths map[uuid.UUID][]str
 		Role:          entity.Role,
 		FullAccess:    entity.FullAccess,
 		Resources:     resources,
+		Capabilities:  capabilitiesOf(entity.Capabilities),
 		CreatedAt:     entity.CreatedAt,
 		LastUsedAt:    entity.LastUsedAt,
 	}

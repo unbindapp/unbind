@@ -98,6 +98,45 @@ func (u PermittedAction) Schema(r huma.Registry) *huma.Schema {
 	return &huma.Schema{Ref: "#/components/schemas/PermittedAction"}
 }
 
+// * KeyCapability enum
+// KeyCapability is something a key or connected app may see beyond its role.
+// Sessions hold every capability; credentials hold none until switched on.
+type KeyCapability string
+
+const (
+	// CapabilityVariableValues reveals variable values instead of names only
+	CapabilityVariableValues KeyCapability = "variable_values"
+	// CapabilityLogs allows reading logs
+	CapabilityLogs KeyCapability = "logs"
+	// CapabilityWebhookURLs reveals webhook URLs, which carry secrets
+	CapabilityWebhookURLs KeyCapability = "webhook_urls"
+)
+
+var allCapabilities = []KeyCapability{
+	CapabilityVariableValues,
+	CapabilityLogs,
+	CapabilityWebhookURLs,
+}
+
+func (c KeyCapability) Values() (kinds []string) {
+	for _, c := range allCapabilities {
+		kinds = append(kinds, string(c))
+	}
+	return
+}
+
+func (c KeyCapability) Schema(r huma.Registry) *huma.Schema {
+	if r.Map()["KeyCapability"] == nil {
+		schemaRef := r.Schema(reflect.TypeOf(""), true, "KeyCapability")
+		schemaRef.Title = "KeyCapability"
+		for _, v := range allCapabilities {
+			schemaRef.Enum = append(schemaRef.Enum, string(v))
+		}
+		r.Map()["KeyCapability"] = schemaRef
+	}
+	return &huma.Schema{Ref: "#/components/schemas/KeyCapability"}
+}
+
 // * ResourceType enum
 type ResourceType string
 

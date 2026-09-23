@@ -39,6 +39,7 @@ func (OAuthAuthorizationCode) Fields() []ent.Field {
 		field.Enum("role").GoType(PermittedAction("")),
 		field.Bool("full_access").Default(false),
 		field.JSON("resources", []APIKeyResource{}),
+		field.JSON("capabilities", []KeyCapability{}).Default([]KeyCapability{}).Comment("What the credential may see beyond its role; empty by default"),
 		field.Time("expires_at"),
 		field.Time("used_at").Optional().Nillable(),
 		field.UUID("grant_id", uuid.UUID{}).Optional().Nillable(),

@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export const KeyCapabilitySchema = z.enum(['variable_values', 'logs', 'webhook_urls']);
+
 export const ResourceTypeSchema = z.enum(['system', 'team', 'project', 'environment', 'service']);
 
 export const APIKeyResourceSchema = z
@@ -13,6 +15,7 @@ export const PermittedActionSchema = z.enum(['admin', 'editor', 'viewer']);
 
 export const APIKeyCreateInputSchema = z
   .object({
+    capabilities: z.array(KeyCapabilitySchema).optional(), // What the key may see beyond its role: variable_values, logs, webhook_urls. All off when omitted.
     expires_at: z.string().datetime({ offset: true }).optional(), // When the key stops working. Omit for a key that never expires.
     full_access: z.boolean(), // Reach everything you can, capped at role. Resources must be empty.
     name: z.string(),
@@ -31,6 +34,7 @@ export const APIKeyResourceResponseSchema = z
 
 export const APIKeyCreatedResponseSchema = z
   .object({
+    capabilities: z.array(KeyCapabilitySchema),
     created_at: z.string().datetime({ offset: true }),
     expires_at: z.string().datetime({ offset: true }).optional(),
     full_access: z.boolean(),
@@ -53,6 +57,7 @@ export const APIKeyDeleteInputSchema = z
 
 export const APIKeyResponseSchema = z
   .object({
+    capabilities: z.array(KeyCapabilitySchema),
     created_at: z.string().datetime({ offset: true }),
     expires_at: z.string().datetime({ offset: true }).optional(),
     full_access: z.boolean(),
@@ -436,6 +441,7 @@ export const CheckUniqueDomainOutputBodySchema = z
 
 export const ConnectedAppApproveInputSchema = z
   .object({
+    capabilities: z.array(KeyCapabilitySchema).optional(), // What the app may see beyond its role: variable_values, logs, webhook_urls. All off when omitted.
     client_id: z.string(),
     code_challenge: z.string(),
     full_access: z.boolean(), // Reach everything you can, capped at role. Resources must be empty.
@@ -477,6 +483,7 @@ export const ConnectedAppRedirectResponseSchema = z
 
 export const ConnectedAppResponseSchema = z
   .object({
+    capabilities: z.array(KeyCapabilitySchema),
     client_host: z.string().optional(),
     client_id: z.string(),
     client_name: z.string(), // Self reported by the client, unverified.
@@ -983,7 +990,8 @@ export const WebhookResponseSchema = z
     project_id: z.string().optional(),
     team_id: z.string(),
     type: WebhookTypeSchema,
-    url: z.string(),
+    url: z.string(), // Blank when url_redacted is true
+    url_redacted: z.boolean(), // True when the caller may not see the URL. It needs the webhook_urls capability.
   })
   .strip();
 
@@ -2810,7 +2818,7 @@ export const VariableResponseItemSchema = z
 
 export const VariableResponseSchema = z
   .object({
-    values_redacted: z.boolean(), // True when the caller may only see names. Every value and resolved value is blank; editing needs the editor role.
+    values_redacted: z.boolean(), // True when the caller may only see names. Every value and resolved value is blank. Values need the editor role, and for a key or connected app the variable_values capability too.
     variables: z.array(VariableResponseItemSchema),
   })
   .strip();
@@ -2843,6 +2851,7 @@ export const WebhookUpdateInputSchema = z
 
 export const WhoamiAPIKeySchema = z
   .object({
+    capabilities: z.array(KeyCapabilitySchema), // What the credential may see beyond its role. Without variable_values, variable values come back blank; without logs, query-logs is refused; without webhook_urls, webhook URLs come back blank.
     full_access: z.boolean(),
     resources: z.array(APIKeyResourceSchema),
     role: PermittedActionSchema,
@@ -2866,6 +2875,7 @@ export const WhoamiResponseBodySchema = z
   })
   .strip();
 
+export type KeyCapability = z.infer<typeof KeyCapabilitySchema>;
 export type ResourceType = z.infer<typeof ResourceTypeSchema>;
 export type APIKeyResource = z.infer<typeof APIKeyResourceSchema>;
 export type PermittedAction = z.infer<typeof PermittedActionSchema>;

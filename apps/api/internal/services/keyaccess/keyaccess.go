@@ -16,9 +16,10 @@ import (
 )
 
 type Spec struct {
-	Role       schema.PermittedAction
-	FullAccess bool
-	Resources  []schema.APIKeyResource
+	Role         schema.PermittedAction
+	FullAccess   bool
+	Resources    []schema.APIKeyResource
+	Capabilities []schema.KeyCapability
 }
 
 func Validate(spec Spec) error {
@@ -50,7 +51,37 @@ func Validate(spec Spec) error {
 		}
 		seen[resource.ResourceID] = struct{}{}
 	}
+
+	return validateCapabilities(spec)
+}
+
+// validateCapabilities rejects what could never take effect: variable values
+// stay names only below editor, whatever the credential says.
+func validateCapabilities(spec Spec) error {
+	seen := map[schema.KeyCapability]struct{}{}
+	for i, capability := range spec.Capabilities {
+		switch capability {
+		case schema.CapabilityVariableValues, schema.CapabilityLogs, schema.CapabilityWebhookURLs:
+		default:
+			return fmt.Errorf("capabilities[%d]: unknown capability %q", i, capability)
+		}
+		if _, dup := seen[capability]; dup {
+			return fmt.Errorf("capabilities[%d]: duplicate capability", i)
+		}
+		seen[capability] = struct{}{}
+		if capability == schema.CapabilityVariableValues && spec.Role == schema.ActionViewer {
+			return errors.New("variable_values needs the editor or admin role")
+		}
+	}
 	return nil
+}
+
+// Capabilities never comes back nil, so responses and stored rows hold a list.
+func Capabilities(spec Spec) []schema.KeyCapability {
+	if spec.Capabilities == nil {
+		return []schema.KeyCapability{}
+	}
+	return spec.Capabilities
 }
 
 // RequesterHolds checks that the requester already has the role on every named

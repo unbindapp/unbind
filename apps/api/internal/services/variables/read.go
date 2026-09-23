@@ -19,7 +19,8 @@ import (
 
 // GetVariables lists the scope's variables. Viewers get names only; values
 // are for editors, because a stored secret is as good as write access to
-// whatever it unlocks.
+// whatever it unlocks. A key or connected app also needs the variable_values
+// capability.
 func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error) {
 	if err := self.checkScopePermission(ctx, userID, schema.ActionViewer, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Resource not found")
@@ -28,6 +29,7 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 	if err != nil {
 		return nil, err
 	}
+	canReadValues = canReadValues && permissions_repo.HasCapability(ctx, schema.CapabilityVariableValues)
 
 	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {

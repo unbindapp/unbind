@@ -1,6 +1,6 @@
 "use client";
 
-import { describeResource, roleOptions } from "@/components/api-key/helpers";
+import { capabilityOptions, describeResource, roleOptions } from "@/components/api-key/helpers";
 import { useConnectedAppsUtils } from "@/components/connected-apps/connected-apps-provider";
 import BrandIcon from "@/components/icons/brand";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
@@ -114,6 +114,7 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
         ) : (
           placeholderChips.map((i) => <Chip key={i}>Loading loading</Chip>)
         )}
+        {connectedApp && <CapabilityChips capabilities={connectedApp.capabilities} />}
       </div>
       <p className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full min-w-0 shrink px-0.75 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
         <Timeline {...(isPlaceholder ? { isPlaceholder: true } : { connectedApp })} />
@@ -133,6 +134,17 @@ export default function ConnectedAppCard({ isPlaceholder, connectedApp }: TProps
       )}
     </div>
   );
+}
+
+function CapabilityChips({ capabilities }: { capabilities: TConnectedApp["capabilities"] }) {
+  return capabilityOptions
+    .filter((option) => capabilities.includes(option.value))
+    .map((option) => (
+      <Chip key={option.value}>
+        <option.Icon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+        {option.title}
+      </Chip>
+    ));
 }
 
 function publisher(connectedApp: TConnectedApp) {

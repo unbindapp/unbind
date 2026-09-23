@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -87,15 +88,16 @@ func (self *fakeOAuth) VerifyAccessToken(_ context.Context, token string) (*ent.
 }
 
 type harness struct {
-	t      *testing.T
-	url    string
-	user   *ent.User
-	keys   *fakeKeys
-	oauth  *fakeOAuth
-	last   *received
-	viewer string
-	editor string
-	grant  string
+	t         *testing.T
+	url       string
+	user      *ent.User
+	keys      *fakeKeys
+	oauth     *fakeOAuth
+	last      *received
+	viewer    string
+	editor    string
+	logReader string
+	grant     string
 }
 
 func newHarness(t *testing.T) *harness {
@@ -133,6 +135,11 @@ func newHarness(t *testing.T) *harness {
 			record(ctx).create = input.Body
 			return &output{}, nil
 		}, oapi.MCP)
+	oapi.Register(grp, oapi.Read, huma.Operation{OperationID: "log-things", Description: "Read logs.", Method: http.MethodGet, Path: "/logs"},
+		func(ctx context.Context, _ *struct{}) (*output, error) {
+			record(ctx)
+			return &output{}, nil
+		}, oapi.MCP, oapi.Needs(schema.CapabilityLogs))
 	oapi.Register(grp, oapi.Read, huma.Operation{OperationID: "hidden-thing", Description: "Not a tool.", Method: http.MethodGet, Path: "/hidden"},
 		func(ctx context.Context, _ *struct{}) (*output, error) {
 			record(ctx)
@@ -149,6 +156,7 @@ func newHarness(t *testing.T) *harness {
 
 	h.viewer = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true}, nil)
 	h.editor = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionEditor, Resources: []schema.APIKeyResource{{ResourceType: schema.ResourceTypeProject, ResourceID: uuid.New()}}}, nil)
+	h.logReader = h.addKey(permissions_repo.APIKeyAccess{Role: schema.ActionViewer, FullAccess: true, Capabilities: []schema.KeyCapability{schema.CapabilityLogs}}, nil)
 
 	grantToken, _ := auth.NewOpaqueToken(auth.OAuthAccessTokenPrefix)
 	h.grant = grantToken.Token
@@ -167,13 +175,14 @@ func newHarness(t *testing.T) *harness {
 func (h *harness) addKey(access permissions_repo.APIKeyAccess, expiresAt *time.Time) string {
 	key, _ := auth.NewAPIKey()
 	h.keys.keys[key.Hash] = &ent.APIKey{
-		ID:         uuid.New(),
-		TokenHash:  key.Hash,
-		Role:       access.Role,
-		FullAccess: access.FullAccess,
-		Resources:  access.Resources,
-		ExpiresAt:  expiresAt,
-		Edges:      ent.APIKeyEdges{User: h.user},
+		ID:           uuid.New(),
+		TokenHash:    key.Hash,
+		Role:         access.Role,
+		FullAccess:   access.FullAccess,
+		Resources:    access.Resources,
+		Capabilities: access.Capabilities,
+		ExpiresAt:    expiresAt,
+		Edges:        ent.APIKeyEdges{User: h.user},
 	}
 	return key.Token
 }
@@ -271,6 +280,28 @@ func TestToolsFollowTheCredentialsRole(t *testing.T) {
 	}
 	if h.last != nil {
 		t.Fatal("the write handler ran for a read only key")
+	}
+}
+
+func TestToolsFollowTheCredentialsCapabilities(t *testing.T) {
+	h := newHarness(t)
+
+	if names := toolNames(t, h.connect(h.editor)); slices.Contains(names, "log-things") {
+		t.Fatalf("editor key without the logs capability sees %v", names)
+	}
+	if names := toolNames(t, h.connect(h.logReader)); !slices.Equal(names, []string{"list-things", "log-things"}) {
+		t.Fatalf("viewer key with the logs capability sees %v, want list-things and log-things", names)
+	}
+
+	if _, err := h.call(h.connect(h.editor), "log-things", nil); err == nil {
+		t.Fatal("a key without the capability called a hidden tool")
+	}
+	if h.last != nil {
+		t.Fatal("the logs handler ran for a key without the capability")
+	}
+	result, err := h.call(h.connect(h.logReader), "log-things", nil)
+	if err != nil || result.IsError {
+		t.Fatalf("key with the capability: err %v, result %s", err, resultText(result))
 	}
 }
 

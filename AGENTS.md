@@ -28,7 +28,7 @@ The docs site at docs.unbind.app. Fumadocs on TanStack Start, prerendered to sta
 
 ## MCP Server
 
-Unbind ships an MCP server inside `apps/api`, served at `/mcp` (code in `apps/api/internal/mcpserver`). It has no tool code of its own: every tool is an API operation, called in process through the API router, so a tool validates, authorizes and answers exactly like its endpoint. Clients authenticate with an OAuth grant (Connected Apps) or an API key, and both are limited to the role and resources the user picked.
+Unbind ships an MCP server inside `apps/api`, served at `/mcp` (code in `apps/api/internal/mcpserver`). It has no tool code of its own: every tool is an API operation, called in process through the API router, so a tool validates, authorizes and answers exactly like its endpoint. Clients authenticate with an OAuth grant (Connected Apps) or an API key, and both are limited to the role, resources and capabilities the user picked. Capabilities (`variable_values`, `logs`, `webhook_urls`) are off by default for every role: without one, values and webhook URLs come back redacted and log operations are refused. Gate an all-or-nothing operation with `oapi.Needs(capability)`; where names or structure still help, redact in the service with `permissions_repo.HasCapability` instead.
 
 Keep it in sync with the API:
 

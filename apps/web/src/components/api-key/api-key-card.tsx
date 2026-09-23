@@ -1,7 +1,7 @@
 "use client";
 
 import { useApiKeysUtils } from "@/components/api-key/api-keys-provider";
-import { describeResource, roleOptions } from "@/components/api-key/helpers";
+import { capabilityOptions, describeResource, roleOptions } from "@/components/api-key/helpers";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -92,6 +92,7 @@ export default function ApiKeyCard({ isPlaceholder, apiKey }: TProps) {
         ) : (
           placeholderChips.map((i) => <Chip key={i}>Loading loading</Chip>)
         )}
+        {apiKey && <CapabilityChips capabilities={apiKey.capabilities} />}
       </div>
       <p className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full min-w-0 shrink px-0.75 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
         <Timeline {...(isPlaceholder ? { isPlaceholder: true } : { apiKey })} />
@@ -111,6 +112,17 @@ export default function ApiKeyCard({ isPlaceholder, apiKey }: TProps) {
       )}
     </div>
   );
+}
+
+function CapabilityChips({ capabilities }: { capabilities: TApiKeyShallow["capabilities"] }) {
+  return capabilityOptions
+    .filter((option) => capabilities.includes(option.value))
+    .map((option) => (
+      <Chip key={option.value}>
+        <option.Icon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+        {option.title}
+      </Chip>
+    ));
 }
 
 function roleTitle(role: TApiKeyShallow["role"]) {

@@ -1,11 +1,13 @@
 "use client";
 
 import AccessField from "@/components/api-key/access-field";
+import CapabilitiesField from "@/components/api-key/capabilities-field";
 import ApiKeyCreatedDialog from "@/components/api-key/api-key-created-dialog";
 import { useApiKeys, useApiKeysUtils } from "@/components/api-key/api-keys-provider";
 import {
   accessFieldClassName,
   accessFormShape,
+  capabilitiesFor,
   defaultExpiry,
   emptyResourceRow,
   expiresAtFrom,
@@ -31,7 +33,7 @@ import { cn } from "@/components/ui/utils";
 import { getTakenNameError } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { createApiKey as createApiKeyFn, type TApiKeyCreated } from "@/lib/queries/api-keys";
-import type { PermittedAction } from "@/lib/server/client.gen";
+import type { KeyCapability, PermittedAction } from "@/lib/server/client.gen";
 import { useMutation } from "@tanstack/react-query";
 import { ClockIcon } from "lucide-react";
 import { useState } from "react";
@@ -78,6 +80,7 @@ export default function AddApiKeyForm({ className }: TProps) {
       access: "full" as TAccess,
       rows: [emptyResourceRow] as TResourceRow[],
       role: "viewer" as PermittedAction,
+      capabilities: [] as KeyCapability[],
       expiry: defaultExpiry as TExpiryValue,
     },
     validators: { onChange: FormSchema },
@@ -89,6 +92,7 @@ export default function AddApiKeyForm({ className }: TProps) {
         role: value.role,
         full_access: value.access === "full",
         resources,
+        capabilities: capabilitiesFor(value.role, value.capabilities),
         expires_at: expiresAtFrom(value.expiry),
       });
       temporarilyAddNewEntity(res.data.id);
@@ -180,6 +184,24 @@ export default function AddApiKeyForm({ className }: TProps) {
                   />
                 );
               }}
+            </form.Subscribe>
+          </InputSectionWrapper>
+          <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
+            Capabilities
+          </h2>
+          <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
+            What the key can see beyond its role. All off by default, for every role.
+          </p>
+          <InputSectionWrapper>
+            <form.Subscribe selector={(state) => ({ role: state.values.role })}>
+              {({ role }) => (
+                <form.AppField
+                  name="capabilities"
+                  children={(field) => (
+                    <CapabilitiesField field={field} role={role} className={accessFieldClassName} />
+                  )}
+                />
+              )}
             </form.Subscribe>
           </InputSectionWrapper>
           <h2 className="mt-8 w-full text-lg leading-tight font-semibold lg:w-[calc((100%-0.5rem)/2)]">
