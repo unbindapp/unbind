@@ -373,7 +373,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
             </BlockItemHeader>
             <BlockItemContent>
               <BlockItemToggle
-                text="Auto deploy on push"
+                text="Deploy on every push"
                 Icon={CircleArrowUpIcon}
                 checked={autoDeploy}
                 hasChanges={staged.autoDeploy !== undefined}

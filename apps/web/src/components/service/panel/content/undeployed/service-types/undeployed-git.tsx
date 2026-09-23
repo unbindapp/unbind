@@ -336,7 +336,7 @@ export function UndeployedContentGit({
                 name="autoDeploy"
                 children={(field) => (
                   <HeaderToggle
-                    label="Auto deploy"
+                    label="Auto Deploy"
                     checked={field.state.value}
                     onChange={(checked) => field.handleChange(checked)}
                   />
