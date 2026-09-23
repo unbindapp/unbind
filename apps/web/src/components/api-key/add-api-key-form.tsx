@@ -141,7 +141,7 @@ export default function AddApiKeyForm({ className }: TProps) {
             Access
           </h2>
           <p className="text-muted-foreground mt-1.5 leading-tight lg:w-[calc((100%-0.5rem)/2)]">
-            You can narrow down a key's permissions if needed.
+            You can narrow down a key's permissions.
           </p>
           <InputSectionWrapper>
             <form.AppField
