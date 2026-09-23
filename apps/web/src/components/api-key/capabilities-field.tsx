@@ -20,7 +20,7 @@ export default function CapabilitiesField({ field, className, isPlaceholder }: T
         <label
           key={option.value}
           data-disabled={isPlaceholder || undefined}
-          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-start gap-2.75 rounded-md px-2.5 py-2.5 data-disabled:cursor-not-allowed data-disabled:opacity-50"
+          className="has-hover:hover:bg-border active:bg-border flex w-full cursor-pointer items-start gap-2.5 rounded-md px-2.5 py-2.25 data-disabled:cursor-not-allowed data-disabled:opacity-50"
         >
           <div className="line-icon">
             <Checkbox
@@ -38,7 +38,9 @@ export default function CapabilitiesField({ field, className, isPlaceholder }: T
           <div className="line-icon">
             <option.Icon className="size-4.5" />
           </div>
-          <p className="min-w-0 shrink leading-tight font-medium select-none">{option.title}</p>
+          <p className="-ml-0.5 min-w-0 shrink pt-[0.05lh] leading-tight font-medium select-none">
+            {option.title}
+          </p>
         </label>
       ))}
     </div>

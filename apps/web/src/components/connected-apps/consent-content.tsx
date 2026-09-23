@@ -345,7 +345,7 @@ function ConsentForm({
         </InputSectionWrapper>
         <h2 className="mt-6 w-full text-lg leading-tight font-semibold">Capabilities</h2>
         <p className="text-muted-foreground mt-1.5 leading-tight">
-          What the application can read beyond its role. All off by default, for every role.
+          Operations not covered by the role.
         </p>
         <InputSectionWrapper>
           <form.AppField

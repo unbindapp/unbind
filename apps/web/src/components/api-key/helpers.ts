@@ -3,7 +3,7 @@ import type { KeyCapability, PermittedAction, ResourceType } from "@/lib/server/
 import { addDays } from "date-fns";
 import {
   EyeIcon,
-  KeyRoundIcon,
+  KeyIcon,
   ListFilterIcon,
   LogsIcon,
   ScrollTextIcon,
@@ -67,7 +67,7 @@ export const capabilityOptions: {
   title: string;
   Icon: FC<{ className?: string }>;
 }[] = [
-  { value: "read_variable_values", title: "Read variable values", Icon: KeyRoundIcon },
+  { value: "read_variable_values", title: "Read variable values", Icon: KeyIcon },
   { value: "read_logs", title: "Read logs", Icon: LogsIcon },
   { value: "read_webhook_urls", title: "Read webhook URLs", Icon: WebhookIcon },
 ];
