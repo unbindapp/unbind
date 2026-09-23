@@ -133,11 +133,13 @@ function Content({ path, markdownUrl }: { path: string; markdownUrl: string }) {
 
   return (
     <DocsPage toc={toc} slots={pageSlots}>
-      <DocsTitle className="flex items-center gap-2">
+      <DocsTitle className="flex items-start gap-2.5">
         {page.icon && templateBrands.has(page.icon) && (
-          <BrandIcon brand={page.icon} color="brand" className="size-8" />
+          <span className="flex h-lh shrink-0 items-center">
+            <BrandIcon brand={page.icon} color="brand" className="size-8" />
+          </span>
         )}
-        <span className="min-w-0">{page.heading ?? page.title}</span>
+        <span className="min-w-0 wrap-break-word">{page.heading ?? page.title}</span>
       </DocsTitle>
       <DocsDescription>{page.description}</DocsDescription>
       <PageActions markdownUrl={markdownUrl} githubUrl={`${repoUrl}/${contentDir}/${path}`} />
