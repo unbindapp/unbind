@@ -143,7 +143,7 @@ function Content({ path, markdownUrl }: { path: string; markdownUrl: string }) {
       </DocsTitle>
       <DocsDescription>{page.description}</DocsDescription>
       <PageActions markdownUrl={markdownUrl} githubUrl={`${repoUrl}/${contentDir}/${path}`} />
-      <DocsBody>
+      <DocsBody className="pb-12">
         <MDX components={useMDXComponents()} />
       </DocsBody>
     </DocsPage>
@@ -172,7 +172,7 @@ function Page() {
           <DocsTitle>{page.title}</DocsTitle>
           <DocsDescription>{page.description}</DocsDescription>
           <PageActions markdownUrl={page.markdownUrl} githubUrl={specGithubUrl} />
-          <DocsBody>
+          <DocsBody className="pb-12">
             <OpenAPIPage {...page.props} />
           </DocsBody>
         </DocsPage>
