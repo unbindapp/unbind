@@ -97,7 +97,7 @@ func TestProjectConfig(t *testing.T) {
 		UpsertHosts: []schema.HostSpec{{Host: "b.com", PrevHost: utils.ToPtr("a.com")}},
 	})
 	assert.Equal(t, []schema.PortSpec{{Port: 4000}, {Port: 5000}}, projected.Ports)
-	assert.Equal(t, []schema.HostSpec{{Host: "b.com", PrevHost: utils.ToPtr("a.com")}}, projected.Hosts)
+	assert.Equal(t, []schema.HostSpec{{Host: "b.com"}}, projected.Hosts)
 	assert.Equal(t, int32(2), projected.Replicas)
 
 	untouched := projectConfig(config, &models.UpdateServiceInput{Replicas: utils.ToPtr[int32](3)})

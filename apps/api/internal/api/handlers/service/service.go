@@ -44,7 +44,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-service",
 		Summary:     "Update Service",
-		Description: "Update a service's config (source, build, runtime, networking). Changes take effect on the next deployment.",
+		Description: "Update a service's config (source, build, runtime, networking). A running service rolls the change out right away, rebuilding when the source or a build setting changed. A service that was never deployed picks it up on its first deployment.",
 		Path:        "/update",
 		Method:      http.MethodPut,
 	}, handlers.UpdateService, oapi.MCP)

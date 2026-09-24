@@ -9049,7 +9049,7 @@ paths:
         risk: low
   /services/update:
     put:
-      description: Update a service's config (source, build, runtime, networking). Changes take effect on the next deployment.
+      description: Update a service's config (source, build, runtime, networking). A running service rolls the change out right away, rebuilding when the source or a build setting changed. A service that was never deployed picks it up on its first deployment.
       operationId: update-service
       requestBody:
         content:

@@ -325,7 +325,9 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 		return NoDeploymentNeeded, nil
 	}
 
-	// Re-consider CurrentDeployment if one is currently being built
+	// Compare against a build in flight when it already carries a resource definition.
+	// A fresh build only gets one once it is deployed
+	current := service.Edges.CurrentDeployment
 	activeBuilds, err := self.base.DB.Deployment.Query().
 		Where(
 			deployment.ServiceIDEQ(service.ID),
@@ -335,33 +337,31 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 		All(ctx)
 	if err != nil {
 		log.Errorf("Failed to query active builds for service %s: %v", service.ID, err)
-	} else {
-		if len(activeBuilds) > 0 {
-			service.Edges.CurrentDeployment = activeBuilds[0]
-		}
+	} else if len(activeBuilds) > 0 && activeBuilds[0].ResourceDefinition != nil {
+		current = activeBuilds[0]
 	}
 	// Create a an object with only fields we care to compare
-	if service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Volumes == nil {
-		service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Volumes = []v1.VolumeSpec{}
+	if current.ResourceDefinition.Spec.Config.Volumes == nil {
+		current.ResourceDefinition.Spec.Config.Volumes = []v1.VolumeSpec{}
 	}
 	existingCrd := &v1.Service{
 		Spec: v1.ServiceSpec{
-			Builder:              service.Edges.CurrentDeployment.ResourceDefinition.Spec.Builder,
-			GitRepository:        service.Edges.CurrentDeployment.ResourceDefinition.Spec.GitRepository,
-			GitHubInstallationID: service.Edges.CurrentDeployment.ResourceDefinition.Spec.GitHubInstallationID,
+			Builder:              current.ResourceDefinition.Spec.Builder,
+			GitRepository:        current.ResourceDefinition.Spec.GitRepository,
+			GitHubInstallationID: current.ResourceDefinition.Spec.GitHubInstallationID,
 			Config: v1.ServiceConfigSpec{
-				GitBranch:      service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.GitBranch,
-				Hosts:          service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Hosts,
-				Replicas:       service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Replicas,
-				Ports:          service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Ports,
-				RunCommand:     service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.RunCommand,
-				Public:         service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Public,
-				Volumes:        service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Volumes,
-				HealthCheck:    service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.HealthCheck,
-				VariableMounts: service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.VariableMounts,
-				Resources:      service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Resources,
+				GitBranch:      current.ResourceDefinition.Spec.Config.GitBranch,
+				Hosts:          current.ResourceDefinition.Spec.Config.Hosts,
+				Replicas:       current.ResourceDefinition.Spec.Config.Replicas,
+				Ports:          current.ResourceDefinition.Spec.Config.Ports,
+				RunCommand:     current.ResourceDefinition.Spec.Config.RunCommand,
+				Public:         current.ResourceDefinition.Spec.Config.Public,
+				Volumes:        current.ResourceDefinition.Spec.Config.Volumes,
+				HealthCheck:    current.ResourceDefinition.Spec.Config.HealthCheck,
+				VariableMounts: current.ResourceDefinition.Spec.Config.VariableMounts,
+				Resources:      current.ResourceDefinition.Spec.Config.Resources,
 				Database: v1.DatabaseSpec{
-					S3BackupConfig: service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Database.S3BackupConfig,
+					S3BackupConfig: current.ResourceDefinition.Spec.Config.Database.S3BackupConfig,
 				},
 			},
 		},
@@ -424,13 +424,13 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	}
 
 	// Build settings live on the deployment row, not in the resource definition
-	if buildSettingsChanged(service.Edges.ServiceConfig, service.Edges.CurrentDeployment) {
+	if buildSettingsChanged(service.Edges.ServiceConfig, current) {
 		return NeedsBuildAndDeployment, nil
 	}
 
 	// Only image services carry their image in config, built services get theirs from the build
 	if service.Type == schema.ServiceTypeDockerimage {
-		existingCrd.Spec.Config.Image = service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Image
+		existingCrd.Spec.Config.Image = current.ResourceDefinition.Spec.Config.Image
 		newCrd.Spec.Config.Image = service.Edges.ServiceConfig.Image
 	}
 
@@ -444,7 +444,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 		return NoDeploymentNeeded, err
 	}
 	if !reflect.DeepEqual(
-		renderedDatabaseConfig(service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.Database.Config),
+		renderedDatabaseConfig(current.ResourceDefinition.Spec.Config.Database.Config),
 		renderedDatabaseConfig(newDatabaseConfig),
 	) {
 		return NeedsDeployment, nil

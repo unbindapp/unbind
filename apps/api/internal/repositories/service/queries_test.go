@@ -999,6 +999,38 @@ func (suite *ServiceQueriesSuite) TestNeedsDeployment() {
 		suite.Equal(NoDeploymentNeeded, result)
 	})
 
+	suite.Run("NeedsDeployment Fresh Build In Flight", func() {
+		suite.DB.Service.UpdateOneID(suite.testService.ID).
+			SetCurrentDeploymentID(suite.testDeployment.ID).
+			SaveX(suite.Ctx)
+		suite.DB.ServiceConfig.UpdateOneID(suite.testConfig.ID).
+			SetBuilder(schema.ServiceBuilderRailpack).
+			SetReplicas(3).
+			SetGitBranch("main").
+			ClearDatabaseConfig().
+			ClearVolumes().
+			SaveX(suite.Ctx)
+		building := suite.DB.Deployment.Create().
+			SetServiceID(suite.testService.ID).
+			SetStatus(schema.DeploymentStatusBuildRunning).
+			SetSource(schema.DeploymentSourceManual).
+			SetBuilder(schema.ServiceBuilderRailpack).
+			SaveX(suite.Ctx)
+		defer suite.DB.Deployment.DeleteOneID(building.ID).ExecX(suite.Ctx)
+
+		service, err := suite.DB.Service.Query().
+			Where(entService.IDEQ(suite.testService.ID)).
+			WithServiceConfig().
+			WithCurrentDeployment().
+			Only(suite.Ctx)
+		suite.NoError(err)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, service)
+		suite.NoError(err)
+		suite.Equal(NeedsDeployment, result)
+		suite.Equal(suite.testDeployment.ID, service.Edges.CurrentDeployment.ID)
+	})
+
 	loadService := func(serviceID uuid.UUID) *ent.Service {
 		service, err := suite.DB.Service.Query().
 			Where(entService.IDEQ(serviceID)).

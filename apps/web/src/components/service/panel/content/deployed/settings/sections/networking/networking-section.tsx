@@ -179,20 +179,20 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                 )}
                 {endpointsData?.endpoints &&
                   !isDatabase &&
-                  endpointsData.endpoints.external.map((endpoint) => {
-                    const change = stagedHosts.find((c) => c.previous?.host === endpoint.host);
-                    const shown = change?.value ?? {
-                      host: endpoint.host,
-                      port: endpoint.target_port?.port,
-                    };
+                  service.config.hosts.map((saved) => {
+                    const endpoint = endpointsData.endpoints.external.find(
+                      (e) => e.host === saved.host,
+                    );
+                    const change = stagedHosts.find((c) => c.previous?.host === saved.host);
+                    const shown = change?.value ?? { host: saved.host, port: saved.target_port };
                     return (
                       <DomainPortCard
                         mode="public"
-                        key={`${endpoint.host}:${shown.host}:${shown.port}`}
+                        key={`${saved.host}:${shown.host}:${shown.port}`}
                         domain={shown.host}
                         port={shown.port}
-                        dnsStatus={endpoint.dns_status}
-                        isCloudflare={endpoint.is_cloudflare}
+                        dnsStatus={endpoint?.dns_status}
+                        isCloudflare={endpoint?.is_cloudflare}
                         service={service}
                         staged={change}
                       />

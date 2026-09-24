@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -172,7 +174,7 @@ func CreateServiceObject(params ServiceParams) (*v1.Service, error) {
 
 // DeployImage creates (or replaces) the service resource in the target namespace
 // for deployment after a successful build job.
-func (self *K8SClient) DeployImage(ctx context.Context, crdName, image string, additionalEnv map[string]string, securityContext *corev1.SecurityContext, healthCheck *v1.HealthCheckSpec, variableMounts []v1.VariableMountSpec) (*unstructured.Unstructured, *v1.Service, error) {
+func (self *K8SClient) DeployImage(ctx context.Context, crdName, image string, additionalEnv map[string]string, securityContext *corev1.SecurityContext, healthCheck *v1.HealthCheckSpec, variableMounts []v1.VariableMountSpec, config *ent.ServiceConfig) (*unstructured.Unstructured, *v1.Service, error) {
 	// Generate a sanitized service name from the repo name
 	serviceName := strings.ToLower(strings.ReplaceAll(crdName, "_", "-"))
 
@@ -304,6 +306,8 @@ func (self *K8SClient) DeployImage(ctx context.Context, crdName, image string, a
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create service object: %v", err)
 	}
+	// Settings saved while the image was building go out with it
+	service_repo.ApplyRuntimeConfig(&service.Spec.Config, config)
 
 	return self.k8s.DeployUnbindService(ctx, service)
 }

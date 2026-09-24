@@ -303,7 +303,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, serviceSpec, err := k8s.DeployImage(ctx, crdName, dockerImg, additionalEnv, securityContext, healthCheck, variableMounts)
+	current, err := repo.Service().GetByID(ctx, serviceId)
+	if err != nil {
+		if err := markDeploymentFailed(ctx, cfg, webhooksService, repo, fmt.Sprintf("failed to read the service config %v", err), cfg.ServiceDeploymentID); err != nil {
+			log.Errorf("Failed to mark deployment as failed: %v", err)
+		}
+		log.Fatalf("Failed to read the service config: %v", err)
+	}
+
+	_, serviceSpec, err := k8s.DeployImage(ctx, crdName, dockerImg, additionalEnv, securityContext, healthCheck, variableMounts, current.Edges.ServiceConfig)
 	if err != nil {
 		if err := markDeploymentFailed(ctx, cfg, webhooksService, repo, fmt.Sprintf("failed to deploy image %v", err), cfg.ServiceDeploymentID); err != nil {
 			log.Errorf("Failed to mark deployment as failed: %v", err)

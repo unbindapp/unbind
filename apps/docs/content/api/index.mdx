@@ -75,9 +75,11 @@ Lists that can grow take `per_page`, from 1 to 100, and a `cursor`. The cursor i
 }
 ```
 
-### Changing a service does not roll it out
+### Creating a service does not deploy it
 
-Creating or updating a service only saves its configuration. Call `POST /deployments/create` to build and deploy it. Variable changes ship with the next deployment as well. [Deploy from CI](/api/guides/deploy-from-ci) shows the whole flow.
+Creating a service only saves its configuration. Call `POST /deployments/create` to build and deploy it. [Deploy from CI](/api/guides/deploy-from-ci) shows the whole flow.
+
+Once a service is running, updating its config or variables rolls the change out right away: a rebuild when the source or a build setting changed, a redeploy for other settings, and a restart for variables. Services that reference a changed variable roll out too. A service that was never deployed picks up changes on its first deployment.
 
 ### Names
 

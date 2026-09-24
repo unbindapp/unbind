@@ -36,6 +36,14 @@ func databasePortsWithNodePorts(ports []schema.PortSpec, nodePorts []int32) []sc
 	return out
 }
 
+// A service left without domains is private
+func removesLastHost(existing []schema.HostSpec, input *models.UpdateServiceInput) bool {
+	if len(existing) == 0 || len(input.RemoveHosts) == 0 {
+		return false
+	}
+	return len(service_repo.MergeHosts(existing, input.OverwriteHosts, input.UpsertHosts, input.RemoveHosts)) == 0
+}
+
 // serviceUpdate is a validated update, ready to apply
 type serviceUpdate struct {
 	input   *models.UpdateServiceInput
@@ -353,10 +361,12 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 		}
 
 		// Determine is public (databases manage this explicitly via the toggle above)
-		if service.Type != schema.ServiceTypeDatabase &&
-			(len(input.OverwritePorts) > 0 || len(input.AddPorts) > 0 || len(service.Edges.ServiceConfig.Ports) > 0) {
-			// Has ports, do we have hosts
-			if len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0 || len(service.Edges.ServiceConfig.Hosts) > 0 {
+		if service.Type != schema.ServiceTypeDatabase {
+			hasPorts := len(input.OverwritePorts) > 0 || len(input.AddPorts) > 0 || len(service.Edges.ServiceConfig.Ports) > 0
+			switch {
+			case removesLastHost(service.Edges.ServiceConfig.Hosts, input):
+				input.IsPublic = new(false)
+			case hasPorts && (len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0 || len(service.Edges.ServiceConfig.Hosts) > 0):
 				input.IsPublic = new(true)
 			}
 		}

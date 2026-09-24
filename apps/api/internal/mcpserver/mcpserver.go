@@ -32,7 +32,7 @@ Names are unique among siblings and case sensitive: projects in a team, environm
 
 Call whoami first: when api_key is present, this connection is limited to the listed role, resources and privileges. Anything outside the role or resources answers "not found" or "forbidden". Without the read_variable_values privilege, variable values come back blank but names and references are listed; without read_webhook_urls, webhook URLs come back blank; without read_logs, there is no query-logs tool. Do not retry for values that are redacted.
 
-Creating or updating a service does not roll it out. Call trigger-deployment, then poll get-deployment until it finishes, and read query-logs when a build or a replica fails. Variable changes are rolled out by the next deployment.`
+Creating a service does not deploy it. Call trigger-deployment, then poll get-deployment until it finishes, and read query-logs when a build or a replica fails. Once a service is running, update-service, update-variables and apply-staged-changes roll their changes out on their own: a rebuild when the source or a build setting changed, a redeploy for other settings, and a restart for variables. Services that reference a changed variable roll out too. A service that was never deployed picks up changes on its first deployment. Changes made while a build is running go live right away and the build keeps them.`
 )
 
 type Options struct {

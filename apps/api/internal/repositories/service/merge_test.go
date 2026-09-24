@@ -34,7 +34,7 @@ func TestMergeHosts(t *testing.T) {
 		MergeHosts(existing, nil, []schema.HostSpec{{Host: "a.com", Path: "/api"}}, nil),
 	)
 	assert.Equal(t,
-		[]schema.HostSpec{{Host: "b.com"}, {Host: "new.com", PrevHost: utils.ToPtr("a.com"), TemplateInputID: utils.ToPtr("domain"), DisplayName: utils.ToPtr("Domain")}},
+		[]schema.HostSpec{{Host: "b.com"}, {Host: "new.com", TemplateInputID: utils.ToPtr("domain"), DisplayName: utils.ToPtr("Domain")}},
 		MergeHosts(existing, nil, []schema.HostSpec{{Host: "new.com", PrevHost: utils.ToPtr("a.com")}}, nil),
 	)
 	assert.Equal(t, []schema.HostSpec{{Host: "b.com"}}, MergeHosts(existing, nil, nil, []schema.HostSpec{{Host: "a.com"}}))

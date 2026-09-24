@@ -15,6 +15,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	ubv1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -232,13 +233,8 @@ func (self *DeploymentService) CreateCRDFromService(ctx context.Context, service
 	}
 
 	crdToDeploy.Spec.Config.GitBranch = gitBranch
-	crdToDeploy.Spec.Config.Hosts = schema.AsV1HostSpecs(service.Edges.ServiceConfig.Hosts)
-	crdToDeploy.Spec.Config.Replicas = new(service.Edges.ServiceConfig.Replicas)
-	crdToDeploy.Spec.Config.Ports = schema.AsV1PortSpecs(service.Edges.ServiceConfig.Ports)
 	crdToDeploy.Spec.Config.RunCommand = service.Edges.ServiceConfig.RunCommand
-	crdToDeploy.Spec.Config.Public = service.Edges.ServiceConfig.IsPublic
-	crdToDeploy.Spec.Config.Volumes = schema.AsV1Volumes(service.Edges.ServiceConfig.Volumes)
-	crdToDeploy.Spec.Config.Resources = schema.ResolveResources(service.Edges.ServiceConfig.Resources)
+	service_repo.ApplyRuntimeConfig(&crdToDeploy.Spec.Config, service.Edges.ServiceConfig)
 	if service.Type == schema.ServiceTypeDockerimage && service.Edges.ServiceConfig.Image != "" {
 		crdToDeploy.Spec.Config.Image = service.Edges.ServiceConfig.Image
 	}
@@ -249,15 +245,6 @@ func (self *DeploymentService) CreateCRDFromService(ctx context.Context, service
 		}
 		crdToDeploy.Spec.Config.Database.S3BackupConfig = backupConfig
 	}
-
-	// ! Prune hosts without a valid port
-	var prunedHosts []ubv1.HostSpec
-	for _, host := range crdToDeploy.Spec.Config.Hosts {
-		if host.Port != nil {
-			prunedHosts = append(prunedHosts, host)
-		}
-	}
-	crdToDeploy.Spec.Config.Hosts = prunedHosts
 
 	return crdToDeploy, nil
 }

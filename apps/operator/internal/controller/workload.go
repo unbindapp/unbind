@@ -4,6 +4,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"slices"
 
 	"github.com/go-logr/logr"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
@@ -132,7 +133,8 @@ func serviceTypeOrDefault(t corev1.ServiceType) corev1.ServiceType {
 
 func kubeServiceNeedsUpdate(logger logr.Logger, desired, existing *corev1.Service) bool {
 	switch {
-	case !equality.Semantic.DeepDerivative(desired.Spec.Ports, existing.Spec.Ports):
+	case len(desired.Spec.Ports) != len(existing.Spec.Ports) ||
+		!equality.Semantic.DeepDerivative(desired.Spec.Ports, existing.Spec.Ports):
 		logger.Info("Service ports need update", "existing", existing.Spec.Ports, "desired", desired.Spec.Ports)
 		return true
 	case !equality.Semantic.DeepDerivative(desired.Spec.Selector, existing.Spec.Selector):
@@ -178,9 +180,7 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	switch obj := desired.(type) {
 	case *networkingv1.Ingress:
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
-			func(existing, desired *networkingv1.Ingress) bool {
-				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec)
-			},
+			ingressNeedsUpdate,
 			func(existing, desired *networkingv1.Ingress) {
 				existing.Spec = desired.Spec
 			},
@@ -190,6 +190,7 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
 			func(existing, desired *gwapiv1.HTTPRoute) bool {
 				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
+					!slices.Equal(desired.Spec.Hostnames, existing.Spec.Hostnames) ||
 					!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
 			},
 			func(existing, desired *gwapiv1.HTTPRoute) {
@@ -202,6 +203,7 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
 			func(existing, desired *gwapiv1.Gateway) bool {
 				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
+					len(desired.Spec.Listeners) != len(existing.Spec.Listeners) ||
 					!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels) ||
 					!equality.Semantic.DeepDerivative(desired.Annotations, existing.Annotations)
 			},
@@ -215,7 +217,9 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	case *gwapiv1.GRPCRoute:
 		return reconcileResource(ctx, r, obj, owner, maxReconcileRetries,
 			func(existing, desired *gwapiv1.GRPCRoute) bool {
-				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) || !equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
+				return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
+					!slices.Equal(desired.Spec.Hostnames, existing.Spec.Hostnames) ||
+					!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
 			},
 			func(existing, desired *gwapiv1.GRPCRoute) {
 				existing.Spec = desired.Spec
@@ -248,6 +252,24 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	default:
 		return r.applyRoute(ctx, desired, owner)
 	}
+}
+
+// DeepDerivative accepts a shorter list, so hosts are compared exactly for a removed
+// one to leave the cluster
+func ingressNeedsUpdate(existing, desired *networkingv1.Ingress) bool {
+	return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
+		!slices.Equal(ingressHosts(desired), ingressHosts(existing))
+}
+
+func ingressHosts(ingress *networkingv1.Ingress) []string {
+	var hosts []string
+	for _, rule := range ingress.Spec.Rules {
+		hosts = append(hosts, rule.Host)
+	}
+	for _, tls := range ingress.Spec.TLS {
+		hosts = append(hosts, tls.Hosts...)
+	}
+	return hosts
 }
 
 // deleteIfExists deletes the named object, treating a missing object as success.
