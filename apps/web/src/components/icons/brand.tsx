@@ -1572,6 +1572,25 @@ export default function BrandIcon({
     );
   }
 
+  if (brand === "zig") {
+    return (
+      <svg
+        className={cn(defaultClassName, className)}
+        {...rest}
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M11.331 14.933h5.802v2.933H8.462l-5.015 1.438 9.218-10.238H6.867V6.134h8.679L20.545 4.7 11.33 14.933zM6.133 9.066h-2.2v5.867h2.494l-2.64 2.933H1V6.134h5.133v2.932zM23 17.866h-5.133v-2.933h2.2V9.066h-2.494l2.64-2.932H23v11.732z"
+          fill={color === "monochrome" ? "currentColor" : "var(--color-zig)"}
+        />
+      </svg>
+    );
+  }
+
   if (brand === "service-group") {
     return <LayoutGridIcon className={cn(defaultClassName, className)} {...rest} />;
   }
