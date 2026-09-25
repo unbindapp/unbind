@@ -438,7 +438,7 @@ function DatabaseSection({ volume }: TProps) {
                     />
                     <span className="min-w-0 wrap-break-word">{attachedService.name}</span>
                   </span>{" "}
-                  at the path the database expects. It can't be changed.
+                  at this path. It can't be changed for databases.
                 </>
               ) : error ? (
                 "Something went wrong."
