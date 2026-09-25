@@ -42,3 +42,21 @@ func TestRemovesLastHost(t *testing.T) {
 	assert.False(t, removesLastHost(nil, removeAll))
 	assert.False(t, removesLastHost(existing, &models.UpdateServiceInput{}))
 }
+
+func TestNewVolumes(t *testing.T) {
+	existing := []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/data"}}
+
+	// A mount path change on an attached volume is not a new attach
+	assert.Empty(t, newVolumes(existing, []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/files"}}))
+
+	assert.Equal(t, []schema.ServiceVolume{{ID: "pvc-2", MountPath: "/data"}}, newVolumes(
+		existing,
+		[]schema.ServiceVolume{{ID: "pvc-1", MountPath: "/files"}},
+		[]schema.ServiceVolume{{ID: "pvc-2", MountPath: "/data"}},
+	))
+	assert.Equal(t, []schema.ServiceVolume{{ID: "pvc-2", MountPath: "/data"}}, newVolumes(
+		nil,
+		[]schema.ServiceVolume{{ID: "pvc-2", MountPath: "/data"}},
+	))
+	assert.Empty(t, newVolumes(existing))
+}

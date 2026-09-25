@@ -69,7 +69,7 @@ export type TServerLists = {
 };
 
 // A list that is left out is unknown, so its changes stay staged. Volumes are not
-// checked here, a mounted volume drops its staged attach on its own
+// checked here, the volume's connection section drops its change once the server has it
 export function listChangesMatchingServer(
   staged: Iterable<TStagedListChange>,
   { hosts, ports }: TServerLists,

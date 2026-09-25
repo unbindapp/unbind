@@ -23,13 +23,14 @@ import {
   useStagedChangesStore,
   useStagedVolumeAttach,
 } from "@/components/staged-changes/staged-changes-provider";
+import { volumeChangeId } from "@/components/staged-changes/types";
 import { cn } from "@/components/ui/utils";
 import { getVolumeDisplayName } from "@/components/volume/helpers";
 import { MountPathSchema } from "@/components/volume/mount-path";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
-import { BoxIcon, FolderClosedIcon, HardDriveIcon, UnplugIcon } from "lucide-react";
+import { BoxIcon, HardDriveIcon, UnplugIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import { z } from "zod";
 
@@ -39,18 +40,7 @@ type TProps = {
 };
 
 export default function ConnectionSection({ volume }: TProps) {
-  const staged = useStagedVolumeAttach(volume.id);
-  const discard = useStagedChangesStore((s) => s.discard);
-  const isMounted = !!volume.mounted_on_service_id;
-
-  // The volume got mounted, by the deploy or by another session, so there is nothing left to attach
-  const settledId = isMounted ? staged?.id : undefined;
-  useEffect(() => {
-    if (!settledId) return;
-    discard([settledId]);
-  }, [settledId, discard]);
-
-  if (!isMounted) {
+  if (!volume.mounted_on_service_id) {
     return <AttachSection volume={volume} />;
   }
   return <AttachedSection volume={volume} />;
@@ -266,16 +256,74 @@ function AttachSection({ volume }: TProps) {
   );
 }
 
+// The volume is on a service, so only its mount path can change. The edit is staged on
+// blur and deploys with the other changes.
 function AttachedSection({ volume }: TProps) {
   const {
     query: { data: servicesData, isPending, error },
+    teamId,
+    projectId,
+    environmentId,
   } = useServices();
+  const staged = useStagedVolumeAttach(volume.id);
+  const stageList = useStagedChangesStore((s) => s.stageList);
+  const discard = useStagedChangesStore((s) => s.discard);
+  const isLocked = isVolumeLocked(volume) || staged?.isApplying === true;
 
   const attachedService = servicesData?.services.find(
     (service) => service.id === volume.mounted_on_service_id,
   );
+  const serverMountPath = volume.mount_path ?? "";
 
   const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
+
+  // A staged attach is done once the volume is mounted, by the deploy or by another
+  // session. A staged path change is done once the server has the path.
+  const isSettled =
+    staged !== undefined &&
+    (staged.previousMountPath === undefined ||
+      (staged.serviceId === volume.mounted_on_service_id && staged.mountPath === serverMountPath));
+  const settledId = isSettled ? staged.id : undefined;
+  useEffect(() => {
+    if (!settledId) return;
+    discard([settledId]);
+  }, [settledId, discard]);
+
+  const defaultValues = { mountPath: staged?.mountPath ?? serverMountPath };
+
+  const form = useAppForm({
+    defaultValues,
+    validators: {
+      onChange: z.object({ mountPath: MountPathSchema }).strip(),
+    },
+  });
+
+  // A discard has to bring the input back to the server path
+  useEffect(() => {
+    form.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultValues.mountPath]);
+
+  const stageMountPath = (mountPath: string) => {
+    if (!attachedService || !MountPathSchema.safeParse(mountPath).success) return;
+    if (mountPath === serverMountPath) {
+      if (staged) discard([staged.id]);
+      return;
+    }
+    stageList({
+      kind: "volume",
+      teamId,
+      projectId,
+      environmentId,
+      serviceId: attachedService.id,
+      serviceName: attachedService.name,
+      serviceIcon: attachedService.config.icon,
+      volumeId: volume.id,
+      volumeName: getVolumeDisplayName(volume),
+      mountPath,
+      previousMountPath: serverMountPath,
+    });
+  };
 
   return (
     <SettingsSection
@@ -283,55 +331,66 @@ function AttachedSection({ volume }: TProps) {
       id="connection"
       entityId={sectionHighlightId}
       Icon={UnplugIcon}
+      hasChanges={staged !== undefined}
+      isApplying={staged?.isApplying}
+      onDiscard={() => staged && discard([staged.id])}
     >
       <Block>
-        <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
-          <BlockItemHeader type="column">
-            <BlockItemTitle>Mount Path</BlockItemTitle>
-            <BlockItemDescription>
-              {isPending ? (
-                <span className="bg-muted-foreground animate-skeleton rounded-md text-transparent">
-                  Loading connection details...
-                </span>
-              ) : attachedService ? (
-                <>
-                  {volume.mount_status === "attaching" ? "Being attached to" : "Mounted on"}{" "}
-                  <span className="text-foreground bg-input inline-flex max-w-full items-center gap-1 rounded border px-1.25 align-bottom leading-tight font-semibold">
-                    <ServiceIcon
-                      service={attachedService}
-                      color="brand"
-                      className="-ml-px size-3.5 shrink-0"
-                    />
-                    <span className="min-w-0 wrap-break-word">{attachedService.name}</span>
-                  </span>{" "}
-                  at this path.
-                </>
-              ) : error ? (
-                "Something went wrong."
-              ) : (
-                "This volume is not attached to a service."
-              )}
-            </BlockItemDescription>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <BlockItemButtonLike
-              asElement="div"
-              isPending={isPending}
-              className={cn(isVolumeLocked(volume) && "opacity-50")}
-              text={
-                isPending
-                  ? "Loading"
-                  : !servicesData && error
-                    ? "Error"
-                    : volume.mount_path || "Not attached"
-              }
-              classNameText="whitespace-normal"
-              Icon={({ className }: { className?: string }) => (
-                <FolderClosedIcon className={className} />
-              )}
-            />
-          </BlockItemContent>
-        </BlockItem>
+        <form.AppField
+          name="mountPath"
+          children={(field) => (
+            <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
+              <BlockItemHeader type="column">
+                <BlockItemTitle>Mount Path</BlockItemTitle>
+                <BlockItemDescription>
+                  {isPending ? (
+                    <span className="bg-muted-foreground animate-skeleton rounded-md text-transparent">
+                      Loading connection details...
+                    </span>
+                  ) : attachedService ? (
+                    <>
+                      {volume.mount_status === "attaching" ? "Being attached to" : "Mounted on"}{" "}
+                      <span className="text-foreground bg-input inline-flex max-w-full items-center gap-1 rounded border px-1.25 align-bottom leading-tight font-semibold">
+                        <ServiceIcon
+                          service={attachedService}
+                          color="brand"
+                          className="-ml-px size-3.5 shrink-0"
+                        />
+                        <span className="min-w-0 wrap-break-word">{attachedService.name}</span>
+                      </span>{" "}
+                      at this path.
+                    </>
+                  ) : error ? (
+                    "Something went wrong."
+                  ) : (
+                    "This volume is not attached to a service."
+                  )}
+                </BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <field.TextField
+                  field={field}
+                  value={field.state.value}
+                  onBlur={() => {
+                    field.handleBlur();
+                    stageMountPath(field.state.value);
+                  }}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="/data"
+                  className="w-full"
+                  disabled={isLocked || !attachedService}
+                  hasChanges={staged !== undefined}
+                  showUndo={!isLocked && field.state.value !== serverMountPath}
+                  onUndo={() => {
+                    field.handleChange(serverMountPath);
+                    // The blur before the click may have just staged the typed path
+                    discard([volumeChangeId(volume.id)]);
+                  }}
+                />
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
         {!servicesData && !isPending && error && <ErrorLine message={error.message} />}
       </Block>
       <VolumeIdBlock volume={volume} />

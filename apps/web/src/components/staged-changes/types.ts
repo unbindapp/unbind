@@ -123,6 +123,8 @@ export const StagedVolumeChangeSchema = StagedListChangeBaseSchema.extend({
   volumeId: z.string(),
   volumeName: z.string(),
   mountPath: z.string(),
+  // Set when the volume is already on the service and only its path changes
+  previousMountPath: z.string().optional(),
 });
 
 export type TStagedVolumeChange = z.infer<typeof StagedVolumeChangeSchema>;

@@ -32,9 +32,11 @@ A volume can be attached to one replica at a time. A service with a volume shoul
 
 If you need several replicas, keep the state somewhere shared instead: a database, or [S3 compatible storage](/templates/minio).
 
-## Move a volume
+## Change the mount path
 
-Open the volume and change the **Service** or the **Mount Path** under **Connection**. The data moves with it.
+Open the volume and edit the **Mount Path** under **Connection**. Press **Deploy** on the changes bar and the service restarts with the volume at the new path. The data stays in place, only the path your app sees changes.
+
+The reset button next to the field brings back the current path.
 
 ## Delete
 

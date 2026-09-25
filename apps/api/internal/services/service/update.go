@@ -234,14 +234,8 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 
 	client := self.k8s.GetInternalClient()
 
-	// Check if PVC is in use by a service
-	for _, volume := range input.OverwriteVolumes {
-		err = self.validatePVC(ctx, input.TeamID, input.ProjectID, input.EnvironmentID, volume.ID, service.Edges.Environment.Edges.Project.Edges.Team.Namespace, client)
-		if err != nil {
-			return nil, err
-		}
-	}
-	for _, volume := range input.AddVolumes {
+	// A volume this service already has is only changing its mount path
+	for _, volume := range newVolumes(service.Edges.ServiceConfig.Volumes, input.OverwriteVolumes, input.AddVolumes) {
 		err = self.validatePVC(ctx, input.TeamID, input.ProjectID, input.EnvironmentID, volume.ID, service.Edges.Environment.Edges.Project.Edges.Team.Namespace, client)
 		if err != nil {
 			return nil, err
@@ -662,4 +656,15 @@ func (self *ServiceService) cleanServiceRename(ctx context.Context, input *model
 		return err
 	}
 	return names.EnsureFree(name, takenNames, "service", "environment")
+}
+
+func newVolumes(existing []schema.ServiceVolume, lists ...[]schema.ServiceVolume) []schema.ServiceVolume {
+	var added []schema.ServiceVolume
+	for _, volume := range slices.Concat(lists...) {
+		if slices.ContainsFunc(existing, func(v schema.ServiceVolume) bool { return v.ID == volume.ID }) {
+			continue
+		}
+		added = append(added, volume)
+	}
+	return added
 }

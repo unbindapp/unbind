@@ -631,7 +631,10 @@ function listRow(change: TStagedListChange, isApplying: boolean): TChangeRow {
     return {
       ...row,
       label: "Volume",
-      previous: null,
+      previous:
+        change.previousMountPath === undefined
+          ? null
+          : `${change.volumeName}\n${change.previousMountPath}`,
       value: `${change.volumeName}\n${change.mountPath}`,
     };
   }
