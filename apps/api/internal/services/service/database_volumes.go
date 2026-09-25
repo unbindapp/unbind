@@ -136,7 +136,8 @@ func validateDatabaseVolumeInput(service *ent.Service, overwrite, add, remove []
 	if len(overwrite) > 1 || len(add) > 1 {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "A database can only have one volume attached")
 	}
-	if len(add) > 0 && len(service.Edges.ServiceConfig.Volumes) > 0 {
+	existing := service.Edges.ServiceConfig.Volumes
+	if len(newVolumes(existing, add)) > 0 && len(existing) > 0 {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Detach the existing volume before attaching another one")
 	}
 	if len(remove) > 0 && len(overwrite) > 0 {

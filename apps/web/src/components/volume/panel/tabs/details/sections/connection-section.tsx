@@ -30,7 +30,7 @@ import { MountPathSchema } from "@/components/volume/mount-path";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
-import { BoxIcon, HardDriveIcon, UnplugIcon } from "lucide-react";
+import { BoxIcon, FolderClosedIcon, HardDriveIcon, UnplugIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import { z } from "zod";
 
@@ -42,6 +42,9 @@ type TProps = {
 export default function ConnectionSection({ volume }: TProps) {
   if (!volume.mounted_on_service_id) {
     return <AttachSection volume={volume} />;
+  }
+  if (volume.is_database) {
+    return <DatabaseSection volume={volume} />;
   }
   return <AttachedSection volume={volume} />;
 }
@@ -391,6 +394,72 @@ function AttachedSection({ volume }: TProps) {
             </BlockItem>
           )}
         />
+        {!servicesData && !isPending && error && <ErrorLine message={error.message} />}
+      </Block>
+      <VolumeIdBlock volume={volume} />
+    </SettingsSection>
+  );
+}
+
+// A database mounts its volume where its engine expects it, so the path can't change
+function DatabaseSection({ volume }: TProps) {
+  const {
+    query: { data: servicesData, isPending, error },
+  } = useServices();
+  const attachedService = servicesData?.services.find(
+    (service) => service.id === volume.mounted_on_service_id,
+  );
+  const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
+
+  return (
+    <SettingsSection
+      title="Connection"
+      id="connection"
+      entityId={sectionHighlightId}
+      Icon={UnplugIcon}
+    >
+      <Block>
+        <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
+          <BlockItemHeader type="column">
+            <BlockItemTitle>Mount Path</BlockItemTitle>
+            <BlockItemDescription>
+              {isPending ? (
+                <span className="bg-muted-foreground animate-skeleton rounded-md text-transparent">
+                  Loading connection details...
+                </span>
+              ) : attachedService ? (
+                <>
+                  Mounted on{" "}
+                  <span className="text-foreground bg-input inline-flex max-w-full items-center gap-1 rounded border px-1.25 align-bottom leading-tight font-semibold">
+                    <ServiceIcon
+                      service={attachedService}
+                      color="brand"
+                      className="-ml-px size-3.5 shrink-0"
+                    />
+                    <span className="min-w-0 wrap-break-word">{attachedService.name}</span>
+                  </span>{" "}
+                  at the path the database expects. It can't be changed.
+                </>
+              ) : error ? (
+                "Something went wrong."
+              ) : (
+                "This volume is not attached to a service."
+              )}
+            </BlockItemDescription>
+          </BlockItemHeader>
+          <BlockItemContent>
+            <BlockItemButtonLike
+              asElement="div"
+              isPending={isPending}
+              className={cn(isVolumeLocked(volume) && "opacity-50")}
+              text={isPending ? "Loading" : volume.mount_path || "Not attached"}
+              classNameText="whitespace-normal"
+              Icon={({ className }: { className?: string }) => (
+                <FolderClosedIcon className={className} />
+              )}
+            />
+          </BlockItemContent>
+        </BlockItem>
         {!servicesData && !isPending && error && <ErrorLine message={error.message} />}
       </Block>
       <VolumeIdBlock volume={volume} />

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
@@ -59,4 +60,14 @@ func TestNewVolumes(t *testing.T) {
 		[]schema.ServiceVolume{{ID: "pvc-2", MountPath: "/data"}},
 	))
 	assert.Empty(t, newVolumes(existing))
+}
+
+func TestValidateDatabaseVolumeInputKeepsAttachedVolume(t *testing.T) {
+	service := &ent.Service{Edges: ent.ServiceEdges{ServiceConfig: &ent.ServiceConfig{
+		Volumes: []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/data"}},
+	}}}
+
+	// Re-sending the attached volume is not a second attach
+	assert.NoError(t, validateDatabaseVolumeInput(service, nil, []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/data"}}, nil, nil))
+	assert.Error(t, validateDatabaseVolumeInput(service, nil, []schema.ServiceVolume{{ID: "pvc-2", MountPath: "/data"}}, nil, nil))
 }
