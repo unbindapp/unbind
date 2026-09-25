@@ -68,8 +68,8 @@ export default function ConnectionSection({ volume }: TProps) {
   return <AttachedSection volume={volume} />;
 }
 
-// The volume is dangling, so it can be attached to a service in this environment. The
-// attach is staged as soon as both fields are valid and deploys with the other changes.
+// The volume is dangling, so it can be attached to a service in this environment. Picking
+// a service stages the attach with the current path, a confirmed path restages it.
 function AttachSection({ volume }: TProps) {
   const {
     query: { data: servicesData, isPending: isPendingServices, error: errorServices },
@@ -117,9 +117,10 @@ function AttachSection({ volume }: TProps) {
     [attachableServices],
   );
 
+  const defaultMountPath = volume.mount_path || "/data";
   const defaultValues = {
     serviceId: staged?.serviceId ?? "",
-    mountPath: staged?.mountPath ?? (volume.mount_path || "/data"),
+    mountPath: staged?.mountPath ?? defaultMountPath,
   };
 
   const form = useAppForm({
@@ -249,23 +250,20 @@ function AttachSection({ volume }: TProps) {
               <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
                 <BlockItemHeader type="column">
                   <BlockItemTitle>Mount Path</BlockItemTitle>
-                  <BlockItemDescription>
-                    The path to mount the volume at (e.g. /data).
-                  </BlockItemDescription>
+                  <BlockItemDescription>The path to mount the volume at.</BlockItemDescription>
                 </BlockItemHeader>
                 <BlockItemContent>
-                  <field.TextField
+                  <MountPathField
                     field={field}
-                    value={field.state.value}
-                    onBlur={() => {
-                      field.handleBlur();
-                      stageAttach(form.state.values);
-                    }}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="/data"
-                    className="w-full"
+                    baseline={defaultValues.mountPath}
+                    revertTo={defaultMountPath}
+                    isStaged={staged !== undefined}
                     disabled={isLocked}
-                    hasChanges={staged !== undefined}
+                    onConfirm={(mountPath) => stageAttach({ ...form.state.values, mountPath })}
+                    onRevert={() => {
+                      field.handleChange(defaultMountPath);
+                      stageAttach({ ...form.state.values, mountPath: defaultMountPath });
+                    }}
                   />
                 </BlockItemContent>
               </BlockItem>
@@ -278,8 +276,8 @@ function AttachSection({ volume }: TProps) {
   );
 }
 
-// The volume is on a service, so only its mount path can change. The edit is staged on
-// blur and deploys with the other changes.
+// The volume is on a service, so only its mount path can change. A confirmed path is
+// staged and deploys with the other changes.
 function AttachedSection({ volume }: TProps) {
   const {
     query: { data: servicesData, isPending, error },
@@ -393,6 +391,7 @@ function AttachedSection({ volume }: TProps) {
                 <MountPathField
                   field={field}
                   baseline={defaultValues.mountPath}
+                  revertTo={serverMountPath}
                   isStaged={staged !== undefined}
                   disabled={isLocked || !attachedService}
                   onConfirm={stageMountPath}
@@ -411,8 +410,10 @@ function AttachedSection({ volume }: TProps) {
 
 type TMountPathFieldProps = {
   field: AnyFieldApi;
-  // What the input goes back to: the staged path, or the server's
+  // What cancel goes back to: the staged path, or the one revert goes back to
   baseline: string;
+  // The server's path for an attached volume, the default path for a dangling one
+  revertTo: string;
   isStaged: boolean;
   disabled: boolean;
   onConfirm: (mountPath: string) => void;
@@ -420,10 +421,11 @@ type TMountPathFieldProps = {
 };
 
 // Typing is a draft: it gets a cancel and a confirm button, and only a confirmed path
-// is staged. A staged path gets a revert button that drops the change.
+// is staged. A confirmed path gets a revert button that brings the original back.
 function MountPathField({
   field,
   baseline,
+  revertTo,
   isStaged,
   disabled,
   onConfirm,
@@ -433,7 +435,7 @@ function MountPathField({
   const value: string = field.state.value;
   const isDraft = value !== baseline;
   const draftError = isDraft ? getMountPathError(value) : null;
-  const showRevert = !disabled && !isDraft && isStaged;
+  const showRevert = !disabled && !isDraft && baseline !== revertTo;
   const showDraftButtons = !disabled && isDraft;
   const buttonVariant = isStaged ? "ghost-change" : "ghost";
 
