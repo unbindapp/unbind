@@ -103,7 +103,7 @@ export default function CreateVariablesForm({
         return;
       }
 
-      const variables = toStoredVariables(value.variables, tokens);
+      const variables = toStoredVariables(value.variables, tokens, typedProps.serviceId);
       stage(variables);
 
       formApi.reset();

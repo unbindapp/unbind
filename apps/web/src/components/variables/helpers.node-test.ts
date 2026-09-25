@@ -2,15 +2,23 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  envVariableNameAt,
   findChangedLockedVariable,
   getVariablesFromRawText,
+  referencesForVariable,
   pendingDatabaseUrlNames,
   splitByStoredReferences,
   splitProvidedVariables,
   toReadableValue,
   toStoredVariables,
 } from "./helpers.ts";
-import { buildReferenceTokens, readableTokenMap, storedToken } from "./tokens.ts";
+import {
+  buildReferenceTokens,
+  isOwnReference,
+  readableTokenMap,
+  referenceMapFromTokens,
+  storedToken,
+} from "./tokens.ts";
 import type {
   TAvailableVariableReference,
   TVariableReferenceInfo,
@@ -259,4 +267,65 @@ test("pendingDatabaseUrlNames lists the database URLs that have a port but no va
   );
 
   assert.deepEqual(pendingDatabaseUrlNames([]), []);
+});
+
+test("a variable's own reference is left as text, other own references are stored", () => {
+  const own: TAvailableVariableReference = {
+    type: "variable",
+    source_type: "service",
+    source_id: "self-id",
+    source_name: "Waft",
+    source_icon: "rust",
+    source_kubernetes_name: "waft-a1",
+    keys: ["PUBLIC_URL", "PORT"],
+  };
+  const tokens = buildReferenceTokens([...available, own]);
+  const [publicUrl, port] = tokens.filter((t) => t.object.source_id === "self-id");
+  assert.equal(isOwnReference(publicUrl, "self-id", "PUBLIC_URL"), true);
+  assert.equal(isOwnReference(publicUrl, "self-id", "PORT"), false);
+  assert.equal(isOwnReference(publicUrl, "other-id", "PUBLIC_URL"), false);
+  assert.equal(isOwnReference(publicUrl, undefined, "PUBLIC_URL"), false);
+
+  const stored = toStoredVariables(
+    [
+      { name: "PUBLIC_URL", value: "${Waft.PUBLIC_URL}/${Waft.PORT}/${Postgres.DATABASE_URL}" },
+      { name: "PORT", value: "${Waft.PUBLIC_URL}" },
+    ],
+    tokens,
+    "self-id",
+  );
+  assert.equal(
+    stored[0].value,
+    "${Waft.PUBLIC_URL}/" +
+      port.object.template +
+      "/" +
+      storedToken({ source_type: "service", source_id: pgId, key: "DATABASE_URL" }),
+  );
+  assert.equal(stored[1].value, publicUrl.object.template);
+
+  // Without a service nothing is own
+  assert.equal(
+    toStoredVariables([{ name: "PUBLIC_URL", value: "${Waft.PUBLIC_URL}" }], tokens)[0].value,
+    publicUrl.object.template,
+  );
+
+  const map = referenceMapFromTokens(tokens);
+  assert.equal(
+    referencesForVariable(map, tokens, "self-id", "PUBLIC_URL").has("${Waft.PUBLIC_URL}"),
+    false,
+  );
+  assert.equal(
+    referencesForVariable(map, tokens, "self-id", "PUBLIC_URL").has("${Waft.PORT}"),
+    true,
+  );
+  assert.equal(referencesForVariable(map, tokens, "self-id", "OTHER"), map);
+});
+
+test("envVariableNameAt reads the name of the line at the cursor", () => {
+  const doc = "A=1\nPUBLIC_URL=${\nno equals\nB=";
+  assert.equal(envVariableNameAt(doc, 0), "A");
+  assert.equal(envVariableNameAt(doc, 3), "A");
+  assert.equal(envVariableNameAt(doc, doc.indexOf("${") + 2), "PUBLIC_URL");
+  assert.equal(envVariableNameAt(doc, doc.indexOf("equals")), undefined);
+  assert.equal(envVariableNameAt(doc, doc.length), "B");
 });

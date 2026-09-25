@@ -1,3 +1,4 @@
+import { envVariableNameAt } from "@/components/variables/helpers";
 import {
   createVariableReferenceLanguage,
   type TVariableReferenceData,
@@ -63,7 +64,8 @@ function build(view: EditorView, isStaged: TIsStaged) {
 // The language is rebuilt when the staged set changes, which is what re-colors
 // names after a save without the text changing.
 export function createEnvVariablesLanguage<T>(getData: () => TEnvVariablesData<T>) {
-  return createVariableReferenceLanguage(getData, [
-    envLineHighlighter((name) => getData().stagedNames.has(name)),
-  ]);
+  return createVariableReferenceLanguage(
+    () => ({ ...getData(), variableNameAt: envVariableNameAt }),
+    [envLineHighlighter((name) => getData().stagedNames.has(name))],
+  );
 }

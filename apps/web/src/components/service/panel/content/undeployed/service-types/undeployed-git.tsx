@@ -113,7 +113,7 @@ export function UndeployedContentGit({
           return;
         }
 
-        const variables = toStoredVariables(validVariables, tokensRef.current);
+        const variables = toStoredVariables(validVariables, tokensRef.current, serviceId);
 
         const { data } = await createOrUpdateVariables({
           type: "service",

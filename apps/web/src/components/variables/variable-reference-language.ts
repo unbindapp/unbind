@@ -16,6 +16,10 @@ import { parser } from "./variable-reference.gen";
 export type TVariableReferenceData<T> = {
   /** undefined while references are still loading */
   tokens: readonly TVariableToken<T>[] | undefined;
+  /** Name of the variable whose value holds the cursor, when the field knows it */
+  variableNameAt?: (doc: string, pos: number) => string | undefined;
+  /** Tokens the variable named name must not use, left out of the dropdown */
+  omit?: (token: TVariableToken<T>, name: string) => boolean;
 };
 
 /** IconCache key for the spinner shown while references load. */
@@ -106,7 +110,12 @@ function completionAt<T>(
     return { from: target.from, to: target.to, options: [pending], filter: false };
   }
 
-  const options: TIconCompletion[] = data.tokens.map((token) => ({
+  const doc = context.state.doc.toString();
+  const name = data.variableNameAt?.(doc, context.pos);
+  const omit = data.omit;
+  const tokens = name && omit ? data.tokens.filter((token) => !omit(token, name)) : data.tokens;
+
+  const options: TIconCompletion[] = tokens.map((token) => ({
     label: token.value,
     iconKey: token.brand,
     type: "reference",

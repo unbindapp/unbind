@@ -103,3 +103,25 @@ export function readableTokenForReference(
   if (!sourceName) return reference.token;
   return readableToken(sourceName, reference.key);
 }
+
+/**
+ * Whether a token is the service's own entry for the variable named name. A
+ * variable can reference anything but itself, so this one is kept out of the
+ * dropdown and stays text when a value is saved.
+ */
+export function isOwnReference(
+  token: TVariableToken<TReferenceExtended>,
+  serviceId: string | undefined,
+  name: string,
+) {
+  if (!serviceId || !name) return false;
+  const { source_type, source_id, key } = token.object;
+  return source_type === "service" && source_id === serviceId && key === name;
+}
+
+export function tokensForVariable<
+  T extends readonly TVariableToken<TReferenceExtended>[] | undefined,
+>(tokens: T, serviceId: string | undefined, name: string): T {
+  if (!tokens) return tokens;
+  return tokens.filter((token) => !isOwnReference(token, serviceId, name)) as unknown as T;
+}

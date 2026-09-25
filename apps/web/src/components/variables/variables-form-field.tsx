@@ -16,7 +16,12 @@ import {
 } from "@/components/variables/variables-env-language";
 import { resolveReferenceInsertion } from "@/components/variables/variable-reference-completion";
 import { referenceLabelCompletionAddition } from "@/components/variables/variable-reference-label";
-import type { TReferenceExtended, TVariableToken } from "@/components/variables/tokens";
+import {
+  isOwnReference,
+  type TReferenceExtended,
+  type TVariableToken,
+} from "@/components/variables/tokens";
+import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import { withForm } from "@/lib/hooks/use-app-form";
 import type { LanguageSupport } from "@codemirror/language";
 import type { AnyFieldApi } from "@tanstack/react-form";
@@ -49,12 +54,21 @@ export function useVariableReferenceLanguage(
   tokens: readonly TVariableToken<TReferenceExtended>[] | undefined,
   variant: "value" | "env" = "value",
   stagedNames: ReadonlySet<string> = noStagedNames,
+  variableName?: string,
 ) {
+  const { serviceId } = useVariableReferences();
   const dataRef = useRef<TEnvVariablesData<TReferenceExtended>>({
     tokens: undefined,
     stagedNames,
   });
-  dataRef.current = { tokens, stagedNames };
+  // A variable cannot reference itself. The value variant is told which variable
+  // it edits, the env variant reads the name off the line at the cursor.
+  dataRef.current = {
+    tokens,
+    stagedNames,
+    variableNameAt: variableName === undefined ? undefined : () => variableName,
+    omit: (token, name) => isOwnReference(token, serviceId, name),
+  };
   const language = useMemo(
     () =>
       variant === "env"
@@ -92,7 +106,7 @@ export const VariablesFormField = withForm({
   },
   props,
   render: function Render({ form, referenceProps }) {
-    const { language, icons } = useVariableReferenceLanguage(referenceProps.tokens);
+    const { icons } = useVariableReferenceLanguage(referenceProps.tokens);
 
     const onPaste = useCallback(
       (e: React.ClipboardEvent<HTMLInputElement>, index: number) => {
@@ -170,10 +184,16 @@ export const VariablesFormField = withForm({
                       </form.AppField>
                       <form.AppField key={`variables[${i}].value`} name={`variables[${i}].value`}>
                         {(subField) => (
-                          <VariableValueField
-                            subField={subField}
-                            language={language}
-                            referencesDisabled={referenceProps.disabled}
+                          <form.Subscribe
+                            selector={(state) => state.values.variables[i]?.name ?? ""}
+                            children={(name) => (
+                              <RowValueField
+                                subField={subField}
+                                name={name}
+                                tokens={referenceProps.tokens}
+                                referencesDisabled={referenceProps.disabled}
+                              />
+                            )}
                           />
                         )}
                       </form.AppField>
@@ -239,6 +259,28 @@ type TValueFieldProps = {
   compact?: boolean;
   placeholder?: string;
 };
+
+// Each row has its own language so the dropdown can leave out the row's own name
+function RowValueField({
+  subField,
+  name,
+  tokens,
+  referencesDisabled,
+}: {
+  subField: AnyFieldApi;
+  name: string;
+  tokens: readonly TVariableToken<TReferenceExtended>[] | undefined;
+  referencesDisabled?: boolean;
+}) {
+  const { language } = useVariableReferenceLanguage(tokens, "value", undefined, name);
+  return (
+    <VariableValueField
+      subField={subField}
+      language={language}
+      referencesDisabled={referencesDisabled}
+    />
+  );
+}
 
 export function VariableValueField({
   subField,

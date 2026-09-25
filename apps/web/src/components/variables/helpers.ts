@@ -1,5 +1,6 @@
 // Relative imports so this can run under `node --test`.
 import {
+  isOwnReference,
   readableTokenForReference,
   readableTokenMap,
   referenceMapFromTokens,
@@ -44,12 +45,44 @@ export function toStoredValue<T extends { template: string }>(
     .join("");
 }
 
+/** Each variable is converted without its own token, so a self reference stays text. */
 export function toStoredVariables(
   variables: readonly TVariableForCreate[],
   tokens: readonly TVariableToken<TReferenceExtended>[],
+  serviceId?: string,
 ): TVariableForCreate[] {
   const referencesByValue = referenceMapFromTokens(tokens);
-  return variables.map((v) => ({ name: v.name, value: toStoredValue(v.value, referencesByValue) }));
+  return variables.map((v) => ({
+    name: v.name,
+    value: toStoredValue(
+      v.value,
+      referencesForVariable(referencesByValue, tokens, serviceId, v.name),
+    ),
+  }));
+}
+
+/** The reference map for saving one variable: the shared map minus its own token */
+export function referencesForVariable<T extends { template: string }>(
+  referencesByValue: ReadonlyMap<string, TVariableToken<T>>,
+  tokens: readonly TVariableToken<TReferenceExtended>[],
+  serviceId: string | undefined,
+  name: string,
+): ReadonlyMap<string, TVariableToken<T>> {
+  const own = tokens.find((token) => isOwnReference(token, serviceId, name));
+  if (!own || !referencesByValue.has(own.value)) return referencesByValue;
+  const map = new Map(referencesByValue);
+  map.delete(own.value);
+  return map;
+}
+
+const envNamePattern = /^([-._A-Za-z0-9]+)=/;
+
+/** The NAME of the NAME=value line holding pos in a raw editor document */
+export function envVariableNameAt(doc: string, pos: number) {
+  const start = doc.lastIndexOf("\n", pos - 1) + 1;
+  const end = doc.indexOf("\n", pos);
+  const line = doc.slice(start, end < 0 ? doc.length : end);
+  return envNamePattern.exec(line)?.[1];
 }
 
 /** Stored templates become their readable form, using the API's reference list for the value. */

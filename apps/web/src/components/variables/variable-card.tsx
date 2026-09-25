@@ -23,7 +23,7 @@ import {
   toStoredValue,
   type TRenderedPart,
 } from "@/components/variables/helpers";
-import { readableTokenMap } from "@/components/variables/tokens";
+import { readableTokenMap, tokensForVariable } from "@/components/variables/tokens";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
 import {
@@ -467,9 +467,18 @@ function EditVariableForm({
   setIsEditingVariable: Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { stage } = useVariables();
-  const { tokens } = useVariableReferences();
+  const { tokens: allTokens } = useVariableReferences();
+  const tokens = useMemo(
+    () => tokensForVariable(allTokens, variableTypeProps.serviceId, variable.name),
+    [allTokens, variableTypeProps.serviceId, variable.name],
+  );
   const referencesDisabled = variableTypeProps.type !== "service";
-  const { language, icons } = useVariableReferenceLanguage(tokens);
+  const { language, icons } = useVariableReferenceLanguage(
+    tokens,
+    "value",
+    undefined,
+    variable.name,
+  );
 
   const [readableValue] = useState(() =>
     toReadableValue(variable.value, variable.references, readableTokenMap(tokens ?? [])),

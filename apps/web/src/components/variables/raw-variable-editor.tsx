@@ -29,6 +29,7 @@ import {
   findChangedLockedVariable,
   getVariablesFromRawText,
   referenceMapForVariables,
+  referencesForVariable,
   toReadableValue,
   toStoredValue,
 } from "@/components/variables/helpers";
@@ -180,7 +181,10 @@ export default function RawVariableEditor({ lockedVariables, children }: TProps)
       }
       parsedVariables.push({
         name: res.data.name,
-        value: toStoredValue(res.data.value, referencesByValue),
+        value: toStoredValue(
+          res.data.value,
+          referencesForVariable(referencesByValue, tokens, typedProps.serviceId, res.data.name),
+        ),
       });
     }
     const current = new Map(variables.map((v) => [v.name, v.value]));
