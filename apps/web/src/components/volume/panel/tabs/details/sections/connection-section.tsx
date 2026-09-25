@@ -493,7 +493,6 @@ function MountPathField({
   const isStaged = baseline !== revertTo;
   const showRevert = !disabled && !isDraft && isStaged;
   const showDraftButtons = !disabled && isDraft;
-  const buttonVariant = isStaged ? "ghost-change" : "ghost";
 
   const cancel = () => {
     field.handleChange(baseline);
@@ -552,22 +551,22 @@ function MountPathField({
                   type="button"
                   aria-label="Cancel"
                   onClick={cancel}
-                  variant={buttonVariant}
+                  variant="ghost-destructive"
                   size="icon"
                   className="pointer-events-auto rounded-md"
                 >
-                  <XIcon className="size-4.5" strokeWidth={2.5} />
+                  <XIcon className="size-4.5" />
                 </Button>
                 <Button
                   type="button"
                   aria-label="Confirm"
                   disabled={draftError !== null}
                   onClick={confirm}
-                  variant={buttonVariant}
+                  variant="ghost-success"
                   size="icon"
                   className="pointer-events-auto rounded-md"
                 >
-                  <CheckIcon className="size-4.5" strokeWidth={2.5} />
+                  <CheckIcon className="size-4.5" />
                 </Button>
               </>
             ) : (
@@ -576,7 +575,7 @@ function MountPathField({
                 aria-label="Revert"
                 disabled={!showRevert}
                 onClick={onRevert}
-                variant={buttonVariant}
+                variant={isStaged ? "ghost-change" : "ghost"}
                 data-staged={isStaged || undefined}
                 size="icon"
                 className="pointer-events-auto rounded-md"
