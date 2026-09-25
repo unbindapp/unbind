@@ -257,7 +257,6 @@ function AttachSection({ volume }: TProps) {
                     field={field}
                     baseline={defaultValues.mountPath}
                     revertTo={defaultMountPath}
-                    isStaged={staged !== undefined}
                     disabled={isLocked}
                     onConfirm={(mountPath) => stageAttach({ ...form.state.values, mountPath })}
                     onRevert={() => {
@@ -392,7 +391,6 @@ function AttachedSection({ volume }: TProps) {
                   field={field}
                   baseline={defaultValues.mountPath}
                   revertTo={serverMountPath}
-                  isStaged={staged !== undefined}
                   disabled={isLocked || !attachedService}
                   onConfirm={stageMountPath}
                   onRevert={() => discard([volumeChangeId(volume.id)])}
@@ -414,19 +412,18 @@ type TMountPathFieldProps = {
   baseline: string;
   // The server's path for an attached volume, the default path for a dangling one
   revertTo: string;
-  isStaged: boolean;
   disabled: boolean;
   onConfirm: (mountPath: string) => void;
   onRevert: () => void;
 };
 
 // Typing is a draft: it gets a cancel and a confirm button, and only a confirmed path
-// is staged. A confirmed path gets a revert button that brings the original back.
+// is staged. The field shows as changed only while the confirmed path differs from the
+// one revert brings back.
 function MountPathField({
   field,
   baseline,
   revertTo,
-  isStaged,
   disabled,
   onConfirm,
   onRevert,
@@ -435,7 +432,8 @@ function MountPathField({
   const value: string = field.state.value;
   const isDraft = value !== baseline;
   const draftError = isDraft ? getMountPathError(value) : null;
-  const showRevert = !disabled && !isDraft && baseline !== revertTo;
+  const isStaged = baseline !== revertTo;
+  const showRevert = !disabled && !isDraft && isStaged;
   const showDraftButtons = !disabled && isDraft;
   const buttonVariant = isStaged ? "ghost-change" : "ghost";
 
