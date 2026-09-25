@@ -17,6 +17,8 @@ spec:
     metadata:
       labels:
         app: registry
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       securityContext:
         fsGroup: 0
@@ -25,17 +27,18 @@ spec:
           image: registry:3.1.1
           ports:
             - containerPort: 5000
-          env:
-            - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
-              value: /var/lib/registry
-            - name: REGISTRY_STORAGE_DELETE_ENABLED
-              value: "true"
           volumeMounts:
             - name: registry-storage
               mountPath: /var/lib/registry
+            - name: registry-config
+              mountPath: /etc/distribution
+              readOnly: true
           securityContext:
             runAsUser: 0
       volumes:
         - name: registry-storage
           persistentVolumeClaim:
             claimName: registry-pvc
+        - name: registry-config
+          configMap:
+            name: docker-registry-config

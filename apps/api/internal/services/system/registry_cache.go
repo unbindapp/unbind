@@ -199,6 +199,9 @@ func (self *SystemService) ReconcileRegistryCache(ctx context.Context, cleanupIm
 	if err := self.registryCacheManager.MigrateCleanupJob(ctx, cleanupImage); err != nil {
 		log.Warnf("registry cache: cleanup job migration failed: %v", err)
 	}
+	if err := self.registryCacheManager.MigrateRegistryConfig(ctx); err != nil {
+		log.Warnf("registry cache: registry config migration failed: %v", err)
+	}
 	settings, err := self.repo.System().GetSystemSettings(ctx, nil)
 	if err != nil || settings.RegistryCacheSettings == nil {
 		return

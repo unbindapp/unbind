@@ -3994,6 +3994,66 @@ func (_c *KubeClientMock_RebindPersistentVolumeClaim_Call) RunAndReturn(run func
 	return _c
 }
 
+// RegistryCleanupRunning provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) RegistryCleanupRunning(ctx context.Context) (bool, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RegistryCleanupRunning")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) (bool, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) bool); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_RegistryCleanupRunning_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegistryCleanupRunning'
+type KubeClientMock_RegistryCleanupRunning_Call struct {
+	*mock.Call
+}
+
+// RegistryCleanupRunning is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *KubeClientMock_Expecter) RegistryCleanupRunning(ctx any) *KubeClientMock_RegistryCleanupRunning_Call {
+	return &KubeClientMock_RegistryCleanupRunning_Call{Call: _e.mock.On("RegistryCleanupRunning", ctx)}
+}
+
+func (_c *KubeClientMock_RegistryCleanupRunning_Call) Run(run func(ctx context.Context)) *KubeClientMock_RegistryCleanupRunning_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_RegistryCleanupRunning_Call) Return(b bool, err error) *KubeClientMock_RegistryCleanupRunning_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *KubeClientMock_RegistryCleanupRunning_Call) RunAndReturn(run func(ctx context.Context) (bool, error)) *KubeClientMock_RegistryCleanupRunning_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ReleasePersistentVolumeClaimsForService provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) ReleasePersistentVolumeClaimsForService(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) ([]string, error) {
 	ret := _mock.Called(ctx, namespace, serviceID, client)

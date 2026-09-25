@@ -11,13 +11,15 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 const (
-	CleanupCronJobName     = "registry-cleanup"
+	CleanupCronJobName     = k8s.RegistryCleanupCronJobName
 	CleanupContainerName   = "registry-cleanup"
+	CleanupRoleName        = "registry-cleanup-role"
 	RegistryPVCName        = "registry-pvc"
 	RegistryServiceName    = "docker-registry"
 	RegistryServicePort    = 5000
@@ -142,7 +144,7 @@ func (self *Manager) Apply(ctx context.Context, threshold *string, schedule *str
 	return nil
 }
 
-// MigrateCleanupJob moves a CronJob still running the old shell script onto the CLI.
+// MigrateCleanupJob brings a CronJob created by an older chart up to the current one.
 func (self *Manager) MigrateCleanupJob(ctx context.Context, image string) error {
 	cron, err := self.getCronJob(ctx)
 	if err != nil {
@@ -152,15 +154,53 @@ func (self *Manager) MigrateCleanupJob(ctx context.Context, image string) error 
 	if container == nil {
 		return fmt.Errorf("cleanup container not found")
 	}
-	if !convertCleanupContainer(container, image) {
-		return nil
+
+	jobSpec := &cron.Spec.JobTemplate.Spec
+	changed := convertCleanupContainer(container, image)
+	if changed {
+		jobSpec.ActiveDeadlineSeconds = new(int64(cleanupTimeoutSeconds))
+	}
+	// Builds wait while the job runs, so a failed run must not keep retrying
+	if jobSpec.BackoffLimit == nil || *jobSpec.BackoffLimit != 0 {
+		jobSpec.BackoffLimit = new(int32(0))
+		changed = true
 	}
 
-	cron.Spec.JobTemplate.Spec.ActiveDeadlineSeconds = new(int64(cleanupTimeoutSeconds))
-	if _, err := self.k8s.GetInternalClient().BatchV1().CronJobs(self.namespace()).Update(ctx, cron, metav1.UpdateOptions{}); err != nil {
-		return fmt.Errorf("failed to migrate cleanup cronjob: %w", err)
+	if changed {
+		if _, err := self.k8s.GetInternalClient().BatchV1().CronJobs(self.namespace()).Update(ctx, cron, metav1.UpdateOptions{}); err != nil {
+			return fmt.Errorf("failed to migrate cleanup cronjob: %w", err)
+		}
+	}
+	return self.grantCleanupJobList(ctx)
+}
+
+func (self *Manager) grantCleanupJobList(ctx context.Context) error {
+	roles := self.k8s.GetInternalClient().RbacV1().Roles(self.namespace())
+	role, err := roles.Get(ctx, CleanupRoleName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if !grantJobList(role) {
+		return nil
+	}
+	if _, err := roles.Update(ctx, role, metav1.UpdateOptions{}); err != nil {
+		return fmt.Errorf("failed to update cleanup role: %w", err)
 	}
 	return nil
+}
+
+func grantJobList(role *rbacv1.Role) bool {
+	for _, rule := range role.Rules {
+		if slices.Contains(rule.APIGroups, "batch") && slices.Contains(rule.Resources, "jobs") && slices.Contains(rule.Verbs, "list") {
+			return false
+		}
+	}
+	role.Rules = append(role.Rules, rbacv1.PolicyRule{
+		APIGroups: []string{"batch"},
+		Resources: []string{"jobs"},
+		Verbs:     []string{"list"},
+	})
+	return true
 }
 
 func convertCleanupContainer(container *corev1.Container, image string) bool {

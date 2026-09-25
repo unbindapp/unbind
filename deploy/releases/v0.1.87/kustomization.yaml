@@ -1,0 +1,3 @@
+# Registry chart changes (config without blob descriptor cache, cleanup job RBAC and retries)
+# reach existing installs through the API's startup reconcile, since external-registry installs
+# have no registry to patch.

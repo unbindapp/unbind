@@ -53,6 +53,7 @@ type KubeClientInterface interface {
 	// Deletes a single build job by name, cleaning up its pods. Missing jobs are not an error.
 	DeleteDeploymentJob(ctx context.Context, jobName string) error
 	CountActiveDeploymentJobs(ctx context.Context) (int, error)
+	RegistryCleanupRunning(ctx context.Context) (bool, error)
 	GetJobStatus(ctx context.Context, jobName string) (JobStatus, error)
 	// This function is used to manage unbind-system resources
 	GetInternalClient() kubernetes.Interface

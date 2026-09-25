@@ -13,6 +13,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	DeploymentJobSelector      = "unbind-deployment-job=true"
+	RegistryCleanupCronJobName = "registry-cleanup"
+)
+
 func (self *KubeClient) CreateDeployment(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (jobName string, err error) {
 	// Build a unique job name
 	jobName = fmt.Sprintf("%s-deployment-%d", deploymentID, time.Now().Unix())
@@ -147,7 +152,7 @@ func (self *KubeClient) DeleteDeploymentJob(ctx context.Context, jobName string)
 
 func (self *KubeClient) CountActiveDeploymentJobs(ctx context.Context) (int, error) {
 	jobList, err := self.clientset.BatchV1().Jobs(self.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{
-		LabelSelector: "unbind-deployment-job=true",
+		LabelSelector: DeploymentJobSelector,
 	})
 	if err != nil {
 		return 0, fmt.Errorf("failed to list jobs: %v", err)
@@ -161,6 +166,35 @@ func (self *KubeClient) CountActiveDeploymentJobs(ctx context.Context) (int, err
 	}
 
 	return activeCount, nil
+}
+
+func (self *KubeClient) RegistryCleanupRunning(ctx context.Context) (bool, error) {
+	jobList, err := self.clientset.BatchV1().Jobs(self.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return false, fmt.Errorf("failed to list jobs: %v", err)
+	}
+
+	for _, job := range jobList.Items {
+		if JobFinished(&job) {
+			continue
+		}
+		for _, ref := range job.OwnerReferences {
+			if ref.Kind == "CronJob" && ref.Name == RegistryCleanupCronJobName {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+// A job counts until it finishes, including the moment before its first pod shows up as active
+func JobFinished(job *batchv1.Job) bool {
+	for _, condition := range job.Status.Conditions {
+		if (condition.Type == batchv1.JobComplete || condition.Type == batchv1.JobFailed) && condition.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }
 
 // Get status of a kubernetes Job resource

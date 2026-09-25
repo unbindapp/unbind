@@ -16,7 +16,7 @@ Everything you need is in the UI.
   - It never becomes healthy: the [health check](/services/replicas-and-health#health-checks) path or port is wrong, or the app listens on `127.0.0.1` instead of `0.0.0.0`.
 - **The domain shows an error page**: the port on the [domain](/services/domains) does not match the port the app listens on.
 - **Certificate warning**: the certificate is issued after the DNS record resolves. Check the record, wait a minute and reload.
-- **A deployment stays QUEUED**: other builds are ahead of it. Two run at a time by default. See [System Settings](/operations/system-settings#builds).
+- **A deployment stays QUEUED**: other builds are ahead of it, or the registry is deleting old images to free space. Two builds run at a time by default. See [System Settings](/operations/system-settings#builds).
 
 ## Unbind itself is not working
 

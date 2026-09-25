@@ -46,6 +46,8 @@ RUN npm run build
 
 Builds run on your servers, and by default two run at a time. The rest wait in a queue. While a service has a build waiting, a newer one for the same service replaces it, so only the latest push gets built.
 
+With the self-hosted registry, new builds also wait while it deletes old images to free space. Builds that are already running finish first.
+
 Someone who manages the instance can raise the limits under [System Settings](/operations/system-settings).
 
 ## Build cache

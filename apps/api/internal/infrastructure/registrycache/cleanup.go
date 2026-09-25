@@ -7,8 +7,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,13 +26,19 @@ const (
 	RegistryPodSelector   = "app=registry"
 
 	registryDataDir    = "/var/lib/registry"
-	registryConfigPath = "/etc/distribution/config.yml"
+	registryConfigPath = registryConfigDir + "/" + registryConfigKey
 	registryRepoDir    = registryDataDir + "/docker/registry/v2/repositories"
 	tagLinkMarker      = "/_manifests/tags/"
 
 	buildCacheSuffix   = "-buildcache"
 	staleUploadMinutes = 1440
 	manifestIndexDepth = 2
+
+	// Longer than a build job's deadline
+	buildDrainTimeout  = 25 * time.Minute
+	buildDrainInterval = 10 * time.Second
+	// A fresh tag may not be pulled yet, so no pod protects it
+	freshTagGrace = time.Hour
 )
 
 type TagInfo struct {
@@ -93,6 +101,11 @@ func (self *Cleaner) Run(ctx context.Context, thresholdBytes int64) error {
 		return nil
 	}
 
+	if err := self.waitForBuilds(ctx, buildDrainTimeout); err != nil {
+		log.Warnf("registry cleanup: skipped, %v", err)
+		return nil
+	}
+
 	tags, err := self.inventory(ctx, pod)
 	if err != nil {
 		return err
@@ -103,7 +116,7 @@ func (self *Cleaner) Run(ctx context.Context, thresholdBytes int64) error {
 		return fmt.Errorf("refusing to prune without the list of deployed images: %w", err)
 	}
 
-	plan := planDeletions(tags, inUse, used-thresholdBytes)
+	plan := planDeletions(tags, inUse, used-thresholdBytes, time.Now().Add(-freshTagGrace).Unix())
 	if len(plan) == 0 {
 		log.Warnf("registry cleanup: over threshold with nothing prunable, grow the registry volume")
 	}
@@ -119,12 +132,12 @@ func (self *Cleaner) Run(ctx context.Context, thresholdBytes int64) error {
 	return self.garbageCollect(ctx, pod)
 }
 
-func planDeletions(tags []TagInfo, inUse map[string]bool, target int64) []TagInfo {
+func planDeletions(tags []TagInfo, inUse map[string]bool, target int64, freshSince int64) []TagInfo {
 	if target <= 0 {
 		return nil
 	}
 
-	protected := protectedTags(tags, inUse)
+	protected := protectedTags(tags, inUse, freshSince)
 	protectedManifests := map[string]bool{}
 	blobRefs := map[string]int{}
 	counted := map[string]bool{}
@@ -173,12 +186,12 @@ func planDeletions(tags []TagInfo, inUse map[string]bool, target int64) []TagInf
 	return plan
 }
 
-func protectedTags(tags []TagInfo, inUse map[string]bool) map[string]bool {
+func protectedTags(tags []TagInfo, inUse map[string]bool, freshSince int64) map[string]bool {
 	protected := map[string]bool{}
 	newest := map[string]TagInfo{}
 
 	for _, tag := range tags {
-		if inUse[tag.Key()] || inUse[tag.Repo+":"+tag.Digest] {
+		if inUse[tag.Key()] || inUse[tag.Repo+":"+tag.Digest] || tag.ModTime >= freshSince {
 			protected[tag.Key()] = true
 		}
 		if tag.IsBuildCache() {
@@ -193,6 +206,44 @@ func protectedTags(tags []TagInfo, inUse map[string]bool) map[string]bool {
 		protected[tag.Key()] = true
 	}
 	return protected
+}
+
+// The API holds new builds while this job runs, so only builds already running need to finish
+func (self *Cleaner) waitForBuilds(ctx context.Context, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	for {
+		running, err := self.runningBuilds(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to list builds: %w", err)
+		}
+		if running == 0 {
+			return nil
+		}
+		log.Infof("registry cleanup: waiting for %d running builds", running)
+
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("%d builds still running after %s", running, timeout)
+		case <-time.After(buildDrainInterval):
+		}
+	}
+}
+
+func (self *Cleaner) runningBuilds(ctx context.Context) (int, error) {
+	jobs, err := self.clientset.BatchV1().Jobs(self.namespace).List(ctx, metav1.ListOptions{LabelSelector: k8s.DeploymentJobSelector})
+	if err != nil {
+		return 0, err
+	}
+
+	running := 0
+	for _, job := range jobs.Items {
+		if !k8s.JobFinished(&job) {
+			running++
+		}
+	}
+	return running, nil
 }
 
 func (self *Cleaner) inventory(ctx context.Context, pod string) ([]TagInfo, error) {

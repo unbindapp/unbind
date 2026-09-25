@@ -2,14 +2,19 @@ package registrycache
 
 import (
 	"context"
+	"math"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 )
+
+const noFreshTags = int64(math.MaxInt64)
 
 func tag(repo, name string, modTime int64, blobs map[string]int64) TagInfo {
 	return TagInfo{
@@ -31,8 +36,8 @@ func keys(tags []TagInfo) []string {
 
 func TestPlanDeletionsUnderThreshold(t *testing.T) {
 	tags := []TagInfo{tag("app", "old", 1, map[string]int64{"a": 100})}
-	assert.Empty(t, planDeletions(tags, nil, 0))
-	assert.Empty(t, planDeletions(tags, nil, -50))
+	assert.Empty(t, planDeletions(tags, nil, 0, noFreshTags))
+	assert.Empty(t, planDeletions(tags, nil, -50, noFreshTags))
 }
 
 func TestPlanDeletionsPrefersBuildCacheThenOldest(t *testing.T) {
@@ -43,7 +48,7 @@ func TestPlanDeletionsPrefersBuildCacheThenOldest(t *testing.T) {
 		tag("app", "cfg-buildcache", 250, map[string]int64{"c": 100}),
 	}
 
-	plan := planDeletions(tags, nil, 300)
+	plan := planDeletions(tags, nil, 300, noFreshTags)
 
 	assert.Equal(t, []string{"app:cfg-buildcache", "app:oldest", "app:middle"}, keys(plan))
 }
@@ -56,7 +61,7 @@ func TestPlanDeletionsProtectsRunningImages(t *testing.T) {
 	}
 	inUse := map[string]bool{"app:running": true}
 
-	plan := planDeletions(tags, inUse, 1000)
+	plan := planDeletions(tags, inUse, 1000, noFreshTags)
 
 	assert.Equal(t, []string{"app:stale"}, keys(plan))
 }
@@ -69,7 +74,7 @@ func TestPlanDeletionsProtectsDigestPinnedImages(t *testing.T) {
 	}
 	inUse := map[string]bool{"app:" + pinned.Digest: true}
 
-	assert.Empty(t, planDeletions(tags, inUse, 1000))
+	assert.Empty(t, planDeletions(tags, inUse, 1000, noFreshTags))
 }
 
 func TestPlanDeletionsKeepsDigestSharedWithProtectedTag(t *testing.T) {
@@ -83,7 +88,7 @@ func TestPlanDeletionsKeepsDigestSharedWithProtectedTag(t *testing.T) {
 	}
 	inUse := map[string]bool{"app:running": true}
 
-	assert.Empty(t, planDeletions(tags, inUse, 1000))
+	assert.Empty(t, planDeletions(tags, inUse, 1000, noFreshTags))
 }
 
 func TestPlanDeletionsOnlyCountsBlobsNoSurvivorNeeds(t *testing.T) {
@@ -93,7 +98,7 @@ func TestPlanDeletionsOnlyCountsBlobsNoSurvivorNeeds(t *testing.T) {
 		tag("app", "old-b", 100, map[string]int64{"base": 900, "top-b": 100}),
 	}
 
-	plan := planDeletions(tags, nil, 150)
+	plan := planDeletions(tags, nil, 150, noFreshTags)
 
 	assert.Equal(t, []string{"app:old-b", "app:old-a"}, keys(plan))
 }
@@ -106,7 +111,7 @@ func TestPlanDeletionsStopsAtTarget(t *testing.T) {
 		tag("app", "c", 100, map[string]int64{"c": 100}),
 	}
 
-	plan := planDeletions(tags, nil, 100)
+	plan := planDeletions(tags, nil, 100, noFreshTags)
 
 	assert.Equal(t, []string{"app:c"}, keys(plan))
 }
@@ -119,9 +124,45 @@ func TestPlanDeletionsKeepsNewestPerRepository(t *testing.T) {
 		tag("two", "old", 100, map[string]int64{"d": 100}),
 	}
 
-	plan := planDeletions(tags, nil, 10000)
+	plan := planDeletions(tags, nil, 10000, noFreshTags)
 
 	assert.ElementsMatch(t, []string{"one:old", "two:old"}, keys(plan))
+}
+
+func TestPlanDeletionsProtectsFreshTags(t *testing.T) {
+	tags := []TagInfo{
+		tag("app", "newest", 300, map[string]int64{"n": 100}),
+		tag("app", "just-pushed", 250, map[string]int64{"j": 100}),
+		tag("app", "old", 100, map[string]int64{"o": 100}),
+	}
+
+	plan := planDeletions(tags, nil, 1000, 200)
+
+	assert.Equal(t, []string{"app:old"}, keys(plan))
+}
+
+func buildJob(name string, conditions ...batchv1.JobConditionType) *batchv1.Job {
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "unbind-system", Labels: map[string]string{"unbind-deployment-job": "true"}},
+	}
+	for _, condition := range conditions {
+		job.Status.Conditions = append(job.Status.Conditions, batchv1.JobCondition{Type: condition, Status: corev1.ConditionTrue})
+	}
+	return job
+}
+
+func TestWaitForBuildsReturnsWhenNoBuildRuns(t *testing.T) {
+	otherJob := &batchv1.Job{ObjectMeta: metav1.ObjectMeta{Name: "other", Namespace: "unbind-system"}}
+	clientset := k8sfake.NewClientset(buildJob("done", batchv1.JobComplete), buildJob("failed", batchv1.JobFailed), otherJob)
+	cleaner := &Cleaner{namespace: "unbind-system", clientset: clientset}
+
+	assert.NoError(t, cleaner.waitForBuilds(context.Background(), time.Second))
+}
+
+func TestWaitForBuildsGivesUpWhileBuildRuns(t *testing.T) {
+	cleaner := &Cleaner{namespace: "unbind-system", clientset: k8sfake.NewClientset(buildJob("just-created"))}
+
+	assert.Error(t, cleaner.waitForBuilds(context.Background(), 50*time.Millisecond))
 }
 
 func TestImageRefKey(t *testing.T) {

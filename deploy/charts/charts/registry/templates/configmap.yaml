@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: docker-registry-config
+  namespace: {{ .Release.Namespace }}
+data:
+  # No blob descriptor cache: garbage collection deletes blobs behind its back,
+  # and a stale entry makes pushes skip layers the registry no longer has
+  config.yml: |
+    version: 0.1
+    log:
+      fields:
+        service: registry
+    storage:
+      delete:
+        enabled: true
+      filesystem:
+        rootdirectory: /var/lib/registry
+      maintenance:
+        uploadpurging:
+          enabled: false
+      tag:
+        concurrencylimit: 8
+    http:
+      addr: :5000
+      headers:
+        X-Content-Type-Options: [nosniff]
+    health:
+      storagedriver:
+        enabled: true
+        interval: 10s
+        threshold: 3

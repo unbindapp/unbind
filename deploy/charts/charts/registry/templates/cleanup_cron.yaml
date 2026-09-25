@@ -10,6 +10,8 @@ spec:
   failedJobsHistoryLimit: 3
   jobTemplate:
     spec:
+      # Builds wait while this job runs, so a failed run waits for the next schedule instead of retrying
+      backoffLimit: 0
       activeDeadlineSeconds: {{ .Values.cleanup.timeoutSeconds | default 3600 }}
       template:
         spec:
