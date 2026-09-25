@@ -604,7 +604,9 @@ function DatabaseSection({ volume }: TProps) {
         <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
           <BlockItemHeader type="column">
             <BlockItemTitle>Mount Path</BlockItemTitle>
-            <BlockItemDescription>Fixed for databases.</BlockItemDescription>
+            <BlockItemDescription>
+              The volume's folder in the service. Fixed for databases.
+            </BlockItemDescription>
           </BlockItemHeader>
           <BlockItemContent>
             <BlockItemButtonLike
