@@ -116,10 +116,29 @@ func TestMysqlStatusCondition(t *testing.T) {
 			expectedReason: v1.DatabaseReasonReady,
 		},
 		{
-			name: "initialized but unavailable is failed",
+			name: "unavailable while pods start is progressing",
 			cluster: cluster(
 				metav1.Condition{Type: mocov1beta2.ConditionInitialized, Status: metav1.ConditionTrue},
-				metav1.Condition{Type: mocov1beta2.ConditionAvailable, Status: metav1.ConditionFalse, Message: "pods down"},
+				metav1.Condition{Type: mocov1beta2.ConditionAvailable, Status: metav1.ConditionFalse, Message: "the current state is Lost"},
+				metav1.Condition{Type: mocov1beta2.ConditionStatefulSetReady, Status: metav1.ConditionFalse},
+			),
+			expectedReason: v1.DatabaseReasonProgressing,
+		},
+		{
+			name: "unavailable with pods ready for an older spec is progressing",
+			cluster: cluster(
+				metav1.Condition{Type: mocov1beta2.ConditionInitialized, Status: metav1.ConditionTrue},
+				metav1.Condition{Type: mocov1beta2.ConditionAvailable, Status: metav1.ConditionFalse, Message: "the current state is Lost"},
+				metav1.Condition{Type: mocov1beta2.ConditionStatefulSetReady, Status: metav1.ConditionTrue, ObservedGeneration: -1},
+			),
+			expectedReason: v1.DatabaseReasonProgressing,
+		},
+		{
+			name: "unavailable with every pod ready is failed",
+			cluster: cluster(
+				metav1.Condition{Type: mocov1beta2.ConditionInitialized, Status: metav1.ConditionTrue},
+				metav1.Condition{Type: mocov1beta2.ConditionAvailable, Status: metav1.ConditionFalse, Message: "the current state is Failed"},
+				metav1.Condition{Type: mocov1beta2.ConditionStatefulSetReady, Status: metav1.ConditionTrue},
 			),
 			expectedReason: v1.DatabaseReasonFailed,
 		},

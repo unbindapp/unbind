@@ -96,8 +96,8 @@ export default function DeleteSection({ volume, className }: TProps) {
           </p>
         ) : volume.mount_status === "detaching" ? (
           <p className="text-muted-foreground max-w-full px-1.5">
-            This volume is still <span className="text-foreground font-semibold">unmounting</span>{" "}
-            from its previous service. It can be deleted once that is done.
+            This volume is still <span className="text-foreground font-semibold">unmounting</span>.
+            It can be deleted once that is done.
           </p>
         ) : (
           <p className="text-muted-foreground max-w-full px-1.5">

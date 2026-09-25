@@ -139,12 +139,15 @@ func mysqlStatusCondition(cluster *mocov1beta2.MySQLCluster) metav1.Condition {
 	healthy := apimeta.FindStatusCondition(cluster.Status.Conditions, mocov1beta2.ConditionHealthy)
 	available := apimeta.FindStatusCondition(cluster.Status.Conditions, mocov1beta2.ConditionAvailable)
 	initialized := apimeta.FindStatusCondition(cluster.Status.Conditions, mocov1beta2.ConditionInitialized)
+	// MOCO reports a cluster whose pods are still starting as Lost, so only an unavailable cluster with every pod up has failed
+	podsReady := apimeta.FindStatusCondition(cluster.Status.Conditions, mocov1beta2.ConditionStatefulSetReady)
 
 	switch {
 	case healthy != nil && healthy.Status == metav1.ConditionTrue:
 		return databaseCondition(metav1.ConditionTrue, v1.DatabaseReasonReady, "MySQL cluster is healthy")
 	case initialized != nil && initialized.Status == metav1.ConditionTrue &&
-		available != nil && available.Status == metav1.ConditionFalse:
+		available != nil && available.Status == metav1.ConditionFalse &&
+		podsReady != nil && podsReady.Status == metav1.ConditionTrue && podsReady.ObservedGeneration == cluster.Generation:
 		message := available.Message
 		if healthy != nil && healthy.Message != "" {
 			message = healthy.Message

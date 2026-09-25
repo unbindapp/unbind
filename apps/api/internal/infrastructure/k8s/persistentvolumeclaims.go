@@ -279,7 +279,8 @@ type pvcBinding struct {
 // from the PVC label or the DB; a pod's service label is only trusted if that
 // service still exists. Pods otherwise just signal whether mounts are still
 // physically live, so a volume whose service was deleted reports as detaching
-// while its old pods terminate instead of appearing mounted. A claim keeps
+// while its old pods terminate instead of appearing mounted, and one unmounted
+// from a service that still exists stays on it as detaching. A claim keeps
 // holding database data after its service is gone, so the engine label counts
 // on its own.
 func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName string, pvcLabels map[string]string, pods []corev1.Pod) (*pvcBinding, error) {
@@ -290,6 +291,7 @@ func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName string, p
 
 	blockingPods := mountBlockingPods(pods)
 
+	claimedByPodsOnly := serviceID == nil
 	if serviceID == nil {
 		for _, pod := range blockingPods {
 			podServiceID, err := uuid.Parse(pod.GetLabels()[serviceLabel])
@@ -311,17 +313,22 @@ func (self *KubeClient) resolvePVCBinding(ctx context.Context, pvcName string, p
 	return &pvcBinding{
 		ServiceID:   serviceID,
 		IsDatabase:  isDatabaseClaim(pvcLabels, service),
-		MountStatus: resolveMountStatus(serviceID, service, pods, blockingPods),
+		MountStatus: resolveMountStatus(serviceID, service, claimedByPodsOnly, pods, blockingPods),
 		InUseByPods: len(blockingPods) > 0,
 	}, nil
 }
 
-func resolveMountStatus(serviceID *uuid.UUID, service *ent.Service, pods, blockingPods []corev1.Pod) models.PVCMountStatus {
+func resolveMountStatus(serviceID *uuid.UUID, service *ent.Service, claimedByPodsOnly bool, pods, blockingPods []corev1.Pod) models.PVCMountStatus {
 	if serviceID == nil {
 		if len(blockingPods) > 0 {
 			return models.PVCMountStatusDetaching
 		}
 		return models.PVCMountStatusUnattached
+	}
+	// A service lists its volumes in its config, so one only its old pods still hold is being
+	// unmounted. Databases on their operator's storage don't list theirs.
+	if claimedByPodsOnly && service != nil && service.Type != schema.ServiceTypeDatabase {
+		return models.PVCMountStatusDetaching
 	}
 	if anyPodRunning(pods) {
 		return models.PVCMountStatusMounted

@@ -51,16 +51,18 @@ export default function VolumeUsageLine({ volume, className }: TProps) {
           className,
         )}
       >
-        {usagePercentage !== undefined && !isUnmountStaged && (
-          <div className="absolute top-0 left-0 h-full w-full">
-            <div
-              style={{
-                transform: `scaleX(${Math.ceil(usagePercentage)}%)`,
-              }}
-              className="bg-foreground/1-10 group-data-[usage=high]/line:bg-warning/3-10 group-data-[usage=critical]/line:bg-destructive/3-10 h-full w-full origin-left"
-            />
-          </div>
-        )}
+        {usagePercentage !== undefined &&
+          !isUnmountStaged &&
+          volume.mount_status !== "detaching" && (
+            <div className="absolute top-0 left-0 h-full w-full">
+              <div
+                style={{
+                  transform: `scaleX(${Math.ceil(usagePercentage)}%)`,
+                }}
+                className="bg-foreground/1-10 group-data-[usage=high]/line:bg-warning/3-10 group-data-[usage=critical]/line:bg-destructive/3-10 h-full w-full origin-left"
+              />
+            </div>
+          )}
         <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive group-data-staged/line:text-change flex w-full items-center justify-between gap-4 px-3">
           <div className="relative flex w-full items-center justify-between gap-8 leading-tight font-medium">
             <div
@@ -94,6 +96,7 @@ function getUnmountStatus(isApplying: boolean) {
 
 function getLineStatus(volume: TVolumeShallow, usagePercentage: number | undefined) {
   const hourglass = <HourglassIcon className="animate-hourglass size-3 min-w-0 shrink-0" />;
+  if (volume.mount_status === "detaching") return { icon: hourglass, text: "Unmounting" };
   if (volume.mount_status === "awaiting_deployment") {
     return {
       icon: <ClockIcon className="size-3.5 min-w-0 shrink-0" />,

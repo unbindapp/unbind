@@ -36,6 +36,7 @@ import {
   CheckIcon,
   EjectIcon,
   FolderClosedIcon,
+  HourglassIcon,
   HardDriveIcon,
   RotateCcwIcon,
   UnplugIcon,
@@ -59,9 +60,11 @@ export default function ConnectionSection({ volume }: TProps) {
   const staged = useStagedVolumeChange(volume.id);
   const discard = useStagedChangesStore((s) => s.discard);
 
-  // A staged unmount is done once the volume is off the service, by the deploy or by another session
+  // A staged unmount is done once the volume is leaving the service, by the deploy or by another
+  // session
   const settledUnmountId =
-    staged?.mountPath === null && staged.serviceId !== volume.mounted_on_service_id
+    staged?.mountPath === null &&
+    (staged.serviceId !== volume.mounted_on_service_id || volume.mount_status === "detaching")
       ? staged.id
       : undefined;
   useEffect(() => {
@@ -304,6 +307,7 @@ function AttachedSection({ volume }: TProps) {
   const discard = useStagedChangesStore((s) => s.discard);
   const isLocked = isVolumeLocked(volume) || staged?.isApplying === true;
   const isUnmountStaged = staged?.mountPath === null;
+  const isUnmounting = volume.mount_status === "detaching";
 
   const attachedService = servicesData?.services.find(
     (service) => service.id === volume.mounted_on_service_id,
@@ -418,7 +422,11 @@ function AttachedSection({ volume }: TProps) {
       isApplying={staged?.isApplying}
       onDiscard={() => staged && discard([staged.id])}
     >
-      <MountedOnBlock volume={volume} isUnmountStaged={isUnmountStaged} trailing={unmountControl} />
+      <MountedOnBlock
+        volume={volume}
+        isUnmountStaged={isUnmountStaged}
+        trailing={isUnmounting ? undefined : unmountControl}
+      />
       <Block>
         <form.AppField
           name="mountPath"
@@ -434,7 +442,13 @@ function AttachedSection({ volume }: TProps) {
                   baseline={defaultValues.mountPath}
                   revertTo={serverMountPath}
                   disabled={isLocked || !attachedService || isUnmountStaged}
-                  disabledText={isUnmountStaged ? "The volume will unmount" : undefined}
+                  disabledText={
+                    isUnmountStaged
+                      ? "The volume will unmount"
+                      : isUnmounting
+                        ? "The volume is unmounting"
+                        : undefined
+                  }
                   onConfirm={stageMountPath}
                   onRevert={() => discard([volumeChangeId(volume.id)])}
                 />
@@ -620,6 +634,7 @@ function MountedOnBlock({
     query: { data: servicesData, isPending, error },
   } = useServices();
   const service = servicesData?.services.find((s) => s.id === volume.mounted_on_service_id);
+  const isUnmounting = volume.mount_status === "detaching";
 
   return (
     <Block>
@@ -633,17 +648,21 @@ function MountedOnBlock({
             asElement="div"
             isPending={isPending}
             hasChanges={isUnmountStaged}
-            className={cn(isVolumeLocked(volume) && "opacity-50")}
+            className={cn(volume.is_deleting && "opacity-50")}
             text={
               isPending
                 ? "Loading"
                 : isUnmountStaged
                   ? "The volume will unmount"
-                  : (service?.name ?? "Service not found")
+                  : isUnmounting
+                    ? "The volume is unmounting"
+                    : (service?.name ?? "Service not found")
             }
             Icon={({ className }: { className?: string }) =>
               isUnmountStaged ? (
                 <EjectIcon className={className} />
+              ) : isUnmounting ? (
+                <HourglassIcon className={cn("animate-hourglass", className)} />
               ) : (
                 <ServicePickerTriggerIcon service={service} color="brand" className={className} />
               )
