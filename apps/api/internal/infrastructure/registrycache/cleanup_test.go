@@ -40,17 +40,32 @@ func TestPlanDeletionsUnderThreshold(t *testing.T) {
 	assert.Empty(t, planDeletions(tags, nil, -50, noFreshTags))
 }
 
-func TestPlanDeletionsPrefersBuildCacheThenOldest(t *testing.T) {
+func TestPlanDeletionsOldestFirst(t *testing.T) {
 	tags := []TagInfo{
 		tag("app", "newest", 300, map[string]int64{"n": 100}),
 		tag("app", "middle", 200, map[string]int64{"m": 100}),
 		tag("app", "oldest", 100, map[string]int64{"o": 100}),
-		tag("app", "cfg-buildcache", 250, map[string]int64{"c": 100}),
+		tag("app", "stale-buildcache", 150, map[string]int64{"s": 100}),
+		tag("app", "current-buildcache", 250, map[string]int64{"c": 100}),
 	}
 
 	plan := planDeletions(tags, nil, 300, noFreshTags)
 
-	assert.Equal(t, []string{"app:cfg-buildcache", "app:oldest", "app:middle"}, keys(plan))
+	assert.Equal(t, []string{"app:oldest", "app:stale-buildcache", "app:middle"}, keys(plan))
+}
+
+func TestPlanDeletionsKeepsNewestBuildCachePerRepository(t *testing.T) {
+	tags := []TagInfo{
+		tag("one", "image", 50, map[string]int64{"i1": 100}),
+		tag("one", "new-buildcache", 200, map[string]int64{"a": 100}),
+		tag("one", "old-buildcache", 100, map[string]int64{"b": 100}),
+		tag("two", "image", 50, map[string]int64{"i2": 100}),
+		tag("two", "only-buildcache", 10, map[string]int64{"c": 100}),
+	}
+
+	plan := planDeletions(tags, nil, 10000, noFreshTags)
+
+	assert.Equal(t, []string{"one:old-buildcache"}, keys(plan))
 }
 
 func TestPlanDeletionsProtectsRunningImages(t *testing.T) {

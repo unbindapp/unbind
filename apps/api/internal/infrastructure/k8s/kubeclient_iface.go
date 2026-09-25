@@ -4,6 +4,7 @@ package k8s
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -50,6 +51,9 @@ type KubeClientInterface interface {
 	CreateDeployment(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (jobName string, err error)
 	// For canceling jobs.
 	CancelJobsByServiceID(ctx context.Context, serviceID string) error
+	// A build started while a cancelled one is still stopping can share BuildKit steps with it and inherit its
+	// cancellation. A job stuck deleting for longer than grace, for example on a dead server, stops counting.
+	ServiceBuildStopping(ctx context.Context, serviceID string, grace time.Duration) (bool, error)
 	// Deletes a single build job by name, cleaning up its pods. Missing jobs are not an error.
 	DeleteDeploymentJob(ctx context.Context, jobName string) error
 	CountActiveDeploymentJobs(ctx context.Context) (int, error)

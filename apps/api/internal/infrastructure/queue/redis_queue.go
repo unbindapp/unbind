@@ -64,6 +64,19 @@ func (q *Queue[T]) Enqueue(ctx context.Context, id string, data T) error {
 	}).Err()
 }
 
+// Requeue puts a dequeued item back where it was, ahead of anything queued after it
+func (q *Queue[T]) Requeue(ctx context.Context, item *QueueItem[T]) error {
+	itemData, err := json.Marshal(item)
+	if err != nil {
+		return err
+	}
+
+	return q.client.ZAdd(ctx, q.key, redis.Z{
+		Score:  float64(item.EnqueuedAt.Unix()),
+		Member: string(itemData),
+	}).Err()
+}
+
 // Dequeue removes and returns highest priority item
 func (q *Queue[T]) Dequeue(ctx context.Context) (*QueueItem[T], error) {
 	results, err := q.client.ZRange(ctx, q.key, 0, 0).Result()

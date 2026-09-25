@@ -59,6 +59,7 @@ func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[str
 			ImageName:         outputImage,
 			RailpackBuildPlan: buildResult.Plan,
 			CacheKey:          cacheKey,
+			CacheMountKey:     self.RailpackCacheMountKey(inputs),
 			Secrets:           buildSecrets,
 			SecretsHash:       inputs.SecretsHash,
 		},

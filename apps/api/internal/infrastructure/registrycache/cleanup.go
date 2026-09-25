@@ -156,10 +156,8 @@ func planDeletions(tags []TagInfo, inUse map[string]bool, target int64, freshSin
 		candidates = append(candidates, tag)
 	}
 
+	// Oldest first: a cache in use is rewritten by every build, so a stale one sorts ahead of it
 	sort.SliceStable(candidates, func(i, j int) bool {
-		if candidates[i].IsBuildCache() != candidates[j].IsBuildCache() {
-			return candidates[i].IsBuildCache()
-		}
 		return candidates[i].ModTime < candidates[j].ModTime
 	})
 
@@ -188,17 +186,20 @@ func planDeletions(tags []TagInfo, inUse map[string]bool, target int64, freshSin
 
 func protectedTags(tags []TagInfo, inUse map[string]bool, freshSince int64) map[string]bool {
 	protected := map[string]bool{}
-	newest := map[string]TagInfo{}
+	// The newest image and the newest build cache of each repository
+	type newestKey struct {
+		repo       string
+		buildCache bool
+	}
+	newest := map[newestKey]TagInfo{}
 
 	for _, tag := range tags {
 		if inUse[tag.Key()] || inUse[tag.Repo+":"+tag.Digest] || tag.ModTime >= freshSince {
 			protected[tag.Key()] = true
 		}
-		if tag.IsBuildCache() {
-			continue
-		}
-		if current, ok := newest[tag.Repo]; !ok || tag.ModTime > current.ModTime {
-			newest[tag.Repo] = tag
+		key := newestKey{repo: tag.Repo, buildCache: tag.IsBuildCache()}
+		if current, ok := newest[key]; !ok || tag.ModTime > current.ModTime {
+			newest[key] = tag
 		}
 	}
 

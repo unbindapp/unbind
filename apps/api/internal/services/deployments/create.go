@@ -80,9 +80,6 @@ func (self *DeploymentService) CreateManualDeployment(ctx context.Context, reque
 	if err != nil {
 		return nil, err
 	}
-	if input.GitSha != nil {
-		env["CHECKOUT_COMMIT_SHA"] = *input.GitSha
-	}
 
 	job, err := self.deploymentController.EnqueueDeploymentJob(ctx, deployctl.DeploymentJobRequest{
 		ServiceID:         input.ServiceID,

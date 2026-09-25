@@ -178,7 +178,6 @@ func (self *DeploymentService) CreateRedeployment(ctx context.Context, requester
 
 	if deployment.CommitSha != nil {
 		commitSha = *deployment.CommitSha
-		env["CHECKOUT_COMMIT_SHA"] = commitSha
 	}
 
 	job, err := self.deploymentController.EnqueueDeploymentJob(ctx, deployctl.DeploymentJobRequest{

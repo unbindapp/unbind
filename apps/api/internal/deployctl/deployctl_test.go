@@ -12,14 +12,18 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/config"
+	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/queue"
 	variables_service "github.com/unbindapp/unbind-api/internal/services/variables"
 	"github.com/unbindapp/unbind-api/internal/vartemplate"
 	k8s_mocks "github.com/unbindapp/unbind-api/mocks/infrastructure/k8s"
 	github_mocks "github.com/unbindapp/unbind-api/mocks/integrations/github"
 	repo_mocks "github.com/unbindapp/unbind-api/mocks/repositories"
+	deployment_mocks "github.com/unbindapp/unbind-api/mocks/repository/deployment"
 	service_mocks "github.com/unbindapp/unbind-api/mocks/repository/service"
+	system_mocks "github.com/unbindapp/unbind-api/mocks/repository/system"
 	variables_mocks "github.com/unbindapp/unbind-api/mocks/services/variables"
 	webhooks_mocks "github.com/unbindapp/unbind-api/mocks/services/webhooks"
 )
@@ -303,6 +307,92 @@ func (suite *DeploymentControllerTestSuite) TestJobQueueOperations() {
 	depJobs, err = suite.deploymentController.dependentQueue.GetAll(suite.ctx)
 	suite.Require().NoError(err)
 	suite.Assert().Len(depJobs, 0)
+}
+
+func (suite *DeploymentControllerTestSuite) enqueueBuild(commitSHA string) map[string]string {
+	serviceID := uuid.New()
+	deploymentRepo := &deployment_mocks.DeploymentRepositoryMock{}
+	systemRepo := &system_mocks.SystemRepositoryMock{}
+	serviceRepo := &service_mocks.ServiceRepositoryMock{}
+	suite.repoMock.EXPECT().Deployment().Return(deploymentRepo)
+	suite.repoMock.EXPECT().System().Return(systemRepo)
+	suite.repoMock.EXPECT().Service().Return(serviceRepo).Maybe()
+	serviceRepo.EXPECT().GetByID(mock.Anything, serviceID).Return(nil, assert.AnError).Maybe()
+	deploymentRepo.EXPECT().Create(mock.Anything, mock.Anything, serviceID, commitSHA, mock.Anything, mock.Anything, mock.Anything, mock.Anything, schema.DeploymentStatusBuildQueued).
+		Return(&ent.Deployment{ID: uuid.New()}, nil)
+	suite.variablesMock.EXPECT().RenderServiceVariables(mock.Anything, serviceID).Return(&variables_service.RenderResult{}, nil)
+	systemRepo.EXPECT().GetDefaultRegistry(mock.Anything).Return(&ent.Registry{Host: "registry.local", KubernetesSecret: "registry"}, nil)
+	systemRepo.EXPECT().GetImagePullSecrets(mock.Anything).Return(nil, nil)
+	suite.k8sMock.EXPECT().GetInternalClient().Return(nil)
+	suite.k8sMock.EXPECT().GetSecret(mock.Anything, "registry", "unbind-system", mock.Anything).Return(nil, nil)
+	suite.k8sMock.EXPECT().ParseRegistryCredentials(mock.Anything).Return("user", "pass", nil)
+
+	_, err := suite.deploymentController.EnqueueDeploymentJob(suite.ctx, DeploymentJobRequest{
+		ServiceID:   serviceID,
+		Source:      schema.DeploymentSourceGit,
+		CommitSHA:   commitSHA,
+		Environment: map[string]string{},
+	})
+	suite.Require().NoError(err)
+
+	jobs, err := suite.deploymentController.jobQueue.GetAll(suite.ctx)
+	suite.Require().NoError(err)
+	suite.Require().Len(jobs, 1)
+	return jobs[0].Data.Environment
+}
+
+func (suite *DeploymentControllerTestSuite) TestEnqueueDeploymentJobPinsCommit() {
+	env := suite.enqueueBuild("0123456789abcdef0123456789abcdef01234567")
+	suite.Equal("0123456789abcdef0123456789abcdef01234567", env["CHECKOUT_COMMIT_SHA"])
+}
+
+func (suite *DeploymentControllerTestSuite) TestEnqueueDeploymentJobWithoutCommitClonesRef() {
+	env := suite.enqueueBuild("")
+	suite.NotContains(env, "CHECKOUT_COMMIT_SHA")
+}
+
+func (suite *DeploymentControllerTestSuite) queuedBuild(serviceID uuid.UUID) (*queue.QueueItem[DeploymentJobRequest], *deployment_mocks.DeploymentRepositoryMock) {
+	jobID := uuid.New()
+	deploymentRepo := &deployment_mocks.DeploymentRepositoryMock{}
+	suite.repoMock.EXPECT().Deployment().Return(deploymentRepo)
+	deploymentRepo.EXPECT().MarkCancelledExcept(mock.Anything, serviceID, jobID).Return(nil)
+	suite.k8sMock.EXPECT().CancelJobsByServiceID(mock.Anything, serviceID.String()).Return(nil)
+
+	return &queue.QueueItem[DeploymentJobRequest]{
+		ID:         jobID.String(),
+		Data:       DeploymentJobRequest{ServiceID: serviceID, Environment: map[string]string{}},
+		EnqueuedAt: time.Now().Add(-time.Minute),
+	}, deploymentRepo
+}
+
+func (suite *DeploymentControllerTestSuite) TestProcessJobRequeuesWhileCancelledBuildStops() {
+	serviceID := uuid.New()
+	item, _ := suite.queuedBuild(serviceID)
+	suite.k8sMock.EXPECT().ServiceBuildStopping(mock.Anything, serviceID.String(), cancelledBuildStopGrace).Return(true, nil)
+	suite.Require().NoError(suite.deploymentController.jobQueue.Enqueue(suite.ctx, uuid.NewString(), DeploymentJobRequest{ServiceID: uuid.New()}))
+
+	suite.Require().NoError(suite.deploymentController.processJob(suite.ctx, item))
+
+	jobs, err := suite.deploymentController.jobQueue.GetAll(suite.ctx)
+	suite.Require().NoError(err)
+	suite.Require().Len(jobs, 2)
+	suite.Equal(item.ID, jobs[0].ID, "the requeued build keeps its place ahead of later ones")
+}
+
+func (suite *DeploymentControllerTestSuite) TestProcessJobStartsOnceCancelledBuildIsGone() {
+	serviceID := uuid.New()
+	item, deploymentRepo := suite.queuedBuild(serviceID)
+	jobID := uuid.MustParse(item.ID)
+	suite.k8sMock.EXPECT().ServiceBuildStopping(mock.Anything, serviceID.String(), cancelledBuildStopGrace).Return(false, nil)
+	deploymentRepo.EXPECT().MarkStarted(mock.Anything, mock.Anything, jobID, mock.Anything).Return(&ent.Deployment{ID: jobID}, nil)
+	suite.k8sMock.EXPECT().CreateDeployment(mock.Anything, item.ID, serviceID.String(), item.Data.Environment).Return("build-job", nil)
+	deploymentRepo.EXPECT().AssignKubernetesJobName(mock.Anything, jobID, "build-job").Return(&ent.Deployment{ID: jobID}, nil)
+
+	suite.Require().NoError(suite.deploymentController.processJob(suite.ctx, item))
+
+	jobs, err := suite.deploymentController.jobQueue.GetAll(suite.ctx)
+	suite.Require().NoError(err)
+	suite.Empty(jobs)
 }
 
 func TestDeploymentControllerSuite(t *testing.T) {

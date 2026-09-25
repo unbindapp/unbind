@@ -124,18 +124,40 @@ func (self *KubeClient) CancelJobsByServiceID(ctx context.Context, serviceID str
 		return fmt.Errorf("failed to list jobs for service ID %s: %v", serviceID, err)
 	}
 	for _, job := range jobList.Items {
-		if job.Status.Active > 0 {
-			// Delete the job. Using foreground deletion ensures that the pods are cleaned up.
-			deletePolicy := metav1.DeletePropagationForeground
-			if err := self.clientset.BatchV1().Jobs(self.config.GetSystemNamespace()).Delete(ctx, job.Name, metav1.DeleteOptions{
-				PropagationPolicy: &deletePolicy,
-			}); err != nil {
-				return fmt.Errorf("failed to delete job %s: %v", job.Name, err)
-			}
-			log.Infof("Canceled existing job %s for service %s\n", job.Name, serviceID)
+		// Not status.active, a job whose pod hasn't started yet would still build
+		if JobFinished(&job) || job.DeletionTimestamp != nil {
+			continue
 		}
+		// Foreground deletion keeps the job around until its pods are gone
+		deletePolicy := metav1.DeletePropagationForeground
+		if err := self.clientset.BatchV1().Jobs(self.config.GetSystemNamespace()).Delete(ctx, job.Name, metav1.DeleteOptions{
+			PropagationPolicy: &deletePolicy,
+		}); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete job %s: %v", job.Name, err)
+		}
+		log.Infof("Canceled existing job %s for service %s\n", job.Name, serviceID)
 	}
 	return nil
+}
+
+// A build started while a cancelled one is still stopping can share BuildKit steps with it and inherit its
+// cancellation. A job stuck deleting for longer than grace, for example on a dead server, stops counting.
+func (self *KubeClient) ServiceBuildStopping(ctx context.Context, serviceID string, grace time.Duration) (bool, error) {
+	jobList, err := self.clientset.BatchV1().Jobs(self.config.GetSystemNamespace()).List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("unbind-deployment-service=%s", serviceID),
+	})
+	if err != nil {
+		return false, fmt.Errorf("failed to list jobs for service ID %s: %v", serviceID, err)
+	}
+	for _, job := range jobList.Items {
+		if JobFinished(&job) || job.DeletionTimestamp == nil {
+			continue
+		}
+		if time.Since(job.DeletionTimestamp.Time) < grace {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // Deletes a single build job by name, cleaning up its pods. Missing jobs are not an error.

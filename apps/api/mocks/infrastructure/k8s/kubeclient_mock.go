@@ -6,6 +6,7 @@ package mocks_infrastructure_k8s
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
@@ -4418,6 +4419,78 @@ func (_c *KubeClientMock_RunManifestApplyJob_Call) Return(err error) *KubeClient
 }
 
 func (_c *KubeClientMock_RunManifestApplyJob_Call) RunAndReturn(run func(ctx context.Context, version string, image string, manifests []byte) error) *KubeClientMock_RunManifestApplyJob_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ServiceBuildStopping provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) ServiceBuildStopping(ctx context.Context, serviceID string, grace time.Duration) (bool, error) {
+	ret := _mock.Called(ctx, serviceID, grace)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ServiceBuildStopping")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Duration) (bool, error)); ok {
+		return returnFunc(ctx, serviceID, grace)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Duration) bool); ok {
+		r0 = returnFunc(ctx, serviceID, grace)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, time.Duration) error); ok {
+		r1 = returnFunc(ctx, serviceID, grace)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_ServiceBuildStopping_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ServiceBuildStopping'
+type KubeClientMock_ServiceBuildStopping_Call struct {
+	*mock.Call
+}
+
+// ServiceBuildStopping is a helper method to define mock.On call
+//   - ctx context.Context
+//   - serviceID string
+//   - grace time.Duration
+func (_e *KubeClientMock_Expecter) ServiceBuildStopping(ctx any, serviceID any, grace any) *KubeClientMock_ServiceBuildStopping_Call {
+	return &KubeClientMock_ServiceBuildStopping_Call{Call: _e.mock.On("ServiceBuildStopping", ctx, serviceID, grace)}
+}
+
+func (_c *KubeClientMock_ServiceBuildStopping_Call) Run(run func(ctx context.Context, serviceID string, grace time.Duration)) *KubeClientMock_ServiceBuildStopping_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 time.Duration
+		if args[2] != nil {
+			arg2 = args[2].(time.Duration)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_ServiceBuildStopping_Call) Return(b bool, err error) *KubeClientMock_ServiceBuildStopping_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *KubeClientMock_ServiceBuildStopping_Call) RunAndReturn(run func(ctx context.Context, serviceID string, grace time.Duration) (bool, error)) *KubeClientMock_ServiceBuildStopping_Call {
 	_c.Call.Return(run)
 	return _c
 }

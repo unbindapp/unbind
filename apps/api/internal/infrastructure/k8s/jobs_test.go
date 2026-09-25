@@ -1,11 +1,16 @@
 package k8s
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestJobConditionType_String(t *testing.T) {
@@ -279,4 +284,84 @@ func TestDeploymentJobsSelector(t *testing.T) {
 	assert.Equal(t, "unbind-deployment-job=true", selector)
 	assert.Contains(t, selector, "unbind-deployment-job")
 	assert.Contains(t, selector, "true")
+}
+
+func buildJob(name, serviceID string, mutations ...func(*batchv1.Job)) *batchv1.Job {
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: testNamespace,
+			Labels:    map[string]string{"unbind-deployment-job": "true", "unbind-deployment-service": serviceID},
+		},
+	}
+	for _, mutate := range mutations {
+		mutate(job)
+	}
+	return job
+}
+
+func withActivePod(job *batchv1.Job) {
+	job.Status.Active = 1
+}
+
+func completed(job *batchv1.Job) {
+	job.Status.Conditions = []batchv1.JobCondition{{Type: batchv1.JobComplete, Status: corev1.ConditionTrue}}
+}
+
+func deletingSince(ago time.Duration) func(*batchv1.Job) {
+	return func(job *batchv1.Job) {
+		since := metav1.NewTime(time.Now().Add(-ago))
+		job.DeletionTimestamp = &since
+		job.Finalizers = []string{"foregroundDeletion"}
+	}
+}
+
+func remainingJobs(t *testing.T, client *KubeClient) []string {
+	t.Helper()
+	jobs, err := client.clientset.BatchV1().Jobs(testNamespace).List(context.Background(), metav1.ListOptions{})
+	require.NoError(t, err)
+	names := make([]string, 0, len(jobs.Items))
+	for _, job := range jobs.Items {
+		names = append(names, job.Name)
+	}
+	return names
+}
+
+func TestCancelJobsByServiceIDDeletesUnfinishedJobs(t *testing.T) {
+	client, _ := testKubeClient(t,
+		buildJob("no-pod-yet", "svc-a"),
+		buildJob("running", "svc-a", withActivePod),
+		buildJob("done", "svc-a", completed),
+		buildJob("other-service", "svc-b", withActivePod),
+	)
+
+	require.NoError(t, client.CancelJobsByServiceID(context.Background(), "svc-a"))
+
+	assert.ElementsMatch(t, []string{"done", "other-service"}, remainingJobs(t, client))
+}
+
+func TestServiceBuildStopping(t *testing.T) {
+	grace := time.Minute
+	tests := []struct {
+		name     string
+		job      *batchv1.Job
+		expected bool
+	}{
+		{"deleting within grace", buildJob("j", "svc-a", withActivePod, deletingSince(5*time.Second)), true},
+		{"deleting past grace", buildJob("j", "svc-a", withActivePod, deletingSince(2*time.Minute)), false},
+		{"finished while deleting", buildJob("j", "svc-a", completed, deletingSince(5*time.Second)), false},
+		{"running, not deleted", buildJob("j", "svc-a", withActivePod), false},
+		{"other service deleting", buildJob("j", "svc-b", withActivePod, deletingSince(5*time.Second)), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, _ := testKubeClient(t, tt.job)
+
+			stopping, err := client.ServiceBuildStopping(context.Background(), "svc-a", grace)
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.expected, stopping)
+		})
+	}
 }

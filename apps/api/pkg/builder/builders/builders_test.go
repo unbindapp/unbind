@@ -25,26 +25,53 @@ func baseInputs() BuildInputs {
 		BuildCommand:   "pnpm turbo build --filter=web",
 		RunCommand:     "pnpm --filter=web start",
 		SecretsHash:    "secrets-a",
+		ServiceRef:     "service-a",
 		UniqueFallback: uuid.New().String(),
 	}
 }
 
 // Two services that build the same commit of the same repo the same way are the
-// same build: one image, one shared cache.
-func TestGenerateBuildMetadataIdenticalInputsShareImageAndCache(t *testing.T) {
+// same build and share one image, but each keeps its own cache.
+func TestGenerateBuildMetadataIdenticalInputsShareImageNotCache(t *testing.T) {
 	b := testBuilder()
 
-	crawlerImage, crawlerCache := b.GenerateBuildMetadata(baseInputs())
-	webImage, webCache := b.GenerateBuildMetadata(baseInputs())
+	crawler := baseInputs()
+	web := baseInputs()
+	web.ServiceRef = "service-b"
+
+	crawlerImage, crawlerCache := b.GenerateBuildMetadata(crawler)
+	webImage, webCache := b.GenerateBuildMetadata(web)
 
 	if crawlerImage != webImage {
 		t.Errorf("identical inputs produced different images: %q vs %q", crawlerImage, webImage)
 	}
-	if crawlerCache != webCache {
-		t.Errorf("identical inputs produced different cache refs: %q vs %q", crawlerCache, webCache)
+	if crawlerCache == webCache {
+		t.Errorf("two services shared cache ref %q", crawlerCache)
 	}
 	if want := "registry.unbind.app/tezara:"; !strings.HasPrefix(crawlerImage, want) {
 		t.Errorf("image %q does not start with %q", crawlerImage, want)
+	}
+}
+
+// Build env can be baked into the output, so it changes the image and Railpack's cache
+// folders. The registry cache stays, BuildKit reruns only the steps that read it.
+func TestGenerateBuildMetadataBuildEnvKeepsRegistryCache(t *testing.T) {
+	b := testBuilder()
+	base := baseInputs()
+	baseImage, baseCache := b.GenerateBuildMetadata(base)
+
+	next := baseInputs()
+	next.SecretsHash = "secrets-b"
+	image, cache := b.GenerateBuildMetadata(next)
+
+	if image == baseImage {
+		t.Errorf("a build env change reused image ref %q", image)
+	}
+	if cache != baseCache {
+		t.Errorf("a build env change moved the cache ref: %q vs %q", cache, baseCache)
+	}
+	if b.RailpackCacheMountKey(next) == b.RailpackCacheMountKey(base) {
+		t.Errorf("a build env change kept Railpack's cache mount key %q", b.RailpackCacheMountKey(next))
 	}
 }
 
@@ -64,7 +91,6 @@ func TestGenerateBuildMetadataBuildConfigSplitsImageAndCache(t *testing.T) {
 		{"install command", func(in *BuildInputs) { in.InstallCommand = "npm ci" }},
 		{"build command", func(in *BuildInputs) { in.BuildCommand = "pnpm turbo build --filter=crawler" }},
 		{"run command", func(in *BuildInputs) { in.RunCommand = "pnpm --filter=crawler start" }},
-		{"build env", func(in *BuildInputs) { in.SecretsHash = "secrets-b" }},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			in := baseInputs()

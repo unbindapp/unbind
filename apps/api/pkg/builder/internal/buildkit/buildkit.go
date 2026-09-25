@@ -36,6 +36,7 @@ type BuildWithBuildkitClientOptions struct {
 	SecretsHash       string
 	Secrets           map[string]string
 	CacheKey          string
+	CacheMountKey     string
 	DockerfilePath    string
 	ContextPath       string
 }
@@ -234,7 +235,7 @@ func BuildWithBuildkitClient(cfg *config.Config, appDir string, opts BuildWithBu
 		llbState, image, err := railpackPlanToLLB(opts.RailpackBuildPlan, rpBuildkit.ConvertPlanOptions{
 			BuildPlatform: buildPlatform,
 			SecretsHash:   opts.SecretsHash,
-			CacheKey:      opts.CacheKey,
+			CacheKey:      opts.CacheMountKey,
 		}, cfg.DisableBuildCache)
 		if err != nil {
 			return fmt.Errorf("error converting plan to LLB: %w", err)

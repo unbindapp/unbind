@@ -31,6 +31,9 @@ import (
 const BUILDER_QUEUE_KEY = "unbind:build:queue"
 const DEPENDENT_SERVICES_QUEUE_KEY = "unbind:dependent-services:queue"
 
+// A builder pod normally exits within seconds of being cancelled
+const cancelledBuildStopGrace = time.Minute
+
 // The request to deploy a service, includes environment for builder image
 type DeploymentJobRequest struct {
 	// If job has already been created in pending
@@ -483,6 +486,11 @@ func (self *DeploymentController) EnqueueDeploymentJob(ctx context.Context, req 
 		req.Environment["DISABLE_BUILD_CACHE"] = "true"
 	}
 
+	// Without it the builder clones whatever the branch points at when its pod starts
+	if req.CommitSHA != "" {
+		req.Environment["CHECKOUT_COMMIT_SHA"] = req.CommitSHA
+	}
+
 	req.Environment["SERVICE_DEPLOYMENT_ID"] = job.ID.String()
 
 	// Render referenced environment
@@ -729,6 +737,15 @@ func (self *DeploymentController) processJob(ctx context.Context, item *queue.Qu
 	// Cancel jobs in Kubernetes
 	if err := self.k8s.CancelJobsByServiceID(ctx, req.ServiceID.String()); err != nil {
 		log.Warnf("Failed to cancel existing jobs: %v service: %s", err, req.ServiceID)
+	}
+
+	// Back in the queue rather than waiting here, so a restart can't lose it and a newer build can still replace it
+	stopping, err := self.k8s.ServiceBuildStopping(ctx, req.ServiceID.String(), cancelledBuildStopGrace)
+	if err != nil {
+		log.Warnf("Failed to check for a stopping build: %v service: %s", err, req.ServiceID)
+	}
+	if stopping {
+		return self.jobQueue.Requeue(ctx, item)
 	}
 
 	// ! This is our time starting the job, not the actual time kubernetes started running it - maybe we should do soemthing different

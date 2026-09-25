@@ -9,97 +9,14 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 )
 
 // ClonePublicRepository clones a public repository without authentication
 func (self *GithubClient) ClonePublicRepository(ctx context.Context, repoURL string, refName string, commitSHA string) (string, error) {
-	tmpDir, err := os.MkdirTemp("", "unbind-api-clone")
-	if err != nil {
-		return "", err
-	}
-
-	logger := &loggerOutput{
-		logger: log.GetLogger(),
-	}
-
-	cloneOptions := &git.CloneOptions{
-		URL:      repoURL,
-		Progress: logger,
-	}
-
-	// If a specific commit SHA is provided, we need to modify the clone strategy
-	if commitSHA != "" {
-		// For specific commits, we need to fetch more history
-		cloneOptions.Depth = 0 // Full clone
-		cloneOptions.SingleBranch = false
-	} else {
-		// Standard branch-based shallow clone
-		cloneOptions.Depth = 1
-		cloneOptions.SingleBranch = true
-
-		// Handle different types of references
-		if strings.HasPrefix(refName, "refs/tags/") {
-			// For tags, we need to fetch the tag
-			cloneOptions.Depth = 0 // Full clone for tags
-			cloneOptions.SingleBranch = false
-			cloneOptions.ReferenceName = plumbing.ReferenceName(refName)
-		} else {
-			// For branches and other refs
-			cloneOptions.ReferenceName = plumbing.ReferenceName(refName)
-		}
-	}
-
-	repo, err := git.PlainClone(tmpDir, false, cloneOptions)
-	if err != nil {
-		return "", fmt.Errorf("failed to clone repository: %v", err)
-	}
-
-	// If a specific commit SHA is provided, checkout that commit
-	if commitSHA != "" {
-		worktree, err := repo.Worktree()
-		if err != nil {
-			return "", fmt.Errorf("failed to get worktree: %v", err)
-		}
-
-		// First, fetch all branches to ensure we have the commit
-		err = repo.Fetch(&git.FetchOptions{
-			RefSpecs: []config.RefSpec{"refs/*:refs/*"},
-			Depth:    0,
-		})
-		if err != nil && err != git.NoErrAlreadyUpToDate {
-			return "", fmt.Errorf("failed to fetch references: %v", err)
-		}
-
-		err = worktree.Checkout(&git.CheckoutOptions{
-			Hash: plumbing.NewHash(commitSHA),
-		})
-		if err != nil {
-			return "", fmt.Errorf("failed to checkout commit %s: %v", commitSHA, err)
-		}
-	} else if strings.HasPrefix(refName, "refs/tags/") {
-		// For tags, we need to ensure we're on the correct tag
-		worktree, err := repo.Worktree()
-		if err != nil {
-			return "", fmt.Errorf("failed to get worktree: %v", err)
-		}
-
-		tagName := strings.TrimPrefix(refName, "refs/tags/")
-		tag, err := repo.Tag(tagName)
-		if err != nil {
-			return "", fmt.Errorf("failed to get tag %s: %v", tagName, err)
-		}
-
-		err = worktree.Checkout(&git.CheckoutOptions{
-			Hash: tag.Hash(),
-		})
-		if err != nil {
-			return "", fmt.Errorf("failed to checkout tag %s: %v", tagName, err)
-		}
-	}
-
-	return tmpDir, nil
+	return clone(ctx, nil, repoURL, refName, commitSHA)
 }
 
 // CloneRepository clones a repository with optional authentication
@@ -114,99 +31,114 @@ func (self *GithubClient) CloneRepository(ctx context.Context, appID, installati
 		return "", err
 	}
 
+	return clone(ctx, &http.BasicAuth{
+		Username: "x-access-token",
+		Password: bearerToken,
+	}, repoURL, refName, commitSHA)
+}
+
+func clone(ctx context.Context, auth transport.AuthMethod, repoURL string, refName string, commitSHA string) (string, error) {
 	tmpDir, err := os.MkdirTemp("", "unbind-api-clone")
 	if err != nil {
 		return "", err
 	}
 
-	logger := &loggerOutput{
-		logger: log.GetLogger(),
-	}
-
-	cloneOptions := &git.CloneOptions{
-		URL: repoURL,
-		Auth: &http.BasicAuth{
-			Username: "x-access-token",
-			Password: bearerToken,
-		},
-		Progress: logger,
-	}
-
-	// If a specific commit SHA is provided, we need to modify the clone strategy
 	if commitSHA != "" {
-		// For specific commits, we need to fetch more history
-		cloneOptions.Depth = 0 // Full clone
-		cloneOptions.SingleBranch = false
+		err = fetchCommit(ctx, tmpDir, auth, repoURL, refName, commitSHA)
 	} else {
-		// Standard branch-based shallow clone
-		cloneOptions.Depth = 1
-		cloneOptions.SingleBranch = true
-
-		// Handle different types of references
-		if strings.HasPrefix(refName, "refs/tags/") {
-			// For tags, we need to fetch the tag
-			cloneOptions.Depth = 0 // Full clone for tags
-			cloneOptions.SingleBranch = false
-			cloneOptions.ReferenceName = plumbing.ReferenceName(refName)
-		} else {
-			// For branches and other refs
-			cloneOptions.ReferenceName = plumbing.ReferenceName(refName)
-		}
+		err = cloneRef(ctx, tmpDir, auth, repoURL, refName)
 	}
-
-	repo, err := git.PlainClone(tmpDir, false, cloneOptions)
 	if err != nil {
-		return "", fmt.Errorf("failed to clone repository: %v", err)
-	}
-
-	// If a specific commit SHA is provided, checkout that commit
-	if commitSHA != "" {
-		worktree, err := repo.Worktree()
-		if err != nil {
-			return "", fmt.Errorf("failed to get worktree: %v", err)
-		}
-
-		// First, fetch all branches to ensure we have the commit
-		err = repo.Fetch(&git.FetchOptions{
-			Auth: &http.BasicAuth{
-				Username: "x-access-token",
-				Password: bearerToken,
-			},
-			RefSpecs: []config.RefSpec{"refs/*:refs/*"},
-			Depth:    0,
-		})
-		if err != nil && err != git.NoErrAlreadyUpToDate {
-			return "", fmt.Errorf("failed to fetch references: %v", err)
-		}
-
-		err = worktree.Checkout(&git.CheckoutOptions{
-			Hash: plumbing.NewHash(commitSHA),
-		})
-		if err != nil {
-			return "", fmt.Errorf("failed to checkout commit %s: %v", commitSHA, err)
-		}
-	} else if strings.HasPrefix(refName, "refs/tags/") {
-		// For tags, we need to ensure we're on the correct tag
-		worktree, err := repo.Worktree()
-		if err != nil {
-			return "", fmt.Errorf("failed to get worktree: %v", err)
-		}
-
-		tagName := strings.TrimPrefix(refName, "refs/tags/")
-		tag, err := repo.Tag(tagName)
-		if err != nil {
-			return "", fmt.Errorf("failed to get tag %s: %v", tagName, err)
-		}
-
-		err = worktree.Checkout(&git.CheckoutOptions{
-			Hash: tag.Hash(),
-		})
-		if err != nil {
-			return "", fmt.Errorf("failed to checkout tag %s: %v", tagName, err)
-		}
+		os.RemoveAll(tmpDir)
+		return "", err
 	}
 
 	return tmpDir, nil
+}
+
+// fetchCommit downloads only the given commit and stores it under refName, so tools
+// reading the branch or tag name in the build still find it
+func fetchCommit(ctx context.Context, dir string, auth transport.AuthMethod, repoURL string, refName string, commitSHA string) error {
+	repo, err := git.PlainInit(dir, false)
+	if err != nil {
+		return fmt.Errorf("failed to init repository: %v", err)
+	}
+
+	if _, err := repo.CreateRemote(&config.RemoteConfig{
+		Name: git.DefaultRemoteName,
+		URLs: []string{repoURL},
+	}); err != nil {
+		return fmt.Errorf("failed to add remote: %v", err)
+	}
+
+	err = repo.FetchContext(ctx, &git.FetchOptions{
+		RemoteName: git.DefaultRemoteName,
+		Auth:       auth,
+		RefSpecs:   []config.RefSpec{config.RefSpec(commitSHA + ":" + refName)},
+		Depth:      1,
+		Progress:   &loggerOutput{logger: log.GetLogger()},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to fetch commit %s: %v", commitSHA, err)
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return fmt.Errorf("failed to get worktree: %v", err)
+	}
+
+	checkout := &git.CheckoutOptions{Hash: plumbing.NewHash(commitSHA)}
+	if ref := plumbing.ReferenceName(refName); ref.IsBranch() {
+		checkout = &git.CheckoutOptions{Branch: ref}
+	}
+	if err := worktree.Checkout(checkout); err != nil {
+		return fmt.Errorf("failed to checkout commit %s: %v", commitSHA, err)
+	}
+
+	return nil
+}
+
+func cloneRef(ctx context.Context, dir string, auth transport.AuthMethod, repoURL string, refName string) error {
+	cloneOptions := &git.CloneOptions{
+		URL:           repoURL,
+		Auth:          auth,
+		Progress:      &loggerOutput{logger: log.GetLogger()},
+		ReferenceName: plumbing.ReferenceName(refName),
+		Depth:         1,
+		SingleBranch:  true,
+	}
+
+	isTag := strings.HasPrefix(refName, "refs/tags/")
+	if isTag {
+		cloneOptions.Depth = 0
+		cloneOptions.SingleBranch = false
+	}
+
+	repo, err := git.PlainCloneContext(ctx, dir, false, cloneOptions)
+	if err != nil {
+		return fmt.Errorf("failed to clone repository: %v", err)
+	}
+
+	if !isTag {
+		return nil
+	}
+
+	worktree, err := repo.Worktree()
+	if err != nil {
+		return fmt.Errorf("failed to get worktree: %v", err)
+	}
+
+	tagName := strings.TrimPrefix(refName, "refs/tags/")
+	tag, err := repo.Tag(tagName)
+	if err != nil {
+		return fmt.Errorf("failed to get tag %s: %v", tagName, err)
+	}
+
+	if err := worktree.Checkout(&git.CheckoutOptions{Hash: tag.Hash()}); err != nil {
+		return fmt.Errorf("failed to checkout tag %s: %v", tagName, err)
+	}
+
+	return nil
 }
 
 type loggerOutput struct {

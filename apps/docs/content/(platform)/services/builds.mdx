@@ -44,7 +44,9 @@ RUN npm run build
 
 ## The build queue
 
-Builds run on your servers, and by default two run at a time. The rest wait in a queue. While a service has a build waiting, a newer one for the same service replaces it, so only the latest push gets built.
+Builds run on your servers, and by default two run at a time. The rest wait in a queue. While a service has a build waiting, a newer one for the same service replaces it, so only the latest push gets built. A newer build also stops one that is already running, and starts once it has stopped.
+
+Each deployment builds exactly the commit it shows, even when newer commits land on the branch before its build starts.
 
 With the self-hosted registry, new builds also wait while it deletes old images to free space. Builds that are already running finish first.
 
@@ -52,7 +54,7 @@ Someone who manages the instance can raise the limits under [System Settings](/o
 
 ## Build cache
 
-Builds reuse layers from earlier builds, which makes them much faster. If a build behaves strangely and you suspect the cache, redeploy with **Skip cache** turned on. See [Deployments](/services/deployments#redeploy).
+Builds reuse layers from earlier builds, which makes them much faster. Each service keeps its own cache. Changing a variable reruns only the steps that use it, not the whole build. If a build behaves strangely and you suspect the cache, redeploy with **Skip cache** turned on. See [Deployments](/services/deployments#redeploy).
 
 ## Build logs
 

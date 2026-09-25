@@ -48,10 +48,9 @@ func (self *Builder) analyzeSource(tmpDir string) {
 }
 
 // BuildInputs is everything about a service that can change the content of the
-// image it produces. It deliberately excludes the service's own identity: two
-// services that build the same commit of the same repo with the same
-// configuration produce the same image, so they should share both the tag and
-// the build cache.
+// image it produces. The tag leaves the service's identity out: two services that
+// build the same commit of the same repo with the same configuration produce the
+// same image, so they share it.
 type BuildInputs struct {
 	CommitSHA      string
 	Builder        string
@@ -64,15 +63,14 @@ type BuildInputs struct {
 	// plenty of frameworks (NEXT_PUBLIC_* and friends), so two services that share
 	// a repo and commands but not their build env still get distinct images.
 	SecretsHash string
+	// ServiceRef scopes the registry cache to the service. It is not part of the tag.
+	ServiceRef string
 	// UniqueFallback is mixed into the tag only when CommitSHA could not be
 	// resolved, so two builds can never share a mutable ref by accident.
 	UniqueFallback string
 }
 
-// configDigest hashes the inputs that survive across commits. The registry cache
-// ref is keyed on this rather than on the commit, so a service keeps its cache as
-// the repo moves while a service with a different dockerfile path, context,
-// commands or build env gets its own cache instead of thrashing a shared one.
+// configDigest hashes the inputs that survive across commits
 func (in BuildInputs) configDigest() string {
 	return shortDigest(
 		in.Builder,
@@ -82,6 +80,21 @@ func (in BuildInputs) configDigest() string {
 		in.BuildCommand,
 		in.RunCommand,
 		in.SecretsHash,
+	)
+}
+
+// cacheDigest keys the registry cache per service and build config. Build env is left
+// out: BuildKit already reruns only the steps that read a changed value, so keying on
+// it threw away every cached layer on a variable edit.
+func (in BuildInputs) cacheDigest() string {
+	return shortDigest(
+		in.ServiceRef,
+		in.Builder,
+		in.DockerfilePath,
+		in.BuildContext,
+		in.InstallCommand,
+		in.BuildCommand,
+		in.RunCommand,
 	)
 }
 
@@ -124,17 +137,27 @@ func (self *Builder) RepoName() string {
 // the same mutable ref, so the loser's service silently started serving the
 // winner's image on its next pull.
 func (self *Builder) GenerateBuildMetadata(inputs BuildInputs) (outputImage string, cacheKey string) {
+	repository := self.imageRepository()
+	outputImage = fmt.Sprintf("%s:%s", repository, inputs.tag())
+	cacheKey = fmt.Sprintf("%s:%s-buildcache", repository, inputs.cacheDigest())
+
+	return outputImage, cacheKey
+}
+
+// RailpackCacheMountKey prefixes the cache folders Railpack keeps in BuildKit. Some tools
+// in them (node_modules/.cache, .next/cache) replay output without checking env, so the
+// key keeps build env and matches the one these folders were created under.
+func (self *Builder) RailpackCacheMountKey(inputs BuildInputs) string {
+	return fmt.Sprintf("%s:%s-buildcache", self.imageRepository(), inputs.configDigest())
+}
+
+func (self *Builder) imageRepository() string {
 	registry := self.config.ContainerRegistryHost
 	if registry == "" || registry == "docker.io" {
 		// Docker Hub wants username/repository, with no registry host prefix
 		registry = self.config.ContainerRegistryUser
 	}
-
-	repoName := self.RepoName()
-	outputImage = fmt.Sprintf("%s/%s:%s", registry, repoName, inputs.tag())
-	cacheKey = fmt.Sprintf("%s/%s:%s-buildcache", registry, repoName, inputs.configDigest())
-
-	return outputImage, cacheKey
+	return fmt.Sprintf("%s/%s", registry, self.RepoName())
 }
 
 // buildInputs collects the build configuration for the clone at repoDir. Callers
@@ -150,13 +173,13 @@ func (self *Builder) buildInputs(repoDir string, buildSecrets map[string]string)
 		BuildCommand:   self.config.RailpackBuildCommand,
 		RunCommand:     self.config.ServiceRunCommand,
 		SecretsHash:    secretsHash(buildSecrets),
+		ServiceRef:     self.config.ServiceRef,
 		UniqueFallback: self.config.ServiceDeploymentID.String(),
 	}
 }
 
-// resolveCommitSHA reports the commit the build actually runs against. Git pushes
-// don't pass a SHA to the builder (the webhook only records it on the deployment
-// row and clones by ref), so it's read back out of the clone.
+// resolveCommitSHA reports the commit the build actually runs against, read back
+// out of the clone when no SHA was pinned.
 func (self *Builder) resolveCommitSHA(repoDir string) string {
 	if self.config.CheckoutCommitSHA != "" {
 		return self.config.CheckoutCommitSHA
