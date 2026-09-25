@@ -24,14 +24,24 @@ import {
   useStagedVolumeAttach,
 } from "@/components/staged-changes/staged-changes-provider";
 import { volumeChangeId } from "@/components/staged-changes/types";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/components/ui/utils";
 import { getVolumeDisplayName } from "@/components/volume/helpers";
-import { MountPathSchema } from "@/components/volume/mount-path";
+import { getMountPathError, MountPathSchema } from "@/components/volume/mount-path";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { useStore } from "@tanstack/react-form";
-import { BoxIcon, FolderClosedIcon, HardDriveIcon, UnplugIcon } from "lucide-react";
-import { useCallback, useEffect, useMemo } from "react";
+import { AnyFieldApi, useStore } from "@tanstack/react-form";
+import {
+  BoxIcon,
+  CheckIcon,
+  FolderClosedIcon,
+  HardDriveIcon,
+  RotateCcwIcon,
+  UnplugIcon,
+  XIcon,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -308,9 +318,9 @@ function AttachedSection({ volume }: TProps) {
   }, [defaultValues.mountPath]);
 
   const stageMountPath = (mountPath: string) => {
-    if (!attachedService || !MountPathSchema.safeParse(mountPath).success) return;
+    if (!attachedService || getMountPathError(mountPath)) return;
     if (mountPath === serverMountPath) {
-      if (staged) discard([staged.id]);
+      discard([volumeChangeId(volume.id)]);
       return;
     }
     stageList({
@@ -371,24 +381,13 @@ function AttachedSection({ volume }: TProps) {
                 </BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
-                <field.TextField
+                <MountPathField
                   field={field}
-                  value={field.state.value}
-                  onBlur={() => {
-                    field.handleBlur();
-                    stageMountPath(field.state.value);
-                  }}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="/data"
-                  className="w-full"
+                  baseline={defaultValues.mountPath}
+                  isStaged={staged !== undefined}
                   disabled={isLocked || !attachedService}
-                  hasChanges={staged !== undefined}
-                  showUndo={!isLocked && field.state.value !== serverMountPath}
-                  onUndo={() => {
-                    field.handleChange(serverMountPath);
-                    // The blur before the click may have just staged the typed path
-                    discard([volumeChangeId(volume.id)]);
-                  }}
+                  onConfirm={stageMountPath}
+                  onRevert={() => discard([volumeChangeId(volume.id)])}
                 />
               </BlockItemContent>
             </BlockItem>
@@ -398,6 +397,124 @@ function AttachedSection({ volume }: TProps) {
       </Block>
       <VolumeIdBlock volume={volume} />
     </SettingsSection>
+  );
+}
+
+type TMountPathFieldProps = {
+  field: AnyFieldApi;
+  // What the input goes back to: the staged path, or the server's
+  baseline: string;
+  isStaged: boolean;
+  disabled: boolean;
+  onConfirm: (mountPath: string) => void;
+  onRevert: () => void;
+};
+
+// Typing is a draft: it gets a cancel and a confirm button, and only a confirmed path
+// is staged. A staged path gets a revert button that drops the change.
+function MountPathField({
+  field,
+  baseline,
+  isStaged,
+  disabled,
+  onConfirm,
+  onRevert,
+}: TMountPathFieldProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const value: string = field.state.value;
+  const isDraft = value !== baseline;
+  const draftError = isDraft ? getMountPathError(value) : null;
+  const showRevert = !disabled && !isDraft && isStaged;
+  const showDraftButtons = !disabled && isDraft;
+  const buttonVariant = isStaged ? "ghost-change-foreground" : "ghost";
+
+  const cancel = () => {
+    field.handleChange(baseline);
+    inputRef.current?.focus();
+  };
+  const confirm = () => {
+    if (draftError) return;
+    onConfirm(value);
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div className="flex w-full flex-col">
+      <div className="relative w-full">
+        <Input
+          ref={inputRef}
+          value={value}
+          onBlur={field.handleBlur}
+          onChange={(e) => field.handleChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (!isDraft) return;
+            if (e.key === "Enter") {
+              e.preventDefault();
+              confirm();
+              return;
+            }
+            if (e.key !== "Escape") return;
+            e.preventDefault();
+            e.stopPropagation();
+            cancel();
+          }}
+          placeholder="/data"
+          aria-invalid={draftError !== null || undefined}
+          className={cn("w-full", showDraftButtons && "pr-20", showRevert && "pr-11.5")}
+          disabled={disabled}
+          hasChanges={isStaged}
+          autoCapitalize="off"
+          autoCorrect="off"
+          autoComplete="off"
+          spellCheck={false}
+        />
+        <div className="pointer-events-none absolute top-0 right-0 flex h-full items-center justify-end overflow-hidden pr-0.75">
+          <div
+            data-visible={showDraftButtons || showRevert || undefined}
+            className="flex translate-x-full items-center transition data-visible:translate-x-0"
+          >
+            {showDraftButtons ? (
+              <>
+                <Button
+                  type="button"
+                  aria-label="Cancel"
+                  onClick={cancel}
+                  variant={buttonVariant}
+                  size="icon"
+                  className="text-muted-more-foreground pointer-events-auto size-9 rounded-md"
+                >
+                  <XIcon className="size-4.5" />
+                </Button>
+                <Button
+                  type="button"
+                  aria-label="Confirm"
+                  disabled={draftError !== null}
+                  onClick={confirm}
+                  variant={buttonVariant}
+                  size="icon"
+                  className="text-muted-more-foreground pointer-events-auto size-9 rounded-md"
+                >
+                  <CheckIcon className="size-4.5" />
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                aria-label="Revert"
+                disabled={!showRevert}
+                onClick={onRevert}
+                variant={buttonVariant}
+                size="icon"
+                className="text-muted-more-foreground pointer-events-auto size-9 rounded-md"
+              >
+                <RotateCcwIcon className="size-4.5" />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+      {draftError && <ErrorLine className="bg-transparent py-1.5 pl-1.5" message={draftError} />}
+    </div>
   );
 }
 
