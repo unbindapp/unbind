@@ -331,10 +331,26 @@ function DeleteTrigger({
     },
   });
 
+  const hasVolumes = serviceGroup.services.some((s) => s.config.volumes.length > 0);
+
   return (
     <DeleteEntityTrigger
-      dialogTitle="Delete Services Group"
-      dialogDescription="All services inside the group will be deleted permanently. This action cannot be undone."
+      dialogTitle="Delete Service Group"
+      dialogDescription={
+        <>
+          All services inside the group will be deleted permanently. This action cannot be undone.
+          {hasVolumes && (
+            <>
+              <br />
+              <br />
+              <span className="text-foreground font-semibold">
+                Mounted volumes won't be deleted.
+              </span>{" "}
+              They stay in your environment and can be mounted on another service.
+            </>
+          )}
+        </>
+      }
       onSubmit={async () => {
         await deleteGroup({
           id: serviceGroup.group.id,
