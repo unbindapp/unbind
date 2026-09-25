@@ -28,6 +28,7 @@ import { getVolumeDisplayName } from "@/components/volume/helpers";
 import { MountPathSchema } from "@/components/volume/mount-path";
 import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TVolumeShallow } from "@/lib/queries/services";
+import { useStore } from "@tanstack/react-form";
 import { BoxIcon, FolderClosedIcon, HardDriveIcon, UnplugIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import { z } from "zod";
@@ -120,6 +121,7 @@ function AttachSection({ volume }: TProps) {
         .strip(),
     },
   });
+  const selectedServiceId = useStore(form.store, (s) => s.values.serviceId);
 
   // A discard has to bring the form back to the server state. Deselecting the
   // service keeps the typed path for the next service that gets picked.
@@ -174,7 +176,7 @@ function AttachSection({ volume }: TProps) {
           children={(field) => (
             <BlockItem id={volumeSettingsIds.connection.service} className="w-full md:w-full">
               <BlockItemHeader type="column">
-                <BlockItemTitle>Service</BlockItemTitle>
+                <BlockItemTitle>Mount to Service</BlockItemTitle>
                 <BlockItemDescription>The service to attach this volume to.</BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
@@ -227,36 +229,38 @@ function AttachSection({ volume }: TProps) {
           )}
         />
       </Block>
-      <Block>
-        <form.AppField
-          name="mountPath"
-          children={(field) => (
-            <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
-              <BlockItemHeader type="column">
-                <BlockItemTitle>Mount Path</BlockItemTitle>
-                <BlockItemDescription>
-                  The path to mount the volume at (e.g. /data).
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <field.TextField
-                  field={field}
-                  value={field.state.value}
-                  onBlur={() => {
-                    field.handleBlur();
-                    stageAttach(form.state.values);
-                  }}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="/data"
-                  className="w-full"
-                  disabled={isLocked}
-                  hasChanges={staged !== undefined}
-                />
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
-      </Block>
+      {selectedServiceId && (
+        <Block>
+          <form.AppField
+            name="mountPath"
+            children={(field) => (
+              <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
+                <BlockItemHeader type="column">
+                  <BlockItemTitle>Mount Path</BlockItemTitle>
+                  <BlockItemDescription>
+                    The path to mount the volume at (e.g. /data).
+                  </BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <field.TextField
+                    field={field}
+                    value={field.state.value}
+                    onBlur={() => {
+                      field.handleBlur();
+                      stageAttach(form.state.values);
+                    }}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="/data"
+                    className="w-full"
+                    disabled={isLocked}
+                    hasChanges={staged !== undefined}
+                  />
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
+        </Block>
+      )}
       <VolumeIdBlock volume={volume} />
     </SettingsSection>
   );
