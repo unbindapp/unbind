@@ -405,7 +405,7 @@ function AttachedSection({ volume }: TProps) {
           onClick={stageUnmount}
           className="text-muted-foreground h-9 gap-1.5 rounded-md px-2.5 py-0 text-sm font-semibold"
         >
-          <EjectIcon className="-ml-px size-4 shrink-0" />
+          <EjectIcon className="size-4 shrink-0" />
           <span className="min-w-0 shrink truncate">Unmount</span>
         </Button>
       )}
