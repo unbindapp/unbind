@@ -399,9 +399,9 @@ function AttachedSection({ volume }: TProps) {
           forceMinSize="medium"
           disabled={isLocked || !attachedService}
           onClick={stageUnmount}
-          className="text-muted-foreground h-9 gap-1.5 rounded-md px-2.5 py-0 font-semibold"
+          className="text-muted-foreground h-9 gap-1.5 rounded-md px-2.5 py-0 text-sm font-semibold"
         >
-          <EjectIcon className="-ml-0.5 size-4.5 shrink-0" />
+          <EjectIcon className="-ml-px size-4 shrink-0" />
           <span className="min-w-0 shrink truncate">Unmount</span>
         </Button>
       )}
@@ -419,33 +419,30 @@ function AttachedSection({ volume }: TProps) {
       onDiscard={() => staged && discard([staged.id])}
     >
       <MountedOnBlock volume={volume} isUnmountStaged={isUnmountStaged} trailing={unmountControl} />
-      {!isUnmountStaged && (
-        <Block>
-          <form.AppField
-            name="mountPath"
-            children={(field) => (
-              <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
-                <BlockItemHeader type="column">
-                  <BlockItemTitle>Mount Path</BlockItemTitle>
-                  <BlockItemDescription>
-                    {"The volume's folder in the service."}
-                  </BlockItemDescription>
-                </BlockItemHeader>
-                <BlockItemContent>
-                  <MountPathField
-                    field={field}
-                    baseline={defaultValues.mountPath}
-                    revertTo={serverMountPath}
-                    disabled={isLocked || !attachedService}
-                    onConfirm={stageMountPath}
-                    onRevert={() => discard([volumeChangeId(volume.id)])}
-                  />
-                </BlockItemContent>
-              </BlockItem>
-            )}
-          />
-        </Block>
-      )}
+      <Block>
+        <form.AppField
+          name="mountPath"
+          children={(field) => (
+            <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
+              <BlockItemHeader type="column">
+                <BlockItemTitle>Mount Path</BlockItemTitle>
+                <BlockItemDescription>{"The volume's folder in the service."}</BlockItemDescription>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <MountPathField
+                  field={field}
+                  baseline={defaultValues.mountPath}
+                  revertTo={serverMountPath}
+                  disabled={isLocked || !attachedService || isUnmountStaged}
+                  disabledText={isUnmountStaged ? "The volume will unmount" : undefined}
+                  onConfirm={stageMountPath}
+                  onRevert={() => discard([volumeChangeId(volume.id)])}
+                />
+              </BlockItemContent>
+            </BlockItem>
+          )}
+        />
+      </Block>
       <VolumeIdBlock volume={volume} />
     </SettingsSection>
   );
@@ -460,6 +457,7 @@ type TMountPathFieldProps = {
   disabled: boolean;
   onConfirm: (mountPath: string) => void;
   onRevert: () => void;
+  disabledText?: string;
 };
 
 // Typing is a draft: it gets a cancel and a confirm button, and only a confirmed path
@@ -472,6 +470,7 @@ function MountPathField({
   disabled,
   onConfirm,
   onRevert,
+  disabledText,
 }: TMountPathFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const value: string = field.state.value;
@@ -496,7 +495,7 @@ function MountPathField({
       <div className="relative w-full">
         <Input
           ref={inputRef}
-          value={value}
+          value={disabled ? (disabledText ?? value) : value}
           onBlur={field.handleBlur}
           onChange={(e) => field.handleChange(e.target.value)}
           onKeyDown={(e) => {
@@ -536,7 +535,7 @@ function MountPathField({
                   size="icon"
                   className="pointer-events-auto rounded-md"
                 >
-                  <XIcon className="size-4.5" />
+                  <XIcon className="size-4.5" strokeWidth={2.5} />
                 </Button>
                 <Button
                   type="button"
@@ -547,7 +546,7 @@ function MountPathField({
                   size="icon"
                   className="pointer-events-auto rounded-md"
                 >
-                  <CheckIcon className="size-4.5" />
+                  <CheckIcon className="size-4.5" strokeWidth={2.5} />
                 </Button>
               </>
             ) : (
@@ -627,7 +626,7 @@ function MountedOnBlock({
       <BlockItem id={volumeSettingsIds.connection.service} className="w-full md:w-full">
         <BlockItemHeader type="column">
           <BlockItemTitle>Mounted On</BlockItemTitle>
-          <BlockItemDescription>The service using this volume.</BlockItemDescription>
+          <BlockItemDescription>The service this volume is mounted on.</BlockItemDescription>
         </BlockItemHeader>
         <BlockItemContent>
           <BlockItemButtonLike
@@ -639,7 +638,7 @@ function MountedOnBlock({
               isPending
                 ? "Loading"
                 : isUnmountStaged
-                  ? "Will unmount"
+                  ? "The volume will unmount"
                   : (service?.name ?? "Service not found")
             }
             Icon={({ className }: { className?: string }) =>
