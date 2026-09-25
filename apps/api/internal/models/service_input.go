@@ -100,7 +100,7 @@ type UpdateServiceInput struct {
 	// Volumes
 	OverwriteVolumes []schema.ServiceVolume `json:"overwrite_volumes,omitempty" required:"false" doc:"Volumes to attach to the service"`
 	AddVolumes       []schema.ServiceVolume `json:"add_volumes,omitempty" required:"false" doc:"Additional volumes to add, will not remove existing volumes"`
-	RemoveVolumes    []schema.ServiceVolume `json:"remove_volumes,omitempty" required:"false" doc:"Volumes to remove from the service"`
+	RemoveVolumes    []schema.ServiceVolume `json:"remove_volumes,omitempty" required:"false" doc:"Volumes to detach from the service, matched by id. The data stays in the volume, which can be attached to another service once this one's old replicas stop"`
 
 	// Health check
 	HealthCheck *schema.HealthCheck `json:"health_check,omitempty" required:"false"`

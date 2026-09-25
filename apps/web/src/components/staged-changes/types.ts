@@ -122,8 +122,9 @@ export const StagedVolumeChangeSchema = StagedListChangeBaseSchema.extend({
   kind: z.literal("volume"),
   volumeId: z.string(),
   volumeName: z.string(),
-  mountPath: z.string(),
-  // Set when the volume is already on the service and only its path changes
+  // null detaches the volume from the service
+  mountPath: z.string().nullable(),
+  // Set when the volume is already on the service, so its path changes or it detaches
   previousMountPath: z.string().optional(),
 });
 
@@ -154,7 +155,7 @@ export type TStagedValue = TStagedVariableChange["value"] | TStagedServiceChange
 // What a list change would leave behind, in a form that can be compared
 export function listChangeValue(change: TStagedListChange): string | null {
   if (change.kind === "port") return change.op;
-  if (change.kind === "volume") return `${change.serviceId}:${change.mountPath}`;
+  if (change.kind === "volume") return `${change.serviceId}:${change.mountPath ?? "detached"}`;
   if (change.value === null) return null;
   return `${change.value.host}:${change.value.port ?? ""}`;
 }

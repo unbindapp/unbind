@@ -86,6 +86,13 @@ export function serviceUpdates(
 
 function addListChange(input: TUpdateServiceInput, change: TStagedListChange) {
   if (change.kind === "volume") {
+    if (change.mountPath === null) {
+      input.removeVolumes = [
+        ...(input.removeVolumes ?? []),
+        { id: change.volumeId, mount_path: change.previousMountPath ?? "" },
+      ];
+      return;
+    }
     input.addVolumes = [
       ...(input.addVolumes ?? []),
       { id: change.volumeId, mount_path: change.mountPath },

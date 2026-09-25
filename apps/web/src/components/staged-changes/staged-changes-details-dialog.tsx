@@ -635,7 +635,7 @@ function listRow(change: TStagedListChange, isApplying: boolean): TChangeRow {
         change.previousMountPath === undefined
           ? null
           : `${change.volumeName}\n${change.previousMountPath}`,
-      value: `${change.volumeName}\n${change.mountPath}`,
+      value: change.mountPath === null ? null : `${change.volumeName}\n${change.mountPath}`,
     };
   }
   if (change.kind === "port") {

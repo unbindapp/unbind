@@ -274,6 +274,28 @@ test("folds domain, port and volume changes into the update of their service", (
   assert.deepEqual(update.add_volumes, [{ id: "pvc-1", mount_path: "/data" }]);
 });
 
+test("a detached volume is removed from its service instead of added", () => {
+  const payload = buildApplyStagedChangesPayload(
+    state(
+      [],
+      [],
+      [
+        list({
+          kind: "volume",
+          volumeId: "pvc-1",
+          volumeName: "data",
+          mountPath: null,
+          previousMountPath: "/data",
+        }),
+      ],
+    ),
+  );
+
+  const [update] = payload.services;
+  assert.deepEqual(update.remove_volumes, [{ id: "pvc-1", mount_path: "/data" }]);
+  assert.equal(update.add_volumes, undefined);
+});
+
 test("a list change alone creates the update of its service", () => {
   const payload = buildApplyStagedChangesPayload(
     state([], [], [list({ kind: "port", port: 9000, op: "add" }, "worker")]),

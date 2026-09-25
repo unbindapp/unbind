@@ -1,3 +1,4 @@
+import { useStagedVolumeChange } from "@/components/staged-changes/staged-changes-provider";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import {
@@ -9,7 +10,7 @@ import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider"
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { TVolumeUsageLevel } from "@/components/volume/types";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { ClockIcon, HardDriveIcon, HourglassIcon } from "lucide-react";
+import { CableIcon, ClockIcon, HardDriveIcon, HourglassIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -28,13 +29,18 @@ export default function VolumeUsageLine({ volume, className }: TProps) {
     return getVolumeUsageLevel(usagePercentage);
   }, [usagePercentage]);
 
-  const status = getLineStatus(volume, usagePercentage);
+  const staged = useStagedVolumeChange(volume.id);
+  const isDetachStaged = staged?.mountPath === null;
+  const status = isDetachStaged
+    ? getDetachStatus(staged.isApplying)
+    : getLineStatus(volume, usagePercentage);
 
   return (
     <VolumePanel volume={volume}>
       <LinkButton
         variant={"card"}
-        data-usage={usageLevel}
+        data-usage={isDetachStaged ? undefined : usageLevel}
+        data-staged={isDetachStaged || undefined}
         from="/$team_id/project/$project_id"
         to="."
         search={(prev) => ({ ...prev, ...getOpenSearch(volume.id) })}
@@ -45,7 +51,7 @@ export default function VolumeUsageLine({ volume, className }: TProps) {
           className,
         )}
       >
-        {usagePercentage !== undefined && (
+        {usagePercentage !== undefined && !isDetachStaged && (
           <div className="absolute top-0 left-0 h-full w-full">
             <div
               style={{
@@ -55,7 +61,7 @@ export default function VolumeUsageLine({ volume, className }: TProps) {
             />
           </div>
         )}
-        <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive flex w-full items-center justify-between gap-4 px-3">
+        <div className="text-muted-foreground group-data-[usage=high]/line:text-warning group-data-[usage=critical]/line:text-destructive group-data-staged/line:text-change flex w-full items-center justify-between gap-4 px-3">
           <div className="relative flex w-full items-center justify-between gap-8 leading-tight font-medium">
             <div
               data-truncate={usagePercentage === undefined || undefined}
@@ -74,6 +80,16 @@ export default function VolumeUsageLine({ volume, className }: TProps) {
       </LinkButton>
     </VolumePanel>
   );
+}
+
+function getDetachStatus(isApplying: boolean) {
+  if (isApplying) {
+    return {
+      icon: <HourglassIcon className="animate-hourglass size-3 min-w-0 shrink-0" />,
+      text: "Detaching",
+    };
+  }
+  return { icon: <CableIcon className="size-3.5 min-w-0 shrink-0" />, text: "Will detach" };
 }
 
 function getLineStatus(volume: TVolumeShallow, usagePercentage: number | undefined) {

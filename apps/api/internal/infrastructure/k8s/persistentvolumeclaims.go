@@ -117,6 +117,8 @@ func (self *KubeClient) EnsurePersistentVolumeClaim(
 
 // nil serviceID releases the claim
 func (self *KubeClient) SetPersistentVolumeClaimService(ctx context.Context, namespace, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error {
+	defer self.invalidateCache()
+
 	pvc, err := client.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, pvcName, metav1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) && serviceID == nil {
@@ -153,6 +155,8 @@ func (self *KubeClient) SetPersistentVolumeClaimService(ctx context.Context, nam
 // claim bound to the service. Runs before the service row is deleted so the
 // claims never point at a missing service.
 func (self *KubeClient) ReleasePersistentVolumeClaimsForService(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) ([]string, error) {
+	defer self.invalidateCache()
+
 	if namespace == "" {
 		return nil, fmt.Errorf("namespace cannot be empty")
 	}

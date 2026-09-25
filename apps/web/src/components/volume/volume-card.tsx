@@ -1,4 +1,4 @@
-import { useStagedVolumeAttach } from "@/components/staged-changes/staged-changes-provider";
+import { useStagedVolumeChange } from "@/components/staged-changes/staged-changes-provider";
 import { LinkButton } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { getVolumeDisplayName } from "@/components/volume/helpers";
@@ -18,7 +18,8 @@ type TProps = {
 export default function VolumeCard({ volume, className }: TProps) {
   const { getOpenSearch } = useVolumePanel();
   const isDeleting = useIsDeleting(deleteMutationKeys.volume(volume.id)) || volume.is_deleting;
-  const stagedAttach = useStagedVolumeAttach(volume.id);
+  const staged = useStagedVolumeChange(volume.id);
+  const stagedAttach = staged?.mountPath === null ? undefined : staged;
 
   const bottomLeftTextAndIcon = useMemo(() => {
     if (isDeleting)

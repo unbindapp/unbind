@@ -4024,7 +4024,7 @@ components:
             - array
             - "null"
         remove_volumes:
-          description: Volumes to remove from the service
+          description: Volumes to detach from the service, matched by id. The data stays in the volume, which can be attached to another service once this one's old replicas stop
           items:
             $ref: "#/components/schemas/ServiceVolume"
           type:

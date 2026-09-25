@@ -21,7 +21,7 @@ import { volumeSettingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
 import {
   useStagedChangesStore,
-  useStagedVolumeAttach,
+  useStagedVolumeChange,
 } from "@/components/staged-changes/staged-changes-provider";
 import { volumeChangeId } from "@/components/staged-changes/types";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ import { TVolumeShallow } from "@/lib/queries/services";
 import { AnyFieldApi, useStore } from "@tanstack/react-form";
 import {
   BoxIcon,
+  CableIcon,
   CheckIcon,
   FolderClosedIcon,
   HardDriveIcon,
@@ -56,6 +57,18 @@ export default function ConnectionSection({ volume }: TProps) {
   const attachedService = servicesData?.services.find(
     (service) => service.id === volume.mounted_on_service_id,
   );
+  const staged = useStagedVolumeChange(volume.id);
+  const discard = useStagedChangesStore((s) => s.discard);
+
+  // A staged detach is done once the volume is off the service, by the deploy or by another session
+  const settledDetachId =
+    staged?.mountPath === null && staged.serviceId !== volume.mounted_on_service_id
+      ? staged.id
+      : undefined;
+  useEffect(() => {
+    if (!settledDetachId) return;
+    discard([settledDetachId]);
+  }, [settledDetachId, discard]);
 
   if (!volume.mounted_on_service_id) {
     return <AttachSection volume={volume} />;
@@ -77,7 +90,8 @@ function AttachSection({ volume }: TProps) {
     projectId,
     environmentId,
   } = useServices();
-  const staged = useStagedVolumeAttach(volume.id);
+  const stagedChange = useStagedVolumeChange(volume.id);
+  const staged = stagedChange?.mountPath === null ? undefined : stagedChange;
   const stageList = useStagedChangesStore((s) => s.stageList);
   const discard = useStagedChangesStore((s) => s.discard);
   const isLocked = isVolumeLocked(volume) || staged?.isApplying === true;
@@ -275,8 +289,8 @@ function AttachSection({ volume }: TProps) {
   );
 }
 
-// The volume is on a service, so only its mount path can change. A confirmed path is
-// staged and deploys with the other changes.
+// The volume is on a service, so it can move to another path or detach. Both are staged
+// and deploy with the other changes.
 function AttachedSection({ volume }: TProps) {
   const {
     query: { data: servicesData, isPending, error },
@@ -284,10 +298,11 @@ function AttachedSection({ volume }: TProps) {
     projectId,
     environmentId,
   } = useServices();
-  const staged = useStagedVolumeAttach(volume.id);
+  const staged = useStagedVolumeChange(volume.id);
   const stageList = useStagedChangesStore((s) => s.stageList);
   const discard = useStagedChangesStore((s) => s.discard);
   const isLocked = isVolumeLocked(volume) || staged?.isApplying === true;
+  const isDetachStaged = staged?.mountPath === null;
 
   const attachedService = servicesData?.services.find(
     (service) => service.id === volume.mounted_on_service_id,
@@ -344,6 +359,53 @@ function AttachedSection({ volume }: TProps) {
     });
   };
 
+  const stageDetach = () => {
+    if (!attachedService) return;
+    stageList({
+      kind: "volume",
+      teamId,
+      projectId,
+      environmentId,
+      serviceId: attachedService.id,
+      serviceName: attachedService.name,
+      serviceIcon: attachedService.config.icon,
+      volumeId: volume.id,
+      volumeName: getVolumeDisplayName(volume),
+      mountPath: null,
+      previousMountPath: serverMountPath,
+    });
+  };
+
+  const detachControl = (
+    <div className="-my-2.5 -mr-3 flex items-start justify-end self-stretch p-0.5">
+      {isDetachStaged ? (
+        <Button
+          type="button"
+          aria-label="Revert"
+          variant="ghost-change"
+          size="icon"
+          forceMinSize="medium"
+          disabled={isLocked}
+          onClick={() => discard([volumeChangeId(volume.id)])}
+          className="rounded-md"
+        >
+          <RotateCcwIcon className="size-4.5" />
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          variant="ghost"
+          forceMinSize="medium"
+          disabled={isLocked || !attachedService}
+          onClick={stageDetach}
+          className="text-muted-foreground h-9 rounded-md px-3 py-0"
+        >
+          Detach
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <SettingsSection
       title="Connection"
@@ -355,52 +417,65 @@ function AttachedSection({ volume }: TProps) {
       onDiscard={() => staged && discard([staged.id])}
     >
       <Block>
-        <form.AppField
-          name="mountPath"
-          children={(field) => (
-            <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
-              <BlockItemHeader type="column">
-                <BlockItemTitle>Mount Path</BlockItemTitle>
-                <BlockItemDescription>
-                  {isPending ? (
-                    <span className="bg-muted-foreground animate-skeleton rounded-md text-transparent">
-                      Loading connection details...
-                    </span>
-                  ) : attachedService ? (
-                    <>
-                      {volume.mount_status === "attaching" ? "Being attached to" : "Mounted on"}{" "}
-                      <span className="text-foreground bg-input inline-flex max-w-full items-center gap-1 rounded border px-1.25 align-bottom leading-tight font-semibold">
-                        <ServiceIcon
-                          service={attachedService}
-                          color="brand"
-                          className="-ml-px size-3.5 shrink-0"
-                        />
-                        <span className="min-w-0 wrap-break-word">{attachedService.name}</span>
-                      </span>{" "}
-                      at this path.
-                    </>
-                  ) : error ? (
-                    "Something went wrong."
-                  ) : (
-                    "This volume is not attached to a service."
-                  )}
-                </BlockItemDescription>
-              </BlockItemHeader>
-              <BlockItemContent>
-                <MountPathField
-                  field={field}
-                  baseline={defaultValues.mountPath}
-                  revertTo={serverMountPath}
-                  disabled={isLocked || !attachedService}
-                  onConfirm={stageMountPath}
-                  onRevert={() => discard([volumeChangeId(volume.id)])}
-                />
-              </BlockItemContent>
-            </BlockItem>
-          )}
-        />
+        <BlockItem id={volumeSettingsIds.connection.service} className="w-full md:w-full">
+          <BlockItemHeader type="column">
+            <BlockItemTitle>Mount to Service</BlockItemTitle>
+            <BlockItemDescription>The service this volume is attached to.</BlockItemDescription>
+          </BlockItemHeader>
+          <BlockItemContent>
+            <BlockItemButtonLike
+              asElement="div"
+              isPending={isPending}
+              hasChanges={isDetachStaged}
+              text={
+                isPending
+                  ? "Loading"
+                  : isDetachStaged
+                    ? "Will be detached"
+                    : (attachedService?.name ?? "Service not found")
+              }
+              Icon={({ className }: { className?: string }) =>
+                isDetachStaged ? (
+                  <CableIcon className={className} />
+                ) : (
+                  <ServicePickerTriggerIcon
+                    service={attachedService}
+                    color="brand"
+                    className={className}
+                  />
+                )
+              }
+              trailing={detachControl}
+            />
+          </BlockItemContent>
+        </BlockItem>
         {!servicesData && !isPending && error && <ErrorLine message={error.message} />}
       </Block>
+      {!isDetachStaged && (
+        <Block>
+          <form.AppField
+            name="mountPath"
+            children={(field) => (
+              <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
+                <BlockItemHeader type="column">
+                  <BlockItemTitle>Mount Path</BlockItemTitle>
+                  <BlockItemDescription>The path to mount the volume at.</BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <MountPathField
+                    field={field}
+                    baseline={defaultValues.mountPath}
+                    revertTo={serverMountPath}
+                    disabled={isLocked || !attachedService}
+                    onConfirm={stageMountPath}
+                    onRevert={() => discard([volumeChangeId(volume.id)])}
+                  />
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          />
+        </Block>
+      )}
       <VolumeIdBlock volume={volume} />
     </SettingsSection>
   );

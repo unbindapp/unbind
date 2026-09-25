@@ -125,7 +125,7 @@ export function useStagedListChanges(serviceId: string) {
   );
 }
 
-export function useStagedVolumeAttach(volumeId: string) {
+export function useStagedVolumeChange(volumeId: string) {
   const id = volumeChangeId(volumeId);
   const change = useStagedChangesStore((s) => s.lists[id]);
   const isApplying = useStagedChangesStore((s) => id in s.applying);

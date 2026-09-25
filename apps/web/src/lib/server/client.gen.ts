@@ -208,7 +208,7 @@ export const UpdateServiceInputSchema = z
     remove_hosts: z.array(HostSpecSchema).nullable().optional(), // Hosts to remove
     remove_ports: z.array(PortSpecSchema).nullable().optional(), // Ports to remove
     remove_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Variable mounts to remove
-    remove_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to remove from the service
+    remove_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to detach from the service, matched by id. The data stays in the volume, which can be attached to another service once this one's old replicas stop
     replicas: z.number().optional(),
     repository_name: z.string().optional(), // Must be a repository the GitHub installation has access to
     repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to

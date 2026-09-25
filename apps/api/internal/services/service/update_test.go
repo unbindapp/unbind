@@ -71,3 +71,17 @@ func TestValidateDatabaseVolumeInputKeepsAttachedVolume(t *testing.T) {
 	assert.NoError(t, validateDatabaseVolumeInput(service, nil, []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/data"}}, nil, nil))
 	assert.Error(t, validateDatabaseVolumeInput(service, nil, []schema.ServiceVolume{{ID: "pvc-2", MountPath: "/data"}}, nil, nil))
 }
+
+func TestReleasedVolumes(t *testing.T) {
+	existing := []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/data"}, {ID: "pvc-2", MountPath: "/cache"}}
+
+	assert.Equal(t, []string{"pvc-1"}, releasedVolumes(existing, nil, nil, []schema.ServiceVolume{{ID: "pvc-1"}}))
+	assert.Equal(t, []string{"pvc-2"}, releasedVolumes(existing, []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/files"}}, nil, nil))
+	assert.Equal(t, []string{"pvc-1", "pvc-2"}, releasedVolumes(existing, []schema.ServiceVolume{{ID: "pvc-3", MountPath: "/data"}}, nil, nil))
+
+	// A path change or a removal undone by an add in the same update keeps the claim
+	assert.Empty(t, releasedVolumes(existing, nil, []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/files"}}, nil))
+	assert.Empty(t, releasedVolumes(existing, nil, []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/data"}}, []schema.ServiceVolume{{ID: "pvc-1"}}))
+	assert.Empty(t, releasedVolumes(existing, nil, nil, nil))
+	assert.Empty(t, releasedVolumes(nil, nil, nil, []schema.ServiceVolume{{ID: "pvc-1"}}))
+}

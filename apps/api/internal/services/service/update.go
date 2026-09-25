@@ -175,6 +175,9 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid volume mount path")
 			}
 		}
+		if unknown := newVolumes(service.Edges.ServiceConfig.Volumes, input.RemoveVolumes); len(unknown) > 0 {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Volume %s is not attached to this service", unknown[0].ID))
+		}
 	}
 
 	// A database with an existing deployment can't change its version.
@@ -480,6 +483,16 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			return errdefs.NewInternalError(err, "Failed to save the service configuration")
 		}
 
+		// databases release their claim while moving it in resolveDatabaseVolumeChange
+		if service.Type == schema.ServiceTypeDatabase {
+			return nil
+		}
+		namespace := service.Edges.Environment.Edges.Project.Edges.Team.Namespace
+		for _, claim := range releasedVolumes(service.Edges.ServiceConfig.Volumes, input.OverwriteVolumes, input.AddVolumes, input.RemoveVolumes) {
+			if err := self.k8s.SetPersistentVolumeClaimService(ctx, namespace, claim, nil, client); err != nil {
+				return err
+			}
+		}
 		return nil
 	}); err != nil {
 		return nil, err
@@ -656,6 +669,19 @@ func (self *ServiceService) cleanServiceRename(ctx context.Context, input *model
 		return err
 	}
 	return names.EnsureFree(name, takenNames, "service", "environment")
+}
+
+// the claims an update takes off the service, mirroring how the repository merges the lists
+func releasedVolumes(existing, overwrite, add, remove []schema.ServiceVolume) []string {
+	kept := overwrite
+	if len(overwrite) == 0 {
+		kept = slices.Concat(newVolumes(remove, existing), add)
+	}
+	var released []string
+	for _, volume := range newVolumes(kept, existing) {
+		released = append(released, volume.ID)
+	}
+	return released
 }
 
 func newVolumes(existing []schema.ServiceVolume, lists ...[]schema.ServiceVolume) []schema.ServiceVolume {

@@ -19,7 +19,15 @@ type TProps = {
 };
 
 export default function DeleteSection({ volume, className }: TProps) {
-  const { teamId, projectId, environmentId } = useServices();
+  const {
+    query: { data: servicesData },
+    teamId,
+    projectId,
+    environmentId,
+  } = useServices();
+  const isOnDatabase = servicesData?.services.some(
+    (service) => service.id === volume.mounted_on_service_id && service.type === "database",
+  );
   const { invalidate: invalidateServices } = useServicesUtils({ teamId, projectId, environmentId });
   const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
   const { closePanel } = useVolumePanel();
@@ -94,8 +102,10 @@ export default function DeleteSection({ volume, className }: TProps) {
         ) : (
           <p className="text-muted-foreground max-w-full px-1.5">
             This volume is attached to a service and{" "}
-            <span className="text-foreground font-semibold">{"can't be deleted"}</span>. Delete the
-            service first to delete this volume.
+            <span className="text-foreground font-semibold">{"can't be deleted"}</span>.{" "}
+            {isOnDatabase
+              ? "Delete the service first to delete this volume."
+              : "Detach it first to delete it."}
           </p>
         )}
       </div>

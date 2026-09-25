@@ -40,11 +40,19 @@ The reset button next to the field brings back the current path.
 
 A database volume has no path to edit. The database mounts it where its engine expects.
 
+## Detach
+
+Open the volume and press **Detach** next to the service under **Connection**, then press **Deploy** on the changes bar. The service restarts without the volume, and the data stays in the volume.
+
+The volume shows as detaching until the old version of the service stops. After that it waits in the environment, unattached. Open it and pick a service under **Mount to Service** to attach it again, to the same service or another one.
+
+A database volume cannot be detached. The database needs it to run.
+
 ## Delete
 
 - **Deleting a service keeps its volume.** The volume stays in the environment, unattached, and can be attached to another service. Open it and pick a service under **Mount to Service**, then set the **Mount Path**.
 - **Deleting an environment or a project deletes its volumes**, with everything in them.
-- **A volume can be deleted only when nothing is attached.** Open it and use **Delete Volume**. This cannot be undone.
+- **A volume can be deleted only when nothing is attached.** [Detach](#detach) it first, then open it and use **Delete Volume**. This cannot be undone.
 
 ## Backups
 
