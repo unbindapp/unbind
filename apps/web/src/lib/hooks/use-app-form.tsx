@@ -109,7 +109,7 @@ function InputWithInfo({
     >
       {hasStandaloneIcon && (
         <Icon
-          className={cn("pointer-events-none absolute top-3 left-3.5 size-4.5", classNameIcon)}
+          className={cn("pointer-events-none absolute top-3 left-3.25 size-4.5", classNameIcon)}
         />
       )}
       <Input
@@ -120,7 +120,7 @@ function InputWithInfo({
         data-show-undo={showUndo || undefined}
         className={cn(
           "w-full data-show-undo:pr-11.5",
-          hasStandaloneIcon && "pl-10",
+          hasStandaloneIcon && "pl-9.5",
           classNameInput,
         )}
       />
@@ -187,7 +187,10 @@ function DomainInput({
     >
       {Icon && (
         <Icon
-          className={cn("pointer-events-none absolute top-3 left-3.5 z-11 size-4.5", classNameIcon)}
+          className={cn(
+            "pointer-events-none absolute top-3 left-3.25 z-11 size-4.5",
+            classNameIcon,
+          )}
         />
       )}
       <div className="relative z-10 max-w-full">
@@ -200,7 +203,7 @@ function DomainInput({
           data-show-generated={showCardType === "auto-generated" || undefined}
           className={cn(
             "relative z-10 w-full data-show-generated:pr-22 data-show-reset:pr-11.5",
-            Icon && "pl-10",
+            Icon && "pl-9.5",
             classNameInput,
           )}
         />

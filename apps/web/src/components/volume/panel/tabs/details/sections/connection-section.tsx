@@ -507,6 +507,13 @@ function MountPathField({
   return (
     <div className="flex w-full flex-col">
       <div className="relative w-full">
+        <FolderClosedIcon
+          className={cn(
+            "pointer-events-none absolute top-3 left-3.25 size-4.5",
+            isStaged && "text-change",
+            disabled && "opacity-50",
+          )}
+        />
         <Input
           ref={inputRef}
           value={disabled ? (disabledText ?? value) : value}
@@ -526,7 +533,7 @@ function MountPathField({
           }}
           placeholder="/data"
           aria-invalid={draftError !== null || undefined}
-          className={cn("w-full", showDraftButtons && "pr-20", showRevert && "pr-11.5")}
+          className={cn("w-full pl-9.5", showDraftButtons && "pr-20", showRevert && "pr-11.5")}
           disabled={disabled}
           hasChanges={isStaged}
           autoCapitalize="off"
