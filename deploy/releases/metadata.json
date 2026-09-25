@@ -433,5 +433,10 @@
     "version": "v0.1.86",
     "summary": "Services can reference their own variables and addresses, editable mount paths on attached volumes, and domain and port removals roll out.",
     "breaking": false
+  },
+  "v0.1.87": {
+    "version": "v0.1.87",
+    "summary": "Volumes can be unmounted from their service, builds pinned to their commit with a kept build cache, builds and registry cleanup no longer overlap, and retried template deploys deploy once.",
+    "breaking": false
   }
 }
