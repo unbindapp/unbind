@@ -1591,6 +1591,27 @@ export default function BrandIcon({
     );
   }
 
+  if (brand === "fastapi") {
+    return (
+      <svg
+        className={cn(defaultClassName, className)}
+        {...rest}
+        width="24"
+        height="24"
+        fill="none"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="12" cy="12" r="11" fill="#fff" />
+        <path
+          d="M12 1a11 11 0 1 0-.001 21.999A11 11 0 0 0 12 1zm-.76 4.98h6.92l-6.948 4.9h4.751L5.839 18.018l2.198-4.898 1.005-2.24 2.198-4.9z"
+          fill="#059386"
+          fill-opacity=".98"
+        />
+      </svg>
+    );
+  }
+
   if (brand === "service-group") {
     return <LayoutGridIcon className={cn(defaultClassName, className)} {...rest} />;
   }
