@@ -271,7 +271,7 @@ export function VariableValueField({
             aria-label="Insert reference"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => fieldRef.current?.insertAndComplete(resolveReferenceInsertion)}
-            className="text-muted-foreground focus:ring-primary mt-0.75 mr-0.75 mb-auto h-8.5 w-9 rounded-md data-compact:mt-0.75 data-compact:mr-0.75 data-compact:h-7 data-compact:w-7.5 data-compact:rounded"
+            className="text-muted-foreground focus:ring-primary mt-0.75 mr-0.75 mb-auto rounded-md data-compact:mt-0.75 data-compact:mr-0.75 data-compact:h-7 data-compact:w-7.5 data-compact:rounded"
           >
             <Link2Icon className="size-4" />
           </Button>

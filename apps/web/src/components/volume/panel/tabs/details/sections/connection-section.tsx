@@ -50,10 +50,19 @@ type TProps = {
 };
 
 export default function ConnectionSection({ volume }: TProps) {
+  const {
+    query: { data: servicesData },
+  } = useServices();
+  const attachedService = servicesData?.services.find(
+    (service) => service.id === volume.mounted_on_service_id,
+  );
+
   if (!volume.mounted_on_service_id) {
     return <AttachSection volume={volume} />;
   }
-  if (volume.is_database) {
+  // The claim keeps its database label after the database is gone, so what counts
+  // is the service it is mounted on now
+  if (attachedService?.type === "database") {
     return <DatabaseSection volume={volume} />;
   }
   return <AttachedSection volume={volume} />;
@@ -481,7 +490,7 @@ function MountPathField({
                   onClick={cancel}
                   variant={buttonVariant}
                   size="icon"
-                  className="text-muted-more-foreground pointer-events-auto size-9 rounded-md"
+                  className="text-muted-more-foreground pointer-events-auto rounded-md"
                 >
                   <XIcon className="size-4.5" />
                 </Button>
@@ -492,7 +501,7 @@ function MountPathField({
                   onClick={confirm}
                   variant={buttonVariant}
                   size="icon"
-                  className="text-muted-more-foreground pointer-events-auto size-9 rounded-md"
+                  className="text-muted-more-foreground pointer-events-auto rounded-md"
                 >
                   <CheckIcon className="size-4.5" />
                 </Button>
@@ -505,7 +514,7 @@ function MountPathField({
                 onClick={onRevert}
                 variant={buttonVariant}
                 size="icon"
-                className="text-muted-more-foreground pointer-events-auto size-9 rounded-md"
+                className="text-muted-more-foreground pointer-events-auto rounded-md"
               >
                 <RotateCcwIcon className="size-4.5" />
               </Button>
@@ -589,8 +598,10 @@ function DatabaseSection({ volume }: TProps) {
 function VolumeIdBlock({ volume }: TProps) {
   const SuffixComponent = useCallback(
     ({ className }: { className?: string }) => (
-      <div className={cn("-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1", className)}>
-        <CopyButton className="size-8" classNameIcon="size-4" valueToCopy={volume.id} />
+      <div
+        className={cn("-my-2.5 -mr-3 flex items-start justify-end self-stretch p-0.5", className)}
+      >
+        <CopyButton classNameIcon="size-4" valueToCopy={volume.id} />
       </div>
     ),
     [volume.id],

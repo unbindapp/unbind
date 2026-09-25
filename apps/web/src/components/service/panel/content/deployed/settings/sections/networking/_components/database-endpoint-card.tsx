@@ -18,8 +18,10 @@ export default function DatabaseEndpointCard({ mode, domain, port }: TProps) {
 
   const SuffixComponent = useCallback(
     ({ className }: { className?: string }) => (
-      <div className={cn("-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1", className)}>
-        <CopyButton className="size-8" classNameIcon="size-4" valueToCopy={address} />
+      <div
+        className={cn("-my-2.5 -mr-3 flex items-start justify-end self-stretch p-0.5", className)}
+      >
+        <CopyButton classNameIcon="size-4" valueToCopy={address} />
       </div>
     ),
     [address],

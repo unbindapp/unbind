@@ -154,17 +154,16 @@ export default function DomainPortCard({
       return (
         <div
           className={cn(
-            "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-1",
+            "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-0.5",
             isEditing && "opacity-0",
             className,
           )}
         >
           {stagedState && (
-            <StagedChip staged={stagedState} isApplying={isApplying} className="mt-1.25 mr-1" />
+            <StagedChip staged={stagedState} isApplying={isApplying} className="mt-1.75 mr-1" />
           )}
           <CopyButton
             disabled={isEditing}
-            className="size-8"
             classNameIcon="size-4"
             variant={buttonVariant}
             valueToCopy={getNetworkingDisplayUrl({
@@ -179,7 +178,7 @@ export default function DomainPortCard({
               size="icon"
               variant={buttonVariant}
               aria-label="Edit"
-              className="text-muted-more-foreground size-8 rounded-md"
+              className="text-muted-more-foreground rounded-md"
               onClick={() => {
                 form.setFieldValue("isEditing", true);
               }}
@@ -194,7 +193,7 @@ export default function DomainPortCard({
               size="icon"
               variant={buttonVariant}
               aria-label={stagedState === "deleted" ? "Restore" : "Discard"}
-              className="text-muted-more-foreground size-8 rounded-md"
+              className="text-muted-more-foreground rounded-md"
               onClick={() => discard([staged.id])}
             >
               <Undo2Icon className="size-4" />
@@ -207,7 +206,7 @@ export default function DomainPortCard({
               size="icon"
               variant="ghost-destructive"
               aria-label="Delete"
-              className="text-muted-more-foreground size-8 rounded-md"
+              className="text-muted-more-foreground rounded-md"
               onClick={remove}
             >
               <Trash2Icon className="size-4" />
