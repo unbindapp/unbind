@@ -435,7 +435,7 @@ function MountPathField({
   const draftError = isDraft ? getMountPathError(value) : null;
   const showRevert = !disabled && !isDraft && isStaged;
   const showDraftButtons = !disabled && isDraft;
-  const buttonVariant = isStaged ? "ghost-change-foreground" : "ghost";
+  const buttonVariant = isStaged ? "ghost-change" : "ghost";
 
   const cancel = () => {
     field.handleChange(baseline);
@@ -444,7 +444,6 @@ function MountPathField({
   const confirm = () => {
     if (draftError) return;
     onConfirm(value);
-    inputRef.current?.focus();
   };
 
   return (
@@ -490,7 +489,7 @@ function MountPathField({
                   onClick={cancel}
                   variant={buttonVariant}
                   size="icon"
-                  className="text-muted-more-foreground pointer-events-auto rounded-md"
+                  className="pointer-events-auto rounded-md"
                 >
                   <XIcon className="size-4.5" />
                 </Button>
@@ -501,7 +500,7 @@ function MountPathField({
                   onClick={confirm}
                   variant={buttonVariant}
                   size="icon"
-                  className="text-muted-more-foreground pointer-events-auto rounded-md"
+                  className="pointer-events-auto rounded-md"
                 >
                   <CheckIcon className="size-4.5" />
                 </Button>
@@ -513,8 +512,9 @@ function MountPathField({
                 disabled={!showRevert}
                 onClick={onRevert}
                 variant={buttonVariant}
+                data-staged={isStaged || undefined}
                 size="icon"
-                className="text-muted-more-foreground pointer-events-auto rounded-md"
+                className="pointer-events-auto rounded-md"
               >
                 <RotateCcwIcon className="size-4.5" />
               </Button>
