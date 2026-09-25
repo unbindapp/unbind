@@ -19,7 +19,7 @@ export default function VolumeCard({ volume, className }: TProps) {
   const { getOpenSearch } = useVolumePanel();
   const isDeleting = useIsDeleting(deleteMutationKeys.volume(volume.id)) || volume.is_deleting;
   const staged = useStagedVolumeChange(volume.id);
-  const stagedAttach = staged?.mountPath === null ? undefined : staged;
+  const stagedMount = staged?.mountPath === null ? undefined : staged;
 
   const bottomLeftTextAndIcon = useMemo(() => {
     if (isDeleting)
@@ -30,33 +30,33 @@ export default function VolumeCard({ volume, className }: TProps) {
     if (volume.mount_status === "detaching")
       return {
         icon: <LoaderIcon className="text-warning size-3.5 shrink-0 animate-spin" />,
-        text: "Detaching",
+        text: "Unmounting",
       };
     if (volume.is_pending_resize)
       return {
         icon: <LoaderIcon className="text-warning size-3.5 shrink-0 animate-spin" />,
         text: "Expanding",
       };
-    if (stagedAttach)
+    if (stagedMount)
       return {
-        icon: stagedAttach.isApplying ? (
+        icon: stagedMount.isApplying ? (
           <LoaderIcon className="text-change size-3.5 shrink-0 animate-spin" />
         ) : null,
-        text: `${stagedAttach.isApplying ? "Attaching" : "Will attach"} to ${stagedAttach.serviceName}`,
+        text: `${stagedMount.isApplying ? "Mounting" : "Will mount"} on ${stagedMount.serviceName}`,
       };
 
     return {
       icon: null,
-      text: "Not attached",
+      text: "Not mounted",
     };
-  }, [isDeleting, volume.mount_status, volume.is_pending_resize, stagedAttach]);
+  }, [isDeleting, volume.mount_status, volume.is_pending_resize, stagedMount]);
 
   return (
     <li
       data-detaching={volume.mount_status === "detaching" || undefined}
       data-deleting={isDeleting || undefined}
       data-pending-resize={volume.is_pending_resize || undefined}
-      data-staged={stagedAttach !== undefined || undefined}
+      data-staged={stagedMount !== undefined || undefined}
       className={cn(
         "group/item data-deleting:animate-skeleton-smooth-weaker flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity)",
         className,

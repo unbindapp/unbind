@@ -245,7 +245,7 @@ func (self *ServiceService) validatePVC(ctx context.Context, teamID, projectID, 
 		return err
 	}
 	if pvc.MountStatus == models.PVCMountStatusDetaching {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "PVC is still detaching from its previous service, try again shortly")
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Volume is still unmounting from its previous service, try again shortly")
 	}
 	if !pvc.IsAvailable {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "PVC is not available")

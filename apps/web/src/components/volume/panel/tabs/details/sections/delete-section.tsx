@@ -96,16 +96,16 @@ export default function DeleteSection({ volume, className }: TProps) {
           </p>
         ) : volume.mount_status === "detaching" ? (
           <p className="text-muted-foreground max-w-full px-1.5">
-            This volume is still <span className="text-foreground font-semibold">detaching</span>{" "}
-            from its previous service. It can be deleted once detaching is complete.
+            This volume is still <span className="text-foreground font-semibold">unmounting</span>{" "}
+            from its previous service. It can be deleted once that is done.
           </p>
         ) : (
           <p className="text-muted-foreground max-w-full px-1.5">
-            This volume is attached to a service and{" "}
+            This volume is mounted on a service and{" "}
             <span className="text-foreground font-semibold">{"can't be deleted"}</span>.{" "}
             {isOnDatabase
               ? "Delete the service first to delete this volume."
-              : "Detach it first to delete it."}
+              : "Unmount it first to delete it."}
           </p>
         )}
       </div>

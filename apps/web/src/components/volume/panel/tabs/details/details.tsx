@@ -37,7 +37,7 @@ export default function Settings({ volume }: TProps) {
           <div className="line-icon">
             <HourglassIcon className="animate-hourglass -ml-0.5 size-4 shrink-0" />
           </div>
-          <p className="min-w-0 shrink">Attaching the volume to the service.</p>
+          <p className="min-w-0 shrink">Mounting the volume.</p>
         </Banner>
       )}
       {volume.mount_status === "detaching" && (
@@ -45,9 +45,7 @@ export default function Settings({ volume }: TProps) {
           <div className="line-icon">
             <HourglassIcon className="animate-hourglass -ml-0.5 size-4 shrink-0" />
           </div>
-          <p className="min-w-0 shrink">
-            Detaching the volume. It can be reattached once this is complete.
-          </p>
+          <p className="min-w-0 shrink">Unmounting the volume.</p>
         </Banner>
       )}
       <UsageSection volume={volume} />

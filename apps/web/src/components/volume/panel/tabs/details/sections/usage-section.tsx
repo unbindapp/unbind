@@ -96,7 +96,7 @@ function getUsageInfo(
   isUnattached: boolean,
 ) {
   if (volume.mount_status === "awaiting_deployment") return "Awaiting deployment";
-  if (volume.mount_status === "attaching") return "Attaching";
+  if (volume.mount_status === "attaching") return "Mounting";
   if (volume.is_pending_resize) return "Expanding";
   if (usagePercentage !== undefined) return `${percentageFormatter(usagePercentage)}%`;
   if (isUnattached) return "Unknown";

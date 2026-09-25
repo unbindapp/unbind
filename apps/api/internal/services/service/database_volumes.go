@@ -50,7 +50,7 @@ func (self *ServiceService) validateVolumeEngine(ctx context.Context, namespace,
 	if !ok || engine == dbType {
 		return nil
 	}
-	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("This volume holds %s data and can only be attached to a %s database", engine, engine))
+	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("This volume holds %s data and can only be mounted on a %s database", engine, engine))
 }
 
 func (self *ServiceService) moveVolume(ctx context.Context, tx repository.TxInterface, namespace, from, to string, serviceID *uuid.UUID, client kubernetes.Interface) error {
@@ -134,14 +134,14 @@ func (self *ServiceService) detachedVolumeName(ctx context.Context, tx repositor
 
 func validateDatabaseVolumeInput(service *ent.Service, overwrite, add, remove []schema.ServiceVolume, replicas *int32) error {
 	if len(overwrite) > 1 || len(add) > 1 {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "A database can only have one volume attached")
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "A database can only have one volume mounted")
 	}
 	existing := service.Edges.ServiceConfig.Volumes
 	if len(newVolumes(existing, add)) > 0 && len(existing) > 0 {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Detach the existing volume before attaching another one")
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Unmount the existing volume before mounting another one")
 	}
 	if len(remove) > 0 && len(overwrite) > 0 {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot attach and detach a volume in the same request")
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot mount and unmount a volume in the same request")
 	}
 
 	// redis/mongo charts point every replica at the one claim they are given by name
@@ -156,7 +156,7 @@ func (self *ServiceService) claimDatabaseVolume(ctx context.Context, tx reposito
 		return nil, nil
 	}
 	if len(input.Volumes) > 1 {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "A database can only have one volume attached")
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "A database can only have one volume mounted")
 	}
 
 	attached := ""

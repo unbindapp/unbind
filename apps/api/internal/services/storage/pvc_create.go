@@ -127,7 +127,7 @@ func (self *StorageService) validateAttachTarget(ctx context.Context, input *mod
 		return nil, nil
 	}
 	if input.Type != models.PvcScopeEnvironment {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Only environment volumes can be attached to a service")
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Only environment volumes can be mounted on a service")
 	}
 	if !utils.IsValidUnixPath(*input.MountPath) {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid volume mount path")
@@ -144,10 +144,10 @@ func (self *StorageService) validateAttachTarget(ctx context.Context, input *mod
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service not found in this environment")
 	}
 	if service.Type == schema.ServiceTypeDatabase {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Volumes cannot be attached to database services")
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Volumes cannot be mounted on database services")
 	}
 	if service.Edges.ServiceConfig != nil && len(service.Edges.ServiceConfig.Volumes) > 0 {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Service already has a volume attached")
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Service already has a volume mounted")
 	}
 	return service, nil
 }

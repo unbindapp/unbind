@@ -9,7 +9,6 @@ import {
 } from "@/components/block";
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
-import ServiceIcon from "@/components/service/service-icon";
 import {
   getDuplicateServiceNames,
   getServicePublicHost,
@@ -34,15 +33,15 @@ import { TVolumeShallow } from "@/lib/queries/services";
 import { AnyFieldApi, useStore } from "@tanstack/react-form";
 import {
   BoxIcon,
-  CableIcon,
   CheckIcon,
+  EjectIcon,
   FolderClosedIcon,
   HardDriveIcon,
   RotateCcwIcon,
   UnplugIcon,
   XIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { ReactNode, useCallback, useEffect, useMemo, useRef } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -60,15 +59,15 @@ export default function ConnectionSection({ volume }: TProps) {
   const staged = useStagedVolumeChange(volume.id);
   const discard = useStagedChangesStore((s) => s.discard);
 
-  // A staged detach is done once the volume is off the service, by the deploy or by another session
-  const settledDetachId =
+  // A staged unmount is done once the volume is off the service, by the deploy or by another session
+  const settledUnmountId =
     staged?.mountPath === null && staged.serviceId !== volume.mounted_on_service_id
       ? staged.id
       : undefined;
   useEffect(() => {
-    if (!settledDetachId) return;
-    discard([settledDetachId]);
-  }, [settledDetachId, discard]);
+    if (!settledUnmountId) return;
+    discard([settledUnmountId]);
+  }, [settledUnmountId, discard]);
 
   if (!volume.mounted_on_service_id) {
     return <AttachSection volume={volume} />;
@@ -204,7 +203,7 @@ function AttachSection({ volume }: TProps) {
             <BlockItem id={volumeSettingsIds.connection.service} className="w-full md:w-full">
               <BlockItemHeader type="column">
                 <BlockItemTitle>Mount to Service</BlockItemTitle>
-                <BlockItemDescription>The service to attach this volume to.</BlockItemDescription>
+                <BlockItemDescription>The service to mount it on.</BlockItemDescription>
               </BlockItemHeader>
               <BlockItemContent>
                 <field.AsyncAndSearchableSelect
@@ -264,7 +263,9 @@ function AttachSection({ volume }: TProps) {
               <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
                 <BlockItemHeader type="column">
                   <BlockItemTitle>Mount Path</BlockItemTitle>
-                  <BlockItemDescription>The path to mount the volume at.</BlockItemDescription>
+                  <BlockItemDescription>
+                    {"The volume's folder in the service."}
+                  </BlockItemDescription>
                 </BlockItemHeader>
                 <BlockItemContent>
                   <MountPathField
@@ -289,11 +290,11 @@ function AttachSection({ volume }: TProps) {
   );
 }
 
-// The volume is on a service, so it can move to another path or detach. Both are staged
+// The volume is on a service, so it can move to another path or unmount. Both are staged
 // and deploy with the other changes.
 function AttachedSection({ volume }: TProps) {
   const {
-    query: { data: servicesData, isPending, error },
+    query: { data: servicesData },
     teamId,
     projectId,
     environmentId,
@@ -302,7 +303,7 @@ function AttachedSection({ volume }: TProps) {
   const stageList = useStagedChangesStore((s) => s.stageList);
   const discard = useStagedChangesStore((s) => s.discard);
   const isLocked = isVolumeLocked(volume) || staged?.isApplying === true;
-  const isDetachStaged = staged?.mountPath === null;
+  const isUnmountStaged = staged?.mountPath === null;
 
   const attachedService = servicesData?.services.find(
     (service) => service.id === volume.mounted_on_service_id,
@@ -359,7 +360,7 @@ function AttachedSection({ volume }: TProps) {
     });
   };
 
-  const stageDetach = () => {
+  const stageUnmount = () => {
     if (!attachedService) return;
     stageList({
       kind: "volume",
@@ -376,9 +377,9 @@ function AttachedSection({ volume }: TProps) {
     });
   };
 
-  const detachControl = (
+  const unmountControl = (
     <div className="-my-2.5 -mr-3 flex items-start justify-end self-stretch p-0.5">
-      {isDetachStaged ? (
+      {isUnmountStaged ? (
         <Button
           type="button"
           aria-label="Revert"
@@ -397,10 +398,11 @@ function AttachedSection({ volume }: TProps) {
           variant="ghost"
           forceMinSize="medium"
           disabled={isLocked || !attachedService}
-          onClick={stageDetach}
-          className="text-muted-foreground h-9 rounded-md px-3 py-0"
+          onClick={stageUnmount}
+          className="text-muted-foreground h-9 gap-1.5 rounded-md px-2.5 py-0 font-semibold"
         >
-          Detach
+          <EjectIcon className="-ml-0.5 size-4.5 shrink-0" />
+          <span className="min-w-0 shrink truncate">Unmount</span>
         </Button>
       )}
     </div>
@@ -416,42 +418,8 @@ function AttachedSection({ volume }: TProps) {
       isApplying={staged?.isApplying}
       onDiscard={() => staged && discard([staged.id])}
     >
-      <Block>
-        <BlockItem id={volumeSettingsIds.connection.service} className="w-full md:w-full">
-          <BlockItemHeader type="column">
-            <BlockItemTitle>Mount to Service</BlockItemTitle>
-            <BlockItemDescription>The service this volume is attached to.</BlockItemDescription>
-          </BlockItemHeader>
-          <BlockItemContent>
-            <BlockItemButtonLike
-              asElement="div"
-              isPending={isPending}
-              hasChanges={isDetachStaged}
-              text={
-                isPending
-                  ? "Loading"
-                  : isDetachStaged
-                    ? "Will be detached"
-                    : (attachedService?.name ?? "Service not found")
-              }
-              Icon={({ className }: { className?: string }) =>
-                isDetachStaged ? (
-                  <CableIcon className={className} />
-                ) : (
-                  <ServicePickerTriggerIcon
-                    service={attachedService}
-                    color="brand"
-                    className={className}
-                  />
-                )
-              }
-              trailing={detachControl}
-            />
-          </BlockItemContent>
-        </BlockItem>
-        {!servicesData && !isPending && error && <ErrorLine message={error.message} />}
-      </Block>
-      {!isDetachStaged && (
+      <MountedOnBlock volume={volume} isUnmountStaged={isUnmountStaged} trailing={unmountControl} />
+      {!isUnmountStaged && (
         <Block>
           <form.AppField
             name="mountPath"
@@ -459,7 +427,9 @@ function AttachedSection({ volume }: TProps) {
               <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
                 <BlockItemHeader type="column">
                   <BlockItemTitle>Mount Path</BlockItemTitle>
-                  <BlockItemDescription>The path to mount the volume at.</BlockItemDescription>
+                  <BlockItemDescription>
+                    {"The volume's folder in the service."}
+                  </BlockItemDescription>
                 </BlockItemHeader>
                 <BlockItemContent>
                   <MountPathField
@@ -605,11 +575,8 @@ function MountPathField({
 // A database mounts its volume where its engine expects it, so the path can't change
 function DatabaseSection({ volume }: TProps) {
   const {
-    query: { data: servicesData, isPending, error },
+    query: { isPending },
   } = useServices();
-  const attachedService = servicesData?.services.find(
-    (service) => service.id === volume.mounted_on_service_id,
-  );
   const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
 
   return (
@@ -619,41 +586,19 @@ function DatabaseSection({ volume }: TProps) {
       entityId={sectionHighlightId}
       Icon={UnplugIcon}
     >
+      <MountedOnBlock volume={volume} />
       <Block>
         <BlockItem id={volumeSettingsIds.connection.mountPath} className="w-full md:w-full">
           <BlockItemHeader type="column">
             <BlockItemTitle>Mount Path</BlockItemTitle>
-            <BlockItemDescription>
-              {isPending ? (
-                <span className="bg-muted-foreground animate-skeleton rounded-md text-transparent">
-                  Loading connection details...
-                </span>
-              ) : attachedService ? (
-                <>
-                  Mounted on{" "}
-                  <span className="text-foreground bg-input inline-flex max-w-full items-center gap-1 rounded border px-1.25 align-bottom leading-tight font-semibold">
-                    <ServiceIcon
-                      service={attachedService}
-                      color="brand"
-                      className="-ml-px size-3.5 shrink-0"
-                    />
-                    <span className="min-w-0 wrap-break-word">{attachedService.name}</span>
-                  </span>{" "}
-                  at this path. It can't be changed for databases.
-                </>
-              ) : error ? (
-                "Something went wrong."
-              ) : (
-                "This volume is not attached to a service."
-              )}
-            </BlockItemDescription>
+            <BlockItemDescription>Fixed for databases.</BlockItemDescription>
           </BlockItemHeader>
           <BlockItemContent>
             <BlockItemButtonLike
               asElement="div"
               isPending={isPending}
               className={cn(isVolumeLocked(volume) && "opacity-50")}
-              text={isPending ? "Loading" : volume.mount_path || "Not attached"}
+              text={isPending ? "Loading" : volume.mount_path || "Not mounted"}
               classNameText="whitespace-normal"
               Icon={({ className }: { className?: string }) => (
                 <FolderClosedIcon className={className} />
@@ -661,10 +606,55 @@ function DatabaseSection({ volume }: TProps) {
             />
           </BlockItemContent>
         </BlockItem>
-        {!servicesData && !isPending && error && <ErrorLine message={error.message} />}
       </Block>
       <VolumeIdBlock volume={volume} />
     </SettingsSection>
+  );
+}
+
+function MountedOnBlock({
+  volume,
+  isUnmountStaged = false,
+  trailing,
+}: TProps & { isUnmountStaged?: boolean; trailing?: ReactNode }) {
+  const {
+    query: { data: servicesData, isPending, error },
+  } = useServices();
+  const service = servicesData?.services.find((s) => s.id === volume.mounted_on_service_id);
+
+  return (
+    <Block>
+      <BlockItem id={volumeSettingsIds.connection.service} className="w-full md:w-full">
+        <BlockItemHeader type="column">
+          <BlockItemTitle>Mounted On</BlockItemTitle>
+          <BlockItemDescription>The service using this volume.</BlockItemDescription>
+        </BlockItemHeader>
+        <BlockItemContent>
+          <BlockItemButtonLike
+            asElement="div"
+            isPending={isPending}
+            hasChanges={isUnmountStaged}
+            className={cn(isVolumeLocked(volume) && "opacity-50")}
+            text={
+              isPending
+                ? "Loading"
+                : isUnmountStaged
+                  ? "Will unmount"
+                  : (service?.name ?? "Service not found")
+            }
+            Icon={({ className }: { className?: string }) =>
+              isUnmountStaged ? (
+                <EjectIcon className={className} />
+              ) : (
+                <ServicePickerTriggerIcon service={service} color="brand" className={className} />
+              )
+            }
+            trailing={trailing}
+          />
+        </BlockItemContent>
+      </BlockItem>
+      {!servicesData && !isPending && error && <ErrorLine message={error.message} />}
+    </Block>
   );
 }
 

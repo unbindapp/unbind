@@ -59,7 +59,7 @@ type CreatePVCInput struct {
 	EnvironmentID uuid.UUID `json:"environment_id" required:"false" format:"uuid"`
 	CapacityGB    float64   `json:"capacity_gb" required:"true"`
 	// Both or neither: attach the new volume to a service in the same environment right away
-	ServiceID *uuid.UUID `json:"service_id,omitempty" required:"false" format:"uuid" doc:"Service to attach the volume to, requires mount_path"`
+	ServiceID *uuid.UUID `json:"service_id,omitempty" required:"false" format:"uuid" doc:"Service to mount the volume on, requires mount_path"`
 	MountPath *string    `json:"mount_path,omitempty" required:"false" doc:"Path to mount the volume at on the service, requires service_id"`
 }
 

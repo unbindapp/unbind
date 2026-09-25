@@ -46,9 +46,9 @@ export default function DeleteSection({ service, className }: Props) {
                 <br />
                 <br />
                 <span className="text-foreground font-semibold">
-                  Volumes attached won't be deleted.
+                  Mounted volumes won't be deleted.
                 </span>{" "}
-                They will remain in your environment and can be attached to another service.
+                They stay in your environment and can be mounted on another service.
               </>
             )}
           </>

@@ -10,7 +10,7 @@ import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider"
 import VolumePanel from "@/components/volume/panel/volume-panel";
 import { TVolumeUsageLevel } from "@/components/volume/types";
 import { TVolumeShallow } from "@/lib/queries/services";
-import { CableIcon, ClockIcon, HardDriveIcon, HourglassIcon } from "lucide-react";
+import { ClockIcon, EjectIcon, HardDriveIcon, HourglassIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -30,17 +30,17 @@ export default function VolumeUsageLine({ volume, className }: TProps) {
   }, [usagePercentage]);
 
   const staged = useStagedVolumeChange(volume.id);
-  const isDetachStaged = staged?.mountPath === null;
-  const status = isDetachStaged
-    ? getDetachStatus(staged.isApplying)
+  const isUnmountStaged = staged?.mountPath === null;
+  const status = isUnmountStaged
+    ? getUnmountStatus(staged.isApplying)
     : getLineStatus(volume, usagePercentage);
 
   return (
     <VolumePanel volume={volume}>
       <LinkButton
         variant={"card"}
-        data-usage={isDetachStaged ? undefined : usageLevel}
-        data-staged={isDetachStaged || undefined}
+        data-usage={isUnmountStaged ? undefined : usageLevel}
+        data-staged={isUnmountStaged || undefined}
         from="/$team_id/project/$project_id"
         to="."
         search={(prev) => ({ ...prev, ...getOpenSearch(volume.id) })}
@@ -51,7 +51,7 @@ export default function VolumeUsageLine({ volume, className }: TProps) {
           className,
         )}
       >
-        {usagePercentage !== undefined && !isDetachStaged && (
+        {usagePercentage !== undefined && !isUnmountStaged && (
           <div className="absolute top-0 left-0 h-full w-full">
             <div
               style={{
@@ -82,14 +82,14 @@ export default function VolumeUsageLine({ volume, className }: TProps) {
   );
 }
 
-function getDetachStatus(isApplying: boolean) {
+function getUnmountStatus(isApplying: boolean) {
   if (isApplying) {
     return {
       icon: <HourglassIcon className="animate-hourglass size-3 min-w-0 shrink-0" />,
-      text: "Detaching",
+      text: "Unmounting",
     };
   }
-  return { icon: <CableIcon className="size-3.5 min-w-0 shrink-0" />, text: "Will detach" };
+  return { icon: <EjectIcon className="size-3.5 min-w-0 shrink-0" />, text: "Will unmount" };
 }
 
 function getLineStatus(volume: TVolumeShallow, usagePercentage: number | undefined) {
@@ -100,7 +100,7 @@ function getLineStatus(volume: TVolumeShallow, usagePercentage: number | undefin
       text: "Awaiting deployment",
     };
   }
-  if (volume.mount_status === "attaching") return { icon: hourglass, text: "Attaching" };
+  if (volume.mount_status === "attaching") return { icon: hourglass, text: "Mounting" };
   if (volume.is_pending_resize) return { icon: hourglass, text: "Expanding" };
   if (usagePercentage === undefined) return { icon: hourglass, text: "Measuring" };
   return {

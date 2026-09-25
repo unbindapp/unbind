@@ -274,7 +274,7 @@ test("folds domain, port and volume changes into the update of their service", (
   assert.deepEqual(update.add_volumes, [{ id: "pvc-1", mount_path: "/data" }]);
 });
 
-test("a detached volume is removed from its service instead of added", () => {
+test("an unmounted volume is removed from its service instead of added", () => {
   const payload = buildApplyStagedChangesPayload(
     state(
       [],

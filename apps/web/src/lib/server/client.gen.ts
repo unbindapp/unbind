@@ -201,14 +201,14 @@ export const UpdateServiceInputSchema = z
     overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
     overwrite_ports: z.array(PortSpecSchema).nullable().optional(),
     overwrite_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
-    overwrite_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to attach to the service
+    overwrite_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to mount on the service
     project_id: z.string(),
     railpack_builder_build_command: z.string().optional(),
     railpack_builder_install_command: z.string().optional(),
     remove_hosts: z.array(HostSpecSchema).nullable().optional(), // Hosts to remove
     remove_ports: z.array(PortSpecSchema).nullable().optional(), // Ports to remove
     remove_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Variable mounts to remove
-    remove_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to detach from the service, matched by id. The data stays in the volume, which can be attached to another service once this one's old replicas stop
+    remove_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to unmount from the service, matched by id. The data stays in the volume, which can be mounted on another service once this one's old replicas stop
     replicas: z.number().optional(),
     repository_name: z.string().optional(), // Must be a repository the GitHub installation has access to
     repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to
@@ -649,7 +649,7 @@ export const CreatePVCInputSchema = z
     mount_path: z.string().optional(), // Path to mount the volume at on the service, requires service_id
     name: z.string(), // Has to be unique among the volumes of the same scope. A taken name gets a short suffix, so read the name from the response
     project_id: z.string().optional(),
-    service_id: z.string().optional(), // Service to attach the volume to, requires mount_path
+    service_id: z.string().optional(), // Service to mount the volume on, requires mount_path
     team_id: z.string(),
     type: PvcScopeSchema,
   })

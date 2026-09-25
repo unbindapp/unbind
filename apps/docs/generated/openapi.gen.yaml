@@ -380,7 +380,7 @@ components:
           format: uuid
           type: string
         service_id:
-          description: Service to attach the volume to, requires mount_path
+          description: Service to mount the volume on, requires mount_path
           format: uuid
           type: string
         team_id:
@@ -3989,7 +3989,7 @@ components:
             - array
             - "null"
         overwrite_volumes:
-          description: Volumes to attach to the service
+          description: Volumes to mount on the service
           items:
             $ref: "#/components/schemas/ServiceVolume"
           type:
@@ -4024,7 +4024,7 @@ components:
             - array
             - "null"
         remove_volumes:
-          description: Volumes to detach from the service, matched by id. The data stays in the volume, which can be attached to another service once this one's old replicas stop
+          description: Volumes to unmount from the service, matched by id. The data stays in the volume, which can be mounted on another service once this one's old replicas stop
           items:
             $ref: "#/components/schemas/ServiceVolume"
           type:
@@ -8642,7 +8642,7 @@ paths:
         risk: low
   /services/delete:
     delete:
-      description: Permanently delete a service, its deployments, and its config. Attached volumes are not deleted, they remain in the environment and can be attached to another service. If it was the last service in its service group, the group is deleted too.
+      description: Permanently delete a service, its deployments, and its config. Mounted volumes are not deleted, they remain in the environment and can be mounted on another service. If it was the last service in its service group, the group is deleted too.
       operationId: delete-service
       requestBody:
         content:

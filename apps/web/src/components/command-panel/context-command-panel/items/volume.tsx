@@ -65,7 +65,7 @@ function getEmptyText({
   hasEligibleServices: boolean;
 }) {
   if (isPending) return "Loading services...";
-  if (!hasServices) return "No services to attach to";
+  if (!hasServices) return "No services to mount on";
   if (!hasEligibleServices) return "All services already have a volume";
   return undefined;
 }
@@ -228,7 +228,7 @@ function useVolumeItem() {
       Icon: HardDriveIcon,
       subpage: {
         id: servicesPageId,
-        title: "Attach to Service",
+        title: "Mount to Service",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Select a service...",
         commandEmptyText: getEmptyText({

@@ -176,7 +176,7 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 			}
 		}
 		if unknown := newVolumes(service.Edges.ServiceConfig.Volumes, input.RemoveVolumes); len(unknown) > 0 {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Volume %s is not attached to this service", unknown[0].ID))
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Volume %s is not mounted on this service", unknown[0].ID))
 		}
 	}
 

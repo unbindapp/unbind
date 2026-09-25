@@ -242,6 +242,7 @@ export function BlockItemButtonLike({
   ...props
 }: TBlockItemButtonLikeProps) {
   const isLink = asElement === "LinkButton" && !!href;
+  const isInteractive = isLink || asElement === "button";
   const Element = (asElement === "button" ? Button : isLink ? "a" : "div") as React.ElementType;
 
   return (
@@ -256,7 +257,10 @@ export function BlockItemButtonLike({
         // take the `variant` prop.
         isLink && buttonVariants({ variant: "outline" }),
         "group/button bg-input flex w-full flex-row items-center justify-start gap-2 rounded-lg border px-3 py-2.5 text-left",
-        "data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:has-hover:hover:bg-change/4-10 data-staged:has-hover:hover:text-change data-staged:active:bg-change/4-10 data-staged:active:text-change",
+        "data-staged:text-change data-staged:bg-change/2-10 data-staged:border-change/5-10",
+        // A div is only a display, so it doesn't react to the pointer
+        isInteractive &&
+          "data-staged:has-hover:hover:bg-change/4-10 data-staged:has-hover:hover:text-change data-staged:active:bg-change/4-10 data-staged:active:text-change",
         className,
       )}
       {...(isLink ? { href, target: "_blank", rel: "noopener noreferrer" } : {})}
