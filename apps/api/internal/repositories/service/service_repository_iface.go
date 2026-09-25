@@ -58,5 +58,6 @@ type ServiceRepositoryInterface interface {
 	GetByIDs(ctx context.Context, serviceIDs []uuid.UUID) ([]*ent.Service, error)
 	// GetByScope lists every service under a team, project or environment, loaded for ad-hoc redeploys
 	GetByScope(ctx context.Context, scope schema.VariableReferenceSourceType, scopeID uuid.UUID) ([]*ent.Service, error)
+	TemplateInstanceExists(ctx context.Context, tx repository.TxInterface, templateInstanceID uuid.UUID) (bool, error)
 	GetNamesByEnvironment(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID) ([]string, error)
 }

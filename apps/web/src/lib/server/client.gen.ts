@@ -2565,6 +2565,7 @@ export const TemplateDeployInputSchema = z
     project_id: z.string(),
     team_id: z.string(),
     template_id: z.string(),
+    template_instance_id: z.string().optional(), // Optional ID for this deployment of the template, returned as template_instance_id on every service it creates. Deploying with an ID that is already used answers conflict, so a retried request never deploys the template twice
   })
   .strip();
 

@@ -247,6 +247,7 @@ export default function TemplateDraftPanelContent({ templateDraft, className, ..
         environmentId: templateDraft.environmentId,
         templateId: templateDraft.template.id,
         inputs: editedInputs,
+        instanceId: templateDraft.id,
       });
 
       for (const item of res.data) {

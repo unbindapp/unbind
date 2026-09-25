@@ -3270,6 +3270,10 @@ components:
         template_id:
           format: uuid
           type: string
+        template_instance_id:
+          description: Optional ID for this deployment of the template, returned as template_instance_id on every service it creates. Deploying with an ID that is already used answers conflict, so a retried request never deploys the template twice
+          format: uuid
+          type: string
       required:
         - group_name
         - template_id

@@ -9,11 +9,12 @@ type TemplateInputValue struct {
 }
 
 type TemplateDeployInput struct {
-	GroupName        string               `json:"group_name" required:"true" minLength:"1" maxLength:"32" doc:"Has to be unique in the environment. A taken name gets a short suffix, and so do the services and volumes of the template"`
-	GroupDescription *string              `json:"group_description,omitempty" required:"false"`
-	TemplateID       uuid.UUID            `json:"template_id" format:"uuid" required:"true"`
-	TeamID           uuid.UUID            `json:"team_id" format:"uuid" required:"true"`
-	ProjectID        uuid.UUID            `json:"project_id" format:"uuid" required:"true"`
-	EnvironmentID    uuid.UUID            `json:"environment_id" format:"uuid" required:"true"`
-	Inputs           []TemplateInputValue `json:"inputs,omitempty" required:"false"`
+	GroupName          string               `json:"group_name" required:"true" minLength:"1" maxLength:"32" doc:"Has to be unique in the environment. A taken name gets a short suffix, and so do the services and volumes of the template"`
+	GroupDescription   *string              `json:"group_description,omitempty" required:"false"`
+	TemplateID         uuid.UUID            `json:"template_id" format:"uuid" required:"true"`
+	TeamID             uuid.UUID            `json:"team_id" format:"uuid" required:"true"`
+	ProjectID          uuid.UUID            `json:"project_id" format:"uuid" required:"true"`
+	EnvironmentID      uuid.UUID            `json:"environment_id" format:"uuid" required:"true"`
+	Inputs             []TemplateInputValue `json:"inputs,omitempty" required:"false"`
+	TemplateInstanceID *uuid.UUID           `json:"template_instance_id,omitempty" format:"uuid" required:"false" doc:"Optional ID for this deployment of the template, returned as template_instance_id on every service it creates. Deploying with an ID that is already used answers conflict, so a retried request never deploys the template twice"`
 }

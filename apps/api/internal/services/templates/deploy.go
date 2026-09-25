@@ -220,10 +220,19 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 	var newServices []*ent.Service
 	dbServiceMap := make(map[string]*ent.Service)
 
-	// Generate a launch ID
 	templateInstanceID := uuid.New()
+	if input.TemplateInstanceID != nil {
+		templateInstanceID = *input.TemplateInstanceID
+	}
 
 	if err := self.repo.WithTx(ctx, func(tx repository.TxInterface) error {
+		instanceTaken, err := self.repo.Service().TemplateInstanceExists(ctx, tx, templateInstanceID)
+		if err != nil {
+			return err
+		}
+		if instanceTaken {
+			return errdefs.NewCustomError(errdefs.ErrTypeConflict, "This template instance is already deployed")
+		}
 		groupName, err := self.uniqueGroupName(ctx, tx, input)
 		if err != nil {
 			return err

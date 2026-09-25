@@ -702,6 +702,14 @@ func derefString(value *string) string {
 	return *value
 }
 
+func (self *ServiceRepository) TemplateInstanceExists(ctx context.Context, tx repository.TxInterface, templateInstanceID uuid.UUID) (bool, error) {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+	return db.Service.Query().Where(service.TemplateInstanceID(templateInstanceID)).Exist(ctx)
+}
+
 func (self *ServiceRepository) GetNamesByEnvironment(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID) ([]string, error) {
 	db := self.base.DB
 	if tx != nil {

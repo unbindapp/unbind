@@ -1431,6 +1431,24 @@ func (suite *ServiceQueriesSuite) TestNameIsUniqueInEnvironment() {
 	suite.True(ent.IsConstraintError(err))
 }
 
+func (suite *ServiceQueriesSuite) TestTemplateInstanceExists() {
+	instanceID := uuid.New()
+
+	exists, err := suite.serviceRepo.TemplateInstanceExists(suite.Ctx, nil, instanceID)
+	suite.NoError(err)
+	suite.False(exists)
+
+	suite.DB.Service.UpdateOneID(suite.testService.ID).SetTemplateInstanceID(instanceID).ExecX(suite.Ctx)
+
+	exists, err = suite.serviceRepo.TemplateInstanceExists(suite.Ctx, nil, instanceID)
+	suite.NoError(err)
+	suite.True(exists)
+
+	exists, err = suite.serviceRepo.TemplateInstanceExists(suite.Ctx, nil, uuid.New())
+	suite.NoError(err)
+	suite.False(exists)
+}
+
 func TestServiceQueriesSuite(t *testing.T) {
 	suite.Run(t, new(ServiceQueriesSuite))
 }

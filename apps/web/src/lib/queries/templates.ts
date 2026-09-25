@@ -38,6 +38,7 @@ export async function deployTemplate(input: {
   inputs?: TemplateInputValue[];
   groupName: string;
   groupDescription?: string;
+  instanceId?: string;
 }) {
   const res = await getGoClient().templates.deploy({
     team_id: input.teamId,
@@ -47,6 +48,7 @@ export async function deployTemplate(input: {
     inputs: input.inputs,
     group_name: input.groupName,
     group_description: input.groupDescription,
+    template_instance_id: input.instanceId,
   });
   return { data: res.data };
 }

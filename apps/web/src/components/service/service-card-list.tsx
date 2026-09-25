@@ -60,6 +60,7 @@ export default function ServiceCardList() {
   const pendingServices = usePendingEntityStore((s) => s.pendingServices);
 
   const servicesOrTemplateDrafts = useMemo(() => {
+    const deployedInstanceIds = new Set(services?.map((s) => s.template_instance_id));
     const isInEnvironment = (item: { teamId: string; projectId: string; environmentId: string }) =>
       item.teamId === teamId &&
       item.projectId === projectId &&
@@ -70,7 +71,7 @@ export default function ServiceCardList() {
         .filter(isInEnvironment)
         .map((p) => ({ type: "pending-service", obj: p }) as const),
       ...templateDrafts
-        .filter(isInEnvironment)
+        .filter((t) => isInEnvironment(t) && !deployedInstanceIds.has(t.id))
         .map((t) => ({ type: "template-draft", obj: t }) as const),
       ...(servicesOrGroups || []).map((s) => ({ type: "service", obj: s }) as const),
     ];
@@ -78,7 +79,15 @@ export default function ServiceCardList() {
     return allItems.toSorted(
       (a, b) => new Date(getCreatedAt(b)).getTime() - new Date(getCreatedAt(a)).getTime(),
     );
-  }, [pendingServices, templateDrafts, servicesOrGroups, teamId, projectId, environmentId]);
+  }, [
+    pendingServices,
+    templateDrafts,
+    services,
+    servicesOrGroups,
+    teamId,
+    projectId,
+    environmentId,
+  ]);
 
   const context: TContextCommandPanelContext = useMemo(
     () => ({ contextType: "new-service", teamId, projectId, environmentId }),
