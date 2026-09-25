@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
@@ -17,6 +18,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/vartemplate"
 	mocks_infrastructure_k8s "github.com/unbindapp/unbind-api/mocks/infrastructure/k8s"
 	mocks_repositories "github.com/unbindapp/unbind-api/mocks/repositories"
+	mocks_repository_environment "github.com/unbindapp/unbind-api/mocks/repository/environment"
 	mocks_repository_permissions "github.com/unbindapp/unbind-api/mocks/repository/permissions"
 	mocks_repository_service "github.com/unbindapp/unbind-api/mocks/repository/service"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -327,7 +329,7 @@ func (suite *RenderSuite) TestRenderedValuesChange() {
 	existing := map[string][]byte{"PLAIN": []byte("1"), "REF": []byte(token)}
 	change := func(upserts map[string][]byte, deletes []string, overwrite bool) bool {
 		final := finalValues(existing, upserts, deletes, overwrite)
-		return renderedValuesChange(existing, final, changedKeys(existing, final))
+		return renderedValuesChange(existing, final, changedKeys(existing, final), suite.target.ID)
 	}
 
 	suite.False(change(map[string][]byte{"PLAIN": []byte("2")}, nil, false))
@@ -338,6 +340,13 @@ func (suite *RenderSuite) TestRenderedValuesChange() {
 	suite.True(change(map[string][]byte{"PLAIN": []byte("1")}, nil, true))
 	suite.True(change(nil, []string{"REF"}, false))
 	suite.False(change(nil, []string{"PLAIN"}, false))
+
+	// A plain value another variable of the service references is rendered too
+	existing["URL"] = []byte("http://x:" + vartemplate.ServiceToken(suite.target.ID, "PLAIN"))
+	suite.True(change(map[string][]byte{"PLAIN": []byte("2")}, nil, false))
+	suite.True(change(nil, []string{"PLAIN"}, false))
+	existing["URL"] = []byte("http://x:" + vartemplate.ServiceToken(uuid.New(), "PLAIN"))
+	suite.False(change(map[string][]byte{"PLAIN": []byte("2")}, nil, false))
 }
 
 func (suite *RenderSuite) TestValidateReferences() {
@@ -369,6 +378,122 @@ func (suite *RenderSuite) TestValidateReferences() {
 		"BAD": []byte(vartemplate.ServiceToken(foreign, "KEY")),
 	})
 	suite.ErrorContains(err, "not found in this project")
+
+	// The service's own variables and addresses need no lookup, only a loop is refused
+	err = suite.service.validateReferences(suite.ctx, userID, suite.target, map[string][]byte{
+		"OWN": []byte(vartemplate.ServiceToken(suite.target.ID, "OTHER") + vartemplate.ServiceToken(suite.target.ID, "UNBIND_URL_PRIVATE")),
+	})
+	suite.NoError(err)
+	err = suite.service.validateReferences(suite.ctx, userID, suite.target, map[string][]byte{
+		"LOOP": []byte("x-" + vartemplate.ServiceToken(suite.target.ID, "LOOP")),
+	})
+	suite.ErrorContains(err, "can't reference itself")
+}
+
+func (suite *RenderSuite) TestRender_SelfReferences() {
+	suite.target.Edges.ServiceConfig.Ports = []schema.PortSpec{{Port: 3000}}
+	own := suite.target.ID
+	values := map[string][]byte{
+		"PORT":   []byte("3000"),
+		"HOST":   []byte(vartemplate.ServiceToken(own, "UNBIND_HOST_PRIVATE")),
+		"URL":    []byte("http://" + vartemplate.ServiceToken(own, "HOST") + ":" + vartemplate.ServiceToken(own, "PORT")),
+		"LOOP_A": []byte(vartemplate.ServiceToken(own, "LOOP_B")),
+		"LOOP_B": []byte(vartemplate.ServiceToken(own, "LOOP_A")),
+		"SELF":   []byte(vartemplate.ServiceToken(own, "SELF")),
+		"NO_KEY": []byte(vartemplate.ServiceToken(own, "MISSING")),
+	}
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{own}).Return([]*ent.Service{suite.target}, nil).Once()
+	suite.expectSecret(suite.target.KubernetesSecret, values)
+
+	result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
+	suite.NoError(err)
+	suite.Equal("web-abc123.unbind-team.svc.cluster.local", result.Env["HOST"])
+	// HOST is itself a reference, so URL is rendered through it
+	suite.Equal("http://web-abc123.unbind-team.svc.cluster.local:3000", result.Env["URL"])
+	suite.Equal("web", result.Variables["URL"].References[0].SourceName)
+
+	// Loops end at the depth cap and stay literal, like any missing key
+	suite.Equal(string(values["LOOP_A"]), result.Env["LOOP_A"])
+	suite.Equal(string(values["LOOP_B"]), result.Env["LOOP_B"])
+	suite.Equal(string(values["SELF"]), result.Env["SELF"])
+	suite.Equal(string(values["NO_KEY"]), result.Env["NO_KEY"])
+	suite.Len(result.Unresolved, 4)
+}
+
+// A referenced value that is itself a reference is rendered too, loading the service
+// it points at on demand. A missing one is looked up once.
+func (suite *RenderSuite) TestRender_ChainedReferences() {
+	api := suite.newService("api", schema.ServiceTypeGithub, nil)
+	db := suite.newService("postgres", schema.ServiceTypeDatabase, utils.ToPtr("postgres"))
+	missing := uuid.New()
+
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{api.ID}).Return([]*ent.Service{api}, nil).Once()
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{db.ID}).Return([]*ent.Service{db}, nil).Once()
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{missing}).Return(nil, nil).Once()
+	suite.expectSecret(api.KubernetesSecret, map[string][]byte{
+		"DSN":  []byte(vartemplate.ServiceToken(db.ID, "DATABASE_URL") + "?sslmode=disable"),
+		"GONE": []byte(vartemplate.ServiceToken(missing, "KEY")),
+	})
+	suite.expectSecret(db.KubernetesSecret, map[string][]byte{"DATABASE_URL": []byte("postgres://db")})
+
+	values := map[string][]byte{
+		"DSN":    []byte(vartemplate.ServiceToken(api.ID, "DSN")),
+		"GONE":   []byte(vartemplate.ServiceToken(api.ID, "GONE")),
+		"GONE_2": []byte("x-" + vartemplate.ServiceToken(api.ID, "GONE")),
+	}
+
+	result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
+	suite.NoError(err)
+	suite.Equal("postgres://db?sslmode=disable", result.Env["DSN"])
+	// A chain that ends nowhere leaves the outer reference unresolved rather than
+	// leaking the inner token
+	suite.Equal(string(values["GONE"]), result.Env["GONE"])
+	suite.Equal(string(values["GONE_2"]), result.Env["GONE_2"])
+	suite.Len(result.Unresolved, 2)
+	suite.False(result.Variables["GONE"].References[0].Resolved)
+	suite.Equal("api", result.Variables["GONE"].References[0].SourceName)
+}
+
+// The picker offers the current service like any other: its stored variables and
+// everything Unbind provides for it
+func (suite *RenderSuite) TestGetAvailableVariableReferences() {
+	userID := uuid.New()
+	suite.target.Edges.ServiceConfig.Ports = []schema.PortSpec{{Port: 3000}}
+	api := suite.newService("api", schema.ServiceTypeGithub, nil)
+	api.Edges.ServiceConfig.IsPublic = true
+	api.Edges.ServiceConfig.Ports = []schema.PortSpec{{Port: 8080}}
+	api.Edges.ServiceConfig.Hosts = []schema.HostSpec{{Host: "api.example.com", TargetPort: utils.ToPtr[int32](8080)}}
+
+	envRepo := mocks_repository_environment.NewEnvironmentRepositoryMock(suite.T())
+	suite.repo.EXPECT().Environment().Return(envRepo).Maybe()
+	suite.svcRepo.EXPECT().GetByID(suite.ctx, suite.target.ID).Return(suite.target, nil).Once()
+	suite.perms.EXPECT().Check(suite.ctx, userID, mock.Anything).Return(nil)
+	envRepo.EXPECT().GetForProject(suite.ctx, mock.Anything, suite.project.ID, mock.Anything).Return([]*ent.Environment{suite.environment}, nil).Once()
+	suite.svcRepo.EXPECT().GetByEnvironmentID(suite.ctx, suite.environment.ID, mock.Anything, false).Return([]*ent.Service{suite.target, api}, nil).Once()
+	suite.k8s.EXPECT().GetAllSecrets(suite.ctx, suite.team.ID, suite.team.KubernetesSecret, suite.project.ID, suite.project.KubernetesSecret,
+		suite.environment.ID, suite.environment.KubernetesSecret,
+		map[uuid.UUID]string{suite.target.ID: suite.target.KubernetesSecret, api.ID: api.KubernetesSecret}, suite.k8sClient, suite.team.Namespace).
+		Return([]models.SecretData{
+			{ID: suite.target.ID, Type: schema.VariableReferenceSourceTypeService, SecretName: suite.target.KubernetesSecret, Keys: []string{"PORT"}},
+			{ID: api.ID, Type: schema.VariableReferenceSourceTypeService, SecretName: api.KubernetesSecret, Keys: []string{"TOKEN"}},
+		}, nil).Once()
+
+	references, err := suite.service.GetAvailableVariableReferences(suite.ctx, userID, suite.team.ID, suite.project.ID, suite.environment.ID, suite.target.ID)
+	suite.NoError(err)
+
+	keys := func(sourceID uuid.UUID, refType schema.VariableReferenceType) []string {
+		for _, reference := range references {
+			if reference.SourceID == sourceID && reference.Type == refType {
+				return reference.Keys
+			}
+		}
+		return nil
+	}
+	suite.Equal([]string{"PORT"}, keys(suite.target.ID, schema.VariableReferenceTypeVariable))
+	suite.Equal([]string{"UNBIND_HOST_PRIVATE", "UNBIND_URL_PRIVATE", "UNBIND_PORT_PRIVATE"}, keys(suite.target.ID, schema.VariableReferenceTypePrivateEndpoint))
+	suite.Nil(keys(suite.target.ID, schema.VariableReferenceTypePublicEndpoint))
+	suite.Equal([]string{"TOKEN"}, keys(api.ID, schema.VariableReferenceTypeVariable))
+	suite.Equal([]string{"UNBIND_URL_PUBLIC", "UNBIND_HOST_PUBLIC", "UNBIND_PORT_PUBLIC"}, keys(api.ID, schema.VariableReferenceTypePublicEndpoint))
 }
 
 func (suite *RenderSuite) TestFindReferencingServices() {

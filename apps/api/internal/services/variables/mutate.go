@@ -76,7 +76,8 @@ func (self *VariablesService) pruneVariableConfig(ctx context.Context, tx reposi
 }
 
 // validateReferences checks that every referenced source exists in the same project
-// and is visible to the writer, and that mounted variables stay literal
+// and is visible to the writer, that mounted variables stay literal and that no
+// variable references itself. The service's own variables need no lookup.
 func (self *VariablesService) validateReferences(ctx context.Context, userID uuid.UUID, service *ent.Service, newVariables map[string][]byte) error {
 	mounted := make(map[string]struct{})
 	if service.Edges.ServiceConfig != nil {
@@ -99,6 +100,12 @@ func (self *VariablesService) validateReferences(ctx context.Context, userID uui
 		for _, token := range tokens {
 			if token.SourceType != schema.VariableReferenceSourceTypeService {
 				scopes[token.SourceType] = struct{}{}
+				continue
+			}
+			if token.SourceID == service.ID {
+				if token.Key == name {
+					return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Variable %s can't reference itself", name))
+				}
 				continue
 			}
 			if _, ok := seenServices[token.SourceID]; ok {

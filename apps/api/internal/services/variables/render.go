@@ -115,14 +115,19 @@ func (self *VariablesService) renderVariables(ctx context.Context, client kubern
 	return result, nil
 }
 
+// maxReferenceDepth bounds how far a chain of references is followed. A referenced
+// value that is itself a reference is rendered too, and a loop ends here.
+const maxReferenceDepth = 8
+
 type renderContext struct {
 	ctx          context.Context
 	svc          *VariablesService
 	client       kubernetes.Interface
 	namespace    string
+	projectID    uuid.UUID
 	scopeNames   map[schema.VariableReferenceSourceType]string
 	scopeSecrets map[schema.VariableReferenceSourceType]string
-	// Referenced services in the same project as the target
+	// Referenced services by ID, nil for one that is missing or outside the project
 	services map[uuid.UUID]*ent.Service
 	secrets  map[string]map[string][]byte
 	// Nil until a public endpoint needs the cluster's own address
@@ -142,6 +147,7 @@ func (self *VariablesService) newRenderContext(ctx context.Context, client kuber
 		svc:       self,
 		client:    client,
 		namespace: team.Namespace,
+		projectID: project.ID,
 		scopeNames: map[schema.VariableReferenceSourceType]string{
 			schema.VariableReferenceSourceTypeTeam:        team.Name,
 			schema.VariableReferenceSourceTypeProject:     project.Name,
@@ -168,20 +174,50 @@ func (self *VariablesService) newRenderContext(ctx context.Context, client kuber
 		seen[token.SourceID] = struct{}{}
 		serviceIDs = append(serviceIDs, token.SourceID)
 	}
+	if len(serviceIDs) == 0 {
+		return rc, nil
+	}
 	slices.SortFunc(serviceIDs, func(a, b uuid.UUID) int { return strings.Compare(a.String(), b.String()) })
 
 	sources, err := self.repo.Service().GetByIDs(ctx, serviceIDs)
 	if err != nil {
 		return nil, err
 	}
+	for _, id := range serviceIDs {
+		rc.services[id] = nil
+	}
 	for _, source := range sources {
-		if source.Edges.Environment == nil || source.Edges.Environment.ProjectID != project.ID {
-			continue
+		if rc.inProject(source) {
+			rc.services[source.ID] = source
 		}
-		rc.services[source.ID] = source
 	}
 
 	return rc, nil
+}
+
+func (rc *renderContext) inProject(source *ent.Service) bool {
+	return source.Edges.Environment != nil && source.Edges.Environment.ProjectID == rc.projectID
+}
+
+// service returns a referenced service. One that only a nested reference names is
+// loaded on first use, and a miss is remembered so it is not looked up again.
+func (rc *renderContext) service(id uuid.UUID) (*ent.Service, bool) {
+	if source, ok := rc.services[id]; ok {
+		return source, source != nil
+	}
+	rc.services[id] = nil
+	sources, err := rc.svc.repo.Service().GetByIDs(rc.ctx, []uuid.UUID{id})
+	if err != nil {
+		log.Warnf("Failed to load service %s while rendering variables: %v", id, err)
+		return nil, false
+	}
+	for _, source := range sources {
+		if source.ID == id && rc.inProject(source) {
+			rc.services[id] = source
+			return source, true
+		}
+	}
+	return nil, false
 }
 
 func (rc *renderContext) secret(name string) map[string][]byte {
@@ -200,29 +236,51 @@ func (rc *renderContext) secret(name string) map[string][]byte {
 }
 
 func (rc *renderContext) resolve(token vartemplate.Token) (string, bool) {
+	return rc.resolveAt(token, 0)
+}
+
+func (rc *renderContext) resolveAt(token vartemplate.Token, depth int) (string, bool) {
+	if depth > maxReferenceDepth {
+		return "", false
+	}
 	if token.SourceType != schema.VariableReferenceSourceTypeService {
 		secretName, ok := rc.scopeSecrets[token.SourceType]
 		if !ok || secretName == "" {
 			return "", false
 		}
 		value, ok := rc.secret(secretName)[token.Key]
-		return string(value), ok
+		if !ok {
+			return "", false
+		}
+		return rc.renderNested(string(value), depth)
 	}
 
-	source, ok := rc.services[token.SourceID]
+	source, ok := rc.service(token.SourceID)
 	if !ok {
 		return "", false
 	}
-	if vartemplate.IsEndpointKey(token.Key) {
-		return rc.endpointValue(source, token.Key)
+	if isProvidedKey(token.Key) {
+		return rc.providedValue(source, token.Key)
 	}
 	if value, ok := rc.secret(source.KubernetesSecret)[token.Key]; ok {
-		return string(value), true
+		return rc.renderNested(string(value), depth)
 	}
 	if replacement := LegacyDatabaseKey(source, token.Key); replacement != "" {
-		return rc.endpointValue(source, replacement)
+		return rc.providedValue(source, replacement)
 	}
 	return "", false
+}
+
+// renderNested renders the references inside a referenced value. One that cannot be
+// resolved leaves the whole reference unresolved instead of leaking a raw token.
+func (rc *renderContext) renderNested(value string, depth int) (string, bool) {
+	if !vartemplate.HasTokens(value) {
+		return value, true
+	}
+	rendered, unresolved := vartemplate.Render(value, func(token vartemplate.Token) (string, bool) {
+		return rc.resolveAt(token, depth+1)
+	})
+	return rendered, len(unresolved) == 0
 }
 
 func (rc *renderContext) endpointValue(source *ent.Service, key string) (string, bool) {
@@ -338,7 +396,7 @@ func (rc *renderContext) referenceInfos(value string) []models.VariableReference
 		if token.SourceType != schema.VariableReferenceSourceTypeService {
 			info.SourceName = rc.scopeNames[token.SourceType]
 			info.SourceIcon = string(token.SourceType)
-		} else if source, ok := rc.services[token.SourceID]; ok {
+		} else if source, ok := rc.service(token.SourceID); ok {
 			info.SourceName = source.Name
 			info.SourceIcon = serviceIcon(source)
 		}

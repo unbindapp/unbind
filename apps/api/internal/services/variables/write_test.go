@@ -5,9 +5,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/vartemplate"
 )
 
 func values(pairs ...string) map[string][]byte {
@@ -37,11 +39,17 @@ func TestChangedKeys(t *testing.T) {
 func TestRenderedValuesChange(t *testing.T) {
 	existing := values("PLAIN", "1", "URL", "${{team.HOST}}/api")
 
-	assert.False(t, renderedValuesChange(existing, values("PLAIN", "2", "URL", "${{team.HOST}}/api"), []string{"PLAIN"}))
-	assert.True(t, renderedValuesChange(existing, values("PLAIN", "1", "URL", "static"), []string{"URL"}))
-	assert.True(t, renderedValuesChange(existing, values("PLAIN", "1", "URL", "${{team.HOST}}/api", "NEW", "${{project.KEY}}"), []string{"NEW"}))
-	assert.True(t, renderedValuesChange(existing, values("PLAIN", "1"), []string{"URL"}))
-	assert.False(t, renderedValuesChange(existing, existing, nil))
+	assert.False(t, renderedValuesChange(existing, values("PLAIN", "2", "URL", "${{team.HOST}}/api"), []string{"PLAIN"}, uuid.Nil))
+	assert.True(t, renderedValuesChange(existing, values("PLAIN", "1", "URL", "static"), []string{"URL"}, uuid.Nil))
+	assert.True(t, renderedValuesChange(existing, values("PLAIN", "1", "URL", "${{team.HOST}}/api", "NEW", "${{project.KEY}}"), []string{"NEW"}, uuid.Nil))
+	assert.True(t, renderedValuesChange(existing, values("PLAIN", "1"), []string{"URL"}, uuid.Nil))
+	assert.False(t, renderedValuesChange(existing, existing, nil, uuid.Nil))
+
+	serviceID := uuid.New()
+	own := values("PORT", "3000", "URL", "http://x:"+vartemplate.ServiceToken(serviceID, "PORT"))
+	assert.True(t, renderedValuesChange(own, values("PORT", "4000", "URL", string(own["URL"])), []string{"PORT"}, serviceID))
+	assert.True(t, renderedValuesChange(own, values("URL", string(own["URL"])), []string{"PORT"}, serviceID))
+	assert.False(t, renderedValuesChange(own, values("PORT", "4000", "URL", string(own["URL"])), []string{"PORT"}, uuid.New()))
 }
 
 func TestProtectedViolation(t *testing.T) {

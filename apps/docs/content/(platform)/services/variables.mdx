@@ -31,7 +31,7 @@ REDIS_URL=redis://default:${Redis.DATABASE_PASSWORD}@${Redis.UNBIND_HOST_PRIVATE
 
 ### What you can reference
 
-- **Another service in the same project**: any of its variables, plus its addresses.
+- **Any service in the same project, including the service itself**: its variables, plus everything under **Provided by Unbind**.
 - **Team and project variables**: values you keep in one place for many services.
 
 Every service offers these, under **Provided by Unbind**:
@@ -45,9 +45,13 @@ Every service offers these, under **Provided by Unbind**:
 
 Databases offer `UNBIND_DATABASE_URL_PRIVATE` and `UNBIND_DATABASE_URL_PUBLIC` instead of the URL keys. A service with several ports gets one key per port, like `UNBIND_URL_PUBLIC_8080`.
 
+A service can point at its own values the same way. `PUBLIC_URL=${my-app.UNBIND_URL_PUBLIC}` gives it its own public address, and `URL=http://localhost:${my-app.PORT}` reuses one of its variables. Only a variable pointing at itself is refused.
+
+A referenced value may hold references of its own. They are rendered too, so `${my-app.DATABASE_URL}` stays correct when that variable is itself `${Postgres.UNBIND_DATABASE_URL_PRIVATE}`. A chain that loops back on itself is left as literal text.
+
 ### When a referenced value changes
 
-Services that reference it are redeployed, so they pick up the new value. You see them under **Affected Services** before you confirm.
+Services that reference it are redeployed, so they pick up the new value, and so is the service itself when one of its variables references another. You see them under **Affected Services** before you confirm.
 
 If a reference cannot be resolved, for example because the other service was deleted, the text is kept as it is and the variable is marked: **Couldn't resolve a reference, kept as literal text.**
 

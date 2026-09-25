@@ -2,7 +2,6 @@ package variables_service
 
 import (
 	"context"
-	"sync"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -10,7 +9,6 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
-	"github.com/unbindapp/unbind-api/internal/vartemplate"
 )
 
 // GetAvailableVariableReferences lists the sources and keys a service's variables can reference
@@ -56,7 +54,7 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 		environmentSecret = currentEnvironment.KubernetesSecret
 	}
 
-	// Services anywhere in the project can be referenced
+	// Services anywhere in the project can be referenced, the current one included
 	if canViewProject {
 		projectEnvironments, err := self.repo.Environment().GetForProject(ctx, nil, project.ID, nil)
 		if err != nil {
@@ -72,7 +70,7 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 				continue
 			}
 			for _, otherService := range environmentServices {
-				if otherService.ID == currentService.ID || !canView(schema.ResourceTypeService, otherService.ID) {
+				if !canView(schema.ResourceTypeService, otherService.ID) {
 					continue
 				}
 				accessibleServiceSecrets[otherService.ID] = otherService.KubernetesSecret
@@ -90,63 +88,15 @@ func (self *VariablesService) GetAvailableVariableReferences(ctx context.Context
 		return nil, err
 	}
 
-	publicAddress := sync.OnceValue(func() string { return ClusterAddress(ctx, self.k8s) })
+	rc, err := self.newRenderContext(ctx, client, currentService, nil)
+	if err != nil {
+		return nil, err
+	}
 
-	var endpoints []models.AvailableVariableReference
+	var provided []models.AvailableVariableReference
 	for _, otherService := range accessibleServices {
-		base := models.AvailableVariableReference{
-			SourceName:           otherService.Name,
-			SourceIcon:           serviceIcon(otherService),
-			SourceKubernetesName: otherService.KubernetesName,
-			SourceType:           schema.VariableReferenceSourceTypeService,
-			SourceID:             otherService.ID,
-		}
-		if keys := privateEndpointKeys(otherService, team.Namespace); len(keys) > 0 {
-			private := base
-			private.Type = schema.VariableReferenceTypePrivateEndpoint
-			private.Keys = keys
-			endpoints = append(endpoints, private)
-		}
-		if keys := publicEndpointKeys(otherService, publicAddress); len(keys) > 0 {
-			public := base
-			public.Type = schema.VariableReferenceTypePublicEndpoint
-			public.Keys = keys
-			endpoints = append(endpoints, public)
-		}
+		provided = append(provided, rc.providedReferences(otherService)...)
 	}
 
-	return models.TransformAvailableVariableResponse(k8sSecrets, endpoints, kubernetesNameMap, nameMap, iconMap), nil
-}
-
-// privateEndpointKeys are the keys the picker offers for reaching a service from
-// inside the cluster. The host never varies by port, so it is offered once.
-func privateEndpointKeys(service *ent.Service, namespace string) []string {
-	endpoints := privateEndpoints(service, namespace)
-	if len(endpoints) == 0 {
-		return nil
-	}
-	keys := []string{vartemplate.KeyHostPrivate}
-	urlBase := vartemplate.KeyURLPrivate
-	if isDatabase(service) {
-		urlBase = vartemplate.KeyDatabaseURLPrivate
-	}
-	keys = append(keys, endpointKeys(urlBase, endpoints)...)
-	keys = append(keys, endpointKeys(vartemplate.KeyPortPrivate, endpoints)...)
-	return keys
-}
-
-// publicEndpointKeys are the keys the picker offers for reaching a service from the
-// internet. A private service has none.
-func publicEndpointKeys(service *ent.Service, clusterAddress func() string) []string {
-	endpoints := publicEndpoints(service, clusterAddress)
-	if len(endpoints) == 0 {
-		return nil
-	}
-	urlBase := vartemplate.KeyURLPublic
-	if isDatabase(service) {
-		urlBase = vartemplate.KeyDatabaseURLPublic
-	}
-	keys := endpointKeys(urlBase, endpoints)
-	keys = append(keys, endpointKeys(vartemplate.KeyHostPublic, endpoints)...)
-	return append(keys, endpointKeys(vartemplate.KeyPortPublic, endpoints)...)
+	return models.TransformAvailableVariableResponse(k8sSecrets, provided, kubernetesNameMap, nameMap, iconMap), nil
 }

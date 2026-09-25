@@ -5,7 +5,6 @@ import (
 	"errors"
 	"maps"
 	"slices"
-	"sync"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -49,7 +48,7 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 		return nil, err
 	}
 
-	response, err := self.buildResponse(ctx, client, input.Type, team.Namespace, service, secrets)
+	response, err := self.buildResponse(ctx, client, input.Type, service, secrets)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +98,7 @@ func (self *VariablesService) checkScopePermission(ctx context.Context, userID u
 }
 
 // buildResponse lists the variables and, for services, renders their references
-func (self *VariablesService) buildResponse(ctx context.Context, client kubernetes.Interface, variableType schema.VariableReferenceSourceType, namespace string, service *ent.Service, secrets map[string][]byte) (*models.VariableResponse, error) {
+func (self *VariablesService) buildResponse(ctx context.Context, client kubernetes.Interface, variableType schema.VariableReferenceSourceType, service *ent.Service, secrets map[string][]byte) (*models.VariableResponse, error) {
 	var render *RenderResult
 	if variableType == schema.VariableReferenceSourceTypeService && service != nil {
 		var err error
@@ -132,41 +131,36 @@ func (self *VariablesService) buildResponse(ctx context.Context, client kubernet
 		}
 		response.Variables = append(response.Variables, item)
 	}
-	response.Variables = append(response.Variables, self.providedVariables(ctx, variableType, namespace, service)...)
+	response.Variables = append(response.Variables, self.providedVariables(ctx, variableType, service)...)
 	models.SortVariableResponse(response.Variables)
 
 	return response, nil
 }
 
-// providedVariables are the endpoint keys Unbind computes for a service. They are
-// listed with their values so a connection string can be copied from the same place
-// as everything else, but they are not stored and so cannot be written to.
-func (self *VariablesService) providedVariables(ctx context.Context, variableType schema.VariableReferenceSourceType, namespace string, service *ent.Service) []*models.VariableResponseItem {
+// providedVariables are the keys Unbind computes for a service. They are listed with
+// their values so a connection string can be copied from the same place as
+// everything else, but they are not stored and so cannot be written to.
+func (self *VariablesService) providedVariables(ctx context.Context, variableType schema.VariableReferenceSourceType, service *ent.Service) []*models.VariableResponseItem {
 	if variableType != schema.VariableReferenceSourceTypeService || service == nil {
 		return nil
 	}
 
-	client := self.k8s.GetInternalClient()
-	rc, err := self.newRenderContext(ctx, client, service, nil)
+	rc, err := self.newRenderContext(ctx, self.k8s.GetInternalClient(), service, nil)
 	if err != nil {
-		log.Warnf("Failed to prepare endpoint variables for service %s: %v", service.ID, err)
+		log.Warnf("Failed to prepare provided variables for service %s: %v", service.ID, err)
 		return nil
 	}
-	rc.services[service.ID] = service
 
-	address := sync.OnceValue(func() string { return ClusterAddress(ctx, self.k8s) })
-	keys := privateEndpointKeys(service, namespace)
-	keys = append(keys, publicEndpointKeys(service, address)...)
-
-	items := make([]*models.VariableResponseItem, 0, len(keys))
-	for _, key := range keys {
-		value, ok := rc.endpointValue(service, key)
+	provided := rc.providedKeys(service)
+	items := make([]*models.VariableResponseItem, 0, len(provided))
+	for _, key := range provided {
+		value, ok := rc.providedValue(service, key.Key)
 		if !ok {
 			continue
 		}
 		items = append(items, &models.VariableResponseItem{
 			Type:       variableType,
-			Name:       key,
+			Name:       key.Key,
 			Value:      value,
 			Provided:   true,
 			References: []models.VariableReferenceInfo{},

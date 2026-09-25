@@ -97,11 +97,11 @@ func (self *VariablesService) PrepareVariableWrite(
 	if upserts == nil {
 		upserts = map[string][]byte{}
 	}
-	// Endpoint keys are computed from the service, so a stored value of the same name
+	// Provided keys are computed from the service, so a stored value of the same name
 	// would be shadowed and never read. A value stored under one of these names before
 	// they were reserved keeps working, or the raw editor could never save again.
 	for name := range upserts {
-		if _, stored := existing[name]; !stored && vartemplate.IsEndpointKey(name) {
+		if _, stored := existing[name]; !stored && isProvidedKey(name) {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
 				fmt.Sprintf("%s is provided by Unbind and cannot be set", name))
 		}
@@ -143,7 +143,7 @@ func (self *VariablesService) PrepareVariableWrite(
 	}
 	final := write.final()
 	write.ChangedKeys = changedKeys(existing, final)
-	write.NeedsRedeploy = write.IsService() && renderedValuesChange(existing, final, write.ChangedKeys)
+	write.NeedsRedeploy = write.IsService() && renderedValuesChange(existing, final, write.ChangedKeys, write.ServiceID())
 	return write, nil
 }
 
@@ -178,7 +178,7 @@ func (self *VariablesService) ApplyVariableWrite(ctx context.Context, write *Var
 		return nil, err
 	}
 
-	response, err := self.buildResponse(ctx, client, write.Input.Type, write.team.Namespace, write.service, secrets)
+	response, err := self.buildResponse(ctx, client, write.Input.Type, write.service, secrets)
 	if err != nil {
 		return nil, err
 	}
@@ -306,12 +306,18 @@ func changedKeys(existing, final map[string][]byte) []string {
 }
 
 // renderedValuesChange reports whether a changed key is rendered into the deployment
-// instead of read from the secret
-func renderedValuesChange(existing, final map[string][]byte, changed []string) bool {
+// instead of read from the secret: its own value holds a reference, or another
+// variable of the service references it
+func renderedValuesChange(existing, final map[string][]byte, changed []string, serviceID uuid.UUID) bool {
+	if len(changed) == 0 {
+		return false
+	}
+	keys := make(map[string]struct{}, len(changed))
 	for _, name := range changed {
 		if vartemplate.HasTokens(string(existing[name])) || vartemplate.HasTokens(string(final[name])) {
 			return true
 		}
+		keys[name] = struct{}{}
 	}
-	return false
+	return referencesAnyKey(final, schema.VariableReferenceSourceTypeService, serviceID, keys)
 }
