@@ -428,5 +428,10 @@
     "version": "v0.1.85",
     "summary": "Privileges for API keys and connected apps that gate variable values, logs and webhook URLs, an auto deploy on push toggle for GitHub services, and brand icons on the docs site.",
     "breaking": false
+  },
+  "v0.1.86": {
+    "version": "v0.1.86",
+    "summary": "Services can reference their own variables and addresses, editable mount paths on attached volumes, and domain and port removals roll out.",
+    "breaking": false
   }
 }
