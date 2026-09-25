@@ -3,6 +3,7 @@
 import { useProject } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
 import DeleteCard from "@/components/settings/delete-card";
+import { useStagedChangesStore } from "@/components/staged-changes/staged-changes-provider";
 import { deleteMutationKeys } from "@/lib/hooks/use-is-deleting";
 import { deleteProject as deleteProjectFn } from "@/lib/queries/projects";
 import { useMutation } from "@tanstack/react-query";
@@ -19,6 +20,7 @@ export default function DeleteProjectSection({ className }: Props) {
     query: { data },
   } = useProject();
   const { invalidate } = useProjectsUtils({ teamId });
+  const discardStaged = useStagedChangesStore((s) => s.discardReferencing);
 
   const {
     mutateAsync: deleteProject,
@@ -28,6 +30,7 @@ export default function DeleteProjectSection({ className }: Props) {
     mutationKey: deleteMutationKeys.project(projectId),
     mutationFn: deleteProjectFn,
     onSuccess: () => {
+      discardStaged([projectId]);
       invalidate();
     },
   });

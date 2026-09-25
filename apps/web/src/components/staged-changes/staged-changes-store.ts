@@ -1,5 +1,9 @@
 import type { TBarEdge } from "@/components/staged-changes/bar-position";
-import { dropSettledChanges, type TApplyingValues } from "@/components/staged-changes/reconcile";
+import {
+  dropChangesReferencing,
+  dropSettledChanges,
+  type TApplyingValues,
+} from "@/components/staged-changes/reconcile";
 import {
   StagedChangesStateSchema,
   listChangeId,
@@ -38,7 +42,8 @@ export type TStagedChangesActions = {
   stageService: (change: TStageServiceInput) => void;
   stageList: (change: TStageListInput) => void;
   discard: (ids: string[]) => void;
-  discardService: (serviceId: string) => void;
+  // Drops the changes that need any of these ids, like the id of a deleted volume or service
+  discardReferencing: (ids: string[]) => void;
   discardAll: () => void;
 };
 
@@ -127,20 +132,7 @@ export const createStagedChangesStore = (initState: TStagedChangesState = defaul
             }
             return { variables, services, lists };
           }),
-        discardService: (serviceId) =>
-          set((state) => ({
-            variables: Object.fromEntries(
-              Object.entries(state.variables).filter(
-                ([, change]) => change.scope.serviceId !== serviceId,
-              ),
-            ),
-            services: Object.fromEntries(
-              Object.entries(state.services).filter(([, change]) => change.serviceId !== serviceId),
-            ),
-            lists: Object.fromEntries(
-              Object.entries(state.lists).filter(([, change]) => change.serviceId !== serviceId),
-            ),
-          })),
+        discardReferencing: (ids) => set((state) => dropChangesReferencing(state, new Set(ids))),
         discardAll: () => set({ variables: {}, services: {}, lists: {} }),
       }),
       {

@@ -2,6 +2,7 @@
 
 import { TVolumeShallow } from "@/lib/queries/services";
 import { queryKeyStorage, volumesListQuery } from "@/lib/queries/storage";
+import { useDiscardChangesForMissing } from "@/components/staged-changes/staged-changes-provider";
 import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext, useMemo } from "react";
 
@@ -31,6 +32,12 @@ export const VolumesProvider: React.FC<{
     // resolved into the URL (the project layout redirects to add it).
     enabled: environmentId !== "",
   });
+  // A cached list can be older than the changes, so only a list fetched now can drop them
+  const volumeIds = useMemo(
+    () => (query.isFetchedAfterMount ? query.data?.volumes.map((item) => item.id) : undefined),
+    [query.data, query.isFetchedAfterMount],
+  );
+  useDiscardChangesForMissing(environmentId, { volumeIds });
   const value = useMemo(
     () => ({ query, teamId, projectId, environmentId }),
     [query, teamId, projectId, environmentId],

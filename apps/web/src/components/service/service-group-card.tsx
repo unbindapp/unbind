@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useStagedChangesStore } from "@/components/staged-changes/staged-changes-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 
 type TProps = {
@@ -307,6 +308,7 @@ function DeleteTrigger({
   // Deleted services leave their volumes behind as dangling — refresh the
   // volumes list so they show up in the project's Volumes section right away.
   const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
+  const discardStaged = useStagedChangesStore((s) => s.discardReferencing);
 
   const {
     mutateAsync: deleteGroup,
@@ -316,6 +318,7 @@ function DeleteTrigger({
     mutationKey: deleteMutationKeys.serviceGroup(serviceGroup.group.id),
     mutationFn: deleteServiceGroupFn,
     onSuccess: async () => {
+      discardStaged(serviceGroup.services.map((service) => service.id));
       const result = await ResultAsync.fromPromise(
         Promise.all([refetchServices(), invalidateVolumes()]),
         () => new Error("Failed to refetch services"),

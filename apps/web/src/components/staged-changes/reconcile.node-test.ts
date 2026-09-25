@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  dropChangesReferencing,
   dropSettledChanges,
   listChangesMatchingServer,
+  missingRefs,
   serviceChangesMatchingServer,
   variableChangesMatchingServer,
 } from "./reconcile.ts";
@@ -240,4 +242,80 @@ test("listChangesMatchingServer leaves lists it was not given alone", () => {
   });
 
   assert.deepEqual(settled, []);
+});
+
+test("dropChangesReferencing drops every change that needs a deleted service", () => {
+  const apiVariable = variable("A", "1");
+  const apiReplicas = service("replicaCount", 3);
+  const apiPort = list({ kind: "port", port: 3000, op: "add" });
+  const mountOnApi = list({
+    kind: "volume",
+    volumeId: "pvc-1",
+    volumeName: "data",
+    mountPath: "/data",
+  });
+  const webReplicas = service("replicaCount", 2, { serviceId: "web", serviceName: "web" });
+  const envVariable: TStagedVariableChange = {
+    ...variable("SHARED", "1"),
+    id: "variable:environment:SHARED",
+    scope: { type: "environment", ...ids },
+  };
+
+  const result = dropChangesReferencing(
+    state([apiVariable, envVariable], [apiReplicas, webReplicas], [apiPort, mountOnApi]),
+    new Set(["api"]),
+  );
+
+  assert.deepEqual(Object.keys(result.variables), [envVariable.id]);
+  assert.deepEqual(Object.keys(result.services), [webReplicas.id]);
+  assert.deepEqual(Object.keys(result.lists), []);
+});
+
+test("dropChangesReferencing drops the mount of a deleted volume and backups to a deleted bucket", () => {
+  const mount = list({ kind: "volume", volumeId: "pvc-1", volumeName: "data", mountPath: "/data" });
+  const otherMount = list({
+    kind: "volume",
+    volumeId: "pvc-2",
+    volumeName: "cache",
+    mountPath: "/cache",
+  });
+  const bucket = service("s3BackupBucketId", "bucket-1");
+  const replicas = service("replicaCount", 3);
+
+  const result = dropChangesReferencing(
+    state([], [bucket, replicas], [mount, otherMount]),
+    new Set(["pvc-1", "bucket-1"]),
+  );
+
+  assert.deepEqual(Object.keys(result.services), [replicas.id]);
+  assert.deepEqual(Object.keys(result.lists), [otherMount.id]);
+});
+
+test("dropChangesReferencing drops everything in a deleted environment or project", () => {
+  const here = service("replicaCount", 3);
+  const elsewhere = service("replicaCount", 2, {
+    serviceId: "other",
+    projectId: "project-2",
+    environmentId: "env-2",
+  });
+  const current = state([variable("A", "1")], [here, elsewhere]);
+
+  for (const deleted of ["env", "project"]) {
+    const result = dropChangesReferencing(current, new Set([deleted]));
+    assert.deepEqual(Object.keys(result.variables), []);
+    assert.deepEqual(Object.keys(result.services), [elsewhere.id]);
+  }
+});
+
+test("missingRefs reports services and volumes of the environment the server no longer lists", () => {
+  const gone = service("replicaCount", 3, { serviceId: "gone" });
+  const kept = service("replicaCount", 3);
+  const otherEnv = service("replicaCount", 3, { serviceId: "far", environmentId: "env-2" });
+  const mount = list({ kind: "volume", volumeId: "pvc-1", volumeName: "data", mountPath: "/data" });
+  const current = state([variable("A", "1")], [gone, kept, otherEnv], [mount]);
+
+  assert.deepEqual(missingRefs(current, "env", { serviceIds: ["api"] }), ["gone"]);
+  assert.deepEqual(missingRefs(current, "env", { volumeIds: [] }), ["pvc-1"]);
+  assert.deepEqual(missingRefs(current, "env", { volumeIds: ["pvc-1"] }), []);
+  assert.deepEqual(missingRefs(current, "env", {}), []);
 });

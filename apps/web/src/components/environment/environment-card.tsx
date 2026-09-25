@@ -5,6 +5,7 @@ import ErrorLine from "@/components/error-line";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
+import { useStagedChangesStore } from "@/components/staged-changes/staged-changes-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
@@ -238,6 +239,7 @@ function DeleteTrigger({
   const {
     utils: { invalidate: invalidateEnvironments },
   } = useEnvironments();
+  const discardStaged = useStagedChangesStore((s) => s.discardReferencing);
 
   const {
     mutateAsync: deleteEnvironment,
@@ -245,7 +247,8 @@ function DeleteTrigger({
     reset: deleteEnvironmentReset,
   } = useMutation({
     mutationFn: deleteEnvironmentFn,
-    onSuccess: async () => {
+    onSuccess: async (_, { id }) => {
+      discardStaged([id]);
       invalidateProject();
       invalidateProjects();
     },

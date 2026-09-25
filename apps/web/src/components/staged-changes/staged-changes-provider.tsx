@@ -10,6 +10,7 @@ import {
   createStagedChangesStore,
   type TStagedChangesStore,
 } from "@/components/staged-changes/staged-changes-store";
+import { missingRefs, type TEnvironmentLists } from "@/components/staged-changes/reconcile";
 import {
   buildApplyStagedChangesPayload,
   idsToKeepAfterFailures,
@@ -42,7 +43,7 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { ReactNode, useContext, useMemo, useRef, useState } from "react";
+import { ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 import { useStore } from "zustand";
 
@@ -151,6 +152,17 @@ export function useIsServiceApplying(serviceId: string) {
       Object.values(s.lists).some((c) => c.serviceId === serviceId && c.id in s.applying) ||
       Object.values(s.variables).some((c) => c.scope.serviceId === serviceId && c.id in s.applying),
   );
+}
+
+// Services and volumes can be deleted in another tab or by someone else. Once a fresh list
+// from the server leaves them out, their staged changes go too
+export function useDiscardChangesForMissing(environmentId: string, lists: TEnvironmentLists) {
+  const discardReferencing = useStagedChangesStore((s) => s.discardReferencing);
+  const missingKey = useStagedChangesStore((s) => missingRefs(s, environmentId, lists).join(","));
+  useEffect(() => {
+    if (!missingKey) return;
+    discardReferencing(missingKey.split(","));
+  }, [missingKey, discardReferencing]);
 }
 
 // Refetches what a deploy changed before the stage lets go of it, so nothing disappears in

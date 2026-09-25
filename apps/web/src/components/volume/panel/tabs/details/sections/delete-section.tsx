@@ -3,6 +3,7 @@
 import { useServices, useServicesUtils } from "@/components/service/services-provider";
 import DeleteCard from "@/components/settings/delete-card";
 import { SettingsSection } from "@/components/settings/settings-section";
+import { useStagedChangesStore } from "@/components/staged-changes/staged-changes-provider";
 import { cn } from "@/components/ui/utils";
 import { useVolumePanel } from "@/components/volume/panel/volume-panel-provider";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
@@ -31,6 +32,7 @@ export default function DeleteSection({ volume, className }: TProps) {
   const { invalidate: invalidateServices } = useServicesUtils({ teamId, projectId, environmentId });
   const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
   const { closePanel } = useVolumePanel();
+  const discardStaged = useStagedChangesStore((s) => s.discardReferencing);
 
   const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
 
@@ -42,6 +44,7 @@ export default function DeleteSection({ volume, className }: TProps) {
     mutationKey: deleteMutationKeys.volume(volume.id),
     mutationFn: deleteVolumeFn,
     onSuccess: () => {
+      discardStaged([volume.id]);
       closePanel();
       invalidateServices();
       invalidateVolumes();

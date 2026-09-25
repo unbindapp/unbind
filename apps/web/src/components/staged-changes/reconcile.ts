@@ -34,6 +34,60 @@ export function dropSettledChanges(
   };
 }
 
+type TStagedChange = TStagedVariableChange | TStagedServiceChange | TStagedListChange;
+
+// Ids of everything a change needs to exist: its team, project, environment and service,
+// plus the volume it mounts or the bucket it backs up to
+export function changeRefs(change: TStagedChange): string[] {
+  const owner = "scope" in change ? change.scope : change;
+  const refs = [owner.teamId, owner.projectId, owner.environmentId, owner.serviceId];
+  if ("kind" in change && change.kind === "volume") refs.push(change.volumeId);
+  if ("field" in change && change.field === "s3BackupBucketId") refs.push(String(change.value));
+  return refs.filter((ref): ref is string => ref !== undefined && ref !== "");
+}
+
+export function dropChangesReferencing(
+  state: TStagedChangesState,
+  ids: Set<string>,
+): TStagedChangesState {
+  const keep = (change: TStagedChange) => !changeRefs(change).some((ref) => ids.has(ref));
+  return {
+    variables: Object.fromEntries(Object.entries(state.variables).filter(([, c]) => keep(c))),
+    services: Object.fromEntries(Object.entries(state.services).filter(([, c]) => keep(c))),
+    lists: Object.fromEntries(Object.entries(state.lists).filter(([, c]) => keep(c))),
+  };
+}
+
+export type TEnvironmentLists = {
+  serviceIds?: string[];
+  volumeIds?: string[];
+};
+
+// Services and volumes of the environment that staged changes need but the server no longer
+// lists. A list that is left out is unknown, so nothing is reported for it
+export function missingRefs(
+  state: TStagedChangesState,
+  environmentId: string,
+  { serviceIds, volumeIds }: TEnvironmentLists,
+): string[] {
+  const missing = new Set<string>();
+  const changes = [
+    ...Object.values(state.variables),
+    ...Object.values(state.services),
+    ...Object.values(state.lists),
+  ];
+  for (const change of changes) {
+    const owner = "scope" in change ? change.scope : change;
+    if (owner.environmentId !== environmentId) continue;
+    if (serviceIds && owner.serviceId && !serviceIds.includes(owner.serviceId)) {
+      missing.add(owner.serviceId);
+    }
+    if (!volumeIds || !("kind" in change) || change.kind !== "volume") continue;
+    if (!volumeIds.includes(change.volumeId)) missing.add(change.volumeId);
+  }
+  return [...missing];
+}
+
 // Ids of staged variables the server already has in the staged state, so there is nothing to deploy
 export function variableChangesMatchingServer(
   staged: Iterable<TStagedVariableChange>,

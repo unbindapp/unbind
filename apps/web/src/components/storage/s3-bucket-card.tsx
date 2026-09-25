@@ -4,6 +4,7 @@ import ErrorLine from "@/components/error-line";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useS3BucketsUtils } from "@/components/storage/s3-buckets-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
+import { useStagedChangesStore } from "@/components/staged-changes/staged-changes-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import RenameEntityTrigger from "@/components/triggers/rename-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -480,12 +481,16 @@ function DeleteTrigger({
   children?: ReactElement;
 }) {
   const invalidateS3Buckets = useInvalidateS3Buckets(teamId);
+  const discardStaged = useStagedChangesStore((s) => s.discardReferencing);
 
   const {
     mutateAsync: deleteS3Bucket,
     error: deleteS3BucketError,
     reset: deleteS3BucketReset,
-  } = useMutation({ mutationFn: deleteS3BucketFn });
+  } = useMutation({
+    mutationFn: deleteS3BucketFn,
+    onSuccess: (_, { id }) => discardStaged([id]),
+  });
 
   return (
     <DeleteEntityTrigger

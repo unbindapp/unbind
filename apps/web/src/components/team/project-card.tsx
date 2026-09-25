@@ -1,6 +1,7 @@
 import BrandIcon from "@/components/icons/brand";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useProjectsUtils } from "@/components/project/projects-provider";
+import { useStagedChangesStore } from "@/components/staged-changes/staged-changes-provider";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button, LinkButton, TButtonVariants } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -121,6 +122,7 @@ function ConditionalButton({
   children: ReactNode;
 }) {
   const { invalidate } = useProjectsUtils({ teamId: project?.team_id || "" });
+  const discardStaged = useStagedChangesStore((s) => s.discardReferencing);
   const {
     mutateAsync: deleteProject,
     error,
@@ -128,7 +130,8 @@ function ConditionalButton({
   } = useMutation({
     mutationKey: deleteMutationKeys.project(project?.id ?? ""),
     mutationFn: deleteProjectFn,
-    onSuccess: () => {
+    onSuccess: (_, { projectId }) => {
+      discardStaged([projectId]);
       invalidate();
     },
   });
