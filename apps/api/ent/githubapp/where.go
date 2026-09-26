@@ -76,9 +76,19 @@ func CreatedBy(v uuid.UUID) predicate.GithubApp {
 	return predicate.GithubApp(sql.FieldEQ(FieldCreatedBy, v))
 }
 
+// TeamID applies equality check predicate on the "team_id" field. It's identical to TeamIDEQ.
+func TeamID(v uuid.UUID) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldEQ(FieldTeamID, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.GithubApp {
 	return predicate.GithubApp(sql.FieldEQ(FieldName, v))
+}
+
+// OwnerLogin applies equality check predicate on the "owner_login" field. It's identical to OwnerLoginEQ.
+func OwnerLogin(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldEQ(FieldOwnerLogin, v))
 }
 
 // ClientID applies equality check predicate on the "client_id" field. It's identical to ClientIDEQ.
@@ -251,6 +261,36 @@ func CreatedByNotNil() predicate.GithubApp {
 	return predicate.GithubApp(sql.FieldNotNull(FieldCreatedBy))
 }
 
+// TeamIDEQ applies the EQ predicate on the "team_id" field.
+func TeamIDEQ(v uuid.UUID) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldEQ(FieldTeamID, v))
+}
+
+// TeamIDNEQ applies the NEQ predicate on the "team_id" field.
+func TeamIDNEQ(v uuid.UUID) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNEQ(FieldTeamID, v))
+}
+
+// TeamIDIn applies the In predicate on the "team_id" field.
+func TeamIDIn(vs ...uuid.UUID) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldIn(FieldTeamID, vs...))
+}
+
+// TeamIDNotIn applies the NotIn predicate on the "team_id" field.
+func TeamIDNotIn(vs ...uuid.UUID) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNotIn(FieldTeamID, vs...))
+}
+
+// TeamIDIsNil applies the IsNil predicate on the "team_id" field.
+func TeamIDIsNil() predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldIsNull(FieldTeamID))
+}
+
+// TeamIDNotNil applies the NotNil predicate on the "team_id" field.
+func TeamIDNotNil() predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNotNull(FieldTeamID))
+}
+
 // NameEQ applies the EQ predicate on the "name" field.
 func NameEQ(v string) predicate.GithubApp {
 	return predicate.GithubApp(sql.FieldEQ(FieldName, v))
@@ -314,6 +354,111 @@ func NameEqualFold(v string) predicate.GithubApp {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.GithubApp {
 	return predicate.GithubApp(sql.FieldContainsFold(FieldName, v))
+}
+
+// OwnerLoginEQ applies the EQ predicate on the "owner_login" field.
+func OwnerLoginEQ(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldEQ(FieldOwnerLogin, v))
+}
+
+// OwnerLoginNEQ applies the NEQ predicate on the "owner_login" field.
+func OwnerLoginNEQ(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNEQ(FieldOwnerLogin, v))
+}
+
+// OwnerLoginIn applies the In predicate on the "owner_login" field.
+func OwnerLoginIn(vs ...string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldIn(FieldOwnerLogin, vs...))
+}
+
+// OwnerLoginNotIn applies the NotIn predicate on the "owner_login" field.
+func OwnerLoginNotIn(vs ...string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNotIn(FieldOwnerLogin, vs...))
+}
+
+// OwnerLoginGT applies the GT predicate on the "owner_login" field.
+func OwnerLoginGT(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldGT(FieldOwnerLogin, v))
+}
+
+// OwnerLoginGTE applies the GTE predicate on the "owner_login" field.
+func OwnerLoginGTE(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldGTE(FieldOwnerLogin, v))
+}
+
+// OwnerLoginLT applies the LT predicate on the "owner_login" field.
+func OwnerLoginLT(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldLT(FieldOwnerLogin, v))
+}
+
+// OwnerLoginLTE applies the LTE predicate on the "owner_login" field.
+func OwnerLoginLTE(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldLTE(FieldOwnerLogin, v))
+}
+
+// OwnerLoginContains applies the Contains predicate on the "owner_login" field.
+func OwnerLoginContains(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldContains(FieldOwnerLogin, v))
+}
+
+// OwnerLoginHasPrefix applies the HasPrefix predicate on the "owner_login" field.
+func OwnerLoginHasPrefix(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldHasPrefix(FieldOwnerLogin, v))
+}
+
+// OwnerLoginHasSuffix applies the HasSuffix predicate on the "owner_login" field.
+func OwnerLoginHasSuffix(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldHasSuffix(FieldOwnerLogin, v))
+}
+
+// OwnerLoginIsNil applies the IsNil predicate on the "owner_login" field.
+func OwnerLoginIsNil() predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldIsNull(FieldOwnerLogin))
+}
+
+// OwnerLoginNotNil applies the NotNil predicate on the "owner_login" field.
+func OwnerLoginNotNil() predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNotNull(FieldOwnerLogin))
+}
+
+// OwnerLoginEqualFold applies the EqualFold predicate on the "owner_login" field.
+func OwnerLoginEqualFold(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldEqualFold(FieldOwnerLogin, v))
+}
+
+// OwnerLoginContainsFold applies the ContainsFold predicate on the "owner_login" field.
+func OwnerLoginContainsFold(v string) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldContainsFold(FieldOwnerLogin, v))
+}
+
+// OwnerTypeEQ applies the EQ predicate on the "owner_type" field.
+func OwnerTypeEQ(v OwnerType) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldEQ(FieldOwnerType, v))
+}
+
+// OwnerTypeNEQ applies the NEQ predicate on the "owner_type" field.
+func OwnerTypeNEQ(v OwnerType) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNEQ(FieldOwnerType, v))
+}
+
+// OwnerTypeIn applies the In predicate on the "owner_type" field.
+func OwnerTypeIn(vs ...OwnerType) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldIn(FieldOwnerType, vs...))
+}
+
+// OwnerTypeNotIn applies the NotIn predicate on the "owner_type" field.
+func OwnerTypeNotIn(vs ...OwnerType) predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNotIn(FieldOwnerType, vs...))
+}
+
+// OwnerTypeIsNil applies the IsNil predicate on the "owner_type" field.
+func OwnerTypeIsNil() predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldIsNull(FieldOwnerType))
+}
+
+// OwnerTypeNotNil applies the NotNil predicate on the "owner_type" field.
+func OwnerTypeNotNil() predicate.GithubApp {
+	return predicate.GithubApp(sql.FieldNotNull(FieldOwnerType))
 }
 
 // ClientIDEQ applies the EQ predicate on the "client_id" field.
@@ -614,6 +759,29 @@ func HasUsers() predicate.GithubApp {
 func HasUsersWith(preds ...predicate.User) predicate.GithubApp {
 	return predicate.GithubApp(func(s *sql.Selector) {
 		step := newUsersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTeam applies the HasEdge predicate on the "team" edge.
+func HasTeam() predicate.GithubApp {
+	return predicate.GithubApp(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, TeamTable, TeamColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTeamWith applies the HasEdge predicate on the "team" edge with a given conditions (other predicates).
+func HasTeamWith(preds ...predicate.Team) predicate.GithubApp {
+	return predicate.GithubApp(func(s *sql.Selector) {
+		step := newTeamStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

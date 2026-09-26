@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-github/v69/github"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
 )
@@ -18,13 +19,28 @@ type GithubRepositoryInterface interface {
 	GetApp(ctx context.Context) (*ent.GithubApp, error)
 	// Get all github apps returns a slice of GithubApp entities.
 	GetApps(ctx context.Context, withInstallations bool) ([]*ent.GithubApp, error)
-	CreateApp(ctx context.Context, uniqueUuid uuid.UUID, app *github.AppConfig, createdBy uuid.UUID) (*ent.GithubApp, error)
+	GetVisibleApps(ctx context.Context, visibility AppVisibility, filter AppFilter) ([]*ent.GithubApp, error)
+	GetVisibleAppByUUID(ctx context.Context, visibility AppVisibility, ID uuid.UUID) (*ent.GithubApp, error)
+	CreateApp(ctx context.Context, uniqueUuid uuid.UUID, app *github.AppConfig, createdBy uuid.UUID, teamID *uuid.UUID) (*ent.GithubApp, error)
 	GetGithubAppByID(ctx context.Context, ID int64) (*ent.GithubApp, error)
 	GetGithubAppByUUID(ctx context.Context, ID uuid.UUID) (*ent.GithubApp, error)
+	SetAppTeam(ctx context.Context, ID int64, teamID *uuid.UUID) (*ent.GithubApp, error)
+	SetAppOwner(ctx context.Context, ID int64, login string, ownerType githubapp.OwnerType) (*ent.GithubApp, error)
+	DeleteApp(ctx context.Context, ID int64) error
+	// DeletePrivateAppsByCreator removes the apps only their creator could use
+	DeletePrivateAppsByCreator(ctx context.Context, createdBy uuid.UUID) (int, error)
 	GetInstallationByID(ctx context.Context, ID int64) (*ent.GithubInstallation, error)
 	GetInstallations(ctx context.Context) ([]*ent.GithubInstallation, error)
 	GetInstallationsByAppID(ctx context.Context, appID int64) ([]*ent.GithubInstallation, error)
+	// GetVisibleInstallations lists the installations of the apps the user can see.
+	// usableOnly drops the ones GitHub uninstalled or suspended, which cannot answer requests.
+	GetVisibleInstallations(ctx context.Context, visibility AppVisibility, usableOnly bool) ([]*ent.GithubInstallation, error)
+	// GetVisibleInstallationByID answers ent.NotFoundError when the user cannot see the installation
+	GetVisibleInstallationByID(ctx context.Context, visibility AppVisibility, ID int64) (*ent.GithubInstallation, error)
+	// CountServicesByInstallation counts the services built from each installation, within one team when given
+	CountServicesByInstallation(ctx context.Context, installationIDs []int64, teamID *uuid.UUID) (map[int64]int, error)
 	UpsertInstallation(ctx context.Context, id int64, appID int64, accountID int64, accountLogin string, accountType githubinstallation.AccountType, accountURL string, repositorySelection githubinstallation.RepositorySelection, suspended bool, active bool, permissions schema.GithubInstallationPermissions, events []string) (*ent.GithubInstallation, error)
 	SetInstallationActive(ctx context.Context, id int64, active bool) (*ent.GithubInstallation, error)
 	SetInstallationSuspended(ctx context.Context, id int64, suspended bool) (*ent.GithubInstallation, error)
+	DeleteInstallation(ctx context.Context, id int64) error
 }

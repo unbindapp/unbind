@@ -575,6 +575,29 @@ func HasMembersWith(preds ...predicate.User) predicate.Team {
 	})
 }
 
+// HasGithubApps applies the HasEdge predicate on the "github_apps" edge.
+func HasGithubApps() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, GithubAppsTable, GithubAppsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGithubAppsWith applies the HasEdge predicate on the "github_apps" edge with a given conditions (other predicates).
+func HasGithubAppsWith(preds ...predicate.GithubApp) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := newGithubAppsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasTeamWebhooks applies the HasEdge predicate on the "team_webhooks" edge.
 func HasTeamWebhooks() predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {

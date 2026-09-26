@@ -7,7 +7,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
+	"github.com/unbindapp/unbind-api/ent/predicate"
+	team_pkg "github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	"golang.org/x/crypto/bcrypt"
@@ -209,7 +212,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 		}
 		uniqueUUID := uuid.New()
 
-		app, err := suite.githubRepo.CreateApp(suite.Ctx, uniqueUUID, appConfig, suite.testUser.ID)
+		app, err := suite.githubRepo.CreateApp(suite.Ctx, uniqueUUID, appConfig, suite.testUser.ID, nil)
 		suite.NoError(err)
 		suite.NotNil(app)
 		suite.Equal(int64(99999), app.ID)
@@ -235,7 +238,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 		}
 		uniqueUUID := uuid.New()
 
-		app, err := suite.githubRepo.CreateApp(suite.Ctx, uniqueUUID, appConfig, suite.testUser.ID)
+		app, err := suite.githubRepo.CreateApp(suite.Ctx, uniqueUUID, appConfig, suite.testUser.ID, nil)
 		suite.Error(err)
 		suite.Nil(app)
 	})
@@ -250,7 +253,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 			Name:          new("UUID Duplicate App"),
 		}
 
-		app, err := suite.githubRepo.CreateApp(suite.Ctx, suite.testApp.UUID, appConfig, suite.testUser.ID) // Same UUID
+		app, err := suite.githubRepo.CreateApp(suite.Ctx, suite.testApp.UUID, appConfig, suite.testUser.ID, nil) // Same UUID
 		suite.Error(err)
 		suite.Nil(app)
 	})
@@ -267,7 +270,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 		uniqueUUID := uuid.New()
 		invalidUserID := uuid.New()
 
-		app, err := suite.githubRepo.CreateApp(suite.Ctx, uniqueUUID, appConfig, invalidUserID)
+		app, err := suite.githubRepo.CreateApp(suite.Ctx, uniqueUUID, appConfig, invalidUserID, nil)
 		suite.Error(err)
 		suite.Nil(app)
 	})
@@ -284,7 +287,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 		uniqueUUID := uuid.New()
 
 		suite.DB.Close()
-		app, err := suite.githubRepo.CreateApp(suite.Ctx, uniqueUUID, appConfig, suite.testUser.ID)
+		app, err := suite.githubRepo.CreateApp(suite.Ctx, uniqueUUID, appConfig, suite.testUser.ID, nil)
 		suite.Error(err)
 		suite.Nil(app)
 		suite.ErrorContains(err, "database is closed")
@@ -348,4 +351,111 @@ func (suite *GithubAppSuite) TestGetGithubAppByUUID() {
 
 func TestGithubAppSuite(t *testing.T) {
 	suite.Run(t, new(GithubAppSuite))
+}
+
+func (suite *GithubAppSuite) createTeam(name string) *ent.Team {
+	return suite.DB.Team.Create().
+		SetKubernetesName(name).
+		SetName(name).
+		SetNamespace(name).
+		SetKubernetesSecret(name + "-secret").
+		SaveX(suite.Ctx)
+}
+
+func (suite *GithubAppSuite) TestVisibleApps() {
+	team := suite.createTeam("team")
+	otherTeam := suite.createTeam("other")
+	teammate := suite.DB.User.Create().SetEmail("teammate@example.com").SetPasswordHash("x").SaveX(suite.Ctx)
+	sees := func(visibility AppVisibility, filter AppFilter) int {
+		apps, err := suite.githubRepo.GetVisibleApps(suite.Ctx, visibility, filter)
+		suite.Require().NoError(err)
+		return len(apps)
+	}
+	memberOf := func(teamID uuid.UUID) predicate.Team { return team_pkg.ID(teamID) }
+
+	suite.Run("private app is only visible to its creator", func() {
+		suite.Equal(1, sees(AppVisibility{UserID: suite.testUser.ID, Teams: memberOf(team.ID)}, AppFilter{}))
+		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, AppFilter{}))
+		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID}, AppFilter{}))
+	})
+
+	suite.Run("shared app is visible to the team", func() {
+		_, err := suite.githubRepo.SetAppTeam(suite.Ctx, suite.testApp.ID, &team.ID)
+		suite.Require().NoError(err)
+
+		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, AppFilter{}))
+		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, AppFilter{TeamID: &team.ID}))
+		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, AppFilter{OwnedOnly: true}))
+		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(otherTeam.ID)}, AppFilter{}))
+		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID}, AppFilter{}), "nil teams means every team")
+
+		app, err := suite.githubRepo.GetVisibleAppByUUID(suite.Ctx, AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, suite.testApp.UUID)
+		suite.Require().NoError(err)
+		suite.Equal("team", app.Edges.Team.Name)
+		suite.Equal(suite.testUser.Email, app.Edges.Users.Email)
+	})
+
+	suite.Run("clearing the team makes it private again", func() {
+		_, err := suite.githubRepo.SetAppTeam(suite.Ctx, suite.testApp.ID, nil)
+		suite.Require().NoError(err)
+		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID}, AppFilter{}))
+	})
+
+	suite.Run("deleting the team unshares the app", func() {
+		_, err := suite.githubRepo.SetAppTeam(suite.Ctx, suite.testApp.ID, &team.ID)
+		suite.Require().NoError(err)
+		suite.DB.Team.DeleteOneID(team.ID).ExecX(suite.Ctx)
+
+		app, err := suite.githubRepo.GetGithubAppByID(suite.Ctx, suite.testApp.ID)
+		suite.Require().NoError(err)
+		suite.Nil(app.TeamID)
+	})
+}
+
+func (suite *GithubAppSuite) TestCreateAppStoresTeamAndOwner() {
+	team := suite.createTeam("team")
+	appConfig := &github.AppConfig{
+		ID:            utils.ToPtr[int64](4242),
+		ClientID:      new("client"),
+		ClientSecret:  new("secret"),
+		WebhookSecret: new("webhook"),
+		PEM:           new("pem"),
+		Name:          new("Owned App"),
+		Owner:         &github.User{Login: new("acme"), Type: new("Organization")},
+	}
+
+	app, err := suite.githubRepo.CreateApp(suite.Ctx, uuid.New(), appConfig, suite.testUser.ID, &team.ID)
+	suite.Require().NoError(err)
+	suite.Equal(team.ID, *app.TeamID)
+	suite.Equal("acme", app.OwnerLogin)
+	suite.Equal(githubapp.OwnerTypeOrganization, app.OwnerType)
+
+	_, err = suite.githubRepo.SetAppOwner(suite.Ctx, app.ID, "someone", githubapp.OwnerTypeUser)
+	suite.Require().NoError(err)
+	updated, err := suite.githubRepo.GetGithubAppByID(suite.Ctx, app.ID)
+	suite.Require().NoError(err)
+	suite.Equal("someone", updated.OwnerLogin)
+	suite.Equal(githubapp.OwnerTypeUser, updated.OwnerType)
+}
+
+func (suite *GithubAppSuite) TestDeletePrivateAppsByCreator() {
+	team := suite.createTeam("team")
+	shared := suite.DB.GithubApp.Create().
+		SetID(777).
+		SetUUID(uuid.New()).
+		SetClientID("c").
+		SetClientSecret("s").
+		SetWebhookSecret("w").
+		SetPrivateKey("p").
+		SetName("Shared").
+		SetCreatedBy(suite.testUser.ID).
+		SetTeamID(team.ID).
+		SaveX(suite.Ctx)
+
+	deleted, err := suite.githubRepo.DeletePrivateAppsByCreator(suite.Ctx, suite.testUser.ID)
+	suite.Require().NoError(err)
+	suite.Equal(1, deleted)
+
+	suite.False(suite.DB.GithubApp.Query().Where(githubapp.ID(suite.testApp.ID)).ExistX(suite.Ctx))
+	suite.True(suite.DB.GithubApp.Query().Where(githubapp.ID(shared.ID)).ExistX(suite.Ctx))
 }

@@ -1,3 +1,4 @@
+import BrandIcon from "@/components/icons/brand";
 import { cn } from "@/components/ui/utils";
 import {
   ArchiveIcon,
@@ -21,7 +22,8 @@ export type TSettingsTabVariant =
   | "danger-zone"
   | "storage"
   | "api-keys"
-  | "connected-apps";
+  | "connected-apps"
+  | "github";
 
 export default function SettingsTabIcon({
   variant,
@@ -54,6 +56,10 @@ export default function SettingsTabIcon({
 
   if (variant === "connected-apps") {
     return <BlocksIcon className={cn("size-5 shrink-0", className)} {...rest} />;
+  }
+
+  if (variant === "github") {
+    return <BrandIcon brand="github" className={cn("size-5 shrink-0", className)} />;
   }
 
   if (variant === "storage") {

@@ -11,8 +11,10 @@ import (
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/repositories/github"
 )
 
 // NewGithubRepositoryMock creates a new instance of GithubRepositoryMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -51,9 +53,83 @@ func (_m *GithubRepositoryMock) EXPECT() *GithubRepositoryMock_Expecter {
 	return &GithubRepositoryMock_Expecter{mock: &_m.Mock}
 }
 
+// CountServicesByInstallation provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) CountServicesByInstallation(ctx context.Context, installationIDs []int64, teamID *uuid.UUID) (map[int64]int, error) {
+	ret := _mock.Called(ctx, installationIDs, teamID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountServicesByInstallation")
+	}
+
+	var r0 map[int64]int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []int64, *uuid.UUID) (map[int64]int, error)); ok {
+		return returnFunc(ctx, installationIDs, teamID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []int64, *uuid.UUID) map[int64]int); ok {
+		r0 = returnFunc(ctx, installationIDs, teamID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[int64]int)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []int64, *uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, installationIDs, teamID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_CountServicesByInstallation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountServicesByInstallation'
+type GithubRepositoryMock_CountServicesByInstallation_Call struct {
+	*mock.Call
+}
+
+// CountServicesByInstallation is a helper method to define mock.On call
+//   - ctx context.Context
+//   - installationIDs []int64
+//   - teamID *uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) CountServicesByInstallation(ctx any, installationIDs any, teamID any) *GithubRepositoryMock_CountServicesByInstallation_Call {
+	return &GithubRepositoryMock_CountServicesByInstallation_Call{Call: _e.mock.On("CountServicesByInstallation", ctx, installationIDs, teamID)}
+}
+
+func (_c *GithubRepositoryMock_CountServicesByInstallation_Call) Run(run func(ctx context.Context, installationIDs []int64, teamID *uuid.UUID)) *GithubRepositoryMock_CountServicesByInstallation_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []int64
+		if args[1] != nil {
+			arg1 = args[1].([]int64)
+		}
+		var arg2 *uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(*uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CountServicesByInstallation_Call) Return(int64ToInt map[int64]int, err error) *GithubRepositoryMock_CountServicesByInstallation_Call {
+	_c.Call.Return(int64ToInt, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_CountServicesByInstallation_Call) RunAndReturn(run func(ctx context.Context, installationIDs []int64, teamID *uuid.UUID) (map[int64]int, error)) *GithubRepositoryMock_CountServicesByInstallation_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateApp provides a mock function for the type GithubRepositoryMock
-func (_mock *GithubRepositoryMock) CreateApp(ctx context.Context, uniqueUuid uuid.UUID, app *github.AppConfig, createdBy uuid.UUID) (*ent.GithubApp, error) {
-	ret := _mock.Called(ctx, uniqueUuid, app, createdBy)
+func (_mock *GithubRepositoryMock) CreateApp(ctx context.Context, uniqueUuid uuid.UUID, app *github.AppConfig, createdBy uuid.UUID, teamID *uuid.UUID) (*ent.GithubApp, error) {
+	ret := _mock.Called(ctx, uniqueUuid, app, createdBy, teamID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateApp")
@@ -61,18 +137,18 @@ func (_mock *GithubRepositoryMock) CreateApp(ctx context.Context, uniqueUuid uui
 
 	var r0 *ent.GithubApp
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *github.AppConfig, uuid.UUID) (*ent.GithubApp, error)); ok {
-		return returnFunc(ctx, uniqueUuid, app, createdBy)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *github.AppConfig, uuid.UUID, *uuid.UUID) (*ent.GithubApp, error)); ok {
+		return returnFunc(ctx, uniqueUuid, app, createdBy, teamID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *github.AppConfig, uuid.UUID) *ent.GithubApp); ok {
-		r0 = returnFunc(ctx, uniqueUuid, app, createdBy)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, *github.AppConfig, uuid.UUID, *uuid.UUID) *ent.GithubApp); ok {
+		r0 = returnFunc(ctx, uniqueUuid, app, createdBy, teamID)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.GithubApp)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *github.AppConfig, uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, uniqueUuid, app, createdBy)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, *github.AppConfig, uuid.UUID, *uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, uniqueUuid, app, createdBy, teamID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -89,11 +165,12 @@ type GithubRepositoryMock_CreateApp_Call struct {
 //   - uniqueUuid uuid.UUID
 //   - app *github.AppConfig
 //   - createdBy uuid.UUID
-func (_e *GithubRepositoryMock_Expecter) CreateApp(ctx any, uniqueUuid any, app any, createdBy any) *GithubRepositoryMock_CreateApp_Call {
-	return &GithubRepositoryMock_CreateApp_Call{Call: _e.mock.On("CreateApp", ctx, uniqueUuid, app, createdBy)}
+//   - teamID *uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) CreateApp(ctx any, uniqueUuid any, app any, createdBy any, teamID any) *GithubRepositoryMock_CreateApp_Call {
+	return &GithubRepositoryMock_CreateApp_Call{Call: _e.mock.On("CreateApp", ctx, uniqueUuid, app, createdBy, teamID)}
 }
 
-func (_c *GithubRepositoryMock_CreateApp_Call) Run(run func(ctx context.Context, uniqueUuid uuid.UUID, app *github.AppConfig, createdBy uuid.UUID)) *GithubRepositoryMock_CreateApp_Call {
+func (_c *GithubRepositoryMock_CreateApp_Call) Run(run func(ctx context.Context, uniqueUuid uuid.UUID, app *github.AppConfig, createdBy uuid.UUID, teamID *uuid.UUID)) *GithubRepositoryMock_CreateApp_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -111,11 +188,16 @@ func (_c *GithubRepositoryMock_CreateApp_Call) Run(run func(ctx context.Context,
 		if args[3] != nil {
 			arg3 = args[3].(uuid.UUID)
 		}
+		var arg4 *uuid.UUID
+		if args[4] != nil {
+			arg4 = args[4].(*uuid.UUID)
+		}
 		run(
 			arg0,
 			arg1,
 			arg2,
 			arg3,
+			arg4,
 		)
 	})
 	return _c
@@ -126,7 +208,187 @@ func (_c *GithubRepositoryMock_CreateApp_Call) Return(githubApp *ent.GithubApp, 
 	return _c
 }
 
-func (_c *GithubRepositoryMock_CreateApp_Call) RunAndReturn(run func(ctx context.Context, uniqueUuid uuid.UUID, app *github.AppConfig, createdBy uuid.UUID) (*ent.GithubApp, error)) *GithubRepositoryMock_CreateApp_Call {
+func (_c *GithubRepositoryMock_CreateApp_Call) RunAndReturn(run func(ctx context.Context, uniqueUuid uuid.UUID, app *github.AppConfig, createdBy uuid.UUID, teamID *uuid.UUID) (*ent.GithubApp, error)) *GithubRepositoryMock_CreateApp_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteApp provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) DeleteApp(ctx context.Context, ID int64) error {
+	ret := _mock.Called(ctx, ID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteApp")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = returnFunc(ctx, ID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_DeleteApp_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteApp'
+type GithubRepositoryMock_DeleteApp_Call struct {
+	*mock.Call
+}
+
+// DeleteApp is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ID int64
+func (_e *GithubRepositoryMock_Expecter) DeleteApp(ctx any, ID any) *GithubRepositoryMock_DeleteApp_Call {
+	return &GithubRepositoryMock_DeleteApp_Call{Call: _e.mock.On("DeleteApp", ctx, ID)}
+}
+
+func (_c *GithubRepositoryMock_DeleteApp_Call) Run(run func(ctx context.Context, ID int64)) *GithubRepositoryMock_DeleteApp_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int64
+		if args[1] != nil {
+			arg1 = args[1].(int64)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteApp_Call) Return(err error) *GithubRepositoryMock_DeleteApp_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteApp_Call) RunAndReturn(run func(ctx context.Context, ID int64) error) *GithubRepositoryMock_DeleteApp_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteInstallation provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) DeleteInstallation(ctx context.Context, id int64) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteInstallation")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_DeleteInstallation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteInstallation'
+type GithubRepositoryMock_DeleteInstallation_Call struct {
+	*mock.Call
+}
+
+// DeleteInstallation is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id int64
+func (_e *GithubRepositoryMock_Expecter) DeleteInstallation(ctx any, id any) *GithubRepositoryMock_DeleteInstallation_Call {
+	return &GithubRepositoryMock_DeleteInstallation_Call{Call: _e.mock.On("DeleteInstallation", ctx, id)}
+}
+
+func (_c *GithubRepositoryMock_DeleteInstallation_Call) Run(run func(ctx context.Context, id int64)) *GithubRepositoryMock_DeleteInstallation_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int64
+		if args[1] != nil {
+			arg1 = args[1].(int64)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteInstallation_Call) Return(err error) *GithubRepositoryMock_DeleteInstallation_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeleteInstallation_Call) RunAndReturn(run func(ctx context.Context, id int64) error) *GithubRepositoryMock_DeleteInstallation_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeletePrivateAppsByCreator provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) DeletePrivateAppsByCreator(ctx context.Context, createdBy uuid.UUID) (int, error) {
+	ret := _mock.Called(ctx, createdBy)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeletePrivateAppsByCreator")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (int, error)); ok {
+		return returnFunc(ctx, createdBy)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) int); ok {
+		r0 = returnFunc(ctx, createdBy)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, createdBy)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_DeletePrivateAppsByCreator_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeletePrivateAppsByCreator'
+type GithubRepositoryMock_DeletePrivateAppsByCreator_Call struct {
+	*mock.Call
+}
+
+// DeletePrivateAppsByCreator is a helper method to define mock.On call
+//   - ctx context.Context
+//   - createdBy uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) DeletePrivateAppsByCreator(ctx any, createdBy any) *GithubRepositoryMock_DeletePrivateAppsByCreator_Call {
+	return &GithubRepositoryMock_DeletePrivateAppsByCreator_Call{Call: _e.mock.On("DeletePrivateAppsByCreator", ctx, createdBy)}
+}
+
+func (_c *GithubRepositoryMock_DeletePrivateAppsByCreator_Call) Run(run func(ctx context.Context, createdBy uuid.UUID)) *GithubRepositoryMock_DeletePrivateAppsByCreator_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeletePrivateAppsByCreator_Call) Return(n int, err error) *GithubRepositoryMock_DeletePrivateAppsByCreator_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_DeletePrivateAppsByCreator_Call) RunAndReturn(run func(ctx context.Context, createdBy uuid.UUID) (int, error)) *GithubRepositoryMock_DeletePrivateAppsByCreator_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -591,6 +853,456 @@ func (_c *GithubRepositoryMock_GetInstallationsByAppID_Call) Return(githubInstal
 }
 
 func (_c *GithubRepositoryMock_GetInstallationsByAppID_Call) RunAndReturn(run func(ctx context.Context, appID int64) ([]*ent.GithubInstallation, error)) *GithubRepositoryMock_GetInstallationsByAppID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetVisibleAppByUUID provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) GetVisibleAppByUUID(ctx context.Context, visibility github_repo.AppVisibility, ID uuid.UUID) (*ent.GithubApp, error) {
+	ret := _mock.Called(ctx, visibility, ID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetVisibleAppByUUID")
+	}
+
+	var r0 *ent.GithubApp
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, github_repo.AppVisibility, uuid.UUID) (*ent.GithubApp, error)); ok {
+		return returnFunc(ctx, visibility, ID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, github_repo.AppVisibility, uuid.UUID) *ent.GithubApp); ok {
+		r0 = returnFunc(ctx, visibility, ID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubApp)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, github_repo.AppVisibility, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, visibility, ID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_GetVisibleAppByUUID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVisibleAppByUUID'
+type GithubRepositoryMock_GetVisibleAppByUUID_Call struct {
+	*mock.Call
+}
+
+// GetVisibleAppByUUID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - visibility github_repo.AppVisibility
+//   - ID uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) GetVisibleAppByUUID(ctx any, visibility any, ID any) *GithubRepositoryMock_GetVisibleAppByUUID_Call {
+	return &GithubRepositoryMock_GetVisibleAppByUUID_Call{Call: _e.mock.On("GetVisibleAppByUUID", ctx, visibility, ID)}
+}
+
+func (_c *GithubRepositoryMock_GetVisibleAppByUUID_Call) Run(run func(ctx context.Context, visibility github_repo.AppVisibility, ID uuid.UUID)) *GithubRepositoryMock_GetVisibleAppByUUID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 github_repo.AppVisibility
+		if args[1] != nil {
+			arg1 = args[1].(github_repo.AppVisibility)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetVisibleAppByUUID_Call) Return(githubApp *ent.GithubApp, err error) *GithubRepositoryMock_GetVisibleAppByUUID_Call {
+	_c.Call.Return(githubApp, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetVisibleAppByUUID_Call) RunAndReturn(run func(ctx context.Context, visibility github_repo.AppVisibility, ID uuid.UUID) (*ent.GithubApp, error)) *GithubRepositoryMock_GetVisibleAppByUUID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetVisibleApps provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) GetVisibleApps(ctx context.Context, visibility github_repo.AppVisibility, filter github_repo.AppFilter) ([]*ent.GithubApp, error) {
+	ret := _mock.Called(ctx, visibility, filter)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetVisibleApps")
+	}
+
+	var r0 []*ent.GithubApp
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, github_repo.AppVisibility, github_repo.AppFilter) ([]*ent.GithubApp, error)); ok {
+		return returnFunc(ctx, visibility, filter)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, github_repo.AppVisibility, github_repo.AppFilter) []*ent.GithubApp); ok {
+		r0 = returnFunc(ctx, visibility, filter)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.GithubApp)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, github_repo.AppVisibility, github_repo.AppFilter) error); ok {
+		r1 = returnFunc(ctx, visibility, filter)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_GetVisibleApps_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVisibleApps'
+type GithubRepositoryMock_GetVisibleApps_Call struct {
+	*mock.Call
+}
+
+// GetVisibleApps is a helper method to define mock.On call
+//   - ctx context.Context
+//   - visibility github_repo.AppVisibility
+//   - filter github_repo.AppFilter
+func (_e *GithubRepositoryMock_Expecter) GetVisibleApps(ctx any, visibility any, filter any) *GithubRepositoryMock_GetVisibleApps_Call {
+	return &GithubRepositoryMock_GetVisibleApps_Call{Call: _e.mock.On("GetVisibleApps", ctx, visibility, filter)}
+}
+
+func (_c *GithubRepositoryMock_GetVisibleApps_Call) Run(run func(ctx context.Context, visibility github_repo.AppVisibility, filter github_repo.AppFilter)) *GithubRepositoryMock_GetVisibleApps_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 github_repo.AppVisibility
+		if args[1] != nil {
+			arg1 = args[1].(github_repo.AppVisibility)
+		}
+		var arg2 github_repo.AppFilter
+		if args[2] != nil {
+			arg2 = args[2].(github_repo.AppFilter)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetVisibleApps_Call) Return(githubApps []*ent.GithubApp, err error) *GithubRepositoryMock_GetVisibleApps_Call {
+	_c.Call.Return(githubApps, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetVisibleApps_Call) RunAndReturn(run func(ctx context.Context, visibility github_repo.AppVisibility, filter github_repo.AppFilter) ([]*ent.GithubApp, error)) *GithubRepositoryMock_GetVisibleApps_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetVisibleInstallationByID provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) GetVisibleInstallationByID(ctx context.Context, visibility github_repo.AppVisibility, ID int64) (*ent.GithubInstallation, error) {
+	ret := _mock.Called(ctx, visibility, ID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetVisibleInstallationByID")
+	}
+
+	var r0 *ent.GithubInstallation
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, github_repo.AppVisibility, int64) (*ent.GithubInstallation, error)); ok {
+		return returnFunc(ctx, visibility, ID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, github_repo.AppVisibility, int64) *ent.GithubInstallation); ok {
+		r0 = returnFunc(ctx, visibility, ID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubInstallation)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, github_repo.AppVisibility, int64) error); ok {
+		r1 = returnFunc(ctx, visibility, ID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_GetVisibleInstallationByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVisibleInstallationByID'
+type GithubRepositoryMock_GetVisibleInstallationByID_Call struct {
+	*mock.Call
+}
+
+// GetVisibleInstallationByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - visibility github_repo.AppVisibility
+//   - ID int64
+func (_e *GithubRepositoryMock_Expecter) GetVisibleInstallationByID(ctx any, visibility any, ID any) *GithubRepositoryMock_GetVisibleInstallationByID_Call {
+	return &GithubRepositoryMock_GetVisibleInstallationByID_Call{Call: _e.mock.On("GetVisibleInstallationByID", ctx, visibility, ID)}
+}
+
+func (_c *GithubRepositoryMock_GetVisibleInstallationByID_Call) Run(run func(ctx context.Context, visibility github_repo.AppVisibility, ID int64)) *GithubRepositoryMock_GetVisibleInstallationByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 github_repo.AppVisibility
+		if args[1] != nil {
+			arg1 = args[1].(github_repo.AppVisibility)
+		}
+		var arg2 int64
+		if args[2] != nil {
+			arg2 = args[2].(int64)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetVisibleInstallationByID_Call) Return(githubInstallation *ent.GithubInstallation, err error) *GithubRepositoryMock_GetVisibleInstallationByID_Call {
+	_c.Call.Return(githubInstallation, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetVisibleInstallationByID_Call) RunAndReturn(run func(ctx context.Context, visibility github_repo.AppVisibility, ID int64) (*ent.GithubInstallation, error)) *GithubRepositoryMock_GetVisibleInstallationByID_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetVisibleInstallations provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) GetVisibleInstallations(ctx context.Context, visibility github_repo.AppVisibility, usableOnly bool) ([]*ent.GithubInstallation, error) {
+	ret := _mock.Called(ctx, visibility, usableOnly)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetVisibleInstallations")
+	}
+
+	var r0 []*ent.GithubInstallation
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, github_repo.AppVisibility, bool) ([]*ent.GithubInstallation, error)); ok {
+		return returnFunc(ctx, visibility, usableOnly)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, github_repo.AppVisibility, bool) []*ent.GithubInstallation); ok {
+		r0 = returnFunc(ctx, visibility, usableOnly)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.GithubInstallation)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, github_repo.AppVisibility, bool) error); ok {
+		r1 = returnFunc(ctx, visibility, usableOnly)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_GetVisibleInstallations_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetVisibleInstallations'
+type GithubRepositoryMock_GetVisibleInstallations_Call struct {
+	*mock.Call
+}
+
+// GetVisibleInstallations is a helper method to define mock.On call
+//   - ctx context.Context
+//   - visibility github_repo.AppVisibility
+//   - usableOnly bool
+func (_e *GithubRepositoryMock_Expecter) GetVisibleInstallations(ctx any, visibility any, usableOnly any) *GithubRepositoryMock_GetVisibleInstallations_Call {
+	return &GithubRepositoryMock_GetVisibleInstallations_Call{Call: _e.mock.On("GetVisibleInstallations", ctx, visibility, usableOnly)}
+}
+
+func (_c *GithubRepositoryMock_GetVisibleInstallations_Call) Run(run func(ctx context.Context, visibility github_repo.AppVisibility, usableOnly bool)) *GithubRepositoryMock_GetVisibleInstallations_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 github_repo.AppVisibility
+		if args[1] != nil {
+			arg1 = args[1].(github_repo.AppVisibility)
+		}
+		var arg2 bool
+		if args[2] != nil {
+			arg2 = args[2].(bool)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetVisibleInstallations_Call) Return(githubInstallations []*ent.GithubInstallation, err error) *GithubRepositoryMock_GetVisibleInstallations_Call {
+	_c.Call.Return(githubInstallations, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetVisibleInstallations_Call) RunAndReturn(run func(ctx context.Context, visibility github_repo.AppVisibility, usableOnly bool) ([]*ent.GithubInstallation, error)) *GithubRepositoryMock_GetVisibleInstallations_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetAppOwner provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) SetAppOwner(ctx context.Context, ID int64, login string, ownerType githubapp.OwnerType) (*ent.GithubApp, error) {
+	ret := _mock.Called(ctx, ID, login, ownerType)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetAppOwner")
+	}
+
+	var r0 *ent.GithubApp
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, string, githubapp.OwnerType) (*ent.GithubApp, error)); ok {
+		return returnFunc(ctx, ID, login, ownerType)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, string, githubapp.OwnerType) *ent.GithubApp); ok {
+		r0 = returnFunc(ctx, ID, login, ownerType)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubApp)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int64, string, githubapp.OwnerType) error); ok {
+		r1 = returnFunc(ctx, ID, login, ownerType)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_SetAppOwner_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetAppOwner'
+type GithubRepositoryMock_SetAppOwner_Call struct {
+	*mock.Call
+}
+
+// SetAppOwner is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ID int64
+//   - login string
+//   - ownerType githubapp.OwnerType
+func (_e *GithubRepositoryMock_Expecter) SetAppOwner(ctx any, ID any, login any, ownerType any) *GithubRepositoryMock_SetAppOwner_Call {
+	return &GithubRepositoryMock_SetAppOwner_Call{Call: _e.mock.On("SetAppOwner", ctx, ID, login, ownerType)}
+}
+
+func (_c *GithubRepositoryMock_SetAppOwner_Call) Run(run func(ctx context.Context, ID int64, login string, ownerType githubapp.OwnerType)) *GithubRepositoryMock_SetAppOwner_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int64
+		if args[1] != nil {
+			arg1 = args[1].(int64)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 githubapp.OwnerType
+		if args[3] != nil {
+			arg3 = args[3].(githubapp.OwnerType)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_SetAppOwner_Call) Return(githubApp *ent.GithubApp, err error) *GithubRepositoryMock_SetAppOwner_Call {
+	_c.Call.Return(githubApp, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_SetAppOwner_Call) RunAndReturn(run func(ctx context.Context, ID int64, login string, ownerType githubapp.OwnerType) (*ent.GithubApp, error)) *GithubRepositoryMock_SetAppOwner_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetAppTeam provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) SetAppTeam(ctx context.Context, ID int64, teamID *uuid.UUID) (*ent.GithubApp, error) {
+	ret := _mock.Called(ctx, ID, teamID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetAppTeam")
+	}
+
+	var r0 *ent.GithubApp
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, *uuid.UUID) (*ent.GithubApp, error)); ok {
+		return returnFunc(ctx, ID, teamID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, *uuid.UUID) *ent.GithubApp); ok {
+		r0 = returnFunc(ctx, ID, teamID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubApp)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int64, *uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, ID, teamID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_SetAppTeam_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetAppTeam'
+type GithubRepositoryMock_SetAppTeam_Call struct {
+	*mock.Call
+}
+
+// SetAppTeam is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ID int64
+//   - teamID *uuid.UUID
+func (_e *GithubRepositoryMock_Expecter) SetAppTeam(ctx any, ID any, teamID any) *GithubRepositoryMock_SetAppTeam_Call {
+	return &GithubRepositoryMock_SetAppTeam_Call{Call: _e.mock.On("SetAppTeam", ctx, ID, teamID)}
+}
+
+func (_c *GithubRepositoryMock_SetAppTeam_Call) Run(run func(ctx context.Context, ID int64, teamID *uuid.UUID)) *GithubRepositoryMock_SetAppTeam_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int64
+		if args[1] != nil {
+			arg1 = args[1].(int64)
+		}
+		var arg2 *uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(*uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_SetAppTeam_Call) Return(githubApp *ent.GithubApp, err error) *GithubRepositoryMock_SetAppTeam_Call {
+	_c.Call.Return(githubApp, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_SetAppTeam_Call) RunAndReturn(run func(ctx context.Context, ID int64, teamID *uuid.UUID) (*ent.GithubApp, error)) *GithubRepositoryMock_SetAppTeam_Call {
 	_c.Call.Return(run)
 	return _c
 }

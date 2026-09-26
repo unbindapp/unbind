@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/s3bucket"
@@ -161,6 +162,21 @@ func (_u *TeamUpdate) AddMembers(v ...*User) *TeamUpdate {
 	return _u.AddMemberIDs(ids...)
 }
 
+// AddGithubAppIDs adds the "github_apps" edge to the GithubApp entity by IDs.
+func (_u *TeamUpdate) AddGithubAppIDs(ids ...int64) *TeamUpdate {
+	_u.mutation.AddGithubAppIDs(ids...)
+	return _u
+}
+
+// AddGithubApps adds the "github_apps" edges to the GithubApp entity.
+func (_u *TeamUpdate) AddGithubApps(v ...*GithubApp) *TeamUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubAppIDs(ids...)
+}
+
 // AddTeamWebhookIDs adds the "team_webhooks" edge to the Webhook entity by IDs.
 func (_u *TeamUpdate) AddTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdate {
 	_u.mutation.AddTeamWebhookIDs(ids...)
@@ -242,6 +258,27 @@ func (_u *TeamUpdate) RemoveMembers(v ...*User) *TeamUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMemberIDs(ids...)
+}
+
+// ClearGithubApps clears all "github_apps" edges to the GithubApp entity.
+func (_u *TeamUpdate) ClearGithubApps() *TeamUpdate {
+	_u.mutation.ClearGithubApps()
+	return _u
+}
+
+// RemoveGithubAppIDs removes the "github_apps" edge to GithubApp entities by IDs.
+func (_u *TeamUpdate) RemoveGithubAppIDs(ids ...int64) *TeamUpdate {
+	_u.mutation.RemoveGithubAppIDs(ids...)
+	return _u
+}
+
+// RemoveGithubApps removes "github_apps" edges to GithubApp entities.
+func (_u *TeamUpdate) RemoveGithubApps(v ...*GithubApp) *TeamUpdate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubAppIDs(ids...)
 }
 
 // ClearTeamWebhooks clears all "team_webhooks" edges to the Webhook entity.
@@ -485,6 +522,51 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.GithubAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubAppsTable,
+			Columns: []string{team.GithubAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubAppsIDs(); len(nodes) > 0 && !_u.mutation.GithubAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubAppsTable,
+			Columns: []string{team.GithubAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubAppsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubAppsTable,
+			Columns: []string{team.GithubAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.TeamWebhooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -679,6 +761,21 @@ func (_u *TeamUpdateOne) AddMembers(v ...*User) *TeamUpdateOne {
 	return _u.AddMemberIDs(ids...)
 }
 
+// AddGithubAppIDs adds the "github_apps" edge to the GithubApp entity by IDs.
+func (_u *TeamUpdateOne) AddGithubAppIDs(ids ...int64) *TeamUpdateOne {
+	_u.mutation.AddGithubAppIDs(ids...)
+	return _u
+}
+
+// AddGithubApps adds the "github_apps" edges to the GithubApp entity.
+func (_u *TeamUpdateOne) AddGithubApps(v ...*GithubApp) *TeamUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddGithubAppIDs(ids...)
+}
+
 // AddTeamWebhookIDs adds the "team_webhooks" edge to the Webhook entity by IDs.
 func (_u *TeamUpdateOne) AddTeamWebhookIDs(ids ...uuid.UUID) *TeamUpdateOne {
 	_u.mutation.AddTeamWebhookIDs(ids...)
@@ -760,6 +857,27 @@ func (_u *TeamUpdateOne) RemoveMembers(v ...*User) *TeamUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMemberIDs(ids...)
+}
+
+// ClearGithubApps clears all "github_apps" edges to the GithubApp entity.
+func (_u *TeamUpdateOne) ClearGithubApps() *TeamUpdateOne {
+	_u.mutation.ClearGithubApps()
+	return _u
+}
+
+// RemoveGithubAppIDs removes the "github_apps" edge to GithubApp entities by IDs.
+func (_u *TeamUpdateOne) RemoveGithubAppIDs(ids ...int64) *TeamUpdateOne {
+	_u.mutation.RemoveGithubAppIDs(ids...)
+	return _u
+}
+
+// RemoveGithubApps removes "github_apps" edges to GithubApp entities.
+func (_u *TeamUpdateOne) RemoveGithubApps(v ...*GithubApp) *TeamUpdateOne {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveGithubAppIDs(ids...)
 }
 
 // ClearTeamWebhooks clears all "team_webhooks" edges to the Webhook entity.
@@ -1026,6 +1144,51 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.GithubAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubAppsTable,
+			Columns: []string{team.GithubAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedGithubAppsIDs(); len(nodes) > 0 && !_u.mutation.GithubAppsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubAppsTable,
+			Columns: []string{team.GithubAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.GithubAppsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubAppsTable,
+			Columns: []string{team.GithubAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

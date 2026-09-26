@@ -19,6 +19,8 @@ import (
 	"github.com/pressly/goose/v3"
 	"github.com/redis/go-redis/v9"
 	"github.com/unbindapp/unbind-api/config"
+	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/githubapp"
 	entmigrate "github.com/unbindapp/unbind-api/ent/migrate"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	oauthserver_handler "github.com/unbindapp/unbind-api/internal/api/handlers/oauthserver"
@@ -127,6 +129,10 @@ func startAPI(cfg *config.Config) {
 		log.Errorf("Failed to list the GitHub apps to update their webhook URL: %v", err)
 	}
 	githubClient.SyncWebhookURLs(ctx, githubApps)
+	githubClient.SyncAppOwners(ctx, githubApps, func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error {
+		_, err := repo.Github().SetAppOwner(ctx, app.ID, login, ownerType)
+		return err
+	})
 
 	buildkitSettings := buildkitd.NewBuildkitSettingsManager(cfg, repo, kubeClient)
 

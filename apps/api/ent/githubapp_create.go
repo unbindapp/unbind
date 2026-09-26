@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
+	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 )
 
@@ -73,9 +74,51 @@ func (_c *GithubAppCreate) SetNillableCreatedBy(v *uuid.UUID) *GithubAppCreate {
 	return _c
 }
 
+// SetTeamID sets the "team_id" field.
+func (_c *GithubAppCreate) SetTeamID(v uuid.UUID) *GithubAppCreate {
+	_c.mutation.SetTeamID(v)
+	return _c
+}
+
+// SetNillableTeamID sets the "team_id" field if the given value is not nil.
+func (_c *GithubAppCreate) SetNillableTeamID(v *uuid.UUID) *GithubAppCreate {
+	if v != nil {
+		_c.SetTeamID(*v)
+	}
+	return _c
+}
+
 // SetName sets the "name" field.
 func (_c *GithubAppCreate) SetName(v string) *GithubAppCreate {
 	_c.mutation.SetName(v)
+	return _c
+}
+
+// SetOwnerLogin sets the "owner_login" field.
+func (_c *GithubAppCreate) SetOwnerLogin(v string) *GithubAppCreate {
+	_c.mutation.SetOwnerLogin(v)
+	return _c
+}
+
+// SetNillableOwnerLogin sets the "owner_login" field if the given value is not nil.
+func (_c *GithubAppCreate) SetNillableOwnerLogin(v *string) *GithubAppCreate {
+	if v != nil {
+		_c.SetOwnerLogin(*v)
+	}
+	return _c
+}
+
+// SetOwnerType sets the "owner_type" field.
+func (_c *GithubAppCreate) SetOwnerType(v githubapp.OwnerType) *GithubAppCreate {
+	_c.mutation.SetOwnerType(v)
+	return _c
+}
+
+// SetNillableOwnerType sets the "owner_type" field if the given value is not nil.
+func (_c *GithubAppCreate) SetNillableOwnerType(v *githubapp.OwnerType) *GithubAppCreate {
+	if v != nil {
+		_c.SetOwnerType(*v)
+	}
 	return _c
 }
 
@@ -143,6 +186,11 @@ func (_c *GithubAppCreate) SetUsers(v *User) *GithubAppCreate {
 	return _c.SetUsersID(v.ID)
 }
 
+// SetTeam sets the "team" edge to the Team entity.
+func (_c *GithubAppCreate) SetTeam(v *Team) *GithubAppCreate {
+	return _c.SetTeamID(v.ID)
+}
+
 // Mutation returns the GithubAppMutation object of the builder.
 func (_c *GithubAppCreate) Mutation() *GithubAppMutation {
 	return _c.mutation
@@ -205,6 +253,11 @@ func (_c *GithubAppCreate) check() error {
 	if v, ok := _c.mutation.Name(); ok {
 		if err := githubapp.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.OwnerType(); ok {
+		if err := githubapp.OwnerTypeValidator(v); err != nil {
+			return &ValidationError{Name: "owner_type", err: fmt.Errorf(`ent: validator failed for field "GithubApp.owner_type": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.ClientID(); !ok {
@@ -273,6 +326,14 @@ func (_c *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if value, ok := _c.mutation.OwnerLogin(); ok {
+		_spec.SetField(githubapp.FieldOwnerLogin, field.TypeString, value)
+		_node.OwnerLogin = value
+	}
+	if value, ok := _c.mutation.OwnerType(); ok {
+		_spec.SetField(githubapp.FieldOwnerType, field.TypeEnum, value)
+		_node.OwnerType = value
+	}
 	if value, ok := _c.mutation.ClientID(); ok {
 		_spec.SetField(githubapp.FieldClientID, field.TypeString, value)
 		_node.ClientID = value
@@ -320,6 +381,23 @@ func (_c *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.CreatedBy = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   githubapp.TeamTable,
+			Columns: []string{githubapp.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TeamID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -404,6 +482,24 @@ func (u *GithubAppUpsert) ClearCreatedBy() *GithubAppUpsert {
 	return u
 }
 
+// SetTeamID sets the "team_id" field.
+func (u *GithubAppUpsert) SetTeamID(v uuid.UUID) *GithubAppUpsert {
+	u.Set(githubapp.FieldTeamID, v)
+	return u
+}
+
+// UpdateTeamID sets the "team_id" field to the value that was provided on create.
+func (u *GithubAppUpsert) UpdateTeamID() *GithubAppUpsert {
+	u.SetExcluded(githubapp.FieldTeamID)
+	return u
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (u *GithubAppUpsert) ClearTeamID() *GithubAppUpsert {
+	u.SetNull(githubapp.FieldTeamID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *GithubAppUpsert) SetName(v string) *GithubAppUpsert {
 	u.Set(githubapp.FieldName, v)
@@ -413,6 +509,42 @@ func (u *GithubAppUpsert) SetName(v string) *GithubAppUpsert {
 // UpdateName sets the "name" field to the value that was provided on create.
 func (u *GithubAppUpsert) UpdateName() *GithubAppUpsert {
 	u.SetExcluded(githubapp.FieldName)
+	return u
+}
+
+// SetOwnerLogin sets the "owner_login" field.
+func (u *GithubAppUpsert) SetOwnerLogin(v string) *GithubAppUpsert {
+	u.Set(githubapp.FieldOwnerLogin, v)
+	return u
+}
+
+// UpdateOwnerLogin sets the "owner_login" field to the value that was provided on create.
+func (u *GithubAppUpsert) UpdateOwnerLogin() *GithubAppUpsert {
+	u.SetExcluded(githubapp.FieldOwnerLogin)
+	return u
+}
+
+// ClearOwnerLogin clears the value of the "owner_login" field.
+func (u *GithubAppUpsert) ClearOwnerLogin() *GithubAppUpsert {
+	u.SetNull(githubapp.FieldOwnerLogin)
+	return u
+}
+
+// SetOwnerType sets the "owner_type" field.
+func (u *GithubAppUpsert) SetOwnerType(v githubapp.OwnerType) *GithubAppUpsert {
+	u.Set(githubapp.FieldOwnerType, v)
+	return u
+}
+
+// UpdateOwnerType sets the "owner_type" field to the value that was provided on create.
+func (u *GithubAppUpsert) UpdateOwnerType() *GithubAppUpsert {
+	u.SetExcluded(githubapp.FieldOwnerType)
+	return u
+}
+
+// ClearOwnerType clears the value of the "owner_type" field.
+func (u *GithubAppUpsert) ClearOwnerType() *GithubAppUpsert {
+	u.SetNull(githubapp.FieldOwnerType)
 	return u
 }
 
@@ -553,6 +685,27 @@ func (u *GithubAppUpsertOne) ClearCreatedBy() *GithubAppUpsertOne {
 	})
 }
 
+// SetTeamID sets the "team_id" field.
+func (u *GithubAppUpsertOne) SetTeamID(v uuid.UUID) *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.SetTeamID(v)
+	})
+}
+
+// UpdateTeamID sets the "team_id" field to the value that was provided on create.
+func (u *GithubAppUpsertOne) UpdateTeamID() *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.UpdateTeamID()
+	})
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (u *GithubAppUpsertOne) ClearTeamID() *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.ClearTeamID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *GithubAppUpsertOne) SetName(v string) *GithubAppUpsertOne {
 	return u.Update(func(s *GithubAppUpsert) {
@@ -564,6 +717,48 @@ func (u *GithubAppUpsertOne) SetName(v string) *GithubAppUpsertOne {
 func (u *GithubAppUpsertOne) UpdateName() *GithubAppUpsertOne {
 	return u.Update(func(s *GithubAppUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetOwnerLogin sets the "owner_login" field.
+func (u *GithubAppUpsertOne) SetOwnerLogin(v string) *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.SetOwnerLogin(v)
+	})
+}
+
+// UpdateOwnerLogin sets the "owner_login" field to the value that was provided on create.
+func (u *GithubAppUpsertOne) UpdateOwnerLogin() *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.UpdateOwnerLogin()
+	})
+}
+
+// ClearOwnerLogin clears the value of the "owner_login" field.
+func (u *GithubAppUpsertOne) ClearOwnerLogin() *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.ClearOwnerLogin()
+	})
+}
+
+// SetOwnerType sets the "owner_type" field.
+func (u *GithubAppUpsertOne) SetOwnerType(v githubapp.OwnerType) *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.SetOwnerType(v)
+	})
+}
+
+// UpdateOwnerType sets the "owner_type" field to the value that was provided on create.
+func (u *GithubAppUpsertOne) UpdateOwnerType() *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.UpdateOwnerType()
+	})
+}
+
+// ClearOwnerType clears the value of the "owner_type" field.
+func (u *GithubAppUpsertOne) ClearOwnerType() *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.ClearOwnerType()
 	})
 }
 
@@ -878,6 +1073,27 @@ func (u *GithubAppUpsertBulk) ClearCreatedBy() *GithubAppUpsertBulk {
 	})
 }
 
+// SetTeamID sets the "team_id" field.
+func (u *GithubAppUpsertBulk) SetTeamID(v uuid.UUID) *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.SetTeamID(v)
+	})
+}
+
+// UpdateTeamID sets the "team_id" field to the value that was provided on create.
+func (u *GithubAppUpsertBulk) UpdateTeamID() *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.UpdateTeamID()
+	})
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (u *GithubAppUpsertBulk) ClearTeamID() *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.ClearTeamID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *GithubAppUpsertBulk) SetName(v string) *GithubAppUpsertBulk {
 	return u.Update(func(s *GithubAppUpsert) {
@@ -889,6 +1105,48 @@ func (u *GithubAppUpsertBulk) SetName(v string) *GithubAppUpsertBulk {
 func (u *GithubAppUpsertBulk) UpdateName() *GithubAppUpsertBulk {
 	return u.Update(func(s *GithubAppUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetOwnerLogin sets the "owner_login" field.
+func (u *GithubAppUpsertBulk) SetOwnerLogin(v string) *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.SetOwnerLogin(v)
+	})
+}
+
+// UpdateOwnerLogin sets the "owner_login" field to the value that was provided on create.
+func (u *GithubAppUpsertBulk) UpdateOwnerLogin() *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.UpdateOwnerLogin()
+	})
+}
+
+// ClearOwnerLogin clears the value of the "owner_login" field.
+func (u *GithubAppUpsertBulk) ClearOwnerLogin() *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.ClearOwnerLogin()
+	})
+}
+
+// SetOwnerType sets the "owner_type" field.
+func (u *GithubAppUpsertBulk) SetOwnerType(v githubapp.OwnerType) *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.SetOwnerType(v)
+	})
+}
+
+// UpdateOwnerType sets the "owner_type" field to the value that was provided on create.
+func (u *GithubAppUpsertBulk) UpdateOwnerType() *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.UpdateOwnerType()
+	})
+}
+
+// ClearOwnerType clears the value of the "owner_type" field.
+func (u *GithubAppUpsertBulk) ClearOwnerType() *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.ClearOwnerType()
 	})
 }
 

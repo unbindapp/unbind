@@ -4497,6 +4497,8 @@ type GithubAppMutation struct {
 	updated_at           *time.Time
 	uuid                 *uuid.UUID
 	name                 *string
+	owner_login          *string
+	owner_type           *githubapp.OwnerType
 	client_id            *string
 	client_secret        *string
 	webhook_secret       *string
@@ -4507,6 +4509,8 @@ type GithubAppMutation struct {
 	clearedinstallations bool
 	users                *uuid.UUID
 	clearedusers         bool
+	team                 *uuid.UUID
+	clearedteam          bool
 	done                 bool
 	oldValue             func(context.Context) (*GithubApp, error)
 	predicates           []predicate.GithubApp
@@ -4773,6 +4777,55 @@ func (m *GithubAppMutation) ResetCreatedBy() {
 	delete(m.clearedFields, githubapp.FieldCreatedBy)
 }
 
+// SetTeamID sets the "team_id" field.
+func (m *GithubAppMutation) SetTeamID(u uuid.UUID) {
+	m.team = &u
+}
+
+// TeamID returns the value of the "team_id" field in the mutation.
+func (m *GithubAppMutation) TeamID() (r uuid.UUID, exists bool) {
+	v := m.team
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTeamID returns the old "team_id" field's value of the GithubApp entity.
+// If the GithubApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubAppMutation) OldTeamID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTeamID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTeamID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTeamID: %w", err)
+	}
+	return oldValue.TeamID, nil
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (m *GithubAppMutation) ClearTeamID() {
+	m.team = nil
+	m.clearedFields[githubapp.FieldTeamID] = struct{}{}
+}
+
+// TeamIDCleared returns if the "team_id" field was cleared in this mutation.
+func (m *GithubAppMutation) TeamIDCleared() bool {
+	_, ok := m.clearedFields[githubapp.FieldTeamID]
+	return ok
+}
+
+// ResetTeamID resets all changes to the "team_id" field.
+func (m *GithubAppMutation) ResetTeamID() {
+	m.team = nil
+	delete(m.clearedFields, githubapp.FieldTeamID)
+}
+
 // SetName sets the "name" field.
 func (m *GithubAppMutation) SetName(s string) {
 	m.name = &s
@@ -4807,6 +4860,104 @@ func (m *GithubAppMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *GithubAppMutation) ResetName() {
 	m.name = nil
+}
+
+// SetOwnerLogin sets the "owner_login" field.
+func (m *GithubAppMutation) SetOwnerLogin(s string) {
+	m.owner_login = &s
+}
+
+// OwnerLogin returns the value of the "owner_login" field in the mutation.
+func (m *GithubAppMutation) OwnerLogin() (r string, exists bool) {
+	v := m.owner_login
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOwnerLogin returns the old "owner_login" field's value of the GithubApp entity.
+// If the GithubApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubAppMutation) OldOwnerLogin(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOwnerLogin is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOwnerLogin requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOwnerLogin: %w", err)
+	}
+	return oldValue.OwnerLogin, nil
+}
+
+// ClearOwnerLogin clears the value of the "owner_login" field.
+func (m *GithubAppMutation) ClearOwnerLogin() {
+	m.owner_login = nil
+	m.clearedFields[githubapp.FieldOwnerLogin] = struct{}{}
+}
+
+// OwnerLoginCleared returns if the "owner_login" field was cleared in this mutation.
+func (m *GithubAppMutation) OwnerLoginCleared() bool {
+	_, ok := m.clearedFields[githubapp.FieldOwnerLogin]
+	return ok
+}
+
+// ResetOwnerLogin resets all changes to the "owner_login" field.
+func (m *GithubAppMutation) ResetOwnerLogin() {
+	m.owner_login = nil
+	delete(m.clearedFields, githubapp.FieldOwnerLogin)
+}
+
+// SetOwnerType sets the "owner_type" field.
+func (m *GithubAppMutation) SetOwnerType(gt githubapp.OwnerType) {
+	m.owner_type = &gt
+}
+
+// OwnerType returns the value of the "owner_type" field in the mutation.
+func (m *GithubAppMutation) OwnerType() (r githubapp.OwnerType, exists bool) {
+	v := m.owner_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOwnerType returns the old "owner_type" field's value of the GithubApp entity.
+// If the GithubApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubAppMutation) OldOwnerType(ctx context.Context) (v githubapp.OwnerType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOwnerType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOwnerType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOwnerType: %w", err)
+	}
+	return oldValue.OwnerType, nil
+}
+
+// ClearOwnerType clears the value of the "owner_type" field.
+func (m *GithubAppMutation) ClearOwnerType() {
+	m.owner_type = nil
+	m.clearedFields[githubapp.FieldOwnerType] = struct{}{}
+}
+
+// OwnerTypeCleared returns if the "owner_type" field was cleared in this mutation.
+func (m *GithubAppMutation) OwnerTypeCleared() bool {
+	_, ok := m.clearedFields[githubapp.FieldOwnerType]
+	return ok
+}
+
+// ResetOwnerType resets all changes to the "owner_type" field.
+func (m *GithubAppMutation) ResetOwnerType() {
+	m.owner_type = nil
+	delete(m.clearedFields, githubapp.FieldOwnerType)
 }
 
 // SetClientID sets the "client_id" field.
@@ -5047,6 +5198,33 @@ func (m *GithubAppMutation) ResetUsers() {
 	m.clearedusers = false
 }
 
+// ClearTeam clears the "team" edge to the Team entity.
+func (m *GithubAppMutation) ClearTeam() {
+	m.clearedteam = true
+	m.clearedFields[githubapp.FieldTeamID] = struct{}{}
+}
+
+// TeamCleared reports if the "team" edge to the Team entity was cleared.
+func (m *GithubAppMutation) TeamCleared() bool {
+	return m.TeamIDCleared() || m.clearedteam
+}
+
+// TeamIDs returns the "team" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TeamID instead. It exists only for internal usage by the builders.
+func (m *GithubAppMutation) TeamIDs() (ids []uuid.UUID) {
+	if id := m.team; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTeam resets all changes to the "team" edge.
+func (m *GithubAppMutation) ResetTeam() {
+	m.team = nil
+	m.clearedteam = false
+}
+
 // Where appends a list predicates to the GithubAppMutation builder.
 func (m *GithubAppMutation) Where(ps ...predicate.GithubApp) {
 	m.predicates = append(m.predicates, ps...)
@@ -5081,7 +5259,7 @@ func (m *GithubAppMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GithubAppMutation) Fields() []string {
-	fields := make([]string, 0, 9)
+	fields := make([]string, 0, 12)
 	if m.created_at != nil {
 		fields = append(fields, githubapp.FieldCreatedAt)
 	}
@@ -5094,8 +5272,17 @@ func (m *GithubAppMutation) Fields() []string {
 	if m.users != nil {
 		fields = append(fields, githubapp.FieldCreatedBy)
 	}
+	if m.team != nil {
+		fields = append(fields, githubapp.FieldTeamID)
+	}
 	if m.name != nil {
 		fields = append(fields, githubapp.FieldName)
+	}
+	if m.owner_login != nil {
+		fields = append(fields, githubapp.FieldOwnerLogin)
+	}
+	if m.owner_type != nil {
+		fields = append(fields, githubapp.FieldOwnerType)
 	}
 	if m.client_id != nil {
 		fields = append(fields, githubapp.FieldClientID)
@@ -5125,8 +5312,14 @@ func (m *GithubAppMutation) Field(name string) (ent.Value, bool) {
 		return m.UUID()
 	case githubapp.FieldCreatedBy:
 		return m.CreatedBy()
+	case githubapp.FieldTeamID:
+		return m.TeamID()
 	case githubapp.FieldName:
 		return m.Name()
+	case githubapp.FieldOwnerLogin:
+		return m.OwnerLogin()
+	case githubapp.FieldOwnerType:
+		return m.OwnerType()
 	case githubapp.FieldClientID:
 		return m.ClientID()
 	case githubapp.FieldClientSecret:
@@ -5152,8 +5345,14 @@ func (m *GithubAppMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldUUID(ctx)
 	case githubapp.FieldCreatedBy:
 		return m.OldCreatedBy(ctx)
+	case githubapp.FieldTeamID:
+		return m.OldTeamID(ctx)
 	case githubapp.FieldName:
 		return m.OldName(ctx)
+	case githubapp.FieldOwnerLogin:
+		return m.OldOwnerLogin(ctx)
+	case githubapp.FieldOwnerType:
+		return m.OldOwnerType(ctx)
 	case githubapp.FieldClientID:
 		return m.OldClientID(ctx)
 	case githubapp.FieldClientSecret:
@@ -5199,12 +5398,33 @@ func (m *GithubAppMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedBy(v)
 		return nil
+	case githubapp.FieldTeamID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTeamID(v)
+		return nil
 	case githubapp.FieldName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case githubapp.FieldOwnerLogin:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOwnerLogin(v)
+		return nil
+	case githubapp.FieldOwnerType:
+		v, ok := value.(githubapp.OwnerType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOwnerType(v)
 		return nil
 	case githubapp.FieldClientID:
 		v, ok := value.(string)
@@ -5267,6 +5487,15 @@ func (m *GithubAppMutation) ClearedFields() []string {
 	if m.FieldCleared(githubapp.FieldCreatedBy) {
 		fields = append(fields, githubapp.FieldCreatedBy)
 	}
+	if m.FieldCleared(githubapp.FieldTeamID) {
+		fields = append(fields, githubapp.FieldTeamID)
+	}
+	if m.FieldCleared(githubapp.FieldOwnerLogin) {
+		fields = append(fields, githubapp.FieldOwnerLogin)
+	}
+	if m.FieldCleared(githubapp.FieldOwnerType) {
+		fields = append(fields, githubapp.FieldOwnerType)
+	}
 	return fields
 }
 
@@ -5283,6 +5512,15 @@ func (m *GithubAppMutation) ClearField(name string) error {
 	switch name {
 	case githubapp.FieldCreatedBy:
 		m.ClearCreatedBy()
+		return nil
+	case githubapp.FieldTeamID:
+		m.ClearTeamID()
+		return nil
+	case githubapp.FieldOwnerLogin:
+		m.ClearOwnerLogin()
+		return nil
+	case githubapp.FieldOwnerType:
+		m.ClearOwnerType()
 		return nil
 	}
 	return fmt.Errorf("unknown GithubApp nullable field %s", name)
@@ -5304,8 +5542,17 @@ func (m *GithubAppMutation) ResetField(name string) error {
 	case githubapp.FieldCreatedBy:
 		m.ResetCreatedBy()
 		return nil
+	case githubapp.FieldTeamID:
+		m.ResetTeamID()
+		return nil
 	case githubapp.FieldName:
 		m.ResetName()
+		return nil
+	case githubapp.FieldOwnerLogin:
+		m.ResetOwnerLogin()
+		return nil
+	case githubapp.FieldOwnerType:
+		m.ResetOwnerType()
 		return nil
 	case githubapp.FieldClientID:
 		m.ResetClientID()
@@ -5325,12 +5572,15 @@ func (m *GithubAppMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *GithubAppMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.installations != nil {
 		edges = append(edges, githubapp.EdgeInstallations)
 	}
 	if m.users != nil {
 		edges = append(edges, githubapp.EdgeUsers)
+	}
+	if m.team != nil {
+		edges = append(edges, githubapp.EdgeTeam)
 	}
 	return edges
 }
@@ -5349,13 +5599,17 @@ func (m *GithubAppMutation) AddedIDs(name string) []ent.Value {
 		if id := m.users; id != nil {
 			return []ent.Value{*id}
 		}
+	case githubapp.EdgeTeam:
+		if id := m.team; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *GithubAppMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedinstallations != nil {
 		edges = append(edges, githubapp.EdgeInstallations)
 	}
@@ -5378,12 +5632,15 @@ func (m *GithubAppMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *GithubAppMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedinstallations {
 		edges = append(edges, githubapp.EdgeInstallations)
 	}
 	if m.clearedusers {
 		edges = append(edges, githubapp.EdgeUsers)
+	}
+	if m.clearedteam {
+		edges = append(edges, githubapp.EdgeTeam)
 	}
 	return edges
 }
@@ -5396,6 +5653,8 @@ func (m *GithubAppMutation) EdgeCleared(name string) bool {
 		return m.clearedinstallations
 	case githubapp.EdgeUsers:
 		return m.clearedusers
+	case githubapp.EdgeTeam:
+		return m.clearedteam
 	}
 	return false
 }
@@ -5406,6 +5665,9 @@ func (m *GithubAppMutation) ClearEdge(name string) error {
 	switch name {
 	case githubapp.EdgeUsers:
 		m.ClearUsers()
+		return nil
+	case githubapp.EdgeTeam:
+		m.ClearTeam()
 		return nil
 	}
 	return fmt.Errorf("unknown GithubApp unique edge %s", name)
@@ -5420,6 +5682,9 @@ func (m *GithubAppMutation) ResetEdge(name string) error {
 		return nil
 	case githubapp.EdgeUsers:
 		m.ResetUsers()
+		return nil
+	case githubapp.EdgeTeam:
+		m.ResetTeam()
 		return nil
 	}
 	return fmt.Errorf("unknown GithubApp edge %s", name)
@@ -23016,6 +23281,9 @@ type TeamMutation struct {
 	members              map[uuid.UUID]struct{}
 	removedmembers       map[uuid.UUID]struct{}
 	clearedmembers       bool
+	github_apps          map[int64]struct{}
+	removedgithub_apps   map[int64]struct{}
+	clearedgithub_apps   bool
 	team_webhooks        map[uuid.UUID]struct{}
 	removedteam_webhooks map[uuid.UUID]struct{}
 	clearedteam_webhooks bool
@@ -23555,6 +23823,60 @@ func (m *TeamMutation) ResetMembers() {
 	m.removedmembers = nil
 }
 
+// AddGithubAppIDs adds the "github_apps" edge to the GithubApp entity by ids.
+func (m *TeamMutation) AddGithubAppIDs(ids ...int64) {
+	if m.github_apps == nil {
+		m.github_apps = make(map[int64]struct{})
+	}
+	for i := range ids {
+		m.github_apps[ids[i]] = struct{}{}
+	}
+}
+
+// ClearGithubApps clears the "github_apps" edge to the GithubApp entity.
+func (m *TeamMutation) ClearGithubApps() {
+	m.clearedgithub_apps = true
+}
+
+// GithubAppsCleared reports if the "github_apps" edge to the GithubApp entity was cleared.
+func (m *TeamMutation) GithubAppsCleared() bool {
+	return m.clearedgithub_apps
+}
+
+// RemoveGithubAppIDs removes the "github_apps" edge to the GithubApp entity by IDs.
+func (m *TeamMutation) RemoveGithubAppIDs(ids ...int64) {
+	if m.removedgithub_apps == nil {
+		m.removedgithub_apps = make(map[int64]struct{})
+	}
+	for i := range ids {
+		delete(m.github_apps, ids[i])
+		m.removedgithub_apps[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedGithubApps returns the removed IDs of the "github_apps" edge to the GithubApp entity.
+func (m *TeamMutation) RemovedGithubAppsIDs() (ids []int64) {
+	for id := range m.removedgithub_apps {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// GithubAppsIDs returns the "github_apps" edge IDs in the mutation.
+func (m *TeamMutation) GithubAppsIDs() (ids []int64) {
+	for id := range m.github_apps {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetGithubApps resets all changes to the "github_apps" edge.
+func (m *TeamMutation) ResetGithubApps() {
+	m.github_apps = nil
+	m.clearedgithub_apps = false
+	m.removedgithub_apps = nil
+}
+
 // AddTeamWebhookIDs adds the "team_webhooks" edge to the Webhook entity by ids.
 func (m *TeamMutation) AddTeamWebhookIDs(ids ...uuid.UUID) {
 	if m.team_webhooks == nil {
@@ -23853,7 +24175,7 @@ func (m *TeamMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.projects != nil {
 		edges = append(edges, team.EdgeProjects)
 	}
@@ -23862,6 +24184,9 @@ func (m *TeamMutation) AddedEdges() []string {
 	}
 	if m.members != nil {
 		edges = append(edges, team.EdgeMembers)
+	}
+	if m.github_apps != nil {
+		edges = append(edges, team.EdgeGithubApps)
 	}
 	if m.team_webhooks != nil {
 		edges = append(edges, team.EdgeTeamWebhooks)
@@ -23891,6 +24216,12 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeGithubApps:
+		ids := make([]ent.Value, 0, len(m.github_apps))
+		for id := range m.github_apps {
+			ids = append(ids, id)
+		}
+		return ids
 	case team.EdgeTeamWebhooks:
 		ids := make([]ent.Value, 0, len(m.team_webhooks))
 		for id := range m.team_webhooks {
@@ -23903,7 +24234,7 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedprojects != nil {
 		edges = append(edges, team.EdgeProjects)
 	}
@@ -23912,6 +24243,9 @@ func (m *TeamMutation) RemovedEdges() []string {
 	}
 	if m.removedmembers != nil {
 		edges = append(edges, team.EdgeMembers)
+	}
+	if m.removedgithub_apps != nil {
+		edges = append(edges, team.EdgeGithubApps)
 	}
 	if m.removedteam_webhooks != nil {
 		edges = append(edges, team.EdgeTeamWebhooks)
@@ -23941,6 +24275,12 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeGithubApps:
+		ids := make([]ent.Value, 0, len(m.removedgithub_apps))
+		for id := range m.removedgithub_apps {
+			ids = append(ids, id)
+		}
+		return ids
 	case team.EdgeTeamWebhooks:
 		ids := make([]ent.Value, 0, len(m.removedteam_webhooks))
 		for id := range m.removedteam_webhooks {
@@ -23953,7 +24293,7 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedprojects {
 		edges = append(edges, team.EdgeProjects)
 	}
@@ -23962,6 +24302,9 @@ func (m *TeamMutation) ClearedEdges() []string {
 	}
 	if m.clearedmembers {
 		edges = append(edges, team.EdgeMembers)
+	}
+	if m.clearedgithub_apps {
+		edges = append(edges, team.EdgeGithubApps)
 	}
 	if m.clearedteam_webhooks {
 		edges = append(edges, team.EdgeTeamWebhooks)
@@ -23979,6 +24322,8 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 		return m.cleareds3_buckets
 	case team.EdgeMembers:
 		return m.clearedmembers
+	case team.EdgeGithubApps:
+		return m.clearedgithub_apps
 	case team.EdgeTeamWebhooks:
 		return m.clearedteam_webhooks
 	}
@@ -24005,6 +24350,9 @@ func (m *TeamMutation) ResetEdge(name string) error {
 		return nil
 	case team.EdgeMembers:
 		m.ResetMembers()
+		return nil
+	case team.EdgeGithubApps:
+		m.ResetGithubApps()
 		return nil
 	case team.EdgeTeamWebhooks:
 		m.ResetTeamWebhooks()

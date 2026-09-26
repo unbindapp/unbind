@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/team"
@@ -151,6 +152,21 @@ func (_c *TeamCreate) AddMembers(v ...*User) *TeamCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddMemberIDs(ids...)
+}
+
+// AddGithubAppIDs adds the "github_apps" edge to the GithubApp entity by IDs.
+func (_c *TeamCreate) AddGithubAppIDs(ids ...int64) *TeamCreate {
+	_c.mutation.AddGithubAppIDs(ids...)
+	return _c
+}
+
+// AddGithubApps adds the "github_apps" edges to the GithubApp entity.
+func (_c *TeamCreate) AddGithubApps(v ...*GithubApp) *TeamCreate {
+	ids := make([]int64, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddGithubAppIDs(ids...)
 }
 
 // AddTeamWebhookIDs adds the "team_webhooks" edge to the Webhook entity by IDs.
@@ -347,6 +363,22 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.GithubAppsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.GithubAppsTable,
+			Columns: []string{team.GithubAppsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(githubapp.FieldID, field.TypeInt64),
 			},
 		}
 		for _, k := range nodes {

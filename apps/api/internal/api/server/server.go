@@ -61,7 +61,7 @@ type SuccessResponse struct {
 type Server struct {
 	KubeClient           *k8s.KubeClient
 	Cfg                  *config.Config
-	GithubClient         *github.GithubClient
+	GithubClient         github.GithubClientInterface
 	Repository           repositories.RepositoriesInterface
 	StringCache          *cache.RedisCache[string]
 	HttpClient           *http.Client

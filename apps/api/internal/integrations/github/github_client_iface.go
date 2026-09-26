@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/go-github/v69/github"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
@@ -43,4 +44,10 @@ type GithubClientInterface interface {
 	GetRepositoryFiles(ctx context.Context, installation *ent.GithubInstallation, owner, repo, ref string) (files []string, truncated bool, err error)
 	// GetChangedFiles lists the files that differ between two commits, GitHub caps the comparison at 300 files
 	GetChangedFiles(ctx context.Context, installation *ent.GithubInstallation, owner, repo, base, head string) ([]string, error)
+	// DeleteInstallation uninstalls the app from the account on GitHub, an installation that is already gone counts as deleted
+	DeleteInstallation(ctx context.Context, app *ent.GithubApp, installationID int64) error
+	// GetAppOwner reads which GitHub account owns the app
+	GetAppOwner(ctx context.Context, app *ent.GithubApp) (login string, ownerType githubapp.OwnerType, err error)
+	// SyncAppOwners fills in the owner of apps connected before it was stored
+	SyncAppOwners(ctx context.Context, apps []*ent.GithubApp, save func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error)
 }

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
+	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 )
 
@@ -28,8 +29,14 @@ type GithubApp struct {
 	UUID uuid.UUID `json:"uuid,omitempty"`
 	// The user that created this github app.
 	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
+	// The team whose members can use this app, unset when only the creator can
+	TeamID *uuid.UUID `json:"team_id,omitempty"`
 	// Name of the GitHub App
 	Name string `json:"name,omitempty"`
+	// The GitHub account that owns the app
+	OwnerLogin string `json:"owner_login,omitempty"`
+	// Whether an organization or a user owns the app
+	OwnerType githubapp.OwnerType `json:"owner_type,omitempty"`
 	// OAuth client ID of the GitHub App
 	ClientID string `json:"client_id,omitempty"`
 	// OAuth client secret of the GitHub App
@@ -50,9 +57,11 @@ type GithubAppEdges struct {
 	Installations []*GithubInstallation `json:"installations,omitempty"`
 	// Users holds the value of the users edge.
 	Users *User `json:"users,omitempty"`
+	// Team holds the value of the team edge.
+	Team *Team `json:"team,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // InstallationsOrErr returns the Installations value or an error if the edge
@@ -75,16 +84,27 @@ func (e GithubAppEdges) UsersOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "users"}
 }
 
+// TeamOrErr returns the Team value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e GithubAppEdges) TeamOrErr() (*Team, error) {
+	if e.Team != nil {
+		return e.Team, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: team.Label}
+	}
+	return nil, &NotLoadedError{edge: "team"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*GithubApp) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case githubapp.FieldCreatedBy:
+		case githubapp.FieldCreatedBy, githubapp.FieldTeamID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case githubapp.FieldID:
 			values[i] = new(sql.NullInt64)
-		case githubapp.FieldName, githubapp.FieldClientID, githubapp.FieldClientSecret, githubapp.FieldWebhookSecret, githubapp.FieldPrivateKey:
+		case githubapp.FieldName, githubapp.FieldOwnerLogin, githubapp.FieldOwnerType, githubapp.FieldClientID, githubapp.FieldClientSecret, githubapp.FieldWebhookSecret, githubapp.FieldPrivateKey:
 			values[i] = new(sql.NullString)
 		case githubapp.FieldCreatedAt, githubapp.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -136,11 +156,30 @@ func (_m *GithubApp) assignValues(columns []string, values []any) error {
 				_m.CreatedBy = new(uuid.UUID)
 				*_m.CreatedBy = *value.S.(*uuid.UUID)
 			}
+		case githubapp.FieldTeamID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field team_id", values[i])
+			} else if value.Valid {
+				_m.TeamID = new(uuid.UUID)
+				*_m.TeamID = *value.S.(*uuid.UUID)
+			}
 		case githubapp.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
+			}
+		case githubapp.FieldOwnerLogin:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field owner_login", values[i])
+			} else if value.Valid {
+				_m.OwnerLogin = value.String
+			}
+		case githubapp.FieldOwnerType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field owner_type", values[i])
+			} else if value.Valid {
+				_m.OwnerType = githubapp.OwnerType(value.String)
 			}
 		case githubapp.FieldClientID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -189,6 +228,11 @@ func (_m *GithubApp) QueryUsers() *UserQuery {
 	return NewGithubAppClient(_m.config).QueryUsers(_m)
 }
 
+// QueryTeam queries the "team" edge of the GithubApp entity.
+func (_m *GithubApp) QueryTeam() *TeamQuery {
+	return NewGithubAppClient(_m.config).QueryTeam(_m)
+}
+
 // Update returns a builder for updating this GithubApp.
 // Note that you need to call GithubApp.Unwrap() before calling this method if this GithubApp
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -226,8 +270,19 @@ func (_m *GithubApp) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
+	if v := _m.TeamID; v != nil {
+		builder.WriteString("team_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
+	builder.WriteString(", ")
+	builder.WriteString("owner_login=")
+	builder.WriteString(_m.OwnerLogin)
+	builder.WriteString(", ")
+	builder.WriteString("owner_type=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OwnerType))
 	builder.WriteString(", ")
 	builder.WriteString("client_id=")
 	builder.WriteString(_m.ClientID)

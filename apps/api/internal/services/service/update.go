@@ -136,7 +136,7 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 	if err := validateSourceUpdate(service.Type, input); err != nil {
 		return nil, err
 	}
-	source, err := self.prepareSourceChange(ctx, service, input)
+	source, err := self.prepareSourceChange(ctx, requesterUserID, service, input)
 	if err != nil {
 		return nil, err
 	}

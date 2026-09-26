@@ -42,6 +42,10 @@ func (Team) Edges() []ent.Edge {
 		// O2M to s3 buckets
 		edge.To("s3_buckets", S3Bucket.Type),
 		edge.From("members", User.Type).Ref("teams"),
+		// O2M to github apps shared with the team
+		edge.To("github_apps", GithubApp.Type).Annotations(
+			entsql.Annotation{OnDelete: entsql.SetNull},
+		),
 		// O2M edge for webhooks
 		edge.To("team_webhooks", Webhook.Type).Annotations(
 			entsql.Annotation{OnDelete: entsql.Cascade},

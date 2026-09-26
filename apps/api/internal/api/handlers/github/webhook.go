@@ -77,15 +77,27 @@ func (self *HandlerGroup) HandleGithubAppSave(ctx context.Context, input *Handle
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to determine user ID"))
 	}
 
-	// Get organization from the cache
-	// !  TODO - do we need this? seems like installation URL is the same regardless of org
+	// The organization only steers the GitHub form, the installation URL is the same either way
 	_, err = self.srv.StringCache.Getdel(ctx, state+"-org")
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub organization from the cache"))
 	}
 
+	var teamID *uuid.UUID
+	teamValue, err := self.srv.StringCache.Getdel(ctx, state+"-team")
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the team to share the GitHub app with"))
+	}
+	if teamValue != "" {
+		parsedTeam, err := uuid.Parse(teamValue)
+		if err != nil {
+			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to parse the team to share the GitHub app with"))
+		}
+		teamID = &parsedTeam
+	}
+
 	// Save the app config
-	ghApp, err := self.srv.Repository.Github().CreateApp(ctx, parsedState, appConfig, userIDParsed)
+	ghApp, err := self.srv.Repository.Github().CreateApp(ctx, parsedState, appConfig, userIDParsed, teamID)
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to save the GitHub app"))
 	}

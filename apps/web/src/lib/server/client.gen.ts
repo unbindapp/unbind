@@ -1778,19 +1778,20 @@ export const GithubInstallationPermissionsSchema = z
 
 export const GithubInstallationAPIResponseSchema = z
   .object({
-    account_id: z.number().optional(),
-    account_login: z.string().optional(),
-    account_type: z.string().optional(),
-    account_url: z.string().optional(),
-    active: z.boolean().optional(),
-    created_at: z.string().datetime({ offset: true }).optional(),
-    events: z.array(z.string()).nullable().optional(),
-    github_app_id: z.number().optional(),
-    id: z.number().optional(),
-    permissions: GithubInstallationPermissionsSchema.optional(),
-    repository_selection: z.string().optional(),
-    suspended: z.boolean().optional(),
-    updated_at: z.string().datetime({ offset: true }).optional(),
+    account_id: z.number(),
+    account_login: z.string(),
+    account_type: z.string(),
+    account_url: z.string(),
+    active: z.boolean(),
+    created_at: z.string().datetime({ offset: true }),
+    events: z.array(z.string()).nullable(),
+    github_app_id: z.number(),
+    id: z.number(),
+    permissions: GithubInstallationPermissionsSchema,
+    repository_selection: z.string(),
+    service_count: z.number(),
+    suspended: z.boolean(),
+    updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
 
@@ -1798,9 +1799,14 @@ export const GithubAppAPIResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
     created_by: z.string().optional(),
+    created_by_email: z.string().optional(),
     id: z.number(),
     installations: z.array(GithubInstallationAPIResponseSchema),
     name: z.string(),
+    owner_login: z.string(),
+    owner_type: z.enum(['Organization', 'User']).optional(),
+    team_id: z.string().optional(),
+    team_name: z.string().optional(),
     updated_at: z.string().datetime({ offset: true }),
     uuid: z.string(),
   })
@@ -1812,6 +1818,18 @@ export const GithubAppCreateResponseBodySchema = z
   })
   .strip();
 
+export const GithubAppDeleteInputBodySchema = z
+  .object({
+    uuid: z.string(),
+  })
+  .strip();
+
+export const GithubAppDeleteResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
 export const GithubAppGetResponseBodySchema = z
   .object({
     data: GithubAppAPIResponseSchema,
@@ -1820,13 +1838,26 @@ export const GithubAppGetResponseBodySchema = z
 
 export const GithubAppInstallationListResponseBodySchema = z
   .object({
-    data: z.array(GithubInstallationAPIResponseSchema).nullable(),
+    data: z.array(GithubInstallationAPIResponseSchema),
   })
   .strip();
 
 export const GithubAppListResponseBodySchema = z
   .object({
-    data: z.array(GithubAppAPIResponseSchema).nullable(),
+    data: z.array(GithubAppAPIResponseSchema),
+  })
+  .strip();
+
+export const GithubAppSetTeamInputBodySchema = z
+  .object({
+    team_id: z.string().nullable().optional(), // The team to share the app with, omit or send null to make it private to its creator
+    uuid: z.string(),
+  })
+  .strip();
+
+export const GithubAppSetTeamResponseBodySchema = z
+  .object({
+    data: GithubAppAPIResponseSchema,
   })
   .strip();
 
@@ -1836,6 +1867,18 @@ export const GithubBranchSchema = z
     protected: z.boolean(),
     ref: z.string(),
     sha: z.string(),
+  })
+  .strip();
+
+export const GithubInstallationDeleteInputBodySchema = z
+  .object({
+    installation_id: z.number(),
+  })
+  .strip();
+
+export const GithubInstallationDeleteResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
   })
   .strip();
 
@@ -3086,12 +3129,22 @@ export type GithubInstallationPermissions = z.infer<typeof GithubInstallationPer
 export type GithubInstallationAPIResponse = z.infer<typeof GithubInstallationAPIResponseSchema>;
 export type GithubAppAPIResponse = z.infer<typeof GithubAppAPIResponseSchema>;
 export type GithubAppCreateResponseBody = z.infer<typeof GithubAppCreateResponseBodySchema>;
+export type GithubAppDeleteInputBody = z.infer<typeof GithubAppDeleteInputBodySchema>;
+export type GithubAppDeleteResponseBody = z.infer<typeof GithubAppDeleteResponseBodySchema>;
 export type GithubAppGetResponseBody = z.infer<typeof GithubAppGetResponseBodySchema>;
 export type GithubAppInstallationListResponseBody = z.infer<
   typeof GithubAppInstallationListResponseBodySchema
 >;
 export type GithubAppListResponseBody = z.infer<typeof GithubAppListResponseBodySchema>;
+export type GithubAppSetTeamInputBody = z.infer<typeof GithubAppSetTeamInputBodySchema>;
+export type GithubAppSetTeamResponseBody = z.infer<typeof GithubAppSetTeamResponseBodySchema>;
 export type GithubBranch = z.infer<typeof GithubBranchSchema>;
+export type GithubInstallationDeleteInputBody = z.infer<
+  typeof GithubInstallationDeleteInputBodySchema
+>;
+export type GithubInstallationDeleteResponseBody = z.infer<
+  typeof GithubInstallationDeleteResponseBodySchema
+>;
 export type GithubRepositoryOwner = z.infer<typeof GithubRepositoryOwnerSchema>;
 export type GithubRepository = z.infer<typeof GithubRepositorySchema>;
 export type GithubTag = z.infer<typeof GithubTagSchema>;
@@ -3312,6 +3365,7 @@ export const app_createQuerySchema = z
   .object({
     redirect_url: z.string(), // The client URL to redirect to after the installation is finished
     organization: z.string().optional(), // The organization to install the app for, if any
+    team_id: z.string().optional(), // Share the app with this team so its members can pick the repositories. Needs editor access to the team.
   })
   .passthrough();
 
@@ -3330,7 +3384,8 @@ export const app_saveQuerySchema = z
 
 export const list_appsQuerySchema = z
   .object({
-    with_installations: z.boolean().optional(),
+    owned: z.boolean().optional(), // Only the apps the caller connected
+    team_id: z.string().optional(), // Only the apps shared with this team. Service counts are then limited to the team.
   })
   .passthrough();
 
@@ -4848,7 +4903,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
             const validatedQuery = app_createQuerySchema.parse(params);
-            const queryKeys = ['redirect_url', 'organization'];
+            const queryKeys = ['redirect_url', 'organization', 'team_id'];
             queryKeys.forEach((key) => {
               const value = validatedQuery[key as keyof typeof validatedQuery];
               if (value !== undefined && value !== null) {
@@ -4870,6 +4925,48 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             }
             const data = await response.json();
             const { data: parsedData, error } = GithubAppCreateResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        delete: async (
+          params: GithubAppDeleteInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubAppDeleteResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/github/app/delete`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = GithubAppDeleteInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = GithubAppDeleteResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);
@@ -4970,6 +5067,48 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             throw error;
           }
         },
+        team: async (
+          params: GithubAppSetTeamInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubAppSetTeamResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/github/app/team`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'PUT',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = GithubAppSetTeamInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = GithubAppSetTeamResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
       },
       apps: async (
         params: z.infer<typeof list_appsQuerySchema>,
@@ -4984,7 +5123,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             typeof window !== 'undefined' ? window.location.origin : undefined,
           );
           const validatedQuery = list_appsQuerySchema.parse(params);
-          const queryKeys = ['with_installations'];
+          const queryKeys = ['owned', 'team_id'];
           queryKeys.forEach((key) => {
             const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
@@ -5018,6 +5157,51 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           throw error;
         }
+      },
+      installation: {
+        delete: async (
+          params: GithubInstallationDeleteInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubInstallationDeleteResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/github/installation/delete`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = GithubInstallationDeleteInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } =
+              GithubInstallationDeleteResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
       },
       installations: async (
         params?: undefined,

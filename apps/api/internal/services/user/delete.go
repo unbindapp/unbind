@@ -33,5 +33,8 @@ func (self *UserService) DeleteUser(ctx context.Context, requesterUserID, userID
 		return err
 	}
 
+	if _, err := self.repo.Github().DeletePrivateAppsByCreator(ctx, userID); err != nil {
+		return err
+	}
 	return self.repo.User().Delete(ctx, userID)
 }

@@ -3,6 +3,7 @@
 package githubapp
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -22,8 +23,14 @@ const (
 	FieldUUID = "uuid"
 	// FieldCreatedBy holds the string denoting the created_by field in the database.
 	FieldCreatedBy = "created_by"
+	// FieldTeamID holds the string denoting the team_id field in the database.
+	FieldTeamID = "team_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldOwnerLogin holds the string denoting the owner_login field in the database.
+	FieldOwnerLogin = "owner_login"
+	// FieldOwnerType holds the string denoting the owner_type field in the database.
+	FieldOwnerType = "owner_type"
 	// FieldClientID holds the string denoting the client_id field in the database.
 	FieldClientID = "client_id"
 	// FieldClientSecret holds the string denoting the client_secret field in the database.
@@ -36,6 +43,8 @@ const (
 	EdgeInstallations = "installations"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
+	// EdgeTeam holds the string denoting the team edge name in mutations.
+	EdgeTeam = "team"
 	// Table holds the table name of the githubapp in the database.
 	Table = "github_apps"
 	// InstallationsTable is the table that holds the installations relation/edge.
@@ -52,6 +61,13 @@ const (
 	UsersInverseTable = "users"
 	// UsersColumn is the table column denoting the users relation/edge.
 	UsersColumn = "created_by"
+	// TeamTable is the table that holds the team relation/edge.
+	TeamTable = "github_apps"
+	// TeamInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	TeamInverseTable = "teams"
+	// TeamColumn is the table column denoting the team relation/edge.
+	TeamColumn = "team_id"
 )
 
 // Columns holds all SQL columns for githubapp fields.
@@ -61,7 +77,10 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldUUID,
 	FieldCreatedBy,
+	FieldTeamID,
 	FieldName,
+	FieldOwnerLogin,
+	FieldOwnerType,
 	FieldClientID,
 	FieldClientSecret,
 	FieldWebhookSecret,
@@ -91,6 +110,29 @@ var (
 	IDValidator func(int64) error
 )
 
+// OwnerType defines the type for the "owner_type" enum field.
+type OwnerType string
+
+// OwnerType values.
+const (
+	OwnerTypeOrganization OwnerType = "Organization"
+	OwnerTypeUser         OwnerType = "User"
+)
+
+func (ot OwnerType) String() string {
+	return string(ot)
+}
+
+// OwnerTypeValidator is a validator for the "owner_type" field enum values. It is called by the builders before save.
+func OwnerTypeValidator(ot OwnerType) error {
+	switch ot {
+	case OwnerTypeOrganization, OwnerTypeUser:
+		return nil
+	default:
+		return fmt.Errorf("githubapp: invalid enum value for owner_type field: %q", ot)
+	}
+}
+
 // OrderOption defines the ordering options for the GithubApp queries.
 type OrderOption func(*sql.Selector)
 
@@ -119,9 +161,24 @@ func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
 }
 
+// ByTeamID orders the results by the team_id field.
+func ByTeamID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTeamID, opts...).ToFunc()
+}
+
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByOwnerLogin orders the results by the owner_login field.
+func ByOwnerLogin(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOwnerLogin, opts...).ToFunc()
+}
+
+// ByOwnerType orders the results by the owner_type field.
+func ByOwnerType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOwnerType, opts...).ToFunc()
 }
 
 // ByClientID orders the results by the client_id field.
@@ -164,6 +221,13 @@ func ByUsersField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUsersStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByTeamField orders the results by team field.
+func ByTeamField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTeamStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newInstallationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -176,5 +240,12 @@ func newUsersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UsersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, UsersTable, UsersColumn),
+	)
+}
+func newTeamStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TeamInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, TeamTable, TeamColumn),
 	)
 }

@@ -161,10 +161,13 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "uuid", Type: field.TypeUUID, Unique: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "owner_login", Type: field.TypeString, Nullable: true},
+		{Name: "owner_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"Organization", "User"}},
 		{Name: "client_id", Type: field.TypeString},
 		{Name: "client_secret", Type: field.TypeString},
 		{Name: "webhook_secret", Type: field.TypeString},
 		{Name: "private_key", Type: field.TypeString, Size: 2147483647},
+		{Name: "team_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 	}
 	// GithubAppsTable holds the schema information for the "github_apps" table.
@@ -174,8 +177,14 @@ var (
 		PrimaryKey: []*schema.Column{GithubAppsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
+				Symbol:     "github_apps_teams_github_apps",
+				Columns:    []*schema.Column{GithubAppsColumns[11]},
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
 				Symbol:     "github_apps_users_created_by",
-				Columns:    []*schema.Column{GithubAppsColumns[9]},
+				Columns:    []*schema.Column{GithubAppsColumns[12]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -947,7 +956,8 @@ func init() {
 	EnvironmentsTable.Annotation = &entsql.Annotation{
 		Table: "environments",
 	}
-	GithubAppsTable.ForeignKeys[0].RefTable = UsersTable
+	GithubAppsTable.ForeignKeys[0].RefTable = TeamsTable
+	GithubAppsTable.ForeignKeys[1].RefTable = UsersTable
 	GithubAppsTable.Annotation = &entsql.Annotation{
 		Table: "github_apps",
 	}

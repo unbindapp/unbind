@@ -7,14 +7,31 @@ Unbind can build a repository and deploy it again every time you push.
 
 ## Connect GitHub
 
-This is done once per GitHub account or organization, by someone who can change system settings.
+This is done once per GitHub account or organization. Anyone can connect their own GitHub.
 
 <Steps>
 <Step>
 
 ### Start the connection
 
-Open the command panel, pick **GitHub Repo**, then **Configure GitHub App**. Choose **Personal** for your own account or **Organization** and type the organization's name.
+Open the command panel, pick **GitHub Repo**, then **Configure GitHub App**. You can also start from **Team Settings** > **GitHub** > **Connect GitHub**.
+
+</Step>
+<Step>
+
+### Choose who can see the repositories
+
+- **Only me**: only you can pick these repositories.
+- **This team**: members of the team you are in can pick them too.
+
+You can change this later from your account settings.
+
+</Step>
+<Step>
+
+### Pick the account
+
+Choose **Personal** for your own account or **Organization** and type the organization's name.
 
 </Step>
 <Step>
@@ -33,12 +50,25 @@ GitHub asks where to install the app. Choose all repositories or only some. Priv
 </Step>
 </Steps>
 
-When the window closes you see **GitHub app connected**.
+When the window closes you see **GitHub connected**.
 
 <Callout title="One connection per account">
   A connection made for your personal account cannot see an organization's repositories. Connect the
   organization as well.
 </Callout>
+
+## Manage connections
+
+A connection belongs to the person who made it. Your avatar > **Account Settings** > **GitHub** lists yours, with the accounts each one is installed on and how many services build from them.
+
+- **Sharing**: pick a team, or **Only me** to take it back. Members of the team see its repositories in the picker; nobody else does.
+- **Install on another account**: install the same app on another GitHub account or organization you own.
+- **Configure on GitHub**: change which repositories an account lets the app see.
+- **Remove**: uninstalls the app from every account and forgets it. Services built from it keep running but stop deploying on push until you pick a repository for them again. Delete the app itself under GitHub > **Settings** > **Developer settings** > **GitHub Apps** afterwards.
+
+**Team Settings** > **GitHub** lists the connections shared with the team. Team editors can **Remove from team**, which takes the repositories out of the team's picker without touching the services. When the person who made a shared connection is deleted, the connection stays with the team and its editors can remove it.
+
+A service whose connection is not shared with you shows its repository and branch, but you cannot change them. Ask the owner to share the connection with your team.
 
 ## Create the service
 

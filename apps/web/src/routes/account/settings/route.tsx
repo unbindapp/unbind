@@ -25,6 +25,12 @@ const tabs: TSettingsTab[] = [
     matchPath: `${basePath}/connected-apps`,
     link: linkOptions({ to: "/account/settings/connected-apps" }),
   },
+  {
+    label: "GitHub",
+    icon: "github",
+    matchPath: `${basePath}/github`,
+    link: linkOptions({ to: "/account/settings/github" }),
+  },
 ];
 
 export const Route = createFileRoute("/account/settings")({

@@ -191,7 +191,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	// Only ad metadata if user is not providing ports
 	addDetectedPorts := len(input.Ports) == 0
 	if input.Type == schema.ServiceTypeGithub {
-		source, err := self.verifyGithubRepository(ctx, *input.GitHubInstallationID, *input.RepositoryOwner, *input.RepositoryName)
+		source, err := self.verifyGithubRepository(ctx, requesterUserID, *input.GitHubInstallationID, *input.RepositoryOwner, *input.RepositoryName)
 		if err != nil {
 			return nil, err
 		}

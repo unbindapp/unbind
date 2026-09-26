@@ -47,11 +47,13 @@ type TeamEdges struct {
 	S3Buckets []*S3Bucket `json:"s3_buckets,omitempty"`
 	// Members holds the value of the members edge.
 	Members []*User `json:"members,omitempty"`
+	// GithubApps holds the value of the github_apps edge.
+	GithubApps []*GithubApp `json:"github_apps,omitempty"`
 	// TeamWebhooks holds the value of the team_webhooks edge.
 	TeamWebhooks []*Webhook `json:"team_webhooks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // ProjectsOrErr returns the Projects value or an error if the edge
@@ -81,10 +83,19 @@ func (e TeamEdges) MembersOrErr() ([]*User, error) {
 	return nil, &NotLoadedError{edge: "members"}
 }
 
+// GithubAppsOrErr returns the GithubApps value or an error if the edge
+// was not loaded in eager-loading.
+func (e TeamEdges) GithubAppsOrErr() ([]*GithubApp, error) {
+	if e.loadedTypes[3] {
+		return e.GithubApps, nil
+	}
+	return nil, &NotLoadedError{edge: "github_apps"}
+}
+
 // TeamWebhooksOrErr returns the TeamWebhooks value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) TeamWebhooksOrErr() ([]*Webhook, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.TeamWebhooks, nil
 	}
 	return nil, &NotLoadedError{edge: "team_webhooks"}
@@ -191,6 +202,11 @@ func (_m *Team) QueryS3Buckets() *S3BucketQuery {
 // QueryMembers queries the "members" edge of the Team entity.
 func (_m *Team) QueryMembers() *UserQuery {
 	return NewTeamClient(_m.config).QueryMembers(_m)
+}
+
+// QueryGithubApps queries the "github_apps" edge of the Team entity.
+func (_m *Team) QueryGithubApps() *GithubAppQuery {
+	return NewTeamClient(_m.config).QueryGithubApps(_m)
 }
 
 // QueryTeamWebhooks queries the "team_webhooks" edge of the Team entity.

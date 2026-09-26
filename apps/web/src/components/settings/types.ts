@@ -4,7 +4,8 @@ export type TGitSectionProps = {
   owner: string;
   repo: string;
   branch: string;
-  installationId: number;
+  // Missing once the GitHub connection the service used was removed
+  installationId?: number;
   service: TServiceShallow;
 };
 

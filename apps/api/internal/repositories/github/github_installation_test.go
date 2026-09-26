@@ -425,3 +425,99 @@ func (suite *GithubInstallationSuite) TestSetInstallationSuspended() {
 func TestGithubInstallationSuite(t *testing.T) {
 	suite.Run(t, new(GithubInstallationSuite))
 }
+
+func (suite *GithubInstallationSuite) createInstallation(id int64, login string, active, suspended bool) *ent.GithubInstallation {
+	return suite.DB.GithubInstallation.Create().
+		SetID(id).
+		SetGithubAppID(suite.testApp.ID).
+		SetAccountID(id).
+		SetAccountLogin(login).
+		SetAccountType(githubinstallation.AccountTypeUser).
+		SetAccountURL("https://github.com/" + login).
+		SetActive(active).
+		SetSuspended(suspended).
+		SaveX(suite.Ctx)
+}
+
+func (suite *GithubInstallationSuite) TestVisibleInstallations() {
+	suite.createInstallation(2, "gone", false, false)
+	suite.createInstallation(3, "paused", true, true)
+	stranger := suite.DB.User.Create().SetEmail("stranger@example.com").SetPasswordHash("x").SaveX(suite.Ctx)
+
+	all, err := suite.githubRepo.GetVisibleInstallations(suite.Ctx, AppVisibility{UserID: suite.testUser.ID}, false)
+	suite.Require().NoError(err)
+	suite.Len(all, 3)
+
+	usable, err := suite.githubRepo.GetVisibleInstallations(suite.Ctx, AppVisibility{UserID: suite.testUser.ID}, true)
+	suite.Require().NoError(err)
+	suite.Require().Len(usable, 1)
+	suite.Equal(suite.testInstallation.ID, usable[0].ID)
+	suite.NotNil(usable[0].Edges.GithubApp)
+
+	none, err := suite.githubRepo.GetVisibleInstallations(suite.Ctx, AppVisibility{UserID: stranger.ID}, false)
+	suite.Require().NoError(err)
+	suite.Empty(none)
+
+	_, err = suite.githubRepo.GetVisibleInstallationByID(suite.Ctx, AppVisibility{UserID: stranger.ID}, suite.testInstallation.ID)
+	suite.True(ent.IsNotFound(err))
+
+	visible, err := suite.githubRepo.GetVisibleInstallationByID(suite.Ctx, AppVisibility{UserID: suite.testUser.ID}, suite.testInstallation.ID)
+	suite.Require().NoError(err)
+	suite.Equal(suite.testApp.ID, visible.Edges.GithubApp.ID)
+}
+
+func (suite *GithubInstallationSuite) createService(name string, teamID uuid.UUID, installationID int64) *ent.Service {
+	project := suite.DB.Project.Create().
+		SetKubernetesName(name).
+		SetName(name).
+		SetTeamID(teamID).
+		SetKubernetesSecret(name + "-secret").
+		SaveX(suite.Ctx)
+	env := suite.DB.Environment.Create().
+		SetKubernetesName(name).
+		SetName(name).
+		SetProjectID(project.ID).
+		SetKubernetesSecret(name + "-env-secret").
+		SaveX(suite.Ctx)
+	return suite.DB.Service.Create().
+		SetType(schema.ServiceTypeGithub).
+		SetKubernetesName(name).
+		SetName(name).
+		SetEnvironmentID(env.ID).
+		SetKubernetesSecret(name + "-service-secret").
+		SetGithubInstallationID(installationID).
+		SetGitRepository("repo").
+		SetGitRepositoryOwner("test-org").
+		SaveX(suite.Ctx)
+}
+
+func (suite *GithubInstallationSuite) TestCountServicesByInstallation() {
+	team := suite.DB.Team.Create().SetKubernetesName("t1").SetName("t1").SetNamespace("t1").SetKubernetesSecret("s").SaveX(suite.Ctx)
+	otherTeam := suite.DB.Team.Create().SetKubernetesName("t2").SetName("t2").SetNamespace("t2").SetKubernetesSecret("s").SaveX(suite.Ctx)
+	other := suite.createInstallation(2, "other", true, false)
+	suite.createService("a", team.ID, suite.testInstallation.ID)
+	suite.createService("b", otherTeam.ID, suite.testInstallation.ID)
+	suite.createService("c", team.ID, other.ID)
+
+	counts, err := suite.githubRepo.CountServicesByInstallation(suite.Ctx, []int64{suite.testInstallation.ID, other.ID, 999}, nil)
+	suite.Require().NoError(err)
+	suite.Equal(map[int64]int{suite.testInstallation.ID: 2, other.ID: 1}, counts)
+
+	counts, err = suite.githubRepo.CountServicesByInstallation(suite.Ctx, []int64{suite.testInstallation.ID, other.ID}, &team.ID)
+	suite.Require().NoError(err)
+	suite.Equal(map[int64]int{suite.testInstallation.ID: 1, other.ID: 1}, counts)
+
+	counts, err = suite.githubRepo.CountServicesByInstallation(suite.Ctx, nil, nil)
+	suite.Require().NoError(err)
+	suite.Empty(counts)
+}
+
+func (suite *GithubInstallationSuite) TestDeleteInstallationDetachesServices() {
+	team := suite.DB.Team.Create().SetKubernetesName("t1").SetName("t1").SetNamespace("t1").SetKubernetesSecret("s").SaveX(suite.Ctx)
+	service := suite.createService("a", team.ID, suite.testInstallation.ID)
+
+	suite.Require().NoError(suite.githubRepo.DeleteInstallation(suite.Ctx, suite.testInstallation.ID))
+
+	suite.Nil(suite.DB.Service.GetX(suite.Ctx, service.ID).GithubInstallationID)
+	suite.True(suite.DB.GithubApp.Query().ExistX(suite.Ctx))
+}

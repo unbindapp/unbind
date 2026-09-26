@@ -35,6 +35,8 @@ const (
 	EdgeS3Buckets = "s3_buckets"
 	// EdgeMembers holds the string denoting the members edge name in mutations.
 	EdgeMembers = "members"
+	// EdgeGithubApps holds the string denoting the github_apps edge name in mutations.
+	EdgeGithubApps = "github_apps"
 	// EdgeTeamWebhooks holds the string denoting the team_webhooks edge name in mutations.
 	EdgeTeamWebhooks = "team_webhooks"
 	// Table holds the table name of the team in the database.
@@ -58,6 +60,13 @@ const (
 	// MembersInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	MembersInverseTable = "users"
+	// GithubAppsTable is the table that holds the github_apps relation/edge.
+	GithubAppsTable = "github_apps"
+	// GithubAppsInverseTable is the table name for the GithubApp entity.
+	// It exists in this package in order to avoid circular dependency with the "githubapp" package.
+	GithubAppsInverseTable = "github_apps"
+	// GithubAppsColumn is the table column denoting the github_apps relation/edge.
+	GithubAppsColumn = "team_id"
 	// TeamWebhooksTable is the table that holds the team_webhooks relation/edge.
 	TeamWebhooksTable = "webhooks"
 	// TeamWebhooksInverseTable is the table name for the Webhook entity.
@@ -193,6 +202,20 @@ func ByMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByGithubAppsCount orders the results by github_apps count.
+func ByGithubAppsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newGithubAppsStep(), opts...)
+	}
+}
+
+// ByGithubApps orders the results by github_apps terms.
+func ByGithubApps(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newGithubAppsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByTeamWebhooksCount orders the results by team_webhooks count.
 func ByTeamWebhooksCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -225,6 +248,13 @@ func newMembersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MembersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, MembersTable, MembersPrimaryKey...),
+	)
+}
+func newGithubAppsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(GithubAppsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, GithubAppsTable, GithubAppsColumn),
 	)
 }
 func newTeamWebhooksStep() *sqlgraph.Step {

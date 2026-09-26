@@ -38,6 +38,7 @@ import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { dockerSearchQuery, dockerTagsQuery } from "@/lib/queries/docker";
 import { gitRepositoriesQuery, gitRepositoryQuery } from "@/lib/queries/git";
 import { TServiceShallow } from "@/lib/queries/services";
+import { ApiError } from "@/lib/server/client.gen";
 import {
   gitRepositoryValue,
   parseGitRepositoryValue,
@@ -51,8 +52,9 @@ import {
   MilestoneIcon,
   PackageIcon,
   TagIcon,
+  TriangleAlertIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 type TProps = {
@@ -63,15 +65,8 @@ export default function SourceSection({ service }: TProps) {
   const { isSectionVisible } = useSettingsSectionSearch("source");
   if (!isSectionVisible) return null;
   if (service.type === "github") {
-    if (
-      !service.git_repository_owner ||
-      !service.git_repository ||
-      !service.config.git_branch ||
-      service.github_installation_id === undefined
-    ) {
-      return (
-        <ErrorWithWrapper message="Git owner, repository, installation ID, or branch is not found." />
-      );
+    if (!service.git_repository_owner || !service.git_repository || !service.config.git_branch) {
+      return <ErrorWithWrapper message="Git owner, repository, or branch is not found." />;
     }
 
     return (
@@ -116,7 +111,10 @@ function formatRepository(value: string) {
 function GitSection({ owner, repo, branch, installationId, service }: TGitSectionProps) {
   const { isItemVisible } = useSettingsSectionSearch("source");
   const queryClient = useQueryClient();
-  const serverRepository = gitRepositoryValue({ installationId, owner, name: repo });
+  const isConnectionRemoved = installationId === undefined;
+  const serverRepository = isConnectionRemoved
+    ? ""
+    : gitRepositoryValue({ installationId, owner, name: repo });
   const serverAutoDeploy = service.config.auto_deploy;
   const { staged, stage, unstage } = useServiceChanges(service, {
     gitRepository: serverRepository,
@@ -125,9 +123,9 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
   });
   const stagedRef = useRef(staged);
   stagedRef.current = staged;
-  const selectedRepository = parseGitRepositoryValue(
-    stagedString(staged.gitRepository, serverRepository),
-  ) ?? { installationId, owner, name: repo };
+  const selectedRepository =
+    parseGitRepositoryValue(stagedString(staged.gitRepository, serverRepository)) ??
+    (isConnectionRemoved ? undefined : { installationId, owner, name: repo });
 
   const {
     data: dataRepositories,
@@ -137,15 +135,23 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
 
   const {
     data: dataRepository,
-    isPending: isPendingRepository,
+    isPending: isPendingRepositoryQuery,
     error: errorRepository,
-  } = useQuery(
-    gitRepositoryQuery({
-      installationId: selectedRepository.installationId,
-      owner: selectedRepository.owner,
-      repoName: selectedRepository.name,
+  } = useQuery({
+    ...gitRepositoryQuery({
+      installationId: selectedRepository?.installationId ?? 0,
+      owner: selectedRepository?.owner ?? owner,
+      repoName: selectedRepository?.name ?? repo,
     }),
-  );
+    enabled: selectedRepository !== undefined,
+  });
+  const isPendingRepository = selectedRepository !== undefined && isPendingRepositoryQuery;
+  // The API answers 404 for an installation the viewer cannot see
+  const isConnectionNotShared =
+    !isConnectionRemoved &&
+    staged.gitRepository === undefined &&
+    errorRepository instanceof ApiError &&
+    errorRepository.status === 404;
 
   const defaultValues = {
     repository: stagedString(staged.gitRepository, serverRepository),
@@ -263,6 +269,17 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       isApplying={hasApplying(staged, fields)}
       onDiscard={() => unstage(fields)}
     >
+      {isConnectionRemoved && (
+        <SourceNotice>
+          The GitHub connection this service used was removed. Pick a repository to connect it
+          again.
+        </SourceNotice>
+      )}
+      {isConnectionNotShared && (
+        <SourceNotice>
+          This repository comes from a GitHub connection that is not shared with you.
+        </SourceNotice>
+      )}
       {showRepository && (
         <Block>
           <form.AppField
@@ -272,7 +289,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                 <BlockItemHeader>
                   <BlockItemTitle>Repository</BlockItemTitle>
                   <SuffixExternalLink
-                    href={`https://github.com/${selectedRepository.owner}/${selectedRepository.name}`}
+                    href={`https://github.com/${selectedRepository?.owner ?? owner}/${selectedRepository?.name ?? repo}`}
                     label="Open repository on GitHub"
                   />
                 </BlockItemHeader>
@@ -298,7 +315,11 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
                     {({ isOpen }) => (
                       <BlockItemButtonLike
                         asElement="button"
-                        text={formatRepository(field.state.value)}
+                        text={
+                          field.state.value
+                            ? formatRepository(field.state.value)
+                            : `${owner}/${repo}`
+                        }
                         Icon={({ className, hasChanges }) => (
                           <BrandIcon
                             brand="github"
@@ -383,6 +404,15 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
 
 function autoDeployLabel(value: boolean) {
   return value ? "On" : "Off";
+}
+
+function SourceNotice({ children }: { children: ReactNode }) {
+  return (
+    <div className="bg-warning/3-10 text-warning flex w-full items-start gap-1.5 rounded-md px-3 py-2 text-sm font-medium">
+      <TriangleAlertIcon className="mt-px size-4 shrink-0" />
+      <p className="min-w-0 flex-1 leading-tight">{children}</p>
+    </div>
+  );
 }
 
 function DockerImageSection({ image, tag, service }: TDockerImageSectionProps) {

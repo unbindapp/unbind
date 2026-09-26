@@ -15,6 +15,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 )
 
@@ -58,6 +59,26 @@ func (_u *GithubAppUpdate) ClearCreatedBy() *GithubAppUpdate {
 	return _u
 }
 
+// SetTeamID sets the "team_id" field.
+func (_u *GithubAppUpdate) SetTeamID(v uuid.UUID) *GithubAppUpdate {
+	_u.mutation.SetTeamID(v)
+	return _u
+}
+
+// SetNillableTeamID sets the "team_id" field if the given value is not nil.
+func (_u *GithubAppUpdate) SetNillableTeamID(v *uuid.UUID) *GithubAppUpdate {
+	if v != nil {
+		_u.SetTeamID(*v)
+	}
+	return _u
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (_u *GithubAppUpdate) ClearTeamID() *GithubAppUpdate {
+	_u.mutation.ClearTeamID()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *GithubAppUpdate) SetName(v string) *GithubAppUpdate {
 	_u.mutation.SetName(v)
@@ -69,6 +90,46 @@ func (_u *GithubAppUpdate) SetNillableName(v *string) *GithubAppUpdate {
 	if v != nil {
 		_u.SetName(*v)
 	}
+	return _u
+}
+
+// SetOwnerLogin sets the "owner_login" field.
+func (_u *GithubAppUpdate) SetOwnerLogin(v string) *GithubAppUpdate {
+	_u.mutation.SetOwnerLogin(v)
+	return _u
+}
+
+// SetNillableOwnerLogin sets the "owner_login" field if the given value is not nil.
+func (_u *GithubAppUpdate) SetNillableOwnerLogin(v *string) *GithubAppUpdate {
+	if v != nil {
+		_u.SetOwnerLogin(*v)
+	}
+	return _u
+}
+
+// ClearOwnerLogin clears the value of the "owner_login" field.
+func (_u *GithubAppUpdate) ClearOwnerLogin() *GithubAppUpdate {
+	_u.mutation.ClearOwnerLogin()
+	return _u
+}
+
+// SetOwnerType sets the "owner_type" field.
+func (_u *GithubAppUpdate) SetOwnerType(v githubapp.OwnerType) *GithubAppUpdate {
+	_u.mutation.SetOwnerType(v)
+	return _u
+}
+
+// SetNillableOwnerType sets the "owner_type" field if the given value is not nil.
+func (_u *GithubAppUpdate) SetNillableOwnerType(v *githubapp.OwnerType) *GithubAppUpdate {
+	if v != nil {
+		_u.SetOwnerType(*v)
+	}
+	return _u
+}
+
+// ClearOwnerType clears the value of the "owner_type" field.
+func (_u *GithubAppUpdate) ClearOwnerType() *GithubAppUpdate {
+	_u.mutation.ClearOwnerType()
 	return _u
 }
 
@@ -162,6 +223,11 @@ func (_u *GithubAppUpdate) SetUsers(v *User) *GithubAppUpdate {
 	return _u.SetUsersID(v.ID)
 }
 
+// SetTeam sets the "team" edge to the Team entity.
+func (_u *GithubAppUpdate) SetTeam(v *Team) *GithubAppUpdate {
+	return _u.SetTeamID(v.ID)
+}
+
 // Mutation returns the GithubAppMutation object of the builder.
 func (_u *GithubAppUpdate) Mutation() *GithubAppMutation {
 	return _u.mutation
@@ -191,6 +257,12 @@ func (_u *GithubAppUpdate) RemoveInstallations(v ...*GithubInstallation) *Github
 // ClearUsers clears the "users" edge to the User entity.
 func (_u *GithubAppUpdate) ClearUsers() *GithubAppUpdate {
 	_u.mutation.ClearUsers()
+	return _u
+}
+
+// ClearTeam clears the "team" edge to the Team entity.
+func (_u *GithubAppUpdate) ClearTeam() *GithubAppUpdate {
+	_u.mutation.ClearTeam()
 	return _u
 }
 
@@ -237,6 +309,11 @@ func (_u *GithubAppUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.OwnerType(); ok {
+		if err := githubapp.OwnerTypeValidator(v); err != nil {
+			return &ValidationError{Name: "owner_type", err: fmt.Errorf(`ent: validator failed for field "GithubApp.owner_type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -263,6 +340,18 @@ func (_u *GithubAppUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OwnerLogin(); ok {
+		_spec.SetField(githubapp.FieldOwnerLogin, field.TypeString, value)
+	}
+	if _u.mutation.OwnerLoginCleared() {
+		_spec.ClearField(githubapp.FieldOwnerLogin, field.TypeString)
+	}
+	if value, ok := _u.mutation.OwnerType(); ok {
+		_spec.SetField(githubapp.FieldOwnerType, field.TypeEnum, value)
+	}
+	if _u.mutation.OwnerTypeCleared() {
+		_spec.ClearField(githubapp.FieldOwnerType, field.TypeEnum)
 	}
 	if value, ok := _u.mutation.ClientID(); ok {
 		_spec.SetField(githubapp.FieldClientID, field.TypeString, value)
@@ -350,6 +439,35 @@ func (_u *GithubAppUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.TeamCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   githubapp.TeamTable,
+			Columns: []string{githubapp.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   githubapp.TeamTable,
+			Columns: []string{githubapp.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -398,6 +516,26 @@ func (_u *GithubAppUpdateOne) ClearCreatedBy() *GithubAppUpdateOne {
 	return _u
 }
 
+// SetTeamID sets the "team_id" field.
+func (_u *GithubAppUpdateOne) SetTeamID(v uuid.UUID) *GithubAppUpdateOne {
+	_u.mutation.SetTeamID(v)
+	return _u
+}
+
+// SetNillableTeamID sets the "team_id" field if the given value is not nil.
+func (_u *GithubAppUpdateOne) SetNillableTeamID(v *uuid.UUID) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetTeamID(*v)
+	}
+	return _u
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (_u *GithubAppUpdateOne) ClearTeamID() *GithubAppUpdateOne {
+	_u.mutation.ClearTeamID()
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *GithubAppUpdateOne) SetName(v string) *GithubAppUpdateOne {
 	_u.mutation.SetName(v)
@@ -409,6 +547,46 @@ func (_u *GithubAppUpdateOne) SetNillableName(v *string) *GithubAppUpdateOne {
 	if v != nil {
 		_u.SetName(*v)
 	}
+	return _u
+}
+
+// SetOwnerLogin sets the "owner_login" field.
+func (_u *GithubAppUpdateOne) SetOwnerLogin(v string) *GithubAppUpdateOne {
+	_u.mutation.SetOwnerLogin(v)
+	return _u
+}
+
+// SetNillableOwnerLogin sets the "owner_login" field if the given value is not nil.
+func (_u *GithubAppUpdateOne) SetNillableOwnerLogin(v *string) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetOwnerLogin(*v)
+	}
+	return _u
+}
+
+// ClearOwnerLogin clears the value of the "owner_login" field.
+func (_u *GithubAppUpdateOne) ClearOwnerLogin() *GithubAppUpdateOne {
+	_u.mutation.ClearOwnerLogin()
+	return _u
+}
+
+// SetOwnerType sets the "owner_type" field.
+func (_u *GithubAppUpdateOne) SetOwnerType(v githubapp.OwnerType) *GithubAppUpdateOne {
+	_u.mutation.SetOwnerType(v)
+	return _u
+}
+
+// SetNillableOwnerType sets the "owner_type" field if the given value is not nil.
+func (_u *GithubAppUpdateOne) SetNillableOwnerType(v *githubapp.OwnerType) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetOwnerType(*v)
+	}
+	return _u
+}
+
+// ClearOwnerType clears the value of the "owner_type" field.
+func (_u *GithubAppUpdateOne) ClearOwnerType() *GithubAppUpdateOne {
+	_u.mutation.ClearOwnerType()
 	return _u
 }
 
@@ -502,6 +680,11 @@ func (_u *GithubAppUpdateOne) SetUsers(v *User) *GithubAppUpdateOne {
 	return _u.SetUsersID(v.ID)
 }
 
+// SetTeam sets the "team" edge to the Team entity.
+func (_u *GithubAppUpdateOne) SetTeam(v *Team) *GithubAppUpdateOne {
+	return _u.SetTeamID(v.ID)
+}
+
 // Mutation returns the GithubAppMutation object of the builder.
 func (_u *GithubAppUpdateOne) Mutation() *GithubAppMutation {
 	return _u.mutation
@@ -531,6 +714,12 @@ func (_u *GithubAppUpdateOne) RemoveInstallations(v ...*GithubInstallation) *Git
 // ClearUsers clears the "users" edge to the User entity.
 func (_u *GithubAppUpdateOne) ClearUsers() *GithubAppUpdateOne {
 	_u.mutation.ClearUsers()
+	return _u
+}
+
+// ClearTeam clears the "team" edge to the Team entity.
+func (_u *GithubAppUpdateOne) ClearTeam() *GithubAppUpdateOne {
+	_u.mutation.ClearTeam()
 	return _u
 }
 
@@ -590,6 +779,11 @@ func (_u *GithubAppUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.OwnerType(); ok {
+		if err := githubapp.OwnerTypeValidator(v); err != nil {
+			return &ValidationError{Name: "owner_type", err: fmt.Errorf(`ent: validator failed for field "GithubApp.owner_type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -633,6 +827,18 @@ func (_u *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, er
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.OwnerLogin(); ok {
+		_spec.SetField(githubapp.FieldOwnerLogin, field.TypeString, value)
+	}
+	if _u.mutation.OwnerLoginCleared() {
+		_spec.ClearField(githubapp.FieldOwnerLogin, field.TypeString)
+	}
+	if value, ok := _u.mutation.OwnerType(); ok {
+		_spec.SetField(githubapp.FieldOwnerType, field.TypeEnum, value)
+	}
+	if _u.mutation.OwnerTypeCleared() {
+		_spec.ClearField(githubapp.FieldOwnerType, field.TypeEnum)
 	}
 	if value, ok := _u.mutation.ClientID(); ok {
 		_spec.SetField(githubapp.FieldClientID, field.TypeString, value)
@@ -713,6 +919,35 @@ func (_u *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TeamCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   githubapp.TeamTable,
+			Columns: []string{githubapp.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   githubapp.TeamTable,
+			Columns: []string{githubapp.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

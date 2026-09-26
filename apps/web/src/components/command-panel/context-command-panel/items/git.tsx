@@ -12,17 +12,25 @@ import { useUniqueServiceName } from "@/components/service/use-unique-service-na
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
+import { connectGitHub, githubConnectedPath } from "@/components/git/connect-github";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { getGoClient } from "@/lib/server/client";
-import { gitRepositoriesQuery, type TGitRepository } from "@/lib/queries/git";
-import { isSystemEditor, meQuery } from "@/lib/queries/me";
+import { gitRepositoriesQuery, queryKeyGitApps, type TGitRepository } from "@/lib/queries/git";
+import { teamQuery } from "@/lib/queries/teams";
 import {
   createService as createServiceFn,
   type TBuilderEnum,
   type TGitServiceBuilder,
 } from "@/lib/queries/services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BuildingIcon, CogIcon, HourglassIcon, UnplugIcon, UserIcon } from "lucide-react";
+import {
+  BuildingIcon,
+  CogIcon,
+  HourglassIcon,
+  LockIcon,
+  UnplugIcon,
+  UserIcon,
+  UsersIcon,
+} from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { v4 as uuidv4 } from "uuid";
 import { useCallback, useMemo } from "react";
@@ -178,107 +186,115 @@ function useGitItem({ context }: TProps) {
     [createServiceWithName, getUniqueServiceName],
   );
 
-  const gitHubRedirectPathname = `/${teamId}/connect-git/connected/github`;
   const queryClient = useQueryClient();
-  const { data: me } = useQuery(meQuery);
-  const canConnectGitHub = isSystemEditor(me);
+  const { data: teamData } = useQuery(teamQuery({ teamId }));
+  const teamName = teamData?.team.name ?? "this team";
   const clearInputValue = useCommandPanelStore((s) => s.clearInputValue);
 
-  const { mutateAsync: createGitHubAppMutate } = useMutation({
-    mutationFn: async ({
-      redirectUrl,
-      organizationName,
-      onSuccess,
-    }: {
-      redirectUrl: string;
-      organizationName?: string;
-      onSuccess: () => void;
-    }) =>
-      createGitHubApp({
-        redirectUrl,
-        organizationName,
-        onSuccess,
-      }),
-    mutationKey: ["create-github-app", { teamId }],
+  const { mutateAsync: connectGitHubMutate } = useMutation({
+    mutationFn: connectGitHub,
+    mutationKey: ["connect-github", { teamId }],
   });
 
   const item: TCommandPanelItem = useMemo(() => {
-    const configureGitHubItem: TCommandPanelItem = {
-      id: "git_configure_github",
-      title: "Configure GitHub App",
-      keywords: ["connect", "configure", "github", "gitlab", "bitbucket"],
-      Icon: CogIcon,
-      subpage: {
-        id: "git_configure_github_options",
+    const connected = ({ setCurrentPageId }: { setCurrentPageId: (id: string) => void }) => {
+      const environmentId = environmentIdFromPathname || defaultEnvironmentId;
+      if (!environmentId) {
+        return;
+      }
+      const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
+        getContextCommandPaneItemsQueryKey({
+          teamId,
+          projectId,
+          context,
+          hasItems: false,
+          searchKey: null,
+          pageId: subpageId,
+          triggerType,
+          environmentId,
+        }),
+      );
+      queryClient.resetQueries({ queryKey: gitRepositoriesQuery().queryKey });
+      queryClient.invalidateQueries({ queryKey: queryKeyGitApps.all() });
+      queryKeys.forEach((queryKey) => {
+        queryClient.resetQueries({ queryKey });
+      });
+      setCurrentPageId(subpageId);
+      toast.add({
+        type: "success",
+        title: "GitHub connected",
+        description: "You can pick its repositories now.",
+        timeout: 5000,
+      });
+    };
+
+    const connect = async ({
+      pendingId,
+      share,
+      organizationName,
+      setCurrentPageId,
+      onSuccess,
+    }: {
+      pendingId: string;
+      share: boolean;
+      organizationName?: string;
+      setCurrentPageId: (id: string) => void;
+      onSuccess?: () => void;
+    }) => {
+      setIsPendingId(pendingId);
+      const res = await ResultAsync.fromPromise(
+        connectGitHubMutate({
+          redirectUrl: window.location.origin + githubConnectedPath(teamId),
+          organizationName,
+          teamId: share ? teamId : undefined,
+          onSuccess: () => {
+            onSuccess?.();
+            connected({ setCurrentPageId });
+          },
+        }),
+        () => new Error("Failed to create GitHub app"),
+      );
+      if (res.isErr()) {
+        toast.add({
+          type: "error",
+          title: "Failed to create GitHub app",
+          description: res.error.message,
+        });
+      }
+      setIsPendingId(null);
+    };
+
+    // The account type page exists once per sharing choice, so every page id stays unique
+    const accountTypePage = (share: boolean) => {
+      const scope = share ? "team" : "me";
+      const pageId = `git_configure_github_${scope}_account_type`;
+      const organizationPageId = `git_configure_github_${scope}_organization`;
+      return {
+        id: pageId,
         title: "GitHub App",
         inputPlaceholder: "Select GitHub account type...",
-        parentPageId: subpageId,
+        parentPageId: "git_configure_github_sharing",
         items: [
           {
-            id: "git_configure_github_options_personal",
+            id: `${pageId}_personal`,
             keywords: ["personal", "github"],
             title: "Personal",
             Icon: UserIcon,
             onSelect: async ({ isPendingId, setCurrentPageId }) => {
               if (isPendingId !== null) return;
-              setIsPendingId("git_configure_github_options_personal");
-              const res = await ResultAsync.fromPromise(
-                createGitHubAppMutate({
-                  redirectUrl: window.location.origin + gitHubRedirectPathname,
-                  onSuccess: () => {
-                    const environmentId = environmentIdFromPathname || defaultEnvironmentId;
-                    if (!environmentId) {
-                      return;
-                    }
-                    const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
-                      getContextCommandPaneItemsQueryKey({
-                        teamId,
-                        projectId,
-                        context,
-                        hasItems: false,
-                        searchKey: null,
-                        pageId: subpageId,
-                        triggerType,
-                        environmentId,
-                      }),
-                    );
-                    queryClient.resetQueries({ queryKey: gitRepositoriesQuery().queryKey });
-                    queryKeys.forEach((queryKey) => {
-                      queryClient.resetQueries({ queryKey });
-                    });
-                    setCurrentPageId(subpageId);
-                    toast.add({
-                      type: "success",
-                      title: "GitHub app connected",
-                      description: "GitHub app has been connected successfully.",
-                      timeout: 5000,
-                    });
-                  },
-                }),
-                () => new Error("Failed to create GitHub app"),
-              );
-              if (res.isErr()) {
-                toast.add({
-                  type: "error",
-                  title: "Failed to create GitHub app",
-                  description: res.error.message,
-                });
-                setIsPendingId(null);
-                return;
-              }
-              setIsPendingId(null);
+              await connect({ pendingId: `${pageId}_personal`, share, setCurrentPageId });
             },
           },
           {
-            id: "git_configure_github_options_organization",
+            id: `${pageId}_organization`,
             keywords: ["organization", "github"],
             title: "Organization",
             Icon: BuildingIcon,
             subpage: {
-              id: "git_configure_github_options_organization_enter_name",
+              id: organizationPageId,
               title: "GitHub Organization",
               inputPlaceholder: "Organization name",
-              parentPageId: "git_configure_github_options",
+              parentPageId: pageId,
               disableCommandFilter: true,
               setSearchDebounceMs: 50,
               InputIcon: BuildingIcon,
@@ -288,75 +304,59 @@ function useGitItem({ context }: TProps) {
                   ? []
                   : [
                       {
-                        id: "git_configure_github_options_organization_connect",
+                        id: `${organizationPageId}_connect`,
                         title: search ? `Connect "${search}"` : "Enter organization name",
                         Icon: !search ? HourglassIcon : UnplugIcon,
                         keywords: ["connect", "organization", "github"],
                         disabled: !search,
                         onSelect: async ({ isPendingId, setCurrentPageId }) => {
                           if (isPendingId !== null) return;
-                          setIsPendingId("git_configure_github_options_organization_connect");
-                          const res = await ResultAsync.fromPromise(
-                            createGitHubAppMutate({
-                              redirectUrl: window.location.origin + gitHubRedirectPathname,
-                              organizationName: search,
-                              onSuccess: () => {
-                                const environmentId =
-                                  environmentIdFromPathname || defaultEnvironmentId;
-                                if (!environmentId) {
-                                  return;
-                                }
-                                const queryKeys = TriggerTypeEnum.options.map((triggerType) =>
-                                  getContextCommandPaneItemsQueryKey({
-                                    teamId,
-                                    projectId,
-                                    context,
-                                    hasItems: false,
-                                    searchKey: null,
-                                    pageId: subpageId,
-                                    triggerType,
-                                    environmentId,
-                                  }),
-                                );
-                                queryClient.resetQueries({
-                                  queryKey: gitRepositoriesQuery().queryKey,
-                                });
-                                queryKeys.forEach((queryKey) => {
-                                  queryClient.resetQueries({ queryKey });
-                                });
-                                clearInputValue(
-                                  "git_configure_github_options_organization_enter_name",
-                                );
-                                setCurrentPageId(subpageId);
-                                toast.add({
-                                  type: "success",
-                                  title: "GitHub app connected",
-                                  description: "GitHub app has been connected successfully.",
-                                  timeout: 5000,
-                                });
-                              },
-                            }),
-                            () => new Error("Failed to create GitHub app"),
-                          );
-                          if (res.isErr()) {
-                            toast.add({
-                              type: "error",
-                              title: "Failed to create GitHub app",
-                              description: res.error.message,
-                            });
-                            setIsPendingId(null);
-                            return;
-                          }
-                          setIsPendingId(null);
+                          await connect({
+                            pendingId: `${organizationPageId}_connect`,
+                            share,
+                            organizationName: search,
+                            setCurrentPageId,
+                            onSuccess: () => clearInputValue(organizationPageId),
+                          });
                         },
                       },
                     ],
             },
           },
         ],
+      } satisfies TCommandPanelItem["subpage"];
+    };
+
+    const configureGitHubItem: TCommandPanelItem = {
+      id: "git_configure_github",
+      title: "Configure GitHub App",
+      keywords: ["connect", "configure", "github", "gitlab", "bitbucket"],
+      Icon: CogIcon,
+      subpage: {
+        id: "git_configure_github_sharing",
+        title: "Who can see the repositories?",
+        inputPlaceholder: "Who can see the repositories?",
+        parentPageId: subpageId,
+        items: [
+          {
+            id: "git_configure_github_sharing_me",
+            keywords: ["only me", "private", "github"],
+            title: "Only me",
+            description: "Only you can pick these repositories.",
+            Icon: LockIcon,
+            subpage: accountTypePage(false),
+          },
+          {
+            id: "git_configure_github_sharing_team",
+            keywords: ["team", "share", "github"],
+            title: "This team",
+            description: `Members of ${teamName} can pick them too.`,
+            Icon: UsersIcon,
+            subpage: accountTypePage(true),
+          },
+        ],
       },
     };
-    const itemsPinned = canConnectGitHub ? [configureGitHubItem] : [];
 
     return {
       id: mainPageId,
@@ -370,7 +370,7 @@ function useGitItem({ context }: TProps) {
         title: "GitHub Repos",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Deploy from GitHub...",
-        itemsPinned,
+        itemsPinned: [configureGitHubItem],
         getItemsAsync: async () => {
           const res = await queryClient.fetchQuery(gitRepositoriesQuery());
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
@@ -397,15 +397,14 @@ function useGitItem({ context }: TProps) {
     queryClient,
     createService,
     setIsPendingId,
-    createGitHubAppMutate,
-    gitHubRedirectPathname,
+    connectGitHubMutate,
     defaultEnvironmentId,
     environmentIdFromPathname,
     teamId,
+    teamName,
     projectId,
     context,
     clearInputValue,
-    canConnectGitHub,
   ]);
 
   const value = useMemo(
@@ -416,102 +415,4 @@ function useGitItem({ context }: TProps) {
   );
 
   return value;
-}
-
-async function createGitHubApp({
-  redirectUrl,
-  onSuccess,
-  organizationName,
-}: {
-  redirectUrl: string;
-  onSuccess: () => void;
-  organizationName?: string;
-}) {
-  const width = 800;
-  const height = 600;
-  const left = (window.screen.width - width) / 2;
-  const top = (window.screen.height - height) / 2;
-  const svg = `<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader"><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>`;
-  const popup = window.open(
-    "",
-    "GitHubAuth",
-    `width=${width},height=${height},top=${top},left=${left}`,
-  );
-
-  if (!popup) {
-    toast.add({ type: "error", title: "Popup was blocked. Please allow popups for this site." });
-    return;
-  }
-
-  const messageHandler = (event: MessageEvent) => {
-    if (event.origin !== window.location.origin) return;
-    if (event.data && event.data.success === true) {
-      clearInterval(interval);
-      onSuccess();
-      window.removeEventListener("message", messageHandler);
-      popup.close();
-    }
-  };
-
-  window.addEventListener("message", messageHandler);
-
-  popup.document.write(`
-    <html>
-      <title>Connect GitHub</title>
-      <head>
-        <style>
-          body {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-          }
-          .loader-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding-bottom: calc(1rem + 4vh);
-          }
-          .loader {
-            width: 2rem;
-            height: 2rem;
-            animation: spin 1s linear infinite;
-          }
-          .icon {
-            width: 100%;
-            height: 100%;
-          }
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        </style>
-      </head>
-      <body>
-        <div class="loader-container">
-          <div class="loader">
-            ${svg}
-          </div>
-        </div>
-      </body>
-    </html>
-  `);
-
-  const abortController = new AbortController();
-
-  const interval = setInterval(() => {
-    if (popup.closed) {
-      clearInterval(interval);
-      abortController.abort();
-    }
-  }, 250);
-
-  const goClient = getGoClient();
-
-  const res = await goClient.github.app.create(
-    { redirect_url: redirectUrl, organization: organizationName },
-    { signal: abortController.signal },
-  );
-  popup.document.write(res.data);
 }

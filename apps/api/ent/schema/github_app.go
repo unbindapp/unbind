@@ -37,9 +37,20 @@ func (GithubApp) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Comment("The user that created this github app."),
+		field.UUID("team_id", uuid.UUID{}).
+			Optional().
+			Nillable().
+			Comment("The team whose members can use this app, unset when only the creator can"),
 		field.String("name").
 			NotEmpty().
 			Comment("Name of the GitHub App"),
+		field.String("owner_login").
+			Optional().
+			Comment("The GitHub account that owns the app"),
+		field.Enum("owner_type").
+			Values("Organization", "User").
+			Optional().
+			Comment("Whether an organization or a user owns the app"),
 		field.String("client_id").
 			Comment("OAuth client ID of the GitHub App"),
 		field.String("client_secret").
@@ -66,6 +77,11 @@ func (GithubApp) Edges() []ent.Edge {
 		edge.From("users", User.Type).
 			Ref("created_by").
 			Field("created_by").
+			Unique(),
+		// M2O with teams
+		edge.From("team", Team.Type).
+			Ref("github_apps").
+			Field("team_id").
 			Unique(),
 	}
 }

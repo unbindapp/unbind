@@ -140,7 +140,7 @@ func init() {
 	// githubapp.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	githubapp.UpdateDefaultUpdatedAt = githubappDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// githubappDescName is the schema descriptor for name field.
-	githubappDescName := githubappFields[3].Descriptor()
+	githubappDescName := githubappFields[4].Descriptor()
 	// githubapp.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	githubapp.NameValidator = githubappDescName.Validators[0].(func(string) error)
 	// githubappDescID is the schema descriptor for id field.

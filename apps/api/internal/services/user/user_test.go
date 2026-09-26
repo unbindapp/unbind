@@ -150,6 +150,7 @@ func (suite *UserServiceSuite) TestDeleteUser() {
 	suite.Run("Success", func() {
 		suite.MockPermissionsRepo.EXPECT().Check(suite.Ctx, suite.requesterID, mock.Anything).Return(nil).Once()
 		suite.MockUserRepo.EXPECT().GetByID(suite.Ctx, suite.targetID).Return(suite.targetUser, nil).Once()
+		suite.MockGithubRepo.EXPECT().DeletePrivateAppsByCreator(suite.Ctx, suite.targetID).Return(1, nil).Once()
 		suite.MockUserRepo.EXPECT().Delete(suite.Ctx, suite.targetID).Return(nil).Once()
 
 		err := suite.service.DeleteUser(suite.Ctx, suite.requesterID, suite.targetID)

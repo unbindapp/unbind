@@ -19,7 +19,12 @@ type GithubRepositoryListResponse struct {
 }
 
 func (self *HandlerGroup) HandleListGithubRepositories(ctx context.Context, input *server.BaseAuthInput) (*GithubRepositoryListResponse, error) {
-	installations, err := self.srv.Repository.Github().GetInstallations(ctx)
+	_, visibility, err := self.visibility(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	installations, err := self.srv.Repository.Github().GetVisibleInstallations(ctx, visibility, true)
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub installation"))
 	}
@@ -58,8 +63,12 @@ type GithubRepositoryDetailResponse struct {
 }
 
 func (self *HandlerGroup) HandleGetGithubRepositoryDetail(ctx context.Context, input *GithubRepositoryDetailInput) (*GithubRepositoryDetailResponse, error) {
-	installationID := input.InstallationID
-	installation, err := self.srv.Repository.Github().GetInstallationByID(ctx, installationID)
+	_, visibility, err := self.visibility(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	installation, err := self.srv.Repository.Github().GetVisibleInstallationByID(ctx, visibility, input.InstallationID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, huma.Error404NotFound("GitHub installation not found")
@@ -98,7 +107,12 @@ type GithubWatchPathSuggestionsResponse struct {
 }
 
 func (self *HandlerGroup) HandleGetGithubWatchPathSuggestions(ctx context.Context, input *GithubWatchPathSuggestionsInput) (*GithubWatchPathSuggestionsResponse, error) {
-	installation, err := self.srv.Repository.Github().GetInstallationByID(ctx, input.InstallationID)
+	_, visibility, err := self.visibility(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	installation, err := self.srv.Repository.Github().GetVisibleInstallationByID(ctx, visibility, input.InstallationID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, huma.Error404NotFound("GitHub installation not found")

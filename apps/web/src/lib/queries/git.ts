@@ -1,7 +1,11 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import { getGoClient } from "@/lib/server/client";
-import type { GithubRepositoryListResponseBody } from "@/lib/server/client.gen";
+import type {
+  GithubAppAPIResponse,
+  GithubInstallationAPIResponse,
+  GithubRepositoryListResponseBody,
+} from "@/lib/server/client.gen";
 
 export type TGitRepository = GithubRepositoryListResponseBody["data"][number];
 
@@ -79,3 +83,61 @@ export const gitWatchPathSuggestionsQuery = (input: {
       return res.data;
     },
   });
+
+// ---- GitHub connections ----
+
+export type TGitApp = GithubAppAPIResponse;
+export type TGitInstallation = GithubInstallationAPIResponse;
+
+export type TGitAppsFilter = { owned: true; teamId?: never } | { owned?: never; teamId: string };
+
+export const queryKeyGitApps = {
+  all: () => ["git", "apps"] as const,
+  list: (filter: TGitAppsFilter) =>
+    ["git", "apps", filter.owned ? "owned" : "team", filter.teamId ?? ""] as const,
+};
+
+export const gitAppsQuery = (filter: TGitAppsFilter) =>
+  queryOptions({
+    queryKey: queryKeyGitApps.list(filter),
+    queryFn: async () => {
+      const res = await getGoClient().github.apps({ owned: filter.owned, team_id: filter.teamId });
+      return { apps: res.data };
+    },
+  });
+
+export async function setGitAppTeam(input: { uuid: string; teamId: string | null }) {
+  const res = await getGoClient().github.app.team({ uuid: input.uuid, team_id: input.teamId });
+  return { app: res.data };
+}
+
+export async function deleteGitApp(input: { uuid: string }) {
+  const res = await getGoClient().github.app.delete({ uuid: input.uuid });
+  return { data: res.data };
+}
+
+export async function deleteGitInstallation(input: { installationId: number }) {
+  const res = await getGoClient().github.installation.delete({
+    installation_id: input.installationId,
+  });
+  return { data: res.data };
+}
+
+// The app is created on GitHub, so its name is the slug GitHub links use
+export function gitAppInstallUrl(app: TGitApp) {
+  return `https://github.com/apps/${encodeURIComponent(app.name)}/installations/new`;
+}
+
+export function gitAppSettingsUrl(app: TGitApp) {
+  if (app.owner_type === "Organization" && app.owner_login) {
+    return `https://github.com/organizations/${encodeURIComponent(app.owner_login)}/settings/apps/${encodeURIComponent(app.name)}`;
+  }
+  return `https://github.com/settings/apps/${encodeURIComponent(app.name)}`;
+}
+
+export function gitInstallationSettingsUrl(installation: TGitInstallation) {
+  if (installation.account_type === "Organization") {
+    return `https://github.com/organizations/${encodeURIComponent(installation.account_login)}/settings/installations/${installation.id}`;
+  }
+  return `https://github.com/settings/installations/${installation.id}`;
+}

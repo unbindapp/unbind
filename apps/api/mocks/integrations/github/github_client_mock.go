@@ -10,6 +10,7 @@ import (
 	github0 "github.com/google/go-github/v69/github"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
 )
@@ -384,6 +385,141 @@ func (_c *GithubClientMock_CreateAppManifest_Call) Return(manifest *github.GitHu
 }
 
 func (_c *GithubClientMock_CreateAppManifest_Call) RunAndReturn(run func(redirectUrl string, setupUrl string, forOrganization bool) (*github.GitHubAppManifest, string, error)) *GithubClientMock_CreateAppManifest_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteInstallation provides a mock function for the type GithubClientMock
+func (_mock *GithubClientMock) DeleteInstallation(ctx context.Context, app *ent.GithubApp, installationID int64) error {
+	ret := _mock.Called(ctx, app, installationID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteInstallation")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubApp, int64) error); ok {
+		r0 = returnFunc(ctx, app, installationID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubClientMock_DeleteInstallation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteInstallation'
+type GithubClientMock_DeleteInstallation_Call struct {
+	*mock.Call
+}
+
+// DeleteInstallation is a helper method to define mock.On call
+//   - ctx context.Context
+//   - app *ent.GithubApp
+//   - installationID int64
+func (_e *GithubClientMock_Expecter) DeleteInstallation(ctx any, app any, installationID any) *GithubClientMock_DeleteInstallation_Call {
+	return &GithubClientMock_DeleteInstallation_Call{Call: _e.mock.On("DeleteInstallation", ctx, app, installationID)}
+}
+
+func (_c *GithubClientMock_DeleteInstallation_Call) Run(run func(ctx context.Context, app *ent.GithubApp, installationID int64)) *GithubClientMock_DeleteInstallation_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *ent.GithubApp
+		if args[1] != nil {
+			arg1 = args[1].(*ent.GithubApp)
+		}
+		var arg2 int64
+		if args[2] != nil {
+			arg2 = args[2].(int64)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubClientMock_DeleteInstallation_Call) Return(err error) *GithubClientMock_DeleteInstallation_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubClientMock_DeleteInstallation_Call) RunAndReturn(run func(ctx context.Context, app *ent.GithubApp, installationID int64) error) *GithubClientMock_DeleteInstallation_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetAppOwner provides a mock function for the type GithubClientMock
+func (_mock *GithubClientMock) GetAppOwner(ctx context.Context, app *ent.GithubApp) (string, githubapp.OwnerType, error) {
+	ret := _mock.Called(ctx, app)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAppOwner")
+	}
+
+	var r0 string
+	var r1 githubapp.OwnerType
+	var r2 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubApp) (string, githubapp.OwnerType, error)); ok {
+		return returnFunc(ctx, app)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.GithubApp) string); ok {
+		r0 = returnFunc(ctx, app)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.GithubApp) githubapp.OwnerType); ok {
+		r1 = returnFunc(ctx, app)
+	} else {
+		r1 = ret.Get(1).(githubapp.OwnerType)
+	}
+	if returnFunc, ok := ret.Get(2).(func(context.Context, *ent.GithubApp) error); ok {
+		r2 = returnFunc(ctx, app)
+	} else {
+		r2 = ret.Error(2)
+	}
+	return r0, r1, r2
+}
+
+// GithubClientMock_GetAppOwner_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAppOwner'
+type GithubClientMock_GetAppOwner_Call struct {
+	*mock.Call
+}
+
+// GetAppOwner is a helper method to define mock.On call
+//   - ctx context.Context
+//   - app *ent.GithubApp
+func (_e *GithubClientMock_Expecter) GetAppOwner(ctx any, app any) *GithubClientMock_GetAppOwner_Call {
+	return &GithubClientMock_GetAppOwner_Call{Call: _e.mock.On("GetAppOwner", ctx, app)}
+}
+
+func (_c *GithubClientMock_GetAppOwner_Call) Run(run func(ctx context.Context, app *ent.GithubApp)) *GithubClientMock_GetAppOwner_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *ent.GithubApp
+		if args[1] != nil {
+			arg1 = args[1].(*ent.GithubApp)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubClientMock_GetAppOwner_Call) Return(login string, ownerType githubapp.OwnerType, err error) *GithubClientMock_GetAppOwner_Call {
+	_c.Call.Return(login, ownerType, err)
+	return _c
+}
+
+func (_c *GithubClientMock_GetAppOwner_Call) RunAndReturn(run func(ctx context.Context, app *ent.GithubApp) (string, githubapp.OwnerType, error)) *GithubClientMock_GetAppOwner_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1125,6 +1261,58 @@ func (_c *GithubClientMock_ReadInstallationRepositories_Call) Return(githubRepos
 
 func (_c *GithubClientMock_ReadInstallationRepositories_Call) RunAndReturn(run func(ctx context.Context, installations []*ent.GithubInstallation) ([]*github.GithubRepository, error)) *GithubClientMock_ReadInstallationRepositories_Call {
 	_c.Call.Return(run)
+	return _c
+}
+
+// SyncAppOwners provides a mock function for the type GithubClientMock
+func (_mock *GithubClientMock) SyncAppOwners(ctx context.Context, apps []*ent.GithubApp, save func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error) {
+	_mock.Called(ctx, apps, save)
+	return
+}
+
+// GithubClientMock_SyncAppOwners_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SyncAppOwners'
+type GithubClientMock_SyncAppOwners_Call struct {
+	*mock.Call
+}
+
+// SyncAppOwners is a helper method to define mock.On call
+//   - ctx context.Context
+//   - apps []*ent.GithubApp
+//   - save func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error
+func (_e *GithubClientMock_Expecter) SyncAppOwners(ctx any, apps any, save any) *GithubClientMock_SyncAppOwners_Call {
+	return &GithubClientMock_SyncAppOwners_Call{Call: _e.mock.On("SyncAppOwners", ctx, apps, save)}
+}
+
+func (_c *GithubClientMock_SyncAppOwners_Call) Run(run func(ctx context.Context, apps []*ent.GithubApp, save func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error)) *GithubClientMock_SyncAppOwners_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 []*ent.GithubApp
+		if args[1] != nil {
+			arg1 = args[1].([]*ent.GithubApp)
+		}
+		var arg2 func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error
+		if args[2] != nil {
+			arg2 = args[2].(func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubClientMock_SyncAppOwners_Call) Return() *GithubClientMock_SyncAppOwners_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *GithubClientMock_SyncAppOwners_Call) RunAndReturn(run func(ctx context.Context, apps []*ent.GithubApp, save func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error)) *GithubClientMock_SyncAppOwners_Call {
+	_c.Run(run)
 	return _c
 }
 

@@ -5,11 +5,13 @@ import (
 	"os"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
+	github_repo "github.com/unbindapp/unbind-api/internal/repositories/github"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer/enum"
 )
@@ -23,12 +25,26 @@ type githubSource struct {
 	defaultBranch string
 }
 
-func (self *ServiceService) verifyGithubRepository(ctx context.Context, installationID int64, owner, repo string) (*githubSource, error) {
-	installation, err := self.repo.Github().GetInstallationByID(ctx, installationID)
+// visibleInstallation loads an installation the requester connected or that is shared with a team they can view
+func (self *ServiceService) visibleInstallation(ctx context.Context, requesterUserID uuid.UUID, installationID int64) (*ent.GithubInstallation, error) {
+	teams, err := self.repo.Permissions().GetAccessibleTeamPredicates(ctx, requesterUserID, schema.ActionViewer)
+	if err != nil {
+		return nil, err
+	}
+	visibility := github_repo.AppVisibility{UserID: requesterUserID, Teams: teams}
+	installation, err := self.repo.Github().GetVisibleInstallationByID(ctx, visibility, installationID)
 	if err != nil {
 		if ent.IsNotFound(err) {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "GitHub installation not found")
 		}
+		return nil, err
+	}
+	return installation, nil
+}
+
+func (self *ServiceService) verifyGithubRepository(ctx context.Context, requesterUserID uuid.UUID, installationID int64, owner, repo string) (*githubSource, error) {
+	installation, err := self.visibleInstallation(ctx, requesterUserID, installationID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -152,7 +168,7 @@ func validateSourceUpdate(serviceType schema.ServiceType, input *models.UpdateSe
 }
 
 // prepareSourceChange verifies a new repository or branch and settles the branch to build from
-func (self *ServiceService) prepareSourceChange(ctx context.Context, service *ent.Service, input *models.UpdateServiceInput) (*githubSource, error) {
+func (self *ServiceService) prepareSourceChange(ctx context.Context, requesterUserID uuid.UUID, service *ent.Service, input *models.UpdateServiceInput) (*githubSource, error) {
 	if input.RepositoryName != nil && sameRepository(service, input) {
 		input.GitHubInstallationID = nil
 		input.RepositoryOwner = nil
@@ -160,7 +176,7 @@ func (self *ServiceService) prepareSourceChange(ctx context.Context, service *en
 	}
 
 	if input.RepositoryName != nil {
-		source, err := self.verifyGithubRepository(ctx, *input.GitHubInstallationID, *input.RepositoryOwner, *input.RepositoryName)
+		source, err := self.verifyGithubRepository(ctx, requesterUserID, *input.GitHubInstallationID, *input.RepositoryOwner, *input.RepositoryName)
 		if err != nil {
 			return nil, err
 		}
@@ -184,11 +200,8 @@ func (self *ServiceService) prepareSourceChange(ctx context.Context, service *en
 	if service.GithubInstallationID == nil || service.GitRepository == nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Service has no repository to pick a branch from")
 	}
-	installation, err := self.repo.Github().GetInstallationByID(ctx, *service.GithubInstallationID)
+	installation, err := self.visibleInstallation(ctx, requesterUserID, *service.GithubInstallationID)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "GitHub installation not found")
-		}
 		return nil, err
 	}
 	source := &githubSource{installation: installation, ownerLogin: installation.AccountLogin, repoName: *service.GitRepository}
