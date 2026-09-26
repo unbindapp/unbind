@@ -232,10 +232,10 @@
   }
   @keyframes border-streak {
     0% {
-      offset-distance: 0%;
+      offset-distance: calc(0% - var(--streak-lag, 0rem));
     }
     100% {
-      offset-distance: 100%;
+      offset-distance: calc(100% - var(--streak-lag, 0rem));
     }
   }
   @keyframes line-in {
