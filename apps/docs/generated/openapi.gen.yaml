@@ -533,6 +533,12 @@ components:
         is_public:
           description: Whether the service is reachable from the internet. Defaults to true for a service with a port and to false for a database
           type: boolean
+        max_request_body_size_mb:
+          description: Largest request body the service's domains accept, in MB. Defaults to 100. Not for databases, and has no effect on clusters that route through a gateway
+          format: int32
+          maximum: 10240
+          minimum: 1
+          type: integer
         name:
           description: Has to be unique in the environment. A taken name gets a short suffix, so read the name from the response
           maxLength: 32
@@ -2787,6 +2793,10 @@ components:
           type: array
         is_public:
           type: boolean
+        max_request_body_size_mb:
+          description: Largest request body the service's domains accept, in MB. Unset uses the default of 100
+          format: int32
+          type: integer
         ports:
           items:
             $ref: "#/components/schemas/PortSpec"
@@ -3971,6 +3981,12 @@ components:
         is_public:
           description: Whether the service is reachable from the internet. A database gets a public address when true and loses it when false
           type: boolean
+        max_request_body_size_mb:
+          description: Largest request body the service's domains accept, in MB. 0 resets it to the default of 100. Not for databases, and has no effect on clusters that route through a gateway
+          format: int32
+          maximum: 10240
+          minimum: 0
+          type: integer
         name:
           description: Has to be unique in the environment
           maxLength: 32

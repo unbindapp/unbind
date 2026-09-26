@@ -105,6 +105,11 @@ type ServiceConfigSpec struct {
 	// Public indicates whether the service is publicly accessible
 	Public bool `json:"public,omitempty"`
 
+	// MaxRequestBodySizeMB caps request bodies on public domains, defaults to 100
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=10240
+	MaxRequestBodySizeMB *int32 `json:"maxRequestBodySizeMb,omitempty"`
+
 	// Image is a custom Docker image if not building from git
 	Image string `json:"image"`
 

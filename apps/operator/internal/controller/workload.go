@@ -183,6 +183,8 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 			ingressNeedsUpdate,
 			func(existing, desired *networkingv1.Ingress) {
 				existing.Spec = desired.Spec
+				existing.Labels = desired.Labels
+				existing.Annotations = desired.Annotations
 			},
 			nil,
 		)
@@ -258,7 +260,9 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 // one to leave the cluster
 func ingressNeedsUpdate(existing, desired *networkingv1.Ingress) bool {
 	return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
-		!slices.Equal(ingressHosts(desired), ingressHosts(existing))
+		!slices.Equal(ingressHosts(desired), ingressHosts(existing)) ||
+		!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels) ||
+		!equality.Semantic.DeepDerivative(desired.Annotations, existing.Annotations)
 }
 
 func ingressHosts(ingress *networkingv1.Ingress) []string {

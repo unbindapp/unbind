@@ -23,9 +23,10 @@ func TestApplyRuntimeConfig(t *testing.T) {
 			{Host: "new.example.com", TargetPort: new(int32(3000))},
 			{Host: "no-port.example.com"},
 		},
-		Ports:    []schema.PortSpec{{Port: 3000}},
-		IsPublic: false,
-		Replicas: 3,
+		Ports:                []schema.PortSpec{{Port: 3000}},
+		IsPublic:             false,
+		Replicas:             3,
+		MaxRequestBodySizeMB: new(int32(500)),
 	}
 
 	ApplyRuntimeConfig(&spec, config)
@@ -34,10 +35,12 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Equal(t, schema.AsV1PortSpecs(config.Ports), spec.Ports)
 	assert.False(t, spec.Public)
 	assert.Equal(t, int32(3), *spec.Replicas)
+	assert.Equal(t, int32(500), *spec.MaxRequestBodySizeMB)
 	assert.Equal(t, "refs/heads/main", spec.GitBranch)
 	assert.Equal(t, "./start", *spec.RunCommand)
 
 	ApplyRuntimeConfig(&spec, &ent.ServiceConfig{Replicas: 1})
 	assert.Empty(t, spec.Hosts)
 	assert.Empty(t, spec.Ports)
+	assert.Nil(t, spec.MaxRequestBodySizeMB)
 }

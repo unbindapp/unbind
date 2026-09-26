@@ -260,6 +260,20 @@ func (_c *ServiceConfigCreate) SetNillableIsPublic(v *bool) *ServiceConfigCreate
 	return _c
 }
 
+// SetMaxRequestBodySizeMB sets the "max_request_body_size_mb" field.
+func (_c *ServiceConfigCreate) SetMaxRequestBodySizeMB(v int32) *ServiceConfigCreate {
+	_c.mutation.SetMaxRequestBodySizeMB(v)
+	return _c
+}
+
+// SetNillableMaxRequestBodySizeMB sets the "max_request_body_size_mb" field if the given value is not nil.
+func (_c *ServiceConfigCreate) SetNillableMaxRequestBodySizeMB(v *int32) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetMaxRequestBodySizeMB(*v)
+	}
+	return _c
+}
+
 // SetImage sets the "image" field.
 func (_c *ServiceConfigCreate) SetImage(v string) *ServiceConfigCreate {
 	_c.mutation.SetImage(v)
@@ -648,6 +662,10 @@ func (_c *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.IsPublic(); ok {
 		_spec.SetField(serviceconfig.FieldIsPublic, field.TypeBool, value)
 		_node.IsPublic = value
+	}
+	if value, ok := _c.mutation.MaxRequestBodySizeMB(); ok {
+		_spec.SetField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32, value)
+		_node.MaxRequestBodySizeMB = &value
 	}
 	if value, ok := _c.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
@@ -1090,6 +1108,30 @@ func (u *ServiceConfigUpsert) SetIsPublic(v bool) *ServiceConfigUpsert {
 // UpdateIsPublic sets the "is_public" field to the value that was provided on create.
 func (u *ServiceConfigUpsert) UpdateIsPublic() *ServiceConfigUpsert {
 	u.SetExcluded(serviceconfig.FieldIsPublic)
+	return u
+}
+
+// SetMaxRequestBodySizeMB sets the "max_request_body_size_mb" field.
+func (u *ServiceConfigUpsert) SetMaxRequestBodySizeMB(v int32) *ServiceConfigUpsert {
+	u.Set(serviceconfig.FieldMaxRequestBodySizeMB, v)
+	return u
+}
+
+// UpdateMaxRequestBodySizeMB sets the "max_request_body_size_mb" field to the value that was provided on create.
+func (u *ServiceConfigUpsert) UpdateMaxRequestBodySizeMB() *ServiceConfigUpsert {
+	u.SetExcluded(serviceconfig.FieldMaxRequestBodySizeMB)
+	return u
+}
+
+// AddMaxRequestBodySizeMB adds v to the "max_request_body_size_mb" field.
+func (u *ServiceConfigUpsert) AddMaxRequestBodySizeMB(v int32) *ServiceConfigUpsert {
+	u.Add(serviceconfig.FieldMaxRequestBodySizeMB, v)
+	return u
+}
+
+// ClearMaxRequestBodySizeMB clears the value of the "max_request_body_size_mb" field.
+func (u *ServiceConfigUpsert) ClearMaxRequestBodySizeMB() *ServiceConfigUpsert {
+	u.SetNull(serviceconfig.FieldMaxRequestBodySizeMB)
 	return u
 }
 
@@ -1744,6 +1786,34 @@ func (u *ServiceConfigUpsertOne) SetIsPublic(v bool) *ServiceConfigUpsertOne {
 func (u *ServiceConfigUpsertOne) UpdateIsPublic() *ServiceConfigUpsertOne {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.UpdateIsPublic()
+	})
+}
+
+// SetMaxRequestBodySizeMB sets the "max_request_body_size_mb" field.
+func (u *ServiceConfigUpsertOne) SetMaxRequestBodySizeMB(v int32) *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetMaxRequestBodySizeMB(v)
+	})
+}
+
+// AddMaxRequestBodySizeMB adds v to the "max_request_body_size_mb" field.
+func (u *ServiceConfigUpsertOne) AddMaxRequestBodySizeMB(v int32) *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.AddMaxRequestBodySizeMB(v)
+	})
+}
+
+// UpdateMaxRequestBodySizeMB sets the "max_request_body_size_mb" field to the value that was provided on create.
+func (u *ServiceConfigUpsertOne) UpdateMaxRequestBodySizeMB() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateMaxRequestBodySizeMB()
+	})
+}
+
+// ClearMaxRequestBodySizeMB clears the value of the "max_request_body_size_mb" field.
+func (u *ServiceConfigUpsertOne) ClearMaxRequestBodySizeMB() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearMaxRequestBodySizeMB()
 	})
 }
 
@@ -2606,6 +2676,34 @@ func (u *ServiceConfigUpsertBulk) SetIsPublic(v bool) *ServiceConfigUpsertBulk {
 func (u *ServiceConfigUpsertBulk) UpdateIsPublic() *ServiceConfigUpsertBulk {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.UpdateIsPublic()
+	})
+}
+
+// SetMaxRequestBodySizeMB sets the "max_request_body_size_mb" field.
+func (u *ServiceConfigUpsertBulk) SetMaxRequestBodySizeMB(v int32) *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetMaxRequestBodySizeMB(v)
+	})
+}
+
+// AddMaxRequestBodySizeMB adds v to the "max_request_body_size_mb" field.
+func (u *ServiceConfigUpsertBulk) AddMaxRequestBodySizeMB(v int32) *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.AddMaxRequestBodySizeMB(v)
+	})
+}
+
+// UpdateMaxRequestBodySizeMB sets the "max_request_body_size_mb" field to the value that was provided on create.
+func (u *ServiceConfigUpsertBulk) UpdateMaxRequestBodySizeMB() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateMaxRequestBodySizeMB()
+	})
+}
+
+// ClearMaxRequestBodySizeMB clears the value of the "max_request_body_size_mb" field.
+func (u *ServiceConfigUpsertBulk) ClearMaxRequestBodySizeMB() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearMaxRequestBodySizeMB()
 	})
 }
 

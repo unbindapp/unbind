@@ -23,6 +23,15 @@ func TestIngressNeedsUpdate(t *testing.T) {
 	assert.True(t, ingressNeedsUpdate(ingress("a.com", "b.com"), ingress("a.com")))
 	assert.True(t, ingressNeedsUpdate(ingress("a.com"), ingress("b.com")))
 	assert.True(t, ingressNeedsUpdate(ingress("a.com"), ingress("a.com", "b.com")))
+
+	withBodySize := func(size string) *networkingv1.Ingress {
+		ing := ingress("a.com")
+		ing.Annotations = map[string]string{"nginx.ingress.kubernetes.io/proxy-body-size": size}
+		return ing
+	}
+	assert.False(t, ingressNeedsUpdate(withBodySize("100m"), withBodySize("100m")))
+	assert.True(t, ingressNeedsUpdate(withBodySize("10m"), withBodySize("100m")))
+	assert.True(t, ingressNeedsUpdate(ingress("a.com"), withBodySize("100m")))
 }
 
 func TestKubeServiceNeedsUpdateOnRemovedPort(t *testing.T) {

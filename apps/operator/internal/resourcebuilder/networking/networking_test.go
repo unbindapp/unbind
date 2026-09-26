@@ -84,7 +84,7 @@ func TestNginxParity(t *testing.T) {
 		"nginx.ingress.kubernetes.io/websocket-services":     "web-service",
 		"nginx.ingress.kubernetes.io/proxy-send-timeout":     "1800",
 		"nginx.ingress.kubernetes.io/proxy-read-timeout":     "21600",
-		"nginx.ingress.kubernetes.io/proxy-body-size":        "10m",
+		"nginx.ingress.kubernetes.io/proxy-body-size":        "100m",
 		"nginx.ingress.kubernetes.io/upstream-hash-by":       "$realip_remote_addr",
 		"nginx.ingress.kubernetes.io/affinity":               "cookie",
 		"nginx.ingress.kubernetes.io/session-cookie-name":    "web-session",
@@ -120,6 +120,39 @@ func TestTraefikRoutes(t *testing.T) {
 	for _, mw := range objs[1:] {
 		if _, ok := mw.(*unstructured.Unstructured); !ok {
 			t.Errorf("expected middleware to be unstructured, got %T", mw)
+		}
+	}
+}
+
+func TestMaxRequestBodySize(t *testing.T) {
+	cases := map[string]struct {
+		limit       *int32
+		nginx       string
+		traefikSize int64
+	}{
+		"default":  {limit: nil, nginx: "100m", traefikSize: 100 << 20},
+		"override": {limit: ptr.To[int32](2048), nginx: "2048m", traefikSize: 2048 << 20},
+	}
+	for name, tc := range cases {
+		svc := setName(publicService(), "web")
+		svc.Spec.Config.MaxRequestBodySizeMB = tc.limit
+
+		objs, err := New(ProviderNginx, Config{}).BuildRoutes(RouteInput{Service: svc})
+		if err != nil {
+			t.Fatalf("%s: nginx BuildRoutes: %v", name, err)
+		}
+		if got := objs[0].GetAnnotations()["nginx.ingress.kubernetes.io/proxy-body-size"]; got != tc.nginx {
+			t.Errorf("%s: nginx proxy-body-size = %q, want %q", name, got, tc.nginx)
+		}
+
+		objs, err = New(ProviderTraefik, Config{}).BuildRoutes(RouteInput{Service: svc})
+		if err != nil {
+			t.Fatalf("%s: traefik BuildRoutes: %v", name, err)
+		}
+		buffering := objs[2].(*unstructured.Unstructured)
+		got, _, _ := unstructured.NestedInt64(buffering.Object, "spec", "buffering", "maxRequestBodyBytes")
+		if got != tc.traefikSize {
+			t.Errorf("%s: traefik maxRequestBodyBytes = %d, want %d", name, got, tc.traefikSize)
 		}
 	}
 }

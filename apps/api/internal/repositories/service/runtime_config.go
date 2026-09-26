@@ -12,6 +12,7 @@ func ApplyRuntimeConfig(spec *v1.ServiceConfigSpec, config *ent.ServiceConfig) {
 	spec.Hosts = routableHosts(config.Hosts)
 	spec.Ports = schema.AsV1PortSpecs(config.Ports)
 	spec.Public = config.IsPublic
+	spec.MaxRequestBodySizeMB = config.MaxRequestBodySizeMB
 	spec.Replicas = new(config.Replicas)
 	spec.Volumes = schema.AsV1Volumes(config.Volumes)
 	spec.Resources = schema.ResolveResources(config.Resources)

@@ -128,6 +128,11 @@ func IsPublic(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldIsPublic, v))
 }
 
+// MaxRequestBodySizeMB applies equality check predicate on the "max_request_body_size_mb" field. It's identical to MaxRequestBodySizeMBEQ.
+func MaxRequestBodySizeMB(v int32) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldMaxRequestBodySizeMB, v))
+}
+
 // Image applies equality check predicate on the "image" field. It's identical to ImageEQ.
 func Image(v string) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldImage, v))
@@ -1041,6 +1046,56 @@ func IsPublicEQ(v bool) predicate.ServiceConfig {
 // IsPublicNEQ applies the NEQ predicate on the "is_public" field.
 func IsPublicNEQ(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldNEQ(FieldIsPublic, v))
+}
+
+// MaxRequestBodySizeMBEQ applies the EQ predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBEQ(v int32) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldMaxRequestBodySizeMB, v))
+}
+
+// MaxRequestBodySizeMBNEQ applies the NEQ predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBNEQ(v int32) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNEQ(FieldMaxRequestBodySizeMB, v))
+}
+
+// MaxRequestBodySizeMBIn applies the In predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBIn(vs ...int32) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIn(FieldMaxRequestBodySizeMB, vs...))
+}
+
+// MaxRequestBodySizeMBNotIn applies the NotIn predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBNotIn(vs ...int32) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotIn(FieldMaxRequestBodySizeMB, vs...))
+}
+
+// MaxRequestBodySizeMBGT applies the GT predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBGT(v int32) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldGT(FieldMaxRequestBodySizeMB, v))
+}
+
+// MaxRequestBodySizeMBGTE applies the GTE predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBGTE(v int32) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldGTE(FieldMaxRequestBodySizeMB, v))
+}
+
+// MaxRequestBodySizeMBLT applies the LT predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBLT(v int32) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldLT(FieldMaxRequestBodySizeMB, v))
+}
+
+// MaxRequestBodySizeMBLTE applies the LTE predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBLTE(v int32) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldLTE(FieldMaxRequestBodySizeMB, v))
+}
+
+// MaxRequestBodySizeMBIsNil applies the IsNil predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBIsNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIsNull(FieldMaxRequestBodySizeMB))
+}
+
+// MaxRequestBodySizeMBNotNil applies the NotNil predicate on the "max_request_body_size_mb" field.
+func MaxRequestBodySizeMBNotNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotNull(FieldMaxRequestBodySizeMB))
 }
 
 // ImageEQ applies the EQ predicate on the "image" field.

@@ -86,6 +86,7 @@ type MutateConfigInput struct {
 	RailpackBuilderBuildCommand   *string
 	RunCommand                    *string
 	Public                        *bool
+	MaxRequestBodySizeMB          *int32
 	Image                         *string
 	DockerBuilderDockerfilePath   *string
 	DockerBuilderBuildContext     *string
@@ -171,6 +172,7 @@ func (self *ServiceRepository) CreateConfig(
 		SetNillableRailpackBuilderBuildCommand(input.RailpackBuilderBuildCommand).
 		SetNillableRunCommand(input.RunCommand).
 		SetNillableIsPublic(input.Public).
+		SetNillableMaxRequestBodySizeMB(input.MaxRequestBodySizeMB).
 		SetNillableImage(input.Image).
 		SetNillableDockerBuilderDockerfilePath(input.DockerBuilderDockerfilePath).
 		SetNillableDockerBuilderBuildContext(input.DockerBuilderBuildContext).
@@ -341,6 +343,14 @@ func (self *ServiceRepository) UpdateConfig(
 			upd.ClearRailpackBuilderBuildCommand()
 		} else {
 			upd.SetRailpackBuilderBuildCommand(*input.RailpackBuilderBuildCommand)
+		}
+	}
+
+	if input.MaxRequestBodySizeMB != nil {
+		if *input.MaxRequestBodySizeMB == 0 {
+			upd.ClearMaxRequestBodySizeMB()
+		} else {
+			upd.SetMaxRequestBodySizeMB(*input.MaxRequestBodySizeMB)
 		}
 	}
 

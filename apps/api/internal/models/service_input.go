@@ -29,6 +29,7 @@ type CreateServiceInput struct {
 	RailpackBuilderBuildCommand   *string               `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string               `json:"run_command,omitempty"`
 	IsPublic                      *bool                 `json:"is_public,omitempty" doc:"Whether the service is reachable from the internet. Defaults to true for a service with a port and to false for a database"`
+	MaxRequestBodySizeMB          *int32                `json:"max_request_body_size_mb,omitempty" required:"false" minimum:"1" maximum:"10240" doc:"Largest request body the service's domains accept, in MB. Defaults to 100. Not for databases, and has no effect on clusters that route through a gateway"`
 	Image                         *string               `json:"image,omitempty"`
 	DockerBuilderDockerfilePath   *string               `json:"docker_builder_dockerfile_path,omitempty" required:"false" doc:"Optional path to Dockerfile, if using docker builder"`
 	DockerBuilderBuildContext     *string               `json:"docker_builder_build_context,omitempty" required:"false" doc:"Optional path to Dockerfile context, if using docker builder"`
@@ -87,6 +88,7 @@ type UpdateServiceInput struct {
 	RailpackBuilderBuildCommand   *string                `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string                `json:"run_command,omitempty" required:"false"`
 	IsPublic                      *bool                  `json:"is_public,omitempty" required:"false" doc:"Whether the service is reachable from the internet. A database gets a public address when true and loses it when false"`
+	MaxRequestBodySizeMB          *int32                 `json:"max_request_body_size_mb,omitempty" required:"false" minimum:"0" maximum:"10240" doc:"Largest request body the service's domains accept, in MB. 0 resets it to the default of 100. Not for databases, and has no effect on clusters that route through a gateway"`
 	Image                         *string                `json:"image,omitempty" required:"false" doc:"Image to run, with an optional tag. Only for an image service"`
 	DockerBuilderDockerfilePath   *string                `json:"docker_builder_dockerfile_path,omitempty" required:"false" doc:"Optional path to Dockerfile, if using docker builder - set empty string to reset to default"`
 	DockerBuilderBuildContext     *string                `json:"docker_builder_build_context,omitempty" required:"false" doc:"Optional path to Dockerfile context, if using docker builder - set empty string to reset to default"`

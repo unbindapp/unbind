@@ -18963,6 +18963,8 @@ type ServiceConfigMutation struct {
 	railpack_builder_build_command   *string
 	run_command                      *string
 	is_public                        *bool
+	max_request_body_size_mb         *int32
+	addmax_request_body_size_mb      *int32
 	image                            *string
 	definition_version               *string
 	database_config                  **schema.DatabaseConfig
@@ -20039,6 +20041,76 @@ func (m *ServiceConfigMutation) ResetIsPublic() {
 	m.is_public = nil
 }
 
+// SetMaxRequestBodySizeMB sets the "max_request_body_size_mb" field.
+func (m *ServiceConfigMutation) SetMaxRequestBodySizeMB(i int32) {
+	m.max_request_body_size_mb = &i
+	m.addmax_request_body_size_mb = nil
+}
+
+// MaxRequestBodySizeMB returns the value of the "max_request_body_size_mb" field in the mutation.
+func (m *ServiceConfigMutation) MaxRequestBodySizeMB() (r int32, exists bool) {
+	v := m.max_request_body_size_mb
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMaxRequestBodySizeMB returns the old "max_request_body_size_mb" field's value of the ServiceConfig entity.
+// If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceConfigMutation) OldMaxRequestBodySizeMB(ctx context.Context) (v *int32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMaxRequestBodySizeMB is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMaxRequestBodySizeMB requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMaxRequestBodySizeMB: %w", err)
+	}
+	return oldValue.MaxRequestBodySizeMB, nil
+}
+
+// AddMaxRequestBodySizeMB adds i to the "max_request_body_size_mb" field.
+func (m *ServiceConfigMutation) AddMaxRequestBodySizeMB(i int32) {
+	if m.addmax_request_body_size_mb != nil {
+		*m.addmax_request_body_size_mb += i
+	} else {
+		m.addmax_request_body_size_mb = &i
+	}
+}
+
+// AddedMaxRequestBodySizeMB returns the value that was added to the "max_request_body_size_mb" field in this mutation.
+func (m *ServiceConfigMutation) AddedMaxRequestBodySizeMB() (r int32, exists bool) {
+	v := m.addmax_request_body_size_mb
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearMaxRequestBodySizeMB clears the value of the "max_request_body_size_mb" field.
+func (m *ServiceConfigMutation) ClearMaxRequestBodySizeMB() {
+	m.max_request_body_size_mb = nil
+	m.addmax_request_body_size_mb = nil
+	m.clearedFields[serviceconfig.FieldMaxRequestBodySizeMB] = struct{}{}
+}
+
+// MaxRequestBodySizeMBCleared returns if the "max_request_body_size_mb" field was cleared in this mutation.
+func (m *ServiceConfigMutation) MaxRequestBodySizeMBCleared() bool {
+	_, ok := m.clearedFields[serviceconfig.FieldMaxRequestBodySizeMB]
+	return ok
+}
+
+// ResetMaxRequestBodySizeMB resets all changes to the "max_request_body_size_mb" field.
+func (m *ServiceConfigMutation) ResetMaxRequestBodySizeMB() {
+	m.max_request_body_size_mb = nil
+	m.addmax_request_body_size_mb = nil
+	delete(m.clearedFields, serviceconfig.FieldMaxRequestBodySizeMB)
+}
+
 // SetImage sets the "image" field.
 func (m *ServiceConfigMutation) SetImage(s string) {
 	m.image = &s
@@ -20871,7 +20943,7 @@ func (m *ServiceConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceConfigMutation) Fields() []string {
-	fields := make([]string, 0, 34)
+	fields := make([]string, 0, 35)
 	if m.created_at != nil {
 		fields = append(fields, serviceconfig.FieldCreatedAt)
 	}
@@ -20931,6 +21003,9 @@ func (m *ServiceConfigMutation) Fields() []string {
 	}
 	if m.is_public != nil {
 		fields = append(fields, serviceconfig.FieldIsPublic)
+	}
+	if m.max_request_body_size_mb != nil {
+		fields = append(fields, serviceconfig.FieldMaxRequestBodySizeMB)
 	}
 	if m.image != nil {
 		fields = append(fields, serviceconfig.FieldImage)
@@ -21022,6 +21097,8 @@ func (m *ServiceConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.RunCommand()
 	case serviceconfig.FieldIsPublic:
 		return m.IsPublic()
+	case serviceconfig.FieldMaxRequestBodySizeMB:
+		return m.MaxRequestBodySizeMB()
 	case serviceconfig.FieldImage:
 		return m.Image()
 	case serviceconfig.FieldDefinitionVersion:
@@ -21099,6 +21176,8 @@ func (m *ServiceConfigMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldRunCommand(ctx)
 	case serviceconfig.FieldIsPublic:
 		return m.OldIsPublic(ctx)
+	case serviceconfig.FieldMaxRequestBodySizeMB:
+		return m.OldMaxRequestBodySizeMB(ctx)
 	case serviceconfig.FieldImage:
 		return m.OldImage(ctx)
 	case serviceconfig.FieldDefinitionVersion:
@@ -21276,6 +21355,13 @@ func (m *ServiceConfigMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetIsPublic(v)
 		return nil
+	case serviceconfig.FieldMaxRequestBodySizeMB:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMaxRequestBodySizeMB(v)
+		return nil
 	case serviceconfig.FieldImage:
 		v, ok := value.(string)
 		if !ok {
@@ -21385,6 +21471,9 @@ func (m *ServiceConfigMutation) AddedFields() []string {
 	if m.addreplicas != nil {
 		fields = append(fields, serviceconfig.FieldReplicas)
 	}
+	if m.addmax_request_body_size_mb != nil {
+		fields = append(fields, serviceconfig.FieldMaxRequestBodySizeMB)
+	}
 	if m.addbackup_retention_count != nil {
 		fields = append(fields, serviceconfig.FieldBackupRetentionCount)
 	}
@@ -21398,6 +21487,8 @@ func (m *ServiceConfigMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	case serviceconfig.FieldReplicas:
 		return m.AddedReplicas()
+	case serviceconfig.FieldMaxRequestBodySizeMB:
+		return m.AddedMaxRequestBodySizeMB()
 	case serviceconfig.FieldBackupRetentionCount:
 		return m.AddedBackupRetentionCount()
 	}
@@ -21415,6 +21506,13 @@ func (m *ServiceConfigMutation) AddField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddReplicas(v)
+		return nil
+	case serviceconfig.FieldMaxRequestBodySizeMB:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddMaxRequestBodySizeMB(v)
 		return nil
 	case serviceconfig.FieldBackupRetentionCount:
 		v, ok := value.(int)
@@ -21466,6 +21564,9 @@ func (m *ServiceConfigMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(serviceconfig.FieldRunCommand) {
 		fields = append(fields, serviceconfig.FieldRunCommand)
+	}
+	if m.FieldCleared(serviceconfig.FieldMaxRequestBodySizeMB) {
+		fields = append(fields, serviceconfig.FieldMaxRequestBodySizeMB)
 	}
 	if m.FieldCleared(serviceconfig.FieldImage) {
 		fields = append(fields, serviceconfig.FieldImage)
@@ -21552,6 +21653,9 @@ func (m *ServiceConfigMutation) ClearField(name string) error {
 		return nil
 	case serviceconfig.FieldRunCommand:
 		m.ClearRunCommand()
+		return nil
+	case serviceconfig.FieldMaxRequestBodySizeMB:
+		m.ClearMaxRequestBodySizeMB()
 		return nil
 	case serviceconfig.FieldImage:
 		m.ClearImage()
@@ -21656,6 +21760,9 @@ func (m *ServiceConfigMutation) ResetField(name string) error {
 		return nil
 	case serviceconfig.FieldIsPublic:
 		m.ResetIsPublic()
+		return nil
+	case serviceconfig.FieldMaxRequestBodySizeMB:
+		m.ResetMaxRequestBodySizeMB()
 		return nil
 	case serviceconfig.FieldImage:
 		m.ResetImage()

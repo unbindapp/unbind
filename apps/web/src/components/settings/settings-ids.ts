@@ -12,6 +12,7 @@ export const settingsIds = {
     access: "networking_access",
     public: "networking_public",
     private: "networking_private",
+    maxRequestSize: "networking_max-request-size",
   },
   backups: {
     bucket: "backups_bucket",

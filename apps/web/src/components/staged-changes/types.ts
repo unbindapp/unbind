@@ -29,6 +29,7 @@ export type TStagedVariableChange = z.infer<typeof StagedVariableChangeSchema>;
 
 export const ServiceChangeFieldSchema = z.enum([
   "isPublic",
+  "maxRequestBodySizeMb",
   "replicaCount",
   "cpuLimitMillicores",
   "memoryLimitMb",

@@ -144,18 +144,19 @@ func resolveChangeAction(active bool, needs service_repo.NeedsDeploymentResponse
 func estimateConfigChange(config *ent.ServiceConfig, input *models.UpdateServiceInput) service_repo.NeedsDeploymentResponse {
 	if input.Builder != nil && *input.Builder != config.Builder ||
 		input.RepositoryName != nil ||
-		stringChanged(input.GitBranch, config.GitBranch) ||
-		stringChanged(input.RailpackBuilderInstallCommand, config.RailpackBuilderInstallCommand) ||
-		stringChanged(input.RailpackBuilderBuildCommand, config.RailpackBuilderBuildCommand) ||
-		stringChanged(input.DockerBuilderDockerfilePath, config.DockerBuilderDockerfilePath) ||
-		stringChanged(input.DockerBuilderBuildContext, config.DockerBuilderBuildContext) {
+		clearableChanged(input.GitBranch, config.GitBranch) ||
+		clearableChanged(input.RailpackBuilderInstallCommand, config.RailpackBuilderInstallCommand) ||
+		clearableChanged(input.RailpackBuilderBuildCommand, config.RailpackBuilderBuildCommand) ||
+		clearableChanged(input.DockerBuilderDockerfilePath, config.DockerBuilderDockerfilePath) ||
+		clearableChanged(input.DockerBuilderBuildContext, config.DockerBuilderBuildContext) {
 		return service_repo.NeedsBuildAndDeployment
 	}
 
 	if input.Replicas != nil && *input.Replicas != config.Replicas ||
 		input.IsPublic != nil && *input.IsPublic != config.IsPublic ||
 		input.Image != nil && *input.Image != config.Image ||
-		stringChanged(input.RunCommand, config.RunCommand) ||
+		clearableChanged(input.RunCommand, config.RunCommand) ||
+		clearableChanged(input.MaxRequestBodySizeMB, config.MaxRequestBodySizeMB) ||
 		len(input.OverwriteHosts)+len(input.UpsertHosts)+len(input.RemoveHosts) > 0 ||
 		len(input.OverwritePorts)+len(input.AddPorts)+len(input.RemovePorts) > 0 ||
 		len(input.OverwriteVolumes)+len(input.AddVolumes)+len(input.RemoveVolumes) > 0 ||
@@ -172,12 +173,14 @@ func estimateConfigChange(config *ent.ServiceConfig, input *models.UpdateService
 	return service_repo.NoDeploymentNeeded
 }
 
-func stringChanged(input, current *string) bool {
+// A zero input clears the value
+func clearableChanged[T comparable](input, current *T) bool {
 	if input == nil {
 		return false
 	}
 	if current == nil {
-		return *input != ""
+		var zero T
+		return *input != zero
 	}
 	return *input != *current
 }

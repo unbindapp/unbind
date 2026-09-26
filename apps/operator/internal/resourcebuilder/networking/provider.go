@@ -120,6 +120,15 @@ func RouteGVKs() []schema.GroupVersionKind {
 	}
 }
 
+const defaultMaxRequestBodySizeMB = 100
+
+func maxRequestBodySizeMB(svc *v1.Service) int64 {
+	if svc.Spec.Config.MaxRequestBodySizeMB == nil {
+		return defaultMaxRequestBodySizeMB
+	}
+	return int64(*svc.Spec.Config.MaxRequestBodySizeMB)
+}
+
 func needsRoutes(svc *v1.Service) bool {
 	if svc.Spec.Type == "database" {
 		return false

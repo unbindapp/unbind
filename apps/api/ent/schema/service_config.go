@@ -49,6 +49,7 @@ func (ServiceConfig) Fields() []ent.Field {
 		field.String("railpack_builder_build_command").Optional().Nillable().Comment("Custom build command (railpack only)"),
 		field.String("run_command").Optional().Nillable().Comment("Custom run command"),
 		field.Bool("is_public").Default(false).Comment("Whether the service is publicly accessible, creates an ingress resource"),
+		field.Int32("max_request_body_size_mb").Optional().Nillable().Comment("Largest request body public domains accept in MB, unset uses the default of 100"),
 		field.String("image").Optional().Comment("Custom Docker image if not building from git"), // Only applies to type=docker-image
 		// Database
 		field.String("definition_version").Optional().Nillable().Comment("Version of the database custom resource definition"),

@@ -265,6 +265,11 @@ func (in *ServiceConfigSpec) DeepCopyInto(out *ServiceConfigSpec) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.MaxRequestBodySizeMB != nil {
+		in, out := &in.MaxRequestBodySizeMB, &out.MaxRequestBodySizeMB
+		*out = new(int32)
+		**out = **in
+	}
 	in.Database.DeepCopyInto(&out.Database)
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes

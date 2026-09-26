@@ -16,10 +16,14 @@ import DatabaseEndpointCard, {
 import DatabaseNetworkAccess from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-network-access";
 import DomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-port-card";
 import { getNetworkingEntityId } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
+import MaxRequestSize, {
+  unsetRequestSizeMb,
+} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/max-request-size";
 import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
   hasApplying,
   networkAccessFields,
+  requestSizeFields,
   stagedBoolean,
   useServiceChanges,
   useStagedNetworking,
@@ -28,6 +32,7 @@ import { useServiceEndpoints } from "@/components/service/service-endpoints-prov
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
+import { useSystem } from "@/components/system/system-provider";
 import { TServiceShallow } from "@/lib/queries/services";
 import { GlobeLockIcon, NetworkIcon } from "lucide-react";
 import { useMemo } from "react";
@@ -82,9 +87,12 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
 
   const { isItemVisible } = useSettingsSectionSearch("networking");
   const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
+  const serverRequestSizeMb = service.config.max_request_body_size_mb ?? unsetRequestSizeMb;
   const { staged, stage, unstage } = useServiceChanges(service, {
     isPublic: service.config.is_public,
+    maxRequestBodySizeMb: serverRequestSizeMb,
   });
+  const { data: systemData } = useSystem();
 
   const { staged: stagedLists, unstage: unstageLists } = useStagedNetworking(service);
   const stagedHosts = stagedLists.filter((change) => change.kind === "host");
@@ -105,7 +113,14 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
   const showAccess = isDatabase && isItemVisible(settingsIds.networking.access);
   const showPublic = isItemVisible(settingsIds.networking.public) && (!isDatabase || isPublic);
   const showPrivate = isItemVisible(settingsIds.networking.private);
-  if (!showAccess && !showPublic && !showPrivate) return null;
+  // Gateway clusters stream request bodies without a limit
+  const showRequestSize =
+    !isDatabase &&
+    systemData !== undefined &&
+    systemData.data.networking_provider !== "gateway" &&
+    isItemVisible(settingsIds.networking.maxRequestSize);
+  if (!showAccess && !showPublic && !showPrivate && !showRequestSize) return null;
+  const sectionFields = [...networkAccessFields, ...requestSizeFields];
 
   return (
     <SettingsSection
@@ -113,12 +128,14 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
       id="networking"
       Icon={NetworkIcon}
       entityId={sectionHighlightId}
-      hasChanges={staged.isPublic !== undefined || stagedLists.length > 0}
+      hasChanges={
+        sectionFields.some((field) => staged[field] !== undefined) || stagedLists.length > 0
+      }
       isApplying={
-        hasApplying(staged, networkAccessFields) || stagedLists.some((change) => change.isApplying)
+        hasApplying(staged, sectionFields) || stagedLists.some((change) => change.isApplying)
       }
       onDiscard={() => {
-        unstage(networkAccessFields);
+        unstage(sectionFields);
         unstageLists();
       }}
     >
@@ -309,6 +326,33 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                   />
                 )}
               </div>
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      )}
+      {showRequestSize && (
+        <Block>
+          <BlockItem id={settingsIds.networking.maxRequestSize} className="w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle>Max Request Size</BlockItemTitle>
+              <BlockItemDescription>
+                The largest request body the service's domains accept.
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <MaxRequestSize
+                serverSizeMb={serverRequestSizeMb}
+                staged={staged}
+                stage={(sizeMb) =>
+                  stage({
+                    field: "maxRequestBodySizeMb",
+                    label: "Max request size",
+                    value: sizeMb,
+                    previous: serverRequestSizeMb,
+                    format: (v) => (v === unsetRequestSizeMb ? "Default" : `${v} MB`),
+                  })
+                }
+              />
             </BlockItemContent>
           </BlockItem>
         </Block>

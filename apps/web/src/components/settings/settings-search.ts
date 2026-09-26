@@ -114,6 +114,12 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
         description: "Communicate with the service from within the Unbind's network.",
         keywords: ["url", "dns", "host", "port", "internal", "cluster", "service discovery"],
       },
+      {
+        id: settingsIds.networking.maxRequestSize,
+        title: "Max Request Size",
+        description: "The largest request body the service's domains accept.",
+        keywords: ["request", "body", "upload", "file", "size", "limit", "413", "payload"],
+      },
     ],
   },
   {

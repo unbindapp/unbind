@@ -58,6 +58,8 @@ const (
 	FieldRunCommand = "run_command"
 	// FieldIsPublic holds the string denoting the is_public field in the database.
 	FieldIsPublic = "is_public"
+	// FieldMaxRequestBodySizeMB holds the string denoting the max_request_body_size_mb field in the database.
+	FieldMaxRequestBodySizeMB = "max_request_body_size_mb"
 	// FieldImage holds the string denoting the image field in the database.
 	FieldImage = "image"
 	// FieldDefinitionVersion holds the string denoting the definition_version field in the database.
@@ -131,6 +133,7 @@ var Columns = []string{
 	FieldRailpackBuilderBuildCommand,
 	FieldRunCommand,
 	FieldIsPublic,
+	FieldMaxRequestBodySizeMB,
 	FieldImage,
 	FieldDefinitionVersion,
 	FieldDatabaseConfig,
@@ -299,6 +302,11 @@ func ByRunCommand(opts ...sql.OrderTermOption) OrderOption {
 // ByIsPublic orders the results by the is_public field.
 func ByIsPublic(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsPublic, opts...).ToFunc()
+}
+
+// ByMaxRequestBodySizeMB orders the results by the max_request_body_size_mb field.
+func ByMaxRequestBodySizeMB(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMaxRequestBodySizeMB, opts...).ToFunc()
 }
 
 // ByImage orders the results by the image field.

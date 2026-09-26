@@ -239,6 +239,13 @@ spec:
                       - image
                       type: object
                     type: array
+                  maxRequestBodySizeMb:
+                    description: MaxRequestBodySizeMB caps request bodies on public
+                      domains, defaults to 100
+                    format: int32
+                    maximum: 10240
+                    minimum: 1
+                    type: integer
                   ports:
                     description: Ports are the container ports to expose
                     items:

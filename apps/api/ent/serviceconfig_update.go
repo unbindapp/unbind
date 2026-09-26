@@ -366,6 +366,33 @@ func (_u *ServiceConfigUpdate) SetNillableIsPublic(v *bool) *ServiceConfigUpdate
 	return _u
 }
 
+// SetMaxRequestBodySizeMB sets the "max_request_body_size_mb" field.
+func (_u *ServiceConfigUpdate) SetMaxRequestBodySizeMB(v int32) *ServiceConfigUpdate {
+	_u.mutation.ResetMaxRequestBodySizeMB()
+	_u.mutation.SetMaxRequestBodySizeMB(v)
+	return _u
+}
+
+// SetNillableMaxRequestBodySizeMB sets the "max_request_body_size_mb" field if the given value is not nil.
+func (_u *ServiceConfigUpdate) SetNillableMaxRequestBodySizeMB(v *int32) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetMaxRequestBodySizeMB(*v)
+	}
+	return _u
+}
+
+// AddMaxRequestBodySizeMB adds value to the "max_request_body_size_mb" field.
+func (_u *ServiceConfigUpdate) AddMaxRequestBodySizeMB(v int32) *ServiceConfigUpdate {
+	_u.mutation.AddMaxRequestBodySizeMB(v)
+	return _u
+}
+
+// ClearMaxRequestBodySizeMB clears the value of the "max_request_body_size_mb" field.
+func (_u *ServiceConfigUpdate) ClearMaxRequestBodySizeMB() *ServiceConfigUpdate {
+	_u.mutation.ClearMaxRequestBodySizeMB()
+	return _u
+}
+
 // SetImage sets the "image" field.
 func (_u *ServiceConfigUpdate) SetImage(v string) *ServiceConfigUpdate {
 	_u.mutation.SetImage(v)
@@ -814,6 +841,15 @@ func (_u *ServiceConfigUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.IsPublic(); ok {
 		_spec.SetField(serviceconfig.FieldIsPublic, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.MaxRequestBodySizeMB(); ok {
+		_spec.SetField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedMaxRequestBodySizeMB(); ok {
+		_spec.AddField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32, value)
+	}
+	if _u.mutation.MaxRequestBodySizeMBCleared() {
+		_spec.ClearField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32)
 	}
 	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
@@ -1321,6 +1357,33 @@ func (_u *ServiceConfigUpdateOne) SetNillableIsPublic(v *bool) *ServiceConfigUpd
 	return _u
 }
 
+// SetMaxRequestBodySizeMB sets the "max_request_body_size_mb" field.
+func (_u *ServiceConfigUpdateOne) SetMaxRequestBodySizeMB(v int32) *ServiceConfigUpdateOne {
+	_u.mutation.ResetMaxRequestBodySizeMB()
+	_u.mutation.SetMaxRequestBodySizeMB(v)
+	return _u
+}
+
+// SetNillableMaxRequestBodySizeMB sets the "max_request_body_size_mb" field if the given value is not nil.
+func (_u *ServiceConfigUpdateOne) SetNillableMaxRequestBodySizeMB(v *int32) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetMaxRequestBodySizeMB(*v)
+	}
+	return _u
+}
+
+// AddMaxRequestBodySizeMB adds value to the "max_request_body_size_mb" field.
+func (_u *ServiceConfigUpdateOne) AddMaxRequestBodySizeMB(v int32) *ServiceConfigUpdateOne {
+	_u.mutation.AddMaxRequestBodySizeMB(v)
+	return _u
+}
+
+// ClearMaxRequestBodySizeMB clears the value of the "max_request_body_size_mb" field.
+func (_u *ServiceConfigUpdateOne) ClearMaxRequestBodySizeMB() *ServiceConfigUpdateOne {
+	_u.mutation.ClearMaxRequestBodySizeMB()
+	return _u
+}
+
 // SetImage sets the "image" field.
 func (_u *ServiceConfigUpdateOne) SetImage(v string) *ServiceConfigUpdateOne {
 	_u.mutation.SetImage(v)
@@ -1799,6 +1862,15 @@ func (_u *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceCo
 	}
 	if value, ok := _u.mutation.IsPublic(); ok {
 		_spec.SetField(serviceconfig.FieldIsPublic, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.MaxRequestBodySizeMB(); ok {
+		_spec.SetField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32, value)
+	}
+	if value, ok := _u.mutation.AddedMaxRequestBodySizeMB(); ok {
+		_spec.AddField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32, value)
+	}
+	if _u.mutation.MaxRequestBodySizeMBCleared() {
+		_spec.ClearField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32)
 	}
 	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)

@@ -21,6 +21,7 @@ type ServiceConfigResponse struct {
 	RailpackBuilderBuildCommand   *string               `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string               `json:"run_command,omitempty"`
 	IsPublic                      bool                  `json:"is_public"`
+	MaxRequestBodySizeMB          *int32                `json:"max_request_body_size_mb,omitempty" doc:"Largest request body the service's domains accept, in MB. Unset uses the default of 100"`
 	Image                         string                `json:"image,omitempty"`
 	// Dockerfile build overrides
 	DockerBuilderDockerfilePath *string `json:"docker_builder_dockerfile_path,omitempty"`
@@ -103,6 +104,7 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 			RailpackBuilderBuildCommand:   entity.RailpackBuilderBuildCommand,
 			RunCommand:                    entity.RunCommand,
 			IsPublic:                      entity.IsPublic,
+			MaxRequestBodySizeMB:          entity.MaxRequestBodySizeMB,
 			Image:                         entity.Image,
 			S3BackupBucketID:              entity.S3BackupBucketID,
 			BackupSchedule:                entity.BackupSchedule,

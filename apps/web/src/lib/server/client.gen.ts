@@ -197,6 +197,7 @@ export const UpdateServiceInputSchema = z
     image: z.string().optional(), // Image to run, with an optional tag. Only for an image service
     init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
     is_public: z.boolean().optional(), // Whether the service is reachable from the internet. A database gets a public address when true and loses it when false
+    max_request_body_size_mb: z.number().optional(), // Largest request body the service's domains accept, in MB. 0 resets it to the default of 100. Not for databases, and has no effect on clusters that route through a gateway
     name: z.string().nullable().optional(), // Has to be unique in the environment
     overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
     overwrite_ports: z.array(PortSpecSchema).nullable().optional(),
@@ -822,6 +823,7 @@ export const CreateServiceInputSchema = z
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema).nullable().optional(), // Init containers to run before the main container
     is_public: z.boolean().optional(), // Whether the service is reachable from the internet. Defaults to true for a service with a port and to false for a database
+    max_request_body_size_mb: z.number().optional(), // Largest request body the service's domains accept, in MB. Defaults to 100. Not for databases, and has no effect on clusters that route through a gateway
     name: z.string(), // Has to be unique in the environment. A taken name gets a short suffix, so read the name from the response
     ports: z.array(PortSpecSchema).nullable().optional(),
     project_id: z.string(),
@@ -878,6 +880,7 @@ export const ServiceConfigResponseSchema = z
     image: z.string().optional(),
     init_containers: z.array(InitContainerSchema),
     is_public: z.boolean(),
+    max_request_body_size_mb: z.number().optional(), // Largest request body the service's domains accept, in MB. Unset uses the default of 100
     ports: z.array(PortSpecSchema),
     protected_variables: z.array(z.string()),
     railpack_builder_build_command: z.string().optional(),

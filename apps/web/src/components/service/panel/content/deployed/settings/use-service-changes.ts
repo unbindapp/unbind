@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceField>>;
 
 export const networkAccessFields: TServiceChangeField[] = ["isPublic"];
+export const requestSizeFields: TServiceChangeField[] = ["maxRequestBodySizeMb"];
 export type TServerValues = Partial<Record<TServiceChangeField, string | number | boolean>>;
 
 type TStageInput<T extends string | number | boolean> = {

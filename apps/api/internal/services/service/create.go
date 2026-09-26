@@ -47,6 +47,10 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		return nil, validateBackupsSupported(input.Type, nil)
 	}
 
+	if input.MaxRequestBodySizeMB != nil && input.Type == schema.ServiceTypeDatabase {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no request size limit")
+	}
+
 	switch input.Type {
 	case schema.ServiceTypeGithub:
 		if input.GitHubInstallationID == nil || input.RepositoryOwner == nil || input.RepositoryName == nil {
@@ -415,6 +419,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			RailpackBuilderBuildCommand:   input.RailpackBuilderBuildCommand,
 			RunCommand:                    input.RunCommand,
 			Public:                        isPublic,
+			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
 			Image:                         input.Image,
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     input.DockerBuilderBuildContext,

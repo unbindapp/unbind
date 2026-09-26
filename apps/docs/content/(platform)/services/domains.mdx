@@ -51,6 +51,14 @@ To remove a domain, press the trash icon on it and deploy. Removing the last one
 
 If the record is proxied through Cloudflare (orange cloud), Unbind shows **Cloudflare detected**. That works for a normal domain. Set Cloudflare's SSL mode to **Full (strict)** so traffic between Cloudflare and your server stays encrypted.
 
+## Max request size
+
+A request with a body larger than 100 MB, like a big file upload, is refused with `413 Request Entity Too Large`. To change it, set **Max Request Size** at the bottom of **Networking** in the service settings, anywhere from 1 MB to 10240 MB, and deploy. Clear the field to go back to 100 MB.
+
+The limit only exists on installs that route traffic with ingress-nginx or Traefik. Installs on Envoy Gateway, the default, accept any size and don't show the setting.
+
+Cloudflare applies its own limit to proxied domains: 100 MB on the Free and Pro plans.
+
 ## Private networking
 
 Your services reach each other without going through the internet. Every service has a private address, shown under **Private Networking**. You rarely need to type it: [reference it from a variable](/services/variables) instead.

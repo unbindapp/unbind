@@ -38,7 +38,7 @@ func (traefikProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 		"redirectScheme": map[string]any{"scheme": "https", "permanent": true},
 	})
 	buffering := traefikMiddleware(svc.Name+"-buffering", svc.Namespace, in.Labels, map[string]any{
-		"buffering": map[string]any{"maxRequestBodyBytes": int64(10 << 20)},
+		"buffering": map[string]any{"maxRequestBodyBytes": maxRequestBodySizeMB(svc) << 20},
 	})
 
 	annotations := map[string]string{

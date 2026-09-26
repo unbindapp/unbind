@@ -64,6 +64,8 @@ type ServiceConfig struct {
 	RunCommand *string `json:"run_command,omitempty"`
 	// Whether the service is publicly accessible, creates an ingress resource
 	IsPublic bool `json:"is_public,omitempty"`
+	// Largest request body public domains accept in MB, unset uses the default of 100
+	MaxRequestBodySizeMB *int32 `json:"max_request_body_size_mb,omitempty"`
 	// Custom Docker image if not building from git
 	Image string `json:"image,omitempty"`
 	// Version of the database custom resource definition
@@ -142,7 +144,7 @@ func (*ServiceConfig) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case serviceconfig.FieldAutoDeploy, serviceconfig.FieldIsPublic:
 			values[i] = new(sql.NullBool)
-		case serviceconfig.FieldReplicas, serviceconfig.FieldBackupRetentionCount:
+		case serviceconfig.FieldReplicas, serviceconfig.FieldMaxRequestBodySizeMB, serviceconfig.FieldBackupRetentionCount:
 			values[i] = new(sql.NullInt64)
 		case serviceconfig.FieldBuilder, serviceconfig.FieldIcon, serviceconfig.FieldDockerBuilderDockerfilePath, serviceconfig.FieldDockerBuilderBuildContext, serviceconfig.FieldRailpackProvider, serviceconfig.FieldRailpackFramework, serviceconfig.FieldGitBranch, serviceconfig.FieldGitTag, serviceconfig.FieldRailpackBuilderInstallCommand, serviceconfig.FieldRailpackBuilderBuildCommand, serviceconfig.FieldRunCommand, serviceconfig.FieldImage, serviceconfig.FieldDefinitionVersion, serviceconfig.FieldBackupSchedule:
 			values[i] = new(sql.NullString)
@@ -305,6 +307,13 @@ func (_m *ServiceConfig) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field is_public", values[i])
 			} else if value.Valid {
 				_m.IsPublic = value.Bool
+			}
+		case serviceconfig.FieldMaxRequestBodySizeMB:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field max_request_body_size_mb", values[i])
+			} else if value.Valid {
+				_m.MaxRequestBodySizeMB = new(int32)
+				*_m.MaxRequestBodySizeMB = int32(value.Int64)
 			}
 		case serviceconfig.FieldImage:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -533,6 +542,11 @@ func (_m *ServiceConfig) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("is_public=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IsPublic))
+	builder.WriteString(", ")
+	if v := _m.MaxRequestBodySizeMB; v != nil {
+		builder.WriteString("max_request_body_size_mb=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("image=")
 	builder.WriteString(_m.Image)

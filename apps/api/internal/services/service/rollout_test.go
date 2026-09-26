@@ -43,6 +43,7 @@ func TestEstimateConfigChange(t *testing.T) {
 		Replicas:                    2,
 		Image:                       "nginx:1.25",
 		RunCommand:                  utils.ToPtr("npm start"),
+		MaxRequestBodySizeMB:        utils.ToPtr[int32](500),
 	}
 
 	tests := []struct {
@@ -61,6 +62,9 @@ func TestEstimateConfigChange(t *testing.T) {
 		{"replicas", models.UpdateServiceInput{Replicas: utils.ToPtr[int32](3)}, service_repo.NeedsDeployment},
 		{"image", models.UpdateServiceInput{Image: utils.ToPtr("nginx:1.27")}, service_repo.NeedsDeployment},
 		{"run command", models.UpdateServiceInput{RunCommand: utils.ToPtr("node server.js")}, service_repo.NeedsDeployment},
+		{"same request size", models.UpdateServiceInput{MaxRequestBodySizeMB: utils.ToPtr[int32](500)}, service_repo.NoDeploymentNeeded},
+		{"request size", models.UpdateServiceInput{MaxRequestBodySizeMB: utils.ToPtr[int32](1024)}, service_repo.NeedsDeployment},
+		{"request size reset", models.UpdateServiceInput{MaxRequestBodySizeMB: utils.ToPtr[int32](0)}, service_repo.NeedsDeployment},
 		{"hosts", models.UpdateServiceInput{UpsertHosts: []schema.HostSpec{{Host: "example.com"}}}, service_repo.NeedsDeployment},
 		{"ports", models.UpdateServiceInput{RemovePorts: []schema.PortSpec{{Port: 3000}}}, service_repo.NeedsDeployment},
 		{"resources", models.UpdateServiceInput{Resources: &schema.Resources{}}, service_repo.NeedsDeployment},

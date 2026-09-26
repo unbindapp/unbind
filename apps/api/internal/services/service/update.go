@@ -151,6 +151,10 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot update builder for docker image or database service")
 	}
 
+	if input.MaxRequestBodySizeMB != nil && service.Type == schema.ServiceTypeDatabase {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no request size limit")
+	}
+
 	// For database we don't want to set ports
 	if service.Type == schema.ServiceTypeDatabase {
 		input.OverwritePorts = nil
@@ -457,6 +461,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			RailpackBuilderBuildCommand:   input.RailpackBuilderBuildCommand,
 			RunCommand:                    input.RunCommand,
 			Public:                        input.IsPublic,
+			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
 			Image:                         input.Image,
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     input.DockerBuilderBuildContext,
@@ -593,6 +598,13 @@ func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, inpu
 			})
 		}
 
+		if input.MaxRequestBodySizeMB != nil {
+			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
+				Name:  "Max Request Size",
+				Value: requestSizeLabel(*input.MaxRequestBodySizeMB),
+			})
+		}
+
 		if input.DockerBuilderDockerfilePath != nil {
 			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
 				Name:  "Dockerfile Path",
@@ -693,4 +705,11 @@ func newVolumes(existing []schema.ServiceVolume, lists ...[]schema.ServiceVolume
 		added = append(added, volume)
 	}
 	return added
+}
+
+func requestSizeLabel(sizeMB int32) string {
+	if sizeMB == 0 {
+		return "Default"
+	}
+	return fmt.Sprintf("%d MB", sizeMB)
 }
