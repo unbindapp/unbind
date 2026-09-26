@@ -2,12 +2,12 @@ import { useReducedMotion } from "motion/react";
 import { useEffect, useRef } from "react";
 
 // Share of the border the streak covers, from 0 to 1
-const streakLengthRatio = 0.15;
+const streakLengthRatio = 0.2;
 // Share of the streak that fades in at its head, from 0 to 1
-const tipRatio = 0.2;
+const tipRatio = 0.5;
 const lapMs = 6000;
 // One copy of the streak per blur, stacked in this order
-const layerBlurs = ["blur-md", "blur-sm", "blur-xs", "blur-[1px]"];
+const layerBlurs = ["blur-md", "blur-sm", "blur-xs", "blur-none"];
 
 type TRegion = [x: number, y: number, width: number, height: number];
 
@@ -167,7 +167,7 @@ export default function BorderStreak() {
     <div
       ref={rootRef}
       aria-hidden
-      className="text-change pointer-events-none absolute -inset-px rounded-lg"
+      className="text-change/9-10 pointer-events-none absolute -inset-px rounded-lg"
     >
       {layerBlurs.map((blur) => (
         <canvas key={blur} className={`absolute inset-0 size-full ${blur}`} />

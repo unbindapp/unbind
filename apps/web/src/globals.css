@@ -126,6 +126,7 @@
 
   --opacity-barrier: var(--opacity-barrier);
   --opacity-shadow-opacity: var(--opacity-shadow);
+  --opacity-shadow-opacity-stronger: var(--opacity-shadow-stronger);
   --opacity-1-10: var(--opacity-1-10);
   --opacity-2-10: var(--opacity-2-10);
   --opacity-3-10: var(--opacity-3-10);

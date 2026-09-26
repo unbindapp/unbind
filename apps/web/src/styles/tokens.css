@@ -144,6 +144,7 @@
 
   --opacity-barrier: 70%;
   --opacity-shadow: 6%;
+  --opacity-shadow-stronger: 10%;
 
   --opacity-1-10: 6%;
   --opacity-2-10: 8%;
@@ -280,6 +281,7 @@
 
   --opacity-barrier: 75%;
   --opacity-shadow: 50%;
+  --opacity-shadow-stronger: 75%;
 
   --opacity-1-10: 4%;
   --opacity-2-10: 6%;
