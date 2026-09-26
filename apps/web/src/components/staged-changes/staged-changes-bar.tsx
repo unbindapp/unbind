@@ -49,8 +49,10 @@ const landingSpring = { type: "spring", stiffness: 250, damping: 32 } as const;
 const emptySize: TSize = { width: 0, height: 0 };
 // How far past the bounds the bar follows the pointer
 const overdragFactor = 0.15;
-// Round glows, each trailing the one before, so the streak bends around the corners
-const streakTrail = [1, 0.6, 0.35, 0.18, 0.08];
+// Percent of the border's length
+const streakLength = 15;
+// Pieces the streak fades over, from its head to its tail
+const streakSegments = 12;
 const streakBlurs = ["blur-md", "blur-sm", "blur-xs"];
 
 function rubberBand(value: number, min: number, max: number) {
@@ -353,19 +355,38 @@ export default function StagedChangesBar() {
   );
 }
 
+// A dash that trails the streak's head by index segments, on a path that is 100 long
+function streakSegmentDashes(index: number, segmentLength: number) {
+  const trail = index * segmentLength;
+  return `0 ${100 - trail - segmentLength} ${segmentLength} ${trail}`;
+}
+
 // Sits on the border, so the streak only lights up the border's pixels. A blur on the
 // outer div spreads that light past the border
 function BorderStreak({ className }: { className?: string }) {
+  const segmentLength = streakLength / streakSegments;
   return (
-    <div className={cn("pointer-events-none absolute -inset-px motion-reduce:hidden", className)}>
+    <div
+      className={cn(
+        "pointer-events-none absolute -inset-px group-data-error/wrapper:hidden motion-reduce:hidden",
+        className,
+      )}
+    >
       <div className="mask-edge absolute inset-0 rounded-lg p-px">
-        {streakTrail.map((opacity, index) => (
-          <div
-            key={index}
-            style={{ opacity, "--streak-lag": `${index * 0.75}rem` } as React.CSSProperties}
-            className="from-change group-data-error/wrapper:from-destructive animate-border-streak absolute top-0 left-0 hidden size-12 bg-radial to-transparent to-70% [offset-path:inset(0_round_var(--radius-lg))] supports-[offset-path:inset(0)]:block"
-          />
-        ))}
+        <svg aria-hidden className="absolute inset-0 size-full overflow-visible">
+          {Array.from({ length: streakSegments }, (_, index) => (
+            <rect
+              key={index}
+              width="100%"
+              height="100%"
+              pathLength={100}
+              strokeWidth={2}
+              strokeDasharray={streakSegmentDashes(index, segmentLength)}
+              opacity={1 - index / streakSegments}
+              className="stroke-change animate-border-streak fill-none [rx:var(--radius-lg)]"
+            />
+          ))}
+        </svg>
       </div>
     </div>
   );

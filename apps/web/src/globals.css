@@ -232,10 +232,10 @@
   }
   @keyframes border-streak {
     0% {
-      offset-distance: calc(0% - var(--streak-lag, 0rem));
+      stroke-dashoffset: 0;
     }
     100% {
-      offset-distance: calc(100% - var(--streak-lag, 0rem));
+      stroke-dashoffset: -100;
     }
   }
   @keyframes line-in {
