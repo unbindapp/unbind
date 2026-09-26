@@ -334,7 +334,12 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
         <Block>
           <BlockItem id={settingsIds.networking.maxRequestSize} className="w-full md:w-full">
             <BlockItemHeader type="column">
-              <BlockItemTitle>Max Request Size</BlockItemTitle>
+              <BlockItemTitle>
+                Max Request Size{" "}
+                <span className="text-muted-more-foreground font-normal">
+                  (<span className="text-muted-foreground">MB</span>)
+                </span>
+              </BlockItemTitle>
               <BlockItemDescription>
                 Requests above this size are refused by the service.
               </BlockItemDescription>

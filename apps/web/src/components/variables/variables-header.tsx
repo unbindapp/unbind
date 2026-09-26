@@ -58,20 +58,18 @@ export default function VariablesHeader({ tokensDisabled, lockedVariables }: TPr
     if (type === "team")
       return (
         <>
-          Team Variables{" "}
-          <span className="text-muted-foreground font-normal">({variableCount})</span>
+          Team Variables <Count>{variableCount}</Count>
         </>
       );
     if (type === "project")
       return (
         <>
-          Project Variables{" "}
-          <span className="text-muted-foreground font-normal">({variableCount})</span>
+          Project Variables <Count>{variableCount}</Count>
         </>
       );
     return (
       <>
-        Variables <span className="text-muted-foreground font-normal">({variableCount})</span>
+        Variables <Count>{variableCount}</Count>
       </>
     );
   }, [variables, isPending, error, type]);
@@ -121,5 +119,13 @@ export default function VariablesHeader({ tokensDisabled, lockedVariables }: TPr
         className={cn("mt-1", isOpen && "rounded-tl-none sm:rounded-xl sm:rounded-tr-none")}
       />
     </div>
+  );
+}
+
+function Count({ children }: { children: number }) {
+  return (
+    <span className="text-muted-more-foreground font-normal">
+      (<span className="text-muted-foreground">{children}</span>)
+    </span>
   );
 }

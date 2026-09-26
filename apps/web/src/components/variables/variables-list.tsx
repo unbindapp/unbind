@@ -212,8 +212,8 @@ function ProvidedVariablesSection({
         className={cn("w-full px-1 pt-3 pb-2 leading-tight font-medium wrap-break-word", className)}
       >
         Provided by Unbind{" "}
-        <span className="text-muted-foreground font-normal">
-          ({provided.length + pendingNames.length})
+        <span className="text-muted-more-foreground font-normal">
+          (<span className="text-muted-foreground">{provided.length + pendingNames.length}</span>)
         </span>
       </li>
       {pendingNames.length > 0 && (
