@@ -336,7 +336,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Max Request Size</BlockItemTitle>
               <BlockItemDescription>
-                The largest request body the service's domains accept.
+                Requests above this size are refused by the service.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>

@@ -61,7 +61,7 @@ export function DraftInput({
   };
 
   const input = (
-    <div className="relative w-full min-w-0">
+    <div className="relative min-w-0 flex-1">
       <Icon
         className={cn(
           "pointer-events-none absolute top-3 left-3.25 size-4.5",

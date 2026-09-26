@@ -117,7 +117,7 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
       {
         id: settingsIds.networking.maxRequestSize,
         title: "Max Request Size",
-        description: "The largest request body the service's domains accept.",
+        description: "Requests above this size are refused by the service.",
         keywords: ["request", "body", "upload", "file", "size", "limit", "413", "payload"],
       },
     ],
