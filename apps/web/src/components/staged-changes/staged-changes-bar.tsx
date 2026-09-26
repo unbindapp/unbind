@@ -298,9 +298,13 @@ export default function StagedChangesBar() {
           data-closed={isHidden || undefined}
           data-edge={edge}
           data-held={isHeld || undefined}
-          className="bg-card group/wrapper border-change/7-10 shadow-shadow-color/shadow-opacity data-error:border-destructive/7-10 flex h-(--changes-bar-height) w-full items-center gap-2 overflow-hidden rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),scale_150ms_ease-out] data-closed:pointer-events-none data-held:scale-96 data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))] sm:min-w-92"
+          className="bg-card group/wrapper border-change/7-10 shadow-shadow-color/shadow-opacity data-error:border-destructive/7-10 flex h-(--changes-bar-height) w-full items-center gap-2 rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),scale_150ms_ease-out] data-closed:pointer-events-none data-held:scale-96 data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))] sm:min-w-92"
         >
-          <div className="bg-change/2-10 group-data-error/wrapper:bg-destructive/2-10 absolute top-0 left-0 h-full w-full" />
+          <div className="bg-change/2-10 group-data-error/wrapper:bg-destructive/2-10 absolute top-0 left-0 h-full w-full rounded-[calc(var(--radius-lg)-1px)]" />
+          {/* Sits on the border, so the streak only lights up the border's pixels */}
+          <div className="mask-edge pointer-events-none absolute -inset-px rounded-lg p-px motion-reduce:hidden">
+            <div className="from-change group-data-error/wrapper:from-destructive animate-border-streak absolute top-0 left-0 hidden h-2 w-24 bg-linear-to-l to-transparent [offset-path:inset(0_round_var(--radius-lg))] supports-[offset-path:inset(0)]:block" />
+          </div>
           <motion.div
             onPointerDown={onHandlePointerDown}
             onPanStart={onPanStart}
