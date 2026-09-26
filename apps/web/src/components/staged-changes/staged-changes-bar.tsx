@@ -12,6 +12,7 @@ import {
   type TPoint,
   type TSize,
 } from "@/components/staged-changes/bar-position";
+import BorderStreak from "@/components/staged-changes/border-streak";
 import StagedChangesDetailsDialog from "@/components/staged-changes/staged-changes-details-dialog";
 import {
   useIsApplying,
@@ -38,7 +39,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useMainStore } from "@/components/stores/main/main-store-provider";
-import { cn } from "@/components/ui/utils";
 import { EllipsisVerticalIcon, GripVerticalIcon, LoaderIcon, Undo2Icon } from "lucide-react";
 import { animate, motion, useMotionValue, useReducedMotion, type PanInfo } from "motion/react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -49,9 +49,6 @@ const landingSpring = { type: "spring", stiffness: 250, damping: 32 } as const;
 const emptySize: TSize = { width: 0, height: 0 };
 // How far past the bounds the bar follows the pointer
 const overdragFactor = 0.15;
-// Of the border's length, from 0 to 1
-const streakLengthRatio = 0.15;
-const streakBlurs = ["blur-md", "blur-sm", "blur-xs"];
 
 function rubberBand(value: number, min: number, max: number) {
   if (value < min) return min + (value - min) * overdragFactor;
@@ -305,10 +302,7 @@ export default function StagedChangesBar() {
           className="bg-card group/wrapper border-change/7-10 shadow-shadow-color/shadow-opacity data-error:border-destructive/7-10 flex h-(--changes-bar-height) w-full items-center gap-2 rounded-lg border p-1.5 shadow-lg will-change-transform [transition:transform_500ms_cubic-bezier(0.22,1,0.36,1),scale_150ms_ease-out] data-closed:pointer-events-none data-held:scale-96 data-[edge=bottom]:data-closed:transform-[translateY(calc(100%+var(--changes-bar-inset-bottom)+1rem))] data-[edge=top]:data-closed:transform-[translateY(calc(-100%-var(--changes-bar-inset-top)-1rem))] sm:min-w-92"
         >
           <div className="bg-change/2-10 group-data-error/wrapper:bg-destructive/2-10 absolute top-0 left-0 h-full w-full rounded-[calc(var(--radius-lg)-1px)]" />
-          {streakBlurs.map((blur) => (
-            <BorderStreak key={blur} className={blur} />
-          ))}
-          <BorderStreak />
+          {!hasError && <BorderStreak />}
           <motion.div
             onPointerDown={onHandlePointerDown}
             onPanStart={onPanStart}
@@ -349,32 +343,6 @@ export default function StagedChangesBar() {
           </div>
         </div>
       </motion.div>
-    </div>
-  );
-}
-
-// Sits on the border, so the streak only lights up the border's pixels. A blur on the
-// outer div spreads that light past the border
-function BorderStreak({ className }: { className?: string }) {
-  return (
-    <div
-      className={cn(
-        "pointer-events-none absolute -inset-px group-data-error/wrapper:hidden motion-reduce:hidden",
-        className,
-      )}
-    >
-      <div className="mask-edge absolute inset-0 rounded-lg p-px">
-        <svg aria-hidden className="absolute inset-0 size-full overflow-visible">
-          <rect
-            width="100%"
-            height="100%"
-            pathLength={1}
-            strokeWidth={2}
-            strokeDasharray={`${streakLengthRatio} ${1 - streakLengthRatio}`}
-            className="stroke-change animate-border-streak fill-none [rx:var(--radius-lg)]"
-          />
-        </svg>
-      </div>
     </div>
   );
 }

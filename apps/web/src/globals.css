@@ -25,12 +25,6 @@
   mask-position: center;
 }
 
-@utility mask-edge {
-  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-  mask-clip: content-box, border-box;
-  mask-composite: exclude;
-}
-
 @utility scrollbar-hidden {
   &::-webkit-scrollbar {
     display: none;
@@ -116,7 +110,6 @@
   --animate-line-in: line-in 0.01s step-end forwards;
   --animate-ping-pong: ping-pong 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
   --animate-ping-pong-long: ping-pong 4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  --animate-border-streak: border-streak 6s linear infinite;
 
   --radius-px: 1px;
   --radius-2px: 2px;
@@ -228,14 +221,6 @@
     }
     100% {
       transform: rotate(360deg);
-    }
-  }
-  @keyframes border-streak {
-    0% {
-      stroke-dashoffset: 0;
-    }
-    100% {
-      stroke-dashoffset: -1;
     }
   }
   @keyframes line-in {
