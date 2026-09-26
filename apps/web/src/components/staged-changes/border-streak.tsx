@@ -3,8 +3,11 @@ import { useEffect, useRef } from "react";
 
 // Share of the border the streak covers, from 0 to 1
 const streakLengthRatio = 0.15;
+// Share of the streak that fades in at its head, from 0 to 1
+const tipRatio = 0.2;
 const lapMs = 6000;
-const glowBlurs = ["blur-md", "blur-sm", "blur-xs"];
+// One copy of the streak per blur, stacked in this order
+const layerBlurs = ["blur-md", "blur-sm", "blur-xs", "blur-[1px]"];
 
 type TRegion = [x: number, y: number, width: number, height: number];
 
@@ -65,13 +68,17 @@ function drawStreak(ctx: CanvasRenderingContext2D, frame: TStreakFrame) {
   const parts = borderParts(width, height, radius);
   const perimeter = parts.reduce((sum, part) => sum + part.length, 0);
   const streakLength = perimeter * streakLengthRatio;
+  const tipLength = streakLength * tipRatio;
   const head = progress * perimeter;
   const alphaAt = (distance: number) => {
     const behind = (((head - distance) % perimeter) + perimeter) % perimeter;
-    return behind <= streakLength ? 1 - behind / streakLength : 0;
+    if (behind > streakLength) return 0;
+    if (behind < tipLength) return behind / tipLength;
+    return 1 - (behind - tipLength) / (streakLength - tipLength);
   };
   const breakpoints = [-1, 0, 1].flatMap((lap) => [
     head + lap * perimeter,
+    head - tipLength + lap * perimeter,
     head - streakLength + lap * perimeter,
   ]);
   const epsilon = 1e-3;
@@ -113,7 +120,7 @@ function fitCanvas(canvas: HTMLCanvasElement, width: number, height: number) {
 }
 
 // A light that runs along the border with a fading tail. The blurred copies spread it past
-// the border so it reads as light rather than a line
+// the border so it reads as light rather than a line. The first canvas is drawn, the rest copy it
 export default function BorderStreak() {
   const rootRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
@@ -121,11 +128,10 @@ export default function BorderStreak() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const canvases = [...root.querySelectorAll("canvas")];
-    const core = canvases.at(-1);
-    const ctx = core?.getContext("2d");
-    if (!core || !ctx) return;
-    const glows = canvases.slice(0, -1);
+    const [source, ...copies] = root.querySelectorAll("canvas");
+    const ctx = source?.getContext("2d");
+    if (!source || !ctx) return;
+    const canvases = [source, ...copies];
 
     let frameId = requestAnimationFrame(function render(now) {
       frameId = requestAnimationFrame(render);
@@ -146,11 +152,11 @@ export default function BorderStreak() {
         color: style.color,
         progress: (now % lapMs) / lapMs,
       });
-      for (const glow of glows) {
-        const glowCtx = glow.getContext("2d");
-        if (!glowCtx) continue;
-        glowCtx.clearRect(0, 0, pixelWidth, pixelHeight);
-        glowCtx.drawImage(core, 0, 0);
+      for (const copy of copies) {
+        const copyCtx = copy.getContext("2d");
+        if (!copyCtx) continue;
+        copyCtx.clearRect(0, 0, pixelWidth, pixelHeight);
+        copyCtx.drawImage(source, 0, 0);
       }
     });
     return () => cancelAnimationFrame(frameId);
@@ -163,10 +169,9 @@ export default function BorderStreak() {
       aria-hidden
       className="text-change pointer-events-none absolute -inset-px rounded-lg"
     >
-      {glowBlurs.map((blur) => (
+      {layerBlurs.map((blur) => (
         <canvas key={blur} className={`absolute inset-0 size-full ${blur}`} />
       ))}
-      <canvas className="absolute inset-0 size-full" />
     </div>
   );
 }
