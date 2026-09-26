@@ -5,11 +5,16 @@ import NoItemsCard from "@/components/no-items-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { providedVariablesKey } from "@/components/variables/constants";
-import { pendingDatabaseUrlNames, splitProvidedVariables } from "@/components/variables/helpers";
+import {
+  expectedProvidedVariableCounts,
+  pendingDatabaseUrlNames,
+  splitProvidedVariables,
+} from "@/components/variables/helpers";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import VariableCard from "@/components/variables/variable-card";
 import type { TVariableWithStaged } from "@/components/variables/variables-provider";
 import { useVariables } from "@/components/variables/variables-provider";
+import type { TServiceShallow } from "@/lib/queries/services";
 import { TVariableShallow } from "@/lib/queries/variables";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
@@ -26,7 +31,7 @@ type TProps = {
   variableTypeProps: TEntityVariableTypeProps;
 };
 
-const placeholderArray = Array.from({ length: 10 });
+const placeholderCount = 5;
 
 // The credentials the engine generates. Everything else about reaching a database
 // is computed from them, so these are what the panel waits for.
@@ -74,6 +79,8 @@ export default function VariablesList({ variableTypeProps }: TProps) {
   const { isOpen: isProvidedVariablesOpen, setIsOpen: setIsProvidedVariablesOpen } =
     useProvidedVariablesOpen();
 
+  const databaseType = databaseTypeOf(variableTypeProps);
+
   if (!variables && !isPending && error) {
     return (
       <Wrapper>
@@ -83,16 +90,23 @@ export default function VariablesList({ variableTypeProps }: TProps) {
   }
 
   if (!variables || isPending) {
+    const count =
+      databaseType === null ? placeholderCount : specialDbVariablesFor(databaseType).length;
     return (
       <Wrapper>
-        {placeholderArray.map((_, i) => (
+        {Array.from({ length: count }).map((_, i) => (
           <VariableCard asElement="li" key={i} isPlaceholder />
         ))}
+        {variableTypeProps.type === "service" && (
+          <ProvidedVariablesPlaceholder
+            service={variableTypeProps.service}
+            isOpen={isProvidedVariablesOpen}
+          />
+        )}
       </Wrapper>
     );
   }
 
-  const databaseType = databaseTypeOf(variableTypeProps);
   const showSpecialDbVariablesSection =
     databaseType !== null &&
     !arrayHasAllSpecialDbVariables(
@@ -208,14 +222,10 @@ function ProvidedVariablesSection({
 
   return (
     <>
-      <li
-        className={cn("w-full px-1 pt-3 pb-2 leading-tight font-medium wrap-break-word", className)}
-      >
-        Provided by Unbind{" "}
-        <span className="text-muted-more-foreground font-normal">
-          (<span className="text-muted-foreground">{provided.length + pendingNames.length}</span>)
-        </span>
-      </li>
+      <ProvidedVariablesHeading
+        count={provided.length + pendingNames.length}
+        className={className}
+      />
       {pendingNames.length > 0 && (
         <WaitingForDatabaseVariables names={pendingNames} variableTypeProps={variableTypeProps} />
       )}
@@ -230,19 +240,94 @@ function ProvidedVariablesSection({
         />
       ))}
       {extras.length > 0 && (
-        <Button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-muted-foreground group/button w-full px-4 text-left font-medium"
-          variant="ghost"
-          data-open={isOpen ? "true" : undefined}
-        >
-          <span className="min-w-0 shrink truncate">
-            {isOpen ? "Show less" : `Show ${extras.length} more`}
-          </span>
-          <ChevronDownIcon className="text-muted-more-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground -mr-0.5 size-5 shrink-0 transition-transform group-data-open/button:rotate-180" />
-        </Button>
+        <ShowMoreButton count={extras.length} isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
       )}
     </>
+  );
+}
+
+function ProvidedVariablesPlaceholder({
+  service,
+  isOpen,
+}: {
+  service: TServiceShallow;
+  isOpen: boolean;
+}) {
+  const { urls, extras } = expectedProvidedVariableCounts(
+    service.config,
+    service.type === "database",
+  );
+  if (urls + extras === 0) return null;
+
+  const visibleCount = isOpen ? urls + extras : urls;
+
+  return (
+    <>
+      <ProvidedVariablesHeading count={urls + extras} className="mt-2" isPlaceholder />
+      {Array.from({ length: visibleCount }).map((_, i) => (
+        <VariableCard asElement="li" key={i} isPlaceholder hideThreeDotButton />
+      ))}
+      {extras > 0 && <ShowMoreButton count={extras} isOpen={isOpen} isPlaceholder />}
+    </>
+  );
+}
+
+function ProvidedVariablesHeading({
+  count,
+  className,
+  isPlaceholder,
+}: {
+  count: number;
+  className?: string;
+  isPlaceholder?: boolean;
+}) {
+  return (
+    <li
+      data-placeholder={isPlaceholder || undefined}
+      className={cn(
+        "group/heading w-full px-1 pt-3 pb-2 leading-tight font-medium wrap-break-word",
+        className,
+      )}
+    >
+      <span className="group-data-placeholder/heading:bg-foreground group-data-placeholder/heading:animate-skeleton group-data-placeholder/heading:rounded-md group-data-placeholder/heading:text-transparent">
+        Provided by Unbind{" "}
+        <span className="text-muted-more-foreground font-normal group-data-placeholder/heading:text-transparent">
+          (
+          <span className="text-muted-foreground group-data-placeholder/heading:text-transparent">
+            {count}
+          </span>
+          )
+        </span>
+      </span>
+    </li>
+  );
+}
+
+function ShowMoreButton({
+  count,
+  isOpen,
+  onClick,
+  isPlaceholder,
+}: {
+  count: number;
+  isOpen?: boolean;
+  onClick?: () => void;
+  isPlaceholder?: boolean;
+}) {
+  return (
+    <Button
+      onClick={onClick}
+      disabled={isPlaceholder}
+      className="text-muted-foreground group/button w-full px-4 text-left font-medium"
+      variant="ghost"
+      data-open={isOpen ? "true" : undefined}
+      data-placeholder={isPlaceholder || undefined}
+    >
+      <span className="group-data-placeholder/button:bg-muted-foreground group-data-placeholder/button:animate-skeleton min-w-0 shrink truncate group-data-placeholder/button:rounded-md group-data-placeholder/button:text-transparent">
+        {isOpen ? "Show less" : `Show ${count} more`}
+      </span>
+      <ChevronDownIcon className="text-muted-more-foreground group-hover/button:text-muted-foreground group-active/button:text-muted-foreground group-data-placeholder/button:bg-muted-more-foreground group-data-placeholder/button:animate-skeleton -mr-0.5 size-5 shrink-0 transition-transform group-data-open/button:rotate-180 group-data-placeholder/button:rounded-md group-data-placeholder/button:text-transparent" />
+    </Button>
   );
 }
 

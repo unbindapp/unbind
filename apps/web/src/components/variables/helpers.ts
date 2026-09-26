@@ -179,6 +179,51 @@ export function splitProvidedVariables<T extends { name: string }>(provided: rea
   return { urls, extras };
 }
 
+type TEndpointConfig = {
+  is_public: boolean;
+  hosts: { target_port?: number }[];
+  ports: { port: number; protocol?: string; is_nodeport?: boolean; node_port?: number }[];
+};
+
+// The shape of the Provided by Unbind section, worked out from the service config the
+// way the API names its endpoint keys, so the loading state can match it
+export function expectedProvidedVariableCounts(config: TEndpointConfig, isDatabase: boolean) {
+  const privateCount = config.ports.filter(
+    (p) => p.protocol !== "UDP" && (!p.is_nodeport || isDatabase),
+  ).length;
+  const publicCount = distinctEndpointKeyCount(publicEndpointTargets(config, isDatabase));
+  return {
+    urls: privateCount + publicCount,
+    extras: (privateCount > 0 ? 1 : 0) + privateCount + publicCount * 2,
+  };
+}
+
+function publicEndpointTargets(config: TEndpointConfig, isDatabase: boolean) {
+  if (!config.is_public) return [];
+
+  const nodePorts = new Set(
+    config.ports.filter((p) => p.is_nodeport && p.node_port !== undefined).map((p) => p.port),
+  );
+  const targets: number[] = [];
+  const fronted = new Set<number>();
+  for (const host of config.hosts) {
+    const bridged = host.target_port !== undefined && nodePorts.has(host.target_port);
+    if (!bridged && isDatabase) continue;
+    targets.push(host.target_port ?? 0);
+    if (host.target_port !== undefined) fronted.add(host.target_port);
+  }
+  for (const port of nodePorts) {
+    if (!fronted.has(port)) targets.push(port);
+  }
+  return targets;
+}
+
+// The first endpoint and every one with no target port share the bare key
+function distinctEndpointKeyCount(targets: number[]) {
+  if (targets.length === 0) return 0;
+  return 1 + targets.slice(1).filter((target) => target !== 0).length;
+}
+
 const PROVIDED_PORT_PREFIX = "UNBIND_PORT_";
 const PROVIDED_DATABASE_URL_PREFIX = "UNBIND_DATABASE_URL_";
 

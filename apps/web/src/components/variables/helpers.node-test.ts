@@ -3,6 +3,7 @@ import { test } from "node:test";
 
 import {
   envVariableNameAt,
+  expectedProvidedVariableCounts,
   findChangedLockedVariable,
   getVariablesFromRawText,
   referencesForVariable,
@@ -328,4 +329,56 @@ test("envVariableNameAt reads the name of the line at the cursor", () => {
   assert.equal(envVariableNameAt(doc, doc.indexOf("${") + 2), "PUBLIC_URL");
   assert.equal(envVariableNameAt(doc, doc.indexOf("equals")), undefined);
   assert.equal(envVariableNameAt(doc, doc.length), "B");
+});
+
+test("expectedProvidedVariableCounts matches the endpoint keys the API provides", () => {
+  const web = { is_public: false, hosts: [], ports: [{ port: 8080 }] };
+  assert.deepEqual(expectedProvidedVariableCounts(web, false), { urls: 1, extras: 2 });
+  assert.deepEqual(
+    expectedProvidedVariableCounts(
+      { ...web, is_public: true, hosts: [{ target_port: 8080 }] },
+      false,
+    ),
+    { urls: 2, extras: 4 },
+  );
+
+  // Hosts without a target port share the bare key, UDP ports have no URL
+  assert.deepEqual(
+    expectedProvidedVariableCounts(
+      { is_public: true, hosts: [{}, {}], ports: [{ port: 3000 }, { port: 53, protocol: "UDP" }] },
+      false,
+    ),
+    { urls: 2, extras: 4 },
+  );
+
+  // A node port no host fronts is reached at the cluster address, and is external only
+  assert.deepEqual(
+    expectedProvidedVariableCounts(
+      {
+        is_public: true,
+        hosts: [{ target_port: 8080 }],
+        ports: [{ port: 8080 }, { port: 25565, is_nodeport: true, node_port: 30001 }],
+      },
+      false,
+    ),
+    { urls: 3, extras: 6 },
+  );
+
+  // A database host needs a node port behind it
+  assert.deepEqual(
+    expectedProvidedVariableCounts(
+      {
+        is_public: true,
+        hosts: [{ target_port: 5432 }, { target_port: 9999 }],
+        ports: [{ port: 5432, is_nodeport: true, node_port: 30432 }],
+      },
+      true,
+    ),
+    { urls: 2, extras: 4 },
+  );
+
+  assert.deepEqual(
+    expectedProvidedVariableCounts({ is_public: true, hosts: [], ports: [] }, false),
+    { urls: 0, extras: 0 },
+  );
 });
