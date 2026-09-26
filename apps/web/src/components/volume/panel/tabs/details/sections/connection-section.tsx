@@ -17,6 +17,7 @@ import {
 } from "@/components/service/service-picker";
 import { useServices } from "@/components/service/services-provider";
 import { volumeSettingsIds } from "@/components/settings/settings-ids";
+import { DraftInput } from "@/components/settings/draft-input";
 import { SettingsSection } from "@/components/settings/settings-section";
 import {
   useStagedChangesStore,
@@ -24,7 +25,6 @@ import {
 } from "@/components/staged-changes/staged-changes-provider";
 import { volumeChangeId } from "@/components/staged-changes/types";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/components/ui/utils";
 import { getVolumeDisplayName } from "@/components/volume/helpers";
 import { getMountPathError, MountPathSchema } from "@/components/volume/mount-path";
@@ -33,16 +33,14 @@ import { TVolumeShallow } from "@/lib/queries/services";
 import { AnyFieldApi, useStore } from "@tanstack/react-form";
 import {
   BoxIcon,
-  CheckIcon,
   EjectIcon,
   FolderClosedIcon,
   HourglassIcon,
   HardDriveIcon,
   RotateCcwIcon,
   UnplugIcon,
-  XIcon,
 } from "lucide-react";
-import { ReactNode, useCallback, useEffect, useMemo, useRef } from "react";
+import { ReactNode, useCallback, useEffect, useMemo } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -474,120 +472,17 @@ type TMountPathFieldProps = {
   disabledText?: string;
 };
 
-// Typing is a draft: it gets a cancel and a confirm button, and only a confirmed path
-// is staged. The field shows as changed only while the confirmed path differs from the
-// one revert brings back.
-function MountPathField({
-  field,
-  baseline,
-  revertTo,
-  disabled,
-  onConfirm,
-  onRevert,
-  disabledText,
-}: TMountPathFieldProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const value: string = field.state.value;
-  const isDraft = value !== baseline;
-  const draftError = isDraft ? getMountPathError(value) : null;
-  const isStaged = baseline !== revertTo;
-  const showRevert = !disabled && !isDraft && isStaged;
-  const showDraftButtons = !disabled && isDraft;
-
-  const cancel = () => {
-    field.handleChange(baseline);
-    inputRef.current?.focus();
-  };
-  const confirm = () => {
-    if (draftError) return;
-    onConfirm(value);
-  };
-
+function MountPathField({ field, ...props }: TMountPathFieldProps) {
   return (
-    <div className="flex w-full flex-col">
-      <div className="relative w-full">
-        <FolderClosedIcon
-          className={cn(
-            "pointer-events-none absolute top-3 left-3.25 size-4.5",
-            isStaged && "text-change",
-            disabled && "opacity-50",
-          )}
-        />
-        <Input
-          ref={inputRef}
-          value={disabled ? (disabledText ?? value) : value}
-          onBlur={field.handleBlur}
-          onChange={(e) => field.handleChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (!isDraft) return;
-            if (e.key === "Enter") {
-              e.preventDefault();
-              confirm();
-              return;
-            }
-            if (e.key !== "Escape") return;
-            e.preventDefault();
-            e.stopPropagation();
-            cancel();
-          }}
-          placeholder="/data"
-          aria-invalid={draftError !== null || undefined}
-          className={cn("w-full pl-9.5", showDraftButtons && "pr-20", showRevert && "pr-11.5")}
-          disabled={disabled}
-          hasChanges={isStaged}
-          autoCapitalize="off"
-          autoCorrect="off"
-          autoComplete="off"
-          spellCheck={false}
-        />
-        <div className="pointer-events-none absolute top-0 right-0 flex h-full items-center justify-end overflow-hidden pr-0.75">
-          <div
-            data-visible={showDraftButtons || showRevert || undefined}
-            className="flex translate-x-full items-center transition data-visible:translate-x-0"
-          >
-            {showDraftButtons ? (
-              <>
-                <Button
-                  type="button"
-                  aria-label="Cancel"
-                  onClick={cancel}
-                  variant="ghost"
-                  size="icon"
-                  className="pointer-events-auto rounded-md"
-                >
-                  <XIcon className="size-4.5" />
-                </Button>
-                <Button
-                  type="button"
-                  aria-label="Confirm"
-                  disabled={draftError !== null}
-                  onClick={confirm}
-                  variant="ghost-success"
-                  size="icon"
-                  className="pointer-events-auto rounded-md"
-                >
-                  <CheckIcon className="size-4.5" />
-                </Button>
-              </>
-            ) : (
-              <Button
-                type="button"
-                aria-label="Revert"
-                disabled={!showRevert}
-                onClick={onRevert}
-                variant={isStaged ? "ghost-change" : "ghost"}
-                data-staged={isStaged || undefined}
-                size="icon"
-                className="pointer-events-auto rounded-md"
-              >
-                <RotateCcwIcon className="size-4.5" />
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-      {draftError && <ErrorLine className="bg-transparent py-1.5 pl-1.5" message={draftError} />}
-    </div>
+    <DraftInput
+      value={field.state.value}
+      onChange={field.handleChange}
+      onBlur={field.handleBlur}
+      getError={getMountPathError}
+      Icon={FolderClosedIcon}
+      placeholder="/data"
+      {...props}
+    />
   );
 }
 

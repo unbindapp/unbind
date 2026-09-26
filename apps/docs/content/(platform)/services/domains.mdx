@@ -53,7 +53,7 @@ If the record is proxied through Cloudflare (orange cloud), Unbind shows **Cloud
 
 ## Max request size
 
-A request with a body larger than 100 MB, like a big file upload, is refused with `413 Request Entity Too Large`. To change it, set **Max Request Size** at the bottom of **Networking** in the service settings, anywhere from 1 MB to 10240 MB, and deploy. Clear the field to go back to 100 MB.
+A request with a body larger than 100 MB, like a big file upload, is refused with `413 Request Entity Too Large`. To change it, type a size from 1 MB to 10240 MB in **Max Request Size** at the bottom of **Networking** in the service settings, confirm it with the tick, and deploy. An empty field means 100 MB.
 
 The limit only exists on installs that route traffic with ingress-nginx or Traefik. Installs on Envoy Gateway, the default, accept any size and don't show the setting.
 
