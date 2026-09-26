@@ -49,10 +49,8 @@ const landingSpring = { type: "spring", stiffness: 250, damping: 32 } as const;
 const emptySize: TSize = { width: 0, height: 0 };
 // How far past the bounds the bar follows the pointer
 const overdragFactor = 0.15;
-// Percent of the border's length
-const streakLength = 15;
-// Pieces the streak fades over, from its head to its tail
-const streakSegments = 12;
+// Of the border's length, from 0 to 1
+const streakLengthRatio = 0.15;
 const streakBlurs = ["blur-md", "blur-sm", "blur-xs"];
 
 function rubberBand(value: number, min: number, max: number) {
@@ -355,16 +353,9 @@ export default function StagedChangesBar() {
   );
 }
 
-// A dash that trails the streak's head by index segments, on a path that is 100 long
-function streakSegmentDashes(index: number, segmentLength: number) {
-  const trail = index * segmentLength;
-  return `0 ${100 - trail - segmentLength} ${segmentLength} ${trail}`;
-}
-
 // Sits on the border, so the streak only lights up the border's pixels. A blur on the
 // outer div spreads that light past the border
 function BorderStreak({ className }: { className?: string }) {
-  const segmentLength = streakLength / streakSegments;
   return (
     <div
       className={cn(
@@ -374,18 +365,14 @@ function BorderStreak({ className }: { className?: string }) {
     >
       <div className="mask-edge absolute inset-0 rounded-lg p-px">
         <svg aria-hidden className="absolute inset-0 size-full overflow-visible">
-          {Array.from({ length: streakSegments }, (_, index) => (
-            <rect
-              key={index}
-              width="100%"
-              height="100%"
-              pathLength={100}
-              strokeWidth={2}
-              strokeDasharray={streakSegmentDashes(index, segmentLength)}
-              opacity={1 - index / streakSegments}
-              className="stroke-change animate-border-streak fill-none [rx:var(--radius-lg)]"
-            />
-          ))}
+          <rect
+            width="100%"
+            height="100%"
+            pathLength={1}
+            strokeWidth={2}
+            strokeDasharray={`${streakLengthRatio} ${1 - streakLengthRatio}`}
+            className="stroke-change animate-border-streak fill-none [rx:var(--radius-lg)]"
+          />
         </svg>
       </div>
     </div>

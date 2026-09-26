@@ -235,7 +235,7 @@
       stroke-dashoffset: 0;
     }
     100% {
-      stroke-dashoffset: -100;
+      stroke-dashoffset: -1;
     }
   }
   @keyframes line-in {
