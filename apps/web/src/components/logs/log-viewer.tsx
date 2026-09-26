@@ -4,6 +4,8 @@ import ErrorCard from "@/components/error-card";
 import ErrorLine from "@/components/error-line";
 import LogFiltersProvider, { useLogFilters } from "@/components/logs/log-filters-provider";
 import LogLine from "@/components/logs/log-line";
+import LogSearchBar from "@/components/logs/log-search-bar";
+import { matchesLogLineRef, nearestLogLineIndex } from "@/components/logs/log-utils";
 import LogViewDropdownProvider from "@/components/logs/log-view-dropdown-provider";
 import LogViewPreferencesProvider, {
   logViewPreferenceKeys,
@@ -17,16 +19,14 @@ import LogsProvider, {
   TServiceLogsProps,
   useLogs,
 } from "@/components/logs/logs-provider";
-import { matchesLogLineRef, nearestLogLineIndex } from "@/components/logs/log-utils";
-import LogSearchBar from "@/components/logs/log-search-bar";
 import TabWrapper from "@/components/navigation/tab-wrapper";
 import NoItemsCard from "@/components/no-items-card";
 import { useServices } from "@/components/service/services-provider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { TLogType } from "@/lib/queries/logs";
 import { settleScroll } from "@/lib/helpers/settle-scroll";
+import { TLogType } from "@/lib/queries/logs";
 import { useVirtualizer, type VirtualItem, type Virtualizer } from "@tanstack/react-virtual";
 import {
   ArrowDownIcon,

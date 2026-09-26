@@ -37,7 +37,7 @@ import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
 import { defaultFilter, useCommandState } from "cmdk";
 import { ChevronLeftIcon, ChevronRightIcon, LoaderIcon } from "lucide-react";
-import { ReactElement, FC, RefObject, useCallback, useEffect, useMemo, useRef } from "react";
+import { FC, ReactElement, RefObject, useCallback, useEffect, useMemo, useRef } from "react";
 
 type TProps = {
   open: boolean;
@@ -317,10 +317,11 @@ function Content({
       key={group.page.id}
       value={group.page.id}
       heading={
-        <>
-          <group.Icon className="-ml-0.5 size-4.5 shrink-0" />
-          <p className="min-w-0 shrink leading-tight">{group.page.title}</p>
-        </>
+        <div className="text-muted-foreground flex w-full items-center gap-1.5 py-0.5">
+          <group.Icon className="mt-[0.1lh] -ml-0.5 size-3.5 shrink-0 self-start" />
+          <p className="min-w-0 shrink pr-1 leading-tight font-medium">{group.page.title}</p>
+          <div className="mt-px flex h-px min-w-0 flex-1 items-center justify-end border-t border-dashed" />
+        </div>
       }
     >
       {group.items.map((item, i) => (
