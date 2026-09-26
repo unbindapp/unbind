@@ -26,9 +26,14 @@ const onlyMe = "me";
 
 export type TConnectTeam = { id: string; name: string };
 
-export function ConnectGithubCard({ teams }: { teams: TConnectTeam[] | undefined }) {
+// From a team page the app is shared with that team, from the account page the user picks
+export type TConnectSharing =
+  | { mode: "team"; team: TConnectTeam | undefined }
+  | { mode: "pick"; teams: TConnectTeam[] | undefined };
+
+export function ConnectGithubCard({ sharing }: { sharing: TConnectSharing }) {
   return (
-    <ConnectGithubTrigger teams={teams}>
+    <ConnectGithubTrigger sharing={sharing}>
       <Button
         variant="outline"
         className="text-muted-foreground flex w-full flex-row items-center justify-start rounded-xl px-4 py-3 font-medium"
@@ -40,14 +45,12 @@ export function ConnectGithubCard({ teams }: { teams: TConnectTeam[] | undefined
   );
 }
 
-// teams are the ones the app may be shared with: the current team on a team page,
-// every team the user can edit on the account page
 export function ConnectGithubTrigger({
-  teams,
+  sharing,
   handle,
   children,
 }: {
-  teams: TConnectTeam[] | undefined;
+  sharing: TConnectSharing;
   handle?: TDialogHandle;
   children: ReactElement;
 }) {
@@ -55,8 +58,10 @@ export function ConnectGithubTrigger({
   const dialogHandle = handle ?? internalHandle;
   const { invalidate } = useGithubAppsUtils();
 
+  const teams = sharing.mode === "pick" ? sharing.teams : undefined;
   const [visibility, setVisibility] = useState(onlyMe);
-  const sharedTeam = teams?.find((team) => team.id === visibility);
+  const sharedTeam =
+    sharing.mode === "team" ? sharing.team : sharing.teams?.find((team) => team.id === visibility);
   const [accountType, setAccountType] = useState<TAccountType>("personal");
   const [organization, setOrganization] = useState("");
   const [isPending, setIsPending] = useState(false);
@@ -139,11 +144,15 @@ export function ConnectGithubTrigger({
           </DialogTitle>
           <DialogDescription>
             A GitHub App is created on your account or organization.
+            {sharing.mode === "team" &&
+              ` Members of ${sharing.team?.name ?? "this team"} can see its repositories.`}
           </DialogDescription>
         </DialogHeader>
-        <Field label="Who should see the repositories?">
-          <ChoiceList items={visibilityItems} value={visibility} onChange={setVisibility} />
-        </Field>
+        {sharing.mode === "pick" && (
+          <Field label="Who should see the repositories?">
+            <ChoiceList items={visibilityItems} value={visibility} onChange={setVisibility} />
+          </Field>
+        )}
         <Field label="GitHub Account">
           <ChoiceList
             items={accountTypeItems}

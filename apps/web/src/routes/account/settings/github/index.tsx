@@ -28,7 +28,7 @@ function AccountGithubSettings() {
         GitHub Apps you connected. Share one with a team so its members can deploy from it.
       </p>
       <GithubAppsList view="account" className="mt-3">
-        <ConnectGithubCard teams={teams} />
+        <ConnectGithubCard sharing={{ mode: "pick", teams }} />
       </GithubAppsList>
     </GithubAppsProvider>
   );
