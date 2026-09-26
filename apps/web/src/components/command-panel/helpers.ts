@@ -1,5 +1,23 @@
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 
+export type TCommandPanelSearchGroup = {
+  page: TCommandPanelPage;
+  Icon: TCommandPanelItem["Icon"];
+  items: TCommandPanelItem[];
+};
+
+export function getSearchGroupsFromCommandPanelPage(
+  page: TCommandPanelPage,
+): TCommandPanelSearchGroup[] {
+  if (!page.items) return [];
+  return page.items.flatMap((item) => {
+    if (!item.subpage) return [];
+    const items = getAllItemsFromCommandPanelPage(item.subpage);
+    if (items.length === 0) return [];
+    return { page: item.subpage, Icon: item.Icon, items };
+  });
+}
+
 export function getAllItemsFromCommandPanelPage(page: TCommandPanelPage): TCommandPanelItem[] {
   if (!page.items) return [];
   return page.items.flatMap((item) => {

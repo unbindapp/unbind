@@ -1,5 +1,8 @@
 import { useCommandPanelItems } from "@/components/command-panel/command-panel-items-provier";
-import { getAllItemsFromCommandPanelPage } from "@/components/command-panel/helpers";
+import {
+  getSearchGroupsFromCommandPanelPage,
+  TCommandPanelSearchGroup,
+} from "@/components/command-panel/helpers";
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TCommandPanelPage } from "@/components/command-panel/types";
 import ErrorCard from "@/components/error-card";
@@ -58,9 +61,17 @@ const defaultDialogContentVariantOptions: TDialogContentVariants = {
   variant: "styleless",
 };
 
+type TCommandFilter = NonNullable<Parameters<typeof Command>[0]["filter"]>;
+
 // Items are keyed by id so same-titled items stay distinct, matching uses title + keywords
-const filterByKeywords: Parameters<typeof Command>[0]["filter"] = (_value, search, keywords) =>
+const filterByKeywords: TCommandFilter = (_value, search, keywords) =>
   defaultFilter(keywords?.join(" ") ?? "", search);
+
+const matchEverything: TCommandFilter = () => 1;
+
+function getItemKeywords(item: TCommandPanelItem) {
+  return [item.title, ...item.keywords];
+}
 
 export function CommandPanelTrigger({
   rootPage,
@@ -235,13 +246,14 @@ function CommandPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, isPending, items]);
 
+  const filter =
+    isPending || isError || currentPage.usesSearchAsync || currentPage.disableCommandFilter
+      ? matchEverything
+      : filterByKeywords;
+
   return (
     <Command
-      filter={
-        isPending || isError || currentPage.usesSearchAsync || currentPage.disableCommandFilter
-          ? () => 1
-          : filterByKeywords
-      }
+      filter={filter}
       value={value}
       onValueChange={setValue}
       {...commandVariantOptions}
@@ -257,6 +269,7 @@ function CommandPanel({
         currentPage={currentPage}
         setCurrentPageId={setCurrentPageId}
         scrollAreaRef={scrollAreaRef}
+        filter={filter}
       />
       <Footer rootPage={rootPage} currentPage={currentPage} goToParentPage={goToParentPage} />
     </Command>
@@ -267,18 +280,59 @@ function Content({
   currentPage,
   setCurrentPageId,
   scrollAreaRef,
+  filter,
 }: {
   currentPage: TCommandPanelPage;
   setCurrentPageId: TSetCurrentPageId;
   scrollAreaRef: RefObject<HTMLDivElement | null>;
+  filter: TCommandFilter;
 }) {
   const { items, isPending, isError, error, itemsPinned } = useCommandPanelItems();
-  const allItems = useMemo(() => getAllItemsFromCommandPanelPage(currentPage), [currentPage]);
+  const search = useCommandState((state) => state.search);
 
-  const allOtherItems = useMemo(() => {
-    if (!items) return [];
-    return allItems.filter((i) => !items.map((c) => c.title).includes(i.title));
-  }, [allItems, items]);
+  const searchGroups = useMemo(() => {
+    if (!search || isPending || isError) return [];
+    return getSearchGroupsFromCommandPanelPage(currentPage);
+  }, [currentPage, search, isPending, isError]);
+
+  // cmdk sorts items inside a group but its group reorder is a no-op in 1.1.1,
+  // so groups are ordered here by their best match, the way cmdk means to
+  const rootScore = useMemo(
+    () => getBestScore([...(itemsPinned ?? []), ...(items ?? [])], search, filter),
+    [itemsPinned, items, search, filter],
+  );
+  const sortedGroups = useMemo(
+    () =>
+      searchGroups
+        .map((group) => ({ group, score: getBestScore(group.items, search, filter) }))
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score),
+    [searchGroups, search, filter],
+  );
+  const groupsAboveRoot = sortedGroups.filter(({ score }) => score > rootScore);
+  const groupsBelowRoot = sortedGroups.filter(({ score }) => score <= rootScore);
+
+  const renderGroup = ({ group }: { group: TCommandPanelSearchGroup }) => (
+    <CommandGroup
+      key={group.page.id}
+      value={group.page.id}
+      heading={
+        <>
+          <group.Icon className="-ml-0.5 size-4.5 shrink-0" />
+          <p className="min-w-0 shrink leading-tight">{group.page.title}</p>
+        </>
+      }
+    >
+      {group.items.map((item, i) => (
+        <Item
+          key={`${item.id || item.title}-${i}`}
+          item={item}
+          currentPageId={currentPage.id}
+          setCurrentPageId={setCurrentPageId}
+        />
+      ))}
+    </CommandGroup>
+  );
 
   return (
     <>
@@ -292,7 +346,8 @@ function Content({
       )}
       <ScrollArea noFocusOnViewport viewportRef={scrollAreaRef}>
         <CommandList>
-          <CommandGroup>
+          {groupsAboveRoot.map(renderGroup)}
+          <CommandGroup key="root">
             {items && currentPage.ExplanationCard && (
               <ConditionalExplanationCard ExplanationCard={currentPage.ExplanationCard} />
             )}
@@ -309,16 +364,6 @@ function Content({
               items &&
               items.map((item, i) => (
                 <Item
-                  key={`${item.id || item.title}-${i}`}
-                  item={item}
-                  currentPageId={currentPage.id}
-                  setCurrentPageId={setCurrentPageId}
-                />
-              ))}
-            {!isPending &&
-              !isError &&
-              allOtherItems.map((item, i) => (
-                <ConditionalItem
                   key={`${item.id || item.title}-${i}`}
                   item={item}
                   currentPageId={currentPage.id}
@@ -344,6 +389,7 @@ function Content({
                 />
               ))}
           </CommandGroup>
+          {groupsBelowRoot.map(renderGroup)}
           {!items && !isPending && isError && (
             <div className="w-full p-1">
               <ErrorCard message={error?.message} />
@@ -352,6 +398,14 @@ function Content({
         </CommandList>
       </ScrollArea>
     </>
+  );
+}
+
+function getBestScore(items: TCommandPanelItem[], search: string, filter: TCommandFilter) {
+  if (!search) return 0;
+  return items.reduce(
+    (best, item) => Math.max(best, filter(item.id, search, getItemKeywords(item))),
+    0,
   );
 }
 
@@ -466,20 +520,6 @@ function Input({
   );
 }
 
-function ConditionalItem({
-  item,
-  currentPageId,
-  setCurrentPageId,
-}: {
-  item: TCommandPanelItem;
-  currentPageId: string;
-  setCurrentPageId: (id: string) => void;
-}) {
-  const search = useCommandState((state) => state.search);
-  if (!search) return null;
-  return <Item item={item} currentPageId={currentPageId} setCurrentPageId={setCurrentPageId} />;
-}
-
 function Item({
   item,
   setCurrentPageId,
@@ -537,7 +577,7 @@ function Item({
       data-has-description={item.description || undefined}
       data-error={item.isError || undefined}
       value={item.id}
-      keywords={[item.title, ...item.keywords]}
+      keywords={getItemKeywords(item)}
       className="group/item active:bg-border data-error:text-destructive data-error:data-[selected=true]:text-destructive flex w-full flex-row items-center justify-between gap-6 px-3.5 py-3 text-left font-medium data-has-description:py-2.75 data-placeholder:text-transparent"
       onSelect={onSelect}
       disabled={disabled || item.disabled}

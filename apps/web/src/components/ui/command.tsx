@@ -107,7 +107,15 @@ function CommandInput({
 }
 
 function CommandList({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) {
-  return <CommandPrimitive.List className={cn("p-1", className)} {...props} />;
+  return (
+    <CommandPrimitive.List
+      className={cn(
+        "p-1 [&_[cmdk-group]:not([hidden])~[cmdk-group]:not([hidden])]:mt-1",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 function CommandEmpty(props: React.ComponentProps<typeof CommandPrimitive.Empty>) {
@@ -123,7 +131,7 @@ function CommandGroup({
   return (
     <CommandPrimitive.Group
       className={cn(
-        "group/command text-foreground [&_[cmdk-group-heading]]:text-muted-foreground overflow-hidden [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium",
+        "group/command text-foreground [&_[cmdk-group-heading]]:text-muted-foreground overflow-hidden [&_[cmdk-group-heading]]:flex [&_[cmdk-group-heading]]:items-center [&_[cmdk-group-heading]]:gap-3 [&_[cmdk-group-heading]]:px-3.5 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-sm [&_[cmdk-group-heading]]:font-medium",
         className,
       )}
       {...props}
