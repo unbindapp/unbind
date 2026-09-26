@@ -517,6 +517,7 @@ export const ContainerStateSchema = z.enum([
   'crashing',
   'not_ready',
   'image_pull_error',
+  'launch_error',
   'starting',
 ]);
 
@@ -528,6 +529,7 @@ export const ContainerStatusSchema = z
     kubernetes_name: z.string(),
     last_exit_code: z.number().optional(),
     last_termination: z.string().optional(),
+    launch_error_reason: z.string().optional(),
     pod_created_at: z.string().datetime({ offset: true }).optional(),
     ready: z.boolean(),
     restart_count: z.number(),
@@ -2129,6 +2131,7 @@ export const PodContainerStatusSchema = z
     init_containers: z.array(ContainerStatusSchema),
     is_terminating: z.boolean(),
     kubernetes_name: z.string(),
+    launch_error_reason: z.string().optional(),
     namespace: z.string(),
     phase: PodPhaseSchema,
     pod_ip: z.string().optional(),

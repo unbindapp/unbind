@@ -371,12 +371,13 @@ func (suite *K8sTestSuite) TestExtractContainerStatus() {
 	podCreatedAt := time.Now().Add(-10 * time.Minute)
 
 	tests := []struct {
-		name               string
-		containerStatus    corev1.ContainerStatus
-		isPodTerminating   bool
-		expectedState      ContainerState
-		expectedIsCrashing bool
-		expectedReady      bool
+		name                      string
+		containerStatus           corev1.ContainerStatus
+		isPodTerminating          bool
+		expectedState             ContainerState
+		expectedIsCrashing        bool
+		expectedReady             bool
+		expectedLaunchErrorReason string
 	}{
 		{
 			name: "Running and ready container",
@@ -443,10 +444,11 @@ func (suite *K8sTestSuite) TestExtractContainerStatus() {
 					},
 				},
 			},
-			isPodTerminating:   false,
-			expectedState:      ContainerStateImagePullError,
-			expectedIsCrashing: false,
-			expectedReady:      false,
+			isPodTerminating:          false,
+			expectedState:             ContainerStateImagePullError,
+			expectedIsCrashing:        false,
+			expectedReady:             false,
+			expectedLaunchErrorReason: "Couldn't pull the image: Unable to pull image",
 		},
 		{
 			name: "Container creating",
@@ -626,6 +628,87 @@ func (suite *K8sTestSuite) TestExtractContainerStatus() {
 			expectedIsCrashing: false,
 			expectedReady:      false,
 		},
+		{
+			name: "ErrImagePull keeps the pull failure without the rpc prefix",
+			containerStatus: corev1.ContainerStatus{
+				Name: "app-container",
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{
+						Reason:  "ErrImagePull",
+						Message: `rpc error: code = NotFound desc = failed to pull and unpack image "nginx:nope": not found`,
+					},
+				},
+			},
+			expectedState:             ContainerStateImagePullError,
+			expectedLaunchErrorReason: `Couldn't pull the image: failed to pull and unpack image "nginx:nope": not found`,
+		},
+		{
+			name: "ImagePullBackOff reports the same failure as ErrImagePull",
+			containerStatus: corev1.ContainerStatus{
+				Name: "app-container",
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{
+						Reason:  "ImagePullBackOff",
+						Message: `Back-off pulling image "nginx:nope": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image "nginx:nope": not found`,
+					},
+				},
+			},
+			expectedState:             ContainerStateImagePullError,
+			expectedLaunchErrorReason: `Couldn't pull the image: failed to pull and unpack image "nginx:nope": not found`,
+		},
+		{
+			name: "ImagePullBackOff without the pull error keeps the back-off text",
+			containerStatus: corev1.ContainerStatus{
+				Name: "app-container",
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{
+						Reason:  "ImagePullBackOff",
+						Message: `Back-off pulling image "nginx:nope"`,
+					},
+				},
+			},
+			expectedState:             ContainerStateImagePullError,
+			expectedLaunchErrorReason: `Couldn't pull the image: Back-off pulling image "nginx:nope"`,
+		},
+		{
+			name: "InvalidImageName is an image pull error",
+			containerStatus: corev1.ContainerStatus{
+				Name: "app-container",
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{
+						Reason:  "InvalidImageName",
+						Message: `Failed to apply default image tag "nginx::bad": couldn't parse image name`,
+					},
+				},
+			},
+			expectedState:             ContainerStateImagePullError,
+			expectedLaunchErrorReason: `Couldn't pull the image: Failed to apply default image tag "nginx::bad": couldn't parse image name`,
+		},
+		{
+			name: "CreateContainerConfigError is a launch error",
+			containerStatus: corev1.ContainerStatus{
+				Name: "app-container",
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{
+						Reason:  "CreateContainerConfigError",
+						Message: `secret "missing-secret" not found`,
+					},
+				},
+			},
+			expectedState:             ContainerStateLaunchError,
+			expectedLaunchErrorReason: `Couldn't start the container: secret "missing-secret" not found`,
+		},
+		{
+			name: "Launch error without a message falls back to the reason",
+			containerStatus: corev1.ContainerStatus{
+				Name: "app-container",
+				State: corev1.ContainerState{
+					Waiting: &corev1.ContainerStateWaiting{Reason: "RunContainerError"},
+				},
+			},
+			expectedState:             ContainerStateLaunchError,
+			expectedLaunchErrorReason: "Couldn't start the container: RunContainerError",
+		},
 	}
 
 	for _, tt := range tests {
@@ -637,10 +720,28 @@ func (suite *K8sTestSuite) TestExtractContainerStatus() {
 			suite.Equal(tt.containerStatus.RestartCount, result.RestartCount)
 			suite.Equal(tt.expectedState, result.State)
 			suite.Equal(tt.expectedIsCrashing, result.IsCrashing)
+			suite.Equal(tt.expectedLaunchErrorReason, result.LaunchErrorReason)
 			suite.Equal(podCreatedAt, result.PodCreatedAt)
 			suite.NotEmpty(result.Events)
 		})
 	}
+}
+
+func (suite *K8sTestSuite) TestUnschedulableReason() {
+	scheduled := corev1.Pod{Status: corev1.PodStatus{Conditions: []corev1.PodCondition{
+		{Type: corev1.PodScheduled, Status: corev1.ConditionTrue},
+	}}}
+	suite.Empty(unschedulableReason(scheduled))
+
+	pending := corev1.Pod{Status: corev1.PodStatus{Conditions: []corev1.PodCondition{
+		{Type: corev1.PodScheduled, Status: corev1.ConditionFalse, Reason: "SchedulingGated"},
+	}}}
+	suite.Empty(unschedulableReason(pending))
+
+	unschedulable := corev1.Pod{Status: corev1.PodStatus{Conditions: []corev1.PodCondition{
+		{Type: corev1.PodScheduled, Status: corev1.ConditionFalse, Reason: corev1.PodReasonUnschedulable, Message: "0/1 nodes are available: 1 Insufficient memory."},
+	}}}
+	suite.Equal("No server can run this replica: 0/1 nodes are available: 1 Insufficient memory.", unschedulableReason(unschedulable))
 }
 
 func (suite *K8sTestSuite) TestContainerStatusCreation() {
@@ -942,6 +1043,52 @@ func (suite *K8sTestSuite) TestMapKubernetesPodPhase() {
 			suite.Equal(tt.expectedPhase, result)
 		})
 	}
+}
+
+func (suite *K8sTestSuite) TestGetSimpleHealthStatusWithUnscheduledPod() {
+	pods := []runtime.Object{
+		&corev1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "unschedulable-pod",
+				Namespace:         "default",
+				Labels:            map[string]string{"app": "test-app"},
+				CreationTimestamp: metav1.Now(),
+			},
+			Status: corev1.PodStatus{
+				Phase: corev1.PodPending,
+				Conditions: []corev1.PodCondition{
+					{Type: corev1.PodScheduled, Status: corev1.ConditionFalse, Reason: corev1.PodReasonUnschedulable, Message: "0/1 nodes are available: 1 Insufficient memory."},
+				},
+			},
+		},
+		&corev1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:              "fresh-pod",
+				Namespace:         "default",
+				Labels:            map[string]string{"app": "test-app"},
+				CreationTimestamp: metav1.Now(),
+			},
+			Status: corev1.PodStatus{Phase: corev1.PodPending},
+		},
+	}
+
+	expectedReplicas := 2
+	healthStatus, err := suite.kubeClient.GetSimpleHealthStatus(
+		suite.ctx,
+		"default",
+		map[string]string{"app": "test-app"},
+		&expectedReplicas,
+		fake.NewSimpleClientset(pods...),
+	)
+	suite.NoError(err)
+	suite.Equal(ReplicaHealthPending, healthStatus.Health)
+
+	statuses := map[string]ContainerState{}
+	for _, replica := range healthStatus.Replicas {
+		statuses[replica.KubernetesName] = replica.Status
+	}
+	suite.Equal(ContainerStateLaunchError, statuses["unschedulable-pod"])
+	suite.Equal(ContainerStateWaiting, statuses["fresh-pod"])
 }
 
 func (suite *K8sTestSuite) TestGetSimpleHealthStatusWithMultiContainerPod() {

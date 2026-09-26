@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -70,6 +71,7 @@ func (self *KubeClient) GetPodContainerStatusByLabelsWithOptions(ctx context.Con
 			DeploymentID:   deploymentID,
 			IsTerminating:  isPodTerminating(pod), // Add terminating detection
 		}
+		podStatus.LaunchErrorReason = unschedulableReason(pod)
 
 		if pod.Status.StartTime != nil {
 			podStatus.StartTime = pod.Status.StartTime.Format(time.RFC3339)
@@ -152,6 +154,19 @@ func isPodTerminating(pod corev1.Pod) bool {
 	}
 
 	return false
+}
+
+func unschedulableReason(pod corev1.Pod) string {
+	for _, condition := range pod.Status.Conditions {
+		if condition.Type != corev1.PodScheduled || condition.Status != corev1.ConditionFalse {
+			continue
+		}
+		if condition.Reason != corev1.PodReasonUnschedulable {
+			continue
+		}
+		return "No server can run this replica: " + condition.Message
+	}
+	return ""
 }
 
 // getBatchPodEvents efficiently fetches events for multiple pods in a single API call
@@ -369,8 +384,12 @@ func extractContainerStatus(container corev1.ContainerStatus, isPodTerminating b
 			status.State = ContainerStateCrashing
 			status.IsCrashing = true
 			status.CrashLoopReason = container.State.Waiting.Message
-		case strings.Contains(reasonLower, "imagepullbackoff") || strings.Contains(reasonLower, "errimagepull"):
+		case isImagePullReason(reasonLower):
 			status.State = ContainerStateImagePullError
+			status.LaunchErrorReason = "Couldn't pull the image: " + imagePullFailure(container.State.Waiting)
+		case isContainerStartReason(reasonLower):
+			status.State = ContainerStateLaunchError
+			status.LaunchErrorReason = "Couldn't start the container: " + waitingFailure(container.State.Waiting)
 		case strings.Contains(reasonLower, "containercreating"):
 			status.State = ContainerStateStarting
 		case isPodTerminating:
@@ -473,13 +492,51 @@ func extractContainerStatus(container corev1.ContainerStatus, isPodTerminating b
 	return status
 }
 
+func isImagePullReason(reasonLower string) bool {
+	return strings.Contains(reasonLower, "imagepullbackoff") ||
+		strings.Contains(reasonLower, "errimagepull") ||
+		strings.Contains(reasonLower, "errimageneverpull") ||
+		strings.Contains(reasonLower, "invalidimagename")
+}
+
+func isContainerStartReason(reasonLower string) bool {
+	return strings.Contains(reasonLower, "createcontainerconfigerror") ||
+		strings.Contains(reasonLower, "createcontainererror") ||
+		strings.Contains(reasonLower, "runcontainererror")
+}
+
+var rpcErrorPrefix = regexp.MustCompile(`^rpc error: code = \w+ desc = `)
+
+// The kubelet alternates between ErrImagePull and ImagePullBackOff, and newer
+// versions repeat the pull error inside the back-off message. Reading it out keeps
+// the reason the same across both, so the UI does not flip between two texts.
+func imagePullFailure(waiting *corev1.ContainerStateWaiting) string {
+	message := strings.TrimSpace(waiting.Message)
+	if _, detail, found := strings.Cut(message, ": ErrImagePull: "); found {
+		message = detail
+	}
+	message = rpcErrorPrefix.ReplaceAllString(message, "")
+	if message == "" {
+		return waiting.Reason
+	}
+	return message
+}
+
+func waitingFailure(waiting *corev1.ContainerStateWaiting) string {
+	message := strings.TrimSpace(waiting.Message)
+	if message == "" {
+		return waiting.Reason
+	}
+	return message
+}
+
 // mapWaitingReasonToEventType maps container waiting reasons to appropriate event types
 func mapWaitingReasonToEventType(reason string) models.EventType {
 	reasonLower := strings.ToLower(reason)
 	switch {
 	case strings.Contains(reasonLower, "crashloopbackoff"):
 		return models.EventTypeCrashLoopBackOff
-	case strings.Contains(reasonLower, "imagepullbackoff") || strings.Contains(reasonLower, "errimagepull"):
+	case isImagePullReason(reasonLower):
 		return models.EventTypeImagePullBackOff
 	case strings.Contains(reasonLower, "containercreating"):
 		return models.EventTypeContainerCreated
@@ -489,18 +546,19 @@ func mapWaitingReasonToEventType(reason string) models.EventType {
 }
 
 type ContainerStatus struct {
-	KubernetesName  string               `json:"kubernetes_name"`
-	Ready           bool                 `json:"ready"`
-	RestartCount    int32                `json:"restart_count"`
-	State           ContainerState       `json:"state"`
-	StateReason     string               `json:"state_reason,omitempty"`
-	StateMessage    string               `json:"state_message,omitempty"`
-	LastExitCode    int32                `json:"last_exit_code,omitempty"`
-	LastTermination string               `json:"last_termination,omitempty"`
-	IsCrashing      bool                 `json:"is_crashing"`
-	CrashLoopReason string               `json:"crash_loop_reason,omitempty"`
-	PodCreatedAt    time.Time            `json:"pod_created_at,omitempty"`
-	Events          []models.EventRecord `json:"events,omitempty" nullable:"false"`
+	KubernetesName    string               `json:"kubernetes_name"`
+	Ready             bool                 `json:"ready"`
+	RestartCount      int32                `json:"restart_count"`
+	State             ContainerState       `json:"state"`
+	StateReason       string               `json:"state_reason,omitempty"`
+	StateMessage      string               `json:"state_message,omitempty"`
+	LastExitCode      int32                `json:"last_exit_code,omitempty"`
+	LastTermination   string               `json:"last_termination,omitempty"`
+	IsCrashing        bool                 `json:"is_crashing"`
+	CrashLoopReason   string               `json:"crash_loop_reason,omitempty"`
+	LaunchErrorReason string               `json:"launch_error_reason,omitempty"`
+	PodCreatedAt      time.Time            `json:"pod_created_at,omitempty"`
+	Events            []models.EventRecord `json:"events,omitempty" nullable:"false"`
 }
 
 type PodContainerStatus struct {
@@ -512,6 +570,7 @@ type PodContainerStatus struct {
 	CreatedAt             time.Time         `json:"created_at,omitempty"`
 	HasCrashingContainers bool              `json:"has_crashing_containers"`
 	IsTerminating         bool              `json:"is_terminating"` // Added terminating detection
+	LaunchErrorReason     string            `json:"launch_error_reason,omitempty"`
 	Containers            []ContainerStatus `json:"containers" nullable:"false"`
 	InitContainers        []ContainerStatus `json:"init_containers" nullable:"false"`
 	TeamID                uuid.UUID         `json:"team_id"`
@@ -545,6 +604,7 @@ const (
 	ContainerStateCrashing       ContainerState = "crashing"         // CrashLoopBackOff or repeatedly failing
 	ContainerStateNotReady       ContainerState = "not_ready"        // Running but failing readiness probes
 	ContainerStateImagePullError ContainerState = "image_pull_error" // Cannot pull container image
+	ContainerStateLaunchError    ContainerState = "launch_error"     // Image is there but the container cannot be created or started
 	ContainerStateStarting       ContainerState = "starting"         // Container is starting but not ready yet
 )
 
@@ -559,6 +619,7 @@ func (u ContainerState) Schema(r huma.Registry) *huma.Schema {
 		schemaRef.Enum = append(schemaRef.Enum, string(ContainerStateCrashing))
 		schemaRef.Enum = append(schemaRef.Enum, string(ContainerStateNotReady))
 		schemaRef.Enum = append(schemaRef.Enum, string(ContainerStateImagePullError))
+		schemaRef.Enum = append(schemaRef.Enum, string(ContainerStateLaunchError))
 		schemaRef.Enum = append(schemaRef.Enum, string(ContainerStateStarting))
 		r.Map()["ContainerState"] = schemaRef
 	}
@@ -741,7 +802,7 @@ func (self *KubeClient) GetSimpleHealthStatus(ctx context.Context, namespace str
 						podState = ContainerStateNotReady
 					}
 				}
-			case ContainerStateNotReady, ContainerStateWaiting, ContainerStateStarting, ContainerStateImagePullError:
+			case ContainerStateNotReady, ContainerStateWaiting, ContainerStateStarting, ContainerStateImagePullError, ContainerStateLaunchError:
 				podHasPending = true
 				hasPending = true
 				if podState != ContainerStateCrashing && podState != ContainerStateTerminating {
@@ -786,7 +847,7 @@ func (self *KubeClient) GetSimpleHealthStatus(ctx context.Context, namespace str
 				if podState != ContainerStateCrashing {
 					podState = ContainerStateTerminating
 				}
-			case ContainerStateWaiting, ContainerStateStarting, ContainerStateImagePullError:
+			case ContainerStateWaiting, ContainerStateStarting, ContainerStateImagePullError, ContainerStateLaunchError:
 				podHasPending = true
 				hasPending = true
 				if podState != ContainerStateCrashing && podState != ContainerStateTerminating {
@@ -799,6 +860,16 @@ func (self *KubeClient) GetSimpleHealthStatus(ctx context.Context, namespace str
 					podState = ContainerStateCrashing
 				}
 			}
+		}
+
+		// A pod the scheduler has not placed yet reports no containers at all
+		if len(podStatus.Containers) == 0 && len(podStatus.InitContainers) == 0 {
+			podState = ContainerStateWaiting
+			if podStatus.LaunchErrorReason != "" {
+				podState = ContainerStateLaunchError
+			}
+			podHasPending = true
+			hasPending = true
 		}
 
 		// Determine final pod state - if all main containers are ready and running, pod is running

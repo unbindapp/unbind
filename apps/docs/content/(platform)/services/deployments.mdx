@@ -7,17 +7,17 @@ Every time a service is built or rolled out, Unbind creates a deployment. The se
 
 ## Statuses
 
-| Status        | What it means                                              |
-| ------------- | ---------------------------------------------------------- |
-| **QUEUED**    | Waiting for a free build slot.                             |
-| **BUILDING**  | The build is running.                                      |
-| **LAUNCHING** | The build is done and the new version is starting.         |
-| **ACTIVE**    | This version is running and serving traffic.               |
-| **FAILED**    | The build failed. Open **Build Logs**.                     |
-| **ERROR**     | The build worked, but the new version could not start.     |
-| **CRASHING**  | It started and keeps stopping. Open **Deploy Logs**.       |
-| **CANCELLED** | Someone aborted the build.                                 |
-| **REMOVED**   | An older deployment that was replaced, or one you removed. |
+| Status        | What it means                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| **QUEUED**    | Waiting for a free build slot.                                                              |
+| **BUILDING**  | The build is running.                                                                       |
+| **LAUNCHING** | The build is done and the new version is starting.                                          |
+| **ACTIVE**    | This version is running and serving traffic.                                                |
+| **FAILED**    | The build failed. Open **Build Logs**.                                                      |
+| **ERROR**     | The build worked, but the new version could not start. Open **Deploy Logs** for the reason. |
+| **CRASHING**  | It started and keeps stopping. Open **Deploy Logs**.                                        |
+| **CANCELLED** | Someone aborted the build.                                                                  |
+| **REMOVED**   | An older deployment that was replaced, or one you removed.                                  |
 
 A failed deployment does not take your service down. The last working version keeps running until a new one is ready.
 

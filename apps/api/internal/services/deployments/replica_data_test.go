@@ -33,6 +33,15 @@ func podStatus(deploymentID uuid.UUID, state k8s.ContainerState, ready, crashing
 	}
 }
 
+func launchErrorPodStatus(deploymentID uuid.UUID, state k8s.ContainerState, reason string) k8s.PodContainerStatus {
+	status := podStatus(deploymentID, state, false, false)
+	status.Containers[0].LaunchErrorReason = reason
+	status.Containers[0].Events = []models.EventRecord{
+		{Type: models.EventTypeImagePullBackOff, Message: "Container container is waiting: " + reason},
+	}
+	return status
+}
+
 func TestCalculateReplicaData(t *testing.T) {
 	currentID := uuid.New()
 	staleID := uuid.New()
@@ -58,6 +67,7 @@ func TestCalculateReplicaData(t *testing.T) {
 		expectedStatus   schema.DeploymentStatus
 		expectedEvents   int
 		expectReason     bool
+		expectedReasons  []string
 	}{
 		{
 			name:             "no deployment labels keeps legacy behavior",
@@ -89,7 +99,7 @@ func TestCalculateReplicaData(t *testing.T) {
 			expectedReplicas: 1,
 			deployment:       currentDeployment(now),
 			expectedStatus:   schema.DeploymentStatusLaunching,
-			expectedEvents:   1,
+			expectedEvents:   0,
 		},
 		{
 			name:             "only stale pods past grace is launch error",
@@ -97,7 +107,7 @@ func TestCalculateReplicaData(t *testing.T) {
 			expectedReplicas: 1,
 			deployment:       currentDeployment(old),
 			expectedStatus:   schema.DeploymentStatusLaunchError,
-			expectedEvents:   1,
+			expectedEvents:   0,
 			expectReason:     true,
 		},
 		{
@@ -115,7 +125,7 @@ func TestCalculateReplicaData(t *testing.T) {
 			expectedReplicas: 1,
 			deployment:       currentDeployment(old),
 			expectedStatus:   schema.DeploymentStatusLaunchError,
-			expectedEvents:   1,
+			expectedEvents:   0,
 			expectReason:     true,
 		},
 		{
@@ -127,7 +137,7 @@ func TestCalculateReplicaData(t *testing.T) {
 			expectedReplicas: 1,
 			deployment:       currentDeployment(old),
 			expectedStatus:   schema.DeploymentStatusActive,
-			expectedEvents:   2,
+			expectedEvents:   1,
 		},
 		{
 			name: "crashing current pod is crashing",
@@ -138,7 +148,7 @@ func TestCalculateReplicaData(t *testing.T) {
 			expectedReplicas: 1,
 			deployment:       currentDeployment(old),
 			expectedStatus:   schema.DeploymentStatusCrashing,
-			expectedEvents:   2,
+			expectedEvents:   1,
 		},
 		{
 			name:             "scale to zero with stale pod is not launch error",
@@ -146,7 +156,7 @@ func TestCalculateReplicaData(t *testing.T) {
 			expectedReplicas: 0,
 			deployment:       currentDeployment(old),
 			expectedStatus:   schema.DeploymentStatusActive,
-			expectedEvents:   1,
+			expectedEvents:   0,
 		},
 		{
 			name:             "removed deployment reports removed even with lingering pods",
@@ -155,6 +165,114 @@ func TestCalculateReplicaData(t *testing.T) {
 			deployment:       removedDeployment(old),
 			expectedStatus:   schema.DeploymentStatusRemoved,
 			expectedEvents:   0,
+		},
+		{
+			name: "image pull error is a launch error with the pull failure as reason",
+			statuses: []k8s.PodContainerStatus{
+				launchErrorPodStatus(currentID, k8s.ContainerStateImagePullError, "Couldn't pull the image: registry served 0 bytes"),
+			},
+			expectedReplicas: 1,
+			deployment:       currentDeployment(now),
+			expectedStatus:   schema.DeploymentStatusLaunchError,
+			expectedEvents:   1,
+			expectedReasons:  []string{"Couldn't pull the image: registry served 0 bytes"},
+		},
+		{
+			name: "image pull error on stale pod is ignored",
+			statuses: []k8s.PodContainerStatus{
+				podStatus(currentID, k8s.ContainerStateRunning, true, false),
+				launchErrorPodStatus(staleID, k8s.ContainerStateImagePullError, "Couldn't pull the image: not found"),
+			},
+			expectedReplicas: 1,
+			deployment:       currentDeployment(now),
+			expectedStatus:   schema.DeploymentStatusActive,
+			expectedEvents:   1,
+			expectedReasons:  []string{},
+		},
+		{
+			name: "container start error is a launch error",
+			statuses: []k8s.PodContainerStatus{
+				launchErrorPodStatus(currentID, k8s.ContainerStateLaunchError, "Couldn't start the container: secret \"db\" not found"),
+			},
+			expectedReplicas: 1,
+			deployment:       currentDeployment(now),
+			expectedStatus:   schema.DeploymentStatusLaunchError,
+			expectedEvents:   1,
+			expectedReasons:  []string{"Couldn't start the container: secret \"db\" not found"},
+		},
+		{
+			name: "init container image pull error is a launch error",
+			statuses: []k8s.PodContainerStatus{
+				{
+					KubernetesName: "pod",
+					DeploymentID:   currentID,
+					InitContainers: []k8s.ContainerStatus{
+						{KubernetesName: "init", State: k8s.ContainerStateImagePullError, LaunchErrorReason: "Couldn't pull the image: not found"},
+					},
+				},
+			},
+			expectedReplicas: 1,
+			deployment:       currentDeployment(now),
+			expectedStatus:   schema.DeploymentStatusLaunchError,
+			expectedEvents:   0,
+			expectedReasons:  []string{"Couldn't pull the image: not found"},
+		},
+		{
+			name: "unschedulable pod is a launch error",
+			statuses: []k8s.PodContainerStatus{
+				{KubernetesName: "pod", DeploymentID: currentID, LaunchErrorReason: "No server can run this replica: 0/1 nodes are available: 1 Insufficient memory."},
+			},
+			expectedReplicas: 1,
+			deployment:       currentDeployment(now),
+			expectedStatus:   schema.DeploymentStatusLaunchError,
+			expectedEvents:   0,
+			expectedReasons:  []string{"No server can run this replica: 0/1 nodes are available: 1 Insufficient memory."},
+		},
+		{
+			name: "replicas failing the same way share one reason",
+			statuses: []k8s.PodContainerStatus{
+				launchErrorPodStatus(currentID, k8s.ContainerStateImagePullError, "Couldn't pull the image: not found"),
+				launchErrorPodStatus(currentID, k8s.ContainerStateImagePullError, "Couldn't pull the image: not found"),
+				launchErrorPodStatus(currentID, k8s.ContainerStateImagePullError, "Couldn't pull the image: unauthorized"),
+			},
+			expectedReplicas: 3,
+			deployment:       currentDeployment(now),
+			expectedStatus:   schema.DeploymentStatusLaunchError,
+			expectedEvents:   3,
+			expectedReasons:  []string{"Couldn't pull the image: not found", "Couldn't pull the image: unauthorized"},
+		},
+		{
+			name: "crashing wins over launch error and keeps both reasons",
+			statuses: []k8s.PodContainerStatus{
+				podStatus(currentID, k8s.ContainerStateCrashing, false, true),
+				launchErrorPodStatus(currentID, k8s.ContainerStateImagePullError, "Couldn't pull the image: not found"),
+			},
+			expectedReplicas: 2,
+			deployment:       currentDeployment(now),
+			expectedStatus:   schema.DeploymentStatusCrashing,
+			expectedEvents:   2,
+			expectedReasons:  []string{"Couldn't pull the image: not found"},
+		},
+		{
+			name: "scheduling failed event without pod reason is a launch error with the event message",
+			statuses: []k8s.PodContainerStatus{
+				{
+					KubernetesName: "pod",
+					DeploymentID:   currentID,
+					Containers: []k8s.ContainerStatus{
+						{
+							KubernetesName: "container",
+							State:          k8s.ContainerStateWaiting,
+							Events:         []models.EventRecord{{Type: models.EventTypeSchedulingFailed, Message: "0/1 nodes are available"}},
+						},
+					},
+				},
+			},
+			expectedReplicas: 1,
+			deployment:       currentDeployment(now),
+			expectedStatus:   schema.DeploymentStatusLaunchError,
+			expectedEvents:   1,
+			expectedReasons:  []string{"0/1 nodes are available"},
 		},
 	}
 
@@ -167,6 +285,9 @@ func TestCalculateReplicaData(t *testing.T) {
 			assert.Len(t, result.ReplicaEvents, tt.expectedEvents)
 			if tt.expectReason {
 				assert.NotEmpty(t, result.CrashingReasons)
+			}
+			if tt.expectedReasons != nil {
+				assert.Equal(t, tt.expectedReasons, result.CrashingReasons)
 			}
 		})
 	}

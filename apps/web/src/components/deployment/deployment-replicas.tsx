@@ -73,13 +73,13 @@ function Replica({ replica }: { replica: TReplicaFromHealth }) {
   return (
     <div
       data-status={replica?.status}
-      className="bg-background data-[status=waiting]:border-warning/6-10 data-[status=starting]:border-process/6-10 data-[status=not_ready]:border-process/6-10 data-[status=running]:border-success/6-10 data-[status=crashing]:border-destructive/6-10 group/div relative z-0 flex overflow-hidden rounded-md border"
+      className="bg-background data-[status=waiting]:border-warning/6-10 data-[status=starting]:border-process/6-10 data-[status=not_ready]:border-process/6-10 data-[status=running]:border-success/6-10 data-[status=crashing]:border-destructive/6-10 data-[status=image_pull_error]:border-destructive/6-10 data-[status=launch_error]:border-destructive/6-10 group/div relative z-0 flex overflow-hidden rounded-md border"
     >
       <IconWrapper>
         <ServerIcon className="text-muted-foreground size-3.5" />
       </IconWrapper>
-      <div className="bg-border group-data-[status=waiting]/div:bg-warning/6-10 group-data-[status=starting]/div:bg-process/6-10 group-data-[status=not_ready]/div:bg-process/6-10 group-data-[status=running]/div:bg-success/6-10 group-data-[status=crashing]/div:bg-destructive/6-10 w-px self-stretch" />
-      <IconWrapper className="group-data-[status=waiting]/div:bg-warning/3-10 group-data-[status=starting]/div:bg-process/3-10 group-data-[status=not_ready]/div:bg-process/3-10 group-data-[status=running]/div:bg-success/3-10 group-data-[status=crashing]/div:bg-destructive/3-10">
+      <div className="bg-border group-data-[status=waiting]/div:bg-warning/6-10 group-data-[status=starting]/div:bg-process/6-10 group-data-[status=not_ready]/div:bg-process/6-10 group-data-[status=running]/div:bg-success/6-10 group-data-[status=crashing]/div:bg-destructive/6-10 group-data-[status=image_pull_error]/div:bg-destructive/6-10 group-data-[status=launch_error]/div:bg-destructive/6-10 w-px self-stretch" />
+      <IconWrapper className="group-data-[status=waiting]/div:bg-warning/3-10 group-data-[status=starting]/div:bg-process/3-10 group-data-[status=not_ready]/div:bg-process/3-10 group-data-[status=running]/div:bg-success/3-10 group-data-[status=crashing]/div:bg-destructive/3-10 group-data-[status=image_pull_error]/div:bg-destructive/3-10 group-data-[status=launch_error]/div:bg-destructive/3-10">
         <div className="size-3.5 shrink-0">
           <Indicator replica={replica} />
         </div>
@@ -102,10 +102,11 @@ function Indicator({ replica }: { replica: TReplicaFromHealth }) {
   if (replica.status === "running") {
     return <HeartIcon className="text-success size-full" />;
   }
-  if (replica.status === "crashing") {
-    return <TriangleAlertIcon className="text-destructive size-full" />;
-  }
-  if (replica.status === "image_pull_error") {
+  if (
+    replica.status === "crashing" ||
+    replica.status === "image_pull_error" ||
+    replica.status === "launch_error"
+  ) {
     return <TriangleAlertIcon className="text-destructive size-full" />;
   }
   if (replica.status === "terminating") {
@@ -122,6 +123,7 @@ function Indicator({ replica }: { replica: TReplicaFromHealth }) {
 const statusOrder: TReplicaFromHealth["status"][] = [
   "crashing",
   "image_pull_error",
+  "launch_error",
   "running",
   "starting",
   "not_ready",

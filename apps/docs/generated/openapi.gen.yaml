@@ -229,6 +229,7 @@ components:
         - crashing
         - not_ready
         - image_pull_error
+        - launch_error
         - starting
       title: ContainerState
       type: string
@@ -249,6 +250,8 @@ components:
           format: int32
           type: integer
         last_termination:
+          type: string
+        launch_error_reason:
           type: string
         pod_created_at:
           format: date-time
@@ -2031,6 +2034,8 @@ components:
         is_terminating:
           type: boolean
         kubernetes_name:
+          type: string
+        launch_error_reason:
           type: string
         namespace:
           type: string

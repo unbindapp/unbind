@@ -96,111 +96,101 @@ func (self *DeploymentService) calculateReplicaData(statuses []k8s.PodContainerS
 	}
 
 	events := []models.EventRecord{}
-	crashingReasons := []string{}
+	reasons := []string{}
 	restartCount := int32(0)
 
 	// gated on the label existing: some database operators don't propagate it to pods,
 	// and those that do never refresh it, so the deployment id goes stale. Database
 	// rollout progress comes from the CR condition in applyServiceState instead.
+	// Pods of older deployments are left out entirely, so their events and crashes
+	// are never mistaken for this deployment's.
 	countedStatuses := statuses
-	staleEvents := []models.EventRecord{}
 	noCurrentPods := false
 	if currentDeployment != nil && !isDatabase && anyPodHasDeploymentLabel(statuses) {
 		countedStatuses = make([]k8s.PodContainerStatus, 0, len(statuses))
 		for _, status := range statuses {
 			if status.DeploymentID == currentDeployment.ID {
 				countedStatuses = append(countedStatuses, status)
-				continue
-			}
-			for _, container := range status.Containers {
-				staleEvents = append(staleEvents, container.Events...)
-			}
-			for _, container := range status.InitContainers {
-				staleEvents = append(staleEvents, container.Events...)
 			}
 		}
 		noCurrentPods = len(countedStatuses) == 0
 	}
 
 	hasCrashing := false
+	hasLaunchError := false
 	hasPending := false
 	readyCount := int32(0)
 
 	for _, status := range countedStatuses {
-		// Check if any containers are crashing at pod level
 		if status.HasCrashingContainers {
 			hasCrashing = true
+		}
+		if status.LaunchErrorReason != "" {
+			hasLaunchError = true
+			reasons = append(reasons, status.LaunchErrorReason)
 		}
 
 		for _, container := range status.Containers {
 			restartCount += container.RestartCount
-			// Always collect events from all containers
 			events = append(events, container.Events...)
 
-			// Handle different container states more precisely
 			switch container.State {
 			case k8s.ContainerStateCrashing:
 				hasCrashing = true
-				crashingReasons = append(crashingReasons, container.CrashLoopReason)
+				reasons = append(reasons, container.CrashLoopReason)
 			case k8s.ContainerStateRunning:
 				if container.Ready {
 					readyCount++
 				} else {
-					// Running but not ready
 					hasPending = true
 				}
-			case k8s.ContainerStateNotReady, k8s.ContainerStateWaiting, k8s.ContainerStateStarting, k8s.ContainerStateImagePullError:
+			case k8s.ContainerStateNotReady, k8s.ContainerStateWaiting, k8s.ContainerStateStarting:
 				hasPending = true
+			case k8s.ContainerStateImagePullError, k8s.ContainerStateLaunchError:
+				hasLaunchError = true
+				reasons = append(reasons, container.LaunchErrorReason)
 			case k8s.ContainerStateTerminated:
-				// Terminated containers might be crashing if they have restart counts or failed
 				if container.IsCrashing {
 					hasCrashing = true
-					crashingReasons = append(crashingReasons, container.CrashLoopReason)
+					reasons = append(reasons, container.CrashLoopReason)
 				}
 			}
 		}
 
-		// Also process container dependencies (init containers)
 		for _, container := range status.InitContainers {
 			events = append(events, container.Events...)
 
-			// Handle different init container states
 			switch container.State {
 			case k8s.ContainerStateCrashing:
 				hasCrashing = true
-				crashingReasons = append(crashingReasons, container.CrashLoopReason)
-			case k8s.ContainerStateWaiting, k8s.ContainerStateStarting, k8s.ContainerStateImagePullError:
+				reasons = append(reasons, container.CrashLoopReason)
+			case k8s.ContainerStateWaiting, k8s.ContainerStateStarting:
 				hasPending = true
+			case k8s.ContainerStateImagePullError, k8s.ContainerStateLaunchError:
+				hasLaunchError = true
+				reasons = append(reasons, container.LaunchErrorReason)
 			case k8s.ContainerStateTerminated:
 				if container.IsCrashing {
 					hasCrashing = true
-					crashingReasons = append(crashingReasons, container.CrashLoopReason)
+					reasons = append(reasons, container.CrashLoopReason)
 				}
 			}
 		}
 	}
 
-	// Determine target status with improved logic:
-	// 1. Crashing takes precedence over everything
-	// 2. Pending if any containers are actively starting/waiting or we don't have enough ready replicas
-	//    (but exclude terminating containers from this check)
-	// 3. Active if we have enough ready replicas and no pending containers
 	var targetStatus schema.DeploymentStatus
-	if hasCrashing {
+	switch {
+	case hasCrashing:
 		targetStatus = schema.DeploymentStatusCrashing
-	} else if hasPending || readyCount < expectedReplicas {
+	case hasLaunchError:
+		targetStatus = schema.DeploymentStatusLaunchError
+	case hasPending || readyCount < expectedReplicas:
 		targetStatus = schema.DeploymentStatusLaunching
-
-		// Detect launch error
-		for _, event := range events {
-			if event.Type == models.EventTypeNodeNotReady ||
-				event.Type == models.EventTypeSchedulingFailed ||
-				event.Type == models.EventTypeImagePullBackOff {
-				targetStatus = schema.DeploymentStatusLaunchError
-				break
-			}
+		if event := launchErrorEvent(events); event != nil {
+			targetStatus = schema.DeploymentStatusLaunchError
+			reasons = append(reasons, event.Message)
 		}
-	} else {
+	default:
 		targetStatus = schema.DeploymentStatusActive
 	}
 
@@ -208,16 +198,45 @@ func (self *DeploymentService) calculateReplicaData(statuses []k8s.PodContainerS
 		targetStatus = schema.DeploymentStatusLaunching
 		if time.Since(deploymentGraceAnchor(currentDeployment)) > deploymentRolloutGracePeriod {
 			targetStatus = schema.DeploymentStatusLaunchError
-			crashingReasons = append(crashingReasons, fmt.Sprintf("No pods from the current deployment after %s; rollout may be stuck", deploymentRolloutGracePeriod))
+			reasons = append(reasons, fmt.Sprintf("No pods from the current deployment after %s; rollout may be stuck", deploymentRolloutGracePeriod))
 		}
 	}
 
 	return &ServiceReplicaData{
 		Status:          targetStatus,
-		ReplicaEvents:   append(events, staleEvents...),
-		CrashingReasons: crashingReasons,
+		ReplicaEvents:   events,
+		CrashingReasons: uniqueReasons(reasons),
 		Restarts:        restartCount,
 	}
+}
+
+// Node and scheduling failures only arrive as Kubernetes events, which callers opt
+// into; image pulls are already caught from container state above.
+func launchErrorEvent(events []models.EventRecord) *models.EventRecord {
+	for i := range events {
+		switch events[i].Type {
+		case models.EventTypeNodeNotReady, models.EventTypeSchedulingFailed, models.EventTypeImagePullBackOff:
+			return &events[i]
+		}
+	}
+	return nil
+}
+
+// Every replica failing the same way would otherwise repeat the reason once per replica
+func uniqueReasons(reasons []string) []string {
+	seen := make(map[string]struct{}, len(reasons))
+	result := make([]string, 0, len(reasons))
+	for _, reason := range reasons {
+		if reason == "" {
+			continue
+		}
+		if _, ok := seen[reason]; ok {
+			continue
+		}
+		seen[reason] = struct{}{}
+		result = append(result, reason)
+	}
+	return result
 }
 
 // applyServiceState layers what the operator reports on top of the pod-derived status.

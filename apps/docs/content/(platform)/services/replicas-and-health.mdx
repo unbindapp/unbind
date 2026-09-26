@@ -45,6 +45,6 @@ Keep the endpoint cheap. It should answer quickly and should not depend on other
 
 ## When something is wrong
 
-A deployment that keeps restarting shows **CRASHING**. Open it and look at **Deploy Logs**. Unbind puts the reason at the top, such as `OOMKilled` or the number of restarts.
+A deployment that keeps restarting shows **CRASHING**. One that never came up shows **ERROR**. Open it and look at **Deploy Logs**. Unbind puts the reason at the top: `OOMKilled` or the number of restarts for a crash, and what stopped a replica from starting for an error, such as an image that could not be pulled, a missing variable reference or a server without enough memory.
 
 To restart a healthy service by hand, open the menu on the current deployment and choose **Restart**.
