@@ -410,7 +410,7 @@ function ThreeDotButton({
                   render={
                     <DropdownMenuItem>
                       <XIcon className="-ml-0.5 size-5" />
-                      <p className="min-w-0 shrink leading-tight">Remove from team</p>
+                      <p className="min-w-0 shrink leading-tight">Remove from Team</p>
                     </DropdownMenuItem>
                   }
                 />
