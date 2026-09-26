@@ -144,8 +144,21 @@ export function ConnectGithubTrigger({
           </DialogTitle>
           <DialogDescription>
             A GitHub App is created on your account or organization.
-            {sharing.mode === "team" &&
-              ` Members of ${sharing.team?.name ?? "this team"} can see its repositories.`}
+            {sharing.mode === "team" && (
+              <>
+                {" "}
+                Members of{" "}
+                {sharing.team?.name ? (
+                  <span className="text-foreground font-medium">
+                    <UsersIcon className="mr-1 mb-[0.1lh] inline-block size-[0.7lh]" />
+                    {sharing.team.name}
+                  </span>
+                ) : (
+                  "this team"
+                )}{" "}
+                will be able to see these repositories.
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
         {sharing.mode === "pick" && (
