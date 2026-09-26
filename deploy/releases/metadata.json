@@ -438,5 +438,10 @@
     "version": "v0.1.87",
     "summary": "Volumes can be unmounted from their service, builds pinned to their commit with a kept build cache, builds and registry cleanup no longer overlap, and retried template deploys deploy once.",
     "breaking": false
+  },
+  "v0.1.88": {
+    "version": "v0.1.88",
+    "summary": "GitHub Apps scoped to their owner and one team, a max request body size per service, and reasons for replicas that could not start.",
+    "breaking": false
   }
 }
