@@ -1,11 +1,12 @@
 "use client";
 
 import { Chip } from "@/components/api-key/access-chips";
+import { BlockItemButtonLike } from "@/components/block";
+import ErrorLine from "@/components/error-line";
 import ChoiceList, { type TChoice } from "@/components/git/choice-list";
 import { useGithubAppsUtils } from "@/components/git/github-apps-provider";
 import BrandIcon from "@/components/icons/brand";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
-import { BlockItemButtonLike } from "@/components/block";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +27,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import ErrorLine from "@/components/error-line";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import {
@@ -49,6 +49,7 @@ import {
   ExternalLinkIcon,
   EyeIcon,
   LockIcon,
+  PlusIcon,
   Trash2Icon,
   UserIcon,
   UserRoundXIcon,
@@ -134,7 +135,7 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
                         <a href={gitAppInstallUrl(app)} target="_blank" rel="noreferrer noopener" />
                       }
                     >
-                      <ExternalLinkIcon className="size-4.5" />
+                      <PlusIcon className="size-4.5" />
                     </Button>
                   </div>
                 )}
@@ -288,7 +289,6 @@ function InstallationRow({
 }
 
 function RemoveInstallationTrigger({
-  app,
   installation,
 }: {
   app: TGitApp;
@@ -305,7 +305,7 @@ function RemoveInstallationTrigger({
       dialogTitle="Remove Account"
       dialogDescription={
         <>
-          {app.name} is uninstalled from {installation.account_login} on GitHub.{" "}
+          The app will be uninstalled from {installation.account_login} on GitHub.{" "}
           <ServicesNote count={installation.service_count} />
         </>
       }
@@ -336,8 +336,10 @@ function ServicesNote({ count }: { count: number }) {
   if (count === 0) return <>No service builds from it.</>;
   return (
     <>
-      {count} {count === 1 ? "service builds" : "services build"} from it. They keep running but
-      stop deploying on push until a repository is picked for them again.
+      <span className="text-foreground">
+        {count} {count === 1 ? "service builds" : "services build"}
+      </span>{" "}
+      from it. They will keep running but stop deploying on push.
     </>
   );
 }
@@ -483,7 +485,7 @@ function VisibilityDialog({ app, handle }: { app: TGitApp; handle: TDialogHandle
       <DialogContent className="w-full max-w-lg" classNameInnerWrapper="gap-4">
         <DialogHeader>
           <DialogTitle>Visibility</DialogTitle>
-          <DialogDescription>Members of the team can see the repositories.</DialogDescription>
+          <DialogDescription>Who should see the repositories?</DialogDescription>
         </DialogHeader>
         <ChoiceList
           items={items}
@@ -543,13 +545,13 @@ function DeleteAppTrigger({ app, handle }: { app: TGitApp; handle: TDialogHandle
       dialogTitle="Remove GitHub Connection"
       dialogDescription={
         <>
-          {app.name} is uninstalled from every account. <ServicesNote count={serviceCount} />{" "}
+          The app will be uninstalled from every account. <ServicesNote count={serviceCount} />{" "}
           Afterwards delete the app itself{" "}
           <ExternalTextLink href={gitAppSettingsUrl(app)}>on GitHub</ExternalTextLink>.
         </>
       }
       deletingEntityName={app.name}
-      textToConfirm={`Remove ${app.name}`}
+      textToConfirm={`Remove app`}
       submitButtonText="Remove"
       handle={handle}
       error={error}

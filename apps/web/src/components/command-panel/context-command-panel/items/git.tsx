@@ -4,23 +4,24 @@ import { getContextCommandPaneItemsQueryKey } from "@/components/command-panel/c
 import { useCommandPanelStore } from "@/components/command-panel/store/command-panel-store-provider";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
+import { connectGitHub, githubConnectedPath } from "@/components/git/connect-github";
 import BrandIcon from "@/components/icons/brand";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
+import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useUniqueServiceName } from "@/components/service/use-unique-service-name";
-import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
-import { connectGitHub, githubConnectedPath } from "@/components/git/connect-github";
+import { toast } from "@/components/ui/toast";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { gitRepositoriesQuery, queryKeyGitApps, type TGitRepository } from "@/lib/queries/git";
-import { teamQuery } from "@/lib/queries/teams";
 import {
   createService as createServiceFn,
   type TBuilderEnum,
   type TGitServiceBuilder,
 } from "@/lib/queries/services";
+import { teamQuery } from "@/lib/queries/teams";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BuildingIcon,
@@ -32,9 +33,8 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { ResultAsync } from "neverthrow";
-import { v4 as uuidv4 } from "uuid";
 import { useCallback, useMemo } from "react";
-import { toast } from "@/components/ui/toast";
+import { v4 as uuidv4 } from "uuid";
 
 type TProps = {
   context: TContextCommandPanelContext;
@@ -334,15 +334,15 @@ function useGitItem({ context }: TProps) {
       Icon: CogIcon,
       subpage: {
         id: "git_configure_github_sharing",
-        title: "Who can see the repositories?",
-        inputPlaceholder: "Who can see the repositories?",
+        title: "Who should see the repositories?",
+        inputPlaceholder: "Who should see the repositories?",
         parentPageId: subpageId,
         items: [
           {
             id: "git_configure_github_sharing_me",
             keywords: ["only me", "private", "github"],
             title: "Only me",
-            description: "Only you can pick these repositories.",
+            description: "Only you can see these repositories.",
             Icon: LockIcon,
             subpage: accountTypePage(false),
           },
@@ -350,7 +350,7 @@ function useGitItem({ context }: TProps) {
             id: "git_configure_github_sharing_team",
             keywords: ["team", "share", "github"],
             title: "This team",
-            description: `Members of ${teamName} can pick them too.`,
+            description: `Members of ${teamName} can see them too.`,
             Icon: UsersIcon,
             subpage: accountTypePage(true),
           },

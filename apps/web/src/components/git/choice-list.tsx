@@ -32,7 +32,10 @@ export default function ChoiceList({
     return <ErrorCard className={className} message={error} />;
   }
   return (
-    <div role="radiogroup" className={cn("flex w-full flex-col", className)}>
+    <div
+      role="radiogroup"
+      className={cn("flex w-full flex-col overflow-hidden rounded-xl border", className)}
+    >
       {!items &&
         placeholderArray.map((i) => (
           <Button key={i} disabled fadeOnDisabled={false} variant="ghost" className="justify-start">
@@ -41,28 +44,33 @@ export default function ChoiceList({
             </p>
           </Button>
         ))}
-      {items?.map((item) => {
+      {items?.map((item, index) => {
         const isSelected = value === item.value;
         return (
           <Button
+            data-first={index === 0 || undefined}
+            data-last={index === items.length - 1 || undefined}
+            data-selected={isSelected || undefined}
             key={item.value}
             type="button"
             role="radio"
             aria-checked={isSelected}
-            variant={isSelected ? "ghost-success" : "ghost"}
-            className={cn("w-full justify-start px-3", !isSelected && "text-muted-foreground")}
+            variant="ghost"
+            className="group/button w-full justify-start rounded-none border-t px-3 font-medium data-first:border-t-0"
             onClick={() => onChange(item.value)}
           >
-            <item.Icon className="-ml-0.5 size-5" />
+            <item.Icon className="group-data-selected/button:text-success mt-px -ml-0.5 size-5 self-start" />
             <div className="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
-              <p className="min-w-0 leading-tight">{item.label}</p>
+              <p className="max-w-full min-w-0 leading-tight">{item.label}</p>
               {item.description && (
-                <p className="min-w-0 text-sm leading-tight font-medium">{item.description}</p>
+                <p className="text-muted-foreground max-w-full min-w-0 text-sm leading-tight font-normal">
+                  {item.description}
+                </p>
               )}
             </div>
             <CheckIcon
               strokeWidth={2.5}
-              className={cn("-mr-0.5 size-4.5", !isSelected && "opacity-0")}
+              className="group-data-selected/button:text-success mt-px -mr-0.5 size-4.5 self-start text-transparent"
             />
           </Button>
         );

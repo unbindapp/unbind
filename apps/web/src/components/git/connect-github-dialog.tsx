@@ -141,7 +141,7 @@ export function ConnectGithubTrigger({
             A GitHub App is created on your account or organization.
           </DialogDescription>
         </DialogHeader>
-        <Field label="Who can see the repositories?">
+        <Field label="Who should see the repositories?">
           <ChoiceList items={visibilityItems} value={visibility} onChange={setVisibility} />
         </Field>
         <Field label="GitHub account">
