@@ -551,7 +551,7 @@ function MountPathField({
                   type="button"
                   aria-label="Cancel"
                   onClick={cancel}
-                  variant="ghost-destructive"
+                  variant="ghost"
                   size="icon"
                   className="pointer-events-auto rounded-md"
                 >
