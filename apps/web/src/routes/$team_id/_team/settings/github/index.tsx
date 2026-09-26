@@ -20,14 +20,15 @@ function TeamGithubSettings() {
     query: { data: teamData },
   } = useTeam();
   const canEditTeam = teamData?.team.permissions.includes("editor") ?? false;
+  const teams = teamData ? [{ id: teamData.team.id, name: teamData.team.name }] : undefined;
   return (
     <GithubAppsProvider filter={{ teamId }}>
-      <SettingsTabTitle>GitHub</SettingsTabTitle>
+      <SettingsTabTitle>GitHub Apps</SettingsTabTitle>
       <p className="text-muted-foreground mt-0.5 w-full px-1">
-        GitHub connections shared with this team. Members can deploy from their repositories.
+        GitHub Apps shared with this team. Members can deploy from their repositories.
       </p>
       <GithubAppsList view="team" canEditTeam={canEditTeam} className="mt-3">
-        <ConnectGithubCard teamId={teamId} />
+        <ConnectGithubCard teams={teams} />
       </GithubAppsList>
     </GithubAppsProvider>
   );

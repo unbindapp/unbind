@@ -45,7 +45,7 @@ function TeamSettingsLayout() {
       link: linkOptions({ to: "/$team_id/settings/webhooks", params }),
     },
     {
-      label: "GitHub",
+      label: "GitHub Apps",
       icon: "github",
       matchPath: `${basePath}/github`,
       link: linkOptions({ to: "/$team_id/settings/github", params }),

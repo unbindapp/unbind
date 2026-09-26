@@ -4,7 +4,6 @@ import ChoiceList, { type TChoice } from "@/components/git/choice-list";
 import { connectGitHub, githubConnectedPath } from "@/components/git/connect-github";
 import { useGithubAppsUtils } from "@/components/git/github-apps-provider";
 import BrandIcon from "@/components/icons/brand";
-import { useTeam } from "@/components/team/team-provider";
 import { Button } from "@/components/ui/button";
 import {
   createDialogHandle,
@@ -22,12 +21,14 @@ import { toast } from "@/components/ui/toast";
 import { BuildingIcon, LockIcon, PlusIcon, UserIcon, UsersIcon } from "lucide-react";
 import { ReactElement, useState } from "react";
 
-type TVisibility = "me" | "team";
 type TAccountType = "personal" | "organization";
+const onlyMe = "me";
 
-export function ConnectGithubCard({ teamId }: { teamId: string }) {
+export type TConnectTeam = { id: string; name: string };
+
+export function ConnectGithubCard({ teams }: { teams: TConnectTeam[] | undefined }) {
   return (
-    <ConnectGithubTrigger teamId={teamId}>
+    <ConnectGithubTrigger teams={teams}>
       <Button
         variant="outline"
         className="text-muted-foreground flex w-full flex-row items-center justify-start rounded-xl px-4 py-3 font-medium"
@@ -39,42 +40,43 @@ export function ConnectGithubCard({ teamId }: { teamId: string }) {
   );
 }
 
+// teams are the ones the app may be shared with: the current team on a team page,
+// every team the user can edit on the account page
 export function ConnectGithubTrigger({
-  teamId,
+  teams,
   handle,
   children,
 }: {
-  teamId: string;
+  teams: TConnectTeam[] | undefined;
   handle?: TDialogHandle;
   children: ReactElement;
 }) {
   const [internalHandle] = useState(() => createDialogHandle());
   const dialogHandle = handle ?? internalHandle;
-  const {
-    query: { data: teamData },
-  } = useTeam();
-  const teamName = teamData?.team.name ?? "this team";
   const { invalidate } = useGithubAppsUtils();
 
-  const [visibility, setVisibility] = useState<TVisibility>("me");
+  const [visibility, setVisibility] = useState(onlyMe);
+  const sharedTeam = teams?.find((team) => team.id === visibility);
   const [accountType, setAccountType] = useState<TAccountType>("personal");
   const [organization, setOrganization] = useState("");
   const [isPending, setIsPending] = useState(false);
 
-  const visibilityItems: TChoice[] = [
-    {
-      value: "me",
-      label: "Only me",
-      description: "Only you can pick these repositories.",
-      Icon: LockIcon,
-    },
-    {
-      value: "team",
-      label: teamName,
-      description: `Members of ${teamName} can pick them too.`,
-      Icon: UsersIcon,
-    },
-  ];
+  const visibilityItems: TChoice[] | undefined = teams
+    ? [
+        {
+          value: onlyMe,
+          label: "Only me",
+          description: "Only you can pick these repositories.",
+          Icon: LockIcon,
+        },
+        ...teams.map((team) => ({
+          value: team.id,
+          label: team.name,
+          description: `Members of ${team.name} can pick them too.`,
+          Icon: UsersIcon,
+        })),
+      ]
+    : undefined;
   const accountTypeItems: TChoice[] = [
     { value: "personal", label: "Personal", Icon: UserIcon },
     { value: "organization", label: "Organization", Icon: BuildingIcon },
@@ -82,7 +84,7 @@ export function ConnectGithubTrigger({
   const organizationMissing = accountType === "organization" && organization.trim() === "";
 
   const reset = () => {
-    setVisibility("me");
+    setVisibility(onlyMe);
     setAccountType("personal");
     setOrganization("");
     setIsPending(false);
@@ -94,18 +96,17 @@ export function ConnectGithubTrigger({
     setIsPending(true);
     try {
       await connectGitHub({
-        redirectUrl: window.location.origin + githubConnectedPath(teamId),
+        redirectUrl: window.location.origin + githubConnectedPath(),
         organizationName: accountType === "organization" ? organization.trim() : undefined,
-        teamId: visibility === "team" ? teamId : undefined,
+        teamId: sharedTeam?.id,
         onSuccess: () => {
           invalidate();
           toast.add({
             type: "success",
             title: "GitHub connected",
-            description:
-              visibility === "team"
-                ? `Members of ${teamName} can now pick its repositories.`
-                : "Only you can pick its repositories.",
+            description: sharedTeam
+              ? `Members of ${sharedTeam.name} can now pick its repositories.`
+              : "Only you can pick its repositories.",
             timeout: 5000,
           });
         },
@@ -142,11 +143,7 @@ export function ConnectGithubTrigger({
           </DialogDescription>
         </DialogHeader>
         <Field label="Who can see the repositories?">
-          <ChoiceList
-            items={visibilityItems}
-            value={visibility}
-            onChange={(v) => setVisibility(v as TVisibility)}
-          />
+          <ChoiceList items={visibilityItems} value={visibility} onChange={setVisibility} />
         </Field>
         <Field label="GitHub account">
           <ChoiceList

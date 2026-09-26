@@ -5,6 +5,7 @@ import {
   useSystemPageItems,
 } from "@/components/command-panel/context-command-panel/items/go-to-shared";
 import useNavigateFromCommandPanel from "@/components/command-panel/context-command-panel/use-navigate-from-command-panel";
+import BrandIcon from "@/components/icons/brand";
 import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/command-panel/types";
 import ServiceIcon from "@/components/service/service-icon";
 import {
@@ -62,6 +63,7 @@ export default function useGoToItem({ context }: TProps) {
         | "/variables"
         | "/members"
         | "/webhooks"
+        | "/github"
         | "/danger-zone",
     ) => {
       if (context.contextType === "project" || context.contextType === "new-service") {
@@ -113,6 +115,8 @@ export default function useGoToItem({ context }: TProps) {
             return { to: "/$team_id/settings/members", params } as const;
           case "/webhooks":
             return { to: "/$team_id/settings/webhooks", params } as const;
+          case "/github":
+            return { to: "/$team_id/settings/github", params } as const;
           case "/danger-zone":
             return { to: "/$team_id/settings/danger-zone", params } as const;
           default:
@@ -489,6 +493,34 @@ export default function useGoToItem({ context }: TProps) {
                   },
                   Icon: ArchiveIcon,
                   keywords: ["s3", "r2", "backup", "bucket", "storage", ...goToKeywords],
+                },
+                {
+                  id: `${subpageId}_/settings/github`,
+                  title: "GitHub Apps",
+                  titleSuffix: ` | ${settingsTitle}`,
+                  onSelect: () => {
+                    navigateToSettings({
+                      suffix: "/github",
+                      isPendingId: `${subpageId}_/settings/github`,
+                    });
+                  },
+                  onHighlight: () => {
+                    prefetchSettings("/github");
+                  },
+                  Icon: ({ className }: { className?: string }) => (
+                    <BrandIcon brand="github" className={className} />
+                  ),
+                  keywords: [
+                    "github",
+                    "git",
+                    "repository",
+                    "repositories",
+                    "connection",
+                    "connect",
+                    "share",
+                    "source",
+                    ...goToKeywords,
+                  ],
                 },
               ]
             : []),

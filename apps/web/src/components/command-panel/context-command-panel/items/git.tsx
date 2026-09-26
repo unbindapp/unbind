@@ -244,7 +244,7 @@ function useGitItem({ context }: TProps) {
       setIsPendingId(pendingId);
       const res = await ResultAsync.fromPromise(
         connectGitHubMutate({
-          redirectUrl: window.location.origin + githubConnectedPath(teamId),
+          redirectUrl: window.location.origin + githubConnectedPath(),
           organizationName,
           teamId: share ? teamId : undefined,
           onSuccess: () => {

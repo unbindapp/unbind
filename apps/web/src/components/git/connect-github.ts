@@ -1,8 +1,8 @@
 import { toast } from "@/components/ui/toast";
 import { getGoClient } from "@/lib/server/client";
 
-export function githubConnectedPath(teamId: string) {
-  return `/${teamId}/connect-git/connected/github`;
+export function githubConnectedPath() {
+  return "/connect-git/connected/github";
 }
 
 type TConnectGitHubInput = {

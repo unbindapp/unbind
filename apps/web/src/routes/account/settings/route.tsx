@@ -26,7 +26,7 @@ const tabs: TSettingsTab[] = [
     link: linkOptions({ to: "/account/settings/connected-apps" }),
   },
   {
-    label: "GitHub",
+    label: "GitHub Apps",
     icon: "github",
     matchPath: `${basePath}/github`,
     link: linkOptions({ to: "/account/settings/github" }),

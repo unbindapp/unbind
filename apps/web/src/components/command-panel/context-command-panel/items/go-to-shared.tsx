@@ -1,5 +1,6 @@
 import useNavigateFromCommandPanel from "@/components/command-panel/context-command-panel/use-navigate-from-command-panel";
 import { TCommandPanelItem } from "@/components/command-panel/types";
+import BrandIcon from "@/components/icons/brand";
 import { useRouter } from "@tanstack/react-router";
 import {
   ChartColumnIcon,
@@ -75,6 +76,24 @@ const accountPages = [
       "agent",
       "access",
       "revoke",
+    ],
+  },
+  {
+    to: "/account/settings/github",
+    title: "GitHub Apps",
+    Icon: ({ className }: { className?: string }) => (
+      <BrandIcon brand="github" className={className} />
+    ),
+    keywords: [
+      "account",
+      "github",
+      "git",
+      "repository",
+      "repositories",
+      "connection",
+      "connect",
+      "share",
+      "source",
     ],
   },
 ] as const;

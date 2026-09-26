@@ -31,7 +31,7 @@ import { cn } from "@/components/ui/utils";
 import {
   deleteGitApp as deleteGitAppFn,
   deleteGitInstallation as deleteGitInstallationFn,
-  gitAppInstallUrl,
+  gitAppAccessUrl,
   gitAppSettingsUrl,
   gitInstallationSettingsUrl,
   setGitAppTeam as setGitAppTeamFn,
@@ -48,6 +48,7 @@ import {
   ExternalLinkIcon,
   LockIcon,
   PlusIcon,
+  SettingsIcon,
   Trash2Icon,
   UserIcon,
   UserRoundXIcon,
@@ -362,11 +363,17 @@ function ThreeDotButton({
               {canManage && (
                 <DropdownMenuItem
                   render={
-                    <a href={gitAppInstallUrl(app)} target="_blank" rel="noreferrer noopener" />
+                    <a href={gitAppAccessUrl(app)} target="_blank" rel="noreferrer noopener" />
                   }
                 >
-                  <PlusIcon className="-ml-0.5 size-5" />
-                  <p className="min-w-0 shrink leading-tight">Install on another account</p>
+                  {app.installations.length === 0 ? (
+                    <PlusIcon className="-ml-0.5 size-5" />
+                  ) : (
+                    <SettingsIcon className="-ml-0.5 size-5" />
+                  )}
+                  <p className="min-w-0 shrink leading-tight">
+                    {app.installations.length === 0 ? "Install" : "Edit Access"}
+                  </p>
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
