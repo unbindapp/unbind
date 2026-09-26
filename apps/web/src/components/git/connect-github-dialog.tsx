@@ -144,7 +144,7 @@ export function ConnectGithubTrigger({
         <Field label="Who should see the repositories?">
           <ChoiceList items={visibilityItems} value={visibility} onChange={setVisibility} />
         </Field>
-        <Field label="GitHub account">
+        <Field label="GitHub Account">
           <ChoiceList
             items={accountTypeItems}
             value={accountType}
@@ -152,7 +152,7 @@ export function ConnectGithubTrigger({
           />
         </Field>
         {accountType === "organization" && (
-          <Field label="Organization name">
+          <Field label="Organization Name">
             <Input
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}

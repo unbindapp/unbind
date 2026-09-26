@@ -68,7 +68,9 @@ export default function ChoiceList({
           >
             <item.Icon className="group-data-selected/button:text-success mt-px -ml-0.5 size-5 self-start" />
             <div className="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
-              <p className="max-w-full min-w-0 leading-tight">{item.label}</p>
+              <p className="group-data-selected/button:text-success max-w-full min-w-0 leading-tight">
+                {item.label}
+              </p>
               {item.description && (
                 <p className="text-muted-foreground max-w-full min-w-0 text-sm leading-tight font-normal">
                   {item.description}
