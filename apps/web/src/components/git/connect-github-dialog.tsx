@@ -66,13 +66,13 @@ export function ConnectGithubTrigger({
         {
           value: onlyMe,
           label: "Only me",
-          description: "Only you can pick these repositories.",
+          description: "Only you can see these repositories.",
           Icon: LockIcon,
         },
         ...teams.map((team) => ({
           value: team.id,
           label: team.name,
-          description: `Members of ${team.name} can pick them too.`,
+          description: `Members of ${team.name} can see them too.`,
           Icon: UsersIcon,
         })),
       ]
@@ -105,8 +105,8 @@ export function ConnectGithubTrigger({
             type: "success",
             title: "GitHub connected",
             description: sharedTeam
-              ? `Members of ${sharedTeam.name} can now pick its repositories.`
-              : "Only you can pick its repositories.",
+              ? `Members of ${sharedTeam.name} can now see its repositories.`
+              : "Only you can see its repositories.",
             timeout: 5000,
           });
         },
@@ -131,7 +131,7 @@ export function ConnectGithubTrigger({
       }}
     >
       <DialogTrigger render={children} />
-      <DialogContent className="w-full max-w-lg" classNameInnerWrapper="gap-4">
+      <DialogContent hideXButton className="w-full max-w-lg" classNameInnerWrapper="gap-4">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BrandIcon brand="github" className="size-6" />

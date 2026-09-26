@@ -223,7 +223,7 @@ function useGitItem({ context }: TProps) {
       toast.add({
         type: "success",
         title: "GitHub connected",
-        description: "You can pick its repositories now.",
+        description: "You can see its repositories now.",
         timeout: 5000,
       });
     };

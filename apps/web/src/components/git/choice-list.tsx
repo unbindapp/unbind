@@ -37,8 +37,15 @@ export default function ChoiceList({
       className={cn("flex w-full flex-col overflow-hidden rounded-xl border", className)}
     >
       {!items &&
-        placeholderArray.map((i) => (
-          <Button key={i} disabled fadeOnDisabled={false} variant="ghost" className="justify-start">
+        placeholderArray.map((i, index) => (
+          <Button
+            key={i}
+            data-first={index === 0 || undefined}
+            disabled
+            fadeOnDisabled={false}
+            variant="ghost"
+            className="group/button w-full justify-start gap-2 rounded-none border-t px-3.5 font-medium data-first:border-t-0"
+          >
             <p className="bg-muted-foreground animate-skeleton rounded-md text-transparent">
               Loading option
             </p>
@@ -56,7 +63,7 @@ export default function ChoiceList({
             role="radio"
             aria-checked={isSelected}
             variant="ghost"
-            className="group/button w-full justify-start rounded-none border-t px-3 font-medium data-first:border-t-0"
+            className="group/button w-full justify-start gap-2 rounded-none border-t px-3.5 font-medium data-first:border-t-0"
             onClick={() => onChange(item.value)}
           >
             <item.Icon className="group-data-selected/button:text-success mt-px -ml-0.5 size-5 self-start" />

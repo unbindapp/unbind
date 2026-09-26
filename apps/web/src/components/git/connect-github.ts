@@ -8,7 +8,7 @@ export function githubConnectedPath() {
 type TConnectGitHubInput = {
   redirectUrl: string;
   organizationName?: string;
-  // The team whose members may pick the repositories, omitted keeps them to the connecting user
+  // The team whose members may see the repositories, omitted keeps them to the connecting user
   teamId?: string;
   onSuccess: () => void;
 };

@@ -91,7 +91,7 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
             {app ? app.name : "Loading connection"}
           </p>
           {!app || !app.team_id ? (
-            <Chip>
+            <Chip className="text-success bg-success/4-10 border-success/4-10 font-medium">
               <LockIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
               Only you
             </Chip>
@@ -109,7 +109,7 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
           )}
         </div>
       </div>
-      <ol className="flex w-full flex-col gap-1.5">
+      <ol className="-mx-1 flex w-[calc(100%+0.5rem)] flex-col gap-1.5">
         {app ? (
           app.installations.length === 0 ? (
             <li className="w-full">
@@ -482,7 +482,7 @@ function VisibilityDialog({ app, handle }: { app: TGitApp; handle: TDialogHandle
         reset();
       }}
     >
-      <DialogContent className="w-full max-w-lg" classNameInnerWrapper="gap-4">
+      <DialogContent hideXButton className="w-full max-w-lg" classNameInnerWrapper="gap-4">
         <DialogHeader>
           <DialogTitle>Visibility</DialogTitle>
           <DialogDescription>Who should see the repositories?</DialogDescription>
@@ -520,7 +520,7 @@ function UnshareTrigger({ app, handle }: { app: TGitApp; handle: TDialogHandle }
   return (
     <DeleteEntityTrigger
       dialogTitle="Remove from Team"
-      dialogDescription="Members of the team can no longer pick its repositories. Services already built from it keep deploying."
+      dialogDescription="Members of the team can no longer see its repositories. Services already built from it keep deploying."
       deletingEntityName={app.name}
       disableConfirmationInput
       submitButtonText="Remove"
