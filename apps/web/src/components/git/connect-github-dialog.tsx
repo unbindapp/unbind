@@ -131,15 +131,14 @@ export function ConnectGithubTrigger({
       }}
     >
       <DialogTrigger render={children} />
-      <DialogContent classNameInnerWrapper="gap-4">
+      <DialogContent className="w-full max-w-lg" classNameInnerWrapper="gap-4">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BrandIcon brand="github" className="size-6" />
             Connect GitHub
           </DialogTitle>
           <DialogDescription>
-            A GitHub App is created on your account or organization. Pick the repositories it can
-            reach when GitHub asks.
+            A GitHub App is created on your account or organization.
           </DialogDescription>
         </DialogHeader>
         <Field label="Who can see the repositories?">
@@ -181,7 +180,7 @@ export function ConnectGithubTrigger({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex w-full flex-col">
-      <p className="mb-1.5 px-1 text-sm leading-tight font-medium">{label}</p>
+      <p className="px-1 pb-2.5 leading-tight font-medium">{label}</p>
       {children}
     </div>
   );

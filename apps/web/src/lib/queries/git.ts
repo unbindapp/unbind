@@ -123,10 +123,8 @@ export async function deleteGitInstallation(input: { installationId: number }) {
   return { data: res.data };
 }
 
-// The app is created on GitHub, so its name is the slug GitHub links use.
-// With one installation GitHub sends the install page there anyway, so link straight to it.
-export function gitAppAccessUrl(app: TGitApp) {
-  if (app.installations.length === 1) return gitInstallationSettingsUrl(app.installations[0]);
+// The app is created on GitHub, so its name is the slug GitHub links use
+export function gitAppInstallUrl(app: TGitApp) {
   return `https://github.com/apps/${encodeURIComponent(app.name)}/installations/new`;
 }
 

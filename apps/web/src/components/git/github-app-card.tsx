@@ -5,6 +5,7 @@ import ChoiceList, { type TChoice } from "@/components/git/choice-list";
 import { useGithubAppsUtils } from "@/components/git/github-apps-provider";
 import BrandIcon from "@/components/icons/brand";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
+import { BlockItemButtonLike } from "@/components/block";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +32,7 @@ import { cn } from "@/components/ui/utils";
 import {
   deleteGitApp as deleteGitAppFn,
   deleteGitInstallation as deleteGitInstallationFn,
-  gitAppAccessUrl,
+  gitAppInstallUrl,
   gitAppSettingsUrl,
   gitInstallationSettingsUrl,
   setGitAppTeam as setGitAppTeamFn,
@@ -46,9 +47,8 @@ import {
   CircleAlertIcon,
   EllipsisVerticalIcon,
   ExternalLinkIcon,
+  EyeIcon,
   LockIcon,
-  PlusIcon,
-  SettingsIcon,
   Trash2Icon,
   UserIcon,
   UserRoundXIcon,
@@ -111,9 +111,34 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
       <ol className="flex w-full flex-col gap-1.5">
         {app ? (
           app.installations.length === 0 ? (
-            <li className="text-muted-foreground flex w-full items-center gap-1.5 rounded-lg border px-3 py-2 text-sm leading-tight">
-              <CircleAlertIcon className="size-4 shrink-0" />
-              <p className="min-w-0 shrink">Not installed on any account yet</p>
+            <li className="w-full">
+              <BlockItemButtonLike
+                asElement="div"
+                className="text-muted-foreground"
+                Icon={({ className }) => <CircleAlertIcon className={className} />}
+                text="Not installed on any account yet"
+                SuffixComponent={({ className }) => (
+                  <div
+                    className={cn(
+                      "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-0.5",
+                      className,
+                    )}
+                  >
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Install on GitHub"
+                      className="text-muted-more-foreground rounded-md"
+                      render={
+                        <a href={gitAppInstallUrl(app)} target="_blank" rel="noreferrer noopener" />
+                      }
+                    >
+                      <ExternalLinkIcon className="size-4.5" />
+                    </Button>
+                  </div>
+                )}
+              />
             </li>
           ) : (
             app.installations.map((installation) => (
@@ -126,7 +151,9 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
             ))
           )
         ) : (
-          <InstallationRow isPlaceholder />
+          <li className="w-full">
+            <BlockItemButtonLike asElement="div" isPending text="Loading account" />
+          </li>
         )}
       </ol>
       <p className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full min-w-0 shrink px-0.75 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
@@ -167,70 +194,95 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
   );
 }
 
+// Chips sit inside the text line so the row keeps the block button height
+const rowChipClassName = "py-px";
+
 function InstallationRow({
   app,
   installation,
   canManage,
-}:
-  | { app: TGitApp; installation: TGitInstallation; canManage: boolean; isPlaceholder?: never }
-  | { app?: never; installation?: never; canManage?: never; isPlaceholder: true }) {
-  const AccountIcon = installation?.account_type === "Organization" ? Building2Icon : UserIcon;
-  const serviceCount = installation?.service_count ?? 0;
+}: {
+  app: TGitApp;
+  installation: TGitInstallation;
+  canManage: boolean;
+}) {
+  const AccountIcon = installation.account_type === "Organization" ? Building2Icon : UserIcon;
+  const serviceCount = installation.service_count;
   return (
-    <li className="flex w-full items-center gap-2 rounded-lg border py-1.5 pr-1.5 pl-3 text-sm leading-tight">
-      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-1 py-1">
-        <a
-          href={installation?.account_url}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground flex max-w-full min-w-0 items-center gap-1.5 font-medium group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent has-hover:hover:underline"
-        >
-          <AccountIcon className="size-4 shrink-0 group-data-placeholder/item:invisible" />
-          <span className="min-w-0 truncate">
-            {installation ? installation.account_login : "loading-account"}
-          </span>
-        </a>
-        <Chip>
-          {installation?.repository_selection === "selected"
-            ? "Selected repositories"
-            : "All repositories"}
-        </Chip>
-        <Chip>
-          {serviceCount} {serviceCount === 1 ? "service" : "services"}
-        </Chip>
-        {installation && !installation.active && (
-          <Chip className="text-destructive bg-destructive/4-10 border-destructive/4-10 font-medium">
-            <CircleAlertIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-            Uninstalled on GitHub
-          </Chip>
-        )}
-        {installation && installation.active && installation.suspended && (
-          <Chip className="text-warning bg-warning/4-10 border-warning/4-10 font-medium">
-            <CircleAlertIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-            Suspended
-          </Chip>
-        )}
-      </div>
-      {installation && (
-        <div className="flex shrink-0 items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label="Configure on GitHub"
-            className="text-muted-more-foreground size-8 rounded-md"
-            render={
-              <a
-                href={gitInstallationSettingsUrl(installation)}
-                target="_blank"
-                rel="noreferrer noopener"
-              />
-            }
+    <li className="w-full">
+      <BlockItemButtonLike
+        asElement="div"
+        Icon={({ className }) => <AccountIcon className={className} />}
+        classNameText="flex flex-wrap items-center gap-x-2 gap-y-1"
+        text={
+          <>
+            <a
+              href={installation.account_url}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="min-w-0 truncate has-hover:hover:underline"
+            >
+              {installation.account_login}
+            </a>
+            <Chip className={rowChipClassName}>
+              {installation.repository_selection === "selected"
+                ? "Selected repositories"
+                : "All repositories"}
+            </Chip>
+            <Chip className={rowChipClassName}>
+              {serviceCount} {serviceCount === 1 ? "service" : "services"}
+            </Chip>
+            {!installation.active && (
+              <Chip
+                className={cn(
+                  rowChipClassName,
+                  "text-destructive bg-destructive/4-10 border-destructive/4-10 font-medium",
+                )}
+              >
+                <CircleAlertIcon className="mr-1 -ml-0.5 size-3" />
+                Uninstalled on GitHub
+              </Chip>
+            )}
+            {installation.active && installation.suspended && (
+              <Chip
+                className={cn(
+                  rowChipClassName,
+                  "text-warning bg-warning/4-10 border-warning/4-10 font-medium",
+                )}
+              >
+                <CircleAlertIcon className="mr-1 -ml-0.5 size-3" />
+                Suspended
+              </Chip>
+            )}
+          </>
+        }
+        SuffixComponent={({ className }) => (
+          <div
+            className={cn(
+              "-my-2.5 -mr-3 flex items-start justify-end self-stretch p-0.5",
+              className,
+            )}
           >
-            <ExternalLinkIcon className="size-4.5" />
-          </Button>
-          {canManage && <RemoveInstallationTrigger app={app} installation={installation} />}
-        </div>
-      )}
+            <Button
+              type="button"
+              size="icon"
+              variant="ghost"
+              aria-label="Configure on GitHub"
+              className="text-muted-more-foreground rounded-md"
+              render={
+                <a
+                  href={gitInstallationSettingsUrl(installation)}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                />
+              }
+            >
+              <ExternalLinkIcon className="size-4.5" />
+            </Button>
+            {canManage && <RemoveInstallationTrigger app={app} installation={installation} />}
+          </div>
+        )}
+      />
     </li>
   );
 }
@@ -268,10 +320,11 @@ function RemoveInstallationTrigger({
       }}
     >
       <Button
-        variant="ghost"
+        type="button"
         size="icon"
+        variant="ghost-destructive"
         aria-label={`Remove ${installation.account_login}`}
-        className="text-muted-more-foreground has-hover:hover:text-destructive active:text-destructive size-8 rounded-md"
+        className="text-muted-more-foreground rounded-md"
       >
         <Trash2Icon className="size-4.5" />
       </Button>
@@ -305,7 +358,7 @@ function ThreeDotButton({
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [sharingHandle] = useState(() => createDialogHandle());
+  const [visibilityHandle] = useState(() => createDialogHandle());
   const [unshareHandle] = useState(() => createDialogHandle());
   const [deleteHandle] = useState(() => createDialogHandle());
 
@@ -339,11 +392,11 @@ function ThreeDotButton({
               {view === "account" && isOwner && (
                 <DialogTrigger
                   nativeButton={false}
-                  handle={sharingHandle}
+                  handle={visibilityHandle}
                   render={
                     <DropdownMenuItem>
-                      <UsersIcon className="-ml-0.5 size-5" />
-                      <p className="min-w-0 shrink leading-tight">Sharing</p>
+                      <EyeIcon className="-ml-0.5 size-5" />
+                      <p className="min-w-0 shrink leading-tight">Visibility</p>
                     </DropdownMenuItem>
                   }
                 />
@@ -360,28 +413,12 @@ function ThreeDotButton({
                   }
                 />
               )}
-              {canManage && (
-                <DropdownMenuItem
-                  render={
-                    <a href={gitAppAccessUrl(app)} target="_blank" rel="noreferrer noopener" />
-                  }
-                >
-                  {app.installations.length === 0 ? (
-                    <PlusIcon className="-ml-0.5 size-5" />
-                  ) : (
-                    <SettingsIcon className="-ml-0.5 size-5" />
-                  )}
-                  <p className="min-w-0 shrink leading-tight">
-                    {app.installations.length === 0 ? "Install" : "Edit Access"}
-                  </p>
-                </DropdownMenuItem>
-              )}
               <DropdownMenuItem
                 render={
                   <a href={gitAppSettingsUrl(app)} target="_blank" rel="noreferrer noopener" />
                 }
               >
-                <ExternalLinkIcon className="-ml-0.5 size-5" />
+                <BrandIcon brand="github" className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Open on GitHub</p>
               </DropdownMenuItem>
               {canManage && (
@@ -400,7 +437,7 @@ function ThreeDotButton({
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
-      {view === "account" && isOwner && <SharingDialog app={app} handle={sharingHandle} />}
+      {view === "account" && isOwner && <VisibilityDialog app={app} handle={visibilityHandle} />}
       {view === "team" && canUnshare && <UnshareTrigger app={app} handle={unshareHandle} />}
       {canManage && <DeleteAppTrigger app={app} handle={deleteHandle} />}
     </>
@@ -409,7 +446,7 @@ function ThreeDotButton({
 
 const onlyMe = "only-me";
 
-function SharingDialog({ app, handle }: { app: TGitApp; handle: TDialogHandle }) {
+function VisibilityDialog({ app, handle }: { app: TGitApp; handle: TDialogHandle }) {
   const { invalidate } = useGithubAppsUtils();
   const {
     data: teamsData,
@@ -443,12 +480,10 @@ function SharingDialog({ app, handle }: { app: TGitApp; handle: TDialogHandle })
         reset();
       }}
     >
-      <DialogContent classNameInnerWrapper="gap-4">
+      <DialogContent className="w-full max-w-lg" classNameInnerWrapper="gap-4">
         <DialogHeader>
-          <DialogTitle>Sharing</DialogTitle>
-          <DialogDescription>
-            Members of the team can pick the repositories of {app.name} for their services.
-          </DialogDescription>
+          <DialogTitle>Visibility</DialogTitle>
+          <DialogDescription>Members of the team can see the repositories.</DialogDescription>
         </DialogHeader>
         <ChoiceList
           items={items}
