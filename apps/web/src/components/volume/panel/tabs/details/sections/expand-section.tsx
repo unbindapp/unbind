@@ -332,7 +332,7 @@ function ExpandDialogTrigger({
             <br />
             <br />
             Type {`"`}
-            <span className="text-warning font-semibold">{textToConfirm}</span>
+            <span className="text-warning font-semibold select-all">{textToConfirm}</span>
             {`"`} to confirm.
           </DialogDescription>
         </DialogHeader>

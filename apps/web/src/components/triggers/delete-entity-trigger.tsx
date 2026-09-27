@@ -115,8 +115,8 @@ export function DeleteEntityTrigger({
                 <span
                   className={
                     variant === "warning"
-                      ? "text-warning font-semibold"
-                      : "text-destructive font-semibold"
+                      ? "text-warning font-semibold select-all"
+                      : "text-destructive font-semibold select-all"
                   }
                 >
                   {textToConfirm}
