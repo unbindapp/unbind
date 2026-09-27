@@ -152,13 +152,13 @@ function InputWithInfo({
           {onRevert && (
             <div
               data-visible={showRevert || undefined}
-              className="flex w-0 shrink-0 items-center justify-end overflow-hidden transition-[width] data-visible:w-9.75"
+              className="flex w-0 shrink-0 items-center justify-end overflow-hidden transition-[width] data-visible:w-9.5"
             >
               <RevertButton
                 onClick={onRevert}
                 isStaged={isStaged}
                 disabled={!showRevert}
-                className="mr-0.75"
+                className="mr-0.5"
               />
             </div>
           )}
