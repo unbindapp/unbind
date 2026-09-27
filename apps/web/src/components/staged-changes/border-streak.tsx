@@ -167,7 +167,7 @@ export default function BorderStreak() {
     <div
       ref={rootRef}
       aria-hidden
-      className="text-change/9-10 pointer-events-none absolute -inset-px rounded-lg"
+      className="text-change/9-10 pointer-events-none absolute -inset-px rounded-xl"
     >
       {layerBlurs.map((blur) => (
         <canvas key={blur} className={`absolute inset-0 size-full ${blur}`} />
