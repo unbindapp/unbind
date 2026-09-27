@@ -19,9 +19,14 @@ export function RevertButton({ onClick, isStaged, disabled, className, className
       onClick={onClick}
       variant={isStaged ? "ghost-change" : "ghost"}
       size="icon"
-      className={cn("rounded-md", className)}
+      className={cn("group/button rounded-md", className)}
     >
-      <RotateCcwIcon className={cn("size-4.5", classNameIcon)} />
+      <RotateCcwIcon
+        className={cn(
+          "size-4.5 transition-transform group-disabled/button:-rotate-45",
+          classNameIcon,
+        )}
+      />
     </Button>
   );
 }

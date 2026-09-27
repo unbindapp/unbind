@@ -349,7 +349,7 @@ function ValueTitle({
         onClick={onRevert}
         isStaged={hasChanges}
         disabled={!hasChanges}
-        className="z-1 mt-0.5 mr-0.5 -mb-1 size-8 transition-opacity disabled:opacity-0"
+        className="z-1 mt-0.5 mr-0.5 -mb-1 size-8 disabled:opacity-0"
         classNameIcon="size-4"
       />
     </div>
