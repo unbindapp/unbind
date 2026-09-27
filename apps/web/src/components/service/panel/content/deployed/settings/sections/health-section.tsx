@@ -144,7 +144,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
     startupCheckIntervalSeconds: healthCheck?.startup_period_seconds ?? defaultApiValue,
     startupCheckFailureThreshold: healthCheck?.startup_failure_threshold ?? defaultApiValue,
   };
-  const { staged, stage, unstage } = useServiceChanges(service, {
+  const { staged, stage, unstage, revert } = useServiceChanges(service, {
     healthCheckType: serverType,
     healthCheckEndpoint: serverEndpoint,
     healthCheckEndpointPort: serverPort,
@@ -224,11 +224,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
         onChange: ({ value }) => validatePositiveInteger(value),
       }}
       children={(fieldApi) => (
-        <MiniSection
-          title={thresholdFields[field].title}
-          unit={thresholdFields[field].unit}
-          hasChanges={staged[field] !== undefined}
-        >
+        <MiniSection title={thresholdFields[field].title}>
           <fieldApi.TextField
             field={fieldApi}
             value={fieldApi.state.value}
@@ -244,8 +240,9 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
             autoComplete="off"
             spellCheck="false"
             inputMode="numeric"
-            className="min-w-0 flex-1"
-            classNameInput="rounded-r-none"
+            unit={thresholdFields[field].unit}
+            revertTo={thresholdToInput(serverThresholds[field])}
+            onRevert={() => revert(fieldApi, field, thresholdToInput(serverThresholds[field]))}
             hasChanges={staged[field] !== undefined}
           />
         </MiniSection>
@@ -337,7 +334,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                     }}
                     children={(field) => (
                       <field.TextField
-                        classNameInput="rounded-t-none border-t-0 pr-27"
+                        classNameFrame="rounded-t-none border-t-0 pr-27"
                         field={field}
                         value={field.state.value}
                         onBlur={field.handleBlur}
@@ -356,6 +353,8 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                         autoCorrect="off"
                         autoComplete="off"
                         spellCheck="false"
+                        revertTo={serverEndpoint}
+                        onRevert={() => revert(field, "healthCheckEndpoint", serverEndpoint)}
                         hasChanges={staged.healthCheckEndpoint !== undefined}
                       />
                     )}
@@ -417,7 +416,7 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                   children={(field) => (
                     <field.TextField
                       className="-mt-1"
-                      classNameInput="rounded-t-none border-t-0"
+                      classNameFrame="rounded-t-none border-t-0"
                       field={field}
                       value={field.state.value}
                       onBlur={field.handleBlur}
@@ -436,6 +435,8 @@ function GitOrDockerImageSection({ service }: { service: TServiceShallow }) {
                       autoCorrect="off"
                       autoComplete="off"
                       spellCheck="false"
+                      revertTo={serverCommand}
+                      onRevert={() => revert(field, "healthCheckCommand", serverCommand)}
                       hasChanges={staged.healthCheckCommand !== undefined}
                     />
                   )}

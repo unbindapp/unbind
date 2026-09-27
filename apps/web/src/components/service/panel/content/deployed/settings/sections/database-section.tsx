@@ -107,7 +107,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
     maxWalSenders: config?.max_wal_senders ?? defaultApiValue,
     maxSlotWalKeepSizeMb: config?.max_slot_wal_keep_size_mb ?? defaultApiValue,
   };
-  const { staged, stage, unstage } = useServiceChanges(service, {
+  const { staged, stage, unstage, revert } = useServiceChanges(service, {
     walLevel: serverWalLevel,
     ...serverNumbers,
   });
@@ -148,12 +148,10 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
       validators={{
         onChange: ({ value }) => validateNumberField(field, value),
       }}
-      children={(fieldApi) => (
-        <MiniSection
-          title={numberFields[field].title}
-          unit={numberFields[field].unit}
-          hasChanges={staged[field] !== undefined}
-        >
+      children={(fieldApi) => {
+        const { title, unit, placeholder } = numberFields[field];
+        const serverInput = numberToInput(serverNumbers[field]);
+        const input = (
           <fieldApi.TextField
             field={fieldApi}
             value={fieldApi.state.value}
@@ -163,18 +161,21 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
               if (fieldApi.state.meta.errors.length > 0) return;
               stageNumber(field, e.target.value);
             }}
-            placeholder={numberFields[field].placeholder}
+            placeholder={placeholder}
             autoCapitalize="off"
             autoCorrect="off"
             autoComplete="off"
             spellCheck="false"
             inputMode="numeric"
-            className="min-w-0 flex-1"
-            classNameInput="rounded-r-none"
+            unit={unit}
+            revertTo={serverInput}
+            onRevert={() => revert(fieldApi, field, serverInput)}
             hasChanges={staged[field] !== undefined}
           />
-        </MiniSection>
-      )}
+        );
+        if (!title) return input;
+        return <MiniSection title={title}>{input}</MiniSection>;
+      }}
     />
   );
 

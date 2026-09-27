@@ -5,9 +5,7 @@ import {
   type TStagedFields,
   useResetFormOnStagedChange,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
-import { DraftInput } from "@/components/settings/draft-input";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { FileUpIcon } from "lucide-react";
 
 // The API treats 0 as unset, which applies the default
 export const unsetRequestSizeMb = 0;
@@ -18,31 +16,44 @@ type TProps = {
   serverSizeMb: number;
   staged: TStagedFields;
   stage: (sizeMb: number) => void;
+  revert: () => void;
 };
 
-export default function MaxRequestSize({ serverSizeMb, staged, stage }: TProps) {
-  const baseline = toInput(stagedNumber(staged.maxRequestBodySizeMb, serverSizeMb));
-  const defaultValues = { sizeMb: baseline };
+export default function MaxRequestSize({ serverSizeMb, staged, stage, revert }: TProps) {
+  const defaultValues = {
+    sizeMb: toInput(stagedNumber(staged.maxRequestBodySizeMb, serverSizeMb)),
+  };
   const form = useAppForm({ defaultValues });
   useResetFormOnStagedChange(form, defaultValues, staged, requestSizeFields);
+  const serverInput = toInput(serverSizeMb);
 
   return (
     <form.AppField
       name="sizeMb"
+      validators={{ onChange: ({ value }) => validateRequestSize(value) }}
       children={(field) => (
-        <DraftInput
+        <field.TextField
+          field={field}
           value={field.state.value}
-          onChange={field.handleChange}
           onBlur={field.handleBlur}
-          baseline={baseline}
-          revertTo={toInput(serverSizeMb)}
-          getError={getRequestSizeError}
-          onConfirm={(value) => stage(value === "" ? unsetRequestSizeMb : Number(value))}
-          onRevert={() => stage(serverSizeMb)}
-          Icon={FileUpIcon}
+          onChange={(e) => {
+            field.handleChange(e.target.value);
+            if (field.state.meta.errors.length > 0) return;
+            stage(e.target.value === "" ? unsetRequestSizeMb : Number(e.target.value));
+          }}
           placeholder={defaultRequestSizeMb.toString()}
+          autoCapitalize="off"
+          autoCorrect="off"
+          autoComplete="off"
+          spellCheck="false"
           inputMode="numeric"
           unit="MB"
+          revertTo={serverInput}
+          onRevert={() => {
+            field.handleChange(serverInput);
+            revert();
+          }}
+          hasChanges={staged.maxRequestBodySizeMb !== undefined}
         />
       )}
     />
@@ -53,9 +64,11 @@ function toInput(sizeMb: number) {
   return sizeMb === unsetRequestSizeMb ? "" : sizeMb.toString();
 }
 
-function getRequestSizeError(value: string) {
+function validateRequestSize(value: string) {
   const error = validatePositiveInteger(value);
-  if (error) return error.message;
-  if (Number(value) > maxRequestSizeMb) return `Must be at most ${maxRequestSizeMb}.`;
-  return null;
+  if (error) return error;
+  if (Number(value) > maxRequestSizeMb) {
+    return { message: `Must be at most ${maxRequestSizeMb}.` };
+  }
+  return undefined;
 }

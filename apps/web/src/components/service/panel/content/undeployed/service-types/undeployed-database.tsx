@@ -30,7 +30,6 @@ import { useConnectOpen } from "@/components/service/panel/content/deployed/depl
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";
 import { useService } from "@/components/service/service-provider";
-import { MiniSection } from "@/components/settings/mini-section";
 import {
   AddBackupBucketTrigger,
   S3BucketCommandItemElement,
@@ -519,22 +518,19 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
                         onChange: ({ value }) => validateBackupRetentionCount(value),
                       }}
                       children={(field) => (
-                        <MiniSection unit="backups">
-                          <field.TextField
-                            field={field}
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder={defaultBackupRetentionCount}
-                            autoCapitalize="off"
-                            autoCorrect="off"
-                            autoComplete="off"
-                            spellCheck="false"
-                            inputMode="numeric"
-                            className="min-w-0 flex-1"
-                            classNameInput="rounded-r-none"
-                          />
-                        </MiniSection>
+                        <field.TextField
+                          field={field}
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          placeholder={defaultBackupRetentionCount}
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          autoComplete="off"
+                          spellCheck="false"
+                          inputMode="numeric"
+                          unit="backups"
+                        />
                       )}
                     />
                   </BlockItemContent>

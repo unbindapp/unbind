@@ -25,7 +25,6 @@ import {
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { useService } from "@/components/service/service-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
-import { MiniSection } from "@/components/settings/mini-section";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { TDatabaseSectionProps } from "@/components/settings/types";
@@ -98,7 +97,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
   const serverBucketId = service.config.s3_backup_bucket_id ?? noBucketId;
   const serverSchedule = service.config.backup_schedule;
   const serverRetention = service.config.backup_retention_count;
-  const { staged, stage, unstage } = useServiceChanges(service, {
+  const { staged, stage, unstage, revert } = useServiceChanges(service, {
     s3BackupBucketId: serverBucketId,
     backupSchedule: serverSchedule,
     backupRetentionCount: serverRetention,
@@ -107,14 +106,16 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
   const stagedSchedule = stagedString(staged.backupSchedule, serverSchedule);
   const stagedRetention = stagedNumber(staged.backupRetentionCount, serverRetention);
 
-  const defaultValues = {
+  const stagedDefaults = {
     s3BucketId: stagedBucketId === noBucketId ? "" : stagedBucketId,
-    backupSchedulePreset: scheduleToPreset(stagedSchedule),
     backupScheduleCustom: stagedSchedule,
     backupRetentionCount: String(stagedRetention),
   };
-  const form = useAppForm({ defaultValues });
-  useResetFormOnStagedChange(form, defaultValues, staged, backupFields);
+  const form = useAppForm({
+    defaultValues: { ...stagedDefaults, backupSchedulePreset: scheduleToPreset(stagedSchedule) },
+  });
+  // The preset only picks a schedule, so it stays on custom when the schedule goes back
+  useResetFormOnStagedChange(form, stagedDefaults, staged, backupFields);
 
   const schedulePreset = useStore(form.store, (s) => s.values.backupSchedulePreset);
   const backupsEnabled = stagedBucketId !== noBucketId;
@@ -324,7 +325,7 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                     children={(field) => (
                       <field.TextField
                         className="-mt-1"
-                        classNameInput="rounded-t-none border-t-0 font-mono"
+                        classNameFrame="rounded-t-none border-t-0 font-mono"
                         field={field}
                         value={field.state.value}
                         onBlur={field.handleBlur}
@@ -338,6 +339,8 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                         autoCorrect="off"
                         autoComplete="off"
                         spellCheck="false"
+                        revertTo={serverSchedule}
+                        onRevert={() => revert(field, "backupSchedule", serverSchedule)}
                         hasChanges={staged.backupSchedule !== undefined}
                       />
                     )}
@@ -364,30 +367,26 @@ function DatabaseSection({ service }: TDatabaseSectionProps) {
                   onChange: ({ value }) => validateBackupRetentionCount(value),
                 }}
                 children={(field) => (
-                  <MiniSection
+                  <field.TextField
+                    field={field}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value);
+                      if (field.state.meta.errors.length > 0) return;
+                      stageRetention(e.target.value);
+                    }}
+                    placeholder="3"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    autoComplete="off"
+                    spellCheck="false"
+                    inputMode="numeric"
                     unit="backups"
+                    revertTo={String(serverRetention)}
+                    onRevert={() => revert(field, "backupRetentionCount", String(serverRetention))}
                     hasChanges={staged.backupRetentionCount !== undefined}
-                  >
-                    <field.TextField
-                      field={field}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => {
-                        field.handleChange(e.target.value);
-                        if (field.state.meta.errors.length > 0) return;
-                        stageRetention(e.target.value);
-                      }}
-                      placeholder="3"
-                      autoCapitalize="off"
-                      autoCorrect="off"
-                      autoComplete="off"
-                      spellCheck="false"
-                      inputMode="numeric"
-                      className="min-w-0 flex-1"
-                      classNameInput="rounded-r-none"
-                      hasChanges={staged.backupRetentionCount !== undefined}
-                    />
-                  </MiniSection>
+                  />
                 )}
               />
             </BlockItemContent>

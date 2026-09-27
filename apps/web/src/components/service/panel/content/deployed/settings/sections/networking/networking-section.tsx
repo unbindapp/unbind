@@ -357,6 +357,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                     format: (v) => (v === unsetRequestSizeMb ? "Default" : `${v} MB`),
                   })
                 }
+                revert={() => unstage(requestSizeFields)}
               />
             </BlockItemContent>
           </BlockItem>

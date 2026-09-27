@@ -22,7 +22,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input, InputProps } from "@/components/ui/input";
+import { RevertButton } from "@/components/settings/revert-button";
+import { Input, inputFrameClassName, InputProps } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider, SliderProps } from "@/components/ui/slider";
@@ -80,7 +81,14 @@ export type TFieldProps = {
   classNameInfo?: string;
 };
 
-type TInputWithInfoProps = TFieldProps & InputProps;
+type TInputWithInfoProps = TFieldProps &
+  InputProps & {
+    unit?: string;
+    // The value revert brings back, usually the deployed one
+    revertTo?: string;
+    onRevert?: () => void;
+    classNameFrame?: string;
+  };
 
 function InputWithInfo({
   className,
@@ -89,17 +97,35 @@ function InputWithInfo({
   classNameInput,
   classNameInfo,
   dontCheckUntilSubmit,
-  showUndo,
-  onUndo,
+  unit,
+  revertTo,
+  onRevert,
+  classNameFrame,
   Icon,
   classNameIcon,
   ...rest
 }: TInputWithInfoProps) {
   const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
-  const ref = useRef<HTMLInputElement>(null);
-  const inputRef = rest.ref || ref;
   // The label-included layout renders the icon inside its floating label
   const hasStandaloneIcon = Icon !== undefined && rest.layout !== "label-included";
+  const isFramed = unit !== undefined || onRevert !== undefined;
+  const isStaged = rest.hasChanges === true;
+  const showRevert =
+    onRevert !== undefined &&
+    revertTo !== undefined &&
+    !rest.disabled &&
+    (isStaged || rest.value !== revertTo);
+
+  const input = (
+    <Input
+      {...rest}
+      Icon={hasStandaloneIcon ? undefined : Icon}
+      aria-invalid={hasError || undefined}
+      framed={isFramed}
+      fadeOnDisabled={isFramed ? false : rest.fadeOnDisabled}
+      className={cn("w-full", hasStandaloneIcon && "pl-9.5", classNameInput)}
+    />
+  );
 
   return (
     <div
@@ -112,30 +138,38 @@ function InputWithInfo({
           className={cn("pointer-events-none absolute top-3 left-3.25 size-4.5", classNameIcon)}
         />
       )}
-      <Input
-        ref={inputRef}
-        {...rest}
-        Icon={hasStandaloneIcon ? undefined : Icon}
-        aria-invalid={hasError || undefined}
-        data-show-undo={showUndo || undefined}
-        className={cn(
-          "w-full data-show-undo:pr-11.5",
-          hasStandaloneIcon && "pl-9.5",
-          classNameInput,
-        )}
-      />
-      {showUndo && (
-        <Button
-          variant="ghost"
-          className="absolute top-0.75 right-0.75 z-10 rounded-md"
-          size="icon"
-          onClick={() => {
-            onUndo?.();
-            ref.current?.focus();
-          }}
+      {isFramed ? (
+        <div
+          data-staged={isStaged || undefined}
+          className={cn(
+            inputFrameClassName,
+            "group/frame",
+            rest.fadeOnDisabled !== false && "has-[input:disabled]:opacity-50",
+            classNameFrame,
+          )}
         >
-          <RotateCcwIcon className="size-4.5" />
-        </Button>
+          {input}
+          {onRevert && (
+            <div
+              data-visible={showRevert || undefined}
+              className="flex w-0 shrink-0 items-center justify-end overflow-hidden transition-[width] data-visible:w-9.75"
+            >
+              <RevertButton
+                onClick={onRevert}
+                isStaged={isStaged}
+                disabled={!showRevert}
+                className="mr-0.75"
+              />
+            </div>
+          )}
+          {unit && (
+            <div className="text-muted-foreground group-data-staged/frame:text-change/9-10 group-data-staged/frame:border-change/5-10 flex min-w-0 shrink items-center justify-end border-l px-2.5 text-right text-sm font-medium">
+              <p className="min-w-0 shrink">{unit}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        input
       )}
       {!hideError && hasError ? (
         <ErrorLine

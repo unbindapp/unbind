@@ -16,6 +16,7 @@ import {
 } from "@/components/staged-changes/types";
 import { useService } from "@/components/service/service-provider";
 import { TServiceShallow } from "@/lib/queries/services";
+import type { AnyFieldApi } from "@tanstack/react-form";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
 export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceField>>;
@@ -80,7 +81,16 @@ export function useServiceChanges(service: TServiceShallow, serverValues: TServe
     [discard, service.id],
   );
 
-  return { staged, stage, unstage };
+  // Setting the field first keeps the form from resetting the section's other fields
+  const revert = useCallback(
+    (fieldApi: AnyFieldApi, field: TServiceChangeField, serverInput: string) => {
+      fieldApi.handleChange(serverInput);
+      unstage([field]);
+    },
+    [unstage],
+  );
+
+  return { staged, stage, unstage, revert };
 }
 
 // Domains and ports are staged one entry at a time, the payload merges them per service
@@ -150,7 +160,7 @@ type TFormValues = Record<string, string | number | boolean>;
 // already match the defaults and are left alone
 export function useResetFormOnStagedChange<T extends TFormValues>(
   form: { reset: () => void; state: { values: T } },
-  defaultValues: T,
+  defaultValues: Partial<T>,
   staged: TStagedFields,
   fields: TServiceChangeField[],
   onReset?: () => void,
@@ -179,7 +189,7 @@ export function hasApplying(staged: TStagedFields, fields: TServiceChangeField[]
   return fields.some((field) => staged[field]?.isApplying === true);
 }
 
-function matchesDefaults<T extends TFormValues>(values: T, defaults: T) {
+function matchesDefaults<T extends TFormValues>(values: T, defaults: Partial<T>) {
   return Object.keys(defaults).every((field) => values[field] === defaults[field]);
 }
 

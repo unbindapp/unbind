@@ -134,7 +134,7 @@ function GitSection({ service }: TGitSectionProps) {
     startCommand: service.config.run_command || "",
   };
   const serverWatchPaths = joinWatchPaths(service.config.watch_paths);
-  const { staged, stage, unstage } = useServiceChanges(service, {
+  const { staged, stage, unstage, revert } = useServiceChanges(service, {
     builder: service.config.builder,
     ...serverValues,
     watchPaths: serverWatchPaths,
@@ -260,6 +260,11 @@ function GitSection({ service }: TGitSectionProps) {
                       autoCorrect="off"
                       autoComplete="off"
                       spellCheck="false"
+                      revertTo={serverValues[field]}
+                      onRevert={() => {
+                        revert(fieldApi, field, serverValues[field]);
+                        if (serverValues[field] === "") closeField(field);
+                      }}
                       hasChanges={staged[field] !== undefined}
                     />
                   )}

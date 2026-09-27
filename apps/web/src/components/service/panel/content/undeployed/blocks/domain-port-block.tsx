@@ -145,13 +145,10 @@ const DomainPortBlock = withForm({
                               field.handleChange(e.target.value);
                             }
                       }
-                      showUndo={
-                        isPublic && detectedPort !== undefined && field.state.value !== detectedPort
-                      }
-                      onUndo={() => {
-                        if (detectedPort !== undefined) {
-                          field.handleChange(detectedPort);
-                        }
+                      revertTo={detectedPort}
+                      onRevert={() => {
+                        if (detectedPort === undefined) return;
+                        field.handleChange(detectedPort);
                       }}
                       placeholder="3000"
                       autoCapitalize="off"
