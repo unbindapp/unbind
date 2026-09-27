@@ -94,6 +94,12 @@ func (_c *GithubAppCreate) SetName(v string) *GithubAppCreate {
 	return _c
 }
 
+// SetSlug sets the "slug" field.
+func (_c *GithubAppCreate) SetSlug(v string) *GithubAppCreate {
+	_c.mutation.SetSlug(v)
+	return _c
+}
+
 // SetOwnerLogin sets the "owner_login" field.
 func (_c *GithubAppCreate) SetOwnerLogin(v string) *GithubAppCreate {
 	_c.mutation.SetOwnerLogin(v)
@@ -255,6 +261,14 @@ func (_c *GithubAppCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.Slug(); !ok {
+		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "GithubApp.slug"`)}
+	}
+	if v, ok := _c.mutation.Slug(); ok {
+		if err := githubapp.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "GithubApp.slug": %w`, err)}
+		}
+	}
 	if v, ok := _c.mutation.OwnerType(); ok {
 		if err := githubapp.OwnerTypeValidator(v); err != nil {
 			return &ValidationError{Name: "owner_type", err: fmt.Errorf(`ent: validator failed for field "GithubApp.owner_type": %w`, err)}
@@ -325,6 +339,10 @@ func (_c *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := _c.mutation.Slug(); ok {
+		_spec.SetField(githubapp.FieldSlug, field.TypeString, value)
+		_node.Slug = value
 	}
 	if value, ok := _c.mutation.OwnerLogin(); ok {
 		_spec.SetField(githubapp.FieldOwnerLogin, field.TypeString, value)
@@ -509,6 +527,18 @@ func (u *GithubAppUpsert) SetName(v string) *GithubAppUpsert {
 // UpdateName sets the "name" field to the value that was provided on create.
 func (u *GithubAppUpsert) UpdateName() *GithubAppUpsert {
 	u.SetExcluded(githubapp.FieldName)
+	return u
+}
+
+// SetSlug sets the "slug" field.
+func (u *GithubAppUpsert) SetSlug(v string) *GithubAppUpsert {
+	u.Set(githubapp.FieldSlug, v)
+	return u
+}
+
+// UpdateSlug sets the "slug" field to the value that was provided on create.
+func (u *GithubAppUpsert) UpdateSlug() *GithubAppUpsert {
+	u.SetExcluded(githubapp.FieldSlug)
 	return u
 }
 
@@ -717,6 +747,20 @@ func (u *GithubAppUpsertOne) SetName(v string) *GithubAppUpsertOne {
 func (u *GithubAppUpsertOne) UpdateName() *GithubAppUpsertOne {
 	return u.Update(func(s *GithubAppUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetSlug sets the "slug" field.
+func (u *GithubAppUpsertOne) SetSlug(v string) *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.SetSlug(v)
+	})
+}
+
+// UpdateSlug sets the "slug" field to the value that was provided on create.
+func (u *GithubAppUpsertOne) UpdateSlug() *GithubAppUpsertOne {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.UpdateSlug()
 	})
 }
 
@@ -1105,6 +1149,20 @@ func (u *GithubAppUpsertBulk) SetName(v string) *GithubAppUpsertBulk {
 func (u *GithubAppUpsertBulk) UpdateName() *GithubAppUpsertBulk {
 	return u.Update(func(s *GithubAppUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetSlug sets the "slug" field.
+func (u *GithubAppUpsertBulk) SetSlug(v string) *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.SetSlug(v)
+	})
+}
+
+// UpdateSlug sets the "slug" field to the value that was provided on create.
+func (u *GithubAppUpsertBulk) UpdateSlug() *GithubAppUpsertBulk {
+	return u.Update(func(s *GithubAppUpsert) {
+		s.UpdateSlug()
 	})
 }
 

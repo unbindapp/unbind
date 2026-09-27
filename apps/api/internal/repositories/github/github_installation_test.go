@@ -40,6 +40,7 @@ func (suite *GithubInstallationSuite) SetupTest() {
 		SetWebhookSecret("test-webhook-secret").
 		SetPrivateKey("test-private-key").
 		SetName("Test App").
+		SetSlug("test-app").
 		SetCreatedBy(suite.testUser.ID).
 		SaveX(suite.Ctx)
 
@@ -117,6 +118,7 @@ func (suite *GithubInstallationSuite) TestGetInstallations() {
 			SetWebhookSecret("another-webhook-secret").
 			SetPrivateKey("another-private-key").
 			SetName("Another App").
+			SetSlug("another-app").
 			SetCreatedBy(anotherUser.ID).
 			SaveX(suite.Ctx)
 
@@ -206,6 +208,7 @@ func (suite *GithubInstallationSuite) TestGetInstallationsByAppID() {
 			SetWebhookSecret("empty-webhook-secret").
 			SetPrivateKey("empty-private-key").
 			SetName("Empty App").
+			SetSlug("empty-app").
 			SetCreatedBy(suite.testUser.ID).
 			SaveX(suite.Ctx)
 

@@ -93,6 +93,20 @@ func (_u *GithubAppUpdate) SetNillableName(v *string) *GithubAppUpdate {
 	return _u
 }
 
+// SetSlug sets the "slug" field.
+func (_u *GithubAppUpdate) SetSlug(v string) *GithubAppUpdate {
+	_u.mutation.SetSlug(v)
+	return _u
+}
+
+// SetNillableSlug sets the "slug" field if the given value is not nil.
+func (_u *GithubAppUpdate) SetNillableSlug(v *string) *GithubAppUpdate {
+	if v != nil {
+		_u.SetSlug(*v)
+	}
+	return _u
+}
+
 // SetOwnerLogin sets the "owner_login" field.
 func (_u *GithubAppUpdate) SetOwnerLogin(v string) *GithubAppUpdate {
 	_u.mutation.SetOwnerLogin(v)
@@ -309,6 +323,11 @@ func (_u *GithubAppUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Slug(); ok {
+		if err := githubapp.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "GithubApp.slug": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.OwnerType(); ok {
 		if err := githubapp.OwnerTypeValidator(v); err != nil {
 			return &ValidationError{Name: "owner_type", err: fmt.Errorf(`ent: validator failed for field "GithubApp.owner_type": %w`, err)}
@@ -340,6 +359,9 @@ func (_u *GithubAppUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Slug(); ok {
+		_spec.SetField(githubapp.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.OwnerLogin(); ok {
 		_spec.SetField(githubapp.FieldOwnerLogin, field.TypeString, value)
@@ -546,6 +568,20 @@ func (_u *GithubAppUpdateOne) SetName(v string) *GithubAppUpdateOne {
 func (_u *GithubAppUpdateOne) SetNillableName(v *string) *GithubAppUpdateOne {
 	if v != nil {
 		_u.SetName(*v)
+	}
+	return _u
+}
+
+// SetSlug sets the "slug" field.
+func (_u *GithubAppUpdateOne) SetSlug(v string) *GithubAppUpdateOne {
+	_u.mutation.SetSlug(v)
+	return _u
+}
+
+// SetNillableSlug sets the "slug" field if the given value is not nil.
+func (_u *GithubAppUpdateOne) SetNillableSlug(v *string) *GithubAppUpdateOne {
+	if v != nil {
+		_u.SetSlug(*v)
 	}
 	return _u
 }
@@ -779,6 +815,11 @@ func (_u *GithubAppUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "GithubApp.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Slug(); ok {
+		if err := githubapp.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "GithubApp.slug": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.OwnerType(); ok {
 		if err := githubapp.OwnerTypeValidator(v); err != nil {
 			return &ValidationError{Name: "owner_type", err: fmt.Errorf(`ent: validator failed for field "GithubApp.owner_type": %w`, err)}
@@ -827,6 +868,9 @@ func (_u *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, er
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Slug(); ok {
+		_spec.SetField(githubapp.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.OwnerLogin(); ok {
 		_spec.SetField(githubapp.FieldOwnerLogin, field.TypeString, value)

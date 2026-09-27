@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/repositories/github"
@@ -1153,86 +1152,6 @@ func (_c *GithubRepositoryMock_GetVisibleInstallations_Call) RunAndReturn(run fu
 	return _c
 }
 
-// SetAppOwner provides a mock function for the type GithubRepositoryMock
-func (_mock *GithubRepositoryMock) SetAppOwner(ctx context.Context, ID int64, login string, ownerType githubapp.OwnerType) (*ent.GithubApp, error) {
-	ret := _mock.Called(ctx, ID, login, ownerType)
-
-	if len(ret) == 0 {
-		panic("no return value specified for SetAppOwner")
-	}
-
-	var r0 *ent.GithubApp
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, string, githubapp.OwnerType) (*ent.GithubApp, error)); ok {
-		return returnFunc(ctx, ID, login, ownerType)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, string, githubapp.OwnerType) *ent.GithubApp); ok {
-		r0 = returnFunc(ctx, ID, login, ownerType)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.GithubApp)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, int64, string, githubapp.OwnerType) error); ok {
-		r1 = returnFunc(ctx, ID, login, ownerType)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// GithubRepositoryMock_SetAppOwner_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetAppOwner'
-type GithubRepositoryMock_SetAppOwner_Call struct {
-	*mock.Call
-}
-
-// SetAppOwner is a helper method to define mock.On call
-//   - ctx context.Context
-//   - ID int64
-//   - login string
-//   - ownerType githubapp.OwnerType
-func (_e *GithubRepositoryMock_Expecter) SetAppOwner(ctx any, ID any, login any, ownerType any) *GithubRepositoryMock_SetAppOwner_Call {
-	return &GithubRepositoryMock_SetAppOwner_Call{Call: _e.mock.On("SetAppOwner", ctx, ID, login, ownerType)}
-}
-
-func (_c *GithubRepositoryMock_SetAppOwner_Call) Run(run func(ctx context.Context, ID int64, login string, ownerType githubapp.OwnerType)) *GithubRepositoryMock_SetAppOwner_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 int64
-		if args[1] != nil {
-			arg1 = args[1].(int64)
-		}
-		var arg2 string
-		if args[2] != nil {
-			arg2 = args[2].(string)
-		}
-		var arg3 githubapp.OwnerType
-		if args[3] != nil {
-			arg3 = args[3].(githubapp.OwnerType)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-			arg3,
-		)
-	})
-	return _c
-}
-
-func (_c *GithubRepositoryMock_SetAppOwner_Call) Return(githubApp *ent.GithubApp, err error) *GithubRepositoryMock_SetAppOwner_Call {
-	_c.Call.Return(githubApp, err)
-	return _c
-}
-
-func (_c *GithubRepositoryMock_SetAppOwner_Call) RunAndReturn(run func(ctx context.Context, ID int64, login string, ownerType githubapp.OwnerType) (*ent.GithubApp, error)) *GithubRepositoryMock_SetAppOwner_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // SetAppTeam provides a mock function for the type GithubRepositoryMock
 func (_mock *GithubRepositoryMock) SetAppTeam(ctx context.Context, ID int64, teamID *uuid.UUID) (*ent.GithubApp, error) {
 	ret := _mock.Called(ctx, ID, teamID)
@@ -1451,6 +1370,80 @@ func (_c *GithubRepositoryMock_SetInstallationSuspended_Call) Return(githubInsta
 }
 
 func (_c *GithubRepositoryMock_SetInstallationSuspended_Call) RunAndReturn(run func(ctx context.Context, id int64, suspended bool) (*ent.GithubInstallation, error)) *GithubRepositoryMock_SetInstallationSuspended_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateAppFromGithub provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) UpdateAppFromGithub(ctx context.Context, ID int64, app *github.App) (*ent.GithubApp, error) {
+	ret := _mock.Called(ctx, ID, app)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateAppFromGithub")
+	}
+
+	var r0 *ent.GithubApp
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, *github.App) (*ent.GithubApp, error)); ok {
+		return returnFunc(ctx, ID, app)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, *github.App) *ent.GithubApp); ok {
+		r0 = returnFunc(ctx, ID, app)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.GithubApp)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int64, *github.App) error); ok {
+		r1 = returnFunc(ctx, ID, app)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_UpdateAppFromGithub_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateAppFromGithub'
+type GithubRepositoryMock_UpdateAppFromGithub_Call struct {
+	*mock.Call
+}
+
+// UpdateAppFromGithub is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ID int64
+//   - app *github.App
+func (_e *GithubRepositoryMock_Expecter) UpdateAppFromGithub(ctx any, ID any, app any) *GithubRepositoryMock_UpdateAppFromGithub_Call {
+	return &GithubRepositoryMock_UpdateAppFromGithub_Call{Call: _e.mock.On("UpdateAppFromGithub", ctx, ID, app)}
+}
+
+func (_c *GithubRepositoryMock_UpdateAppFromGithub_Call) Run(run func(ctx context.Context, ID int64, app *github.App)) *GithubRepositoryMock_UpdateAppFromGithub_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int64
+		if args[1] != nil {
+			arg1 = args[1].(int64)
+		}
+		var arg2 *github.App
+		if args[2] != nil {
+			arg2 = args[2].(*github.App)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_UpdateAppFromGithub_Call) Return(githubApp *ent.GithubApp, err error) *GithubRepositoryMock_UpdateAppFromGithub_Call {
+	_c.Call.Return(githubApp, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_UpdateAppFromGithub_Call) RunAndReturn(run func(ctx context.Context, ID int64, app *github.App) (*ent.GithubApp, error)) *GithubRepositoryMock_UpdateAppFromGithub_Call {
 	_c.Call.Return(run)
 	return _c
 }

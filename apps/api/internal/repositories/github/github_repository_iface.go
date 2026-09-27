@@ -8,7 +8,6 @@ import (
 	"github.com/google/go-github/v69/github"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
 )
@@ -25,7 +24,8 @@ type GithubRepositoryInterface interface {
 	GetGithubAppByID(ctx context.Context, ID int64) (*ent.GithubApp, error)
 	GetGithubAppByUUID(ctx context.Context, ID uuid.UUID) (*ent.GithubApp, error)
 	SetAppTeam(ctx context.Context, ID int64, teamID *uuid.UUID) (*ent.GithubApp, error)
-	SetAppOwner(ctx context.Context, ID int64, login string, ownerType githubapp.OwnerType) (*ent.GithubApp, error)
+	// UpdateAppFromGithub stores the name, slug and owner the app has on GitHub now
+	UpdateAppFromGithub(ctx context.Context, ID int64, app *github.App) (*ent.GithubApp, error)
 	DeleteApp(ctx context.Context, ID int64) error
 	// DeletePrivateAppsByCreator removes the apps only their creator could use
 	DeletePrivateAppsByCreator(ctx context.Context, createdBy uuid.UUID) (int, error)

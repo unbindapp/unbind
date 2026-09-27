@@ -1810,6 +1810,7 @@ export const GithubAppAPIResponseSchema = z
     name: z.string(),
     owner_login: z.string(),
     owner_type: z.enum(['Organization', 'User']).optional(),
+    slug: z.string(),
     team_id: z.string().optional(),
     team_name: z.string().optional(),
     updated_at: z.string().datetime({ offset: true }),

@@ -33,6 +33,8 @@ type GithubApp struct {
 	TeamID *uuid.UUID `json:"team_id,omitempty"`
 	// Name of the GitHub App
 	Name string `json:"name,omitempty"`
+	// The name GitHub uses in the app's URLs
+	Slug string `json:"slug,omitempty"`
 	// The GitHub account that owns the app
 	OwnerLogin string `json:"owner_login,omitempty"`
 	// Whether an organization or a user owns the app
@@ -104,7 +106,7 @@ func (*GithubApp) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case githubapp.FieldID:
 			values[i] = new(sql.NullInt64)
-		case githubapp.FieldName, githubapp.FieldOwnerLogin, githubapp.FieldOwnerType, githubapp.FieldClientID, githubapp.FieldClientSecret, githubapp.FieldWebhookSecret, githubapp.FieldPrivateKey:
+		case githubapp.FieldName, githubapp.FieldSlug, githubapp.FieldOwnerLogin, githubapp.FieldOwnerType, githubapp.FieldClientID, githubapp.FieldClientSecret, githubapp.FieldWebhookSecret, githubapp.FieldPrivateKey:
 			values[i] = new(sql.NullString)
 		case githubapp.FieldCreatedAt, githubapp.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -168,6 +170,12 @@ func (_m *GithubApp) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
+			}
+		case githubapp.FieldSlug:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field slug", values[i])
+			} else if value.Valid {
+				_m.Slug = value.String
 			}
 		case githubapp.FieldOwnerLogin:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -277,6 +285,9 @@ func (_m *GithubApp) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
+	builder.WriteString(", ")
+	builder.WriteString("slug=")
+	builder.WriteString(_m.Slug)
 	builder.WriteString(", ")
 	builder.WriteString("owner_login=")
 	builder.WriteString(_m.OwnerLogin)

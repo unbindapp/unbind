@@ -81,6 +81,7 @@ func (self *GithubRepository) CreateApp(ctx context.Context, uniqueUuid uuid.UUI
 		SetWebhookSecret(app.GetWebhookSecret()).
 		SetPrivateKey(app.GetPEM()).
 		SetName(app.GetName()).
+		SetSlug(app.GetSlug()).
 		SetCreatedBy(createdBy).
 		SetNillableTeamID(teamID)
 	if owner := app.GetOwner(); owner != nil {
@@ -110,11 +111,22 @@ func (self *GithubRepository) SetAppTeam(ctx context.Context, ID int64, teamID *
 	return update.Save(ctx)
 }
 
-func (self *GithubRepository) SetAppOwner(ctx context.Context, ID int64, login string, ownerType githubapp.OwnerType) (*ent.GithubApp, error) {
-	return self.base.DB.GithubApp.UpdateOneID(ID).
-		SetOwnerLogin(login).
-		SetOwnerType(ownerType).
-		Save(ctx)
+// UpdateAppFromGithub stores the name, slug and owner the app has on GitHub now
+func (self *GithubRepository) UpdateAppFromGithub(ctx context.Context, ID int64, app *github.App) (*ent.GithubApp, error) {
+	update := self.base.DB.GithubApp.UpdateOneID(ID)
+	if app.GetName() != "" {
+		update = update.SetName(app.GetName())
+	}
+	if app.GetSlug() != "" {
+		update = update.SetSlug(app.GetSlug())
+	}
+	if owner := app.GetOwner(); owner.GetLogin() != "" {
+		update = update.SetOwnerLogin(owner.GetLogin())
+		if ownerType := githubapp.OwnerType(owner.GetType()); githubapp.OwnerTypeValidator(ownerType) == nil {
+			update = update.SetOwnerType(ownerType)
+		}
+	}
+	return update.Save(ctx)
 }
 
 func (self *GithubRepository) DeleteApp(ctx context.Context, ID int64) error {

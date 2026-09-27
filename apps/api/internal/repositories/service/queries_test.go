@@ -82,6 +82,7 @@ func (suite *ServiceQueriesSuite) SetupTest() {
 		SetWebhookSecret("test-webhook-secret").
 		SetPrivateKey("test-private-key").
 		SetName("Test App").
+		SetSlug("test-app").
 		SetCreatedBy(suite.testUser.ID).
 		SaveX(suite.Ctx)
 

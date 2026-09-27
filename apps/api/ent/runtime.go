@@ -143,6 +143,10 @@ func init() {
 	githubappDescName := githubappFields[4].Descriptor()
 	// githubapp.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	githubapp.NameValidator = githubappDescName.Validators[0].(func(string) error)
+	// githubappDescSlug is the schema descriptor for slug field.
+	githubappDescSlug := githubappFields[5].Descriptor()
+	// githubapp.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	githubapp.SlugValidator = githubappDescSlug.Validators[0].(func(string) error)
 	// githubappDescID is the schema descriptor for id field.
 	githubappDescID := githubappFields[0].Descriptor()
 	// githubapp.IDValidator is a validator for the "id" field. It is called by the builders before save.

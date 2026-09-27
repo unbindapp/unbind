@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -17,6 +18,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
+	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
@@ -31,10 +33,14 @@ type GitHubAppCreateInput struct {
 }
 
 type GithubAppCreateResponse struct {
-	Body struct {
+	SetCookie http.Cookie `header:"Set-Cookie"`
+	Body      struct {
 		Data string `json:"data"`
 	}
 }
+
+// appFlowTTL is how long the user has to confirm the app on GitHub
+const appFlowTTL = 30 * time.Minute
 
 // Handler to render GitHub page with form submission
 func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitHubAppCreateInput) (*GithubAppCreateResponse, error) {
@@ -96,28 +102,23 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 	input.RedirectURL = parsedRedirect.String()
 
 	// Create GitHub app manifest, if not organization we also want organization read permission
-	manifest, appName, err := self.srv.GithubClient.CreateAppManifest(redirect, input.RedirectURL, input.Organization != "")
-
+	manifest, err := self.srv.GithubClient.CreateAppManifest(redirect, input.RedirectURL, input.Organization != "")
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to create the GitHub app manifest"))
 	}
 
-	err = self.srv.StringCache.SetWithExpiration(ctx, appName, state, 30*time.Minute)
-	if err != nil {
-		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the GitHub app state"))
-	}
-	err = self.srv.StringCache.SetWithExpiration(ctx, state, user.ID.String(), 30*time.Minute)
+	err = self.srv.StringCache.SetWithExpiration(ctx, state, user.ID.String(), appFlowTTL)
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the requesting user"))
 	}
 	if input.Organization != "" {
-		err = self.srv.StringCache.SetWithExpiration(ctx, state+"-org", input.Organization, 30*time.Minute)
+		err = self.srv.StringCache.SetWithExpiration(ctx, state+"-org", input.Organization, appFlowTTL)
 		if err != nil {
 			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the GitHub organization"))
 		}
 	}
 	if input.TeamID != uuid.Nil {
-		err = self.srv.StringCache.SetWithExpiration(ctx, state+"-team", input.TeamID.String(), 30*time.Minute)
+		err = self.srv.StringCache.SetWithExpiration(ctx, state+"-team", input.TeamID.String(), appFlowTTL)
 		if err != nil {
 			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the team to share the GitHub app with"))
 		}
@@ -157,13 +158,9 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to render the GitHub redirect page"))
 	}
 
-	return &GithubAppCreateResponse{
-		Body: struct {
-			Data string `json:"data"`
-		}{
-			Data: buf.String(),
-		},
-	}, nil
+	resp := &GithubAppCreateResponse{SetCookie: auth.GithubAppFlowCookie(state, appFlowTTL, self.srv.Cfg.CookieSecure)}
+	resp.Body.Data = buf.String()
+	return resp, nil
 }
 
 // GET Github apps
@@ -376,6 +373,7 @@ func transformGithubAppEntity(entity *ent.GithubApp, serviceCounts map[int64]int
 		CreatedBy:     entity.CreatedBy,
 		TeamID:        entity.TeamID,
 		Name:          entity.Name,
+		Slug:          entity.Slug,
 		OwnerLogin:    entity.OwnerLogin,
 		OwnerType:     entity.OwnerType,
 		Installations: installations,
@@ -413,6 +411,8 @@ type GithubAppAPIResponse struct {
 	TeamName *string    `json:"team_name,omitempty"`
 	// Name of the GitHub App
 	Name string `json:"name"`
+	// The name GitHub uses in the app's URLs
+	Slug string `json:"slug"`
 	// The GitHub account that owns the app, empty until it has been read from GitHub
 	OwnerLogin    string                           `json:"owner_login"`
 	OwnerType     githubapp.OwnerType              `json:"owner_type,omitempty" enum:"Organization,User"`

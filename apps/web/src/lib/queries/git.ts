@@ -123,16 +123,15 @@ export async function deleteGitInstallation(input: { installationId: number }) {
   return { data: res.data };
 }
 
-// The app is created on GitHub, so its name is the slug GitHub links use
 export function gitAppInstallUrl(app: TGitApp) {
-  return `https://github.com/apps/${encodeURIComponent(app.name)}/installations/new`;
+  return `https://github.com/apps/${encodeURIComponent(app.slug)}/installations/new`;
 }
 
 export function gitAppSettingsUrl(app: TGitApp) {
   if (app.owner_type === "Organization" && app.owner_login) {
-    return `https://github.com/organizations/${encodeURIComponent(app.owner_login)}/settings/apps/${encodeURIComponent(app.name)}`;
+    return `https://github.com/organizations/${encodeURIComponent(app.owner_login)}/settings/apps/${encodeURIComponent(app.slug)}`;
   }
-  return `https://github.com/settings/apps/${encodeURIComponent(app.name)}`;
+  return `https://github.com/settings/apps/${encodeURIComponent(app.slug)}`;
 }
 
 export function gitInstallationSettingsUrl(installation: TGitInstallation) {

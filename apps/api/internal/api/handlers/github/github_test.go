@@ -2,17 +2,26 @@ package github_handler
 
 import (
 	"context"
+	"net/http"
 	"testing"
+	"time"
 
+	"github.com/alicebob/miniredis/v2"
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/google/go-github/v69/github"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/apictx"
 	"github.com/unbindapp/unbind-api/internal/api/server"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/cache"
+	github_integration "github.com/unbindapp/unbind-api/internal/integrations/github"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	mocks_integrations_github "github.com/unbindapp/unbind-api/mocks/integrations/github"
@@ -22,6 +31,7 @@ type GithubHandlerSuite struct {
 	repository.RepositoryBaseSuite
 	handlers     *HandlerGroup
 	githubClient *mocks_integrations_github.GithubClientMock
+	redis        *miniredis.Miniredis
 	team         *ent.Team
 	otherTeam    *ent.Team
 	creator      *ent.User
@@ -35,9 +45,16 @@ type GithubHandlerSuite struct {
 func (suite *GithubHandlerSuite) SetupTest() {
 	suite.RepositoryBaseSuite.SetupTest()
 	suite.githubClient = mocks_integrations_github.NewGithubClientMock(suite.T())
+	suite.redis = miniredis.RunT(suite.T())
 	suite.handlers = &HandlerGroup{srv: &server.Server{
+		Cfg: &config.Config{
+			ExternalAPIURL: "https://unbind.example.com/api/go",
+			GithubURL:      "https://github.com",
+			CookieSecure:   true,
+		},
 		Repository:   repositories.NewRepositories(suite.DB),
 		GithubClient: suite.githubClient,
+		StringCache:  cache.NewStringCache(redis.NewClient(&redis.Options{Addr: suite.redis.Addr()}), "test"),
 	}}
 
 	suite.team = suite.createTeam("team")
@@ -56,6 +73,7 @@ func (suite *GithubHandlerSuite) SetupTest() {
 		SetWebhookSecret("webhook-secret").
 		SetPrivateKey("private-key").
 		SetName("Test App").
+		SetSlug("test-app").
 		SetCreatedBy(suite.creator.ID).
 		SaveX(suite.Ctx)
 
@@ -309,6 +327,71 @@ func (suite *GithubHandlerSuite) TestRepositoriesSkipUninstalledAndSuspended() {
 	resp, err := suite.handlers.HandleListGithubRepositories(suite.as(suite.creator), &server.BaseAuthInput{})
 	suite.Require().NoError(err)
 	suite.Empty(resp.Body.Data)
+}
+
+// startAppFlow begins a connection as the creator and returns the cookie the browser gets
+func (suite *GithubHandlerSuite) startAppFlow() http.Cookie {
+	suite.githubClient.EXPECT().
+		CreateAppManifest(mock.Anything, mock.Anything, false).
+		Return(&github_integration.GitHubAppManifest{Name: "unbind-generated"}, nil).Once()
+	resp, err := suite.handlers.HandleGithubAppCreate(suite.as(suite.creator), &GitHubAppCreateInput{RedirectURL: "https://unbind.example.com/connected"})
+	suite.Require().NoError(err)
+	suite.Equal("__Host-github_app_flow", resp.SetCookie.Name)
+	suite.Require().NotEmpty(resp.SetCookie.Value)
+	return resp.SetCookie
+}
+
+func (suite *GithubHandlerSuite) TestSaveRenamedApp() {
+	flow := suite.startAppFlow()
+	suite.githubClient.EXPECT().
+		ManifestCodeConversion(mock.Anything, "code").
+		Return(&github.AppConfig{
+			ID:            new(int64(999)),
+			Name:          new("My Unbind"),
+			Slug:          new("my-unbind"),
+			ClientID:      new("client"),
+			ClientSecret:  new("secret"),
+			WebhookSecret: new("webhook"),
+			PEM:           new("pem"),
+			Owner:         &github.User{Login: new("yekta"), Type: new("User")},
+		}, nil).Once()
+
+	resp, err := suite.handlers.HandleGithubAppSave(suite.Ctx, &HandleGithubAppSaveInput{Code: "code", State: flow.Value, FlowCookieSecure: flow})
+	suite.Require().NoError(err)
+	suite.Equal("https://github.com/apps/my-unbind/installations/new?state="+flow.Value, resp.Url)
+	suite.Equal(-1, resp.SetCookie.MaxAge)
+
+	app := suite.DB.GithubApp.Query().Where(githubapp.ID(999)).OnlyX(suite.Ctx)
+	suite.Equal("My Unbind", app.Name)
+	suite.Equal("my-unbind", app.Slug)
+	suite.Equal(flow.Value, app.UUID.String())
+	suite.Equal(suite.creator.ID, *app.CreatedBy)
+}
+
+func (suite *GithubHandlerSuite) TestSaveRejectsFlowFromAnotherBrowser() {
+	flow := suite.startAppFlow()
+	other := suite.startAppFlow()
+
+	cases := map[string]*HandleGithubAppSaveInput{
+		"no cookie":       {Code: "code", State: flow.Value},
+		"another flow":    {Code: "code", State: flow.Value, FlowCookieSecure: other},
+		"insecure cookie": {Code: "code", State: flow.Value, FlowCookie: http.Cookie{Name: "github_app_flow", Value: flow.Value}},
+	}
+	for name, input := range cases {
+		suite.Run(name, func() {
+			_, err := suite.handlers.HandleGithubAppSave(suite.Ctx, input)
+			suite.assertStatus(err, http.StatusBadRequest)
+		})
+	}
+	suite.False(suite.DB.GithubApp.Query().Where(githubapp.ID(999)).ExistX(suite.Ctx))
+}
+
+func (suite *GithubHandlerSuite) TestSaveRejectsExpiredFlow() {
+	flow := suite.startAppFlow()
+	suite.redis.FastForward(appFlowTTL + time.Minute)
+
+	_, err := suite.handlers.HandleGithubAppSave(suite.Ctx, &HandleGithubAppSaveInput{Code: "code", State: flow.Value, FlowCookieSecure: flow})
+	suite.assertStatus(err, http.StatusBadRequest)
 }
 
 func TestGithubHandlerSuite(t *testing.T) {

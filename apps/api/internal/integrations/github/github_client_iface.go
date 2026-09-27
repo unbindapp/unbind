@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/go-github/v69/github"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
@@ -24,7 +23,7 @@ type GithubClientInterface interface {
 	SyncWebhookURLs(ctx context.Context, apps []*ent.GithubApp)
 	GetAuthenticatedClient(ctx context.Context, appID int64, installationID int64, appPrivateKey string) (*github.Client, error)
 	// CreateAppManifest generates the GitHub App manifest
-	CreateAppManifest(redirectUrl string, setupUrl string, forOrganization bool) (manifest *GitHubAppManifest, appName string, err error)
+	CreateAppManifest(redirectUrl string, setupUrl string, forOrganization bool) (*GitHubAppManifest, error)
 	// ManifestCodeConversion gets app configruation from github using the code
 	ManifestCodeConversion(ctx context.Context, code string) (*github.AppConfig, error)
 	// Installation tokens can't verify the requesting user's per-repo permissions, so this returns everything the installations can access.
@@ -46,8 +45,8 @@ type GithubClientInterface interface {
 	GetChangedFiles(ctx context.Context, installation *ent.GithubInstallation, owner, repo, base, head string) ([]string, error)
 	// DeleteInstallation uninstalls the app from the account on GitHub, an installation that is already gone counts as deleted
 	DeleteInstallation(ctx context.Context, app *ent.GithubApp, installationID int64) error
-	// GetAppOwner reads which GitHub account owns the app
-	GetAppOwner(ctx context.Context, app *ent.GithubApp) (login string, ownerType githubapp.OwnerType, err error)
-	// SyncAppOwners fills in the owner of apps connected before it was stored
-	SyncAppOwners(ctx context.Context, apps []*ent.GithubApp, save func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error)
+	// GetApp reads the app as GitHub has it now
+	GetApp(ctx context.Context, app *ent.GithubApp) (*github.App, error)
+	// SyncApps saves the name, slug and owner of apps that were renamed or transferred on GitHub
+	SyncApps(ctx context.Context, apps []*ent.GithubApp, save func(ctx context.Context, app *ent.GithubApp, ghApp *github.App) error)
 }

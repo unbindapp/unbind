@@ -14,13 +14,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-co-op/gocron/v2"
+	gogithub "github.com/google/go-github/v69/github"
 	_ "github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
 	"github.com/redis/go-redis/v9"
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/ent"
-	"github.com/unbindapp/unbind-api/ent/githubapp"
 	entmigrate "github.com/unbindapp/unbind-api/ent/migrate"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	oauthserver_handler "github.com/unbindapp/unbind-api/internal/api/handlers/oauthserver"
@@ -129,10 +129,6 @@ func startAPI(cfg *config.Config) {
 		log.Errorf("Failed to list the GitHub apps to update their webhook URL: %v", err)
 	}
 	githubClient.SyncWebhookURLs(ctx, githubApps)
-	githubClient.SyncAppOwners(ctx, githubApps, func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error {
-		_, err := repo.Github().SetAppOwner(ctx, app.ID, login, ownerType)
-		return err
-	})
 
 	buildkitSettings := buildkitd.NewBuildkitSettingsManager(cfg, repo, kubeClient)
 
@@ -424,6 +420,29 @@ func startAPI(cfg *config.Config) {
 	)
 	if err != nil {
 		log.Fatal("Failed to create longhorn snapshot purge job", "err", err)
+	}
+
+	// Apps can be renamed or transferred on GitHub, which changes their links
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(10*time.Minute),
+		gocron.NewTask(
+			func(ctx context.Context) {
+				apps, err := repo.Github().GetApps(ctx, false)
+				if err != nil {
+					log.Error("Failed to list the GitHub apps to sync", "err", err)
+					return
+				}
+				githubClient.SyncApps(ctx, apps, func(ctx context.Context, app *ent.GithubApp, ghApp *gogithub.App) error {
+					_, err := repo.Github().UpdateAppFromGithub(ctx, app.ID, ghApp)
+					return err
+				})
+			},
+			ctx,
+		),
+		gocron.WithStartAt(gocron.WithStartImmediately()),
+	)
+	if err != nil {
+		log.Fatal("Failed to create GitHub app sync job", "err", err)
 	}
 
 	_, err = scheduler.NewJob(

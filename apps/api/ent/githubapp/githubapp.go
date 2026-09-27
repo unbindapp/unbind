@@ -27,6 +27,8 @@ const (
 	FieldTeamID = "team_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldSlug holds the string denoting the slug field in the database.
+	FieldSlug = "slug"
 	// FieldOwnerLogin holds the string denoting the owner_login field in the database.
 	FieldOwnerLogin = "owner_login"
 	// FieldOwnerType holds the string denoting the owner_type field in the database.
@@ -79,6 +81,7 @@ var Columns = []string{
 	FieldCreatedBy,
 	FieldTeamID,
 	FieldName,
+	FieldSlug,
 	FieldOwnerLogin,
 	FieldOwnerType,
 	FieldClientID,
@@ -106,6 +109,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	SlugValidator func(string) error
 	// IDValidator is a validator for the "id" field. It is called by the builders before save.
 	IDValidator func(int64) error
 )
@@ -169,6 +174,11 @@ func ByTeamID(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// BySlug orders the results by the slug field.
+func BySlug(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSlug, opts...).ToFunc()
 }
 
 // ByOwnerLogin orders the results by the owner_login field.

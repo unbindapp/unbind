@@ -4497,6 +4497,7 @@ type GithubAppMutation struct {
 	updated_at           *time.Time
 	uuid                 *uuid.UUID
 	name                 *string
+	slug                 *string
 	owner_login          *string
 	owner_type           *githubapp.OwnerType
 	client_id            *string
@@ -4860,6 +4861,42 @@ func (m *GithubAppMutation) OldName(ctx context.Context) (v string, err error) {
 // ResetName resets all changes to the "name" field.
 func (m *GithubAppMutation) ResetName() {
 	m.name = nil
+}
+
+// SetSlug sets the "slug" field.
+func (m *GithubAppMutation) SetSlug(s string) {
+	m.slug = &s
+}
+
+// Slug returns the value of the "slug" field in the mutation.
+func (m *GithubAppMutation) Slug() (r string, exists bool) {
+	v := m.slug
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSlug returns the old "slug" field's value of the GithubApp entity.
+// If the GithubApp object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GithubAppMutation) OldSlug(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSlug is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSlug requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSlug: %w", err)
+	}
+	return oldValue.Slug, nil
+}
+
+// ResetSlug resets all changes to the "slug" field.
+func (m *GithubAppMutation) ResetSlug() {
+	m.slug = nil
 }
 
 // SetOwnerLogin sets the "owner_login" field.
@@ -5259,7 +5296,7 @@ func (m *GithubAppMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GithubAppMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 13)
 	if m.created_at != nil {
 		fields = append(fields, githubapp.FieldCreatedAt)
 	}
@@ -5277,6 +5314,9 @@ func (m *GithubAppMutation) Fields() []string {
 	}
 	if m.name != nil {
 		fields = append(fields, githubapp.FieldName)
+	}
+	if m.slug != nil {
+		fields = append(fields, githubapp.FieldSlug)
 	}
 	if m.owner_login != nil {
 		fields = append(fields, githubapp.FieldOwnerLogin)
@@ -5316,6 +5356,8 @@ func (m *GithubAppMutation) Field(name string) (ent.Value, bool) {
 		return m.TeamID()
 	case githubapp.FieldName:
 		return m.Name()
+	case githubapp.FieldSlug:
+		return m.Slug()
 	case githubapp.FieldOwnerLogin:
 		return m.OwnerLogin()
 	case githubapp.FieldOwnerType:
@@ -5349,6 +5391,8 @@ func (m *GithubAppMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldTeamID(ctx)
 	case githubapp.FieldName:
 		return m.OldName(ctx)
+	case githubapp.FieldSlug:
+		return m.OldSlug(ctx)
 	case githubapp.FieldOwnerLogin:
 		return m.OldOwnerLogin(ctx)
 	case githubapp.FieldOwnerType:
@@ -5411,6 +5455,13 @@ func (m *GithubAppMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case githubapp.FieldSlug:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSlug(v)
 		return nil
 	case githubapp.FieldOwnerLogin:
 		v, ok := value.(string)
@@ -5547,6 +5598,9 @@ func (m *GithubAppMutation) ResetField(name string) error {
 		return nil
 	case githubapp.FieldName:
 		m.ResetName()
+		return nil
+	case githubapp.FieldSlug:
+		m.ResetSlug()
 		return nil
 	case githubapp.FieldOwnerLogin:
 		m.ResetOwnerLogin()

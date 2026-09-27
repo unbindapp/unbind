@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/go-github/v69/github"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/internal/common/log"
@@ -32,11 +33,11 @@ func (self *GithubClient) DeleteInstallation(ctx context.Context, app *ent.Githu
 	return fmt.Errorf("failed to delete installation %d of app %s: %w", installationID, app.Name, err)
 }
 
-// GetAppOwner reads which GitHub account owns the app
-func (self *GithubClient) GetAppOwner(ctx context.Context, app *ent.GithubApp) (login string, ownerType githubapp.OwnerType, err error) {
+// GetApp reads the app as GitHub has it now
+func (self *GithubClient) GetApp(ctx context.Context, app *ent.GithubApp) (*github.App, error) {
 	client, err := self.getAppClient(app.ID, app.PrivateKey)
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 	defer client.Client().CloseIdleConnections()
 
@@ -45,32 +46,32 @@ func (self *GithubClient) GetAppOwner(ctx context.Context, app *ent.GithubApp) (
 
 	ghApp, _, err := client.Apps.Get(timeoutCtx, "")
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
-	owner := ghApp.GetOwner()
-	if owner == nil || owner.GetLogin() == "" {
-		return "", "", fmt.Errorf("GitHub returned no owner for app %s", app.Name)
-	}
-	ownerType = githubapp.OwnerType(owner.GetType())
-	if err := githubapp.OwnerTypeValidator(ownerType); err != nil {
-		return "", "", err
-	}
-	return owner.GetLogin(), ownerType, nil
+	return ghApp, nil
 }
 
-// SyncAppOwners fills in the owner of apps connected before it was stored
-func (self *GithubClient) SyncAppOwners(ctx context.Context, apps []*ent.GithubApp, save func(ctx context.Context, app *ent.GithubApp, login string, ownerType githubapp.OwnerType) error) {
+// SyncApps saves the name, slug and owner of apps that were renamed or transferred on GitHub
+func (self *GithubClient) SyncApps(ctx context.Context, apps []*ent.GithubApp, save func(ctx context.Context, app *ent.GithubApp, ghApp *github.App) error) {
 	for _, app := range apps {
-		if app.OwnerLogin != "" {
-			continue
-		}
-		login, ownerType, err := self.GetAppOwner(ctx, app)
+		ghApp, err := self.GetApp(ctx, app)
 		if err != nil {
-			log.Warnf("Failed to read the owner of GitHub app %s (%d): %v", app.Name, app.ID, err)
+			log.Warnf("Failed to read GitHub app %s (%d): %v", app.Name, app.ID, err)
 			continue
 		}
-		if err := save(ctx, app, login, ownerType); err != nil {
-			log.Warnf("Failed to store the owner of GitHub app %s (%d): %v", app.Name, app.ID, err)
+		if !changedOnGithub(app, ghApp) {
+			continue
+		}
+		if err := save(ctx, app, ghApp); err != nil {
+			log.Warnf("Failed to store the changes of GitHub app %s (%d): %v", app.Name, app.ID, err)
 		}
 	}
+}
+
+func changedOnGithub(app *ent.GithubApp, ghApp *github.App) bool {
+	owner := ghApp.GetOwner()
+	return ghApp.GetName() != app.Name ||
+		ghApp.GetSlug() != app.Slug ||
+		owner.GetLogin() != app.OwnerLogin ||
+		githubapp.OwnerType(owner.GetType()) != app.OwnerType
 }

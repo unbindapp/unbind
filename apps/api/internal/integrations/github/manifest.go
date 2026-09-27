@@ -37,16 +37,14 @@ type DefaultPermissions struct {
 }
 
 // CreateAppManifest generates the GitHub App manifest
-func (self *GithubClient) CreateAppManifest(redirectUrl string, setupUrl string, forOrganization bool) (manifest *GitHubAppManifest, appName string, err error) {
+func (self *GithubClient) CreateAppManifest(redirectUrl string, setupUrl string, forOrganization bool) (*GitHubAppManifest, error) {
 	suffixRand, err := utils.GenerateRandomSimpleID(5)
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to generate random suffix: %w", err)
+		return nil, fmt.Errorf("failed to generate random suffix: %w", err)
 	}
 
-	appName = fmt.Sprintf("unbind-%s-%s", self.cfg.UnbindSuffix, suffixRand)
-
-	manifest = &GitHubAppManifest{
-		Name:        appName,
+	manifest := &GitHubAppManifest{
+		Name:        fmt.Sprintf("unbind-%s-%s", self.cfg.UnbindSuffix, suffixRand),
 		Description: "Application to connect unbind with Github",
 		URL:         self.cfg.ExternalAPIURL,
 		HookAttributes: HookAttributes{
@@ -68,7 +66,7 @@ func (self *GithubClient) CreateAppManifest(redirectUrl string, setupUrl string,
 		manifest.DefaultPermissions.Members = "read"
 	}
 
-	return manifest, appName, nil
+	return manifest, nil
 }
 
 // ManifestCodeConversion gets app configruation from github using the code

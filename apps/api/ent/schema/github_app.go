@@ -44,6 +44,9 @@ func (GithubApp) Fields() []ent.Field {
 		field.String("name").
 			NotEmpty().
 			Comment("Name of the GitHub App"),
+		field.String("slug").
+			NotEmpty().
+			Comment("The name GitHub uses in the app's URLs"),
 		field.String("owner_login").
 			Optional().
 			Comment("The GitHub account that owns the app"),

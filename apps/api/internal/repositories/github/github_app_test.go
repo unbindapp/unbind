@@ -43,6 +43,7 @@ func (suite *GithubAppSuite) SetupTest() {
 		SetWebhookSecret("test-webhook-secret").
 		SetPrivateKey("test-private-key").
 		SetName("Test App").
+		SetSlug("test-app").
 		SetCreatedBy(suite.testUser.ID).
 		SaveX(suite.Ctx)
 }
@@ -95,6 +96,7 @@ func (suite *GithubAppSuite) TestGetApp() {
 			SetWebhookSecret("second-webhook-secret").
 			SetPrivateKey("second-private-key").
 			SetName("Second App").
+			SetSlug("second-app").
 			SetCreatedBy(suite.testUser.ID).
 			SaveX(suite.Ctx)
 
@@ -154,6 +156,7 @@ func (suite *GithubAppSuite) TestGetApps() {
 			SetWebhookSecret("second-webhook-secret").
 			SetPrivateKey("second-private-key").
 			SetName("Second App").
+			SetSlug("second-app").
 			SetCreatedBy(suite.testUser.ID).
 			SaveX(suite.Ctx)
 
@@ -165,6 +168,7 @@ func (suite *GithubAppSuite) TestGetApps() {
 			SetWebhookSecret("third-webhook-secret").
 			SetPrivateKey("third-private-key").
 			SetName("Third App").
+			SetSlug("third-app").
 			SetCreatedBy(suite.testUser.ID).
 			SaveX(suite.Ctx)
 
@@ -209,6 +213,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 			WebhookSecret: new("new-webhook-secret"),
 			PEM:           new("new-private-key"),
 			Name:          new("New App"),
+			Slug:          new("new-app"),
 		}
 		uniqueUUID := uuid.New()
 
@@ -235,6 +240,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 			WebhookSecret: new("duplicate-webhook-secret"),
 			PEM:           new("duplicate-private-key"),
 			Name:          new("Duplicate App"),
+			Slug:          new("duplicate-app"),
 		}
 		uniqueUUID := uuid.New()
 
@@ -251,6 +257,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 			WebhookSecret: new("uuid-duplicate-webhook-secret"),
 			PEM:           new("uuid-duplicate-private-key"),
 			Name:          new("UUID Duplicate App"),
+			Slug:          new("uuid-duplicate-app"),
 		}
 
 		app, err := suite.githubRepo.CreateApp(suite.Ctx, suite.testApp.UUID, appConfig, suite.testUser.ID, nil) // Same UUID
@@ -266,6 +273,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 			WebhookSecret: new("invalid-user-webhook-secret"),
 			PEM:           new("invalid-user-private-key"),
 			Name:          new("Invalid User App"),
+			Slug:          new("invalid-user-app"),
 		}
 		uniqueUUID := uuid.New()
 		invalidUserID := uuid.New()
@@ -283,6 +291,7 @@ func (suite *GithubAppSuite) TestCreateApp() {
 			WebhookSecret: new("closed-db-webhook-secret"),
 			PEM:           new("closed-db-private-key"),
 			Name:          new("Closed DB App"),
+			Slug:          new("closed-db-app"),
 		}
 		uniqueUUID := uuid.New()
 
@@ -421,6 +430,7 @@ func (suite *GithubAppSuite) TestCreateAppStoresTeamAndOwner() {
 		WebhookSecret: new("webhook"),
 		PEM:           new("pem"),
 		Name:          new("Owned App"),
+		Slug:          new("owned-app"),
 		Owner:         &github.User{Login: new("acme"), Type: new("Organization")},
 	}
 
@@ -429,11 +439,18 @@ func (suite *GithubAppSuite) TestCreateAppStoresTeamAndOwner() {
 	suite.Equal(team.ID, *app.TeamID)
 	suite.Equal("acme", app.OwnerLogin)
 	suite.Equal(githubapp.OwnerTypeOrganization, app.OwnerType)
+	suite.Equal("owned-app", app.Slug)
 
-	_, err = suite.githubRepo.SetAppOwner(suite.Ctx, app.ID, "someone", githubapp.OwnerTypeUser)
+	_, err = suite.githubRepo.UpdateAppFromGithub(suite.Ctx, app.ID, &github.App{
+		Name:  new("Renamed App"),
+		Slug:  new("renamed-app"),
+		Owner: &github.User{Login: new("someone"), Type: new("User")},
+	})
 	suite.Require().NoError(err)
 	updated, err := suite.githubRepo.GetGithubAppByID(suite.Ctx, app.ID)
 	suite.Require().NoError(err)
+	suite.Equal("Renamed App", updated.Name)
+	suite.Equal("renamed-app", updated.Slug)
 	suite.Equal("someone", updated.OwnerLogin)
 	suite.Equal(githubapp.OwnerTypeUser, updated.OwnerType)
 }
@@ -448,6 +465,7 @@ func (suite *GithubAppSuite) TestDeletePrivateAppsByCreator() {
 		SetWebhookSecret("w").
 		SetPrivateKey("p").
 		SetName("Shared").
+		SetSlug("shared").
 		SetCreatedBy(suite.testUser.ID).
 		SetTeamID(team.ID).
 		SaveX(suite.Ctx)

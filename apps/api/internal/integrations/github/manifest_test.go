@@ -32,17 +32,13 @@ func (suite *ManifestTestSuite) TestCreateAppManifest_ForUser() {
 	redirectUrl := "https://test.com/redirect"
 	setupUrl := "https://test.com/setup"
 
-	manifest, appName, err := suite.client.CreateAppManifest(redirectUrl, setupUrl, false)
+	manifest, err := suite.client.CreateAppManifest(redirectUrl, setupUrl, false)
 
 	suite.NoError(err)
 	suite.NotNil(manifest)
-	suite.NotEmpty(appName)
-
-	// Check app name format
-	suite.Contains(appName, "unbind-test-")
 
 	// Check manifest fields
-	suite.Equal(appName, manifest.Name)
+	suite.Contains(manifest.Name, "unbind-test-")
 	suite.Equal("Application to connect unbind with Github", manifest.Description)
 	suite.Equal(suite.cfg.ExternalAPIURL, manifest.URL)
 	suite.Equal(suite.cfg.GithubWebhookURL, manifest.HookAttributes.URL)
@@ -66,17 +62,13 @@ func (suite *ManifestTestSuite) TestCreateAppManifest_ForOrganization() {
 	redirectUrl := "https://test.com/redirect"
 	setupUrl := "https://test.com/setup"
 
-	manifest, appName, err := suite.client.CreateAppManifest(redirectUrl, setupUrl, true)
+	manifest, err := suite.client.CreateAppManifest(redirectUrl, setupUrl, true)
 
 	suite.NoError(err)
 	suite.NotNil(manifest)
-	suite.NotEmpty(appName)
-
-	// Check app name format
-	suite.Contains(appName, "unbind-test-")
 
 	// Check manifest fields
-	suite.Equal(appName, manifest.Name)
+	suite.Contains(manifest.Name, "unbind-test-")
 	suite.Equal("Application to connect unbind with Github", manifest.Description)
 	suite.Equal(suite.cfg.ExternalAPIURL, manifest.URL)
 	suite.Equal(suite.cfg.GithubWebhookURL, manifest.HookAttributes.URL)

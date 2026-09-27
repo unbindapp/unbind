@@ -161,6 +161,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "uuid", Type: field.TypeUUID, Unique: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "slug", Type: field.TypeString},
 		{Name: "owner_login", Type: field.TypeString, Nullable: true},
 		{Name: "owner_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"Organization", "User"}},
 		{Name: "client_id", Type: field.TypeString},
@@ -178,13 +179,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "github_apps_teams_github_apps",
-				Columns:    []*schema.Column{GithubAppsColumns[11]},
+				Columns:    []*schema.Column{GithubAppsColumns[12]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "github_apps_users_created_by",
-				Columns:    []*schema.Column{GithubAppsColumns[12]},
+				Columns:    []*schema.Column{GithubAppsColumns[13]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
