@@ -9,6 +9,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/pkg/databases"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -541,7 +542,7 @@ type DatabaseConfig struct {
 	WalLevel             WalLevel `json:"walLevel,omitempty" required:"false" description:"PostgreSQL wal_level"`
 	MaxReplicationSlots  *int     `json:"maxReplicationSlots,omitempty" required:"false" minimum:"0" maximum:"1000" description:"PostgreSQL max_replication_slots, 0 uses the default"`
 	MaxWalSenders        *int     `json:"maxWalSenders,omitempty" required:"false" minimum:"0" maximum:"1000" description:"PostgreSQL max_wal_senders, 0 uses the default"`
-	MaxSlotWalKeepSizeMB *int     `json:"maxSlotWalKeepSizeMb,omitempty" required:"false" minimum:"0" description:"PostgreSQL max_slot_wal_keep_size in megabytes, 0 is unlimited"`
+	MaxSlotWalKeepSizeMB *int     `json:"maxSlotWalKeepSizeMb,omitempty" required:"false" minimum:"0" doc:"PostgreSQL max_slot_wal_keep_size in megabytes, the most WAL a lagging replication slot can hold before Postgres drops the slot. Only applies with the logical WAL level. 0 sizes it at a quarter of the volume, which is right for most databases. At least 64 and at most half of the volume. Changing it reloads the config without a restart"`
 	SharedBuffersMB      *int     `json:"sharedBuffersMb,omitempty" required:"false" minimum:"0" doc:"PostgreSQL shared_buffers in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most half of the memory limit. Changing it restarts the database"`
 	// MySQL only
 	InnodbBufferPoolSizeMB *int `json:"innodbBufferPoolSizeMb,omitempty" required:"false" minimum:"0" doc:"MySQL innodb_buffer_pool_size in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most three quarters of the memory limit, and rounded down to whole 128MB chunks. Changing it restarts the database"`
@@ -618,6 +619,26 @@ func validateCacheOverride(field, engine string, value int, databaseType string,
 	}
 	if maxMegabytes > 0 && int64(value) > maxMegabytes {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("%s cannot exceed %d with the current memory limit", field, maxMegabytes))
+	}
+	return nil
+}
+
+func (self *DatabaseConfig) ValidateSlotWalKeepSize(databaseType string, volumeMiB int64) error {
+	if self == nil {
+		return nil
+	}
+	value := int64(intOrZero(self.MaxSlotWalKeepSizeMB))
+	if value == 0 {
+		return nil
+	}
+	if databaseType != databases.TypePostgres {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "maxSlotWalKeepSizeMb only applies to postgres databases")
+	}
+	if value < databases.MinSlotWalKeepSizeMB {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("maxSlotWalKeepSizeMb must be at least %d, or 0 to size it from the volume", databases.MinSlotWalKeepSizeMB))
+	}
+	if maxMegabytes := databases.MaxSlotWalKeepSizeMB(volumeMiB); value > maxMegabytes {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("maxSlotWalKeepSizeMb cannot exceed %d, half of the volume", maxMegabytes))
 	}
 	return nil
 }

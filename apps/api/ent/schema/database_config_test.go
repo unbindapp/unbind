@@ -123,6 +123,36 @@ func TestDatabaseConfigValidateMemorySettings(t *testing.T) {
 	}
 }
 
+func TestDatabaseConfigValidateSlotWalKeepSize(t *testing.T) {
+	cases := map[string]struct {
+		config       *DatabaseConfig
+		databaseType string
+		volumeMiB    int64
+		wantErr      string
+	}{
+		"nil config":                    {nil, "postgres", 1024, ""},
+		"zero sizes it from the volume": {&DatabaseConfig{MaxSlotWalKeepSizeMB: new(0)}, "postgres", 1024, ""},
+		"at the minimum":                {&DatabaseConfig{MaxSlotWalKeepSizeMB: new(64)}, "postgres", 1024, ""},
+		"below the minimum":             {&DatabaseConfig{MaxSlotWalKeepSizeMB: new(63)}, "postgres", 1024, "at least 64"},
+		"at half the volume":            {&DatabaseConfig{MaxSlotWalKeepSizeMB: new(512)}, "postgres", 1024, ""},
+		"above half the volume":         {&DatabaseConfig{MaxSlotWalKeepSizeMB: new(513)}, "postgres", 1024, "cannot exceed 512"},
+		"a resized volume allows more":  {&DatabaseConfig{MaxSlotWalKeepSizeMB: new(4096)}, "postgres", 10240, ""},
+		"beyond what postgres accepts":  {&DatabaseConfig{MaxSlotWalKeepSizeMB: new(2147483647)}, "postgres", 10240, "cannot exceed 5120"},
+		"on mysql":                      {&DatabaseConfig{MaxSlotWalKeepSizeMB: new(256)}, "mysql", 1024, "only applies to postgres"},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			err := tc.config.ValidateSlotWalKeepSize(tc.databaseType, tc.volumeMiB)
+			if tc.wantErr == "" {
+				assert.NoError(t, err)
+				return
+			}
+			assert.ErrorContains(t, err, tc.wantErr)
+		})
+	}
+}
+
 func TestMergeResources(t *testing.T) {
 	existing := &Resources{CPULimitsMillicores: 1000, MemoryLimitsMegabytes: 2048}
 

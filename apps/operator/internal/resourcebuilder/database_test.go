@@ -304,3 +304,40 @@ func TestBuildDatabaseConfigSizesWalFromTheRealVolume(t *testing.T) {
 	assert.Equal(t, "3072MB", resized["postgresql"].(map[string]any)["maxWalSize"])
 	assert.Equal(t, "1Gi", resized["common"].(map[string]any)["storage"], "the claim template keeps the recorded size")
 }
+
+func TestBuildDatabaseConfigCapsSlotWalKeepSizeFromTheRealVolume(t *testing.T) {
+	tests := []struct {
+		name       string
+		walLevel   string
+		keepSizeMB int
+		volume     string
+		expected   any
+	}{
+		{name: "replica leaves the postgres default", walLevel: "replica", volume: "1Gi", expected: nil},
+		{name: "replica ignores a stale value", walLevel: "replica", keepSizeMB: 512, volume: "1Gi", expected: nil},
+		{name: "logical defaults to a quarter of the volume", walLevel: "logical", volume: "1Gi", expected: int64(256)},
+		{name: "logical default follows a resize", walLevel: "logical", volume: "20Gi", expected: int64(5120)},
+		{name: "logical keeps a value within half the volume", walLevel: "logical", keepSizeMB: 512, volume: "1Gi", expected: int64(512)},
+		{name: "logical caps a value above half the volume", walLevel: "logical", keepSizeMB: 4096, volume: "1Gi", expected: int64(512)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			service := &v1.Service{}
+			service.Spec.Config.Database.Type = "postgres"
+			service.Spec.Config.Database.Config = &v1.DatabaseConfigSpec{
+				WalLevel:             tt.walLevel,
+				MaxSlotWalKeepSizeMB: tt.keepSizeMB,
+			}
+			rb := NewResourceBuilder(service, nil, nil)
+
+			dbConfig := rb.buildDatabaseConfig(tt.volume)
+
+			if tt.expected == nil {
+				assert.NotContains(t, dbConfig, "maxSlotWalKeepSizeMb")
+				return
+			}
+			assert.Equal(t, tt.expected, dbConfig["maxSlotWalKeepSizeMb"])
+		})
+	}
+}

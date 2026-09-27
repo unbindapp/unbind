@@ -194,6 +194,8 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Cannot update version for database service with existing deployment")
 	}
 
+	slotWalKeepSizeChanged := input.DatabaseConfig != nil && input.DatabaseConfig.MaxSlotWalKeepSizeMB != nil
+
 	// Verify storage size changes if applicable
 	if input.DatabaseConfig != nil {
 		if input.DatabaseConfig.StorageSize == "" {
@@ -235,6 +237,16 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		}
 		resources := schema.MergeResources(service.Edges.ServiceConfig.Resources, input.Resources)
 		if err := databaseConfig.ValidateMemorySettings(*service.Database, resources); err != nil {
+			return nil, err
+		}
+	}
+
+	if slotWalKeepSizeChanged && service.Database != nil {
+		volumeMiB, err := self.databaseVolumeMiB(ctx, service, input.DatabaseConfig.StorageSize)
+		if err != nil {
+			return nil, err
+		}
+		if err := input.DatabaseConfig.ValidateSlotWalKeepSize(*service.Database, volumeMiB); err != nil {
 			return nil, err
 		}
 	}

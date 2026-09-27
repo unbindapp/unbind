@@ -646,6 +646,7 @@ components:
           minimum: 0
           type: integer
         maxSlotWalKeepSizeMb:
+          description: PostgreSQL max_slot_wal_keep_size in megabytes, the most WAL a lagging replication slot can hold before Postgres drops the slot. Only applies with the logical WAL level. 0 sizes it at a quarter of the volume, which is right for most databases. At least 64 and at most half of the volume. Changing it reloads the config without a restart
           format: int64
           minimum: 0
           type: integer

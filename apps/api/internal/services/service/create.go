@@ -130,6 +130,10 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			return nil, err
 		}
 
+		if err := input.DatabaseConfig.ValidateSlotWalKeepSize(*input.DatabaseType, storageMiB(input.DatabaseConfig.StorageSize)); err != nil {
+			return nil, err
+		}
+
 		if dbVersion == nil {
 			versionProperty, ok := dbDefinition.Schema.Properties["version"]
 			if ok {

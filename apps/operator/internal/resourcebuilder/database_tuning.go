@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/unbindapp/unbind-api/pkg/databases"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -21,6 +22,8 @@ type databaseTuningInput struct {
 	storage                string
 	sharedBuffersMB        int
 	innodbBufferPoolSizeMB int
+	walLevel               string
+	maxSlotWalKeepSizeMB   int
 }
 
 // Sizes each engine from its memory and CPU limits. Without a limit nothing is set and the
@@ -31,6 +34,7 @@ func applyDatabaseTuning(dbConfig map[string]any, input databaseTuningInput) {
 	switch strings.ToLower(input.dbType) {
 	case "postgres":
 		applyPostgresTuning(ensureMapKey(dbConfig, "postgresql"), limitBytes, input)
+		applyPostgresSlotWalKeepSize(dbConfig, input)
 	case "mysql":
 		applyMySQLTuning(dbConfig, limitBytes, input)
 		applyMySQLRedoLog(dbConfig, input.storage)
@@ -91,6 +95,24 @@ func postgresMaxWalSizeMB(storage string) int64 {
 		return 0
 	}
 	return clamp(quantity.Value()/mebibyte/10, 256, 8192)
+}
+
+// Only logical subscribers leave slots behind for long, standbys lose their slot when they leave
+// the cluster and one that lagged past a cap would need the WAL archive or a fresh copy
+func applyPostgresSlotWalKeepSize(dbConfig map[string]any, input databaseTuningInput) {
+	if input.walLevel != "logical" {
+		return
+	}
+	quantity, err := resource.ParseQuantity(input.storage)
+	if err != nil {
+		return
+	}
+	volumeMiB := quantity.Value() / mebibyte
+	keepSizeMB := int64(input.maxSlotWalKeepSizeMB)
+	if keepSizeMB == 0 {
+		keepSizeMB = databases.AutoSlotWalKeepSizeMB(volumeMiB)
+	}
+	dbConfig["maxSlotWalKeepSizeMb"] = min(keepSizeMB, databases.MaxSlotWalKeepSizeMB(volumeMiB))
 }
 
 func postgresMegabytes(value int64) string {

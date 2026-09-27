@@ -61,7 +61,7 @@ schema:
       default: 10
     maxSlotWalKeepSizeMb:
       type: "integer"
-      description: "PostgreSQL max_slot_wal_keep_size in megabytes, 0 is unlimited"
+      description: "PostgreSQL max_slot_wal_keep_size in megabytes, set by the operator for logical WAL. Unset is unlimited"
       default: 0
     postgresql:
       type: "object"

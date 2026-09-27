@@ -121,7 +121,7 @@ export const DatabaseConfigSchema = z
     initdb: z.string().optional(),
     innodbBufferPoolSizeMb: z.number().optional(), // MySQL innodb_buffer_pool_size in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most three quarters of the memory limit, and rounded down to whole 128MB chunks. Changing it restarts the database
     maxReplicationSlots: z.number().optional(),
-    maxSlotWalKeepSizeMb: z.number().optional(),
+    maxSlotWalKeepSizeMb: z.number().optional(), // PostgreSQL max_slot_wal_keep_size in megabytes, the most WAL a lagging replication slot can hold before Postgres drops the slot. Only applies with the logical WAL level. 0 sizes it at a quarter of the volume, which is right for most databases. At least 64 and at most half of the volume. Changing it reloads the config without a restart
     maxWalSenders: z.number().optional(),
     sharedBuffersMb: z.number().optional(), // PostgreSQL shared_buffers in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most half of the memory limit. Changing it restarts the database
     storage: z.string().optional(),

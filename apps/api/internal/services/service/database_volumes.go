@@ -14,6 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -234,4 +235,33 @@ func (self *ServiceService) applyDatabaseStorageSize(ctx context.Context, servic
 		}
 	}
 	return nil
+}
+
+func (self *ServiceService) databaseVolumeMiB(ctx context.Context, service *ent.Service, requestedSize string) (int64, error) {
+	team := service.Edges.Environment.Edges.Project.Edges.Team
+	volumeMap, err := self.GetVolumesForServices(ctx, team.Namespace, team.ID, []*ent.Service{service})
+	if err != nil {
+		return 0, err
+	}
+	return smallestVolumeMiB(volumeMap[service.ID], requestedSize), nil
+}
+
+// the real claims include resizes the recorded size misses, a larger requested size is about to land
+func smallestVolumeMiB(volumes []*models.PVCInfo, requestedSize string) int64 {
+	var smallestMiB int64
+	for _, volume := range volumes {
+		volumeMiB := int64(volume.CapacityGB * 1024)
+		if smallestMiB == 0 || volumeMiB < smallestMiB {
+			smallestMiB = volumeMiB
+		}
+	}
+	return max(smallestMiB, storageMiB(requestedSize))
+}
+
+func storageMiB(size string) int64 {
+	quantity, err := utils.ParseStorageQuantity(size)
+	if err != nil {
+		quantity = resource.MustParse(dbvolumes.DefaultStorage)
+	}
+	return quantity.Value() / (1024 * 1024)
 }

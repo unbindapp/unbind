@@ -54,9 +54,12 @@ func (rb *ResourceBuilder) buildDatabaseConfig(dataVolumeCapacity string) map[st
 		dbConfig = config.AsMap()
 		tuning.sharedBuffersMB = config.SharedBuffersMB
 		tuning.innodbBufferPoolSizeMB = config.InnodbBufferPoolSizeMB
+		tuning.walLevel = config.WalLevel
+		tuning.maxSlotWalKeepSizeMB = config.MaxSlotWalKeepSizeMB
 	}
 	delete(dbConfig, "sharedBuffersMb")
 	delete(dbConfig, "innodbBufferPoolSizeMb")
+	delete(dbConfig, "maxSlotWalKeepSizeMb")
 
 	storage, _ := dbConfig["storage"].(string)
 	if storage == "" {

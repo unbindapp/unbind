@@ -56,3 +56,5 @@ Backups are available for PostgreSQL, MySQL, MongoDB and ClickHouse. Redis has n
 ## PostgreSQL replication settings
 
 PostgreSQL has a **Database** section in its settings with **WAL Level**. Leave it on `replica` unless a tool asks for logical replication, such as change data capture. With `logical` you can also set **Replication Slots**, **WAL Senders** and **Slot WAL keep size**.
+
+**Slot WAL keep size** limits how much WAL a replication slot can keep when its subscriber falls behind. Without a limit, one idle subscriber can fill the volume and stop the database. Leave it empty to use **Auto**, a quarter of the volume, which grows when you expand the volume. You can set it anywhere from 64 MB to half of the volume. If a subscriber falls further behind than the limit, PostgreSQL drops its slot and the subscriber has to sync again. Clear the field to go back to Auto.

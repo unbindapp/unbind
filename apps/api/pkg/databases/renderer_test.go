@@ -2058,7 +2058,7 @@ func TestPostgresRendersReplicationParameters(t *testing.T) {
 			"walLevel":             "logical",
 			"maxReplicationSlots":  20,
 			"maxWalSenders":        30,
-			"maxSlotWalKeepSizeMb": 2048,
+			"maxSlotWalKeepSizeMb": int64(2048),
 		})
 		assert.Contains(t, result, `wal_level: "logical"`)
 		assert.Contains(t, result, `max_replication_slots: "20"`)

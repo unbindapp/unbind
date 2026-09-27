@@ -85,3 +85,12 @@ func TestReleasedVolumes(t *testing.T) {
 	assert.Empty(t, releasedVolumes(existing, nil, nil, nil))
 	assert.Empty(t, releasedVolumes(nil, nil, nil, []schema.ServiceVolume{{ID: "pvc-1"}}))
 }
+
+func TestSmallestVolumeMiB(t *testing.T) {
+	replicas := []*models.PVCInfo{{CapacityGB: 20}, {CapacityGB: 10}}
+
+	assert.Equal(t, int64(10240), smallestVolumeMiB(replicas, "1Gi"), "a resize the recorded size missed")
+	assert.Equal(t, int64(51200), smallestVolumeMiB(replicas, "50Gi"), "a resize in the same request")
+	assert.Equal(t, int64(2048), smallestVolumeMiB(nil, "2Gi"), "no claim yet")
+	assert.Equal(t, int64(1024), smallestVolumeMiB(nil, ""), "nothing recorded")
+}

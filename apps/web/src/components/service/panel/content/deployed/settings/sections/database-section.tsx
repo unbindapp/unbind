@@ -52,7 +52,15 @@ type TNumberField = Extract<
 
 const numberFields: Record<
   TNumberField,
-  { label: string; title?: string; unit: string; placeholder: string; unset: string; max?: number }
+  {
+    label: string;
+    title?: string;
+    unit: string;
+    placeholder: string;
+    unset: string;
+    min?: number;
+    max?: number;
+  }
 > = {
   maxReplicationSlots: {
     label: "Replication Slots",
@@ -73,8 +81,9 @@ const numberFields: Record<
   maxSlotWalKeepSizeMb: {
     label: "Slot WAL keep size",
     unit: "MB",
-    placeholder: "Unlimited",
-    unset: "Unlimited",
+    placeholder: "Auto",
+    unset: "Auto",
+    min: 64,
   },
 };
 
@@ -98,7 +107,20 @@ function numberToApi(value: string) {
   return value === "" ? defaultApiValue : Number(value);
 }
 
+// Same sizing as the API: auto is a quarter of the smallest volume, the cap is half of it
+function slotWalKeepSizeFromVolumes(service: TServiceShallow) {
+  const volumesMb = service.config.volumes.map((volume) => Math.floor(volume.capacity_gb * 1024));
+  if (volumesMb.length === 0) return undefined;
+  const volumeMb = Math.min(...volumesMb);
+  const min = numberFields.maxSlotWalKeepSizeMb.min ?? 0;
+  return {
+    auto: Math.max(Math.floor(volumeMb / 4), min),
+    max: Math.max(Math.floor(volumeMb / 2), min),
+  };
+}
+
 function PostgresSection({ service }: { service: TServiceShallow }) {
+  const slotWalKeepSize = slotWalKeepSizeFromVolumes(service);
   const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
   const config = service.config.database_config;
   const serverWalLevel: WalLevel = config?.wal_level ?? "replica";
@@ -142,14 +164,22 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
         v === defaultApiValue ? numberFields[field].unset : `${v} ${numberFields[field].unit}`,
     });
 
+  const fieldMax = (field: TNumberField) =>
+    field === "maxSlotWalKeepSizeMb" ? slotWalKeepSize?.max : numberFields[field].max;
+
+  const fieldPlaceholder = (field: TNumberField) =>
+    field === "maxSlotWalKeepSizeMb" && slotWalKeepSize
+      ? `Auto (${slotWalKeepSize.auto})`
+      : numberFields[field].placeholder;
+
   const numberInput = (field: TNumberField) => (
     <form.AppField
       name={field}
       validators={{
-        onChange: ({ value }) => validateNumberField(field, value),
+        onChange: ({ value }) => validateNumberField(field, value, fieldMax(field)),
       }}
       children={(fieldApi) => {
-        const { title, unit, placeholder } = numberFields[field];
+        const { title, unit } = numberFields[field];
         const serverInput = numberToInput(serverNumbers[field]);
         const input = (
           <fieldApi.TextField
@@ -161,7 +191,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
               if (fieldApi.state.meta.errors.length > 0) return;
               stageNumber(field, e.target.value);
             }}
-            placeholder={placeholder}
+            placeholder={fieldPlaceholder(field)}
             autoCapitalize="off"
             autoCorrect="off"
             autoComplete="off"
@@ -272,7 +302,8 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Slot WAL Keep Size</BlockItemTitle>
               <BlockItemDescription>
-                Caps the WAL kept for lagging replication slots.
+                Caps the WAL a lagging replication slot can hold. A slot past the cap is dropped and
+                its subscriber has to sync again. Auto keeps it at a quarter of the volume.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>{numberInput("maxSlotWalKeepSizeMb")}</BlockItemContent>
@@ -300,10 +331,14 @@ function walLevelToName(level: WalLevel | (string & {})) {
   return "Unknown";
 }
 
-function validateNumberField(field: TNumberField, value: string) {
+function validateNumberField(field: TNumberField, value: string, max: number | undefined) {
   const error = validatePositiveInteger(value);
   if (error) return error;
-  const max = numberFields[field].max;
+  if (value === "") return undefined;
+  const min = numberFields[field].min;
+  if (min !== undefined && Number(value) < min) {
+    return { message: `Must be at least ${min}.` };
+  }
   if (max !== undefined && Number(value) > max) {
     return { message: `Must be at most ${max}.` };
   }
