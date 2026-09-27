@@ -5,6 +5,7 @@ import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { cn } from "@/components/ui/utils";
 import { cva, VariantProps } from "class-variance-authority";
 import { XIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const createDialogHandle = DialogPrimitive.createHandle;
 export type TDialogHandle = DialogPrimitive.Handle<unknown>;
@@ -148,10 +149,19 @@ function DialogContent({
           <div className={cn("flex w-full flex-col gap-4", classNameInnerWrapper)}>
             {children}
             {!hideXButton && variant !== "styleless" && (
-              <DialogPrimitive.Close className="focus-visible:ring-foreground text-muted-foreground absolute top-0 right-0 rounded-xl p-2.5 opacity-50 ring-1 ring-transparent focus-visible:outline-hidden active:opacity-100 disabled:pointer-events-none has-hover:hover:opacity-100">
-                <XIcon className="h-5 w-5" />
-                <span className="sr-only">Close</span>
-              </DialogPrimitive.Close>
+              <DialogPrimitive.Close
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-more-foreground mt-0.75 mr-0.75 size-8.5 rounded-lg!"
+                  >
+                    <XIcon className="size-4.5" />
+                    <span className="sr-only">Close</span>
+                  </Button>
+                }
+                className="focus-visible:ring-foreground text-muted-foreground absolute top-0 right-0 rounded-xl p-2.5 opacity-50 ring-1 ring-transparent focus-visible:outline-hidden active:opacity-100 disabled:pointer-events-none has-hover:hover:opacity-100"
+              ></DialogPrimitive.Close>
             )}
           </div>
         </DialogPrimitive.Popup>
@@ -184,7 +194,10 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("max-w-full pr-6 text-xl leading-tight font-semibold", className)}
+      className={cn(
+        "max-w-full pr-6 text-xl leading-tight font-semibold wrap-break-word",
+        className,
+      )}
       {...props}
     />
   );
