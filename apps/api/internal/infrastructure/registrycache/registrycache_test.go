@@ -149,3 +149,10 @@ func TestCountImages(t *testing.T) {
 	assert.Equal(t, 2, stats.RepositoryCount)
 	assert.Equal(t, 3, stats.ImageCount)
 }
+
+func TestPVCInfoIsPendingResize(t *testing.T) {
+	assert.True(t, (&PVCInfo{RequestedBytes: 30 * gib, CapacityBytes: 20 * gib}).IsPendingResize())
+	assert.False(t, (&PVCInfo{RequestedBytes: 20 * gib, CapacityBytes: 20 * gib}).IsPendingResize())
+	assert.False(t, (&PVCInfo{RequestedBytes: 20 * gib, CapacityBytes: 21 * gib}).IsPendingResize(), "provisioners may round up")
+	assert.False(t, (&PVCInfo{RequestedBytes: 20 * gib}).IsPendingResize(), "not provisioned yet")
+}

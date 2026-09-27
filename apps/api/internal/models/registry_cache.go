@@ -37,6 +37,7 @@ type RegistryCacheConfig struct {
 	PVCCapacityGB      float64 `json:"pvc_capacity_gb" doc:"Provisioned size of the registry volume"`
 	StorageClass       string  `json:"storage_class" doc:"Storage class backing the registry volume"`
 	CanExpand          bool    `json:"can_expand" doc:"Whether the storage class supports growing the volume"`
+	IsPendingResize    bool    `json:"is_pending_resize" doc:"The volume is growing to a requested size"`
 	MinimumStorageGB   float64 `json:"minimum_storage_gb"`
 	MaximumStorageGB   float64 `json:"maximum_storage_gb"`
 	StorageStepGB      float64 `json:"storage_step_gb"`

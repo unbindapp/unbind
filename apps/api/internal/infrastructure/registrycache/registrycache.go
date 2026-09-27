@@ -264,6 +264,11 @@ func (self *PVCInfo) EffectiveBytes() int64 {
 	return self.RequestedBytes
 }
 
+// IsPendingResize reports a growth that was requested but has not reached the volume yet.
+func (self *PVCInfo) IsPendingResize() bool {
+	return self.CapacityBytes > 0 && self.RequestedBytes > self.CapacityBytes
+}
+
 func (self *Manager) GetPVC(ctx context.Context) (*PVCInfo, error) {
 	pvc, err := self.k8s.GetInternalClient().CoreV1().PersistentVolumeClaims(self.namespace()).Get(ctx, RegistryPVCName, metav1.GetOptions{})
 	if err != nil {

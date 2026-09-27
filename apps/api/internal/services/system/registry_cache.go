@@ -52,6 +52,7 @@ func (self *SystemService) GetRegistryCacheConfig(ctx context.Context, requester
 		cfg.PVCCapacityGB = float64(pvc.EffectiveBytes()) / bytesPerGB
 		cfg.StorageClass = pvc.StorageClass
 		cfg.CanExpand = pvc.CanExpand
+		cfg.IsPendingResize = pvc.IsPendingResize()
 	} else {
 		log.Warnf("registry cache: failed to read pvc: %v", err)
 	}
@@ -166,7 +167,10 @@ func (self *SystemService) UpdateRegistryCache(ctx context.Context, requesterUse
 		if !pvc.CanExpand {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Storage class does not support volume expansion")
 		}
-		existingQty, err := utils.ValidateStorageQuantity(fmt.Sprintf("%d", pvc.EffectiveBytes()))
+		if pvc.IsPendingResize() {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeConflict, "The registry volume is still growing to its last requested size")
+		}
+		existingQty, err := utils.ValidateStorageQuantity(fmt.Sprintf("%d", max(pvc.EffectiveBytes(), pvc.RequestedBytes)))
 		if err != nil {
 			return nil, err
 		}

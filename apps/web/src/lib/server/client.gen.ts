@@ -2351,6 +2351,7 @@ export const RegistryCacheConfigSchema = z
     can_expand: z.boolean(), // Whether the storage class supports growing the volume
     cleanup_schedule: z.string(), // Cron schedule for the cleanup job
     cleanup_threshold_gb: z.number(), // Cache size at which cleanup begins pruning
+    is_pending_resize: z.boolean(), // The volume is growing to a requested size
     managed: z.boolean(), // False when an external registry is used; cache config does not apply
     maximum_storage_gb: z.number(),
     minimum_storage_gb: z.number(),

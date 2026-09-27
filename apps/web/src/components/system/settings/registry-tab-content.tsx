@@ -24,7 +24,7 @@ import {
 import DropdownSelect from "@/components/ui/dropdown-select";
 import { cn } from "@/components/ui/utils";
 import { percentageFormatter } from "@/components/volume/helpers";
-import { appLocale } from "@/lib/constants";
+import { appLocale, defaultAnimationMs } from "@/lib/constants";
 import { formatGB } from "@/lib/helpers/format-gb";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
@@ -45,11 +45,14 @@ import {
   CircleCheckIcon,
   CircleSlashIcon,
   ClockIcon,
+  HourglassIcon,
   LoaderIcon,
+  RotateCcwIcon,
+  ScalingIcon,
   SparklesIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -60,11 +63,17 @@ const runningPollMs = 5000;
 
 export default function RegistryTabContent({ className }: TProps) {
   const queryClient = useQueryClient();
-  const configQuery = useQuery(registryConfigQuery());
+  const configQuery = useQuery({
+    ...registryConfigQuery(),
+    refetchInterval: (query) => (query.state.data?.data.is_pending_resize ? runningPollMs : false),
+  });
   const statsQuery = useQuery({
     ...registryStatsQuery(),
     refetchInterval: (query) =>
-      query.state.data?.data.last_cleanup?.status === "running" ? runningPollMs : false,
+      query.state.data?.data.last_cleanup?.status === "running" ||
+      configQuery.data?.data.is_pending_resize
+        ? runningPollMs
+        : false,
   });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: queryKeySystem.registry() });
@@ -521,19 +530,24 @@ function VolumeSizeForm({
   config: RegistryCacheConfig;
   onSaved: () => Promise<void>;
 }) {
-  const { mutateAsync: update, error } = useMutation({ mutationFn: updateRegistry });
-
   const minGB = roundGB(config.pvc_capacity_gb);
   const maxGB = Math.max(minGB, config.maximum_storage_gb);
   const stepGB = config.storage_step_gb || 1;
 
   const form = useAppForm({
     defaultValues: { capacityGB: minGB },
-    onSubmit: async ({ value }) => {
-      await update({ pvc_capacity_gb: value.capacityGB });
-      await onSaved();
-    },
   });
+
+  if (config.is_pending_resize) {
+    return (
+      <div className="bg-warning/3-10 border-warning/3-10 text-warning flex w-full items-start justify-start gap-2 rounded-lg border px-3.5 py-2.5 leading-tight font-medium">
+        <div className="line-icon">
+          <HourglassIcon className="animate-hourglass -ml-0.5 size-4 shrink-0" />
+        </div>
+        <p className="min-w-0 shrink">Expanding the volume. This could take a couple of minutes.</p>
+      </div>
+    );
+  }
 
   if (!config.can_expand) {
     return (
@@ -546,55 +560,204 @@ function VolumeSizeForm({
   }
 
   return (
-    <div className="flex w-full flex-col gap-3">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit(e);
-        }}
-        className="flex w-full flex-col gap-3 xl:flex-row xl:items-center"
-      >
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <form.Subscribe
-            selector={(state) => state.values.capacityGB}
-            children={(capacityGB) => (
-              <p className="px-1.5 font-semibold">
-                <span className="pr-[0.6ch]">Size:</span>
-                <StorageSizeChip>{formatGB(capacityGB)}</StorageSizeChip>
-              </p>
-            )}
-          />
-          <form.AppField
-            name="capacityGB"
-            children={(field) => (
-              <field.StorageSizeInput
-                field={field}
-                className="w-full px-1.5 py-2.25"
-                onBlur={field.handleBlur}
-                min={minGB}
-                max={maxGB}
-                step={stepGB}
-                minMaxFormatter={formatGB}
-                defaultValue={[minGB]}
-                value={[field.state.value]}
-                onValueChange={(value) => field.handleChange(value[0])}
-              />
-            )}
-          />
-        </div>
+    <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <form.Subscribe
-          selector={(state) => ({ isSubmitting: state.isSubmitting, values: state.values })}
-          children={({ isSubmitting, values }) => (
-            <FormActions
-              isSubmitting={isSubmitting}
-              isUnchanged={values.capacityGB <= minGB}
-              onUndo={() => form.reset()}
+          selector={(state) => state.values.capacityGB}
+          children={(capacityGB) => (
+            <p className="px-1.5 font-semibold">
+              <span className="pr-[0.6ch]">Size:</span>
+              <StorageSizeChip>{formatGB(capacityGB)}</StorageSizeChip>
+            </p>
+          )}
+        />
+        <form.AppField
+          name="capacityGB"
+          children={(field) => (
+            <field.StorageSizeInput
+              field={field}
+              className="w-full px-1.5 py-2.25"
+              onBlur={field.handleBlur}
+              min={minGB}
+              max={maxGB}
+              step={stepGB}
+              minMaxFormatter={formatGB}
+              defaultValue={[minGB]}
+              value={[field.state.value]}
+              onValueChange={(value) => field.handleChange(value[0])}
             />
           )}
         />
-      </form>
-      {error && <ErrorLine message={error.message} />}
+      </div>
+      <form.Subscribe
+        selector={(state) => state.values.capacityGB}
+        children={(capacityGB) => {
+          const isUnchanged = capacityGB <= minGB;
+          return (
+            <div className="flex w-full flex-row gap-3 md:w-auto">
+              <ExpandRegistryDialogTrigger newCapacityGB={capacityGB} onExpanded={onSaved}>
+                <Button
+                  type="button"
+                  variant="warning"
+                  disabled={isUnchanged}
+                  className="flex-1 md:flex-none xl:py-3.5"
+                >
+                  <ScalingIcon className="-ml-0.5 size-4.5 shrink-0" />
+                  <p className="min-w-0 shrink">Expand</p>
+                </Button>
+              </ExpandRegistryDialogTrigger>
+              <Button
+                type="button"
+                disabled={isUnchanged}
+                onClick={() => form.reset()}
+                variant="outline"
+                className="gap-1.5 xl:py-3.5"
+              >
+                <RotateCcwIcon
+                  data-unchanged={isUnchanged || undefined}
+                  className="-ml-0.5 size-4.5 shrink-0 transition-transform data-unchanged:-rotate-90"
+                />
+                <p className="min-w-0">Undo</p>
+              </Button>
+            </div>
+          );
+        }}
+      />
     </div>
+  );
+}
+
+const expandConfirmText = "I want to expand this volume";
+
+function ExpandRegistryDialogTrigger({
+  newCapacityGB,
+  onExpanded,
+  children,
+}: {
+  newCapacityGB: number;
+  onExpanded: () => Promise<void>;
+  children: React.ReactElement;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  const {
+    mutateAsync: expand,
+    error,
+    reset,
+  } = useMutation({
+    mutationFn: updateRegistry,
+    onSuccess: async () => {
+      await onExpanded();
+      setIsOpen(false);
+    },
+  });
+
+  const form = useAppForm({
+    defaultValues: { textToConfirm: "" },
+    validators: {
+      onChange: z
+        .object({
+          textToConfirm: z.string().refine((v) => v === expandConfirmText, {
+            message: "Please type the correct text to confirm",
+          }),
+        })
+        .strip(),
+    },
+    onSubmit: async () => {
+      await expand({ pvc_capacity_gb: newCapacityGB });
+    },
+  });
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (open) return;
+        if (timeout.current) clearTimeout(timeout.current);
+        timeout.current = setTimeout(() => {
+          form.reset();
+          reset();
+        }, defaultAnimationMs);
+      }}
+    >
+      <DialogTrigger render={children} />
+      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
+        <DialogHeader>
+          <DialogTitle>
+            <span className="pr-[0.5ch]">Expand to:</span>
+            <span className="text-foreground bg-foreground/2-10 border-foreground/2-10 max-w-full rounded-md border px-1.25 leading-tight font-semibold">
+              {formatGB(newCapacityGB)}
+            </span>
+          </DialogTitle>
+          <DialogDescription>
+            Proceed with caution:{" "}
+            <span className="text-warning font-semibold">
+              The volume size can never be reduced!
+            </span>{" "}
+            Whenever possible, expand the volume in small increments.
+            <br />
+            <br />
+            Type {`"`}
+            <span className="text-warning font-semibold">{expandConfirmText}</span>
+            {`"`} to confirm.
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          className="flex w-full flex-col"
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit(e);
+          }}
+        >
+          <form.AppField
+            name="textToConfirm"
+            children={(field) => (
+              <field.TextField
+                hideError
+                field={field}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                className="w-full"
+                placeholder={expandConfirmText}
+              />
+            )}
+          />
+          <div className="mt-4 flex w-full flex-col gap-4">
+            {error && <ErrorLine message={error.message} />}
+            <div className="flex w-full flex-wrap items-center justify-end gap-2">
+              <DialogClose
+                className="text-muted-foreground"
+                render={
+                  <Button type="button" variant="ghost">
+                    Cancel
+                  </Button>
+                }
+              />
+              <form.Subscribe
+                selector={(s) => ({
+                  canSubmit: s.canSubmit,
+                  isSubmitting: s.isSubmitting,
+                  values: s.values,
+                })}
+                children={({ canSubmit, isSubmitting, values }) => (
+                  <form.SubmitButton
+                    isPending={isSubmitting}
+                    variant="warning"
+                    disabled={!canSubmit || values.textToConfirm !== expandConfirmText}
+                  >
+                    Expand
+                  </form.SubmitButton>
+                )}
+              />
+            </div>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
