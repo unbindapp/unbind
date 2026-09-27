@@ -1,10 +1,10 @@
 "use client";
 
-import { StagedChip } from "@/components/staged-changes/staged-chip";
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import { IconCache } from "@/components/icons/icon-cache";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
+import { StagedChip } from "@/components/staged-changes/staged-chip";
 import { Button, TButtonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,11 +27,11 @@ import {
 import { readableTokenMap, tokensForVariable } from "@/components/variables/tokens";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import { useVariableReferences } from "@/components/variables/variable-references-provider";
+import type { TVariableWithStaged } from "@/components/variables/variables-context";
 import {
   useVariableReferenceLanguage,
   VariableValueField,
 } from "@/components/variables/variables-form-field";
-import type { TVariableWithStaged } from "@/components/variables/variables-context";
 import { useVariables } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { VariableForCreateValueSchema } from "@/lib/queries/variables";
@@ -130,15 +130,38 @@ export default function VariableCard({
           id={getNewEntityIdForVariable({ name: variable.name, value: variable.value })}
         />
       )}
-      <div className="flex min-h-9 w-full shrink-0 items-center py-1.75 pr-8 sm:w-48 sm:pr-4 lg:w-68">
-        <IconFinal
-          data-dynamic={isDynamic || undefined}
-          data-unresolved={hasUnresolved || undefined}
-          className="text-foreground data-dynamic:text-process group-data-placeholder/card:animate-skeleton group-data-placeholder/card:bg-foreground mt-1 mr-2 size-3.5 shrink-0 self-start group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent"
-        />
-        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink font-mono text-sm leading-normal text-balance wrap-break-word group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
-          {isPlaceholder ? "Loading key" : <VariableName name={variable.name} />}
-        </p>
+      <div className="flex w-full items-start gap-3 sm:w-auto">
+        <div className="flex min-h-9 min-w-0 shrink items-center py-1.75 sm:w-48 sm:shrink-0 sm:pr-4 lg:w-68">
+          <IconFinal
+            data-dynamic={isDynamic || undefined}
+            data-unresolved={hasUnresolved || undefined}
+            className="text-foreground data-dynamic:text-process group-data-placeholder/card:animate-skeleton group-data-placeholder/card:bg-foreground mt-1 mr-2 size-3.5 shrink-0 self-start group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent"
+          />
+          <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink font-mono text-sm leading-normal text-balance wrap-break-word group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+            {isPlaceholder ? "Loading key" : <VariableName name={variable.name} />}
+          </p>
+        </div>
+        {(!isEditingVariable || !variable) && (
+          <div className="-mr-2 ml-auto flex items-center gap-1 sm:hidden">
+            {variable?.staged && <StagedChip staged={variable.staged} isApplying={isApplying} />}
+            {!hideThreeDotButton && (
+              <ConditionalDropdownButton
+                {...placeholderOrVariableProps}
+                disableDelete={disableDelete}
+                disableEdit={disableEdit || isStagedDelete}
+                setIsEditingVariable={setIsEditingVariable}
+                className="rounded-lg"
+                variant={
+                  variable?.staged
+                    ? "ghost-change-foreground"
+                    : hasUnresolved
+                      ? "ghost-warning-foreground"
+                      : "ghost"
+                }
+              />
+            )}
+          </div>
+        )}
       </div>
       <div className="relative -ml-2 flex w-[calc(100%+1rem)] min-w-0 flex-1 items-start sm:mt-0 sm:w-auto">
         {(!variable || !isEditingVariable) && (
@@ -185,7 +208,7 @@ export default function VariableCard({
                 className="max-h-[min(16rem,50vh)] w-full mask-[linear-gradient(to_bottom,transparent_0%,black_0.375rem,black_calc(100%-0.375rem),transparent_100%)]"
                 classNameViewport="py-1.5"
               >
-                <div className="flex w-full flex-col items-start justify-start gap-1 lg:flex-row lg:items-center lg:gap-1.5">
+                <div className="flex w-full items-start justify-start gap-1.5">
                   <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal text-balance group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                     {isPlaceholder || !variable || !isValueVisible ? (
                       HIDDEN_VARIABLE_VALUE
@@ -215,7 +238,7 @@ export default function VariableCard({
               <StagedChip
                 staged={variable.staged}
                 isApplying={isApplying}
-                className="mr-1 hidden self-center sm:flex"
+                className="mt-1.75 mr-1 hidden self-start sm:flex"
               />
             )}
             <div className="hidden sm:flex">
@@ -245,27 +268,6 @@ export default function VariableCard({
           />
         )}
       </div>
-      {(!isEditingVariable || !variable) && (
-        <div className="absolute top-0.75 right-0.75 flex items-center gap-1 sm:hidden">
-          {variable?.staged && <StagedChip staged={variable.staged} isApplying={isApplying} />}
-          {!hideThreeDotButton && (
-            <ConditionalDropdownButton
-              {...placeholderOrVariableProps}
-              disableDelete={disableDelete}
-              disableEdit={disableEdit || isStagedDelete}
-              setIsEditingVariable={setIsEditingVariable}
-              className="rounded-lg"
-              variant={
-                variable?.staged
-                  ? "ghost-change-foreground"
-                  : hasUnresolved
-                    ? "ghost-warning-foreground"
-                    : "ghost"
-              }
-            />
-          )}
-        </div>
-      )}
     </Element>
   );
 }
