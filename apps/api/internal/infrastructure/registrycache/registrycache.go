@@ -2,8 +2,10 @@ package registrycache
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/internal/common/log"
@@ -25,7 +27,12 @@ const (
 	RegistryServicePort    = 5000
 	ThresholdEnvVar        = "MAX_STORAGE"
 	DefaultCleanupSchedule = "0 * * * *"
+	PruneAllFlag           = "--all"
+	TerminationMessagePath = "/dev/termination-log"
 	cleanupTimeoutSeconds  = 3600
+	// Set by kubectl create job --from=cronjob as well
+	manualRunAnnotation = "cronjob.kubernetes.io/instantiate"
+	manualRunValue      = "manual"
 )
 
 var cleanupCommand = []string{"/app/cli", "registry:cleanup"}
@@ -39,16 +46,16 @@ func RegistryURL(namespace string) string {
 // images share a single registry volume). All operations target the system
 // namespace; when the registry is externally managed the resources are absent.
 type Manager struct {
-	cfg      *config.Config
-	k8s      *k8s.KubeClient
-	registry *Client
+	cfg     *config.Config
+	k8s     *k8s.KubeClient
+	cleaner *Cleaner
 }
 
 func NewManager(cfg *config.Config, k8sClient *k8s.KubeClient) *Manager {
 	return &Manager{
-		cfg:      cfg,
-		k8s:      k8sClient,
-		registry: NewClient(RegistryURL(cfg.GetSystemNamespace())),
+		cfg:     cfg,
+		k8s:     k8sClient,
+		cleaner: newCleaner(cfg.GetSystemNamespace(), k8sClient.GetInternalClient(), k8sClient.GetInternalRestConfig()),
 	}
 }
 
@@ -68,7 +75,11 @@ func (self *Manager) getCronJob(ctx context.Context) (*batchv1.CronJob, error) {
 }
 
 func (self *Manager) cleanupContainer(cron *batchv1.CronJob) *corev1.Container {
-	containers := cron.Spec.JobTemplate.Spec.Template.Spec.Containers
+	return cleanupContainerOf(&cron.Spec.JobTemplate.Spec.Template.Spec)
+}
+
+func cleanupContainerOf(spec *corev1.PodSpec) *corev1.Container {
+	containers := spec.Containers
 	for i := range containers {
 		if containers[i].Name == CleanupContainerName {
 			return &containers[i]
@@ -298,6 +309,43 @@ func (self *Manager) UpdatePVCCapacity(ctx context.Context, newSize string) erro
 	return nil
 }
 
+// StartCleanup runs the cleanup job now, deleting every image cleanup is allowed to delete.
+func (self *Manager) StartCleanup(ctx context.Context) error {
+	cron, err := self.getCronJob(ctx)
+	if err != nil {
+		return err
+	}
+
+	job := manualCleanupJob(cron)
+	if _, err := self.k8s.GetInternalClient().BatchV1().Jobs(self.namespace()).Create(ctx, job, metav1.CreateOptions{}); err != nil {
+		return fmt.Errorf("failed to start registry cleanup: %w", err)
+	}
+	return nil
+}
+
+// Owned by the CronJob so builds wait for it and the CronJob's history limits remove it
+func manualCleanupJob(cron *batchv1.CronJob) *batchv1.Job {
+	annotations := map[string]string{manualRunAnnotation: manualRunValue}
+	for key, value := range cron.Spec.JobTemplate.Annotations {
+		annotations[key] = value
+	}
+
+	job := &batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			GenerateName:    CleanupCronJobName + "-manual-",
+			Namespace:       cron.Namespace,
+			Labels:          cron.Spec.JobTemplate.Labels,
+			Annotations:     annotations,
+			OwnerReferences: []metav1.OwnerReference{*metav1.NewControllerRef(cron, batchv1.SchemeGroupVersion.WithKind("CronJob"))},
+		},
+		Spec: *cron.Spec.JobTemplate.Spec.DeepCopy(),
+	}
+	if container := cleanupContainerOf(&job.Spec.Template.Spec); container != nil && !slices.Contains(container.Args, PruneAllFlag) {
+		container.Args = append(container.Args, PruneAllFlag)
+	}
+	return job
+}
+
 // GetLastCleanup returns the latest cleanup Job spawned by the CronJob.
 func (self *Manager) GetLastCleanup(ctx context.Context) (*models.RegistryCacheCleanupRun, error) {
 	jobList, err := self.k8s.GetInternalClient().BatchV1().Jobs(self.namespace()).List(ctx, metav1.ListOptions{})
@@ -319,7 +367,10 @@ func (self *Manager) GetLastCleanup(ctx context.Context) (*models.RegistryCacheC
 		return nil, nil
 	}
 
-	run := &models.RegistryCacheCleanupRun{Status: "running"}
+	run := &models.RegistryCacheCleanupRun{
+		Status: "running",
+		Manual: latest.Annotations[manualRunAnnotation] == manualRunValue,
+	}
 	if latest.Status.StartTime != nil {
 		run.StartedAt = &latest.Status.StartTime.Time
 	}
@@ -332,7 +383,47 @@ func (self *Manager) GetLastCleanup(ctx context.Context) (*models.RegistryCacheC
 	case latest.Status.Failed > 0:
 		run.Status = "failed"
 	}
+	if run.Status != "running" {
+		run.Result = self.cleanupResult(ctx, latest.Name)
+	}
 	return run, nil
+}
+
+// The job reports its result as the container's termination message
+func (self *Manager) cleanupResult(ctx context.Context, jobName string) *models.RegistryCleanupResult {
+	pods, err := self.k8s.GetInternalClient().CoreV1().Pods(self.namespace()).List(ctx, metav1.ListOptions{LabelSelector: "job-name=" + jobName})
+	if err != nil {
+		log.Warnf("registry cache: failed to list pods of %s: %v", jobName, err)
+		return nil
+	}
+
+	for _, pod := range pods.Items {
+		for _, status := range pod.Status.ContainerStatuses {
+			if status.Name != CleanupContainerName {
+				continue
+			}
+			for _, terminated := range []*corev1.ContainerStateTerminated{status.State.Terminated, status.LastTerminationState.Terminated} {
+				if terminated == nil {
+					continue
+				}
+				if result := ParseCleanupResult(terminated.Message); result != nil {
+					return result
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func ParseCleanupResult(message string) *models.RegistryCleanupResult {
+	result := &models.RegistryCleanupResult{}
+	if err := json.Unmarshal([]byte(message), result); err != nil {
+		return nil
+	}
+	if result.Outcome == "" && result.Error == "" {
+		return nil
+	}
+	return result
 }
 
 func ownedByCleanupCron(job *batchv1.Job) bool {
@@ -346,38 +437,42 @@ func ownedByCleanupCron(job *batchv1.Job) bool {
 
 // UsageStats describes current registry contents and disk usage.
 type UsageStats struct {
-	UsedBytes       int64 `json:"used_bytes"`
-	RepositoryCount int   `json:"repository_count"`
-	TagCount        int   `json:"tag_count"`
+	UsedBytes       int64
+	RepositoryCount int
+	ImageCount      int
 }
 
-// GetUsage walks the registry catalog and sums unique blob sizes (registry
-// stores each blob once, so deduping by digest yields real disk usage).
+// GetUsage measures the volume the same way cleanup does, so the numbers agree with the threshold.
 func (self *Manager) GetUsage(ctx context.Context) (*UsageStats, error) {
-	repos, err := self.registry.Repositories(ctx)
+	pod, err := self.cleaner.registryPod(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	stats := &UsageStats{RepositoryCount: len(repos)}
-	blobs := map[string]int64{}
-
-	for _, repo := range repos {
-		tags, err := self.registry.Tags(ctx, repo)
-		if err != nil {
-			log.Warnf("registry cache: failed to list tags for %s: %v", repo, err)
-			continue
-		}
-		stats.TagCount += len(tags)
-		for _, tag := range tags {
-			if err := collectBlobs(ctx, self.registry, repo, tag, blobs, 0); err != nil {
-				log.Warnf("registry cache: failed to read manifest %s:%s: %v", repo, tag, err)
-			}
-		}
+	used, err := self.cleaner.diskUsage(ctx, pod)
+	if err != nil {
+		return nil, err
+	}
+	tags, err := self.cleaner.tagModTimes(ctx, pod)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list registry tags: %w", err)
 	}
 
-	for _, size := range blobs {
-		stats.UsedBytes += size
-	}
+	stats := countImages(tags)
+	stats.UsedBytes = used
 	return stats, nil
+}
+
+func countImages(tags map[string]int64) *UsageStats {
+	stats := &UsageStats{}
+	repos := map[string]bool{}
+	for key := range tags {
+		colon := strings.LastIndex(key, ":")
+		repo, tag := key[:colon], key[colon+1:]
+		repos[repo] = true
+		if !isBuildCacheTag(tag) {
+			stats.ImageCount++
+		}
+	}
+	stats.RepositoryCount = len(repos)
+	return stats
 }

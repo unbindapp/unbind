@@ -11,6 +11,7 @@ import TeamNavbar from "@/components/team/team-navbar";
 import TeamProvider from "@/components/team/team-provider";
 import TeamsProvider from "@/components/team/teams-provider";
 import TemplatesProvider from "@/components/templates/templates-provider";
+import RegistryWarningToastProvider from "@/components/system/registry/registry-warning-toast-provider";
 import { UpdateToastProvider } from "@/components/system/update/update-status-provider";
 
 export const Route = createFileRoute("/$team_id/_team")({
@@ -39,19 +40,21 @@ function TeamLayout() {
     <SystemProvider>
       <TemplatesProvider>
         <UpdateToastProvider>
-          <TeamsProvider initialData={teamsData}>
-            <TeamProvider teamId={teamId}>
-              <TeamNavbar />
-              <Outlet />
-              <NavbarSafeAreaInsetBottom className="sm:hidden" />
-              <ContextCommandPanel
-                title="Team Command Panel"
-                description="Team command panel"
-                context={{ contextType: "team", teamId }}
-                triggerType="layout"
-              />
-            </TeamProvider>
-          </TeamsProvider>
+          <RegistryWarningToastProvider>
+            <TeamsProvider initialData={teamsData}>
+              <TeamProvider teamId={teamId}>
+                <TeamNavbar />
+                <Outlet />
+                <NavbarSafeAreaInsetBottom className="sm:hidden" />
+                <ContextCommandPanel
+                  title="Team Command Panel"
+                  description="Team command panel"
+                  context={{ contextType: "team", teamId }}
+                  triggerType="layout"
+                />
+              </TeamProvider>
+            </TeamsProvider>
+          </RegistryWarningToastProvider>
         </UpdateToastProvider>
       </TemplatesProvider>
     </SystemProvider>

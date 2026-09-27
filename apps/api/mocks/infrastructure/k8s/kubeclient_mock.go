@@ -17,6 +17,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 // NewKubeClientMock creates a new instance of KubeClientMock. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -2079,6 +2080,52 @@ func (_c *KubeClientMock_GetInternalClient_Call) Return(interfaceParam kubernete
 }
 
 func (_c *KubeClientMock_GetInternalClient_Call) RunAndReturn(run func() kubernetes.Interface) *KubeClientMock_GetInternalClient_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetInternalRestConfig provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) GetInternalRestConfig() *rest.Config {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetInternalRestConfig")
+	}
+
+	var r0 *rest.Config
+	if returnFunc, ok := ret.Get(0).(func() *rest.Config); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rest.Config)
+		}
+	}
+	return r0
+}
+
+// KubeClientMock_GetInternalRestConfig_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetInternalRestConfig'
+type KubeClientMock_GetInternalRestConfig_Call struct {
+	*mock.Call
+}
+
+// GetInternalRestConfig is a helper method to define mock.On call
+func (_e *KubeClientMock_Expecter) GetInternalRestConfig() *KubeClientMock_GetInternalRestConfig_Call {
+	return &KubeClientMock_GetInternalRestConfig_Call{Call: _e.mock.On("GetInternalRestConfig")}
+}
+
+func (_c *KubeClientMock_GetInternalRestConfig_Call) Run(run func()) *KubeClientMock_GetInternalRestConfig_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_GetInternalRestConfig_Call) Return(config *rest.Config) *KubeClientMock_GetInternalRestConfig_Call {
+	_c.Call.Return(config)
+	return _c
+}
+
+func (_c *KubeClientMock_GetInternalRestConfig_Call) RunAndReturn(run func() *rest.Config) *KubeClientMock_GetInternalRestConfig_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -26,3 +26,39 @@ Builds are the heaviest thing Unbind does. They compete with your running servic
 - **Several servers**: raise **Replicas**, but not above the number of servers.
 
 If the build service is managed outside Unbind, these settings are shown but cannot be changed.
+
+## Registry
+
+**System** > **Settings** > **Registry** manages the registry that stores your built images. Images and build caches share one volume, 20 GB by default.
+
+### Usage
+
+The bar shows how full the volume is, with a mark at the cleanup threshold. Usage going up to the threshold is normal: cleanup brings it back down.
+
+### Cleanup
+
+Cleanup runs every hour. When usage is over the threshold, it deletes the oldest images until usage is under it again. It never deletes:
+
+- Images that are deployed
+- Images pushed in the last hour
+- The newest image and the newest build cache of each repository
+
+New builds wait while cleanup runs. Builds that are already running finish first.
+
+The page shows the last run: how much space it freed and how many images it deleted. **Still over the threshold** means everything left is protected, so grow the volume.
+
+**Clean Up Now** runs cleanup right away and deletes every image it is allowed to delete, even when usage is under the threshold. Redeploying a deployment whose image was deleted builds it again.
+
+### Settings
+
+| Setting       | What it is                                        | Default    |
+| ------------- | ------------------------------------------------- | ---------- |
+| **Threshold** | Usage at which cleanup starts deleting images     | 16 GB      |
+| **Schedule**  | How often cleanup checks the registry             | Every hour |
+| **Size**      | Size of the volume. It can grow but never shrink. | 20 GB      |
+
+The size can only be changed when the storage behind the volume supports growing.
+
+People who can manage the instance get a notice in the app when the registry is almost full or cleanup can't free enough space.
+
+If you chose an external registry at install, Unbind doesn't manage it and this page only says so.

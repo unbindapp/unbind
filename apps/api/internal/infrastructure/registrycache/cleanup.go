@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"math"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -11,6 +13,8 @@ import (
 
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
+	"github.com/unbindapp/unbind-api/internal/models"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -58,7 +62,11 @@ func (self TagInfo) ManifestKey() string {
 }
 
 func (self TagInfo) IsBuildCache() bool {
-	return strings.HasSuffix(self.Tag, buildCacheSuffix)
+	return isBuildCacheTag(self.Tag)
+}
+
+func isBuildCacheTag(tag string) bool {
+	return strings.HasSuffix(tag, buildCacheSuffix)
 }
 
 type Cleaner struct {
@@ -73,18 +81,32 @@ func NewCleaner(namespace string, restCfg *rest.Config) (*Cleaner, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
+	return newCleaner(namespace, clientset, restCfg), nil
+}
+
+func newCleaner(namespace string, clientset kubernetes.Interface, restCfg *rest.Config) *Cleaner {
 	return &Cleaner{
 		namespace: namespace,
 		registry:  NewClient(RegistryURL(namespace)),
 		clientset: clientset,
 		restCfg:   restCfg,
-	}, nil
+	}
 }
 
-func (self *Cleaner) Run(ctx context.Context, thresholdBytes int64) error {
+// Run prunes the registry once it is over the threshold. With pruneAll it deletes everything unprotected regardless.
+func (self *Cleaner) Run(ctx context.Context, thresholdBytes int64, pruneAll bool) (*models.RegistryCleanupResult, error) {
 	pod, err := self.registryPod(ctx)
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	overlapping, err := self.olderCleanupRunning(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check for other cleanups: %w", err)
+	}
+	if overlapping {
+		log.Warnf("registry cleanup: skipped, another cleanup is running")
+		return &models.RegistryCleanupResult{Outcome: models.RegistryCleanupSkipped}, nil
 	}
 
 	if err := self.pruneStaleUploads(ctx, pod); err != nil {
@@ -93,43 +115,69 @@ func (self *Cleaner) Run(ctx context.Context, thresholdBytes int64) error {
 
 	used, err := self.diskUsage(ctx, pod)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Infof("registry cleanup: %s used, threshold %s", humanBytes(used), humanBytes(thresholdBytes))
-	if used < thresholdBytes {
-		return nil
+	if used < thresholdBytes && !pruneAll {
+		return &models.RegistryCleanupResult{Outcome: models.RegistryCleanupUnderThreshold}, nil
 	}
 
 	if err := self.waitForBuilds(ctx, buildDrainTimeout); err != nil {
 		log.Warnf("registry cleanup: skipped, %v", err)
-		return nil
+		return &models.RegistryCleanupResult{Outcome: models.RegistryCleanupSkipped}, nil
 	}
 
 	tags, err := self.inventory(ctx, pod)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	inUse, err := self.inUseRefs(ctx)
 	if err != nil {
-		return fmt.Errorf("refusing to prune without the list of deployed images: %w", err)
+		return nil, fmt.Errorf("refusing to prune without the list of deployed images: %w", err)
 	}
 
-	plan := planDeletions(tags, inUse, used-thresholdBytes, time.Now().Add(-freshTagGrace).Unix())
-	if len(plan) == 0 {
+	target := used - thresholdBytes
+	if pruneAll {
+		target = math.MaxInt64
+	}
+	plan := planDeletions(tags, inUse, target, time.Now().Add(-freshTagGrace).Unix())
+	if len(plan) == 0 && used >= thresholdBytes {
 		log.Warnf("registry cleanup: over threshold with nothing prunable, grow the registry volume")
 	}
 
+	deleted := 0
 	for _, tag := range plan {
 		if err := self.registry.DeleteManifest(ctx, tag.Repo, tag.Digest); err != nil {
 			log.Warnf("registry cleanup: failed to delete %s: %v", tag.Key(), err)
 			continue
 		}
+		deleted++
 		log.Infof("registry cleanup: deleted %s", tag.Key())
 	}
 
-	return self.garbageCollect(ctx, pod)
+	if err := self.garbageCollect(ctx, pod); err != nil {
+		return nil, err
+	}
+
+	usedAfter, err := self.diskUsage(ctx, pod)
+	if err != nil {
+		return nil, err
+	}
+	return cleanupResult(used, usedAfter, thresholdBytes, deleted), nil
+}
+
+func cleanupResult(usedBefore, usedAfter, thresholdBytes int64, deleted int) *models.RegistryCleanupResult {
+	result := &models.RegistryCleanupResult{
+		Outcome:       models.RegistryCleanupCleaned,
+		FreedBytes:    max(usedBefore-usedAfter, 0),
+		DeletedImages: deleted,
+	}
+	if usedAfter >= thresholdBytes {
+		result.Outcome = models.RegistryCleanupOverThreshold
+	}
+	return result
 }
 
 func planDeletions(tags []TagInfo, inUse map[string]bool, target int64, freshSince int64) []TagInfo {
@@ -230,6 +278,56 @@ func (self *Cleaner) waitForBuilds(ctx context.Context, timeout time.Duration) e
 		case <-time.After(buildDrainInterval):
 		}
 	}
+}
+
+// Manual runs are outside the CronJob's concurrency policy, so of two overlapping runs only the older one goes ahead
+func (self *Cleaner) olderCleanupRunning(ctx context.Context) (bool, error) {
+	jobs, err := self.clientset.BatchV1().Jobs(self.namespace).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return false, err
+	}
+	return hasOlderCleanup(jobs.Items, self.ownJobName(ctx)), nil
+}
+
+// Outside a job there is no own job name, so every running cleanup counts as older
+func (self *Cleaner) ownJobName(ctx context.Context) string {
+	pod, err := self.clientset.CoreV1().Pods(self.namespace).Get(ctx, os.Getenv("HOSTNAME"), metav1.GetOptions{})
+	if err != nil {
+		return ""
+	}
+	for _, ref := range pod.OwnerReferences {
+		if ref.Kind == "Job" {
+			return ref.Name
+		}
+	}
+	return ""
+}
+
+func hasOlderCleanup(jobs []batchv1.Job, ownName string) bool {
+	var own *batchv1.Job
+	for i := range jobs {
+		if jobs[i].Name == ownName {
+			own = &jobs[i]
+		}
+	}
+
+	for i := range jobs {
+		job := &jobs[i]
+		if job.Name == ownName || !ownedByCleanupCron(job) || k8s.JobFinished(job) {
+			continue
+		}
+		if own == nil || startsBefore(job, own) {
+			return true
+		}
+	}
+	return false
+}
+
+func startsBefore(a, b *batchv1.Job) bool {
+	if !a.CreationTimestamp.Equal(&b.CreationTimestamp) {
+		return a.CreationTimestamp.Before(&b.CreationTimestamp)
+	}
+	return a.Name < b.Name
 }
 
 func (self *Cleaner) runningBuilds(ctx context.Context) (int, error) {

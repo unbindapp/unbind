@@ -2327,11 +2327,22 @@ export const ReferenceableVariablesResponseBodySchema = z
   })
   .strip();
 
+export const RegistryCleanupResultSchema = z
+  .object({
+    deleted_images: z.number(),
+    error: z.string().optional(),
+    freed_bytes: z.number(),
+    outcome: z.enum(['under_threshold', 'cleaned', 'over_threshold', 'skipped']).optional(), // under_threshold: nothing to do. cleaned: usage is under the threshold. over_threshold: usage is still over the threshold because everything left is protected. skipped: builds or another cleanup kept running
+  })
+  .strip();
+
 export const RegistryCacheCleanupRunSchema = z
   .object({
     finished_at: z.string().datetime({ offset: true }).nullable(),
+    manual: z.boolean(), // Started by a user instead of the schedule
+    result: RegistryCleanupResultSchema.optional(), // Omitted while running or when the run did not report one
     started_at: z.string().datetime({ offset: true }).nullable(),
-    status: z.string(), // running, succeeded, or failed
+    status: z.enum(['running', 'succeeded', 'failed']),
   })
   .strip();
 
@@ -2358,12 +2369,12 @@ export const RegistryCacheConfigResponseBodySchema = z
 export const RegistryCacheStatsSchema = z
   .object({
     cleanup_threshold_gb: z.number(),
+    image_count: z.number(), // Image tags, build caches excluded
     last_cleanup: RegistryCacheCleanupRunSchema.optional(), // Most recent cleanup run, omitted if none
     managed: z.boolean(),
     pvc_capacity_gb: z.number(),
     repository_count: z.number(),
-    tag_count: z.number(),
-    used_bytes: z.number(),
+    used_bytes: z.number(), // Disk used by the registry volume, the number cleanup compares to the threshold
   })
   .strip();
 
@@ -3222,6 +3233,7 @@ export type RedirectResponseBody = z.infer<typeof RedirectResponseBodySchema>;
 export type ReferenceableVariablesResponseBody = z.infer<
   typeof ReferenceableVariablesResponseBodySchema
 >;
+export type RegistryCleanupResult = z.infer<typeof RegistryCleanupResultSchema>;
 export type RegistryCacheCleanupRun = z.infer<typeof RegistryCacheCleanupRunSchema>;
 export type RegistryCacheConfig = z.infer<typeof RegistryCacheConfigSchema>;
 export type RegistryCacheConfigResponseBody = z.infer<typeof RegistryCacheConfigResponseBodySchema>;
@@ -7999,6 +8011,48 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
     system: {
       cache: {
         registry: {
+          cleanup: async (
+            params?: undefined,
+            fetchOptions?: RequestInit,
+          ): Promise<RegistryCacheStatsResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/system/cache/registry/cleanup`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                RegistryCacheStatsResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
           config: async (
             params?: undefined,
             fetchOptions?: RequestInit,

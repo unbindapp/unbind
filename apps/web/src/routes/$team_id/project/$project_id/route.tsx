@@ -45,6 +45,7 @@ import ServicePanelProvider from "@/components/service/panel/service-panel-provi
 import SystemProvider from "@/components/system/system-provider";
 import TemplateDraftPanelProvider from "@/components/templates/panel/template-draft-panel-provider";
 import TemplatesProvider from "@/components/templates/templates-provider";
+import RegistryWarningToastProvider from "@/components/system/registry/registry-warning-toast-provider";
 import { UpdateToastProvider } from "@/components/system/update/update-status-provider";
 import VolumePanelProvider from "@/components/volume/panel/volume-panel-provider";
 
@@ -145,29 +146,31 @@ function ProjectLayout() {
     <SystemProvider>
       <TemplatesProvider>
         <UpdateToastProvider>
-          <ProjectsProvider teamId={teamId}>
-            <ProjectProvider teamId={teamId} projectId={projectId}>
-              <TemplateDraftPanelProvider>
-                <ServicePanelProvider>
-                  <VolumePanelProvider>
-                    <ProjectNavbar />
-                    <Outlet />
-                    {!isLogsPage && <NavbarSafeAreaInsetBottom className="sm:hidden" />}
-                    <ContextCommandPanel
-                      title="Project Command Panel"
-                      description="Project command panel"
-                      triggerType="layout"
-                      context={{
-                        contextType: "project",
-                        projectId,
-                        teamId,
-                      }}
-                    />
-                  </VolumePanelProvider>
-                </ServicePanelProvider>
-              </TemplateDraftPanelProvider>
-            </ProjectProvider>
-          </ProjectsProvider>
+          <RegistryWarningToastProvider>
+            <ProjectsProvider teamId={teamId}>
+              <ProjectProvider teamId={teamId} projectId={projectId}>
+                <TemplateDraftPanelProvider>
+                  <ServicePanelProvider>
+                    <VolumePanelProvider>
+                      <ProjectNavbar />
+                      <Outlet />
+                      {!isLogsPage && <NavbarSafeAreaInsetBottom className="sm:hidden" />}
+                      <ContextCommandPanel
+                        title="Project Command Panel"
+                        description="Project command panel"
+                        triggerType="layout"
+                        context={{
+                          contextType: "project",
+                          projectId,
+                          teamId,
+                        }}
+                      />
+                    </VolumePanelProvider>
+                  </ServicePanelProvider>
+                </TemplateDraftPanelProvider>
+              </ProjectProvider>
+            </ProjectsProvider>
+          </RegistryWarningToastProvider>
         </UpdateToastProvider>
       </TemplatesProvider>
     </SystemProvider>

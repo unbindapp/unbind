@@ -6,6 +6,7 @@ import {
   KeyIcon,
   KeySquareIcon,
   BlocksIcon,
+  PackageIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
   UsersIcon,
@@ -23,7 +24,8 @@ export type TSettingsTabVariant =
   | "storage"
   | "api-keys"
   | "connected-apps"
-  | "github";
+  | "github"
+  | "registry";
 
 export default function SettingsTabIcon({
   variant,
@@ -60,6 +62,10 @@ export default function SettingsTabIcon({
 
   if (variant === "github") {
     return <BrandIcon brand="github" className={cn("size-5 shrink-0", className)} />;
+  }
+
+  if (variant === "registry") {
+    return <PackageIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
   if (variant === "storage") {

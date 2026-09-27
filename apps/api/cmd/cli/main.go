@@ -49,7 +49,9 @@ Commands:
     apply-manifests --file=PATH  Apply rendered release manifests to the cluster
 
   registry:
-    cleanup [--threshold=SIZE]   Prune the self-hosted registry when it grows past SIZE
+    cleanup [--threshold=SIZE] [--all]
+                                 Prune the self-hosted registry when it grows past SIZE,
+                                 or everything unprotected with --all
 
 For detailed help on a specific command, use: unbind-cli help [command]
 `

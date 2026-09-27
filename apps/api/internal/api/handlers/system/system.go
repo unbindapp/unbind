@@ -136,4 +136,12 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/cache/registry/update",
 		Method:      http.MethodPut,
 	}, handlers.UpdateRegistryCache)
+
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "start-registry-cleanup",
+		Summary:     "Start Registry Cleanup",
+		Description: "Run the self-hosted registry cleanup now. It deletes every image that is not deployed, pushed in the last hour, or the newest of its repository, then frees the space.",
+		Path:        "/cache/registry/cleanup",
+		Method:      http.MethodPost,
+	}, handlers.StartRegistryCleanup)
 }

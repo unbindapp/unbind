@@ -65,6 +65,15 @@ sudo k3s crictl rmi --prune
 
 The second command removes images nothing uses. `sudo unbind update-node` does the same when the disk is more than 80% full. If the disk is still full, grow it or move [volumes](/services/volumes) and services to a bigger server.
 
+### Builds fail because the registry is full
+
+A build whose error starts with **The registry could not store the image** failed while pushing its image. Open **System** > **Settings** > **Registry**:
+
+- **Still over the threshold** on the last cleanup: every image left is deployed or recent. Grow the volume.
+- Otherwise, click **Clean Up Now** and redeploy once it finishes.
+
+See [Registry](/operations/system-settings#registry).
+
 ### Pods stuck in Pending
 
 ```bash

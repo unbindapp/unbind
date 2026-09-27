@@ -84,7 +84,7 @@ func (self *SystemService) GetRegistryCacheStats(ctx context.Context, requesterU
 	}
 	stats.UsedBytes = usage.UsedBytes
 	stats.RepositoryCount = usage.RepositoryCount
-	stats.TagCount = usage.TagCount
+	stats.ImageCount = usage.ImageCount
 
 	if pvc, err := self.registryCacheManager.GetPVC(ctx); err == nil {
 		stats.PVCCapacityGB = float64(pvc.EffectiveBytes()) / bytesPerGB
@@ -103,6 +103,31 @@ func (self *SystemService) GetRegistryCacheStats(ctx context.Context, requesterU
 	}
 
 	return stats, nil
+}
+
+// StartRegistryCleanup runs cleanup now instead of waiting for the schedule.
+func (self *SystemService) StartRegistryCleanup(ctx context.Context, requesterUserID uuid.UUID) (*models.RegistryCacheStats, error) {
+	if err := self.checkRegistryCachePermission(ctx, requesterUserID, schema.ActionEditor); err != nil {
+		return nil, err
+	}
+
+	if !self.registryCacheManager.IsManaged(ctx) {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Registry is externally managed and cannot be cleaned up")
+	}
+
+	running, err := self.k8s.RegistryCleanupRunning(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if running {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeConflict, "A registry cleanup is already running")
+	}
+
+	if err := self.registryCacheManager.StartCleanup(ctx); err != nil {
+		return nil, err
+	}
+
+	return self.GetRegistryCacheStats(ctx, requesterUserID)
 }
 
 // UpdateRegistryCache persists the desired cache config and applies it to

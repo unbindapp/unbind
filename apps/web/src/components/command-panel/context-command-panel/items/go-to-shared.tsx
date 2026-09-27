@@ -9,6 +9,7 @@ import {
   HouseIcon,
   KeySquareIcon,
   MonitorIcon,
+  PackageIcon,
   SettingsIcon,
 } from "lucide-react";
 import { useMemo } from "react";
@@ -42,6 +43,12 @@ const systemPages = [
     title: "Settings",
     Icon: SettingsIcon,
     keywords: ["settings", "general", "change", "tweak", "adjust"],
+  },
+  {
+    to: "/system/settings/registry",
+    title: "Registry",
+    Icon: PackageIcon,
+    keywords: ["registry", "images", "cleanup", "storage", "disk", "full", "prune"],
   },
 ] as const;
 

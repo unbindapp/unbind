@@ -75,3 +75,20 @@ func (self *HandlerGroup) UpdateRegistryCache(ctx context.Context, input *Update
 	resp.Body.Data = config
 	return resp, nil
 }
+
+// * Cleanup
+func (self *HandlerGroup) StartRegistryCleanup(ctx context.Context, input *server.BaseAuthInput) (*RegistryCacheStatsResponse, error) {
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	stats, err := self.srv.SystemService.StartRegistryCleanup(ctx, user.ID)
+	if err != nil {
+		return nil, oapi.MapError(err)
+	}
+
+	resp := &RegistryCacheStatsResponse{}
+	resp.Body.Data = stats
+	return resp, nil
+}

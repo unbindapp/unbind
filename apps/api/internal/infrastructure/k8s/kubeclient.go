@@ -108,6 +108,10 @@ func (self *KubeClient) GetInternalClient() kubernetes.Interface {
 	return self.clientset
 }
 
+func (self *KubeClient) GetInternalRestConfig() *rest.Config {
+	return self.baseConfig
+}
+
 // SetTokenVerifier wires the token verifier used to authorize per-user operations.
 // It is set after construction because the token manager is built later.
 func (self *KubeClient) SetTokenVerifier(verifier TokenVerifier) {

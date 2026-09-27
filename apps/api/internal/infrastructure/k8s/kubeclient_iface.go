@@ -13,6 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 // KubeClientInterface ...
@@ -61,6 +62,7 @@ type KubeClientInterface interface {
 	GetJobStatus(ctx context.Context, jobName string) (JobStatus, error)
 	// This function is used to manage unbind-system resources
 	GetInternalClient() kubernetes.Interface
+	GetInternalRestConfig() *rest.Config
 	// SetTokenVerifier wires the token verifier used to authorize per-user operations.
 	// It is set after construction because the token manager is built later.
 	SetTokenVerifier(verifier TokenVerifier)

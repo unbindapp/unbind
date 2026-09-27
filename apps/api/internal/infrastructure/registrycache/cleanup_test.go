@@ -8,13 +8,17 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/unbindapp/unbind-api/internal/models"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sfake "k8s.io/client-go/kubernetes/fake"
 )
 
-const noFreshTags = int64(math.MaxInt64)
+const (
+	noFreshTags = int64(math.MaxInt64)
+	gib         = int64(1 << 30)
+)
 
 func tag(repo, name string, modTime int64, blobs map[string]int64) TagInfo {
 	return TagInfo{
@@ -252,4 +256,62 @@ func TestInUseRefsCollectsEveryContainer(t *testing.T) {
 	assert.True(t, refs["tezara:init-tag"])
 	assert.True(t, refs["tezara:main-tag"])
 	assert.True(t, refs["tezara:status-tag"])
+}
+
+func TestPlanDeletionsPruneAllKeepsProtectedTags(t *testing.T) {
+	tags := []TagInfo{
+		tag("app", "oldest", 100, map[string]int64{"o": 100}),
+		tag("app", "deployed", 150, map[string]int64{"d": 100}),
+		tag("app", "middle", 200, map[string]int64{"m": 100}),
+		tag("app", "newest", 300, map[string]int64{"n": 100}),
+	}
+
+	plan := planDeletions(tags, map[string]bool{"app:deployed": true}, math.MaxInt64, noFreshTags)
+
+	assert.Equal(t, []string{"app:oldest", "app:middle"}, keys(plan))
+}
+
+func TestCleanupResultOutcome(t *testing.T) {
+	cleaned := cleanupResult(20*gib, 10*gib, 16*gib, 4)
+	assert.Equal(t, models.RegistryCleanupCleaned, cleaned.Outcome)
+	assert.Equal(t, 10*gib, cleaned.FreedBytes)
+	assert.Equal(t, 4, cleaned.DeletedImages)
+
+	stuck := cleanupResult(20*gib, 20*gib, 16*gib, 0)
+	assert.Equal(t, models.RegistryCleanupOverThreshold, stuck.Outcome)
+	assert.Zero(t, stuck.FreedBytes)
+
+	grew := cleanupResult(10*gib, 11*gib, 16*gib, 0)
+	assert.Zero(t, grew.FreedBytes)
+}
+
+func cleanupJob(name string, created int64, finished bool) batchv1.Job {
+	job := batchv1.Job{ObjectMeta: metav1.ObjectMeta{
+		Name:              name,
+		CreationTimestamp: metav1.Unix(created, 0),
+		OwnerReferences:   []metav1.OwnerReference{{Kind: "CronJob", Name: CleanupCronJobName}},
+	}}
+	if finished {
+		job.Status.Conditions = []batchv1.JobCondition{{Type: batchv1.JobComplete, Status: corev1.ConditionTrue}}
+	}
+	return job
+}
+
+func TestHasOlderCleanup(t *testing.T) {
+	scheduled := cleanupJob("registry-cleanup-100", 100, false)
+	manual := cleanupJob("registry-cleanup-manual-abc", 200, false)
+	finished := cleanupJob("registry-cleanup-50", 50, true)
+	build := batchv1.Job{ObjectMeta: metav1.ObjectMeta{Name: "build", CreationTimestamp: metav1.Unix(10, 0)}}
+
+	jobs := []batchv1.Job{scheduled, manual, finished, build}
+	assert.False(t, hasOlderCleanup(jobs, scheduled.Name))
+	assert.True(t, hasOlderCleanup(jobs, manual.Name))
+	assert.True(t, hasOlderCleanup(jobs, ""), "outside a job every running cleanup is older")
+	assert.False(t, hasOlderCleanup([]batchv1.Job{finished, build}, ""))
+
+	sameSecondA := cleanupJob("registry-cleanup-manual-a", 300, false)
+	sameSecondB := cleanupJob("registry-cleanup-manual-b", 300, false)
+	pair := []batchv1.Job{sameSecondA, sameSecondB}
+	assert.False(t, hasOlderCleanup(pair, sameSecondA.Name))
+	assert.True(t, hasOlderCleanup(pair, sameSecondB.Name))
 }
