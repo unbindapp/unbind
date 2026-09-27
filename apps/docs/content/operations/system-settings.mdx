@@ -43,7 +43,7 @@ Cleanup runs every hour. When usage is over the threshold, it deletes the oldest
 - Images pushed in the last hour
 - The newest image and the newest build cache of each repository
 
-New builds wait while cleanup runs. Builds that are already running finish first.
+Cleanup waits until no build is running before it deletes anything. Builds never wait for cleanup. If a build starts while cleanup is deleting and part of its image gets removed, the build notices and pushes the image again.
 
 The page shows the last run: how much space it freed and how many images it deleted. **Still over the threshold** means everything left is protected, so grow the volume.
 

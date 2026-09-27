@@ -2,6 +2,7 @@ package registrycache
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -86,4 +87,49 @@ func TestDeleteManifestSurfacesErrors(t *testing.T) {
 	err := NewClient(server.URL).DeleteManifest(context.Background(), "tezara", "sha256:abc")
 
 	require.ErrorContains(t, err, "405")
+}
+
+func fakeRegistry(t *testing.T, missing string, status int) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == missing {
+			w.WriteHeader(status)
+			return
+		}
+		switch r.URL.Path {
+		case "/v2/tezara/manifests/abc":
+			w.Write([]byte(`{"manifests":[{"digest":"sha256:image"}]}`))
+		case "/v2/tezara/manifests/sha256:image":
+			w.Write([]byte(`{"config":{"digest":"sha256:config"},"layers":[{"digest":"sha256:layer"}]}`))
+		case "/v2/tezara/blobs/sha256:config", "/v2/tezara/blobs/sha256:layer":
+		default:
+			t.Errorf("unexpected request %s", r.URL.Path)
+		}
+	}))
+}
+
+func TestVerifyImage(t *testing.T) {
+	cases := map[string]struct {
+		missing    string
+		status     int
+		incomplete bool
+		fails      bool
+	}{
+		"complete image":              {},
+		"missing layer":               {missing: "/v2/tezara/blobs/sha256:layer", status: http.StatusNotFound, incomplete: true, fails: true},
+		"missing config":              {missing: "/v2/tezara/blobs/sha256:config", status: http.StatusNotFound, incomplete: true, fails: true},
+		"missing child manifest":      {missing: "/v2/tezara/manifests/sha256:image", status: http.StatusNotFound, incomplete: true, fails: true},
+		"registry error is not a gap": {missing: "/v2/tezara/blobs/sha256:layer", status: http.StatusInternalServerError, fails: true},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			server := fakeRegistry(t, tc.missing, tc.status)
+			defer server.Close()
+
+			err := NewClient(server.URL).VerifyImage(context.Background(), "tezara", "abc")
+
+			assert.Equal(t, tc.fails, err != nil)
+			assert.Equal(t, tc.incomplete, errors.Is(err, ErrImageIncomplete))
+		})
+	}
 }

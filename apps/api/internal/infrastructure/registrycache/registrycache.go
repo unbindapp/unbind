@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/internal/common/log"
@@ -14,6 +15,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -29,7 +31,7 @@ const (
 	DefaultCleanupSchedule = "0 * * * *"
 	PruneAllFlag           = "--all"
 	TerminationMessagePath = "/dev/termination-log"
-	cleanupTimeoutSeconds  = 3600
+	cleanupTimeoutSeconds  = int64(k8s.RegistryCleanupTimeout / time.Second)
 	// Set by kubectl create job --from=cronjob as well
 	manualRunAnnotation = "cronjob.kubernetes.io/instantiate"
 	manualRunValue      = "manual"
@@ -155,7 +157,8 @@ func (self *Manager) Apply(ctx context.Context, threshold *string, schedule *str
 	return nil
 }
 
-// MigrateCleanupJob brings a CronJob created by an older chart up to the current one.
+// MigrateCleanupJob brings a CronJob created by an older chart up to the current one and runs it from the API's own
+// version. An empty image keeps the current one.
 func (self *Manager) MigrateCleanupJob(ctx context.Context, image string) error {
 	cron, err := self.getCronJob(ctx)
 	if err != nil {
@@ -166,23 +169,66 @@ func (self *Manager) MigrateCleanupJob(ctx context.Context, image string) error 
 		return fmt.Errorf("cleanup container not found")
 	}
 
-	jobSpec := &cron.Spec.JobTemplate.Spec
-	changed := convertCleanupContainer(container, image)
-	if changed {
-		jobSpec.ActiveDeadlineSeconds = new(int64(cleanupTimeoutSeconds))
-	}
-	// Builds wait while the job runs, so a failed run must not keep retrying
-	if jobSpec.BackoffLimit == nil || *jobSpec.BackoffLimit != 0 {
-		jobSpec.BackoffLimit = new(int32(0))
-		changed = true
-	}
-
+	changed := syncCleanupJob(&cron.Spec.JobTemplate.Spec, container, image)
 	if changed {
 		if _, err := self.k8s.GetInternalClient().BatchV1().CronJobs(self.namespace()).Update(ctx, cron, metav1.UpdateOptions{}); err != nil {
 			return fmt.Errorf("failed to migrate cleanup cronjob: %w", err)
 		}
 	}
+	if err := self.deleteStaleCleanupJobs(ctx); err != nil {
+		return err
+	}
 	return self.grantCleanupJobList(ctx)
+}
+
+func syncCleanupJob(jobSpec *batchv1.JobSpec, container *corev1.Container, image string) bool {
+	changed := false
+	if image != "" {
+		changed = convertCleanupContainer(container, image)
+		if container.Image != image {
+			container.Image = image
+			changed = true
+		}
+	}
+	if jobSpec.ActiveDeadlineSeconds == nil {
+		jobSpec.ActiveDeadlineSeconds = new(cleanupTimeoutSeconds)
+		changed = true
+	}
+	// A failed run waits for the next schedule instead of retrying
+	if jobSpec.BackoffLimit == nil || *jobSpec.BackoffLimit != 0 {
+		jobSpec.BackoffLimit = new(int32(0))
+		changed = true
+	}
+	return changed
+}
+
+func (self *Manager) deleteStaleCleanupJobs(ctx context.Context) error {
+	jobs := self.k8s.GetInternalClient().BatchV1().Jobs(self.namespace())
+	jobList, err := jobs.List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to list cleanup jobs: %w", err)
+	}
+
+	propagation := metav1.DeletePropagationBackground
+	for _, name := range staleCleanupJobs(jobList.Items, time.Now()) {
+		if err := jobs.Delete(ctx, name, metav1.DeleteOptions{PropagationPolicy: &propagation}); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete stale cleanup job %s: %w", name, err)
+		}
+		log.Infof("registry cache: deleted stale cleanup job %s", name)
+	}
+	return nil
+}
+
+// A job from before the deadline never ends, and the CronJob starts no run while one is unfinished
+func staleCleanupJobs(jobs []batchv1.Job, now time.Time) []string {
+	var stale []string
+	for i := range jobs {
+		job := &jobs[i]
+		if k8s.IsRegistryCleanupJob(job) && !k8s.JobFinished(job) && !k8s.RegistryCleanupJobActive(job, now) {
+			stale = append(stale, job.Name)
+		}
+	}
+	return stale
 }
 
 func (self *Manager) grantCleanupJobList(ctx context.Context) error {
@@ -328,7 +374,7 @@ func (self *Manager) StartCleanup(ctx context.Context) error {
 	return nil
 }
 
-// Owned by the CronJob so builds wait for it and the CronJob's history limits remove it
+// Owned by the CronJob so scheduled runs skip while it runs and the CronJob's history limits remove it
 func manualCleanupJob(cron *batchv1.CronJob) *batchv1.Job {
 	annotations := map[string]string{manualRunAnnotation: manualRunValue}
 	for key, value := range cron.Spec.JobTemplate.Annotations {
@@ -361,7 +407,7 @@ func (self *Manager) GetLastCleanup(ctx context.Context) (*models.RegistryCacheC
 	var latest *batchv1.Job
 	for i := range jobList.Items {
 		job := &jobList.Items[i]
-		if !ownedByCleanupCron(job) {
+		if !k8s.IsRegistryCleanupJob(job) {
 			continue
 		}
 		if latest == nil || job.CreationTimestamp.After(latest.CreationTimestamp.Time) {
@@ -429,15 +475,6 @@ func ParseCleanupResult(message string) *models.RegistryCleanupResult {
 		return nil
 	}
 	return result
-}
-
-func ownedByCleanupCron(job *batchv1.Job) bool {
-	for _, ref := range job.OwnerReferences {
-		if ref.Kind == "CronJob" && ref.Name == CleanupCronJobName {
-			return true
-		}
-	}
-	return false
 }
 
 // UsageStats describes current registry contents and disk usage.

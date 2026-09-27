@@ -16,6 +16,7 @@ import (
 const (
 	DeploymentJobSelector      = "unbind-deployment-job=true"
 	RegistryCleanupCronJobName = "registry-cleanup"
+	RegistryCleanupTimeout     = time.Hour
 )
 
 func (self *KubeClient) CreateDeployment(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (jobName string, err error) {
@@ -196,17 +197,27 @@ func (self *KubeClient) RegistryCleanupRunning(ctx context.Context) (bool, error
 		return false, fmt.Errorf("failed to list jobs: %v", err)
 	}
 
-	for _, job := range jobList.Items {
-		if JobFinished(&job) {
-			continue
-		}
-		for _, ref := range job.OwnerReferences {
-			if ref.Kind == "CronJob" && ref.Name == RegistryCleanupCronJobName {
-				return true, nil
-			}
+	now := time.Now()
+	for i := range jobList.Items {
+		if IsRegistryCleanupJob(&jobList.Items[i]) && RegistryCleanupJobActive(&jobList.Items[i], now) {
+			return true, nil
 		}
 	}
 	return false, nil
+}
+
+func IsRegistryCleanupJob(job *batchv1.Job) bool {
+	for _, ref := range job.OwnerReferences {
+		if ref.Kind == "CronJob" && ref.Name == RegistryCleanupCronJobName {
+			return true
+		}
+	}
+	return false
+}
+
+// The job deadline ends every run within the timeout. An older unfinished job predates the deadline and never ran
+func RegistryCleanupJobActive(job *batchv1.Job, now time.Time) bool {
+	return !JobFinished(job) && now.Sub(job.CreationTimestamp.Time) < RegistryCleanupTimeout
 }
 
 // A job counts until it finishes, including the moment before its first pod shows up as active

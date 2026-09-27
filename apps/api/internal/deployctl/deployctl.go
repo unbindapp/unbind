@@ -95,25 +95,13 @@ func NewDeploymentController(
 // Start queue processor
 func (self *DeploymentController) StartAsync() {
 	// Start the job processor
-	self.jobQueue.StartProcessor(self.ctx, self.processJob, self.busyBuildSlots)
+	self.jobQueue.StartProcessor(self.ctx, self.processJob, self.k8s.CountActiveDeploymentJobs)
 
 	// Start the dependent services processor
-	self.dependentQueue.StartProcessor(self.ctx, self.processDependentJob, self.busyBuildSlots)
+	self.dependentQueue.StartProcessor(self.ctx, self.processDependentJob, self.k8s.CountActiveDeploymentJobs)
 
 	// Start the job status synchronizer
 	go self.startStatusSynchronizer()
-}
-
-// Registry garbage collection deletes blobs a build could be pushing, so no build starts while it runs
-func (self *DeploymentController) busyBuildSlots(ctx context.Context) (int, error) {
-	cleanupRunning, err := self.k8s.RegistryCleanupRunning(ctx)
-	if err != nil {
-		return 0, err
-	}
-	if cleanupRunning {
-		return queue.QUEUE_CONCURRENCY, nil
-	}
-	return self.k8s.CountActiveDeploymentJobs(ctx)
 }
 
 // Stop stops the deployment manager

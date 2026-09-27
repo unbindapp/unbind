@@ -91,10 +91,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # The short SHA is the version stamped into the binaries, the API runs registry cleanup from that tag
       - name: Create and push manifests
         run: |
           for IMAGE in ghcr.io/unbindapp/unbind ghcr.io/unbindapp/unbind-builder; do
-            for TAG in "$REF" latest; do
+            for TAG in "$REF" "${GITHUB_SHA::7}" latest; do
               docker manifest create "$IMAGE:$TAG" \
                 --amend "$IMAGE:$REF-amd64" \
                 --amend "$IMAGE:$REF-arm64"

@@ -51,6 +51,8 @@ type TagInfo struct {
 	Digest  string
 	Blobs   map[string]int64
 	ModTime int64
+	// Manifests of an index, which only the index references
+	Children []string
 }
 
 func (self TagInfo) Key() string {
@@ -156,6 +158,11 @@ func (self *Cleaner) Run(ctx context.Context, thresholdBytes int64, pruneAll boo
 		deleted++
 		log.Infof("registry cleanup: deleted %s", tag.Key())
 	}
+	for _, child := range orphanedChildren(tags, plan) {
+		if err := self.registry.DeleteManifest(ctx, child.repo, child.digest); err != nil {
+			log.Warnf("registry cleanup: failed to delete %s@%s: %v", child.repo, child.digest, err)
+		}
+	}
 
 	if err := self.garbageCollect(ctx, pod); err != nil {
 		return nil, err
@@ -232,6 +239,43 @@ func planDeletions(tags []TagInfo, inUse map[string]bool, target int64, freshSin
 	return plan
 }
 
+type manifestRef struct {
+	repo   string
+	digest string
+}
+
+// GC keeps every manifest still in a repository, so the children of a deleted index have to be deleted too.
+// A child that a kept index shares stays.
+func orphanedChildren(tags []TagInfo, plan []TagInfo) []manifestRef {
+	deleted := map[string]bool{}
+	for _, tag := range plan {
+		deleted[tag.ManifestKey()] = true
+	}
+	kept := map[manifestRef]bool{}
+	for _, tag := range tags {
+		if deleted[tag.ManifestKey()] {
+			continue
+		}
+		for _, child := range tag.Children {
+			kept[manifestRef{repo: tag.Repo, digest: child}] = true
+		}
+	}
+
+	var orphans []manifestRef
+	seen := map[manifestRef]bool{}
+	for _, tag := range plan {
+		for _, child := range tag.Children {
+			ref := manifestRef{repo: tag.Repo, digest: child}
+			if kept[ref] || seen[ref] {
+				continue
+			}
+			seen[ref] = true
+			orphans = append(orphans, ref)
+		}
+	}
+	return orphans
+}
+
 func protectedTags(tags []TagInfo, inUse map[string]bool, freshSince int64) map[string]bool {
 	protected := map[string]bool{}
 	// The newest image and the newest build cache of each repository
@@ -257,7 +301,7 @@ func protectedTags(tags []TagInfo, inUse map[string]bool, freshSince int64) map[
 	return protected
 }
 
-// The API holds new builds while this job runs, so only builds already running need to finish
+// Starts at a quiet moment. A build that starts during GC can still lose blobs, the builder checks its push for that
 func (self *Cleaner) waitForBuilds(ctx context.Context, timeout time.Duration) error {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
@@ -286,7 +330,7 @@ func (self *Cleaner) olderCleanupRunning(ctx context.Context) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return hasOlderCleanup(jobs.Items, self.ownJobName(ctx)), nil
+	return hasOlderCleanup(jobs.Items, self.ownJobName(ctx), time.Now()), nil
 }
 
 // Outside a job there is no own job name, so every running cleanup counts as older
@@ -303,7 +347,7 @@ func (self *Cleaner) ownJobName(ctx context.Context) string {
 	return ""
 }
 
-func hasOlderCleanup(jobs []batchv1.Job, ownName string) bool {
+func hasOlderCleanup(jobs []batchv1.Job, ownName string, now time.Time) bool {
 	var own *batchv1.Job
 	for i := range jobs {
 		if jobs[i].Name == ownName {
@@ -313,7 +357,7 @@ func hasOlderCleanup(jobs []batchv1.Job, ownName string) bool {
 
 	for i := range jobs {
 		job := &jobs[i]
-		if job.Name == ownName || !ownedByCleanupCron(job) || k8s.JobFinished(job) {
+		if job.Name == ownName || !k8s.IsRegistryCleanupJob(job) || !k8s.RegistryCleanupJobActive(job, now) {
 			continue
 		}
 		if own == nil || startsBefore(job, own) {
@@ -375,12 +419,17 @@ func (self *Cleaner) inventory(ctx context.Context, pod string) ([]TagInfo, erro
 				log.Warnf("registry cleanup: failed to size %s:%s: %v", repo, tag, err)
 				continue
 			}
+			children := make([]string, 0, len(manifest.Manifests))
+			for _, child := range manifest.Manifests {
+				children = append(children, child.Digest)
+			}
 			inventory = append(inventory, TagInfo{
-				Repo:    repo,
-				Tag:     tag,
-				Digest:  manifest.Digest,
-				Blobs:   blobs,
-				ModTime: modTimes[repo+":"+tag],
+				Repo:     repo,
+				Tag:      tag,
+				Digest:   manifest.Digest,
+				Blobs:    blobs,
+				ModTime:  modTimes[repo+":"+tag],
+				Children: children,
 			})
 		}
 	}
@@ -532,7 +581,8 @@ func (self *Cleaner) pruneStaleUploads(ctx context.Context, pod string) error {
 }
 
 func (self *Cleaner) garbageCollect(ctx context.Context, pod string) error {
-	if _, err := self.exec(ctx, pod, []string{"/bin/registry", "garbage-collect", registryConfigPath, "--delete-untagged=true"}); err != nil {
+	// Not --delete-untagged, it also unlinks the untagged children of a freshly pushed index
+	if _, err := self.exec(ctx, pod, []string{"/bin/registry", "garbage-collect", registryConfigPath}); err != nil {
 		return fmt.Errorf("garbage collection failed: %w", err)
 	}
 	log.Infof("registry cleanup: garbage collection finished")

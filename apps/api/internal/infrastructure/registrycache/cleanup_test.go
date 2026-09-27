@@ -110,6 +110,21 @@ func TestPlanDeletionsKeepsDigestSharedWithProtectedTag(t *testing.T) {
 	assert.Empty(t, planDeletions(tags, inUse, 1000, noFreshTags))
 }
 
+func TestOrphanedChildren(t *testing.T) {
+	deleted := TagInfo{Repo: "app", Tag: "old", Digest: "sha256:old", Children: []string{"sha256:image", "sha256:attestation", "sha256:shared"}}
+	alias := TagInfo{Repo: "app", Tag: "alias", Digest: "sha256:old", Children: deleted.Children}
+	kept := TagInfo{Repo: "app", Tag: "new", Digest: "sha256:new", Children: []string{"sha256:shared"}}
+	otherRepo := TagInfo{Repo: "web", Tag: "new", Digest: "sha256:web", Children: []string{"sha256:image"}}
+	tags := []TagInfo{deleted, alias, kept, otherRepo}
+
+	assert.Equal(t,
+		[]manifestRef{{repo: "app", digest: "sha256:image"}, {repo: "app", digest: "sha256:attestation"}},
+		orphanedChildren(tags, []TagInfo{deleted}),
+		"a kept index keeps its children, and an alias of the deleted digest goes with it",
+	)
+	assert.Empty(t, orphanedChildren(tags, nil))
+}
+
 func TestPlanDeletionsOnlyCountsBlobsNoSurvivorNeeds(t *testing.T) {
 	tags := []TagInfo{
 		tag("app", "newest", 300, map[string]int64{"base": 900, "top-new": 100}),
@@ -298,20 +313,24 @@ func cleanupJob(name string, created int64, finished bool) batchv1.Job {
 }
 
 func TestHasOlderCleanup(t *testing.T) {
+	now := time.Unix(1000, 0)
 	scheduled := cleanupJob("registry-cleanup-100", 100, false)
 	manual := cleanupJob("registry-cleanup-manual-abc", 200, false)
 	finished := cleanupJob("registry-cleanup-50", 50, true)
 	build := batchv1.Job{ObjectMeta: metav1.ObjectMeta{Name: "build", CreationTimestamp: metav1.Unix(10, 0)}}
 
 	jobs := []batchv1.Job{scheduled, manual, finished, build}
-	assert.False(t, hasOlderCleanup(jobs, scheduled.Name))
-	assert.True(t, hasOlderCleanup(jobs, manual.Name))
-	assert.True(t, hasOlderCleanup(jobs, ""), "outside a job every running cleanup is older")
-	assert.False(t, hasOlderCleanup([]batchv1.Job{finished, build}, ""))
+	assert.False(t, hasOlderCleanup(jobs, scheduled.Name, now))
+	assert.True(t, hasOlderCleanup(jobs, manual.Name, now))
+	assert.True(t, hasOlderCleanup(jobs, "", now), "outside a job every running cleanup is older")
+	assert.False(t, hasOlderCleanup([]batchv1.Job{finished, build}, "", now))
 
 	sameSecondA := cleanupJob("registry-cleanup-manual-a", 300, false)
 	sameSecondB := cleanupJob("registry-cleanup-manual-b", 300, false)
 	pair := []batchv1.Job{sameSecondA, sameSecondB}
-	assert.False(t, hasOlderCleanup(pair, sameSecondA.Name))
-	assert.True(t, hasOlderCleanup(pair, sameSecondB.Name))
+	assert.False(t, hasOlderCleanup(pair, sameSecondA.Name, now))
+	assert.True(t, hasOlderCleanup(pair, sameSecondB.Name, now))
+
+	stuck := cleanupJob("registry-cleanup-stuck", 100, false)
+	assert.False(t, hasOlderCleanup([]batchv1.Job{stuck, manual}, manual.Name, now.Add(2*time.Hour)), "a job past the deadline never ran")
 }

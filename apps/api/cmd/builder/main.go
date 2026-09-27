@@ -266,7 +266,10 @@ func main() {
 
 		switch cfg.ServiceBuilder {
 		case schema.ServiceBuilderRailpack:
-			dockerImg, _, err = builder.BuildWithRailpack(ctx, buildSecrets)
+			dockerImg, err = buildVerified(ctx, cfg.GetSystemNamespace(), func() (string, error) {
+				image, _, err := builder.BuildWithRailpack(ctx, buildSecrets)
+				return image, err
+			})
 			if err != nil {
 				if err := markDeploymentFailed(ctx, cfg, webhooksService, repo, buildFailureReason("railpack", err, cfg.ContainerRegistryHost), cfg.ServiceDeploymentID); err != nil {
 					log.Errorf("Failed to mark deployment as failed: %v", err)
@@ -274,7 +277,10 @@ func main() {
 				log.Fatalf("Failed to build with railpack: %v", err)
 			}
 		case schema.ServiceBuilderDocker:
-			dockerImg, _, err = builder.BuildDockerfile(ctx, buildSecrets)
+			dockerImg, err = buildVerified(ctx, cfg.GetSystemNamespace(), func() (string, error) {
+				image, _, err := builder.BuildDockerfile(ctx, buildSecrets)
+				return image, err
+			})
 			if err != nil {
 				if err := markDeploymentFailed(ctx, cfg, webhooksService, repo, buildFailureReason("docker", err, cfg.ContainerRegistryHost), cfg.ServiceDeploymentID); err != nil {
 					log.Errorf("Failed to mark deployment as failed: %v", err)

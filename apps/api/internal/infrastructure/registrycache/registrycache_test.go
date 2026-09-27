@@ -4,9 +4,11 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -43,6 +45,41 @@ func TestConvertCleanupContainerLeavesCLIJobAlone(t *testing.T) {
 
 	assert.False(t, convertCleanupContainer(container, "ghcr.io/unbindapp/unbind:v1.2.3"))
 	assert.Equal(t, "ghcr.io/unbindapp/unbind:v0.1.40", container.Image)
+}
+
+func TestSyncCleanupJob(t *testing.T) {
+	current := func(image string) (*batchv1.JobSpec, *corev1.Container) {
+		return &batchv1.JobSpec{ActiveDeadlineSeconds: new(cleanupTimeoutSeconds), BackoffLimit: new(int32(0))},
+			&corev1.Container{Image: image, Command: cleanupCommand}
+	}
+
+	spec, container := current("ghcr.io/unbindapp/unbind:01a82cc")
+	assert.True(t, syncCleanupJob(spec, container, "ghcr.io/unbindapp/unbind:76779cd"), "a missing tag written by an older API gets replaced")
+	assert.Equal(t, "ghcr.io/unbindapp/unbind:76779cd", container.Image)
+
+	spec, container = current("ghcr.io/unbindapp/unbind:v0.1.89")
+	assert.False(t, syncCleanupJob(spec, container, "ghcr.io/unbindapp/unbind:v0.1.89"))
+
+	spec, container = current("ghcr.io/unbindapp/unbind:v0.1.89")
+	assert.False(t, syncCleanupJob(spec, container, ""), "a development build keeps the image")
+	assert.Equal(t, "ghcr.io/unbindapp/unbind:v0.1.89", container.Image)
+
+	legacy := &batchv1.JobSpec{}
+	_, container = current("ghcr.io/unbindapp/unbind:v0.1.89")
+	assert.True(t, syncCleanupJob(legacy, container, ""))
+	assert.Equal(t, cleanupTimeoutSeconds, *legacy.ActiveDeadlineSeconds)
+	assert.Equal(t, int32(0), *legacy.BackoffLimit)
+}
+
+func TestStaleCleanupJobs(t *testing.T) {
+	now := time.Unix(100000, 0)
+	age := func(d time.Duration) int64 { return now.Add(-d).Unix() }
+	stuck := cleanupJob("registry-cleanup-stuck", age(3*time.Hour+45*time.Minute), false)
+	running := cleanupJob("registry-cleanup-running", age(10*time.Minute), false)
+	done := cleanupJob("registry-cleanup-done", age(25*24*time.Hour), true)
+	build := batchv1.Job{ObjectMeta: metav1.ObjectMeta{Name: "build", CreationTimestamp: metav1.Unix(age(5*time.Hour), 0)}}
+
+	assert.Equal(t, []string{"registry-cleanup-stuck"}, staleCleanupJobs([]batchv1.Job{stuck, running, done, build}, now))
 }
 
 func TestMountRegistryConfigAddsVolumeOnce(t *testing.T) {
@@ -114,7 +151,7 @@ func TestManualCleanupJob(t *testing.T) {
 	assert.Equal(t, "CronJob", job.OwnerReferences[0].Kind)
 	assert.Equal(t, CleanupCronJobName, job.OwnerReferences[0].Name)
 	assert.True(t, *job.OwnerReferences[0].Controller)
-	assert.True(t, ownedByCleanupCron(job))
+	assert.True(t, k8s.IsRegistryCleanupJob(job))
 
 	container := job.Spec.Template.Spec.Containers[0]
 	assert.Equal(t, []string{PruneAllFlag}, container.Args)

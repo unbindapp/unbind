@@ -3,6 +3,7 @@ package registrycache
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -99,6 +100,78 @@ func (self *Client) DeleteManifest(ctx context.Context, repo, digest string) err
 		return fmt.Errorf("registry returned %d: %s", resp.StatusCode, string(body))
 	}
 	return nil
+}
+
+var ErrImageIncomplete = errors.New("image incomplete in registry")
+
+// VerifyImage checks the registry can serve every manifest and blob of an image. A GC that overlapped the push leaves gaps.
+func (self *Client) VerifyImage(ctx context.Context, repo, ref string) error {
+	return self.verifyManifest(ctx, repo, ref, 0)
+}
+
+func (self *Client) verifyManifest(ctx context.Context, repo, ref string, depth int) error {
+	if depth > manifestIndexDepth {
+		return nil
+	}
+	exists, err := self.exists(ctx, fmt.Sprintf("%s/v2/%s/manifests/%s", self.baseURL, repo, ref), manifestAccept)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("%w: manifest %s@%s is missing", ErrImageIncomplete, repo, ref)
+	}
+
+	manifest, err := self.Manifest(ctx, repo, ref)
+	if err != nil {
+		return err
+	}
+	for _, child := range manifest.Manifests {
+		if err := self.verifyManifest(ctx, repo, child.Digest, depth+1); err != nil {
+			return err
+		}
+	}
+
+	blobs := make([]string, 0, len(manifest.Layers)+1)
+	if manifest.Config.Digest != "" {
+		blobs = append(blobs, manifest.Config.Digest)
+	}
+	for _, layer := range manifest.Layers {
+		blobs = append(blobs, layer.Digest)
+	}
+	for _, digest := range blobs {
+		exists, err := self.exists(ctx, fmt.Sprintf("%s/v2/%s/blobs/%s", self.baseURL, repo, digest), "")
+		if err != nil {
+			return err
+		}
+		if !exists {
+			return fmt.Errorf("%w: blob %s of %s:%s is missing", ErrImageIncomplete, digest, repo, ref)
+		}
+	}
+	return nil
+}
+
+func (self *Client) exists(ctx context.Context, endpoint, accept string) (bool, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, endpoint, nil)
+	if err != nil {
+		return false, err
+	}
+	if accept != "" {
+		req.Header.Set("Accept", accept)
+	}
+
+	resp, err := self.http.Do(req)
+	if err != nil {
+		return false, err
+	}
+	resp.Body.Close()
+
+	switch resp.StatusCode {
+	case http.StatusOK:
+		return true, nil
+	case http.StatusNotFound:
+		return false, nil
+	}
+	return false, fmt.Errorf("registry returned %d for %s", resp.StatusCode, endpoint)
 }
 
 func (self *Client) getJSON(ctx context.Context, endpoint string, headers map[string]string, out any) error {
