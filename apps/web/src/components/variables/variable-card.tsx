@@ -136,7 +136,7 @@ export default function VariableCard({
           data-unresolved={hasUnresolved || undefined}
           className="text-foreground data-dynamic:text-process group-data-placeholder/card:animate-skeleton group-data-placeholder/card:bg-foreground mt-1 mr-2 size-3.5 shrink-0 self-start group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent"
         />
-        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink font-mono text-sm leading-normal wrap-break-word group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+        <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink font-mono text-sm leading-normal text-balance wrap-break-word group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
           {isPlaceholder ? "Loading key" : <VariableName name={variable.name} />}
         </p>
       </div>
@@ -186,7 +186,7 @@ export default function VariableCard({
                 classNameViewport="py-1.5"
               >
                 <div className="flex w-full flex-col items-start justify-start gap-1 lg:flex-row lg:items-center lg:gap-1.5">
-                  <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal wrap-anywhere whitespace-pre-wrap group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
+                  <p className="group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton min-w-0 shrink px-px py-px pr-2 font-mono text-xs leading-normal text-balance group-data-placeholder/card:rounded-sm group-data-placeholder/card:text-transparent">
                     {isPlaceholder || !variable || !isValueVisible ? (
                       HIDDEN_VARIABLE_VALUE
                     ) : isDynamic ? (
