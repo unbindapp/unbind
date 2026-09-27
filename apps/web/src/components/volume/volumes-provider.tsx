@@ -1,21 +1,10 @@
 "use client";
 
-import { TVolumeShallow } from "@/lib/queries/services";
 import { queryKeyStorage, volumesListQuery } from "@/lib/queries/storage";
 import { useDiscardChangesForMissing } from "@/components/staged-changes/staged-changes-provider";
-import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
-import { createContext, ReactNode, useContext, useMemo } from "react";
-
-export type TVolumesResult = { volumes: TVolumeShallow[] };
-
-type TVolumesContext = {
-  query: UseQueryResult<TVolumesResult, Error>;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
-};
-
-const VolumesContext = createContext<TVolumesContext | null>(null);
+import { VolumesContext, type TVolumesResult } from "@/components/volume/volumes-context";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ReactNode, useContext, useMemo } from "react";
 
 export const VolumesProvider: React.FC<{
   teamId: string;

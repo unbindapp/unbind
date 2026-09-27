@@ -1,20 +1,10 @@
 "use client";
 
-import { queryKeyServices, servicesListQuery, type TServiceShallow } from "@/lib/queries/services";
+import { queryKeyServices, servicesListQuery } from "@/lib/queries/services";
+import { ServicesContext, type TServicesResult } from "@/components/service/services-context";
 import { useDiscardChangesForMissing } from "@/components/staged-changes/staged-changes-provider";
-import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
-import { createContext, ReactNode, useContext, useMemo } from "react";
-
-export type TServicesResult = { services: TServiceShallow[] };
-
-type TServicesContext = {
-  query: UseQueryResult<TServicesResult, Error>;
-  teamId: string;
-  projectId: string;
-  environmentId: string;
-};
-
-const ServicesContext = createContext<TServicesContext | null>(null);
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ReactNode, useContext, useMemo } from "react";
 
 export const ServicesProvider: React.FC<{
   teamId: string;

@@ -1,6 +1,5 @@
 "use client";
 
-import type { TStagedState } from "@/components/staged-changes/staged-chip";
 import { variableChangesMatchingServer } from "@/components/staged-changes/reconcile";
 import {
   useStagedChangesStore,
@@ -10,40 +9,20 @@ import {
 import type { TVariableScope } from "@/components/staged-changes/types";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import {
+  VariablesContext,
+  type TStageInput,
+  type TVariablesContext,
+  type TVariableWithStaged,
+} from "@/components/variables/variables-context";
+import {
   queryKeyVariables,
   variablesListQuery,
   type TVariableReferenceInfo,
   type TVariableShallow,
   type TVariablesList,
 } from "@/lib/queries/variables";
-import { useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
-
-export type TVariableWithStaged = TVariableShallow & {
-  staged?: TStagedState;
-  // The value the server has while an update is staged
-  stagedPrevious?: string;
-  // The change is being deployed and the row waits for the refetch
-  isApplying?: boolean;
-};
-
-type TStageInput = { name: string; value: string | null };
-
-type TVariablesContext = {
-  list: UseQueryResult<TVariablesList, Error>;
-  // Server variables with the staged changes applied on top
-  variables: TVariableWithStaged[] | undefined;
-  // Computed endpoint values, read-only
-  provided: TVariableShallow[] | undefined;
-  scope: TVariableScope;
-  scopeName: string;
-  staged: Map<string, TStagedVariable>;
-  // Stages values against what the server has, so re-staging the server value clears the change
-  stage: (changes: TStageInput[]) => void;
-  discardStaged: (names: string[]) => void;
-} & Omit<TEntityVariableTypeProps, "service">;
-
-const VariablesContext = createContext<TVariablesContext | null>(null);
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { ReactNode, useCallback, useContext, useEffect, useMemo } from "react";
 
 type TProps = {
   initialData?: TVariablesList;

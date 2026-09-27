@@ -12,7 +12,7 @@ import {
 } from "@/components/variables/helpers";
 import { TEntityVariableTypeProps } from "@/components/variables/types";
 import VariableCard from "@/components/variables/variable-card";
-import type { TVariableWithStaged } from "@/components/variables/variables-provider";
+import type { TVariableWithStaged } from "@/components/variables/variables-context";
 import { useVariables } from "@/components/variables/variables-provider";
 import type { TServiceShallow } from "@/lib/queries/services";
 import { TVariableShallow } from "@/lib/queries/variables";

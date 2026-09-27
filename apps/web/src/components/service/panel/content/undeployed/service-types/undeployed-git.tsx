@@ -20,8 +20,7 @@ import { WrapperForm, WrapperInner } from "@/components/service/panel/content/un
 import { usePublishDraftDomain } from "@/components/service/panel/draft-domain-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { toast } from "@/components/ui/toast";
-import { toStoredVariables } from "@/components/variables/helpers";
-import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
+import { getNewEntityIdForVariable, toStoredVariables } from "@/components/variables/helpers";
 import { generateDomain } from "@/lib/helpers/generate-domain";
 import { TCommandItem } from "@/lib/hooks/use-app-form";
 import {

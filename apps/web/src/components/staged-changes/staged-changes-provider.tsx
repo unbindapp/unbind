@@ -28,7 +28,7 @@ import {
 } from "@/components/staged-changes/types";
 import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-provider";
 import { toast } from "@/components/ui/toast";
-import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
+import { getNewEntityIdForVariable } from "@/components/variables/helpers";
 import { defaultDebounceMs } from "@/lib/constants";
 import { applyStagedChanges, type TApplyStagedChangesResult } from "@/lib/queries/staged-changes";
 import { queryKeyServices } from "@/lib/queries/services";

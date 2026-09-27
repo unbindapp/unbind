@@ -14,6 +14,10 @@ import type {
   TVariableShallow,
 } from "../../lib/queries/variables.ts";
 
+export function getNewEntityIdForVariable({ name, value }: { name: string; value: string }) {
+  return `${name}|${value}`;
+}
+
 export function unwrapQuotes(value: string) {
   let newValue = value;
   if (newValue.startsWith('"') && newValue.endsWith('"')) {

@@ -39,8 +39,7 @@ import {
 import S3BucketsProvider, { useS3Buckets } from "@/components/storage/s3-buckets-provider";
 import { CommandItem } from "@/components/ui/command";
 import { toast } from "@/components/ui/toast";
-import { toStoredVariables } from "@/components/variables/helpers";
-import { getNewEntityIdForVariable } from "@/components/variables/variable-card";
+import { getNewEntityIdForVariable, toStoredVariables } from "@/components/variables/helpers";
 import { TCommandItem } from "@/lib/hooks/use-app-form";
 import {
   removeFormDraft,

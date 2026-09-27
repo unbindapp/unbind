@@ -39,7 +39,8 @@ import {
   referenceCompletionAdditions,
   useVariableReferenceLanguage,
 } from "@/components/variables/variables-form-field";
-import { useVariables, type TVariableWithStaged } from "@/components/variables/variables-provider";
+import type { TVariableWithStaged } from "@/components/variables/variables-context";
+import { useVariables } from "@/components/variables/variables-provider";
 import useTemporaryValue from "@/lib/hooks/use-temporary-value";
 import {
   TVariableForCreate,

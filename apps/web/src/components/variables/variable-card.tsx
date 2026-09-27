@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
 import { HIDDEN_VARIABLE_VALUE } from "@/components/variables/constants";
 import {
+  getNewEntityIdForVariable,
   referenceMapForVariables,
   splitByStoredReferences,
   toReadableValue,
@@ -30,7 +31,8 @@ import {
   useVariableReferenceLanguage,
   VariableValueField,
 } from "@/components/variables/variables-form-field";
-import { useVariables, type TVariableWithStaged } from "@/components/variables/variables-provider";
+import type { TVariableWithStaged } from "@/components/variables/variables-context";
+import { useVariables } from "@/components/variables/variables-provider";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { VariableForCreateValueSchema } from "@/lib/queries/variables";
 import {
@@ -266,10 +268,6 @@ export default function VariableCard({
       )}
     </Element>
   );
-}
-
-export function getNewEntityIdForVariable({ name, value }: { name: string; value: string }) {
-  return `${name}|${value}`;
 }
 
 // Reference segments are colored so what came from where stays visible in the rendered text
