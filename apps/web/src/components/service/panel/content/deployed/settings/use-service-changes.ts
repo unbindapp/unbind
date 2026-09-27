@@ -83,7 +83,7 @@ export function useServiceChanges(service: TServiceShallow, serverValues: TServe
 
   // Setting the field first keeps the form from resetting the section's other fields
   const revert = useCallback(
-    (fieldApi: AnyFieldApi, field: TServiceChangeField, serverInput: string) => {
+    (fieldApi: AnyFieldApi, field: TServiceChangeField, serverInput: string | number) => {
       fieldApi.handleChange(serverInput);
       unstage([field]);
     },

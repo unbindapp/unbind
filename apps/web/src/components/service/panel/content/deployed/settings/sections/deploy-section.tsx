@@ -18,6 +18,7 @@ import {
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import type { TServiceChangeField } from "@/components/staged-changes/types";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
+import { RevertButton } from "@/components/settings/revert-button";
 import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -99,7 +100,7 @@ function Section({ service }: { service: TServiceShallow }) {
   const serverReplicaCount = service.config.replicas;
   const serverCpu = service.config.resources?.cpu_limits_millicores || unlimitedApiValue;
   const serverMemory = service.config.resources?.memory_limits_megabytes || unlimitedApiValue;
-  const { staged, stage, unstage } = useServiceChanges(service, {
+  const { staged, stage, unstage, revert } = useServiceChanges(service, {
     replicaCount: serverReplicaCount,
     cpuLimitMillicores: serverCpu,
     memoryLimitMb: serverMemory,
@@ -162,6 +163,7 @@ function Section({ service }: { service: TServiceShallow }) {
                     title="Replicas"
                     value={field.state.value ? field.state.value.toString() : "1"}
                     hasChanges={changed.replicaCount}
+                    onRevert={() => revert(field, "replicaCount", serverReplicaCount)}
                   />
                   <field.StorageSizeInput
                     field={field}
@@ -219,6 +221,13 @@ function Section({ service }: { service: TServiceShallow }) {
                         title="vCPU"
                         value={cpuFormatter(field.state.value)}
                         hasChanges={changed.cpuLimitMillicores}
+                        onRevert={() =>
+                          revert(
+                            field,
+                            "cpuLimitMillicores",
+                            toSlider(serverCpu, cpuLimits.unlimited),
+                          )
+                        }
                       />
                       <field.StorageSizeInput
                         field={field}
@@ -262,6 +271,13 @@ function Section({ service }: { service: TServiceShallow }) {
                         title="Memory"
                         value={memoryFormatter(field.state.value)}
                         hasChanges={changed.memoryLimitMb}
+                        onRevert={() =>
+                          revert(
+                            field,
+                            "memoryLimitMb",
+                            toSlider(serverMemory, memoryLimits.unlimited),
+                          )
+                        }
                       />
                       <field.StorageSizeInput
                         field={field}
@@ -314,26 +330,28 @@ function ValueTitle({
   title,
   value,
   hasChanges,
-  className,
+  onRevert,
 }: {
   title: string;
   value: string;
-  hasChanges?: boolean;
-  className?: string;
+  hasChanges: boolean;
+  onRevert: () => void;
 }) {
   return (
-    <p
-      data-staged={hasChanges || undefined}
-      className={cn(
-        "group/title text-muted-foreground data-staged:text-change/9-10 w-full px-3.5 pt-2.5 pb-1 leading-tight font-medium",
-        className,
-      )}
-    >
-      <span className="pr-[0.6ch]">{title}:</span>
-      <span className="text-foreground group-data-staged/title:text-change font-mono font-bold">
-        {value}
-      </span>
-    </p>
+    <div data-staged={hasChanges || undefined} className="group/title flex w-full items-start">
+      <p className="text-muted-foreground group-data-staged/title:text-change/9-10 min-w-0 flex-1 px-3.5 pt-2.5 pb-1 leading-tight font-medium">
+        <span className="pr-[0.6ch]">{title}:</span>
+        <span className="text-foreground group-data-staged/title:text-change font-mono font-bold">
+          {value}
+        </span>
+      </p>
+      <RevertButton
+        onClick={onRevert}
+        isStaged={hasChanges}
+        disabled={!hasChanges}
+        className="mt-0.5 mr-1 -mb-1 transition disabled:opacity-0"
+      />
+    </div>
   );
 }
 
