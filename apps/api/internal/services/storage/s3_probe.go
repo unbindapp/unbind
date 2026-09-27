@@ -82,10 +82,10 @@ func (self *StorageService) TestStoredS3Bucket(ctx context.Context, requesterUse
 func testS3Connection(ctx context.Context, conn s3Connection) *models.S3TestResult {
 	s3Client, err := s3.NewS3Client(ctx, conn.Endpoint, conn.Region, conn.AccessKeyID, conn.SecretKey)
 	if err != nil {
-		return &models.S3TestResult{Valid: false, Error: err.Error()}
+		return &models.S3TestResult{Valid: false, Error: errdefs.DetailMessage(err)}
 	}
 	if err := s3Client.ProbeBucketRW(ctx, conn.Bucket); err != nil {
-		return &models.S3TestResult{Valid: false, Error: err.Error()}
+		return &models.S3TestResult{Valid: false, Error: errdefs.DetailMessage(err)}
 	}
 	return &models.S3TestResult{Valid: true}
 }

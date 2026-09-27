@@ -87,6 +87,34 @@ func (suite *S3TestSuite) TestNewS3Client_ValidEndpoint() {
 	suite.NotNil(client.client)
 }
 
+func (suite *S3TestSuite) TestNewS3Client_EndpointValidation() {
+	tests := []struct {
+		endpoint string
+		valid    bool
+	}{
+		{"https://s3.amazonaws.com", true},
+		{"https://abc.r2.cloudflarestorage.com", true},
+		{"http://minio:9000", true},
+		{"donjon", false},
+		{"abc.r2.cloudflarestorage.com", false},
+		{"ftp://s3.amazonaws.com", false},
+		{"https://", false},
+		{"", false},
+	}
+
+	for _, tt := range tests {
+		client, err := NewS3Client(context.Background(), tt.endpoint, "auto", "key", "secret")
+		if tt.valid {
+			suite.NoError(err, tt.endpoint)
+			suite.NotNil(client, tt.endpoint)
+			continue
+		}
+		var customErr *errdefs.CustomError
+		suite.ErrorAs(err, &customErr, tt.endpoint)
+		suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type, tt.endpoint)
+	}
+}
+
 // Test NewS3ClientWithAPI function
 func (suite *S3TestSuite) TestNewS3ClientWithAPI() {
 	mockAPI := &MockS3API{}
@@ -182,7 +210,7 @@ func (suite *S3TestSuite) TestProbeBucketRW_PutObjectAccessDenied() {
 
 // Test mapS3Error function
 func (suite *S3TestSuite) TestMapS3Error_InvalidAccessKey() {
-	for _, code := range []string{"InvalidAccessKeyId", "SignatureDoesNotMatch"} {
+	for _, code := range []string{"InvalidAccessKeyId", "SignatureDoesNotMatch", "Unauthorized"} {
 		httpErr := &smithyhttp.ResponseError{
 			Response: &smithyhttp.Response{
 				Response: &http.Response{StatusCode: 403},
@@ -194,7 +222,7 @@ func (suite *S3TestSuite) TestMapS3Error_InvalidAccessKey() {
 
 		customErr := result.(*errdefs.CustomError)
 		suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
-		suite.Contains(customErr.Message, "invalid access key ID or secret access key")
+		suite.Contains(customErr.Message, "Invalid access key ID or secret access key")
 	}
 }
 
@@ -210,7 +238,22 @@ func (suite *S3TestSuite) TestMapS3Error_NoSuchBucket() {
 
 	customErr := result.(*errdefs.CustomError)
 	suite.Equal(errdefs.ErrTypeNotFound, customErr.Type)
-	suite.Contains(customErr.Message, "bucket not found")
+	suite.Contains(customErr.Message, "Bucket not found")
+}
+
+func (suite *S3TestSuite) TestMapS3Error_401Unauthorized() {
+	httpErr := &smithyhttp.ResponseError{
+		Response: &smithyhttp.Response{
+			Response: &http.Response{StatusCode: 401},
+		},
+		Err: errors.New("unauthorized"),
+	}
+
+	result := mapS3Error(httpErr)
+
+	customErr := result.(*errdefs.CustomError)
+	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
+	suite.Contains(customErr.Message, "Invalid access key ID or secret access key")
 }
 
 func (suite *S3TestSuite) TestMapS3Error_403Forbidden() {
@@ -225,7 +268,7 @@ func (suite *S3TestSuite) TestMapS3Error_403Forbidden() {
 
 	customErr := result.(*errdefs.CustomError)
 	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
-	suite.Contains(customErr.Message, "invalid endpoint URL or access forbidden")
+	suite.Contains(customErr.Message, "Invalid endpoint URL or access forbidden")
 }
 
 func (suite *S3TestSuite) TestMapS3Error_404NotFound() {
@@ -240,7 +283,7 @@ func (suite *S3TestSuite) TestMapS3Error_404NotFound() {
 
 	customErr := result.(*errdefs.CustomError)
 	suite.Equal(errdefs.ErrTypeNotFound, customErr.Type)
-	suite.Contains(customErr.Message, "bucket or object not found")
+	suite.Contains(customErr.Message, "Bucket or object not found")
 }
 
 func (suite *S3TestSuite) TestMapS3Error_301Redirect() {
@@ -255,21 +298,21 @@ func (suite *S3TestSuite) TestMapS3Error_301Redirect() {
 
 	customErr := result.(*errdefs.CustomError)
 	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
-	suite.Contains(customErr.Message, "wrong region for bucket")
+	suite.Contains(customErr.Message, "Wrong region for bucket")
 }
 
 func (suite *S3TestSuite) TestMapS3Error_URLError() {
 	urlErr := &url.Error{
-		Op:  "Get",
-		URL: "invalid-url",
-		Err: errors.New("invalid URL"),
+		Op:  "Put",
+		URL: "https://abc.r2.cloudflarestorage.com/bucket/.probe-123?x-id=PutObject",
+		Err: errors.New("remote error: tls: handshake failure"),
 	}
 
 	result := mapS3Error(urlErr)
 
 	customErr := result.(*errdefs.CustomError)
 	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
-	suite.Contains(customErr.Message, "invalid endpoint URL")
+	suite.Equal("Could not connect to the endpoint: remote error: tls: handshake failure", customErr.Message)
 }
 
 func (suite *S3TestSuite) TestMapS3Error_OtherError() {

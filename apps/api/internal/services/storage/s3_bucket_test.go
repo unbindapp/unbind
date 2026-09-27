@@ -252,6 +252,26 @@ func (suite *S3BucketSuite) TestCreateRejectsBucketWithoutWriteAccess() {
 	suite.Equal(1, suite.fake.probesOf("locked-bucket"))
 }
 
+func (suite *S3BucketSuite) TestCreateRejectsEndpointWithoutScheme() {
+	suite.expectPermissionAndTeam()
+
+	result, err := suite.service.CreateS3Bucket(suite.Ctx, suite.testUserID, &models.S3BucketCreateInput{
+		TeamID:      suite.testTeamID,
+		Name:        "Backups",
+		Endpoint:    "abc.r2.cloudflarestorage.com",
+		Region:      "auto",
+		Bucket:      "my-bucket",
+		AccessKeyID: "AKIA",
+		SecretKey:   "secret",
+	})
+
+	suite.Nil(result)
+	customErr := err.(*errdefs.CustomError)
+	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
+	suite.Equal("Endpoint must be a full URL like https://s3.amazonaws.com", customErr.Message)
+	suite.Equal(0, suite.fake.requestCount())
+}
+
 func (suite *S3BucketSuite) TestCreateRejectsTakenNameBeforeProbing() {
 	suite.expectPermissionAndTeam()
 
@@ -435,7 +455,7 @@ func (suite *S3BucketSuite) TestStoredBucketTestReportsFailedProbe() {
 
 	suite.NoError(err)
 	suite.False(result.Valid)
-	suite.Contains(result.Error, "not allowed to read and write this bucket")
+	suite.Equal("Credentials are valid but are not allowed to read and write this bucket", result.Error)
 }
 
 func (suite *S3BucketSuite) TestStoredBucketTestRejectsBucketOfAnotherTeam() {

@@ -67,10 +67,9 @@ type S3Client struct {
 
 // NewS3Client creates a new S3Client with the provided credentials.
 func NewS3Client(ctx context.Context, endpoint, region, accessKeyID, secretKey string) (*S3Client, error) {
-	// Validate/parse the custom endpoint once up-front.
-	_, err := url.Parse(endpoint)
-	if err != nil {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid endpoint URL")
+	if !isValidEndpoint(endpoint) {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+			"Endpoint must be a full URL like https://s3.amazonaws.com")
 	}
 
 	cfg, err := config.LoadDefaultConfig(
@@ -95,6 +94,14 @@ func NewS3Client(ctx context.Context, endpoint, region, accessKeyID, secretKey s
 	})
 
 	return &S3Client{client: client}, nil
+}
+
+func isValidEndpoint(endpoint string) bool {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return false
+	}
+	return (u.Scheme == "https" || u.Scheme == "http") && u.Host != ""
 }
 
 // NewS3ClientWithAPI creates a new S3Client with a custom S3 API implementation (useful for testing)
@@ -143,39 +150,42 @@ func mapS3Error(err error) error {
 	var apiErr smithy.APIError
 	if errors.As(err, &apiErr) {
 		switch apiErr.ErrorCode() {
-		case "InvalidAccessKeyId", "SignatureDoesNotMatch":
+		case "InvalidAccessKeyId", "SignatureDoesNotMatch", "Unauthorized":
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-				"invalid access key ID or secret access key")
+				"Invalid access key ID or secret access key")
 		case "AccessDenied":
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-				"credentials are valid but are not allowed to read and write this bucket")
+				"Credentials are valid but are not allowed to read and write this bucket")
 		case "NoSuchBucket":
 			return errdefs.NewCustomError(errdefs.ErrTypeNotFound,
-				"bucket not found")
+				"Bucket not found")
 		}
 	}
 
 	var respErr *smithyhttp.ResponseError
 	if errors.As(err, &respErr) {
 		switch respErr.Response.StatusCode {
+		case 401:
+			// R2 answers bad credentials with a bare 401 on HEAD
+			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+				"Invalid access key ID or secret access key")
 		case 403:
 			// Forbidden without an error code, R2/MinIO do this for bad hosts
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-				"invalid endpoint URL or access forbidden (HTTP 403)")
+				"Invalid endpoint URL or access forbidden (HTTP 403)")
 		case 404:
 			return errdefs.NewCustomError(errdefs.ErrTypeNotFound,
-				"bucket or object not found (HTTP 404)")
+				"Bucket or object not found (HTTP 404)")
 		case 301, 307:
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-				"wrong region for bucket (redirect)")
+				"Wrong region for bucket (redirect)")
 		}
 	}
 
-	// Network/URL parse issues
 	var urlErr *url.Error
 	if errors.As(err, &urlErr) {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
-			fmt.Sprintf("invalid endpoint URL: %v", urlErr))
+			fmt.Sprintf("Could not connect to the endpoint: %v", urlErr.Err))
 	}
 
 	// Fallback: surface the original error.

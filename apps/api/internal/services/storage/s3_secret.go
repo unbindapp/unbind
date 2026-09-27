@@ -21,7 +21,7 @@ type s3Connection struct {
 func probeS3Bucket(ctx context.Context, conn s3Connection) error {
 	s3Client, err := s3.NewS3Client(ctx, conn.Endpoint, conn.Region, conn.AccessKeyID, conn.SecretKey)
 	if err != nil {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, errdefs.DetailMessage(err))
 	}
 
 	err = s3Client.ProbeBucketRW(ctx, conn.Bucket)

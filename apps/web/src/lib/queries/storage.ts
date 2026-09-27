@@ -195,9 +195,14 @@ export const S3BucketNameSchema = z
   .min(1, "Name is required.")
   .max(s3BucketNameMaxLength, `Name should be at most ${s3BucketNameMaxLength} characters.`);
 
+const S3EndpointSchema = z
+  .string()
+  .url("Endpoint must be a valid URL.")
+  .refine((value) => /^https?:\/\//i.test(value), "Endpoint must start with https:// or http://.");
+
 export const CreateS3BucketFormSchema = z.object({
   name: S3BucketNameSchema,
-  endpoint: z.string().url("Endpoint must be a valid URL."),
+  endpoint: S3EndpointSchema,
   region: z.string(),
   bucket: z.string().min(1, "Bucket name is required."),
   accessKeyId: z.string().min(1, "Access Key ID is required."),
@@ -207,7 +212,7 @@ export const CreateS3BucketFormSchema = z.object({
 // Credentials are optional on edit, empty means keep the current ones
 export const EditS3BucketFormSchema = z.object({
   name: S3BucketNameSchema,
-  endpoint: z.string().url("Endpoint must be a valid URL."),
+  endpoint: S3EndpointSchema,
   region: z.string(),
   bucket: z.string().min(1, "Bucket name is required."),
   accessKeyId: z.string(),

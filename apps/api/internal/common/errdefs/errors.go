@@ -69,7 +69,7 @@ func errorCode(status int) string {
 var HumaErrorFunc = func(status int, message string, errs ...error) huma.StatusError {
 	details := make([]string, 0, len(errs))
 	for _, err := range errs {
-		if detail := detailMessage(err); detail != "" {
+		if detail := DetailMessage(err); detail != "" {
 			details = append(details, detail)
 		}
 	}
@@ -92,10 +92,10 @@ func WithCause(err huma.StatusError, cause error) huma.StatusError {
 	return resp
 }
 
-// detailMessage renders an error for the client-facing Details field. A CustomError carries an
+// DetailMessage renders an error for the client-facing Details field. A CustomError carries an
 // internal type prefix ("ErrInvalidInput: ...") that is noise to the caller, so only the message a
 // handler actually wrote is surfaced.
-func detailMessage(err error) string {
+func DetailMessage(err error) string {
 	if err == nil {
 		return ""
 	}
