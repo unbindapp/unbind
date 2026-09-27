@@ -443,5 +443,10 @@
     "version": "v0.1.88",
     "summary": "GitHub Apps scoped to their owner and one team, a max request body size per service, and reasons for replicas that could not start.",
     "breaking": false
+  },
+  "v0.1.89": {
+    "version": "v0.1.89",
+    "summary": "A registry settings tab with manual cleanup and full registry warnings, reverting changed settings from the field, GitHub App links that survive renames, and S3 endpoint validation.",
+    "breaking": false
   }
 }
