@@ -106,6 +106,11 @@ export const gitAppsQuery = (filter: TGitAppsFilter) =>
     },
   });
 
+export async function saveGitApp(input: { code: string; state: string }) {
+  const res = await getGoClient().github.app.save({ code: input.code, state: input.state });
+  return res.data;
+}
+
 export async function setGitAppTeam(input: { uuid: string; teamId: string | null }) {
   const res = await getGoClient().github.app.team({ uuid: input.uuid, team_id: input.teamId });
   return { app: res.data };

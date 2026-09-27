@@ -2,119 +2,21 @@ package github_handler
 
 import (
 	"context"
-	"crypto/subtle"
-	"errors"
-	"fmt"
-	"net/http"
-	"net/url"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/go-github/v69/github"
-	"github.com/google/uuid"
-	"github.com/redis/go-redis/v9"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
-	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
 	"github.com/unbindapp/unbind-api/internal/watchpaths"
 )
-
-// Connect the new github app to our instance, via manifest code exchange
-type HandleGithubAppSaveInput struct {
-	Code  string `query:"code" required:"true"`
-	State string `query:"state" required:"true"`
-	// Both names: __Host- for secure cookies, the bare name for an insecure local API
-	FlowCookieSecure http.Cookie `cookie:"__Host-github_app_flow"`
-	FlowCookie       http.Cookie `cookie:"github_app_flow"`
-}
-
-type HandleGithubAppSaveResponse struct {
-	Status    int
-	Url       string      `header:"Location"`
-	SetCookie http.Cookie `header:"Set-Cookie"`
-}
-
-// Save github app and redirect to installation
-func (self *HandlerGroup) HandleGithubAppSave(ctx context.Context, input *HandleGithubAppSaveInput) (*HandleGithubAppSaveResponse, error) {
-	flow := input.FlowCookie.Value
-	if self.srv.Cfg.CookieSecure {
-		flow = input.FlowCookieSecure.Value
-	}
-	if flow == "" || subtle.ConstantTimeCompare([]byte(flow), []byte(input.State)) != 1 {
-		return nil, huma.Error400BadRequest("This GitHub connection was started in another browser or has expired. Connect GitHub again from Unbind.")
-	}
-
-	parsedState, err := uuid.Parse(input.State)
-	if err != nil {
-		return nil, huma.Error400BadRequest("Invalid state")
-	}
-
-	userID, err := self.srv.StringCache.Getdel(ctx, input.State)
-	if err != nil {
-		if errors.Is(err, redis.Nil) {
-			return nil, huma.Error400BadRequest("This GitHub connection has expired. Connect GitHub again from Unbind.")
-		}
-		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the user this GitHub app belongs to"))
-	}
-	userIDParsed, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to determine user ID"))
-	}
-
-	appConfig, err := self.srv.GithubClient.ManifestCodeConversion(ctx, input.Code)
-	if err != nil {
-		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to exchange the GitHub manifest code"))
-	}
-
-	// The organization only steers the GitHub form, the installation URL is the same either way
-	_, err = self.srv.StringCache.Getdel(ctx, input.State+"-org")
-	if err != nil && !errors.Is(err, redis.Nil) {
-		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub organization from the cache"))
-	}
-
-	var teamID *uuid.UUID
-	teamValue, err := self.srv.StringCache.Getdel(ctx, input.State+"-team")
-	if err != nil && !errors.Is(err, redis.Nil) {
-		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the team to share the GitHub app with"))
-	}
-	if teamValue != "" {
-		parsedTeam, err := uuid.Parse(teamValue)
-		if err != nil {
-			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to parse the team to share the GitHub app with"))
-		}
-		teamID = &parsedTeam
-	}
-
-	// Save the app config
-	ghApp, err := self.srv.Repository.Github().CreateApp(ctx, parsedState, appConfig, userIDParsed, teamID)
-	if err != nil {
-		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to save the GitHub app"))
-	}
-
-	// Redirect URL - this is where GitHub will send users to install your app
-	installationURL := fmt.Sprintf(
-		"https://github.com/apps/%s/installations/new?state=%s",
-		url.PathEscape(ghApp.Slug),
-		url.QueryEscape(input.State),
-	)
-
-	// Delay the redirect because github will 404 otherwise
-	time.Sleep(2 * time.Second)
-
-	return &HandleGithubAppSaveResponse{
-		Status:    http.StatusTemporaryRedirect,
-		Url:       installationURL,
-		SetCookie: auth.ClearedGithubAppFlowCookie(self.srv.Cfg.CookieSecure),
-	}, nil
-}
 
 // HandleGithubWebhook handles incoming GitHub webhooks.
 type GithubWebhookInput struct {

@@ -4,21 +4,21 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
-	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/redis/go-redis/v9"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
-	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
@@ -27,14 +27,13 @@ import (
 
 type GitHubAppCreateInput struct {
 	server.BaseAuthInput
-	RedirectURL  string    `query:"redirect_url" required:"true" doc:"The client URL to redirect to after the installation is finished"`
+	RedirectURL  string    `query:"redirect_url" required:"true" doc:"The client page GitHub returns to, with code and state once the app is created and with id once it is installed"`
 	Organization string    `query:"organization" doc:"The organization to install the app for, if any"`
 	TeamID       uuid.UUID `query:"team_id" format:"uuid" doc:"Share the app with this team so its members can pick the repositories. Needs editor access to the team."`
 }
 
 type GithubAppCreateResponse struct {
-	SetCookie http.Cookie `header:"Set-Cookie"`
-	Body      struct {
+	Body struct {
 		Data string `json:"data"`
 	}
 }
@@ -82,27 +81,22 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 </body>
 </html>`
 
-	redirect, err := utils.JoinURLPaths(self.srv.Cfg.ExternalAPIURL, "/github/app/save")
-	if err != nil {
-		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to build the GitHub redirect URL"))
+	parsedRedirect, err := url.Parse(input.RedirectURL)
+	if err != nil || (parsedRedirect.Scheme != "https" && parsedRedirect.Scheme != "http") || parsedRedirect.Host == "" {
+		return nil, huma.Error400BadRequest("Invalid redirect URL")
 	}
 
 	// Create a unique state to identify this request
 	state := uuid.New().String()
 
-	// Attach state as ?id to the input redirect URL
-	parsedRedirect, err := url.Parse(input.RedirectURL)
-	if err != nil {
-		log.Error("Error parsing redirect URL", "err", err)
-		return nil, huma.Error400BadRequest("Invalid redirect URL")
-	}
-	inputQ := parsedRedirect.Query()
-	inputQ.Set("id", state)
-	parsedRedirect.RawQuery = inputQ.Encode()
-	input.RedirectURL = parsedRedirect.String()
+	// GitHub returns to the same page after the installation, the id tells it which app to wait for
+	setupURL := *parsedRedirect
+	setupQ := setupURL.Query()
+	setupQ.Set("id", state)
+	setupURL.RawQuery = setupQ.Encode()
 
 	// Create GitHub app manifest, if not organization we also want organization read permission
-	manifest, err := self.srv.GithubClient.CreateAppManifest(redirect, input.RedirectURL, input.Organization != "")
+	manifest, err := self.srv.GithubClient.CreateAppManifest(parsedRedirect.String(), setupURL.String(), input.Organization != "")
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to create the GitHub app manifest"))
 	}
@@ -110,12 +104,6 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 	err = self.srv.StringCache.SetWithExpiration(ctx, state, user.ID.String(), appFlowTTL)
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the requesting user"))
-	}
-	if input.Organization != "" {
-		err = self.srv.StringCache.SetWithExpiration(ctx, state+"-org", input.Organization, appFlowTTL)
-		if err != nil {
-			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to store the GitHub organization"))
-		}
 	}
 	if input.TeamID != uuid.Nil {
 		err = self.srv.StringCache.SetWithExpiration(ctx, state+"-team", input.TeamID.String(), appFlowTTL)
@@ -158,8 +146,84 @@ func (self *HandlerGroup) HandleGithubAppCreate(ctx context.Context, input *GitH
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to render the GitHub redirect page"))
 	}
 
-	resp := &GithubAppCreateResponse{SetCookie: auth.GithubAppFlowCookie(state, appFlowTTL, self.srv.Cfg.CookieSecure)}
+	resp := &GithubAppCreateResponse{}
 	resp.Body.Data = buf.String()
+	return resp, nil
+}
+
+type GithubAppSaveInput struct {
+	server.BaseAuthInput
+	Body struct {
+		Code  string `json:"code" required:"true" minLength:"1" doc:"The code GitHub added to the redirect URL"`
+		State string `json:"state" required:"true" format:"uuid" doc:"The state GitHub added to the redirect URL"`
+	}
+}
+
+type GithubAppSaveResponse struct {
+	Body struct {
+		Data struct {
+			UUID       uuid.UUID `json:"uuid"`
+			InstallURL string    `json:"install_url" doc:"Where to send the user to install the app"`
+		} `json:"data" nullable:"false"`
+	}
+}
+
+// HandleGithubAppSave stores the app GitHub created, only for the user who started the flow
+func (self *HandlerGroup) HandleGithubAppSave(ctx context.Context, input *GithubAppSaveInput) (*GithubAppSaveResponse, error) {
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+	state, err := uuid.Parse(input.Body.State)
+	if err != nil {
+		return nil, huma.Error400BadRequest("Invalid state")
+	}
+
+	owner, err := self.srv.StringCache.Getdel(ctx, state.String())
+	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return nil, huma.Error400BadRequest("This GitHub connection has expired or was already saved. Connect GitHub again.")
+		}
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub connection"))
+	}
+	if owner != user.ID.String() {
+		return nil, huma.Error403Forbidden("This GitHub connection was started by another user")
+	}
+
+	var teamID *uuid.UUID
+	teamValue, err := self.srv.StringCache.Getdel(ctx, state.String()+"-team")
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the team to share the GitHub app with"))
+	}
+	if teamValue != "" {
+		parsedTeam, err := uuid.Parse(teamValue)
+		if err != nil {
+			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to parse the team to share the GitHub app with"))
+		}
+		teamID = &parsedTeam
+	}
+
+	appConfig, err := self.srv.GithubClient.ManifestCodeConversion(ctx, input.Body.Code)
+	if err != nil {
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to exchange the GitHub manifest code"))
+	}
+
+	ghApp, err := self.srv.Repository.Github().CreateApp(ctx, state, appConfig, user.ID, teamID)
+	if err != nil {
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to save the GitHub app"))
+	}
+
+	installURL, err := utils.JoinURLPaths(self.srv.Cfg.GithubURL, "apps", ghApp.Slug, "installations", "new")
+	if err != nil {
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to build the GitHub install URL"))
+	}
+
+	// GitHub 404s the install page for a moment after the app is created
+	time.Sleep(2 * time.Second)
+
+	resp := &GithubAppSaveResponse{}
+	resp.Body.Data.UUID = ghApp.UUID
+	resp.Body.Data.InstallURL = installURL
 	return resp, nil
 }
 

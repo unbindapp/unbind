@@ -66,6 +66,14 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodGet,
 	}, handlers.HandleGithubAppCreate, oapi.OpenWorld)
 
+	oapi.Register(grp, oapi.Create, huma.Operation{
+		OperationID: "app-save",
+		Summary:     "Save App",
+		Description: "Finish the GitHub app creation flow with the code and state GitHub returned. Only the user who started the flow can save the app. Returns the URL to install it.",
+		Path:        "/app/save",
+		Method:      http.MethodPost,
+	}, handlers.HandleGithubAppSave, oapi.OpenWorld)
+
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-github-app",
 		Summary:     "Get App",
@@ -152,12 +160,4 @@ func RegisterPublicHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/webhook",
 		Method:      http.MethodPost,
 	}, handlers.HandleGithubWebhook, oapi.Public)
-
-	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "app-save",
-		Summary:     "Save GitHub App",
-		Description: "GitHub app creation callback: exchanges the code, stores the app, and redirects to installation.",
-		Path:        "/app/save",
-		Method:      http.MethodGet,
-	}, handlers.HandleGithubAppSave, oapi.Public, oapi.OpenWorld)
 }

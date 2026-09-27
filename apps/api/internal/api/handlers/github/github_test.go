@@ -3,6 +3,7 @@ package github_handler
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"testing"
 	"time"
 
@@ -47,11 +48,7 @@ func (suite *GithubHandlerSuite) SetupTest() {
 	suite.githubClient = mocks_integrations_github.NewGithubClientMock(suite.T())
 	suite.redis = miniredis.RunT(suite.T())
 	suite.handlers = &HandlerGroup{srv: &server.Server{
-		Cfg: &config.Config{
-			ExternalAPIURL: "https://unbind.example.com/api/go",
-			GithubURL:      "https://github.com",
-			CookieSecure:   true,
-		},
+		Cfg:          &config.Config{GithubURL: "https://github.com"},
 		Repository:   repositories.NewRepositories(suite.DB),
 		GithubClient: suite.githubClient,
 		StringCache:  cache.NewStringCache(redis.NewClient(&redis.Options{Addr: suite.redis.Addr()}), "test"),
@@ -329,20 +326,39 @@ func (suite *GithubHandlerSuite) TestRepositoriesSkipUninstalledAndSuspended() {
 	suite.Empty(resp.Body.Data)
 }
 
-// startAppFlow begins a connection as the creator and returns the cookie the browser gets
-func (suite *GithubHandlerSuite) startAppFlow() http.Cookie {
+// startAppFlow begins a connection as the user and returns the state GitHub will send back
+func (suite *GithubHandlerSuite) startAppFlow(user *ent.User, teamID uuid.UUID) string {
+	var state string
 	suite.githubClient.EXPECT().
-		CreateAppManifest(mock.Anything, mock.Anything, false).
-		Return(&github_integration.GitHubAppManifest{Name: "unbind-generated"}, nil).Once()
-	resp, err := suite.handlers.HandleGithubAppCreate(suite.as(suite.creator), &GitHubAppCreateInput{RedirectURL: "https://unbind.example.com/connected"})
+		CreateAppManifest("https://unbind.example.com/connected", mock.Anything, false).
+		RunAndReturn(func(redirectUrl, setupUrl string, forOrganization bool) (*github_integration.GitHubAppManifest, error) {
+			parsed, err := url.Parse(setupUrl)
+			suite.Require().NoError(err)
+			state = parsed.Query().Get("id")
+			return &github_integration.GitHubAppManifest{Name: "unbind-generated"}, nil
+		}).Once()
+	_, err := suite.handlers.HandleGithubAppCreate(suite.as(user), &GitHubAppCreateInput{RedirectURL: "https://unbind.example.com/connected", TeamID: teamID})
 	suite.Require().NoError(err)
-	suite.Equal("__Host-github_app_flow", resp.SetCookie.Name)
-	suite.Require().NotEmpty(resp.SetCookie.Value)
-	return resp.SetCookie
+	suite.Require().NotEmpty(state)
+	return state
+}
+
+func (suite *GithubHandlerSuite) saveInput(state string) *GithubAppSaveInput {
+	input := &GithubAppSaveInput{}
+	input.Body.Code = "code"
+	input.Body.State = state
+	return input
+}
+
+func (suite *GithubHandlerSuite) TestCreateRejectsInvalidRedirectURL() {
+	for _, redirectURL := range []string{"javascript:alert(1)", "/connected", "ftp://unbind.example.com/connected"} {
+		_, err := suite.handlers.HandleGithubAppCreate(suite.as(suite.creator), &GitHubAppCreateInput{RedirectURL: redirectURL})
+		suite.assertStatus(err, http.StatusBadRequest)
+	}
 }
 
 func (suite *GithubHandlerSuite) TestSaveRenamedApp() {
-	flow := suite.startAppFlow()
+	state := suite.startAppFlow(suite.creator, suite.team.ID)
 	suite.githubClient.EXPECT().
 		ManifestCodeConversion(mock.Anything, "code").
 		Return(&github.AppConfig{
@@ -356,42 +372,37 @@ func (suite *GithubHandlerSuite) TestSaveRenamedApp() {
 			Owner:         &github.User{Login: new("yekta"), Type: new("User")},
 		}, nil).Once()
 
-	resp, err := suite.handlers.HandleGithubAppSave(suite.Ctx, &HandleGithubAppSaveInput{Code: "code", State: flow.Value, FlowCookieSecure: flow})
+	resp, err := suite.handlers.HandleGithubAppSave(suite.as(suite.creator), suite.saveInput(state))
 	suite.Require().NoError(err)
-	suite.Equal("https://github.com/apps/my-unbind/installations/new?state="+flow.Value, resp.Url)
-	suite.Equal(-1, resp.SetCookie.MaxAge)
+	suite.Equal("https://github.com/apps/my-unbind/installations/new", resp.Body.Data.InstallURL)
+	suite.Equal(state, resp.Body.Data.UUID.String())
 
 	app := suite.DB.GithubApp.Query().Where(githubapp.ID(999)).OnlyX(suite.Ctx)
 	suite.Equal("My Unbind", app.Name)
 	suite.Equal("my-unbind", app.Slug)
-	suite.Equal(flow.Value, app.UUID.String())
 	suite.Equal(suite.creator.ID, *app.CreatedBy)
+	suite.Equal(suite.team.ID, *app.TeamID)
+
+	_, err = suite.handlers.HandleGithubAppSave(suite.as(suite.creator), suite.saveInput(state))
+	suite.assertStatus(err, http.StatusBadRequest)
 }
 
-func (suite *GithubHandlerSuite) TestSaveRejectsFlowFromAnotherBrowser() {
-	flow := suite.startAppFlow()
-	other := suite.startAppFlow()
+func (suite *GithubHandlerSuite) TestSaveRejectsAnotherUser() {
+	state := suite.startAppFlow(suite.creator, uuid.Nil)
 
-	cases := map[string]*HandleGithubAppSaveInput{
-		"no cookie":       {Code: "code", State: flow.Value},
-		"another flow":    {Code: "code", State: flow.Value, FlowCookieSecure: other},
-		"insecure cookie": {Code: "code", State: flow.Value, FlowCookie: http.Cookie{Name: "github_app_flow", Value: flow.Value}},
-	}
-	for name, input := range cases {
-		suite.Run(name, func() {
-			_, err := suite.handlers.HandleGithubAppSave(suite.Ctx, input)
-			suite.assertStatus(err, http.StatusBadRequest)
-		})
-	}
+	_, err := suite.handlers.HandleGithubAppSave(suite.as(suite.teamEditor), suite.saveInput(state))
+	suite.assertStatus(err, http.StatusForbidden)
 	suite.False(suite.DB.GithubApp.Query().Where(githubapp.ID(999)).ExistX(suite.Ctx))
 }
 
-func (suite *GithubHandlerSuite) TestSaveRejectsExpiredFlow() {
-	flow := suite.startAppFlow()
+func (suite *GithubHandlerSuite) TestSaveRejectsExpiredOrUnknownState() {
+	state := suite.startAppFlow(suite.creator, uuid.Nil)
 	suite.redis.FastForward(appFlowTTL + time.Minute)
 
-	_, err := suite.handlers.HandleGithubAppSave(suite.Ctx, &HandleGithubAppSaveInput{Code: "code", State: flow.Value, FlowCookieSecure: flow})
-	suite.assertStatus(err, http.StatusBadRequest)
+	for _, state := range []string{state, uuid.NewString()} {
+		_, err := suite.handlers.HandleGithubAppSave(suite.as(suite.creator), suite.saveInput(state))
+		suite.assertStatus(err, http.StatusBadRequest)
+	}
 }
 
 func TestGithubHandlerSuite(t *testing.T) {

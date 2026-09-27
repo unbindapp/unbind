@@ -1018,6 +1018,13 @@ export const DataStructSchema = z
   })
   .strip();
 
+export const DataStruct1Schema = z
+  .object({
+    install_url: z.string(), // Where to send the user to install the app
+    uuid: z.string(),
+  })
+  .strip();
+
 export const DatabaseConfigurableSchema = z
   .object({
     default: z.string(),
@@ -1851,6 +1858,19 @@ export const GithubAppInstallationListResponseBodySchema = z
 export const GithubAppListResponseBodySchema = z
   .object({
     data: z.array(GithubAppAPIResponseSchema),
+  })
+  .strip();
+
+export const GithubAppSaveInputBodySchema = z
+  .object({
+    code: z.string(), // The code GitHub added to the redirect URL
+    state: z.string(), // The state GitHub added to the redirect URL
+  })
+  .strip();
+
+export const GithubAppSaveResponseBodySchema = z
+  .object({
+    data: DataStruct1Schema,
   })
   .strip();
 
@@ -3046,6 +3066,7 @@ export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
 export type DNSStatus = z.infer<typeof DNSStatusSchema>;
 export type DataStruct = z.infer<typeof DataStructSchema>;
+export type DataStruct1 = z.infer<typeof DataStruct1Schema>;
 export type DatabaseConfigurable = z.infer<typeof DatabaseConfigurableSchema>;
 export type DatabaseConfigurables = z.infer<typeof DatabaseConfigurablesSchema>;
 export type DeletedResponse = z.infer<typeof DeletedResponseSchema>;
@@ -3155,6 +3176,8 @@ export type GithubAppInstallationListResponseBody = z.infer<
   typeof GithubAppInstallationListResponseBodySchema
 >;
 export type GithubAppListResponseBody = z.infer<typeof GithubAppListResponseBodySchema>;
+export type GithubAppSaveInputBody = z.infer<typeof GithubAppSaveInputBodySchema>;
+export type GithubAppSaveResponseBody = z.infer<typeof GithubAppSaveResponseBodySchema>;
 export type GithubAppSetTeamInputBody = z.infer<typeof GithubAppSetTeamInputBodySchema>;
 export type GithubAppSetTeamResponseBody = z.infer<typeof GithubAppSetTeamResponseBodySchema>;
 export type GithubBranch = z.infer<typeof GithubBranchSchema>;
@@ -3383,7 +3406,7 @@ export const list_environmentsQuerySchema = z
 
 export const app_createQuerySchema = z
   .object({
-    redirect_url: z.string(), // The client URL to redirect to after the installation is finished
+    redirect_url: z.string(), // The client page GitHub returns to, with code and state once the app is created and with id once it is installed
     organization: z.string().optional(), // The organization to install the app for, if any
     team_id: z.string().optional(), // Share the app with this team so its members can pick the repositories. Needs editor access to the team.
   })
@@ -3392,13 +3415,6 @@ export const app_createQuerySchema = z
 export const get_github_appQuerySchema = z
   .object({
     uuid: z.string(),
-  })
-  .passthrough();
-
-export const app_saveQuerySchema = z
-  .object({
-    code: z.string(),
-    state: z.string(),
   })
   .passthrough();
 
@@ -5048,7 +5064,10 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             throw error;
           }
         },
-        save: async (params: z.infer<typeof app_saveQuerySchema>, fetchOptions?: RequestInit) => {
+        save: async (
+          params: GithubAppSaveInputBody,
+          fetchOptions?: RequestInit,
+        ): Promise<GithubAppSaveResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
@@ -5057,29 +5076,29 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               `${apiUrl}/github/app/save`,
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
-            const validatedQuery = app_saveQuerySchema.parse(params);
-            const queryKeys = ['code', 'state'];
-            queryKeys.forEach((key) => {
-              const value = validatedQuery[key as keyof typeof validatedQuery];
-              if (value !== undefined && value !== null) {
-                url.searchParams.append(key, String(value));
-              }
-            });
+
             const options: RequestInit = {
-              method: 'GET',
+              method: 'POST',
               credentials: 'include',
               headers: {
                 'Content-Type': 'application/json',
               },
               ...fetchOptions,
             };
-
+            const validatedBody = GithubAppSaveInputBodySchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            return data;
+            const { data: parsedData, error } = GithubAppSaveResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
           } catch (error) {
             if (import.meta.env.DEV) {
               console.error('Error in API request:', error);
