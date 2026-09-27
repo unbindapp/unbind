@@ -319,7 +319,7 @@ function Content({
       heading={
         <div className="text-muted-foreground flex w-full items-center gap-1.5 py-0.5">
           <group.Icon className="mt-[0.1lh] -ml-0.5 size-3.5 shrink-0 self-start" />
-          <p className="min-w-0 shrink pr-1 leading-tight font-medium">{group.page.title}</p>
+          <p className="min-w-0 shrink pr-1 leading-tight font-normal">{group.page.title}</p>
           <div className="mt-px flex h-px min-w-0 flex-1 items-center justify-end border-t border-dashed" />
         </div>
       }
