@@ -240,7 +240,7 @@ function referenceRows(serviceName: string, privateUrls: TConnectionUrl[]) {
   return keys.map(({ key, label }) => ({ key, label, value: readableToken(serviceName, key) }));
 }
 
-// Same reading as the variable editor: the "${", the dot and the "}" are scaffolding
+// Styled like a resolved reference in the variable editor
 function ReferenceToken({
   sourceName,
   referenceKey,
@@ -249,13 +249,13 @@ function ReferenceToken({
   referenceKey: string;
 }) {
   return (
-    <>
-      <span className="text-muted-more-foreground">{"${"}</span>
-      {sourceName}
-      <span className="text-muted-more-foreground">.</span>
-      {referenceKey}
-      <span className="text-muted-more-foreground">{"}"}</span>
-    </>
+    <span className="tok-chip tok-chip-process">
+      <span className="tok-punct">{"${"}</span>
+      <span className="tok-key">{sourceName}</span>
+      <span className="tok-punct">.</span>
+      <span className="tok-key">{referenceKey}</span>
+      <span className="tok-punct">{"}"}</span>
+    </span>
   );
 }
 
@@ -364,11 +364,11 @@ function ConnectRow({
       )}
     >
       {label && (
-        <p className="text-muted-foreground shrink-0 border-r px-2.5 py-2 font-mono text-sm leading-5">
+        <p className="text-muted-foreground py-1.875 shrink-0 border-r px-2.5 font-mono text-sm leading-normal">
           {label}
         </p>
       )}
-      <p className="min-w-0 flex-1 px-2.5 py-2 font-mono text-sm leading-5 wrap-anywhere">
+      <p className="py-1.875 min-w-0 flex-1 px-2.5 font-mono text-sm leading-normal wrap-anywhere">
         {Icon && (
           <span className="inline-icon mr-1.5">
             <Icon className="size-4 shrink-0" />
