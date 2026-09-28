@@ -700,7 +700,7 @@ function ExpandRegistryDialogTrigger({
             <br />
             <br />
             Type {`"`}
-            <span className="text-warning font-semibold select-all">{expandConfirmText}</span>
+            <span className="text-warning font-semibold">{expandConfirmText}</span>
             {`"`} to confirm.
           </DialogDescription>
         </DialogHeader>
