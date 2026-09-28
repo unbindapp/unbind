@@ -48,6 +48,7 @@ import {
   EllipsisVerticalIcon,
   ExternalLinkIcon,
   EyeIcon,
+  EyeOffIcon,
   LockIcon,
   PlusIcon,
   Trash2Icon,
@@ -92,7 +93,7 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
           {!app || !app.team_id ? (
             <Chip className="text-success bg-success/4-10 border-success/4-10 font-medium">
               <LockIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-              Only you
+              Only me
             </Chip>
           ) : (
             <Chip className="text-process bg-process/4-10 border-process/4-10 font-medium">
@@ -183,9 +184,10 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
       ) : (
         <ThreeDotButton
           app={app}
+          view={view}
           isOwner={isOwner}
           canManage={canManage}
-          canSetVisibility={isOwner || (!ownerGone && !!app.team_id && !!canEditTeam)}
+          canUnshare={isOwner || (!ownerGone && !!app.team_id && !!canEditTeam)}
           className="absolute top-1 right-1"
         />
       )}
@@ -344,19 +346,22 @@ function ServicesNote({ count }: { count: number }) {
 
 function ThreeDotButton({
   app,
+  view,
   isOwner,
   canManage,
-  canSetVisibility,
+  canUnshare,
   className,
 }: {
   app: TGitApp;
+  view: TGithubAppCardView;
   isOwner: boolean;
   canManage: boolean;
-  canSetVisibility: boolean;
+  canUnshare: boolean;
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [visibilityHandle] = useState(() => createDialogHandle());
+  const [unshareHandle] = useState(() => createDialogHandle());
   const [deleteHandle] = useState(() => createDialogHandle());
 
   return (
@@ -386,7 +391,7 @@ function ThreeDotButton({
           <ScrollArea>
             <DropdownMenuGroup>
               {/* The dialogs live outside the menu; nested inside the open modal menu they would be inert */}
-              {canSetVisibility && (
+              {view === "account" && isOwner && (
                 <DialogTrigger
                   nativeButton={false}
                   handle={visibilityHandle}
@@ -406,6 +411,18 @@ function ThreeDotButton({
                 <BrandIcon brand="github" className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Open on GitHub</p>
               </DropdownMenuItem>
+              {view === "team" && canUnshare && (
+                <DialogTrigger
+                  nativeButton={false}
+                  handle={unshareHandle}
+                  render={
+                    <DropdownMenuItem className="text-warning active:bg-warning/4-10 data-highlighted:bg-warning/4-10 data-highlighted:text-warning">
+                      <EyeOffIcon className="-ml-0.5 size-5" />
+                      <p className="min-w-0 shrink leading-tight">Stop Sharing</p>
+                    </DropdownMenuItem>
+                  }
+                />
+              )}
               {canManage && (
                 <DialogTrigger
                   nativeButton={false}
@@ -422,9 +439,8 @@ function ThreeDotButton({
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
-      {canSetVisibility && (
-        <VisibilityDialog app={app} isOwner={isOwner} handle={visibilityHandle} />
-      )}
+      {view === "account" && isOwner && <VisibilityDialog app={app} handle={visibilityHandle} />}
+      {view === "team" && canUnshare && <UnshareTrigger app={app} handle={unshareHandle} />}
       {canManage && <DeleteAppTrigger app={app} handle={deleteHandle} />}
     </>
   );
@@ -432,22 +448,16 @@ function ThreeDotButton({
 
 const onlyMe = "only-me";
 
-function VisibilityDialog({
-  app,
-  isOwner,
-  handle,
-}: {
-  app: TGitApp;
-  isOwner: boolean;
-  handle: TDialogHandle;
-}) {
+function VisibilityDialog({ app, handle }: { app: TGitApp; handle: TDialogHandle }) {
   const { invalidate } = useGithubAppsUtils();
   const {
     data: teamsData,
     isPending: isPendingTeams,
     error: teamsError,
   } = useQuery(teamsListQuery());
-  const [value, setValue] = useState(app.team_id ?? onlyMe);
+  const current = app.team_id ?? onlyMe;
+  const [picked, setPicked] = useState<string | null>(null);
+  const value = picked ?? current;
   const {
     mutateAsync: setTeam,
     isPending,
@@ -457,26 +467,20 @@ function VisibilityDialog({
 
   const items: TChoice[] | undefined = teamsData
     ? [
-        {
-          value: onlyMe,
-          label: isOwner ? "Only me" : `Only ${app.created_by_email ?? "the owner"}`,
-          Icon: LockIcon,
-        },
+        { value: onlyMe, label: "Only me", Icon: LockIcon },
         ...teamsData.teams
-          .filter(
-            (team) => team.id === app.team_id || (isOwner && team.permissions.includes("editor")),
-          )
+          .filter((team) => team.permissions.includes("editor") || team.id === app.team_id)
           .map((team) => ({ value: team.id, label: team.name, Icon: UsersIcon })),
       ]
     : undefined;
-  const isUnchanged = value === (app.team_id ?? onlyMe);
+  const isUnchanged = value === current;
 
   return (
     <Dialog
       handle={handle}
       onOpenChange={(open) => {
         if (open) return;
-        setValue(app.team_id ?? onlyMe);
+        setPicked(null);
         reset();
       }}
     >
@@ -488,7 +492,7 @@ function VisibilityDialog({
         <ChoiceList
           items={items}
           value={value}
-          onChange={setValue}
+          onChange={setPicked}
           isPending={isPendingTeams}
           error={teamsError?.message}
         />
@@ -501,6 +505,7 @@ function VisibilityDialog({
             onClick={async () => {
               await setTeam({ uuid: app.uuid, teamId: value === onlyMe ? null : value });
               await invalidate();
+              setPicked(null);
               handle.close();
             }}
           >
@@ -509,6 +514,28 @@ function VisibilityDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function UnshareTrigger({ app, handle }: { app: TGitApp; handle: TDialogHandle }) {
+  const { invalidate } = useGithubAppsUtils();
+  const { mutateAsync: setTeam, error, reset } = useMutation({ mutationFn: setGitAppTeamFn });
+  return (
+    <DeleteEntityTrigger
+      dialogTitle="Stop Sharing"
+      dialogDescription={`Members of ${app.team_name ?? "the team"} can no longer see its repositories. Services already built from it keep deploying.`}
+      deletingEntityName={app.name}
+      disableConfirmationInput
+      submitButtonText="Stop Sharing"
+      variant="warning"
+      handle={handle}
+      error={error}
+      onDialogClose={reset}
+      onSubmit={async () => {
+        await setTeam({ uuid: app.uuid, teamId: null });
+        await invalidate();
+      }}
+    />
   );
 }
 
