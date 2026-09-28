@@ -448,5 +448,10 @@
     "version": "v0.1.89",
     "summary": "A registry settings tab with manual cleanup and full registry warnings, reverting changed settings from the field, GitHub App links that survive renames, and S3 endpoint validation.",
     "breaking": false
+  },
+  "v0.1.90": {
+    "version": "v0.1.90",
+    "summary": "Tracked registry volume expansion, PostgreSQL WAL retention sized from the volume, and GitHub App sharing from the team view.",
+    "breaking": false
   }
 }
