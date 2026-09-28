@@ -523,7 +523,21 @@ function UnshareTrigger({ app, handle }: { app: TGitApp; handle: TDialogHandle }
   return (
     <DeleteEntityTrigger
       dialogTitle="Stop Sharing"
-      dialogDescription={`Members of ${app.team_name ?? "the team"} can no longer see its repositories. Services already built from it keep deploying.`}
+      dialogDescription={
+        <>
+          Members of{" "}
+          {app.team_name ? (
+            <span className="text-foreground font-medium">
+              <UsersIcon className="mr-1 mb-[0.1lh] inline-block size-[0.7lh]" />
+              {app.team_name}
+            </span>
+          ) : (
+            "the team"
+          )}{" "}
+          will no longer see the repositories from this GitHub App. Services already built from it
+          keep deploying.
+        </>
+      }
       deletingEntityName={app.name}
       disableConfirmationInput
       submitButtonText="Stop Sharing"

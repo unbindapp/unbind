@@ -223,7 +223,7 @@ function useGitItem({ context }: TProps) {
       toast.add({
         type: "success",
         title: "GitHub connected",
-        description: "You can see its repositories now.",
+        description: "You can now see the repositories from this GitHub App.",
         timeout: 5000,
       });
     };
@@ -252,12 +252,12 @@ function useGitItem({ context }: TProps) {
             connected({ setCurrentPageId });
           },
         }),
-        () => new Error("Failed to create GitHub app"),
+        () => new Error("Failed to create GitHub App"),
       );
       if (res.isErr()) {
         toast.add({
           type: "error",
-          title: "Failed to create GitHub app",
+          title: "Failed to create GitHub App",
           description: res.error.message,
         });
       }

@@ -110,8 +110,8 @@ export function ConnectGithubTrigger({
             type: "success",
             title: "GitHub connected",
             description: sharedTeam
-              ? `Members of ${sharedTeam.name} can now see its repositories.`
-              : "Only you can see its repositories.",
+              ? `Members of ${sharedTeam.name} can now see the repositories from this GitHub App.`
+              : "Only you can see the repositories from this GitHub App.",
             timeout: 5000,
           });
         },

@@ -13,7 +13,7 @@ type TConnectGitHubInput = {
   onSuccess: () => void;
 };
 
-// Opens the GitHub app creation flow in a popup. Must run inside a user gesture,
+// Opens the GitHub App creation flow in a popup. Must run inside a user gesture,
 // otherwise the browser blocks the popup.
 export async function connectGitHub({
   redirectUrl,
