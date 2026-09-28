@@ -38,7 +38,7 @@ jobs:
             echo "No previous release tag; skipping chart guard"
             exit 0
           fi
-          CHANGED=$(git diff --name-only "$PREV" "$VERSION" -- deploy/charts/charts/)
+          CHANGED=$(git diff --name-only -I '^\s*#' "$PREV" "$VERSION" -- deploy/charts/charts/)
           if [ -z "$CHANGED" ]; then
             echo "No chart changes since $PREV"
             exit 0

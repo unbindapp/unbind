@@ -40,8 +40,8 @@ git fetch origin -q
 git status -sb                                   # must be clean; "behind N" is fine, pull later
 git tag --sort=-v:refname | head -1              # <last>
 git log --oneline <last>..origin/master          # what goes into the release
-git diff --name-only <last> origin/master -- 'deploy/charts/charts/*/templates/**' \
-  | grep -iE '(rbac|role|sa|serviceaccount)[^/]*\.yaml$' || echo "no RBAC changes"
+git diff --name-only -I '^\s*#' <last> origin/master -- deploy/charts/charts/ \
+  | grep . || echo "no chart changes"
 git ls-tree -d origin/master deploy/releases/ | tail -3   # staged per-version manifests
 grep -c '"<next>"' deploy/releases/metadata.json          # hand-written entry?
 ```
@@ -51,8 +51,8 @@ Decide the version:
 - Default is the last tag with the patch bumped.
 - If `deploy/releases/<version>/` exists on `origin/master` for a version newer than the
   last tag, a collaborator staged manifests for it. That version **is** the next release.
-- The RBAC guard: if chart RBAC templates changed since the last tag, the workflow fails
-  unless `deploy/releases/<next>/` exists. If it is missing, stop and tell the user. Do not
+- The chart guard: if anything under `deploy/charts/charts/` changed since the last tag,
+  other than comment lines, the workflow fails unless `deploy/releases/<next>/` exists. If it is missing, stop and tell the user. Do not
   create the directory yourself.
 
 Things to surface to the user instead of working around:
@@ -197,7 +197,7 @@ retry a failed tag push with a different version on your own.
 - **"has no summary"**: the tag was lightweight or the message was empty. Delete the
   tag locally and on origin, re-tag with `-a -m`, push again. Ask first with
   `AskUserQuestion`; deleting a remote tag is visible to everyone.
-- **RBAC guard**: chart RBAC changed with no `deploy/releases/<next>/`. Tell the user;
+- **Chart guard**: a chart changed with no `deploy/releases/<next>/`. Tell the user;
   someone needs to stage manifests (or an empty `kustomization.yaml`) on `master` and the
   release must be re-tagged after that commit.
 - **Metadata push conflict**: the workflow retries three times. If it still fails, the
