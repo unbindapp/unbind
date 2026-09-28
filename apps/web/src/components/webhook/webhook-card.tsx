@@ -14,13 +14,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
-import { getWebhookIcon } from "@/components/webhook/helpers";
+import { getWebhookIcon, maskWebhookUrl } from "@/components/webhook/helpers";
 import { TWebhookProjectProps, TWebhookProps, TWebhookTeamProps } from "@/components/webhook/types";
 import { useWebhooksUtils } from "@/components/webhook/webhooks-provider";
 import { deleteWebhook as deleteWebhookFn, type TWebhookShallow } from "@/lib/queries/webhooks";
 import { useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
+import { EllipsisVerticalIcon, EyeIcon, EyeOffIcon, Trash2Icon } from "lucide-react";
 import { ReactElement, useState } from "react";
 
 const placeholderArray = Array.from({ length: 6 }, (_, i) => i);
@@ -35,6 +35,7 @@ type TProps =
   | { type: "placeholder"; webhook?: never; teamId?: never; projectId?: never };
 
 export default function WebhookCard({ type, webhook, teamId, projectId }: TProps) {
+  const [isUrlVisible, setIsUrlVisible] = useState(false);
   const threeDotTButtonProps =
     type === "project"
       ? { type, teamId, projectId, webhook }
@@ -48,7 +49,7 @@ export default function WebhookCard({ type, webhook, teamId, projectId }: TProps
       className="group/item relative flex flex-col items-start justify-start gap-3 rounded-xl border p-3 sm:p-4 sm:pt-3.5"
     >
       {webhook && <NewEntityIndicator id={webhook.id} />}
-      <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-10 text-sm leading-tight">
+      <div className="flex w-full items-start justify-start gap-2 px-0.5 pr-18 text-sm leading-tight">
         <div className="line-icon">
           <BrandIcon
             color="brand"
@@ -56,8 +57,12 @@ export default function WebhookCard({ type, webhook, teamId, projectId }: TProps
             className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground size-5 group-data-placeholder/item:rounded-full"
           />
         </div>
-        <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
-          {type === "placeholder" ? "https://unbind.app/webhook" : webhook.url}
+        <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink wrap-break-word group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
+          {type === "placeholder"
+            ? "https://unbind.app/webhook"
+            : isUrlVisible
+              ? webhook.url
+              : maskWebhookUrl(webhook.url)}
         </p>
       </div>
       <div className="flex w-full flex-wrap items-start justify-start gap-1.5 text-xs">
@@ -73,19 +78,39 @@ export default function WebhookCard({ type, webhook, teamId, projectId }: TProps
       <p className="text-muted-foreground group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-muted-foreground max-w-full min-w-0 shrink px-0.75 text-sm leading-tight group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
         {type === "placeholder" ? "Jan 01, 2024" : format(webhook.created_at, "MMMM dd, yyyy")}
       </p>
-      {!threeDotTButtonProps ? (
+      <div className="absolute top-1 right-1 flex">
         <Button
-          disabled
-          fadeOnDisabled={false}
+          data-visible={isUrlVisible || undefined}
+          onClick={() => setIsUrlVisible((prev) => !prev)}
+          aria-label={isUrlVisible ? "Hide URL" : "Show URL"}
           variant="ghost"
           size="icon"
-          className="absolute top-1 right-1 rounded-lg"
+          className="text-muted-more-foreground group/button rounded-lg"
+          disabled={!threeDotTButtonProps}
+          fadeOnDisabled={false}
         >
-          <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
+          <div className="relative size-5">
+            <EyeIcon className="size-full group-data-visible/button:opacity-0" />
+            <EyeOffIcon className="absolute top-0 left-0 size-full opacity-0 group-data-visible/button:opacity-100" />
+            {!threeDotTButtonProps && (
+              <div className="bg-muted-more-foreground animate-skeleton absolute top-0 left-0 size-full rounded-sm" />
+            )}
+          </div>
         </Button>
-      ) : (
-        <ThreeDotButton {...threeDotTButtonProps} className="absolute top-1 right-1" />
-      )}
+        {!threeDotTButtonProps ? (
+          <Button
+            disabled
+            fadeOnDisabled={false}
+            variant="ghost"
+            size="icon"
+            className="rounded-lg"
+          >
+            <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
+          </Button>
+        ) : (
+          <ThreeDotButton {...threeDotTButtonProps} />
+        )}
+      </div>
     </div>
   );
 }
@@ -193,10 +218,10 @@ function DeleteTrigger({
       disableConfirmationInput
       EntityNameBadge={() => (
         <p className="bg-foreground/2-10 border-foreground/2-10 -ml-0.5 max-w-[calc(100%+0.25rem)] truncate rounded-md border px-1.5 py-px text-sm font-medium">
-          {webhook.url}
+          {maskWebhookUrl(webhook.url)}
         </p>
       )}
-      deletingEntityName={webhook.url}
+      deletingEntityName={maskWebhookUrl(webhook.url)}
       handle={handle}
       onDialogClose={() => {
         deleteWebhookReset();

@@ -47,6 +47,6 @@ Any other URL receives a `POST` with a JSON body:
 
 ## Good to know
 
-- **Treat the URL as a secret.** Anyone who has it can post to your channel.
+- **Treat the URL as a secret.** Anyone who has it can post to your channel. The webhooks page hides it except for the host and the last few characters. Press the eye button on a webhook to see the full URL.
 - **There is no test button.** Subscribe to **Service Updated**, change something small and check that the message arrives.
-- **Webhooks cannot be managed through the API or MCP**, because their URLs are secrets.
+- **API keys and connected apps see a blank URL** unless they have the `read_webhook_urls` privilege.

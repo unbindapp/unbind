@@ -51,3 +51,24 @@ export function getWebhookIcon(urlStr: string): "discord" | "telegram" | "slack"
   // Default
   return "webhook";
 }
+
+const MASK = "••••••••";
+const VISIBLE_TAIL_LENGTH = 4;
+const MIN_HIDDEN_LENGTH_FOR_TAIL = 20;
+
+// Keeps the host readable and hides the path and query, where providers put the secret.
+// The last few characters stay visible only when enough of the secret is left hidden.
+export function maskWebhookUrl(urlStr: string) {
+  let parsedURL: URL;
+  try {
+    parsedURL = new URL(urlStr);
+  } catch {
+    return MASK;
+  }
+  if (parsedURL.origin === "null") return MASK;
+
+  const hidden = `${parsedURL.pathname}${parsedURL.search}${parsedURL.hash}`.slice(1);
+  const tail =
+    hidden.length >= MIN_HIDDEN_LENGTH_FOR_TAIL ? hidden.slice(-VISIBLE_TAIL_LENGTH) : "";
+  return `${parsedURL.origin}/${MASK}${tail}`;
+}
