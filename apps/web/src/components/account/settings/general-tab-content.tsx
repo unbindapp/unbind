@@ -2,6 +2,7 @@
 
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
+import { Section } from "@/components/system/settings/section";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
@@ -10,7 +11,6 @@ import { useAppForm } from "@/lib/hooks/use-app-form";
 import { meQuery, updatePassword as updatePasswordFn } from "@/lib/queries/me";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { LoaderIcon, RotateCcwIcon, SaveIcon } from "lucide-react";
-import { ReactNode } from "react";
 import { z } from "zod";
 
 type TProps = {
@@ -23,7 +23,7 @@ export default function GeneralTabContent({ className }: TProps) {
   return (
     <div className={cn("flex w-full flex-col gap-6", className)}>
       <Section title="Email" description="The address you sign in with. It cannot be changed yet.">
-        <div className="flex w-full items-start gap-2 md:max-w-md">
+        <div className="flex w-full items-start gap-2">
           <Input
             readOnly
             value={me?.email ?? ""}
@@ -83,7 +83,7 @@ function PasswordForm() {
         }}
         className="flex w-full flex-col gap-3"
       >
-        <div className="flex w-full flex-col gap-3 md:max-w-md">
+        <div className="flex w-full flex-col gap-3">
           <form.AppField
             name="currentPassword"
             children={(field) => (
@@ -172,26 +172,6 @@ function PasswordForm() {
         />
       </form>
       {error && <ErrorLine message={error.message} />}
-    </div>
-  );
-}
-
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex w-full flex-col gap-3">
-      <div className="flex w-full flex-col gap-1 px-1">
-        <h3 className="leading-tight font-semibold">{title}</h3>
-        <p className="text-muted-foreground text-sm">{description}</p>
-      </div>
-      {children}
     </div>
   );
 }

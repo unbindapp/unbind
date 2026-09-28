@@ -11,9 +11,7 @@ function TeamDangerZoneSettings() {
   return (
     <>
       <SettingsTabTitle>Delete Team</SettingsTabTitle>
-      <div className="-mx-1 mt-2 w-[calc(100%+0.5rem)] p-1 md:max-w-3xl">
-        <ComingSoonCard />
-      </div>
+      <ComingSoonCard className="mt-3" />
     </>
   );
 }

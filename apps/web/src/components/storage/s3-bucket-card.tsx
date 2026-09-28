@@ -89,7 +89,7 @@ type TProps =
 
 export default function S3BucketCard({ s3Bucket, teamId, isPlaceholder }: TProps) {
   return (
-    <li className="relative w-full p-1 md:max-w-3xl">
+    <li className="relative w-full p-1">
       <div
         data-pending={isPlaceholder || undefined}
         className="group/item relative flex w-full items-center justify-start"
@@ -588,7 +588,7 @@ function EditTrigger({
 
 export function AddS3BucketCard({ teamId }: { teamId: string }) {
   return (
-    <li className="relative w-full p-1 md:max-w-3xl">
+    <li className="relative w-full p-1">
       <div className="group/item relative flex w-full items-center justify-start">
         <AddS3BucketTrigger teamId={teamId}>
           <Button

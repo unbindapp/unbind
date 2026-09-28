@@ -16,7 +16,7 @@ export default function SettingsLayout({ title, tabs, children }: TProps) {
         </h1>
         <div className="relative flex w-full flex-1 flex-col pt-1 md:flex-row md:items-stretch md:gap-4 md:pt-3">
           <SettingsTabs tabs={tabs} />
-          <div className="flex min-w-0 flex-1 flex-col gap-0.75 px-3 pt-4 pb-12 sm:px-4 sm:pt-5 md:pt-2 md:pr-2 md:pl-0">
+          <div className="flex min-w-0 flex-1 flex-col gap-0.75 px-3 pt-4 pb-12 sm:px-4 sm:pt-5 md:max-w-3xl md:pt-2 md:pr-2 md:pl-0">
             {children}
           </div>
         </div>
