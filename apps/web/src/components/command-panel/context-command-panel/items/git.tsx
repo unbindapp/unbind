@@ -8,6 +8,7 @@ import { connectGitHub, githubConnectedPath } from "@/components/git/connect-git
 import BrandIcon from "@/components/icons/brand";
 import { useProject, useProjectUtils } from "@/components/project/project-provider";
 import { useProjectsUtils } from "@/components/project/projects-provider";
+import { useNavigateToServices } from "@/components/project/use-navigate-to-services";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useUniqueServiceName } from "@/components/service/use-unique-service-name";
@@ -85,6 +86,7 @@ function useGitItem({ context }: TProps) {
   const { invalidate: invalidateProject } = useProjectUtils({ teamId, projectId });
 
   const { openPanel: openServicePanel } = useServicePanel();
+  const navigateToServices = useNavigateToServices({ teamId, projectId });
 
   const environments = projectData?.project.environments;
   const defaultEnvironmentId = projectData?.project.default_environment_id || environments?.[0]?.id;
@@ -134,19 +136,21 @@ function useGitItem({ context }: TProps) {
     },
     onMutate: ({ name }) => {
       closeCommandPanel();
+      const environmentId = environmentIdFromPathname || defaultEnvironmentId || "";
+      const navigation = navigateToServices(environmentId);
       const pendingId = uuidv4();
       addPendingService({
         id: pendingId,
         teamId,
         projectId,
-        environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
+        environmentId,
         name,
         icon: "github",
         createdAt: new Date().toISOString(),
       });
-      return { pendingId };
+      return { pendingId, navigation };
     },
-    onSuccess: async (data) => {
+    onSuccess: async (data, _variables, context) => {
       invalidateProject();
       invalidateProjects();
 
@@ -164,6 +168,7 @@ function useGitItem({ context }: TProps) {
         return;
       }
 
+      await context?.navigation;
       openServicePanel(data.service.id);
 
       setIsPendingId(null);

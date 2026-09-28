@@ -3,6 +3,7 @@ import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/com
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import BrandIcon from "@/components/icons/brand";
 import { useProject } from "@/components/project/project-provider";
+import { useNavigateToServices } from "@/components/project/use-navigate-to-services";
 import { useTemplateDraftPanel } from "@/components/templates/panel/template-draft-panel-provider";
 import { TTemplateDraft } from "@/components/templates/template-draft-store";
 import { useTemplateDraftStore } from "@/components/templates/template-draft-store-provider";
@@ -62,6 +63,7 @@ function useTemplateItem() {
     environmentId: environmentIdFromPathname || defaultEnvironmentId || "",
   });
   const { openPanel: openTemplateDraftPanel } = useTemplateDraftPanel();
+  const navigateToServices = useNavigateToServices({ teamId, projectId });
 
   const templateItems: TCommandPanelItem[] = useMemo(() => {
     return templates.map((template) => {
@@ -103,7 +105,7 @@ function useTemplateItem() {
           );
         },
         keywords: template.keywords,
-        onSelect: () => {
+        onSelect: async () => {
           const id = uuidv4();
           const environmentId = environmentIdFromPathname || defaultEnvironmentId;
           if (!environmentId) {
@@ -126,6 +128,7 @@ function useTemplateItem() {
           };
           createTemplateDraft(templateDraft);
           closeCommandPanel();
+          await navigateToServices(environmentId);
           openTemplateDraftPanel(id);
         },
         Icon: ({ className }: { className?: string }) => (
@@ -137,6 +140,7 @@ function useTemplateItem() {
   }, [
     templates,
     closeCommandPanel,
+    navigateToServices,
     openTemplateDraftPanel,
     createTemplateDraft,
     environmentIdFromPathname,

@@ -4,6 +4,7 @@ import { TCommandPanelItem, TContextCommandPanelContext } from "@/components/com
 import TitleChip from "@/components/command-panel/title-chip";
 import useCommandPanel from "@/components/command-panel/use-command-panel";
 import { useProject } from "@/components/project/project-provider";
+import { useNavigateToServices } from "@/components/project/use-navigate-to-services";
 import ServiceIcon from "@/components/service/service-icon";
 import {
   getDuplicateServiceNames,
@@ -88,6 +89,7 @@ function useVolumeItem() {
   } = useProject();
   const { data: systemData } = useSystem();
   const { openPanel: openVolumePanel } = useVolumePanel();
+  const navigateToServices = useNavigateToServices({ teamId, projectId });
 
   const environments = projectData?.project.environments;
   const defaultEnvironmentId = projectData?.project.default_environment_id || environments?.[0]?.id;
@@ -149,6 +151,7 @@ function useVolumeItem() {
       }
 
       closeCommandPanel();
+      await navigateToServices(environmentId);
       openVolumePanel(data.volume.id);
       setIsPendingId(null);
     },
