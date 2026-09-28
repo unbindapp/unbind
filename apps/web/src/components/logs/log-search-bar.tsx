@@ -340,17 +340,22 @@ function FilterButton({ className }: { className?: string }) {
           <DropdownMenuSeparator />
           <DropdownMenuGroup className="pb-2">
             <DropdownMenuLabel>Time Range</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={activeLogRangePreset(range)}
-              onValueChange={(preset: TLogRangePreset) => setRange({ preset, until: range.until })}
-              className="grid w-full grid-cols-4 gap-1.5 px-1.5 pt-1.5"
-            >
-              {logRangePresets.map((preset) => (
-                <DropdownMenuRadioButton key={preset} value={preset} className="font-mono">
-                  {preset}
-                </DropdownMenuRadioButton>
-              ))}
-            </DropdownMenuRadioGroup>
+            <div className="px-1.5 pt-1 pb-0.5">
+              <DropdownMenuRadioGroup
+                value={activeLogRangePreset(range)}
+                onValueChange={(preset: TLogRangePreset) =>
+                  setRange({ preset, until: range.until })
+                }
+                className="grid grid-cols-4"
+              >
+                {logRangePresets.map((preset) => (
+                  <DropdownMenuRadioButton key={preset} value={preset} className="font-mono">
+                    {preset}
+                  </DropdownMenuRadioButton>
+                ))}
+              </DropdownMenuRadioGroup>
+            </div>
+
             <div
               onKeyDown={(e) => {
                 if (e.key === "Escape") return;

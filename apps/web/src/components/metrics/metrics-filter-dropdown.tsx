@@ -97,34 +97,38 @@ export default function MetricsFilterDropdown({
         <ScrollArea className="min-h-0 shrink">
           <DropdownMenuGroup className="pb-2">
             <DropdownMenuLabel>Time Range</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={interval.value}
-              onValueChange={(value: TMetricsIntervalEnum) => setInterval(value)}
-              className="grid w-full grid-cols-4 gap-1.5 px-1.5 pt-1.5"
-            >
-              {intervals.map((i) => (
-                <DropdownMenuRadioButton key={i.value} value={i.value} className="font-mono">
-                  {i.label}
-                </DropdownMenuRadioButton>
-              ))}
-            </DropdownMenuRadioGroup>
+            <div className="px-1.5 pt-1 pb-0.5">
+              <DropdownMenuRadioGroup
+                value={interval.value}
+                onValueChange={(value: TMetricsIntervalEnum) => setInterval(value)}
+                className="grid grid-cols-4"
+              >
+                {intervals.map((i) => (
+                  <DropdownMenuRadioButton key={i.value} value={i.value} className="font-mono">
+                    {i.label}
+                  </DropdownMenuRadioButton>
+                ))}
+              </DropdownMenuRadioGroup>
+            </div>
           </DropdownMenuGroup>
           {viewEnabled && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuGroup className="pb-2">
                 <DropdownMenuLabel>View</DropdownMenuLabel>
-                <DropdownMenuRadioGroup
-                  value={view}
-                  onValueChange={(value: TMetricsView) => setView(value)}
-                  className="grid w-full grid-cols-2 gap-1.5 px-1.5 pt-1.5"
-                >
-                  {metricsViews.map((v) => (
-                    <DropdownMenuRadioButton key={v} value={v}>
-                      {viewLabels[v]}
-                    </DropdownMenuRadioButton>
-                  ))}
-                </DropdownMenuRadioGroup>
+                <div className="px-1.5 pt-1 pb-0.5">
+                  <DropdownMenuRadioGroup
+                    value={view}
+                    onValueChange={(value: TMetricsView) => setView(value)}
+                    className="grid grid-cols-2"
+                  >
+                    {metricsViews.map((v) => (
+                      <DropdownMenuRadioButton key={v} value={v}>
+                        {viewLabels[v]}
+                      </DropdownMenuRadioButton>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </div>
               </DropdownMenuGroup>
             </>
           )}

@@ -223,8 +223,14 @@ function DropdownMenuCheckboxItem({
   );
 }
 
-function DropdownMenuRadioGroup({ ...props }: MenuPrimitive.RadioGroup.Props) {
-  return <MenuPrimitive.RadioGroup data-slot="dropdown-menu-radio-group" {...props} />;
+function DropdownMenuRadioGroup({ className, ...props }: MenuPrimitive.RadioGroup.Props) {
+  return (
+    <MenuPrimitive.RadioGroup
+      data-slot="dropdown-menu-radio-group"
+      className={cn("bg-background gap-0.5 rounded-lg border p-1", className)}
+      {...props}
+    />
+  );
 }
 
 function DropdownMenuRadioItem({
@@ -268,7 +274,7 @@ function DropdownMenuRadioButton({
       variant="outline"
       render={<DropdownMenuRadioItem hideIndicator value={value} />}
       className={cn(
-        "data-checked:border-foreground/selected-border data-checked:data-highlighted:border-foreground/selected-border data-checked:bg-foreground/2-10 text-muted-foreground data-checked:text-foreground data-checked:data-highlighted:bg-foreground/4-10 data-checked:data-highlighted:text-foreground data-highlighted:bg-border data-highlighted:text-foreground w-full justify-center px-2 py-1.5 font-medium",
+        "has-hover:hover:border-border active:border-border data-checked:border-border data-checked:data-highlighted:border-border data-checked:bg-popover text-muted-foreground data-checked:text-foreground data-checked:data-highlighted:bg-popover data-checked:data-highlighted:text-foreground data-highlighted:text-foreground shadow-shadow-color/shadow-opacity w-full justify-center rounded-[4px] border-transparent px-2 py-1.5 font-medium shadow-none active:bg-transparent has-hover:hover:bg-transparent data-checked:z-1 data-checked:shadow-md data-highlighted:z-1 data-highlighted:bg-transparent",
         className,
       )}
       {...props}
