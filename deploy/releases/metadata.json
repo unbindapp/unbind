@@ -453,5 +453,10 @@
     "version": "v0.1.90",
     "summary": "Tracked registry volume expansion, PostgreSQL WAL retention sized from the volume, and GitHub App sharing from the team view.",
     "breaking": false
+  },
+  "v0.1.91": {
+    "version": "v0.1.91",
+    "summary": "Service references written with a colon and migrated automatically, new service panels opening on the services page, inline revert on rename fields, and clearer GitHub App wording.",
+    "breaking": false
   }
 }
