@@ -4,6 +4,7 @@ import {
   DomainCard,
   TSavedDomainStatus,
 } from "@/components/service/panel/content/undeployed/domain-card";
+import { RevertButton } from "@/components/settings/revert-button";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -22,7 +23,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { RevertButton } from "@/components/settings/revert-button";
 import { Input, inputFrameClassName, InputProps } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -103,6 +103,7 @@ function InputWithInfo({
   classNameFrame,
   Icon,
   classNameIcon,
+  id,
   ...rest
 }: TInputWithInfoProps) {
   const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
@@ -117,9 +118,13 @@ function InputWithInfo({
     !rest.disabled &&
     (isStaged || rest.value !== revertTo);
 
+  const generatedId = useId();
+  const finalId = id || generatedId;
+
   const input = (
     <Input
       {...rest}
+      id={finalId}
       Icon={hasStandaloneIcon ? undefined : Icon}
       aria-invalid={hasError || undefined}
       framed={isFramed}
@@ -153,23 +158,25 @@ function InputWithInfo({
           {onRevert && (
             <div
               data-visible={showRevert || undefined}
-              className={cn(
-                "flex w-0 shrink-0 items-center justify-end overflow-hidden transition-[width]",
-                isLabelIncluded ? "data-visible:w-11.5" : "data-visible:w-9.5",
-              )}
+              data-has-label={isLabelIncluded || undefined}
+              className="flex w-0 shrink-0 items-center justify-end overflow-hidden transition-[width] data-visible:w-9.5 data-has-label:data-visible:w-10.5"
             >
               <RevertButton
                 onClick={onRevert}
                 isStaged={isStaged}
                 disabled={!showRevert}
-                className={cn("mr-0.5", isLabelIncluded && "size-11")}
+                data-has-label={isLabelIncluded || undefined}
+                className="mr-0.5 data-has-label:h-11 data-has-label:w-10"
               />
             </div>
           )}
           {unit && (
-            <div className="text-muted-foreground group-data-staged/frame:text-change/9-10 group-data-staged/frame:border-change/5-10 flex min-w-0 shrink items-center justify-end border-l px-2.5 text-right text-sm font-medium">
+            <label
+              htmlFor={finalId}
+              className="text-muted-foreground group-data-staged/frame:text-change/9-10 group-data-staged/frame:border-change/5-10 flex min-w-0 shrink cursor-text items-center justify-end border-l px-2.5 text-right text-sm font-medium"
+            >
               <p className="min-w-0 shrink">{unit}</p>
-            </div>
+            </label>
           )}
         </div>
       ) : (

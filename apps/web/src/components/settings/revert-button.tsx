@@ -3,30 +3,21 @@ import { cn } from "@/components/ui/utils";
 import { RotateCcwIcon } from "lucide-react";
 
 type TProps = {
-  onClick: () => void;
   isStaged: boolean;
-  disabled?: boolean;
-  className?: string;
   classNameIcon?: string;
-};
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export function RevertButton({ onClick, isStaged, disabled, className, classNameIcon }: TProps) {
+export function RevertButton({ isStaged, className, classNameIcon, ...rest }: TProps) {
   return (
     <Button
       type="button"
       aria-label="Revert"
-      disabled={disabled}
-      onClick={onClick}
       variant={isStaged ? "ghost-change" : "ghost"}
       size="icon"
       className={cn("group/button rounded-md", className)}
+      {...rest}
     >
-      <RotateCcwIcon
-        className={cn(
-          "size-4.5 transition-transform group-disabled/button:-rotate-45",
-          classNameIcon,
-        )}
-      />
+      <RotateCcwIcon className={cn("size-4.5", classNameIcon)} />
     </Button>
   );
 }
