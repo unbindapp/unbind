@@ -157,6 +157,9 @@ func startAPI(cfg *config.Config) {
 	}
 
 	variableService := variables_service.NewVariablesService(repo, kubeClient)
+	if err := variableService.MigrateServiceReferenceSyntax(ctx); err != nil {
+		log.Fatalf("Failed to migrate service references: %v", err)
+	}
 	if err := variableService.MigrateEndpointKeys(ctx); err != nil {
 		log.Errorf("Failed to rename endpoint key references: %v", err)
 	}

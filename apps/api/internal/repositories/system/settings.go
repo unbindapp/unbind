@@ -70,3 +70,16 @@ func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *S
 
 	return settings, nil
 }
+
+func (self *SystemRepository) MarkServiceReferenceSyntaxMigrated(ctx context.Context) error {
+	return self.base.WithTx(ctx, func(tx repository.TxInterface) error {
+		settings, err := self.GetSystemSettings(ctx, tx)
+		if ent.IsNotFound(err) {
+			return tx.Client().SystemSetting.Create().SetServiceReferenceSyntaxMigrated(true).Exec(ctx)
+		}
+		if err != nil {
+			return err
+		}
+		return tx.Client().SystemSetting.UpdateOneID(settings.ID).SetServiceReferenceSyntaxMigrated(true).Exec(ctx)
+	})
+}

@@ -100,10 +100,14 @@ func (self *VariablesService) PrepareVariableWrite(
 	// Provided keys are computed from the service, so a stored value of the same name
 	// would be shadowed and never read. A value stored under one of these names before
 	// they were reserved keeps working, or the raw editor could never save again.
-	for name := range upserts {
+	for name, value := range upserts {
 		if _, stored := existing[name]; !stored && isProvidedKey(name) {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
 				fmt.Sprintf("%s is provided by Unbind and cannot be set", name))
+		}
+		if hasLegacyServiceReference(value) {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+				fmt.Sprintf("%s uses the old ${{service.<id>.KEY}} reference format, use ${{service:<id>.KEY}} instead", name))
 		}
 	}
 

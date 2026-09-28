@@ -11354,7 +11354,7 @@ paths:
         risk: low
   /variables/update:
     post:
-      description: Upsert variables by key for a service, environment, project, or team. Values may contain ${{service.<id>.KEY}}, ${{team.KEY}}, ${{project.KEY}} and ${{environment.KEY}} references. A service may reference its own variables and addresses, but a variable cannot reference itself. A referenced value that holds references is rendered too. A service's protected_variables, such as database credentials, are managed by Unbind and cannot be changed.
+      description: Upsert variables by key for a service, environment, project, or team. Values may contain ${{service:<id>.KEY}}, ${{team.KEY}}, ${{project.KEY}} and ${{environment.KEY}} references. A service may reference its own variables and addresses, but a variable cannot reference itself. A referenced value that holds references is rendered too. A service's protected_variables, such as database credentials, are managed by Unbind and cannot be changed.
       operationId: update-variables
       requestBody:
         content:

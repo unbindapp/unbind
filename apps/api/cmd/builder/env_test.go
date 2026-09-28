@@ -65,7 +65,7 @@ func TestDecodeEnvJSONSkipsUndecodableEntries(t *testing.T) {
 
 func TestMergeBuildSecretsRenderedReferencesWin(t *testing.T) {
 	raw := map[string]string{
-		"API_URL":  "${{service.abc.HTTP}}",
+		"API_URL":  "${{service:abc.HTTP}}",
 		"DB_NAME":  "app",
 		"LOG_JSON": "true",
 	}

@@ -27,4 +27,5 @@ type SystemRepositoryInterface interface {
 	DeleteRegistry(ctx context.Context, id uuid.UUID) error
 	GetSystemSettings(ctx context.Context, tx repository.TxInterface) (*ent.SystemSetting, error)
 	UpdateSystemSettings(ctx context.Context, input *SystemSettingUpdateInput) (settings *ent.SystemSetting, err error)
+	MarkServiceReferenceSyntaxMigrated(ctx context.Context) error
 }

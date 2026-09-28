@@ -80,6 +80,20 @@ func (_u *SystemSettingUpdate) ClearRegistryCacheSettings() *SystemSettingUpdate
 	return _u
 }
 
+// SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
+func (_u *SystemSettingUpdate) SetServiceReferenceSyntaxMigrated(v bool) *SystemSettingUpdate {
+	_u.mutation.SetServiceReferenceSyntaxMigrated(v)
+	return _u
+}
+
+// SetNillableServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field if the given value is not nil.
+func (_u *SystemSettingUpdate) SetNillableServiceReferenceSyntaxMigrated(v *bool) *SystemSettingUpdate {
+	if v != nil {
+		_u.SetServiceReferenceSyntaxMigrated(*v)
+	}
+	return _u
+}
+
 // Mutation returns the SystemSettingMutation object of the builder.
 func (_u *SystemSettingUpdate) Mutation() *SystemSettingMutation {
 	return _u.mutation
@@ -157,6 +171,9 @@ func (_u *SystemSettingUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	if _u.mutation.RegistryCacheSettingsCleared() {
 		_spec.ClearField(systemsetting.FieldRegistryCacheSettings, field.TypeJSON)
 	}
+	if value, ok := _u.mutation.ServiceReferenceSyntaxMigrated(); ok {
+		_spec.SetField(systemsetting.FieldServiceReferenceSyntaxMigrated, field.TypeBool, value)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -226,6 +243,20 @@ func (_u *SystemSettingUpdateOne) SetRegistryCacheSettings(v *schema.RegistryCac
 // ClearRegistryCacheSettings clears the value of the "registry_cache_settings" field.
 func (_u *SystemSettingUpdateOne) ClearRegistryCacheSettings() *SystemSettingUpdateOne {
 	_u.mutation.ClearRegistryCacheSettings()
+	return _u
+}
+
+// SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
+func (_u *SystemSettingUpdateOne) SetServiceReferenceSyntaxMigrated(v bool) *SystemSettingUpdateOne {
+	_u.mutation.SetServiceReferenceSyntaxMigrated(v)
+	return _u
+}
+
+// SetNillableServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field if the given value is not nil.
+func (_u *SystemSettingUpdateOne) SetNillableServiceReferenceSyntaxMigrated(v *bool) *SystemSettingUpdateOne {
+	if v != nil {
+		_u.SetServiceReferenceSyntaxMigrated(*v)
+	}
 	return _u
 }
 
@@ -335,6 +366,9 @@ func (_u *SystemSettingUpdateOne) sqlSave(ctx context.Context) (_node *SystemSet
 	}
 	if _u.mutation.RegistryCacheSettingsCleared() {
 		_spec.ClearField(systemsetting.FieldRegistryCacheSettings, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.ServiceReferenceSyntaxMigrated(); ok {
+		_spec.SetField(systemsetting.FieldServiceReferenceSyntaxMigrated, field.TypeBool, value)
 	}
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &SystemSetting{config: _u.config}

@@ -31,7 +31,9 @@ type SystemSetting struct {
 	BuildkitSettings *schema.BuildkitSettings `json:"buildkit_settings,omitempty"`
 	// Registry cache cleanup settings
 	RegistryCacheSettings *schema.RegistryCacheSettings `json:"registry_cache_settings,omitempty"`
-	selectValues          sql.SelectValues
+	// Whether stored variables were rewritten from ${{service.<id>.KEY}} to ${{service:<id>.KEY}}
+	ServiceReferenceSyntaxMigrated bool `json:"service_reference_syntax_migrated,omitempty"`
+	selectValues                   sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -41,6 +43,8 @@ func (*SystemSetting) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case systemsetting.FieldBuildkitSettings, systemsetting.FieldRegistryCacheSettings:
 			values[i] = new([]byte)
+		case systemsetting.FieldServiceReferenceSyntaxMigrated:
+			values[i] = new(sql.NullBool)
 		case systemsetting.FieldWildcardBaseURL:
 			values[i] = new(sql.NullString)
 		case systemsetting.FieldCreatedAt, systemsetting.FieldUpdatedAt:
@@ -103,6 +107,12 @@ func (_m *SystemSetting) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field registry_cache_settings: %w", err)
 				}
 			}
+		case systemsetting.FieldServiceReferenceSyntaxMigrated:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field service_reference_syntax_migrated", values[i])
+			} else if value.Valid {
+				_m.ServiceReferenceSyntaxMigrated = value.Bool
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -155,6 +165,9 @@ func (_m *SystemSetting) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("registry_cache_settings=")
 	builder.WriteString(fmt.Sprintf("%v", _m.RegistryCacheSettings))
+	builder.WriteString(", ")
+	builder.WriteString("service_reference_syntax_migrated=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ServiceReferenceSyntaxMigrated))
 	builder.WriteByte(')')
 	return builder.String()
 }

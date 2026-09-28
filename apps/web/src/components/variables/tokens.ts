@@ -2,7 +2,7 @@ import type { TAvailableVariableReference, TVariableReferenceInfo } from "@/lib/
 
 /**
  * A reference the user can insert. `value` is the readable `${Source.KEY}` form
- * shown and typed; `object.template` holds the `${{service.<id>.KEY}}` form that
+ * shown and typed; `object.template` holds the `${{service:<id>.KEY}}` form that
  * is actually stored.
  */
 export type TVariableToken<T> = {
@@ -37,7 +37,7 @@ export function storedToken({
   source_id,
   key,
 }: Pick<TAvailableVariableReference, "source_type" | "source_id"> & { key: string }) {
-  if (source_type === "service") return `\${{service.${source_id}.${key}}}`;
+  if (source_type === "service") return `\${{service:${source_id}.${key}}}`;
   return `\${{${source_type}.${key}}}`;
 }
 

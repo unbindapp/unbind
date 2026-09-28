@@ -1,5 +1,5 @@
 // Package vartemplate parses and renders the ${{source.KEY}} references that
-// variable values may contain. Sources are service.<uuid>, team, project and
+// variable values may contain. Sources are service:<uuid>, team, project and
 // environment. Anything that does not match is plain text.
 package vartemplate
 
@@ -63,7 +63,7 @@ const endpointKeyPrefix = "UNBIND_"
 // whichever port the engine happens to answer on.
 var endpointLabels = []string{"HTTP"}
 
-var tokenPattern = regexp.MustCompile(`\$\{\{(?:service\.([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(team|project|environment))\.([-._a-zA-Z0-9]+)\}\}`)
+var tokenPattern = regexp.MustCompile(`\$\{\{(?:service:([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})|(team|project|environment))\.([-._a-zA-Z0-9]+)\}\}`)
 
 type Token struct {
 	Raw        string
@@ -142,7 +142,7 @@ func Render(value string, resolve Resolver) (string, []Token) {
 }
 
 func ServiceToken(serviceID uuid.UUID, key string) string {
-	return fmt.Sprintf("${{service.%s.%s}}", serviceID, key)
+	return fmt.Sprintf("${{service:%s.%s}}", serviceID, key)
 }
 
 func ScopeToken(sourceType schema.VariableReferenceSourceType, key string) string {

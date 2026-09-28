@@ -24,6 +24,8 @@ const (
 	FieldBuildkitSettings = "buildkit_settings"
 	// FieldRegistryCacheSettings holds the string denoting the registry_cache_settings field in the database.
 	FieldRegistryCacheSettings = "registry_cache_settings"
+	// FieldServiceReferenceSyntaxMigrated holds the string denoting the service_reference_syntax_migrated field in the database.
+	FieldServiceReferenceSyntaxMigrated = "service_reference_syntax_migrated"
 	// Table holds the table name of the systemsetting in the database.
 	Table = "system_settings"
 )
@@ -36,6 +38,7 @@ var Columns = []string{
 	FieldWildcardBaseURL,
 	FieldBuildkitSettings,
 	FieldRegistryCacheSettings,
+	FieldServiceReferenceSyntaxMigrated,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -55,6 +58,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultServiceReferenceSyntaxMigrated holds the default value on creation for the "service_reference_syntax_migrated" field.
+	DefaultServiceReferenceSyntaxMigrated bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -80,4 +85,9 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByWildcardBaseURL orders the results by the wildcard_base_url field.
 func ByWildcardBaseURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWildcardBaseURL, opts...).ToFunc()
+}
+
+// ByServiceReferenceSyntaxMigrated orders the results by the service_reference_syntax_migrated field.
+func ByServiceReferenceSyntaxMigrated(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldServiceReferenceSyntaxMigrated, opts...).ToFunc()
 }

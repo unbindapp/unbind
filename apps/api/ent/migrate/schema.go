@@ -729,6 +729,7 @@ var (
 		{Name: "wildcard_base_url", Type: field.TypeString, Nullable: true},
 		{Name: "buildkit_settings", Type: field.TypeJSON, Nullable: true},
 		{Name: "registry_cache_settings", Type: field.TypeJSON, Nullable: true},
+		{Name: "service_reference_syntax_migrated", Type: field.TypeBool, Default: false},
 	}
 	// SystemSettingsTable holds the schema information for the "system_settings" table.
 	SystemSettingsTable = &schema.Table{

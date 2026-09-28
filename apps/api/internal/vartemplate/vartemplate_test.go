@@ -11,12 +11,12 @@ import (
 
 func TestParse(t *testing.T) {
 	serviceID := uuid.MustParse("3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c")
-	value := "postgres://${{service.3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c.DATABASE_HOST}}:${{team.PORT}}/${{service.3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c.DATABASE_HOST}} ${not-a-token} ${{nope.KEY}} ${{service.abc.KEY}}"
+	value := "postgres://${{service:3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c.DATABASE_HOST}}:${{team.PORT}}/${{service:3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c.DATABASE_HOST}} ${not-a-token} ${{nope.KEY}} ${{service:abc.KEY}}"
 
 	tokens := Parse(value)
 	require.Len(t, tokens, 2)
 	assert.Equal(t, Token{
-		Raw:        "${{service.3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c.DATABASE_HOST}}",
+		Raw:        "${{service:3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c.DATABASE_HOST}}",
 		SourceType: schema.VariableReferenceSourceTypeService,
 		SourceID:   serviceID,
 		Key:        "DATABASE_HOST",
@@ -29,8 +29,8 @@ func TestParse(t *testing.T) {
 }
 
 func TestParse_NoTokens(t *testing.T) {
-	assert.Nil(t, Parse("plain ${value} $${{}} ${{service.KEY}}"))
-	assert.False(t, HasTokens("plain ${service.x.KEY}"))
+	assert.Nil(t, Parse("plain ${value} $${{}} ${{service:KEY}} ${{service.3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c.KEY}}"))
+	assert.False(t, HasTokens("plain ${service:3f2a9c1e-7b4d-4e8a-9f0c-1d2e3f4a5b6c.KEY}"))
 	assert.True(t, HasTokens("${{project.KEY}}"))
 }
 

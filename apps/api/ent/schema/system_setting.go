@@ -45,6 +45,9 @@ func (SystemSetting) Fields() []ent.Field {
 		field.JSON("registry_cache_settings", &RegistryCacheSettings{}).
 			Optional().
 			Comment("Registry cache cleanup settings"),
+		field.Bool("service_reference_syntax_migrated").
+			Default(false).
+			Comment("Whether stored variables were rewritten from ${{service.<id>.KEY}} to ${{service:<id>.KEY}}"),
 	}
 }
 

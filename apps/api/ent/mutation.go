@@ -22814,18 +22814,19 @@ func (m *ServiceGroupMutation) ResetEdge(name string) error {
 // SystemSettingMutation represents an operation that mutates the SystemSetting nodes in the graph.
 type SystemSettingMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	created_at              *time.Time
-	updated_at              *time.Time
-	wildcard_base_url       *string
-	buildkit_settings       **schema.BuildkitSettings
-	registry_cache_settings **schema.RegistryCacheSettings
-	clearedFields           map[string]struct{}
-	done                    bool
-	oldValue                func(context.Context) (*SystemSetting, error)
-	predicates              []predicate.SystemSetting
+	op                                Op
+	typ                               string
+	id                                *uuid.UUID
+	created_at                        *time.Time
+	updated_at                        *time.Time
+	wildcard_base_url                 *string
+	buildkit_settings                 **schema.BuildkitSettings
+	registry_cache_settings           **schema.RegistryCacheSettings
+	service_reference_syntax_migrated *bool
+	clearedFields                     map[string]struct{}
+	done                              bool
+	oldValue                          func(context.Context) (*SystemSetting, error)
+	predicates                        []predicate.SystemSetting
 }
 
 var _ ent.Mutation = (*SystemSettingMutation)(nil)
@@ -23151,6 +23152,42 @@ func (m *SystemSettingMutation) ResetRegistryCacheSettings() {
 	delete(m.clearedFields, systemsetting.FieldRegistryCacheSettings)
 }
 
+// SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
+func (m *SystemSettingMutation) SetServiceReferenceSyntaxMigrated(b bool) {
+	m.service_reference_syntax_migrated = &b
+}
+
+// ServiceReferenceSyntaxMigrated returns the value of the "service_reference_syntax_migrated" field in the mutation.
+func (m *SystemSettingMutation) ServiceReferenceSyntaxMigrated() (r bool, exists bool) {
+	v := m.service_reference_syntax_migrated
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldServiceReferenceSyntaxMigrated returns the old "service_reference_syntax_migrated" field's value of the SystemSetting entity.
+// If the SystemSetting object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemSettingMutation) OldServiceReferenceSyntaxMigrated(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldServiceReferenceSyntaxMigrated is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldServiceReferenceSyntaxMigrated requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldServiceReferenceSyntaxMigrated: %w", err)
+	}
+	return oldValue.ServiceReferenceSyntaxMigrated, nil
+}
+
+// ResetServiceReferenceSyntaxMigrated resets all changes to the "service_reference_syntax_migrated" field.
+func (m *SystemSettingMutation) ResetServiceReferenceSyntaxMigrated() {
+	m.service_reference_syntax_migrated = nil
+}
+
 // Where appends a list predicates to the SystemSettingMutation builder.
 func (m *SystemSettingMutation) Where(ps ...predicate.SystemSetting) {
 	m.predicates = append(m.predicates, ps...)
@@ -23185,7 +23222,7 @@ func (m *SystemSettingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemSettingMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.created_at != nil {
 		fields = append(fields, systemsetting.FieldCreatedAt)
 	}
@@ -23200,6 +23237,9 @@ func (m *SystemSettingMutation) Fields() []string {
 	}
 	if m.registry_cache_settings != nil {
 		fields = append(fields, systemsetting.FieldRegistryCacheSettings)
+	}
+	if m.service_reference_syntax_migrated != nil {
+		fields = append(fields, systemsetting.FieldServiceReferenceSyntaxMigrated)
 	}
 	return fields
 }
@@ -23219,6 +23259,8 @@ func (m *SystemSettingMutation) Field(name string) (ent.Value, bool) {
 		return m.BuildkitSettings()
 	case systemsetting.FieldRegistryCacheSettings:
 		return m.RegistryCacheSettings()
+	case systemsetting.FieldServiceReferenceSyntaxMigrated:
+		return m.ServiceReferenceSyntaxMigrated()
 	}
 	return nil, false
 }
@@ -23238,6 +23280,8 @@ func (m *SystemSettingMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldBuildkitSettings(ctx)
 	case systemsetting.FieldRegistryCacheSettings:
 		return m.OldRegistryCacheSettings(ctx)
+	case systemsetting.FieldServiceReferenceSyntaxMigrated:
+		return m.OldServiceReferenceSyntaxMigrated(ctx)
 	}
 	return nil, fmt.Errorf("unknown SystemSetting field %s", name)
 }
@@ -23281,6 +23325,13 @@ func (m *SystemSettingMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRegistryCacheSettings(v)
+		return nil
+	case systemsetting.FieldServiceReferenceSyntaxMigrated:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetServiceReferenceSyntaxMigrated(v)
 		return nil
 	}
 	return fmt.Errorf("unknown SystemSetting field %s", name)
@@ -23366,6 +23417,9 @@ func (m *SystemSettingMutation) ResetField(name string) error {
 		return nil
 	case systemsetting.FieldRegistryCacheSettings:
 		m.ResetRegistryCacheSettings()
+		return nil
+	case systemsetting.FieldServiceReferenceSyntaxMigrated:
+		m.ResetServiceReferenceSyntaxMigrated()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemSetting field %s", name)

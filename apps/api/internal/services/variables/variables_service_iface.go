@@ -21,12 +21,17 @@ type VariablesServiceInterface interface {
 	// keys Unbind used to store on a database, and the port-suffixed keys that now name a
 	// protocol. Old keys still resolve, so a failure here is not fatal.
 	MigrateEndpointKeys(ctx context.Context) error
+	// MigrateServiceReferenceSyntax rewrites every stored ${{service.<id>.KEY}} reference
+	// into ${{service:<id>.KEY}}. The old form no longer resolves, so any failure is
+	// returned and the migration runs again on the next start.
+	MigrateServiceReferenceSyntax(ctx context.Context) error
 	// UpdateVariables writes variables in bulk. The returned bool is true when a rendered
 	// value changed, meaning the service needs a new deployment rather than a pod restart.
 	UpdateVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesJSONInput, behavior models.VariableUpdateBehavior, newVariables map[string][]byte) (*models.VariableResponse, bool, error)
-	// GetVariables lists the scope's variables. Viewers get names only; values
-	// are for editors, because a stored secret is as good as write access to
-	// whatever it unlocks.
+	// GetVariables lists the scope's variables. A session sees values with the
+	// editor role, because a stored secret is as good as write access to whatever
+	// it unlocks. A key or connected app sees them with the read_variable_values
+	// privilege, whatever its role, as long as its owner holds editor.
 	GetVariables(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (*models.VariableResponse, error)
 	// GetAvailableVariableReferences lists the sources and keys a service's variables can reference
 	GetAvailableVariableReferences(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID, serviceID uuid.UUID) ([]models.AvailableVariableReference, error)

@@ -70,6 +70,11 @@ func WildcardBaseURL(v string) predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldEQ(FieldWildcardBaseURL, v))
 }
 
+// ServiceReferenceSyntaxMigrated applies equality check predicate on the "service_reference_syntax_migrated" field. It's identical to ServiceReferenceSyntaxMigratedEQ.
+func ServiceReferenceSyntaxMigrated(v bool) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldEQ(FieldServiceReferenceSyntaxMigrated, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldEQ(FieldCreatedAt, v))
@@ -243,6 +248,16 @@ func RegistryCacheSettingsIsNil() predicate.SystemSetting {
 // RegistryCacheSettingsNotNil applies the NotNil predicate on the "registry_cache_settings" field.
 func RegistryCacheSettingsNotNil() predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldNotNull(FieldRegistryCacheSettings))
+}
+
+// ServiceReferenceSyntaxMigratedEQ applies the EQ predicate on the "service_reference_syntax_migrated" field.
+func ServiceReferenceSyntaxMigratedEQ(v bool) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldEQ(FieldServiceReferenceSyntaxMigrated, v))
+}
+
+// ServiceReferenceSyntaxMigratedNEQ applies the NEQ predicate on the "service_reference_syntax_migrated" field.
+func ServiceReferenceSyntaxMigratedNEQ(v bool) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldNEQ(FieldServiceReferenceSyntaxMigrated, v))
 }
 
 // And groups predicates with the AND operator between them.

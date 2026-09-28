@@ -28,7 +28,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "update-variables",
 		Summary:     "Create or Update Variables",
-		Description: "Upsert variables by key for a service, environment, project, or team. Values may contain ${{service.<id>.KEY}}, ${{team.KEY}}, ${{project.KEY}} and ${{environment.KEY}} references. A service may reference its own variables and addresses, but a variable cannot reference itself. A referenced value that holds references is rendered too. A service's protected_variables, such as database credentials, are managed by Unbind and cannot be changed.",
+		Description: "Upsert variables by key for a service, environment, project, or team. Values may contain ${{service:<id>.KEY}}, ${{team.KEY}}, ${{project.KEY}} and ${{environment.KEY}} references. A service may reference its own variables and addresses, but a variable cannot reference itself. A referenced value that holds references is rendered too. A service's protected_variables, such as database credentials, are managed by Unbind and cannot be changed.",
 		Path:        "/update",
 		Method:      http.MethodPost,
 	}, handlers.UpdateVariables, oapi.MCP)

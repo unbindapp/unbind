@@ -63,9 +63,10 @@ Still in `deploy.go`, inside a transaction, per resolved service:
   builder, ports, hosts, `DatabaseConfig`, health check, security context, resources, init
   containers, variable mounts, volumes.
 - Create PVCs for volumes.
-- Write `VariableReferences` into the target's secret as `${{service.<uuid>.KEY}}`
+- Write `VariableReferences` into the target's secret as `${{service:<uuid>.KEY}}`
   templates once every service has an ID. Host refs become
-  `${{service.<uuid>.UNBIND_INTERNAL_HOST}}`.
+  `${{service:<uuid>.UNBIND_HOST_PRIVATE}}` for databases and
+  `${{service:<uuid>.UNBIND_URL_PRIVATE}}` for everything else.
 
 ## 6. Deploy to Kubernetes
 

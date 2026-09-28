@@ -720,6 +720,57 @@ func (_c *SystemRepositoryMock_GetSystemSettings_Call) RunAndReturn(run func(ctx
 	return _c
 }
 
+// MarkServiceReferenceSyntaxMigrated provides a mock function for the type SystemRepositoryMock
+func (_mock *SystemRepositoryMock) MarkServiceReferenceSyntaxMigrated(ctx context.Context) error {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MarkServiceReferenceSyntaxMigrated")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MarkServiceReferenceSyntaxMigrated'
+type SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call struct {
+	*mock.Call
+}
+
+// MarkServiceReferenceSyntaxMigrated is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *SystemRepositoryMock_Expecter) MarkServiceReferenceSyntaxMigrated(ctx any) *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call {
+	return &SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call{Call: _e.mock.On("MarkServiceReferenceSyntaxMigrated", ctx)}
+}
+
+func (_c *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call) Run(run func(ctx context.Context)) *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call) Return(err error) *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call) RunAndReturn(run func(ctx context.Context) error) *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // RenamePVCMetadata provides a mock function for the type SystemRepositoryMock
 func (_mock *SystemRepositoryMock) RenamePVCMetadata(ctx context.Context, tx repository.TxInterface, fromPvcID string, toPvcID string) error {
 	ret := _mock.Called(ctx, tx, fromPvcID, toPvcID)

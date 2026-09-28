@@ -73,11 +73,11 @@ const tokens = buildReferenceTokens(available);
 test("tokens pair the readable form with the stored template", () => {
   const values = tokens.map((t) => [t.value, t.object.template]);
   assert.deepEqual(values, [
-    ["${Postgres.DATABASE_URL}", `\${{service.${pgId}.DATABASE_URL}}`],
-    ["${Postgres.DATABASE_HOST}", `\${{service.${pgId}.DATABASE_HOST}}`],
+    ["${Postgres.DATABASE_URL}", `\${{service:${pgId}.DATABASE_URL}}`],
+    ["${Postgres.DATABASE_HOST}", `\${{service:${pgId}.DATABASE_HOST}}`],
     ["${Team.REGION}", "${{team.REGION}}"],
-    ["${Redis.UNBIND_HOST_PRIVATE}", `\${{service.${redisId}.UNBIND_HOST_PRIVATE}}`],
-    ["${Redis(2).UNBIND_HOST_PRIVATE}", `\${{service.${redisTwoId}.UNBIND_HOST_PRIVATE}}`],
+    ["${Redis.UNBIND_HOST_PRIVATE}", `\${{service:${redisId}.UNBIND_HOST_PRIVATE}}`],
+    ["${Redis(2).UNBIND_HOST_PRIVATE}", `\${{service:${redisTwoId}.UNBIND_HOST_PRIVATE}}`],
   ]);
 });
 
@@ -93,17 +93,17 @@ test("readable references become stored templates with surrounding text kept", (
   );
   assert.equal(
     variables[0].value,
-    `prefix \${{service.${pgId}.DATABASE_URL}}/db \${{team.REGION}}`,
+    `prefix \${{service:${pgId}.DATABASE_URL}}/db \${{team.REGION}}`,
   );
 });
 
 test("stored templates render back to the readable form", () => {
-  const value = `x=\${{service.${pgId}.DATABASE_URL}} y=\${{team.REGION}} z=\${{service.${redisTwoId}.UNBIND_HOST_PRIVATE}}`;
+  const value = `x=\${{service:${pgId}.DATABASE_URL}} y=\${{team.REGION}} z=\${{service:${redisTwoId}.UNBIND_HOST_PRIVATE}}`;
   const references: TVariableReferenceInfo[] = [
-    reference(`\${{service.${pgId}.DATABASE_URL}}`, "service", pgId, "Postgres", "DATABASE_URL"),
+    reference(`\${{service:${pgId}.DATABASE_URL}}`, "service", pgId, "Postgres", "DATABASE_URL"),
     reference("${{team.REGION}}", "team", "", "My Team", "REGION"),
     reference(
-      `\${{service.${redisTwoId}.UNBIND_HOST_PRIVATE}}`,
+      `\${{service:${redisTwoId}.UNBIND_HOST_PRIVATE}}`,
       "service",
       redisTwoId,
       "Redis",

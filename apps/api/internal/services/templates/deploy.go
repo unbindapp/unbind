@@ -833,7 +833,7 @@ func (self *TemplatesService) generateWildcardHost(ctx context.Context, tx repos
 	}, nil
 }
 
-// templateReferenceValue turns a template's reference into a ${{service.<id>.KEY}} template string
+// templateReferenceValue turns a template's reference into a ${{service:<id>.KEY}} template string
 func templateReferenceValue(reference schema.TemplateVariableReference, source *ent.Service) string {
 	if reference.IsHost {
 		return vartemplate.ServiceToken(source.ID, hostReferenceKey(source))

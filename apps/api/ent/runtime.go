@@ -577,6 +577,10 @@ func init() {
 	systemsetting.DefaultUpdatedAt = systemsettingDescUpdatedAt.Default.(func() time.Time)
 	// systemsetting.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemsetting.UpdateDefaultUpdatedAt = systemsettingDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemsettingDescServiceReferenceSyntaxMigrated is the schema descriptor for service_reference_syntax_migrated field.
+	systemsettingDescServiceReferenceSyntaxMigrated := systemsettingFields[3].Descriptor()
+	// systemsetting.DefaultServiceReferenceSyntaxMigrated holds the default value on creation for the service_reference_syntax_migrated field.
+	systemsetting.DefaultServiceReferenceSyntaxMigrated = systemsettingDescServiceReferenceSyntaxMigrated.Default.(bool)
 	// systemsettingDescID is the schema descriptor for id field.
 	systemsettingDescID := systemsettingMixinFields0[0].Descriptor()
 	// systemsetting.DefaultID holds the default value on creation for the id field.

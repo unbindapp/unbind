@@ -79,6 +79,20 @@ func (_c *SystemSettingCreate) SetRegistryCacheSettings(v *schema.RegistryCacheS
 	return _c
 }
 
+// SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
+func (_c *SystemSettingCreate) SetServiceReferenceSyntaxMigrated(v bool) *SystemSettingCreate {
+	_c.mutation.SetServiceReferenceSyntaxMigrated(v)
+	return _c
+}
+
+// SetNillableServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field if the given value is not nil.
+func (_c *SystemSettingCreate) SetNillableServiceReferenceSyntaxMigrated(v *bool) *SystemSettingCreate {
+	if v != nil {
+		_c.SetServiceReferenceSyntaxMigrated(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *SystemSettingCreate) SetID(v uuid.UUID) *SystemSettingCreate {
 	_c.mutation.SetID(v)
@@ -136,6 +150,10 @@ func (_c *SystemSettingCreate) defaults() {
 		v := systemsetting.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.ServiceReferenceSyntaxMigrated(); !ok {
+		v := systemsetting.DefaultServiceReferenceSyntaxMigrated
+		_c.mutation.SetServiceReferenceSyntaxMigrated(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := systemsetting.DefaultID()
 		_c.mutation.SetID(v)
@@ -149,6 +167,9 @@ func (_c *SystemSettingCreate) check() error {
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SystemSetting.updated_at"`)}
+	}
+	if _, ok := _c.mutation.ServiceReferenceSyntaxMigrated(); !ok {
+		return &ValidationError{Name: "service_reference_syntax_migrated", err: errors.New(`ent: missing required field "SystemSetting.service_reference_syntax_migrated"`)}
 	}
 	return nil
 }
@@ -205,6 +226,10 @@ func (_c *SystemSettingCreate) createSpec() (*SystemSetting, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.RegistryCacheSettings(); ok {
 		_spec.SetField(systemsetting.FieldRegistryCacheSettings, field.TypeJSON, value)
 		_node.RegistryCacheSettings = value
+	}
+	if value, ok := _c.mutation.ServiceReferenceSyntaxMigrated(); ok {
+		_spec.SetField(systemsetting.FieldServiceReferenceSyntaxMigrated, field.TypeBool, value)
+		_node.ServiceReferenceSyntaxMigrated = value
 	}
 	return _node, _spec
 }
@@ -321,6 +346,18 @@ func (u *SystemSettingUpsert) UpdateRegistryCacheSettings() *SystemSettingUpsert
 // ClearRegistryCacheSettings clears the value of the "registry_cache_settings" field.
 func (u *SystemSettingUpsert) ClearRegistryCacheSettings() *SystemSettingUpsert {
 	u.SetNull(systemsetting.FieldRegistryCacheSettings)
+	return u
+}
+
+// SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
+func (u *SystemSettingUpsert) SetServiceReferenceSyntaxMigrated(v bool) *SystemSettingUpsert {
+	u.Set(systemsetting.FieldServiceReferenceSyntaxMigrated, v)
+	return u
+}
+
+// UpdateServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field to the value that was provided on create.
+func (u *SystemSettingUpsert) UpdateServiceReferenceSyntaxMigrated() *SystemSettingUpsert {
+	u.SetExcluded(systemsetting.FieldServiceReferenceSyntaxMigrated)
 	return u
 }
 
@@ -449,6 +486,20 @@ func (u *SystemSettingUpsertOne) UpdateRegistryCacheSettings() *SystemSettingUps
 func (u *SystemSettingUpsertOne) ClearRegistryCacheSettings() *SystemSettingUpsertOne {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.ClearRegistryCacheSettings()
+	})
+}
+
+// SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
+func (u *SystemSettingUpsertOne) SetServiceReferenceSyntaxMigrated(v bool) *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetServiceReferenceSyntaxMigrated(v)
+	})
+}
+
+// UpdateServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field to the value that was provided on create.
+func (u *SystemSettingUpsertOne) UpdateServiceReferenceSyntaxMigrated() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateServiceReferenceSyntaxMigrated()
 	})
 }
 
@@ -744,6 +795,20 @@ func (u *SystemSettingUpsertBulk) UpdateRegistryCacheSettings() *SystemSettingUp
 func (u *SystemSettingUpsertBulk) ClearRegistryCacheSettings() *SystemSettingUpsertBulk {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.ClearRegistryCacheSettings()
+	})
+}
+
+// SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
+func (u *SystemSettingUpsertBulk) SetServiceReferenceSyntaxMigrated(v bool) *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetServiceReferenceSyntaxMigrated(v)
+	})
+}
+
+// UpdateServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field to the value that was provided on create.
+func (u *SystemSettingUpsertBulk) UpdateServiceReferenceSyntaxMigrated() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateServiceReferenceSyntaxMigrated()
 	})
 }
 
