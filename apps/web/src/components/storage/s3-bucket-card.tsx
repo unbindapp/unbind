@@ -99,7 +99,7 @@ export default function S3BucketCard({ s3Bucket, teamId, isPlaceholder }: TProps
             disabled={isPlaceholder}
             fadeOnDisabled={false}
             variant="outline"
-            className="flex w-full flex-col items-start justify-start gap-2.5 py-3 pr-12 pl-4 font-medium"
+            className="flex w-full flex-col items-start justify-start gap-2.5 rounded-xl py-3 pr-12 pl-4 font-medium"
           >
             {s3Bucket && <NewEntityIndicator id={s3Bucket.id} />}
             <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight font-semibold group-data-pending/item:rounded-md group-data-pending/item:text-transparent">
@@ -114,7 +114,7 @@ export default function S3BucketCard({ s3Bucket, teamId, isPlaceholder }: TProps
             </div>
           </Button>
         </S3BucketDialogConditional>
-        <div className="absolute top-1.25 right-1.25 size-9">
+        <div className="absolute top-1 right-1 size-9">
           {isPlaceholder ? (
             <div className="flex size-full items-center justify-center">
               <div className="bg-muted-more-foreground animate-skeleton size-6 rounded-md" />
@@ -307,7 +307,7 @@ function ThreeDotButton({
               variant="ghost"
               size="icon"
               className={cn(
-                "text-muted-more-foreground group/button rounded-md group-data-placeholder/card:text-transparent",
+                "text-muted-more-foreground group/button rounded-lg group-data-placeholder/card:text-transparent",
                 className,
               )}
             >
@@ -593,7 +593,7 @@ export function AddS3BucketCard({ teamId }: { teamId: string }) {
         <AddS3BucketTrigger teamId={teamId}>
           <Button
             variant="outline"
-            className="text-muted-foreground flex w-full flex-row items-center justify-start px-4 py-3 font-medium"
+            className="text-muted-foreground flex w-full flex-row items-center justify-start rounded-xl px-4 py-3 font-medium"
           >
             <PlusIcon className="-my-1 -ml-1 size-4.5 shrink-0" />
             <p className="group-data-pending/item:bg-foreground group-data-pending/item:animate-skeleton min-w-0 shrink truncate leading-tight group-data-pending/item:rounded-md group-data-pending/item:text-transparent">

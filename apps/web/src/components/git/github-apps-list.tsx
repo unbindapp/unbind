@@ -45,9 +45,7 @@ export default function GithubAppsList({ view, canEditTeam, className, children 
     return (
       <Wrapper className={className}>
         <NoItemsCard Icon={({ className }) => <BrandIcon brand="github" className={className} />}>
-          {view === "account"
-            ? "No GitHub Apps yet"
-            : "No GitHub Apps are shared with this team yet"}
+          {view === "account" ? "No GitHub Apps yet" : "No shared GitHub Apps yet"}
         </NoItemsCard>
         {children}
       </Wrapper>
