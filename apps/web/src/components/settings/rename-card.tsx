@@ -1,9 +1,8 @@
 import ErrorLine from "@/components/error-line";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { getTakenNameError, TUniqueAmong } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { LoaderIcon, RotateCcwIcon, SaveIcon } from "lucide-react";
+import { LoaderIcon, SaveIcon } from "lucide-react";
 import { ZodObject, ZodString, ZodTypeAny } from "zod";
 
 type TRenameCardType = "team" | "project";
@@ -60,8 +59,9 @@ export default function RenameCard({
       onChange: schema,
     },
     onSubmit: async ({ formApi, value }) => {
-      await onSubmit(value);
-      formApi.reset();
+      const saved = schema.parse(value);
+      await onSubmit(saved);
+      formApi.reset(saved);
     },
   });
 
@@ -91,6 +91,8 @@ export default function RenameCard({
               inputTitle={nameTitle}
               className="flex-1 xl:max-w-72"
               maxLength={nameMaxLength}
+              revertTo={name ?? ""}
+              onRevert={() => field.setValue(name ?? "")}
             />
           )}
         />
@@ -106,6 +108,8 @@ export default function RenameCard({
               inputTitle={descriptionTitle}
               className="flex-1"
               maxLength={descriptionMaxLength}
+              revertTo={description ?? ""}
+              onRevert={() => field.setValue(description ?? "")}
             />
           )}
         />
@@ -115,34 +119,20 @@ export default function RenameCard({
             const valuesUnchanged =
               values.name === name && looseMatch(values.description, description);
             return (
-              <div className="flex w-full flex-row gap-3 md:w-auto">
-                <form.SubmitButton
-                  data-submitting={isSubmitting || undefined}
-                  className="group/button flex-1 md:flex-none xl:py-3.5"
-                  disabled={valuesUnchanged}
-                >
-                  <div className="-ml-0.5 size-4.5 shrink-0">
-                    {isSubmitting ? (
-                      <LoaderIcon className="size-full animate-spin" />
-                    ) : (
-                      <SaveIcon className="size-full" />
-                    )}
-                  </div>
-                  <p className="min-w-0 shrink">Save</p>
-                </form.SubmitButton>
-                <Button
-                  disabled={valuesUnchanged}
-                  onClick={() => form.reset()}
-                  variant="outline"
-                  className="gap-1.5 xl:py-3.5"
-                >
-                  <RotateCcwIcon
-                    data-unchanged={valuesUnchanged || undefined}
-                    className="-ml-0.5 size-4.5 shrink-0 transition-transform data-unchanged:-rotate-90"
-                  />
-                  <p className="min-w-0">Undo</p>
-                </Button>
-              </div>
+              <form.SubmitButton
+                data-submitting={isSubmitting || undefined}
+                className="group/button w-full md:w-auto xl:py-3.5"
+                disabled={valuesUnchanged}
+              >
+                <div className="-ml-0.5 size-4.5 shrink-0">
+                  {isSubmitting ? (
+                    <LoaderIcon className="size-full animate-spin" />
+                  ) : (
+                    <SaveIcon className="size-full" />
+                  )}
+                </div>
+                <p className="min-w-0 shrink">Save</p>
+              </form.SubmitButton>
             );
           }}
         />

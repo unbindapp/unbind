@@ -107,7 +107,8 @@ function InputWithInfo({
 }: TInputWithInfoProps) {
   const { hasError, formDomId } = useFieldError(field, dontCheckUntilSubmit);
   // The label-included layout renders the icon inside its floating label
-  const hasStandaloneIcon = Icon !== undefined && rest.layout !== "label-included";
+  const isLabelIncluded = rest.layout === "label-included";
+  const hasStandaloneIcon = Icon !== undefined && !isLabelIncluded;
   const isFramed = unit !== undefined || onRevert !== undefined;
   const isStaged = rest.hasChanges === true;
   const showRevert =
@@ -152,13 +153,16 @@ function InputWithInfo({
           {onRevert && (
             <div
               data-visible={showRevert || undefined}
-              className="flex w-0 shrink-0 items-center justify-end overflow-hidden transition-[width] data-visible:w-9.5"
+              className={cn(
+                "flex w-0 shrink-0 items-center justify-end overflow-hidden transition-[width]",
+                isLabelIncluded ? "data-visible:w-11.5" : "data-visible:w-9.5",
+              )}
             >
               <RevertButton
                 onClick={onRevert}
                 isStaged={isStaged}
                 disabled={!showRevert}
-                className="mr-0.5"
+                className={cn("mr-0.5", isLabelIncluded && "size-11")}
               />
             </div>
           )}

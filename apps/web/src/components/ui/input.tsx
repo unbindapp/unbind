@@ -66,13 +66,14 @@ function Input({
 }: InputProps) {
   if (layout === "label-included") {
     return (
-      <div className={cn("relative", className)}>
+      <div className={cn("relative", framed && "min-w-0 flex-1", className)}>
         <input
           type={type}
           data-staged={hasChanges || undefined}
           className={cn(
             inputVariants({
               variant,
+              framed,
               fadeOnDisabled,
             }),
             "peer relative pt-4.5 pb-1.5",
