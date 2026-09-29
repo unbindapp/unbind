@@ -302,8 +302,7 @@ function PostgresSection({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Slot WAL Keep Size</BlockItemTitle>
               <BlockItemDescription>
-                Caps the WAL a lagging replication slot can hold. A slot past the cap is dropped and
-                its subscriber has to sync again. Auto keeps it at a quarter of the volume.
+                Caps the WAL a lagging replication slot can hold.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>{numberInput("maxSlotWalKeepSizeMb")}</BlockItemContent>
