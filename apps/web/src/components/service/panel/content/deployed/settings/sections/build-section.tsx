@@ -29,6 +29,7 @@ import { formatWatchPaths, joinWatchPaths, splitWatchPaths } from "@/lib/watch-p
 import { useStore } from "@tanstack/react-form";
 import { PlusIcon, WrenchIcon } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 type TProps = {
   service: TServiceShallow;
@@ -233,10 +234,8 @@ function GitSection({ service }: TGitSectionProps) {
                       Icon={({ className }) => <PlusIcon className={className} />}
                       text={commandFields[field].toggleText}
                       onClick={() => {
-                        toggle(true);
-                        setTimeout(() => {
-                          inputRefs[field].current?.focus();
-                        });
+                        flushSync(() => toggle(true));
+                        inputRefs[field].current?.focus();
                       }}
                     />
                   )}
