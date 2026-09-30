@@ -458,5 +458,10 @@
     "version": "v0.1.91",
     "summary": "Service references written with a colon and migrated automatically, new service panels opening on the services page, inline revert on rename fields, and clearer GitHub App wording.",
     "breaking": false
+  },
+  "v0.1.92": {
+    "version": "v0.1.92",
+    "summary": "Services with a volume run a single replica, new images pulled before the running replica stops, and deploy settings improvements.",
+    "breaking": false
   }
 }
