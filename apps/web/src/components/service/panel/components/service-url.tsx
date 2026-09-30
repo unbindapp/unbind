@@ -112,7 +112,7 @@ export default function ServiceUrl({
     );
   }
 
-  if (
+  /*   if (
     endpoint.dns_status === "unresolved" ||
     endpoint.tls_status === "pending" ||
     endpoint.tls_status === "attempting"
@@ -127,7 +127,7 @@ export default function ServiceUrl({
       />
     );
   }
-
+ */
   if (isWildcardDomain(endpoint.host)) {
     return (
       <WildcardServiceUrl
@@ -296,18 +296,18 @@ function WildcardServiceUrl({
             className="flex min-h-0 w-full flex-none shrink flex-col justify-start"
           >
             <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
-              <div className="text-process flex w-full justify-start gap-1.5">
+              <div className="flex w-full justify-start gap-1.5">
                 <AsteriskIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0" />
                 <p className="min-w-0 shrink text-base leading-tight font-semibold">
                   Wildcard Domain
                 </p>
               </div>
-              <p className="w-full pb-0.5 text-sm leading-snug">
+              <p className="text-muted-foreground w-full pb-0.5 text-sm leading-snug">
                 Every subdomain reaches this service.
               </p>
             </div>
             {!isCloudflare && (
-              <div className="w-full pt-2.5">
+              <div className="w-full pt-1.5">
                 <Banner className="bg-warning/3-10 border-warning/3-10 text-warning flex-col gap-0.5 rounded-sm px-2.5 py-1.5 text-sm">
                   <div className="flex w-full gap-1">
                     <div className="line-icon h-[0.85lh]">
