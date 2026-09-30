@@ -193,11 +193,16 @@ export function DomainStatusRow({
         </div>
       )}
       {isWildcard && (
-        <div className="text-warning flex max-w-full items-center justify-start gap-1.5 pr-4">
+        <div
+          data-proxied={isCloudflare || undefined}
+          className="text-warning flex max-w-full items-center justify-start gap-1.5 pr-4 data-proxied:text-inherit"
+        >
           <div className="size-3.5 shrink-0">
             <ShieldIcon className="size-full" />
           </div>
-          <p className="min-w-0 shrink">Self-signed certificate</p>
+          <p className="min-w-0 shrink">
+            {isCloudflare ? "Self-signed certificate" : "Self-signed certificate, needs a proxy"}
+          </p>
         </div>
       )}
     </div>

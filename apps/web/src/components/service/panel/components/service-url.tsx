@@ -1,3 +1,4 @@
+import Banner from "@/components/banner";
 import ErrorLine from "@/components/error-line";
 import { DomainCard } from "@/components/service/panel/content/undeployed/domain-card";
 import { Button } from "@/components/ui/button";
@@ -128,7 +129,14 @@ export default function ServiceUrl({
   }
 
   if (isWildcardDomain(endpoint.host)) {
-    return <WildcardServiceUrl host={endpoint.host} path={endpoint.path} className={className} />;
+    return (
+      <WildcardServiceUrl
+        host={endpoint.host}
+        path={endpoint.path}
+        isCloudflare={endpoint.is_cloudflare}
+        className={className}
+      />
+    );
   }
 
   return (
@@ -250,10 +258,12 @@ export function PendingServiceUrl({
 function WildcardServiceUrl({
   host,
   path,
+  isCloudflare,
   className,
 }: {
   host: string;
   path: string;
+  isCloudflare: boolean;
   className?: string;
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -278,28 +288,26 @@ function WildcardServiceUrl({
           }
         />
         <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 overflow-hidden p-0">
-          <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col justify-start">
-            <div className="flex w-full flex-col gap-1.5 px-4 py-2.5">
+          <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col justify-start p-2">
+            <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
               <div className="text-process flex w-full justify-start gap-1.5">
                 <AsteriskIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0" />
                 <p className="min-w-0 shrink text-base leading-tight font-semibold">
-                  Wildcard domain
+                  Wildcard Domain
                 </p>
               </div>
               <p className="w-full text-sm leading-snug">Every subdomain reaches this service.</p>
             </div>
-            <div className="bg-border h-px w-full" />
-            <div className="flex w-full flex-col gap-1.5 px-4 py-2.5">
-              <div className="text-warning flex w-full justify-start gap-1.5">
-                <ShieldIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0" />
-                <p className="min-w-0 shrink text-base leading-tight font-semibold">
-                  Self-signed certificate
+            {!isCloudflare && (
+              <Banner className="bg-warning/3-10 border-warning/3-10 text-warning mt-2 gap-1.5 rounded-md px-2.5 py-2 text-sm leading-snug">
+                <div className="line-icon">
+                  <ShieldIcon className="-ml-0.5 size-3.5 shrink-0" />
+                </div>
+                <p className="min-w-0 shrink">
+                  Self-signed certificate. Needs a proxy like Cloudflare in front.
                 </p>
-              </div>
-              <p className="w-full text-sm leading-snug">
-                Browsers don't trust it. Put a proxy like Cloudflare in front.
-              </p>
-            </div>
+              </Banner>
+            )}
           </ScrollArea>
         </PopoverContent>
       </Popover>
