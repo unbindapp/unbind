@@ -51,6 +51,7 @@ The server gives every client a short set of instructions. They are worth knowin
 - Agents call `whoami` first to learn their role, limits and privileges, and not to retry for values that come back redacted.
 - Creating a service does not deploy it. The agent calls `trigger-deployment`, polls `get-deployment` until it finishes, and reads `query-logs` when a build or a replica fails.
 - Once a service is running, changes to its config or variables roll out on their own, and so do the services that reference a changed variable.
+- A service holds one volume at most. A service with a volume runs a single replica, and its rollouts stop the running replica before the new one starts. The new image is pulled first, so an image that can't be pulled leaves the running replica in place.
 
 ## Hints for the client
 

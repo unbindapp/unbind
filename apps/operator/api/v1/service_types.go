@@ -168,6 +168,9 @@ const (
 	ReconcileReasonFailed    = "Failed"
 
 	DeploymentStatusFailed = "Failed"
+
+	// PrepullLabel marks the pod that pulls a rollout's images before the running replica is stopped
+	PrepullLabel = "unbind-prepull"
 )
 
 // ServiceStatus defines the observed state of Service

@@ -20,11 +20,7 @@ func (rb *ResourceBuilder) BuildDeployment() (*appsv1.Deployment, error) {
 		return nil, ErrDeploymentNotNeeded
 	}
 
-	replicas := int32(1)
-	if rb.service.Spec.Config.Replicas != nil {
-		replicas = *rb.service.Spec.Config.Replicas
-	}
-
+	replicas := rb.replicas()
 	strategy := rb.buildDeploymentStrategy()
 	volumes, volumeMounts := rb.buildVolumes()
 	container := rb.buildMainContainer(volumeMounts)
@@ -53,6 +49,14 @@ func (rb *ResourceBuilder) BuildDeployment() (*appsv1.Deployment, error) {
 			},
 		},
 	}, nil
+}
+
+// A volume takes one writer at a time, so a service that mounts one runs a single replica
+func (rb *ResourceBuilder) replicas() int32 {
+	if rb.service.Spec.Config.Replicas == nil || len(rb.service.Spec.Config.Volumes) > 0 {
+		return 1
+	}
+	return *rb.service.Spec.Config.Replicas
 }
 
 func (rb *ResourceBuilder) buildDeploymentStrategy() appsv1.DeploymentStrategy {

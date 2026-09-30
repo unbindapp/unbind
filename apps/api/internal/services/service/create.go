@@ -170,6 +170,12 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid PVC mount path")
 			}
 		}
+		if len(input.Volumes) > 1 {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, SingleVolumeMessage)
+		}
+		if len(input.Volumes) > 0 && input.Replicas != nil && *input.Replicas > 1 {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, singleReplicaWithVolumeMessage)
+		}
 	}
 
 	permissionChecks := []permissions_repo.PermissionCheck{

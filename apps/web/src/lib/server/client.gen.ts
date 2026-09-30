@@ -180,7 +180,7 @@ export const UpdateServiceInputSchema = z
   .object({
     add_ports: z.array(PortSpecSchema).nullable().optional(), // Additional ports to add, will not remove existing ports
     add_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Additional variable mounts to add, will not remove existing mounts
-    add_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Additional volumes to add, will not remove existing volumes
+    add_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volume to mount. A service holds one volume, so this only works on a service without one, or together with remove_volumes for the current one
     auto_deploy: z.boolean().optional(), // Deploy on every push to the branch. Only for a GitHub service
     backup_retention_count: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
@@ -202,7 +202,7 @@ export const UpdateServiceInputSchema = z
     overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
     overwrite_ports: z.array(PortSpecSchema).nullable().optional(),
     overwrite_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
-    overwrite_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to mount on the service
+    overwrite_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volume to mount on the service, replacing the current one. One at most
     project_id: z.string(),
     railpack_builder_build_command: z.string().optional(),
     railpack_builder_install_command: z.string().optional(),
@@ -210,7 +210,7 @@ export const UpdateServiceInputSchema = z
     remove_ports: z.array(PortSpecSchema).nullable().optional(), // Ports to remove
     remove_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Variable mounts to remove
     remove_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to unmount from the service, matched by id. The data stays in the volume, which can be mounted on another service once this one's old replicas stop
-    replicas: z.number().optional(),
+    replicas: z.number().optional(), // Must be 1 for a service with a volume
     repository_name: z.string().optional(), // Must be a repository the GitHub installation has access to
     repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
@@ -652,7 +652,7 @@ export const CreatePVCInputSchema = z
     mount_path: z.string().optional(), // Path to mount the volume at on the service, requires service_id
     name: z.string(), // Has to be unique among the volumes of the same scope. A taken name gets a short suffix, so read the name from the response
     project_id: z.string().optional(),
-    service_id: z.string().optional(), // Service to mount the volume on, requires mount_path
+    service_id: z.string().optional(), // Service to mount the volume on, requires mount_path. The service must not have a volume already
     team_id: z.string(),
     type: PvcScopeSchema,
   })
@@ -829,7 +829,7 @@ export const CreateServiceInputSchema = z
     project_id: z.string(),
     railpack_builder_build_command: z.string().optional(),
     railpack_builder_install_command: z.string().optional(),
-    replicas: z.number().optional(),
+    replicas: z.number().optional(), // Must be 1 for a service with a volume
     repository_name: z.string().optional(), // Must be a repository the GitHub installation has access to
     repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
@@ -838,7 +838,7 @@ export const CreateServiceInputSchema = z
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
     variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
-    volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volumes to mount in the service
+    volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volume to mount in the service, one at most
   })
   .strip();
 

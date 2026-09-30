@@ -373,6 +373,7 @@ export type TCommandItem = {
   label: string;
   description?: string;
   keywords?: string[];
+  disabled?: boolean;
 };
 
 // cmdk only searches the value, so id-backed items need the visible text as keywords
@@ -514,6 +515,7 @@ function AsyncAndSearchableSelect({
                           value={item.value}
                           keywords={commandItemKeywords(item)}
                           key={item.value}
+                          disabled={item.disabled}
                           className="group/item px-3"
                           data-checked={field.state.value === item.value || undefined}
                         >

@@ -23,7 +23,7 @@ type CreateServiceInput struct {
 	Builder                       schema.ServiceBuilder `required:"true" doc:"Builder of the service - docker, nixpacks, railpack" json:"builder"`
 	Hosts                         []schema.HostSpec     `json:"hosts,omitempty"`
 	Ports                         []schema.PortSpec     `json:"ports,omitempty"`
-	Replicas                      *int32                `minimum:"1" maximum:"10" json:"replicas,omitempty"`
+	Replicas                      *int32                `minimum:"1" maximum:"10" json:"replicas,omitempty" doc:"Must be 1 for a service with a volume"`
 	AutoDeploy                    *bool                 `json:"auto_deploy,omitempty" doc:"Deploy on every push to the branch. Only for a GitHub service, defaults to true"`
 	RailpackBuilderInstallCommand *string               `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string               `json:"railpack_builder_build_command,omitempty"`
@@ -42,7 +42,7 @@ type CreateServiceInput struct {
 	BackupRetentionCount *int                   `json:"backup_retention_count,omitempty" required:"false" minimum:"1" doc:"Number of base backups to retain, e.g. 3"`
 
 	// PVC
-	Volumes []schema.ServiceVolume `json:"volumes,omitempty" required:"false" doc:"Volumes to mount in the service"`
+	Volumes []schema.ServiceVolume `json:"volumes,omitempty" required:"false" doc:"Volume to mount in the service, one at most"`
 
 	// Health check
 	HealthCheck *schema.HealthCheck `json:"health_check,omitempty" doc:"Health check configuration for the service"`
@@ -82,7 +82,7 @@ type UpdateServiceInput struct {
 	AddPorts                      []schema.PortSpec      `json:"add_ports,omitempty" required:"false" doc:"Additional ports to add, will not remove existing ports"`
 	RemovePorts                   []schema.PortSpec      `json:"remove_ports,omitempty" required:"false" doc:"Ports to remove"`
 	OverwritePorts                []schema.PortSpec      `json:"overwrite_ports,omitempty" required:"false"`
-	Replicas                      *int32                 `json:"replicas,omitempty" required:"false" minimum:"1" maximum:"10"`
+	Replicas                      *int32                 `json:"replicas,omitempty" required:"false" minimum:"1" maximum:"10" doc:"Must be 1 for a service with a volume"`
 	AutoDeploy                    *bool                  `json:"auto_deploy,omitempty" required:"false" doc:"Deploy on every push to the branch. Only for a GitHub service"`
 	RailpackBuilderInstallCommand *string                `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string                `json:"railpack_builder_build_command,omitempty"`
@@ -100,8 +100,8 @@ type UpdateServiceInput struct {
 	BackupRetentionCount *int                   `json:"backup_retention_count,omitempty" required:"false" minimum:"1" doc:"Number of base backups to retain, e.g. 3"`
 
 	// Volumes
-	OverwriteVolumes []schema.ServiceVolume `json:"overwrite_volumes,omitempty" required:"false" doc:"Volumes to mount on the service"`
-	AddVolumes       []schema.ServiceVolume `json:"add_volumes,omitempty" required:"false" doc:"Additional volumes to add, will not remove existing volumes"`
+	OverwriteVolumes []schema.ServiceVolume `json:"overwrite_volumes,omitempty" required:"false" doc:"Volume to mount on the service, replacing the current one. One at most"`
+	AddVolumes       []schema.ServiceVolume `json:"add_volumes,omitempty" required:"false" doc:"Volume to mount. A service holds one volume, so this only works on a service without one, or together with remove_volumes for the current one"`
 	RemoveVolumes    []schema.ServiceVolume `json:"remove_volumes,omitempty" required:"false" doc:"Volumes to unmount from the service, matched by id. The data stays in the volume, which can be mounted on another service once this one's old replicas stop"`
 
 	// Health check

@@ -383,7 +383,7 @@ components:
           format: uuid
           type: string
         service_id:
-          description: Service to mount the volume on, requires mount_path
+          description: Service to mount the volume on, requires mount_path. The service must not have a volume already
           format: uuid
           type: string
         team_id:
@@ -558,6 +558,7 @@ components:
         railpack_builder_install_command:
           type: string
         replicas:
+          description: Must be 1 for a service with a volume
           format: int32
           maximum: 10
           minimum: 1
@@ -591,7 +592,7 @@ components:
             - array
             - "null"
         volumes:
-          description: Volumes to mount in the service
+          description: Volume to mount in the service, one at most
           items:
             $ref: "#/components/schemas/ServiceVolume"
           type:
@@ -3923,7 +3924,7 @@ components:
             - array
             - "null"
         add_volumes:
-          description: Additional volumes to add, will not remove existing volumes
+          description: Volume to mount. A service holds one volume, so this only works on a service without one, or together with remove_volumes for the current one
           items:
             $ref: "#/components/schemas/ServiceVolume"
           type:
@@ -4015,7 +4016,7 @@ components:
             - array
             - "null"
         overwrite_volumes:
-          description: Volumes to mount on the service
+          description: Volume to mount on the service, replacing the current one. One at most
           items:
             $ref: "#/components/schemas/ServiceVolume"
           type:
@@ -4057,6 +4058,7 @@ components:
             - array
             - "null"
         replicas:
+          description: Must be 1 for a service with a volume
           format: int32
           maximum: 10
           minimum: 1

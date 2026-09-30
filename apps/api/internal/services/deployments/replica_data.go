@@ -47,6 +47,7 @@ func (self *DeploymentService) AttachReplicaDataToServices(ctx context.Context, 
 		self.k8s.GetInternalClient(),
 		k8s.PodStatusOptions{
 			IncludeKubernetesEvents: false, // Skip expensive Kubernetes Events API for list views
+			IncludePrepullPods:      true,
 		},
 	)
 	if err != nil {

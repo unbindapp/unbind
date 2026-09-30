@@ -7,8 +7,11 @@ import { useProject } from "@/components/project/project-provider";
 import { useNavigateToServices } from "@/components/project/use-navigate-to-services";
 import ServiceIcon from "@/components/service/service-icon";
 import {
+  getMountBlocker,
   getDuplicateServiceNames,
   ServicePickerDescription,
+  ServicePickerHint,
+  sortByMountBlocker,
 } from "@/components/service/service-picker";
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useSystem } from "@/components/system/system-provider";
@@ -51,24 +54,14 @@ function mountPathPageId(serviceId: string) {
   return `volume_mount_path_${serviceId}`;
 }
 
-// Databases manage their own storage and a service holds one volume at most
+// Databases manage their own storage
 function canAttachVolume(service: TServiceShallow) {
-  return service.type !== "database" && service.config.volumes.length === 0;
+  return service.type !== "database";
 }
 
-function getEmptyText({
-  isPending,
-  hasServices,
-  hasEligibleServices,
-}: {
-  isPending: boolean;
-  hasServices: boolean;
-  hasEligibleServices: boolean;
-}) {
+function getEmptyText({ isPending }: { isPending: boolean }) {
   if (isPending) return "Loading services...";
-  if (!hasServices) return "No services to mount on";
-  if (!hasEligibleServices) return "All services already have a volume";
-  return undefined;
+  return "No services to mount on";
 }
 
 function getDefaultCapacityGb(minimumStorageGb: number | undefined) {
@@ -109,10 +102,9 @@ function useVolumeItem() {
   });
 
   const eligibleServices = useMemo(
-    () => servicesData?.services.filter(canAttachVolume) ?? [],
+    () => sortByMountBlocker(servicesData?.services.filter(canAttachVolume) ?? []),
     [servicesData],
   );
-  const hasServices = (servicesData?.services.length ?? 0) > 0;
 
   const minimumStorageGb = systemData?.data.storage.minimum_storage_gb;
 
@@ -166,6 +158,19 @@ function useVolumeItem() {
     return eligibleServices.map((service) => {
       const pageId = mountPathPageId(service.id);
       const mountItemId = `${pageId}_mount`;
+      const blocker = getMountBlocker(service);
+      if (blocker) {
+        return {
+          id: `${servicesPageId}_${service.id}`,
+          title: service.name,
+          keywords: [],
+          description: ({ className }) => (
+            <ServicePickerHint text={blocker} className={className} />
+          ),
+          Icon: ({ className }) => <ServiceIcon service={service} className={className} />,
+          disabled: true,
+        };
+      }
       return {
         id: `${servicesPageId}_${service.id}`,
         title: service.name,
@@ -234,15 +239,11 @@ function useVolumeItem() {
         title: "Mount to Service",
         parentPageId: contextCommandPanelRootPage,
         inputPlaceholder: "Select a service...",
-        commandEmptyText: getEmptyText({
-          isPending: isPendingServices,
-          hasServices,
-          hasEligibleServices: eligibleServices.length > 0,
-        }),
+        commandEmptyText: getEmptyText({ isPending: isPendingServices }),
         items: serviceItems,
       },
     }),
-    [serviceItems, isPendingServices, hasServices, eligibleServices.length],
+    [serviceItems, isPendingServices],
   );
 
   const value = useMemo(

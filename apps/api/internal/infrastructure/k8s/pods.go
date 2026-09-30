@@ -3,20 +3,32 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
 
+	unbindv1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 )
 
-// GetPodsByLabels returns pods matching the provided labels in a namespace. The
-// replica views poll this every few seconds per open tab, so identical reads are
-// served from a short-lived cache (see ttlCache).
+// GetPodsByLabels returns pods matching the provided labels in a namespace, without
+// the pods that only pull images ahead of a rollout. The replica views poll this every
+// few seconds per open tab, so identical reads are served from a short-lived cache
+// (see ttlCache).
 func (k *KubeClient) GetPodsByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) (*corev1.PodList, error) {
+	pods, err := k.listPodsByLabels(ctx, namespace, labels, client)
+	if err != nil {
+		return nil, err
+	}
+	pods.Items = slices.DeleteFunc(pods.Items, isPrepullPod)
+	return pods, nil
+}
+
+func (k *KubeClient) listPodsByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) (*corev1.PodList, error) {
 	var labelSelectors []string
 	for key, value := range labels {
 		labelSelectors = append(labelSelectors, fmt.Sprintf("%s=%s", key, value))
@@ -34,6 +46,35 @@ func (k *KubeClient) GetPodsByLabels(ctx context.Context, namespace string, labe
 		return fetch(ctx)
 	}
 	return cached(ctx, k.listCache, "pods|"+namespace+"|"+labelSelector, fetch, (*corev1.PodList).DeepCopy)
+}
+
+func isPrepullPod(pod corev1.Pod) bool {
+	return pod.Labels[unbindv1.PrepullLabel] != ""
+}
+
+// withPullingPrepullPods keeps a prepull pod only for as long as it says something
+// about the rollout: while it pulls, or when the pull fails. Its containers are made
+// to fail once their image is there, so those are left out.
+func withPullingPrepullPods(pods []corev1.Pod) []corev1.Pod {
+	kept := make([]corev1.Pod, 0, len(pods))
+	for _, pod := range pods {
+		if !isPrepullPod(pod) {
+			kept = append(kept, pod)
+			continue
+		}
+		if pod.Status.Phase == corev1.PodFailed || pod.Status.Phase == corev1.PodSucceeded {
+			continue
+		}
+		pulling := slices.DeleteFunc(slices.Clone(pod.Status.ContainerStatuses), func(status corev1.ContainerStatus) bool {
+			return status.State.Terminated != nil
+		})
+		if len(pulling) == 0 && len(pod.Status.ContainerStatuses) > 0 {
+			continue
+		}
+		pod.Status.ContainerStatuses = pulling
+		kept = append(kept, pod)
+	}
+	return kept
 }
 
 // RollingRestartPodsByLabel performs a rolling restart of all pods with a specific label

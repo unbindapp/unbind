@@ -33,7 +33,15 @@ func (r *ServiceReconciler) reconcileDeployment(ctx context.Context, rb resource
 		return fmt.Errorf("building deployment: %w", err)
 	}
 
-	return reconcileResource(ctx, r, desired, nil, maxReconcileRetries,
+	pulled, err := r.prepullImages(ctx, &service, desired)
+	if err != nil {
+		return fmt.Errorf("pulling images ahead of the rollout: %w", err)
+	}
+	if !pulled {
+		return nil
+	}
+
+	err = reconcileResource(ctx, r, desired, nil, maxReconcileRetries,
 		func(existing, desired *appsv1.Deployment) bool {
 			return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
 				!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
@@ -44,6 +52,10 @@ func (r *ServiceReconciler) reconcileDeployment(ctx context.Context, rb resource
 		},
 		nil,
 	)
+	if err != nil {
+		return err
+	}
+	return r.deletePrepullJob(ctx, &service)
 }
 
 // reconcileServices reconciles the ClusterIP and NodePort Services for the workload,

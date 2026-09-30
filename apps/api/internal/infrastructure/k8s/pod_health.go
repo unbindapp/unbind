@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -27,14 +28,21 @@ func (self *KubeClient) GetPodContainerStatusByLabels(ctx context.Context, names
 // PodStatusOptions controls what data to fetch for pod status
 type PodStatusOptions struct {
 	IncludeKubernetesEvents bool // Whether to fetch additional events from Kubernetes Events API (more expensive)
+	// Whether to include the pods pulling a rollout's images. They tell how a deployment is doing, but are not replicas
+	IncludePrepullPods bool
 }
 
 // GetPodContainerStatusByLabelsWithOptions efficiently fetches pod status with configurable options
 // Container state events are always inferred (lightweight and reliable)
 func (self *KubeClient) GetPodContainerStatusByLabelsWithOptions(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface, options PodStatusOptions) ([]PodContainerStatus, error) {
-	pods, err := self.GetPodsByLabels(ctx, namespace, labels, client)
+	pods, err := self.listPodsByLabels(ctx, namespace, labels, client)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get pods: %w", err)
+	}
+	if options.IncludePrepullPods {
+		pods.Items = withPullingPrepullPods(pods.Items)
+	} else {
+		pods.Items = slices.DeleteFunc(pods.Items, isPrepullPod)
 	}
 
 	result := make([]PodContainerStatus, 0, len(pods.Items))

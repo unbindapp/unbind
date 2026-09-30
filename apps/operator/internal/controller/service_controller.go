@@ -29,6 +29,7 @@ import (
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder"
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -279,6 +280,7 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	builder := ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Service{}).
 		Owns(&appsv1.Deployment{}).
+		Owns(&batchv1.Job{}).
 		Owns(&corev1.Service{}).
 		Owns(&networkingv1.Ingress{}).
 		Owns(&helmv2.HelmRelease{}).

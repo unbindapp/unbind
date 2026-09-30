@@ -10,10 +10,12 @@ import {
 import CopyButton from "@/components/copy-button";
 import ErrorLine from "@/components/error-line";
 import {
+  getMountBlocker,
   getDuplicateServiceNames,
   getServicePublicHost,
   ServicePickerItem,
   ServicePickerTriggerIcon,
+  sortByMountBlocker,
 } from "@/components/service/service-picker";
 import { useServices } from "@/components/service/services-provider";
 import { volumeSettingsIds } from "@/components/settings/settings-ids";
@@ -23,7 +25,7 @@ import {
   useStagedChangesStore,
   useStagedVolumeChange,
 } from "@/components/staged-changes/staged-changes-provider";
-import { volumeChangeId } from "@/components/staged-changes/types";
+import { TStagedVolumeChange, volumeChangeId } from "@/components/staged-changes/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
 import { getVolumeDisplayName } from "@/components/volume/helpers";
@@ -98,11 +100,27 @@ function AttachSection({ volume }: TProps) {
 
   const sectionHighlightId = useMemo(() => getEntityId(volume), [volume]);
 
+  // Mounts and unmounts staged for the other volumes deploy together with this one
+  const lists = useStagedChangesStore((s) => s.lists);
+  const stagedVolumes = useMemo(
+    () =>
+      Object.values(lists).filter(
+        (change): change is TStagedVolumeChange =>
+          change.kind === "volume" && change.volumeId !== volume.id,
+      ),
+    [lists, volume.id],
+  );
+
   // Volumes can't be attached to database services, the database operator
   // manages its own storage.
   const attachableServices = useMemo(
-    () => servicesData?.services.filter((service) => service.type !== "database"),
-    [servicesData],
+    () =>
+      servicesData &&
+      sortByMountBlocker(
+        servicesData.services.filter((service) => service.type !== "database"),
+        stagedVolumes,
+      ),
+    [servicesData, stagedVolumes],
   );
 
   const serviceItems: TCommandItem[] | undefined = useMemo(
@@ -111,8 +129,9 @@ function AttachSection({ volume }: TProps) {
         value: service.id,
         label: service.name,
         keywords: [service.name, getServicePublicHost(service) ?? ""],
+        disabled: getMountBlocker(service, stagedVolumes) !== null,
       })),
-    [attachableServices],
+    [attachableServices, stagedVolumes],
   );
 
   const ServiceItemElement = useCallback(
@@ -124,11 +143,12 @@ function AttachSection({ volume }: TProps) {
         <ServicePickerItem
           service={service}
           showDescription={duplicateNames.has(service.name)}
+          hint={getMountBlocker(service, stagedVolumes)}
           className={className}
         />
       );
     },
-    [attachableServices],
+    [attachableServices, stagedVolumes],
   );
 
   const defaultMountPath = volume.mount_path || "/data";

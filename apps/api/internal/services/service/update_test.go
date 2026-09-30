@@ -72,6 +72,77 @@ func TestValidateDatabaseVolumeInputKeepsAttachedVolume(t *testing.T) {
 	assert.Error(t, validateDatabaseVolumeInput(service, nil, []schema.ServiceVolume{{ID: "pvc-2", MountPath: "/data"}}, nil, nil))
 }
 
+func TestValidateVolumeCount(t *testing.T) {
+	data := schema.ServiceVolume{ID: "pvc-1", MountPath: "/data"}
+	files := schema.ServiceVolume{ID: "pvc-2", MountPath: "/files"}
+	mounted := []schema.ServiceVolume{data}
+
+	assert.NoError(t, validateVolumeCount(nil, &models.UpdateServiceInput{AddVolumes: []schema.ServiceVolume{data}}))
+	assert.NoError(t, validateVolumeCount(nil, &models.UpdateServiceInput{OverwriteVolumes: []schema.ServiceVolume{data}}))
+	assert.NoError(t, validateVolumeCount(mounted, &models.UpdateServiceInput{}))
+
+	assert.ErrorContains(t, validateVolumeCount(mounted, &models.UpdateServiceInput{AddVolumes: []schema.ServiceVolume{files}}), "Unmount the current one first")
+	assert.ErrorContains(t, validateVolumeCount(nil, &models.UpdateServiceInput{AddVolumes: []schema.ServiceVolume{data, files}}), SingleVolumeMessage)
+	assert.ErrorContains(t, validateVolumeCount(nil, &models.UpdateServiceInput{OverwriteVolumes: []schema.ServiceVolume{data, files}}), SingleVolumeMessage)
+
+	// A mount path change re-adds the mounted volume
+	assert.NoError(t, validateVolumeCount(mounted, &models.UpdateServiceInput{
+		AddVolumes: []schema.ServiceVolume{{ID: data.ID, MountPath: "/other"}},
+	}))
+
+	// Swapping volumes can go in one request
+	assert.NoError(t, validateVolumeCount(mounted, &models.UpdateServiceInput{
+		RemoveVolumes: []schema.ServiceVolume{data},
+		AddVolumes:    []schema.ServiceVolume{files},
+	}))
+	assert.NoError(t, validateVolumeCount(mounted, &models.UpdateServiceInput{OverwriteVolumes: []schema.ServiceVolume{files}}))
+
+	// Unmounting is always possible
+	assert.NoError(t, validateVolumeCount([]schema.ServiceVolume{data, files}, &models.UpdateServiceInput{RemoveVolumes: []schema.ServiceVolume{files}}))
+}
+
+func TestValidateVolumeReplicas(t *testing.T) {
+	volume := schema.ServiceVolume{ID: "pvc-1", MountPath: "/data"}
+	other := schema.ServiceVolume{ID: "pvc-2", MountPath: "/data"}
+	single := &ent.ServiceConfig{Replicas: 1}
+	replicated := &ent.ServiceConfig{Replicas: 3}
+	withVolume := &ent.ServiceConfig{Replicas: 1, Volumes: []schema.ServiceVolume{volume}}
+	legacy := &ent.ServiceConfig{Replicas: 3, Volumes: []schema.ServiceVolume{volume}}
+
+	assert.NoError(t, validateVolumeReplicas(single, &models.UpdateServiceInput{AddVolumes: []schema.ServiceVolume{volume}}))
+	assert.NoError(t, validateVolumeReplicas(replicated, &models.UpdateServiceInput{Replicas: new(int32(5))}))
+
+	assert.ErrorContains(t, validateVolumeReplicas(replicated, &models.UpdateServiceInput{AddVolumes: []schema.ServiceVolume{volume}}), "Set its replicas to 1")
+	assert.ErrorContains(t, validateVolumeReplicas(replicated, &models.UpdateServiceInput{OverwriteVolumes: []schema.ServiceVolume{volume}}), "Set its replicas to 1")
+	assert.ErrorContains(t, validateVolumeReplicas(single, &models.UpdateServiceInput{
+		Replicas:   new(int32(2)),
+		AddVolumes: []schema.ServiceVolume{volume},
+	}), "Set its replicas to 1")
+
+	// Lowering the replicas and mounting can go in one request
+	assert.NoError(t, validateVolumeReplicas(replicated, &models.UpdateServiceInput{
+		Replicas:   new(int32(1)),
+		AddVolumes: []schema.ServiceVolume{volume},
+	}))
+
+	assert.ErrorContains(t, validateVolumeReplicas(withVolume, &models.UpdateServiceInput{Replicas: new(int32(2))}), singleReplicaWithVolumeMessage)
+	assert.ErrorContains(t, validateVolumeReplicas(withVolume, &models.UpdateServiceInput{
+		Replicas:         new(int32(2)),
+		OverwriteVolumes: []schema.ServiceVolume{{ID: volume.ID, MountPath: "/files"}},
+	}), singleReplicaWithVolumeMessage)
+
+	// Unmounting and scaling up can go in one request
+	assert.NoError(t, validateVolumeReplicas(withVolume, &models.UpdateServiceInput{
+		Replicas:      new(int32(2)),
+		RemoveVolumes: []schema.ServiceVolume{volume},
+	}))
+
+	// A service that broke the rule before it existed can still be edited and fixed
+	assert.NoError(t, validateVolumeReplicas(legacy, &models.UpdateServiceInput{}))
+	assert.NoError(t, validateVolumeReplicas(legacy, &models.UpdateServiceInput{Replicas: new(int32(1))}))
+	assert.Error(t, validateVolumeReplicas(legacy, &models.UpdateServiceInput{AddVolumes: []schema.ServiceVolume{other}}))
+}
+
 func TestReleasedVolumes(t *testing.T) {
 	existing := []schema.ServiceVolume{{ID: "pvc-1", MountPath: "/data"}, {ID: "pvc-2", MountPath: "/cache"}}
 

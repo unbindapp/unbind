@@ -31,3 +31,14 @@ func TestBuildVolumesNamesArePodSafe(t *testing.T) {
 	assert.Len(t, names, 4, "every claim gets its own volume name")
 	assert.Equal(t, short, volumes[0].Name, "a name a pod accepts is kept, so running services are not rolled")
 }
+
+func TestReplicasWithVolume(t *testing.T) {
+	service := &v1.Service{}
+	assert.Equal(t, int32(1), NewResourceBuilder(service, nil, nil).replicas())
+
+	service.Spec.Config.Replicas = new(int32(3))
+	assert.Equal(t, int32(3), NewResourceBuilder(service, nil, nil).replicas())
+
+	service.Spec.Config.Volumes = []v1.VolumeSpec{{Name: "data", MountPath: "/data"}}
+	assert.Equal(t, int32(1), NewResourceBuilder(service, nil, nil).replicas(), "replicas can't share a volume")
+}

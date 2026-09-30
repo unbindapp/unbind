@@ -13,6 +13,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
+	service_service "github.com/unbindapp/unbind-api/internal/services/service"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -147,7 +148,10 @@ func (self *StorageService) validateAttachTarget(ctx context.Context, input *mod
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Volumes cannot be mounted on database services")
 	}
 	if service.Edges.ServiceConfig != nil && len(service.Edges.ServiceConfig.Volumes) > 0 {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Service already has a volume mounted")
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, service_service.SingleVolumeMessage+". Unmount the current one first")
+	}
+	if service.Edges.ServiceConfig != nil && service.Edges.ServiceConfig.Replicas > 1 {
+		return nil, service_service.ReplicatedMountError(service.Edges.ServiceConfig.Replicas)
 	}
 	return service, nil
 }

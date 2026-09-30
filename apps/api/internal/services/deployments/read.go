@@ -113,6 +113,7 @@ func (self *DeploymentService) AttachReplicaDataToCurrent(ctx context.Context, d
 		self.k8s.GetInternalClient(),
 		k8s.PodStatusOptions{
 			IncludeKubernetesEvents: false, // Skip expensive Kubernetes Events API for deployment lists
+			IncludePrepullPods:      true,
 		},
 	)
 	if err != nil {

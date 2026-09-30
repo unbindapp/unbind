@@ -1,5 +1,6 @@
 import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import { settingsIds } from "@/components/settings/settings-ids";
+import Banner from "@/components/banner";
 import {
   Block,
   BlockItem,
@@ -23,7 +24,7 @@ import { SettingsSection } from "@/components/settings/settings-section";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/lib/queries/services";
-import { RocketIcon } from "lucide-react";
+import { InfoIcon, LockIcon, RocketIcon } from "lucide-react";
 import { useStore } from "@tanstack/react-form";
 import { useMemo } from "react";
 
@@ -96,6 +97,8 @@ const deployFields: TServiceChangeField[] = ["replicaCount", "cpuLimitMillicores
 function Section({ service }: { service: TServiceShallow }) {
   const { isItemVisible } = useSettingsSectionSearch("deploy");
   const hasReplicas = shouldDeploySectionHaveReplicas(service);
+  // Replicas can't share a volume
+  const isReplicaCountLocked = service.config.volumes.length > 0;
   const sectionHighlightId = useMemo(() => getDeploySectionId(service), [service]);
   const serverReplicaCount = service.config.replicas;
   const serverCpu = service.config.resources?.cpu_limits_millicores || unlimitedApiValue;
@@ -161,33 +164,61 @@ function Section({ service }: { service: TServiceShallow }) {
                 >
                   <ValueTitle
                     title="Replicas"
-                    value={field.state.value ? field.state.value.toString() : "1"}
+                    value={
+                      isReplicaCountLocked || !field.state.value
+                        ? "1"
+                        : field.state.value.toString()
+                    }
                     hasChanges={changed.replicaCount}
                     onRevert={() => revert(field, "replicaCount", serverReplicaCount)}
                   />
-                  <field.StorageSizeInput
-                    field={field}
-                    className="w-full px-3.5 py-3"
-                    onBlur={field.handleBlur}
-                    min={1}
-                    max={10}
-                    step={1}
-                    hideMinMax
-                    defaultValue={[serverReplicaCount]}
-                    value={field.state.value ? [field.state.value] : undefined}
-                    hasChanges={changed.replicaCount}
-                    onValueChange={(value) => {
-                      field.handleChange(value[0]);
-                    }}
-                    onValueCommitted={(value) => {
-                      stage({
-                        field: "replicaCount",
-                        label: "Replicas",
-                        value: value[0] || 1,
-                        previous: serverReplicaCount,
-                      });
-                    }}
-                  />
+                  <div className="flex w-full items-center gap-3 px-3.5 py-3">
+                    {isReplicaCountLocked && (
+                      <LockIcon className="text-muted-foreground size-4 shrink-0" />
+                    )}
+                    <field.StorageSizeInput
+                      field={field}
+                      className="min-w-0 flex-1"
+                      onBlur={field.handleBlur}
+                      min={1}
+                      max={10}
+                      step={1}
+                      hideMinMax
+                      disabled={isReplicaCountLocked}
+                      defaultValue={[serverReplicaCount]}
+                      value={
+                        isReplicaCountLocked
+                          ? [1]
+                          : field.state.value
+                            ? [field.state.value]
+                            : undefined
+                      }
+                      hasChanges={changed.replicaCount}
+                      onValueChange={(value) => {
+                        field.handleChange(value[0]);
+                      }}
+                      onValueCommitted={(value) => {
+                        stage({
+                          field: "replicaCount",
+                          label: "Replicas",
+                          value: value[0] || 1,
+                          previous: serverReplicaCount,
+                        });
+                      }}
+                    />
+                  </div>
+                  {isReplicaCountLocked && (
+                    <div className="w-full px-1.5">
+                      <Banner className="bg-process/3-10 border-process/3-10 text-process rounded-md px-2.5 py-2 md:max-w-none">
+                        <div className="line-icon">
+                          <InfoIcon className="-ml-0.5 size-4 shrink-0" />
+                        </div>
+                        <p className="min-w-0 shrink">
+                          Services with a volume run a single replica.
+                        </p>
+                      </Banner>
+                    </div>
+                  )}
                 </BlockItemContentHighlightable>
               </BlockItem>
             )}

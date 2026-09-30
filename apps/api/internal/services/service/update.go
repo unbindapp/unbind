@@ -182,6 +182,12 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		if unknown := newVolumes(service.Edges.ServiceConfig.Volumes, input.RemoveVolumes); len(unknown) > 0 {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Volume %s is not mounted on this service", unknown[0].ID))
 		}
+		if err := validateVolumeCount(service.Edges.ServiceConfig.Volumes, input); err != nil {
+			return nil, err
+		}
+		if err := validateVolumeReplicas(service.Edges.ServiceConfig, input); err != nil {
+			return nil, err
+		}
 	}
 
 	// A database with an existing deployment can't change its version.
@@ -717,6 +723,56 @@ func newVolumes(existing []schema.ServiceVolume, lists ...[]schema.ServiceVolume
 		added = append(added, volume)
 	}
 	return added
+}
+
+const SingleVolumeMessage = "A service can only have one volume"
+
+// Only a request that mounts is checked, so unmounting is never in the way of getting back to one volume
+func validateVolumeCount(existing []schema.ServiceVolume, input *models.UpdateServiceInput) error {
+	if len(input.OverwriteVolumes) == 0 && len(input.AddVolumes) == 0 {
+		return nil
+	}
+
+	mounted := input.OverwriteVolumes
+	if len(mounted) == 0 {
+		kept := newVolumes(slices.Concat(input.AddVolumes, input.RemoveVolumes), existing)
+		mounted = slices.Concat(kept, input.AddVolumes)
+	}
+	if len(mounted) <= 1 {
+		return nil
+	}
+	if len(existing) > 0 {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, SingleVolumeMessage+". Unmount the current one first")
+	}
+	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, SingleVolumeMessage)
+}
+
+const singleReplicaWithVolumeMessage = "A service with a volume can only run 1 replica, because replicas can't share a volume"
+
+// A volume takes one writer at a time. Only a request that mounts a volume or sets the
+// replicas is rejected, so a service that broke the rule before it existed stays editable.
+func validateVolumeReplicas(config *ent.ServiceConfig, input *models.UpdateServiceInput) error {
+	replicas := config.Replicas
+	if input.Replicas != nil {
+		replicas = *input.Replicas
+	}
+	if replicas <= 1 {
+		return nil
+	}
+
+	if len(newVolumes(config.Volumes, input.OverwriteVolumes, input.AddVolumes)) > 0 {
+		return ReplicatedMountError(replicas)
+	}
+
+	keepsVolume := len(input.OverwriteVolumes) > 0 || len(newVolumes(input.RemoveVolumes, config.Volumes)) > 0
+	if input.Replicas != nil && keepsVolume {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, singleReplicaWithVolumeMessage)
+	}
+	return nil
+}
+
+func ReplicatedMountError(replicas int32) error {
+	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("This service runs %d replicas and replicas can't share a volume. Set its replicas to 1 before mounting a volume", replicas))
 }
 
 func requestSizeLabel(sizeMB int32) string {

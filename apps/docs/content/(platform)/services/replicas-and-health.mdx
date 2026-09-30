@@ -9,7 +9,9 @@ These settings live under **Deploy** and **Health** in the service settings. Cha
 
 A replica is one running copy of your service. With more than one, traffic is spread across them, and a deployment replaces them one by one so there is no gap.
 
-Set **Replicas** from 1 to 10. Your app has to be fine with running as several copies: no state in memory or on local disk that other copies need. Services with a [volume](/services/volumes) should stay at 1.
+Set **Replicas** from 1 to 10. Your app has to be fine with running as several copies: no state in memory or on local disk that other copies need.
+
+A service with a [volume](/services/volumes#replicas) always runs 1 replica and its **Replicas** setting is locked, because replicas can't share a volume.
 
 Databases have no replica setting.
 
