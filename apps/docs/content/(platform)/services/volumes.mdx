@@ -39,7 +39,7 @@ If you need several replicas, keep the state somewhere shared instead: a databas
 
 Two versions never write to a volume at the same time. During a deployment the old version stops before the new one starts, so expect a gap of a few seconds.
 
-Unbind keeps that gap short by pulling the new image while the old version is still running. If the image can't be pulled, the deployment shows an error and the old version keeps running.
+Unbind keeps that gap short in two ways. It pulls the new image while the old version is still running. And the old version gets about 2 seconds to stop after its stop signal (`SIGTERM`), not the 5 seconds other services get, so an app that needs longer to write its data out safely should not rely on that window. If the image can't be pulled, the deployment shows an error and the old version keeps running.
 
 A new version that crashes on start still takes the service down, because the old version has already stopped. [Health checks](/services/replicas-and-health#health-checks) do not prevent this for a service with a volume.
 

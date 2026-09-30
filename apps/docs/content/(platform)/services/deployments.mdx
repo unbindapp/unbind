@@ -55,6 +55,12 @@ You can deploy changes while a build is running. They go live right away on the 
 
 Creating or deleting a service, and the actions below, happen right away. They are not staged.
 
+## How the old version stops
+
+When a deployment replaces a version, the old replicas get a stop signal (`SIGTERM`) and 5 seconds to finish what they are doing. A replica that is still running after that is stopped by force.
+
+A service with a [volume](/services/volumes#deployments) gets about 2 seconds instead, because the new version can't start until the old one is gone.
+
 ## Actions on a deployment
 
 Open the menu on a deployment.

@@ -42,3 +42,17 @@ func TestReplicasWithVolume(t *testing.T) {
 	service.Spec.Config.Volumes = []v1.VolumeSpec{{Name: "data", MountPath: "/data"}}
 	assert.Equal(t, int32(1), NewResourceBuilder(service, nil, nil).replicas(), "replicas can't share a volume")
 }
+
+func TestTerminationGracePeriod(t *testing.T) {
+	service := &v1.Service{}
+	service.Spec.Config.Image = "app:1"
+
+	deployment, err := NewResourceBuilder(service, nil, nil).BuildDeployment()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(5), *deployment.Spec.Template.Spec.TerminationGracePeriodSeconds)
+
+	service.Spec.Config.Volumes = []v1.VolumeSpec{{Name: "data", MountPath: "/data"}}
+	deployment, err = NewResourceBuilder(service, nil, nil).BuildDeployment()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), *deployment.Spec.Template.Spec.TerminationGracePeriodSeconds, "the wait is downtime, and 0 lets two replicas overlap")
+}

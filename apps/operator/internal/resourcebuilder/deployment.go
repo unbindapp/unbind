@@ -41,10 +41,11 @@ func (rb *ResourceBuilder) BuildDeployment() (*appsv1.Deployment, error) {
 					Annotations: rb.buildPodAnnotations(),
 				},
 				Spec: corev1.PodSpec{
-					ImagePullSecrets: imagePullSecrets,
-					InitContainers:   initContainers,
-					Containers:       []corev1.Container{container},
-					Volumes:          volumes,
+					ImagePullSecrets:              imagePullSecrets,
+					InitContainers:                initContainers,
+					Containers:                    []corev1.Container{container},
+					Volumes:                       volumes,
+					TerminationGracePeriodSeconds: new(rb.terminationGracePeriodSeconds()),
 				},
 			},
 		},
@@ -57,6 +58,20 @@ func (rb *ResourceBuilder) replicas() int32 {
 		return 1
 	}
 	return *rb.service.Spec.Config.Replicas
+}
+
+const (
+	terminationGracePeriodSeconds = 5
+	// With a volume the new replica waits for the old one to stop, so the wait is downtime.
+	// 0 would let the new replica start while the old one is still being killed.
+	terminationGracePeriodSecondsWithVolume = 1
+)
+
+func (rb *ResourceBuilder) terminationGracePeriodSeconds() int64 {
+	if len(rb.service.Spec.Config.Volumes) > 0 {
+		return terminationGracePeriodSecondsWithVolume
+	}
+	return terminationGracePeriodSeconds
 }
 
 func (rb *ResourceBuilder) buildDeploymentStrategy() appsv1.DeploymentStrategy {
