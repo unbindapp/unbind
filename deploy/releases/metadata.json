@@ -463,5 +463,10 @@
     "version": "v0.1.92",
     "summary": "Services with a volume run a single replica, new images pulled before the running replica stops, and deploy settings improvements.",
     "breaking": false
+  },
+  "v0.1.93": {
+    "version": "v0.1.93",
+    "summary": "Wildcard domains for services, wildcard DNS records accepted for pending service URLs, softer self-signed certificate warnings, and a termination grace period for services.",
+    "breaking": false
   }
 }
