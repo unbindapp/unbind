@@ -10,7 +10,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type traefikProvider struct{}
+type traefikProvider struct {
+	cfg Config
+}
 
 func (traefikProvider) Name() Provider { return ProviderTraefik }
 
@@ -28,7 +30,7 @@ func (traefikProvider) ServiceAnnotations(svc *v1.Service) map[string]string {
 
 func (traefikProvider) ExposesL4ViaGateway() bool { return false }
 
-func (traefikProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
+func (p traefikProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	svc := in.Service
 	if !needsRoutes(svc) {
 		return nil, ErrRouteNotNeeded
@@ -48,7 +50,7 @@ func (traefikProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	}
 	ingress := buildIngress(in, "traefik", annotations)
 
-	return []client.Object{ingress, redirect, buffering}, nil
+	return ingressRoutes(p.cfg, in, ingress, redirect, buffering), nil
 }
 
 func traefikMiddleware(name, namespace string, labels map[string]string, spec map[string]any) *unstructured.Unstructured {

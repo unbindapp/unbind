@@ -124,9 +124,10 @@ type KubeClientInterface interface {
 	GetPodContainerStatusByLabelsWithOptions(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface, options PodStatusOptions) ([]PodContainerStatus, error)
 	GetExpectedReplicas(ctx context.Context, namespace string, podName string, client kubernetes.Interface) (int, error)
 	GetSimpleHealthStatus(ctx context.Context, namespace string, labels map[string]string, expectedReplicas *int, client kubernetes.Interface) (*SimpleHealthStatus, error)
-	// GetPodsByLabels returns pods matching the provided labels in a namespace. The
-	// replica views poll this every few seconds per open tab, so identical reads are
-	// served from a short-lived cache (see ttlCache).
+	// GetPodsByLabels returns pods matching the provided labels in a namespace, without
+	// the pods that only pull images ahead of a rollout. The replica views poll this every
+	// few seconds per open tab, so identical reads are served from a short-lived cache
+	// (see ttlCache).
 	GetPodsByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) (*corev1.PodList, error)
 	// RollingRestartPodsByLabel performs a rolling restart of all pods with a specific label
 	// regardless of whether they're part of Deployments, StatefulSets, or standalone pods.

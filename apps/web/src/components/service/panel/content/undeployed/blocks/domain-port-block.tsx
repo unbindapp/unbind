@@ -57,6 +57,7 @@ const DomainPortBlock = withForm({
                   }}
                   children={(field) => (
                     <field.DomainInput
+                      allowWildcard
                       disabled={!isPublic}
                       fadeOnDisabled={!isPublic ? false : undefined}
                       data-private={!isPublic || undefined}

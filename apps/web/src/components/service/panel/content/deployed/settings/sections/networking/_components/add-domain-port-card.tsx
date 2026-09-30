@@ -225,6 +225,7 @@ export default function AddDomainPortCard({
                               </BlockItemHeader>
                               <BlockItemContent>
                                 <field.DomainInput
+                                  allowWildcard
                                   field={field}
                                   value={field.state.value}
                                   onBlur={field.handleBlur}

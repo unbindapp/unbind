@@ -7,7 +7,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type nginxProvider struct{}
+type nginxProvider struct {
+	cfg Config
+}
 
 func (nginxProvider) Name() Provider { return ProviderNginx }
 
@@ -15,7 +17,7 @@ func (nginxProvider) ServiceAnnotations(*v1.Service) map[string]string { return 
 
 func (nginxProvider) ExposesL4ViaGateway() bool { return false }
 
-func (nginxProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
+func (p nginxProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	if !needsRoutes(in.Service) {
 		return nil, ErrRouteNotNeeded
 	}
@@ -24,7 +26,7 @@ func (nginxProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 		annotations["nginx.ingress.kubernetes.io/backend-protocol"] = "GRPC"
 	}
 	ingress := buildIngress(in, "nginx", annotations)
-	return []client.Object{ingress}, nil
+	return ingressRoutes(p.cfg, in, ingress), nil
 }
 
 func hasGRPCHost(svc *v1.Service) bool {

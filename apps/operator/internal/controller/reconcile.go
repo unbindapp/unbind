@@ -125,6 +125,10 @@ func (r *ServiceReconciler) cleanupStaleRoutes(ctx context.Context, service *v1.
 			if desired[gvk.String()+"/"+item.GetName()] {
 				continue
 			}
+			// cert-manager's ingress-shim copies the Ingress labels onto the Certificates it owns
+			if gvk.Kind == "Certificate" && !metav1.IsControlledBy(item, service) {
+				continue
+			}
 			stale := &unstructured.Unstructured{}
 			stale.SetGroupVersionKind(gvk)
 			stale.SetNamespace(item.GetNamespace())

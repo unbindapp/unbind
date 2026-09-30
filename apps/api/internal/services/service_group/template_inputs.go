@@ -451,7 +451,7 @@ func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, reque
 				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("invalid host for input %q: %v", edit.ID, err))
 			}
 			if cleaned != r.hostSpec.Host {
-				count, err := self.repo.Service().CountDomainCollisons(ctx, nil, cleaned, new(r.hostSvc.ID))
+				count, err := self.repo.Service().CountHostConflicts(ctx, nil, cleaned, input.TeamID, new(r.hostSvc.ID))
 				if err != nil {
 					return nil, err
 				}

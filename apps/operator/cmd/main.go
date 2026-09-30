@@ -99,13 +99,15 @@ func main() {
 	flag.StringVar(&metricsCertKey, "metrics-cert-key", "tls.key", "The name of the metrics server key file.")
 	flag.BoolVar(&enableHTTP2, "enable-http2", false,
 		"If set, HTTP/2 will be enabled for the metrics and webhook servers")
-	var networkingProvider, gatewayClass, clusterIssuer string
+	var networkingProvider, gatewayClass, clusterIssuer, selfSignedIssuer string
 	flag.StringVar(&networkingProvider, "networking-provider", "auto",
 		"Networking provider to generate routing resources for: nginx|traefik|gateway|auto")
 	flag.StringVar(&gatewayClass, "gateway-class", "unbind",
 		"GatewayClass the per-service Gateways attach to (gateway provider)")
 	flag.StringVar(&clusterIssuer, "cluster-issuer", "letsencrypt-prod",
 		"cert-manager ClusterIssuer that issues per-host certs for service Gateways")
+	flag.StringVar(&selfSignedIssuer, "self-signed-issuer", "unbind-selfsigned",
+		"cert-manager ClusterIssuer that signs certificates for wildcard hosts")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -241,7 +243,7 @@ func main() {
 	}
 	provider, networkingConfig := networking.Resolve(context.Background(), directClient,
 		networking.Provider(networkingProvider),
-		networking.Config{GatewayClassName: gatewayClass, ClusterIssuer: clusterIssuer},
+		networking.Config{GatewayClassName: gatewayClass, ClusterIssuer: clusterIssuer, SelfSignedIssuer: selfSignedIssuer},
 	)
 	setupLog.Info("resolved networking provider", "requested", networkingProvider, "provider", provider)
 

@@ -55,6 +55,18 @@ func TestPublicEndpointsFor(t *testing.T) {
 		assert.Equal(t, []serviceEndpoint{{Host: "app.example.com", IsDomain: true, Port: 443, Target: 3000}}, app(config))
 	})
 
+	t.Run("a wildcard host names no endpoint", func(t *testing.T) {
+		config := &ent.ServiceConfig{
+			IsPublic: true,
+			Ports:    []schema.PortSpec{{Port: 3000}},
+			Hosts: []schema.HostSpec{
+				{Host: "*.example.com", TargetPort: utils.ToPtr[int32](3000)},
+				{Host: "example.com", TargetPort: utils.ToPtr[int32](3000)},
+			},
+		}
+		assert.Equal(t, []serviceEndpoint{{Host: "example.com", IsDomain: true, Port: 443, Target: 3000}}, app(config))
+	})
+
 	// Nothing routes a database over HTTP, so a domain with no node port behind it
 	// reaches nothing and must not be named
 	t.Run("a database host with no node port behind it is dropped", func(t *testing.T) {

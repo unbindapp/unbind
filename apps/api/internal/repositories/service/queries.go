@@ -240,6 +240,49 @@ func (self *ServiceRepository) CountDomainCollisons(ctx context.Context, tx repo
 	return jsonCount, nil
 }
 
+// CountHostConflicts counts what stops a team from claiming host: every other service
+// holding the same host, and services of other teams whose host overlaps it through a
+// wildcard. Overlap inside one team is left to the team.
+func (self *ServiceRepository) CountHostConflicts(ctx context.Context, tx repository.TxInterface, host string, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error) {
+	db := self.base.DB
+	if tx != nil {
+		db = tx.Client()
+	}
+
+	q := db.ServiceConfig.Query().Where(serviceconfig.HostsNotNil())
+	if excludingServiceID != nil {
+		q = q.Where(serviceconfig.ServiceIDNEQ(*excludingServiceID))
+	}
+	configs, err := q.All(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	otherTeamConfigIDs, err := db.ServiceConfig.Query().
+		Where(
+			serviceconfig.HostsNotNil(),
+			serviceconfig.HasServiceWith(service.HasEnvironmentWith(environment.HasProjectWith(project.TeamIDNEQ(teamID)))),
+		).
+		IDs(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	count := 0
+	for _, config := range configs {
+		isOtherTeam := slices.Contains(otherTeamConfigIDs, config.ID)
+		if slices.ContainsFunc(config.Hosts, func(existing schema.HostSpec) bool {
+			if strings.EqualFold(existing.Host, host) {
+				return true
+			}
+			return isOtherTeam && utils.HostsOverlap(existing.Host, host)
+		}) {
+			count++
+		}
+	}
+	return count, nil
+}
+
 func (self *ServiceRepository) GetDeploymentNamespace(ctx context.Context, serviceID uuid.UUID) (string, error) {
 	svc, err := self.base.DB.Service.Query().
 		Where(service.IDEQ(serviceID)).

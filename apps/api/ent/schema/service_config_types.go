@@ -17,7 +17,7 @@ import (
 // * Custom kubernetes-like types
 type HostSpec struct {
 	PrevHost   *string       `json:"prev_host,omitempty" required:"false" doc:"Previous host for the service, used for upserting key"`
-	Host       string        `json:"host"`
+	Host       string        `json:"host" doc:"Domain the service answers on, e.g. app.example.com. A wildcard like *.example.com answers every subdomain, but it is served with a self-signed certificate and needs a proxy such as Cloudflare in front to give visitors a trusted one"`
 	Path       string        `json:"path"`
 	TargetPort *int32        `json:"target_port,omitempty" required:"false"`
 	Protocol   *HostProtocol `json:"protocol,omitempty" required:"false" doc:"Application protocol for the domain: http (default) or grpc"`

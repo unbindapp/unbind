@@ -15,6 +15,7 @@ import { StagedChip, type TStagedState } from "@/components/staged-changes/stage
 import type { TStagedListEntry } from "@/components/staged-changes/staged-changes-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
+import { isWildcardDomain } from "@/lib/helpers/is-domain";
 import { validateDomain } from "@/lib/helpers/validate-domain";
 import { validatePort } from "@/lib/helpers/validate-port";
 import { useAppForm } from "@/lib/hooks/use-app-form";
@@ -264,6 +265,7 @@ export default function DomainPortCard({
                   <DomainStatusRow
                     dnsStatus={dnsStatus}
                     isCloudflare={isCloudflare}
+                    isWildcard={isWildcardDomain(domain)}
                     className="mt-2 border-t px-0 pt-2 pb-0 text-xs"
                   />
                 )}
@@ -305,6 +307,7 @@ export default function DomainPortCard({
                       </BlockItemHeader>
                       <BlockItemContent>
                         <field.DomainInput
+                          allowWildcard
                           field={field}
                           value={field.state.value}
                           onBlur={field.handleBlur}

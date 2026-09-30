@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"bytes"
 	"context"
 	"crypto/x509"
 	"encoding/pem"
@@ -299,24 +300,28 @@ type hostStatus struct {
 
 // hostStatus resolves DNS and TLS state for one external host; an issued certificate
 // covering the host implies DNS resolved, otherwise the host is probed directly.
+// A wildcard is probed through a subdomain it covers.
 func (self *KubeClient) hostStatus(ctx context.Context, namespace, host, secretName string, checkDNS bool, client kubernetes.Interface) (hostStatus, error) {
 	status := hostStatus{DNS: models.DNSStatusUnknown, TLS: models.TlsStatusAttempting}
 
 	if secretName != "" {
 		secret, err := client.CoreV1().Secrets(namespace).Get(ctx, secretName, metav1.GetOptions{})
-		if err == nil && certificateCoversHost(secret, host) {
-			status.DNS = models.DNSStatusResolved
-			status.TLS = models.TlsStatusIssued
+		if err == nil {
+			status.TLS = certificateStatus(secret, host)
 		}
+	}
+	if status.TLS == models.TlsStatusIssued {
+		status.DNS = models.DNSStatusResolved
 	}
 
 	if !checkDNS {
 		return status, nil
 	}
 
+	probeHost := utils.ProbeHost(host)
 	if status.DNS == models.DNSStatusResolved {
-		status.Cloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(host)
-		status.CloudflareMissingCertificate = status.Cloudflare && !self.dnsChecker.ServesTLS(host)
+		status.Cloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(probeHost)
+		status.CloudflareMissingCertificate = status.Cloudflare && !self.dnsChecker.ServesTLS(probeHost)
 		return status, nil
 	}
 
@@ -324,15 +329,15 @@ func (self *KubeClient) hostStatus(ctx context.Context, namespace, host, secretN
 	if err != nil {
 		return status, fmt.Errorf("failed to get ingress nginx IP: %w", err)
 	}
-	configured, _ := self.dnsChecker.IsPointingToIP(host, ips.IPv4)
+	configured, _ := self.dnsChecker.IsPointingToIP(probeHost, ips.IPv4)
 	if !configured {
-		configured, _ = self.dnsChecker.IsPointingToIP(host, ips.IPv6)
+		configured, _ = self.dnsChecker.IsPointingToIP(probeHost, ips.IPv6)
 	}
 	if !configured {
-		status.Cloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(host)
+		status.Cloudflare, _ = self.dnsChecker.IsUsingCloudflareProxy(probeHost)
 		if status.Cloudflare {
-			status.CloudflareMissingCertificate = !self.dnsChecker.ServesTLS(host)
-			configured = !status.CloudflareMissingCertificate && self.reachableThroughCloudflare(ctx, host)
+			status.CloudflareMissingCertificate = !self.dnsChecker.ServesTLS(probeHost)
+			configured = !status.CloudflareMissingCertificate && self.reachableThroughCloudflare(ctx, probeHost)
 		}
 	}
 
@@ -553,24 +558,27 @@ func gatewayRoutePathPort(rules []any) (string, int32) {
 // named cert-manager.local (cert-manager pkg/util/pki/temporarycertificate.go).
 const temporaryCertificateIssuer = "cert-manager.local"
 
-// certificateCoversHost reports whether the secret holds an issued (non-temporary)
-// certificate valid for host.
-func certificateCoversHost(secret *corev1.Secret, host string) bool {
+// certificateStatus reads what the secret's certificate means for host: issued by a CA,
+// self-signed on purpose (wildcard hosts), or still being attempted.
+func certificateStatus(secret *corev1.Secret, host string) models.TlsStatus {
 	if secret == nil {
-		return false
+		return models.TlsStatusAttempting
 	}
 	block, _ := pem.Decode(secret.Data[corev1.TLSCertKey])
 	if block == nil {
-		return false
+		return models.TlsStatusAttempting
 	}
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
-		return false
+		return models.TlsStatusAttempting
 	}
-	if cert.Issuer.CommonName == temporaryCertificateIssuer {
-		return false
+	if cert.Issuer.CommonName == temporaryCertificateIssuer || cert.VerifyHostname(host) != nil {
+		return models.TlsStatusAttempting
 	}
-	return cert.VerifyHostname(host) == nil
+	if bytes.Equal(cert.RawIssuer, cert.RawSubject) && cert.CheckSignature(cert.SignatureAlgorithm, cert.RawTBSCertificate, cert.Signature) == nil {
+		return models.TlsStatusSelfSigned
+	}
+	return models.TlsStatusIssued
 }
 
 const (

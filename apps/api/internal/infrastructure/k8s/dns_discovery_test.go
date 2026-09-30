@@ -45,6 +45,22 @@ func testCertPEM(t *testing.T, issuerCN string, hosts ...string) []byte {
 	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 }
 
+func selfSignedCertPEM(t *testing.T, hosts ...string) []byte {
+	t.Helper()
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err)
+	template := &x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject:      pkix.Name{Organization: []string{"Unbind"}},
+		DNSNames:     hosts,
+		NotBefore:    time.Now().Add(-time.Hour),
+		NotAfter:     time.Now().Add(time.Hour),
+	}
+	der, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
+	require.NoError(t, err)
+	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
+}
+
 func tlsSecret(name string, cert []byte) *corev1.Secret {
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: "default"},
@@ -52,54 +68,72 @@ func tlsSecret(name string, cert []byte) *corev1.Secret {
 	}
 }
 
-func TestCertificateCoversHost(t *testing.T) {
+func TestCertificateStatus(t *testing.T) {
 	tests := []struct {
 		name     string
 		secret   *corev1.Secret
 		host     string
-		expected bool
+		expected models.TlsStatus
 	}{
 		{
 			name:     "Nil secret",
 			secret:   nil,
 			host:     "example.com",
-			expected: false,
+			expected: models.TlsStatusAttempting,
 		},
 		{
 			name:     "Secret without TLS data",
 			secret:   &corev1.Secret{Data: map[string][]byte{"other": []byte("data")}},
 			host:     "example.com",
-			expected: false,
+			expected: models.TlsStatusAttempting,
 		},
 		{
 			name:     "Secret with non-PEM cert",
 			secret:   tlsSecret("test-secret", []byte("test-cert")),
 			host:     "example.com",
-			expected: false,
+			expected: models.TlsStatusAttempting,
 		},
 		{
 			name:     "Issued certificate covering host",
 			secret:   tlsSecret("test-secret", testCertPEM(t, "R3", "example.com", "other.example.com")),
 			host:     "other.example.com",
-			expected: true,
+			expected: models.TlsStatusIssued,
 		},
 		{
 			name:     "Issued certificate for a different host",
 			secret:   tlsSecret("test-secret", testCertPEM(t, "R3", "example.com")),
 			host:     "other.example.com",
-			expected: false,
+			expected: models.TlsStatusAttempting,
 		},
 		{
 			name:     "Temporary cert-manager certificate",
 			secret:   tlsSecret("test-secret", testCertPEM(t, temporaryCertificateIssuer, "example.com")),
 			host:     "example.com",
-			expected: false,
+			expected: models.TlsStatusAttempting,
+		},
+		{
+			name:     "Issued wildcard certificate covering a wildcard host",
+			secret:   tlsSecret("test-secret", testCertPEM(t, "R3", "*.example.com")),
+			host:     "*.example.com",
+			expected: models.TlsStatusIssued,
+		},
+		{
+			name:     "Self-signed certificate covering a wildcard host",
+			secret:   tlsSecret("test-secret", selfSignedCertPEM(t, "*.example.com")),
+			host:     "*.example.com",
+			expected: models.TlsStatusSelfSigned,
+		},
+		{
+			name:     "Self-signed certificate for a different wildcard",
+			secret:   tlsSecret("test-secret", selfSignedCertPEM(t, "*.example.com")),
+			host:     "*.other.com",
+			expected: models.TlsStatusAttempting,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expected, certificateCoversHost(tt.secret, tt.host))
+			assert.Equal(t, tt.expected, certificateStatus(tt.secret, tt.host))
 		})
 	}
 }

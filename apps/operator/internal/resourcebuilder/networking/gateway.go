@@ -2,6 +2,7 @@ package networking
 
 import (
 	"fmt"
+	"slices"
 
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,8 +25,8 @@ func (gatewayProvider) ServiceAnnotations(*v1.Service) map[string]string { retur
 func (gatewayProvider) ExposesL4ViaGateway() bool { return true }
 
 // BuildRoutes emits a per-service Gateway plus the routes for each exposure:
-// HTTPRoute/GRPCRoute for HTTP(S) hosts (per-host cert via the gateway-shim over
-// HTTP-01) and TCPRoute/UDPRoute for raw L4 ports (clean LB-IP:port endpoints,
+// HTTPRoute/GRPCRoute for HTTP(S) hosts (certificate over HTTP-01, self-signed for
+// wildcard hosts) and TCPRoute/UDPRoute for raw L4 ports (clean LB-IP:port endpoints,
 // replacing NodePort). mergeGateways lands them all on one Envoy fleet / LB IP.
 func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	svc := in.Service
@@ -49,7 +50,7 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 				Protocol: gwapiv1.HTTPSProtocolType,
 				TLS: &gwapiv1.ListenerTLSConfig{
 					Mode:            ptr.To(gwapiv1.TLSModeTerminate),
-					CertificateRefs: []gwapiv1.SecretObjectReference{{Name: gwapiv1.ObjectName(tlsSecretName(svc))}},
+					CertificateRefs: []gwapiv1.SecretObjectReference{{Name: gwapiv1.ObjectName(hostTLSSecretName(svc, host))}},
 				},
 				AllowedRoutes: &gwapiv1.AllowedRoutes{
 					Namespaces: &gwapiv1.RouteNamespaces{From: ptr.To(gwapiv1.NamespacesFromSame)},
@@ -108,10 +109,17 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	// Emit an explicit Certificate (not the gateway-shim) with issue-temporary-certificate
 	// so the HTTPS listener programs immediately; otherwise the shared Envoy resets that
 	// SNI until ACME issues (ERR_CONNECTION_RESET). Raw L4 needs no cert.
-	certHosts := append([]v1.HostSpec{}, httpHosts...)
-	certHosts = append(certHosts, grpcHosts...)
-	if len(certHosts) > 0 {
-		objects = append(objects, p.certificate(svc, in.Labels, certHosts))
+	var acmeHosts []v1.HostSpec
+	for _, host := range slices.Concat(httpHosts, grpcHosts) {
+		if !isWildcardHost(host) {
+			acmeHosts = append(acmeHosts, host)
+		}
+	}
+	if len(acmeHosts) > 0 {
+		objects = append(objects, p.certificate(svc, in.Labels, acmeHosts))
+	}
+	if wildcards := wildcardHosts(svc.Spec.Config.Hosts); httpRoutable && len(wildcards) > 0 {
+		objects = append(objects, wildcardCertificate(p.cfg, svc, in.Labels, wildcards))
 	}
 
 	return append([]client.Object{gateway}, objects...), nil
@@ -203,27 +211,10 @@ func (p gatewayProvider) l4Route(svc *v1.Service, labels map[string]string, port
 
 // certificate builds the cert-manager Certificate for a service's HTTPS listeners.
 // issue-temporary-certificate seeds a self-signed cert so the listener programs
-// before ACME completes. Unstructured to avoid depending on the cert-manager module.
+// before ACME completes.
 func (p gatewayProvider) certificate(svc *v1.Service, labels map[string]string, hosts []v1.HostSpec) *unstructured.Unstructured {
-	dnsNames := make([]any, len(hosts))
-	for i, h := range hosts {
-		dnsNames[i] = h.Host
-	}
-	u := &unstructured.Unstructured{}
-	u.SetGroupVersionKind(schema.GroupVersionKind{Group: "cert-manager.io", Version: "v1", Kind: "Certificate"})
-	u.SetName(tlsSecretName(svc))
-	u.SetNamespace(svc.Namespace)
-	u.SetLabels(labels)
+	u := newCertificate(svc, labels, tlsSecretName(svc), p.cfg.ClusterIssuer, hosts)
 	u.SetAnnotations(map[string]string{"cert-manager.io/issue-temporary-certificate": "true"})
-	u.Object["spec"] = map[string]any{
-		"secretName": tlsSecretName(svc),
-		"dnsNames":   dnsNames,
-		"issuerRef": map[string]any{
-			"name":  p.cfg.ClusterIssuer,
-			"kind":  "ClusterIssuer",
-			"group": "cert-manager.io",
-		},
-	}
 	return u
 }
 

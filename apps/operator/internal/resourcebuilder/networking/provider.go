@@ -49,9 +49,11 @@ var ErrRouteNotNeeded = fmt.Errorf("route not needed, probably no domain configu
 type Config struct {
 	// GatewayClassName is the GatewayClass the per-service Gateways attach to.
 	GatewayClassName string
-	// ClusterIssuer is the cert-manager ClusterIssuer that issues per-host certs
-	// for service Gateways (via the gateway-shim, over HTTP-01).
+	// ClusterIssuer is the cert-manager ClusterIssuer that issues certs for
+	// service Gateways over HTTP-01.
 	ClusterIssuer string
+	// SelfSignedIssuer is the cert-manager ClusterIssuer that signs wildcard hosts.
+	SelfSignedIssuer string
 	// GatewayControllerEnvoy enables Envoy Gateway policy CRDs for features
 	// (cookie session affinity) that have no portable HTTPRoute equivalent.
 	GatewayControllerEnvoy bool
@@ -97,11 +99,11 @@ func portProtocol(p v1.PortSpec) string {
 func New(provider Provider, cfg Config) NetworkingProvider {
 	switch provider {
 	case ProviderTraefik:
-		return &traefikProvider{}
+		return &traefikProvider{cfg: cfg}
 	case ProviderGateway:
 		return &gatewayProvider{cfg: cfg}
 	default:
-		return &nginxProvider{}
+		return &nginxProvider{cfg: cfg}
 	}
 }
 
@@ -117,6 +119,7 @@ func RouteGVKs() []schema.GroupVersionKind {
 		{Group: "gateway.networking.k8s.io", Version: "v1", Kind: "Gateway"},
 		{Group: "traefik.io", Version: "v1alpha1", Kind: "Middleware"},
 		{Group: "gateway.envoyproxy.io", Version: "v1alpha1", Kind: "BackendTrafficPolicy"},
+		certificateGVK,
 	}
 }
 
@@ -159,4 +162,29 @@ func resolveHostPort(svc *v1.Service, host v1.HostSpec) (int32, string) {
 
 func tlsSecretName(svc *v1.Service) string {
 	return fmt.Sprintf("%s-tls-secret", strings.ToLower(svc.Name))
+}
+
+func wildcardTLSSecretName(svc *v1.Service) string {
+	return fmt.Sprintf("%s-wildcard-tls-secret", strings.ToLower(svc.Name))
+}
+
+func hostTLSSecretName(svc *v1.Service, host v1.HostSpec) string {
+	if isWildcardHost(host) {
+		return wildcardTLSSecretName(svc)
+	}
+	return tlsSecretName(svc)
+}
+
+func isWildcardHost(host v1.HostSpec) bool {
+	return strings.HasPrefix(host.Host, "*.")
+}
+
+func wildcardHosts(hosts []v1.HostSpec) []v1.HostSpec {
+	var wildcards []v1.HostSpec
+	for _, host := range hosts {
+		if isWildcardHost(host) {
+			wildcards = append(wildcards, host)
+		}
+	}
+	return wildcards
 }

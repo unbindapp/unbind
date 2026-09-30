@@ -725,6 +725,15 @@ releases:
                       class: {{ $certProvider }}
             {{- end }}
             EOF
+            # Signs the certificates of wildcard service domains, which HTTP-01 can't issue
+            cat <<EOF | kubectl apply -f -
+            apiVersion: cert-manager.io/v1
+            kind: ClusterIssuer
+            metadata:
+              name: unbind-selfsigned
+            spec:
+              selfSigned: {}
+            EOF
             {{- if eq $certProvider "gateway" }}
             # Explicit Certificate (not the gateway-shim) so issue-temporary-certificate
             # seeds a self-signed cert immediately and 443 is reachable before ACME issues.

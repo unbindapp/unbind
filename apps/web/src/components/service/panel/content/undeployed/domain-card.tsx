@@ -3,11 +3,11 @@ import BrandIcon from "@/components/icons/brand";
 import { useSystem } from "@/components/system/system-provider";
 import { cn } from "@/components/ui/utils";
 import { defaultDebounceMs } from "@/lib/constants";
-import { isDomain } from "@/lib/helpers/is-domain";
+import { isDomain, isWildcardDomain } from "@/lib/helpers/is-domain";
 import { dnsCheckQuery } from "@/lib/queries/system";
 import { DNSStatus } from "@/lib/server/client.gen";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircleIcon, HourglassIcon } from "lucide-react";
+import { CheckCircleIcon, HourglassIcon, ShieldIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
@@ -31,8 +31,10 @@ export function DomainCard({
   paragraph,
   className,
   savedStatus,
+  allowWildcard,
 }: Omit<TDomainStatusCardProps, "dnsStatus" | "isCloudflare"> & {
   savedStatus?: TSavedDomainStatus;
+  allowWildcard?: boolean;
 }) {
   const [isValidDebouncedDomain, setIsValidDebouncedDomain] = useState(false);
   const [isValidDomain, setIsValidDomain] = useState(false);
@@ -50,14 +52,15 @@ export function DomainCard({
   });
 
   useEffect(() => {
-    const isValid = isDomain(debouncedDomain);
+    const isValid =
+      isDomain(debouncedDomain) || (!!allowWildcard && isWildcardDomain(debouncedDomain));
     setIsValidDebouncedDomain(isValid);
-  }, [debouncedDomain]);
+  }, [debouncedDomain, allowWildcard]);
 
   useEffect(() => {
-    const isValid = isDomain(domain);
+    const isValid = isDomain(domain) || (!!allowWildcard && isWildcardDomain(domain));
     setIsValidDomain(isValid);
-  }, [domain]);
+  }, [domain, allowWildcard]);
 
   if (!isValid) return null;
 
@@ -130,7 +133,13 @@ export function DomainStatusCard({
           </div>
         </div>
       )}
-      {data && <DomainStatusRow dnsStatus={dnsStatus} isCloudflare={!!isCloudflare} />}
+      {data && (
+        <DomainStatusRow
+          dnsStatus={dnsStatus}
+          isCloudflare={!!isCloudflare}
+          isWildcard={isWildcardDomain(domain)}
+        />
+      )}
       {error && (
         <div className="w-full p-1.5">
           <ErrorLine message={error.message} className="rounded-md" />
@@ -147,8 +156,12 @@ function getIsResolved(dnsStatus: DNSStatus | undefined) {
 export function DomainStatusRow({
   dnsStatus,
   isCloudflare,
+  isWildcard,
   className,
-}: Pick<TDomainStatusCardProps, "dnsStatus" | "isCloudflare"> & { className?: string }) {
+}: Pick<TDomainStatusCardProps, "dnsStatus" | "isCloudflare"> & {
+  isWildcard?: boolean;
+  className?: string;
+}) {
   const isResolved = getIsResolved(dnsStatus);
   const { data } = useSystem();
   return (
@@ -177,6 +190,14 @@ export function DomainStatusRow({
             <BrandIcon brand="cloudflare" className="size-full" />
           </div>
           <p className="min-w-0 shrink">Cloudflare detected</p>
+        </div>
+      )}
+      {isWildcard && (
+        <div className="text-warning flex max-w-full items-center justify-start gap-1.5 pr-4">
+          <div className="size-3.5 shrink-0">
+            <ShieldIcon className="size-full" />
+          </div>
+          <p className="min-w-0 shrink">Self-signed certificate</p>
         </div>
       )}
     </div>

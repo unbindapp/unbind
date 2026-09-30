@@ -73,9 +73,11 @@ func (u DNSStatus) Schema(r huma.Registry) *huma.Schema {
 type TlsStatus string
 
 const (
-	TlsStatusPending      TlsStatus = "pending"
-	TlsStatusAttempting   TlsStatus = "attempting"
-	TlsStatusIssued       TlsStatus = "issued"
+	TlsStatusPending    TlsStatus = "pending"
+	TlsStatusAttempting TlsStatus = "attempting"
+	TlsStatusIssued     TlsStatus = "issued"
+	// Self-signed on purpose: wildcard hosts, which expect a proxy to serve visitors a trusted certificate
+	TlsStatusSelfSigned   TlsStatus = "self_signed"
 	TlsStatusNotAvailable TlsStatus = "not_available"
 )
 
@@ -90,6 +92,7 @@ func (u TlsStatus) Schema(r huma.Registry) *huma.Schema {
 				string(TlsStatusPending),
 				string(TlsStatusAttempting),
 				string(TlsStatusIssued),
+				string(TlsStatusSelfSigned),
 				string(TlsStatusNotAvailable),
 			}...,
 		)

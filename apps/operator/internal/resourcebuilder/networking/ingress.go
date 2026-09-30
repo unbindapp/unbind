@@ -3,6 +3,7 @@ package networking
 import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // buildIngress assembles a classic networking.k8s.io/v1 Ingress, shared by the
@@ -12,7 +13,7 @@ func buildIngress(in RouteInput, className string, annotations map[string]string
 	pathType := networkingv1.PathTypePrefix
 
 	rules := make([]networkingv1.IngressRule, len(svc.Spec.Config.Hosts))
-	tlsHosts := make([]string, len(svc.Spec.Config.Hosts))
+	var acmeHosts, wildcardTLSHosts []string
 	for i, host := range svc.Spec.Config.Hosts {
 		port, path := resolveHostPort(svc, host)
 		rules[i] = networkingv1.IngressRule{
@@ -34,7 +35,19 @@ func buildIngress(in RouteInput, className string, annotations map[string]string
 				},
 			},
 		}
-		tlsHosts[i] = host.Host
+		if isWildcardHost(host) {
+			wildcardTLSHosts = append(wildcardTLSHosts, host.Host)
+			continue
+		}
+		acmeHosts = append(acmeHosts, host.Host)
+	}
+
+	var tls []networkingv1.IngressTLS
+	if len(acmeHosts) > 0 {
+		tls = append(tls, networkingv1.IngressTLS{Hosts: acmeHosts, SecretName: tlsSecretName(svc)})
+	}
+	if len(wildcardTLSHosts) > 0 {
+		tls = append(tls, networkingv1.IngressTLS{Hosts: wildcardTLSHosts, SecretName: wildcardTLSSecretName(svc)})
 	}
 
 	class := className
@@ -47,11 +60,20 @@ func buildIngress(in RouteInput, className string, annotations map[string]string
 		},
 		Spec: networkingv1.IngressSpec{
 			IngressClassName: &class,
-			TLS: []networkingv1.IngressTLS{{
-				Hosts:      tlsHosts,
-				SecretName: tlsSecretName(svc),
-			}},
-			Rules: rules,
+			TLS:              tls,
+			Rules:            rules,
 		},
 	}
+}
+
+// ingressRoutes puts the wildcard Certificate ahead of the Ingress: cert-manager's
+// ingress-shim leaves a TLS secret alone once a Certificate it doesn't own claims it,
+// otherwise it would order the wildcard from Let's Encrypt.
+func ingressRoutes(cfg Config, in RouteInput, ingress *networkingv1.Ingress, extra ...client.Object) []client.Object {
+	var objects []client.Object
+	if wildcards := wildcardHosts(in.Service.Spec.Config.Hosts); len(wildcards) > 0 {
+		objects = append(objects, wildcardCertificate(cfg, in.Service, in.Labels, wildcards))
+	}
+	objects = append(objects, ingress)
+	return append(objects, extra...)
 }

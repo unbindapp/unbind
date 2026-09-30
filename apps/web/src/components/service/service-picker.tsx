@@ -1,5 +1,6 @@
 import ServiceIcon from "@/components/service/service-icon";
 import { cn } from "@/components/ui/utils";
+import { isWildcardDomain } from "@/lib/helpers/is-domain";
 import { useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TServiceShallow } from "@/lib/queries/services";
 import { BoxIcon, InfoIcon } from "lucide-react";
@@ -54,7 +55,8 @@ export function ServicePickerHint({ text, className }: { text: string; className
 }
 
 export function getServicePublicHost(service: TServiceShallow) {
-  const host = service.config.hosts?.[0];
+  const hosts = service.config.hosts ?? [];
+  const host = hosts.find((h) => !isWildcardDomain(h.host)) ?? hosts[0];
   if (!host) return null;
   return host.host + (host.path === "/" ? "" : host.path);
 }

@@ -364,18 +364,17 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 				input.OverwriteHosts = append(input.OverwriteHosts, *generatedHost)
 			}
 		}
-		// Validate hosts
-		var hostCollisionsToCheck []schema.HostSpec
-		hostCollisionsToCheck = append(hostCollisionsToCheck, input.OverwriteHosts...)
-		hostCollisionsToCheck = append(hostCollisionsToCheck, input.UpsertHosts...)
-		for _, host := range hostCollisionsToCheck {
-			// Count domain collisions
-			domainCount, err := self.repo.Service().CountDomainCollisons(ctx, tx, host.Host, new(service.ID))
+		claimedHosts := slices.Concat(input.OverwriteHosts, input.UpsertHosts)
+		if err := self.validateHosts(ctx, tx, claimedHosts); err != nil {
+			return err
+		}
+		for _, host := range claimedHosts {
+			conflicts, err := self.repo.Service().CountHostConflicts(ctx, tx, host.Host, input.TeamID, new(service.ID))
 			if err != nil {
 				return errdefs.NewInternalError(err, "Failed to check the domain for collisions")
 			}
-			if domainCount > 0 {
-				return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", host.Host))
+			if conflicts > 0 {
+				return hostConflictError(host.Host)
 			}
 		}
 
@@ -637,10 +636,10 @@ func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, inpu
 			})
 		}
 
-		if len(service.Edges.ServiceConfig.Hosts) > 0 {
+		if url, ok := serviceURL(service.Edges.ServiceConfig.Hosts); ok {
 			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
 				Name:  "Service URL",
-				Value: fmt.Sprintf("https://%s", service.Edges.ServiceConfig.Hosts[0].Host),
+				Value: url,
 			})
 		}
 

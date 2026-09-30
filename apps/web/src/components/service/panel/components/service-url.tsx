@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/components/ui/utils";
+import { isWildcardDomain } from "@/lib/helpers/is-domain";
 import { useCopyToClipboard } from "@/lib/hooks/use-copy";
 import { TExternalEndpoint } from "@/lib/queries/services";
 import {
+  AsteriskIcon,
   CheckIcon,
   ChevronUpIcon,
   EthernetPortIcon,
@@ -14,6 +16,7 @@ import {
   GlobeIcon,
   HourglassIcon,
   LoaderIcon,
+  ShieldIcon,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 
@@ -124,6 +127,10 @@ export default function ServiceUrl({
     );
   }
 
+  if (isWildcardDomain(endpoint.host)) {
+    return <WildcardServiceUrl host={endpoint.host} path={endpoint.path} className={className} />;
+  }
+
   return (
     <Wrapper className={className}>
       <Button
@@ -214,19 +221,84 @@ export function PendingServiceUrl({
                 </p>
               </div>
             )}
+            {!isWildcardDomain(host) && (
+              <Button
+                render={
+                  <a href={getUrl({ host, path })} target="_blank" rel="noopener noreferrer" />
+                }
+                className="group/button mt-2 min-w-0 shrink px-2.25 py-1.5 text-left font-medium"
+                variant="outline"
+                size="sm"
+                forceMinSize={false}
+              >
+                <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
+                  <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
+                  <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+                </div>
+                <p className="min-w-0 shrink truncate">Visit</p>
+              </Button>
+            )}
+          </ScrollArea>
+        </PopoverContent>
+      </Popover>
+    </Wrapper>
+  );
+}
+
+// A wildcard is a pattern, there is no single address to open
+function WildcardServiceUrl({
+  host,
+  path,
+  className,
+}: {
+  host: string;
+  path: string;
+  className?: string;
+}) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  return (
+    <Wrapper className={className}>
+      <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <PopoverTrigger
+          render={
             <Button
-              render={<a href={getUrl({ host, path })} target="_blank" rel="noopener noreferrer" />}
-              className="group/button mt-2 min-w-0 shrink px-2.25 py-1.5 text-left font-medium"
-              variant="outline"
+              data-open={isDropdownOpen || undefined}
+              className="text-muted-foreground group/button min-w-0 shrink px-2.25 py-1 text-left font-medium"
+              variant="ghost"
               size="sm"
-              forceMinSize={false}
             >
-              <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-active/button:rotate-45 has-hover:group-hover/button:rotate-45">
-                <GlobeIcon className="size-full group-active/button:opacity-0 has-hover:group-hover/button:opacity-0" />
-                <ExternalLinkIcon className="absolute top-0 left-0 size-full -rotate-45 opacity-0 group-active/button:opacity-100 has-hover:group-hover/button:opacity-100" />
+              <div className="relative -ml-0.5 size-3.5 shrink-0 transition-transform group-data-open/button:rotate-90">
+                <AsteriskIcon className="size-full group-data-open/button:opacity-0" />
+                <ChevronUpIcon className="absolute top-0 left-0 size-full scale-110 -rotate-90 opacity-0 group-data-open/button:opacity-100" />
               </div>
-              <p className="min-w-0 shrink truncate">Visit</p>
+              <p className="min-w-0 shrink truncate">{getUrlDisplayStr({ host, path })}</p>
             </Button>
+          }
+        />
+        <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 overflow-hidden p-0">
+          <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col justify-start">
+            <div className="flex w-full flex-col gap-1.5 px-4 py-2.5">
+              <div className="text-process flex w-full justify-start gap-1.5">
+                <AsteriskIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0" />
+                <p className="min-w-0 shrink text-base leading-tight font-semibold">
+                  Wildcard domain
+                </p>
+              </div>
+              <p className="w-full text-sm leading-snug">Every subdomain reaches this service.</p>
+            </div>
+            <div className="bg-border h-px w-full" />
+            <div className="flex w-full flex-col gap-1.5 px-4 py-2.5">
+              <div className="text-warning flex w-full justify-start gap-1.5">
+                <ShieldIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0" />
+                <p className="min-w-0 shrink text-base leading-tight font-semibold">
+                  Self-signed certificate
+                </p>
+              </div>
+              <p className="w-full text-sm leading-snug">
+                Browsers don't trust it. Put a proxy like Cloudflare in front.
+              </p>
+            </div>
           </ScrollArea>
         </PopoverContent>
       </Popover>

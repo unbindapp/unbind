@@ -1,0 +1,3 @@
+# Self-signed ClusterIssuer for wildcard service domains, fresh installs get it from the helmfile
+resources:
+  - selfsigned-issuer.yaml

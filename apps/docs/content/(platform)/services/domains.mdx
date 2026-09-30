@@ -51,6 +51,25 @@ To remove a domain, press the trash icon on it and deploy. Removing the last one
 
 If the record is proxied through Cloudflare (orange cloud), Unbind shows **Cloudflare detected**. That works for a normal domain. Set Cloudflare's SSL mode to **Full (strict)** so traffic between Cloudflare and your server stays encrypted.
 
+## Wildcard domains
+
+A wildcard domain like `*.example.com` sends every subdomain of `example.com` to one service. Use it when your app gives each user, site or document its own subdomain. It does not cover `example.com` itself, so add that as a second domain if you need it.
+
+Add it like any other domain, with a `*` record at your DNS provider:
+
+| Type | Name            | Content                  |
+| ---- | --------------- | ------------------------ |
+| A    | `*.example.com` | your server's IP address |
+
+A wildcard domain gets a self-signed certificate, because Let's Encrypt can't issue wildcard certificates the way Unbind requests them. Browsers don't trust it, so put a proxy in front that serves visitors its own certificate. With Cloudflare, proxy the record (orange cloud) and set the SSL mode to **Full**. **Full (strict)** rejects a self-signed certificate.
+
+A few rules apply:
+
+- Only one `*` is allowed, as the first label. `*.com` is refused.
+- A wildcard can't cover a domain that another team uses, and another team can't add a domain under your wildcard. Inside your team, a service can take `app.example.com` while another holds `*.example.com`. The exact domain wins.
+- A wildcard can't cover the domain of your Unbind instance or its generated domains.
+- `UNBIND_URL_PUBLIC` and the other public variables never point at a wildcard. They use the service's other domains.
+
 ## Max request size
 
 A request with a body larger than 100 MB, like a big file upload, is refused with `413 Request Entity Too Large`. To change it, type a size from 1 MB to 10240 MB in **Max Request Size** at the bottom of **Networking** in the service settings and deploy. An empty field means 100 MB.

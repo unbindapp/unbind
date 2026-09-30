@@ -1,4 +1,5 @@
 // Relative imports so this can run under `node --test`.
+import { isWildcardDomain } from "../../lib/helpers/is-domain.ts";
 import {
   isOwnReference,
   readableTokenForReference,
@@ -185,7 +186,7 @@ export function splitProvidedVariables<T extends { name: string }>(provided: rea
 
 type TEndpointConfig = {
   is_public: boolean;
-  hosts: { target_port?: number }[];
+  hosts: { host: string; target_port?: number }[];
   ports: { port: number; protocol?: string; is_nodeport?: boolean; node_port?: number }[];
 };
 
@@ -211,6 +212,7 @@ function publicEndpointTargets(config: TEndpointConfig, isDatabase: boolean) {
   const targets: number[] = [];
   const fronted = new Set<number>();
   for (const host of config.hosts) {
+    if (isWildcardDomain(host.host)) continue;
     const bridged = host.target_port !== undefined && nodePorts.has(host.target_port);
     if (!bridged && isDatabase) continue;
     targets.push(host.target_port ?? 0);

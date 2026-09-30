@@ -5,16 +5,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
 type DnsCheckInput struct {
 	server.BaseAuthInput
-	Domain string `query:"domain" required:"true" doc:"Domain to check DNS for"`
+	Domain string `query:"domain" required:"true" doc:"Domain to check DNS for. A wildcard like *.example.com is checked through a subdomain it covers"`
 }
 
 type DnsCheck struct {
@@ -30,6 +32,12 @@ type DnsCheckResponse struct {
 }
 
 func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsCheckInput) (*DnsCheckResponse, error) {
+	if err := utils.ValidateServiceHost(input.Domain); err != nil {
+		return nil, huma.Error400BadRequest(err.Error())
+	}
+	// A wildcard is checked through a subdomain it covers
+	domain := utils.ProbeHost(input.Domain)
+
 	// Get k8s IPs for load balancer server
 	ips, err := self.srv.KubeClient.GetIngressNginxIP(ctx)
 	if err != nil {
@@ -40,7 +48,7 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 	dnsCheck := &DnsCheck{
 		DnsStatus: models.DNSStatusUnresolved,
 	}
-	resolved, err := self.srv.DNSChecker.IsPointingToIP(input.Domain, ips.IPv4)
+	resolved, err := self.srv.DNSChecker.IsPointingToIP(domain, ips.IPv4)
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain's DNS records"))
 	}
@@ -49,7 +57,7 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 	}
 
 	if !resolved {
-		resolved, err = self.srv.DNSChecker.IsPointingToIP(input.Domain, ips.IPv6)
+		resolved, err = self.srv.DNSChecker.IsPointingToIP(domain, ips.IPv6)
 		if err != nil {
 			return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to check the domain's DNS records"))
 		}
@@ -60,7 +68,7 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 
 	// Check Cloudflare
 	if !resolved {
-		resolved, err = self.srv.DNSChecker.IsUsingCloudflareProxy(input.Domain)
+		resolved, err = self.srv.DNSChecker.IsUsingCloudflareProxy(domain)
 		if err != nil {
 			log.Error("Error checking Cloudflare", "err", err)
 		}
@@ -68,25 +76,25 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 	}
 
 	if dnsCheck.IsCloudflare {
-		dnsCheck.CloudflareMissingCertificate = !self.srv.DNSChecker.ServesTLS(input.Domain)
+		dnsCheck.CloudflareMissingCertificate = !self.srv.DNSChecker.ServesTLS(domain)
 	}
 
 	if dnsCheck.IsCloudflare && !dnsCheck.CloudflareMissingCertificate {
 		// Spin up a verification route to confirm the domain reaches the cluster
-		routeName, probeURL, err := self.srv.KubeClient.CreateVerificationRoute(ctx, input.Domain, self.srv.KubeClient.GetInternalClient())
+		routeName, probeURL, err := self.srv.KubeClient.CreateVerificationRoute(ctx, domain, self.srv.KubeClient.GetInternalClient())
 		if err != nil {
-			log.Warnf("Error creating verification route for domain %s: %v", input.Domain, err)
+			log.Warnf("Error creating verification route for domain %s: %v", domain, err)
 		} else {
 			defer func() {
 				err := self.srv.KubeClient.DeleteVerificationRoute(ctx, routeName, self.srv.KubeClient.GetInternalClient())
 				if err != nil {
-					log.Warnf("Error deleting verification route for domain %s: %v", input.Domain, err)
+					log.Warnf("Error deleting verification route for domain %s: %v", domain, err)
 				}
 			}()
 
 			req, err := http.NewRequestWithContext(ctx, "GET", probeURL, nil)
 			if err != nil {
-				log.Warnf("Error creating HTTP request for domain %s: %v", input.Domain, err)
+				log.Warnf("Error creating HTTP request for domain %s: %v", domain, err)
 			} else {
 				// Retry delaying 200ms between tries
 				maxRetries := 20
@@ -97,7 +105,7 @@ func (self *HandlerGroup) CheckDNSResolution(ctx context.Context, input *DnsChec
 
 					resp, err := self.srv.HttpClient.Do(req)
 					if err != nil {
-						log.Warnf("Attempt %d: Error executing HTTP request for domain %s: %v", attempt+1, input.Domain, err)
+						log.Warnf("Attempt %d: Error executing HTTP request for domain %s: %v", attempt+1, domain, err)
 						continue // Try again after sleep
 					}
 

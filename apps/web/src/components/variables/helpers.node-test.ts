@@ -336,7 +336,7 @@ test("expectedProvidedVariableCounts matches the endpoint keys the API provides"
   assert.deepEqual(expectedProvidedVariableCounts(web, false), { urls: 1, extras: 2 });
   assert.deepEqual(
     expectedProvidedVariableCounts(
-      { ...web, is_public: true, hosts: [{ target_port: 8080 }] },
+      { ...web, is_public: true, hosts: [{ host: "app.example.com", target_port: 8080 }] },
       false,
     ),
     { urls: 2, extras: 4 },
@@ -345,7 +345,11 @@ test("expectedProvidedVariableCounts matches the endpoint keys the API provides"
   // Hosts without a target port share the bare key, UDP ports have no URL
   assert.deepEqual(
     expectedProvidedVariableCounts(
-      { is_public: true, hosts: [{}, {}], ports: [{ port: 3000 }, { port: 53, protocol: "UDP" }] },
+      {
+        is_public: true,
+        hosts: [{ host: "a.example.com" }, { host: "b.example.com" }],
+        ports: [{ port: 3000 }, { port: 53, protocol: "UDP" }],
+      },
       false,
     ),
     { urls: 2, extras: 4 },
@@ -356,7 +360,7 @@ test("expectedProvidedVariableCounts matches the endpoint keys the API provides"
     expectedProvidedVariableCounts(
       {
         is_public: true,
-        hosts: [{ target_port: 8080 }],
+        hosts: [{ host: "app.example.com", target_port: 8080 }],
         ports: [{ port: 8080 }, { port: 25565, is_nodeport: true, node_port: 30001 }],
       },
       false,
@@ -369,10 +373,29 @@ test("expectedProvidedVariableCounts matches the endpoint keys the API provides"
     expectedProvidedVariableCounts(
       {
         is_public: true,
-        hosts: [{ target_port: 5432 }, { target_port: 9999 }],
+        hosts: [
+          { host: "db.example.com", target_port: 5432 },
+          { host: "other.example.com", target_port: 9999 },
+        ],
         ports: [{ port: 5432, is_nodeport: true, node_port: 30432 }],
       },
       true,
+    ),
+    { urls: 2, extras: 4 },
+  );
+
+  // A wildcard host is a pattern, it names no endpoint
+  assert.deepEqual(
+    expectedProvidedVariableCounts(
+      {
+        is_public: true,
+        hosts: [
+          { host: "*.example.com", target_port: 8080 },
+          { host: "example.com", target_port: 8080 },
+        ],
+        ports: [{ port: 8080 }],
+      },
+      false,
     ),
     { urls: 2, extras: 4 },
   );

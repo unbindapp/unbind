@@ -161,17 +161,20 @@ func (self *ServiceService) checkHostClaims(ctx context.Context, updates []*serv
 	}
 
 	for _, update := range updates {
+		if err := self.validateHosts(ctx, nil, slices.Concat(update.input.OverwriteHosts, update.input.UpsertHosts)); err != nil {
+			return err
+		}
 		released := releasedHosts(inputs, update.input.ServiceID)
 		for _, host := range claimedHosts(update.input) {
 			if _, ok := released[host]; ok {
 				continue
 			}
-			count, err := self.repo.Service().CountDomainCollisons(ctx, nil, host, &update.service.ID)
+			count, err := self.repo.Service().CountHostConflicts(ctx, nil, host, update.input.TeamID, &update.service.ID)
 			if err != nil {
 				return errdefs.NewInternalError(err, "Failed to check the domain for collisions")
 			}
 			if count > 0 {
-				return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", host))
+				return hostConflictError(host)
 			}
 		}
 	}

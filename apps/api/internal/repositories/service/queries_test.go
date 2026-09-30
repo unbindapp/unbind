@@ -615,6 +615,61 @@ func (suite *ServiceQueriesSuite) TestCountDomainCollisions() {
 	})
 }
 
+func (suite *ServiceQueriesSuite) TestCountHostConflicts() {
+	wildcardService := suite.DB.Service.Create().
+		SetType(schema.ServiceTypeGithub).
+		SetKubernetesName("wildcard-service").
+		SetName("Wildcard Service").
+		SetEnvironmentID(suite.testEnvironment.ID).
+		SetKubernetesSecret("wildcard-service-secret").
+		SaveX(suite.Ctx)
+	suite.DB.ServiceConfig.Create().
+		SetServiceID(wildcardService.ID).
+		SetBuilder(schema.ServiceBuilderRailpack).
+		SetIcon("nodejs").
+		SetHosts([]schema.HostSpec{
+			{Host: "*.wild.com", TargetPort: new(int32(3000))},
+			{Host: "api.taken.com", TargetPort: new(int32(3000))},
+		}).
+		SaveX(suite.Ctx)
+
+	sameTeam := suite.testTeam.ID
+	otherTeam := uuid.New()
+
+	tests := []struct {
+		name      string
+		host      string
+		teamID    uuid.UUID
+		excluding *uuid.UUID
+		want      int
+	}{
+		{"same host, same team", "*.wild.com", sameTeam, nil, 1},
+		{"same host, case insensitive", "*.WILD.com", sameTeam, nil, 1},
+		{"same host, own service excluded", "*.wild.com", sameTeam, &wildcardService.ID, 0},
+		{"host under the team's own wildcard", "app.wild.com", sameTeam, nil, 0},
+		{"wildcard over the team's own host", "*.taken.com", sameTeam, nil, 0},
+		{"host under another team's wildcard", "app.wild.com", otherTeam, nil, 1},
+		{"nested host under another team's wildcard", "a.b.wild.com", otherTeam, nil, 1},
+		{"wildcard under another team's wildcard", "*.apps.wild.com", otherTeam, nil, 1},
+		{"wildcard over another team's host", "*.taken.com", otherTeam, nil, 1},
+		{"apex of another team's wildcard", "wild.com", otherTeam, nil, 0},
+		{"sibling of another team's host", "app.taken.com", otherTeam, nil, 0},
+	}
+	for _, tt := range tests {
+		suite.Run(tt.name, func() {
+			count, err := suite.serviceRepo.CountHostConflicts(suite.Ctx, nil, tt.host, tt.teamID, tt.excluding)
+			suite.NoError(err)
+			suite.Equal(tt.want, count)
+		})
+	}
+
+	suite.Run("Error when DB closed", func() {
+		suite.DB.Close()
+		_, err := suite.serviceRepo.CountHostConflicts(suite.Ctx, nil, "app.wild.com", otherTeam, nil)
+		suite.Error(err)
+	})
+}
+
 func (suite *ServiceQueriesSuite) TestGetDeploymentNamespace() {
 	suite.Run("GetDeploymentNamespace Success", func() {
 		namespace, err := suite.serviceRepo.GetDeploymentNamespace(suite.Ctx, suite.testService.ID)

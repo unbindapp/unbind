@@ -131,6 +131,90 @@ func (_c *ServiceRepositoryMock_CountDomainCollisons_Call) RunAndReturn(run func
 	return _c
 }
 
+// CountHostConflicts provides a mock function for the type ServiceRepositoryMock
+func (_mock *ServiceRepositoryMock) CountHostConflicts(ctx context.Context, tx repository.TxInterface, host string, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error) {
+	ret := _mock.Called(ctx, tx, host, teamID, excludingServiceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CountHostConflicts")
+	}
+
+	var r0 int
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, uuid.UUID, *uuid.UUID) (int, error)); ok {
+		return returnFunc(ctx, tx, host, teamID, excludingServiceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, uuid.UUID, *uuid.UUID) int); ok {
+		r0 = returnFunc(ctx, tx, host, teamID, excludingServiceID)
+	} else {
+		r0 = ret.Get(0).(int)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, string, uuid.UUID, *uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, tx, host, teamID, excludingServiceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ServiceRepositoryMock_CountHostConflicts_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CountHostConflicts'
+type ServiceRepositoryMock_CountHostConflicts_Call struct {
+	*mock.Call
+}
+
+// CountHostConflicts is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - host string
+//   - teamID uuid.UUID
+//   - excludingServiceID *uuid.UUID
+func (_e *ServiceRepositoryMock_Expecter) CountHostConflicts(ctx any, tx any, host any, teamID any, excludingServiceID any) *ServiceRepositoryMock_CountHostConflicts_Call {
+	return &ServiceRepositoryMock_CountHostConflicts_Call{Call: _e.mock.On("CountHostConflicts", ctx, tx, host, teamID, excludingServiceID)}
+}
+
+func (_c *ServiceRepositoryMock_CountHostConflicts_Call) Run(run func(ctx context.Context, tx repository.TxInterface, host string, teamID uuid.UUID, excludingServiceID *uuid.UUID)) *ServiceRepositoryMock_CountHostConflicts_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].(uuid.UUID)
+		}
+		var arg4 *uuid.UUID
+		if args[4] != nil {
+			arg4 = args[4].(*uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_CountHostConflicts_Call) Return(n int, err error) *ServiceRepositoryMock_CountHostConflicts_Call {
+	_c.Call.Return(n, err)
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_CountHostConflicts_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, host string, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error)) *ServiceRepositoryMock_CountHostConflicts_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Create provides a mock function for the type ServiceRepositoryMock
 func (_mock *ServiceRepositoryMock) Create(ctx context.Context, tx repository.TxInterface, input *service_repo.CreateServiceInput) (*ent.Service, error) {
 	ret := _mock.Called(ctx, tx, input)

@@ -14,3 +14,10 @@ export function isDomain(str: string): boolean {
   const re = new RegExp(`^(?:${part}\\.)+${part}$`, "iu");
   return re.test(h);
 }
+
+const wildcardPrefix = "*.";
+
+// One leading "*." over a full domain, so "*.com" is not a wildcard domain
+export function isWildcardDomain(str: string): boolean {
+  return str.startsWith(wildcardPrefix) && isDomain(str.slice(wildcardPrefix.length));
+}

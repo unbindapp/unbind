@@ -3,6 +3,8 @@ package service_service
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"slices"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/config"
@@ -130,6 +132,71 @@ func (self *ServiceService) generateWildcardHost(ctx context.Context, tx reposit
 		Path:       "/",
 		TargetPort: new(ports[0].Port),
 	}, nil
+}
+
+// validateHosts rejects malformed hosts, and wildcards that would take the traffic of
+// Unbind itself or of the domains it generates for services.
+func (self *ServiceService) validateHosts(ctx context.Context, tx repository.TxInterface, hosts []schema.HostSpec) error {
+	var reserved []string
+	for _, host := range hosts {
+		if err := utils.ValidateServiceHost(host.Host); err != nil {
+			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+		}
+		if !utils.IsWildcardHost(host.Host) {
+			continue
+		}
+		if reserved == nil {
+			var err error
+			reserved, err = self.reservedHosts(ctx, tx)
+			if err != nil {
+				return err
+			}
+		}
+		if slices.ContainsFunc(reserved, func(reservedHost string) bool { return utils.WildcardCovers(host.Host, reservedHost) }) {
+			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s is reserved, it covers domains this Unbind instance uses", host.Host))
+		}
+	}
+	return nil
+}
+
+// reservedHosts lists hostnames no service wildcard may cover: Unbind's own, and one
+// standing for every domain generated under the system wildcard domain.
+func (self *ServiceService) reservedHosts(ctx context.Context, tx repository.TxInterface) ([]string, error) {
+	reserved := []string{}
+	for _, rawURL := range []string{self.cfg.ExternalUIUrl, self.cfg.ExternalAPIURL} {
+		if parsed, err := url.Parse(rawURL); err == nil && parsed.Hostname() != "" {
+			reserved = append(reserved, parsed.Hostname())
+		}
+	}
+
+	settings, err := self.repo.System().GetSystemSettings(ctx, tx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get system settings: %w", err)
+	}
+	if settings.WildcardBaseURL == nil || *settings.WildcardBaseURL == "" {
+		return reserved, nil
+	}
+	if generated, err := utils.GenerateSubdomain("service", *settings.WildcardBaseURL); err == nil {
+		reserved = append(reserved, generated)
+	}
+	return reserved, nil
+}
+
+// serviceURL is the first address a visitor can open, wildcards only match addresses
+func serviceURL(hosts []schema.HostSpec) (string, bool) {
+	for _, host := range hosts {
+		if !utils.IsWildcardHost(host.Host) {
+			return fmt.Sprintf("https://%s", host.Host), true
+		}
+	}
+	return "", false
+}
+
+func hostConflictError(host string) error {
+	if utils.IsWildcardHost(host) {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s is already in use, or covers a domain another team uses", host))
+	}
+	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", host))
 }
 
 // prepareDatabaseExposure allocates the external port a public database is reached

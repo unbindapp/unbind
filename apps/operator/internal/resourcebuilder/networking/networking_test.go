@@ -1,7 +1,10 @@
 package networking
 
 import (
+	"maps"
+	"reflect"
 	"regexp"
+	"slices"
 	"testing"
 
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
@@ -324,5 +327,107 @@ func TestGatewayL4UDP(t *testing.T) {
 	}
 	if udp == nil {
 		t.Fatalf("expected a UDPRoute, got %#v", objs)
+	}
+}
+
+func wildcardService() *v1.Service {
+	svc := setName(publicService(), "web")
+	svc.Spec.Config.Hosts = append(svc.Spec.Config.Hosts, v1.HostSpec{Host: "*.example.com", Path: "/"})
+	return svc
+}
+
+func certificatesByName(objs []client.Object) map[string]*unstructured.Unstructured {
+	certs := map[string]*unstructured.Unstructured{}
+	for _, o := range objs {
+		if u, ok := o.(*unstructured.Unstructured); ok && u.GetKind() == "Certificate" {
+			certs[u.GetName()] = u
+		}
+	}
+	return certs
+}
+
+func assertCertificate(t *testing.T, cert *unstructured.Unstructured, issuer string, dnsNames ...string) {
+	t.Helper()
+	if cert == nil {
+		t.Fatalf("certificate for %v is missing", dnsNames)
+	}
+	if got, _, _ := unstructured.NestedString(cert.Object, "spec", "issuerRef", "name"); got != issuer {
+		t.Errorf("%s issuer = %q, want %q", cert.GetName(), got, issuer)
+	}
+	if got, _, _ := unstructured.NestedStringSlice(cert.Object, "spec", "dnsNames"); !slices.Equal(got, dnsNames) {
+		t.Errorf("%s dnsNames = %v, want %v", cert.GetName(), got, dnsNames)
+	}
+}
+
+// A wildcard can't be issued over HTTP-01, so it must never share a Certificate with
+// hosts that can.
+func TestGatewayWildcardHost(t *testing.T) {
+	cfg := Config{GatewayClassName: "unbind", ClusterIssuer: "letsencrypt-prod", SelfSignedIssuer: "unbind-selfsigned"}
+	objs, err := New(ProviderGateway, cfg).BuildRoutes(RouteInput{Service: wildcardService()})
+	if err != nil {
+		t.Fatalf("BuildRoutes: %v", err)
+	}
+
+	listenerSecrets := map[string]string{}
+	for _, l := range objs[0].(*gwapiv1.Gateway).Spec.Listeners {
+		listenerSecrets[string(*l.Hostname)] = string(l.TLS.CertificateRefs[0].Name)
+	}
+	want := map[string]string{"example.com": "web-tls-secret", "*.example.com": "web-wildcard-tls-secret"}
+	if !maps.Equal(listenerSecrets, want) {
+		t.Errorf("listener secrets = %v, want %v", listenerSecrets, want)
+	}
+
+	certs := certificatesByName(objs)
+	if len(certs) != 2 {
+		t.Fatalf("expected 2 certificates, got %d", len(certs))
+	}
+	assertCertificate(t, certs["web-tls-secret"], "letsencrypt-prod", "example.com")
+	assertCertificate(t, certs["web-wildcard-tls-secret"], "unbind-selfsigned", "*.example.com")
+}
+
+func TestGatewayWildcardOnly(t *testing.T) {
+	svc := setName(publicService(), "web")
+	svc.Spec.Config.Hosts = []v1.HostSpec{{Host: "*.example.com", Path: "/"}}
+	cfg := Config{GatewayClassName: "unbind", ClusterIssuer: "letsencrypt-prod", SelfSignedIssuer: "unbind-selfsigned"}
+	objs, err := New(ProviderGateway, cfg).BuildRoutes(RouteInput{Service: svc})
+	if err != nil {
+		t.Fatalf("BuildRoutes: %v", err)
+	}
+	certs := certificatesByName(objs)
+	if len(certs) != 1 {
+		t.Fatalf("expected only the wildcard certificate, got %d", len(certs))
+	}
+	assertCertificate(t, certs["web-wildcard-tls-secret"], "unbind-selfsigned", "*.example.com")
+}
+
+func TestIngressWildcardHost(t *testing.T) {
+	cfg := Config{SelfSignedIssuer: "unbind-selfsigned"}
+	for _, provider := range []Provider{ProviderNginx, ProviderTraefik} {
+		objs, err := New(provider, cfg).BuildRoutes(RouteInput{Service: wildcardService()})
+		if err != nil {
+			t.Fatalf("%s BuildRoutes: %v", provider, err)
+		}
+
+		// The ingress-shim only leaves the wildcard secret alone when the Certificate exists first
+		cert, ok := objs[0].(*unstructured.Unstructured)
+		if !ok || cert.GetKind() != "Certificate" {
+			t.Fatalf("%s: expected the wildcard Certificate first, got %T", provider, objs[0])
+		}
+		assertCertificate(t, cert, "unbind-selfsigned", "*.example.com")
+
+		ing, ok := objs[1].(*networkingv1.Ingress)
+		if !ok {
+			t.Fatalf("%s: expected *Ingress second, got %T", provider, objs[1])
+		}
+		want := []networkingv1.IngressTLS{
+			{Hosts: []string{"example.com"}, SecretName: "web-tls-secret"},
+			{Hosts: []string{"*.example.com"}, SecretName: "web-wildcard-tls-secret"},
+		}
+		if !reflect.DeepEqual(ing.Spec.TLS, want) {
+			t.Errorf("%s tls = %+v, want %+v", provider, ing.Spec.TLS, want)
+		}
+		if len(ing.Spec.Rules) != 2 || ing.Spec.Rules[1].Host != "*.example.com" {
+			t.Errorf("%s: expected a rule per host, got %+v", provider, ing.Spec.Rules)
+		}
 	}
 }

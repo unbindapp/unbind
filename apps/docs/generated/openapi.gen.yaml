@@ -1432,6 +1432,7 @@ components:
           description: Human label from the template input, e.g. Cloud Domain
           type: string
         host:
+          description: Domain the service answers on, e.g. app.example.com. A wildcard like *.example.com answers every subdomain, but it is served with a self-signed certificate and needs a proxy such as Cloudflare in front to give visitors a trusted one
           type: string
         path:
           type: string
@@ -3673,6 +3674,7 @@ components:
         - pending
         - attempting
         - issued
+        - self_signed
         - not_available
       title: TlsStatus
       type: string

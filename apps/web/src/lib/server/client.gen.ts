@@ -158,7 +158,7 @@ export const HostSpecSchema = z
   .object({
     description: z.string().optional(),
     display_name: z.string().optional(), // Human label from the template input, e.g. Cloud Domain
-    host: z.string(),
+    host: z.string(), // Domain the service answers on, e.g. app.example.com. A wildcard like *.example.com answers every subdomain, but it is served with a self-signed certificate and needs a proxy such as Cloudflare in front to give visitors a trusted one
     path: z.string(),
     prev_host: z.string().optional(), // Previous host for the service, used for upserting key
     protocol: z.string().optional(), // Application protocol for the domain: http (default) or grpc
@@ -1275,7 +1275,13 @@ export const TlsDetailsSchema = z
   })
   .strip();
 
-export const TlsStatusSchema = z.enum(['pending', 'attempting', 'issued', 'not_available']);
+export const TlsStatusSchema = z.enum([
+  'pending',
+  'attempting',
+  'issued',
+  'self_signed',
+  'not_available',
+]);
 
 export const IngressEndpointSchema = z
   .object({
@@ -3668,7 +3674,7 @@ export const list_s3_bucketsQuerySchema = z
 
 export const check_dns_resolutionQuerySchema = z
   .object({
-    domain: z.string(), // Domain to check DNS for
+    domain: z.string(), // Domain to check DNS for. A wildcard like *.example.com is checked through a subdomain it covers
   })
   .passthrough();
 
