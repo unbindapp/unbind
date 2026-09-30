@@ -1,31 +1,30 @@
-import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
-import { settingsIds } from "@/components/settings/settings-ids";
-import Banner from "@/components/banner";
 import {
   Block,
   BlockItem,
   BlockItemContent,
+  BlockItemContentHighlightable,
   BlockItemDescription,
   BlockItemHeader,
-  BlockItemContentHighlightable,
   BlockItemTitle,
 } from "@/components/block";
 import { shouldDeploySectionHaveReplicas } from "@/components/service/panel/content/deployed/settings/helpers";
+import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
+  hasApplying,
   stagedNumber,
   useResetFormOnStagedChange,
-  hasApplying,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
-import type { TServiceChangeField } from "@/components/staged-changes/types";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { RevertButton } from "@/components/settings/revert-button";
+import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
+import type { TServiceChangeField } from "@/components/staged-changes/types";
 import { cn } from "@/components/ui/utils";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/lib/queries/services";
-import { InfoIcon, LockIcon, RocketIcon } from "lucide-react";
 import { useStore } from "@tanstack/react-form";
+import { InfoIcon, LockIcon, RocketIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -208,15 +207,14 @@ function Section({ service }: { service: TServiceShallow }) {
                     />
                   </div>
                   {isReplicaCountLocked && (
-                    <div className="w-full px-1.5">
-                      <Banner className="bg-process/3-10 border-process/3-10 text-process rounded-md px-2.5 py-2 md:max-w-none">
-                        <div className="line-icon">
-                          <InfoIcon className="-ml-0.5 size-4 shrink-0" />
-                        </div>
-                        <p className="min-w-0 shrink">
-                          Services with a volume run a single replica.
-                        </p>
-                      </Banner>
+                    <div className="text-process flex w-full items-start justify-start gap-1.5 px-4 pt-1 pb-1.5 text-sm">
+                      <div className="line-icon h-[0.9lh]">
+                        <InfoIcon className="-ml-0.5 size-3.5 shrink-0" />
+                      </div>
+                      <p className="min-w-0 shrink leading-snug">
+                        Services with a volume can only have a single replica.
+                      </p>
+                      Ò
                     </div>
                   )}
                 </BlockItemContentHighlightable>
