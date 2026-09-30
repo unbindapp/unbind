@@ -203,7 +203,10 @@ export function PendingServiceUrl({
           align="start"
           className="group/popover flex w-72 flex-col gap-0.5 overflow-hidden p-0 data-unresolved:w-90"
         >
-          <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col p-2 group-data-unresolved/popover:p-0">
+          <ScrollArea
+            classNameViewport="p-2 group-data-unresolved/popover:p-0"
+            className="flex min-h-0 w-full flex-none shrink flex-col"
+          >
             {dnsStatus === "unresolved" ? (
               <DomainCard
                 className="border-none"
@@ -288,7 +291,10 @@ function WildcardServiceUrl({
           }
         />
         <PopoverContent align="start" className="flex w-72 flex-col gap-0.5 overflow-hidden p-0">
-          <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col justify-start p-2">
+          <ScrollArea
+            classNameViewport="p-2"
+            className="flex min-h-0 w-full flex-none shrink flex-col justify-start"
+          >
             <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
               <div className="text-process flex w-full justify-start gap-1.5">
                 <AsteriskIcon className="mt-0.75 -ml-0.5 size-3.5 shrink-0" />
@@ -300,18 +306,15 @@ function WildcardServiceUrl({
                 Every subdomain reaches this service.
               </p>
             </div>
-          </ScrollArea>
-          {!isCloudflare && (
-            <>
-              <div className="bg-border -mt-0.5 h-px w-full" />
-              <div className="-mt-2.5 p-1.5">
-                <Banner className="bg-warning/3-10 border-warning/3-10 text-warning mt-2 flex-col gap-0.5 rounded-md px-2.5 py-1.5 text-sm">
+            {!isCloudflare && (
+              <div className="w-full pt-2.5">
+                <Banner className="bg-warning/3-10 border-warning/3-10 text-warning flex-col gap-0.5 rounded-sm px-2.5 py-1.5 text-sm">
                   <div className="flex w-full gap-1">
                     <div className="line-icon h-[0.85lh]">
                       <ShieldIcon className="-ml-0.5 size-3.5 shrink-0" />
                     </div>
                     <p className="min-w-0 shrink leading-tight font-medium">
-                      Self-signed Certificate
+                      Self-signed certificate
                     </p>
                   </div>
                   <p className="text-muted-foreground leading-snug">
@@ -319,8 +322,8 @@ function WildcardServiceUrl({
                   </p>
                 </Banner>
               </div>
-            </>
-          )}
+            )}
+          </ScrollArea>
         </PopoverContent>
       </Popover>
     </Wrapper>
