@@ -168,16 +168,16 @@ export function DomainStatusRow({
     <div
       data-configured={(data && isResolved) || undefined}
       className={cn(
-        "data-configured:text-success group-data-configured/card:text-success text-muted-foreground flex w-full flex-row flex-wrap gap-1.5 px-3 py-2.5 leading-tight font-medium group-data-configured/card:mt-0",
+        "data-configured:text-success group-data-configured/card:text-success text-muted-foreground flex w-full flex-row flex-wrap gap-1.5 px-3 py-2.5 leading-snug font-medium group-data-configured/card:mt-0",
         className,
       )}
     >
       <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
-        <div className="size-3.5 shrink-0">
+        <div className="line-icon">
           {isResolved ? (
-            <CheckCircleIcon className="size-full" />
+            <CheckCircleIcon className="size-3.5" />
           ) : (
-            <HourglassIcon className="animate-hourglass size-full" />
+            <HourglassIcon className="animate-hourglass size-3.5" />
           )}
         </div>
         <p className="min-w-0 shrink">
@@ -186,23 +186,21 @@ export function DomainStatusRow({
       </div>
       {isCloudflare && (
         <div className="flex max-w-full items-center justify-start gap-1.5 pr-4">
-          <div className="size-3.5 shrink-0">
-            <BrandIcon brand="cloudflare" className="size-full" />
+          <div className="line-icon">
+            <BrandIcon brand="cloudflare" className="size-3.5" />
           </div>
           <p className="min-w-0 shrink">Cloudflare detected</p>
         </div>
       )}
-      {isWildcard && (
+      {isWildcard && !isCloudflare && (
         <div
           data-proxied={isCloudflare || undefined}
-          className="text-warning flex max-w-full items-center justify-start gap-1.5 pr-4 data-proxied:text-inherit"
+          className="text-warning flex max-w-full items-start justify-start gap-1.5 pr-4 data-proxied:text-inherit"
         >
-          <div className="size-3.5 shrink-0">
-            <ShieldIcon className="size-full" />
+          <div className="line-icon">
+            <ShieldIcon className="size-3.5" />
           </div>
-          <p className="min-w-0 shrink">
-            {isCloudflare ? "Self-signed certificate" : "Self-signed certificate, needs a proxy"}
-          </p>
+          <p className="min-w-0 shrink">Self-signed certificate, needs a proxy like Cloudflare</p>
         </div>
       )}
     </div>

@@ -203,10 +203,10 @@ export function PendingServiceUrl({
           align="start"
           className="group/popover flex w-72 flex-col gap-0.5 overflow-hidden p-0 data-unresolved:w-90"
         >
-          <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col justify-start p-2">
+          <ScrollArea className="flex min-h-0 w-full flex-none shrink flex-col p-2 group-data-unresolved/popover:p-0">
             {dnsStatus === "unresolved" ? (
               <DomainCard
-                className="-mt-2 -mb-1 border-none"
+                className="border-none"
                 domain={host}
                 paragraph="Create the DNS record below."
                 allowWildcard
@@ -296,19 +296,31 @@ function WildcardServiceUrl({
                   Wildcard Domain
                 </p>
               </div>
-              <p className="w-full text-sm leading-snug">Every subdomain reaches this service.</p>
+              <p className="w-full pb-0.5 text-sm leading-snug">
+                Every subdomain reaches this service.
+              </p>
             </div>
-            {!isCloudflare && (
-              <Banner className="bg-warning/3-10 border-warning/3-10 text-warning mt-2 gap-1.5 rounded-md px-2.5 py-2 text-sm leading-snug">
-                <div className="line-icon">
-                  <ShieldIcon className="-ml-0.5 size-3.5 shrink-0" />
-                </div>
-                <p className="min-w-0 shrink">
-                  Self-signed certificate. Needs a proxy like Cloudflare in front.
-                </p>
-              </Banner>
-            )}
           </ScrollArea>
+          {!isCloudflare && (
+            <>
+              <div className="bg-border -mt-0.5 h-px w-full" />
+              <div className="-mt-2.5 p-1.5">
+                <Banner className="bg-warning/3-10 border-warning/3-10 text-warning mt-2 flex-col gap-0.5 rounded-md px-2.5 py-1.5 text-sm">
+                  <div className="flex w-full gap-1">
+                    <div className="line-icon h-[0.85lh]">
+                      <ShieldIcon className="-ml-0.5 size-3.5 shrink-0" />
+                    </div>
+                    <p className="min-w-0 shrink leading-tight font-medium">
+                      Self-signed Certificate
+                    </p>
+                  </div>
+                  <p className="text-muted-foreground leading-snug">
+                    Needs a proxy like Cloudflare in front.
+                  </p>
+                </Banner>
+              </div>
+            </>
+          )}
         </PopoverContent>
       </Popover>
     </Wrapper>
