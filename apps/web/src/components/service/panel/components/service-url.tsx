@@ -201,6 +201,7 @@ export function PendingServiceUrl({
                 className="-mt-2 -mb-1 border-none"
                 domain={host}
                 paragraph="Create the DNS record below."
+                allowWildcard
               />
             ) : (
               <div className="flex w-full flex-col gap-1.5 px-2 py-0.5">
