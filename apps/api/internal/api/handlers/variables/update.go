@@ -19,7 +19,7 @@ type UpsertVariablesInput struct {
 		Behavior  models.VariableUpdateBehavior `json:"behavior" default:"upsert" required:"true" doc:"The behavior of the update - upsert or overwrite"`
 		Variables []*struct {
 			Name  string `json:"name" required:"true"`
-			Value string `json:"value" required:"true" doc:"May contain ${{source.KEY}} references"`
+			Value string `json:"value" required:"true" doc:"May contain references, like ${{service:<service_id>.UNBIND_URL_PRIVATE}}"`
 		} `json:"variables" required:"true"`
 	}
 }

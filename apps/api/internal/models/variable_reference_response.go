@@ -9,13 +9,13 @@ import (
 )
 
 type AvailableVariableReference struct {
-	Type                 schema.VariableReferenceType       `json:"type"`
+	Type                 schema.VariableReferenceType       `json:"type" doc:"What the keys hold: stored variables, or the private or public addresses Unbind provides"`
 	SourceKubernetesName string                             `json:"source_kubernetes_name"`
 	SourceName           string                             `json:"source_name"`
 	SourceIcon           string                             `json:"source_icon"`
 	SourceType           schema.VariableReferenceSourceType `json:"source_type"`
 	SourceID             uuid.UUID                          `json:"source_id" format:"uuid"`
-	Keys                 []string                           `json:"keys"`
+	Keys                 []string                           `json:"keys" doc:"Each is referenced as ${{service:<source_id>.KEY}} for a service, or ${{<source_type>.KEY}} for a team, project or environment"`
 }
 
 func compareAvailableVariableReferences(a, b AvailableVariableReference) int {

@@ -96,6 +96,7 @@ components:
       additionalProperties: false
       properties:
         keys:
+          description: Each is referenced as ${{service:<source_id>.KEY}} for a service, or ${{<source_type>.KEY}} for a team, project or environment
           items:
             type: string
           type:
@@ -114,6 +115,7 @@ components:
           $ref: "#/components/schemas/VariableReferenceSourceType"
         type:
           $ref: "#/components/schemas/VariableReferenceType"
+          description: "What the keys hold: stored variables, or the private or public addresses Unbind provides"
       required:
         - type
         - source_kubernetes_name
@@ -1523,7 +1525,7 @@ components:
         name:
           type: string
         value:
-          description: May contain ${{source.KEY}} references
+          description: May contain references, like ${{service:<service_id>.UNBIND_URL_PRIVATE}}
           type: string
       required:
         - name
@@ -8761,7 +8763,7 @@ paths:
         risk: high
   /services/endpoints/list:
     get:
-      description: List the internal and external endpoints exposed by a service.
+      description: List the internal and external endpoints exposed by a service. A variable can reference these instead of copying them, for example ${{service:<id>.UNBIND_URL_PRIVATE}}.
       operationId: list-service-endpoints
       parameters:
         - explode: false
@@ -11250,7 +11252,7 @@ paths:
         risk: low
   /variables/references/available:
     get:
-      description: "List the sources and keys a service's variables can reference: team, project and environment variables, and the variables and Unbind-provided addresses of every service in the project, the service itself included."
+      description: "List the sources and keys a service's variables can reference: team, project and environment variables, and the variables and Unbind-provided addresses of every service in the project, the service itself included. A key of a service is referenced as ${{service:<source_id>.KEY}}, the others as ${{team.KEY}}, ${{project.KEY}} and ${{environment.KEY}}."
       operationId: list-available-references
       parameters:
         - explode: false
@@ -11358,7 +11360,7 @@ paths:
         risk: low
   /variables/update:
     post:
-      description: Upsert variables by key for a service, environment, project, or team. Values may contain ${{service:<id>.KEY}}, ${{team.KEY}}, ${{project.KEY}} and ${{environment.KEY}} references. A service may reference its own variables and addresses, but a variable cannot reference itself. A referenced value that holds references is rendered too. A service's protected_variables, such as database credentials, are managed by Unbind and cannot be changed.
+      description: Upsert variables by key for a service, environment, project, or team. Values may contain ${{service:<id>.KEY}}, ${{team.KEY}}, ${{project.KEY}} and ${{environment.KEY}} references, which follow the source when it changes, for example API_URL=${{service:<id>.UNBIND_URL_PRIVATE}}. list-available-references lists the keys. A service may reference its own variables and addresses, but a variable cannot reference itself. A referenced value that holds references is rendered too. A service's protected_variables, such as database credentials, are managed by Unbind and cannot be changed.
       operationId: update-variables
       requestBody:
         content:

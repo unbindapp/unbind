@@ -34,6 +34,8 @@ Call whoami first: when api_key is present, this connection is limited to the li
 
 Creating a service does not deploy it. Call trigger-deployment, then poll get-deployment until it finishes, and read query-logs when a build or a replica fails. Once a service is running, update-service, update-variables and apply-staged-changes roll their changes out on their own: a rebuild when the source or a build setting changed, a redeploy for other settings, and a restart for variables. Services that reference a changed variable roll out too. A service that was never deployed picks up changes on its first deployment. Changes made while a build is running go live right away and the build keeps them.
 
+A service's variables can reference other values instead of copying them, so they stay correct when the source changes: ${{service:<service_id>.KEY}}, ${{team.KEY}}, ${{project.KEY}} or ${{environment.KEY}}. Every service offers its addresses as keys, for example API_URL=${{service:<service_id>.UNBIND_URL_PRIVATE}} or DATABASE_URL=${{service:<service_id>.UNBIND_DATABASE_URL_PRIVATE}}. list-available-references lists the sources and keys a service can use.
+
 A service holds one volume at most. A service with a volume runs a single replica, because replicas can't share a volume: set replicas to 1 before mounting one. Its rollouts stop the running replica before the new one starts, so expect a short gap. The new image is pulled first, and an image that can't be pulled leaves the running replica in place.`
 )
 

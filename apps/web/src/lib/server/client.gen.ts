@@ -297,13 +297,13 @@ export const VariableReferenceTypeSchema = z.enum([
 
 export const AvailableVariableReferenceSchema = z
   .object({
-    keys: z.array(z.string()).nullable(),
+    keys: z.array(z.string()).nullable(), // Each is referenced as ${{service:<source_id>.KEY}} for a service, or ${{<source_type>.KEY}} for a team, project or environment
     source_icon: z.string(),
     source_id: z.string(),
     source_kubernetes_name: z.string(),
     source_name: z.string(),
     source_type: VariableReferenceSourceTypeSchema,
-    type: VariableReferenceTypeSchema,
+    type: VariableReferenceTypeSchema, // What the keys hold: stored variables, or the private or public addresses Unbind provides
   })
   .strip();
 
@@ -2054,7 +2054,7 @@ export const GroupMemberResponseBodySchema = z
 export const ItemSchema = z
   .object({
     name: z.string(),
-    value: z.string(), // May contain ${{source.KEY}} references
+    value: z.string(), // May contain references, like ${{service:<service_id>.UNBIND_URL_PRIVATE}}
   })
   .strip();
 

@@ -76,7 +76,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-service-endpoints",
 		Summary:     "List Service Endpoints",
-		Description: "List the internal and external endpoints exposed by a service.",
+		Description: "List the internal and external endpoints exposed by a service. A variable can reference these instead of copying them, for example ${{service:<id>.UNBIND_URL_PRIVATE}}.",
 		Path:        "/endpoints/list",
 		Method:      http.MethodGet,
 	}, handlers.ListEndpoints, oapi.MCP)
