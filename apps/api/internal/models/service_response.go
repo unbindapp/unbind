@@ -77,28 +77,49 @@ func TransformServiceEntity(entity *ent.Service) *ServiceResponse {
 			response.CurrentDeployment = TransformDeploymentEntity(entity.Edges.CurrentDeployment)
 		}
 
-		if len(entity.Edges.Deployments) > 0 {
-			var lastDeployment *ent.Deployment
-			var lastSuccessfulDeployment *ent.Deployment
-			for _, deployment := range entity.Edges.Deployments {
-				if lastDeployment == nil || deployment.CreatedAt.After(lastDeployment.CreatedAt) {
-					lastDeployment = deployment
-				}
-				if deployment.Status == schema.DeploymentStatusBuildSucceeded {
-					if lastSuccessfulDeployment == nil || deployment.CreatedAt.After(lastSuccessfulDeployment.CreatedAt) {
-						lastSuccessfulDeployment = deployment
-					}
-				}
-			}
-			if lastDeployment != nil {
-				response.LastDeployment = TransformDeploymentEntity(lastDeployment)
-			}
-			if lastSuccessfulDeployment != nil {
-				response.LastSuccessfulDeployment = TransformDeploymentEntity(lastSuccessfulDeployment)
-			}
+		if lastDeployment := lastDeployment(entity); lastDeployment != nil {
+			response.LastDeployment = TransformDeploymentEntity(lastDeployment)
+		}
+		if lastSuccessfulDeployment := lastSuccessfulDeployment(entity); lastSuccessfulDeployment != nil {
+			response.LastSuccessfulDeployment = TransformDeploymentEntity(lastSuccessfulDeployment)
 		}
 	}
 	return response
+}
+
+// lastDeployment is the newest deployment, unless a newer rollout went live after it finished
+func lastDeployment(entity *ent.Service) *ent.Deployment {
+	var last *ent.Deployment
+	for _, deployment := range entity.Edges.Deployments {
+		if last == nil || deployment.CreatedAt.After(last.CreatedAt) {
+			last = deployment
+		}
+	}
+
+	current := entity.Edges.CurrentDeployment
+	if last == nil || current == nil || last.ID == current.ID || last.Status != schema.DeploymentStatusBuildSucceeded {
+		return last
+	}
+	return current
+}
+
+// lastSuccessfulDeployment is the one that went live most recently, which is the current one when it is still up
+func lastSuccessfulDeployment(entity *ent.Service) *ent.Deployment {
+	current := entity.Edges.CurrentDeployment
+	if current != nil && current.Status == schema.DeploymentStatusBuildSucceeded {
+		return current
+	}
+
+	var last *ent.Deployment
+	for _, deployment := range entity.Edges.Deployments {
+		if deployment.Status != schema.DeploymentStatusBuildSucceeded {
+			continue
+		}
+		if last == nil || deployment.CreatedAt.After(last.CreatedAt) {
+			last = deployment
+		}
+	}
+	return last
 }
 
 // TransformServiceEntities transforms a slice of ent.Service entities into a slice of ServiceResponse
