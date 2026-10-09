@@ -80,37 +80,37 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_Success() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_cpu_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_memory_MemTotal_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_network_receive_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_disk_read_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_filesystem_size_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_load1")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetNodeMetrics(
@@ -141,7 +141,7 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_CPUQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_cpu_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("CPU query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("CPU query failed"),
 	)
 
 	result, err := s.client.GetNodeMetrics(
@@ -164,13 +164,13 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_RAMQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_cpu_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_memory_MemTotal_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("RAM query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("RAM query failed"),
 	)
 
 	result, err := s.client.GetNodeMetrics(
@@ -194,20 +194,20 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_NetworkQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_cpu_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_memory_MemTotal_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Mock failed network query
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_network_receive_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("Network query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("Network query failed"),
 	)
 
 	result, err := s.client.GetNodeMetrics(
@@ -231,26 +231,26 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_DiskQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_cpu_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_memory_MemTotal_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_network_receive_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Mock failed disk query
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_disk_read_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("Disk query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("Disk query failed"),
 	)
 
 	result, err := s.client.GetNodeMetrics(
@@ -274,32 +274,32 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_FileSystemQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_cpu_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_memory_MemTotal_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_network_receive_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_disk_read_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Mock failed filesystem query
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_filesystem_size_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("FileSystem query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("FileSystem query failed"),
 	)
 
 	result, err := s.client.GetNodeMetrics(
@@ -323,38 +323,38 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_LoadQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_cpu_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_memory_MemTotal_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_network_receive_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_disk_read_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_filesystem_size_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Mock failed load query
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "node_load1")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("Load query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("Load query failed"),
 	)
 
 	result, err := s.client.GetNodeMetrics(
@@ -375,7 +375,7 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_EmptyResults() {
 	emptyMatrix := model.Matrix{}
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return(
-		emptyMatrix, v1.Warnings{}, nil,
+		emptyMatrix, v1.Warnings{}, v1.Infos{}, nil,
 	).Times(6)
 
 	result, err := s.client.GetNodeMetrics(
@@ -417,7 +417,7 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_MultipleNodes() {
 	}
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return(
-		multiNodeMatrix, v1.Warnings{}, nil,
+		multiNodeMatrix, v1.Warnings{}, v1.Infos{}, nil,
 	).Times(6)
 
 	result, err := s.client.GetNodeMetrics(
@@ -450,7 +450,7 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_SeriesWithoutInstanceIsSk
 	}
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return(
-		matrixWithoutInstance, v1.Warnings{}, nil,
+		matrixWithoutInstance, v1.Warnings{}, v1.Infos{}, nil,
 	).Times(6)
 
 	result, err := s.client.GetNodeMetrics(
@@ -472,7 +472,7 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_NilFilter() {
 		// Should not contain instance filters when filter is nil
 		return !containsString(query, "instance=~")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	).Times(6)
 
 	result, err := s.client.GetNodeMetrics(
@@ -503,7 +503,7 @@ func (s *NodeMetricsQueryTestSuite) TestGetNodeMetrics_TimeAlignment() {
 
 		return r.Start.Equal(expectedStart) && r.End.Equal(expectedEnd) && r.Step == step
 	})).Return(
-		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, nil,
+		s.createNodeSampleMatrix("10.0.0.1:9100", samples), v1.Warnings{}, v1.Infos{}, nil,
 	).Times(6)
 
 	result, err := s.client.GetNodeMetrics(
@@ -607,7 +607,7 @@ func (s *NodeMetricsQueryTestSuite) captureQueries(filter *NodeMetricsFilter) ma
 				return
 			}
 		}
-	}).Return(model.Matrix{}, v1.Warnings{}, nil).Times(len(metricNames))
+	}).Return(model.Matrix{}, v1.Warnings{}, v1.Infos{}, nil).Times(len(metricNames))
 
 	_, err := s.client.GetNodeMetrics(s.ctx, s.testStart, s.testEnd, s.testStep, filter)
 	s.Require().NoError(err)

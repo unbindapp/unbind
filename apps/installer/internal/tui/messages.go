@@ -4,6 +4,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/unbindapp/unbind-installer/internal/cloudinfo"
 	"github.com/unbindapp/unbind-installer/internal/installer"
 	"github.com/unbindapp/unbind-installer/internal/k3s"
 	"github.com/unbindapp/unbind-installer/internal/network"
@@ -55,6 +56,7 @@ type packageInstallProgressMsg struct {
 
 type detectIPsCompleteMsg struct {
 	ipInfo *network.IPInfo
+	cloud  *cloudinfo.Info
 }
 
 type dnsValidationResultMsg struct {
@@ -68,6 +70,10 @@ type dnsValidationResultMsg struct {
 	registryChecked    bool
 	credentialsValid   bool
 	credentialsErr     string
+	tokenChecked       bool
+	tokenValid         bool
+	tokenErr           string
+	volumePricePerGB   string
 	duration           time.Duration
 }
 

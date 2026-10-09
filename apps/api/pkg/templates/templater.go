@@ -18,7 +18,7 @@ func (self *Templater) AvailableTemplates() []*schema.TemplateDefinition {
 	return []*schema.TemplateDefinition{
 		wordPressTemplate(),
 		ghostTemplate(),
-		minioTemplate(),
+		siloTemplate(),
 		meiliSearchTemplate(),
 		plausibleTemplate(),
 		umamiTemplate(),

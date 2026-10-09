@@ -90,7 +90,7 @@ func (self *PrometheusClient) getPrometheusUsageStats(ctx context.Context, pvcNa
 )
 `, pvcRegex)
 
-	result, _, err := self.api.Query(ctx, query, time.Now())
+	result, _, _, err := self.api.Query(ctx, query, time.Now())
 	if err != nil {
 		return nil, fmt.Errorf("prometheus query failed for PVC usage stats: %w", err)
 	}
@@ -204,7 +204,7 @@ func (self *PrometheusClient) GetVolumeStatsWithHistory(
 		)
 	`, pvcName)
 
-	result, _, err := self.api.QueryRange(ctx, historyQuery, r)
+	result, _, _, err := self.api.QueryRange(ctx, historyQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query volume history for PVC %s: %w", pvcName, err)
 	}

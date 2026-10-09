@@ -8,7 +8,7 @@ COPY apps/web/public /repo/apps/web/public
 COPY apps/docs ./
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:1.29-alpine
+FROM nginxinc/nginx-unprivileged:1.30-alpine
 COPY apps/docs/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /repo/apps/docs/.output/public /usr/share/nginx/html
 EXPOSE 8080

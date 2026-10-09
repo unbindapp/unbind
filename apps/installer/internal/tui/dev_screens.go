@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/unbindapp/unbind-installer/internal/cloudinfo"
+	"github.com/unbindapp/unbind-installer/internal/k3s"
 	"github.com/unbindapp/unbind-installer/internal/network"
 	"github.com/unbindapp/unbind-installer/internal/osinfo"
 )
@@ -16,6 +18,9 @@ var DevScreens = []string{
 	"dns-config",
 	"registry-type",
 	"registry-input",
+	"storage-select",
+	"storage-select-do",
+	"storage-token",
 	"validation",
 	"install-complete",
 }
@@ -45,6 +50,17 @@ func NewDevModel(version, screen, domain string) (Model, error) {
 		m.state = StateExternalRegistryInput
 		m.dnsInfo.RegistryType = RegistryExternal
 		m.initCmd = m.usernameInput.Focus()
+	case "storage-select":
+		m.state = StateStorageSelection
+		m.cloud = &cloudinfo.Info{Provider: cloudinfo.Hetzner, InstanceID: "1"}
+	case "storage-select-do":
+		m.state = StateStorageSelection
+		m.cloud = &cloudinfo.Info{Provider: cloudinfo.DigitalOcean, InstanceID: "1", Region: "fra1"}
+	case "storage-token":
+		m.state = StateCloudTokenInput
+		m.cloud = &cloudinfo.Info{Provider: cloudinfo.Hetzner, InstanceID: "1"}
+		m.storage.Backend = k3s.StorageCloudVolumes
+		m.initCmd = m.tokenInput.Focus()
 	case "validation":
 		if info, err := network.DetectIPs(func(string) {}); err == nil {
 			m.dnsInfo.ExternalIP = info.ExternalIP

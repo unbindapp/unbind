@@ -46,7 +46,7 @@ overrides:
     # Configurable storage size
     storage: "3Gi"
   buildkitd:
-    image: moby/buildkit:v0.32.2-rootless
+    image: moby/buildkit:v0.34.0-rootless
     replicas: 1
     maxParallism: 2
   postgresOperator:

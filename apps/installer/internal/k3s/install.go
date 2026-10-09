@@ -16,7 +16,7 @@ import (
 	"github.com/unbindapp/unbind-installer/internal/system"
 )
 
-const K3S_VERSION = "v1.36.1+k3s1"
+const K3S_VERSION = "v1.36.5+k3s1"
 
 const KubeletConfigPath = "/etc/rancher/k3s/kubelet-config.yaml"
 
@@ -272,6 +272,27 @@ func (self *Installer) sendUpdateMessage(progress float64, status string, descri
 	}
 }
 
+// showFacts rotates educational facts until the returned stop function is called
+func (self *Installer) showFacts(ctx context.Context, interval time.Duration) func() {
+	done := make(chan struct{})
+	go func() {
+		self.sendFact(self.factRotator.GetNext())
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				self.sendFact(self.factRotator.GetNext())
+			case <-done:
+				return
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+	return func() { close(done) }
+}
+
 // sendFact sends an educational fact to the UI
 func (self *Installer) sendFact(fact string) {
 	if self.FactChan != nil {
@@ -284,8 +305,13 @@ func (self *Installer) sendFact(fact string) {
 	}
 }
 
+type InstallOptions struct {
+	SelfHostedRegistry bool
+	Storage            StorageOptions
+}
+
 // Install sets up k3s and returns the kubeconfig path
-func (self *Installer) Install(ctx context.Context, selfHostedRegistry bool) (string, error) {
+func (self *Installer) Install(ctx context.Context, opts InstallOptions) (string, error) {
 	var kubeconfigPath string
 
 	// Start the installation process and initialize state
@@ -333,6 +359,9 @@ fs.inotify.max_user_instances = 512`
 			Description: "Blacklisting Longhorn devices from multipathd",
 			Progress:    0.03,
 			Action: func(ctx context.Context) error {
+				if opts.Storage.Backend != StorageLonghorn {
+					return nil
+				}
 				if err := system.ConfigureMultipathBlacklist(self.LogChan); err != nil {
 					self.log(fmt.Sprintf("Warning: Could not configure multipathd blacklist: %v", err))
 				}
@@ -356,7 +385,7 @@ fs.inotify.max_user_instances = 512`
 			Description: "Configuring container registry access for nodes",
 			Progress:    0.045,
 			Action: func(ctx context.Context) error {
-				if !selfHostedRegistry {
+				if !opts.SelfHostedRegistry {
 					return nil
 				}
 				if err := os.MkdirAll("/etc/rancher/k3s", 0755); err != nil {
@@ -420,28 +449,8 @@ fs.inotify.max_user_instances = 512`
 			Action: func(ctx context.Context) error {
 				self.log(fmt.Sprintf("Running K3S installer with flags: %s", ServerInstallFlags))
 
-				// Start a goroutine to show educational facts during installation
-				factsDone := make(chan struct{})
-				go func() {
-					// Show first fact immediately
-					fact := self.factRotator.GetNext()
-					self.sendFact(fact)
-
-					ticker := time.NewTicker(8 * time.Second) // Show a new fact every 8 seconds
-					defer ticker.Stop()
-
-					for {
-						select {
-						case <-ticker.C:
-							fact := self.factRotator.GetNext()
-							self.sendFact(fact)
-						case <-factsDone:
-							return
-						case <-ctx.Done():
-							return
-						}
-					}
-				}()
+				stopFacts := self.showFacts(ctx, 8*time.Second)
+				defer stopFacts()
 
 				installCmd := exec.CommandContext(ctx, "/bin/sh", "/tmp/k3s-installer.sh")
 				installCmd.Env = append(os.Environ(),
@@ -450,7 +459,6 @@ fs.inotify.max_user_instances = 512`
 				)
 
 				installOutput, err := installCmd.CombinedOutput()
-				close(factsDone) // Stop showing facts
 
 				installOutputStr := string(installOutput)
 				self.log(fmt.Sprintf("Installation output: %s", installOutputStr))
@@ -665,7 +673,7 @@ LimitNPROC=65536
 						helmArch = "arm64"
 					}
 
-					version := "3.21.1"
+					version := "3.22.0"
 
 					// Construct the download URL for Helm
 					url := fmt.Sprintf("https://get.helm.sh/helm-v%s-%s-%s.tar.gz",
@@ -765,7 +773,7 @@ LimitNPROC=65536
 						helmArch = "arm64"
 					}
 
-					version := "1.5.5"
+					version := "1.8.1"
 					url := fmt.Sprintf("https://github.com/helmfile/helmfile/releases/download/v%s/helmfile_%s_%s_%s.tar.gz",
 						version, version, "linux", helmArch)
 
@@ -846,148 +854,12 @@ LimitNPROC=65536
 			},
 		},
 		{
-			Description: "Installing Longhorn storage system",
-			Progress:    0.85, // Larger allocation since Longhorn installation takes significant time
+			Description: "Installing storage",
+			Progress:    0.85, // Larger allocation since the storage driver takes a while to come up
 			Action: func(ctx context.Context) error {
-				// Start showing educational facts during Longhorn installation
-				factsDone := make(chan struct{})
-				go func() {
-					// Show first fact immediately
-					fact := self.factRotator.GetNext()
-					self.sendFact(fact)
-
-					ticker := time.NewTicker(5 * time.Second) // Show a new fact every 5 seconds
-					defer ticker.Stop()
-
-					for {
-						select {
-						case <-ticker.C:
-							fact := self.factRotator.GetNext()
-							self.sendFact(fact)
-						case <-factsDone:
-							return
-						case <-ctx.Done():
-							return
-						}
-					}
-				}()
-
-				// Enable and start iSCSI daemon (required for Longhorn)
-				self.log("Enabling iSCSI daemon for Longhorn storage...")
-				iscsidCmd := exec.CommandContext(ctx, "systemctl", "enable", "--now", "iscsid")
-				if output, err := iscsidCmd.CombinedOutput(); err != nil {
-					// Log warning but don't fail the installation
-					self.log(fmt.Sprintf("Warning: Failed to enable iscsid service: %v, output: %s", err, string(output)))
-				} else {
-					self.log("iSCSI daemon enabled successfully")
-				}
-
-				// Add Longhorn Helm repo
-				self.log("Adding Longhorn Helm repository...")
-				repoCmd := exec.CommandContext(ctx, "helm", "repo", "add", "longhorn", "https://charts.longhorn.io")
-				if output, err := repoCmd.CombinedOutput(); err != nil {
-					close(factsDone)
-					return fmt.Errorf("failed to add Longhorn Helm repo: %w, output: %s", err, string(output))
-				}
-
-				// Update Helm repos
-				self.log("Updating Helm repositories...")
-				updateCmd := exec.CommandContext(ctx, "helm", "repo", "update")
-				if output, err := updateCmd.CombinedOutput(); err != nil {
-					close(factsDone)
-					return fmt.Errorf("failed to update Helm repos: %w, output: %s", err, string(output))
-				}
-
-				// Drop the default-class annotation from k3s's built-in local-path so
-				// Longhorn can become the single default. kubectl patch cannot select
-				// by label, so target the class by name.
-				self.log("Removing default annotation from existing StorageClasses...")
-				patchCmd := exec.CommandContext(ctx, "kubectl", "patch", "storageclass", "local-path", "--type=json", "-p",
-					`[{"op": "replace", "path": "/metadata/annotations/storageclass.kubernetes.io~1is-default-class", "value": "false"}]`)
-				patchCmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeconfigPath))
-				if output, err := patchCmd.CombinedOutput(); err != nil {
-					self.log(fmt.Sprintf("Warning: Failed to remove default annotation from local-path StorageClass: %s", string(output)))
-				}
-
-				// Install Longhorn
-				self.log("Installing Longhorn...")
-				installCmd := exec.CommandContext(ctx, "helm", "install", "longhorn", "longhorn/longhorn",
-					"--namespace", "longhorn-system",
-					"--create-namespace",
-					"--version", "1.12.1",
-					"--set", "defaultSettings.admissionWebhookTimeout=30",
-					"--set", "defaultSettings.conversionWebhookTimeout=30",
-					"--set", "defaultSettings.defaultReplicaCount=1",
-					"--set", "defaultSettings.replicaSoftAntiAffinity=true",
-					"--set", "defaultSettings.replicaAutoBalance=disabled",
-					"--set", "defaultSettings.disableRevisionCounter=true",
-					"--set", "defaultSettings.upgradeChecker=false",
-					"--set", "defaultSettings.autoSalvage=true",
-					"--set", "defaultSettings.storageOverProvisioningPercentage=150",
-					"--set", "defaultSettings.storageMinimalAvailablePercentage=10",
-					"--set", "defaultSettings.concurrentReplicaRebuildPerNodeLimit=0",
-					"--set", "defaultSettings.concurrentVolumeBackupRestorePerNodeLimit=0",
-					"--set", "defaultSettings.concurrentAutomaticEngineUpgradePerNodeLimit=0",
-					"--set", "defaultSettings.guaranteedInstanceManagerCPU=0",
-					"--set", "defaultSettings.kubernetesClusterAutoscalerEnabled=false",
-					"--set", "defaultSettings.autoCleanupSystemGeneratedSnapshot=true",
-					"--set", "defaultSettings.orphanResourceAutoDeletion=replica-data",
-					"--set", "defaultSettings.disableSchedulingOnCordonedNode=true",
-					"--set", "defaultSettings.fastReplicaRebuildEnabled=false",
-					"--set", "longhornUI.enabled=false",
-					"--set", "enableShareManager=false",
-					"--set", "enableUpgradeChecker=false",
-					"--set", "enablePSP=false",
-					"--set", "longhornDriverDeployer.enabled=false",
-					"--set", "driver.debug=false",
-					"--set", "longhornManager.resources.requests.cpu=50m",
-					"--set", "longhornManager.resources.requests.memory=128Mi",
-					"--set", "longhornManager.resources.limits.cpu=100m",
-					"--set", "longhornManager.resources.limits.memory=256Mi",
-					"--set", "instanceManager.resources.requests.cpu=40m",
-					"--set", "instanceManager.resources.requests.memory=64Mi",
-					"--set", "instanceManager.resources.limits.cpu=200m",
-					"--set", "instanceManager.resources.limits.memory=256Mi",
-					"--set", "csi.attacherReplicaCount=1",
-					"--set", "csi.provisionerReplicaCount=1",
-					"--set", "csi.resizerReplicaCount=1",
-					"--set", "csi.snapshotterReplicaCount=0",
-					"--set", "csi.kubeletPlugin.resources.requests.cpu=10m",
-					"--set", "csi.kubeletPlugin.resources.requests.memory=32Mi",
-					"--set", "csi.kubeletPlugin.resources.limits.cpu=50m",
-					"--set", "csi.kubeletPlugin.resources.limits.memory=128Mi",
-					"--set", "persistence.defaultClass=true",
-					"--set", "persistence.defaultClassReplicaCount=1",
-					"--set", "persistence.defaultDataLocality=best-effort",
-					"--set", "persistence.reclaimPolicy=Retain",
-				)
-
-				// Set KUBECONFIG environment variable
-				installCmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeconfigPath))
-
-				if output, err := installCmd.CombinedOutput(); err != nil {
-					close(factsDone)
-					return fmt.Errorf("failed to install Longhorn: %w, output: %s", err, string(output))
-				}
-
-				// Wait for Longhorn to be ready
-				self.log("Waiting for Longhorn to be ready...")
-				if err := self.waitForLonghornReady(ctx, kubeconfigPath); err != nil {
-					close(factsDone)
-					return err
-				}
-
-				// Remove default annotation from local-path storage class
-				self.log("Removing default annotation from local-path storage class...")
-				patchCmd = exec.CommandContext(ctx, "kubectl", "patch", "storageclass", "local-path", "--type=json", "-p",
-					`[{"op": "replace", "path": "/metadata/annotations/storageclass.kubernetes.io~1is-default-class", "value": "false"}]`)
-				patchCmd.Env = append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeconfigPath))
-				if output, err := patchCmd.CombinedOutput(); err != nil {
-					self.log(fmt.Sprintf("Warning: Failed to remove default annotation from local-path storage class: %s", string(output)))
-				}
-
-				close(factsDone) // Stop showing facts
-				return nil
+				stopFacts := self.showFacts(ctx, 5*time.Second)
+				defer stopFacts()
+				return self.installStorage(ctx, kubeconfigPath, opts.Storage)
 			},
 		},
 		{
@@ -1080,44 +952,6 @@ LimitNPROC=65536
 	self.logProgress(1.0, "completed", "K3S installation completed successfully", nil)
 
 	return kubeconfigPath, nil
-}
-
-// waitForLonghornReady polls until the longhorn-manager pods are ready. A single
-// `kubectl wait` races the controllers that create those pods and exits
-// immediately with "no matching resources found" when none exist yet, so retry
-// with a short per-attempt timeout until they appear and become ready, or the
-// overall deadline passes.
-func (self *Installer) waitForLonghornReady(ctx context.Context, kubeconfigPath string) error {
-	deadline := time.Now().Add(6 * time.Minute)
-	env := append(os.Environ(), fmt.Sprintf("KUBECONFIG=%s", kubeconfigPath))
-
-	var lastErr error
-	var lastOutput string
-	for attempt := 1; time.Now().Before(deadline); attempt++ {
-		if ctx.Err() != nil {
-			return fmt.Errorf("failed waiting for Longhorn to be ready: %w", ctx.Err())
-		}
-
-		cmd := exec.CommandContext(ctx, "kubectl", "wait", "--for=condition=ready", "pod",
-			"-l", "app=longhorn-manager", "-n", "longhorn-system", "--timeout=30s")
-		cmd.Env = env
-		output, err := cmd.CombinedOutput()
-		if err == nil {
-			return nil
-		}
-
-		lastErr = err
-		lastOutput = strings.TrimSpace(string(output))
-		self.log(fmt.Sprintf("Longhorn not ready yet (attempt %d): %s", attempt, lastOutput))
-
-		select {
-		case <-time.After(5 * time.Second):
-		case <-ctx.Done():
-			return fmt.Errorf("failed waiting for Longhorn to be ready: %w", ctx.Err())
-		}
-	}
-
-	return fmt.Errorf("timed out waiting for Longhorn to be ready: %w, output: %s", lastErr, lastOutput)
 }
 
 // checkServiceStatus checks k3s service state

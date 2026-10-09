@@ -16,8 +16,8 @@ jobs:
       operator: ${{ steps.filter.outputs.operator }}
       installer: ${{ steps.filter.outputs.installer }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -43,7 +43,7 @@ jobs:
       run:
         working-directory: ./apps/api
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-go
         with:
           module: apps/api
@@ -56,7 +56,7 @@ jobs:
     if: ${{ needs.changes.outputs.api == 'true' || needs.changes.outputs.docs == 'true' }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-go
         with:
           module: apps/api
@@ -69,12 +69,12 @@ jobs:
     if: ${{ needs.changes.outputs.api == 'true' || needs.changes.outputs.web == 'true' }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-go
         with:
           module: apps/api
           cache-name: api-test
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: "npm"
@@ -92,8 +92,8 @@ jobs:
       run:
         working-directory: ./apps/web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: "npm"
@@ -113,8 +113,8 @@ jobs:
       run:
         working-directory: ./apps/docs
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: "npm"
@@ -132,8 +132,8 @@ jobs:
       run:
         working-directory: ./apps/operator
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: ./apps/operator/go.mod
           cache-dependency-path: ./apps/operator/go.sum
@@ -156,8 +156,8 @@ jobs:
       run:
         working-directory: ./apps/installer
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: ./apps/installer/go.mod
           cache-dependency-path: ./apps/installer/go.sum

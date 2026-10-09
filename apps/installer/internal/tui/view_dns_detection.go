@@ -28,5 +28,6 @@ func (m Model) updateDetectingIPsState(msg tea.Msg) (Model, tea.Cmd) {
 		m.dnsInfo.InternalIP = result.ipInfo.InternalIP
 		m.dnsInfo.ExternalIP = result.ipInfo.ExternalIP
 	}
+	m.cloud = result.cloud
 	return m, m.domainInput.Focus()
 }

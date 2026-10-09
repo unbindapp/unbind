@@ -4,7 +4,7 @@ type: "helm"
 version: "1.0.0"
 chart:
   name: "redis"
-  version: "0.34.20"
+  version: "0.37.2"
   repository: "oci://registry-1.docker.io/cloudpirates"
   repositoryName: "redis"
 port: 6379

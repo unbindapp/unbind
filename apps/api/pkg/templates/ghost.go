@@ -13,7 +13,7 @@ func ghostTemplate() *schema.TemplateDefinition {
 		Icon:        "ghost",
 		Keywords:    []string{"blogging", "cms", "mysql"},
 		Description: "Open source blog and newsletter platform.",
-		Version:     3,
+		Version:     5,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   1,
 			MinimumRecommendedRAMGB: 1,
@@ -66,7 +66,7 @@ func ghostTemplate() *schema.TemplateDefinition {
 				Name:      "Ghost",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("ghost:6.60.0"),
+				Image:     new("ghost:6.69.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 				},
@@ -89,6 +89,11 @@ func ghostTemplate() *schema.TemplateDefinition {
 					{
 						Name:  "database__client",
 						Value: "mysql",
+					},
+					// Ghost 6.69 listens on :: by default, which fails on IPv4-only nodes
+					{
+						Name:  "server__host",
+						Value: "0.0.0.0",
 					},
 				},
 				VariableReferences: []schema.TemplateVariableReference{

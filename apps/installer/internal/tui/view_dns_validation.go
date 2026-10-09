@@ -44,7 +44,7 @@ func (m Model) updateDNSValidationState(msg tea.Msg) (Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter":
-			if !m.validation.ready(m.dnsInfo.RegistryType) {
+			if !m.validationReady() {
 				return m, nil
 			}
 			return m.startInstall()
@@ -66,6 +66,13 @@ func (m Model) updateDNSValidationState(msg tea.Msg) (Model, tea.Cmd) {
 			}
 			m.state = StateExternalRegistryInput
 			return m, m.usernameInput.Focus()
+		case "ctrl+s":
+			if m.cloud == nil {
+				return m, nil
+			}
+			m.isLoading = false
+			m.state = StateStorageSelection
+			return m, nil
 		}
 	}
 	return m, nil
@@ -82,6 +89,12 @@ func (m Model) applyValidationResult(msg dnsValidationResultMsg) Model {
 		msg.credentialsValid = prev.credentialsValid
 		msg.credentialsErr = prev.credentialsErr
 	}
+	if !msg.tokenChecked && prev != nil {
+		msg.tokenChecked = prev.tokenChecked
+		msg.tokenValid = prev.tokenValid
+		msg.tokenErr = prev.tokenErr
+		msg.volumePricePerGB = prev.volumePricePerGB
+	}
 
 	m.validation.inFlight = false
 	m.validation.lastAt = time.Now()
@@ -97,6 +110,7 @@ func viewDNSValidation(m Model) string {
 	res := m.validation.result
 	external := m.dnsInfo.RegistryType == RegistryExternal
 	credentialsRejected := external && res != nil && res.registryChecked && !res.credentialsValid
+	tokenRejected := m.usesCloudVolumes() && res != nil && res.tokenChecked && !res.tokenValid
 
 	switch {
 	case res == nil || !res.mainResolved:
@@ -107,6 +121,8 @@ func viewDNSValidation(m Model) string {
 		s.WriteString("\n")
 	case credentialsRejected:
 		writeWrapped(&s, m.styles.Error, fmt.Sprintf("Registry credentials rejected by %s. Press Ctrl+g to fix them.", getRegistryDisplayName(m.dnsInfo.RegistryHost)), maxWidth)
+	case tokenRejected:
+		writeWrapped(&s, m.styles.Error, fmt.Sprintf("%s rejected the API token. Press Ctrl+s to fix it.", m.cloud.Spec().DisplayName), maxWidth)
 	case res.wildcardProxied:
 		s.WriteString(m.styles.Success.Render("✓ Main DNS record detected. Press Enter to continue."))
 		s.WriteString("\n")
@@ -131,6 +147,9 @@ func viewDNSValidation(m Model) string {
 	if external {
 		s.WriteString(m.renderCredentialsCheck())
 	}
+	if m.usesCloudVolumes() {
+		s.WriteString(m.renderTokenCheck())
+	}
 	s.WriteString("\n")
 
 	writeWrapped(&s, m.styles.Subtle, m.validationTimingText(), maxWidth)
@@ -140,7 +159,7 @@ func viewDNSValidation(m Model) string {
 	s.WriteString(m.styles.Bold.Render("Options:"))
 	s.WriteString("\n")
 	hints := []keyHint{}
-	if m.validation.ready(m.dnsInfo.RegistryType) {
+	if m.validationReady() {
 		hints = append(hints, keyHint{key: "Enter", desc: "Continue"})
 	}
 	hints = append(hints,
@@ -148,6 +167,9 @@ func viewDNSValidation(m Model) string {
 		keyHint{key: "Ctrl+e", desc: "Edit domain"},
 		keyHint{key: "Ctrl+g", desc: "Edit registry"},
 	)
+	if m.cloud != nil {
+		hints = append(hints, keyHint{key: "Ctrl+s", desc: "Edit storage"})
+	}
 	s.WriteString(renderKeyHints(m, hints...))
 	s.WriteString("\n\n")
 	s.WriteString(quitHint(m))
@@ -200,6 +222,26 @@ func (m Model) renderCredentialsCheck() string {
 	default:
 		return renderCheckLine(m, checkFail, label, res.credentialsErr)
 	}
+}
+
+func (m Model) renderTokenCheck() string {
+	spec := m.cloud.Spec()
+	label := spec.DisplayName + " API token"
+	res := m.validation.result
+	switch {
+	case res == nil || !res.tokenChecked:
+		return renderCheckLine(m, checkPending, label, "checking…")
+	case res.tokenValid && res.volumePricePerGB != "":
+		return renderCheckLine(m, checkOK, label, fmt.Sprintf("%s cost %s per GB per month in this project", spec.VolumeName, res.volumePricePerGB))
+	case res.tokenValid:
+		return renderCheckLine(m, checkOK, label, "")
+	default:
+		return renderCheckLine(m, checkFail, label, res.tokenErr)
+	}
+}
+
+func (m Model) validationReady() bool {
+	return m.validation.ready(m.dnsInfo.RegistryType == RegistryExternal, m.usesCloudVolumes())
 }
 
 func (m Model) validationTimingText() string {

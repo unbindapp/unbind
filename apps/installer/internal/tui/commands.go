@@ -11,6 +11,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"golang.org/x/net/publicsuffix"
 
+	"github.com/unbindapp/unbind-installer/internal/cloudinfo"
 	"github.com/unbindapp/unbind-installer/internal/errdefs"
 	unbindInstaller "github.com/unbindapp/unbind-installer/internal/installer"
 	"github.com/unbindapp/unbind-installer/internal/k3s"
@@ -133,12 +134,17 @@ func (m Model) startDetectingIPs() tea.Cmd {
 			m.log("Error detecting IPs: " + err.Error())
 			return errMsg{err: errdefs.ErrNetworkDetectionFailed}
 		}
-		return detectIPsCompleteMsg{ipInfo: ipInfo}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		return detectIPsCompleteMsg{ipInfo: ipInfo, cloud: cloudinfo.Detect(ctx, m.log)}
 	}
 }
 
-func (m Model) validateConfig(gen int, checkRegistry bool) tea.Cmd {
+func (m Model) validateConfig(gen int, checkCredentials bool) tea.Cmd {
 	info := m.dnsInfo
+	cloud := m.cloud
+	storage := m.storage
 	return func() tea.Msg {
 		start := time.Now()
 		m.log("Checking DNS records for " + info.UnbindDomain + "…")
@@ -159,7 +165,7 @@ func (m Model) validateConfig(gen int, checkRegistry bool) tea.Cmd {
 			result.wildcardProxied = !network.ServesTLS(net.JoinHostPort(probe, "443"), probe, m.log)
 		}
 
-		if checkRegistry && info.RegistryType == RegistryExternal {
+		if checkCredentials && info.RegistryType == RegistryExternal {
 			m.log(fmt.Sprintf("Validating registry credentials for %s on %s...", info.RegistryUsername, info.RegistryHost))
 			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 			defer cancel()
@@ -169,6 +175,24 @@ func (m Model) validateConfig(gen int, checkRegistry bool) tea.Cmd {
 			if err != nil {
 				result.credentialsErr = err.Error()
 				m.log("Registry credential check failed: " + err.Error())
+			}
+		}
+
+		if checkCredentials && cloud != nil && storage.Backend == k3s.StorageCloudVolumes {
+			spec := cloud.Spec()
+			m.log("Validating the " + spec.DisplayName + " API token...")
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancel()
+			check, err := cloudinfo.CheckToken(ctx, cloud, storage.Token)
+			result.tokenChecked = true
+			result.tokenValid = err == nil
+			switch {
+			case err != nil:
+				result.tokenErr = err.Error()
+				m.log(spec.DisplayName + " token check failed: " + err.Error())
+			case check.VolumePricePerGB != "":
+				result.volumePricePerGB = check.VolumePricePerGB
+				m.log(fmt.Sprintf("%s volumes cost %s per GB per month in this project", spec.DisplayName, check.VolumePricePerGB))
 			}
 		}
 
@@ -192,7 +216,11 @@ func (m Model) installK3S() tea.Cmd {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
 		defer cancel()
 
-		kubeConfig, err := k3s.NewInstaller(m.logChan, m.k3sProgressChan, m.factChan).Install(ctx, m.dnsInfo.RegistryType == RegistrySelfHosted)
+		opts := k3s.InstallOptions{
+			SelfHostedRegistry: m.dnsInfo.RegistryType == RegistrySelfHosted,
+			Storage:            k3s.StorageOptions{Backend: m.storage.Backend, Cloud: m.cloud, Token: m.storage.Token},
+		}
+		kubeConfig, err := k3s.NewInstaller(m.logChan, m.k3sProgressChan, m.factChan).Install(ctx, opts)
 		if err != nil {
 			m.log(fmt.Sprintf("K3S installation failed: %s", err.Error()))
 			return errMsg{err: errdefs.NewCustomError(errdefs.ErrTypeK3sInstallFailed, fmt.Sprintf("K3S installation failed: %s", err.Error()))}

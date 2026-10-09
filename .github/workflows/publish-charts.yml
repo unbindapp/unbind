@@ -29,10 +29,13 @@ jobs:
           - unbind
           - unbind-operator
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
+        with:
+          # charts and the installer target helm 3; v5 defaults to helm 4
+          version: v3.22.0
 
       - name: Login to registry
         run: helm registry login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"

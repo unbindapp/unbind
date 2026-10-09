@@ -106,7 +106,7 @@ spec:
     spec:
       containers:
         - name: mysqld
-          image: {{ printf "ghcr.io/cybozu-go/moco/mysql:%s" (.Parameters.version | default "8.4.8") | quote }}
+          image: {{ printf "ghcr.io/cybozu-go/moco/mysql:%s" (.Parameters.version | default "8.4.10") | quote }}
           resources:
             requests:
               cpu:    {{ $common.resources.requests.cpu    | default "10m"   | quote }}
@@ -276,7 +276,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: prune
-              image: amazon/aws-cli:2.27.63
+              image: amazon/aws-cli:2.37.11
               env:
                 - name: AWS_ACCESS_KEY_ID
                   valueFrom:

@@ -87,22 +87,22 @@ func (self *PrometheusClient) GetResourceMetrics(
 	)`, sumBy.Label(), sumBy.Label(), kubeLabelsSelector)
 
 	// Execute queries
-	cpuResult, _, err := self.api.QueryRange(ctx, cpuQuery, r)
+	cpuResult, _, _, err := self.api.QueryRange(ctx, cpuQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying CPU metrics: %w", err)
 	}
 
-	ramResult, _, err := self.api.QueryRange(ctx, ramQuery, r)
+	ramResult, _, _, err := self.api.QueryRange(ctx, ramQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying RAM metrics: %w", err)
 	}
 
-	networkResult, _, err := self.api.QueryRange(ctx, networkQuery, r)
+	networkResult, _, _, err := self.api.QueryRange(ctx, networkQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying network metrics: %w", err)
 	}
 
-	diskResult, _, err := self.api.QueryRange(ctx, diskQuery, r)
+	diskResult, _, _, err := self.api.QueryRange(ctx, diskQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying disk metrics: %w", err)
 	}

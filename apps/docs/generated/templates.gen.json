@@ -97,19 +97,20 @@
       {
         "name": "Ghost",
         "icon": "docker-image",
-        "image": "ghost:6.60.0"
+        "image": "ghost:6.69.0"
       }
     ]
   },
   {
-    "name": "MinIO",
-    "description": "S3-compatible object storage.",
-    "icon": "minio",
+    "name": "Silo",
+    "description": "S3-compatible object storage, a maintained MinIO fork.",
+    "icon": "silo",
     "keywords": [
       "object storage",
       "file storage",
       "s3",
       "s3 compatible",
+      "minio",
       "r2",
       "aws",
       "cloudflare"
@@ -122,28 +123,28 @@
       {
         "name": "API Domain",
         "type": "host",
-        "description": "The domain for the MinIO API.",
+        "description": "The domain for the Silo API.",
         "required": true
       },
       {
         "name": "Dashboard Domain",
         "type": "host",
-        "description": "The domain for the MinIO dashboard.",
+        "description": "The domain for the Silo dashboard.",
         "required": true
       },
       {
         "name": "Storage Size",
         "type": "volume-size",
-        "description": "Size of the storage for the MinIO data.",
+        "description": "Size of the storage for the Silo data.",
         "default": "1",
         "required": true
       }
     ],
     "services": [
       {
-        "name": "MinIO",
+        "name": "Silo",
         "icon": "docker-image",
-        "image": "minio/minio:RELEASE.2025-09-07T16-13-09Z"
+        "image": "pgsty/silo:RELEASE.2026-09-16T00-00-00Z"
       }
     ]
   },
@@ -180,7 +181,7 @@
       {
         "name": "Meilisearch",
         "icon": "docker-image",
-        "image": "getmeili/meilisearch:v1.53.1"
+        "image": "getmeili/meilisearch:v1.54.3"
       }
     ]
   },
@@ -278,7 +279,7 @@
       {
         "name": "Umami",
         "icon": "docker-image",
-        "image": "ghcr.io/umami-software/umami:3.3.1"
+        "image": "ghcr.io/umami-software/umami:3.4.0"
       }
     ]
   },
@@ -420,17 +421,17 @@
       {
         "name": "Studio",
         "icon": "docker-image",
-        "image": "supabase/studio:2026.08.24-sha-8ec45b2"
+        "image": "supabase/studio:2026.09.07-sha-7996410"
       },
       {
         "name": "Storage",
         "icon": "docker-image",
-        "image": "supabase/storage-api:v1.71.0"
+        "image": "supabase/storage-api:v1.74.0"
       },
       {
-        "name": "MinIO",
+        "name": "Silo",
         "icon": "docker-image",
-        "image": "minio/minio:RELEASE.2025-09-07T16-13-09Z"
+        "image": "pgsty/silo:RELEASE.2026-09-16T00-00-00Z"
       },
       {
         "name": "PostgREST",
@@ -445,12 +446,12 @@
       {
         "name": "Postgres Meta",
         "icon": "docker-image",
-        "image": "supabase/postgres-meta:v0.98.0"
+        "image": "supabase/postgres-meta:v0.99.0"
       },
       {
         "name": "Functions",
         "icon": "docker-image",
-        "image": "supabase/edge-runtime:v1.74.3"
+        "image": "supabase/edge-runtime:v1.76.2"
       },
       {
         "name": "Kong",
@@ -509,12 +510,12 @@
       {
         "name": "n8n Worker",
         "icon": "docker-image",
-        "image": "n8nio/n8n:2.37.1"
+        "image": "n8nio/n8n:2.42.6"
       },
       {
         "name": "n8n",
         "icon": "docker-image",
-        "image": "n8nio/n8n:2.37.1"
+        "image": "n8nio/n8n:2.42.6"
       }
     ]
   },
@@ -700,7 +701,7 @@
       {
         "name": "Appsmith",
         "icon": "docker-image",
-        "image": "appsmith/appsmith-ee:v2.3.1"
+        "image": "appsmith/appsmith-ee:v2.4.3"
       }
     ]
   },
@@ -754,7 +755,7 @@
       {
         "name": "NocoDB",
         "icon": "docker-image",
-        "image": "nocodb/nocodb:2026.08.1"
+        "image": "nocodb/nocodb:2026.09.1"
       }
     ]
   },
@@ -813,7 +814,7 @@
       {
         "name": "Teable",
         "icon": "docker-image",
-        "image": "ghcr.io/teableio/teable:release.2026-08-25T14-19-49Z.2796"
+        "image": "ghcr.io/teableio/teable:release.2026-10-02T04-02-20Z.3278"
       }
     ]
   },
@@ -869,7 +870,7 @@
       {
         "name": "Formbricks",
         "icon": "docker-image",
-        "image": "ghcr.io/formbricks/formbricks:5.3.4"
+        "image": "ghcr.io/formbricks/formbricks:5.4.5"
       }
     ]
   },

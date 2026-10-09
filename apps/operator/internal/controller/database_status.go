@@ -9,7 +9,7 @@ import (
 	helmv2 "github.com/fluxcd/helm-controller/api/v2"
 	fluxmeta "github.com/fluxcd/pkg/apis/meta"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
-	postgresv1 "github.com/zalando/postgres-operator/pkg/apis/acid.zalan.do/v1"
+	postgresv1 "github.com/zalando/postgres-operator/v2/pkg/apis/acid.zalan.do/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"

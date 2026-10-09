@@ -314,14 +314,23 @@ func BuildWithBuildkitClient(cfg *config.Config, appDir string, opts BuildWithBu
 }
 
 // IgnoreCache on the ops only re-runs them, the persistent cache mounts (pnpm store etc.) keep their
-// contents. Railpack only reads this env var to leave them out.
+// contents. Dropping the caches from the plan is the only way to leave the mounts out.
 func railpackPlanToLLB(buildPlan *plan.BuildPlan, opts rpBuildkit.ConvertPlanOptions, disableCache bool) (*llb.State, *rpBuildkit.Image, error) {
 	if disableCache {
-		if err := os.Setenv("RAILPACK_DISABLE_CACHES", "*"); err != nil {
-			return nil, nil, fmt.Errorf("error disabling railpack caches: %w", err)
-		}
+		buildPlan = withoutCaches(buildPlan)
 	}
 	return rpBuildkit.ConvertPlanToLLB(buildPlan, opts)
+}
+
+func withoutCaches(buildPlan *plan.BuildPlan) *plan.BuildPlan {
+	stripped := *buildPlan
+	stripped.Caches = map[string]*plan.Cache{}
+	stripped.Steps = make([]plan.Step, len(buildPlan.Steps))
+	for i, step := range buildPlan.Steps {
+		step.Caches = nil
+		stripped.Steps[i] = step
+	}
+	return &stripped
 }
 
 func getImageName(appDir string) string {

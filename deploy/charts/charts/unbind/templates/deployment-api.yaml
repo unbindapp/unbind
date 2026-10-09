@@ -27,7 +27,7 @@ spec:
       serviceAccountName: {{ include "unbind.serviceAccountName" . }}
       initContainers:
         - name: wait-for-db
-          image: busybox:1.37
+          image: busybox:1.38
           command: ['sh', '-c']
           args:
             - |

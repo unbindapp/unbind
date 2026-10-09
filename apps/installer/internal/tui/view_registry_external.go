@@ -94,7 +94,7 @@ func (m Model) updateRegistryTypeSelectionState(msg tea.Msg) (Model, tea.Cmd) {
 	switch keyMsg.String() {
 	case "1":
 		m.dnsInfo.RegistryType = RegistrySelfHosted
-		return m.startConfigValidation()
+		return m.afterRegistry()
 	case "2":
 		m.dnsInfo.RegistryType = RegistryExternal
 		m.state = StateExternalRegistryInput
@@ -235,5 +235,5 @@ func (m Model) submitRegistryCredentials() (Model, tea.Cmd) {
 	if m.dnsInfo.RegistryUsername == "" || m.dnsInfo.RegistryPassword == "" || m.dnsInfo.RegistryHost == "" {
 		return m, nil
 	}
-	return m.startConfigValidation()
+	return m.afterRegistry()
 }

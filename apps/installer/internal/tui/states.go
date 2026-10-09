@@ -1,6 +1,10 @@
 package tui
 
-import "time"
+import (
+	"time"
+
+	"github.com/unbindapp/unbind-installer/internal/k3s"
+)
 
 type ApplicationState int
 
@@ -25,6 +29,8 @@ const (
 	StateDNSValidation
 	StateRegistryTypeSelection
 	StateExternalRegistryInput
+	StateStorageSelection
+	StateCloudTokenInput
 	StateInstallingK3S
 	StateInstallingUnbind
 	StateInstallationComplete
@@ -48,6 +54,11 @@ type dnsInfo struct {
 	RegistryHost     string
 }
 
+type storageConfig struct {
+	Backend k3s.StorageBackend
+	Token   string
+}
+
 type validationStatus struct {
 	gen          int
 	inFlight     bool
@@ -57,9 +68,12 @@ type validationStatus struct {
 	result       *dnsValidationResultMsg
 }
 
-func (v validationStatus) ready(rt RegistryType) bool {
+func (v validationStatus) ready(needsRegistry, needsToken bool) bool {
 	if v.result == nil || !v.result.mainResolved {
 		return false
 	}
-	return rt == RegistrySelfHosted || v.result.credentialsValid
+	if needsRegistry && !v.result.credentialsValid {
+		return false
+	}
+	return !needsToken || v.result.tokenValid
 }

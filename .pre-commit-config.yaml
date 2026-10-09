@@ -32,7 +32,7 @@ repos:
         pass_filenames: false
       - id: api-golangci-lint
         name: "api: golangci-lint"
-        entry: bash -c 'cd apps/api && golangci-lint run'
+        entry: bash -c 'cd apps/api && go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0 run'
         language: system
         files: ^apps/api/.*\.go$
         pass_filenames: false
@@ -66,7 +66,7 @@ repos:
         pass_filenames: false
       - id: operator-golangci-lint
         name: "operator: golangci-lint"
-        entry: bash -c 'cd apps/operator && golangci-lint run'
+        entry: bash -c 'cd apps/operator && go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0 run'
         language: system
         files: ^apps/operator/.*\.go$
         pass_filenames: false

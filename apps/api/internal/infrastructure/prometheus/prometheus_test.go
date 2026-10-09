@@ -91,10 +91,10 @@ func (s *PrometheusTestSuite) TestPrometheusClient_APIAccess() {
 
 	// Test that we can call methods on the API interface
 	s.mockAPI.On("Query", s.ctx, "up", mock.AnythingOfType("time.Time")).Return(
-		model.Vector{}, v1.Warnings{}, nil,
+		model.Vector{}, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
-	result, warnings, err := s.client.api.Query(s.ctx, "up", time.Now())
+	result, warnings, _, err := s.client.api.Query(s.ctx, "up", time.Now())
 
 	s.NoError(err)
 	s.Empty(warnings)
@@ -114,10 +114,10 @@ func (s *PrometheusTestSuite) TestPrometheusClient_ContextTimeout() {
 	time.Sleep(2 * time.Nanosecond) // Ensure context is expired
 
 	s.mockAPI.On("Query", shortCtx, "up", mock.AnythingOfType("time.Time")).Return(
-		nil, v1.Warnings{}, context.DeadlineExceeded,
+		nil, v1.Warnings{}, v1.Infos{}, context.DeadlineExceeded,
 	)
 
-	_, _, err := s.client.api.Query(shortCtx, "up", time.Now())
+	_, _, _, err := s.client.api.Query(shortCtx, "up", time.Now())
 
 	s.Error(err)
 	s.Equal(context.DeadlineExceeded, err)

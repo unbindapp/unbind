@@ -48,7 +48,7 @@ import (
 	"github.com/unbindapp/unbind-operator/internal/controller"
 	"github.com/unbindapp/unbind-operator/internal/operator"
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
-	postgresv1 "github.com/zalando/postgres-operator/pkg/apis/acid.zalan.do/v1"
+	postgresv1 "github.com/zalando/postgres-operator/v2/pkg/apis/acid.zalan.do/v1"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 	// +kubebuilder:scaffold:imports

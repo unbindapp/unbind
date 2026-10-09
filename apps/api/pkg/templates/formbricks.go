@@ -13,7 +13,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 		Icon:        "formbricks",
 		Keywords:    []string{"forms", "surveys", "feedback", "analytics", "open source", "typeform alternative"},
 		Description: "Typeform alternative for user feedback and surveys.",
-		Version:     3,
+		Version:     4,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   1,
 			MinimumRecommendedRAMGB: 2,
@@ -76,7 +76,7 @@ func formbricksTemplate() *schema.TemplateDefinition {
 				InputIDs:  []string{"input_domain", "input_storage_size"},
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("ghcr.io/formbricks/formbricks:5.3.4"),
+				Image:     new("ghcr.io/formbricks/formbricks:5.4.5"),
 				DependsOn: []string{"service_postgresql", "service_redis"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,

@@ -8,12 +8,15 @@ stack (via the helmfile in `deploy/charts`).
 1. Detects the OS and verifies it is supported (see `internal/osinfo`).
 2. Installs prerequisite packages and, on low-memory hosts, sizes and creates a
    swap file automatically.
-3. Installs K3s, Helm, Helmfile, and Longhorn.
-4. Validates DNS for your domain and configures the container registry.
+3. Installs K3s, Helm and Helmfile, then Longhorn or, on Hetzner Cloud and
+   DigitalOcean servers, the provider's volume driver if you chose it
+   (see `internal/cloudinfo` for the provider table).
+4. Validates DNS for your domain, the registry and the cloud API token.
 5. Runs the helmfile sync to bring up Unbind.
 
 The installer prompts only for what it cannot infer: the domain, the registry
-choice (and credentials for an external registry), and whether to uninstall an
+choice (and credentials for an external registry), the storage choice on a
+recognised cloud server (and its API token), and whether to uninstall an
 existing K3s or create a swap file. Nothing is selected automatically.
 
 To look at a single screen without installing anything (no root needed):

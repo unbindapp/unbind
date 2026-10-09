@@ -93,32 +93,32 @@ func (self *PrometheusClient) GetNodeMetrics(
 	)`, selector)
 
 	// Execute queries
-	cpuResult, _, err := self.api.QueryRange(ctx, cpuQuery, r)
+	cpuResult, _, _, err := self.api.QueryRange(ctx, cpuQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying node CPU metrics: %w", err)
 	}
 
-	ramResult, _, err := self.api.QueryRange(ctx, ramQuery, r)
+	ramResult, _, _, err := self.api.QueryRange(ctx, ramQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying node RAM metrics: %w", err)
 	}
 
-	networkResult, _, err := self.api.QueryRange(ctx, networkQuery, r)
+	networkResult, _, _, err := self.api.QueryRange(ctx, networkQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying node network metrics: %w", err)
 	}
 
-	diskResult, _, err := self.api.QueryRange(ctx, diskQuery, r)
+	diskResult, _, _, err := self.api.QueryRange(ctx, diskQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying node disk metrics: %w", err)
 	}
 
-	fsResult, _, err := self.api.QueryRange(ctx, fsQuery, r)
+	fsResult, _, _, err := self.api.QueryRange(ctx, fsQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying node filesystem metrics: %w", err)
 	}
 
-	loadResult, _, err := self.api.QueryRange(ctx, loadQuery, r)
+	loadResult, _, _, err := self.api.QueryRange(ctx, loadQuery, r)
 	if err != nil {
 		return nil, fmt.Errorf("error querying node load metrics: %w", err)
 	}

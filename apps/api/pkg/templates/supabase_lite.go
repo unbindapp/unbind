@@ -14,7 +14,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 		Icon:        "supabase",
 		Keywords:    []string{"database", "auth", "storage", "supabase", "postgres", "pocketbase"},
 		Description: "The open source Firebase alternative.",
-		Version:     4,
+		Version:     6,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   2,
 			MinimumRecommendedRAMGB: 4,
@@ -42,7 +42,7 @@ func supabaseTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "minio-volume",
+					Name:      "silo-volume",
 					MountPath: "/data",
 				},
 				Description: "Size of the storage for the Supabase storage service.",
@@ -1345,7 +1345,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Studio",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("supabase/studio:2026.08.24-sha-8ec45b2"),
+				Image:     new("supabase/studio:2026.09.07-sha-7996410"),
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
@@ -1449,7 +1449,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Storage",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("supabase/storage-api:v1.71.0"),
+				Image:     new("supabase/storage-api:v1.74.0"),
 				DependsOn: []string{"service_postgresql", "service_minio"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -1525,12 +1525,12 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 			},
 			{
 				ID:         "service_minio",
-				Name:       "MinIO",
+				Name:       "Silo",
 				InputIDs:   []string{"input_storage_size"},
 				Type:       schema.ServiceTypeDockerimage,
 				Builder:    schema.ServiceBuilderDocker,
-				Image:      new("minio/minio:RELEASE.2025-09-07T16-13-09Z"),
-				RunCommand: new("bash -c '/usr/bin/mc alias set supabase-minio http://localhost:9000 \"${MINIO_ROOT_USER}\" \"${MINIO_ROOT_PASSWORD}\" 2>/dev/null || true && /usr/bin/mc mb --ignore-existing supabase-minio/stub 2>/dev/null || true && exec minio server /data --console-address \":9001\"'"),
+				Image:      new("pgsty/silo:RELEASE.2026-09-16T00-00-00Z"),
+				RunCommand: new("bash -c '/usr/bin/mc alias set supabase-minio http://localhost:9000 \"${MINIO_ROOT_USER}\" \"${MINIO_ROOT_PASSWORD}\" 2>/dev/null || true && /usr/bin/mc mb --ignore-existing supabase-minio/stub 2>/dev/null || true && exec silo server /data --console-address \":9001\"'"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 50,
 				},
@@ -1698,7 +1698,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Postgres Meta",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("supabase/postgres-meta:v0.98.0"),
+				Image:     new("supabase/postgres-meta:v0.99.0"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,
@@ -1746,7 +1746,7 @@ alter function pg_catalog.lo_import(text, oid) owner to postgres;
 				Name:      "Functions",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("supabase/edge-runtime:v1.74.3"),
+				Image:     new("supabase/edge-runtime:v1.76.2"),
 				DependsOn: []string{"service_postgresql", "service_kong"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 20,

@@ -125,7 +125,7 @@ func (s *VolumeQueryTestSuite) TestGetPVCsVolumeStats_Success() {
 	s.mockAPI.On("Query", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "kubelet_volume_stats_used_bytes")
 	}), mock.AnythingOfType("time.Time")).Return(
-		usageVector, v1.Warnings{}, nil,
+		usageVector, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetPVCsVolumeStats(s.ctx, pvcNames, namespace, s.kubeClient)
@@ -163,7 +163,7 @@ func (s *VolumeQueryTestSuite) TestGetPVCsVolumeStats_PrometheusError() {
 
 	// Mock Prometheus error
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("Prometheus connection failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("Prometheus connection failed"),
 	)
 
 	result, err := s.client.GetPVCsVolumeStats(s.ctx, pvcNames, namespace, s.kubeClient)
@@ -182,7 +182,7 @@ func (s *VolumeQueryTestSuite) TestGetPVCsVolumeStats_KubernetesError() {
 
 	// Mock Prometheus query (will be called but should handle error gracefully)
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		model.Vector{}, v1.Warnings{}, nil,
+		model.Vector{}, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetPVCsVolumeStats(s.ctx, pvcNames, namespace, s.kubeClient)
@@ -203,7 +203,7 @@ func (s *VolumeQueryTestSuite) TestGetPVCsVolumeStats_PartialResults() {
 	// Mock Prometheus usage query
 	usageVector := s.createPrometheusUsageVector("test-pvc-1", 5.5)
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		usageVector, v1.Warnings{}, nil,
+		usageVector, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetPVCsVolumeStats(s.ctx, pvcNames, namespace, s.kubeClient)
@@ -225,7 +225,7 @@ func (s *VolumeQueryTestSuite) TestGetPVCsVolumeStats_NoUsageData() {
 	// Mock empty Prometheus response
 	emptyVector := model.Vector{}
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		emptyVector, v1.Warnings{}, nil,
+		emptyVector, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetPVCsVolumeStats(s.ctx, pvcNames, namespace, s.kubeClient)
@@ -266,7 +266,7 @@ func (s *VolumeQueryTestSuite) TestGetPVCsVolumeStats_CapacityFromRequests() {
 	// Mock empty Prometheus response
 	emptyVector := model.Vector{}
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		emptyVector, v1.Warnings{}, nil,
+		emptyVector, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetPVCsVolumeStats(s.ctx, pvcNames, namespace, s.kubeClient)
@@ -291,7 +291,7 @@ func (s *VolumeQueryTestSuite) TestGetVolumeStatsWithHistory_Success() {
 	s.mockAPI.On("Query", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "kubelet_volume_stats_used_bytes") && containsString(query, "last_over_time")
 	}), mock.AnythingOfType("time.Time")).Return(
-		usageVector, v1.Warnings{}, nil,
+		usageVector, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Create historical data
@@ -317,7 +317,7 @@ func (s *VolumeQueryTestSuite) TestGetVolumeStatsWithHistory_Success() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "kubelet_volume_stats_used_bytes") && containsString(query, pvcName)
 	}), mock.AnythingOfType("v1.Range")).Return(
-		historyMatrix, v1.Warnings{}, nil,
+		historyMatrix, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetVolumeStatsWithHistory(
@@ -347,13 +347,13 @@ func (s *VolumeQueryTestSuite) TestGetVolumeStatsWithHistory_StatsError() {
 	// Mock current stats query (will return empty result)
 	emptyVector := model.Vector{}
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		emptyVector, v1.Warnings{}, nil,
+		emptyVector, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Mock historical query
 	emptyMatrix := model.Matrix{}
 	s.mockAPI.On("QueryRange", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return(
-		emptyMatrix, v1.Warnings{}, nil,
+		emptyMatrix, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetVolumeStatsWithHistory(
@@ -384,12 +384,12 @@ func (s *VolumeQueryTestSuite) TestGetVolumeStatsWithHistory_HistoryError() {
 	// Mock current stats query
 	usageVector := s.createPrometheusUsageVector(pvcName, 5.5)
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		usageVector, v1.Warnings{}, nil,
+		usageVector, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Mock failed historical query
 	s.mockAPI.On("QueryRange", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("Historical query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("Historical query failed"),
 	)
 
 	result, err := s.client.GetVolumeStatsWithHistory(
@@ -419,13 +419,13 @@ func (s *VolumeQueryTestSuite) TestGetVolumeStatsWithHistory_EmptyHistory() {
 	// Mock current stats query
 	usageVector := s.createPrometheusUsageVector(pvcName, 5.5)
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		usageVector, v1.Warnings{}, nil,
+		usageVector, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Mock empty historical query
 	emptyMatrix := model.Matrix{}
 	s.mockAPI.On("QueryRange", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return(
-		emptyMatrix, v1.Warnings{}, nil,
+		emptyMatrix, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetVolumeStatsWithHistory(
@@ -454,7 +454,7 @@ func (s *VolumeQueryTestSuite) TestGetPrometheusUsageStats_UnexpectedResultType(
 	}
 
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		scalar, v1.Warnings{}, nil,
+		scalar, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.getPrometheusUsageStats(s.ctx, pvcNames)
@@ -486,7 +486,7 @@ func (s *VolumeQueryTestSuite) TestGetPrometheusUsageStats_FilterTargetPVCs() {
 	}
 
 	s.mockAPI.On("Query", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("time.Time")).Return(
-		usageVector, v1.Warnings{}, nil,
+		usageVector, v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.getPrometheusUsageStats(s.ctx, pvcNames)

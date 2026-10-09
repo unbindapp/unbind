@@ -87,25 +87,25 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_Success() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_cpu_usage_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_memory_working_set_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_network_receive_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "kubelet_volume_stats_used_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	result, err := s.client.GetResourceMetrics(
@@ -133,7 +133,7 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_CPUQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_cpu_usage_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("CPU query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("CPU query failed"),
 	)
 
 	result, err := s.client.GetResourceMetrics(
@@ -156,13 +156,13 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_RAMQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_cpu_usage_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_memory_working_set_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("RAM query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("RAM query failed"),
 	)
 
 	result, err := s.client.GetResourceMetrics(
@@ -186,20 +186,20 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_NetworkQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_cpu_usage_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_memory_working_set_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Mock failed network query
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_network_receive_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("Network query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("Network query failed"),
 	)
 
 	result, err := s.client.GetResourceMetrics(
@@ -223,26 +223,26 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_DiskQueryError() {
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_cpu_usage_seconds_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_memory_working_set_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "container_network_receive_bytes_total")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	)
 
 	// Mock failed disk query
 	s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 		return containsString(query, "kubelet_volume_stats_used_bytes")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		nil, v1.Warnings{}, fmt.Errorf("Disk query failed"),
+		nil, v1.Warnings{}, v1.Infos{}, fmt.Errorf("Disk query failed"),
 	)
 
 	result, err := s.client.GetResourceMetrics(
@@ -264,7 +264,7 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_EmptyResults() {
 	emptyMatrix := model.Matrix{}
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return(
-		emptyMatrix, v1.Warnings{}, nil,
+		emptyMatrix, v1.Warnings{}, v1.Infos{}, nil,
 	).Times(4)
 
 	result, err := s.client.GetResourceMetrics(
@@ -305,7 +305,7 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_MultipleServices() {
 	}
 
 	s.mockAPI.On("QueryRange", s.ctx, mock.AnythingOfType("string"), mock.AnythingOfType("v1.Range")).Return(
-		multiServiceMatrix, v1.Warnings{}, nil,
+		multiServiceMatrix, v1.Warnings{}, v1.Infos{}, nil,
 	).Times(4)
 
 	result, err := s.client.GetResourceMetrics(
@@ -365,7 +365,7 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_DifferentSumByOptions() {
 			s.mockAPI.On("QueryRange", s.ctx, mock.MatchedBy(func(query string) bool {
 				return containsString(query, fmt.Sprintf("sum by (%s)", tc.expectedLabel))
 			}), mock.AnythingOfType("v1.Range")).Return(
-				testMatrix, v1.Warnings{}, nil,
+				testMatrix, v1.Warnings{}, v1.Infos{}, nil,
 			).Times(4)
 
 			result, err := s.client.GetResourceMetrics(
@@ -400,7 +400,7 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_TimeAlignment() {
 
 		return r.Start.Equal(expectedStart) && r.End.Equal(expectedEnd) && r.Step == step
 	})).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	).Times(4)
 
 	result, err := s.client.GetResourceMetrics(
@@ -423,7 +423,7 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_NilFilter() {
 		// Should not contain label selector filters when filter is nil (kube_pod_labels, not kube_pod_labels{...})
 		return containsString(query, "kube_pod_labels") && !containsString(query, "kube_pod_labels{")
 	}), mock.AnythingOfType("v1.Range")).Return(
-		s.createSampleMatrix("test-service", samples), v1.Warnings{}, nil,
+		s.createSampleMatrix("test-service", samples), v1.Warnings{}, v1.Infos{}, nil,
 	).Times(4)
 
 	result, err := s.client.GetResourceMetrics(
@@ -556,7 +556,7 @@ func (s *MetricsQueryTestSuite) TestGetResourceMetrics_QueryDefinitions() {
 				return
 			}
 		}
-	}).Return(model.Matrix{}, v1.Warnings{}, nil).Times(len(metricNames))
+	}).Return(model.Matrix{}, v1.Warnings{}, v1.Infos{}, nil).Times(len(metricNames))
 
 	_, err := s.client.GetResourceMetrics(
 		s.ctx,

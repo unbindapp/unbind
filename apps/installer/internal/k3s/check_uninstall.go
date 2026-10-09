@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/unbindapp/unbind-installer/internal/cloudinfo"
 	"github.com/unbindapp/unbind-installer/internal/errdefs"
 )
 
@@ -78,7 +79,6 @@ func RunCommand(logChan chan<- string, command string, args ...string) error {
 
 // Uninstall executes the K3s uninstall script.
 func Uninstall(uninstallScriptPath string, logChan chan<- string) error {
-	var err error
 	if os.Geteuid() != 0 {
 		return errdefs.ErrNotRoot // Ensure we run as root
 	}
@@ -86,11 +86,128 @@ func Uninstall(uninstallScriptPath string, logChan chan<- string) error {
 		return fmt.Errorf("k3s uninstall script not found at %s", uninstallScriptPath)
 	}
 
-	// Longhorn uninstall process
-	nbSend(logChan, "Starting Longhorn uninstall process...")
-
-	// Set KUBECONFIG for kubectl commands
 	os.Setenv("KUBECONFIG", "/etc/rancher/k3s/k3s.yaml")
+	cleanupStorage(logChan)
+
+	// Now proceed with K3s uninstall
+	nbSend(logChan, fmt.Sprintf("Executing K3s uninstall script: %s", uninstallScriptPath))
+
+	cmd := exec.Command(uninstallScriptPath)
+	var stdOut, stdErr bytes.Buffer
+	cmd.Stdout = &stdOut
+	cmd.Stderr = &stdErr
+
+	err := cmd.Run()
+
+	// Log output even if there's an error
+	if stdOut.Len() > 0 {
+		nbSend(logChan, "Uninstall script stdout:")
+		nbSend(logChan, stdOut.String())
+	}
+	if stdErr.Len() > 0 {
+		nbSend(logChan, "Uninstall script stderr:")
+		nbSend(logChan, stdErr.String())
+	}
+
+	if err != nil {
+		nbSend(logChan, fmt.Sprintf("Error running K3s uninstall script: %v", err))
+		return errdefs.NewCustomError(errdefs.ErrTypeK3sUninstallFailed, fmt.Sprintf("failed to run K3s uninstall script %s: %v\nStderr: %s", uninstallScriptPath, err, stdErr.String()))
+	}
+
+	nbSend(logChan, "K3s uninstall script executed successfully.")
+
+	// --- Clean up IPTables ---
+	nbSend(logChan, "Attempting to flush iptables rules and delete chains...")
+	iptablesCleanupSuccess := true // Track if cleanup succeeds
+
+	// Commands to run
+	iptablesCommands := [][]string{
+		{"iptables", "-F"},                 // Flush all rules in filter table
+		{"iptables", "-t", "nat", "-F"},    // Flush all rules in nat table
+		{"iptables", "-t", "mangle", "-F"}, // Flush all rules in mangle table
+		{"iptables", "-X"},                 // Delete all non-default chains
+	}
+
+	for _, cmdArgs := range iptablesCommands {
+		err := RunCommand(logChan, cmdArgs[0], cmdArgs[1:]...)
+		if err != nil {
+			// Log the error but continue trying other cleanup commands
+			nbSend(logChan, fmt.Sprintf("Warning: Failed iptables cleanup command '%s': %v", strings.Join(cmdArgs, " "), err))
+			iptablesCleanupSuccess = false // Mark cleanup as potentially incomplete
+		}
+	}
+
+	if iptablesCleanupSuccess {
+		nbSend(logChan, "iptables cleanup commands executed.")
+	} else {
+		nbSend(logChan, "Warning: One or more iptables cleanup commands failed. Manual inspection might be needed.")
+	}
+
+	nbSend(logChan, "K3s uninstall process finished.")
+	return nil
+}
+
+const longhornUninstallManifest = "https://raw.githubusercontent.com/longhorn/longhorn/v" + LonghornVersion + "/uninstall/uninstall.yaml"
+
+var systemNamespaces = map[string]bool{"kube-system": true, "kube-public": true, "kube-node-lease": true, "default": true}
+
+// cleanupStorage removes whatever the installer set up for volumes before k3s goes away:
+// Longhorn needs its own uninstall job and host cleanup, cloud volumes have to be deleted
+// through the CSI driver while it still runs or they keep billing after the server is gone.
+func cleanupStorage(logChan chan<- string) {
+	switch {
+	case exec.Command("kubectl", "get", "namespace", "longhorn-system").Run() == nil:
+		uninstallLonghorn(logChan)
+	case exec.Command("kubectl", "get", "csidriver", cloudinfo.Hetzner.Spec().Provisioner).Run() == nil:
+		releaseCloudVolumes(logChan, cloudinfo.Hetzner.Spec())
+	case exec.Command("kubectl", "get", "csidriver", cloudinfo.DigitalOcean.Spec().Provisioner).Run() == nil:
+		releaseCloudVolumes(logChan, cloudinfo.DigitalOcean.Spec())
+	default:
+		nbSend(logChan, "No storage system found, skipping storage cleanup")
+	}
+}
+
+// Unbind keeps PVs on Retain so volumes survive rebinds; flip them to Delete so the driver
+// removes the cloud volumes once their claims and pods are gone.
+func releaseCloudVolumes(logChan chan<- string, spec cloudinfo.Spec) {
+	nbSend(logChan, "Deleting "+spec.VolumeName+" through the CSI driver...")
+
+	if err := RunCommand(logChan, "sh", "-c", `kubectl get pv -o name | xargs -r -n1 kubectl patch -p '{"spec":{"persistentVolumeReclaimPolicy":"Delete"}}'`); err != nil {
+		nbSend(logChan, "Warning: Failed to set volumes to Delete, continuing anyway")
+	}
+
+	output, err := exec.Command("kubectl", "get", "namespaces", "-o", "jsonpath={.items[*].metadata.name}").Output()
+	if err != nil {
+		nbSend(logChan, "Warning: Could not list namespaces, continuing anyway")
+	}
+	for _, namespace := range strings.Fields(string(output)) {
+		if systemNamespaces[namespace] {
+			continue
+		}
+		if err := RunCommand(logChan, "kubectl", "delete", "namespace", namespace, "--wait=false"); err != nil {
+			nbSend(logChan, fmt.Sprintf("Warning: Failed to delete namespace %s, continuing anyway", namespace))
+		}
+	}
+	if err := RunCommand(logChan, "kubectl", "delete", "pvc", "--all", "--all-namespaces", "--wait=false"); err != nil {
+		nbSend(logChan, "Warning: Failed to delete volume claims, continuing anyway")
+	}
+
+	deadline := time.Now().Add(5 * time.Minute)
+	for time.Now().Before(deadline) {
+		remaining, _ := exec.Command("kubectl", "get", "pv", "-o", "jsonpath={.items[*].metadata.name}").Output()
+		if strings.TrimSpace(string(remaining)) == "" {
+			nbSend(logChan, "All "+spec.VolumeName+" deleted")
+			return
+		}
+		time.Sleep(5 * time.Second)
+	}
+	remaining, _ := exec.Command("kubectl", "get", "pv", "-o", "jsonpath={.items[*].metadata.name}").Output()
+	nbSend(logChan, fmt.Sprintf("Warning: these volumes were not deleted in time, remove them in the %s console: %s", spec.DisplayName, strings.TrimSpace(string(remaining))))
+}
+
+func uninstallLonghorn(logChan chan<- string) {
+	var err error
+	nbSend(logChan, "Starting Longhorn uninstall process...")
 
 	// Set flag to allow uninstall
 	err = RunCommand(logChan, "kubectl", "patch", "-n", "longhorn-system", "settings.longhorn.io", "deleting-confirmation-flag", "-p", `{"value":"true"}`, "--type=merge")
@@ -99,7 +216,7 @@ func Uninstall(uninstallScriptPath string, logChan chan<- string) error {
 	}
 
 	// Create Longhorn uninstall job
-	err = RunCommand(logChan, "kubectl", "create", "-f", "https://raw.githubusercontent.com/longhorn/longhorn/v1.12.1/uninstall/uninstall.yaml")
+	err = RunCommand(logChan, "kubectl", "create", "-f", longhornUninstallManifest)
 	if err != nil {
 		nbSend(logChan, "Warning: Failed to create Longhorn uninstall job, continuing anyway")
 	}
@@ -190,61 +307,4 @@ cleanup:
 	}
 
 	nbSend(logChan, "Longhorn cleanup completed, proceeding with K3s uninstall...")
-
-	// Now proceed with K3s uninstall
-	nbSend(logChan, fmt.Sprintf("Executing K3s uninstall script: %s", uninstallScriptPath))
-
-	cmd = exec.Command(uninstallScriptPath)
-	var stdOut, stdErr bytes.Buffer
-	cmd.Stdout = &stdOut
-	cmd.Stderr = &stdErr
-
-	err = cmd.Run()
-
-	// Log output even if there's an error
-	if stdOut.Len() > 0 {
-		nbSend(logChan, "Uninstall script stdout:")
-		nbSend(logChan, stdOut.String())
-	}
-	if stdErr.Len() > 0 {
-		nbSend(logChan, "Uninstall script stderr:")
-		nbSend(logChan, stdErr.String())
-	}
-
-	if err != nil {
-		nbSend(logChan, fmt.Sprintf("Error running K3s uninstall script: %v", err))
-		return errdefs.NewCustomError(errdefs.ErrTypeK3sUninstallFailed, fmt.Sprintf("failed to run K3s uninstall script %s: %v\nStderr: %s", uninstallScriptPath, err, stdErr.String()))
-	}
-
-	nbSend(logChan, "K3s uninstall script executed successfully.")
-
-	// --- Clean up IPTables ---
-	nbSend(logChan, "Attempting to flush iptables rules and delete chains...")
-	iptablesCleanupSuccess := true // Track if cleanup succeeds
-
-	// Commands to run
-	iptablesCommands := [][]string{
-		{"iptables", "-F"},                 // Flush all rules in filter table
-		{"iptables", "-t", "nat", "-F"},    // Flush all rules in nat table
-		{"iptables", "-t", "mangle", "-F"}, // Flush all rules in mangle table
-		{"iptables", "-X"},                 // Delete all non-default chains
-	}
-
-	for _, cmdArgs := range iptablesCommands {
-		err := RunCommand(logChan, cmdArgs[0], cmdArgs[1:]...)
-		if err != nil {
-			// Log the error but continue trying other cleanup commands
-			nbSend(logChan, fmt.Sprintf("Warning: Failed iptables cleanup command '%s': %v", strings.Join(cmdArgs, " "), err))
-			iptablesCleanupSuccess = false // Mark cleanup as potentially incomplete
-		}
-	}
-
-	if iptablesCleanupSuccess {
-		nbSend(logChan, "iptables cleanup commands executed.")
-	} else {
-		nbSend(logChan, "Warning: One or more iptables cleanup commands failed. Manual inspection might be needed.")
-	}
-
-	nbSend(logChan, "K3s uninstall process finished.")
-	return nil
 }

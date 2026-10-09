@@ -21,7 +21,7 @@ jobs:
       version: ${{ steps.v.outputs.version }}
       summary: ${{ steps.summary.outputs.summary }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: master
           fetch-depth: 0
@@ -108,7 +108,7 @@ jobs:
     env:
       VERSION: ${{ needs.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build app artifacts
         id: artifacts
@@ -118,15 +118,15 @@ jobs:
           version: ${{ env.VERSION }}
           build_image: ghcr.io/unbindapp/unbind-builder:${{ env.VERSION }}
 
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: App image (SPA + API)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
@@ -138,7 +138,7 @@ jobs:
           tags: ghcr.io/unbindapp/unbind:${{ env.VERSION }}-${{ matrix.arch }}
 
       - name: Builder image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile.builder
@@ -153,7 +153,7 @@ jobs:
           arch: ${{ matrix.arch }}
 
       - name: Operator image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./apps/operator/Dockerfile
@@ -169,7 +169,7 @@ jobs:
     env:
       VERSION: ${{ needs.version.outputs.version }}
     steps:
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -198,8 +198,8 @@ jobs:
       run:
         working-directory: ./apps/installer
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version-file: ./apps/installer/go.mod
           cache-dependency-path: ./apps/installer/go.sum
@@ -212,7 +212,7 @@ jobs:
             gzip -9 -f "unbind-installer-$ARCH"
             sha256sum "unbind-installer-$ARCH.gz" > "unbind-installer-$ARCH.gz.sha256"
           done
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: installer-binaries
           path: |
@@ -227,11 +227,11 @@ jobs:
       VERSION: ${{ needs.version.outputs.version }}
       SUMMARY: ${{ needs.version.outputs.summary }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: installer-binaries
           path: dist
@@ -273,7 +273,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.VERSION }}
           name: Unbind ${{ env.VERSION }}

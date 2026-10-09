@@ -50,7 +50,7 @@ func (_m *PromAPIInterfaceMock) EXPECT() *PromAPIInterfaceMock_Expecter {
 }
 
 // Query provides a mock function for the type PromAPIInterfaceMock
-func (_mock *PromAPIInterfaceMock) Query(ctx context.Context, query string, ts time.Time, opts ...v1.Option) (model.Value, v1.Warnings, error) {
+func (_mock *PromAPIInterfaceMock) Query(ctx context.Context, query string, ts time.Time, opts ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error) {
 	// v1.Option
 	_va := make([]any, len(opts))
 	for _i := range opts {
@@ -67,8 +67,9 @@ func (_mock *PromAPIInterfaceMock) Query(ctx context.Context, query string, ts t
 
 	var r0 model.Value
 	var r1 v1.Warnings
-	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time, ...v1.Option) (model.Value, v1.Warnings, error)); ok {
+	var r2 v1.Infos
+	var r3 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time, ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error)); ok {
 		return returnFunc(ctx, query, ts, opts...)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, time.Time, ...v1.Option) model.Value); ok {
@@ -85,12 +86,19 @@ func (_mock *PromAPIInterfaceMock) Query(ctx context.Context, query string, ts t
 			r1 = ret.Get(1).(v1.Warnings)
 		}
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, string, time.Time, ...v1.Option) error); ok {
+	if returnFunc, ok := ret.Get(2).(func(context.Context, string, time.Time, ...v1.Option) v1.Infos); ok {
 		r2 = returnFunc(ctx, query, ts, opts...)
 	} else {
-		r2 = ret.Error(2)
+		if ret.Get(2) != nil {
+			r2 = ret.Get(2).(v1.Infos)
+		}
 	}
-	return r0, r1, r2
+	if returnFunc, ok := ret.Get(3).(func(context.Context, string, time.Time, ...v1.Option) error); ok {
+		r3 = returnFunc(ctx, query, ts, opts...)
+	} else {
+		r3 = ret.Error(3)
+	}
+	return r0, r1, r2, r3
 }
 
 // PromAPIInterfaceMock_Query_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Query'
@@ -140,18 +148,18 @@ func (_c *PromAPIInterfaceMock_Query_Call) Run(run func(ctx context.Context, que
 	return _c
 }
 
-func (_c *PromAPIInterfaceMock_Query_Call) Return(value model.Value, warnings v1.Warnings, err error) *PromAPIInterfaceMock_Query_Call {
-	_c.Call.Return(value, warnings, err)
+func (_c *PromAPIInterfaceMock_Query_Call) Return(value model.Value, warnings v1.Warnings, infos v1.Infos, err error) *PromAPIInterfaceMock_Query_Call {
+	_c.Call.Return(value, warnings, infos, err)
 	return _c
 }
 
-func (_c *PromAPIInterfaceMock_Query_Call) RunAndReturn(run func(ctx context.Context, query string, ts time.Time, opts ...v1.Option) (model.Value, v1.Warnings, error)) *PromAPIInterfaceMock_Query_Call {
+func (_c *PromAPIInterfaceMock_Query_Call) RunAndReturn(run func(ctx context.Context, query string, ts time.Time, opts ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error)) *PromAPIInterfaceMock_Query_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // QueryRange provides a mock function for the type PromAPIInterfaceMock
-func (_mock *PromAPIInterfaceMock) QueryRange(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, error) {
+func (_mock *PromAPIInterfaceMock) QueryRange(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error) {
 	// v1.Option
 	_va := make([]any, len(opts))
 	for _i := range opts {
@@ -168,8 +176,9 @@ func (_mock *PromAPIInterfaceMock) QueryRange(ctx context.Context, query string,
 
 	var r0 model.Value
 	var r1 v1.Warnings
-	var r2 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, v1.Range, ...v1.Option) (model.Value, v1.Warnings, error)); ok {
+	var r2 v1.Infos
+	var r3 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, v1.Range, ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error)); ok {
 		return returnFunc(ctx, query, r, opts...)
 	}
 	if returnFunc, ok := ret.Get(0).(func(context.Context, string, v1.Range, ...v1.Option) model.Value); ok {
@@ -186,12 +195,19 @@ func (_mock *PromAPIInterfaceMock) QueryRange(ctx context.Context, query string,
 			r1 = ret.Get(1).(v1.Warnings)
 		}
 	}
-	if returnFunc, ok := ret.Get(2).(func(context.Context, string, v1.Range, ...v1.Option) error); ok {
+	if returnFunc, ok := ret.Get(2).(func(context.Context, string, v1.Range, ...v1.Option) v1.Infos); ok {
 		r2 = returnFunc(ctx, query, r, opts...)
 	} else {
-		r2 = ret.Error(2)
+		if ret.Get(2) != nil {
+			r2 = ret.Get(2).(v1.Infos)
+		}
 	}
-	return r0, r1, r2
+	if returnFunc, ok := ret.Get(3).(func(context.Context, string, v1.Range, ...v1.Option) error); ok {
+		r3 = returnFunc(ctx, query, r, opts...)
+	} else {
+		r3 = ret.Error(3)
+	}
+	return r0, r1, r2, r3
 }
 
 // PromAPIInterfaceMock_QueryRange_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'QueryRange'
@@ -241,12 +257,12 @@ func (_c *PromAPIInterfaceMock_QueryRange_Call) Run(run func(ctx context.Context
 	return _c
 }
 
-func (_c *PromAPIInterfaceMock_QueryRange_Call) Return(value model.Value, warnings v1.Warnings, err error) *PromAPIInterfaceMock_QueryRange_Call {
-	_c.Call.Return(value, warnings, err)
+func (_c *PromAPIInterfaceMock_QueryRange_Call) Return(value model.Value, warnings v1.Warnings, infos v1.Infos, err error) *PromAPIInterfaceMock_QueryRange_Call {
+	_c.Call.Return(value, warnings, infos, err)
 	return _c
 }
 
-func (_c *PromAPIInterfaceMock_QueryRange_Call) RunAndReturn(run func(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, error)) *PromAPIInterfaceMock_QueryRange_Call {
+func (_c *PromAPIInterfaceMock_QueryRange_Call) RunAndReturn(run func(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error)) *PromAPIInterfaceMock_QueryRange_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -13,7 +13,7 @@ func n8nTemplate() *schema.TemplateDefinition {
 		Icon:        "n8n",
 		Keywords:    []string{"workflow", "automation", "n8n", "queue", "low code", "low-code", "no code", "no-code", "chatbot", "ai", "llm"},
 		Description: "Powerful AI workflow automation tools.",
-		Version:     2,
+		Version:     4,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   1,
 			MinimumRecommendedRAMGB: 1.5,
@@ -65,7 +65,7 @@ func n8nTemplate() *schema.TemplateDefinition {
 				Name:       "n8n Worker",
 				Type:       schema.ServiceTypeDockerimage,
 				Builder:    schema.ServiceBuilderDocker,
-				Image:      new("n8nio/n8n:2.37.1"),
+				Image:      new("n8nio/n8n:2.42.6"),
 				RunCommand: new("n8n worker"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
@@ -88,6 +88,15 @@ func n8nTemplate() *schema.TemplateDefinition {
 					HealthFailureThreshold:  new(int32(5)),
 				},
 				Variables: []schema.TemplateVariable{
+					// n8n 2.42 listens on :: by default, which fails on IPv4-only nodes
+					{
+						Name:  "N8N_LISTEN_ADDRESS",
+						Value: "0.0.0.0",
+					},
+					{
+						Name:  "N8N_WORKER_SERVER_ADDRESS",
+						Value: "0.0.0.0",
+					},
 					// Queue mode for worker
 					{
 						Name:  "EXECUTIONS_MODE",
@@ -177,7 +186,7 @@ func n8nTemplate() *schema.TemplateDefinition {
 				Name:      "n8n",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("n8nio/n8n:2.37.1"),
+				Image:     new("n8nio/n8n:2.42.6"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
 				},
@@ -235,6 +244,10 @@ func n8nTemplate() *schema.TemplateDefinition {
 					{
 						Name:  "N8N_PORT",
 						Value: "5678",
+					},
+					{
+						Name:  "N8N_LISTEN_ADDRESS",
+						Value: "0.0.0.0",
 					},
 					{
 						Name: "N8N_ENCRYPTION_KEY",

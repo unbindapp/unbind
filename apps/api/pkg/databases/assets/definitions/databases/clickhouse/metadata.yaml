@@ -27,8 +27,8 @@ schema:
     version:
       type: "string"
       description: "ClickHouse version"
-      default: "26.3"
-      enum: ["24.12", "25.5", "26.3", "26.5", "26.7"]
+      default: "26.8"
+      enum: ["24.12", "25.5", "26.3", "26.5", "26.7", "26.8", "26.9"]
     shardsCount:
       type: "integer"
       description: "Number of shards"

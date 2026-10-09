@@ -1,5 +1,5 @@
 replicaCount: 1
-image: moby/buildkit:v0.32.2-rootless
+image: moby/buildkit:v0.34.0-rootless
 maxParallelism: 2
 # Build cache bounds, percentages are of the disk holding the cache
 gc:

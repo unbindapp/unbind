@@ -3,7 +3,7 @@ description: "Standard MongoDB database using CloudPirates MongoDB chart"
 type: "helm"
 chart:
   name: "mongodb"
-  version: "0.18.11"
+  version: "0.20.0"
   repository: "oci://registry-1.docker.io/cloudpirates"
   repositoryName: "mongodb"
 version: "1.0.0"
@@ -26,8 +26,8 @@ schema:
     version:
       type: "string"
       description: "MongoDB version"
-      default: "8.3"
-      enum: ["7.0", "8.0", "8.2", "8.3"]
+      default: "9.0"
+      enum: ["7.0", "8.0", "8.2", "8.3", "9.0"]
     exposeExternal:
       type: "boolean"
       description: "Expose external service"

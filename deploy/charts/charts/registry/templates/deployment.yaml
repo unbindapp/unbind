@@ -24,7 +24,7 @@ spec:
         fsGroup: 0
       containers:
         - name: registry
-          image: registry:3.1.1
+          image: registry:3.1.2
           ports:
             - containerPort: 5000
           volumeMounts:

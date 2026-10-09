@@ -13,7 +13,7 @@ func teableTemplate() *schema.TemplateDefinition {
 		Icon:        "teable",
 		Keywords:    []string{"airtable", "teable", "no-code", "database", "visual", "interface", "relational", "sql", "postgresql"},
 		Description: "The next-gen Airtable alternative.",
-		Version:     3,
+		Version:     4,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   2,
 			MinimumRecommendedRAMGB: 3,
@@ -76,7 +76,7 @@ func teableTemplate() *schema.TemplateDefinition {
 				InputIDs:  []string{"input_domain", "input_teable_size"},
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("ghcr.io/teableio/teable:release.2026-08-25T14-19-49Z.2796"),
+				Image:     new("ghcr.io/teableio/teable:release.2026-10-02T04-02-20Z.3278"),
 				DependsOn: []string{"service_postgres", "service_redis"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,

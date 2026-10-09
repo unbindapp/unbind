@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/unbindapp/unbind-installer/internal/cloudinfo"
 	"github.com/unbindapp/unbind-installer/internal/k3s"
 )
 
@@ -87,6 +88,88 @@ __KUBELET_CONFIG__
 KUBELETEOF
 }
 
+# Unbind keeps volumes on Retain so they survive rebinds. Cloud volumes have to be flipped
+# to Delete and released while the CSI driver still runs, or they keep billing afterwards.
+release_cloud_volumes() {
+    local driver="$1"
+    echo -e "${YELLOW}Deleting cloud volumes through the ${driver} driver...${NC}"
+    kubectl get pv -o name | xargs -r -n1 kubectl patch -p '{"spec":{"persistentVolumeReclaimPolicy":"Delete"}}' || true
+    for ns in $(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'); do
+        case "$ns" in
+            kube-system|kube-public|kube-node-lease|default) ;;
+            *) kubectl delete namespace "$ns" --wait=false || true ;;
+        esac
+    done
+    kubectl delete pvc --all --all-namespaces --wait=false || true
+
+    timeout=300
+    while [ $timeout -gt 0 ]; do
+        if [ -z "$(kubectl get pv -o jsonpath='{.items[*].metadata.name}')" ]; then
+            echo "All cloud volumes deleted"
+            return 0
+        fi
+        sleep 5
+        timeout=$((timeout - 5))
+    done
+    echo -e "${YELLOW}Warning: these volumes were not deleted in time, remove them in your provider's console:${NC}"
+    kubectl get pv -o jsonpath='{.items[*].metadata.name}'
+    echo ""
+}
+
+uninstall_longhorn() {
+    kubectl -n longhorn-system patch settings.longhorn.io deleting-confirmation-flag -p '{"value":"true"}' --type=merge || true
+    kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/v__LONGHORN_VERSION__/uninstall/uninstall.yaml || true
+
+    # Wait for uninstall job with timeout
+    timeout=300
+    while [ $timeout -gt 0 ]; do
+        if kubectl -n longhorn-system get job longhorn-uninstall -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' | grep -q "True"; then
+            echo "Longhorn uninstall job completed successfully"
+            break
+        fi
+        sleep 5
+        timeout=$((timeout - 5))
+    done
+    if [ $timeout -le 0 ]; then
+        echo "Warning: Longhorn uninstall job timed out, continuing anyway"
+    fi
+}
+
+# Leftovers the k3s uninstall script ignores; a no-op when Longhorn was never installed
+cleanup_longhorn_host() {
+    # Remove longhorn
+    # 1. Log out of any leftover iSCSI sessions Longhorn created
+    iscsiadm -m session | grep 'io.longhorn' | awk '{print $2}' | sed 's/\[\([0-9]*\)\]/\1/' | xargs -r -I{} iscsiadm -m session -u -r {}
+    iscsiadm -m node --targetname iqn.*.longhorn* -o delete || true
+
+    # 2. Remove any device-mapper entries that still reference Longhorn
+    for dev in $(sudo dmsetup ls 2>/dev/null | grep longhorn | awk '{print $1}'); do
+        dmsetup remove "$dev" || true
+    done
+
+    # 3. Unmount and delete mountpoints that the k3s uninstall script ignored
+    umount $(mount | grep longhorn | awk '{print $3}') 2>/dev/null || true
+
+    # 4. Blow away the on-disk data and plugin sockets
+    rm -rf /var/lib/longhorn \
+                /var/lib/rancher/longhorn \
+                /var/lib/kubelet/plugins/driver.longhorn.io \
+                /var/lib/kubelet/plugins/kubernetes.io/csi/driver.longhorn.io \
+                /dev/longhorn 2>/dev/null || true
+}
+
+cleanup_storage() {
+    if kubectl get namespace longhorn-system >/dev/null 2>&1; then
+        uninstall_longhorn
+    elif kubectl get csidriver __HETZNER_PROVISIONER__ >/dev/null 2>&1; then
+        release_cloud_volumes __HETZNER_PROVISIONER__
+    elif kubectl get csidriver __DIGITALOCEAN_PROVISIONER__ >/dev/null 2>&1; then
+        release_cloud_volumes __DIGITALOCEAN_PROVISIONER__
+    else
+        echo "No storage system found, skipping storage cleanup"
+    fi
+}
+
 # Function to handle uninstallation
 handle_uninstall() {
     check_installation
@@ -102,43 +185,9 @@ handle_uninstall() {
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo -e "${YELLOW}Uninstalling Unbind...${NC}"
         export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-        kubectl -n longhorn-system patch settings.longhorn.io deleting-confirmation-flag -p '{"value":"true"}' --type=merge || true
-        kubectl create -f https://raw.githubusercontent.com/longhorn/longhorn/v1.12.1/uninstall/uninstall.yaml || true
-
-        # Wait for uninstall job with timeout
-        timeout=300
-        while [ $timeout -gt 0 ]; do
-            if kubectl -n longhorn-system get job longhorn-uninstall -o jsonpath='{.status.conditions[?(@.type=="Complete")].status}' | grep -q "True"; then
-                echo "Longhorn uninstall job completed successfully"
-                break
-            fi
-            sleep 5
-            timeout=$((timeout - 5))
-        done
-        if [ $timeout -le 0 ]; then
-            echo "Warning: Longhorn uninstall job timed out, continuing anyway"
-        fi
-
+        cleanup_storage
         /usr/local/bin/k3s-uninstall.sh
-        # Remove longhorn
-        # 1. Log out of any leftover iSCSI sessions Longhorn created
-        iscsiadm -m session | grep 'io.longhorn' | awk '{print $2}' | sed 's/\[\([0-9]*\)\]/\1/' | xargs -r -I{} iscsiadm -m session -u -r {}
-        iscsiadm -m node --targetname iqn.*.longhorn* -o delete || true
-
-        # 2. Remove any device-mapper entries that still reference Longhorn
-        for dev in $(sudo dmsetup ls 2>/dev/null | grep longhorn | awk '{print $1}'); do
-            dmsetup remove "$dev" || true
-        done
-
-        # 3. Unmount and delete mountpoints that the k3s uninstall script ignored
-        umount $(mount | grep longhorn | awk '{print $3}') 2>/dev/null || true
-
-        # 4. Blow away the on-disk data and plugin sockets
-        rm -rf /var/lib/longhorn \
-                    /var/lib/rancher/longhorn \
-                    /var/lib/kubelet/plugins/driver.longhorn.io \
-                    /var/lib/kubelet/plugins/kubernetes.io/csi/driver.longhorn.io \
-                    /dev/longhorn 2>/dev/null || true
+        cleanup_longhorn_host
         print_banner
         print_box "Unbind has been uninstalled successfully." "$GREEN"
     else
@@ -211,6 +260,7 @@ handle_add_node() {
         step=$((step + 1))
     fi
 
+    if kubectl get namespace longhorn-system >/dev/null 2>&1; then
     echo -e "${BOLD}${step}. Keep multipathd off Longhorn devices:${NC}"
     echo ""
     echo -e "${CYAN}sudo bash <<'MPEOF'"
@@ -236,6 +286,7 @@ MPSCRIPT
     echo -e "MPEOF${NC}"
     echo ""
     step=$((step + 1))
+    fi
 
     echo -e "${BOLD}${step}. Configure the kubelet:${NC}"
     echo ""
@@ -257,6 +308,11 @@ MPSCRIPT
 
     echo ""
     echo -e "${YELLOW}Note:${NC} Make sure the new server can reach this server on port 6443"
+    if kubectl get csidriver __HETZNER_PROVISIONER__ >/dev/null 2>&1; then
+        echo -e "${YELLOW}Note:${NC} Volumes are Hetzner Cloud Volumes: the new server must be a Hetzner Cloud server in the same project and location"
+    elif kubectl get csidriver __DIGITALOCEAN_PROVISIONER__ >/dev/null 2>&1; then
+        echo -e "${YELLOW}Note:${NC} Volumes are DigitalOcean Volumes: the new server must be a droplet in the same team and region"
+    fi
     echo -e "${YELLOW}Note:${NC} Rerun steps $((step - 1)) and ${step} on a node that already joined to bring its kubelet settings up to date"
 }
 
@@ -332,6 +388,9 @@ func renderManagementScript() string {
 		"__KUBELET_CONFIG__", strings.TrimRight(k3s.KubeletConfig, "\n"),
 		"__KUBELET_ARGS__", k3s.KubeletArgs,
 		"__SERVER_FLAGS__", k3s.ServerInstallFlags,
+		"__LONGHORN_VERSION__", k3s.LonghornVersion,
+		"__HETZNER_PROVISIONER__", cloudinfo.Hetzner.Spec().Provisioner,
+		"__DIGITALOCEAN_PROVISIONER__", cloudinfo.DigitalOcean.Spec().Provisioner,
 	).Replace(managementScriptTemplate)
 }
 

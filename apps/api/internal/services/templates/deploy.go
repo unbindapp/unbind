@@ -282,12 +282,19 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					return err
 				}
 
-				// Nuke whatever they tell us for ports
+				// Nuke whatever they tell us for ports. The primary protocol comes first, so
+				// the unsuffixed endpoint keys name it.
 				templateService.Ports = []schema.PortSpec{
 					{
 						Port:     int32(dbDefinition.Port),
 						Protocol: utils.ToPtr(schema.ProtocolTCP),
 					},
+				}
+				if dbDefinition.HTTPPort > 0 {
+					templateService.Ports = append(templateService.Ports, schema.PortSpec{
+						Port:     int32(dbDefinition.HTTPPort),
+						Protocol: utils.ToPtr(schema.ProtocolTCP),
+					})
 				}
 
 				versionProperty, ok := dbDefinition.Schema.Properties["version"]

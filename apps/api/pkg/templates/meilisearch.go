@@ -13,7 +13,7 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 		Icon:        "meilisearch",
 		Keywords:    []string{"full text search", "elasticsearch", "search engine", "ram"},
 		Description: "Fast & open source search engine.",
-		Version:     2,
+		Version:     3,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   0.5,
 			MinimumRecommendedRAMGB: 0.5,
@@ -47,7 +47,7 @@ func meiliSearchTemplate() *schema.TemplateDefinition {
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
 				InputIDs: []string{"input_domain", "input_storage_size"},
-				Image:    new("getmeili/meilisearch:v1.53.1"),
+				Image:    new("getmeili/meilisearch:v1.54.3"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,
 				},

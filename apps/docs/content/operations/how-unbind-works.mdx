@@ -33,18 +33,18 @@ Unbind is a layer on top of [Kubernetes](https://kubernetes.io). The UI talks ab
 
 Everything lives in the `unbind-system` namespace, except storage.
 
-| Part                         | What does it                                                                                               |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Kubernetes                   | [k3s](https://k3s.io)                                                                                      |
-| Storage                      | [Longhorn](https://longhorn.io)                                                                            |
-| Traffic and routing          | [Envoy Gateway](https://gateway.envoyproxy.io). Older installs use ingress-nginx.                          |
-| Certificates                 | [cert-manager](https://cert-manager.io) with Let's Encrypt                                                 |
-| Builds                       | BuildKit and Railpack                                                                                      |
-| Image storage                | A Docker registry, unless you chose an external one                                                        |
-| Logs                         | [Loki](https://grafana.com/oss/loki/) with [Alloy](https://grafana.com/oss/alloy/), kept 3 days by default |
-| Metrics                      | [VictoriaMetrics](https://victoriametrics.com), kept 7 days by default                                     |
-| Unbind's own data            | PostgreSQL and Redis                                                                                       |
-| Installing Redis and MongoDB | [Flux](https://fluxcd.io)                                                                                  |
+| Part                         | What does it                                                                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kubernetes                   | [k3s](https://k3s.io)                                                                                                                          |
+| Storage                      | [Longhorn](https://longhorn.io) on the server's disk, or the provider's volume driver on Hetzner Cloud and DigitalOcean when chosen at install |
+| Traffic and routing          | [Envoy Gateway](https://gateway.envoyproxy.io). Older installs use ingress-nginx.                                                              |
+| Certificates                 | [cert-manager](https://cert-manager.io) with Let's Encrypt                                                                                     |
+| Builds                       | BuildKit and Railpack                                                                                                                          |
+| Image storage                | A Docker registry, unless you chose an external one                                                                                            |
+| Logs                         | [Loki](https://grafana.com/oss/loki/) with [Alloy](https://grafana.com/oss/alloy/), kept 3 days by default                                     |
+| Metrics                      | [VictoriaMetrics](https://victoriametrics.com), kept 7 days by default                                                                         |
+| Unbind's own data            | PostgreSQL and Redis                                                                                                                           |
+| Installing Redis and MongoDB | [Flux](https://fluxcd.io)                                                                                                                      |
 
 The Unbind UI and API are a single program in a single image. The operator is a second one.
 

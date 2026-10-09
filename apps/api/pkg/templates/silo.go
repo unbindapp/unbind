@@ -5,15 +5,14 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 )
 
-// MinioTemplate returns the predefined MinIO template
-func minioTemplate() *schema.TemplateDefinition {
+func siloTemplate() *schema.TemplateDefinition {
 	return &schema.TemplateDefinition{
-		Name:        "MinIO",
+		Name:        "Silo",
 		DisplayRank: uint(60000),
-		Icon:        "minio",
-		Keywords:    []string{"object storage", "file storage", "s3", "s3 compatible", "r2", "aws", "cloudflare"},
-		Description: "S3-compatible object storage.",
-		Version:     2,
+		Icon:        "silo",
+		Keywords:    []string{"object storage", "file storage", "s3", "s3 compatible", "minio", "r2", "aws", "cloudflare"},
+		Description: "S3-compatible object storage, a maintained MinIO fork.",
+		Version:     1,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   0.5,
 			MinimumRecommendedRAMGB: 0.5,
@@ -23,7 +22,7 @@ func minioTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain_api",
 				Name:        "API Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain for the MinIO API.",
+				Description: "The domain for the Silo API.",
 				Required:    true,
 				TargetPort:  new(9000),
 			},
@@ -31,7 +30,7 @@ func minioTemplate() *schema.TemplateDefinition {
 				ID:          "input_domain_ui",
 				Name:        "Dashboard Domain",
 				Type:        schema.InputTypeHost,
-				Description: "The domain for the MinIO dashboard.",
+				Description: "The domain for the Silo dashboard.",
 				Required:    true,
 				TargetPort:  new(9001),
 			},
@@ -40,22 +39,22 @@ func minioTemplate() *schema.TemplateDefinition {
 				Name: "Storage Size",
 				Type: schema.InputTypeVolumeSize,
 				Volume: &schema.TemplateVolume{
-					Name:      "minio-volume",
+					Name:      "silo-volume",
 					MountPath: "/data",
 				},
-				Description: "Size of the storage for the MinIO data.",
+				Description: "Size of the storage for the Silo data.",
 				Required:    true,
 				Default:     new("1"),
 			},
 		},
 		Services: []schema.TemplateService{
 			{
-				ID:       "service_minio",
-				Name:     "MinIO",
+				ID:       "service_silo",
+				Name:     "Silo",
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
 				InputIDs: []string{"input_domain_api", "input_domain_ui", "input_storage_size"},
-				Image:    new("minio/minio:RELEASE.2025-09-07T16-13-09Z"),
+				Image:    new("pgsty/silo:RELEASE.2026-09-16T00-00-00Z"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 				},
@@ -69,7 +68,7 @@ func minioTemplate() *schema.TemplateDefinition {
 						Protocol: utils.ToPtr(schema.ProtocolTCP),
 					},
 				},
-				RunCommand: new("minio server /data --console-address ':9001'"),
+				RunCommand: new("silo server /data --console-address ':9001'"),
 				HealthCheck: &schema.HealthCheck{
 					Type:                    utils.ToPtr(schema.HealthCheckTypeExec),
 					Command:                 "mc ready local",
@@ -81,8 +80,8 @@ func minioTemplate() *schema.TemplateDefinition {
 					HealthFailureThreshold:  new(int32(5)),
 				},
 				VariableDisplays: []schema.TemplateVariableDisplay{
-					{Name: "MINIO_ROOT_USER", DisplayName: "Root User", Description: "Root user for the MinIO console and API."},
-					{Name: "MINIO_ROOT_PASSWORD", DisplayName: "Root Password", Description: "Root password for the MinIO console and API."},
+					{Name: "MINIO_ROOT_USER", DisplayName: "Root User", Description: "Root user for the Silo console and API."},
+					{Name: "MINIO_ROOT_PASSWORD", DisplayName: "Root Password", Description: "Root password for the Silo console and API."},
 				},
 				Variables: []schema.TemplateVariable{
 					{

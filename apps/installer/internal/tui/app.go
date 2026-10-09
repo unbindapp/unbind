@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/unbindapp/unbind-installer/internal/cloudinfo"
 	"github.com/unbindapp/unbind-installer/internal/installer"
 	"github.com/unbindapp/unbind-installer/internal/k3s"
 	"github.com/unbindapp/unbind-installer/internal/osinfo"
@@ -44,6 +45,10 @@ type Model struct {
 	passwordInput     textinput.Model
 	registryHostInput textinput.Model
 	selectedRegistry  int
+
+	cloud      *cloudinfo.Info
+	storage    storageConfig
+	tokenInput textinput.Model
 
 	unbindInstaller *installer.UnbindInstaller
 
@@ -90,6 +95,7 @@ func NewModel(version string) Model {
 		usernameInput:     initializeUsernameInput(styles),
 		passwordInput:     initializePasswordInput(styles),
 		registryHostInput: initializeRegistryHostInput(styles),
+		tokenInput:        initializeTokenInput(styles),
 	}
 }
 
@@ -104,7 +110,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 		case "ctrl+d":
-			if m.state != StateDNSConfig && m.state != StateExternalRegistryInput {
+			if m.state != StateDNSConfig && m.state != StateExternalRegistryInput && m.state != StateCloudTokenInput {
 				m.showDebugLogs = !m.showDebugLogs
 				return m, nil
 			}
@@ -170,6 +176,10 @@ func (m Model) updateState(msg tea.Msg) (Model, tea.Cmd) {
 		return m.updateRegistryTypeSelectionState(msg)
 	case StateExternalRegistryInput:
 		return m.updateExternalRegistryInputState(msg)
+	case StateStorageSelection:
+		return m.updateStorageSelectionState(msg)
+	case StateCloudTokenInput:
+		return m.updateCloudTokenInputState(msg)
 	case StateInstallingK3S:
 		return m.updateInstallingK3SState(msg)
 	case StateInstallingUnbind:
@@ -245,6 +255,10 @@ func (m Model) viewState() string {
 		return viewRegistryTypeSelection(m)
 	case StateExternalRegistryInput:
 		return viewExternalRegistryInput(m)
+	case StateStorageSelection:
+		return viewStorageSelection(m)
+	case StateCloudTokenInput:
+		return viewCloudTokenInput(m)
 	default:
 		return viewWelcome(m)
 	}

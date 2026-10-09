@@ -13,7 +13,7 @@ func umamiTemplate() *schema.TemplateDefinition {
 		Icon:        "umami",
 		Keywords:    []string{"analytics", "open source", "privacy-friendly", "Google Analytics", "plausible"},
 		Description: "Privacy-focused Google Analytics alternative.",
-		Version:     2,
+		Version:     3,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   0.5,
 			MinimumRecommendedRAMGB: 0.5,
@@ -52,7 +52,7 @@ func umamiTemplate() *schema.TemplateDefinition {
 				Name:      "Umami",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("ghcr.io/umami-software/umami:3.3.1"),
+				Image:     new("ghcr.io/umami-software/umami:3.4.0"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 				},

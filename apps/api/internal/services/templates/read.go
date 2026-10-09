@@ -7,6 +7,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
+	predefined "github.com/unbindapp/unbind-api/pkg/templates"
 )
 
 func (self *TemplatesService) GetAvailable(ctx context.Context) ([]*models.TemplateWithDefinitionResponse, error) {
@@ -24,9 +25,19 @@ func (self *TemplatesService) GetAvailable(ctx context.Context) ([]*models.Templ
 		capable[c] = true
 	}
 
+	// Seeding never deletes rows, so a renamed or removed template keeps its old rows
+	// for the services that reference them. Only names the code still defines are offered.
+	defined := map[string]bool{}
+	for _, t := range predefined.NewTemplater(nil).AvailableTemplates() {
+		defined[t.Name] = true
+	}
+
 	transformed := models.TransformTemplateEntities(templates)
 	supported := make([]*models.TemplateWithDefinitionResponse, 0, len(transformed))
 	for _, t := range transformed {
+		if !defined[t.Name] {
+			continue
+		}
 		if capabilitiesSatisfied(t.Definition.RequiredCapabilities, capable) {
 			supported = append(supported, t)
 		}

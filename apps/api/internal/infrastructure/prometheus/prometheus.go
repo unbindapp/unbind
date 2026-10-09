@@ -13,8 +13,8 @@ import (
 
 // PromAPIInterface is an interface that defines the methods we expect from the Prometheus API client, so we can generate mocks with mockery
 type PromAPIInterface interface {
-	Query(ctx context.Context, query string, ts time.Time, opts ...v1.Option) (model.Value, v1.Warnings, error)
-	QueryRange(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, error)
+	Query(ctx context.Context, query string, ts time.Time, opts ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error)
+	QueryRange(ctx context.Context, query string, r v1.Range, opts ...v1.Option) (model.Value, v1.Warnings, v1.Infos, error)
 }
 
 type PrometheusClient struct {

@@ -21,6 +21,8 @@ Press **Deploy** on the changes bar. The volume is created and the service resta
 
 A new volume starts small. Open it to see **Usage**: how much is used out of the total. Unbind warns you at 75% and again at 85%.
 
+Where the volume lives sets the smallest size you can pick. On the server's disk it is a fraction of a gigabyte. On cloud volumes it is the provider's minimum, 10 GB on Hetzner Cloud and 1 GB on DigitalOcean, and the provider bills every volume by the gigabyte. Whoever installed Unbind made that choice; see [Install](/operations/install#storage).
+
 To grow it, use **Expand**, pick the new size and confirm. It takes a couple of minutes and the data stays in place.
 
 <Callout type="warn" title="Volumes only grow">
@@ -33,7 +35,7 @@ Replicas can't share a volume, so a service with a volume runs a single [replica
 
 A service that runs several replicas can't get a volume. It shows up in the list when you mount one, but can't be picked. Set its replicas to 1 and deploy first.
 
-If you need several replicas, keep the state somewhere shared instead: a database, or [S3 compatible storage](/templates/minio).
+If you need several replicas, keep the state somewhere shared instead: a database, or [S3 compatible storage](/templates/silo).
 
 ## Deployments
 

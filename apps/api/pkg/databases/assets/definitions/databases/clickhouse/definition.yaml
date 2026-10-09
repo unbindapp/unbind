@@ -110,7 +110,7 @@ spec:
         spec:
           containers:
             - name: clickhouse-pod
-              image: clickhouse/clickhouse-server:{{ .Parameters.version | default "26.3" }}
+              image: clickhouse/clickhouse-server:{{ .Parameters.version | default "26.8" }}
               command:
                 - clickhouse-server
                 - --config-file=/etc/clickhouse-server/config.xml
@@ -293,7 +293,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: clickhouse-backup
-              image: clickhouse/clickhouse-server:{{ .Parameters.version | default "26.3" }}
+              image: clickhouse/clickhouse-server:{{ .Parameters.version | default "26.8" }}
               imagePullPolicy: Always
               env:
                 - name: LOG_LEVEL
@@ -456,7 +456,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: clickhouse-restore
-          image: clickhouse/clickhouse-client:{{ .Parameters.version | default "26.3" }}
+          image: clickhouse/clickhouse-client:{{ .Parameters.version | default "26.8" }}
           imagePullPolicy: Always
           env:
             - name: LOG_LEVEL

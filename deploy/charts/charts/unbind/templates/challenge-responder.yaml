@@ -42,7 +42,7 @@ spec:
     spec:
       containers:
         - name: responder
-          image: nginx:1.27-alpine
+          image: nginx:1.30-alpine
           ports:
             - containerPort: 80
           resources:

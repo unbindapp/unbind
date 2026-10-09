@@ -13,7 +13,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 		Icon:        "flowise",
 		Keywords:    []string{"llm", "ai", "chatbot", "langchain", "flow", "workflow", "automation", "low code", "low-code", "no code", "no-code", "chatbot", "ai"},
 		Description: "Low code tool for building LLM flows.",
-		Version:     3,
+		Version:     4,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   1,
 			MinimumRecommendedRAMGB: 1.5,
@@ -71,7 +71,7 @@ func flowiseTemplate() *schema.TemplateDefinition {
 				// The image runs as node (uid 1000); fresh volumes are root-owned
 				InitContainers: []*schema.InitContainer{
 					{
-						Image:   "busybox:1.37.0",
+						Image:   "busybox:1.38.0",
 						Command: "chown -R 1000:1000 /home/node/.flowise",
 					},
 				},

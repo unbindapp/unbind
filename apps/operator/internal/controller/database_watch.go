@@ -6,7 +6,7 @@ import (
 	altinityv1 "github.com/altinity/clickhouse-operator/pkg/apis/clickhouse.altinity.com/v1"
 	mocov1beta2 "github.com/cybozu-go/moco/api/v1beta2"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
-	postgresv1 "github.com/zalando/postgres-operator/pkg/apis/acid.zalan.do/v1"
+	postgresv1 "github.com/zalando/postgres-operator/v2/pkg/apis/acid.zalan.do/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"

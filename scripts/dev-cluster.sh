@@ -8,11 +8,11 @@ NAMESPACE=unbind-system
 KUBECONFIG_PATH=apps/api/.data/kubernetes/k3d.kubeconfig.yaml
 KUBELET_CONFIG_PATH=/etc/rancher/k3s/kubelet-config.yaml
 # Flux's preflight check requires Kubernetes >=1.33; k3d's default k3s is older.
-K3S_IMAGE=rancher/k3s:v1.36.2-k3s1
+K3S_IMAGE=rancher/k3s:v1.36.5-k3s1
 # longhorn can't run on k3d (busybox nodes, no iscsiadm); hostpath CSI stands in as the
 # expandable default class since local-path has no resizer and resizes on it never complete
 CSI_HOSTPATH_REPO=https://github.com/kubernetes-csi/csi-driver-host-path.git
-CSI_HOSTPATH_REF=v1.17.0
+CSI_HOSTPATH_REF=v1.18.0
 # outside the repo: anything under apps/ gets picked up by the pre-commit hooks
 CSI_HOSTPATH_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/unbind-dev/csi-driver-host-path"
 

@@ -13,7 +13,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 		Icon:        "nocodb",
 		Keywords:    []string{"low code", "no code", "no-code", "database", "spreadsheet", "airtable alternative", "api builder", "sql", "postgresql"},
 		Description: "Build databases as spreadsheets.",
-		Version:     3,
+		Version:     4,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   1,
 			MinimumRecommendedRAMGB: 1.5,
@@ -66,7 +66,7 @@ func nocodbTemplate() *schema.TemplateDefinition {
 				Name:      "NocoDB",
 				Type:      schema.ServiceTypeDockerimage,
 				Builder:   schema.ServiceBuilderDocker,
-				Image:     new("nocodb/nocodb:2026.08.1"),
+				Image:     new("nocodb/nocodb:2026.09.1"),
 				DependsOn: []string{"service_postgresql"},
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 40,

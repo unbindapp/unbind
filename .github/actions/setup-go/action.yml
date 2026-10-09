@@ -10,14 +10,14 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v7
       with:
         go-version-file: ${{ inputs.module }}/go.mod
         cache: false
 
     # setup-go keys its cache on go.sum alone, so it is written once and goes stale.
     # Keying on the commit lets every master run start from the previous one.
-    - uses: actions/cache@v4
+    - uses: actions/cache@v6
       if: github.ref == 'refs/heads/master'
       with:
         path: |
@@ -28,7 +28,7 @@ runs:
           go-${{ inputs.cache-name }}-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles(format('{0}/go.sum', inputs.module)) }}-
 
     # Caches saved outside master are not visible to other refs, so only restore.
-    - uses: actions/cache/restore@v4
+    - uses: actions/cache/restore@v6
       if: github.ref != 'refs/heads/master'
       with:
         path: |

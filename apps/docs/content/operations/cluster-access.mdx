@@ -36,7 +36,7 @@ KUBECONFIG=~/.kube/unbind.yaml kubectl get nodes
 | Namespace         | What is in it                                                                                               |
 | ----------------- | ----------------------------------------------------------------------------------------------------------- |
 | `unbind-system`   | Unbind itself: the API and UI, the operator, builds, the registry, logs, metrics, and Unbind's own database |
-| `longhorn-system` | Storage                                                                                                     |
+| `longhorn-system` | Storage, on instances that keep volumes on the server's disk. Cloud volume drivers run in `kube-system`.    |
 | One per team      | Everything that team runs                                                                                   |
 
 Inside a team's namespace, every resource carries labels for its team, project, environment and service, so you can filter by them.

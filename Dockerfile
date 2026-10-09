@@ -4,7 +4,7 @@
 # The SPA bundle and Go binaries are built on the CI runner (see build-app.yml /
 # release.yml) and copied in here, so this stage stays a thin package step.
 
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 # mise is pre-installed because the API's source analyzer execs it via railpack.
 # MISE_VERSION is pinned to railpack's own version.txt at build time, so railpack

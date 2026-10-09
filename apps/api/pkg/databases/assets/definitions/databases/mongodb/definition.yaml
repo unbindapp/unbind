@@ -28,7 +28,7 @@ image:
   registry: docker.io
   repository: mongo
   # Quote: CloudPirates' schema requires a string (unquoted 8.2 -> YAML number).
-  tag: {{ .Parameters.version | default "8.3" | quote }}
+  tag: {{ .Parameters.version | default "9.0" | quote }}
   extraArgs:
     - {{ printf "--wiredTigerCacheSizeGB=%s" (.Parameters.wiredTigerCacheSizeGB | default "0.25") | quote }}
     - {{ printf "--maxConns=%s" (.Parameters.maxConns | default "100") | quote }}
@@ -112,7 +112,7 @@ extraObjects:
             spec:
               containers:
               - name: mongodump-s3
-                image: mongo:{{ .Parameters.version | default "8.3" }}
+                image: mongo:{{ .Parameters.version | default "9.0" }}
                 command:
                 - /bin/sh
                 - -c
@@ -235,7 +235,7 @@ extraObjects:
         spec:
           containers:
           - name: mongorestore-s3
-            image: mongo:{{ .Parameters.version | default "8.3" }}
+            image: mongo:{{ .Parameters.version | default "9.0" }}
             command:
             - /bin/sh
             - -c

@@ -18,6 +18,8 @@ sudo unbind uninstall
 
 It asks you to confirm. Then it removes the storage system and its data, removes k3s and everything running on it, and cleans up what they left on disk.
 
+On an instance that uses cloud volumes, it deletes the volumes at your provider first, so they stop billing. If some are still there after five minutes, it prints their names: delete those in the provider's console.
+
 If you added more servers, remove k3s on each of them as well:
 
 ```bash

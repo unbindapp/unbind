@@ -1,0 +1,30 @@
+---
+title: Silo
+icon: silo
+heading: Self-host Silo with Unbind
+description: Deploy Silo on your own servers with Unbind. S3 compatible object storage for your apps, backups and files.
+---
+
+[Silo](https://silo.pgsty.com) is S3 compatible object storage. It is a community maintained fork of MinIO, which stopped publishing container images in 2025, with the same API, dashboard and `mc` client. Anything that can talk to Amazon S3 can talk to it.
+
+Deploy it from the [template list](/templates#deploy-a-template). It takes a minute or two.
+
+## What gets deployed
+
+<TemplateServices name="Silo" />
+
+Your objects are kept on a volume mounted at `/data`. Size it for what you plan to store. You can grow it later, but not shrink it.
+
+## What you fill in
+
+<TemplateInputs name="Silo" />
+
+## After it deploys
+
+Open the **Silo** service and look at its variables. The user is in `MINIO_ROOT_USER` (it is `minioadmin`) and the generated password is in `MINIO_ROOT_PASSWORD`. The variable names keep MinIO's prefix because Silo reads the same settings. Sign in with those at your dashboard domain.
+
+## Good to know
+
+- **Two domains**: the dashboard domain is for people, the API domain is for apps. Point S3 clients at the API domain.
+- **Make access keys for apps**: do not give the root user to your apps. Create an access key in the Silo dashboard instead.
+- **Use it for Unbind backups**: a bucket here works as [S3 storage](/teams/s3-storage) for database backups. Keep in mind that backups stored on the same servers do not protect you from losing those servers.

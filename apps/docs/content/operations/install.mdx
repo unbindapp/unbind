@@ -33,6 +33,18 @@ Built images have to be stored somewhere.
 </Step>
 <Step>
 
+### Storage
+
+Only on a Hetzner Cloud server or a DigitalOcean droplet. The installer recognises the provider and asks where volumes should live.
+
+- **Server disk** keeps volumes on the server's own disk. No extra cost, any size, and the default everywhere else.
+- **Cloud volumes** puts each volume on the provider's block storage. The screen shows the price per GB per month, the minimum size per volume (10 GB on Hetzner Cloud, 1 GB on DigitalOcean) and the limit of volumes per server. Every volume counts towards that limit, including the ones Unbind creates for itself. You enter an API token for the project or team the server belongs to. The installer checks that the token can see this server and, on Hetzner Cloud, shows the live price from your project.
+
+Cloud volumes survive the server and can move to another server in the same location. The token is kept as a secret inside your cluster, so treat the server as having write access to your provider account.
+
+</Step>
+<Step>
+
 ### DNS check
 
 The installer checks your DNS records and keeps checking until they resolve. `Ctrl+r` checks again right away, `Ctrl+e` lets you change the domain. See [DNS Setup](/operations/dns-setup).

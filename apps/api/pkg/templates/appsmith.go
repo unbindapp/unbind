@@ -13,7 +13,7 @@ func appsmithTemplate() *schema.TemplateDefinition {
 		Icon:        "appsmith",
 		Keywords:    []string{"low code", "no code", "app builder", "internal tools", "dashboard", "automation"},
 		Description: "Build admin panels, internal tools, and dashboards.",
-		Version:     2,
+		Version:     3,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   2,
 			MinimumRecommendedRAMGB: 4,
@@ -46,7 +46,7 @@ func appsmithTemplate() *schema.TemplateDefinition {
 				Name:     "Appsmith",
 				Type:     schema.ServiceTypeDockerimage,
 				Builder:  schema.ServiceBuilderDocker,
-				Image:    new("appsmith/appsmith-ee:v2.3.1"),
+				Image:    new("appsmith/appsmith-ee:v2.4.3"),
 				Resources: &schema.Resources{
 					CPURequestsMillicores: 30,
 				},

@@ -62,7 +62,7 @@ After a minute the server shows up under **System** > **Servers** as **Ready**. 
 ## Good to know
 
 - **Traffic still enters through the first server.** Your DNS records keep pointing at it. If it goes down, the instance is unreachable even when other servers are fine.
-- **Volumes live on one server.** A service with a [volume](/services/volumes) runs where its volume is.
+- **Volumes live on one server.** A service with a [volume](/services/volumes) runs where its volume is. With cloud volumes, the volume can follow the service to another server in the same location, so the new server has to be with the same provider, in the same project or team and the same location. `unbind add-node` reminds you of this.
 - **Keep servers close.** Put them in the same data center or region. High latency between servers causes odd problems.
 
 ## Apply new settings to a server
@@ -77,4 +77,4 @@ It restarts the server's agent once. Your services keep running.
 
 ## Remove a server
 
-There is no command for this yet. If you need to remove one, ask in the community first, because removing a server that holds volumes loses their data.
+There is no command for this yet. If you need to remove one, ask in the community first, because removing a server that holds volumes on its disk loses their data.

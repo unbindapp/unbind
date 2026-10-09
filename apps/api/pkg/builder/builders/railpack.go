@@ -99,7 +99,10 @@ func GenerateBuildResult(directory string, buildSecrets map[string]string, runCo
 		generateOptions.StartCommand = runCommand
 	}
 
-	buildResult := core.GenerateBuildPlan(app, &env, generateOptions)
+	buildResult, err := core.GenerateBuildPlan(app, &env, generateOptions)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("error generating build plan: %w", err)
+	}
 
 	return buildResult, app, &env, nil
 }

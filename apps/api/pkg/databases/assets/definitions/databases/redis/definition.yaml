@@ -28,7 +28,7 @@ podLabels:
 image:
   registry: docker.io
   repository: redis
-  tag: {{ .Parameters.version | default "8.8" | quote }}
+  tag: {{ .Parameters.version | default "8.10" | quote }}
 
 # Authentication
 auth:
