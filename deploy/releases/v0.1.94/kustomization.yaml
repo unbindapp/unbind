@@ -1,0 +1,2 @@
+# Image bumps (buildkit, registry, nginx, busybox) and a services CRD description change are
+# fresh-install-only; no manifests for existing installs.
