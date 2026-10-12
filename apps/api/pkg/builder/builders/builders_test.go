@@ -162,6 +162,23 @@ func TestGenerateBuildMetadataDockerHubUsesUserPrefix(t *testing.T) {
 	}
 }
 
+func TestGenerateBuildMetadataLowercasesRepoName(t *testing.T) {
+	b := NewBuilder(&config.Config{
+		ContainerRegistryHost: "docker-registry.unbind-system:5000",
+		GitRepoURL:            "https://github.com/AvengeMedia/WallpaperGenerator",
+	})
+
+	image, cache := b.GenerateBuildMetadata(baseInputs())
+
+	want := "docker-registry.unbind-system:5000/wallpapergenerator:"
+	if !strings.HasPrefix(image, want) {
+		t.Errorf("image %q does not start with %q", image, want)
+	}
+	if !strings.HasPrefix(cache, want) {
+		t.Errorf("cache %q does not start with %q", cache, want)
+	}
+}
+
 // An unparseable repo URL must still not collide with a different repo.
 func TestRepoNameFallbackIsPerRepo(t *testing.T) {
 	first := NewBuilder(&config.Config{GitRepoURL: "not-a-url"}).RepoName()

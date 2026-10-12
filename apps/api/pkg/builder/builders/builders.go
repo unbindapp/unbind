@@ -127,7 +127,8 @@ func (self *Builder) RepoName() string {
 		// collide with a different one.
 		return fmt.Sprintf("unbind-build-%s", shortDigest(self.config.GitRepoURL))
 	}
-	return repoName
+	// Image references reject uppercase, GitHub repo names allow it
+	return strings.ToLower(repoName)
 }
 
 // GenerateBuildMetadata returns the image ref to build and push, and the registry
