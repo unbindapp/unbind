@@ -1,5 +1,6 @@
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 
+import { getLastTeamId } from "@/lib/last-team";
 import { teamsListQuery } from "@/lib/queries/teams";
 import { getGoClient } from "@/lib/server/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -8,13 +9,14 @@ import { Button } from "@/components/ui/button";
 import { CreateTeamDialog } from "@/components/team/create-team-dialog";
 import { LoaderIcon, LogOutIcon, PlusIcon } from "lucide-react";
 
-// "/" resolves to the user's first team, mirroring the old server redirect.
+// "/" resolves to the team the user was last on, else their first team.
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
     const { teams } = await context.queryClient.ensureQueryData(teamsListQuery());
-    const firstTeam = teams[0];
-    if (firstTeam) {
-      throw redirect({ to: "/$team_id", params: { team_id: firstTeam.id } });
+    const lastTeamId = getLastTeamId();
+    const team = teams.find((t) => t.id === lastTeamId) ?? teams[0];
+    if (team) {
+      throw redirect({ to: "/$team_id", params: { team_id: team.id } });
     }
   },
   component: NoTeams,

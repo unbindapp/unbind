@@ -1,3 +1,4 @@
+import { useRememberTeam } from "@/lib/last-team";
 import { useQuery } from "@tanstack/react-query";
 import {
   createFileRoute,
@@ -106,6 +107,7 @@ export const Route = createFileRoute("/$team_id/project/$project_id")({
 
 function ProjectLayout() {
   const { team_id: teamId, project_id: projectId } = Route.useParams();
+  useRememberTeam(teamId);
   const { environment } = Route.useSearch();
   const { data: projectData } = useQuery(projectQuery({ teamId, projectId }));
 

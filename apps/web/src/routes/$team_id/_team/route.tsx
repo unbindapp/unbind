@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 
+import { useRememberTeam } from "@/lib/last-team";
 import { isSystemViewer, meQuery } from "@/lib/queries/me";
 import { systemQuery } from "@/lib/queries/system";
 import { teamQuery, teamsListQuery } from "@/lib/queries/teams";
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/$team_id/_team")({
 function TeamLayout() {
   const { team_id: teamId } = Route.useParams();
   const { data: teamsData } = useQuery(teamsListQuery());
+  useRememberTeam(teamId);
 
   // Redirect to the first team if the requested team isn't one of the user's.
   // Moved out of the loader so navigation isn't blocked on the teams list.

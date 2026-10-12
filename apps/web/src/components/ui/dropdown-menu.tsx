@@ -70,7 +70,7 @@ function DropdownMenuContent({
   TDropdownContentVariants) {
   return (
     <MenuPrimitive.Portal keepMounted={keepMounted}>
-      <MenuPrimitive.Backdrop className="fixed inset-0 z-998" />
+      <MenuPrimitive.Backdrop className="fixed inset-0 z-[1001]" />
       <MenuPrimitive.Positioner
         data-ui-popup=""
         align={align}
@@ -78,7 +78,7 @@ function DropdownMenuContent({
         side={side}
         sideOffset={sideOffset}
         collisionPadding={collisionPadding}
-        className="isolate z-999 outline-none"
+        className="isolate z-[1002] outline-none"
       >
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
