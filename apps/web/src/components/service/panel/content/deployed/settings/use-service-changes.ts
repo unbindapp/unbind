@@ -23,6 +23,7 @@ export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceFi
 
 export const networkAccessFields: TServiceChangeField[] = ["isPublic"];
 export const requestSizeFields: TServiceChangeField[] = ["maxRequestBodySizeMb"];
+export const sessionAffinityFields: TServiceChangeField[] = ["sessionAffinity"];
 export type TServerValues = Partial<Record<TServiceChangeField, string | number | boolean>>;
 
 type TStageInput<T extends string | number | boolean> = {

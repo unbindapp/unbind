@@ -393,6 +393,20 @@ func (_u *ServiceConfigUpdate) ClearMaxRequestBodySizeMB() *ServiceConfigUpdate 
 	return _u
 }
 
+// SetSessionAffinity sets the "session_affinity" field.
+func (_u *ServiceConfigUpdate) SetSessionAffinity(v bool) *ServiceConfigUpdate {
+	_u.mutation.SetSessionAffinity(v)
+	return _u
+}
+
+// SetNillableSessionAffinity sets the "session_affinity" field if the given value is not nil.
+func (_u *ServiceConfigUpdate) SetNillableSessionAffinity(v *bool) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetSessionAffinity(*v)
+	}
+	return _u
+}
+
 // SetImage sets the "image" field.
 func (_u *ServiceConfigUpdate) SetImage(v string) *ServiceConfigUpdate {
 	_u.mutation.SetImage(v)
@@ -850,6 +864,9 @@ func (_u *ServiceConfigUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if _u.mutation.MaxRequestBodySizeMBCleared() {
 		_spec.ClearField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.SessionAffinity(); ok {
+		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
@@ -1384,6 +1401,20 @@ func (_u *ServiceConfigUpdateOne) ClearMaxRequestBodySizeMB() *ServiceConfigUpda
 	return _u
 }
 
+// SetSessionAffinity sets the "session_affinity" field.
+func (_u *ServiceConfigUpdateOne) SetSessionAffinity(v bool) *ServiceConfigUpdateOne {
+	_u.mutation.SetSessionAffinity(v)
+	return _u
+}
+
+// SetNillableSessionAffinity sets the "session_affinity" field if the given value is not nil.
+func (_u *ServiceConfigUpdateOne) SetNillableSessionAffinity(v *bool) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetSessionAffinity(*v)
+	}
+	return _u
+}
+
 // SetImage sets the "image" field.
 func (_u *ServiceConfigUpdateOne) SetImage(v string) *ServiceConfigUpdateOne {
 	_u.mutation.SetImage(v)
@@ -1871,6 +1902,9 @@ func (_u *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceCo
 	}
 	if _u.mutation.MaxRequestBodySizeMBCleared() {
 		_spec.ClearField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32)
+	}
+	if value, ok := _u.mutation.SessionAffinity(); ok {
+		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)

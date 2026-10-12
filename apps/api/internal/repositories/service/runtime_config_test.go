@@ -27,6 +27,7 @@ func TestApplyRuntimeConfig(t *testing.T) {
 		IsPublic:             false,
 		Replicas:             3,
 		MaxRequestBodySizeMB: new(int32(500)),
+		SessionAffinity:      true,
 	}
 
 	ApplyRuntimeConfig(&spec, config)
@@ -36,6 +37,7 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.False(t, spec.Public)
 	assert.Equal(t, int32(3), *spec.Replicas)
 	assert.Equal(t, int32(500), *spec.MaxRequestBodySizeMB)
+	assert.True(t, spec.SessionAffinity)
 	assert.Equal(t, "refs/heads/main", spec.GitBranch)
 	assert.Equal(t, "./start", *spec.RunCommand)
 
@@ -43,4 +45,5 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Empty(t, spec.Hosts)
 	assert.Empty(t, spec.Ports)
 	assert.Nil(t, spec.MaxRequestBodySizeMB)
+	assert.False(t, spec.SessionAffinity)
 }

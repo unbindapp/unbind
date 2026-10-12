@@ -1,4 +1,4 @@
-h1:X3P3Iej2MiLKvBT2LufiZPsq3ZPtOUVkjmih16SkFjY=
+h1:0gFrs8Bj0TWv+H43ElmH92uJv7NaYTPViZvbVQ3VjCc=
 20250519010757_initial_migration.sql h1:94lMwKemoNX/ichD+2Vzb7GmOHXVj4qVTfeBInQAe0g=
 20250519163449_add_init_containers.sql h1:7bt+zCbtmlYr1QDztgka0R5wUxdjD7XYUkrhL9GYYIQ=
 20250521202532_non_nillable_kubernetes_secret.sql h1:eDpMWyeBXh5cG4poavaUMeYs5QXddFBBIyYlxc+nq64=
@@ -39,3 +39,4 @@ h1:X3P3Iej2MiLKvBT2LufiZPsq3ZPtOUVkjmih16SkFjY=
 20260930120000_single_replica_with_volume.sql h1:goaJlk+QDVQklwUX927qjjXi69MoMVP6LwcHQ2quMDk=
 20261012175416_team_role_groups.sql h1:ObwS7hZSTGYJMThyaHByKAfDCLuZ0GCgSyOeOXdGiGI=
 20261012180510_invitations_and_email.sql h1:XkkPdT+7aLDnC6G8G6UDAIEpmbKC52jqVr5GZSFf5L4=
+20261012195534_session_affinity.sql h1:tciOQn/OkR4+v2M0dzPVm2nA7Gi858Ud8dUUKNnff0Q=

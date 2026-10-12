@@ -65,6 +65,8 @@ func TestEstimateConfigChange(t *testing.T) {
 		{"same request size", models.UpdateServiceInput{MaxRequestBodySizeMB: utils.ToPtr[int32](500)}, service_repo.NoDeploymentNeeded},
 		{"request size", models.UpdateServiceInput{MaxRequestBodySizeMB: utils.ToPtr[int32](1024)}, service_repo.NeedsDeployment},
 		{"request size reset", models.UpdateServiceInput{MaxRequestBodySizeMB: utils.ToPtr[int32](0)}, service_repo.NeedsDeployment},
+		{"same session affinity", models.UpdateServiceInput{SessionAffinity: utils.ToPtr(false)}, service_repo.NoDeploymentNeeded},
+		{"session affinity", models.UpdateServiceInput{SessionAffinity: utils.ToPtr(true)}, service_repo.NeedsDeployment},
 		{"hosts", models.UpdateServiceInput{UpsertHosts: []schema.HostSpec{{Host: "example.com"}}}, service_repo.NeedsDeployment},
 		{"ports", models.UpdateServiceInput{RemovePorts: []schema.PortSpec{{Port: 3000}}}, service_repo.NeedsDeployment},
 		{"resources", models.UpdateServiceInput{Resources: &schema.Resources{}}, service_repo.NeedsDeployment},

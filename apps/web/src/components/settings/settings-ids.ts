@@ -13,6 +13,7 @@ export const settingsIds = {
     public: "networking_public",
     private: "networking_private",
     maxRequestSize: "networking_max-request-size",
+    sessionAffinity: "networking_session-affinity",
   },
   backups: {
     bucket: "backups_bucket",

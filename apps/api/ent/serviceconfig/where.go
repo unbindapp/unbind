@@ -133,6 +133,11 @@ func MaxRequestBodySizeMB(v int32) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldMaxRequestBodySizeMB, v))
 }
 
+// SessionAffinity applies equality check predicate on the "session_affinity" field. It's identical to SessionAffinityEQ.
+func SessionAffinity(v bool) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldSessionAffinity, v))
+}
+
 // Image applies equality check predicate on the "image" field. It's identical to ImageEQ.
 func Image(v string) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldImage, v))
@@ -1096,6 +1101,16 @@ func MaxRequestBodySizeMBIsNil() predicate.ServiceConfig {
 // MaxRequestBodySizeMBNotNil applies the NotNil predicate on the "max_request_body_size_mb" field.
 func MaxRequestBodySizeMBNotNil() predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldNotNull(FieldMaxRequestBodySizeMB))
+}
+
+// SessionAffinityEQ applies the EQ predicate on the "session_affinity" field.
+func SessionAffinityEQ(v bool) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldSessionAffinity, v))
+}
+
+// SessionAffinityNEQ applies the NEQ predicate on the "session_affinity" field.
+func SessionAffinityNEQ(v bool) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNEQ(FieldSessionAffinity, v))
 }
 
 // ImageEQ applies the EQ predicate on the "image" field.

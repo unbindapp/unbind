@@ -80,19 +80,14 @@ func TestNginxParity(t *testing.T) {
 	}
 
 	want := map[string]string{
-		"kubernetes.io/tls-acme":                             "true",
-		"nginx.ingress.kubernetes.io/eventsource":            "true",
-		"nginx.ingress.kubernetes.io/add-base-url":           "true",
-		"nginx.ingress.kubernetes.io/ssl-redirect":           "true",
-		"nginx.ingress.kubernetes.io/websocket-services":     "web-service",
-		"nginx.ingress.kubernetes.io/proxy-send-timeout":     "1800",
-		"nginx.ingress.kubernetes.io/proxy-read-timeout":     "21600",
-		"nginx.ingress.kubernetes.io/proxy-body-size":        "100m",
-		"nginx.ingress.kubernetes.io/upstream-hash-by":       "$realip_remote_addr",
-		"nginx.ingress.kubernetes.io/affinity":               "cookie",
-		"nginx.ingress.kubernetes.io/session-cookie-name":    "web-session",
-		"nginx.ingress.kubernetes.io/session-cookie-expires": "172800",
-		"nginx.ingress.kubernetes.io/session-cookie-max-age": "172800",
+		"kubernetes.io/tls-acme":                         "true",
+		"nginx.ingress.kubernetes.io/eventsource":        "true",
+		"nginx.ingress.kubernetes.io/add-base-url":       "true",
+		"nginx.ingress.kubernetes.io/ssl-redirect":       "true",
+		"nginx.ingress.kubernetes.io/websocket-services": "web-service",
+		"nginx.ingress.kubernetes.io/proxy-send-timeout": "1800",
+		"nginx.ingress.kubernetes.io/proxy-read-timeout": "21600",
+		"nginx.ingress.kubernetes.io/proxy-body-size":    "100m",
 	}
 	if len(ing.Annotations) != len(want) {
 		t.Errorf("annotation count = %d, want %d", len(ing.Annotations), len(want))
@@ -160,8 +155,45 @@ func TestMaxRequestBodySize(t *testing.T) {
 	}
 }
 
+func TestSessionAffinity(t *testing.T) {
+	envoy := Config{GatewayClassName: "unbind", ClusterIssuer: "letsencrypt-prod", GatewayControllerEnvoy: true}
+	for _, enabled := range []bool{false, true} {
+		svc := setName(publicService(), "web")
+		svc.Spec.Config.SessionAffinity = enabled
+
+		objs, err := New(ProviderNginx, Config{}).BuildRoutes(RouteInput{Service: svc})
+		if err != nil {
+			t.Fatalf("nginx BuildRoutes: %v", err)
+		}
+		nginx := objs[0].GetAnnotations()
+		for _, key := range []string{
+			"nginx.ingress.kubernetes.io/affinity",
+			"nginx.ingress.kubernetes.io/session-cookie-name",
+			"nginx.ingress.kubernetes.io/upstream-hash-by",
+		} {
+			if _, ok := nginx[key]; ok != enabled {
+				t.Errorf("affinity %t: nginx annotation %q present = %t", enabled, key, ok)
+			}
+		}
+
+		traefik := New(ProviderTraefik, Config{}).ServiceAnnotations(svc)
+		if got := traefik["traefik.ingress.kubernetes.io/service.sticky.cookie"] == "true"; got != enabled {
+			t.Errorf("affinity %t: traefik sticky cookie = %t", enabled, got)
+		}
+
+		objs, err = New(ProviderGateway, envoy).BuildRoutes(RouteInput{Service: svc})
+		if err != nil {
+			t.Fatalf("gateway BuildRoutes: %v", err)
+		}
+		if got := findKind(objs, "BackendTrafficPolicy") != nil; got != enabled {
+			t.Errorf("affinity %t: envoy BackendTrafficPolicy present = %t", enabled, got)
+		}
+	}
+}
+
 func TestGatewayRoutes(t *testing.T) {
 	svc := setName(publicService(), "web")
+	svc.Spec.Config.SessionAffinity = true
 	cfg := Config{GatewayClassName: "unbind", ClusterIssuer: "letsencrypt-prod", GatewayControllerEnvoy: true}
 	objs, err := New(ProviderGateway, cfg).BuildRoutes(RouteInput{Service: svc})
 	if err != nil {

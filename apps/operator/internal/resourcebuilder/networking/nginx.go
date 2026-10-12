@@ -39,19 +39,23 @@ func hasGRPCHost(svc *v1.Service) bool {
 }
 
 func nginxAnnotations(svc *v1.Service) map[string]string {
-	return map[string]string{
-		"kubernetes.io/tls-acme":                             "true",
-		"nginx.ingress.kubernetes.io/eventsource":            "true",
-		"nginx.ingress.kubernetes.io/add-base-url":           "true",
-		"nginx.ingress.kubernetes.io/ssl-redirect":           "true",
-		"nginx.ingress.kubernetes.io/websocket-services":     fmt.Sprintf("%s-service", svc.Name),
-		"nginx.ingress.kubernetes.io/proxy-send-timeout":     "1800",
-		"nginx.ingress.kubernetes.io/proxy-read-timeout":     "21600",
-		"nginx.ingress.kubernetes.io/proxy-body-size":        fmt.Sprintf("%dm", maxRequestBodySizeMB(svc)),
-		"nginx.ingress.kubernetes.io/upstream-hash-by":       "$realip_remote_addr",
-		"nginx.ingress.kubernetes.io/affinity":               "cookie",
-		"nginx.ingress.kubernetes.io/session-cookie-name":    fmt.Sprintf("%s-session", svc.Name),
-		"nginx.ingress.kubernetes.io/session-cookie-expires": "172800",
-		"nginx.ingress.kubernetes.io/session-cookie-max-age": "172800",
+	annotations := map[string]string{
+		"kubernetes.io/tls-acme":                         "true",
+		"nginx.ingress.kubernetes.io/eventsource":        "true",
+		"nginx.ingress.kubernetes.io/add-base-url":       "true",
+		"nginx.ingress.kubernetes.io/ssl-redirect":       "true",
+		"nginx.ingress.kubernetes.io/websocket-services": fmt.Sprintf("%s-service", svc.Name),
+		"nginx.ingress.kubernetes.io/proxy-send-timeout": "1800",
+		"nginx.ingress.kubernetes.io/proxy-read-timeout": "21600",
+		"nginx.ingress.kubernetes.io/proxy-body-size":    fmt.Sprintf("%dm", maxRequestBodySizeMB(svc)),
 	}
+	if !svc.Spec.Config.SessionAffinity {
+		return annotations
+	}
+	annotations["nginx.ingress.kubernetes.io/upstream-hash-by"] = "$realip_remote_addr"
+	annotations["nginx.ingress.kubernetes.io/affinity"] = "cookie"
+	annotations["nginx.ingress.kubernetes.io/session-cookie-name"] = fmt.Sprintf("%s-session", svc.Name)
+	annotations["nginx.ingress.kubernetes.io/session-cookie-expires"] = "172800"
+	annotations["nginx.ingress.kubernetes.io/session-cookie-max-age"] = "172800"
+	return annotations
 }

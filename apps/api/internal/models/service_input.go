@@ -30,6 +30,7 @@ type CreateServiceInput struct {
 	RunCommand                    *string               `json:"run_command,omitempty"`
 	IsPublic                      *bool                 `json:"is_public,omitempty" doc:"Whether the service is reachable from the internet. Defaults to true for a service with a port and to false for a database"`
 	MaxRequestBodySizeMB          *int32                `json:"max_request_body_size_mb,omitempty" required:"false" minimum:"1" maximum:"10240" doc:"Largest request body the service's domains accept, in MB. Defaults to 100. Not for databases, and has no effect on clusters that route through a gateway"`
+	SessionAffinity               *bool                 `json:"session_affinity,omitempty" required:"false" doc:"Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Defaults to false. Caches like Cloudflare skip responses that set the cookie. Not for databases"`
 	Image                         *string               `json:"image,omitempty"`
 	DockerBuilderDockerfilePath   *string               `json:"docker_builder_dockerfile_path,omitempty" required:"false" doc:"Optional path to Dockerfile, if using docker builder"`
 	DockerBuilderBuildContext     *string               `json:"docker_builder_build_context,omitempty" required:"false" doc:"Optional path to Dockerfile context, if using docker builder"`
@@ -89,6 +90,7 @@ type UpdateServiceInput struct {
 	RunCommand                    *string                `json:"run_command,omitempty" required:"false"`
 	IsPublic                      *bool                  `json:"is_public,omitempty" required:"false" doc:"Whether the service is reachable from the internet. A database gets a public address when true and loses it when false"`
 	MaxRequestBodySizeMB          *int32                 `json:"max_request_body_size_mb,omitempty" required:"false" minimum:"0" maximum:"10240" doc:"Largest request body the service's domains accept, in MB. 0 resets it to the default of 100. Not for databases, and has no effect on clusters that route through a gateway"`
+	SessionAffinity               *bool                  `json:"session_affinity,omitempty" required:"false" doc:"Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Caches like Cloudflare skip responses that set the cookie. Not for databases"`
 	Image                         *string                `json:"image,omitempty" required:"false" doc:"Image to run, with an optional tag. Only for an image service"`
 	DockerBuilderDockerfilePath   *string                `json:"docker_builder_dockerfile_path,omitempty" required:"false" doc:"Optional path to Dockerfile, if using docker builder - set empty string to reset to default"`
 	DockerBuilderBuildContext     *string                `json:"docker_builder_build_context,omitempty" required:"false" doc:"Optional path to Dockerfile context, if using docker builder - set empty string to reset to default"`

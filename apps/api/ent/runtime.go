@@ -553,12 +553,16 @@ func init() {
 	serviceconfigDescIsPublic := serviceconfigFields[17].Descriptor()
 	// serviceconfig.DefaultIsPublic holds the default value on creation for the is_public field.
 	serviceconfig.DefaultIsPublic = serviceconfigDescIsPublic.Default.(bool)
+	// serviceconfigDescSessionAffinity is the schema descriptor for session_affinity field.
+	serviceconfigDescSessionAffinity := serviceconfigFields[19].Descriptor()
+	// serviceconfig.DefaultSessionAffinity holds the default value on creation for the session_affinity field.
+	serviceconfig.DefaultSessionAffinity = serviceconfigDescSessionAffinity.Default.(bool)
 	// serviceconfigDescBackupSchedule is the schema descriptor for backup_schedule field.
-	serviceconfigDescBackupSchedule := serviceconfigFields[23].Descriptor()
+	serviceconfigDescBackupSchedule := serviceconfigFields[24].Descriptor()
 	// serviceconfig.DefaultBackupSchedule holds the default value on creation for the backup_schedule field.
 	serviceconfig.DefaultBackupSchedule = serviceconfigDescBackupSchedule.Default.(string)
 	// serviceconfigDescBackupRetentionCount is the schema descriptor for backup_retention_count field.
-	serviceconfigDescBackupRetentionCount := serviceconfigFields[24].Descriptor()
+	serviceconfigDescBackupRetentionCount := serviceconfigFields[25].Descriptor()
 	// serviceconfig.DefaultBackupRetentionCount holds the default value on creation for the backup_retention_count field.
 	serviceconfig.DefaultBackupRetentionCount = serviceconfigDescBackupRetentionCount.Default.(int)
 	// serviceconfigDescID is the schema descriptor for id field.

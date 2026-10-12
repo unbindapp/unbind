@@ -60,6 +60,8 @@ const (
 	FieldIsPublic = "is_public"
 	// FieldMaxRequestBodySizeMB holds the string denoting the max_request_body_size_mb field in the database.
 	FieldMaxRequestBodySizeMB = "max_request_body_size_mb"
+	// FieldSessionAffinity holds the string denoting the session_affinity field in the database.
+	FieldSessionAffinity = "session_affinity"
 	// FieldImage holds the string denoting the image field in the database.
 	FieldImage = "image"
 	// FieldDefinitionVersion holds the string denoting the definition_version field in the database.
@@ -134,6 +136,7 @@ var Columns = []string{
 	FieldRunCommand,
 	FieldIsPublic,
 	FieldMaxRequestBodySizeMB,
+	FieldSessionAffinity,
 	FieldImage,
 	FieldDefinitionVersion,
 	FieldDatabaseConfig,
@@ -173,6 +176,8 @@ var (
 	DefaultAutoDeploy bool
 	// DefaultIsPublic holds the default value on creation for the "is_public" field.
 	DefaultIsPublic bool
+	// DefaultSessionAffinity holds the default value on creation for the "session_affinity" field.
+	DefaultSessionAffinity bool
 	// DefaultBackupSchedule holds the default value on creation for the "backup_schedule" field.
 	DefaultBackupSchedule string
 	// DefaultBackupRetentionCount holds the default value on creation for the "backup_retention_count" field.
@@ -307,6 +312,11 @@ func ByIsPublic(opts ...sql.OrderTermOption) OrderOption {
 // ByMaxRequestBodySizeMB orders the results by the max_request_body_size_mb field.
 func ByMaxRequestBodySizeMB(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldMaxRequestBodySizeMB, opts...).ToFunc()
+}
+
+// BySessionAffinity orders the results by the session_affinity field.
+func BySessionAffinity(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSessionAffinity, opts...).ToFunc()
 }
 
 // ByImage orders the results by the image field.

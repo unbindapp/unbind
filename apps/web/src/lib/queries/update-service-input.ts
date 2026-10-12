@@ -44,6 +44,7 @@ export const UpdateServiceInputSchema = z
     watchPaths: z.string().optional(),
     image: z.string().optional(),
     isPublic: z.boolean().optional(),
+    sessionAffinity: z.boolean().optional(),
     // 0 resets to the default
     maxRequestBodySizeMb: z.number().int().min(0).max(10240).optional(),
     overwritePorts: PortSpecSchema.array().optional(),
@@ -99,6 +100,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     watchPaths,
     image,
     isPublic,
+    sessionAffinity,
     maxRequestBodySizeMb,
     overwritePorts,
     overwriteHosts,
@@ -208,6 +210,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     watch_paths: watchPaths === undefined ? undefined : splitWatchPaths(watchPaths),
     image,
     is_public: isPublic,
+    session_affinity: sessionAffinity,
     max_request_body_size_mb: maxRequestBodySizeMb,
     overwrite_ports: overwritePorts,
     overwrite_hosts: overwriteHosts,

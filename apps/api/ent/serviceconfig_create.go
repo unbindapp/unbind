@@ -274,6 +274,20 @@ func (_c *ServiceConfigCreate) SetNillableMaxRequestBodySizeMB(v *int32) *Servic
 	return _c
 }
 
+// SetSessionAffinity sets the "session_affinity" field.
+func (_c *ServiceConfigCreate) SetSessionAffinity(v bool) *ServiceConfigCreate {
+	_c.mutation.SetSessionAffinity(v)
+	return _c
+}
+
+// SetNillableSessionAffinity sets the "session_affinity" field if the given value is not nil.
+func (_c *ServiceConfigCreate) SetNillableSessionAffinity(v *bool) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetSessionAffinity(*v)
+	}
+	return _c
+}
+
 // SetImage sets the "image" field.
 func (_c *ServiceConfigCreate) SetImage(v string) *ServiceConfigCreate {
 	_c.mutation.SetImage(v)
@@ -477,6 +491,10 @@ func (_c *ServiceConfigCreate) defaults() {
 		v := serviceconfig.DefaultIsPublic
 		_c.mutation.SetIsPublic(v)
 	}
+	if _, ok := _c.mutation.SessionAffinity(); !ok {
+		v := serviceconfig.DefaultSessionAffinity
+		_c.mutation.SetSessionAffinity(v)
+	}
 	if _, ok := _c.mutation.BackupSchedule(); !ok {
 		v := serviceconfig.DefaultBackupSchedule
 		_c.mutation.SetBackupSchedule(v)
@@ -531,6 +549,9 @@ func (_c *ServiceConfigCreate) check() error {
 	}
 	if _, ok := _c.mutation.IsPublic(); !ok {
 		return &ValidationError{Name: "is_public", err: errors.New(`ent: missing required field "ServiceConfig.is_public"`)}
+	}
+	if _, ok := _c.mutation.SessionAffinity(); !ok {
+		return &ValidationError{Name: "session_affinity", err: errors.New(`ent: missing required field "ServiceConfig.session_affinity"`)}
 	}
 	if _, ok := _c.mutation.BackupSchedule(); !ok {
 		return &ValidationError{Name: "backup_schedule", err: errors.New(`ent: missing required field "ServiceConfig.backup_schedule"`)}
@@ -666,6 +687,10 @@ func (_c *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.MaxRequestBodySizeMB(); ok {
 		_spec.SetField(serviceconfig.FieldMaxRequestBodySizeMB, field.TypeInt32, value)
 		_node.MaxRequestBodySizeMB = &value
+	}
+	if value, ok := _c.mutation.SessionAffinity(); ok {
+		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
+		_node.SessionAffinity = value
 	}
 	if value, ok := _c.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
@@ -1132,6 +1157,18 @@ func (u *ServiceConfigUpsert) AddMaxRequestBodySizeMB(v int32) *ServiceConfigUps
 // ClearMaxRequestBodySizeMB clears the value of the "max_request_body_size_mb" field.
 func (u *ServiceConfigUpsert) ClearMaxRequestBodySizeMB() *ServiceConfigUpsert {
 	u.SetNull(serviceconfig.FieldMaxRequestBodySizeMB)
+	return u
+}
+
+// SetSessionAffinity sets the "session_affinity" field.
+func (u *ServiceConfigUpsert) SetSessionAffinity(v bool) *ServiceConfigUpsert {
+	u.Set(serviceconfig.FieldSessionAffinity, v)
+	return u
+}
+
+// UpdateSessionAffinity sets the "session_affinity" field to the value that was provided on create.
+func (u *ServiceConfigUpsert) UpdateSessionAffinity() *ServiceConfigUpsert {
+	u.SetExcluded(serviceconfig.FieldSessionAffinity)
 	return u
 }
 
@@ -1814,6 +1851,20 @@ func (u *ServiceConfigUpsertOne) UpdateMaxRequestBodySizeMB() *ServiceConfigUpse
 func (u *ServiceConfigUpsertOne) ClearMaxRequestBodySizeMB() *ServiceConfigUpsertOne {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.ClearMaxRequestBodySizeMB()
+	})
+}
+
+// SetSessionAffinity sets the "session_affinity" field.
+func (u *ServiceConfigUpsertOne) SetSessionAffinity(v bool) *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetSessionAffinity(v)
+	})
+}
+
+// UpdateSessionAffinity sets the "session_affinity" field to the value that was provided on create.
+func (u *ServiceConfigUpsertOne) UpdateSessionAffinity() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateSessionAffinity()
 	})
 }
 
@@ -2704,6 +2755,20 @@ func (u *ServiceConfigUpsertBulk) UpdateMaxRequestBodySizeMB() *ServiceConfigUps
 func (u *ServiceConfigUpsertBulk) ClearMaxRequestBodySizeMB() *ServiceConfigUpsertBulk {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.ClearMaxRequestBodySizeMB()
+	})
+}
+
+// SetSessionAffinity sets the "session_affinity" field.
+func (u *ServiceConfigUpsertBulk) SetSessionAffinity(v bool) *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetSessionAffinity(v)
+	})
+}
+
+// UpdateSessionAffinity sets the "session_affinity" field to the value that was provided on create.
+func (u *ServiceConfigUpsertBulk) UpdateSessionAffinity() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateSessionAffinity()
 	})
 }
 

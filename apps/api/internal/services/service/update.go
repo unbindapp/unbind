@@ -155,6 +155,10 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no request size limit")
 	}
 
+	if input.SessionAffinity != nil && service.Type == schema.ServiceTypeDatabase {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no sticky sessions")
+	}
+
 	// For database we don't want to set ports
 	if service.Type == schema.ServiceTypeDatabase {
 		input.OverwritePorts = nil
@@ -479,6 +483,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			RunCommand:                    input.RunCommand,
 			Public:                        input.IsPublic,
 			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
+			SessionAffinity:               input.SessionAffinity,
 			Image:                         input.Image,
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     input.DockerBuilderBuildContext,
@@ -619,6 +624,13 @@ func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, inpu
 			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
 				Name:  "Max Request Size",
 				Value: requestSizeLabel(*input.MaxRequestBodySizeMB),
+			})
+		}
+
+		if input.SessionAffinity != nil {
+			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
+				Name:  "Sticky Sessions",
+				Value: fmt.Sprintf("%t", *input.SessionAffinity),
 			})
 		}
 

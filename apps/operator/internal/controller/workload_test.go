@@ -32,6 +32,7 @@ func TestIngressNeedsUpdate(t *testing.T) {
 	assert.False(t, ingressNeedsUpdate(withBodySize("100m"), withBodySize("100m")))
 	assert.True(t, ingressNeedsUpdate(withBodySize("10m"), withBodySize("100m")))
 	assert.True(t, ingressNeedsUpdate(ingress("a.com"), withBodySize("100m")))
+	assert.True(t, ingressNeedsUpdate(withBodySize("100m"), ingress("a.com")))
 }
 
 func TestKubeServiceNeedsUpdateOnRemovedPort(t *testing.T) {
@@ -45,4 +46,17 @@ func TestKubeServiceNeedsUpdateOnRemovedPort(t *testing.T) {
 
 	assert.False(t, kubeServiceNeedsUpdate(logr.Discard(), service(80, 443), service(80, 443)))
 	assert.True(t, kubeServiceNeedsUpdate(logr.Discard(), service(80), service(80, 443)))
+}
+
+func TestKubeServiceNeedsUpdateOnAnnotations(t *testing.T) {
+	sticky := func() *corev1.Service {
+		svc := &corev1.Service{}
+		svc.Annotations = map[string]string{"traefik.ingress.kubernetes.io/service.sticky.cookie": "true"}
+		return svc
+	}
+
+	assert.False(t, kubeServiceNeedsUpdate(logr.Discard(), sticky(), sticky()))
+	assert.False(t, kubeServiceNeedsUpdate(logr.Discard(), &corev1.Service{}, &corev1.Service{}))
+	assert.True(t, kubeServiceNeedsUpdate(logr.Discard(), &corev1.Service{}, sticky()))
+	assert.True(t, kubeServiceNeedsUpdate(logr.Discard(), sticky(), &corev1.Service{}))
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	stderrors "errors"
 	"fmt"
+	"maps"
 	"slices"
 
 	"github.com/go-logr/logr"
@@ -94,6 +95,7 @@ func (r *ServiceReconciler) reconcileSingleKubeService(ctx context.Context, logg
 		},
 		func(existing, desired *corev1.Service) {
 			existing.Spec = desired.Spec
+			existing.Annotations = desired.Annotations
 		},
 		nil,
 	)
@@ -154,6 +156,9 @@ func kubeServiceNeedsUpdate(logger logr.Logger, desired, existing *corev1.Servic
 		return true
 	case serviceTypeOrDefault(existing.Spec.Type) != serviceTypeOrDefault(desired.Spec.Type):
 		logger.Info("Service type needs update", "from", existing.Spec.Type, "to", desired.Spec.Type)
+		return true
+	case !maps.Equal(desired.Annotations, existing.Annotations):
+		logger.Info("Service annotations need update")
 		return true
 	default:
 		return false
@@ -268,13 +273,13 @@ func (r *ServiceReconciler) reconcileRouteObject(ctx context.Context, desired cl
 	}
 }
 
-// DeepDerivative accepts a shorter list, so hosts are compared exactly for a removed
-// one to leave the cluster
+// DeepDerivative accepts a shorter list, so hosts and annotations are compared exactly
+// for a removed one to leave the cluster
 func ingressNeedsUpdate(existing, desired *networkingv1.Ingress) bool {
 	return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
 		!slices.Equal(ingressHosts(desired), ingressHosts(existing)) ||
 		!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels) ||
-		!equality.Semantic.DeepDerivative(desired.Annotations, existing.Annotations)
+		!maps.Equal(desired.Annotations, existing.Annotations)
 }
 
 func ingressHosts(ingress *networkingv1.Ingress) []string {

@@ -8,6 +8,7 @@ import {
   BlockItemTitle,
 } from "@/components/block";
 import ErrorLine from "@/components/error-line";
+import HeaderToggle from "@/components/service/header-toggle";
 import { networkAccessLabel } from "@/components/service/network-access";
 import AddDomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/add-domain-port-card";
 import DatabaseEndpointCard, {
@@ -24,6 +25,7 @@ import {
   hasApplying,
   networkAccessFields,
   requestSizeFields,
+  sessionAffinityFields,
   stagedBoolean,
   useServiceChanges,
   useStagedNetworking,
@@ -91,6 +93,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
   const { staged, stage, unstage } = useServiceChanges(service, {
     isPublic: service.config.is_public,
     maxRequestBodySizeMb: serverRequestSizeMb,
+    sessionAffinity: service.config.session_affinity,
   });
   const { data: systemData } = useSystem();
 
@@ -119,8 +122,12 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     systemData !== undefined &&
     systemData.data.networking_provider !== "gateway" &&
     isItemVisible(settingsIds.networking.maxRequestSize);
-  if (!showAccess && !showPublic && !showPrivate && !showRequestSize) return null;
-  const sectionFields = [...networkAccessFields, ...requestSizeFields];
+  const showSessionAffinity = !isDatabase && isItemVisible(settingsIds.networking.sessionAffinity);
+  const sessionAffinity = stagedBoolean(staged.sessionAffinity, service.config.session_affinity);
+  if (!showAccess && !showPublic && !showPrivate && !showRequestSize && !showSessionAffinity) {
+    return null;
+  }
+  const sectionFields = [...networkAccessFields, ...requestSizeFields, ...sessionAffinityFields];
 
   return (
     <SettingsSection
@@ -330,6 +337,29 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
           </BlockItem>
         </Block>
       )}
+      {showSessionAffinity && (
+        <Block>
+          <BlockItem id={settingsIds.networking.sessionAffinity} className="w-full md:w-full">
+            <BlockItemHeader>
+              <BlockItemTitle>Load Balancing</BlockItemTitle>
+              <HeaderToggle
+                label="Sticky Sessions"
+                checked={sessionAffinity}
+                hasChanges={staged.sessionAffinity !== undefined}
+                onChange={(checked) =>
+                  stage({
+                    field: "sessionAffinity",
+                    label: "Sticky Sessions",
+                    value: checked,
+                    previous: service.config.session_affinity,
+                    format: sessionAffinityLabel,
+                  })
+                }
+              />
+            </BlockItemHeader>
+          </BlockItem>
+        </Block>
+      )}
       {showRequestSize && (
         <Block>
           <BlockItem id={settingsIds.networking.maxRequestSize} className="w-full md:w-full">
@@ -365,4 +395,8 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
       )}
     </SettingsSection>
   );
+}
+
+function sessionAffinityLabel(value: boolean) {
+  return value ? "On" : "Off";
 }

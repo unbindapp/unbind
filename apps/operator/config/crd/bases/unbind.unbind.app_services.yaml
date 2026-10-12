@@ -294,6 +294,10 @@ spec:
                   runCommand:
                     description: RunCommand is a custom run command
                     type: string
+                  sessionAffinity:
+                    description: SessionAffinity pins each visitor to one replica
+                      with a cookie
+                    type: boolean
                   variableMounts:
                     description: VariableMounts are paths to mount variables (from
                       secret ref)

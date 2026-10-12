@@ -51,6 +51,10 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no request size limit")
 	}
 
+	if input.SessionAffinity != nil && input.Type == schema.ServiceTypeDatabase {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no sticky sessions")
+	}
+
 	switch input.Type {
 	case schema.ServiceTypeGithub:
 		if input.GitHubInstallationID == nil || input.RepositoryOwner == nil || input.RepositoryName == nil {
@@ -431,6 +435,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			RunCommand:                    input.RunCommand,
 			Public:                        isPublic,
 			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
+			SessionAffinity:               input.SessionAffinity,
 			Image:                         input.Image,
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     input.DockerBuilderBuildContext,

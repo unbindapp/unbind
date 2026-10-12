@@ -239,6 +239,7 @@ export const UpdateServiceInputSchema = z
     run_command: z.string().optional(),
     s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for databases that support backups, Redis does not
     service_id: z.string(),
+    session_affinity: z.boolean().optional(), // Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Caches like Cloudflare skip responses that set the cookie. Not for databases
     team_id: z.string(),
     upsert_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
     watch_paths: z.array(z.string()).optional(), // Gitignore-style patterns, a push deploys only when a changed file matches. Empty deploys on every push
@@ -859,6 +860,7 @@ export const CreateServiceInputSchema = z
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
     s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for databases that support backups, Redis does not
+    session_affinity: z.boolean().optional(), // Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Defaults to false. Caches like Cloudflare skip responses that set the cookie. Not for databases
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
     variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
@@ -914,6 +916,7 @@ export const ServiceConfigResponseSchema = z
     run_command: z.string().optional(),
     s3_backup_bucket_id: z.string().optional(),
     security_context: SecurityContextSchema.optional(),
+    session_affinity: z.boolean(), // Whether the service's domains pin each visitor to one replica with a cookie
     variable_mounts: z.array(VariableMountSchema),
     volumes: z.array(PVCInfoSchema),
     watch_paths: z.array(z.string()),

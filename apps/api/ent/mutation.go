@@ -20131,6 +20131,7 @@ type ServiceConfigMutation struct {
 	is_public                        *bool
 	max_request_body_size_mb         *int32
 	addmax_request_body_size_mb      *int32
+	session_affinity                 *bool
 	image                            *string
 	definition_version               *string
 	database_config                  **schema.DatabaseConfig
@@ -21277,6 +21278,42 @@ func (m *ServiceConfigMutation) ResetMaxRequestBodySizeMB() {
 	delete(m.clearedFields, serviceconfig.FieldMaxRequestBodySizeMB)
 }
 
+// SetSessionAffinity sets the "session_affinity" field.
+func (m *ServiceConfigMutation) SetSessionAffinity(b bool) {
+	m.session_affinity = &b
+}
+
+// SessionAffinity returns the value of the "session_affinity" field in the mutation.
+func (m *ServiceConfigMutation) SessionAffinity() (r bool, exists bool) {
+	v := m.session_affinity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSessionAffinity returns the old "session_affinity" field's value of the ServiceConfig entity.
+// If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceConfigMutation) OldSessionAffinity(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSessionAffinity is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSessionAffinity requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSessionAffinity: %w", err)
+	}
+	return oldValue.SessionAffinity, nil
+}
+
+// ResetSessionAffinity resets all changes to the "session_affinity" field.
+func (m *ServiceConfigMutation) ResetSessionAffinity() {
+	m.session_affinity = nil
+}
+
 // SetImage sets the "image" field.
 func (m *ServiceConfigMutation) SetImage(s string) {
 	m.image = &s
@@ -22109,7 +22146,7 @@ func (m *ServiceConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceConfigMutation) Fields() []string {
-	fields := make([]string, 0, 35)
+	fields := make([]string, 0, 36)
 	if m.created_at != nil {
 		fields = append(fields, serviceconfig.FieldCreatedAt)
 	}
@@ -22172,6 +22209,9 @@ func (m *ServiceConfigMutation) Fields() []string {
 	}
 	if m.max_request_body_size_mb != nil {
 		fields = append(fields, serviceconfig.FieldMaxRequestBodySizeMB)
+	}
+	if m.session_affinity != nil {
+		fields = append(fields, serviceconfig.FieldSessionAffinity)
 	}
 	if m.image != nil {
 		fields = append(fields, serviceconfig.FieldImage)
@@ -22265,6 +22305,8 @@ func (m *ServiceConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.IsPublic()
 	case serviceconfig.FieldMaxRequestBodySizeMB:
 		return m.MaxRequestBodySizeMB()
+	case serviceconfig.FieldSessionAffinity:
+		return m.SessionAffinity()
 	case serviceconfig.FieldImage:
 		return m.Image()
 	case serviceconfig.FieldDefinitionVersion:
@@ -22344,6 +22386,8 @@ func (m *ServiceConfigMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldIsPublic(ctx)
 	case serviceconfig.FieldMaxRequestBodySizeMB:
 		return m.OldMaxRequestBodySizeMB(ctx)
+	case serviceconfig.FieldSessionAffinity:
+		return m.OldSessionAffinity(ctx)
 	case serviceconfig.FieldImage:
 		return m.OldImage(ctx)
 	case serviceconfig.FieldDefinitionVersion:
@@ -22527,6 +22571,13 @@ func (m *ServiceConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMaxRequestBodySizeMB(v)
+		return nil
+	case serviceconfig.FieldSessionAffinity:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSessionAffinity(v)
 		return nil
 	case serviceconfig.FieldImage:
 		v, ok := value.(string)
@@ -22929,6 +22980,9 @@ func (m *ServiceConfigMutation) ResetField(name string) error {
 		return nil
 	case serviceconfig.FieldMaxRequestBodySizeMB:
 		m.ResetMaxRequestBodySizeMB()
+		return nil
+	case serviceconfig.FieldSessionAffinity:
+		m.ResetSessionAffinity()
 		return nil
 	case serviceconfig.FieldImage:
 		m.ResetImage()

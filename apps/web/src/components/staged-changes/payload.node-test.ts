@@ -228,6 +228,14 @@ test("sends a staged auto deploy toggle as auto_deploy", () => {
   assert.equal(untouched.services[0].auto_deploy, undefined);
 });
 
+test("sends a staged sticky sessions toggle as session_affinity", () => {
+  const payload = buildApplyStagedChangesPayload(state([], [service("sessionAffinity", true)]));
+  assert.equal(payload.services[0].session_affinity, true);
+
+  const untouched = buildApplyStagedChangesPayload(state([], [service("gitBranch", "main")]));
+  assert.equal(untouched.services[0].session_affinity, undefined);
+});
+
 test("folds domain, port and volume changes into the update of their service", () => {
   const payload = buildApplyStagedChangesPayload(
     state(

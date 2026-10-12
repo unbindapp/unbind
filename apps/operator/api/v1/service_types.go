@@ -110,6 +110,9 @@ type ServiceConfigSpec struct {
 	// +kubebuilder:validation:Maximum=10240
 	MaxRequestBodySizeMB *int32 `json:"maxRequestBodySizeMb,omitempty"`
 
+	// SessionAffinity pins each visitor to one replica with a cookie
+	SessionAffinity bool `json:"sessionAffinity,omitempty"`
+
 	// Image is a custom Docker image if not building from git
 	Image string `json:"image"`
 

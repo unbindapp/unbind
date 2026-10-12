@@ -120,6 +120,20 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
         description: "Requests above this size are refused by the service.",
         keywords: ["request", "body", "upload", "file", "size", "limit", "413", "payload"],
       },
+      {
+        id: settingsIds.networking.sessionAffinity,
+        title: "Sticky Sessions",
+        description: "Pin each visitor to one replica with a cookie.",
+        keywords: [
+          "sticky",
+          "session",
+          "affinity",
+          "cookie",
+          "load balancing",
+          "websocket",
+          "replica",
+        ],
+      },
     ],
   },
   {

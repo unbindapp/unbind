@@ -68,7 +68,7 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 		if len(grpcHosts) > 0 {
 			objects = append(objects, p.grpcRoute(svc, in.Labels, grpcHosts))
 		}
-		if p.cfg.GatewayControllerEnvoy {
+		if p.cfg.GatewayControllerEnvoy && svc.Spec.Config.SessionAffinity {
 			objects = append(objects, envoyAffinityPolicy(in))
 		}
 	}
