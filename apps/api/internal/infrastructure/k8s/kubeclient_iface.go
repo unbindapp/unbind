@@ -114,6 +114,9 @@ type KubeClientInterface interface {
 	// RebindPersistentVolumeClaim renames a claim without moving data: retain the PV, delete the
 	// claim, reserve the PV for the new name, recreate.
 	RebindPersistentVolumeClaim(ctx context.Context, namespace, fromName, toName string, client kubernetes.Interface) (*models.PVCInfo, error)
+	// EnsurePlatformRouteTimeouts adds request timeouts to the platform's HTTPRoute. Installs
+	// before the chart set them have none, and Envoy cuts those requests at its 15s default.
+	EnsurePlatformRouteTimeouts(ctx context.Context, uiURL string) error
 	// GetPodContainerStatusByLabels efficiently fetches pod status with inferred events from container state
 	GetPodContainerStatusByLabels(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) ([]PodContainerStatus, error)
 	// GetPodContainerStatusByLabelsWithOptions efficiently fetches pod status with configurable options

@@ -34,6 +34,8 @@ spec:
       backendRefs:
         - name: {{ .Values.api.name }}
           port: {{ .Values.api.service.port }}
+      timeouts:
+        request: 21600s
     - matches:
         - path:
             type: PathPrefix
@@ -47,6 +49,8 @@ spec:
       backendRefs:
         - name: {{ .Values.api.name }}
           port: {{ .Values.api.service.port }}
+      timeouts:
+        request: 21600s
     - matches:
         - path:
             type: PathPrefix
@@ -54,4 +58,6 @@ spec:
       backendRefs:
         - name: {{ .Values.api.name }}
           port: {{ .Values.api.service.port }}
+      timeouts:
+        request: 21600s
 {{- end }}

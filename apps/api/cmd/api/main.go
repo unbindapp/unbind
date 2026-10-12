@@ -188,6 +188,9 @@ func startAPI(cfg *config.Config) {
 		cleanupImage = k8s.AppImageRepository + ":" + Version
 	}
 	systemService.ReconcileRegistryCache(ctx, cleanupImage)
+	if err := kubeClient.EnsurePlatformRouteTimeouts(ctx, cfg.ExternalUIUrl); err != nil {
+		log.Warnf("Failed to set platform route timeouts: %v", err)
+	}
 	metricsService := metric_service.NewMetricService(promClient, repo, kubeClient)
 	serversService := servers_service.NewServersService(kubeClient, repo)
 	replicaService := replica_service.NewReplicaService(cfg, repo, kubeClient)

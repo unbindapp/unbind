@@ -1,0 +1,2 @@
+# Platform HTTPRoute request timeouts are fresh-install-only in the chart; the API adds them
+# to existing installs at startup.
