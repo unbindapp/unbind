@@ -20,6 +20,13 @@ const tabs: TSettingsTab[] = [
     matchPath: `${basePath}/registry`,
     link: linkOptions({ to: "/system/settings/registry" }),
   },
+  {
+    label: "Email",
+    icon: "email",
+    strictMatch: true,
+    matchPath: `${basePath}/email`,
+    link: linkOptions({ to: "/system/settings/email" }),
+  },
 ];
 
 export const Route = createFileRoute("/system/settings")({

@@ -48,16 +48,20 @@ type VerifiedClaims struct {
 	Groups  []string
 }
 
-// MintAccessToken issues an OIDC-shaped access token. Groups carry the "oidc:"
-// prefix that the Kubernetes RBAC bindings match on.
+// GroupClaims names the user's groups the way the Kubernetes RBAC bindings
+// match on them.
+func GroupClaims(groups []*ent.Group) []string {
+	claims := make([]string, len(groups))
+	for i, g := range groups {
+		claims[i] = fmt.Sprintf("oidc:%s", g.Name)
+	}
+	return claims
+}
+
+// MintAccessToken issues an OIDC-shaped access token.
 func (self *TokenManager) MintAccessToken(user *ent.User, groups []*ent.Group) (token string, expiresAt time.Time, err error) {
 	now := time.Now()
 	expiresAt = now.Add(AccessTokenTTL)
-
-	groupClaims := make([]string, len(groups))
-	for i, g := range groups {
-		groupClaims[i] = fmt.Sprintf("oidc:%s", g.Name)
-	}
 
 	claims := jwt.MapClaims{
 		"iss":            self.issuer,
@@ -65,7 +69,7 @@ func (self *TokenManager) MintAccessToken(user *ent.User, groups []*ent.Group) (
 		"aud":            self.audience,
 		"email":          user.Email,
 		"email_verified": true,
-		"groups":         groupClaims,
+		"groups":         GroupClaims(groups),
 		"iat":            now.Unix(),
 		"exp":            expiresAt.Unix(),
 	}

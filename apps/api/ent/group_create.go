@@ -15,6 +15,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/permission"
+	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 )
 
@@ -88,6 +90,34 @@ func (_c *GroupCreate) SetNillableK8sRoleName(v *string) *GroupCreate {
 	return _c
 }
 
+// SetTeamID sets the "team_id" field.
+func (_c *GroupCreate) SetTeamID(v uuid.UUID) *GroupCreate {
+	_c.mutation.SetTeamID(v)
+	return _c
+}
+
+// SetNillableTeamID sets the "team_id" field if the given value is not nil.
+func (_c *GroupCreate) SetNillableTeamID(v *uuid.UUID) *GroupCreate {
+	if v != nil {
+		_c.SetTeamID(*v)
+	}
+	return _c
+}
+
+// SetRole sets the "role" field.
+func (_c *GroupCreate) SetRole(v schema.PermittedAction) *GroupCreate {
+	_c.mutation.SetRole(v)
+	return _c
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_c *GroupCreate) SetNillableRole(v *schema.PermittedAction) *GroupCreate {
+	if v != nil {
+		_c.SetRole(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *GroupCreate) SetID(v uuid.UUID) *GroupCreate {
 	_c.mutation.SetID(v)
@@ -130,6 +160,11 @@ func (_c *GroupCreate) AddPermissions(v ...*Permission) *GroupCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddPermissionIDs(ids...)
+}
+
+// SetTeam sets the "team" edge to the Team entity.
+func (_c *GroupCreate) SetTeam(v *Team) *GroupCreate {
+	return _c.SetTeamID(v.ID)
 }
 
 // Mutation returns the GroupMutation object of the builder.
@@ -197,6 +232,11 @@ func (_c *GroupCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Group.name": %w`, err)}
 		}
 	}
+	if v, ok := _c.mutation.Role(); ok {
+		if err := group.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "Group.role": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -253,6 +293,10 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 		_spec.SetField(group.FieldK8sRoleName, field.TypeString, value)
 		_node.K8sRoleName = &value
 	}
+	if value, ok := _c.mutation.Role(); ok {
+		_spec.SetField(group.FieldRole, field.TypeEnum, value)
+		_node.Role = &value
+	}
 	if nodes := _c.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -283,6 +327,23 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.TeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.TeamTable,
+			Columns: []string{group.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TeamID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -394,6 +455,42 @@ func (u *GroupUpsert) UpdateK8sRoleName() *GroupUpsert {
 // ClearK8sRoleName clears the value of the "k8s_role_name" field.
 func (u *GroupUpsert) ClearK8sRoleName() *GroupUpsert {
 	u.SetNull(group.FieldK8sRoleName)
+	return u
+}
+
+// SetTeamID sets the "team_id" field.
+func (u *GroupUpsert) SetTeamID(v uuid.UUID) *GroupUpsert {
+	u.Set(group.FieldTeamID, v)
+	return u
+}
+
+// UpdateTeamID sets the "team_id" field to the value that was provided on create.
+func (u *GroupUpsert) UpdateTeamID() *GroupUpsert {
+	u.SetExcluded(group.FieldTeamID)
+	return u
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (u *GroupUpsert) ClearTeamID() *GroupUpsert {
+	u.SetNull(group.FieldTeamID)
+	return u
+}
+
+// SetRole sets the "role" field.
+func (u *GroupUpsert) SetRole(v schema.PermittedAction) *GroupUpsert {
+	u.Set(group.FieldRole, v)
+	return u
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *GroupUpsert) UpdateRole() *GroupUpsert {
+	u.SetExcluded(group.FieldRole)
+	return u
+}
+
+// ClearRole clears the value of the "role" field.
+func (u *GroupUpsert) ClearRole() *GroupUpsert {
+	u.SetNull(group.FieldRole)
 	return u
 }
 
@@ -515,6 +612,48 @@ func (u *GroupUpsertOne) UpdateK8sRoleName() *GroupUpsertOne {
 func (u *GroupUpsertOne) ClearK8sRoleName() *GroupUpsertOne {
 	return u.Update(func(s *GroupUpsert) {
 		s.ClearK8sRoleName()
+	})
+}
+
+// SetTeamID sets the "team_id" field.
+func (u *GroupUpsertOne) SetTeamID(v uuid.UUID) *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetTeamID(v)
+	})
+}
+
+// UpdateTeamID sets the "team_id" field to the value that was provided on create.
+func (u *GroupUpsertOne) UpdateTeamID() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateTeamID()
+	})
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (u *GroupUpsertOne) ClearTeamID() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.ClearTeamID()
+	})
+}
+
+// SetRole sets the "role" field.
+func (u *GroupUpsertOne) SetRole(v schema.PermittedAction) *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *GroupUpsertOne) UpdateRole() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateRole()
+	})
+}
+
+// ClearRole clears the value of the "role" field.
+func (u *GroupUpsertOne) ClearRole() *GroupUpsertOne {
+	return u.Update(func(s *GroupUpsert) {
+		s.ClearRole()
 	})
 }
 
@@ -803,6 +942,48 @@ func (u *GroupUpsertBulk) UpdateK8sRoleName() *GroupUpsertBulk {
 func (u *GroupUpsertBulk) ClearK8sRoleName() *GroupUpsertBulk {
 	return u.Update(func(s *GroupUpsert) {
 		s.ClearK8sRoleName()
+	})
+}
+
+// SetTeamID sets the "team_id" field.
+func (u *GroupUpsertBulk) SetTeamID(v uuid.UUID) *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetTeamID(v)
+	})
+}
+
+// UpdateTeamID sets the "team_id" field to the value that was provided on create.
+func (u *GroupUpsertBulk) UpdateTeamID() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateTeamID()
+	})
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (u *GroupUpsertBulk) ClearTeamID() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.ClearTeamID()
+	})
+}
+
+// SetRole sets the "role" field.
+func (u *GroupUpsertBulk) SetRole(v schema.PermittedAction) *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *GroupUpsertBulk) UpdateRole() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.UpdateRole()
+	})
+}
+
+// ClearRole clears the value of the "role" field.
+func (u *GroupUpsertBulk) ClearRole() *GroupUpsertBulk {
+	return u.Update(func(s *GroupUpsert) {
+		s.ClearRole()
 	})
 }
 

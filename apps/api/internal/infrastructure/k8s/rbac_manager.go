@@ -31,21 +31,10 @@ func NewRBACManager(repository repositories.RepositoriesInterface, kubeClient *K
 func (self *RBACManager) SyncGroupToK8s(ctx context.Context, group *ent.Group) error {
 	roleName, bindingName := getRoleAndBindingName(group.Name, group.ID.String())
 
-	var err error
-	// Create or update Role for each permission
-	for _, permission := range group.Edges.Permissions {
-		teams := []*ent.Team{}
-		if permission.ResourceSelector.Superuser {
-			teams, err = self.repo.Team().GetAll(ctx, nil)
-			if err != nil {
-				return fmt.Errorf("failed to get all teams: %w", err)
-			}
-		} else {
-			team, err := self.repo.Team().GetByID(ctx, permission.ResourceSelector.ID)
-			if err != nil {
-				return err
-			}
-			teams = append(teams, team)
+	for _, permission := range teamPermissions(group) {
+		teams, err := self.teamsForPermission(ctx, permission)
+		if err != nil {
+			return err
 		}
 
 		for _, team := range teams {
@@ -63,13 +52,43 @@ func (self *RBACManager) SyncGroupToK8s(ctx context.Context, group *ent.Group) e
 		}
 	}
 
-	// Update the group in our database to store K8s reference
-	err = self.repo.Group().UpdateK8sRoleName(ctx, group, roleName)
-	if err != nil {
+	if err := self.repo.Group().UpdateK8sRoleName(ctx, group, roleName); err != nil {
 		return fmt.Errorf("failed to update group: %w", err)
 	}
 
 	return nil
+}
+
+// Only team grants map to Kubernetes RBAC: a team is a namespace, nothing below it is.
+func teamPermissions(group *ent.Group) []*ent.Permission {
+	var perms []*ent.Permission
+	for _, p := range group.Edges.Permissions {
+		if p.ResourceType == entSchema.ResourceTypeTeam {
+			perms = append(perms, p)
+		}
+	}
+	return perms
+}
+
+// teamsForPermission resolves the namespaces a team grant reaches. A grant on a
+// team that no longer exists reaches nothing.
+func (self *RBACManager) teamsForPermission(ctx context.Context, permission *ent.Permission) ([]*ent.Team, error) {
+	if permission.ResourceSelector.Superuser {
+		teams, err := self.repo.Team().GetAll(ctx, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get all teams: %w", err)
+		}
+		return teams, nil
+	}
+
+	team, err := self.repo.Team().GetByID(ctx, permission.ResourceSelector.ID)
+	if ent.IsNotFound(err) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return []*ent.Team{team}, nil
 }
 
 // createOrUpdateRole creates or updates a Role for the given group in the specified namespace
@@ -338,22 +357,13 @@ func (self *RBACManager) DeleteK8sRBAC(ctx context.Context, group *ent.Group) er
 		return nil // Nothing to delete
 	}
 
-	// Get teams
-	teams := []*ent.Team{}
-	var err error
-	for _, permission := range group.Edges.Permissions {
-		if permission.ResourceSelector.Superuser {
-			teams, err = self.repo.Team().GetAll(ctx, nil)
-			if err != nil {
-				return fmt.Errorf("failed to get all teams: %w", err)
-			}
-		} else {
-			team, err := self.repo.Team().GetByID(ctx, permission.ResourceSelector.ID)
-			if err != nil {
-				return err
-			}
-			teams = append(teams, team)
+	var teams []*ent.Team
+	for _, permission := range teamPermissions(group) {
+		reached, err := self.teamsForPermission(ctx, permission)
+		if err != nil {
+			return err
 		}
+		teams = append(teams, reached...)
 	}
 
 	// Define the resource schemas
@@ -371,25 +381,19 @@ func (self *RBACManager) DeleteK8sRBAC(ctx context.Context, group *ent.Group) er
 
 	roleName, bindingName := getRoleAndBindingName(group.Name, group.ID.String())
 
-	// For each team, try to delete the Role and RoleBinding
 	for _, team := range teams {
-		// Delete the RoleBinding first
-		err = self.kubeClient.client.Resource(rbResource).Namespace(team.Namespace).Delete(ctx, bindingName, metav1.DeleteOptions{})
+		err := self.kubeClient.client.Resource(rbResource).Namespace(team.Namespace).Delete(ctx, bindingName, metav1.DeleteOptions{})
 		if err == nil {
 			log.Infof("RoleBinding '%s' in namespace '%s' deleted successfully", bindingName, team.Namespace)
 		}
 
-		// Delete the Role
 		err = self.kubeClient.client.Resource(roleResource).Namespace(team.Namespace).Delete(ctx, roleName, metav1.DeleteOptions{})
 		if err == nil {
 			log.Infof("Role '%s' in namespace '%s' deleted successfully", roleName, team.Namespace)
 		}
 	}
 
-	// Update the group in our database to remove K8s reference
-	err = self.repo.Group().ClearK8sRoleName(ctx, group)
-
-	return err
+	return self.repo.Group().ClearK8sRoleName(ctx, group)
 }
 
 // Helper function to convert a string slice to an interface slice

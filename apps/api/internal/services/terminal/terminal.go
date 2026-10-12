@@ -8,6 +8,7 @@ import (
 
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
@@ -49,6 +50,7 @@ type ExecInput struct {
 }
 
 type ExecTarget struct {
+	Identity  k8s.ExecIdentity
 	Namespace string
 	PodName   string
 	Container string
@@ -59,6 +61,11 @@ type ExecTarget struct {
 // websocket upgrade so denials surface as normal HTTP errors.
 func (self *TerminalService) Resolve(ctx context.Context, requesterUserID uuid.UUID, input *ExecInput) (*ExecTarget, error) {
 	team, service, err := self.validatePermissionsAndParseInputs(ctx, requesterUserID, input)
+	if err != nil {
+		return nil, err
+	}
+
+	identity, err := self.execIdentity(ctx, requesterUserID)
 	if err != nil {
 		return nil, err
 	}
@@ -84,11 +91,24 @@ func (self *TerminalService) Resolve(ctx context.Context, requesterUserID uuid.U
 	}
 
 	return &ExecTarget{
+		Identity:  identity,
 		Namespace: team.Namespace,
 		PodName:   pod.Name,
 		Container: container,
 		Command:   defaultShellCommand,
 	}, nil
+}
+
+func (self *TerminalService) execIdentity(ctx context.Context, userID uuid.UUID) (k8s.ExecIdentity, error) {
+	user, err := self.repo.User().GetByID(ctx, userID)
+	if err != nil {
+		return k8s.ExecIdentity{}, err
+	}
+	groups, err := self.repo.User().GetGroups(ctx, userID)
+	if err != nil {
+		return k8s.ExecIdentity{}, err
+	}
+	return k8s.ExecIdentity{Email: user.Email, Groups: auth.GroupClaims(groups)}, nil
 }
 
 func selectPod(pods []corev1.Pod, requested string) (*corev1.Pod, error) {

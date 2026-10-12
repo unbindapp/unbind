@@ -99,3 +99,20 @@ func (suite *BSCreateUserSuite) TestCreateUserBootstrapsSuperuser() {
 func TestBSCreateUserSuite(t *testing.T) {
 	suite.Run(t, new(BSCreateUserSuite))
 }
+
+// Team role groups exist from the first start; they must not stop the superuser
+// group from being created, and the first user must not land in them.
+func (suite *BSCreateUserSuite) TestRoleGroupsDoNotCountAsBootstrappedGroups() {
+	suite.DB.Group.Delete().ExecX(suite.Ctx)
+	team := suite.DB.Team.Create().SetKubernetesName("default-abc").SetName("Default").SetNamespace("default-abc").SetKubernetesSecret("default-abc").SaveX(suite.Ctx)
+	suite.DB.Group.Create().SetName("team-default-abc-admin").SetTeamID(team.ID).SetRole("admin").SaveX(suite.Ctx)
+
+	dbUser, err := suite.bootstrapRepo.CreateUser(suite.Ctx, "owner@unbind.app", "password123")
+	suite.Require().NoError(err)
+
+	groups := suite.DB.User.Query().Where(user.IDEQ(dbUser.ID)).QueryGroups().AllX(suite.Ctx)
+	suite.Require().Len(groups, 1)
+	suite.Equal("superuser", groups[0].Name)
+	suite.Nil(groups[0].TeamID)
+	suite.Equal(1, suite.DB.Group.Query().Where(group.TeamIDIsNil()).CountX(suite.Ctx))
+}

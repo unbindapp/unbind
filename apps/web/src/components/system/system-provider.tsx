@@ -1,5 +1,6 @@
 "use client";
 
+import { isSystemViewer, meQuery } from "@/lib/queries/me";
 import { systemQuery, type TSystem } from "@/lib/queries/system";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { createContext, ReactNode, useContext } from "react";
@@ -12,7 +13,8 @@ export const SystemProvider: React.FC<{
   initialData?: TSystem;
   children: ReactNode;
 }> = ({ initialData, children }) => {
-  const query = useQuery({ ...systemQuery(), initialData });
+  const { data: me } = useQuery(meQuery);
+  const query = useQuery({ ...systemQuery(), initialData, enabled: isSystemViewer(me) });
   return <SystemContext.Provider value={query}>{children}</SystemContext.Provider>;
 };
 

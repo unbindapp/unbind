@@ -526,7 +526,8 @@ func parseDiskUsage(output string) (int64, error) {
 
 // Tags are content hashes with no ordering, so the tag link mtime stands in for push time
 func (self *Cleaner) tagModTimes(ctx context.Context, pod string) (map[string]int64, error) {
-	command := fmt.Sprintf(`find %s -path '*/_manifests/tags/*/current/link' -exec stat -c '%%Y %%n' {} +`, registryRepoDir)
+	// The repositories dir only exists after the first push
+	command := fmt.Sprintf(`[ -d %[1]s ] || exit 0; find %[1]s -path '*/_manifests/tags/*/current/link' -exec stat -c '%%Y %%n' {} +`, registryRepoDir)
 	out, err := self.exec(ctx, pod, []string{"sh", "-c", command})
 	if err != nil {
 		return nil, err

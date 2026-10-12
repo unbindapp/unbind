@@ -1,4 +1,4 @@
-h1:0DdDwFdcwBFEgeS/b/ppCeauk2tpQwVfl+53i/qy1PA=
+h1:X3P3Iej2MiLKvBT2LufiZPsq3ZPtOUVkjmih16SkFjY=
 20250519010757_initial_migration.sql h1:94lMwKemoNX/ichD+2Vzb7GmOHXVj4qVTfeBInQAe0g=
 20250519163449_add_init_containers.sql h1:7bt+zCbtmlYr1QDztgka0R5wUxdjD7XYUkrhL9GYYIQ=
 20250521202532_non_nillable_kubernetes_secret.sql h1:eDpMWyeBXh5cG4poavaUMeYs5QXddFBBIyYlxc+nq64=
@@ -37,3 +37,5 @@ h1:0DdDwFdcwBFEgeS/b/ppCeauk2tpQwVfl+53i/qy1PA=
 20260927093000_github_app_slug.sql h1:e/GODvw9dUhrT9wNseQDeOhNk/8TWGcC4iHVkH3pFiQ=
 20260928210000_service_reference_syntax_migrated.sql h1:oIVuFrv9BFtC5EVKC7VQwKEp8GIaG67TAX6/ErBjgv4=
 20260930120000_single_replica_with_volume.sql h1:goaJlk+QDVQklwUX927qjjXi69MoMVP6LwcHQ2quMDk=
+20261012175416_team_role_groups.sql h1:ObwS7hZSTGYJMThyaHByKAfDCLuZ0GCgSyOeOXdGiGI=
+20261012180510_invitations_and_email.sql h1:XkkPdT+7aLDnC6G8G6UDAIEpmbKC52jqVr5GZSFf5L4=

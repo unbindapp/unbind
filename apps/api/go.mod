@@ -51,6 +51,7 @@ require (
 	github.com/stretchr/testify v1.12.1
 	github.com/tonistiigi/fsutil v0.0.0-20261009124904-c1c5bffae3b5
 	github.com/unbindapp/unbind-operator v0.0.22-0.20250613192245-dc821b968321
+	github.com/wneessen/go-mail v0.8.1
 	github.com/zalando/postgres-operator/v2 v2.0.3
 	go.uber.org/automaxprocs v1.6.0
 	golang.org/x/crypto v0.57.0

@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
+	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/s3bucket"
@@ -32,6 +34,8 @@ type TeamQuery struct {
 	withProjects     *ProjectQuery
 	withS3Buckets    *S3BucketQuery
 	withMembers      *UserQuery
+	withRoleGroups   *GroupQuery
+	withInvitations  *InvitationQuery
 	withGithubApps   *GithubAppQuery
 	withTeamWebhooks *WebhookQuery
 	modifiers        []func(*sql.Selector)
@@ -130,6 +134,50 @@ func (_q *TeamQuery) QueryMembers() *UserQuery {
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, team.MembersTable, team.MembersPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoleGroups chains the current query on the "role_groups" edge.
+func (_q *TeamQuery) QueryRoleGroups() *GroupQuery {
+	query := (&GroupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, selector),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, team.RoleGroupsTable, team.RoleGroupsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryInvitations chains the current query on the "invitations" edge.
+func (_q *TeamQuery) QueryInvitations() *InvitationQuery {
+	query := (&InvitationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, selector),
+			sqlgraph.To(invitation.Table, invitation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, team.InvitationsTable, team.InvitationsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -376,6 +424,8 @@ func (_q *TeamQuery) Clone() *TeamQuery {
 		withProjects:     _q.withProjects.Clone(),
 		withS3Buckets:    _q.withS3Buckets.Clone(),
 		withMembers:      _q.withMembers.Clone(),
+		withRoleGroups:   _q.withRoleGroups.Clone(),
+		withInvitations:  _q.withInvitations.Clone(),
 		withGithubApps:   _q.withGithubApps.Clone(),
 		withTeamWebhooks: _q.withTeamWebhooks.Clone(),
 		// clone intermediate query.
@@ -415,6 +465,28 @@ func (_q *TeamQuery) WithMembers(opts ...func(*UserQuery)) *TeamQuery {
 		opt(query)
 	}
 	_q.withMembers = query
+	return _q
+}
+
+// WithRoleGroups tells the query-builder to eager-load the nodes that are connected to
+// the "role_groups" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TeamQuery) WithRoleGroups(opts ...func(*GroupQuery)) *TeamQuery {
+	query := (&GroupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withRoleGroups = query
+	return _q
+}
+
+// WithInvitations tells the query-builder to eager-load the nodes that are connected to
+// the "invitations" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TeamQuery) WithInvitations(opts ...func(*InvitationQuery)) *TeamQuery {
+	query := (&InvitationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withInvitations = query
 	return _q
 }
 
@@ -518,10 +590,12 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 	var (
 		nodes       = []*Team{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [7]bool{
 			_q.withProjects != nil,
 			_q.withS3Buckets != nil,
 			_q.withMembers != nil,
+			_q.withRoleGroups != nil,
+			_q.withInvitations != nil,
 			_q.withGithubApps != nil,
 			_q.withTeamWebhooks != nil,
 		}
@@ -565,6 +639,20 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 		if err := _q.loadMembers(ctx, query, nodes,
 			func(n *Team) { n.Edges.Members = []*User{} },
 			func(n *Team, e *User) { n.Edges.Members = append(n.Edges.Members, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withRoleGroups; query != nil {
+		if err := _q.loadRoleGroups(ctx, query, nodes,
+			func(n *Team) { n.Edges.RoleGroups = []*Group{} },
+			func(n *Team, e *Group) { n.Edges.RoleGroups = append(n.Edges.RoleGroups, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withInvitations; query != nil {
+		if err := _q.loadInvitations(ctx, query, nodes,
+			func(n *Team) { n.Edges.Invitations = []*Invitation{} },
+			func(n *Team, e *Invitation) { n.Edges.Invitations = append(n.Edges.Invitations, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -703,6 +791,69 @@ func (_q *TeamQuery) loadMembers(ctx context.Context, query *UserQuery, nodes []
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *TeamQuery) loadRoleGroups(ctx context.Context, query *GroupQuery, nodes []*Team, init func(*Team), assign func(*Team, *Group)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Team)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(group.FieldTeamID)
+	}
+	query.Where(predicate.Group(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(team.RoleGroupsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TeamID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "team_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "team_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *TeamQuery) loadInvitations(ctx context.Context, query *InvitationQuery, nodes []*Team, init func(*Team), assign func(*Team, *Invitation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Team)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(invitation.FieldTeamID)
+	}
+	query.Where(predicate.Invitation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(team.InvitationsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TeamID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "team_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

@@ -10515,7 +10515,7 @@ paths:
         risk: low
   /teams/list:
     get:
-      description: List all teams the current user belongs to.
+      description: List the teams the current user can see.
       operationId: list-teams
       responses:
         "200":

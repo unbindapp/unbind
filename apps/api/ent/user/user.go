@@ -37,6 +37,8 @@ const (
 	EdgeTeams = "teams"
 	// EdgeAPIKeys holds the string denoting the api_keys edge name in mutations.
 	EdgeAPIKeys = "api_keys"
+	// EdgeSentInvitations holds the string denoting the sent_invitations edge name in mutations.
+	EdgeSentInvitations = "sent_invitations"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// Oauth2TokensTable is the table that holds the oauth2_tokens relation/edge.
@@ -84,6 +86,13 @@ const (
 	APIKeysInverseTable = "api_keys"
 	// APIKeysColumn is the table column denoting the api_keys relation/edge.
 	APIKeysColumn = "user_id"
+	// SentInvitationsTable is the table that holds the sent_invitations relation/edge.
+	SentInvitationsTable = "invitations"
+	// SentInvitationsInverseTable is the table name for the Invitation entity.
+	// It exists in this package in order to avoid circular dependency with the "invitation" package.
+	SentInvitationsInverseTable = "invitations"
+	// SentInvitationsColumn is the table column denoting the sent_invitations relation/edge.
+	SentInvitationsColumn = "invited_by"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -250,6 +259,20 @@ func ByAPIKeys(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAPIKeysStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySentInvitationsCount orders the results by sent_invitations count.
+func BySentInvitationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSentInvitationsStep(), opts...)
+	}
+}
+
+// BySentInvitations orders the results by sent_invitations terms.
+func BySentInvitations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSentInvitationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newOauth2TokensStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -297,5 +320,12 @@ func newAPIKeysStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(APIKeysInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, APIKeysTable, APIKeysColumn),
+	)
+}
+func newSentInvitationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SentInvitationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SentInvitationsTable, SentInvitationsColumn),
 	)
 }

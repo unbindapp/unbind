@@ -19,6 +19,9 @@ func (self *GroupService) UpdateGroup(ctx context.Context, userID uuid.UUID, gro
 		// May be ent.NotFound
 		return nil, err
 	}
+	if err := ensureNotManaged(group); err != nil {
+		return nil, err
+	}
 
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage system resources
@@ -43,12 +46,24 @@ func (self *GroupService) UpdateGroup(ctx context.Context, userID uuid.UUID, gro
 		update.SetDescription(input.Description)
 	}
 
+	renamed := input.Name != "" && input.Name != group.Name
+	if renamed && group.K8sRoleName != nil {
+		// The role name embeds the group name, so the old role goes before the rename
+		if err := self.rbacManager.DeleteK8sRBAC(ctx, group); err != nil {
+			return nil, fmt.Errorf("error removing K8s RBAC before rename: %w", err)
+		}
+	}
+
 	updatedGroup, err := update.Save(ctx)
 	if err != nil {
 		if ent.IsConstraintError(err) {
 			return nil, errdefs.ErrGroupAlreadyExists
 		}
 		return nil, fmt.Errorf("error updating group: %w", err)
+	}
+
+	if renamed {
+		self.syncRBAC(ctx, groupID)
 	}
 
 	return updatedGroup, nil

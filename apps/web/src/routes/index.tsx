@@ -2,10 +2,11 @@ import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 
 import { teamsListQuery } from "@/lib/queries/teams";
 import { getGoClient } from "@/lib/server/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { meQuery } from "@/lib/queries/me";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isSystemAdmin, meQuery } from "@/lib/queries/me";
 import { Button } from "@/components/ui/button";
-import { LoaderIcon, LogOutIcon } from "lucide-react";
+import { CreateTeamDialog } from "@/components/team/create-team-dialog";
+import { LoaderIcon, LogOutIcon, PlusIcon } from "lucide-react";
 
 // "/" resolves to the user's first team, mirroring the old server redirect.
 export const Route = createFileRoute("/")({
@@ -22,6 +23,8 @@ export const Route = createFileRoute("/")({
 function NoTeams() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { data: me } = useQuery(meQuery);
+  const canCreateTeam = isSystemAdmin(me);
   const { mutate: signOut, isPending: isPendingSignOut } = useMutation({
     mutationFn: async () => await getGoClient().auth.logout(),
     onSuccess: () => {
@@ -33,9 +36,22 @@ function NoTeams() {
     <main className="flex min-h-svh w-full flex-col items-center justify-center gap-4 px-4 py-8 text-center md:px-8">
       <div className="flex max-w-full flex-col gap-0.5">
         <h1 className="text-foreground text-2xl font-semibold">No teams found</h1>
-        <p className="text-muted-foreground">{`This account isn't a member of any team yet`}</p>
+        <p className="text-muted-foreground">
+          {canCreateTeam
+            ? "There are no teams yet. Create the first one."
+            : `This account isn't a member of any team yet`}
+        </p>
       </div>
+      {canCreateTeam && (
+        <CreateTeamDialog>
+          <Button className="max-w-full cursor-default items-center justify-start gap-2.5 rounded-lg text-left font-medium">
+            <PlusIcon className="-my-1 -ml-0.5 size-5 shrink-0" />
+            <p className="min-w-0 shrink leading-tight">Create Team</p>
+          </Button>
+        </CreateTeamDialog>
+      )}
       <Button
+        variant={canCreateTeam ? "outline" : "default"}
         disabled={isPendingSignOut}
         onClick={() => {
           signOut();

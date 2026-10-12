@@ -3,12 +3,6 @@ title: Members and Permissions
 description: Who can see and change what, and how roles work.
 ---
 
-<Callout title="Member management is on the way">
-  Inviting people and managing their access from the UI is not available yet. The **Members** tabs
-  in team and project settings say **Coming Soon**. This page explains the roles that already apply
-  everywhere else, including API keys and connected apps.
-</Callout>
-
 ## Roles
 
 Unbind has three roles. Each one includes everything the one before it can do.
@@ -24,6 +18,33 @@ Editors cannot delete. If a delete is refused, that is why.
 ## Where a role applies
 
 A role is given on something: the whole instance, a team, a project, an environment or a single service. It covers everything underneath. An editor on a project is an editor on all of its environments and services.
+
+People who own the instance have the admin role on every team. See [Managing Teams](/teams/managing-teams).
+
+## Members
+
+**Team** > **Settings** > **Members** lists everyone who can reach the team and the role they have. Team admins manage it: add people, change their role and remove them. Anyone can leave a team they are on.
+
+Some rows cannot be changed here. They are marked with the name of a group, such as `superuser`, and belong to people who reach the team through that group rather than through a role on the team itself. Instance owners show up this way on every team.
+
+### Add someone
+
+Press **Add Member**, enter an email address and pick a role.
+
+- **The address has an account**: they are on the team right away. If [email](/operations/email) is set up, they get a message about it.
+- **The address has no account yet**: Unbind creates an invitation and shows you a link. Share it with them, or let Unbind email it when email is set up. The link works once and expires after 7 days. Opening it asks for a password, creates the account and puts it on the team with the role you picked.
+
+Pending invitations are listed under the members. Revoke one and its link stops working. Inviting the same address again replaces the earlier invitation.
+
+Instance owners can also create accounts without an invitation, from the server with `user:create`. See [Reset Password](/operations/reset-password#reset-from-the-server) for how to run the CLI.
+
+### Change a role or remove someone
+
+Use the menu on a member's row. Removing someone takes away the role they had on this team and nothing else. Their account, their other teams and their API keys stay as they are.
+
+## Groups
+
+Under the hood a role on a team is a group with that one permission, and every team has an admin, editor and viewer group. These groups are managed from the members page and cannot be renamed, deleted or changed through the group endpoints. Instance owners can still make groups of their own for finer grants, such as an editor on one service.
 
 ## Roles for API keys and apps
 

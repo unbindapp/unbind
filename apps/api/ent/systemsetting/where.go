@@ -250,6 +250,16 @@ func RegistryCacheSettingsNotNil() predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldNotNull(FieldRegistryCacheSettings))
 }
 
+// EmailSettingsIsNil applies the IsNil predicate on the "email_settings" field.
+func EmailSettingsIsNil() predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldIsNull(FieldEmailSettings))
+}
+
+// EmailSettingsNotNil applies the NotNil predicate on the "email_settings" field.
+func EmailSettingsNotNil() predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldNotNull(FieldEmailSettings))
+}
+
 // ServiceReferenceSyntaxMigratedEQ applies the EQ predicate on the "service_reference_syntax_migrated" field.
 func ServiceReferenceSyntaxMigratedEQ(v bool) predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldEQ(FieldServiceReferenceSyntaxMigrated, v))

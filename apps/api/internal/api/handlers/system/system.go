@@ -144,4 +144,36 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/cache/registry/cleanup",
 		Method:      http.MethodPost,
 	}, handlers.StartRegistryCleanup)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-email-settings",
+		Summary:     "Get Email Settings",
+		Description: "Get the outgoing mail relay. The password is never returned.",
+		Path:        "/email/get",
+		Method:      http.MethodGet,
+	}, handlers.GetEmailSettings)
+
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "update-email-settings",
+		Summary:     "Update Email Settings",
+		Description: "Set the outgoing mail relay Unbind sends invitations and notifications through.",
+		Path:        "/email/update",
+		Method:      http.MethodPut,
+	}, handlers.UpdateEmailSettings)
+
+	oapi.Register(grp, oapi.Delete, huma.Operation{
+		OperationID: "clear-email-settings",
+		Summary:     "Clear Email Settings",
+		Description: "Remove the outgoing mail relay. Unbind stops sending email.",
+		Path:        "/email/clear",
+		Method:      http.MethodDelete,
+	}, handlers.ClearEmailSettings)
+
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
+		OperationID: "send-test-email",
+		Summary:     "Send Test Email",
+		Description: "Send a test message to your own address through the configured relay.",
+		Path:        "/email/test",
+		Method:      http.MethodPost,
+	}, handlers.SendTestEmail)
 }

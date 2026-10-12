@@ -28,6 +28,9 @@ func (self *GroupService) GrantPermissionToGroup(
 		// May be ent.NotFound
 		return nil, err
 	}
+	if err := ensureNotManaged(group); err != nil {
+		return nil, err
+	}
 
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage system resources
@@ -54,15 +57,8 @@ func (self *GroupService) GrantPermissionToGroup(
 		return nil, fmt.Errorf("error associating permission with group: %w", err)
 	}
 
-	// Check if this permission affects Kubernetes resources
-	needsK8sSync := resourceType == schema.ResourceTypeTeam
-
-	if needsK8sSync {
-		// Sync the group's RBAC
-		if err := self.rbacManager.SyncGroupToK8s(ctx, group); err != nil {
-			// Log but continue
-			log.Warnf("Warning: error syncing K8s RBAC: %v", err)
-		}
+	if resourceType == schema.ResourceTypeTeam {
+		self.syncRBAC(ctx, groupID)
 	}
 
 	return perm, nil
@@ -77,6 +73,9 @@ func (self *GroupService) RevokePermissionFromGroup(
 ) error {
 	group, err := self.repo.Group().GetByID(ctx, groupID)
 	if err != nil {
+		return err
+	}
+	if err := ensureNotManaged(group); err != nil {
 		return err
 	}
 
@@ -124,41 +123,41 @@ func (self *GroupService) RevokePermissionFromGroup(
 		}
 	}
 
-	// Check if permission affects Kubernetes resources
-	needsK8sSync := perm.ResourceType == schema.ResourceTypeTeam
-
-	if needsK8sSync {
-		// Get updated permissions
-		perms, err := self.repo.Group().GetPermissions(ctx, groupID)
-		if err != nil {
-			return err
-		}
-
-		// Check if there are any remaining permissions that would affect k8s
-		hasK8sPerms := false
-		for _, p := range perms {
-			if p.ResourceType == schema.ResourceTypeTeam {
-				hasK8sPerms = true
-				break
-			}
-		}
-
-		if hasK8sPerms {
-			// Sync the group's RBAC
-			if err := self.rbacManager.SyncGroupToK8s(ctx, group); err != nil {
-				// Log but continue
-				fmt.Printf("Warning: error syncing K8s RBAC: %v", err)
-			}
-		} else {
-			// No k8s-related permissions left, remove RBAC
-			if err := self.rbacManager.DeleteK8sRBAC(ctx, group); err != nil {
-				// Log but continue
-				fmt.Printf("Warning: error removing K8s RBAC: %v", err)
-			}
-		}
+	if perm.ResourceType == schema.ResourceTypeTeam {
+		self.syncRBAC(ctx, groupID)
 	}
 
 	return nil
+}
+
+// syncRBAC reloads the group so the sync sees the grants as they are now, then
+// writes or removes its Kubernetes role. Failures are logged: the grant is
+// already recorded and the startup sync retries.
+func (self *GroupService) syncRBAC(ctx context.Context, groupID uuid.UUID) {
+	group, err := self.repo.Group().GetByID(ctx, groupID)
+	if err != nil {
+		log.Warnf("Warning: error reloading group for K8s RBAC sync: %v", err)
+		return
+	}
+
+	hasTeamGrant := false
+	for _, p := range group.Edges.Permissions {
+		if p.ResourceType == schema.ResourceTypeTeam {
+			hasTeamGrant = true
+			break
+		}
+	}
+
+	if !hasTeamGrant {
+		if err := self.rbacManager.DeleteK8sRBAC(ctx, group); err != nil {
+			log.Warnf("Warning: error removing K8s RBAC: %v", err)
+		}
+		return
+	}
+
+	if err := self.rbacManager.SyncGroupToK8s(ctx, group); err != nil {
+		log.Warnf("Warning: error syncing K8s RBAC: %v", err)
+	}
 }
 
 // GetGroupPermissions lists all permissions for a group

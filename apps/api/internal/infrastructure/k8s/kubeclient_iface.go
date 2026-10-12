@@ -46,9 +46,9 @@ type KubeClientInterface interface {
 	// DeleteOldVerificationRoutes deletes verification routes (Ingress + HTTPRoute)
 	// created more than 10 minutes ago.
 	DeleteOldVerificationRoutes(ctx context.Context, client kubernetes.Interface) error
-	// ExecInPod runs a command in a pod container after checking that the token's user is
+	// ExecInPod runs a command in a pod container after checking that the identity is
 	// allowed to exec there, per the RBAC bindings synced from the user's permissions.
-	ExecInPod(ctx context.Context, token string, opts ExecOptions) error
+	ExecInPod(ctx context.Context, identity ExecIdentity, opts ExecOptions) error
 	CreateDeployment(ctx context.Context, deploymentID string, serviceID string, env map[string]string) (jobName string, err error)
 	// For canceling jobs.
 	CancelJobsByServiceID(ctx context.Context, serviceID string) error
@@ -63,9 +63,6 @@ type KubeClientInterface interface {
 	// This function is used to manage unbind-system resources
 	GetInternalClient() kubernetes.Interface
 	GetInternalRestConfig() *rest.Config
-	// SetTokenVerifier wires the token verifier used to authorize per-user operations.
-	// It is set after construction because the token manager is built later.
-	SetTokenVerifier(verifier TokenVerifier)
 	// ApplyYAML applies a multi-document YAML bundle with server-side apply, dry-run first
 	ApplyYAML(ctx context.Context, yaml []byte) error
 	// GetLoadBalancerIPs returns the external IP addresses for load balancer services
@@ -191,6 +188,9 @@ type KubeClientInterface interface {
 	AvailableStorageBytes(ctx context.Context) (*StorageMetadata, error)
 	// CreateNamespace creates a new namespace in the Kubernetes cluster
 	CreateNamespace(ctx context.Context, namespaceName string, client kubernetes.Interface) (*corev1.Namespace, error)
+	// DeleteNamespace removes a team namespace and everything in it. Deletion is
+	// asynchronous on the cluster side; a namespace that is already gone is not an error.
+	DeleteNamespace(ctx context.Context, namespaceName string, client kubernetes.Interface) error
 	// Delete a custom unbind service CRD
 	DeleteUnbindService(ctx context.Context, namespace, name string) error
 	// DeployUnbindService creates (or replaces) the service resource in the target namespace,

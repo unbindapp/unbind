@@ -15,6 +15,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/apikey"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
 	"github.com/unbindapp/unbind-api/ent/oauthgrant"
@@ -176,6 +177,21 @@ func (_u *UserUpdate) AddAPIKeys(v ...*APIKey) *UserUpdate {
 	return _u.AddAPIKeyIDs(ids...)
 }
 
+// AddSentInvitationIDs adds the "sent_invitations" edge to the Invitation entity by IDs.
+func (_u *UserUpdate) AddSentInvitationIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.AddSentInvitationIDs(ids...)
+	return _u
+}
+
+// AddSentInvitations adds the "sent_invitations" edges to the Invitation entity.
+func (_u *UserUpdate) AddSentInvitations(v ...*Invitation) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSentInvitationIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
@@ -326,6 +342,27 @@ func (_u *UserUpdate) RemoveAPIKeys(v ...*APIKey) *UserUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAPIKeyIDs(ids...)
+}
+
+// ClearSentInvitations clears all "sent_invitations" edges to the Invitation entity.
+func (_u *UserUpdate) ClearSentInvitations() *UserUpdate {
+	_u.mutation.ClearSentInvitations()
+	return _u
+}
+
+// RemoveSentInvitationIDs removes the "sent_invitations" edge to Invitation entities by IDs.
+func (_u *UserUpdate) RemoveSentInvitationIDs(ids ...uuid.UUID) *UserUpdate {
+	_u.mutation.RemoveSentInvitationIDs(ids...)
+	return _u
+}
+
+// RemoveSentInvitations removes "sent_invitations" edges to Invitation entities.
+func (_u *UserUpdate) RemoveSentInvitations(v ...*Invitation) *UserUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSentInvitationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -703,6 +740,51 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.SentInvitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SentInvitationsTable,
+			Columns: []string{user.SentInvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSentInvitationsIDs(); len(nodes) > 0 && !_u.mutation.SentInvitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SentInvitationsTable,
+			Columns: []string{user.SentInvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SentInvitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SentInvitationsTable,
+			Columns: []string{user.SentInvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -864,6 +946,21 @@ func (_u *UserUpdateOne) AddAPIKeys(v ...*APIKey) *UserUpdateOne {
 	return _u.AddAPIKeyIDs(ids...)
 }
 
+// AddSentInvitationIDs adds the "sent_invitations" edge to the Invitation entity by IDs.
+func (_u *UserUpdateOne) AddSentInvitationIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.AddSentInvitationIDs(ids...)
+	return _u
+}
+
+// AddSentInvitations adds the "sent_invitations" edges to the Invitation entity.
+func (_u *UserUpdateOne) AddSentInvitations(v ...*Invitation) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSentInvitationIDs(ids...)
+}
+
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
@@ -1014,6 +1111,27 @@ func (_u *UserUpdateOne) RemoveAPIKeys(v ...*APIKey) *UserUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAPIKeyIDs(ids...)
+}
+
+// ClearSentInvitations clears all "sent_invitations" edges to the Invitation entity.
+func (_u *UserUpdateOne) ClearSentInvitations() *UserUpdateOne {
+	_u.mutation.ClearSentInvitations()
+	return _u
+}
+
+// RemoveSentInvitationIDs removes the "sent_invitations" edge to Invitation entities by IDs.
+func (_u *UserUpdateOne) RemoveSentInvitationIDs(ids ...uuid.UUID) *UserUpdateOne {
+	_u.mutation.RemoveSentInvitationIDs(ids...)
+	return _u
+}
+
+// RemoveSentInvitations removes "sent_invitations" edges to Invitation entities.
+func (_u *UserUpdateOne) RemoveSentInvitations(v ...*Invitation) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSentInvitationIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1414,6 +1532,51 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SentInvitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SentInvitationsTable,
+			Columns: []string{user.SentInvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSentInvitationsIDs(); len(nodes) > 0 && !_u.mutation.SentInvitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SentInvitationsTable,
+			Columns: []string{user.SentInvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SentInvitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SentInvitationsTable,
+			Columns: []string{user.SentInvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -1,0 +1,10 @@
+{{.Heading}}
+{{range .Paragraphs}}
+{{.}}
+{{end}}{{if .ButtonURL}}
+{{.ButtonLabel}}: {{.ButtonURL}}
+{{end}}{{if .Note}}
+{{.Note}}
+{{end}}
+--
+Sent by your Unbind instance{{if .InstanceURL}} at {{.InstanceURL}}{{end}}.

@@ -54,7 +54,7 @@ metadata:
 rules:
   - apiGroups: [""]
     resources: ["namespaces"]
-    verbs: ["get", "list", "watch", "create", "update", "patch"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 ---
 # ClusterRole for creating/managing Roles and RoleBindings in any namespace
 apiVersion: rbac.authorization.k8s.io/v1

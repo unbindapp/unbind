@@ -24,6 +24,8 @@ const (
 	FieldBuildkitSettings = "buildkit_settings"
 	// FieldRegistryCacheSettings holds the string denoting the registry_cache_settings field in the database.
 	FieldRegistryCacheSettings = "registry_cache_settings"
+	// FieldEmailSettings holds the string denoting the email_settings field in the database.
+	FieldEmailSettings = "email_settings"
 	// FieldServiceReferenceSyntaxMigrated holds the string denoting the service_reference_syntax_migrated field in the database.
 	FieldServiceReferenceSyntaxMigrated = "service_reference_syntax_migrated"
 	// Table holds the table name of the systemsetting in the database.
@@ -38,6 +40,7 @@ var Columns = []string{
 	FieldWildcardBaseURL,
 	FieldBuildkitSettings,
 	FieldRegistryCacheSettings,
+	FieldEmailSettings,
 	FieldServiceReferenceSyntaxMigrated,
 }
 

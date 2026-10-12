@@ -12,6 +12,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
 	"github.com/unbindapp/unbind-api/ent/oauthclient"
@@ -211,6 +212,31 @@ func init() {
 	groupDescID := groupMixinFields0[0].Descriptor()
 	// group.DefaultID holds the default value on creation for the id field.
 	group.DefaultID = groupDescID.Default.(func() uuid.UUID)
+	invitationMixin := schema.Invitation{}.Mixin()
+	invitationMixinFields0 := invitationMixin[0].Fields()
+	_ = invitationMixinFields0
+	invitationMixinFields1 := invitationMixin[1].Fields()
+	_ = invitationMixinFields1
+	invitationFields := schema.Invitation{}.Fields()
+	_ = invitationFields
+	// invitationDescCreatedAt is the schema descriptor for created_at field.
+	invitationDescCreatedAt := invitationMixinFields1[0].Descriptor()
+	// invitation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	invitation.DefaultCreatedAt = invitationDescCreatedAt.Default.(func() time.Time)
+	// invitationDescUpdatedAt is the schema descriptor for updated_at field.
+	invitationDescUpdatedAt := invitationMixinFields1[1].Descriptor()
+	// invitation.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	invitation.DefaultUpdatedAt = invitationDescUpdatedAt.Default.(func() time.Time)
+	// invitation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	invitation.UpdateDefaultUpdatedAt = invitationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// invitationDescEmail is the schema descriptor for email field.
+	invitationDescEmail := invitationFields[0].Descriptor()
+	// invitation.EmailValidator is a validator for the "email" field. It is called by the builders before save.
+	invitation.EmailValidator = invitationDescEmail.Validators[0].(func(string) error)
+	// invitationDescID is the schema descriptor for id field.
+	invitationDescID := invitationMixinFields0[0].Descriptor()
+	// invitation.DefaultID holds the default value on creation for the id field.
+	invitation.DefaultID = invitationDescID.Default.(func() uuid.UUID)
 	oauthauthorizationcodeMixin := schema.OAuthAuthorizationCode{}.Mixin()
 	oauthauthorizationcodeMixinFields0 := oauthauthorizationcodeMixin[0].Fields()
 	_ = oauthauthorizationcodeMixinFields0
@@ -578,7 +604,7 @@ func init() {
 	// systemsetting.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemsetting.UpdateDefaultUpdatedAt = systemsettingDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// systemsettingDescServiceReferenceSyntaxMigrated is the schema descriptor for service_reference_syntax_migrated field.
-	systemsettingDescServiceReferenceSyntaxMigrated := systemsettingFields[3].Descriptor()
+	systemsettingDescServiceReferenceSyntaxMigrated := systemsettingFields[4].Descriptor()
 	// systemsetting.DefaultServiceReferenceSyntaxMigrated holds the default value on creation for the service_reference_syntax_migrated field.
 	systemsetting.DefaultServiceReferenceSyntaxMigrated = systemsettingDescServiceReferenceSyntaxMigrated.Default.(bool)
 	// systemsettingDescID is the schema descriptor for id field.

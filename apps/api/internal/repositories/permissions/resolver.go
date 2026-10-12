@@ -64,23 +64,23 @@ func newGrants() grants {
 func (g *grants) add(resourceType entSchema.ResourceType, action entSchema.PermittedAction, selector entSchema.ResourceSelector) {
 	switch {
 	case selector.Superuser:
-		g.superuser[resourceType] = strongerAction(g.superuser[resourceType], action)
+		g.superuser[resourceType] = StrongerAction(g.superuser[resourceType], action)
 	case selector.ID != uuid.Nil:
 		byID := g.byID[resourceType]
 		if byID == nil {
 			byID = make(map[uuid.UUID]entSchema.PermittedAction)
 			g.byID[resourceType] = byID
 		}
-		byID[selector.ID] = strongerAction(byID[selector.ID], action)
+		byID[selector.ID] = StrongerAction(byID[selector.ID], action)
 	}
 }
 
 func (g *grants) strongest(refs ...ResourceRef) entSchema.PermittedAction {
 	var best entSchema.PermittedAction
 	for _, ref := range refs {
-		best = strongerAction(best, g.superuser[ref.Type])
+		best = StrongerAction(best, g.superuser[ref.Type])
 		if byID := g.byID[ref.Type]; byID != nil {
-			best = strongerAction(best, byID[ref.ID])
+			best = StrongerAction(best, byID[ref.ID])
 		}
 	}
 	return best
@@ -140,7 +140,8 @@ func (s *UserPermissionSet) ServiceActions(teamID, projectID, environmentID, ser
 	)
 }
 
-func strongerAction(a, b entSchema.PermittedAction) entSchema.PermittedAction {
+// StrongerAction picks the higher of two roles; an empty action ranks lowest.
+func StrongerAction(a, b entSchema.PermittedAction) entSchema.PermittedAction {
 	if actionRank(b) > actionRank(a) {
 		return b
 	}

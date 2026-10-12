@@ -3,11 +3,13 @@
 package group
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
 const (
@@ -25,10 +27,16 @@ const (
 	FieldDescription = "description"
 	// FieldK8sRoleName holds the string denoting the k8s_role_name field in the database.
 	FieldK8sRoleName = "k8s_role_name"
+	// FieldTeamID holds the string denoting the team_id field in the database.
+	FieldTeamID = "team_id"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
 	// EdgePermissions holds the string denoting the permissions edge name in mutations.
 	EdgePermissions = "permissions"
+	// EdgeTeam holds the string denoting the team edge name in mutations.
+	EdgeTeam = "team"
 	// Table holds the table name of the group in the database.
 	Table = "groups"
 	// UsersTable is the table that holds the users relation/edge. The primary key declared below.
@@ -41,6 +49,13 @@ const (
 	// PermissionsInverseTable is the table name for the Permission entity.
 	// It exists in this package in order to avoid circular dependency with the "permission" package.
 	PermissionsInverseTable = "permissions"
+	// TeamTable is the table that holds the team relation/edge.
+	TeamTable = "groups"
+	// TeamInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	TeamInverseTable = "teams"
+	// TeamColumn is the table column denoting the team relation/edge.
+	TeamColumn = "team_id"
 )
 
 // Columns holds all SQL columns for group fields.
@@ -51,6 +66,8 @@ var Columns = []string{
 	FieldName,
 	FieldDescription,
 	FieldK8sRoleName,
+	FieldTeamID,
+	FieldRole,
 }
 
 var (
@@ -85,6 +102,16 @@ var (
 	DefaultID func() uuid.UUID
 )
 
+// RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
+func RoleValidator(r schema.PermittedAction) error {
+	switch r {
+	case "admin", "editor", "viewer":
+		return nil
+	default:
+		return fmt.Errorf("group: invalid enum value for role field: %q", r)
+	}
+}
+
 // OrderOption defines the ordering options for the Group queries.
 type OrderOption func(*sql.Selector)
 
@@ -118,6 +145,16 @@ func ByK8sRoleName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldK8sRoleName, opts...).ToFunc()
 }
 
+// ByTeamID orders the results by the team_id field.
+func ByTeamID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTeamID, opts...).ToFunc()
+}
+
+// ByRole orders the results by the role field.
+func ByRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
 // ByUsersCount orders the results by users count.
 func ByUsersCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -145,6 +182,13 @@ func ByPermissions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newPermissionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByTeamField orders the results by team field.
+func ByTeamField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTeamStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newUsersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -157,5 +201,12 @@ func newPermissionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(PermissionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, PermissionsTable, PermissionsPrimaryKey...),
+	)
+}
+func newTeamStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TeamInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, TeamTable, TeamColumn),
 	)
 }

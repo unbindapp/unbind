@@ -79,6 +79,12 @@ func (_c *SystemSettingCreate) SetRegistryCacheSettings(v *schema.RegistryCacheS
 	return _c
 }
 
+// SetEmailSettings sets the "email_settings" field.
+func (_c *SystemSettingCreate) SetEmailSettings(v *schema.EmailSettings) *SystemSettingCreate {
+	_c.mutation.SetEmailSettings(v)
+	return _c
+}
+
 // SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
 func (_c *SystemSettingCreate) SetServiceReferenceSyntaxMigrated(v bool) *SystemSettingCreate {
 	_c.mutation.SetServiceReferenceSyntaxMigrated(v)
@@ -227,6 +233,10 @@ func (_c *SystemSettingCreate) createSpec() (*SystemSetting, *sqlgraph.CreateSpe
 		_spec.SetField(systemsetting.FieldRegistryCacheSettings, field.TypeJSON, value)
 		_node.RegistryCacheSettings = value
 	}
+	if value, ok := _c.mutation.EmailSettings(); ok {
+		_spec.SetField(systemsetting.FieldEmailSettings, field.TypeJSON, value)
+		_node.EmailSettings = value
+	}
 	if value, ok := _c.mutation.ServiceReferenceSyntaxMigrated(); ok {
 		_spec.SetField(systemsetting.FieldServiceReferenceSyntaxMigrated, field.TypeBool, value)
 		_node.ServiceReferenceSyntaxMigrated = value
@@ -346,6 +356,24 @@ func (u *SystemSettingUpsert) UpdateRegistryCacheSettings() *SystemSettingUpsert
 // ClearRegistryCacheSettings clears the value of the "registry_cache_settings" field.
 func (u *SystemSettingUpsert) ClearRegistryCacheSettings() *SystemSettingUpsert {
 	u.SetNull(systemsetting.FieldRegistryCacheSettings)
+	return u
+}
+
+// SetEmailSettings sets the "email_settings" field.
+func (u *SystemSettingUpsert) SetEmailSettings(v *schema.EmailSettings) *SystemSettingUpsert {
+	u.Set(systemsetting.FieldEmailSettings, v)
+	return u
+}
+
+// UpdateEmailSettings sets the "email_settings" field to the value that was provided on create.
+func (u *SystemSettingUpsert) UpdateEmailSettings() *SystemSettingUpsert {
+	u.SetExcluded(systemsetting.FieldEmailSettings)
+	return u
+}
+
+// ClearEmailSettings clears the value of the "email_settings" field.
+func (u *SystemSettingUpsert) ClearEmailSettings() *SystemSettingUpsert {
+	u.SetNull(systemsetting.FieldEmailSettings)
 	return u
 }
 
@@ -486,6 +514,27 @@ func (u *SystemSettingUpsertOne) UpdateRegistryCacheSettings() *SystemSettingUps
 func (u *SystemSettingUpsertOne) ClearRegistryCacheSettings() *SystemSettingUpsertOne {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.ClearRegistryCacheSettings()
+	})
+}
+
+// SetEmailSettings sets the "email_settings" field.
+func (u *SystemSettingUpsertOne) SetEmailSettings(v *schema.EmailSettings) *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetEmailSettings(v)
+	})
+}
+
+// UpdateEmailSettings sets the "email_settings" field to the value that was provided on create.
+func (u *SystemSettingUpsertOne) UpdateEmailSettings() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateEmailSettings()
+	})
+}
+
+// ClearEmailSettings clears the value of the "email_settings" field.
+func (u *SystemSettingUpsertOne) ClearEmailSettings() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.ClearEmailSettings()
 	})
 }
 
@@ -795,6 +844,27 @@ func (u *SystemSettingUpsertBulk) UpdateRegistryCacheSettings() *SystemSettingUp
 func (u *SystemSettingUpsertBulk) ClearRegistryCacheSettings() *SystemSettingUpsertBulk {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.ClearRegistryCacheSettings()
+	})
+}
+
+// SetEmailSettings sets the "email_settings" field.
+func (u *SystemSettingUpsertBulk) SetEmailSettings(v *schema.EmailSettings) *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetEmailSettings(v)
+	})
+}
+
+// UpdateEmailSettings sets the "email_settings" field to the value that was provided on create.
+func (u *SystemSettingUpsertBulk) UpdateEmailSettings() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateEmailSettings()
+	})
+}
+
+// ClearEmailSettings clears the value of the "email_settings" field.
+func (u *SystemSettingUpsertBulk) ClearEmailSettings() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.ClearEmailSettings()
 	})
 }
 

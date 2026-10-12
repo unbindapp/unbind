@@ -35,7 +35,7 @@ type serverMessage struct {
 
 // Attach pumps the websocket to/from the pod until either side closes. The target must
 // already be authorized via Resolve.
-func (self *TerminalService) Attach(ctx context.Context, ws *websocket.Conn, bearerToken string, target *ExecTarget) {
+func (self *TerminalService) Attach(ctx context.Context, ws *websocket.Conn, target *ExecTarget) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -48,7 +48,7 @@ func (self *TerminalService) Attach(ctx context.Context, ws *websocket.Conn, bea
 	go conn.readPump(ctx, cancel, stdinWriter, resize)
 	go conn.keepAlive(ctx)
 
-	err := self.k8s.ExecInPod(ctx, bearerToken, k8s.ExecOptions{
+	err := self.k8s.ExecInPod(ctx, target.Identity, k8s.ExecOptions{
 		Namespace: target.Namespace,
 		PodName:   target.PodName,
 		Container: target.Container,

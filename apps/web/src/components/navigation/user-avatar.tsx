@@ -17,7 +17,7 @@ import {
 import { cn } from "@/components/ui/utils";
 import { useUpdateStatus } from "@/components/system/update/update-status-provider";
 import { useIsAwayFromHome } from "@/lib/hooks/use-is-away-from-home";
-import { isSystemAdmin, meQuery } from "@/lib/queries/me";
+import { isSystemAdmin, isSystemViewer, meQuery } from "@/lib/queries/me";
 import { systemQuery } from "@/lib/queries/system";
 import { getGoClient } from "@/lib/server/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -50,12 +50,13 @@ export default function UserAvatar({ email, className }: TProps) {
 
   const { data: me } = useQuery(meQuery);
   const isAdmin = isSystemAdmin(me);
+  const canSeeSystem = isSystemViewer(me);
   const isAwayFromHome = useIsAwayFromHome();
   const {
     data: systemData,
     isPending: isPendingSystem,
     isError: isErrorSystem,
-  } = useQuery(systemQuery());
+  } = useQuery({ ...systemQuery(), enabled: canSeeSystem });
   const { hasUpdateAvailable, hasUnseenUpdate, latestVersion } = useUpdateStatus();
 
   return (
@@ -161,37 +162,39 @@ export default function UserAvatar({ email, className }: TProps) {
             <p className="min-w-0 shrink leading-tight">Sign Out</p>
           </Button>
         </div>
-        <div
-          data-pending={isPendingSystem || undefined}
-          data-error={(!systemData && !isPendingSystem && isErrorSystem) || undefined}
-          className="group/version bg-background absolute bottom-(--safe-area-inset-bottom) z-10 flex w-full border-t"
-        >
-          {systemData ? (
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href={systemData.data.version_url}
-              className="group/version hover:bg-border active:bg-border flex w-full items-center justify-start gap-1.25 px-4.25 py-3"
-            >
-              <GitBranchOrExternalLinkIcon />
-              <p className="text-muted-foreground group-hover/version:text-foreground group-active/version:text-foreground min-w-0 shrink text-center text-sm leading-tight">
-                Version: <span className="font-semibold">{systemData.data.version}</span>
-              </p>
-            </a>
-          ) : (
-            <div className="flex w-full items-center justify-start gap-1.25 px-4.25 py-3">
-              {!isPendingSystem && (
-                <GitBranchIcon className="text-muted-foreground -ml-px size-3.75 shrink-0" />
-              )}
-              <p className="group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
-                Version:{" "}
-                <span className="group-data-error/version:text-destructive font-semibold">
-                  {isPendingSystem ? "1234567" : "Error"}
-                </span>
-              </p>
-            </div>
-          )}
-        </div>
+        {canSeeSystem && (
+          <div
+            data-pending={isPendingSystem || undefined}
+            data-error={(!systemData && !isPendingSystem && isErrorSystem) || undefined}
+            className="group/version bg-background absolute bottom-(--safe-area-inset-bottom) z-10 flex w-full border-t"
+          >
+            {systemData ? (
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={systemData.data.version_url}
+                className="group/version hover:bg-border active:bg-border flex w-full items-center justify-start gap-1.25 px-4.25 py-3"
+              >
+                <GitBranchOrExternalLinkIcon />
+                <p className="text-muted-foreground group-hover/version:text-foreground group-active/version:text-foreground min-w-0 shrink text-center text-sm leading-tight">
+                  Version: <span className="font-semibold">{systemData.data.version}</span>
+                </p>
+              </a>
+            ) : (
+              <div className="flex w-full items-center justify-start gap-1.25 px-4.25 py-3">
+                {!isPendingSystem && (
+                  <GitBranchIcon className="text-muted-foreground -ml-px size-3.75 shrink-0" />
+                )}
+                <p className="group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
+                  Version:{" "}
+                  <span className="group-data-error/version:text-destructive font-semibold">
+                    {isPendingSystem ? "1234567" : "Error"}
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </DropdownOrDrawerContentForDrawer>
       <DropdownOrDrawerContentForDropdown>
         <div className="flex w-full items-center justify-start gap-2.5 px-3 py-3">
@@ -249,38 +252,42 @@ export default function UserAvatar({ email, className }: TProps) {
             </div>
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          {systemData ? (
-            <DropdownMenuItem
-              className="group/version flex w-full cursor-pointer items-center gap-1.5 px-3 py-2 text-left leading-tight"
-              render={
-                <a target="_blank" rel="noopener noreferrer" href={systemData.data.version_url}>
-                  <GitBranchOrExternalLinkIcon />
-                  <p className="group-hover/version:text-foreground group-active/version:text-foreground text-muted-foreground min-w-0 shrink text-center text-sm leading-tight">
-                    Version: <span className="font-semibold">{systemData.data.version}</span>
+        {canSeeSystem && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {systemData ? (
+                <DropdownMenuItem
+                  className="group/version flex w-full cursor-pointer items-center gap-1.5 px-3 py-2 text-left leading-tight"
+                  render={
+                    <a target="_blank" rel="noopener noreferrer" href={systemData.data.version_url}>
+                      <GitBranchOrExternalLinkIcon />
+                      <p className="group-hover/version:text-foreground group-active/version:text-foreground text-muted-foreground min-w-0 shrink text-center text-sm leading-tight">
+                        Version: <span className="font-semibold">{systemData.data.version}</span>
+                      </p>
+                    </a>
+                  }
+                />
+              ) : (
+                <div
+                  data-pending={isPendingSystem || undefined}
+                  data-error={(!isPendingSystem && isErrorSystem) || undefined}
+                  className="group/version flex w-full items-center gap-1.5 px-3 py-2 text-left leading-tight"
+                >
+                  {!isPendingSystem && (
+                    <GitBranchIcon className="text-muted-foreground -ml-px size-3.75 shrink-0" />
+                  )}
+                  <p className="group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
+                    Version:{" "}
+                    <span className="group-data-error/version:text-destructive font-semibold">
+                      {isPendingSystem ? "1234567" : "Error"}
+                    </span>
                   </p>
-                </a>
-              }
-            />
-          ) : (
-            <div
-              data-pending={isPendingSystem || undefined}
-              data-error={(!isPendingSystem && isErrorSystem) || undefined}
-              className="group/version flex w-full items-center gap-1.5 px-3 py-2 text-left leading-tight"
-            >
-              {!isPendingSystem && (
-                <GitBranchIcon className="text-muted-foreground -ml-px size-3.75 shrink-0" />
+                </div>
               )}
-              <p className="group-data-pending/version:bg-muted-foreground group-data-pending/version:animate-skeleton text-muted-foreground min-w-0 shrink text-center text-sm leading-tight group-data-pending/version:rounded-sm group-data-pending/version:text-transparent">
-                Version:{" "}
-                <span className="group-data-error/version:text-destructive font-semibold">
-                  {isPendingSystem ? "1234567" : "Error"}
-                </span>
-              </p>
-            </div>
-          )}
-        </DropdownMenuGroup>
+            </DropdownMenuGroup>
+          </>
+        )}
       </DropdownOrDrawerContentForDropdown>
     </DropdownOrDrawer>
   );

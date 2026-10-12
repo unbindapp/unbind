@@ -34,6 +34,7 @@ func (self *Bootstrapper) Sync(ctx context.Context) error {
 	multierr = multierror.Append(multierr, self.bootstrapRegistry(ctx))
 	multierr = multierror.Append(multierr, self.bootstrapTeam(ctx))
 	multierr = multierror.Append(multierr, self.bootstrapGroupsAndPermissions(ctx))
+	multierr = multierror.Append(multierr, self.ensureTeamRoleGroups(ctx))
 	multierr = multierror.Append(multierr, self.syncK8sRBAC(ctx))
 
 	return multierr.ErrorOrNil()
@@ -313,6 +314,26 @@ func (self *Bootstrapper) bootstrapTeam(ctx context.Context) error {
 
 	// Sync registry secrets to the newly created team
 	return self.syncRegistrySecretsToTeams(ctx)
+}
+
+// * Team role groups
+// Every team owns an admin, editor and viewer group; teams from before role groups existed get theirs here.
+func (self *Bootstrapper) ensureTeamRoleGroups(ctx context.Context) error {
+	log.Infof("Ensuring team role groups")
+
+	teams, err := self.repos.Ent().Team.Query().All(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to query teams: %w", err)
+	}
+
+	return self.repos.WithTx(ctx, func(tx repository.TxInterface) error {
+		for _, team := range teams {
+			if _, err := self.repos.Team().EnsureRoleGroups(ctx, tx, team); err != nil {
+				return fmt.Errorf("failed to ensure role groups for team %s: %w", team.Name, err)
+			}
+		}
+		return nil
+	})
 }
 
 // * Registry Team Sync

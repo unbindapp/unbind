@@ -229,12 +229,69 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "k8s_role_name", Type: field.TypeString, Nullable: true},
+		{Name: "role", Type: field.TypeEnum, Nullable: true, Enums: []string{"admin", "editor", "viewer"}},
+		{Name: "team_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// GroupsTable holds the schema information for the "groups" table.
 	GroupsTable = &schema.Table{
 		Name:       "groups",
 		Columns:    GroupsColumns,
 		PrimaryKey: []*schema.Column{GroupsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "groups_teams_role_groups",
+				Columns:    []*schema.Column{GroupsColumns[7]},
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "group_team_id_role",
+				Unique:  true,
+				Columns: []*schema.Column{GroupsColumns[7], GroupsColumns[6]},
+			},
+		},
+	}
+	// InvitationsColumns holds the columns for the "invitations" table.
+	InvitationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "email", Type: field.TypeString},
+		{Name: "token_hash", Type: field.TypeString, Unique: true},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "editor", "viewer"}},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "accepted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "team_id", Type: field.TypeUUID},
+		{Name: "invited_by", Type: field.TypeUUID, Nullable: true},
+	}
+	// InvitationsTable holds the schema information for the "invitations" table.
+	InvitationsTable = &schema.Table{
+		Name:       "invitations",
+		Columns:    InvitationsColumns,
+		PrimaryKey: []*schema.Column{InvitationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "invitations_teams_invitations",
+				Columns:    []*schema.Column{InvitationsColumns[8]},
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "invitations_users_sent_invitations",
+				Columns:    []*schema.Column{InvitationsColumns[9]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "invitation_team_id",
+				Unique:  false,
+				Columns: []*schema.Column{InvitationsColumns[8]},
+			},
+		},
 	}
 	// JwtKeysColumns holds the columns for the "jwt_keys" table.
 	JwtKeysColumns = []*schema.Column{
@@ -729,6 +786,7 @@ var (
 		{Name: "wildcard_base_url", Type: field.TypeString, Nullable: true},
 		{Name: "buildkit_settings", Type: field.TypeJSON, Nullable: true},
 		{Name: "registry_cache_settings", Type: field.TypeJSON, Nullable: true},
+		{Name: "email_settings", Type: field.TypeJSON, Nullable: true},
 		{Name: "service_reference_syntax_migrated", Type: field.TypeBool, Default: false},
 	}
 	// SystemSettingsTable holds the schema information for the "system_settings" table.
@@ -918,6 +976,7 @@ var (
 		GithubAppsTable,
 		GithubInstallationsTable,
 		GroupsTable,
+		InvitationsTable,
 		JwtKeysTable,
 		OauthAuthorizationCodesTable,
 		OauthClientsTable,
@@ -968,8 +1027,14 @@ func init() {
 	GithubInstallationsTable.Annotation = &entsql.Annotation{
 		Table: "github_installations",
 	}
+	GroupsTable.ForeignKeys[0].RefTable = TeamsTable
 	GroupsTable.Annotation = &entsql.Annotation{
 		Table: "groups",
+	}
+	InvitationsTable.ForeignKeys[0].RefTable = TeamsTable
+	InvitationsTable.ForeignKeys[1].RefTable = UsersTable
+	InvitationsTable.Annotation = &entsql.Annotation{
+		Table: "invitations",
 	}
 	JwtKeysTable.Annotation = &entsql.Annotation{
 		Table: "jwt_keys",

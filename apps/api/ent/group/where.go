@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/ent/schema"
 )
 
 // ID filters vertices based on their ID field.
@@ -79,6 +80,11 @@ func Description(v string) predicate.Group {
 // K8sRoleName applies equality check predicate on the "k8s_role_name" field. It's identical to K8sRoleNameEQ.
 func K8sRoleName(v string) predicate.Group {
 	return predicate.Group(sql.FieldEQ(FieldK8sRoleName, v))
+}
+
+// TeamID applies equality check predicate on the "team_id" field. It's identical to TeamIDEQ.
+func TeamID(v uuid.UUID) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldTeamID, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -376,6 +382,76 @@ func K8sRoleNameContainsFold(v string) predicate.Group {
 	return predicate.Group(sql.FieldContainsFold(FieldK8sRoleName, v))
 }
 
+// TeamIDEQ applies the EQ predicate on the "team_id" field.
+func TeamIDEQ(v uuid.UUID) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldTeamID, v))
+}
+
+// TeamIDNEQ applies the NEQ predicate on the "team_id" field.
+func TeamIDNEQ(v uuid.UUID) predicate.Group {
+	return predicate.Group(sql.FieldNEQ(FieldTeamID, v))
+}
+
+// TeamIDIn applies the In predicate on the "team_id" field.
+func TeamIDIn(vs ...uuid.UUID) predicate.Group {
+	return predicate.Group(sql.FieldIn(FieldTeamID, vs...))
+}
+
+// TeamIDNotIn applies the NotIn predicate on the "team_id" field.
+func TeamIDNotIn(vs ...uuid.UUID) predicate.Group {
+	return predicate.Group(sql.FieldNotIn(FieldTeamID, vs...))
+}
+
+// TeamIDIsNil applies the IsNil predicate on the "team_id" field.
+func TeamIDIsNil() predicate.Group {
+	return predicate.Group(sql.FieldIsNull(FieldTeamID))
+}
+
+// TeamIDNotNil applies the NotNil predicate on the "team_id" field.
+func TeamIDNotNil() predicate.Group {
+	return predicate.Group(sql.FieldNotNull(FieldTeamID))
+}
+
+// RoleEQ applies the EQ predicate on the "role" field.
+func RoleEQ(v schema.PermittedAction) predicate.Group {
+	vc := v
+	return predicate.Group(sql.FieldEQ(FieldRole, vc))
+}
+
+// RoleNEQ applies the NEQ predicate on the "role" field.
+func RoleNEQ(v schema.PermittedAction) predicate.Group {
+	vc := v
+	return predicate.Group(sql.FieldNEQ(FieldRole, vc))
+}
+
+// RoleIn applies the In predicate on the "role" field.
+func RoleIn(vs ...schema.PermittedAction) predicate.Group {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Group(sql.FieldIn(FieldRole, v...))
+}
+
+// RoleNotIn applies the NotIn predicate on the "role" field.
+func RoleNotIn(vs ...schema.PermittedAction) predicate.Group {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Group(sql.FieldNotIn(FieldRole, v...))
+}
+
+// RoleIsNil applies the IsNil predicate on the "role" field.
+func RoleIsNil() predicate.Group {
+	return predicate.Group(sql.FieldIsNull(FieldRole))
+}
+
+// RoleNotNil applies the NotNil predicate on the "role" field.
+func RoleNotNil() predicate.Group {
+	return predicate.Group(sql.FieldNotNull(FieldRole))
+}
+
 // HasUsers applies the HasEdge predicate on the "users" edge.
 func HasUsers() predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
@@ -414,6 +490,29 @@ func HasPermissions() predicate.Group {
 func HasPermissionsWith(preds ...predicate.Permission) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
 		step := newPermissionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTeam applies the HasEdge predicate on the "team" edge.
+func HasTeam() predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, TeamTable, TeamColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTeamWith applies the HasEdge predicate on the "team" edge with a given conditions (other predicates).
+func HasTeamWith(preds ...predicate.Team) predicate.Group {
+	return predicate.Group(func(s *sql.Selector) {
+		step := newTeamStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

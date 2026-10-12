@@ -56,6 +56,10 @@ func (User) Edges() []ent.Edge {
 			Annotations(entsql.Annotation{
 				OnDelete: entsql.Cascade,
 			}),
+		edge.To("sent_invitations", Invitation.Type).
+			Annotations(entsql.Annotation{
+				OnDelete: entsql.SetNull,
+			}),
 	}
 }
 

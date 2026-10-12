@@ -23,6 +23,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/jwtkey"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
@@ -65,6 +66,8 @@ type Client struct {
 	GithubInstallation *GithubInstallationClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// Invitation is the client for interacting with the Invitation builders.
+	Invitation *InvitationClient
 	// JWTKey is the client for interacting with the JWTKey builders.
 	JWTKey *JWTKeyClient
 	// OAuthAuthorizationCode is the client for interacting with the OAuthAuthorizationCode builders.
@@ -121,6 +124,7 @@ func (c *Client) init() {
 	c.GithubApp = NewGithubAppClient(c.config)
 	c.GithubInstallation = NewGithubInstallationClient(c.config)
 	c.Group = NewGroupClient(c.config)
+	c.Invitation = NewInvitationClient(c.config)
 	c.JWTKey = NewJWTKeyClient(c.config)
 	c.OAuthAuthorizationCode = NewOAuthAuthorizationCodeClient(c.config)
 	c.OAuthClient = NewOAuthClientClient(c.config)
@@ -239,6 +243,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		GithubApp:              NewGithubAppClient(cfg),
 		GithubInstallation:     NewGithubInstallationClient(cfg),
 		Group:                  NewGroupClient(cfg),
+		Invitation:             NewInvitationClient(cfg),
 		JWTKey:                 NewJWTKeyClient(cfg),
 		OAuthAuthorizationCode: NewOAuthAuthorizationCodeClient(cfg),
 		OAuthClient:            NewOAuthClientClient(cfg),
@@ -284,6 +289,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		GithubApp:              NewGithubAppClient(cfg),
 		GithubInstallation:     NewGithubInstallationClient(cfg),
 		Group:                  NewGroupClient(cfg),
+		Invitation:             NewInvitationClient(cfg),
 		JWTKey:                 NewJWTKeyClient(cfg),
 		OAuthAuthorizationCode: NewOAuthAuthorizationCodeClient(cfg),
 		OAuthClient:            NewOAuthClientClient(cfg),
@@ -333,10 +339,11 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIKey, c.Bootstrap, c.Deployment, c.Environment, c.GithubApp,
-		c.GithubInstallation, c.Group, c.JWTKey, c.OAuthAuthorizationCode,
-		c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PVCMetadata,
-		c.Permission, c.Project, c.Registry, c.S3Bucket, c.Service, c.ServiceConfig,
-		c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User, c.Webhook,
+		c.GithubInstallation, c.Group, c.Invitation, c.JWTKey,
+		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
+		c.Oauth2Token, c.PVCMetadata, c.Permission, c.Project, c.Registry, c.S3Bucket,
+		c.Service, c.ServiceConfig, c.ServiceGroup, c.SystemSetting, c.Team,
+		c.Template, c.User, c.Webhook,
 	} {
 		n.Use(hooks...)
 	}
@@ -347,10 +354,11 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIKey, c.Bootstrap, c.Deployment, c.Environment, c.GithubApp,
-		c.GithubInstallation, c.Group, c.JWTKey, c.OAuthAuthorizationCode,
-		c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken, c.Oauth2Token, c.PVCMetadata,
-		c.Permission, c.Project, c.Registry, c.S3Bucket, c.Service, c.ServiceConfig,
-		c.ServiceGroup, c.SystemSetting, c.Team, c.Template, c.User, c.Webhook,
+		c.GithubInstallation, c.Group, c.Invitation, c.JWTKey,
+		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
+		c.Oauth2Token, c.PVCMetadata, c.Permission, c.Project, c.Registry, c.S3Bucket,
+		c.Service, c.ServiceConfig, c.ServiceGroup, c.SystemSetting, c.Team,
+		c.Template, c.User, c.Webhook,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -373,6 +381,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.GithubInstallation.mutate(ctx, m)
 	case *GroupMutation:
 		return c.Group.mutate(ctx, m)
+	case *InvitationMutation:
+		return c.Invitation.mutate(ctx, m)
 	case *JWTKeyMutation:
 		return c.JWTKey.mutate(ctx, m)
 	case *OAuthAuthorizationCodeMutation:
@@ -1530,6 +1540,22 @@ func (c *GroupClient) QueryPermissions(_m *Group) *PermissionQuery {
 	return query
 }
 
+// QueryTeam queries the team edge of a Group.
+func (c *GroupClient) QueryTeam(_m *Group) *TeamQuery {
+	query := (&TeamClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, group.TeamTable, group.TeamColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *GroupClient) Hooks() []Hook {
 	return c.hooks.Group
@@ -1552,6 +1578,171 @@ func (c *GroupClient) mutate(ctx context.Context, m *GroupMutation) (Value, erro
 		return (&GroupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Group mutation op: %q", m.Op())
+	}
+}
+
+// InvitationClient is a client for the Invitation schema.
+type InvitationClient struct {
+	config
+}
+
+// NewInvitationClient returns a client for the Invitation from the given config.
+func NewInvitationClient(c config) *InvitationClient {
+	return &InvitationClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `invitation.Hooks(f(g(h())))`.
+func (c *InvitationClient) Use(hooks ...Hook) {
+	c.hooks.Invitation = append(c.hooks.Invitation, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `invitation.Intercept(f(g(h())))`.
+func (c *InvitationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Invitation = append(c.inters.Invitation, interceptors...)
+}
+
+// Create returns a builder for creating a Invitation entity.
+func (c *InvitationClient) Create() *InvitationCreate {
+	mutation := newInvitationMutation(c.config, OpCreate)
+	return &InvitationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Invitation entities.
+func (c *InvitationClient) CreateBulk(builders ...*InvitationCreate) *InvitationCreateBulk {
+	return &InvitationCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *InvitationClient) MapCreateBulk(slice any, setFunc func(*InvitationCreate, int)) *InvitationCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &InvitationCreateBulk{err: fmt.Errorf("calling to InvitationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*InvitationCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &InvitationCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Invitation.
+func (c *InvitationClient) Update() *InvitationUpdate {
+	mutation := newInvitationMutation(c.config, OpUpdate)
+	return &InvitationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *InvitationClient) UpdateOne(_m *Invitation) *InvitationUpdateOne {
+	mutation := newInvitationMutation(c.config, OpUpdateOne, withInvitation(_m))
+	return &InvitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *InvitationClient) UpdateOneID(id uuid.UUID) *InvitationUpdateOne {
+	mutation := newInvitationMutation(c.config, OpUpdateOne, withInvitationID(id))
+	return &InvitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Invitation.
+func (c *InvitationClient) Delete() *InvitationDelete {
+	mutation := newInvitationMutation(c.config, OpDelete)
+	return &InvitationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *InvitationClient) DeleteOne(_m *Invitation) *InvitationDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *InvitationClient) DeleteOneID(id uuid.UUID) *InvitationDeleteOne {
+	builder := c.Delete().Where(invitation.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &InvitationDeleteOne{builder}
+}
+
+// Query returns a query builder for Invitation.
+func (c *InvitationClient) Query() *InvitationQuery {
+	return &InvitationQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeInvitation},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Invitation entity by its id.
+func (c *InvitationClient) Get(ctx context.Context, id uuid.UUID) (*Invitation, error) {
+	return c.Query().Where(invitation.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *InvitationClient) GetX(ctx context.Context, id uuid.UUID) *Invitation {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTeam queries the team edge of a Invitation.
+func (c *InvitationClient) QueryTeam(_m *Invitation) *TeamQuery {
+	query := (&TeamClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(invitation.Table, invitation.FieldID, id),
+			sqlgraph.To(team.Table, team.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, invitation.TeamTable, invitation.TeamColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInviter queries the inviter edge of a Invitation.
+func (c *InvitationClient) QueryInviter(_m *Invitation) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(invitation.Table, invitation.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, invitation.InviterTable, invitation.InviterColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *InvitationClient) Hooks() []Hook {
+	return c.hooks.Invitation
+}
+
+// Interceptors returns the client interceptors.
+func (c *InvitationClient) Interceptors() []Interceptor {
+	return c.inters.Invitation
+}
+
+func (c *InvitationClient) mutate(ctx context.Context, m *InvitationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&InvitationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&InvitationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&InvitationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&InvitationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Invitation mutation op: %q", m.Op())
 	}
 }
 
@@ -4074,6 +4265,38 @@ func (c *TeamClient) QueryMembers(_m *Team) *UserQuery {
 	return query
 }
 
+// QueryRoleGroups queries the role_groups edge of a Team.
+func (c *TeamClient) QueryRoleGroups(_m *Team) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, team.RoleGroupsTable, team.RoleGroupsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryInvitations queries the invitations edge of a Team.
+func (c *TeamClient) QueryInvitations(_m *Team) *InvitationQuery {
+	query := (&InvitationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(invitation.Table, invitation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, team.InvitationsTable, team.InvitationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryGithubApps queries the github_apps edge of a Team.
 func (c *TeamClient) QueryGithubApps(_m *Team) *GithubAppQuery {
 	query := (&GithubAppClient{config: c.config}).Query()
@@ -4500,6 +4723,22 @@ func (c *UserClient) QueryAPIKeys(_m *User) *APIKeyQuery {
 	return query
 }
 
+// QuerySentInvitations queries the sent_invitations edge of a User.
+func (c *UserClient) QuerySentInvitations(_m *User) *InvitationQuery {
+	query := (&InvitationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(invitation.Table, invitation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.SentInvitationsTable, user.SentInvitationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
@@ -4694,14 +4933,14 @@ func (c *WebhookClient) mutate(ctx context.Context, m *WebhookMutation) (Value, 
 type (
 	hooks struct {
 		APIKey, Bootstrap, Deployment, Environment, GithubApp, GithubInstallation,
-		Group, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
+		Group, Invitation, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
 		OAuthGrantToken, Oauth2Token, PVCMetadata, Permission, Project, Registry,
 		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template,
 		User, Webhook []ent.Hook
 	}
 	inters struct {
 		APIKey, Bootstrap, Deployment, Environment, GithubApp, GithubInstallation,
-		Group, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
+		Group, Invitation, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
 		OAuthGrantToken, Oauth2Token, PVCMetadata, Permission, Project, Registry,
 		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, Template,
 		User, Webhook []ent.Interceptor

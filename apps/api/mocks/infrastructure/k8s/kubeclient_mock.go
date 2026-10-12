@@ -921,6 +921,69 @@ func (_c *KubeClientMock_DeleteDeploymentJob_Call) RunAndReturn(run func(ctx con
 	return _c
 }
 
+// DeleteNamespace provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) DeleteNamespace(ctx context.Context, namespaceName string, client kubernetes.Interface) error {
+	ret := _mock.Called(ctx, namespaceName, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteNamespace")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, kubernetes.Interface) error); ok {
+		r0 = returnFunc(ctx, namespaceName, client)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// KubeClientMock_DeleteNamespace_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteNamespace'
+type KubeClientMock_DeleteNamespace_Call struct {
+	*mock.Call
+}
+
+// DeleteNamespace is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespaceName string
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) DeleteNamespace(ctx any, namespaceName any, client any) *KubeClientMock_DeleteNamespace_Call {
+	return &KubeClientMock_DeleteNamespace_Call{Call: _e.mock.On("DeleteNamespace", ctx, namespaceName, client)}
+}
+
+func (_c *KubeClientMock_DeleteNamespace_Call) Run(run func(ctx context.Context, namespaceName string, client kubernetes.Interface)) *KubeClientMock_DeleteNamespace_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 kubernetes.Interface
+		if args[2] != nil {
+			arg2 = args[2].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_DeleteNamespace_Call) Return(err error) *KubeClientMock_DeleteNamespace_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *KubeClientMock_DeleteNamespace_Call) RunAndReturn(run func(ctx context.Context, namespaceName string, client kubernetes.Interface) error) *KubeClientMock_DeleteNamespace_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteOldVerificationRoutes provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) DeleteOldVerificationRoutes(ctx context.Context, client kubernetes.Interface) error {
 	ret := _mock.Called(ctx, client)
@@ -1658,16 +1721,16 @@ func (_c *KubeClientMock_EnsurePersistentVolumeClaim_Call) RunAndReturn(run func
 }
 
 // ExecInPod provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) ExecInPod(ctx context.Context, token string, opts k8s.ExecOptions) error {
-	ret := _mock.Called(ctx, token, opts)
+func (_mock *KubeClientMock) ExecInPod(ctx context.Context, identity k8s.ExecIdentity, opts k8s.ExecOptions) error {
+	ret := _mock.Called(ctx, identity, opts)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ExecInPod")
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string, k8s.ExecOptions) error); ok {
-		r0 = returnFunc(ctx, token, opts)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, k8s.ExecIdentity, k8s.ExecOptions) error); ok {
+		r0 = returnFunc(ctx, identity, opts)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -1681,21 +1744,21 @@ type KubeClientMock_ExecInPod_Call struct {
 
 // ExecInPod is a helper method to define mock.On call
 //   - ctx context.Context
-//   - token string
+//   - identity k8s.ExecIdentity
 //   - opts k8s.ExecOptions
-func (_e *KubeClientMock_Expecter) ExecInPod(ctx any, token any, opts any) *KubeClientMock_ExecInPod_Call {
-	return &KubeClientMock_ExecInPod_Call{Call: _e.mock.On("ExecInPod", ctx, token, opts)}
+func (_e *KubeClientMock_Expecter) ExecInPod(ctx any, identity any, opts any) *KubeClientMock_ExecInPod_Call {
+	return &KubeClientMock_ExecInPod_Call{Call: _e.mock.On("ExecInPod", ctx, identity, opts)}
 }
 
-func (_c *KubeClientMock_ExecInPod_Call) Run(run func(ctx context.Context, token string, opts k8s.ExecOptions)) *KubeClientMock_ExecInPod_Call {
+func (_c *KubeClientMock_ExecInPod_Call) Run(run func(ctx context.Context, identity k8s.ExecIdentity, opts k8s.ExecOptions)) *KubeClientMock_ExecInPod_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 string
+		var arg1 k8s.ExecIdentity
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(k8s.ExecIdentity)
 		}
 		var arg2 k8s.ExecOptions
 		if args[2] != nil {
@@ -1715,7 +1778,7 @@ func (_c *KubeClientMock_ExecInPod_Call) Return(err error) *KubeClientMock_ExecI
 	return _c
 }
 
-func (_c *KubeClientMock_ExecInPod_Call) RunAndReturn(run func(ctx context.Context, token string, opts k8s.ExecOptions) error) *KubeClientMock_ExecInPod_Call {
+func (_c *KubeClientMock_ExecInPod_Call) RunAndReturn(run func(ctx context.Context, identity k8s.ExecIdentity, opts k8s.ExecOptions) error) *KubeClientMock_ExecInPod_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -4614,46 +4677,6 @@ func (_c *KubeClientMock_SetPersistentVolumeClaimService_Call) Return(err error)
 
 func (_c *KubeClientMock_SetPersistentVolumeClaimService_Call) RunAndReturn(run func(ctx context.Context, namespace string, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error) *KubeClientMock_SetPersistentVolumeClaimService_Call {
 	_c.Call.Return(run)
-	return _c
-}
-
-// SetTokenVerifier provides a mock function for the type KubeClientMock
-func (_mock *KubeClientMock) SetTokenVerifier(verifier k8s.TokenVerifier) {
-	_mock.Called(verifier)
-	return
-}
-
-// KubeClientMock_SetTokenVerifier_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetTokenVerifier'
-type KubeClientMock_SetTokenVerifier_Call struct {
-	*mock.Call
-}
-
-// SetTokenVerifier is a helper method to define mock.On call
-//   - verifier k8s.TokenVerifier
-func (_e *KubeClientMock_Expecter) SetTokenVerifier(verifier any) *KubeClientMock_SetTokenVerifier_Call {
-	return &KubeClientMock_SetTokenVerifier_Call{Call: _e.mock.On("SetTokenVerifier", verifier)}
-}
-
-func (_c *KubeClientMock_SetTokenVerifier_Call) Run(run func(verifier k8s.TokenVerifier)) *KubeClientMock_SetTokenVerifier_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 k8s.TokenVerifier
-		if args[0] != nil {
-			arg0 = args[0].(k8s.TokenVerifier)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *KubeClientMock_SetTokenVerifier_Call) Return() *KubeClientMock_SetTokenVerifier_Call {
-	_c.Call.Return()
-	return _c
-}
-
-func (_c *KubeClientMock_SetTokenVerifier_Call) RunAndReturn(run func(verifier k8s.TokenVerifier)) *KubeClientMock_SetTokenVerifier_Call {
-	_c.Run(run)
 	return _c
 }
 

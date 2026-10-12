@@ -14,6 +14,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
+	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/team"
@@ -152,6 +154,36 @@ func (_c *TeamCreate) AddMembers(v ...*User) *TeamCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddMemberIDs(ids...)
+}
+
+// AddRoleGroupIDs adds the "role_groups" edge to the Group entity by IDs.
+func (_c *TeamCreate) AddRoleGroupIDs(ids ...uuid.UUID) *TeamCreate {
+	_c.mutation.AddRoleGroupIDs(ids...)
+	return _c
+}
+
+// AddRoleGroups adds the "role_groups" edges to the Group entity.
+func (_c *TeamCreate) AddRoleGroups(v ...*Group) *TeamCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddRoleGroupIDs(ids...)
+}
+
+// AddInvitationIDs adds the "invitations" edge to the Invitation entity by IDs.
+func (_c *TeamCreate) AddInvitationIDs(ids ...uuid.UUID) *TeamCreate {
+	_c.mutation.AddInvitationIDs(ids...)
+	return _c
+}
+
+// AddInvitations adds the "invitations" edges to the Invitation entity.
+func (_c *TeamCreate) AddInvitations(v ...*Invitation) *TeamCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddInvitationIDs(ids...)
 }
 
 // AddGithubAppIDs adds the "github_apps" edge to the GithubApp entity by IDs.
@@ -363,6 +395,38 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.RoleGroupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.RoleGroupsTable,
+			Columns: []string{team.RoleGroupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(group.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.InvitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   team.InvitationsTable,
+			Columns: []string{team.InvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

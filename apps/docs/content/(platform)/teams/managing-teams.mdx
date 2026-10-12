@@ -1,0 +1,39 @@
+---
+title: Managing Teams
+description: Create teams, rename them and delete them.
+---
+
+A team is the top of the tree. It holds projects and the settings they share, and it has its own [members](/teams/members-and-permissions). Every team runs in its own namespace on the cluster, so nothing in one team can see another.
+
+Your instance starts with one team, `Default`.
+
+## Create a team
+
+Only people who own the instance can create teams. Open the team switcher in the breadcrumb at the top of the page and press **New Team**. Give it a name of up to 32 characters, unique on the instance, and an optional description.
+
+Whoever creates the team is its first admin. From there, add people under **Settings** > **Members**.
+
+A new team starts empty. Create a project in it to get going. See [Projects and Environments](/teams/projects-and-environments).
+
+## Settings
+
+**Team** > **Settings** has:
+
+- **General**: rename the team and change its description.
+- **Variables**: values shared by every project in the team. See [Variables](/services/variables#team-and-project-variables).
+- **Storage**: buckets for database backups. See [S3 Storage](/teams/s3-storage).
+- **Members**: who can reach the team and with what role.
+- **Webhooks**: notifications about the team's projects and services. See [Webhooks](/monitoring/webhooks).
+- **GitHub Apps**: GitHub connections shared with the team.
+- **Danger Zone**: delete the team.
+
+## Delete a team
+
+<Callout type="warn" title="Deleting takes everything with it">
+  Deleting a team permanently deletes every project in it, with their services, databases, volumes
+  and buckets, and the namespace they ran in. It cannot be undone.
+</Callout>
+
+Deleting needs the admin role on the team. Go to **Settings** > **Danger Zone**, press **Delete Team** and type the team's name to confirm.
+
+Members keep their accounts and whatever they have on other teams. API keys and connected apps limited to the deleted team stop reaching anything.

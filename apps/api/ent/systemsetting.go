@@ -31,6 +31,8 @@ type SystemSetting struct {
 	BuildkitSettings *schema.BuildkitSettings `json:"buildkit_settings,omitempty"`
 	// Registry cache cleanup settings
 	RegistryCacheSettings *schema.RegistryCacheSettings `json:"registry_cache_settings,omitempty"`
+	// Outgoing mail relay, password kept in a Kubernetes secret
+	EmailSettings *schema.EmailSettings `json:"email_settings,omitempty"`
 	// Whether stored variables were rewritten from ${{service.<id>.KEY}} to ${{service:<id>.KEY}}
 	ServiceReferenceSyntaxMigrated bool `json:"service_reference_syntax_migrated,omitempty"`
 	selectValues                   sql.SelectValues
@@ -41,7 +43,7 @@ func (*SystemSetting) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case systemsetting.FieldBuildkitSettings, systemsetting.FieldRegistryCacheSettings:
+		case systemsetting.FieldBuildkitSettings, systemsetting.FieldRegistryCacheSettings, systemsetting.FieldEmailSettings:
 			values[i] = new([]byte)
 		case systemsetting.FieldServiceReferenceSyntaxMigrated:
 			values[i] = new(sql.NullBool)
@@ -107,6 +109,14 @@ func (_m *SystemSetting) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field registry_cache_settings: %w", err)
 				}
 			}
+		case systemsetting.FieldEmailSettings:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field email_settings", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.EmailSettings); err != nil {
+					return fmt.Errorf("unmarshal field email_settings: %w", err)
+				}
+			}
 		case systemsetting.FieldServiceReferenceSyntaxMigrated:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field service_reference_syntax_migrated", values[i])
@@ -165,6 +175,9 @@ func (_m *SystemSetting) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("registry_cache_settings=")
 	builder.WriteString(fmt.Sprintf("%v", _m.RegistryCacheSettings))
+	builder.WriteString(", ")
+	builder.WriteString("email_settings=")
+	builder.WriteString(fmt.Sprintf("%v", _m.EmailSettings))
 	builder.WriteString(", ")
 	builder.WriteString("service_reference_syntax_migrated=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ServiceReferenceSyntaxMigrated))

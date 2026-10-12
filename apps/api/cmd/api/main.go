@@ -36,6 +36,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/database"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/loki"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/mail"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/prometheus"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/registry"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/registrycache"
@@ -46,6 +47,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	apikey_service "github.com/unbindapp/unbind-api/internal/services/apikey"
 	deployments_service "github.com/unbindapp/unbind-api/internal/services/deployments"
+	email_service "github.com/unbindapp/unbind-api/internal/services/email"
 	environment_service "github.com/unbindapp/unbind-api/internal/services/environment"
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
 	logs_service "github.com/unbindapp/unbind-api/internal/services/logs"
@@ -175,7 +177,6 @@ func startAPI(cfg *config.Config) {
 	rbacManager := k8s.NewRBACManager(repo, kubeClient)
 	groupService := group_service.NewGroupService(repo, rbacManager)
 	userService := user_service.NewUserService(repo)
-	teamService := team_service.NewTeamService(repo, kubeClient)
 	projectService := project_service.NewProjectService(cfg, repo, kubeClient, webhooksService, deploymentController)
 	environmentService := environment_service.NewEnvironmentService(repo, kubeClient, deploymentController)
 	logService := logs_service.NewLogsService(repo, kubeClient, lokiQuerier)
@@ -192,6 +193,8 @@ func startAPI(cfg *config.Config) {
 	replicaService := replica_service.NewReplicaService(cfg, repo, kubeClient)
 	storageService := storage_service.NewStorageService(cfg, repo, kubeClient, promClient, serviceService)
 	go storageService.StoreDatabaseVolumeNames(ctx)
+	emailService := email_service.NewEmailService(cfg, repo, kubeClient, mail.SMTPSender{})
+	teamService := team_service.NewTeamService(cfg, repo, kubeClient, rbacManager, projectService, storageService, emailService)
 	templateService := templates_service.NewTemplatesService(cfg, repo, kubeClient, dbProvider, deploymentController)
 	serviceGroupService := servicegroup_service.NewServiceGroupService(cfg, repo, kubeClient, deploymentController, serviceService, storageService)
 	terminalService := terminal_service.NewTerminalService(repo, kubeClient)
@@ -207,7 +210,6 @@ func startAPI(cfg *config.Config) {
 	}
 	tokenManager := auth.NewTokenManager(pkey, cfg.ExternalOauth2URL, cfg.TokenAudience)
 	oidcHandler := auth.NewOIDCHandler(tokenManager)
-	kubeClient.SetTokenVerifier(tokenManager)
 
 	// Implementation
 	srvImpl := &server.Server{
@@ -224,6 +226,7 @@ func startAPI(cfg *config.Config) {
 		GroupService:         groupService,
 		UserService:          userService,
 		TeamService:          teamService,
+		EmailService:         emailService,
 		ProjectService:       projectService,
 		ServiceService:       serviceService,
 		EnvironmentService:   environmentService,

@@ -12,6 +12,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/services"
 )
@@ -54,6 +55,10 @@ func (suite *ResolveSuite) expectChainLookups() {
 		Return(&ent.Environment{ID: suite.environmentID, ProjectID: suite.projectID}, nil)
 	suite.MockServiceRepo.EXPECT().GetByID(suite.Ctx, suite.serviceID).
 		Return(&ent.Service{ID: suite.serviceID, EnvironmentID: suite.environmentID}, nil)
+	suite.MockUserRepo.EXPECT().GetByID(suite.Ctx, suite.userID).
+		Return(&ent.User{ID: suite.userID, Email: "dev@example.com"}, nil)
+	suite.MockUserRepo.EXPECT().GetGroups(suite.Ctx, suite.userID).
+		Return([]*ent.Group{{Name: "team-acme-editor"}}, nil)
 }
 
 func (suite *ResolveSuite) TestRequiresEditor() {
@@ -112,6 +117,7 @@ func (suite *ResolveSuite) TestDefaultsToFirstRunningPod() {
 	suite.Equal("running-pod", target.PodName)
 	suite.Equal("app", target.Container)
 	suite.Equal(defaultShellCommand, target.Command)
+	suite.Equal(k8s.ExecIdentity{Email: "dev@example.com", Groups: []string{"oidc:team-acme-editor"}}, target.Identity)
 }
 
 func (suite *ResolveSuite) TestRejectsUnknownContainer() {

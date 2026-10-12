@@ -27,11 +27,16 @@ const searchSchema = z.object({
 
 // Routes reachable while signed out. Everything else requires auth.
 const PUBLIC_PATHS = new Set(["/sign-in", "/welcome"]);
+const PUBLIC_PREFIXES = ["/invite/"];
+
+function isPublicPath(pathname: string) {
+  return PUBLIC_PATHS.has(pathname) || PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
+}
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   validateSearch: zodValidator(searchSchema),
   beforeLoad: ({ context, location }) => {
-    if (PUBLIC_PATHS.has(location.pathname)) return;
+    if (isPublicPath(location.pathname)) return;
 
     const cached = context.queryClient.getQueryData(meQuery.queryKey);
     if (cached !== undefined) {

@@ -15,6 +15,8 @@ import (
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/permission"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 )
 
@@ -92,6 +94,46 @@ func (_u *GroupUpdate) ClearK8sRoleName() *GroupUpdate {
 	return _u
 }
 
+// SetTeamID sets the "team_id" field.
+func (_u *GroupUpdate) SetTeamID(v uuid.UUID) *GroupUpdate {
+	_u.mutation.SetTeamID(v)
+	return _u
+}
+
+// SetNillableTeamID sets the "team_id" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableTeamID(v *uuid.UUID) *GroupUpdate {
+	if v != nil {
+		_u.SetTeamID(*v)
+	}
+	return _u
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (_u *GroupUpdate) ClearTeamID() *GroupUpdate {
+	_u.mutation.ClearTeamID()
+	return _u
+}
+
+// SetRole sets the "role" field.
+func (_u *GroupUpdate) SetRole(v schema.PermittedAction) *GroupUpdate {
+	_u.mutation.SetRole(v)
+	return _u
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *GroupUpdate) SetNillableRole(v *schema.PermittedAction) *GroupUpdate {
+	if v != nil {
+		_u.SetRole(*v)
+	}
+	return _u
+}
+
+// ClearRole clears the value of the "role" field.
+func (_u *GroupUpdate) ClearRole() *GroupUpdate {
+	_u.mutation.ClearRole()
+	return _u
+}
+
 // AddUserIDs adds the "users" edge to the User entity by IDs.
 func (_u *GroupUpdate) AddUserIDs(ids ...uuid.UUID) *GroupUpdate {
 	_u.mutation.AddUserIDs(ids...)
@@ -120,6 +162,11 @@ func (_u *GroupUpdate) AddPermissions(v ...*Permission) *GroupUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddPermissionIDs(ids...)
+}
+
+// SetTeam sets the "team" edge to the Team entity.
+func (_u *GroupUpdate) SetTeam(v *Team) *GroupUpdate {
+	return _u.SetTeamID(v.ID)
 }
 
 // Mutation returns the GroupMutation object of the builder.
@@ -169,6 +216,12 @@ func (_u *GroupUpdate) RemovePermissions(v ...*Permission) *GroupUpdate {
 	return _u.RemovePermissionIDs(ids...)
 }
 
+// ClearTeam clears the "team" edge to the Team entity.
+func (_u *GroupUpdate) ClearTeam() *GroupUpdate {
+	_u.mutation.ClearTeam()
+	return _u
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (_u *GroupUpdate) Save(ctx context.Context) (int, error) {
 	_u.defaults()
@@ -212,6 +265,11 @@ func (_u *GroupUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Group.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Role(); ok {
+		if err := group.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "Group.role": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -250,6 +308,12 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.K8sRoleNameCleared() {
 		_spec.ClearField(group.FieldK8sRoleName, field.TypeString)
+	}
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(group.FieldRole, field.TypeEnum, value)
+	}
+	if _u.mutation.RoleCleared() {
+		_spec.ClearField(group.FieldRole, field.TypeEnum)
 	}
 	if _u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -334,6 +398,35 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TeamCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.TeamTable,
+			Columns: []string{group.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.TeamTable,
+			Columns: []string{group.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -423,6 +516,46 @@ func (_u *GroupUpdateOne) ClearK8sRoleName() *GroupUpdateOne {
 	return _u
 }
 
+// SetTeamID sets the "team_id" field.
+func (_u *GroupUpdateOne) SetTeamID(v uuid.UUID) *GroupUpdateOne {
+	_u.mutation.SetTeamID(v)
+	return _u
+}
+
+// SetNillableTeamID sets the "team_id" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableTeamID(v *uuid.UUID) *GroupUpdateOne {
+	if v != nil {
+		_u.SetTeamID(*v)
+	}
+	return _u
+}
+
+// ClearTeamID clears the value of the "team_id" field.
+func (_u *GroupUpdateOne) ClearTeamID() *GroupUpdateOne {
+	_u.mutation.ClearTeamID()
+	return _u
+}
+
+// SetRole sets the "role" field.
+func (_u *GroupUpdateOne) SetRole(v schema.PermittedAction) *GroupUpdateOne {
+	_u.mutation.SetRole(v)
+	return _u
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (_u *GroupUpdateOne) SetNillableRole(v *schema.PermittedAction) *GroupUpdateOne {
+	if v != nil {
+		_u.SetRole(*v)
+	}
+	return _u
+}
+
+// ClearRole clears the value of the "role" field.
+func (_u *GroupUpdateOne) ClearRole() *GroupUpdateOne {
+	_u.mutation.ClearRole()
+	return _u
+}
+
 // AddUserIDs adds the "users" edge to the User entity by IDs.
 func (_u *GroupUpdateOne) AddUserIDs(ids ...uuid.UUID) *GroupUpdateOne {
 	_u.mutation.AddUserIDs(ids...)
@@ -451,6 +584,11 @@ func (_u *GroupUpdateOne) AddPermissions(v ...*Permission) *GroupUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.AddPermissionIDs(ids...)
+}
+
+// SetTeam sets the "team" edge to the Team entity.
+func (_u *GroupUpdateOne) SetTeam(v *Team) *GroupUpdateOne {
+	return _u.SetTeamID(v.ID)
 }
 
 // Mutation returns the GroupMutation object of the builder.
@@ -498,6 +636,12 @@ func (_u *GroupUpdateOne) RemovePermissions(v ...*Permission) *GroupUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemovePermissionIDs(ids...)
+}
+
+// ClearTeam clears the "team" edge to the Team entity.
+func (_u *GroupUpdateOne) ClearTeam() *GroupUpdateOne {
+	_u.mutation.ClearTeam()
+	return _u
 }
 
 // Where appends a list predicates to the GroupUpdate builder.
@@ -556,6 +700,11 @@ func (_u *GroupUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Group.name": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Role(); ok {
+		if err := group.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "Group.role": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -611,6 +760,12 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 	}
 	if _u.mutation.K8sRoleNameCleared() {
 		_spec.ClearField(group.FieldK8sRoleName, field.TypeString)
+	}
+	if value, ok := _u.mutation.Role(); ok {
+		_spec.SetField(group.FieldRole, field.TypeEnum, value)
+	}
+	if _u.mutation.RoleCleared() {
+		_spec.ClearField(group.FieldRole, field.TypeEnum)
 	}
 	if _u.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -695,6 +850,35 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(permission.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.TeamCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.TeamTable,
+			Columns: []string{group.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TeamIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   group.TeamTable,
+			Columns: []string{group.TeamColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

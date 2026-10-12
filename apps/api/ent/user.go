@@ -49,9 +49,11 @@ type UserEdges struct {
 	Teams []*Team `json:"teams,omitempty"`
 	// APIKeys holds the value of the api_keys edge.
 	APIKeys []*APIKey `json:"api_keys,omitempty"`
+	// SentInvitations holds the value of the sent_invitations edge.
+	SentInvitations []*Invitation `json:"sent_invitations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // Oauth2TokensOrErr returns the Oauth2Tokens value or an error if the edge
@@ -115,6 +117,15 @@ func (e UserEdges) APIKeysOrErr() ([]*APIKey, error) {
 		return e.APIKeys, nil
 	}
 	return nil, &NotLoadedError{edge: "api_keys"}
+}
+
+// SentInvitationsOrErr returns the SentInvitations value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) SentInvitationsOrErr() ([]*Invitation, error) {
+	if e.loadedTypes[7] {
+		return e.SentInvitations, nil
+	}
+	return nil, &NotLoadedError{edge: "sent_invitations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -219,6 +230,11 @@ func (_m *User) QueryTeams() *TeamQuery {
 // QueryAPIKeys queries the "api_keys" edge of the User entity.
 func (_m *User) QueryAPIKeys() *APIKeyQuery {
 	return NewUserClient(_m.config).QueryAPIKeys(_m)
+}
+
+// QuerySentInvitations queries the "sent_invitations" edge of the User entity.
+func (_m *User) QuerySentInvitations() *InvitationQuery {
+	return NewUserClient(_m.config).QuerySentInvitations(_m)
 }
 
 // Update returns a builder for updating this User.

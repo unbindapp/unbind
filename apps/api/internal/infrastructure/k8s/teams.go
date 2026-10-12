@@ -8,6 +8,7 @@ import (
 
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -28,4 +29,14 @@ func (k *KubeClient) CreateNamespace(ctx context.Context, namespaceName string, 
 
 	log.Infof("Successfully created namespace: %s", namespaceName)
 	return createdNamespace, nil
+}
+
+// DeleteNamespace removes a team namespace and everything in it. Deletion is
+// asynchronous on the cluster side; a namespace that is already gone is not an error.
+func (k *KubeClient) DeleteNamespace(ctx context.Context, namespaceName string, client kubernetes.Interface) error {
+	err := client.CoreV1().Namespaces().Delete(ctx, namespaceName, metav1.DeleteOptions{})
+	if err != nil && !errors.IsNotFound(err) {
+		return fmt.Errorf("error deleting namespace %s: %w", namespaceName, err)
+	}
+	return nil
 }

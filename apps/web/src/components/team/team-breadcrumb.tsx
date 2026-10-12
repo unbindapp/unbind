@@ -2,10 +2,13 @@
 
 import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
+import { CreateTeamDialog } from "@/components/team/create-team-dialog";
 import { useTeams } from "@/components/team/teams-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
+import { isSystemAdmin, meQuery } from "@/lib/queries/me";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { ReactElement, useCallback, useEffect, useState } from "react";
 
 type TProps = {
   className?: string;
@@ -16,6 +19,8 @@ export default function TeamBreadcrumb({ className }: TProps) {
   const { teamId: teamIdFromPathname } = useIdsFromPathname();
 
   const { data: teamData, isPending } = useTeams();
+  const { data: me } = useQuery(meQuery);
+  const canCreateTeam = isSystemAdmin(me);
 
   const [selectedTeamId, setSelectedTeamId] = useState(teamIdFromPathname);
 
@@ -43,20 +48,34 @@ export default function TeamBreadcrumb({ className }: TProps) {
     [router],
   );
 
+  const CreateTeamDialogMemoized = useCallback(
+    ({ children }: { children: ReactElement }) => <CreateTeamDialog>{children}</CreateTeamDialog>,
+    [],
+  );
+
+  const shared = {
+    flipChevronOnSm: true,
+    title: "Teams",
+    selectedItem: selectedTeam,
+    items: teamData?.teams,
+    onSelect: onTeamIdSelect,
+    onIntent: onTeamIdIntent,
+  };
+
   return (
     <BreadcrumbWrapper className={className}>
-      <BreadcrumbItem
-        flipChevronOnSm
-        title="Teams"
-        selectedItem={selectedTeam}
-        items={teamData?.teams}
-        onSelect={onTeamIdSelect}
-        onIntent={onTeamIdIntent}
-        newItemTitle="New Team"
-        newItemIsPending={false}
-        newItemComingSoon={true}
-        onSelectNewItem={() => {}}
-      />
+      {canCreateTeam ? (
+        <BreadcrumbItem
+          {...shared}
+          newItemTitle="New Team"
+          newItemIsPending={false}
+          newItemDontCloseMenuOnSelect={true}
+          NewItemWrapper={CreateTeamDialogMemoized}
+          onSelectNewItem={() => {}}
+        />
+      ) : (
+        <BreadcrumbItem {...shared} />
+      )}
     </BreadcrumbWrapper>
   );
 }

@@ -5,7 +5,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/permission"
 	"github.com/unbindapp/unbind-api/ent/predicate"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -66,4 +69,43 @@ func (self *TeamRepository) GetNames(ctx context.Context, tx repository.TxInterf
 		db = tx.Client()
 	}
 	return db.Team.Query().Select(team.FieldName).Strings(ctx)
+}
+
+// GetRoleGroups returns the team's role groups with their members loaded.
+func (self *TeamRepository) GetRoleGroups(ctx context.Context, teamID uuid.UUID) ([]*ent.Group, error) {
+	return self.base.DB.Team.Query().
+		Where(team.ID(teamID)).
+		QueryRoleGroups().
+		WithUsers().
+		All(ctx)
+}
+
+// GetGroupsReachingTeam returns every group that is not one of the team's own
+// role groups but holds a grant on the team, with members and grants loaded.
+// Their members reach the team without being on it.
+func (self *TeamRepository) GetGroupsReachingTeam(ctx context.Context, teamID uuid.UUID) ([]*ent.Group, error) {
+	groups, err := self.base.DB.Group.Query().
+		Where(
+			group.Or(group.TeamIDIsNil(), group.TeamIDNEQ(teamID)),
+			group.HasPermissionsWith(permission.ResourceTypeEQ(schema.ResourceTypeTeam)),
+		).
+		WithUsers().
+		WithPermissions(func(q *ent.PermissionQuery) {
+			q.Where(permission.ResourceTypeEQ(schema.ResourceTypeTeam))
+		}).
+		All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var reaching []*ent.Group
+	for _, g := range groups {
+		for _, p := range g.Edges.Permissions {
+			if p.ResourceSelector.Superuser || p.ResourceSelector.ID == teamID {
+				reaching = append(reaching, g)
+				break
+			}
+		}
+	}
+	return reaching, nil
 }

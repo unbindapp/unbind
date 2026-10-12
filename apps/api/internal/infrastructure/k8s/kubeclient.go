@@ -7,7 +7,6 @@ import (
 
 	certmanagerclientset "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/unbindapp/unbind-api/config"
-	"github.com/unbindapp/unbind-api/internal/auth"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
@@ -17,18 +16,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// TokenVerifier validates an access token and returns its OIDC claims
-type TokenVerifier interface {
-	Verify(token string) (*auth.VerifiedClaims, error)
-}
-
 // KubeClient handles Kubernetes operations
 //
 //go:generate go run -mod=mod github.com/vburenin/ifacemaker -f "*.go" -i KubeClientInterface -p k8s -s KubeClient -o kubeclient_iface.go
 type KubeClient struct {
 	config                    config.ConfigInterface
 	baseConfig                *rest.Config
-	tokenVerifier             TokenVerifier
 	client                    dynamic.Interface
 	clientset                 kubernetes.Interface
 	applier                   *Applier
@@ -110,12 +103,6 @@ func (self *KubeClient) GetInternalClient() kubernetes.Interface {
 
 func (self *KubeClient) GetInternalRestConfig() *rest.Config {
 	return self.baseConfig
-}
-
-// SetTokenVerifier wires the token verifier used to authorize per-user operations.
-// It is set after construction because the token manager is built later.
-func (self *KubeClient) SetTokenVerifier(verifier TokenVerifier) {
-	self.tokenVerifier = verifier
 }
 
 // ApplyYAML applies a multi-document YAML bundle with server-side apply, dry-run first

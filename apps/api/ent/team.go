@@ -47,13 +47,17 @@ type TeamEdges struct {
 	S3Buckets []*S3Bucket `json:"s3_buckets,omitempty"`
 	// Members holds the value of the members edge.
 	Members []*User `json:"members,omitempty"`
+	// RoleGroups holds the value of the role_groups edge.
+	RoleGroups []*Group `json:"role_groups,omitempty"`
+	// Invitations holds the value of the invitations edge.
+	Invitations []*Invitation `json:"invitations,omitempty"`
 	// GithubApps holds the value of the github_apps edge.
 	GithubApps []*GithubApp `json:"github_apps,omitempty"`
 	// TeamWebhooks holds the value of the team_webhooks edge.
 	TeamWebhooks []*Webhook `json:"team_webhooks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [7]bool
 }
 
 // ProjectsOrErr returns the Projects value or an error if the edge
@@ -83,10 +87,28 @@ func (e TeamEdges) MembersOrErr() ([]*User, error) {
 	return nil, &NotLoadedError{edge: "members"}
 }
 
+// RoleGroupsOrErr returns the RoleGroups value or an error if the edge
+// was not loaded in eager-loading.
+func (e TeamEdges) RoleGroupsOrErr() ([]*Group, error) {
+	if e.loadedTypes[3] {
+		return e.RoleGroups, nil
+	}
+	return nil, &NotLoadedError{edge: "role_groups"}
+}
+
+// InvitationsOrErr returns the Invitations value or an error if the edge
+// was not loaded in eager-loading.
+func (e TeamEdges) InvitationsOrErr() ([]*Invitation, error) {
+	if e.loadedTypes[4] {
+		return e.Invitations, nil
+	}
+	return nil, &NotLoadedError{edge: "invitations"}
+}
+
 // GithubAppsOrErr returns the GithubApps value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) GithubAppsOrErr() ([]*GithubApp, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[5] {
 		return e.GithubApps, nil
 	}
 	return nil, &NotLoadedError{edge: "github_apps"}
@@ -95,7 +117,7 @@ func (e TeamEdges) GithubAppsOrErr() ([]*GithubApp, error) {
 // TeamWebhooksOrErr returns the TeamWebhooks value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) TeamWebhooksOrErr() ([]*Webhook, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[6] {
 		return e.TeamWebhooks, nil
 	}
 	return nil, &NotLoadedError{edge: "team_webhooks"}
@@ -202,6 +224,16 @@ func (_m *Team) QueryS3Buckets() *S3BucketQuery {
 // QueryMembers queries the "members" edge of the Team entity.
 func (_m *Team) QueryMembers() *UserQuery {
 	return NewTeamClient(_m.config).QueryMembers(_m)
+}
+
+// QueryRoleGroups queries the "role_groups" edge of the Team entity.
+func (_m *Team) QueryRoleGroups() *GroupQuery {
+	return NewTeamClient(_m.config).QueryRoleGroups(_m)
+}
+
+// QueryInvitations queries the "invitations" edge of the Team entity.
+func (_m *Team) QueryInvitations() *InvitationQuery {
+	return NewTeamClient(_m.config).QueryInvitations(_m)
 }
 
 // QueryGithubApps queries the "github_apps" edge of the Team entity.

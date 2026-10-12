@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/ent/team"
 )
 
 // Group is the model entity for the Group schema.
@@ -29,6 +31,10 @@ type Group struct {
 	Description string `json:"description,omitempty"`
 	// Reference to the Kubernetes Role name
 	K8sRoleName *string `json:"k8s_role_name,omitempty"`
+	// Set on a role group owned by a team
+	TeamID *uuid.UUID `json:"team_id,omitempty"`
+	// The one role a team role group grants on its team
+	Role *schema.PermittedAction `json:"role,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GroupQuery when eager-loading is set.
 	Edges        GroupEdges `json:"edges"`
@@ -41,9 +47,11 @@ type GroupEdges struct {
 	Users []*User `json:"users,omitempty"`
 	// Permissions holds the value of the permissions edge.
 	Permissions []*Permission `json:"permissions,omitempty"`
+	// Team holds the value of the team edge.
+	Team *Team `json:"team,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -64,12 +72,25 @@ func (e GroupEdges) PermissionsOrErr() ([]*Permission, error) {
 	return nil, &NotLoadedError{edge: "permissions"}
 }
 
+// TeamOrErr returns the Team value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e GroupEdges) TeamOrErr() (*Team, error) {
+	if e.Team != nil {
+		return e.Team, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: team.Label}
+	}
+	return nil, &NotLoadedError{edge: "team"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Group) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case group.FieldName, group.FieldDescription, group.FieldK8sRoleName:
+		case group.FieldTeamID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case group.FieldName, group.FieldDescription, group.FieldK8sRoleName, group.FieldRole:
 			values[i] = new(sql.NullString)
 		case group.FieldCreatedAt, group.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -127,6 +148,20 @@ func (_m *Group) assignValues(columns []string, values []any) error {
 				_m.K8sRoleName = new(string)
 				*_m.K8sRoleName = value.String
 			}
+		case group.FieldTeamID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field team_id", values[i])
+			} else if value.Valid {
+				_m.TeamID = new(uuid.UUID)
+				*_m.TeamID = *value.S.(*uuid.UUID)
+			}
+		case group.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				_m.Role = new(schema.PermittedAction)
+				*_m.Role = schema.PermittedAction(value.String)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -148,6 +183,11 @@ func (_m *Group) QueryUsers() *UserQuery {
 // QueryPermissions queries the "permissions" edge of the Group entity.
 func (_m *Group) QueryPermissions() *PermissionQuery {
 	return NewGroupClient(_m.config).QueryPermissions(_m)
+}
+
+// QueryTeam queries the "team" edge of the Group entity.
+func (_m *Group) QueryTeam() *TeamQuery {
+	return NewGroupClient(_m.config).QueryTeam(_m)
 }
 
 // Update returns a builder for updating this Group.
@@ -188,6 +228,16 @@ func (_m *Group) String() string {
 	if v := _m.K8sRoleName; v != nil {
 		builder.WriteString("k8s_role_name=")
 		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.TeamID; v != nil {
+		builder.WriteString("team_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := _m.Role; v != nil {
+		builder.WriteString("role=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteByte(')')
 	return builder.String()

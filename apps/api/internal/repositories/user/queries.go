@@ -16,7 +16,7 @@ func (self *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.Use
 }
 
 func (self *UserRepository) GetByEmail(ctx context.Context, email string) (*ent.User, error) {
-	return self.base.DB.User.Query().Where(user.EmailEQ(email)).Only(ctx)
+	return self.base.DB.User.Query().Where(user.EmailEqualFold(email)).Only(ctx)
 }
 
 var (

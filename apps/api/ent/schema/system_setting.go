@@ -22,6 +22,17 @@ type RegistryCacheSettings struct {
 	PVCCapacityGB      float64 `json:"pvc_capacity_gb"`
 }
 
+// EmailSettings is the outgoing SMTP relay. The password lives in a Kubernetes
+// secret in the system namespace, never in the database.
+type EmailSettings struct {
+	Host        string `json:"host" required:"true" minLength:"1"`
+	Port        int    `json:"port" required:"true" minimum:"1" maximum:"65535"`
+	Username    string `json:"username" required:"false"`
+	FromAddress string `json:"from_address" required:"true" format:"email"`
+	FromName    string `json:"from_name" required:"false"`
+	Encryption  string `json:"encryption" required:"true" enum:"starttls,tls,none" doc:"starttls upgrades the connection (usually port 587), tls connects encrypted (usually port 465), none sends in the clear"`
+}
+
 // SystemSetting holds the schema definition for the SystemSetting entity.
 type SystemSetting struct {
 	ent.Schema
@@ -45,6 +56,9 @@ func (SystemSetting) Fields() []ent.Field {
 		field.JSON("registry_cache_settings", &RegistryCacheSettings{}).
 			Optional().
 			Comment("Registry cache cleanup settings"),
+		field.JSON("email_settings", &EmailSettings{}).
+			Optional().
+			Comment("Outgoing mail relay, password kept in a Kubernetes secret"),
 		field.Bool("service_reference_syntax_migrated").
 			Default(false).
 			Comment("Whether stored variables were rewritten from ${{service.<id>.KEY}} to ${{service:<id>.KEY}}"),

@@ -8,6 +8,7 @@ import {
   BlocksIcon,
   HouseIcon,
   KeySquareIcon,
+  MailIcon,
   MonitorIcon,
   PackageIcon,
   SettingsIcon,
@@ -49,6 +50,12 @@ const systemPages = [
     title: "Registry",
     Icon: PackageIcon,
     keywords: ["registry", "images", "cleanup", "storage", "disk", "full", "prune"],
+  },
+  {
+    to: "/system/settings/email",
+    title: "Email",
+    Icon: MailIcon,
+    keywords: ["email", "smtp", "mail", "invitations", "notifications", "relay"],
   },
 ] as const;
 

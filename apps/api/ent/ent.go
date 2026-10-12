@@ -19,6 +19,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/jwtkey"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
@@ -105,6 +106,7 @@ func checkColumn(t, c string) error {
 			githubapp.Table:              githubapp.ValidColumn,
 			githubinstallation.Table:     githubinstallation.ValidColumn,
 			group.Table:                  group.ValidColumn,
+			invitation.Table:             invitation.ValidColumn,
 			jwtkey.Table:                 jwtkey.ValidColumn,
 			oauthauthorizationcode.Table: oauthauthorizationcode.ValidColumn,
 			oauthclient.Table:            oauthclient.ValidColumn,

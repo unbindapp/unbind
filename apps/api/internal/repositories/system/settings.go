@@ -23,6 +23,8 @@ type SystemSettingUpdateInput struct {
 	WildcardDomain        *string                       `json:"wildcard_domain" doc:"Wildcard domain for the system"`
 	BuildkitSettings      *schema.BuildkitSettings      `json:"buildkit_settings" doc:"Buildkit settings"`
 	RegistryCacheSettings *schema.RegistryCacheSettings `json:"registry_cache_settings" doc:"Registry cache cleanup settings"`
+	EmailSettings         *schema.EmailSettings         `json:"email_settings" doc:"Outgoing mail relay"`
+	ClearEmailSettings    bool                          `json:"clear_email_settings" doc:"Remove the outgoing mail relay"`
 }
 
 func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *SystemSettingUpdateInput) (settings *ent.SystemSetting, err error) {
@@ -56,6 +58,13 @@ func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *S
 
 		if input.RegistryCacheSettings != nil {
 			m.SetRegistryCacheSettings(input.RegistryCacheSettings)
+		}
+
+		if input.EmailSettings != nil {
+			m.SetEmailSettings(input.EmailSettings)
+		}
+		if input.ClearEmailSettings {
+			m.ClearEmailSettings()
 		}
 
 		settings, err = m.Save(ctx)

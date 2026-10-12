@@ -14,6 +14,10 @@ export function isSystemEditor(me: Me | null | undefined): boolean {
   return me?.system_permissions.includes("editor") ?? false;
 }
 
+export function isSystemViewer(me: Me | null | undefined): boolean {
+  return me?.system_permissions.includes("viewer") ?? false;
+}
+
 export const queryKeyMe = ["me"] as const;
 
 /**

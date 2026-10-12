@@ -28,6 +28,8 @@ type Tx struct {
 	GithubInstallation *GithubInstallationClient
 	// Group is the client for interacting with the Group builders.
 	Group *GroupClient
+	// Invitation is the client for interacting with the Invitation builders.
+	Invitation *InvitationClient
 	// JWTKey is the client for interacting with the JWTKey builders.
 	JWTKey *JWTKeyClient
 	// OAuthAuthorizationCode is the client for interacting with the OAuthAuthorizationCode builders.
@@ -204,6 +206,7 @@ func (tx *Tx) init() {
 	tx.GithubApp = NewGithubAppClient(tx.config)
 	tx.GithubInstallation = NewGithubInstallationClient(tx.config)
 	tx.Group = NewGroupClient(tx.config)
+	tx.Invitation = NewInvitationClient(tx.config)
 	tx.JWTKey = NewJWTKeyClient(tx.config)
 	tx.OAuthAuthorizationCode = NewOAuthAuthorizationCodeClient(tx.config)
 	tx.OAuthClient = NewOAuthClientClient(tx.config)

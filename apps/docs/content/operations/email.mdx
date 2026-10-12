@@ -1,0 +1,40 @@
+---
+title: Email
+description: Let Unbind send invitations and notifications.
+---
+
+Unbind sends mail through an SMTP relay you give it. It does not run a mail server of its own, so nothing is sent until you set one up. Invitations still work without it: the person inviting gets a link to share by hand.
+
+## What gets sent
+
+- An invitation link when someone is invited who has no account yet. See [Members](/teams/members-and-permissions#add-someone).
+- A note when someone who already has an account is added to a team.
+- The test message from the settings page.
+
+Password reset by email is not available. See [Reset Password](/operations/reset-password).
+
+## Set it up
+
+Go to **System** > **Settings** > **Email**.
+
+| Field            | What it is                                                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Host**         | The relay's SMTP server, such as `smtp.postmarkapp.com`                                                                                           |
+| **Port**         | Usually `587` with STARTTLS or `465` with TLS                                                                                                     |
+| **Username**     | What the relay gave you. Leave it empty for a relay that needs no login.                                                                          |
+| **Password**     | Kept in a Kubernetes secret in the system namespace, never in the database.                                                                       |
+| **From address** | The address mail comes from. It has to belong to a domain the relay allows.                                                                       |
+| **From name**    | Shown as the sender, such as `Unbind`                                                                                                             |
+| **Encryption**   | **STARTTLS** upgrades the connection, **TLS** connects encrypted, **None** sends in the clear. Use **None** only for a relay on your own network. |
+
+Save, then press **Send Test Email**. The message goes to your own address. If it fails, the error from the relay is shown.
+
+Any provider with SMTP access works: Postmark, Resend, Amazon SES, Mailgun, SendGrid, a Google Workspace or Microsoft 365 account, or a mail server you run.
+
+## Landing in the inbox
+
+Whether a message reaches the inbox is decided by the receiving side, from the reputation of your sending domain and the relay's addresses. Set up what your provider asks for on the domain of the from address: SPF, DKIM and DMARC records. Without them, mail from a fresh domain often ends up in spam or is refused.
+
+## Turn it off
+
+**Remove** on the same page forgets the relay and deletes the stored password. Unbind stops sending mail, and invitations go back to the shared link only.

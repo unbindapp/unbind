@@ -6,6 +6,7 @@ import {
   KeyIcon,
   KeySquareIcon,
   BlocksIcon,
+  MailIcon,
   PackageIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
@@ -25,7 +26,8 @@ export type TSettingsTabVariant =
   | "api-keys"
   | "connected-apps"
   | "github"
-  | "registry";
+  | "registry"
+  | "email";
 
 export default function SettingsTabIcon({
   variant,
@@ -66,6 +68,10 @@ export default function SettingsTabIcon({
 
   if (variant === "registry") {
     return <PackageIcon className={cn("size-5 shrink-0", className)} {...rest} />;
+  }
+
+  if (variant === "email") {
+    return <MailIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
   if (variant === "storage") {

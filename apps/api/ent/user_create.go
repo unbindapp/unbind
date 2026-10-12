@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/apikey"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
 	"github.com/unbindapp/unbind-api/ent/group"
+	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
 	"github.com/unbindapp/unbind-api/ent/oauthgrant"
@@ -188,6 +189,21 @@ func (_c *UserCreate) AddAPIKeys(v ...*APIKey) *UserCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddAPIKeyIDs(ids...)
+}
+
+// AddSentInvitationIDs adds the "sent_invitations" edge to the Invitation entity by IDs.
+func (_c *UserCreate) AddSentInvitationIDs(ids ...uuid.UUID) *UserCreate {
+	_c.mutation.AddSentInvitationIDs(ids...)
+	return _c
+}
+
+// AddSentInvitations adds the "sent_invitations" edges to the Invitation entity.
+func (_c *UserCreate) AddSentInvitations(v ...*Invitation) *UserCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSentInvitationIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -410,6 +426,22 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(apikey.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SentInvitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.SentInvitationsTable,
+			Columns: []string{user.SentInvitationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(invitation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

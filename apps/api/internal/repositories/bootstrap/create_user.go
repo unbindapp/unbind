@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
@@ -40,8 +41,8 @@ func (self *BootstrapRepository) CreateUser(ctx context.Context, email, password
 			return err
 		}
 
-		// Add user to all existing groups
-		groups, err := tx.Client().Group.Query().All(ctx)
+		// The first user joins every instance-level group, never a team's role groups
+		groups, err := tx.Client().Group.Query().Where(group.TeamIDIsNil()).All(ctx)
 		if err != nil {
 			log.Errorf("Error querying groups: %v\n", err)
 			return err

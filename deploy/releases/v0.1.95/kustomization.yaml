@@ -1,0 +1,3 @@
+# Team deletion removes the team's namespace, so the API's namespace ClusterRole gains delete.
+resources:
+  - rbac.yaml

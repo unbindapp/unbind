@@ -64,7 +64,7 @@ func RegisterHandlers(srv *server.Server, grp *huma.Group, allowedOrigins []stri
 // Exec authorizes before the upgrade so denials surface as normal HTTP errors,
 // then hijacks the connection and attaches the shell.
 func (self *HandlerGroup) Exec(ctx context.Context, input *ExecInput) (*huma.StreamResponse, error) {
-	user, bearerToken, err := self.srv.AuthenticatedUser(ctx)
+	user, _, err := self.srv.AuthenticatedUser(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func (self *HandlerGroup) Exec(ctx context.Context, input *ExecInput) (*huma.Str
 				log.Warnf("terminal websocket upgrade failed: %v", err)
 				return
 			}
-			self.srv.TerminalService.Attach(r.Context(), ws, bearerToken, target)
+			self.srv.TerminalService.Attach(r.Context(), ws, target)
 		},
 	}, nil
 }

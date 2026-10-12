@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
 
+import { isSystemViewer, meQuery } from "@/lib/queries/me";
 import { systemQuery } from "@/lib/queries/system";
 import { teamQuery, teamsListQuery } from "@/lib/queries/teams";
 import { templatesListQuery } from "@/lib/queries/templates";
@@ -19,7 +20,9 @@ export const Route = createFileRoute("/$team_id/_team")({
     // Warm the cache (this also runs on intent preload) without blocking the
     // navigation — the components below render immediately and show skeletons.
     void queryClient.prefetchQuery(teamsListQuery());
-    void queryClient.prefetchQuery(systemQuery());
+    if (isSystemViewer(queryClient.getQueryData(meQuery.queryKey))) {
+      void queryClient.prefetchQuery(systemQuery());
+    }
     void queryClient.prefetchQuery(templatesListQuery());
     void queryClient.prefetchQuery(teamQuery({ teamId: params.team_id }));
   },

@@ -27,6 +27,9 @@ type GithubInstallation func(*sql.Selector)
 // Group is the predicate function for group builders.
 type Group func(*sql.Selector)
 
+// Invitation is the predicate function for invitation builders.
+type Invitation func(*sql.Selector)
+
 // JWTKey is the predicate function for jwtkey builders.
 type JWTKey func(*sql.Selector)
 

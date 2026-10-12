@@ -18,6 +18,9 @@ func (self *GroupService) DeleteGroup(ctx context.Context, userID uuid.UUID, gro
 		// May be ent.NotFound
 		return err
 	}
+	if err := ensureNotManaged(groupToDelete); err != nil {
+		return err
+	}
 
 	// Determine permissions based on group type (global vs team)
 	if err := self.repo.Permissions().Check(

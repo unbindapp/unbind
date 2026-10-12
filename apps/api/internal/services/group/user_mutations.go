@@ -9,6 +9,10 @@ import (
 )
 
 func (self *GroupService) AddUserToGroup(ctx context.Context, requesterUserID, targetUserID, groupID uuid.UUID) error {
+	if err := self.ensureGroupNotManaged(ctx, groupID); err != nil {
+		return err
+	}
+
 	permissionChecks := []permissions_repo.PermissionCheck{
 		// Has permission to manage system resources
 		{
@@ -37,6 +41,10 @@ func (self *GroupService) AddUserToGroup(ctx context.Context, requesterUserID, t
 
 // RemoveUserFromGroup removes a user from a group if the requester has permission
 func (self *GroupService) RemoveUserFromGroup(ctx context.Context, requesterUserID, targetUserID, groupID uuid.UUID) error {
+	if err := self.ensureGroupNotManaged(ctx, groupID); err != nil {
+		return err
+	}
+
 	// Users can remove themselves from groups
 	if requesterUserID == targetUserID {
 		return self.repo.Group().RemoveUser(ctx, groupID, targetUserID)
@@ -66,4 +74,12 @@ func (self *GroupService) RemoveUserFromGroup(ctx context.Context, requesterUser
 	}
 
 	return self.repo.Group().RemoveUser(ctx, groupID, targetUserID)
+}
+
+func (self *GroupService) ensureGroupNotManaged(ctx context.Context, groupID uuid.UUID) error {
+	group, err := self.repo.Group().GetByID(ctx, groupID)
+	if err != nil {
+		return err
+	}
+	return ensureNotManaged(group)
 }

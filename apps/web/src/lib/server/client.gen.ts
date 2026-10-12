@@ -75,6 +75,28 @@ export const APIKeyResponseSchema = z
   })
   .strip();
 
+export const AcceptInvitationInputSchema = z
+  .object({
+    password: z.string().optional(), // Required unless an account with the invited email already exists
+    token: z.string(),
+  })
+  .strip();
+
+export const UserResponseSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    email: z.string(),
+    id: z.string(),
+    updated_at: z.string().datetime({ offset: true }),
+  })
+  .strip();
+
+export const AcceptInvitationResponseBodySchema = z
+  .object({
+    data: UserResponseSchema,
+  })
+  .strip();
+
 export const AffectedServiceSchema = z
   .object({
     action: z.enum(['build', 'redeploy', 'restart', 'none']),
@@ -633,6 +655,8 @@ export const GroupResponseSchema = z
     description: z.string(),
     id: z.string(),
     name: z.string(),
+    role: PermittedActionSchema.optional(), // The role a team role group grants on its team
+    team_id: z.string().optional(), // Set when the group is a role group owned by a team; such groups are managed through the team's members
   })
   .strip();
 
@@ -951,6 +975,30 @@ export const CreateServiceResponseBodySchema = z
   })
   .strip();
 
+export const CreateTeamInputSchema = z
+  .object({
+    description: z.string().nullable().optional(),
+    name: z.string(), // Has to be unique
+  })
+  .strip();
+
+export const TeamResponseSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    description: z.string().nullable(),
+    id: z.string(),
+    kubernetes_name: z.string(),
+    name: z.string(),
+    permissions: z.array(PermittedActionSchema), // Actions the current user can perform on this resource
+  })
+  .strip();
+
+export const CreateTeamResponseBodySchema = z
+  .object({
+    data: TeamResponseSchema,
+  })
+  .strip();
+
 export const CreateUserInputBodySchema = z
   .object({
     email: z.string(),
@@ -1156,6 +1204,18 @@ export const DeleteServiceResponseBodySchema = z
   })
   .strip();
 
+export const DeleteTeamInputBodySchema = z
+  .object({
+    team_id: z.string(),
+  })
+  .strip();
+
+export const DeleteTeamResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
 export const DeleteUserInputBodySchema = z
   .object({
     user_id: z.string(),
@@ -1267,6 +1327,42 @@ export const DockerTagSchema = z
   })
   .strip();
 
+export const EmailSettingsSchema = z
+  .object({
+    encryption: z.enum(['starttls', 'tls', 'none']), // starttls upgrades the connection (usually port 587), tls connects encrypted (usually port 465), none sends in the clear
+    from_address: z.string(),
+    from_name: z.string().optional(),
+    host: z.string(),
+    port: z.number(),
+    username: z.string().optional(),
+  })
+  .strip();
+
+export const EmailSettingsResponseSchema = z
+  .object({
+    configured: z.boolean(), // True when a relay is set up and Unbind can send mail
+    settings: EmailSettingsSchema.optional(),
+  })
+  .strip();
+
+export const EmailSettingsResponseBodySchema = z
+  .object({
+    data: EmailSettingsResponseSchema,
+  })
+  .strip();
+
+export const EmailSettingsUpdateInputSchema = z
+  .object({
+    encryption: z.enum(['starttls', 'tls', 'none']), // starttls upgrades the connection (usually port 587), tls connects encrypted (usually port 465), none sends in the clear
+    from_address: z.string(),
+    from_name: z.string().optional(),
+    host: z.string(),
+    password: z.string().nullable().optional(), // Omit to keep the stored password; send an empty string to clear it
+    port: z.number(),
+    username: z.string().optional(),
+  })
+  .strip();
+
 export const TlsDetailsSchema = z
   .object({
     condition: CertManagerConditionSchema,
@@ -1370,6 +1466,22 @@ export const GetEnvironmentOutputBodySchema = z
 export const GetGroupResponseBodySchema = z
   .object({
     data: GroupResponseSchema,
+  })
+  .strip();
+
+export const InvitationPreviewResponseSchema = z
+  .object({
+    account_exists: z.boolean(), // True when an account with this email already exists, so accepting only adds it to the team
+    email: z.string(),
+    expires_at: z.string().datetime({ offset: true }),
+    role: PermittedActionSchema,
+    team_name: z.string(),
+  })
+  .strip();
+
+export const GetInvitationResponseBodySchema = z
+  .object({
+    data: InvitationPreviewResponseSchema,
   })
   .strip();
 
@@ -1598,17 +1710,6 @@ export const GetServiceGroupTemplateInputsResponseBodySchema = z
 export const GetServiceResponseBodySchema = z
   .object({
     data: ServiceResponseSchema,
-  })
-  .strip();
-
-export const TeamResponseSchema = z
-  .object({
-    created_at: z.string().datetime({ offset: true }),
-    description: z.string().nullable(),
-    id: z.string(),
-    kubernetes_name: z.string(),
-    name: z.string(),
-    permissions: z.array(PermittedActionSchema), // Actions the current user can perform on this resource
   })
   .strip();
 
@@ -2051,6 +2152,52 @@ export const GroupMemberResponseBodySchema = z
   })
   .strip();
 
+export const InvitationResponseSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    email: z.string(),
+    email_sent: z.boolean(), // Whether the link was also emailed. False when no mail relay is configured.
+    expires_at: z.string().datetime({ offset: true }),
+    id: z.string(),
+    invite_url: z.string().optional(), // The link to share. Only returned when the invitation is created.
+    role: PermittedActionSchema,
+    team_id: z.string(),
+  })
+  .strip();
+
+export const InviteMemberInputSchema = z
+  .object({
+    email: z.string(),
+    role: PermittedActionSchema, // admin, editor or viewer on this team
+    team_id: z.string(),
+  })
+  .strip();
+
+export const TeamMemberResponseSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    email: z.string(),
+    group_name: z.string().optional(), // The group the access comes from, when source is group
+    id: z.string(),
+    role: PermittedActionSchema, // Strongest role the user holds on the team
+    source: z.enum(['team', 'group']), // team: holds a role on the team and can be managed here. group: reaches the team through another group and is read-only here
+    updated_at: z.string().datetime({ offset: true }),
+  })
+  .strip();
+
+export const InviteMemberResponseSchema = z
+  .object({
+    invitation: InvitationResponseSchema.optional(),
+    member: TeamMemberResponseSchema.optional(),
+  })
+  .strip();
+
+export const InviteTeamMemberResponseBodySchema = z
+  .object({
+    data: InviteMemberResponseSchema,
+  })
+  .strip();
+
 export const ItemSchema = z
   .object({
     name: z.string(),
@@ -2101,15 +2248,6 @@ export const ListEndpointsResponseBodySchema = z
 export const ListEnvironmentsOutputBodySchema = z
   .object({
     data: z.array(EnvironmentResponseSchema),
-  })
-  .strip();
-
-export const UserResponseSchema = z
-  .object({
-    created_at: z.string().datetime({ offset: true }),
-    email: z.string(),
-    id: z.string(),
-    updated_at: z.string().datetime({ offset: true }),
   })
   .strip();
 
@@ -2233,6 +2371,18 @@ export const ListServiceResponseBodySchema = z
 export const ListTagsResponseBodySchema = z
   .object({
     data: z.array(DockerTagSchema),
+  })
+  .strip();
+
+export const ListTeamInvitationsResponseBodySchema = z
+  .object({
+    data: z.array(InvitationResponseSchema),
+  })
+  .strip();
+
+export const ListTeamMembersResponseBodySchema = z
+  .object({
+    data: z.array(TeamMemberResponseSchema),
   })
   .strip();
 
@@ -2427,6 +2577,12 @@ export const RemoveDeploymentOutputBodySchema = z
   })
   .strip();
 
+export const RemoveTeamMemberResponseBodySchema = z
+  .object({
+    data: SuccessResponseSchema,
+  })
+  .strip();
+
 export const ReplicaTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
 export const ResponseErrorSchema = z
@@ -2483,7 +2639,20 @@ export const RevokeGroupPermissionResponseBodySchema = z
   })
   .strip();
 
+export const RevokeInvitationInputSchema = z
+  .object({
+    invitation_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
 export const RevokeResponseBodySchema = z
+  .object({
+    data: DeletedResponseSchema,
+  })
+  .strip();
+
+export const RevokeTeamInvitationResponseBodySchema = z
   .object({
     data: DeletedResponseSchema,
   })
@@ -2605,6 +2774,12 @@ export const StorageMetadataSchema = z
   })
   .strip();
 
+export const SuccessResponseBodySchema = z
+  .object({
+    data: SuccessResponseSchema,
+  })
+  .strip();
+
 export const SystemMetaSchema = z
   .object({
     external_ipv4: z.string(),
@@ -2628,6 +2803,35 @@ export const SystemSettingsUpdateInputSchema = z
   .object({
     buildkit_settings: BuildkitSettingsSchema.optional(), // Buildkit settings
     wildcard_domain: z.string().nullable().optional(), // Wildcard domain for the system, an empty string clears it
+  })
+  .strip();
+
+export const TeamMemberAddInputSchema = z
+  .object({
+    email: z.string(), // Email of an existing account. Accounts are created by instance admins.
+    role: PermittedActionSchema, // admin, editor or viewer on this team
+    team_id: z.string(),
+  })
+  .strip();
+
+export const TeamMemberRemoveInputSchema = z
+  .object({
+    team_id: z.string(),
+    user_id: z.string(),
+  })
+  .strip();
+
+export const TeamMemberResponseBodySchema = z
+  .object({
+    data: TeamMemberResponseSchema,
+  })
+  .strip();
+
+export const TeamMemberRoleInputSchema = z
+  .object({
+    role: PermittedActionSchema, // admin, editor or viewer on this team
+    team_id: z.string(),
+    user_id: z.string(),
   })
   .strip();
 
@@ -2977,6 +3181,9 @@ export type APIKeyResourceResponse = z.infer<typeof APIKeyResourceResponseSchema
 export type APIKeyCreatedResponse = z.infer<typeof APIKeyCreatedResponseSchema>;
 export type APIKeyDeleteInput = z.infer<typeof APIKeyDeleteInputSchema>;
 export type APIKeyResponse = z.infer<typeof APIKeyResponseSchema>;
+export type AcceptInvitationInput = z.infer<typeof AcceptInvitationInputSchema>;
+export type UserResponse = z.infer<typeof UserResponseSchema>;
+export type AcceptInvitationResponseBody = z.infer<typeof AcceptInvitationResponseBodySchema>;
 export type AffectedService = z.infer<typeof AffectedServiceSchema>;
 export type Protocol = z.infer<typeof ProtocolSchema>;
 export type PortSpec = z.infer<typeof PortSpecSchema>;
@@ -3061,6 +3268,9 @@ export type TemplateResourceRecommendations = z.infer<typeof TemplateResourceRec
 export type TemplateShortResponse = z.infer<typeof TemplateShortResponseSchema>;
 export type ServiceResponse = z.infer<typeof ServiceResponseSchema>;
 export type CreateServiceResponseBody = z.infer<typeof CreateServiceResponseBodySchema>;
+export type CreateTeamInput = z.infer<typeof CreateTeamInputSchema>;
+export type TeamResponse = z.infer<typeof TeamResponseSchema>;
+export type CreateTeamResponseBody = z.infer<typeof CreateTeamResponseBodySchema>;
 export type CreateUserInputBody = z.infer<typeof CreateUserInputBodySchema>;
 export type UserData = z.infer<typeof UserDataSchema>;
 export type CreateUserResponseBody = z.infer<typeof CreateUserResponseBodySchema>;
@@ -3092,6 +3302,8 @@ export type DeleteServiceGroupInput = z.infer<typeof DeleteServiceGroupInputSche
 export type DeleteServiceGroupResponseBody = z.infer<typeof DeleteServiceGroupResponseBodySchema>;
 export type DeleteServiceInputBody = z.infer<typeof DeleteServiceInputBodySchema>;
 export type DeleteServiceResponseBody = z.infer<typeof DeleteServiceResponseBodySchema>;
+export type DeleteTeamInputBody = z.infer<typeof DeleteTeamInputBodySchema>;
+export type DeleteTeamResponseBody = z.infer<typeof DeleteTeamResponseBodySchema>;
 export type DeleteUserInputBody = z.infer<typeof DeleteUserInputBodySchema>;
 export type DeleteUserResponseBody = z.infer<typeof DeleteUserResponseBodySchema>;
 export type VariableDeleteInput = z.infer<typeof VariableDeleteInputSchema>;
@@ -3105,6 +3317,10 @@ export type DnsCheck = z.infer<typeof DnsCheckSchema>;
 export type DnsCheckResponseBody = z.infer<typeof DnsCheckResponseBodySchema>;
 export type DockerImage = z.infer<typeof DockerImageSchema>;
 export type DockerTag = z.infer<typeof DockerTagSchema>;
+export type EmailSettings = z.infer<typeof EmailSettingsSchema>;
+export type EmailSettingsResponse = z.infer<typeof EmailSettingsResponseSchema>;
+export type EmailSettingsResponseBody = z.infer<typeof EmailSettingsResponseBodySchema>;
+export type EmailSettingsUpdateInput = z.infer<typeof EmailSettingsUpdateInputSchema>;
 export type TlsDetails = z.infer<typeof TlsDetailsSchema>;
 export type TlsStatus = z.infer<typeof TlsStatusSchema>;
 export type IngressEndpoint = z.infer<typeof IngressEndpointSchema>;
@@ -3120,6 +3336,8 @@ export type GetDatabaseResponseBody = z.infer<typeof GetDatabaseResponseBodySche
 export type GetDeploymentResponseBody = z.infer<typeof GetDeploymentResponseBodySchema>;
 export type GetEnvironmentOutputBody = z.infer<typeof GetEnvironmentOutputBodySchema>;
 export type GetGroupResponseBody = z.infer<typeof GetGroupResponseBodySchema>;
+export type InvitationPreviewResponse = z.infer<typeof InvitationPreviewResponseSchema>;
+export type GetInvitationResponseBody = z.infer<typeof GetInvitationResponseBodySchema>;
 export type MetricsType = z.infer<typeof MetricsTypeSchema>;
 export type MetricDetail = z.infer<typeof MetricDetailSchema>;
 export type MetricsMapEntry = z.infer<typeof MetricsMapEntrySchema>;
@@ -3153,7 +3371,6 @@ export type GetServiceGroupTemplateInputsResponseBody = z.infer<
   typeof GetServiceGroupTemplateInputsResponseBodySchema
 >;
 export type GetServiceResponseBody = z.infer<typeof GetServiceResponseBodySchema>;
-export type TeamResponse = z.infer<typeof TeamResponseSchema>;
 export type GetTeamResponseBody = z.infer<typeof GetTeamResponseBodySchema>;
 export type TemplateVolume = z.infer<typeof TemplateVolumeSchema>;
 export type TemplateInput = z.infer<typeof TemplateInputSchema>;
@@ -3216,6 +3433,11 @@ export type GrantGroupPermissionResponseBody = z.infer<
 export type GroupMemberInputBody = z.infer<typeof GroupMemberInputBodySchema>;
 export type SuccessResponse = z.infer<typeof SuccessResponseSchema>;
 export type GroupMemberResponseBody = z.infer<typeof GroupMemberResponseBodySchema>;
+export type InvitationResponse = z.infer<typeof InvitationResponseSchema>;
+export type InviteMemberInput = z.infer<typeof InviteMemberInputSchema>;
+export type TeamMemberResponse = z.infer<typeof TeamMemberResponseSchema>;
+export type InviteMemberResponse = z.infer<typeof InviteMemberResponseSchema>;
+export type InviteTeamMemberResponseBody = z.infer<typeof InviteTeamMemberResponseBodySchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type ListAPIKeysResponseBody = z.infer<typeof ListAPIKeysResponseBodySchema>;
 export type ListDatabasesResponseBody = z.infer<typeof ListDatabasesResponseBodySchema>;
@@ -3224,7 +3446,6 @@ export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDa
 export type ListDeploymentsResponseBody = z.infer<typeof ListDeploymentsResponseBodySchema>;
 export type ListEndpointsResponseBody = z.infer<typeof ListEndpointsResponseBodySchema>;
 export type ListEnvironmentsOutputBody = z.infer<typeof ListEnvironmentsOutputBodySchema>;
-export type UserResponse = z.infer<typeof UserResponseSchema>;
 export type ListGroupMembersResponseBody = z.infer<typeof ListGroupMembersResponseBodySchema>;
 export type ListGroupPermissionsResponseBody = z.infer<
   typeof ListGroupPermissionsResponseBodySchema
@@ -3243,6 +3464,8 @@ export type ListServersResponseBody = z.infer<typeof ListServersResponseBodySche
 export type ListServiceGroupResponseBody = z.infer<typeof ListServiceGroupResponseBodySchema>;
 export type ListServiceResponseBody = z.infer<typeof ListServiceResponseBodySchema>;
 export type ListTagsResponseBody = z.infer<typeof ListTagsResponseBodySchema>;
+export type ListTeamInvitationsResponseBody = z.infer<typeof ListTeamInvitationsResponseBodySchema>;
+export type ListTeamMembersResponseBody = z.infer<typeof ListTeamMembersResponseBodySchema>;
 export type ListTemplatesResponseBody = z.infer<typeof ListTemplatesResponseBodySchema>;
 export type ListUserGroupsResponseBody = z.infer<typeof ListUserGroupsResponseBodySchema>;
 export type ListUsersResponseBody = z.infer<typeof ListUsersResponseBodySchema>;
@@ -3271,6 +3494,7 @@ export type RegistryCacheStats = z.infer<typeof RegistryCacheStatsSchema>;
 export type RegistryCacheStatsResponseBody = z.infer<typeof RegistryCacheStatsResponseBodySchema>;
 export type RemoveDeploymentInputBody = z.infer<typeof RemoveDeploymentInputBodySchema>;
 export type RemoveDeploymentOutputBody = z.infer<typeof RemoveDeploymentOutputBodySchema>;
+export type RemoveTeamMemberResponseBody = z.infer<typeof RemoveTeamMemberResponseBodySchema>;
 export type ReplicaType = z.infer<typeof ReplicaTypeSchema>;
 export type ResponseError = z.infer<typeof ResponseErrorSchema>;
 export type RestartReplicasInputBody = z.infer<typeof RestartReplicasInputBodySchema>;
@@ -3280,7 +3504,11 @@ export type RevokeGroupPermissionInputBody = z.infer<typeof RevokeGroupPermissio
 export type RevokeGroupPermissionResponseBody = z.infer<
   typeof RevokeGroupPermissionResponseBodySchema
 >;
+export type RevokeInvitationInput = z.infer<typeof RevokeInvitationInputSchema>;
 export type RevokeResponseBody = z.infer<typeof RevokeResponseBodySchema>;
+export type RevokeTeamInvitationResponseBody = z.infer<
+  typeof RevokeTeamInvitationResponseBodySchema
+>;
 export type S3AccessTestInput = z.infer<typeof S3AccessTestInputSchema>;
 export type S3BucketCreateInput = z.infer<typeof S3BucketCreateInputSchema>;
 export type S3BucketUpdateInput = z.infer<typeof S3BucketUpdateInputSchema>;
@@ -3297,9 +3525,14 @@ export type SetupStatusResponseBody = z.infer<typeof SetupStatusResponseBodySche
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
 export type StorageMetadata = z.infer<typeof StorageMetadataSchema>;
+export type SuccessResponseBody = z.infer<typeof SuccessResponseBodySchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
 export type SystemSettingsUpdateInput = z.infer<typeof SystemSettingsUpdateInputSchema>;
+export type TeamMemberAddInput = z.infer<typeof TeamMemberAddInputSchema>;
+export type TeamMemberRemoveInput = z.infer<typeof TeamMemberRemoveInputSchema>;
+export type TeamMemberResponseBody = z.infer<typeof TeamMemberResponseBodySchema>;
+export type TeamMemberRoleInput = z.infer<typeof TeamMemberRoleInputSchema>;
 export type TeamResponseBody = z.infer<typeof TeamResponseBodySchema>;
 export type TemplateInputValue = z.infer<typeof TemplateInputValueSchema>;
 export type TemplateDeployInput = z.infer<typeof TemplateDeployInputSchema>;
@@ -3463,6 +3696,12 @@ export const list_group_membersQuerySchema = z
 export const list_group_permissionsQuerySchema = z
   .object({
     group_id: z.string(),
+  })
+  .passthrough();
+
+export const get_invitationQuerySchema = z
+  .object({
+    token: z.string(),
   })
   .passthrough();
 
@@ -3691,6 +3930,18 @@ export const get_registryQuerySchema = z
   .passthrough();
 
 export const get_teamQuerySchema = z
+  .object({
+    team_id: z.string(),
+  })
+  .passthrough();
+
+export const list_team_invitationsQuerySchema = z
+  .object({
+    team_id: z.string(),
+  })
+  .passthrough();
+
+export const list_team_membersQuerySchema = z
   .object({
     team_id: z.string(),
   })
@@ -5945,6 +6196,98 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = UpdateGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+    },
+    invitations: {
+      accept: async (
+        params: AcceptInvitationInput,
+        fetchOptions?: RequestInit,
+      ): Promise<AcceptInvitationResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/invitations/accept`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = AcceptInvitationInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = AcceptInvitationResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      get: async (
+        params: z.infer<typeof get_invitationQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<GetInvitationResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/invitations/get`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = get_invitationQuerySchema.parse(params);
+          const queryKeys = ['token'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = GetInvitationResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);
@@ -8351,6 +8694,173 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
         },
       },
+      email: {
+        clear: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<SuccessResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/email/clear`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = SuccessResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        get: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<EmailSettingsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/email/get`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = EmailSettingsResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        test: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<SuccessResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/email/test`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'POST',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = SuccessResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        update: async (
+          params: EmailSettingsUpdateInput,
+          fetchOptions?: RequestInit,
+        ): Promise<EmailSettingsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/email/update`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'PUT',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = EmailSettingsUpdateInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = EmailSettingsResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+      },
       get: async (
         params?: undefined,
         fetchOptions?: RequestInit,
@@ -8732,6 +9242,90 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
       },
     },
     teams: {
+      create: async (
+        params: CreateTeamInput,
+        fetchOptions?: RequestInit,
+      ): Promise<CreateTeamResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/teams/create`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = CreateTeamInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = CreateTeamResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      delete: async (
+        params: DeleteTeamInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<DeleteTeamResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/teams/delete`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = DeleteTeamInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = DeleteTeamResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
       get: async (
         params: z.infer<typeof get_teamQuerySchema>,
         fetchOptions?: RequestInit,
@@ -8780,6 +9374,102 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           throw error;
         }
       },
+      invitations: Object.assign(
+        async (
+          params: z.infer<typeof list_team_invitationsQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<ListTeamInvitationsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/teams/invitations`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = list_team_invitationsQuerySchema.parse(params);
+            const queryKeys = ['team_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } =
+              ListTeamInvitationsResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        {
+          revoke: async (
+            params: RevokeInvitationInput,
+            fetchOptions?: RequestInit,
+          ): Promise<RevokeTeamInvitationResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/teams/invitations/revoke`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = RevokeInvitationInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                RevokeTeamInvitationResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+        },
+      ),
       list: async (params?: undefined, fetchOptions?: RequestInit): Promise<TeamResponseBody> => {
         try {
           if (!apiUrl || typeof apiUrl !== 'string') {
@@ -8818,6 +9508,228 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           throw error;
         }
       },
+      members: Object.assign(
+        async (
+          params: z.infer<typeof list_team_membersQuerySchema>,
+          fetchOptions?: RequestInit,
+        ): Promise<ListTeamMembersResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/teams/members`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = list_team_membersQuerySchema.parse(params);
+            const queryKeys = ['team_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = ListTeamMembersResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        {
+          add: async (
+            params: TeamMemberAddInput,
+            fetchOptions?: RequestInit,
+          ): Promise<TeamMemberResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/teams/members/add`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = TeamMemberAddInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } = TeamMemberResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          invite: async (
+            params: InviteMemberInput,
+            fetchOptions?: RequestInit,
+          ): Promise<InviteTeamMemberResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/teams/members/invite`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = InviteMemberInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                InviteTeamMemberResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          remove: async (
+            params: TeamMemberRemoveInput,
+            fetchOptions?: RequestInit,
+          ): Promise<RemoveTeamMemberResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/teams/members/remove`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = TeamMemberRemoveInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                RemoveTeamMemberResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          update: async (
+            params: TeamMemberRoleInput,
+            fetchOptions?: RequestInit,
+          ): Promise<TeamMemberResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/teams/members/update`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = TeamMemberRoleInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } = TeamMemberResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+        },
+      ),
       update: async (
         params: UpdateTeamInputBody,
         fetchOptions?: RequestInit,

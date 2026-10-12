@@ -27,15 +27,18 @@ type ExecOptions struct {
 	Resize    remotecommand.TerminalSizeQueue
 }
 
-// ExecInPod runs a command in a pod container after checking that the token's user is
-// allowed to exec there, per the RBAC bindings synced from the user's permissions.
-func (self *KubeClient) ExecInPod(ctx context.Context, token string, opts ExecOptions) error {
-	claims, err := self.tokenVerifier.Verify(token)
-	if err != nil {
-		return err
-	}
+// ExecIdentity is who the exec runs as for authorization: the user's email and
+// their current group claims, loaded at request time so a membership change
+// applies at once.
+type ExecIdentity struct {
+	Email  string
+	Groups []string
+}
 
-	if err := self.authorizePodExec(ctx, claims.Email, claims.Groups, opts.Namespace, opts.PodName); err != nil {
+// ExecInPod runs a command in a pod container after checking that the identity is
+// allowed to exec there, per the RBAC bindings synced from the user's permissions.
+func (self *KubeClient) ExecInPod(ctx context.Context, identity ExecIdentity, opts ExecOptions) error {
+	if err := self.authorizePodExec(ctx, identity.Email, identity.Groups, opts.Namespace, opts.PodName); err != nil {
 		return err
 	}
 
