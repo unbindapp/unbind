@@ -468,5 +468,10 @@
     "version": "v0.1.93",
     "summary": "Wildcard domains for services, wildcard DNS records accepted for pending service URLs, softer self-signed certificate warnings, and a termination grace period for services.",
     "breaking": false
+  },
+  "v0.1.94": {
+    "version": "v0.1.94",
+    "summary": "Release v0.1.94",
+    "breaking": false
   }
 }
