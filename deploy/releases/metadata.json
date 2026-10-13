@@ -508,5 +508,10 @@
     "version": "v0.1.101",
     "summary": "Cron schedules for services, domain redirects, basic auth on domains, custom response headers, and a client IP header with automatic Cloudflare support.",
     "breaking": false
+  },
+  "v0.1.102": {
+    "version": "v0.1.102",
+    "summary": "Redirect domains without a target port now route, and domain cleanup no longer removes secrets it did not create.",
+    "breaking": false
   }
 }
