@@ -13,7 +13,7 @@ func umamiTemplate() *schema.TemplateDefinition {
 		Icon:        "umami",
 		Keywords:    []string{"analytics", "open source", "privacy-friendly", "Google Analytics", "plausible"},
 		Description: "Privacy-focused Google Analytics alternative.",
-		Version:     3,
+		Version:     4,
 		ResourceRecommendations: schema.TemplateResourceRecommendations{
 			MinimumRecommendedCPU:   0.5,
 			MinimumRecommendedRAMGB: 0.5,
@@ -75,7 +75,7 @@ func umamiTemplate() *schema.TemplateDefinition {
 				},
 				Variables: []schema.TemplateVariable{
 					{
-						Name: "HASH_SALT",
+						Name: "APP_SECRET",
 						Generator: &schema.ValueGenerator{
 							Type:     schema.GeneratorTypePassword,
 							HashType: utils.ToPtr(schema.ValueHashTypeSHA512),

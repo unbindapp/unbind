@@ -110,6 +110,8 @@ func (r *ServiceReconciler) reconcileJob(ctx context.Context, desiredJob *batchv
 	logger := log.FromContext(ctx)
 	logger.Info("Reconciling Job", "name", desiredJob.Name, "namespace", desiredJob.Namespace)
 
+	hash := renderHash(desiredJob.Spec)
+	setRenderHash(desiredJob, hash)
 	if err := controllerutil.SetControllerReference(owner, desiredJob, r.Scheme); err != nil {
 		return fmt.Errorf("setting controller reference: %w", err)
 	}
@@ -124,7 +126,7 @@ func (r *ServiceReconciler) reconcileJob(ctx context.Context, desiredJob *batchv
 		return err
 	}
 
-	if jobFinished(&existingJob) || equality.Semantic.DeepDerivative(desiredJob.Spec.Template.Spec.Containers, existingJob.Spec.Template.Spec.Containers) {
+	if jobFinished(&existingJob) || renderHashMatches(&existingJob, hash) {
 		logger.Info("Job already exists and no update needed", "name", desiredJob.Name)
 		return nil
 	}
