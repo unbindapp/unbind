@@ -503,5 +503,10 @@
     "version": "v0.1.100",
     "summary": "Release v0.1.100",
     "breaking": false
+  },
+  "v0.1.101": {
+    "version": "v0.1.101",
+    "summary": "Cron schedules for services, domain redirects, basic auth on domains, custom response headers, and a client IP header with automatic Cloudflare support.",
+    "breaking": false
   }
 }
