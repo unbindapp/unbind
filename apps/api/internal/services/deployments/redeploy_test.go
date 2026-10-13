@@ -135,6 +135,28 @@ func (suite *CreateCRDFromServiceSuite) TestBucketCleared() {
 	suite.Nil(crd.Spec.Config.Database.S3BackupConfig)
 }
 
+func (suite *CreateCRDFromServiceSuite) TestHealthCheckChangeReachesRedeploy() {
+	service := suite.deployedService(nil)
+	service.Edges.CurrentDeployment.ResourceDefinition.Spec.Config.HealthCheck = &v1.HealthCheckSpec{Type: "http", Path: "/sping"}
+
+	suite.DB.ServiceConfig.UpdateOneID(suite.config.ID).
+		SetHealthCheck(&schema.HealthCheck{Type: utils.ToPtr(schema.HealthCheckTypeExec), Command: "true"}).
+		SaveX(suite.Ctx)
+	service.Edges.ServiceConfig = suite.DB.ServiceConfig.GetX(suite.Ctx, suite.config.ID)
+	crd, err := suite.deploymentService.CreateCRDFromService(suite.Ctx, service)
+	suite.NoError(err)
+	suite.Equal("exec", crd.Spec.Config.HealthCheck.Type)
+	suite.Equal("true", crd.Spec.Config.HealthCheck.Command)
+
+	suite.DB.ServiceConfig.UpdateOneID(suite.config.ID).
+		SetHealthCheck(&schema.HealthCheck{Type: utils.ToPtr(schema.HealthCheckTypeNone)}).
+		SaveX(suite.Ctx)
+	service.Edges.ServiceConfig = suite.DB.ServiceConfig.GetX(suite.Ctx, suite.config.ID)
+	crd, err = suite.deploymentService.CreateCRDFromService(suite.Ctx, service)
+	suite.NoError(err)
+	suite.Nil(crd.Spec.Config.HealthCheck, "turning the check off removes the probes")
+}
+
 func (suite *CreateCRDFromServiceSuite) TestImageServiceUsesConfiguredImage() {
 	service := suite.DB.Service.Create().
 		SetType(schema.ServiceTypeDockerimage).

@@ -309,19 +309,16 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 		env["SECURITY_CONTEXT"] = string(marshalled)
 	}
 
-	if service.Edges.ServiceConfig.HealthCheck != nil &&
-		service.Edges.ServiceConfig.HealthCheck.Type != nil &&
-		*service.Edges.ServiceConfig.HealthCheck.Type != schema.HealthCheckTypeNone {
-		marshalled, err := json.Marshal(service.Edges.ServiceConfig.HealthCheck.AsV1HealthCheck())
+	if healthCheck := service.Edges.ServiceConfig.HealthCheck.AsV1HealthCheck(); healthCheck != nil {
+		marshalled, err := json.Marshal(healthCheck)
 		if err != nil {
 			return nil, err
 		}
 		env["SERVICE_HEALTH_CHECK"] = string(marshalled)
 	}
 
-	if len(service.Edges.ServiceConfig.VariableMounts) > 0 {
-		asV1Mounts := schema.AsV1VariableMounts(service.Edges.ServiceConfig.VariableMounts)
-		marshalled, err := json.Marshal(asV1Mounts)
+	if variableMounts := schema.AsV1VariableMounts(service.Edges.ServiceConfig.VariableMounts); variableMounts != nil {
+		marshalled, err := json.Marshal(variableMounts)
 		if err != nil {
 			return nil, err
 		}

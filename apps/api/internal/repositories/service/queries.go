@@ -418,14 +418,6 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 			gitBranch = fmt.Sprintf("refs/heads/%s", gitBranch)
 		}
 	}
-	var healthCheck *v1.HealthCheckSpec
-	if service.Edges.ServiceConfig.HealthCheck != nil {
-		healthCheck = service.Edges.ServiceConfig.HealthCheck.AsV1HealthCheck()
-	}
-	var variableMounts []v1.VariableMountSpec
-	if len(service.Edges.ServiceConfig.VariableMounts) > 0 {
-		variableMounts = schema.AsV1VariableMounts(service.Edges.ServiceConfig.VariableMounts)
-	}
 	resources := schema.ResolveResources(service.Edges.ServiceConfig.Resources)
 	s3BackupConfig, err := self.s3BackupConfig(ctx, service.Edges.ServiceConfig)
 	if err != nil {
@@ -450,8 +442,8 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 				MaxRequestBodySizeMB: service.Edges.ServiceConfig.MaxRequestBodySizeMB,
 				SessionAffinity:      service.Edges.ServiceConfig.SessionAffinity,
 				Volumes:              schema.AsV1Volumes(service.Edges.ServiceConfig.Volumes),
-				HealthCheck:          healthCheck,
-				VariableMounts:       variableMounts,
+				HealthCheck:          service.Edges.ServiceConfig.HealthCheck.AsV1HealthCheck(),
+				VariableMounts:       schema.AsV1VariableMounts(service.Edges.ServiceConfig.VariableMounts),
 				Resources:            resources,
 				Database:             v1.DatabaseSpec{S3BackupConfig: s3BackupConfig},
 			},

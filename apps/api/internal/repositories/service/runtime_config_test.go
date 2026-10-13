@@ -47,3 +47,29 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Nil(t, spec.MaxRequestBodySizeMB)
 	assert.False(t, spec.SessionAffinity)
 }
+
+func TestApplyRuntimeConfigHealthCheckAndVariableMounts(t *testing.T) {
+	spec := v1.ServiceConfigSpec{
+		HealthCheck:    &v1.HealthCheckSpec{Type: "http", Path: "/sping"},
+		VariableMounts: []v1.VariableMountSpec{{Name: "OLD_CERT", Path: "/etc/old.pem"}},
+	}
+
+	ApplyRuntimeConfig(&spec, &ent.ServiceConfig{
+		Replicas:       1,
+		HealthCheck:    &schema.HealthCheck{Type: new(schema.HealthCheckTypeExec), Command: "true"},
+		VariableMounts: []*schema.VariableMount{{Name: "CERT", Path: "/etc/cert.pem"}},
+	})
+	assert.Equal(t, "exec", spec.HealthCheck.Type)
+	assert.Equal(t, "true", spec.HealthCheck.Command)
+	assert.Equal(t, []v1.VariableMountSpec{{Name: "CERT", Path: "/etc/cert.pem"}}, spec.VariableMounts)
+
+	ApplyRuntimeConfig(&spec, &ent.ServiceConfig{
+		Replicas:    1,
+		HealthCheck: &schema.HealthCheck{Type: new(schema.HealthCheckTypeNone)},
+	})
+	assert.Nil(t, spec.HealthCheck, "a check of type none removes the probes")
+	assert.Nil(t, spec.VariableMounts)
+
+	ApplyRuntimeConfig(&spec, &ent.ServiceConfig{Replicas: 1})
+	assert.Nil(t, spec.HealthCheck)
+}

@@ -218,6 +218,9 @@ type VariableMount struct {
 }
 
 func AsV1VariableMounts(mounts []*VariableMount) []v1.VariableMountSpec {
+	if len(mounts) == 0 {
+		return nil
+	}
 	v1Mounts := make([]v1.VariableMountSpec, len(mounts))
 	for i, mount := range mounts {
 		v1Mounts[i] = v1.VariableMountSpec{
@@ -428,12 +431,16 @@ func (self *HealthCheck) ApplyDefaults() {
 	}
 }
 
+// A check of type none renders as no check at all
 func (self *HealthCheck) AsV1HealthCheck() *v1.HealthCheckSpec {
 	if self == nil {
 		return nil
 	}
 	if self.Type == nil {
 		self.Type = utils.ToPtr(HealthCheckTypeHTTP)
+	}
+	if *self.Type == HealthCheckTypeNone {
+		return nil
 	}
 	healthCheck := &v1.HealthCheckSpec{
 		Type:                    string(*self.Type),

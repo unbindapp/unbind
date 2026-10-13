@@ -17,6 +17,8 @@ func ApplyRuntimeConfig(spec *v1.ServiceConfigSpec, config *ent.ServiceConfig) {
 	spec.Replicas = new(config.Replicas)
 	spec.Volumes = schema.AsV1Volumes(config.Volumes)
 	spec.Resources = schema.ResolveResources(config.Resources)
+	spec.HealthCheck = config.HealthCheck.AsV1HealthCheck()
+	spec.VariableMounts = schema.AsV1VariableMounts(config.VariableMounts)
 }
 
 // A host without a target port has nothing to route to
