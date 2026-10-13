@@ -22,6 +22,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/queue"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	variables_service "github.com/unbindapp/unbind-api/internal/services/variables"
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
@@ -278,14 +279,7 @@ func (self *DeploymentController) PopulateBuildEnvironment(ctx context.Context, 
 	}
 
 	if len(service.Edges.ServiceConfig.Hosts) > 0 {
-		// ! Prune all hosts that don't have a target
-		prunedHosts := []schema.HostSpec{}
-		for _, host := range service.Edges.ServiceConfig.Hosts {
-			if host.TargetPort != nil {
-				prunedHosts = append(prunedHosts, host)
-			}
-		}
-		marshalled, err := json.Marshal(schema.AsV1HostSpecs(prunedHosts))
+		marshalled, err := json.Marshal(service_repo.RoutableHosts(service.Edges.ServiceConfig.Hosts))
 		if err != nil {
 			return nil, err
 		}

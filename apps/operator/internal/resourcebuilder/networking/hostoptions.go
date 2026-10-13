@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -28,8 +29,16 @@ func hostObjectName(svc *v1.Service, index int) string {
 	return fmt.Sprintf("%s-%d", svc.Name, index)
 }
 
+const htpasswdSecretSuffix = "-htpasswd"
+
 func htpasswdSecretName(objectName string) string {
-	return objectName + "-htpasswd"
+	return objectName + htpasswdSecretSuffix
+}
+
+// IsRouteSecretName reports whether a Secret is one the route builders create. Other
+// Secrets carry the same instance label, such as the Postgres operator's credentials.
+func IsRouteSecretName(name string) bool {
+	return strings.HasSuffix(name, htpasswdSecretSuffix)
 }
 
 type redirectTarget struct {

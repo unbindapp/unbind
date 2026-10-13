@@ -42,7 +42,7 @@ func clientIPHeader(config *ent.ServiceConfig, behindCloudflare func(host string
 // ApplyRuntimeConfig sets what the service runs with from its saved config. Build
 // inputs like the branch and run command are left alone
 func ApplyRuntimeConfig(spec *v1.ServiceConfigSpec, config *ent.ServiceConfig) {
-	spec.Hosts = routableHosts(config.Hosts)
+	spec.Hosts = RoutableHosts(config.Hosts)
 	spec.Ports = schema.AsV1PortSpecs(config.Ports)
 	spec.Public = config.IsPublic
 	spec.MaxRequestBodySizeMB = config.MaxRequestBodySizeMB
@@ -73,13 +73,14 @@ func valueOrEmpty(value *string) string {
 	return *value
 }
 
-// A host without a target port has nothing to route to
-func routableHosts(hosts []schema.HostSpec) []v1.HostSpec {
+// RoutableHosts leaves out hosts without a target port, except redirects, which never reach the service
+func RoutableHosts(hosts []schema.HostSpec) []v1.HostSpec {
 	var routable []v1.HostSpec
 	for _, host := range schema.AsV1HostSpecs(hosts) {
-		if host.Port != nil {
-			routable = append(routable, host)
+		if host.Port == nil && host.Redirect == nil {
+			continue
 		}
+		routable = append(routable, host)
 	}
 	return routable
 }

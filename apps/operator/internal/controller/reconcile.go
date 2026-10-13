@@ -130,6 +130,9 @@ func (r *ServiceReconciler) cleanupStaleRoutes(ctx context.Context, service *v1.
 			if (gvk.Kind == "Certificate" || gvk.Kind == "Secret") && !metav1.IsControlledBy(item, service) {
 				continue
 			}
+			if gvk.Kind == "Secret" && !networking.IsRouteSecretName(item.GetName()) {
+				continue
+			}
 			stale := &unstructured.Unstructured{}
 			stale.SetGroupVersionKind(gvk)
 			stale.SetNamespace(item.GetNamespace())
