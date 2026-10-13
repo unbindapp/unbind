@@ -155,6 +155,7 @@ func estimateConfigChange(config *ent.ServiceConfig, input *models.UpdateService
 	if input.Replicas != nil && *input.Replicas != config.Replicas ||
 		input.IsPublic != nil && *input.IsPublic != config.IsPublic ||
 		input.SessionAffinity != nil && *input.SessionAffinity != config.SessionAffinity ||
+		input.Stopped != nil && *input.Stopped != config.Stopped ||
 		input.Image != nil && *input.Image != config.Image ||
 		clearableChanged(input.RunCommand, config.RunCommand) ||
 		clearableChanged(input.MaxRequestBodySizeMB, config.MaxRequestBodySizeMB) ||

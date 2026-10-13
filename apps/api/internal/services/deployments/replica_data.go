@@ -3,6 +3,7 @@ package deployments_service
 import (
 	"context"
 	"fmt"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 	"time"
 
 	"github.com/google/uuid"
@@ -78,7 +79,7 @@ func (self *DeploymentService) AttachReplicaDataToServices(ctx context.Context, 
 
 		statuses := serviceStatuses[service.ID]
 		isDatabase := service.Type == schema.ServiceTypeDatabase
-		replicaData := self.calculateReplicaData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment, isDatabase)
+		replicaData := self.calculateReplicaData(statuses, service_repo.ExpectedReplicas(service.Edges.ServiceConfig), service.Edges.CurrentDeployment, isDatabase)
 		applyServiceState(serviceStates[service.KubernetesName], isDatabase, replicaData)
 		result[service.ID] = replicaData
 	}

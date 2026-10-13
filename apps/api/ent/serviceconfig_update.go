@@ -407,6 +407,20 @@ func (_u *ServiceConfigUpdate) SetNillableSessionAffinity(v *bool) *ServiceConfi
 	return _u
 }
 
+// SetStopped sets the "stopped" field.
+func (_u *ServiceConfigUpdate) SetStopped(v bool) *ServiceConfigUpdate {
+	_u.mutation.SetStopped(v)
+	return _u
+}
+
+// SetNillableStopped sets the "stopped" field if the given value is not nil.
+func (_u *ServiceConfigUpdate) SetNillableStopped(v *bool) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetStopped(*v)
+	}
+	return _u
+}
+
 // SetImage sets the "image" field.
 func (_u *ServiceConfigUpdate) SetImage(v string) *ServiceConfigUpdate {
 	_u.mutation.SetImage(v)
@@ -867,6 +881,9 @@ func (_u *ServiceConfigUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.SessionAffinity(); ok {
 		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Stopped(); ok {
+		_spec.SetField(serviceconfig.FieldStopped, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
@@ -1415,6 +1432,20 @@ func (_u *ServiceConfigUpdateOne) SetNillableSessionAffinity(v *bool) *ServiceCo
 	return _u
 }
 
+// SetStopped sets the "stopped" field.
+func (_u *ServiceConfigUpdateOne) SetStopped(v bool) *ServiceConfigUpdateOne {
+	_u.mutation.SetStopped(v)
+	return _u
+}
+
+// SetNillableStopped sets the "stopped" field if the given value is not nil.
+func (_u *ServiceConfigUpdateOne) SetNillableStopped(v *bool) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetStopped(*v)
+	}
+	return _u
+}
+
 // SetImage sets the "image" field.
 func (_u *ServiceConfigUpdateOne) SetImage(v string) *ServiceConfigUpdateOne {
 	_u.mutation.SetImage(v)
@@ -1905,6 +1936,9 @@ func (_u *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceCo
 	}
 	if value, ok := _u.mutation.SessionAffinity(); ok {
 		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Stopped(); ok {
+		_spec.SetField(serviceconfig.FieldStopped, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)

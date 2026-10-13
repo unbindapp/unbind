@@ -6,6 +6,7 @@ import {
   HourglassIcon,
   LoaderIcon,
   OctagonXIcon,
+  PowerIcon,
   TriangleAlertIcon,
 } from "lucide-react";
 import { FC, useMemo } from "react";
@@ -13,6 +14,8 @@ import { FC, useMemo } from "react";
 type TProps = {
   deployment: TDeploymentShallow | undefined;
   isPlaceholder: boolean | undefined;
+  // The current deployment of a stopped service, running no replicas
+  stopped?: boolean;
   iconClassName?: string;
   className?: string;
 };
@@ -20,11 +23,13 @@ type TProps = {
 export default function DeploymentStatusChip({
   deployment,
   isPlaceholder,
+  stopped,
   iconClassName,
   className,
 }: TProps) {
   const [statusText, Icon]: [string, FC<{ className?: string }>] = useMemo(() => {
     if (isPlaceholder || !deployment) return ["LOADING", AnimatedLoaderIcon];
+    if (stopped && deployment.status === "active") return ["STOPPED", PowerIcon];
     if (deployment.status === "build-queued") return ["QUEUED", AnimatedHourglassIcon];
     if (deployment.status === "build-pending") return ["PENDING", AnimatedHourglassIcon];
     if (deployment.status === "build-running") return ["BUILDING", AnimatedLoaderIcon];
@@ -36,12 +41,12 @@ export default function DeploymentStatusChip({
     if (deployment.status === "active") return ["ACTIVE", CircleCheckIcon];
     if (deployment.status === "crashing") return ["CRASHING", TriangleAlertIcon];
     return ["REMOVED", BroomIcon];
-  }, [deployment, isPlaceholder]);
+  }, [deployment, isPlaceholder, stopped]);
 
   return (
     <div
       data-placeholder={isPlaceholder || undefined}
-      data-color={getDeploymentStatusChipColor({ deployment, isPlaceholder })}
+      data-color={getDeploymentStatusChipColor({ deployment, isPlaceholder, stopped })}
       className={cn(
         "bg-foreground/3-10 text-muted-foreground data-[color=wait]:bg-wait/4-10 data-[color=destructive]:bg-destructive/4-10 data-[color=destructive]:text-destructive data-[color=wait]:text-wait data-[color=process]:bg-process/4-10 data-[color=process]:text-process data-[color=success]:bg-success/4-10 data-[color=success]:text-success data-placeholder:bg-muted-more-foreground data-placeholder:animate-skeleton flex max-w-full min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium data-placeholder:text-transparent",
         className,
@@ -66,11 +71,14 @@ type TDeploymentStatusColor = "default" | "wait" | "process" | "destructive" | "
 export function getDeploymentStatusChipColor({
   deployment,
   isPlaceholder,
+  stopped,
 }: {
   deployment?: TDeploymentShallow;
   isPlaceholder?: boolean;
+  stopped?: boolean;
 }): TDeploymentStatusColor {
   if (isPlaceholder || !deployment) return "default";
+  if (stopped && deployment.status === "active") return "default";
   if (deployment.status === "build-queued") return "wait";
   if (deployment.status === "build-pending") return "wait";
   if (deployment.status === "build-running") return "process";

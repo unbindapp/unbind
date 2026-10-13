@@ -23,6 +23,7 @@ type ServiceConfigResponse struct {
 	IsPublic                      bool                  `json:"is_public"`
 	MaxRequestBodySizeMB          *int32                `json:"max_request_body_size_mb,omitempty" doc:"Largest request body the service's domains accept, in MB. Unset uses the default of 100"`
 	SessionAffinity               bool                  `json:"session_affinity" doc:"Whether the service's domains pin each visitor to one replica with a cookie"`
+	Stopped                       bool                  `json:"stopped" doc:"Whether the service is stopped and runs no replicas"`
 	Image                         string                `json:"image,omitempty"`
 	// Dockerfile build overrides
 	DockerBuilderDockerfilePath *string `json:"docker_builder_dockerfile_path,omitempty"`
@@ -107,6 +108,7 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 			IsPublic:                      entity.IsPublic,
 			MaxRequestBodySizeMB:          entity.MaxRequestBodySizeMB,
 			SessionAffinity:               entity.SessionAffinity,
+			Stopped:                       entity.Stopped,
 			Image:                         entity.Image,
 			S3BackupBucketID:              entity.S3BackupBucketID,
 			BackupSchedule:                entity.BackupSchedule,

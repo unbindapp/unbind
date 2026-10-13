@@ -298,6 +298,10 @@ spec:
                     description: SessionAffinity pins each visitor to one replica
                       with a cookie
                     type: boolean
+                  stopped:
+                    description: Stopped runs no replicas, everything else stays in
+                      place
+                    type: boolean
                   variableMounts:
                     description: VariableMounts are paths to mount variables (from
                       secret ref)

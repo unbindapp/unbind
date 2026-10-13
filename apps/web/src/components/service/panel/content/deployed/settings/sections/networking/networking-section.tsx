@@ -27,6 +27,7 @@ import {
   requestSizeFields,
   sessionAffinityFields,
   stagedBoolean,
+  stagedNumber,
   useServiceChanges,
   useStagedNetworking,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
@@ -122,7 +123,10 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     systemData !== undefined &&
     systemData.data.networking_provider !== "gateway" &&
     isItemVisible(settingsIds.networking.maxRequestSize);
-  const showSessionAffinity = !isDatabase && isItemVisible(settingsIds.networking.sessionAffinity);
+  // One replica has nothing to pin a visitor to
+  const replicaCount = stagedNumber(staged.replicaCount, service.config.replicas);
+  const showSessionAffinity =
+    !isDatabase && replicaCount > 1 && isItemVisible(settingsIds.networking.sessionAffinity);
   const sessionAffinity = stagedBoolean(staged.sessionAffinity, service.config.session_affinity);
   if (!showAccess && !showPublic && !showPrivate && !showRequestSize && !showSessionAffinity) {
     return null;

@@ -15,6 +15,14 @@ A service with a [volume](/services/volumes#replicas) always runs 1 replica and 
 
 Databases have no replica setting.
 
+## Stop a service
+
+To turn a service off without deleting it, open the menu on its current deployment and choose **Stop**. The service runs no replicas until you choose **Start** from the same menu. Its volumes, domains, variables and settings stay as they are, and it comes back with the replica count it had.
+
+Use it when the app must not run for a while: restoring its database, an upgrade whose migrations must not overlap with the old version, or pausing something that misbehaves. A stopped service shows **Stopped**, and its domains answer with an error until it starts again.
+
+Databases can't be stopped.
+
 ## Resource limits
 
 **Resource Limits** caps the vCPU and memory of each replica. Drag a slider to the end for **Unlimited**.

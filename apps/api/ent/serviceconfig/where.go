@@ -138,6 +138,11 @@ func SessionAffinity(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldSessionAffinity, v))
 }
 
+// Stopped applies equality check predicate on the "stopped" field. It's identical to StoppedEQ.
+func Stopped(v bool) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldStopped, v))
+}
+
 // Image applies equality check predicate on the "image" field. It's identical to ImageEQ.
 func Image(v string) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldImage, v))
@@ -1111,6 +1116,16 @@ func SessionAffinityEQ(v bool) predicate.ServiceConfig {
 // SessionAffinityNEQ applies the NEQ predicate on the "session_affinity" field.
 func SessionAffinityNEQ(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldNEQ(FieldSessionAffinity, v))
+}
+
+// StoppedEQ applies the EQ predicate on the "stopped" field.
+func StoppedEQ(v bool) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldStopped, v))
+}
+
+// StoppedNEQ applies the NEQ predicate on the "stopped" field.
+func StoppedNEQ(v bool) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNEQ(FieldStopped, v))
 }
 
 // ImageEQ applies the EQ predicate on the "image" field.

@@ -68,6 +68,8 @@ type ServiceConfig struct {
 	MaxRequestBodySizeMB *int32 `json:"max_request_body_size_mb,omitempty"`
 	// Whether public domains pin each visitor to one replica with a cookie
 	SessionAffinity bool `json:"session_affinity,omitempty"`
+	// Whether the service is stopped and runs no replicas
+	Stopped bool `json:"stopped,omitempty"`
 	// Custom Docker image if not building from git
 	Image string `json:"image,omitempty"`
 	// Version of the database custom resource definition
@@ -144,7 +146,7 @@ func (*ServiceConfig) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case serviceconfig.FieldWatchPaths, serviceconfig.FieldHosts, serviceconfig.FieldPorts, serviceconfig.FieldDatabaseConfig, serviceconfig.FieldVolumes, serviceconfig.FieldSecurityContext, serviceconfig.FieldHealthCheck, serviceconfig.FieldVariableMounts, serviceconfig.FieldProtectedVariables, serviceconfig.FieldVariableMetadata, serviceconfig.FieldInitContainers, serviceconfig.FieldResources:
 			values[i] = new([]byte)
-		case serviceconfig.FieldAutoDeploy, serviceconfig.FieldIsPublic, serviceconfig.FieldSessionAffinity:
+		case serviceconfig.FieldAutoDeploy, serviceconfig.FieldIsPublic, serviceconfig.FieldSessionAffinity, serviceconfig.FieldStopped:
 			values[i] = new(sql.NullBool)
 		case serviceconfig.FieldReplicas, serviceconfig.FieldMaxRequestBodySizeMB, serviceconfig.FieldBackupRetentionCount:
 			values[i] = new(sql.NullInt64)
@@ -322,6 +324,12 @@ func (_m *ServiceConfig) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field session_affinity", values[i])
 			} else if value.Valid {
 				_m.SessionAffinity = value.Bool
+			}
+		case serviceconfig.FieldStopped:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field stopped", values[i])
+			} else if value.Valid {
+				_m.Stopped = value.Bool
 			}
 		case serviceconfig.FieldImage:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -558,6 +566,9 @@ func (_m *ServiceConfig) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("session_affinity=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SessionAffinity))
+	builder.WriteString(", ")
+	builder.WriteString("stopped=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Stopped))
 	builder.WriteString(", ")
 	builder.WriteString("image=")
 	builder.WriteString(_m.Image)

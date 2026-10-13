@@ -47,7 +47,7 @@ import {
   type TDeploymentShallow,
 } from "@/lib/queries/deployments";
 import { restartReplicas } from "@/lib/queries/replicas";
-import { TServiceShallow } from "@/lib/queries/services";
+import { TServiceShallow, updateService } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
@@ -55,6 +55,8 @@ import {
   GitBranchIcon,
   GitCommitHorizontalIcon,
   OctagonXIcon,
+  PlayIcon,
+  PowerIcon,
   RewindIcon,
   RocketIcon,
   RotateCcwIcon,
@@ -95,6 +97,7 @@ export default function DeploymentCard({
   const brand = getBrand(service, isPlaceholder);
 
   const isCurrentDeployment = isPlaceholder ? false : currentDeployment?.id === deployment.id;
+  const isStopped = isCurrentDeployment && service.config.stopped;
   const isDeployed = isPlaceholder
     ? false
     : deployment.status === "build-succeeded" ||
@@ -114,7 +117,11 @@ export default function DeploymentCard({
   const cardContent = (
     <>
       <div className="flex flex-col items-start justify-start pr-8 sm:w-34 sm:pr-3">
-        <DeploymentStatusChip deployment={deployment} isPlaceholder={isPlaceholder} />
+        <DeploymentStatusChip
+          deployment={deployment}
+          isPlaceholder={isPlaceholder}
+          stopped={isStopped}
+        />
       </div>
       <div className="mt-2 flex shrink-0 flex-col items-start justify-center sm:mt-0">
         <BrandIcon
@@ -149,7 +156,7 @@ export default function DeploymentCard({
   return (
     <div
       {...rest}
-      data-color={getDeploymentStatusChipColor({ deployment, isPlaceholder })}
+      data-color={getDeploymentStatusChipColor({ deployment, isPlaceholder, stopped: isStopped })}
       data-placeholder={isPlaceholder || undefined}
       className="group/card relative flex w-full flex-row items-stretch rounded-xl"
     >
@@ -199,12 +206,15 @@ function ThreeDotButton({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [restartHandle] = useState(() => createDialogHandle());
+  const [stopHandle] = useState(() => createDialogHandle());
   const [rollbackHandle] = useState(() => createDialogHandle());
   const [redeployHandle] = useState(() => createDialogHandle());
   const [abortHandle] = useState(() => createDialogHandle());
   const [removeHandle] = useState(() => createDialogHandle());
 
-  const showRestart = isCurrentDeployment && deployment.status !== "removed";
+  const isDeployed = isCurrentDeployment && deployment.status !== "removed";
+  const showRestart = isDeployed && !service.config.stopped;
+  const showStop = isDeployed && service.type !== "database";
   const showRollback = deployment.status === "removed" && !isCurrentDeployment;
   const showAbort =
     deployment.status === "build-pending" ||
@@ -247,6 +257,25 @@ function ThreeDotButton({
                       <RotateCcwIcon className="-ml-0.5 size-5" />
                       <p className="min-w-0 shrink leading-tight">Restart</p>
                     </DropdownMenuItem>
+                  }
+                />
+              )}
+              {showStop && (
+                <DialogTrigger
+                  nativeButton={false}
+                  handle={stopHandle}
+                  render={
+                    service.config.stopped ? (
+                      <DropdownMenuItem>
+                        <PlayIcon className="-ml-0.5 size-5" />
+                        <p className="min-w-0 shrink leading-tight">Start</p>
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem className="active:bg-warning/4-10 data-highlighted:bg-warning/4-10 data-highlighted:text-warning">
+                        <PowerIcon className="-ml-0.5 size-5" />
+                        <p className="min-w-0 shrink leading-tight">Stop</p>
+                      </DropdownMenuItem>
+                    )
                   }
                 />
               )}
@@ -301,6 +330,7 @@ function ThreeDotButton({
         </DropdownMenuContent>
       </DropdownMenu>
       {showRestart && <RestartTrigger handle={restartHandle} />}
+      {showStop && <StopTrigger handle={stopHandle} service={service} />}
       {showRollback && (
         <RedeployTrigger
           title="Rollback"
@@ -402,6 +432,85 @@ function RestartTrigger({ handle }: { handle: TDialogHandle }) {
             isPending={isPending}
           >
             Restart
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function StopTrigger({ handle, service }: { handle: TDialogHandle; service: TServiceShallow }) {
+  const { teamId, projectId, environmentId, serviceId } = useService();
+  const starting = service.config.stopped;
+
+  const props = { teamId, projectId, environmentId, serviceId };
+  const { refetch: refetchDeployments } = useDeploymentsUtils({ ...props });
+  const { refetch: refetchService } = useServiceUtils({ ...props });
+  const { refetch: refetchServices } = useServicesUtils({ ...props });
+
+  const {
+    mutate: setStopped,
+    isPending,
+    error,
+    reset,
+  } = useMutation({
+    mutationFn: updateService,
+    onSuccess: async () => {
+      const result = await ResultAsync.fromPromise(
+        Promise.all([refetchServices(), refetchService(), refetchDeployments()]),
+        () => new Error("Failed to refetch data"),
+      );
+      if (result.isErr()) {
+        toast.add({
+          type: "error",
+          title: "Failed to refetch",
+          description: `${starting ? "Started" : "Stopped"} successfully but couldn't refetch the new data.`,
+          timeout: 5000,
+        });
+      }
+      handle.close();
+    },
+  });
+
+  const timeout = useRef<NodeJS.Timeout | null>(null);
+
+  return (
+    <Dialog
+      handle={handle}
+      onOpenChange={(open) => {
+        if (!open) {
+          if (timeout.current) clearTimeout(timeout.current);
+          timeout.current = setTimeout(() => {
+            reset();
+          }, defaultAnimationMs);
+        }
+      }}
+    >
+      <DialogContent hideXButton classNameInnerWrapper="w-128 max-w-full">
+        <DialogHeader>
+          <DialogTitle>{starting ? "Start service" : "Stop service"}</DialogTitle>
+          <DialogDescription>
+            {starting
+              ? "The service starts again with the replicas it had before it was stopped."
+              : "Every replica of this service stops and its domains stop answering. Volumes, domains, variables and settings stay, and you can start it again from this menu."}
+          </DialogDescription>
+        </DialogHeader>
+        {error && <ErrorLine message={error?.message} />}
+        <div className="flex w-full flex-wrap items-center justify-end gap-2">
+          <DialogClose
+            className="text-muted-foreground"
+            render={
+              <Button type="button" variant="ghost">
+                Cancel
+              </Button>
+            }
+          />
+          <Button
+            variant={starting ? "default" : "warning"}
+            onClick={() => setStopped({ ...props, stopped: !starting })}
+            isPending={isPending}
+          >
+            {starting ? "Start" : "Stop"}
           </Button>
         </div>
       </DialogContent>

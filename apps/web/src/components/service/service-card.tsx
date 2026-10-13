@@ -291,7 +291,10 @@ function ServiceInfoLine({ service, isDeleting, isDeploying, className }: TServi
       )}
     >
       {(deployment || showOfflineFallback) && (
-        <StatusIndicator status={deployment?.status || "removed"} />
+        <StatusIndicator
+          status={deployment?.status || "removed"}
+          stopped={isStopped(service, deployment)}
+        />
       )}
       <StatusText
         service={service}
@@ -411,6 +414,9 @@ function StatusText({
   if (deployment.status === "removed") {
     return <StatusTextWrapper deployment={deployment}>Offline</StatusTextWrapper>;
   }
+  if (isStopped(service, deployment)) {
+    return <StatusTextWrapper deployment={deployment}>Stopped</StatusTextWrapper>;
+  }
   if (deployment.status === "active")
     return (
       <StatusTextWrapper deployment={deployment}>
@@ -420,7 +426,15 @@ function StatusText({
     );
 }
 
-function StatusIndicator({ status }: { status: TDeployment["status"] }) {
+// A stop is a deployment with no replicas, so it reads as active once it lands
+function isStopped(service: TServiceShallow, deployment: TDeployment | undefined) {
+  return service.config.stopped && deployment?.status === "active";
+}
+
+function StatusIndicator({ status, stopped }: { status: TDeployment["status"]; stopped: boolean }) {
+  if (stopped) {
+    return <PowerIcon className="size-3.5 shrink-0" />;
+  }
   if (status === "build-queued" || status === "build-pending") {
     return <HourglassIcon className="animate-hourglass size-3.5 shrink-0" />;
   }

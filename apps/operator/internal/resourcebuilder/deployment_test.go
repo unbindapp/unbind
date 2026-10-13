@@ -42,6 +42,9 @@ func TestReplicasWithVolume(t *testing.T) {
 
 	service.Spec.Config.Volumes = []v1.VolumeSpec{{Name: "data", MountPath: "/data"}}
 	assert.Equal(t, int32(1), NewResourceBuilder(service, nil, nil).replicas(), "replicas can't share a volume")
+
+	service.Spec.Config.Stopped = true
+	assert.Equal(t, int32(0), NewResourceBuilder(service, nil, nil).replicas(), "a stopped service runs nothing")
 }
 
 func TestTerminationGracePeriod(t *testing.T) {

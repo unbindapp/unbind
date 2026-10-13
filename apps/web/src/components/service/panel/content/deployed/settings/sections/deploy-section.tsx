@@ -214,7 +214,6 @@ function Section({ service }: { service: TServiceShallow }) {
                       <p className="min-w-0 shrink leading-snug">
                         Services with a volume can only have a single replica.
                       </p>
-                      Ò
                     </div>
                   )}
                 </BlockItemContentHighlightable>

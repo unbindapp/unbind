@@ -2832,6 +2832,9 @@ components:
         session_affinity:
           description: Whether the service's domains pin each visitor to one replica with a cookie
           type: boolean
+        stopped:
+          description: Whether the service is stopped and runs no replicas
+          type: boolean
         variable_mounts:
           items:
             $ref: "#/components/schemas/VariableMount"
@@ -2854,6 +2857,7 @@ components:
         - auto_deploy
         - is_public
         - session_affinity
+        - stopped
         - backup_schedule
         - backup_retention_count
         - volumes
@@ -4094,6 +4098,9 @@ components:
           type: string
         session_affinity:
           description: Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Caches like Cloudflare skip responses that set the cookie. Not for databases
+          type: boolean
+        stopped:
+          description: Stop or start the service. A stopped service runs no replicas while its volumes, domains, variables and settings stay in place. Set false to start it again. Not for databases
           type: boolean
         team_id:
           format: uuid

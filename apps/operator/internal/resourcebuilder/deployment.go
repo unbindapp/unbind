@@ -55,6 +55,9 @@ func (rb *ResourceBuilder) BuildDeployment() (*appsv1.Deployment, error) {
 
 // A volume takes one writer at a time, so a service that mounts one runs a single replica
 func (rb *ResourceBuilder) replicas() int32 {
+	if rb.service.Spec.Config.Stopped {
+		return 0
+	}
 	if rb.service.Spec.Config.Replicas == nil || len(rb.service.Spec.Config.Volumes) > 0 {
 		return 1
 	}

@@ -62,6 +62,8 @@ const (
 	FieldMaxRequestBodySizeMB = "max_request_body_size_mb"
 	// FieldSessionAffinity holds the string denoting the session_affinity field in the database.
 	FieldSessionAffinity = "session_affinity"
+	// FieldStopped holds the string denoting the stopped field in the database.
+	FieldStopped = "stopped"
 	// FieldImage holds the string denoting the image field in the database.
 	FieldImage = "image"
 	// FieldDefinitionVersion holds the string denoting the definition_version field in the database.
@@ -137,6 +139,7 @@ var Columns = []string{
 	FieldIsPublic,
 	FieldMaxRequestBodySizeMB,
 	FieldSessionAffinity,
+	FieldStopped,
 	FieldImage,
 	FieldDefinitionVersion,
 	FieldDatabaseConfig,
@@ -178,6 +181,8 @@ var (
 	DefaultIsPublic bool
 	// DefaultSessionAffinity holds the default value on creation for the "session_affinity" field.
 	DefaultSessionAffinity bool
+	// DefaultStopped holds the default value on creation for the "stopped" field.
+	DefaultStopped bool
 	// DefaultBackupSchedule holds the default value on creation for the "backup_schedule" field.
 	DefaultBackupSchedule string
 	// DefaultBackupRetentionCount holds the default value on creation for the "backup_retention_count" field.
@@ -317,6 +322,11 @@ func ByMaxRequestBodySizeMB(opts ...sql.OrderTermOption) OrderOption {
 // BySessionAffinity orders the results by the session_affinity field.
 func BySessionAffinity(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSessionAffinity, opts...).ToFunc()
+}
+
+// ByStopped orders the results by the stopped field.
+func ByStopped(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStopped, opts...).ToFunc()
 }
 
 // ByImage orders the results by the image field.

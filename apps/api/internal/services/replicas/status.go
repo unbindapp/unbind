@@ -2,6 +2,7 @@ package replica_service
 
 import (
 	"context"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/schema"
@@ -58,7 +59,7 @@ func (self *ReplicaService) GetReplicaHealth(ctx context.Context, requesterUserI
 	// This will override checking kubernetes state for replicas (DBs are complicated and may not match)
 	var expectedReplicas *int
 	if service.Type != schema.ServiceTypeDatabase {
-		expectedReplicas = new(int(service.Edges.ServiceConfig.Replicas))
+		expectedReplicas = new(int(service_repo.ExpectedReplicas(service.Edges.ServiceConfig)))
 	}
 	return self.k8s.GetSimpleHealthStatus(ctx, team.Namespace, labels, expectedReplicas, client)
 }

@@ -20132,6 +20132,7 @@ type ServiceConfigMutation struct {
 	max_request_body_size_mb         *int32
 	addmax_request_body_size_mb      *int32
 	session_affinity                 *bool
+	stopped                          *bool
 	image                            *string
 	definition_version               *string
 	database_config                  **schema.DatabaseConfig
@@ -21314,6 +21315,42 @@ func (m *ServiceConfigMutation) ResetSessionAffinity() {
 	m.session_affinity = nil
 }
 
+// SetStopped sets the "stopped" field.
+func (m *ServiceConfigMutation) SetStopped(b bool) {
+	m.stopped = &b
+}
+
+// Stopped returns the value of the "stopped" field in the mutation.
+func (m *ServiceConfigMutation) Stopped() (r bool, exists bool) {
+	v := m.stopped
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStopped returns the old "stopped" field's value of the ServiceConfig entity.
+// If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceConfigMutation) OldStopped(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStopped is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStopped requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStopped: %w", err)
+	}
+	return oldValue.Stopped, nil
+}
+
+// ResetStopped resets all changes to the "stopped" field.
+func (m *ServiceConfigMutation) ResetStopped() {
+	m.stopped = nil
+}
+
 // SetImage sets the "image" field.
 func (m *ServiceConfigMutation) SetImage(s string) {
 	m.image = &s
@@ -22146,7 +22183,7 @@ func (m *ServiceConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceConfigMutation) Fields() []string {
-	fields := make([]string, 0, 36)
+	fields := make([]string, 0, 37)
 	if m.created_at != nil {
 		fields = append(fields, serviceconfig.FieldCreatedAt)
 	}
@@ -22212,6 +22249,9 @@ func (m *ServiceConfigMutation) Fields() []string {
 	}
 	if m.session_affinity != nil {
 		fields = append(fields, serviceconfig.FieldSessionAffinity)
+	}
+	if m.stopped != nil {
+		fields = append(fields, serviceconfig.FieldStopped)
 	}
 	if m.image != nil {
 		fields = append(fields, serviceconfig.FieldImage)
@@ -22307,6 +22347,8 @@ func (m *ServiceConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.MaxRequestBodySizeMB()
 	case serviceconfig.FieldSessionAffinity:
 		return m.SessionAffinity()
+	case serviceconfig.FieldStopped:
+		return m.Stopped()
 	case serviceconfig.FieldImage:
 		return m.Image()
 	case serviceconfig.FieldDefinitionVersion:
@@ -22388,6 +22430,8 @@ func (m *ServiceConfigMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldMaxRequestBodySizeMB(ctx)
 	case serviceconfig.FieldSessionAffinity:
 		return m.OldSessionAffinity(ctx)
+	case serviceconfig.FieldStopped:
+		return m.OldStopped(ctx)
 	case serviceconfig.FieldImage:
 		return m.OldImage(ctx)
 	case serviceconfig.FieldDefinitionVersion:
@@ -22578,6 +22622,13 @@ func (m *ServiceConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSessionAffinity(v)
+		return nil
+	case serviceconfig.FieldStopped:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStopped(v)
 		return nil
 	case serviceconfig.FieldImage:
 		v, ok := value.(string)
@@ -22983,6 +23034,9 @@ func (m *ServiceConfigMutation) ResetField(name string) error {
 		return nil
 	case serviceconfig.FieldSessionAffinity:
 		m.ResetSessionAffinity()
+		return nil
+	case serviceconfig.FieldStopped:
+		m.ResetStopped()
 		return nil
 	case serviceconfig.FieldImage:
 		m.ResetImage()

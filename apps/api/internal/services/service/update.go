@@ -158,6 +158,9 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 	if input.SessionAffinity != nil && service.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no sticky sessions")
 	}
+	if input.Stopped != nil && service.Type == schema.ServiceTypeDatabase {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases can't be stopped")
+	}
 
 	// For database we don't want to set ports
 	if service.Type == schema.ServiceTypeDatabase {
@@ -484,6 +487,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			Public:                        input.IsPublic,
 			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
 			SessionAffinity:               input.SessionAffinity,
+			Stopped:                       input.Stopped,
 			Image:                         input.Image,
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     input.DockerBuilderBuildContext,
@@ -631,6 +635,13 @@ func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, inpu
 			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
 				Name:  "Sticky Sessions",
 				Value: fmt.Sprintf("%t", *input.SessionAffinity),
+			})
+		}
+
+		if input.Stopped != nil {
+			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
+				Name:  "Stopped",
+				Value: fmt.Sprintf("%t", *input.Stopped),
 			})
 		}
 

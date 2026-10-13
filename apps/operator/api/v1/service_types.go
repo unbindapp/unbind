@@ -113,6 +113,9 @@ type ServiceConfigSpec struct {
 	// SessionAffinity pins each visitor to one replica with a cookie
 	SessionAffinity bool `json:"sessionAffinity,omitempty"`
 
+	// Stopped runs no replicas, everything else stays in place
+	Stopped bool `json:"stopped,omitempty"`
+
 	// Image is a custom Docker image if not building from git
 	Image string `json:"image"`
 

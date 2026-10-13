@@ -14,11 +14,20 @@ func ApplyRuntimeConfig(spec *v1.ServiceConfigSpec, config *ent.ServiceConfig) {
 	spec.Public = config.IsPublic
 	spec.MaxRequestBodySizeMB = config.MaxRequestBodySizeMB
 	spec.SessionAffinity = config.SessionAffinity
+	spec.Stopped = config.Stopped
 	spec.Replicas = new(config.Replicas)
 	spec.Volumes = schema.AsV1Volumes(config.Volumes)
 	spec.Resources = schema.ResolveResources(config.Resources)
 	spec.HealthCheck = config.HealthCheck.AsV1HealthCheck()
 	spec.VariableMounts = schema.AsV1VariableMounts(config.VariableMounts)
+}
+
+// ExpectedReplicas is how many replicas the service should be running
+func ExpectedReplicas(config *ent.ServiceConfig) int32 {
+	if config.Stopped {
+		return 0
+	}
+	return config.Replicas
 }
 
 // A host without a target port has nothing to route to

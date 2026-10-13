@@ -28,6 +28,7 @@ func TestApplyRuntimeConfig(t *testing.T) {
 		Replicas:             3,
 		MaxRequestBodySizeMB: new(int32(500)),
 		SessionAffinity:      true,
+		Stopped:              true,
 	}
 
 	ApplyRuntimeConfig(&spec, config)
@@ -38,6 +39,7 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Equal(t, int32(3), *spec.Replicas)
 	assert.Equal(t, int32(500), *spec.MaxRequestBodySizeMB)
 	assert.True(t, spec.SessionAffinity)
+	assert.True(t, spec.Stopped)
 	assert.Equal(t, "refs/heads/main", spec.GitBranch)
 	assert.Equal(t, "./start", *spec.RunCommand)
 
@@ -46,6 +48,7 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Empty(t, spec.Ports)
 	assert.Nil(t, spec.MaxRequestBodySizeMB)
 	assert.False(t, spec.SessionAffinity)
+	assert.False(t, spec.Stopped)
 }
 
 func TestApplyRuntimeConfigHealthCheckAndVariableMounts(t *testing.T) {
@@ -72,4 +75,9 @@ func TestApplyRuntimeConfigHealthCheckAndVariableMounts(t *testing.T) {
 
 	ApplyRuntimeConfig(&spec, &ent.ServiceConfig{Replicas: 1})
 	assert.Nil(t, spec.HealthCheck)
+}
+
+func TestExpectedReplicas(t *testing.T) {
+	assert.Equal(t, int32(3), ExpectedReplicas(&ent.ServiceConfig{Replicas: 3}))
+	assert.Equal(t, int32(0), ExpectedReplicas(&ent.ServiceConfig{Replicas: 3, Stopped: true}), "a stopped service expects no replicas")
 }

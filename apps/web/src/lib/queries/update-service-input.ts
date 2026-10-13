@@ -45,6 +45,7 @@ export const UpdateServiceInputSchema = z
     image: z.string().optional(),
     isPublic: z.boolean().optional(),
     sessionAffinity: z.boolean().optional(),
+    stopped: z.boolean().optional(),
     // 0 resets to the default
     maxRequestBodySizeMb: z.number().int().min(0).max(10240).optional(),
     overwritePorts: PortSpecSchema.array().optional(),
@@ -101,6 +102,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     image,
     isPublic,
     sessionAffinity,
+    stopped,
     maxRequestBodySizeMb,
     overwritePorts,
     overwriteHosts,
@@ -211,6 +213,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     image,
     is_public: isPublic,
     session_affinity: sessionAffinity,
+    stopped,
     max_request_body_size_mb: maxRequestBodySizeMb,
     overwrite_ports: overwritePorts,
     overwrite_hosts: overwriteHosts,

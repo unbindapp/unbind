@@ -80,7 +80,7 @@ Cloudflare applies its own limit to proxied domains: 100 MB on the Free and Pro 
 
 ## Sticky sessions
 
-A service with more than one replica spreads requests across them. An app that keeps sessions or websocket state in a replica's memory needs each visitor to keep reaching the same replica. Turn on **Sticky Sessions** under **Load Balancing** in **Networking** in the service settings and deploy. Unbind then pins each visitor to one replica with a cookie.
+A service with more than one replica spreads requests across them. An app that keeps sessions or websocket state in a replica's memory needs each visitor to keep reaching the same replica. Turn on **Sticky Sessions** under **Load Balancing** in **Networking** in the service settings and deploy. The setting only shows for a service with more than one replica. Unbind then pins each visitor to one replica with a cookie.
 
 It is off by default. Leave it off for anything a cache should serve: Cloudflare and other caches don't store responses that set a cookie, so every request reaches your service.
 

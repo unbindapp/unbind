@@ -240,6 +240,7 @@ export const UpdateServiceInputSchema = z
     s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for databases that support backups, Redis does not
     service_id: z.string(),
     session_affinity: z.boolean().optional(), // Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Caches like Cloudflare skip responses that set the cookie. Not for databases
+    stopped: z.boolean().optional(), // Stop or start the service. A stopped service runs no replicas while its volumes, domains, variables and settings stay in place. Set false to start it again. Not for databases
     team_id: z.string(),
     upsert_hosts: z.array(HostSpecSchema).nullable().optional(), // Additional hosts to add, will not remove existing hosts
     watch_paths: z.array(z.string()).optional(), // Gitignore-style patterns, a push deploys only when a changed file matches. Empty deploys on every push
@@ -917,6 +918,7 @@ export const ServiceConfigResponseSchema = z
     s3_backup_bucket_id: z.string().optional(),
     security_context: SecurityContextSchema.optional(),
     session_affinity: z.boolean(), // Whether the service's domains pin each visitor to one replica with a cookie
+    stopped: z.boolean(), // Whether the service is stopped and runs no replicas
     variable_mounts: z.array(VariableMountSchema),
     volumes: z.array(PVCInfoSchema),
     watch_paths: z.array(z.string()),

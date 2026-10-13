@@ -88,6 +88,7 @@ type MutateConfigInput struct {
 	Public                        *bool
 	MaxRequestBodySizeMB          *int32
 	SessionAffinity               *bool
+	Stopped                       *bool
 	Image                         *string
 	DockerBuilderDockerfilePath   *string
 	DockerBuilderBuildContext     *string
@@ -175,6 +176,7 @@ func (self *ServiceRepository) CreateConfig(
 		SetNillableIsPublic(input.Public).
 		SetNillableMaxRequestBodySizeMB(input.MaxRequestBodySizeMB).
 		SetNillableSessionAffinity(input.SessionAffinity).
+		SetNillableStopped(input.Stopped).
 		SetNillableImage(input.Image).
 		SetNillableDockerBuilderDockerfilePath(input.DockerBuilderDockerfilePath).
 		SetNillableDockerBuilderBuildContext(input.DockerBuilderBuildContext).
@@ -306,6 +308,7 @@ func (self *ServiceRepository) UpdateConfig(
 		SetNillableAutoDeploy(input.AutoDeploy).
 		SetNillableIsPublic(input.Public).
 		SetNillableSessionAffinity(input.SessionAffinity).
+		SetNillableStopped(input.Stopped).
 		SetNillableImage(input.Image).
 		SetNillableDefinitionVersion(input.CustomDefinitionVersion).
 		SetNillableBackupSchedule(input.BackupSchedule).
