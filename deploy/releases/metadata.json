@@ -498,5 +498,10 @@
     "version": "v0.1.99",
     "summary": "Release v0.1.99",
     "breaking": false
+  },
+  "v0.1.100": {
+    "version": "v0.1.100",
+    "summary": "Release v0.1.100",
+    "breaking": false
   }
 }
