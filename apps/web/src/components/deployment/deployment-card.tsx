@@ -46,6 +46,7 @@ import {
   removeDeployment as removeDeploymentFn,
   type TDeploymentShallow,
 } from "@/lib/queries/deployments";
+import { isScheduledService } from "@/components/service/cron/cron-schedule";
 import { restartReplicas } from "@/lib/queries/replicas";
 import { TServiceShallow, updateService } from "@/lib/queries/services";
 import { useMutation } from "@tanstack/react-query";
@@ -213,7 +214,8 @@ function ThreeDotButton({
   const [removeHandle] = useState(() => createDialogHandle());
 
   const isDeployed = isCurrentDeployment && deployment.status !== "removed";
-  const showRestart = isDeployed && !service.config.stopped;
+  // A scheduled service has no replicas to restart, its runs start from the Runs list
+  const showRestart = isDeployed && !service.config.stopped && !isScheduledService(service);
   const showStop = isDeployed && service.type !== "database";
   const showRollback = deployment.status === "removed" && !isCurrentDeployment;
   const showAbort =

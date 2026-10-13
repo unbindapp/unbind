@@ -15,6 +15,8 @@ func ApplyRuntimeConfig(spec *v1.ServiceConfigSpec, config *ent.ServiceConfig) {
 	spec.MaxRequestBodySizeMB = config.MaxRequestBodySizeMB
 	spec.SessionAffinity = config.SessionAffinity
 	spec.Stopped = config.Stopped
+	spec.CronSchedule = valueOrEmpty(config.CronSchedule)
+	spec.CronTimeZone = valueOrEmpty(config.CronTimezone)
 	spec.Replicas = new(config.Replicas)
 	spec.Volumes = schema.AsV1Volumes(config.Volumes)
 	spec.Resources = schema.ResolveResources(config.Resources)
@@ -22,12 +24,20 @@ func ApplyRuntimeConfig(spec *v1.ServiceConfigSpec, config *ent.ServiceConfig) {
 	spec.VariableMounts = schema.AsV1VariableMounts(config.VariableMounts)
 }
 
-// ExpectedReplicas is how many replicas the service should be running
+// ExpectedReplicas is how many replicas the service should be running. A scheduled
+// service runs nothing between its runs.
 func ExpectedReplicas(config *ent.ServiceConfig) int32 {
-	if config.Stopped {
+	if config.Stopped || valueOrEmpty(config.CronSchedule) != "" {
 		return 0
 	}
 	return config.Replicas
+}
+
+func valueOrEmpty(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }
 
 // A host without a target port has nothing to route to

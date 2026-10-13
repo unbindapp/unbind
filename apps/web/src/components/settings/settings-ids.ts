@@ -30,6 +30,8 @@ export const settingsIds = {
     watchPaths: "build_watch-paths",
   },
   deploy: {
+    cronSchedule: "deploy_cron-schedule",
+    cronTimezone: "deploy_cron-timezone",
     replicas: "deploy_replicas",
     resourceLimits: "deploy_resource-limits",
   },

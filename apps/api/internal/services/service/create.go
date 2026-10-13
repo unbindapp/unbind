@@ -54,6 +54,9 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	if input.SessionAffinity != nil && input.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no sticky sessions")
 	}
+	if err := validateCronInput(input.Type, input.CronSchedule, input.CronTimezone); err != nil {
+		return nil, err
+	}
 
 	switch input.Type {
 	case schema.ServiceTypeGithub:
@@ -433,6 +436,8 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			RailpackBuilderInstallCommand: input.RailpackBuilderInstallCommand,
 			RailpackBuilderBuildCommand:   input.RailpackBuilderBuildCommand,
 			RunCommand:                    input.RunCommand,
+			CronSchedule:                  input.CronSchedule,
+			CronTimezone:                  input.CronTimezone,
 			Public:                        isPublic,
 			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
 			SessionAffinity:               input.SessionAffinity,

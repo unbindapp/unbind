@@ -12,6 +12,7 @@ import (
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder"
 	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -57,6 +58,45 @@ func (r *ServiceReconciler) reconcileDeployment(ctx context.Context, rb resource
 		return err
 	}
 	return r.deletePrepullJob(ctx, &service)
+}
+
+// reconcileCronJob renders a scheduled service as a CronJob and retires the Deployment
+// that ran it continuously. The CronJob is owned by the Service, so its runs go with it.
+func (r *ServiceReconciler) reconcileCronJob(ctx context.Context, rb resourcebuilder.ResourceBuilderInterface, service v1.Service) error {
+	if err := r.deleteIfExists(ctx, &appsv1.Deployment{}, service.Name, service.Namespace); err != nil {
+		return err
+	}
+	if err := r.deletePrepullJob(ctx, &service); err != nil {
+		return err
+	}
+
+	desired, err := rb.BuildCronJob()
+	if err == resourcebuilder.ErrCronJobNotNeeded {
+		return r.deleteIfExists(ctx, &batchv1.CronJob{}, service.Name, service.Namespace)
+	}
+	if err != nil {
+		return fmt.Errorf("building cron job: %w", err)
+	}
+
+	return reconcileResource(ctx, r, desired, &service, maxReconcileRetries,
+		func(existing, desired *batchv1.CronJob) bool {
+			return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
+				!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels)
+		},
+		func(existing, desired *batchv1.CronJob) {
+			existing.Labels = desired.Labels
+			existing.Spec = desired.Spec
+		},
+		nil,
+	)
+}
+
+// A scheduled service serves no traffic, so whatever exposed it before goes
+func (r *ServiceReconciler) removeExposure(ctx context.Context, service *v1.Service) error {
+	if err := r.deleteKubeServices(ctx, []string{service.Name, service.Name + "-nodeport"}, service.Namespace); err != nil {
+		return err
+	}
+	return r.cleanupStaleRoutes(ctx, service, nil)
 }
 
 // reconcileServices reconciles the ClusterIP and NodePort Services for the workload,

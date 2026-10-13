@@ -8,6 +8,7 @@ import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import { useNow } from "@/components/providers/now-provider";
 import ServicePanel from "@/components/service/panel/service-panel";
 import { useServicePanel } from "@/components/service/panel/service-panel-provider";
+import { formatCronSchedule, isScheduledService } from "@/components/service/cron/cron-schedule";
 import ServiceIcon from "@/components/service/service-icon";
 import { usePrefetchService } from "@/components/service/use-prefetch-service";
 import { Button, LinkButton } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { deployMutationKeys, useSharedMutation } from "@/lib/hooks/use-shared-mu
 import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-difference";
 import { TService, TServiceShallow } from "@/lib/queries/services";
 import {
+  CalendarClockIcon,
   HourglassIcon,
   LoaderIcon,
   OctagonXIcon,
@@ -294,6 +296,7 @@ function ServiceInfoLine({ service, isDeleting, isDeploying, className }: TServi
         <StatusIndicator
           status={deployment?.status || "removed"}
           stopped={isStopped(service, deployment)}
+          scheduled={isScheduled(service, deployment)}
         />
       )}
       <StatusText
@@ -417,6 +420,14 @@ function StatusText({
   if (isStopped(service, deployment)) {
     return <StatusTextWrapper deployment={deployment}>Stopped</StatusTextWrapper>;
   }
+  if (isScheduled(service, deployment)) {
+    return (
+      <StatusTextWrapper deployment={deployment}>
+        Scheduled <span className="text-muted-most-foreground px-[0.75ch]">|</span>{" "}
+        {formatCronSchedule(service.config.cron_schedule ?? "")}
+      </StatusTextWrapper>
+    );
+  }
   if (deployment.status === "active")
     return (
       <StatusTextWrapper deployment={deployment}>
@@ -431,9 +442,25 @@ function isStopped(service: TServiceShallow, deployment: TDeployment | undefined
   return service.config.stopped && deployment?.status === "active";
 }
 
-function StatusIndicator({ status, stopped }: { status: TDeployment["status"]; stopped: boolean }) {
+// Between runs a scheduled service has nothing running, its deployment is still in place
+function isScheduled(service: TServiceShallow, deployment: TDeployment | undefined) {
+  return isScheduledService(service) && deployment?.status === "active";
+}
+
+function StatusIndicator({
+  status,
+  stopped,
+  scheduled,
+}: {
+  status: TDeployment["status"];
+  stopped: boolean;
+  scheduled: boolean;
+}) {
   if (stopped) {
     return <PowerIcon className="size-3.5 shrink-0" />;
+  }
+  if (scheduled) {
+    return <CalendarClockIcon className="size-3.5 shrink-0" />;
   }
   if (status === "build-queued" || status === "build-pending") {
     return <HourglassIcon className="animate-hourglass size-3.5 shrink-0" />;

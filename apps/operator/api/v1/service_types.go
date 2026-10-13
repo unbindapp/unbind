@@ -116,6 +116,12 @@ type ServiceConfigSpec struct {
 	// Stopped runs no replicas, everything else stays in place
 	Stopped bool `json:"stopped,omitempty"`
 
+	// CronSchedule runs the service as a CronJob on this cron expression instead of a Deployment
+	CronSchedule string `json:"cronSchedule,omitempty"`
+
+	// CronTimeZone is the IANA time zone of CronSchedule, UTC when empty
+	CronTimeZone string `json:"cronTimeZone,omitempty"`
+
 	// Image is a custom Docker image if not building from git
 	Image string `json:"image"`
 

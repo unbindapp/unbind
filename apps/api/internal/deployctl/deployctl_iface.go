@@ -11,6 +11,8 @@ import (
 
 // DeploymentControllerInterface ...
 type DeploymentControllerInterface interface {
+	// SyncCronRunFailures sends one alert per failed run, then marks the run so it is not sent again
+	SyncCronRunFailures(ctx context.Context) error
 	// Start queue processor
 	StartAsync()
 	// Stop stops the deployment manager

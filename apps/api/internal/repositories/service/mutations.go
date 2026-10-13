@@ -89,6 +89,8 @@ type MutateConfigInput struct {
 	MaxRequestBodySizeMB          *int32
 	SessionAffinity               *bool
 	Stopped                       *bool
+	CronSchedule                  *string
+	CronTimezone                  *string
 	Image                         *string
 	DockerBuilderDockerfilePath   *string
 	DockerBuilderBuildContext     *string
@@ -177,6 +179,8 @@ func (self *ServiceRepository) CreateConfig(
 		SetNillableMaxRequestBodySizeMB(input.MaxRequestBodySizeMB).
 		SetNillableSessionAffinity(input.SessionAffinity).
 		SetNillableStopped(input.Stopped).
+		SetNillableCronSchedule(input.CronSchedule).
+		SetNillableCronTimezone(input.CronTimezone).
 		SetNillableImage(input.Image).
 		SetNillableDockerBuilderDockerfilePath(input.DockerBuilderDockerfilePath).
 		SetNillableDockerBuilderBuildContext(input.DockerBuilderBuildContext).
@@ -365,6 +369,22 @@ func (self *ServiceRepository) UpdateConfig(
 			upd.ClearRunCommand()
 		} else {
 			upd.SetRunCommand(*input.RunCommand)
+		}
+	}
+
+	if input.CronSchedule != nil {
+		if *input.CronSchedule == "" {
+			upd.ClearCronSchedule()
+		} else {
+			upd.SetCronSchedule(*input.CronSchedule)
+		}
+	}
+
+	if input.CronTimezone != nil {
+		if *input.CronTimezone == "" {
+			upd.ClearCronTimezone()
+		} else {
+			upd.SetCronTimezone(*input.CronTimezone)
 		}
 	}
 

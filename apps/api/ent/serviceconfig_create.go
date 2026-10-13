@@ -302,6 +302,34 @@ func (_c *ServiceConfigCreate) SetNillableStopped(v *bool) *ServiceConfigCreate 
 	return _c
 }
 
+// SetCronSchedule sets the "cron_schedule" field.
+func (_c *ServiceConfigCreate) SetCronSchedule(v string) *ServiceConfigCreate {
+	_c.mutation.SetCronSchedule(v)
+	return _c
+}
+
+// SetNillableCronSchedule sets the "cron_schedule" field if the given value is not nil.
+func (_c *ServiceConfigCreate) SetNillableCronSchedule(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetCronSchedule(*v)
+	}
+	return _c
+}
+
+// SetCronTimezone sets the "cron_timezone" field.
+func (_c *ServiceConfigCreate) SetCronTimezone(v string) *ServiceConfigCreate {
+	_c.mutation.SetCronTimezone(v)
+	return _c
+}
+
+// SetNillableCronTimezone sets the "cron_timezone" field if the given value is not nil.
+func (_c *ServiceConfigCreate) SetNillableCronTimezone(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetCronTimezone(*v)
+	}
+	return _c
+}
+
 // SetImage sets the "image" field.
 func (_c *ServiceConfigCreate) SetImage(v string) *ServiceConfigCreate {
 	_c.mutation.SetImage(v)
@@ -716,6 +744,14 @@ func (_c *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.Stopped(); ok {
 		_spec.SetField(serviceconfig.FieldStopped, field.TypeBool, value)
 		_node.Stopped = value
+	}
+	if value, ok := _c.mutation.CronSchedule(); ok {
+		_spec.SetField(serviceconfig.FieldCronSchedule, field.TypeString, value)
+		_node.CronSchedule = &value
+	}
+	if value, ok := _c.mutation.CronTimezone(); ok {
+		_spec.SetField(serviceconfig.FieldCronTimezone, field.TypeString, value)
+		_node.CronTimezone = &value
 	}
 	if value, ok := _c.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
@@ -1206,6 +1242,42 @@ func (u *ServiceConfigUpsert) SetStopped(v bool) *ServiceConfigUpsert {
 // UpdateStopped sets the "stopped" field to the value that was provided on create.
 func (u *ServiceConfigUpsert) UpdateStopped() *ServiceConfigUpsert {
 	u.SetExcluded(serviceconfig.FieldStopped)
+	return u
+}
+
+// SetCronSchedule sets the "cron_schedule" field.
+func (u *ServiceConfigUpsert) SetCronSchedule(v string) *ServiceConfigUpsert {
+	u.Set(serviceconfig.FieldCronSchedule, v)
+	return u
+}
+
+// UpdateCronSchedule sets the "cron_schedule" field to the value that was provided on create.
+func (u *ServiceConfigUpsert) UpdateCronSchedule() *ServiceConfigUpsert {
+	u.SetExcluded(serviceconfig.FieldCronSchedule)
+	return u
+}
+
+// ClearCronSchedule clears the value of the "cron_schedule" field.
+func (u *ServiceConfigUpsert) ClearCronSchedule() *ServiceConfigUpsert {
+	u.SetNull(serviceconfig.FieldCronSchedule)
+	return u
+}
+
+// SetCronTimezone sets the "cron_timezone" field.
+func (u *ServiceConfigUpsert) SetCronTimezone(v string) *ServiceConfigUpsert {
+	u.Set(serviceconfig.FieldCronTimezone, v)
+	return u
+}
+
+// UpdateCronTimezone sets the "cron_timezone" field to the value that was provided on create.
+func (u *ServiceConfigUpsert) UpdateCronTimezone() *ServiceConfigUpsert {
+	u.SetExcluded(serviceconfig.FieldCronTimezone)
+	return u
+}
+
+// ClearCronTimezone clears the value of the "cron_timezone" field.
+func (u *ServiceConfigUpsert) ClearCronTimezone() *ServiceConfigUpsert {
+	u.SetNull(serviceconfig.FieldCronTimezone)
 	return u
 }
 
@@ -1916,6 +1988,48 @@ func (u *ServiceConfigUpsertOne) SetStopped(v bool) *ServiceConfigUpsertOne {
 func (u *ServiceConfigUpsertOne) UpdateStopped() *ServiceConfigUpsertOne {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.UpdateStopped()
+	})
+}
+
+// SetCronSchedule sets the "cron_schedule" field.
+func (u *ServiceConfigUpsertOne) SetCronSchedule(v string) *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetCronSchedule(v)
+	})
+}
+
+// UpdateCronSchedule sets the "cron_schedule" field to the value that was provided on create.
+func (u *ServiceConfigUpsertOne) UpdateCronSchedule() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateCronSchedule()
+	})
+}
+
+// ClearCronSchedule clears the value of the "cron_schedule" field.
+func (u *ServiceConfigUpsertOne) ClearCronSchedule() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearCronSchedule()
+	})
+}
+
+// SetCronTimezone sets the "cron_timezone" field.
+func (u *ServiceConfigUpsertOne) SetCronTimezone(v string) *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetCronTimezone(v)
+	})
+}
+
+// UpdateCronTimezone sets the "cron_timezone" field to the value that was provided on create.
+func (u *ServiceConfigUpsertOne) UpdateCronTimezone() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateCronTimezone()
+	})
+}
+
+// ClearCronTimezone clears the value of the "cron_timezone" field.
+func (u *ServiceConfigUpsertOne) ClearCronTimezone() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearCronTimezone()
 	})
 }
 
@@ -2834,6 +2948,48 @@ func (u *ServiceConfigUpsertBulk) SetStopped(v bool) *ServiceConfigUpsertBulk {
 func (u *ServiceConfigUpsertBulk) UpdateStopped() *ServiceConfigUpsertBulk {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.UpdateStopped()
+	})
+}
+
+// SetCronSchedule sets the "cron_schedule" field.
+func (u *ServiceConfigUpsertBulk) SetCronSchedule(v string) *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetCronSchedule(v)
+	})
+}
+
+// UpdateCronSchedule sets the "cron_schedule" field to the value that was provided on create.
+func (u *ServiceConfigUpsertBulk) UpdateCronSchedule() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateCronSchedule()
+	})
+}
+
+// ClearCronSchedule clears the value of the "cron_schedule" field.
+func (u *ServiceConfigUpsertBulk) ClearCronSchedule() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearCronSchedule()
+	})
+}
+
+// SetCronTimezone sets the "cron_timezone" field.
+func (u *ServiceConfigUpsertBulk) SetCronTimezone(v string) *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetCronTimezone(v)
+	})
+}
+
+// UpdateCronTimezone sets the "cron_timezone" field to the value that was provided on create.
+func (u *ServiceConfigUpsertBulk) UpdateCronTimezone() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateCronTimezone()
+	})
+}
+
+// ClearCronTimezone clears the value of the "cron_timezone" field.
+func (u *ServiceConfigUpsertBulk) ClearCronTimezone() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearCronTimezone()
 	})
 }
 

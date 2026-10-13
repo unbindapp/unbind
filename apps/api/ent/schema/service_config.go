@@ -52,6 +52,8 @@ func (ServiceConfig) Fields() []ent.Field {
 		field.Int32("max_request_body_size_mb").Optional().Nillable().Comment("Largest request body public domains accept in MB, unset uses the default of 100"),
 		field.Bool("session_affinity").Default(false).Comment("Whether public domains pin each visitor to one replica with a cookie"),
 		field.Bool("stopped").Default(false).Comment("Whether the service is stopped and runs no replicas"),
+		field.String("cron_schedule").Optional().Nillable().Comment("Cron expression. When set the service runs on this schedule instead of continuously"),
+		field.String("cron_timezone").Optional().Nillable().Comment("IANA time zone of the cron schedule, UTC when empty"),
 		field.String("image").Optional().Comment("Custom Docker image if not building from git"), // Only applies to type=docker-image
 		// Database
 		field.String("definition_version").Optional().Nillable().Comment("Version of the database custom resource definition"),

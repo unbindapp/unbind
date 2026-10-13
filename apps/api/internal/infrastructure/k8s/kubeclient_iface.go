@@ -10,6 +10,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/models"
 	unbindv1 "github.com/unbindapp/unbind-operator/api/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
@@ -18,6 +19,14 @@ import (
 
 // KubeClientInterface ...
 type KubeClientInterface interface {
+	// ListCronRuns returns the runs the cluster still keeps for a scheduled service, newest first
+	ListCronRuns(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) ([]*models.CronRunResponse, error)
+	// StartCronRun starts one run outside the schedule, the way kubectl create job --from does.
+	// The run is owned by the CronJob so it counts against its history and concurrency.
+	StartCronRun(ctx context.Context, namespace, cronJobName string, client kubernetes.Interface) (*models.CronRunResponse, error)
+	// ListUnalertedFailedCronRuns finds failed runs in every namespace that no alert went out for yet
+	ListUnalertedFailedCronRuns(ctx context.Context, client kubernetes.Interface) ([]*batchv1.Job, error)
+	MarkCronRunAlerted(ctx context.Context, job *batchv1.Job, client kubernetes.Interface) error
 	// SyncDatabaseSecrets syncs all database secrets with the operator logic, returning
 	// the changed variable keys per service so callers can redeploy referencing services
 	SyncDatabaseSecrets(ctx context.Context) (map[uuid.UUID][]string, error)

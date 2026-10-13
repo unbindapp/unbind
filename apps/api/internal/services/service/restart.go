@@ -41,6 +41,9 @@ func (self *ServiceService) RestartServiceByID(ctx context.Context, requesterUse
 	if env.ID != service.EnvironmentID {
 		return errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service not found")
 	}
+	if isScheduled(service.Edges.ServiceConfig) {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "A service on a cron schedule has no replicas to restart, start a run instead")
+	}
 
 	client := self.k8s.GetInternalClient()
 

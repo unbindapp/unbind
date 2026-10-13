@@ -46,6 +46,10 @@ export const UpdateServiceInputSchema = z
     isPublic: z.boolean().optional(),
     sessionAffinity: z.boolean().optional(),
     stopped: z.boolean().optional(),
+    // "" runs the service continuously again
+    cronSchedule: z.string().optional(),
+    // "" means UTC
+    cronTimezone: z.string().optional(),
     // 0 resets to the default
     maxRequestBodySizeMb: z.number().int().min(0).max(10240).optional(),
     overwritePorts: PortSpecSchema.array().optional(),
@@ -103,6 +107,8 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     isPublic,
     sessionAffinity,
     stopped,
+    cronSchedule,
+    cronTimezone,
     maxRequestBodySizeMb,
     overwritePorts,
     overwriteHosts,
@@ -214,6 +220,8 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     is_public: isPublic,
     session_affinity: sessionAffinity,
     stopped,
+    cron_schedule: cronSchedule,
+    cron_timezone: cronTimezone,
     max_request_body_size_mb: maxRequestBodySizeMb,
     overwrite_ports: overwritePorts,
     overwrite_hosts: overwriteHosts,

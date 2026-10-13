@@ -17,6 +17,7 @@ import (
 	apikeys_handler "github.com/unbindapp/unbind-api/internal/api/handlers/apikeys"
 	auth_handler "github.com/unbindapp/unbind-api/internal/api/handlers/auth"
 	connectedapps_handler "github.com/unbindapp/unbind-api/internal/api/handlers/connectedapps"
+	cron_handler "github.com/unbindapp/unbind-api/internal/api/handlers/cron"
 	deployments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/deployments"
 	docker_handler "github.com/unbindapp/unbind-api/internal/api/handlers/docker"
 	environments_handler "github.com/unbindapp/unbind-api/internal/api/handlers/environments"
@@ -189,6 +190,7 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 	register("/metrics", "Metrics", true, metrics_handler.RegisterHandlers)
 	register("/webhooks", "Webhooks", true, webhooks_handler.RegisterHandlers)
 	register("/replicas", "Replicas", true, replicas_handler.RegisterHandlers)
+	register("/cron", "Cron", true, cron_handler.RegisterHandlers)
 	register("/storage", "Storage", true, storage_handler.RegisterHandlers)
 	register("/templates", "Templates", true, template_handler.RegisterHandlers)
 	register("/docker", "Docker", true, docker_handler.RegisterHandlers)

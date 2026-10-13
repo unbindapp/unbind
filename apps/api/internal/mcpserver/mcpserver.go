@@ -36,6 +36,8 @@ Creating a service does not deploy it. Call trigger-deployment, then poll get-de
 
 A service's variables can reference other values instead of copying them, so they stay correct when the source changes: ${{service:<service_id>.KEY}}, ${{team.KEY}}, ${{project.KEY}} or ${{environment.KEY}}. Every service offers its addresses as keys, for example API_URL=${{service:<service_id>.UNBIND_URL_PRIVATE}} or DATABASE_URL=${{service:<service_id>.UNBIND_DATABASE_URL_PRIVATE}}. list-available-references lists the sources and keys a service can use.
 
+A service can run on a cron schedule instead of continuously: set cron_schedule (and cron_timezone) with update-service or create-service. It then runs its command on every tick and is expected to exit; it has no replicas, ports or domains while scheduled, and an empty cron_schedule makes it continuous again. list-cron-runs shows the recent runs with their outcome, start-cron-run starts one outside the schedule, and query-logs reads a run's output.
+
 A service holds one volume at most. A service with a volume runs a single replica, because replicas can't share a volume: set replicas to 1 before mounting one. Its rollouts stop the running replica before the new one starts, so expect a short gap. The new image is pulled first, and an image that can't be pulled leaves the running replica in place.`
 )
 

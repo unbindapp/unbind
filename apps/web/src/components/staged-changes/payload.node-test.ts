@@ -236,6 +236,20 @@ test("sends a staged sticky sessions toggle as session_affinity", () => {
   assert.equal(untouched.services[0].session_affinity, undefined);
 });
 
+test("sends a staged cron schedule and time zone, an empty schedule turns it off", () => {
+  const payload = buildApplyStagedChangesPayload(
+    state([], [service("cronSchedule", "*/10 * * * *"), service("cronTimezone", "Europe/Berlin")]),
+  );
+  assert.equal(payload.services[0].cron_schedule, "*/10 * * * *");
+  assert.equal(payload.services[0].cron_timezone, "Europe/Berlin");
+
+  const off = buildApplyStagedChangesPayload(state([], [service("cronSchedule", "")]));
+  assert.equal(off.services[0].cron_schedule, "");
+
+  const untouched = buildApplyStagedChangesPayload(state([], [service("gitBranch", "main")]));
+  assert.equal(untouched.services[0].cron_schedule, undefined);
+});
+
 test("folds domain, port and volume changes into the update of their service", () => {
   const payload = buildApplyStagedChangesPayload(
     state(

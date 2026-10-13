@@ -96,6 +96,7 @@ const (
 	WebhookEventDeploymentSucceeded WebhookEvent = "deployment.succeeded"
 	WebhookEventDeploymentFailed    WebhookEvent = "deployment.failed"
 	WebhookEventDeploymentCancelled WebhookEvent = "deployment.cancelled"
+	WebhookEventCronFailed          WebhookEvent = "cron.failed"
 )
 
 var allWebhookEvents = []WebhookEvent{
@@ -110,6 +111,7 @@ var allWebhookEvents = []WebhookEvent{
 	WebhookEventDeploymentSucceeded,
 	WebhookEventDeploymentFailed,
 	WebhookEventDeploymentCancelled,
+	WebhookEventCronFailed,
 }
 
 // WebhookType tells which webhook level receives the event.
@@ -155,6 +157,7 @@ func (u WebhookEvent) Schema(r huma.Registry) *huma.Schema {
 			string(WebhookEventDeploymentSucceeded),
 			string(WebhookEventDeploymentFailed),
 			string(WebhookEventDeploymentCancelled),
+			string(WebhookEventCronFailed),
 		}
 
 		projectSchema := &huma.Schema{

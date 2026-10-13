@@ -161,6 +161,9 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 	if input.Stopped != nil && service.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases can't be stopped")
 	}
+	if err := validateCronInput(service.Type, input.CronSchedule, input.CronTimezone); err != nil {
+		return nil, err
+	}
 
 	// For database we don't want to set ports
 	if service.Type == schema.ServiceTypeDatabase {
@@ -488,6 +491,8 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
 			SessionAffinity:               input.SessionAffinity,
 			Stopped:                       input.Stopped,
+			CronSchedule:                  input.CronSchedule,
+			CronTimezone:                  input.CronTimezone,
 			Image:                         input.Image,
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     input.DockerBuilderBuildContext,
@@ -642,6 +647,20 @@ func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, inpu
 			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
 				Name:  "Stopped",
 				Value: fmt.Sprintf("%t", *input.Stopped),
+			})
+		}
+
+		if input.CronSchedule != nil {
+			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
+				Name:  "Cron Schedule",
+				Value: *input.CronSchedule,
+			})
+		}
+
+		if input.CronTimezone != nil {
+			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
+				Name:  "Cron Time Zone",
+				Value: *input.CronTimezone,
 			})
 		}
 

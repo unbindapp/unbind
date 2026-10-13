@@ -16,6 +16,8 @@ import {
   servicePanelServiceIdKey,
   TServicePanelTabEnum,
 } from "@/components/service/panel/constants";
+import { isScheduledService } from "@/components/service/cron/cron-schedule";
+import CronRunsTab from "@/components/service/panel/content/deployed/cron-runs/cron-runs";
 import Deployments from "@/components/service/panel/content/deployed/deployments/deployments";
 import Logs from "@/components/service/panel/content/deployed/logs/logs";
 import Metrics from "@/components/service/panel/content/deployed/metrics/metrics";
@@ -34,6 +36,7 @@ import VariablesProvider, {
   useVariables,
   useVariablesUtils,
 } from "@/components/variables/variables-provider";
+import { cronRunsListQuery } from "@/lib/queries/cron";
 import { deploymentsListQuery } from "@/lib/queries/deployments";
 import { replicasListQuery } from "@/lib/queries/replicas";
 import { metricsListQuery } from "@/lib/queries/metrics";
@@ -75,6 +78,18 @@ const tabs: TServicePanelTab[] = [
     Page: Deployments,
     Provider: DeploymentsProvider,
     onIntent: ({ queryClient, teamId, projectId, environmentId, serviceId }) => {
+      queryClient.prefetchQuery(
+        deploymentsListQuery({ teamId, projectId, environmentId, serviceId }),
+      );
+    },
+  },
+  {
+    title: "Cron Runs",
+    value: "cron-runs",
+    Page: CronRunsTab,
+    Provider: DeploymentsProvider,
+    onIntent: ({ queryClient, teamId, projectId, environmentId, serviceId }) => {
+      queryClient.prefetchQuery(cronRunsListQuery({ teamId, projectId, environmentId, serviceId }));
       queryClient.prefetchQuery(
         deploymentsListQuery({ teamId, projectId, environmentId, serviceId }),
       );
@@ -168,7 +183,11 @@ type TProps = {
 export default function ServicePanelContent({ service, className }: TProps) {
   const { teamId, projectId, environmentId } = useService();
   const { currentTabId } = useServicePanel();
-  const currentTab = tabs.find((tab) => tab.value === currentTabId);
+  // The runs tab appears with a cron schedule, a service that lost its schedule falls back
+  const serviceTabs = tabs.filter(
+    (tab) => tab.value !== "cron-runs" || isScheduledService(service),
+  );
+  const currentTab = serviceTabs.find((tab) => tab.value === currentTabId) ?? serviceTabs[0];
 
   if (!service.last_deployment) {
     return (
@@ -198,7 +217,7 @@ export default function ServicePanelContent({ service, className }: TProps) {
       environmentId={environmentId}
       serviceId={service.id}
     >
-      <ServicePanelContentDeployed tabs={tabs} service={service} currentTab={currentTab} />
+      <ServicePanelContentDeployed tabs={serviceTabs} service={service} currentTab={currentTab} />
     </ReplicaHealthProvider>
   );
 }

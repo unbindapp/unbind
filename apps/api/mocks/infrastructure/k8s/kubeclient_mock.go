@@ -14,6 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/infrastructure/k8s"
 	"github.com/unbindapp/unbind-api/internal/models"
 	v10 "github.com/unbindapp/unbind-operator/api/v1"
+	v11 "k8s.io/api/batch/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes"
@@ -3478,6 +3479,86 @@ func (_c *KubeClientMock_GetUnusedNodePorts_Call) RunAndReturn(run func(ctx cont
 	return _c
 }
 
+// ListCronRuns provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) ListCronRuns(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) ([]*models.CronRunResponse, error) {
+	ret := _mock.Called(ctx, namespace, serviceID, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListCronRuns")
+	}
+
+	var r0 []*models.CronRunResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, kubernetes.Interface) ([]*models.CronRunResponse, error)); ok {
+		return returnFunc(ctx, namespace, serviceID, client)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, uuid.UUID, kubernetes.Interface) []*models.CronRunResponse); ok {
+		r0 = returnFunc(ctx, namespace, serviceID, client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*models.CronRunResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, uuid.UUID, kubernetes.Interface) error); ok {
+		r1 = returnFunc(ctx, namespace, serviceID, client)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_ListCronRuns_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListCronRuns'
+type KubeClientMock_ListCronRuns_Call struct {
+	*mock.Call
+}
+
+// ListCronRuns is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespace string
+//   - serviceID uuid.UUID
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) ListCronRuns(ctx any, namespace any, serviceID any, client any) *KubeClientMock_ListCronRuns_Call {
+	return &KubeClientMock_ListCronRuns_Call{Call: _e.mock.On("ListCronRuns", ctx, namespace, serviceID, client)}
+}
+
+func (_c *KubeClientMock_ListCronRuns_Call) Run(run func(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface)) *KubeClientMock_ListCronRuns_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 kubernetes.Interface
+		if args[3] != nil {
+			arg3 = args[3].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_ListCronRuns_Call) Return(cronRunResponses []*models.CronRunResponse, err error) *KubeClientMock_ListCronRuns_Call {
+	_c.Call.Return(cronRunResponses, err)
+	return _c
+}
+
+func (_c *KubeClientMock_ListCronRuns_Call) RunAndReturn(run func(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) ([]*models.CronRunResponse, error)) *KubeClientMock_ListCronRuns_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListPersistentVolumeClaims provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) ListPersistentVolumeClaims(ctx context.Context, namespace string, labels map[string]string, client kubernetes.Interface) ([]*models.PVCInfo, error) {
 	ret := _mock.Called(ctx, namespace, labels, client)
@@ -3620,6 +3701,74 @@ func (_c *KubeClientMock_ListServers_Call) RunAndReturn(run func(ctx context.Con
 	return _c
 }
 
+// ListUnalertedFailedCronRuns provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) ListUnalertedFailedCronRuns(ctx context.Context, client kubernetes.Interface) ([]*v11.Job, error) {
+	ret := _mock.Called(ctx, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListUnalertedFailedCronRuns")
+	}
+
+	var r0 []*v11.Job
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, kubernetes.Interface) ([]*v11.Job, error)); ok {
+		return returnFunc(ctx, client)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, kubernetes.Interface) []*v11.Job); ok {
+		r0 = returnFunc(ctx, client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*v11.Job)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, kubernetes.Interface) error); ok {
+		r1 = returnFunc(ctx, client)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_ListUnalertedFailedCronRuns_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListUnalertedFailedCronRuns'
+type KubeClientMock_ListUnalertedFailedCronRuns_Call struct {
+	*mock.Call
+}
+
+// ListUnalertedFailedCronRuns is a helper method to define mock.On call
+//   - ctx context.Context
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) ListUnalertedFailedCronRuns(ctx any, client any) *KubeClientMock_ListUnalertedFailedCronRuns_Call {
+	return &KubeClientMock_ListUnalertedFailedCronRuns_Call{Call: _e.mock.On("ListUnalertedFailedCronRuns", ctx, client)}
+}
+
+func (_c *KubeClientMock_ListUnalertedFailedCronRuns_Call) Run(run func(ctx context.Context, client kubernetes.Interface)) *KubeClientMock_ListUnalertedFailedCronRuns_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 kubernetes.Interface
+		if args[1] != nil {
+			arg1 = args[1].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_ListUnalertedFailedCronRuns_Call) Return(jobs []*v11.Job, err error) *KubeClientMock_ListUnalertedFailedCronRuns_Call {
+	_c.Call.Return(jobs, err)
+	return _c
+}
+
+func (_c *KubeClientMock_ListUnalertedFailedCronRuns_Call) RunAndReturn(run func(ctx context.Context, client kubernetes.Interface) ([]*v11.Job, error)) *KubeClientMock_ListUnalertedFailedCronRuns_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ListUnbindServiceStates provides a mock function for the type KubeClientMock
 func (_mock *KubeClientMock) ListUnbindServiceStates(ctx context.Context, namespace string) (map[string]*k8s.UnbindServiceState, error) {
 	ret := _mock.Called(ctx, namespace)
@@ -3684,6 +3833,69 @@ func (_c *KubeClientMock_ListUnbindServiceStates_Call) Return(stringToUnbindServ
 }
 
 func (_c *KubeClientMock_ListUnbindServiceStates_Call) RunAndReturn(run func(ctx context.Context, namespace string) (map[string]*k8s.UnbindServiceState, error)) *KubeClientMock_ListUnbindServiceStates_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// MarkCronRunAlerted provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) MarkCronRunAlerted(ctx context.Context, job *v11.Job, client kubernetes.Interface) error {
+	ret := _mock.Called(ctx, job, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for MarkCronRunAlerted")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *v11.Job, kubernetes.Interface) error); ok {
+		r0 = returnFunc(ctx, job, client)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// KubeClientMock_MarkCronRunAlerted_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'MarkCronRunAlerted'
+type KubeClientMock_MarkCronRunAlerted_Call struct {
+	*mock.Call
+}
+
+// MarkCronRunAlerted is a helper method to define mock.On call
+//   - ctx context.Context
+//   - job *v11.Job
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) MarkCronRunAlerted(ctx any, job any, client any) *KubeClientMock_MarkCronRunAlerted_Call {
+	return &KubeClientMock_MarkCronRunAlerted_Call{Call: _e.mock.On("MarkCronRunAlerted", ctx, job, client)}
+}
+
+func (_c *KubeClientMock_MarkCronRunAlerted_Call) Run(run func(ctx context.Context, job *v11.Job, client kubernetes.Interface)) *KubeClientMock_MarkCronRunAlerted_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *v11.Job
+		if args[1] != nil {
+			arg1 = args[1].(*v11.Job)
+		}
+		var arg2 kubernetes.Interface
+		if args[2] != nil {
+			arg2 = args[2].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_MarkCronRunAlerted_Call) Return(err error) *KubeClientMock_MarkCronRunAlerted_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *KubeClientMock_MarkCronRunAlerted_Call) RunAndReturn(run func(ctx context.Context, job *v11.Job, client kubernetes.Interface) error) *KubeClientMock_MarkCronRunAlerted_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -4733,6 +4945,86 @@ func (_c *KubeClientMock_SetPersistentVolumeClaimService_Call) Return(err error)
 }
 
 func (_c *KubeClientMock_SetPersistentVolumeClaimService_Call) RunAndReturn(run func(ctx context.Context, namespace string, pvcName string, serviceID *uuid.UUID, client kubernetes.Interface) error) *KubeClientMock_SetPersistentVolumeClaimService_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// StartCronRun provides a mock function for the type KubeClientMock
+func (_mock *KubeClientMock) StartCronRun(ctx context.Context, namespace string, cronJobName string, client kubernetes.Interface) (*models.CronRunResponse, error) {
+	ret := _mock.Called(ctx, namespace, cronJobName, client)
+
+	if len(ret) == 0 {
+		panic("no return value specified for StartCronRun")
+	}
+
+	var r0 *models.CronRunResponse
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, kubernetes.Interface) (*models.CronRunResponse, error)); ok {
+		return returnFunc(ctx, namespace, cronJobName, client)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, kubernetes.Interface) *models.CronRunResponse); ok {
+		r0 = returnFunc(ctx, namespace, cronJobName, client)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.CronRunResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, kubernetes.Interface) error); ok {
+		r1 = returnFunc(ctx, namespace, cronJobName, client)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// KubeClientMock_StartCronRun_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'StartCronRun'
+type KubeClientMock_StartCronRun_Call struct {
+	*mock.Call
+}
+
+// StartCronRun is a helper method to define mock.On call
+//   - ctx context.Context
+//   - namespace string
+//   - cronJobName string
+//   - client kubernetes.Interface
+func (_e *KubeClientMock_Expecter) StartCronRun(ctx any, namespace any, cronJobName any, client any) *KubeClientMock_StartCronRun_Call {
+	return &KubeClientMock_StartCronRun_Call{Call: _e.mock.On("StartCronRun", ctx, namespace, cronJobName, client)}
+}
+
+func (_c *KubeClientMock_StartCronRun_Call) Run(run func(ctx context.Context, namespace string, cronJobName string, client kubernetes.Interface)) *KubeClientMock_StartCronRun_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 kubernetes.Interface
+		if args[3] != nil {
+			arg3 = args[3].(kubernetes.Interface)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *KubeClientMock_StartCronRun_Call) Return(cronRunResponse *models.CronRunResponse, err error) *KubeClientMock_StartCronRun_Call {
+	_c.Call.Return(cronRunResponse, err)
+	return _c
+}
+
+func (_c *KubeClientMock_StartCronRun_Call) RunAndReturn(run func(ctx context.Context, namespace string, cronJobName string, client kubernetes.Interface) (*models.CronRunResponse, error)) *KubeClientMock_StartCronRun_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -1,17 +1,32 @@
 import {
   Block,
   BlockItem,
+  BlockItemButtonLike,
   BlockItemContent,
   BlockItemContentHighlightable,
   BlockItemDescription,
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
-import { shouldDeploySectionHaveReplicas } from "@/components/service/panel/content/deployed/settings/helpers";
+import { validateCronExpression } from "@/components/service/backups/backup-config";
+import CronScheduleNotice from "@/components/service/cron/cron-schedule-notice";
+import {
+  continuousScheduleValue,
+  cronSchedulePresets,
+  cronScheduleToPreset,
+  customCronScheduleValue,
+  formatCronSchedule,
+  formatCronTimezone,
+} from "@/components/service/cron/cron-schedule";
+import {
+  shouldServiceSettingsHaveCronSchedule,
+  shouldDeploySectionHaveReplicas,
+} from "@/components/service/panel/content/deployed/settings/helpers";
 import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
   hasApplying,
   stagedNumber,
+  stagedString,
   useResetFormOnStagedChange,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
@@ -21,10 +36,10 @@ import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
 import type { TServiceChangeField } from "@/components/staged-changes/types";
 import { cn } from "@/components/ui/utils";
-import { useAppForm } from "@/lib/hooks/use-app-form";
+import { TCommandItem, useAppForm } from "@/lib/hooks/use-app-form";
 import { TServiceShallow } from "@/lib/queries/services";
 import { useStore } from "@tanstack/react-form";
-import { InfoIcon, LockIcon, RocketIcon } from "lucide-react";
+import { CalendarClockIcon, GlobeIcon, InfoIcon, LockIcon, RocketIcon } from "lucide-react";
 import { useMemo } from "react";
 
 type TProps = {
@@ -91,24 +106,57 @@ function toApi(sliderValue: number, unlimited: number) {
   return sliderValue === unlimited ? unlimitedApiValue : sliderValue;
 }
 
-const deployFields: TServiceChangeField[] = ["replicaCount", "cpuLimitMillicores", "memoryLimitMb"];
+const deployFields: TServiceChangeField[] = [
+  "cronSchedule",
+  "cronTimezone",
+  "replicaCount",
+  "cpuLimitMillicores",
+  "memoryLimitMb",
+];
+
+const scheduleItems: TCommandItem[] = [
+  { value: continuousScheduleValue, label: "Off" },
+  ...cronSchedulePresets,
+  { value: customCronScheduleValue, label: "Custom" },
+];
+
+function scheduleLabel(preset: string) {
+  return scheduleItems.find((item) => item.value === preset)?.label ?? "Custom";
+}
+
+const timezoneItems: TCommandItem[] = [
+  { value: "", label: "UTC" },
+  ...Intl.supportedValuesOf("timeZone")
+    .filter((zone) => zone !== "UTC")
+    .map((zone) => ({ value: zone, label: zone })),
+];
 
 function Section({ service }: { service: TServiceShallow }) {
   const { isItemVisible } = useSettingsSectionSearch("deploy");
   const hasReplicas = shouldDeploySectionHaveReplicas(service);
-  // Replicas can't share a volume
-  const isReplicaCountLocked = service.config.volumes.length > 0;
+  const hasSchedule = shouldServiceSettingsHaveCronSchedule(service);
   const sectionHighlightId = useMemo(() => getDeploySectionId(service), [service]);
+  const serverSchedule = service.config.cron_schedule ?? continuousScheduleValue;
+  const serverTimezone = service.config.cron_timezone ?? "";
   const serverReplicaCount = service.config.replicas;
   const serverCpu = service.config.resources?.cpu_limits_millicores || unlimitedApiValue;
   const serverMemory = service.config.resources?.memory_limits_megabytes || unlimitedApiValue;
   const { staged, stage, unstage, revert } = useServiceChanges(service, {
+    cronSchedule: serverSchedule,
+    cronTimezone: serverTimezone,
     replicaCount: serverReplicaCount,
     cpuLimitMillicores: serverCpu,
     memoryLimitMb: serverMemory,
   });
+  const stagedSchedule = stagedString(staged.cronSchedule, serverSchedule);
+  const isScheduled = stagedSchedule !== continuousScheduleValue;
+  // Replicas can't share a volume, and a schedule runs one job at a time
+  const hasVolume = service.config.volumes.length > 0;
+  const isReplicaCountLocked = hasVolume || isScheduled;
 
   const defaultValues = {
+    cronScheduleCustom: stagedSchedule,
+    cronTimezone: stagedString(staged.cronTimezone, serverTimezone),
     replicaCount: stagedNumber(staged.replicaCount, serverReplicaCount),
     cpuLimitMillicores: toSlider(
       stagedNumber(staged.cpuLimitMillicores, serverCpu),
@@ -119,18 +167,42 @@ function Section({ service }: { service: TServiceShallow }) {
       memoryLimits.unlimited,
     ),
   };
-  const form = useAppForm({ defaultValues });
+  // The preset only picks a schedule, so it stays on custom when the schedule goes back
+  const form = useAppForm({
+    defaultValues: { ...defaultValues, cronSchedulePreset: cronScheduleToPreset(stagedSchedule) },
+  });
   useResetFormOnStagedChange(form, defaultValues, staged, deployFields);
   const values = useStore(form.store, (s) => s.values);
+  const schedulePreset = values.cronSchedulePreset;
+
+  const stageSchedule = (cron: string) =>
+    stage({
+      field: "cronSchedule",
+      label: "Cron schedule",
+      value: cron,
+      previous: serverSchedule,
+      format: formatCronSchedule,
+    });
+  const stageTimezone = (timezone: string) =>
+    stage({
+      field: "cronTimezone",
+      label: "Cron time zone",
+      value: timezone,
+      previous: serverTimezone,
+      format: formatCronTimezone,
+    });
   const changed = {
     replicaCount: values.replicaCount !== serverReplicaCount,
     cpuLimitMillicores: values.cpuLimitMillicores !== toSlider(serverCpu, cpuLimits.unlimited),
     memoryLimitMb: values.memoryLimitMb !== toSlider(serverMemory, memoryLimits.unlimited),
   };
 
+  const showSchedule = hasSchedule && isItemVisible(settingsIds.deploy.cronSchedule);
+  const showTimezone =
+    showSchedule && isScheduled && isItemVisible(settingsIds.deploy.cronTimezone);
   const showReplicas = hasReplicas && isItemVisible(settingsIds.deploy.replicas);
   const showResourceLimits = isItemVisible(settingsIds.deploy.resourceLimits);
-  if (!showReplicas && !showResourceLimits) return null;
+  if (!showSchedule && !showReplicas && !showResourceLimits) return null;
 
   return (
     <SettingsSection
@@ -138,10 +210,140 @@ function Section({ service }: { service: TServiceShallow }) {
       id="deploy"
       Icon={RocketIcon}
       entityId={sectionHighlightId}
-      hasChanges={Object.values(changed).some(Boolean)}
+      hasChanges={
+        Object.values(changed).some(Boolean) ||
+        staged.cronSchedule !== undefined ||
+        staged.cronTimezone !== undefined
+      }
       isApplying={hasApplying(staged, deployFields)}
       onDiscard={() => unstage(deployFields)}
     >
+      {showSchedule && (
+        <Block>
+          <BlockItem id={settingsIds.deploy.cronSchedule} className="w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle>Cron Schedule</BlockItemTitle>
+              <BlockItemDescription>
+                Run the service on a schedule instead of continuously. On every tick it runs its
+                start command and exits.
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent className="gap-0">
+              <form.AppField
+                name="cronSchedulePreset"
+                children={(field) => (
+                  <field.AsyncDropdownMenu
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onChange={(v) => {
+                      field.handleChange(v);
+                      if (v === customCronScheduleValue) {
+                        stageSchedule(form.getFieldValue("cronScheduleCustom"));
+                        return;
+                      }
+                      form.setFieldValue("cronScheduleCustom", v);
+                      stageSchedule(v);
+                    }}
+                    items={scheduleItems}
+                    isPending={false}
+                    error={undefined}
+                  >
+                    {({ isOpen }) => (
+                      <BlockItemButtonLike
+                        asElement="button"
+                        data-custom={field.state.value === customCronScheduleValue || undefined}
+                        className="data-custom:rounded-b-none data-custom:border-b-0"
+                        text={scheduleLabel(field.state.value)}
+                        Icon={({ className }) => <CalendarClockIcon className={className} />}
+                        variant="outline"
+                        open={isOpen}
+                        onBlur={field.handleBlur}
+                        hasChanges={staged.cronSchedule !== undefined}
+                      />
+                    )}
+                  </field.AsyncDropdownMenu>
+                )}
+              />
+              {schedulePreset === customCronScheduleValue && (
+                <>
+                  <div className="bg-border group-data-staged/wrapper:bg-change/5-10 -mt-1 h-px w-full" />
+                  <form.AppField
+                    name="cronScheduleCustom"
+                    validators={{
+                      onChange: ({ value }) => validateCronExpression(value),
+                    }}
+                    children={(field) => (
+                      <field.TextField
+                        className="-mt-1"
+                        classNameFrame="rounded-t-none border-t-0 font-mono"
+                        field={field}
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => {
+                          field.handleChange(e.target.value);
+                          if (field.state.meta.errors.length > 0) return;
+                          stageSchedule(e.target.value);
+                        }}
+                        placeholder="*/10 * * * *"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        autoComplete="off"
+                        spellCheck="false"
+                        revertTo={serverSchedule}
+                        onRevert={() => revert(field, "cronSchedule", serverSchedule)}
+                        hasChanges={staged.cronSchedule !== undefined}
+                      />
+                    )}
+                  />
+                </>
+              )}
+            </BlockItemContent>
+          </BlockItem>
+          {showTimezone && (
+            <form.AppField
+              name="cronTimezone"
+              children={(field) => (
+                <BlockItem id={settingsIds.deploy.cronTimezone} className="w-full md:w-full">
+                  <BlockItemHeader type="column">
+                    <BlockItemTitle>Time Zone</BlockItemTitle>
+                    <BlockItemDescription>Time zone the schedule is read in.</BlockItemDescription>
+                  </BlockItemHeader>
+                  <BlockItemContent>
+                    <field.AsyncAndSearchableSelect
+                      dontCheckUntilSubmit
+                      field={field}
+                      value={field.state.value}
+                      onChange={(v) => {
+                        field.handleChange(v);
+                        stageTimezone(v);
+                      }}
+                      items={timezoneItems}
+                      isPending={false}
+                      error={undefined}
+                      commandInputPlaceholder="Search time zones..."
+                      CommandEmptyText="No time zones found"
+                      CommandEmptyIcon={GlobeIcon}
+                    >
+                      {({ isOpen }) => (
+                        <BlockItemButtonLike
+                          asElement="button"
+                          text={formatCronTimezone(field.state.value)}
+                          Icon={({ className }) => <GlobeIcon className={className} />}
+                          variant="outline"
+                          open={isOpen}
+                          onBlur={field.handleBlur}
+                          hasChanges={staged.cronTimezone !== undefined}
+                        />
+                      )}
+                    </field.AsyncAndSearchableSelect>
+                  </BlockItemContent>
+                </BlockItem>
+              )}
+            />
+          )}
+        </Block>
+      )}
       {showReplicas && (
         <Block>
           <form.AppField
@@ -206,7 +408,12 @@ function Section({ service }: { service: TServiceShallow }) {
                       }}
                     />
                   </div>
-                  {isReplicaCountLocked && (
+                  {isScheduled && (
+                    <CronScheduleNotice>
+                      Replicas are not available for cron schedules.
+                    </CronScheduleNotice>
+                  )}
+                  {hasVolume && !isScheduled && (
                     <div className="text-process flex w-full items-start justify-start gap-1.5 px-4 pt-1 pb-1.5 text-sm">
                       <div className="line-icon h-[0.9lh]">
                         <InfoIcon className="-ml-0.5 size-3.5 shrink-0" />

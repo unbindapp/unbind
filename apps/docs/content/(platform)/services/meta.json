@@ -10,6 +10,7 @@
     "variables",
     "volumes",
     "replicas-and-health",
+    "cron-jobs",
     "service-groups",
     "terminal"
   ]

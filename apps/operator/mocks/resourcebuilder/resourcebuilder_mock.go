@@ -9,8 +9,9 @@ import (
 
 	"github.com/go-logr/logr"
 	mock "github.com/stretchr/testify/mock"
-	"k8s.io/api/apps/v1"
-	v10 "k8s.io/api/core/v1"
+	v10 "k8s.io/api/apps/v1"
+	"k8s.io/api/batch/v1"
+	v11 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -49,6 +50,61 @@ type ResourceBuilderMock_Expecter struct {
 
 func (_m *ResourceBuilderMock) EXPECT() *ResourceBuilderMock_Expecter {
 	return &ResourceBuilderMock_Expecter{mock: &_m.Mock}
+}
+
+// BuildCronJob provides a mock function for the type ResourceBuilderMock
+func (_mock *ResourceBuilderMock) BuildCronJob() (*v1.CronJob, error) {
+	ret := _mock.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for BuildCronJob")
+	}
+
+	var r0 *v1.CronJob
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func() (*v1.CronJob, error)); ok {
+		return returnFunc()
+	}
+	if returnFunc, ok := ret.Get(0).(func() *v1.CronJob); ok {
+		r0 = returnFunc()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*v1.CronJob)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func() error); ok {
+		r1 = returnFunc()
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// ResourceBuilderMock_BuildCronJob_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'BuildCronJob'
+type ResourceBuilderMock_BuildCronJob_Call struct {
+	*mock.Call
+}
+
+// BuildCronJob is a helper method to define mock.On call
+func (_e *ResourceBuilderMock_Expecter) BuildCronJob() *ResourceBuilderMock_BuildCronJob_Call {
+	return &ResourceBuilderMock_BuildCronJob_Call{Call: _e.mock.On("BuildCronJob")}
+}
+
+func (_c *ResourceBuilderMock_BuildCronJob_Call) Run(run func()) *ResourceBuilderMock_BuildCronJob_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run()
+	})
+	return _c
+}
+
+func (_c *ResourceBuilderMock_BuildCronJob_Call) Return(cronJob *v1.CronJob, err error) *ResourceBuilderMock_BuildCronJob_Call {
+	_c.Call.Return(cronJob, err)
+	return _c
+}
+
+func (_c *ResourceBuilderMock_BuildCronJob_Call) RunAndReturn(run func() (*v1.CronJob, error)) *ResourceBuilderMock_BuildCronJob_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // BuildDatabaseObjects provides a mock function for the type ResourceBuilderMock
@@ -126,23 +182,23 @@ func (_c *ResourceBuilderMock_BuildDatabaseObjects_Call) RunAndReturn(run func(c
 }
 
 // BuildDeployment provides a mock function for the type ResourceBuilderMock
-func (_mock *ResourceBuilderMock) BuildDeployment() (*v1.Deployment, error) {
+func (_mock *ResourceBuilderMock) BuildDeployment() (*v10.Deployment, error) {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for BuildDeployment")
 	}
 
-	var r0 *v1.Deployment
+	var r0 *v10.Deployment
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() (*v1.Deployment, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func() (*v10.Deployment, error)); ok {
 		return returnFunc()
 	}
-	if returnFunc, ok := ret.Get(0).(func() *v1.Deployment); ok {
+	if returnFunc, ok := ret.Get(0).(func() *v10.Deployment); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*v1.Deployment)
+			r0 = ret.Get(0).(*v10.Deployment)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func() error); ok {
@@ -170,12 +226,12 @@ func (_c *ResourceBuilderMock_BuildDeployment_Call) Run(run func()) *ResourceBui
 	return _c
 }
 
-func (_c *ResourceBuilderMock_BuildDeployment_Call) Return(deployment *v1.Deployment, err error) *ResourceBuilderMock_BuildDeployment_Call {
+func (_c *ResourceBuilderMock_BuildDeployment_Call) Return(deployment *v10.Deployment, err error) *ResourceBuilderMock_BuildDeployment_Call {
 	_c.Call.Return(deployment, err)
 	return _c
 }
 
-func (_c *ResourceBuilderMock_BuildDeployment_Call) RunAndReturn(run func() (*v1.Deployment, error)) *ResourceBuilderMock_BuildDeployment_Call {
+func (_c *ResourceBuilderMock_BuildDeployment_Call) RunAndReturn(run func() (*v10.Deployment, error)) *ResourceBuilderMock_BuildDeployment_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -236,23 +292,23 @@ func (_c *ResourceBuilderMock_BuildRoutes_Call) RunAndReturn(run func() ([]clien
 }
 
 // BuildServices provides a mock function for the type ResourceBuilderMock
-func (_mock *ResourceBuilderMock) BuildServices() ([]*v10.Service, error) {
+func (_mock *ResourceBuilderMock) BuildServices() ([]*v11.Service, error) {
 	ret := _mock.Called()
 
 	if len(ret) == 0 {
 		panic("no return value specified for BuildServices")
 	}
 
-	var r0 []*v10.Service
+	var r0 []*v11.Service
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() ([]*v10.Service, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func() ([]*v11.Service, error)); ok {
 		return returnFunc()
 	}
-	if returnFunc, ok := ret.Get(0).(func() []*v10.Service); ok {
+	if returnFunc, ok := ret.Get(0).(func() []*v11.Service); ok {
 		r0 = returnFunc()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*v10.Service)
+			r0 = ret.Get(0).([]*v11.Service)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func() error); ok {
@@ -280,12 +336,12 @@ func (_c *ResourceBuilderMock_BuildServices_Call) Run(run func()) *ResourceBuild
 	return _c
 }
 
-func (_c *ResourceBuilderMock_BuildServices_Call) Return(services []*v10.Service, err error) *ResourceBuilderMock_BuildServices_Call {
+func (_c *ResourceBuilderMock_BuildServices_Call) Return(services []*v11.Service, err error) *ResourceBuilderMock_BuildServices_Call {
 	_c.Call.Return(services, err)
 	return _c
 }
 
-func (_c *ResourceBuilderMock_BuildServices_Call) RunAndReturn(run func() ([]*v10.Service, error)) *ResourceBuilderMock_BuildServices_Call {
+func (_c *ResourceBuilderMock_BuildServices_Call) RunAndReturn(run func() ([]*v11.Service, error)) *ResourceBuilderMock_BuildServices_Call {
 	_c.Call.Return(run)
 	return _c
 }

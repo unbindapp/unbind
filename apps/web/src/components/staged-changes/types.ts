@@ -31,6 +31,8 @@ export const ServiceChangeFieldSchema = z.enum([
   "isPublic",
   "maxRequestBodySizeMb",
   "sessionAffinity",
+  "cronSchedule",
+  "cronTimezone",
   "replicaCount",
   "cpuLimitMillicores",
   "memoryLimitMb",

@@ -9,6 +9,7 @@ import { z } from "zod";
 
 export const ServicePanelTabEnum = z.enum([
   "deployments",
+  "cron-runs",
   "variables",
   "logs",
   "metrics",

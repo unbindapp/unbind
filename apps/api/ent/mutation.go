@@ -20133,6 +20133,8 @@ type ServiceConfigMutation struct {
 	addmax_request_body_size_mb      *int32
 	session_affinity                 *bool
 	stopped                          *bool
+	cron_schedule                    *string
+	cron_timezone                    *string
 	image                            *string
 	definition_version               *string
 	database_config                  **schema.DatabaseConfig
@@ -21351,6 +21353,104 @@ func (m *ServiceConfigMutation) ResetStopped() {
 	m.stopped = nil
 }
 
+// SetCronSchedule sets the "cron_schedule" field.
+func (m *ServiceConfigMutation) SetCronSchedule(s string) {
+	m.cron_schedule = &s
+}
+
+// CronSchedule returns the value of the "cron_schedule" field in the mutation.
+func (m *ServiceConfigMutation) CronSchedule() (r string, exists bool) {
+	v := m.cron_schedule
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCronSchedule returns the old "cron_schedule" field's value of the ServiceConfig entity.
+// If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceConfigMutation) OldCronSchedule(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCronSchedule is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCronSchedule requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCronSchedule: %w", err)
+	}
+	return oldValue.CronSchedule, nil
+}
+
+// ClearCronSchedule clears the value of the "cron_schedule" field.
+func (m *ServiceConfigMutation) ClearCronSchedule() {
+	m.cron_schedule = nil
+	m.clearedFields[serviceconfig.FieldCronSchedule] = struct{}{}
+}
+
+// CronScheduleCleared returns if the "cron_schedule" field was cleared in this mutation.
+func (m *ServiceConfigMutation) CronScheduleCleared() bool {
+	_, ok := m.clearedFields[serviceconfig.FieldCronSchedule]
+	return ok
+}
+
+// ResetCronSchedule resets all changes to the "cron_schedule" field.
+func (m *ServiceConfigMutation) ResetCronSchedule() {
+	m.cron_schedule = nil
+	delete(m.clearedFields, serviceconfig.FieldCronSchedule)
+}
+
+// SetCronTimezone sets the "cron_timezone" field.
+func (m *ServiceConfigMutation) SetCronTimezone(s string) {
+	m.cron_timezone = &s
+}
+
+// CronTimezone returns the value of the "cron_timezone" field in the mutation.
+func (m *ServiceConfigMutation) CronTimezone() (r string, exists bool) {
+	v := m.cron_timezone
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCronTimezone returns the old "cron_timezone" field's value of the ServiceConfig entity.
+// If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceConfigMutation) OldCronTimezone(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCronTimezone is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCronTimezone requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCronTimezone: %w", err)
+	}
+	return oldValue.CronTimezone, nil
+}
+
+// ClearCronTimezone clears the value of the "cron_timezone" field.
+func (m *ServiceConfigMutation) ClearCronTimezone() {
+	m.cron_timezone = nil
+	m.clearedFields[serviceconfig.FieldCronTimezone] = struct{}{}
+}
+
+// CronTimezoneCleared returns if the "cron_timezone" field was cleared in this mutation.
+func (m *ServiceConfigMutation) CronTimezoneCleared() bool {
+	_, ok := m.clearedFields[serviceconfig.FieldCronTimezone]
+	return ok
+}
+
+// ResetCronTimezone resets all changes to the "cron_timezone" field.
+func (m *ServiceConfigMutation) ResetCronTimezone() {
+	m.cron_timezone = nil
+	delete(m.clearedFields, serviceconfig.FieldCronTimezone)
+}
+
 // SetImage sets the "image" field.
 func (m *ServiceConfigMutation) SetImage(s string) {
 	m.image = &s
@@ -22183,7 +22283,7 @@ func (m *ServiceConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceConfigMutation) Fields() []string {
-	fields := make([]string, 0, 37)
+	fields := make([]string, 0, 39)
 	if m.created_at != nil {
 		fields = append(fields, serviceconfig.FieldCreatedAt)
 	}
@@ -22252,6 +22352,12 @@ func (m *ServiceConfigMutation) Fields() []string {
 	}
 	if m.stopped != nil {
 		fields = append(fields, serviceconfig.FieldStopped)
+	}
+	if m.cron_schedule != nil {
+		fields = append(fields, serviceconfig.FieldCronSchedule)
+	}
+	if m.cron_timezone != nil {
+		fields = append(fields, serviceconfig.FieldCronTimezone)
 	}
 	if m.image != nil {
 		fields = append(fields, serviceconfig.FieldImage)
@@ -22349,6 +22455,10 @@ func (m *ServiceConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.SessionAffinity()
 	case serviceconfig.FieldStopped:
 		return m.Stopped()
+	case serviceconfig.FieldCronSchedule:
+		return m.CronSchedule()
+	case serviceconfig.FieldCronTimezone:
+		return m.CronTimezone()
 	case serviceconfig.FieldImage:
 		return m.Image()
 	case serviceconfig.FieldDefinitionVersion:
@@ -22432,6 +22542,10 @@ func (m *ServiceConfigMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldSessionAffinity(ctx)
 	case serviceconfig.FieldStopped:
 		return m.OldStopped(ctx)
+	case serviceconfig.FieldCronSchedule:
+		return m.OldCronSchedule(ctx)
+	case serviceconfig.FieldCronTimezone:
+		return m.OldCronTimezone(ctx)
 	case serviceconfig.FieldImage:
 		return m.OldImage(ctx)
 	case serviceconfig.FieldDefinitionVersion:
@@ -22629,6 +22743,20 @@ func (m *ServiceConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStopped(v)
+		return nil
+	case serviceconfig.FieldCronSchedule:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCronSchedule(v)
+		return nil
+	case serviceconfig.FieldCronTimezone:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCronTimezone(v)
 		return nil
 	case serviceconfig.FieldImage:
 		v, ok := value.(string)
@@ -22836,6 +22964,12 @@ func (m *ServiceConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(serviceconfig.FieldMaxRequestBodySizeMB) {
 		fields = append(fields, serviceconfig.FieldMaxRequestBodySizeMB)
 	}
+	if m.FieldCleared(serviceconfig.FieldCronSchedule) {
+		fields = append(fields, serviceconfig.FieldCronSchedule)
+	}
+	if m.FieldCleared(serviceconfig.FieldCronTimezone) {
+		fields = append(fields, serviceconfig.FieldCronTimezone)
+	}
 	if m.FieldCleared(serviceconfig.FieldImage) {
 		fields = append(fields, serviceconfig.FieldImage)
 	}
@@ -22924,6 +23058,12 @@ func (m *ServiceConfigMutation) ClearField(name string) error {
 		return nil
 	case serviceconfig.FieldMaxRequestBodySizeMB:
 		m.ClearMaxRequestBodySizeMB()
+		return nil
+	case serviceconfig.FieldCronSchedule:
+		m.ClearCronSchedule()
+		return nil
+	case serviceconfig.FieldCronTimezone:
+		m.ClearCronTimezone()
 		return nil
 	case serviceconfig.FieldImage:
 		m.ClearImage()
@@ -23037,6 +23177,12 @@ func (m *ServiceConfigMutation) ResetField(name string) error {
 		return nil
 	case serviceconfig.FieldStopped:
 		m.ResetStopped()
+		return nil
+	case serviceconfig.FieldCronSchedule:
+		m.ResetCronSchedule()
+		return nil
+	case serviceconfig.FieldCronTimezone:
+		m.ResetCronTimezone()
 		return nil
 	case serviceconfig.FieldImage:
 		m.ResetImage()

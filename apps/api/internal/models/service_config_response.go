@@ -24,6 +24,8 @@ type ServiceConfigResponse struct {
 	MaxRequestBodySizeMB          *int32                `json:"max_request_body_size_mb,omitempty" doc:"Largest request body the service's domains accept, in MB. Unset uses the default of 100"`
 	SessionAffinity               bool                  `json:"session_affinity" doc:"Whether the service's domains pin each visitor to one replica with a cookie"`
 	Stopped                       bool                  `json:"stopped" doc:"Whether the service is stopped and runs no replicas"`
+	CronSchedule                  *string               `json:"cron_schedule,omitempty" doc:"Cron expression the service runs on instead of running continuously"`
+	CronTimezone                  *string               `json:"cron_timezone,omitempty" doc:"IANA time zone of the cron schedule, UTC when unset"`
 	Image                         string                `json:"image,omitempty"`
 	// Dockerfile build overrides
 	DockerBuilderDockerfilePath *string `json:"docker_builder_dockerfile_path,omitempty"`
@@ -109,6 +111,8 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 			MaxRequestBodySizeMB:          entity.MaxRequestBodySizeMB,
 			SessionAffinity:               entity.SessionAffinity,
 			Stopped:                       entity.Stopped,
+			CronSchedule:                  entity.CronSchedule,
+			CronTimezone:                  entity.CronTimezone,
 			Image:                         entity.Image,
 			S3BackupBucketID:              entity.S3BackupBucketID,
 			BackupSchedule:                entity.BackupSchedule,

@@ -207,6 +207,8 @@ export const UpdateServiceInputSchema = z
     backup_retention_count: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
     builder: ServiceBuilderSchema.optional(),
+    cron_schedule: z.string().optional(), // Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Set empty string to run continuously again. Not for databases
+    cron_timezone: z.string().optional(), // IANA time zone for the cron schedule, e.g. 'Europe/Berlin'. Set empty string for UTC
     database_config: DatabaseConfigSchema.optional(),
     description: z.string().nullable().optional(),
     docker_builder_build_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder - set empty string to reset to default
@@ -837,6 +839,8 @@ export const CreateServiceInputSchema = z
     backup_retention_count: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
     builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
+    cron_schedule: z.string().optional(), // Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Not for databases
+    cron_timezone: z.string().optional(), // IANA time zone for the cron schedule, e.g. 'Europe/Berlin'. UTC when unset
     database_config: DatabaseConfigSchema.optional(),
     database_type: z.string().optional(),
     description: z.string().optional(),
@@ -896,6 +900,8 @@ export const ServiceConfigResponseSchema = z
     backup_retention_count: z.number(),
     backup_schedule: z.string(),
     builder: ServiceBuilderSchema,
+    cron_schedule: z.string().optional(), // Cron expression the service runs on instead of running continuously
+    cron_timezone: z.string().optional(), // IANA time zone of the cron schedule, UTC when unset
     database_config: DatabaseConfigResponseSchema.optional(),
     docker_builder_build_context: z.string().optional(),
     docker_builder_dockerfile_path: z.string().optional(),
@@ -1038,6 +1044,7 @@ export const WebhookProjectEventSchema = z.enum([
   'deployment.succeeded',
   'deployment.failed',
   'deployment.cancelled',
+  'cron.failed',
 ]);
 
 export const WebhookEventSchema = z.union([WebhookTeamEventSchema, WebhookProjectEventSchema]);
@@ -1060,6 +1067,21 @@ export const WebhookResponseSchema = z
 export const CreateWebhookResponseBodySchema = z
   .object({
     data: WebhookResponseSchema,
+  })
+  .strip();
+
+export const CronRunStatusSchema = z.enum(['running', 'succeeded', 'failed']);
+
+export const CronRunResponseSchema = z
+  .object({
+    completed_at: z.string().datetime({ offset: true }).optional(), // When the run finished, succeeded or failed
+    created_at: z.string().datetime({ offset: true }),
+    deployment_id: z.string().optional(), // Deployment the run used
+    failure_reason: z.string().optional(),
+    manual: z.boolean(), // Started by hand instead of by the schedule
+    name: z.string(), // Name of the run, use it to find its logs
+    started_at: z.string().datetime({ offset: true }).optional(),
+    status: CronRunStatusSchema,
   })
   .strip();
 
@@ -2216,6 +2238,12 @@ export const ListAPIKeysResponseBodySchema = z
   })
   .strip();
 
+export const ListCronRunsResponseBodySchema = z
+  .object({
+    data: z.array(CronRunResponseSchema),
+  })
+  .strip();
+
 export const ListDatabasesResponseBodySchema = z
   .object({
     data: z.array(z.string()),
@@ -2768,6 +2796,21 @@ export const SortByFieldSchema = z.enum(['created_at', 'updated_at']);
 
 export const SortOrderSchema = z.enum(['asc', 'desc']);
 
+export const StartCronRunInputBodySchema = z
+  .object({
+    environment_id: z.string(),
+    project_id: z.string(),
+    service_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const StartCronRunResponseBodySchema = z
+  .object({
+    data: CronRunResponseSchema,
+  })
+  .strip();
+
 export const StorageMetadataSchema = z
   .object({
     available_storage_gb: z.number().optional(), // Free space left on the node; only reported for provisioners with node-local capacity (e.g. Longhorn). Expansion ceiling is current volume size + this value.
@@ -3285,6 +3328,8 @@ export type WebhookEvent = z.infer<typeof WebhookEventSchema>;
 export type WebhookType = z.infer<typeof WebhookTypeSchema>;
 export type WebhookResponse = z.infer<typeof WebhookResponseSchema>;
 export type CreateWebhookResponseBody = z.infer<typeof CreateWebhookResponseBodySchema>;
+export type CronRunStatus = z.infer<typeof CronRunStatusSchema>;
+export type CronRunResponse = z.infer<typeof CronRunResponseSchema>;
 export type DNSStatus = z.infer<typeof DNSStatusSchema>;
 export type DataStruct = z.infer<typeof DataStructSchema>;
 export type DataStruct1 = z.infer<typeof DataStruct1Schema>;
@@ -3445,6 +3490,7 @@ export type InviteMemberResponse = z.infer<typeof InviteMemberResponseSchema>;
 export type InviteTeamMemberResponseBody = z.infer<typeof InviteTeamMemberResponseBodySchema>;
 export type Item = z.infer<typeof ItemSchema>;
 export type ListAPIKeysResponseBody = z.infer<typeof ListAPIKeysResponseBodySchema>;
+export type ListCronRunsResponseBody = z.infer<typeof ListCronRunsResponseBodySchema>;
 export type ListDatabasesResponseBody = z.infer<typeof ListDatabasesResponseBodySchema>;
 export type PaginationResponseMetadata = z.infer<typeof PaginationResponseMetadataSchema>;
 export type ListDeploymentResponseData = z.infer<typeof ListDeploymentResponseDataSchema>;
@@ -3529,6 +3575,8 @@ export type SetupData = z.infer<typeof SetupDataSchema>;
 export type SetupStatusResponseBody = z.infer<typeof SetupStatusResponseBodySchema>;
 export type SortByField = z.infer<typeof SortByFieldSchema>;
 export type SortOrder = z.infer<typeof SortOrderSchema>;
+export type StartCronRunInputBody = z.infer<typeof StartCronRunInputBodySchema>;
+export type StartCronRunResponseBody = z.infer<typeof StartCronRunResponseBodySchema>;
 export type StorageMetadata = z.infer<typeof StorageMetadataSchema>;
 export type SuccessResponseBody = z.infer<typeof SuccessResponseBodySchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
@@ -3595,6 +3643,15 @@ export const get_connected_app_clientQuerySchema = z
   .object({
     client_id: z.string(),
     redirect_uri: z.string(),
+  })
+  .passthrough();
+
+export const list_cron_runsQuerySchema = z
+  .object({
+    team_id: z.string(),
+    project_id: z.string(),
+    environment_id: z.string(),
+    service_id: z.string(),
   })
   .passthrough();
 
@@ -4570,6 +4627,98 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = RevokeResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+    },
+    cron: {
+      run: async (
+        params: StartCronRunInputBody,
+        fetchOptions?: RequestInit,
+      ): Promise<StartCronRunResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/cron/run`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = StartCronRunInputBodySchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = StartCronRunResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      runs: async (
+        params: z.infer<typeof list_cron_runsQuerySchema>,
+        fetchOptions?: RequestInit,
+      ): Promise<ListCronRunsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/cron/runs`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+          const validatedQuery = list_cron_runsQuerySchema.parse(params);
+          const queryKeys = ['team_id', 'project_id', 'environment_id', 'service_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
+          const options: RequestInit = {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ListCronRunsResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

@@ -1,3 +1,5 @@
+import CronScheduleNotice from "@/components/service/cron/cron-schedule-notice";
+import { isScheduledService } from "@/components/service/cron/cron-schedule";
 import {
   Block,
   BlockItem,
@@ -43,6 +45,16 @@ type TProps = {
 export default function HealthSection({ service }: TProps) {
   const { isSectionVisible } = useSettingsSectionSearch("health");
   if (!isSectionVisible) return null;
+  if (isScheduledService(service)) {
+    return (
+      <SettingsSection title="Health" id="health" Icon={HeartIcon} entityId={getEntityId(service)}>
+        <CronScheduleNotice className="px-1 pt-0 pb-0">
+          Health checks are not available for cron schedules. A run counts as healthy when it exits
+          successfully.
+        </CronScheduleNotice>
+      </SettingsSection>
+    );
+  }
   if (service.type === "github") {
     if (
       !service.git_repository_owner ||

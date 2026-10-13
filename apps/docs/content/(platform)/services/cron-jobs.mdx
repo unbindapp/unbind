@@ -1,0 +1,55 @@
+---
+title: Cron Jobs
+description: Run a service on a schedule instead of all the time.
+---
+
+Some work has to happen every so often and then stop: a report, a cleanup, pocketing incoming payments, refreshing a price feed. Give the service a cron schedule and Unbind runs it at those times instead of keeping it running.
+
+## Set a schedule
+
+Open the service settings and find **Cron Schedule** under **Deploy**. Pick how often it should run, or choose **Custom** and type a cron expression:
+
+```text
+minute hour day month weekday
+*/10 * * * *     every 10 minutes
+0 3 * * *        every day at 03:00
+0 0 * * 1        every Monday at midnight
+```
+
+Schedules are read in UTC. Pick a **Time Zone** below the schedule to read it in another one, so `0 9 * * *` means nine in the morning where you are.
+
+Press **Deploy** on the changes bar. From then on, every tick starts one run of the service: a fresh copy of the latest deployment that runs the start command and exits. Nothing runs between ticks.
+
+The service works like any other service otherwise. It builds from GitHub or runs an image, it has the same variables, references and variable mounts, and a new deployment changes what the next run uses.
+
+## What a run has to do
+
+A run is expected to do its work and exit. A process that keeps running counts as a run that never finished: it blocks the next tick, because runs never overlap. If a run is still going when the next tick comes, that tick is skipped.
+
+A run that exits with an error counts as failed. It is not retried, the next tick is the retry. Exit with code 0 when the work is done.
+
+## Runs
+
+A service with a schedule gets a **Cron Runs** tab. It lists the recent runs, newest first: whether each one is running, succeeded or failed, how long it took, and the error a failed run ended with. Pick a run to open the logs of the deployment it ran on.
+
+**Run Now** starts a run outside the schedule, for example after fixing a bug. It is unavailable while another run is in progress.
+
+Unbind keeps the last 10 successful and the last 10 failed runs.
+
+## Alerts
+
+A failed run can send a [webhook](/monitoring/webhooks). Pick **Cron Run Failed** when creating the webhook. Each failure is sent once.
+
+## What changes with a schedule
+
+A service on a schedule has no replicas, domains or ports, and no health checks. Those settings show why they are unavailable. Its domains stop answering while it has a schedule and come back when the schedule is removed.
+
+**Stop** suspends the schedule: no runs start until you **Start** it again, and the run history stays.
+
+To go back to running continuously, set **Cron Schedule** to **Off** and deploy.
+
+Databases can't run on a schedule.
+
+## From the API and MCP
+
+Set `cron_schedule` and `cron_timezone` with `update-service` or when creating a service. `list-cron-runs` lists the recent runs and `start-cron-run` starts one.

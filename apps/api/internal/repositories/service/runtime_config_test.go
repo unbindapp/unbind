@@ -29,6 +29,8 @@ func TestApplyRuntimeConfig(t *testing.T) {
 		MaxRequestBodySizeMB: new(int32(500)),
 		SessionAffinity:      true,
 		Stopped:              true,
+		CronSchedule:         new("*/10 * * * *"),
+		CronTimezone:         new("Europe/Berlin"),
 	}
 
 	ApplyRuntimeConfig(&spec, config)
@@ -40,6 +42,8 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Equal(t, int32(500), *spec.MaxRequestBodySizeMB)
 	assert.True(t, spec.SessionAffinity)
 	assert.True(t, spec.Stopped)
+	assert.Equal(t, "*/10 * * * *", spec.CronSchedule)
+	assert.Equal(t, "Europe/Berlin", spec.CronTimeZone)
 	assert.Equal(t, "refs/heads/main", spec.GitBranch)
 	assert.Equal(t, "./start", *spec.RunCommand)
 
@@ -49,6 +53,8 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Nil(t, spec.MaxRequestBodySizeMB)
 	assert.False(t, spec.SessionAffinity)
 	assert.False(t, spec.Stopped)
+	assert.Empty(t, spec.CronSchedule, "a cleared schedule runs the service continuously again")
+	assert.Empty(t, spec.CronTimeZone)
 }
 
 func TestApplyRuntimeConfigHealthCheckAndVariableMounts(t *testing.T) {
@@ -80,4 +86,5 @@ func TestApplyRuntimeConfigHealthCheckAndVariableMounts(t *testing.T) {
 func TestExpectedReplicas(t *testing.T) {
 	assert.Equal(t, int32(3), ExpectedReplicas(&ent.ServiceConfig{Replicas: 3}))
 	assert.Equal(t, int32(0), ExpectedReplicas(&ent.ServiceConfig{Replicas: 3, Stopped: true}), "a stopped service expects no replicas")
+	assert.Equal(t, int32(0), ExpectedReplicas(&ent.ServiceConfig{Replicas: 3, CronSchedule: new("0 * * * *")}), "a scheduled service runs nothing between runs")
 }

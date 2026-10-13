@@ -156,6 +156,8 @@ func estimateConfigChange(config *ent.ServiceConfig, input *models.UpdateService
 		input.IsPublic != nil && *input.IsPublic != config.IsPublic ||
 		input.SessionAffinity != nil && *input.SessionAffinity != config.SessionAffinity ||
 		input.Stopped != nil && *input.Stopped != config.Stopped ||
+		clearableChanged(input.CronSchedule, config.CronSchedule) ||
+		clearableChanged(input.CronTimezone, config.CronTimezone) ||
 		input.Image != nil && *input.Image != config.Image ||
 		clearableChanged(input.RunCommand, config.RunCommand) ||
 		clearableChanged(input.MaxRequestBodySizeMB, config.MaxRequestBodySizeMB) ||

@@ -61,6 +61,14 @@ spec:
               config:
                 description: Configuration for the service
                 properties:
+                  cronSchedule:
+                    description: CronSchedule runs the service as a CronJob on this
+                      cron expression instead of a Deployment
+                    type: string
+                  cronTimeZone:
+                    description: CronTimeZone is the IANA time zone of CronSchedule,
+                      UTC when empty
+                    type: string
                   database:
                     description: Databases are custom resources to create
                     properties:

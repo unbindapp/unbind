@@ -14,6 +14,8 @@ type BootstrapRepositoryInterface interface {
 	// Create initial bootstrap user, added to all groups
 	CreateUser(ctx context.Context, email, password string) (user *ent.User, err error)
 	IsBootstrapped(ctx context.Context, tx repository.TxInterface) (userExists bool, isBootstrapped bool, err error)
-	// Create the superuser group with system and team admin permissions, if no groups exist yet
+	// Create the superuser group with system and team admin permissions, if no
+	// instance-level group exists yet. Team role groups do not count: they exist
+	// from the first start and grant nothing on the system.
 	EnsureSuperuserGroup(ctx context.Context, tx repository.TxInterface) error
 }

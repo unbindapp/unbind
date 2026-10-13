@@ -143,6 +143,16 @@ func Stopped(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldStopped, v))
 }
 
+// CronSchedule applies equality check predicate on the "cron_schedule" field. It's identical to CronScheduleEQ.
+func CronSchedule(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldCronSchedule, v))
+}
+
+// CronTimezone applies equality check predicate on the "cron_timezone" field. It's identical to CronTimezoneEQ.
+func CronTimezone(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldCronTimezone, v))
+}
+
 // Image applies equality check predicate on the "image" field. It's identical to ImageEQ.
 func Image(v string) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldImage, v))
@@ -1126,6 +1136,156 @@ func StoppedEQ(v bool) predicate.ServiceConfig {
 // StoppedNEQ applies the NEQ predicate on the "stopped" field.
 func StoppedNEQ(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldNEQ(FieldStopped, v))
+}
+
+// CronScheduleEQ applies the EQ predicate on the "cron_schedule" field.
+func CronScheduleEQ(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldCronSchedule, v))
+}
+
+// CronScheduleNEQ applies the NEQ predicate on the "cron_schedule" field.
+func CronScheduleNEQ(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNEQ(FieldCronSchedule, v))
+}
+
+// CronScheduleIn applies the In predicate on the "cron_schedule" field.
+func CronScheduleIn(vs ...string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIn(FieldCronSchedule, vs...))
+}
+
+// CronScheduleNotIn applies the NotIn predicate on the "cron_schedule" field.
+func CronScheduleNotIn(vs ...string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotIn(FieldCronSchedule, vs...))
+}
+
+// CronScheduleGT applies the GT predicate on the "cron_schedule" field.
+func CronScheduleGT(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldGT(FieldCronSchedule, v))
+}
+
+// CronScheduleGTE applies the GTE predicate on the "cron_schedule" field.
+func CronScheduleGTE(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldGTE(FieldCronSchedule, v))
+}
+
+// CronScheduleLT applies the LT predicate on the "cron_schedule" field.
+func CronScheduleLT(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldLT(FieldCronSchedule, v))
+}
+
+// CronScheduleLTE applies the LTE predicate on the "cron_schedule" field.
+func CronScheduleLTE(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldLTE(FieldCronSchedule, v))
+}
+
+// CronScheduleContains applies the Contains predicate on the "cron_schedule" field.
+func CronScheduleContains(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldContains(FieldCronSchedule, v))
+}
+
+// CronScheduleHasPrefix applies the HasPrefix predicate on the "cron_schedule" field.
+func CronScheduleHasPrefix(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldHasPrefix(FieldCronSchedule, v))
+}
+
+// CronScheduleHasSuffix applies the HasSuffix predicate on the "cron_schedule" field.
+func CronScheduleHasSuffix(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldHasSuffix(FieldCronSchedule, v))
+}
+
+// CronScheduleIsNil applies the IsNil predicate on the "cron_schedule" field.
+func CronScheduleIsNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIsNull(FieldCronSchedule))
+}
+
+// CronScheduleNotNil applies the NotNil predicate on the "cron_schedule" field.
+func CronScheduleNotNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotNull(FieldCronSchedule))
+}
+
+// CronScheduleEqualFold applies the EqualFold predicate on the "cron_schedule" field.
+func CronScheduleEqualFold(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEqualFold(FieldCronSchedule, v))
+}
+
+// CronScheduleContainsFold applies the ContainsFold predicate on the "cron_schedule" field.
+func CronScheduleContainsFold(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldContainsFold(FieldCronSchedule, v))
+}
+
+// CronTimezoneEQ applies the EQ predicate on the "cron_timezone" field.
+func CronTimezoneEQ(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldCronTimezone, v))
+}
+
+// CronTimezoneNEQ applies the NEQ predicate on the "cron_timezone" field.
+func CronTimezoneNEQ(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNEQ(FieldCronTimezone, v))
+}
+
+// CronTimezoneIn applies the In predicate on the "cron_timezone" field.
+func CronTimezoneIn(vs ...string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIn(FieldCronTimezone, vs...))
+}
+
+// CronTimezoneNotIn applies the NotIn predicate on the "cron_timezone" field.
+func CronTimezoneNotIn(vs ...string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotIn(FieldCronTimezone, vs...))
+}
+
+// CronTimezoneGT applies the GT predicate on the "cron_timezone" field.
+func CronTimezoneGT(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldGT(FieldCronTimezone, v))
+}
+
+// CronTimezoneGTE applies the GTE predicate on the "cron_timezone" field.
+func CronTimezoneGTE(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldGTE(FieldCronTimezone, v))
+}
+
+// CronTimezoneLT applies the LT predicate on the "cron_timezone" field.
+func CronTimezoneLT(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldLT(FieldCronTimezone, v))
+}
+
+// CronTimezoneLTE applies the LTE predicate on the "cron_timezone" field.
+func CronTimezoneLTE(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldLTE(FieldCronTimezone, v))
+}
+
+// CronTimezoneContains applies the Contains predicate on the "cron_timezone" field.
+func CronTimezoneContains(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldContains(FieldCronTimezone, v))
+}
+
+// CronTimezoneHasPrefix applies the HasPrefix predicate on the "cron_timezone" field.
+func CronTimezoneHasPrefix(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldHasPrefix(FieldCronTimezone, v))
+}
+
+// CronTimezoneHasSuffix applies the HasSuffix predicate on the "cron_timezone" field.
+func CronTimezoneHasSuffix(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldHasSuffix(FieldCronTimezone, v))
+}
+
+// CronTimezoneIsNil applies the IsNil predicate on the "cron_timezone" field.
+func CronTimezoneIsNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIsNull(FieldCronTimezone))
+}
+
+// CronTimezoneNotNil applies the NotNil predicate on the "cron_timezone" field.
+func CronTimezoneNotNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotNull(FieldCronTimezone))
+}
+
+// CronTimezoneEqualFold applies the EqualFold predicate on the "cron_timezone" field.
+func CronTimezoneEqualFold(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEqualFold(FieldCronTimezone, v))
+}
+
+// CronTimezoneContainsFold applies the ContainsFold predicate on the "cron_timezone" field.
+func CronTimezoneContainsFold(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldContainsFold(FieldCronTimezone, v))
 }
 
 // ImageEQ applies the EQ predicate on the "image" field.

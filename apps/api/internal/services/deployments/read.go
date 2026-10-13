@@ -122,7 +122,7 @@ func (self *DeploymentService) AttachReplicaDataToCurrent(ctx context.Context, d
 	}
 
 	// Use the standard utility to calculate replica data with inferred events
-	replicaData := self.calculateReplicaData(statuses, service.Edges.ServiceConfig.Replicas, service.Edges.CurrentDeployment, service.Type == schema.ServiceTypeDatabase)
+	replicaData := self.calculateServiceReplicaData(statuses, service.Edges.ServiceConfig, service.Edges.CurrentDeployment, service.Type == schema.ServiceTypeDatabase)
 	serviceState, err := self.k8s.GetUnbindServiceState(ctx, namespace, service.KubernetesName)
 	if err != nil && !kerrors.IsNotFound(err) {
 		log.Warn("Failed to read service CR state", "err", err, "service_id", service.ID)

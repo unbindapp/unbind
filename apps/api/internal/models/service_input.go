@@ -28,6 +28,8 @@ type CreateServiceInput struct {
 	RailpackBuilderInstallCommand *string               `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string               `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string               `json:"run_command,omitempty"`
+	CronSchedule                  *string               `json:"cron_schedule,omitempty" required:"false" doc:"Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Not for databases"`
+	CronTimezone                  *string               `json:"cron_timezone,omitempty" required:"false" doc:"IANA time zone for the cron schedule, e.g. 'Europe/Berlin'. UTC when unset"`
 	IsPublic                      *bool                 `json:"is_public,omitempty" doc:"Whether the service is reachable from the internet. Defaults to true for a service with a port and to false for a database"`
 	MaxRequestBodySizeMB          *int32                `json:"max_request_body_size_mb,omitempty" required:"false" minimum:"1" maximum:"10240" doc:"Largest request body the service's domains accept, in MB. Defaults to 100. Not for databases, and has no effect on clusters that route through a gateway"`
 	SessionAffinity               *bool                 `json:"session_affinity,omitempty" required:"false" doc:"Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Defaults to false. Caches like Cloudflare skip responses that set the cookie. Not for databases"`
@@ -88,6 +90,8 @@ type UpdateServiceInput struct {
 	RailpackBuilderInstallCommand *string                `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string                `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string                `json:"run_command,omitempty" required:"false"`
+	CronSchedule                  *string                `json:"cron_schedule,omitempty" required:"false" doc:"Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Set empty string to run continuously again. Not for databases"`
+	CronTimezone                  *string                `json:"cron_timezone,omitempty" required:"false" doc:"IANA time zone for the cron schedule, e.g. 'Europe/Berlin'. Set empty string for UTC"`
 	IsPublic                      *bool                  `json:"is_public,omitempty" required:"false" doc:"Whether the service is reachable from the internet. A database gets a public address when true and loses it when false"`
 	MaxRequestBodySizeMB          *int32                 `json:"max_request_body_size_mb,omitempty" required:"false" minimum:"0" maximum:"10240" doc:"Largest request body the service's domains accept, in MB. 0 resets it to the default of 100. Not for databases, and has no effect on clusters that route through a gateway"`
 	SessionAffinity               *bool                  `json:"session_affinity,omitempty" required:"false" doc:"Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Caches like Cloudflare skip responses that set the cookie. Not for databases"`

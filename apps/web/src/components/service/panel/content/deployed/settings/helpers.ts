@@ -17,6 +17,10 @@ export function shouldServiceSettingsHaveHealthSection(service: TServiceShallow)
   return service.type === "github" || service.type === "docker-image";
 }
 
+export function shouldServiceSettingsHaveCronSchedule(service: TServiceShallow) {
+  return service.type === "github" || service.type === "docker-image";
+}
+
 export function shouldServiceSettingsHaveBackupsSection(service: TServiceShallow) {
   if (service.type !== "database") return false;
   if (!service.database_type) return false;

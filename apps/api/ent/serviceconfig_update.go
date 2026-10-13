@@ -421,6 +421,46 @@ func (_u *ServiceConfigUpdate) SetNillableStopped(v *bool) *ServiceConfigUpdate 
 	return _u
 }
 
+// SetCronSchedule sets the "cron_schedule" field.
+func (_u *ServiceConfigUpdate) SetCronSchedule(v string) *ServiceConfigUpdate {
+	_u.mutation.SetCronSchedule(v)
+	return _u
+}
+
+// SetNillableCronSchedule sets the "cron_schedule" field if the given value is not nil.
+func (_u *ServiceConfigUpdate) SetNillableCronSchedule(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetCronSchedule(*v)
+	}
+	return _u
+}
+
+// ClearCronSchedule clears the value of the "cron_schedule" field.
+func (_u *ServiceConfigUpdate) ClearCronSchedule() *ServiceConfigUpdate {
+	_u.mutation.ClearCronSchedule()
+	return _u
+}
+
+// SetCronTimezone sets the "cron_timezone" field.
+func (_u *ServiceConfigUpdate) SetCronTimezone(v string) *ServiceConfigUpdate {
+	_u.mutation.SetCronTimezone(v)
+	return _u
+}
+
+// SetNillableCronTimezone sets the "cron_timezone" field if the given value is not nil.
+func (_u *ServiceConfigUpdate) SetNillableCronTimezone(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetCronTimezone(*v)
+	}
+	return _u
+}
+
+// ClearCronTimezone clears the value of the "cron_timezone" field.
+func (_u *ServiceConfigUpdate) ClearCronTimezone() *ServiceConfigUpdate {
+	_u.mutation.ClearCronTimezone()
+	return _u
+}
+
 // SetImage sets the "image" field.
 func (_u *ServiceConfigUpdate) SetImage(v string) *ServiceConfigUpdate {
 	_u.mutation.SetImage(v)
@@ -884,6 +924,18 @@ func (_u *ServiceConfigUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.Stopped(); ok {
 		_spec.SetField(serviceconfig.FieldStopped, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.CronSchedule(); ok {
+		_spec.SetField(serviceconfig.FieldCronSchedule, field.TypeString, value)
+	}
+	if _u.mutation.CronScheduleCleared() {
+		_spec.ClearField(serviceconfig.FieldCronSchedule, field.TypeString)
+	}
+	if value, ok := _u.mutation.CronTimezone(); ok {
+		_spec.SetField(serviceconfig.FieldCronTimezone, field.TypeString, value)
+	}
+	if _u.mutation.CronTimezoneCleared() {
+		_spec.ClearField(serviceconfig.FieldCronTimezone, field.TypeString)
 	}
 	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)
@@ -1446,6 +1498,46 @@ func (_u *ServiceConfigUpdateOne) SetNillableStopped(v *bool) *ServiceConfigUpda
 	return _u
 }
 
+// SetCronSchedule sets the "cron_schedule" field.
+func (_u *ServiceConfigUpdateOne) SetCronSchedule(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetCronSchedule(v)
+	return _u
+}
+
+// SetNillableCronSchedule sets the "cron_schedule" field if the given value is not nil.
+func (_u *ServiceConfigUpdateOne) SetNillableCronSchedule(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetCronSchedule(*v)
+	}
+	return _u
+}
+
+// ClearCronSchedule clears the value of the "cron_schedule" field.
+func (_u *ServiceConfigUpdateOne) ClearCronSchedule() *ServiceConfigUpdateOne {
+	_u.mutation.ClearCronSchedule()
+	return _u
+}
+
+// SetCronTimezone sets the "cron_timezone" field.
+func (_u *ServiceConfigUpdateOne) SetCronTimezone(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetCronTimezone(v)
+	return _u
+}
+
+// SetNillableCronTimezone sets the "cron_timezone" field if the given value is not nil.
+func (_u *ServiceConfigUpdateOne) SetNillableCronTimezone(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetCronTimezone(*v)
+	}
+	return _u
+}
+
+// ClearCronTimezone clears the value of the "cron_timezone" field.
+func (_u *ServiceConfigUpdateOne) ClearCronTimezone() *ServiceConfigUpdateOne {
+	_u.mutation.ClearCronTimezone()
+	return _u
+}
+
 // SetImage sets the "image" field.
 func (_u *ServiceConfigUpdateOne) SetImage(v string) *ServiceConfigUpdateOne {
 	_u.mutation.SetImage(v)
@@ -1939,6 +2031,18 @@ func (_u *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceCo
 	}
 	if value, ok := _u.mutation.Stopped(); ok {
 		_spec.SetField(serviceconfig.FieldStopped, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.CronSchedule(); ok {
+		_spec.SetField(serviceconfig.FieldCronSchedule, field.TypeString, value)
+	}
+	if _u.mutation.CronScheduleCleared() {
+		_spec.ClearField(serviceconfig.FieldCronSchedule, field.TypeString)
+	}
+	if value, ok := _u.mutation.CronTimezone(); ok {
+		_spec.SetField(serviceconfig.FieldCronTimezone, field.TypeString, value)
+	}
+	if _u.mutation.CronTimezoneCleared() {
+		_spec.ClearField(serviceconfig.FieldCronTimezone, field.TypeString)
 	}
 	if value, ok := _u.mutation.Image(); ok {
 		_spec.SetField(serviceconfig.FieldImage, field.TypeString, value)

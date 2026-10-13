@@ -69,6 +69,9 @@ import (
 	"github.com/unbindapp/unbind-api/internal/web"
 	"github.com/unbindapp/unbind-api/pkg/databases"
 	_ "go.uber.org/automaxprocs"
+
+	// cron time zones are validated here, and the image ships no zoneinfo
+	_ "time/tzdata"
 )
 
 var Version = "development"

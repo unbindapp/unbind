@@ -70,6 +70,10 @@ type ServiceConfig struct {
 	SessionAffinity bool `json:"session_affinity,omitempty"`
 	// Whether the service is stopped and runs no replicas
 	Stopped bool `json:"stopped,omitempty"`
+	// Cron expression. When set the service runs on this schedule instead of continuously
+	CronSchedule *string `json:"cron_schedule,omitempty"`
+	// IANA time zone of the cron schedule, UTC when empty
+	CronTimezone *string `json:"cron_timezone,omitempty"`
 	// Custom Docker image if not building from git
 	Image string `json:"image,omitempty"`
 	// Version of the database custom resource definition
@@ -150,7 +154,7 @@ func (*ServiceConfig) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case serviceconfig.FieldReplicas, serviceconfig.FieldMaxRequestBodySizeMB, serviceconfig.FieldBackupRetentionCount:
 			values[i] = new(sql.NullInt64)
-		case serviceconfig.FieldBuilder, serviceconfig.FieldIcon, serviceconfig.FieldDockerBuilderDockerfilePath, serviceconfig.FieldDockerBuilderBuildContext, serviceconfig.FieldRailpackProvider, serviceconfig.FieldRailpackFramework, serviceconfig.FieldGitBranch, serviceconfig.FieldGitTag, serviceconfig.FieldRailpackBuilderInstallCommand, serviceconfig.FieldRailpackBuilderBuildCommand, serviceconfig.FieldRunCommand, serviceconfig.FieldImage, serviceconfig.FieldDefinitionVersion, serviceconfig.FieldBackupSchedule:
+		case serviceconfig.FieldBuilder, serviceconfig.FieldIcon, serviceconfig.FieldDockerBuilderDockerfilePath, serviceconfig.FieldDockerBuilderBuildContext, serviceconfig.FieldRailpackProvider, serviceconfig.FieldRailpackFramework, serviceconfig.FieldGitBranch, serviceconfig.FieldGitTag, serviceconfig.FieldRailpackBuilderInstallCommand, serviceconfig.FieldRailpackBuilderBuildCommand, serviceconfig.FieldRunCommand, serviceconfig.FieldCronSchedule, serviceconfig.FieldCronTimezone, serviceconfig.FieldImage, serviceconfig.FieldDefinitionVersion, serviceconfig.FieldBackupSchedule:
 			values[i] = new(sql.NullString)
 		case serviceconfig.FieldCreatedAt, serviceconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -330,6 +334,20 @@ func (_m *ServiceConfig) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field stopped", values[i])
 			} else if value.Valid {
 				_m.Stopped = value.Bool
+			}
+		case serviceconfig.FieldCronSchedule:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field cron_schedule", values[i])
+			} else if value.Valid {
+				_m.CronSchedule = new(string)
+				*_m.CronSchedule = value.String
+			}
+		case serviceconfig.FieldCronTimezone:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field cron_timezone", values[i])
+			} else if value.Valid {
+				_m.CronTimezone = new(string)
+				*_m.CronTimezone = value.String
 			}
 		case serviceconfig.FieldImage:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -569,6 +587,16 @@ func (_m *ServiceConfig) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("stopped=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Stopped))
+	builder.WriteString(", ")
+	if v := _m.CronSchedule; v != nil {
+		builder.WriteString("cron_schedule=")
+		builder.WriteString(*v)
+	}
+	builder.WriteString(", ")
+	if v := _m.CronTimezone; v != nil {
+		builder.WriteString("cron_timezone=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("image=")
 	builder.WriteString(_m.Image)

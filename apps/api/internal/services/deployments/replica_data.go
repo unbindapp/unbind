@@ -79,12 +79,33 @@ func (self *DeploymentService) AttachReplicaDataToServices(ctx context.Context, 
 
 		statuses := serviceStatuses[service.ID]
 		isDatabase := service.Type == schema.ServiceTypeDatabase
-		replicaData := self.calculateReplicaData(statuses, service_repo.ExpectedReplicas(service.Edges.ServiceConfig), service.Edges.CurrentDeployment, isDatabase)
+		replicaData := self.calculateServiceReplicaData(statuses, service.Edges.ServiceConfig, service.Edges.CurrentDeployment, isDatabase)
 		applyServiceState(serviceStates[service.KubernetesName], isDatabase, replicaData)
 		result[service.ID] = replicaData
 	}
 
 	return result, nil
+}
+
+// A scheduled service's pods are its runs, finished ones included, so they say nothing
+// about whether the current deployment is in place. The runs list carries their outcome.
+func (self *DeploymentService) calculateServiceReplicaData(statuses []k8s.PodContainerStatus, config *ent.ServiceConfig, currentDeployment *ent.Deployment, isDatabase bool) *ServiceReplicaData {
+	if config.CronSchedule != nil && *config.CronSchedule != "" {
+		return scheduledReplicaData(currentDeployment)
+	}
+	return self.calculateReplicaData(statuses, service_repo.ExpectedReplicas(config), currentDeployment, isDatabase)
+}
+
+func scheduledReplicaData(currentDeployment *ent.Deployment) *ServiceReplicaData {
+	status := schema.DeploymentStatusActive
+	if currentDeployment != nil && currentDeployment.Status == schema.DeploymentStatusRemoved {
+		status = schema.DeploymentStatusRemoved
+	}
+	return &ServiceReplicaData{
+		Status:          status,
+		ReplicaEvents:   []models.EventRecord{},
+		CrashingReasons: []string{},
+	}
 }
 
 // calculateReplicaData processes pod statuses to determine deployment status and events

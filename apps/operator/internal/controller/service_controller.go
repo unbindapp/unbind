@@ -44,6 +44,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	gwapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwapiv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
 )
@@ -176,6 +177,17 @@ func (r *ServiceReconciler) reconcileResources(ctx context.Context, service *v1.
 		return nil
 	}
 
+	if service.Spec.Config.CronSchedule != "" {
+		if err := r.reconcileCronJob(ctx, rb, *service); err != nil {
+			logger.Error(err, "Failed to reconcile CronJob")
+			return err
+		}
+		return r.removeExposure(ctx, service)
+	}
+
+	if err := r.deleteIfExists(ctx, &batchv1.CronJob{}, service.Name, service.Namespace); err != nil {
+		return err
+	}
 	if err := r.reconcileDeployment(ctx, rb, *service); err != nil {
 		logger.Error(err, "Failed to reconcile Deployment")
 		return err
@@ -254,6 +266,7 @@ func (r *ServiceReconciler) finalizeService(ctx context.Context, service *v1.Ser
 
 	objects := []client.Object{
 		&appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: service.Name, Namespace: service.Namespace}},
+		&batchv1.CronJob{ObjectMeta: metav1.ObjectMeta{Name: service.Name, Namespace: service.Namespace}},
 		&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: service.Name, Namespace: service.Namespace}},
 	}
 	if service.Spec.Type == "database" {
@@ -280,6 +293,7 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	builder := ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Service{}).
 		Owns(&appsv1.Deployment{}).
+		Owns(&batchv1.CronJob{}, ctrlbuilder.WithPredicates(predicate.GenerationChangedPredicate{})).
 		Owns(&batchv1.Job{}).
 		Owns(&corev1.Service{}).
 		Owns(&networkingv1.Ingress{}).

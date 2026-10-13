@@ -496,6 +496,12 @@ components:
         builder:
           $ref: "#/components/schemas/ServiceBuilder"
           description: Builder of the service - docker, nixpacks, railpack
+        cron_schedule:
+          description: Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Not for databases
+          type: string
+        cron_timezone:
+          description: IANA time zone for the cron schedule, e.g. 'Europe/Berlin'. UTC when unset
+          type: string
         database_config:
           $ref: "#/components/schemas/DatabaseConfig"
         database_type:
@@ -627,6 +633,46 @@ components:
       required:
         - data
       type: object
+    CronRunResponse:
+      additionalProperties: false
+      properties:
+        completed_at:
+          description: When the run finished, succeeded or failed
+          format: date-time
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        deployment_id:
+          description: Deployment the run used
+          format: uuid
+          type: string
+        failure_reason:
+          type: string
+        manual:
+          description: Started by hand instead of by the schedule
+          type: boolean
+        name:
+          description: Name of the run, use it to find its logs
+          type: string
+        started_at:
+          format: date-time
+          type: string
+        status:
+          $ref: "#/components/schemas/CronRunStatus"
+      required:
+        - name
+        - status
+        - manual
+        - created_at
+      type: object
+    CronRunStatus:
+      enum:
+        - running
+        - succeeded
+        - failed
+      title: CronRunStatus
+      type: string
     DNSStatus:
       enum:
         - unknown
@@ -1558,6 +1604,16 @@ components:
         - read_webhook_urls
       title: KeyPrivilege
       type: string
+    ListCronRunsResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/CronRunResponse"
+          type: array
+      required:
+        - data
+      type: object
     ListDatabasesResponseBody:
       additionalProperties: false
       properties:
@@ -2775,6 +2831,12 @@ components:
           type: string
         builder:
           $ref: "#/components/schemas/ServiceBuilder"
+        cron_schedule:
+          description: Cron expression the service runs on instead of running continuously
+          type: string
+        cron_timezone:
+          description: IANA time zone of the cron schedule, UTC when unset
+          type: string
         database_config:
           $ref: "#/components/schemas/DatabaseConfigResponse"
         docker_builder_build_context:
@@ -3187,6 +3249,35 @@ components:
       required:
         - type
         - team_id
+      type: object
+    StartCronRunInputBody:
+      additionalProperties: false
+      properties:
+        environment_id:
+          format: uuid
+          type: string
+        project_id:
+          format: uuid
+          type: string
+        service_id:
+          format: uuid
+          type: string
+        team_id:
+          format: uuid
+          type: string
+      required:
+        - team_id
+        - project_id
+        - environment_id
+        - service_id
+      type: object
+    StartCronRunResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          $ref: "#/components/schemas/CronRunResponse"
+      required:
+        - data
       type: object
     TeamResponse:
       additionalProperties: false
@@ -3958,6 +4049,12 @@ components:
           type: string
         builder:
           $ref: "#/components/schemas/ServiceBuilder"
+        cron_schedule:
+          description: Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Set empty string to run continuously again. Not for databases
+          type: string
+        cron_timezone:
+          description: IANA time zone for the cron schedule, e.g. 'Europe/Berlin'. Set empty string for UTC
+          type: string
         database_config:
           $ref: "#/components/schemas/DatabaseConfig"
         description:
@@ -4429,6 +4526,7 @@ components:
         - deployment.succeeded
         - deployment.failed
         - deployment.cancelled
+        - cron.failed
       title: WebhookProjectEvent
       type: string
     WebhookResponse:
@@ -4578,6 +4676,213 @@ info:
   version: 1.0.0
 openapi: 3.1.0
 paths:
+  /cron/run:
+    post:
+      description: Start a run of a service that has a cron schedule right now, outside its schedule. Refused while another run is in progress, and until the schedule has been deployed.
+      operationId: start-cron-run
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartCronRunInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartCronRunResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Start Cron Run
+      tags:
+        - Cron
+      x-agent:
+        destructiveHint: false
+        idempotentHint: false
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: false
+        risk: medium
+  /cron/runs:
+    get:
+      description: List the runs of a service that has a cron schedule, newest first. Scheduled and manual runs are listed for as long as the cluster keeps them, with their status, timing and failure reason. Use the run's name to find its logs.
+      operationId: list-cron-runs
+      parameters:
+        - explode: false
+          in: query
+          name: team_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: project_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: environment_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: service_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListCronRunsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: List Cron Runs
+      tags:
+        - Cron
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: true
+        requiresConfirmation: false
+        risk: low
   /deployments/cancel:
     post:
       description: Abort a queued or running build. The deployment is marked as cancelled and its build job is deleted.

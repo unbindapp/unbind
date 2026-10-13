@@ -23,6 +23,7 @@ import { Button, LinkButton } from "@/components/ui/button";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { shouldDeploySectionHaveReplicas } from "@/components/service/panel/content/deployed/settings/helpers";
 import ConnectCard from "@/components/service/panel/content/deployed/deployments/connect/connect-card";
+import { isScheduledService } from "@/components/service/cron/cron-schedule";
 
 export default function Deployments({ service }: { service: TServiceShallow }) {
   const {
@@ -76,7 +77,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
         deployments={deploymentsData?.deployments || null}
         isPending={isPendingDeployments}
       >
-        {shouldDeploySectionHaveReplicas(service) && <InfoRow />}
+        {shouldDeploySectionHaveReplicas(service) && !isScheduledService(service) && <InfoRow />}
         {service.type === "database" && (
           <div className="w-full pb-1">
             <ConnectCard service={service} />
@@ -95,7 +96,7 @@ export default function Deployments({ service }: { service: TServiceShallow }) {
                 service={service}
                 deployment={currentOrLastDeployment}
                 currentDeployment={deploymentsData?.current_deployment}
-                showReplicas={true}
+                showReplicas={!isScheduledService(service)}
               />
             ) : (
               <DeploymentCard showReplicas={true} isPlaceholder={true} service={service} />

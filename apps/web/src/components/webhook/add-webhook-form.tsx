@@ -72,6 +72,10 @@ const webhookGroupsProject: TWebhookGroupProject[] = [
       { id: "deployment.cancelled", title: "Deployment Cancelled" },
     ],
   },
+  {
+    title: "Cron",
+    options: [{ id: "cron.failed", title: "Cron Run Failed" }],
+  },
 ];
 
 export default function AddWebhookForm({ className, ...rest }: TProps) {

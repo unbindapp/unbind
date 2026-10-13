@@ -64,6 +64,10 @@ const (
 	FieldSessionAffinity = "session_affinity"
 	// FieldStopped holds the string denoting the stopped field in the database.
 	FieldStopped = "stopped"
+	// FieldCronSchedule holds the string denoting the cron_schedule field in the database.
+	FieldCronSchedule = "cron_schedule"
+	// FieldCronTimezone holds the string denoting the cron_timezone field in the database.
+	FieldCronTimezone = "cron_timezone"
 	// FieldImage holds the string denoting the image field in the database.
 	FieldImage = "image"
 	// FieldDefinitionVersion holds the string denoting the definition_version field in the database.
@@ -140,6 +144,8 @@ var Columns = []string{
 	FieldMaxRequestBodySizeMB,
 	FieldSessionAffinity,
 	FieldStopped,
+	FieldCronSchedule,
+	FieldCronTimezone,
 	FieldImage,
 	FieldDefinitionVersion,
 	FieldDatabaseConfig,
@@ -327,6 +333,16 @@ func BySessionAffinity(opts ...sql.OrderTermOption) OrderOption {
 // ByStopped orders the results by the stopped field.
 func ByStopped(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStopped, opts...).ToFunc()
+}
+
+// ByCronSchedule orders the results by the cron_schedule field.
+func ByCronSchedule(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCronSchedule, opts...).ToFunc()
+}
+
+// ByCronTimezone orders the results by the cron_timezone field.
+func ByCronTimezone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCronTimezone, opts...).ToFunc()
 }
 
 // ByImage orders the results by the image field.

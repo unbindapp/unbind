@@ -122,6 +122,9 @@ func (self *DeploymentController) startStatusSynchronizer() {
 			if err := self.SyncJobStatuses(self.ctx); err != nil {
 				log.Error("Failed to sync job statuses", "err", err)
 			}
+			if err := self.SyncCronRunFailures(self.ctx); err != nil {
+				log.Error("Failed to alert on failed cron runs", "err", err)
+			}
 		}
 	}
 }

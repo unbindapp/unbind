@@ -191,6 +191,18 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
     keywords: ["deployment", "scale", "resources"],
     items: [
       {
+        id: settingsIds.deploy.cronSchedule,
+        title: "Cron Schedule",
+        description: "Run the service on a schedule instead of continuously.",
+        keywords: ["cron", "schedule", "job", "scheduled", "periodic", "timer", "interval"],
+      },
+      {
+        id: settingsIds.deploy.cronTimezone,
+        title: "Time Zone",
+        description: "Time zone the cron schedule is read in.",
+        keywords: ["timezone", "tz", "utc", "cron", "schedule"],
+      },
+      {
         id: settingsIds.deploy.replicas,
         title: "Replicas",
         description: "The number of replicas to run for this service.",
