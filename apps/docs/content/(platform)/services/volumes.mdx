@@ -45,6 +45,12 @@ Unbind keeps that gap short in two ways. It pulls the new image while the old ve
 
 A new version that crashes on start still takes the service down, because the old version has already stopped. [Health checks](/services/replicas-and-health#health-checks) do not prevent this for a service with a volume.
 
+## Permissions
+
+A new volume is owned by root. Unbind mounts it with a group that your service runs with, so an image that runs as a non-root user can still create files in it. Files your app creates stay owned by the user it runs as.
+
+If the image sets a run-as group in its security context, the volume uses that group instead.
+
 ## Change the mount path
 
 Open the volume and edit the **Mount Path** under **Connection**. Press **Deploy** on the changes bar and the service restarts with the volume at the new path. The data stays in place, only the path your app sees changes.

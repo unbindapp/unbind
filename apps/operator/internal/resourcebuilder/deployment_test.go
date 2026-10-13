@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation"
 )
 
@@ -55,4 +56,25 @@ func TestTerminationGracePeriod(t *testing.T) {
 	deployment, err = NewResourceBuilder(service, nil, nil).BuildDeployment()
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), *deployment.Spec.Template.Spec.TerminationGracePeriodSeconds, "the wait is downtime, and 0 lets two replicas overlap")
+}
+
+func TestPodSecurityContextWithVolume(t *testing.T) {
+	service := &v1.Service{}
+	service.Spec.Config.Image = "app:1"
+
+	deployment, err := NewResourceBuilder(service, nil, nil).BuildDeployment()
+	assert.NoError(t, err)
+	assert.Nil(t, deployment.Spec.Template.Spec.SecurityContext, "nothing to own without a volume")
+
+	service.Spec.Config.Volumes = []v1.VolumeSpec{{Name: "data", MountPath: "/data"}}
+	deployment, err = NewResourceBuilder(service, nil, nil).BuildDeployment()
+	assert.NoError(t, err)
+	podSecurity := deployment.Spec.Template.Spec.SecurityContext
+	assert.Equal(t, volumeGroup, *podSecurity.FSGroup)
+	assert.Equal(t, corev1.FSGroupChangeOnRootMismatch, *podSecurity.FSGroupChangePolicy, "a volume full of files is not rewritten on every start")
+
+	service.Spec.SecurityContext = &corev1.SecurityContext{RunAsGroup: new(int64(10001))}
+	deployment, err = NewResourceBuilder(service, nil, nil).BuildDeployment()
+	assert.NoError(t, err)
+	assert.Equal(t, int64(10001), *deployment.Spec.Template.Spec.SecurityContext.FSGroup, "an explicit group wins")
 }

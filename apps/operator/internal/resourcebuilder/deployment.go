@@ -45,6 +45,7 @@ func (rb *ResourceBuilder) BuildDeployment() (*appsv1.Deployment, error) {
 					InitContainers:                initContainers,
 					Containers:                    []corev1.Container{container},
 					Volumes:                       volumes,
+					SecurityContext:               rb.buildPodSecurityContext(),
 					TerminationGracePeriodSeconds: new(rb.terminationGracePeriodSeconds()),
 				},
 			},
@@ -72,6 +73,24 @@ func (rb *ResourceBuilder) terminationGracePeriodSeconds() int64 {
 		return terminationGracePeriodSecondsWithVolume
 	}
 	return terminationGracePeriodSeconds
+}
+
+// A fresh volume is owned by root. The group reaches every container as a supplementary
+// group, so an image running as any non-root user can write to the volume.
+const volumeGroup int64 = 65532
+
+func (rb *ResourceBuilder) buildPodSecurityContext() *corev1.PodSecurityContext {
+	if len(rb.service.Spec.Config.Volumes) == 0 {
+		return nil
+	}
+	group := volumeGroup
+	if sc := rb.service.Spec.SecurityContext; sc != nil && sc.RunAsGroup != nil {
+		group = *sc.RunAsGroup
+	}
+	return &corev1.PodSecurityContext{
+		FSGroup:             &group,
+		FSGroupChangePolicy: new(corev1.FSGroupChangeOnRootMismatch),
+	}
 }
 
 func (rb *ResourceBuilder) buildDeploymentStrategy() appsv1.DeploymentStrategy {
