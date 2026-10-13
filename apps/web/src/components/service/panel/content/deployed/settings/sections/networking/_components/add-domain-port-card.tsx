@@ -6,6 +6,11 @@ import {
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
+import {
+  DomainOptionsFields,
+  defaultDomainOptionsValues,
+  domainOptionsFromValues,
+} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-options-fields";
 import { TMode } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
 import { useStageNetworking } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import type { TStagedListEntry } from "@/components/staged-changes/staged-changes-provider";
@@ -36,6 +41,13 @@ const DraftSchema = z.object({
   host: z.string(),
   targetPortType: z.string(),
   targetPort: z.string(),
+  options: z.object({
+    redirectTo: z.string(),
+    redirectStatus: z.string(),
+    basicAuthUsername: z.string(),
+    basicAuthPassword: z.string(),
+    responseHeaders: z.array(z.string()),
+  }),
   isEditing: z.boolean(),
 });
 
@@ -90,6 +102,7 @@ export default function AddDomainPortCard({
       host: "",
       targetPortType: defaultTargetPortType,
       targetPort: "",
+      options: defaultDomainOptionsValues,
       isEditing: false,
     },
     persistenceType: "session",
@@ -101,7 +114,9 @@ export default function AddDomainPortCard({
         mode === "public" && allPortOptions.length >= 1 && value.targetPortType !== customPortText;
       const port = Number(usesPortSelect ? value.targetPortType : value.targetPort);
 
-      if (mode === "public") stageHost(null, { host: value.host, port });
+      if (mode === "public") {
+        stageHost(null, { host: value.host, port, ...domainOptionsFromValues(value.options) });
+      }
       if (mode === "private") stagePort(port, "add");
       form.reset();
       setGeneratedDomain(undefined);
@@ -125,6 +140,8 @@ export default function AddDomainPortCard({
 
     return Array.from(allPorts);
   }, [service.detected_ports, currentPorts]);
+
+  const hasRedirect = useStore(form.store, (s) => s.values.options.redirectTo.trim() !== "");
 
   // A restored draft can name a port the service no longer has
   const targetPortType = useStore(form.store, (s) => s.values.targetPortType);
@@ -247,7 +264,10 @@ export default function AddDomainPortCard({
                       </form.AppField>
                     </Block>
                   )}
-                  <div className="flex w-full flex-col">
+                  <div
+                    data-redirect={hasRedirect || undefined}
+                    className="flex w-full flex-col data-redirect:hidden"
+                  >
                     {(mode === "private" || allPortOptions.length === 0) && (
                       <Block>
                         <form.AppField
@@ -406,6 +426,13 @@ export default function AddDomainPortCard({
                       />
                     )}
                   </div>
+                  {mode === "public" && (
+                    <DomainOptionsFields
+                      form={form}
+                      fields="options"
+                      serverValues={defaultDomainOptionsValues}
+                    />
+                  )}
                 </div>
                 <div className="flex w-full flex-col border-t p-1.5">
                   <div className="flex w-full">

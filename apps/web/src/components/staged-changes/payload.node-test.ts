@@ -296,6 +296,56 @@ test("folds domain, port and volume changes into the update of their service", (
   assert.deepEqual(update.add_volumes, [{ id: "pvc-1", mount_path: "/data" }]);
 });
 
+test("a domain's redirect, basic auth and headers travel with its upsert", () => {
+  const payload = buildApplyStagedChangesPayload(
+    state(
+      [],
+      [],
+      [
+        list({
+          kind: "host",
+          previous: null,
+          value: {
+            host: "www.example.com",
+            port: 3000,
+            redirect: { to: "https://example.com", statusCode: 308 },
+          },
+          addsPort: false,
+        }),
+        list({
+          kind: "host",
+          previous: { host: "invoice.example.com", port: 3000 },
+          value: {
+            host: "invoice.example.com",
+            port: 3000,
+            basicAuth: { username: "admin", password: "secret" },
+            responseHeaders: [{ name: "Cache-Control", value: "no-store" }],
+          },
+          addsPort: false,
+        }),
+      ],
+    ),
+  );
+
+  assert.deepEqual(payload.services[0].upsert_hosts, [
+    {
+      host: "www.example.com",
+      path: "",
+      target_port: 3000,
+      prev_host: undefined,
+      redirect: { to: "https://example.com", status_code: 308 },
+    },
+    {
+      host: "invoice.example.com",
+      path: "",
+      target_port: 3000,
+      prev_host: "invoice.example.com",
+      basic_auth: { username: "admin", password: "secret" },
+      response_headers: [{ name: "Cache-Control", value: "no-store" }],
+    },
+  ]);
+});
+
 test("an unmounted volume is removed from its service instead of added", () => {
   const payload = buildApplyStagedChangesPayload(
     state(

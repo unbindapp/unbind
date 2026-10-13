@@ -3,8 +3,41 @@ package service_repo
 import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/internal/common/utils"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 )
+
+const CloudflareClientIPHeader = "CF-Connecting-IP"
+
+var cloudflareChecker = utils.NewDNSChecker()
+
+// ClientIPHeader is the header the service's domains take the visitor's address from:
+// the one chosen for the service, or Cloudflare's while a domain is proxied through it.
+// Resolved on every rollout, so a domain moving on or off Cloudflare is picked up then.
+func ClientIPHeader(config *ent.ServiceConfig) string {
+	return clientIPHeader(config, func(host string) bool {
+		proxied, _ := cloudflareChecker.IsUsingCloudflareProxy(host)
+		return proxied
+	})
+}
+
+func clientIPHeader(config *ent.ServiceConfig, behindCloudflare func(host string) bool) string {
+	if config.ClientIPHeader != nil && *config.ClientIPHeader != "" {
+		return *config.ClientIPHeader
+	}
+	if !config.IsPublic {
+		return ""
+	}
+	for _, host := range config.Hosts {
+		if utils.IsWildcardHost(host.Host) {
+			continue
+		}
+		if behindCloudflare(host.Host) {
+			return CloudflareClientIPHeader
+		}
+	}
+	return ""
+}
 
 // ApplyRuntimeConfig sets what the service runs with from its saved config. Build
 // inputs like the branch and run command are left alone

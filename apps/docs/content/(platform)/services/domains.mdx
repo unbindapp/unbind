@@ -70,11 +70,60 @@ A few rules apply:
 - A wildcard can't cover the domain of your Unbind instance or its generated domains.
 - `UNBIND_URL_PUBLIC` and the other public variables never point at a wildcard. They use the service's other domains.
 
+## Redirect a domain
+
+A domain can send visitors to another URL instead of the service. Press the pencil on the domain, type the URL in **Redirect**, like `https://example.com`, pick the **Redirect Status** and deploy.
+
+- A URL with no path keeps the path and query of the request: `www.example.com/pricing` goes to `example.com/pricing`.
+- A URL with a path drops it: every page of `plugins.example.com` goes to `example.com/plugins`.
+
+The status is **308** by default, which keeps the request method. **301** is the classic permanent redirect, **302** and **307** are temporary ones that browsers don't cache.
+
+A redirect domain still needs a DNS record and gets its own certificate, so visitors on HTTPS are redirected without a warning. It is not one of the service's addresses: `UNBIND_URL_PUBLIC` and the links in the app skip it.
+
+This is how to send `www.example.com` to `example.com`: add `www.example.com` to the service that serves `example.com`, with a redirect to `https://example.com`.
+
+## Password protect a domain
+
+**Basic Auth** asks visitors for a username and password before the service answers. Press the pencil on the domain, type a username and a password and deploy. Browsers show a login prompt, and tools send the pair with `curl -u`.
+
+Unbind keeps a hash of the password, never the password itself, and never shows it again. To change it, type a new one. Leaving the password empty on a later edit keeps the current one. A domain with a redirect has no basic auth, since the service never answers on it.
+
+## Response headers
+
+**Response Headers** adds headers to every response of a domain, typed as `Name: value`. A header the service already sends is replaced.
+
+Common ones:
+
+| Header                                                           | What it does                                              |
+| ---------------------------------------------------------------- | --------------------------------------------------------- |
+| `Strict-Transport-Security: max-age=31536000; includeSubDomains` | Browsers that saw it only ever open the domain over HTTPS |
+| `Cache-Control: public, max-age=600`                             | Caches and Cloudflare keep responses for ten minutes      |
+| `X-Frame-Options: DENY`                                          | No other site can show the page in a frame                |
+
+Names use letters, digits and dashes. Values can't have quotes, backslashes or dollar signs, and the headers that frame a response, like `Content-Length`, can't be set.
+
+The HSTS header is worth adding when you move a site from a host that sent it: Unbind doesn't send it on its own, and browsers that cached it keep it for up to a year.
+
+## Visitor IP addresses
+
+Behind a proxy like Cloudflare, every request reaches your server from the proxy, so a service sees the proxy's address as the visitor and `X-Forwarded-For` ends with your own server's address. The proxy's own header, like `CF-Connecting-IP`, always carries the visitor's address.
+
+**Client IP Header** under **Networking** in the service settings names that header. Unbind then takes the visitor's address from it for its own logs and policies, and passes `X-Forwarded-For` on as the proxy sent it instead of appending your server's address. A request without the header, from a visitor who connects directly, keeps the address of the connection.
+
+Leave it empty for the automatic choice: `CF-Connecting-IP` while one of the service's domains is proxied through Cloudflare, nothing otherwise. The choice is made on every deploy, so a domain moving on or off Cloudflare is picked up on the next one. Type a header to use another proxy's, like `X-Real-IP`.
+
+Only trust a header when every domain of the service goes through that proxy. Anyone who reaches your server directly can put any address in it.
+
+The setting shows on installs that route through Envoy Gateway, the default. On ingress-nginx, `X-Forwarded-For` from the proxy is trusted as installed, and services read the proxy's own header themselves.
+
 ## Max request size
 
 A request with a body larger than 100 MB, like a big file upload, is refused with `413 Request Entity Too Large`. To change it, type a size from 1 MB to 10240 MB in **Max Request Size** at the bottom of **Networking** in the service settings and deploy. An empty field means 100 MB.
 
 The limit only exists on installs that route traffic with ingress-nginx or Traefik. Installs on Envoy Gateway, the default, accept any size and don't show the setting.
+
+Redirects, basic auth and response headers work on every install. On ingress-nginx the redirect and the headers go through a configuration snippet, which the controller only accepts with `annotations-risk-level` set to `Critical`, the value Unbind installs it with.
 
 Cloudflare applies its own limit to proxied domains: 100 MB on the Free and Pro plans.
 

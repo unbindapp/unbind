@@ -407,6 +407,26 @@ func (_u *ServiceConfigUpdate) SetNillableSessionAffinity(v *bool) *ServiceConfi
 	return _u
 }
 
+// SetClientIPHeader sets the "client_ip_header" field.
+func (_u *ServiceConfigUpdate) SetClientIPHeader(v string) *ServiceConfigUpdate {
+	_u.mutation.SetClientIPHeader(v)
+	return _u
+}
+
+// SetNillableClientIPHeader sets the "client_ip_header" field if the given value is not nil.
+func (_u *ServiceConfigUpdate) SetNillableClientIPHeader(v *string) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetClientIPHeader(*v)
+	}
+	return _u
+}
+
+// ClearClientIPHeader clears the value of the "client_ip_header" field.
+func (_u *ServiceConfigUpdate) ClearClientIPHeader() *ServiceConfigUpdate {
+	_u.mutation.ClearClientIPHeader()
+	return _u
+}
+
 // SetStopped sets the "stopped" field.
 func (_u *ServiceConfigUpdate) SetStopped(v bool) *ServiceConfigUpdate {
 	_u.mutation.SetStopped(v)
@@ -921,6 +941,12 @@ func (_u *ServiceConfigUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.SessionAffinity(); ok {
 		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.ClientIPHeader(); ok {
+		_spec.SetField(serviceconfig.FieldClientIPHeader, field.TypeString, value)
+	}
+	if _u.mutation.ClientIPHeaderCleared() {
+		_spec.ClearField(serviceconfig.FieldClientIPHeader, field.TypeString)
 	}
 	if value, ok := _u.mutation.Stopped(); ok {
 		_spec.SetField(serviceconfig.FieldStopped, field.TypeBool, value)
@@ -1484,6 +1510,26 @@ func (_u *ServiceConfigUpdateOne) SetNillableSessionAffinity(v *bool) *ServiceCo
 	return _u
 }
 
+// SetClientIPHeader sets the "client_ip_header" field.
+func (_u *ServiceConfigUpdateOne) SetClientIPHeader(v string) *ServiceConfigUpdateOne {
+	_u.mutation.SetClientIPHeader(v)
+	return _u
+}
+
+// SetNillableClientIPHeader sets the "client_ip_header" field if the given value is not nil.
+func (_u *ServiceConfigUpdateOne) SetNillableClientIPHeader(v *string) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetClientIPHeader(*v)
+	}
+	return _u
+}
+
+// ClearClientIPHeader clears the value of the "client_ip_header" field.
+func (_u *ServiceConfigUpdateOne) ClearClientIPHeader() *ServiceConfigUpdateOne {
+	_u.mutation.ClearClientIPHeader()
+	return _u
+}
+
 // SetStopped sets the "stopped" field.
 func (_u *ServiceConfigUpdateOne) SetStopped(v bool) *ServiceConfigUpdateOne {
 	_u.mutation.SetStopped(v)
@@ -2028,6 +2074,12 @@ func (_u *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceCo
 	}
 	if value, ok := _u.mutation.SessionAffinity(); ok {
 		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.ClientIPHeader(); ok {
+		_spec.SetField(serviceconfig.FieldClientIPHeader, field.TypeString, value)
+	}
+	if _u.mutation.ClientIPHeaderCleared() {
+		_spec.ClearField(serviceconfig.FieldClientIPHeader, field.TypeString)
 	}
 	if value, ok := _u.mutation.Stopped(); ok {
 		_spec.SetField(serviceconfig.FieldStopped, field.TypeBool, value)

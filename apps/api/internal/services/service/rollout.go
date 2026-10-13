@@ -161,6 +161,7 @@ func estimateConfigChange(config *ent.ServiceConfig, input *models.UpdateService
 		input.Image != nil && *input.Image != config.Image ||
 		clearableChanged(input.RunCommand, config.RunCommand) ||
 		clearableChanged(input.MaxRequestBodySizeMB, config.MaxRequestBodySizeMB) ||
+		clearableChanged(input.ClientIPHeader, config.ClientIPHeader) ||
 		len(input.OverwriteHosts)+len(input.UpsertHosts)+len(input.RemoveHosts) > 0 ||
 		len(input.OverwritePorts)+len(input.AddPorts)+len(input.RemovePorts) > 0 ||
 		len(input.OverwriteVolumes)+len(input.AddVolumes)+len(input.RemoveVolumes) > 0 ||

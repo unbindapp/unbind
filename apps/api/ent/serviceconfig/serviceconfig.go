@@ -62,6 +62,8 @@ const (
 	FieldMaxRequestBodySizeMB = "max_request_body_size_mb"
 	// FieldSessionAffinity holds the string denoting the session_affinity field in the database.
 	FieldSessionAffinity = "session_affinity"
+	// FieldClientIPHeader holds the string denoting the client_ip_header field in the database.
+	FieldClientIPHeader = "client_ip_header"
 	// FieldStopped holds the string denoting the stopped field in the database.
 	FieldStopped = "stopped"
 	// FieldCronSchedule holds the string denoting the cron_schedule field in the database.
@@ -143,6 +145,7 @@ var Columns = []string{
 	FieldIsPublic,
 	FieldMaxRequestBodySizeMB,
 	FieldSessionAffinity,
+	FieldClientIPHeader,
 	FieldStopped,
 	FieldCronSchedule,
 	FieldCronTimezone,
@@ -328,6 +331,11 @@ func ByMaxRequestBodySizeMB(opts ...sql.OrderTermOption) OrderOption {
 // BySessionAffinity orders the results by the session_affinity field.
 func BySessionAffinity(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSessionAffinity, opts...).ToFunc()
+}
+
+// ByClientIPHeader orders the results by the client_ip_header field.
+func ByClientIPHeader(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldClientIPHeader, opts...).ToFunc()
 }
 
 // ByStopped orders the results by the stopped field.

@@ -46,6 +46,18 @@ func TestPublicEndpointsFor(t *testing.T) {
 		assert.Equal(t, []serviceEndpoint{{Host: "db.example.com", IsDomain: true, Port: 30001, Target: 5432, L4: true}}, postgres(config))
 	})
 
+	t.Run("a redirect host is not an address of the service", func(t *testing.T) {
+		config := &ent.ServiceConfig{
+			IsPublic: true,
+			Ports:    []schema.PortSpec{{Port: 3000}},
+			Hosts: []schema.HostSpec{
+				{Host: "www.example.com", TargetPort: utils.ToPtr[int32](3000), Redirect: &schema.HostRedirect{To: "https://example.com"}},
+				{Host: "example.com", TargetPort: utils.ToPtr[int32](3000)},
+			},
+		}
+		assert.Equal(t, []serviceEndpoint{{Host: "example.com", IsDomain: true, Port: 443, Target: 3000}}, app(config))
+	})
+
 	t.Run("an http host answers on 443", func(t *testing.T) {
 		config := &ent.ServiceConfig{
 			IsPublic: true,

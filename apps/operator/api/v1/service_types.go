@@ -112,6 +112,8 @@ type ServiceConfigSpec struct {
 
 	// SessionAffinity pins each visitor to one replica with a cookie
 	SessionAffinity bool `json:"sessionAffinity,omitempty"`
+	// ClientIPHeader names the header a proxy in front of the service carries the visitor's address in
+	ClientIPHeader string `json:"clientIPHeader,omitempty" required:"false"`
 
 	// Stopped runs no replicas, everything else stays in place
 	Stopped bool `json:"stopped,omitempty"`
@@ -208,6 +210,30 @@ type HostSpec struct {
 	// Protocol is the application protocol for domain routing: "http" (default) or "grpc".
 	// +kubebuilder:validation:Enum=http;grpc
 	Protocol string `json:"protocol,omitempty" required:"false"`
+	// Redirect answers every request for the host with a redirect instead of routing it
+	Redirect *HostRedirectSpec `json:"redirect,omitempty" required:"false"`
+	// BasicAuth asks visitors for a username and password before the host answers
+	BasicAuth *HostBasicAuthSpec `json:"basicAuth,omitempty" required:"false"`
+	// ResponseHeaders are set on every response of the host
+	ResponseHeaders []HostHeaderSpec `json:"responseHeaders,omitempty" required:"false"`
+}
+
+type HostRedirectSpec struct {
+	// To is the URL visitors are sent to. The request path is kept when it has no path
+	To string `json:"to"`
+	// +kubebuilder:validation:Enum=301;302;307;308
+	StatusCode int32 `json:"statusCode"`
+}
+
+type HostBasicAuthSpec struct {
+	Username string `json:"username"`
+	// PasswordHash is the password in htpasswd SHA form
+	PasswordHash string `json:"passwordHash"`
+}
+
+type HostHeaderSpec struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 type VolumeSpec struct {

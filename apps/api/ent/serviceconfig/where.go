@@ -138,6 +138,11 @@ func SessionAffinity(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldSessionAffinity, v))
 }
 
+// ClientIPHeader applies equality check predicate on the "client_ip_header" field. It's identical to ClientIPHeaderEQ.
+func ClientIPHeader(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldClientIPHeader, v))
+}
+
 // Stopped applies equality check predicate on the "stopped" field. It's identical to StoppedEQ.
 func Stopped(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldStopped, v))
@@ -1126,6 +1131,81 @@ func SessionAffinityEQ(v bool) predicate.ServiceConfig {
 // SessionAffinityNEQ applies the NEQ predicate on the "session_affinity" field.
 func SessionAffinityNEQ(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldNEQ(FieldSessionAffinity, v))
+}
+
+// ClientIPHeaderEQ applies the EQ predicate on the "client_ip_header" field.
+func ClientIPHeaderEQ(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEQ(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderNEQ applies the NEQ predicate on the "client_ip_header" field.
+func ClientIPHeaderNEQ(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNEQ(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderIn applies the In predicate on the "client_ip_header" field.
+func ClientIPHeaderIn(vs ...string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIn(FieldClientIPHeader, vs...))
+}
+
+// ClientIPHeaderNotIn applies the NotIn predicate on the "client_ip_header" field.
+func ClientIPHeaderNotIn(vs ...string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotIn(FieldClientIPHeader, vs...))
+}
+
+// ClientIPHeaderGT applies the GT predicate on the "client_ip_header" field.
+func ClientIPHeaderGT(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldGT(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderGTE applies the GTE predicate on the "client_ip_header" field.
+func ClientIPHeaderGTE(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldGTE(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderLT applies the LT predicate on the "client_ip_header" field.
+func ClientIPHeaderLT(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldLT(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderLTE applies the LTE predicate on the "client_ip_header" field.
+func ClientIPHeaderLTE(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldLTE(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderContains applies the Contains predicate on the "client_ip_header" field.
+func ClientIPHeaderContains(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldContains(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderHasPrefix applies the HasPrefix predicate on the "client_ip_header" field.
+func ClientIPHeaderHasPrefix(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldHasPrefix(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderHasSuffix applies the HasSuffix predicate on the "client_ip_header" field.
+func ClientIPHeaderHasSuffix(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldHasSuffix(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderIsNil applies the IsNil predicate on the "client_ip_header" field.
+func ClientIPHeaderIsNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldIsNull(FieldClientIPHeader))
+}
+
+// ClientIPHeaderNotNil applies the NotNil predicate on the "client_ip_header" field.
+func ClientIPHeaderNotNil() predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldNotNull(FieldClientIPHeader))
+}
+
+// ClientIPHeaderEqualFold applies the EqualFold predicate on the "client_ip_header" field.
+func ClientIPHeaderEqualFold(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldEqualFold(FieldClientIPHeader, v))
+}
+
+// ClientIPHeaderContainsFold applies the ContainsFold predicate on the "client_ip_header" field.
+func ClientIPHeaderContainsFold(v string) predicate.ServiceConfig {
+	return predicate.ServiceConfig(sql.FieldContainsFold(FieldClientIPHeader, v))
 }
 
 // StoppedEQ applies the EQ predicate on the "stopped" field.

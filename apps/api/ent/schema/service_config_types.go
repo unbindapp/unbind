@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"crypto/sha1"
+	"encoding/base64"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -16,15 +18,64 @@ import (
 
 // * Custom kubernetes-like types
 type HostSpec struct {
-	PrevHost   *string       `json:"prev_host,omitempty" required:"false" doc:"Previous host for the service, used for upserting key"`
-	Host       string        `json:"host" doc:"Domain the service answers on, e.g. app.example.com. A wildcard like *.example.com answers every subdomain, but it is served with a self-signed certificate and needs a proxy such as Cloudflare in front to give visitors a trusted one"`
-	Path       string        `json:"path"`
-	TargetPort *int32        `json:"target_port,omitempty" required:"false"`
-	Protocol   *HostProtocol `json:"protocol,omitempty" required:"false" doc:"Application protocol for the domain: http (default) or grpc"`
+	PrevHost   *string        `json:"prev_host,omitempty" required:"false" doc:"Previous host for the service, used for upserting key"`
+	Host       string         `json:"host" doc:"Domain the service answers on, e.g. app.example.com. A wildcard like *.example.com answers every subdomain, but it is served with a self-signed certificate and needs a proxy such as Cloudflare in front to give visitors a trusted one"`
+	Path       string         `json:"path"`
+	TargetPort *int32         `json:"target_port,omitempty" required:"false"`
+	Protocol   *HostProtocol  `json:"protocol,omitempty" required:"false" doc:"Application protocol for the domain: http (default) or grpc"`
+	Redirect   *HostRedirect  `json:"redirect,omitempty" required:"false" doc:"Send every request for the domain to another URL instead of the service, e.g. www.example.com to https://example.com. The port is ignored while a redirect is set"`
+	BasicAuth  *HostBasicAuth `json:"basic_auth,omitempty" required:"false" doc:"Ask visitors for a username and password before the service answers on this domain. Not with a redirect"`
+	// Headers are set on every response of the domain, a later one with the same name wins
+	ResponseHeaders []HostHeader `json:"response_headers,omitempty" required:"false" maxItems:"20" doc:"Headers set on every response of the domain, e.g. Strict-Transport-Security or Cache-Control. At most 20"`
 	// Template input metadata, snapshotted at deploy time and preserved across edits
 	TemplateInputID *string `json:"template_input_id,omitempty" required:"false"`
 	DisplayName     *string `json:"display_name,omitempty" required:"false" doc:"Human label from the template input, e.g. Cloud Domain"`
 	Description     *string `json:"description,omitempty" required:"false"`
+}
+
+type HostRedirect struct {
+	To         string `json:"to" doc:"URL visitors are sent to, with http or https, e.g. https://example.com. With no path the request path is kept, with a path every request lands on that path"`
+	StatusCode int    `json:"status_code,omitempty" required:"false" enum:"301,302,307,308" doc:"HTTP status of the redirect. 308 when unset, which keeps the request method"`
+}
+
+type HostBasicAuth struct {
+	Username string `json:"username" minLength:"1" maxLength:"64" doc:"Username visitors sign in with"`
+	// Password is write-only, the API hashes it and keeps the hash
+	Password     string `json:"password,omitempty" required:"false" maxLength:"128" doc:"Password visitors sign in with. Required when the domain had no basic auth, leave it out to keep the current one. Never returned"`
+	PasswordHash string `json:"password_hash,omitempty" hidden:"true" required:"false"`
+}
+
+// HashBasicAuthPassword makes the htpasswd SHA form, the one every routing controller reads
+func HashBasicAuthPassword(password string) string {
+	sum := sha1.Sum([]byte(password))
+	return "{SHA}" + base64.StdEncoding.EncodeToString(sum[:])
+}
+
+// RedactedHosts strips the credentials before hosts leave the API
+func RedactedHosts(hosts []HostSpec) []HostSpec {
+	redacted := make([]HostSpec, len(hosts))
+	for i, host := range hosts {
+		if host.BasicAuth != nil {
+			host.BasicAuth = &HostBasicAuth{Username: host.BasicAuth.Username}
+		}
+		redacted[i] = host
+	}
+	return redacted
+}
+
+type HostHeader struct {
+	Name  string `json:"name" doc:"Header name, e.g. Cache-Control"`
+	Value string `json:"value" doc:"Header value, e.g. public, max-age=600"`
+}
+
+const DefaultRedirectStatusCode = 308
+
+// Status is the redirect's status code, 308 when none was chosen
+func (r HostRedirect) Status() int {
+	if r.StatusCode == 0 {
+		return DefaultRedirectStatusCode
+	}
+	return r.StatusCode
 }
 
 // VariableMetadata describes a deployed variable, sourced from a template input.
@@ -142,8 +193,22 @@ func AsV1HostSpecs(hosts []HostSpec) []v1.HostSpec {
 			Port:     host.TargetPort,
 			Protocol: protocol,
 		}
+		if host.Redirect != nil {
+			v1Hosts[i].Redirect = &v1.HostRedirectSpec{To: host.Redirect.To, StatusCode: int32(host.Redirect.Status())}
+		}
+		if host.BasicAuth != nil {
+			v1Hosts[i].BasicAuth = &v1.HostBasicAuthSpec{Username: host.BasicAuth.Username, PasswordHash: host.BasicAuth.PasswordHash}
+		}
+		for _, header := range host.ResponseHeaders {
+			v1Hosts[i].ResponseHeaders = append(v1Hosts[i].ResponseHeaders, v1.HostHeaderSpec{Name: header.Name, Value: header.Value})
+		}
 	}
 	return v1Hosts
+}
+
+// IsRedirect reports whether the host sends visitors elsewhere instead of to the service
+func (h HostSpec) IsRedirect() bool {
+	return h.Redirect != nil
 }
 
 type PortSpec struct {

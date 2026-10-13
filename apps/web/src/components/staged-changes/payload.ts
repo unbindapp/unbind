@@ -10,6 +10,7 @@ import {
   toUpdateServiceInput,
   type TUpdateServiceInput,
 } from "../../lib/queries/update-service-input.ts";
+import { hostTargetToSpec } from "./host-target.ts";
 import type {
   ChangeFailure,
   StagedVariables,
@@ -117,12 +118,7 @@ function addListChange(input: TUpdateServiceInput, change: TStagedListChange) {
   }
   input.upsertHosts = [
     ...(input.upsertHosts ?? []),
-    {
-      host: change.value.host,
-      path: "",
-      target_port: change.value.port,
-      prev_host: change.previous?.host,
-    },
+    hostTargetToSpec(change.value, change.previous?.host),
   ];
   if (change.addsPort && change.value.port !== undefined) addPort(input, change.value.port);
 }

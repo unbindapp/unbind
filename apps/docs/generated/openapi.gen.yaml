@@ -496,6 +496,9 @@ components:
         builder:
           $ref: "#/components/schemas/ServiceBuilder"
           description: Builder of the service - docker, nixpacks, railpack
+        client_ip_header:
+          description: Header a proxy in front of the service, like Cloudflare, carries the visitor's IP address in, e.g. CF-Connecting-IP. Unset picks CF-Connecting-IP while a domain is proxied through Cloudflare and nothing otherwise. Not for databases, only on installs that route through Envoy Gateway
+          type: string
         cron_schedule:
           description: Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Not for databases
           type: string
@@ -1474,9 +1477,58 @@ components:
         - none
       title: HealthCheckType
       type: string
+    HostBasicAuth:
+      additionalProperties: false
+      properties:
+        password:
+          description: Password visitors sign in with. Required when the domain had no basic auth, leave it out to keep the current one. Never returned
+          maxLength: 128
+          type: string
+        username:
+          description: Username visitors sign in with
+          maxLength: 64
+          minLength: 1
+          type: string
+      required:
+        - username
+      type: object
+    HostHeader:
+      additionalProperties: false
+      properties:
+        name:
+          description: Header name, e.g. Cache-Control
+          type: string
+        value:
+          description: Header value, e.g. public, max-age=600
+          type: string
+      required:
+        - name
+        - value
+      type: object
+    HostRedirect:
+      additionalProperties: false
+      properties:
+        status_code:
+          description: HTTP status of the redirect. 308 when unset, which keeps the request method
+          enum:
+            - 301
+            - 302
+            - 307
+            - 308
+          format: int64
+          type: integer
+        to:
+          description: URL visitors are sent to, with http or https, e.g. https://example.com. With no path the request path is kept, with a path every request lands on that path
+          type: string
+      required:
+        - to
+      type: object
     HostSpec:
       additionalProperties: false
       properties:
+        basic_auth:
+          $ref: "#/components/schemas/HostBasicAuth"
+          description: Ask visitors for a username and password before the service answers on this domain. Not with a redirect
         description:
           type: string
         display_name:
@@ -1493,6 +1545,17 @@ components:
         protocol:
           description: "Application protocol for the domain: http (default) or grpc"
           type: string
+        redirect:
+          $ref: "#/components/schemas/HostRedirect"
+          description: Send every request for the domain to another URL instead of the service, e.g. www.example.com to https://example.com. The port is ignored while a redirect is set
+        response_headers:
+          description: Headers set on every response of the domain, e.g. Strict-Transport-Security or Cache-Control. At most 20
+          items:
+            $ref: "#/components/schemas/HostHeader"
+          maxItems: 20
+          type:
+            - array
+            - "null"
         target_port:
           format: int32
           type: integer
@@ -2831,6 +2894,9 @@ components:
           type: string
         builder:
           $ref: "#/components/schemas/ServiceBuilder"
+        client_ip_header:
+          description: "Header the service's domains take the visitor's IP address from. Unset means automatic: CF-Connecting-IP while a domain is proxied through Cloudflare"
+          type: string
         cron_schedule:
           description: Cron expression the service runs on instead of running continuously
           type: string
@@ -4049,6 +4115,9 @@ components:
           type: string
         builder:
           $ref: "#/components/schemas/ServiceBuilder"
+        client_ip_header:
+          description: "Header a proxy in front of the service, like Cloudflare, carries the visitor's IP address in, e.g. CF-Connecting-IP. An empty string goes back to automatic: CF-Connecting-IP while a domain is proxied through Cloudflare and nothing otherwise. Not for databases, only on installs that route through Envoy Gateway"
+          type: string
         cron_schedule:
           description: Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Set empty string to run continuously again. Not for databases
           type: string

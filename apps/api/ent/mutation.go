@@ -20132,6 +20132,7 @@ type ServiceConfigMutation struct {
 	max_request_body_size_mb         *int32
 	addmax_request_body_size_mb      *int32
 	session_affinity                 *bool
+	client_ip_header                 *string
 	stopped                          *bool
 	cron_schedule                    *string
 	cron_timezone                    *string
@@ -21317,6 +21318,55 @@ func (m *ServiceConfigMutation) ResetSessionAffinity() {
 	m.session_affinity = nil
 }
 
+// SetClientIPHeader sets the "client_ip_header" field.
+func (m *ServiceConfigMutation) SetClientIPHeader(s string) {
+	m.client_ip_header = &s
+}
+
+// ClientIPHeader returns the value of the "client_ip_header" field in the mutation.
+func (m *ServiceConfigMutation) ClientIPHeader() (r string, exists bool) {
+	v := m.client_ip_header
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldClientIPHeader returns the old "client_ip_header" field's value of the ServiceConfig entity.
+// If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceConfigMutation) OldClientIPHeader(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldClientIPHeader is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldClientIPHeader requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldClientIPHeader: %w", err)
+	}
+	return oldValue.ClientIPHeader, nil
+}
+
+// ClearClientIPHeader clears the value of the "client_ip_header" field.
+func (m *ServiceConfigMutation) ClearClientIPHeader() {
+	m.client_ip_header = nil
+	m.clearedFields[serviceconfig.FieldClientIPHeader] = struct{}{}
+}
+
+// ClientIPHeaderCleared returns if the "client_ip_header" field was cleared in this mutation.
+func (m *ServiceConfigMutation) ClientIPHeaderCleared() bool {
+	_, ok := m.clearedFields[serviceconfig.FieldClientIPHeader]
+	return ok
+}
+
+// ResetClientIPHeader resets all changes to the "client_ip_header" field.
+func (m *ServiceConfigMutation) ResetClientIPHeader() {
+	m.client_ip_header = nil
+	delete(m.clearedFields, serviceconfig.FieldClientIPHeader)
+}
+
 // SetStopped sets the "stopped" field.
 func (m *ServiceConfigMutation) SetStopped(b bool) {
 	m.stopped = &b
@@ -22283,7 +22333,7 @@ func (m *ServiceConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceConfigMutation) Fields() []string {
-	fields := make([]string, 0, 39)
+	fields := make([]string, 0, 40)
 	if m.created_at != nil {
 		fields = append(fields, serviceconfig.FieldCreatedAt)
 	}
@@ -22349,6 +22399,9 @@ func (m *ServiceConfigMutation) Fields() []string {
 	}
 	if m.session_affinity != nil {
 		fields = append(fields, serviceconfig.FieldSessionAffinity)
+	}
+	if m.client_ip_header != nil {
+		fields = append(fields, serviceconfig.FieldClientIPHeader)
 	}
 	if m.stopped != nil {
 		fields = append(fields, serviceconfig.FieldStopped)
@@ -22453,6 +22506,8 @@ func (m *ServiceConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.MaxRequestBodySizeMB()
 	case serviceconfig.FieldSessionAffinity:
 		return m.SessionAffinity()
+	case serviceconfig.FieldClientIPHeader:
+		return m.ClientIPHeader()
 	case serviceconfig.FieldStopped:
 		return m.Stopped()
 	case serviceconfig.FieldCronSchedule:
@@ -22540,6 +22595,8 @@ func (m *ServiceConfigMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldMaxRequestBodySizeMB(ctx)
 	case serviceconfig.FieldSessionAffinity:
 		return m.OldSessionAffinity(ctx)
+	case serviceconfig.FieldClientIPHeader:
+		return m.OldClientIPHeader(ctx)
 	case serviceconfig.FieldStopped:
 		return m.OldStopped(ctx)
 	case serviceconfig.FieldCronSchedule:
@@ -22736,6 +22793,13 @@ func (m *ServiceConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSessionAffinity(v)
+		return nil
+	case serviceconfig.FieldClientIPHeader:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetClientIPHeader(v)
 		return nil
 	case serviceconfig.FieldStopped:
 		v, ok := value.(bool)
@@ -22964,6 +23028,9 @@ func (m *ServiceConfigMutation) ClearedFields() []string {
 	if m.FieldCleared(serviceconfig.FieldMaxRequestBodySizeMB) {
 		fields = append(fields, serviceconfig.FieldMaxRequestBodySizeMB)
 	}
+	if m.FieldCleared(serviceconfig.FieldClientIPHeader) {
+		fields = append(fields, serviceconfig.FieldClientIPHeader)
+	}
 	if m.FieldCleared(serviceconfig.FieldCronSchedule) {
 		fields = append(fields, serviceconfig.FieldCronSchedule)
 	}
@@ -23058,6 +23125,9 @@ func (m *ServiceConfigMutation) ClearField(name string) error {
 		return nil
 	case serviceconfig.FieldMaxRequestBodySizeMB:
 		m.ClearMaxRequestBodySizeMB()
+		return nil
+	case serviceconfig.FieldClientIPHeader:
+		m.ClearClientIPHeader()
 		return nil
 	case serviceconfig.FieldCronSchedule:
 		m.ClearCronSchedule()
@@ -23174,6 +23244,9 @@ func (m *ServiceConfigMutation) ResetField(name string) error {
 		return nil
 	case serviceconfig.FieldSessionAffinity:
 		m.ResetSessionAffinity()
+		return nil
+	case serviceconfig.FieldClientIPHeader:
+		m.ResetClientIPHeader()
 		return nil
 	case serviceconfig.FieldStopped:
 		m.ResetStopped()

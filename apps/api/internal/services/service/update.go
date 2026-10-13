@@ -154,6 +154,12 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 	if input.MaxRequestBodySizeMB != nil && service.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no request size limit")
 	}
+	if input.ClientIPHeader != nil && service.Type == schema.ServiceTypeDatabase {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Client IP header is not available for databases")
+	}
+	if err := validateClientIPHeader(input.ClientIPHeader); err != nil {
+		return nil, err
+	}
 
 	if input.SessionAffinity != nil && service.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no sticky sessions")
@@ -374,6 +380,9 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 				input.OverwriteHosts = append(input.OverwriteHosts, *generatedHost)
 			}
 		}
+		if err := prepareBasicAuth(service.Edges.ServiceConfig.Hosts, input.OverwriteHosts, input.UpsertHosts); err != nil {
+			return err
+		}
 		claimedHosts := slices.Concat(input.OverwriteHosts, input.UpsertHosts)
 		if err := self.validateHosts(ctx, tx, claimedHosts); err != nil {
 			return err
@@ -489,6 +498,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			RunCommand:                    input.RunCommand,
 			Public:                        input.IsPublic,
 			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
+			ClientIPHeader:                input.ClientIPHeader,
 			SessionAffinity:               input.SessionAffinity,
 			Stopped:                       input.Stopped,
 			CronSchedule:                  input.CronSchedule,
@@ -640,6 +650,13 @@ func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, inpu
 			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
 				Name:  "Sticky Sessions",
 				Value: fmt.Sprintf("%t", *input.SessionAffinity),
+			})
+		}
+
+		if input.ClientIPHeader != nil {
+			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
+				Name:  "Client IP Header",
+				Value: clientIPHeaderLabel(*input.ClientIPHeader),
 			})
 		}
 
@@ -821,4 +838,11 @@ func requestSizeLabel(sizeMB int32) string {
 		return "Default"
 	}
 	return fmt.Sprintf("%d MB", sizeMB)
+}
+
+func clientIPHeaderLabel(header string) string {
+	if header == "" {
+		return "Automatic"
+	}
+	return header
 }

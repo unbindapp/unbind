@@ -1,3 +1,4 @@
+import { headerLines } from "@/components/staged-changes/host-target";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
@@ -656,9 +657,15 @@ function listRow(change: TStagedListChange, isApplying: boolean): TChangeRow {
   };
 }
 
-function hostTargetLabel({ host, port }: THostTarget) {
-  if (port === undefined) return host;
-  return `${host}\nPort ${port}`;
+function hostTargetLabel({ host, port, redirect, basicAuth, responseHeaders }: THostTarget) {
+  const lines = [host];
+  if (redirect) lines.push(`Redirect to ${redirect.to} (${redirect.statusCode})`);
+  else if (port !== undefined) lines.push(`Port ${port}`);
+  if (basicAuth) {
+    lines.push(`Basic auth ${basicAuth.username}${basicAuth.password ? " (new password)" : ""}`);
+  }
+  lines.push(...headerLines(responseHeaders));
+  return lines.join("\n");
 }
 
 function variableRow(change: TStagedVariableChange, isApplying: boolean): TChangeRow {

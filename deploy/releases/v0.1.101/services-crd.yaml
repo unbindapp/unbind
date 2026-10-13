@@ -61,6 +61,10 @@ spec:
               config:
                 description: Configuration for the service
                 properties:
+                  clientIPHeader:
+                    description: ClientIPHeader names the header a proxy in front
+                      of the service carries the visitor's address in
+                    type: string
                   cronSchedule:
                     description: CronSchedule runs the service as a CronJob on this
                       cron expression instead of a Deployment
@@ -202,6 +206,20 @@ spec:
                       service
                     items:
                       properties:
+                        basicAuth:
+                          description: BasicAuth asks visitors for a username and
+                            password before the host answers
+                          properties:
+                            passwordHash:
+                              description: PasswordHash is the password in htpasswd
+                                SHA form
+                              type: string
+                            username:
+                              type: string
+                          required:
+                          - passwordHash
+                          - username
+                          type: object
                         host:
                           description: Host is the external domain for the service
                           type: string
@@ -217,6 +235,40 @@ spec:
                           - http
                           - grpc
                           type: string
+                        redirect:
+                          description: Redirect answers every request for the host
+                            with a redirect instead of routing it
+                          properties:
+                            statusCode:
+                              enum:
+                              - 301
+                              - 302
+                              - 307
+                              - 308
+                              format: int32
+                              type: integer
+                            to:
+                              description: To is the URL visitors are sent to. The
+                                request path is kept when it has no path
+                              type: string
+                          required:
+                          - statusCode
+                          - to
+                          type: object
+                        responseHeaders:
+                          description: ResponseHeaders are set on every response of
+                            the host
+                          items:
+                            properties:
+                              name:
+                                type: string
+                              value:
+                                type: string
+                            required:
+                            - name
+                            - value
+                            type: object
+                          type: array
                       required:
                       - host
                       - path

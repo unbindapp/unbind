@@ -1,0 +1,294 @@
+import {
+  Block,
+  BlockItem,
+  BlockItemButtonLike,
+  BlockItemContent,
+  BlockItemDescription,
+  BlockItemHeader,
+  BlockItemTitle,
+} from "@/components/block";
+import ErrorLine from "@/components/error-line";
+import ResponseHeadersInput from "@/components/service/panel/content/deployed/settings/sections/networking/_components/response-headers-input";
+import {
+  defaultRedirectStatusCode,
+  headerLines,
+  parseHeaderLine,
+  redirectStatusCodes,
+} from "@/components/staged-changes/host-target";
+import type { THostTarget } from "@/components/staged-changes/types";
+import { withFieldGroup } from "@/lib/hooks/use-app-form";
+import type { AnyFieldApi } from "@tanstack/react-form";
+import { CornerDownRightIcon, KeyRoundIcon, UserIcon } from "lucide-react";
+
+const redirectStatusLabels: Record<(typeof redirectStatusCodes)[number], string> = {
+  301: "301 Moved Permanently",
+  302: "302 Found",
+  307: "307 Temporary Redirect",
+  308: "308 Permanent Redirect",
+};
+
+const redirectStatusItems = redirectStatusCodes.map((code) => ({
+  value: String(code),
+  label: redirectStatusLabels[code],
+}));
+
+export type THostOptions = Pick<THostTarget, "redirect" | "basicAuth" | "responseHeaders">;
+
+// The options as the form holds them
+export type TDomainOptionsValues = {
+  redirectTo: string;
+  redirectStatus: string;
+  basicAuthUsername: string;
+  // Only ever typed, the server never returns it
+  basicAuthPassword: string;
+  responseHeaders: string[];
+};
+
+export const defaultDomainOptionsValues: TDomainOptionsValues = {
+  redirectTo: "",
+  redirectStatus: String(defaultRedirectStatusCode),
+  basicAuthUsername: "",
+  basicAuthPassword: "",
+  responseHeaders: [],
+};
+
+export function domainOptionsToValues(options: THostOptions | undefined): TDomainOptionsValues {
+  return {
+    redirectTo: options?.redirect?.to ?? "",
+    redirectStatus: String(options?.redirect?.statusCode ?? defaultRedirectStatusCode),
+    basicAuthUsername: options?.basicAuth?.username ?? "",
+    basicAuthPassword: "",
+    responseHeaders: headerLines(options?.responseHeaders),
+  };
+}
+
+export function domainOptionsFromValues(values: TDomainOptionsValues): THostOptions {
+  const options: THostOptions = {};
+  const redirectTo = values.redirectTo.trim();
+  const username = values.basicAuthUsername.trim();
+  if (redirectTo) {
+    options.redirect = { to: redirectTo, statusCode: Number(values.redirectStatus) };
+  } else if (username) {
+    options.basicAuth = { username, password: values.basicAuthPassword || undefined };
+  }
+  const headers = values.responseHeaders.map(parseHeaderLine).filter((h) => h !== null);
+  if (headers.length > 0) options.responseHeaders = headers;
+  return options;
+}
+
+export const domainOptionsFieldNames = [
+  "redirectTo",
+  "redirectStatus",
+  "basicAuthUsername",
+  "basicAuthPassword",
+  "responseHeaders",
+] as const;
+
+export function validateRedirectTo(value: string) {
+  const trimmed = value.trim();
+  if (trimmed === "") return undefined;
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return { message: "Enter a URL starting with https:// or http://." };
+  }
+  try {
+    const url = new URL(trimmed);
+    if (!url.hostname) return { message: "Enter a URL like https://example.com." };
+    if (url.search || url.hash || url.username) {
+      return { message: "A redirect URL cannot have a query, fragment or credentials." };
+    }
+  } catch {
+    return { message: "Enter a URL like https://example.com." };
+  }
+  return undefined;
+}
+
+export function validateResponseHeaders(value: string[]) {
+  if (value.some((line) => parseHeaderLine(line) === null)) {
+    return { message: "Each header is Name: value, like Cache-Control: no-store." };
+  }
+  return undefined;
+}
+
+// A field group's fields are typed against an unknown form, which the field components reject
+const asFieldApi = (field: unknown) => field as AnyFieldApi;
+
+export const DomainOptionsFields = withFieldGroup({
+  defaultValues: defaultDomainOptionsValues,
+  props: {
+    serverValues: defaultDomainOptionsValues,
+  },
+  render: function Render({ group, serverValues }) {
+    const hasSavedPassword = serverValues.basicAuthUsername !== "";
+    return (
+      <>
+        <Block>
+          <group.AppField
+            name="redirectTo"
+            validators={{ onChange: ({ value }) => validateRedirectTo(value) }}
+          >
+            {(field) => (
+              <BlockItem className="w-full md:w-full">
+                <BlockItemHeader type="column">
+                  <BlockItemTitle>Redirect</BlockItemTitle>
+                  <BlockItemDescription>
+                    Send visitors to another URL instead of the service. The path is kept when the
+                    URL has none.
+                  </BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <field.TextField
+                    field={asFieldApi(field)}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="https://example.com"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    autoComplete="off"
+                    spellCheck="false"
+                    inputMode="url"
+                    Icon={CornerDownRightIcon}
+                    hasChanges={field.state.value.trim() !== serverValues.redirectTo}
+                  />
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          </group.AppField>
+        </Block>
+        <group.Subscribe selector={(s) => s.values.redirectTo.trim() !== ""}>
+          {(hasRedirect) =>
+            hasRedirect ? (
+              <Block>
+                <group.AppField name="redirectStatus">
+                  {(field) => (
+                    <BlockItem className="w-full md:w-full">
+                      <BlockItemHeader type="column">
+                        <BlockItemTitle>Redirect Status</BlockItemTitle>
+                      </BlockItemHeader>
+                      <BlockItemContent>
+                        <field.AsyncDropdownMenu
+                          dontCheckUntilSubmit
+                          field={asFieldApi(field)}
+                          value={field.state.value}
+                          onChange={(v) => field.handleChange(v)}
+                          items={redirectStatusItems}
+                          isPending={false}
+                          error={undefined}
+                        >
+                          {({ isOpen }) => (
+                            <BlockItemButtonLike
+                              asElement="button"
+                              text={
+                                redirectStatusItems.find((i) => i.value === field.state.value)
+                                  ?.label ?? field.state.value
+                              }
+                              variant="outline"
+                              open={isOpen}
+                              onBlur={field.handleBlur}
+                              hasChanges={field.state.value !== serverValues.redirectStatus}
+                            />
+                          )}
+                        </field.AsyncDropdownMenu>
+                      </BlockItemContent>
+                    </BlockItem>
+                  )}
+                </group.AppField>
+              </Block>
+            ) : (
+              <Block>
+                <BlockItem className="w-full md:w-full">
+                  <BlockItemHeader type="column">
+                    <BlockItemTitle>Basic Auth</BlockItemTitle>
+                    <BlockItemDescription>
+                      Ask visitors for a username and password before the service answers.
+                    </BlockItemDescription>
+                  </BlockItemHeader>
+                  <BlockItemContent>
+                    <div className="flex w-full flex-col">
+                      <group.AppField name="basicAuthUsername">
+                        {(field) => (
+                          <field.TextField
+                            field={asFieldApi(field)}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            placeholder="Username"
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            autoComplete="off"
+                            spellCheck="false"
+                            Icon={UserIcon}
+                            classNameInput="rounded-b-none"
+                            hasChanges={field.state.value.trim() !== serverValues.basicAuthUsername}
+                          />
+                        )}
+                      </group.AppField>
+                      <div className="bg-border h-px w-full" />
+                      <group.AppField
+                        name="basicAuthPassword"
+                        validators={{
+                          onSubmit: ({ value }) => {
+                            const isProtected =
+                              group.getFieldValue("redirectTo").trim() === "" &&
+                              group.getFieldValue("basicAuthUsername").trim() !== "";
+                            if (!isProtected || hasSavedPassword || value !== "") return undefined;
+                            return { message: "Enter a password." };
+                          },
+                        }}
+                      >
+                        {(field) => (
+                          <field.TextField
+                            field={asFieldApi(field)}
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            type="password"
+                            placeholder={hasSavedPassword ? "Password (unchanged)" : "Password"}
+                            autoComplete="new-password"
+                            Icon={KeyRoundIcon}
+                            classNameInput="rounded-t-none border-t-0"
+                            hasChanges={field.state.value !== ""}
+                          />
+                        )}
+                      </group.AppField>
+                    </div>
+                  </BlockItemContent>
+                </BlockItem>
+              </Block>
+            )
+          }
+        </group.Subscribe>
+        <Block>
+          <group.AppField
+            name="responseHeaders"
+            validators={{ onChange: ({ value }) => validateResponseHeaders(value) }}
+          >
+            {(field) => (
+              <BlockItem className="w-full md:w-full">
+                <BlockItemHeader type="column">
+                  <BlockItemTitle>Response Headers</BlockItemTitle>
+                  <BlockItemDescription>
+                    Set on every response of the domain, as Name: value.
+                  </BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <div className="flex w-full flex-col gap-1.5">
+                    <ResponseHeadersInput
+                      value={field.state.value}
+                      serverValue={serverValues.responseHeaders}
+                      onChange={(v) => field.handleChange(v)}
+                      onBlur={field.handleBlur}
+                    />
+                    {field.state.meta.errors.length > 0 && field.state.meta.isTouched && (
+                      <ErrorLine message={field.state.meta.errors[0]?.message} />
+                    )}
+                  </div>
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          </group.AppField>
+        </Block>
+      </>
+    );
+  },
+});

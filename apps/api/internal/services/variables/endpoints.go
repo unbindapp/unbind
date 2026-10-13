@@ -79,8 +79,9 @@ func publicEndpointsFor(serviceType schema.ServiceType, databaseType string, con
 	var endpoints []serviceEndpoint
 	fronted := make(map[int32]struct{})
 	for _, host := range config.Hosts {
-		// A wildcard is a pattern, not an address a client can connect to
-		if utils.IsWildcardHost(host.Host) {
+		// A wildcard is a pattern, not an address a client can connect to, and a
+		// redirect never reaches the service
+		if utils.IsWildcardHost(host.Host) || host.IsRedirect() {
 			continue
 		}
 		var nodePort int32

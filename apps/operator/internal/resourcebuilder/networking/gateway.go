@@ -39,8 +39,11 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	var listeners []gwapiv1.Listener
 	var objects []client.Object
 
-	// HTTP / gRPC hosts: one HTTPS listener per host, split into HTTPRoute/GRPCRoute.
+	// HTTP / gRPC hosts: one HTTPS listener per host. Each HTTP host gets its own
+	// HTTPRoute bound to its listener, since a rule cannot match on hostname and the
+	// hosts differ in port, redirect, auth or headers.
 	var httpHosts, grpcHosts []v1.HostSpec
+	var httpRouteNames []string
 	if httpRoutable {
 		for i, host := range svc.Spec.Config.Hosts {
 			listeners = append(listeners, gwapiv1.Listener{
@@ -58,18 +61,27 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 			})
 			if host.Protocol == "grpc" {
 				grpcHosts = append(grpcHosts, host)
-			} else {
-				httpHosts = append(httpHosts, host)
+				continue
 			}
-		}
-		if len(httpHosts) > 0 {
-			objects = append(objects, p.httpRoute(svc, in.Labels, httpHosts))
+			httpHosts = append(httpHosts, host)
+			name := hostObjectName(svc, i)
+			httpRouteNames = append(httpRouteNames, name)
+			objects = append(objects, p.httpRoute(svc, in.Labels, name, i, host))
+			if p.cfg.GatewayControllerEnvoy && host.BasicAuth != nil {
+				objects = append(objects,
+					htpasswdSecret(svc, in.Labels, name, ".htpasswd", host.BasicAuth),
+					envoyBasicAuthPolicy(svc, in.Labels, name),
+				)
+			}
 		}
 		if len(grpcHosts) > 0 {
 			objects = append(objects, p.grpcRoute(svc, in.Labels, grpcHosts))
 		}
-		if p.cfg.GatewayControllerEnvoy && svc.Spec.Config.SessionAffinity {
-			objects = append(objects, envoyAffinityPolicy(in))
+		if p.cfg.GatewayControllerEnvoy && svc.Spec.Config.SessionAffinity && len(httpRouteNames) > 0 {
+			objects = append(objects, envoyAffinityPolicy(in, httpRouteNames))
+		}
+		if p.cfg.GatewayControllerEnvoy && svc.Spec.Config.ClientIPHeader != "" {
+			objects = append(objects, envoyClientIPPolicy(in))
 		}
 	}
 
@@ -134,29 +146,58 @@ func (p gatewayProvider) parentRef(svc *v1.Service, section *gwapiv1.SectionName
 	}
 }
 
-func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, hosts []v1.HostSpec) *gwapiv1.HTTPRoute {
-	hostnames := make([]gwapiv1.Hostname, len(hosts))
-	rules := make([]gwapiv1.HTTPRouteRule, len(hosts))
-	for i, host := range hosts {
-		port, path := resolveHostPort(svc, host)
-		hostnames[i] = gwapiv1.Hostname(host.Host)
-		rules[i] = gwapiv1.HTTPRouteRule{
-			Matches: []gwapiv1.HTTPRouteMatch{{
-				Path: &gwapiv1.HTTPPathMatch{Type: ptr.To(gwapiv1.PathMatchPathPrefix), Value: ptr.To(path)},
-			}},
-			BackendRefs: []gwapiv1.HTTPBackendRef{{BackendRef: gwapiv1.BackendRef{
-				BackendObjectReference: gwapiv1.BackendObjectReference{Name: gwapiv1.ObjectName(svc.Name), Port: ptr.To(gwapiv1.PortNumber(port))},
-			}}},
-			Timeouts: &gwapiv1.HTTPRouteTimeouts{Request: ptr.To(gwapiv1.Duration("21600s"))},
-		}
+func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, name string, index int, host v1.HostSpec) *gwapiv1.HTTPRoute {
+	port, path := resolveHostPort(svc, host)
+	rule := gwapiv1.HTTPRouteRule{
+		Matches: []gwapiv1.HTTPRouteMatch{{
+			Path: &gwapiv1.HTTPPathMatch{Type: ptr.To(gwapiv1.PathMatchPathPrefix), Value: ptr.To(path)},
+		}},
 	}
+	if target, ok := parseRedirect(host.Redirect); ok {
+		rule.Filters = append(rule.Filters, redirectFilter(target, host.Redirect.StatusCode))
+	} else {
+		rule.BackendRefs = []gwapiv1.HTTPBackendRef{{BackendRef: gwapiv1.BackendRef{
+			BackendObjectReference: gwapiv1.BackendObjectReference{Name: gwapiv1.ObjectName(svc.Name), Port: ptr.To(gwapiv1.PortNumber(port))},
+		}}}
+		rule.Timeouts = &gwapiv1.HTTPRouteTimeouts{Request: ptr.To(gwapiv1.Duration("21600s"))}
+	}
+	if len(host.ResponseHeaders) > 0 {
+		rule.Filters = append(rule.Filters, responseHeaderFilter(host.ResponseHeaders))
+	}
+	section := gwapiv1.SectionName(fmt.Sprintf("https-%d", index))
 	return &gwapiv1.HTTPRoute{
-		ObjectMeta: metav1.ObjectMeta{Name: svc.Name, Namespace: svc.Namespace, Labels: labels},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: svc.Namespace, Labels: labels},
 		Spec: gwapiv1.HTTPRouteSpec{
-			CommonRouteSpec: gwapiv1.CommonRouteSpec{ParentRefs: []gwapiv1.ParentReference{p.parentRef(svc, nil)}},
-			Hostnames:       hostnames,
-			Rules:           rules,
+			CommonRouteSpec: gwapiv1.CommonRouteSpec{ParentRefs: []gwapiv1.ParentReference{p.parentRef(svc, &section)}},
+			Hostnames:       []gwapiv1.Hostname{gwapiv1.Hostname(host.Host)},
+			Rules:           []gwapiv1.HTTPRouteRule{rule},
 		},
+	}
+}
+
+func redirectFilter(target redirectTarget, statusCode int32) gwapiv1.HTTPRouteFilter {
+	redirect := &gwapiv1.HTTPRequestRedirectFilter{
+		Scheme:     ptr.To(target.Scheme),
+		Hostname:   ptr.To(gwapiv1.PreciseHostname(target.Host)),
+		StatusCode: ptr.To(int(statusCode)),
+	}
+	if target.Port != nil {
+		redirect.Port = ptr.To(gwapiv1.PortNumber(*target.Port))
+	}
+	if target.Path != "" {
+		redirect.Path = &gwapiv1.HTTPPathModifier{Type: gwapiv1.FullPathHTTPPathModifier, ReplaceFullPath: ptr.To(target.Path)}
+	}
+	return gwapiv1.HTTPRouteFilter{Type: gwapiv1.HTTPRouteFilterRequestRedirect, RequestRedirect: redirect}
+}
+
+func responseHeaderFilter(headers []v1.HostHeaderSpec) gwapiv1.HTTPRouteFilter {
+	set := make([]gwapiv1.HTTPHeader, len(headers))
+	for i, header := range headers {
+		set[i] = gwapiv1.HTTPHeader{Name: gwapiv1.HTTPHeaderName(header.Name), Value: header.Value}
+	}
+	return gwapiv1.HTTPRouteFilter{
+		Type:                   gwapiv1.HTTPRouteFilterResponseHeaderModifier,
+		ResponseHeaderModifier: &gwapiv1.HTTPHeaderFilter{Set: set},
 	}
 }
 
@@ -218,21 +259,30 @@ func (p gatewayProvider) certificate(svc *v1.Service, labels map[string]string, 
 	return u
 }
 
+func envoyPolicy(svc *v1.Service, labels map[string]string, kind, name string, spec map[string]any) *unstructured.Unstructured {
+	u := &unstructured.Unstructured{}
+	u.SetGroupVersionKind(schema.GroupVersionKind{Group: "gateway.envoyproxy.io", Version: "v1alpha1", Kind: kind})
+	u.SetName(name)
+	u.SetNamespace(svc.Namespace)
+	u.SetLabels(labels)
+	u.Object["spec"] = spec
+	return u
+}
+
+func routeTargetRefs(names []string) []any {
+	refs := make([]any, len(names))
+	for i, name := range names {
+		refs[i] = map[string]any{"group": "gateway.networking.k8s.io", "kind": "HTTPRoute", "name": name}
+	}
+	return refs
+}
+
 // envoyAffinityPolicy reproduces nginx cookie session affinity via an Envoy
 // Gateway BackendTrafficPolicy, the only portable spot for it on Gateway API.
-func envoyAffinityPolicy(in RouteInput) *unstructured.Unstructured {
+func envoyAffinityPolicy(in RouteInput, routeNames []string) *unstructured.Unstructured {
 	svc := in.Service
-	u := &unstructured.Unstructured{}
-	u.SetGroupVersionKind(schema.GroupVersionKind{Group: "gateway.envoyproxy.io", Version: "v1alpha1", Kind: "BackendTrafficPolicy"})
-	u.SetName(svc.Name)
-	u.SetNamespace(svc.Namespace)
-	u.SetLabels(in.Labels)
-	u.Object["spec"] = map[string]any{
-		"targetRefs": []any{map[string]any{
-			"group": "gateway.networking.k8s.io",
-			"kind":  "HTTPRoute",
-			"name":  svc.Name,
-		}},
+	return envoyPolicy(svc, in.Labels, "BackendTrafficPolicy", svc.Name, map[string]any{
+		"targetRefs": routeTargetRefs(routeNames),
 		"loadBalancer": map[string]any{
 			"type": "ConsistentHash",
 			"consistentHash": map[string]any{
@@ -240,6 +290,27 @@ func envoyAffinityPolicy(in RouteInput) *unstructured.Unstructured {
 				"cookie": map[string]any{"name": fmt.Sprintf("%s-session", svc.Name), "ttl": "48h"},
 			},
 		},
-	}
-	return u
+	})
+}
+
+// envoyBasicAuthPolicy guards one host's HTTPRoute with the htpasswd Secret of the
+// same name. Envoy Gateway reads the users from the .htpasswd key.
+func envoyBasicAuthPolicy(svc *v1.Service, labels map[string]string, routeName string) *unstructured.Unstructured {
+	return envoyPolicy(svc, labels, "SecurityPolicy", routeName, map[string]any{
+		"targetRefs": routeTargetRefs([]string{routeName}),
+		"basicAuth":  map[string]any{"users": map[string]any{"name": htpasswdSecretName(routeName)}},
+	})
+}
+
+// envoyClientIPPolicy makes Envoy take the visitor's address from the header a
+// proxy in front of the service sets, for every listener of the service's Gateway.
+// Requests without the header keep the address of the connection.
+func envoyClientIPPolicy(in RouteInput) *unstructured.Unstructured {
+	svc := in.Service
+	return envoyPolicy(svc, in.Labels, "ClientTrafficPolicy", svc.Name, map[string]any{
+		"targetRefs": []any{map[string]any{"group": "gateway.networking.k8s.io", "kind": "Gateway", "name": svc.Name}},
+		"clientIPDetection": map[string]any{
+			"customHeader": map[string]any{"name": svc.Spec.Config.ClientIPHeader, "failClosed": false},
+		},
+	})
 }

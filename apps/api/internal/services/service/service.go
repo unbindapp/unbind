@@ -142,6 +142,9 @@ func (self *ServiceService) validateHosts(ctx context.Context, tx repository.TxI
 		if err := utils.ValidateServiceHost(host.Host); err != nil {
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 		}
+		if err := validateHostOptions(host); err != nil {
+			return err
+		}
 		if !utils.IsWildcardHost(host.Host) {
 			continue
 		}
@@ -182,10 +185,11 @@ func (self *ServiceService) reservedHosts(ctx context.Context, tx repository.TxI
 	return reserved, nil
 }
 
-// serviceURL is the first address a visitor can open, wildcards only match addresses
+// serviceURL is the first address a visitor can open: wildcards only match addresses
+// and a redirect sends them elsewhere
 func serviceURL(hosts []schema.HostSpec) (string, bool) {
 	for _, host := range hosts {
-		if !utils.IsWildcardHost(host.Host) {
+		if !utils.IsWildcardHost(host.Host) && !host.IsRedirect() {
 			return fmt.Sprintf("https://%s", host.Host), true
 		}
 	}

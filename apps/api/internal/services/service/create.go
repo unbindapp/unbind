@@ -50,6 +50,12 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	if input.MaxRequestBodySizeMB != nil && input.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no request size limit")
 	}
+	if input.ClientIPHeader != nil && input.Type == schema.ServiceTypeDatabase {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Client IP header is not available for databases")
+	}
+	if err := validateClientIPHeader(input.ClientIPHeader); err != nil {
+		return nil, err
+	}
 
 	if input.SessionAffinity != nil && input.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no sticky sessions")
@@ -361,6 +367,9 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			}
 		}
 
+		if err := prepareBasicAuth(nil, hosts); err != nil {
+			return err
+		}
 		if err := self.validateHosts(ctx, tx, hosts); err != nil {
 			return err
 		}
@@ -440,6 +449,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			CronTimezone:                  input.CronTimezone,
 			Public:                        isPublic,
 			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
+			ClientIPHeader:                input.ClientIPHeader,
 			SessionAffinity:               input.SessionAffinity,
 			Image:                         input.Image,
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,

@@ -711,6 +711,7 @@ var (
 		{Name: "is_public", Type: field.TypeBool, Default: false},
 		{Name: "max_request_body_size_mb", Type: field.TypeInt32, Nullable: true},
 		{Name: "session_affinity", Type: field.TypeBool, Default: false},
+		{Name: "client_ip_header", Type: field.TypeString, Nullable: true},
 		{Name: "stopped", Type: field.TypeBool, Default: false},
 		{Name: "cron_schedule", Type: field.TypeString, Nullable: true},
 		{Name: "cron_timezone", Type: field.TypeString, Nullable: true},
@@ -738,13 +739,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "service_configs_s3_buckets_service_backup_configs",
-				Columns:    []*schema.Column{ServiceConfigsColumns[38]},
+				Columns:    []*schema.Column{ServiceConfigsColumns[39]},
 				RefColumns: []*schema.Column{S3BucketsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "service_configs_services_service_config",
-				Columns:    []*schema.Column{ServiceConfigsColumns[39]},
+				Columns:    []*schema.Column{ServiceConfigsColumns[40]},
 				RefColumns: []*schema.Column{ServicesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

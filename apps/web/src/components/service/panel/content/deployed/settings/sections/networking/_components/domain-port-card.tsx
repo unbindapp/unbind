@@ -7,10 +7,18 @@ import {
   BlockItemTitle,
 } from "@/components/block";
 import CopyButton from "@/components/copy-button";
+import {
+  DomainOptionsFields,
+  domainOptionsFieldNames,
+  domainOptionsFromValues,
+  domainOptionsToValues,
+  type THostOptions,
+} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-options-fields";
 import { getNetworkingDisplayUrl } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
 import { TModeAndPort } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
 import { useStageNetworking } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { DomainStatusRow } from "@/components/service/panel/content/undeployed/domain-card";
+import { hostTargetsEqual } from "@/components/staged-changes/host-target";
 import { StagedChip, type TStagedState } from "@/components/staged-changes/staged-chip";
 import type { TStagedListEntry } from "@/components/staged-changes/staged-changes-provider";
 import { Button } from "@/components/ui/button";
@@ -25,9 +33,12 @@ import { useStore } from "@tanstack/react-form";
 import {
   CheckCircleIcon,
   CircleAlertIcon,
+  CornerDownRightIcon,
   EthernetPortIcon,
   GlobeIcon,
   GlobeLockIcon,
+  KeyRoundIcon,
+  ListIcon,
   PenIcon,
   PlusIcon,
   Trash2Icon,
@@ -39,21 +50,26 @@ export default function DomainPortCard({
   mode,
   domain,
   port,
+  options,
   service,
   dnsStatus,
   isCloudflare,
   staged,
 }: {
   service: TServiceShallow;
-  // What the card shows: the staged domain and port when there are any, the saved ones otherwise
+  // What the card shows: the staged domain, port and options when there are any, the saved ones otherwise
   domain: string;
+  options?: THostOptions;
   dnsStatus?: DNSStatus;
   isCloudflare?: boolean;
   staged?: TStagedListEntry;
 } & TModeAndPort) {
   const { stageHost, stagePort, discard } = useStageNetworking(service);
   const stagedHost = staged?.kind === "host" ? staged : undefined;
-  const saved = stagedHost ? stagedHost.previous : { host: domain, port };
+  const shown = { host: domain, port, ...options };
+  const saved = stagedHost ? stagedHost.previous : shown;
+  const optionValues = useMemo(() => domainOptionsToValues(options), [options]);
+  const savedOptionValues = useMemo(() => domainOptionsToValues(saved ?? undefined), [saved]);
   const stagedState = getStagedState(staged);
   const isApplying = staged?.isApplying === true;
 
@@ -100,6 +116,7 @@ export default function DomainPortCard({
       targetPortType:
         port !== undefined && allPortOptions.includes(port.toString()) ? port.toString() : "",
       targetPort: "",
+      options: optionValues,
       isEditing: false,
     },
     onSubmit: async ({ value }) => {
@@ -109,11 +126,16 @@ export default function DomainPortCard({
       }
       const targetPort =
         value.targetPortType !== customPortText ? value.targetPortType : value.targetPort;
-      const next = { host: value.host, port: Number(targetPort) };
+      const next = {
+        host: value.host,
+        port: Number(targetPort) || port,
+        ...domainOptionsFromValues(value.options),
+      };
 
       // A staged domain that gets another name is another change
       const isRenamedAddition = staged && !saved && next.host !== domain;
-      const isBackToSaved = saved?.host === next.host && saved.port === next.port;
+      const isBackToSaved =
+        saved !== null && hostTargetsEqual(saved, next) && !next.basicAuth?.password;
       if (staged && (isRenamedAddition || isBackToSaved)) discard([staged.id]);
       if (!isBackToSaved) stageHost(saved, next);
       form.reset();
@@ -135,8 +157,12 @@ export default function DomainPortCard({
     if (s.values.targetPortType === customPortText && !s.fieldMeta.targetPort?.isDefaultValue) {
       count++;
     }
+    for (const name of domainOptionsFieldNames) {
+      if (!s.fieldMeta[`options.${name}`]?.isDefaultValue) count++;
+    }
     return count;
   });
+  const hasRedirect = useStore(form.store, (s) => s.values.options.redirectTo.trim() !== "");
 
   const isEditing = useStore(form.store, (s) => s.values.isEditing);
   const showDnsStatus =
@@ -250,17 +276,43 @@ export default function DomainPortCard({
           })}
           description={({ className }) => {
             if (port === undefined || mode !== "public") return null;
+            const rowClassName = cn(
+              "text-muted-foreground group-data-editing/field:text-change/9-10 group-data-staged/field:text-change/9-10 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
+              className,
+            );
+            const headerCount = options?.responseHeaders?.length ?? 0;
             return (
               <div className="flex w-full flex-col">
-                <div
-                  className={cn(
-                    "text-muted-foreground group-data-editing/field:text-change/9-10 group-data-staged/field:text-change/9-10 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
-                    className,
+                <div className={rowClassName}>
+                  {options?.redirect ? (
+                    <>
+                      <CornerDownRightIcon className="mt-0.375 size-3.5 shrink-0" />
+                      <p className="min-w-0 shrink wrap-anywhere">
+                        {options.redirect.to}
+                        <span className="opacity-60">{` · ${options.redirect.statusCode}`}</span>
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <EthernetPortIcon className="mt-0.375 size-3.5 shrink-0" />
+                      <p className="min-w-0 shrink">{port}</p>
+                    </>
                   )}
-                >
-                  <EthernetPortIcon className="mt-0.375 size-3.5 shrink-0" />
-                  <p className="min-w-0 shrink">{port}</p>
                 </div>
+                {options?.basicAuth && (
+                  <div className={cn(rowClassName, "mt-1")}>
+                    <KeyRoundIcon className="mt-0.375 size-3.5 shrink-0" />
+                    <p className="min-w-0 shrink">{options.basicAuth.username}</p>
+                  </div>
+                )}
+                {headerCount > 0 && (
+                  <div className={cn(rowClassName, "mt-1")}>
+                    <ListIcon className="mt-0.375 size-3.5 shrink-0" />
+                    <p className="min-w-0 shrink">
+                      {headerCount === 1 ? "1 header" : `${headerCount} headers`}
+                    </p>
+                  </div>
+                )}
                 {showDnsStatus && (
                   <DomainStatusRow
                     dnsStatus={dnsStatus}
@@ -327,7 +379,10 @@ export default function DomainPortCard({
                   )}
                 </form.AppField>
               </Block>
-              <div className="flex w-full flex-col">
+              <div
+                data-redirect={hasRedirect || undefined}
+                className="flex w-full flex-col data-redirect:hidden"
+              >
                 {allPortOptions.length === 0 && (
                   <Block>
                     <form.AppField
@@ -476,6 +531,7 @@ export default function DomainPortCard({
                   />
                 )}
               </div>
+              <DomainOptionsFields form={form} fields="options" serverValues={savedOptionValues} />
             </div>
             <div className="bg-change/2-10 border-change/5-10 mt-1 flex w-full flex-col border-t p-1.5">
               <form.Subscribe

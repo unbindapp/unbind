@@ -1,3 +1,5 @@
-# Service CRD with cronSchedule and cronTimeZone
+# Service CRD with cronSchedule, cronTimeZone and domain options (redirect, basic auth,
+# response headers), operator ClusterRole with the Envoy Gateway policy kinds
 resources:
   - services-crd.yaml
+  - rbac.yaml

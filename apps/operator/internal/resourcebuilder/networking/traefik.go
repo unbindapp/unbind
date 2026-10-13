@@ -43,15 +43,68 @@ func (p traefikProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	buffering := traefikMiddleware(svc.Name+"-buffering", svc.Namespace, in.Labels, map[string]any{
 		"buffering": map[string]any{"maxRequestBodyBytes": maxRequestBodySizeMB(svc) << 20},
 	})
+	var objects []client.Object
 
-	annotations := map[string]string{
+	plain, optioned := splitHosts(svc)
+	if len(plain) > 0 {
+		annotations := traefikAnnotations(svc.Namespace, redirect, buffering)
+		objects = append(objects, buildIngress(in, svc.Name, "traefik", annotations, plain, tlsSecretName(svc)))
+	}
+	objects = append(objects, redirect, buffering)
+	for _, i := range sortedIndexes(optioned) {
+		host := optioned[i]
+		name := hostIngressName(svc, i)
+		middlewares := []*unstructured.Unstructured{redirect, buffering}
+		if target, ok := parseRedirect(host.Redirect); ok {
+			middlewares = append(middlewares, traefikMiddleware(name+"-redirect", svc.Namespace, in.Labels, traefikRedirect(target, host.Redirect.StatusCode)))
+		}
+		if host.BasicAuth != nil {
+			objects = append(objects, htpasswdSecret(svc, in.Labels, name, "users", host.BasicAuth))
+			middlewares = append(middlewares, traefikMiddleware(name+"-auth", svc.Namespace, in.Labels, map[string]any{
+				"basicAuth": map[string]any{"secret": htpasswdSecretName(name)},
+			}))
+		}
+		if len(host.ResponseHeaders) > 0 {
+			headers := map[string]any{}
+			for _, header := range host.ResponseHeaders {
+				headers[header.Name] = header.Value
+			}
+			middlewares = append(middlewares, traefikMiddleware(name+"-headers", svc.Namespace, in.Labels, map[string]any{
+				"headers": map[string]any{"customResponseHeaders": headers},
+			}))
+		}
+		annotations := traefikAnnotations(svc.Namespace, middlewares...)
+		objects = append(objects, buildIngress(in, name, "traefik", annotations, []v1.HostSpec{host}, name+"-tls-secret"))
+		for _, mw := range middlewares[2:] {
+			objects = append(objects, mw)
+		}
+	}
+
+	return ingressRoutes(p.cfg, in, objects...), nil
+}
+
+func traefikAnnotations(namespace string, middlewares ...*unstructured.Unstructured) map[string]string {
+	return map[string]string{
 		"kubernetes.io/tls-acme":                           "true",
 		"traefik.ingress.kubernetes.io/router.entrypoints": "websecure",
-		"traefik.ingress.kubernetes.io/router.middlewares": traefikMiddlewareRefs(svc.Namespace, redirect, buffering),
+		"traefik.ingress.kubernetes.io/router.middlewares": traefikMiddlewareRefs(namespace, middlewares...),
 	}
-	ingress := buildIngress(in, "traefik", annotations)
+}
 
-	return ingressRoutes(p.cfg, in, ingress, redirect, buffering), nil
+// traefikRedirect rewrites the whole request URL. Traefik picks 301/302 for GET and
+// 308/307 for other methods from the permanent flag, so 308 maps to permanent.
+func traefikRedirect(target redirectTarget, statusCode int32) map[string]any {
+	regex, replacement := "^.*$", target.URL()
+	if target.Path == "" {
+		regex, replacement = "^https?://[^/]+(.*)$", target.URL()+"${1}"
+	}
+	return map[string]any{
+		"redirectRegex": map[string]any{
+			"regex":       regex,
+			"replacement": replacement,
+			"permanent":   statusCode == 301 || statusCode == 308,
+		},
+	}
 }
 
 func traefikMiddleware(name, namespace string, labels map[string]string, spec map[string]any) *unstructured.Unstructured {

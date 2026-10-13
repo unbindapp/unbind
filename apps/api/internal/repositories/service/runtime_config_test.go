@@ -88,3 +88,42 @@ func TestExpectedReplicas(t *testing.T) {
 	assert.Equal(t, int32(0), ExpectedReplicas(&ent.ServiceConfig{Replicas: 3, Stopped: true}), "a stopped service expects no replicas")
 	assert.Equal(t, int32(0), ExpectedReplicas(&ent.ServiceConfig{Replicas: 3, CronSchedule: new("0 * * * *")}), "a scheduled service runs nothing between runs")
 }
+
+func TestClientIPHeader(t *testing.T) {
+	proxied := map[string]bool{"app.example.com": true}
+	behindCloudflare := func(host string) bool { return proxied[host] }
+	hosts := func(names ...string) []schema.HostSpec {
+		specs := make([]schema.HostSpec, len(names))
+		for i, name := range names {
+			specs[i] = schema.HostSpec{Host: name}
+		}
+		return specs
+	}
+
+	t.Run("a chosen header wins", func(t *testing.T) {
+		config := &ent.ServiceConfig{IsPublic: true, ClientIPHeader: new("X-Real-IP"), Hosts: hosts("app.example.com")}
+		assert.Equal(t, "X-Real-IP", clientIPHeader(config, behindCloudflare))
+	})
+
+	t.Run("a domain behind cloudflare picks its header", func(t *testing.T) {
+		config := &ent.ServiceConfig{IsPublic: true, Hosts: hosts("other.example.com", "app.example.com")}
+		assert.Equal(t, CloudflareClientIPHeader, clientIPHeader(config, behindCloudflare))
+	})
+
+	t.Run("no proxied domain means no header", func(t *testing.T) {
+		config := &ent.ServiceConfig{IsPublic: true, Hosts: hosts("other.example.com")}
+		assert.Equal(t, "", clientIPHeader(config, behindCloudflare))
+	})
+
+	t.Run("wildcards are never looked up", func(t *testing.T) {
+		looked := []string{}
+		config := &ent.ServiceConfig{IsPublic: true, Hosts: hosts("*.example.com")}
+		clientIPHeader(config, func(host string) bool { looked = append(looked, host); return false })
+		assert.Empty(t, looked)
+	})
+
+	t.Run("a private service has no visitors", func(t *testing.T) {
+		config := &ent.ServiceConfig{Hosts: hosts("app.example.com")}
+		assert.Equal(t, "", clientIPHeader(config, behindCloudflare))
+	})
+}

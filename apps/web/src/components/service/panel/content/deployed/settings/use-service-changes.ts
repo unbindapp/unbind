@@ -15,6 +15,7 @@ import {
   type TStagedServiceChange,
 } from "@/components/staged-changes/types";
 import { useService } from "@/components/service/service-provider";
+import { hostTargetFromSpec } from "@/components/staged-changes/host-target";
 import { TServiceShallow } from "@/lib/queries/services";
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { useCallback, useEffect, useMemo, useRef } from "react";
@@ -24,6 +25,7 @@ export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceFi
 export const networkAccessFields: TServiceChangeField[] = ["isPublic"];
 export const requestSizeFields: TServiceChangeField[] = ["maxRequestBodySizeMb"];
 export const sessionAffinityFields: TServiceChangeField[] = ["sessionAffinity"];
+export const clientIpHeaderFields: TServiceChangeField[] = ["clientIpHeader"];
 export type TServerValues = Partial<Record<TServiceChangeField, string | number | boolean>>;
 
 type TStageInput<T extends string | number | boolean> = {
@@ -141,7 +143,7 @@ export function useStagedNetworking(service: TServiceShallow) {
 
   const { hosts, ports } = service.config;
   const settledKey = listChangesMatchingServer(staged, {
-    hosts: hosts.map((h) => ({ host: h.host, port: h.target_port })),
+    hosts: hosts.map(hostTargetFromSpec),
     ports: ports.map((p) => p.port),
   }).join(",");
   useEffect(() => {

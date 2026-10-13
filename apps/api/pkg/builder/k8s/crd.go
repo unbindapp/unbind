@@ -308,6 +308,7 @@ func (self *K8SClient) DeployImage(ctx context.Context, crdName, image string, a
 	}
 	// Settings saved while the image was building go out with it
 	service_repo.ApplyRuntimeConfig(&service.Spec.Config, config)
+	service.Spec.Config.ClientIPHeader = service_repo.ClientIPHeader(config)
 
 	return self.k8s.DeployUnbindService(ctx, service)
 }

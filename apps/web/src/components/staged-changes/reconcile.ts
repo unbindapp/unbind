@@ -1,4 +1,5 @@
 // Relative imports so this can run under `node --test`.
+import { hostTargetsEqual } from "./host-target.ts";
 import {
   listChangeValue,
   type THostTarget,
@@ -144,7 +145,7 @@ export function listChangesMatchingServer(
     }
     const isRenamed = previous !== null && previous.host !== value.host;
     if (isRenamed && hosts.some((h) => h.host === previous.host)) continue;
-    if (hosts.some((h) => h.host === value.host && h.port === value.port)) ids.push(change.id);
+    if (hosts.some((h) => hostTargetsEqual(h, value))) ids.push(change.id);
   }
   return ids;
 }

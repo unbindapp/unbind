@@ -45,6 +45,8 @@ export const UpdateServiceInputSchema = z
     image: z.string().optional(),
     isPublic: z.boolean().optional(),
     sessionAffinity: z.boolean().optional(),
+    // "" goes back to automatic
+    clientIpHeader: z.string().optional(),
     stopped: z.boolean().optional(),
     // "" runs the service continuously again
     cronSchedule: z.string().optional(),
@@ -106,6 +108,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     image,
     isPublic,
     sessionAffinity,
+    clientIpHeader,
     stopped,
     cronSchedule,
     cronTimezone,
@@ -219,6 +222,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     image,
     is_public: isPublic,
     session_affinity: sessionAffinity,
+    client_ip_header: clientIpHeader,
     stopped,
     cron_schedule: cronSchedule,
     cron_timezone: cronTimezone,

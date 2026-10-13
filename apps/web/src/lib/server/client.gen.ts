@@ -176,14 +176,40 @@ export const InitContainerSchema = z
   })
   .strip();
 
+export const HostBasicAuthSchema = z
+  .object({
+    password: z.string().optional(), // Password visitors sign in with. Required when the domain had no basic auth, leave it out to keep the current one. Never returned
+    username: z.string(), // Username visitors sign in with
+  })
+  .strip();
+
+export const HostRedirectSchema = z
+  .object({
+    status_code: z
+      .union([z.literal(301), z.literal(302), z.literal(307), z.literal(308)])
+      .optional(), // HTTP status of the redirect. 308 when unset, which keeps the request method
+    to: z.string(), // URL visitors are sent to, with http or https, e.g. https://example.com. With no path the request path is kept, with a path every request lands on that path
+  })
+  .strip();
+
+export const HostHeaderSchema = z
+  .object({
+    name: z.string(), // Header name, e.g. Cache-Control
+    value: z.string(), // Header value, e.g. public, max-age=600
+  })
+  .strip();
+
 export const HostSpecSchema = z
   .object({
+    basic_auth: HostBasicAuthSchema.optional(), // Ask visitors for a username and password before the service answers on this domain. Not with a redirect
     description: z.string().optional(),
     display_name: z.string().optional(), // Human label from the template input, e.g. Cloud Domain
     host: z.string(), // Domain the service answers on, e.g. app.example.com. A wildcard like *.example.com answers every subdomain, but it is served with a self-signed certificate and needs a proxy such as Cloudflare in front to give visitors a trusted one
     path: z.string(),
     prev_host: z.string().optional(), // Previous host for the service, used for upserting key
     protocol: z.string().optional(), // Application protocol for the domain: http (default) or grpc
+    redirect: HostRedirectSchema.optional(), // Send every request for the domain to another URL instead of the service, e.g. www.example.com to https://example.com. The port is ignored while a redirect is set
+    response_headers: z.array(HostHeaderSchema).nullable().optional(), // Headers set on every response of the domain, e.g. Strict-Transport-Security or Cache-Control. At most 20
     target_port: z.number().optional(),
     template_input_id: z.string().optional(),
   })
@@ -207,6 +233,7 @@ export const UpdateServiceInputSchema = z
     backup_retention_count: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
     builder: ServiceBuilderSchema.optional(),
+    client_ip_header: z.string().optional(), // Header a proxy in front of the service, like Cloudflare, carries the visitor's IP address in, e.g. CF-Connecting-IP. An empty string goes back to automatic: CF-Connecting-IP while a domain is proxied through Cloudflare and nothing otherwise. Not for databases, only on installs that route through Envoy Gateway
     cron_schedule: z.string().optional(), // Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Set empty string to run continuously again. Not for databases
     cron_timezone: z.string().optional(), // IANA time zone for the cron schedule, e.g. 'Europe/Berlin'. Set empty string for UTC
     database_config: DatabaseConfigSchema.optional(),
@@ -839,6 +866,7 @@ export const CreateServiceInputSchema = z
     backup_retention_count: z.number().optional(), // Number of base backups to retain, e.g. 3
     backup_schedule: z.string().optional(), // Cron expression for the backup schedule, e.g. '0 0 * * *'
     builder: ServiceBuilderSchema, // Builder of the service - docker, nixpacks, railpack
+    client_ip_header: z.string().optional(), // Header a proxy in front of the service, like Cloudflare, carries the visitor's IP address in, e.g. CF-Connecting-IP. Unset picks CF-Connecting-IP while a domain is proxied through Cloudflare and nothing otherwise. Not for databases, only on installs that route through Envoy Gateway
     cron_schedule: z.string().optional(), // Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Not for databases
     cron_timezone: z.string().optional(), // IANA time zone for the cron schedule, e.g. 'Europe/Berlin'. UTC when unset
     database_config: DatabaseConfigSchema.optional(),
@@ -900,6 +928,7 @@ export const ServiceConfigResponseSchema = z
     backup_retention_count: z.number(),
     backup_schedule: z.string(),
     builder: ServiceBuilderSchema,
+    client_ip_header: z.string().optional(), // Header the service's domains take the visitor's IP address from. Unset means automatic: CF-Connecting-IP while a domain is proxied through Cloudflare
     cron_schedule: z.string().optional(), // Cron expression the service runs on instead of running continuously
     cron_timezone: z.string().optional(), // IANA time zone of the cron schedule, UTC when unset
     database_config: DatabaseConfigResponseSchema.optional(),
@@ -3243,6 +3272,9 @@ export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
 export type HealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
 export type HealthCheck = z.infer<typeof HealthCheckSchema>;
 export type InitContainer = z.infer<typeof InitContainerSchema>;
+export type HostBasicAuth = z.infer<typeof HostBasicAuthSchema>;
+export type HostRedirect = z.infer<typeof HostRedirectSchema>;
+export type HostHeader = z.infer<typeof HostHeaderSchema>;
 export type HostSpec = z.infer<typeof HostSpecSchema>;
 export type Resources = z.infer<typeof ResourcesSchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;

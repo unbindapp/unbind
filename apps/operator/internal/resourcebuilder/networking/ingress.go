@@ -1,20 +1,57 @@
 package networking
 
 import (
+	"fmt"
+
+	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// hostIngressName names the Ingress of a host that carries options of its own,
+// which the ingress controllers only read per Ingress.
+func hostIngressName(svc *v1.Service, index int) string {
+	return fmt.Sprintf("%s-host-%d", svc.Name, index)
+}
+
+// splitHosts separates the hosts the shared Ingress serves from the ones that need
+// an Ingress of their own, keyed by their position in the config.
+func splitHosts(svc *v1.Service) (plain []v1.HostSpec, optioned map[int]v1.HostSpec) {
+	optioned = map[int]v1.HostSpec{}
+	for i, host := range svc.Spec.Config.Hosts {
+		if hasRouteOptions(host) {
+			optioned[i] = host
+			continue
+		}
+		plain = append(plain, host)
+	}
+	return plain, optioned
+}
+
+func sortedIndexes(optioned map[int]v1.HostSpec) []int {
+	indexes := make([]int, 0, len(optioned))
+	for i := range optioned {
+		indexes = append(indexes, i)
+	}
+	for i := 1; i < len(indexes); i++ {
+		for j := i; j > 0 && indexes[j] < indexes[j-1]; j-- {
+			indexes[j], indexes[j-1] = indexes[j-1], indexes[j]
+		}
+	}
+	return indexes
+}
+
 // buildIngress assembles a classic networking.k8s.io/v1 Ingress, shared by the
 // nginx and traefik providers which differ only by class name and annotations.
-func buildIngress(in RouteInput, className string, annotations map[string]string) *networkingv1.Ingress {
+// Hosts needing ACME share acmeSecret, wildcard hosts the service's wildcard secret.
+func buildIngress(in RouteInput, name, className string, annotations map[string]string, hosts []v1.HostSpec, acmeSecret string) *networkingv1.Ingress {
 	svc := in.Service
 	pathType := networkingv1.PathTypePrefix
 
-	rules := make([]networkingv1.IngressRule, len(svc.Spec.Config.Hosts))
+	rules := make([]networkingv1.IngressRule, len(hosts))
 	var acmeHosts, wildcardTLSHosts []string
-	for i, host := range svc.Spec.Config.Hosts {
+	for i, host := range hosts {
 		port, path := resolveHostPort(svc, host)
 		rules[i] = networkingv1.IngressRule{
 			Host: host.Host,
@@ -44,7 +81,7 @@ func buildIngress(in RouteInput, className string, annotations map[string]string
 
 	var tls []networkingv1.IngressTLS
 	if len(acmeHosts) > 0 {
-		tls = append(tls, networkingv1.IngressTLS{Hosts: acmeHosts, SecretName: tlsSecretName(svc)})
+		tls = append(tls, networkingv1.IngressTLS{Hosts: acmeHosts, SecretName: acmeSecret})
 	}
 	if len(wildcardTLSHosts) > 0 {
 		tls = append(tls, networkingv1.IngressTLS{Hosts: wildcardTLSHosts, SecretName: wildcardTLSSecretName(svc)})
@@ -53,7 +90,7 @@ func buildIngress(in RouteInput, className string, annotations map[string]string
 	class := className
 	return &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        svc.Name,
+			Name:        name,
 			Namespace:   svc.Namespace,
 			Labels:      in.Labels,
 			Annotations: annotations,
@@ -66,14 +103,13 @@ func buildIngress(in RouteInput, className string, annotations map[string]string
 	}
 }
 
-// ingressRoutes puts the wildcard Certificate ahead of the Ingress: cert-manager's
+// ingressRoutes puts the wildcard Certificate ahead of the Ingresses: cert-manager's
 // ingress-shim leaves a TLS secret alone once a Certificate it doesn't own claims it,
 // otherwise it would order the wildcard from Let's Encrypt.
-func ingressRoutes(cfg Config, in RouteInput, ingress *networkingv1.Ingress, extra ...client.Object) []client.Object {
-	var objects []client.Object
+func ingressRoutes(cfg Config, in RouteInput, objects ...client.Object) []client.Object {
+	var all []client.Object
 	if wildcards := wildcardHosts(in.Service.Spec.Config.Hosts); len(wildcards) > 0 {
-		objects = append(objects, wildcardCertificate(cfg, in.Service, in.Labels, wildcards))
+		all = append(all, wildcardCertificate(cfg, in.Service, in.Labels, wildcards))
 	}
-	objects = append(objects, ingress)
-	return append(objects, extra...)
+	return append(all, objects...)
 }

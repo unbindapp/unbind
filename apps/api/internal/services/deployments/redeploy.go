@@ -234,6 +234,7 @@ func (self *DeploymentService) CreateCRDFromService(ctx context.Context, service
 	crdToDeploy.Spec.Config.GitBranch = gitBranch
 	crdToDeploy.Spec.Config.RunCommand = service.Edges.ServiceConfig.RunCommand
 	service_repo.ApplyRuntimeConfig(&crdToDeploy.Spec.Config, service.Edges.ServiceConfig)
+	crdToDeploy.Spec.Config.ClientIPHeader = service_repo.ClientIPHeader(service.Edges.ServiceConfig)
 	if service.Type == schema.ServiceTypeDockerimage && service.Edges.ServiceConfig.Image != "" {
 		crdToDeploy.Spec.Config.Image = service.Edges.ServiceConfig.Image
 	}

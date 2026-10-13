@@ -13,6 +13,9 @@ import ErrorLine from "@/components/error-line";
 import HeaderToggle from "@/components/service/header-toggle";
 import { networkAccessLabel } from "@/components/service/network-access";
 import AddDomainPortCard from "@/components/service/panel/content/deployed/settings/sections/networking/_components/add-domain-port-card";
+import ClientIPHeader, {
+  automaticClientIpHeader,
+} from "@/components/service/panel/content/deployed/settings/sections/networking/_components/client-ip-header";
 import DatabaseEndpointCard, {
   DatabasePendingEndpointRow,
 } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/database-endpoint-card";
@@ -24,6 +27,7 @@ import MaxRequestSize, {
 } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/max-request-size";
 import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
+  clientIpHeaderFields,
   hasApplying,
   networkAccessFields,
   requestSizeFields,
@@ -34,6 +38,7 @@ import {
   useStagedNetworking,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
+import { hostTargetFromSpec } from "@/components/staged-changes/host-target";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -108,10 +113,12 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
   const { isItemVisible } = useSettingsSectionSearch("networking");
   const sectionHighlightId = useMemo(() => getNetworkingEntityId(service.id), [service.id]);
   const serverRequestSizeMb = service.config.max_request_body_size_mb ?? unsetRequestSizeMb;
+  const serverClientIpHeader = service.config.client_ip_header ?? automaticClientIpHeader;
   const { staged, stage, unstage } = useServiceChanges(service, {
     isPublic: service.config.is_public,
     maxRequestBodySizeMb: serverRequestSizeMb,
     sessionAffinity: service.config.session_affinity,
+    clientIpHeader: serverClientIpHeader,
   });
   const { data: systemData } = useSystem();
 
@@ -140,15 +147,32 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
     systemData !== undefined &&
     systemData.data.networking_provider !== "gateway" &&
     isItemVisible(settingsIds.networking.maxRequestSize);
+  // Only a gateway cluster can take the visitor's address from a header
+  const showClientIpHeader =
+    !isDatabase &&
+    systemData?.data.networking_provider === "gateway" &&
+    isItemVisible(settingsIds.networking.clientIpHeader);
   // One replica has nothing to pin a visitor to
   const replicaCount = stagedNumber(staged.replicaCount, service.config.replicas);
   const showSessionAffinity =
     !isDatabase && replicaCount > 1 && isItemVisible(settingsIds.networking.sessionAffinity);
   const sessionAffinity = stagedBoolean(staged.sessionAffinity, service.config.session_affinity);
-  if (!showAccess && !showPublic && !showPrivate && !showRequestSize && !showSessionAffinity) {
+  if (
+    !showAccess &&
+    !showPublic &&
+    !showPrivate &&
+    !showRequestSize &&
+    !showSessionAffinity &&
+    !showClientIpHeader
+  ) {
     return null;
   }
-  const sectionFields = [...networkAccessFields, ...requestSizeFields, ...sessionAffinityFields];
+  const sectionFields = [
+    ...networkAccessFields,
+    ...requestSizeFields,
+    ...sessionAffinityFields,
+    ...clientIpHeaderFields,
+  ];
 
   return (
     <SettingsSection
@@ -229,13 +253,14 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                       (e) => e.host === saved.host,
                     );
                     const change = stagedHosts.find((c) => c.previous?.host === saved.host);
-                    const shown = change?.value ?? { host: saved.host, port: saved.target_port };
+                    const shown = change?.value ?? hostTargetFromSpec(saved);
                     return (
                       <DomainPortCard
                         mode="public"
                         key={`${saved.host}:${shown.host}:${shown.port}`}
                         domain={shown.host}
                         port={shown.port}
+                        options={shown}
                         dnsStatus={endpoint?.dns_status}
                         isCloudflare={endpoint?.is_cloudflare}
                         service={service}
@@ -251,6 +276,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                       key={`${change.id}:${change.value?.port}`}
                       domain={change.value?.host ?? ""}
                       port={change.value?.port}
+                      options={change.value ?? undefined}
                       service={service}
                       staged={change}
                     />
@@ -378,6 +404,35 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                 }
               />
             </BlockItemHeader>
+          </BlockItem>
+        </Block>
+      )}
+      {showClientIpHeader && (
+        <Block>
+          <BlockItem id={settingsIds.networking.clientIpHeader} className="w-full md:w-full">
+            <BlockItemHeader type="column">
+              <BlockItemTitle>Client IP Header</BlockItemTitle>
+              <BlockItemDescription>
+                Header a proxy in front of the service, like Cloudflare, puts the visitor&apos;s
+                address in. Automatic uses CF-Connecting-IP while a domain is behind Cloudflare.
+              </BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <ClientIPHeader
+                serverHeader={serverClientIpHeader}
+                staged={staged}
+                stage={(header) =>
+                  stage({
+                    field: "clientIpHeader",
+                    label: "Client IP header",
+                    value: header,
+                    previous: serverClientIpHeader,
+                    format: (v) => (v === automaticClientIpHeader ? "Automatic" : String(v)),
+                  })
+                }
+                revert={() => unstage(clientIpHeaderFields)}
+              />
+            </BlockItemContent>
           </BlockItem>
         </Block>
       )}

@@ -288,6 +288,20 @@ func (_c *ServiceConfigCreate) SetNillableSessionAffinity(v *bool) *ServiceConfi
 	return _c
 }
 
+// SetClientIPHeader sets the "client_ip_header" field.
+func (_c *ServiceConfigCreate) SetClientIPHeader(v string) *ServiceConfigCreate {
+	_c.mutation.SetClientIPHeader(v)
+	return _c
+}
+
+// SetNillableClientIPHeader sets the "client_ip_header" field if the given value is not nil.
+func (_c *ServiceConfigCreate) SetNillableClientIPHeader(v *string) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetClientIPHeader(*v)
+	}
+	return _c
+}
+
 // SetStopped sets the "stopped" field.
 func (_c *ServiceConfigCreate) SetStopped(v bool) *ServiceConfigCreate {
 	_c.mutation.SetStopped(v)
@@ -740,6 +754,10 @@ func (_c *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.SessionAffinity(); ok {
 		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
 		_node.SessionAffinity = value
+	}
+	if value, ok := _c.mutation.ClientIPHeader(); ok {
+		_spec.SetField(serviceconfig.FieldClientIPHeader, field.TypeString, value)
+		_node.ClientIPHeader = &value
 	}
 	if value, ok := _c.mutation.Stopped(); ok {
 		_spec.SetField(serviceconfig.FieldStopped, field.TypeBool, value)
@@ -1230,6 +1248,24 @@ func (u *ServiceConfigUpsert) SetSessionAffinity(v bool) *ServiceConfigUpsert {
 // UpdateSessionAffinity sets the "session_affinity" field to the value that was provided on create.
 func (u *ServiceConfigUpsert) UpdateSessionAffinity() *ServiceConfigUpsert {
 	u.SetExcluded(serviceconfig.FieldSessionAffinity)
+	return u
+}
+
+// SetClientIPHeader sets the "client_ip_header" field.
+func (u *ServiceConfigUpsert) SetClientIPHeader(v string) *ServiceConfigUpsert {
+	u.Set(serviceconfig.FieldClientIPHeader, v)
+	return u
+}
+
+// UpdateClientIPHeader sets the "client_ip_header" field to the value that was provided on create.
+func (u *ServiceConfigUpsert) UpdateClientIPHeader() *ServiceConfigUpsert {
+	u.SetExcluded(serviceconfig.FieldClientIPHeader)
+	return u
+}
+
+// ClearClientIPHeader clears the value of the "client_ip_header" field.
+func (u *ServiceConfigUpsert) ClearClientIPHeader() *ServiceConfigUpsert {
+	u.SetNull(serviceconfig.FieldClientIPHeader)
 	return u
 }
 
@@ -1974,6 +2010,27 @@ func (u *ServiceConfigUpsertOne) SetSessionAffinity(v bool) *ServiceConfigUpsert
 func (u *ServiceConfigUpsertOne) UpdateSessionAffinity() *ServiceConfigUpsertOne {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.UpdateSessionAffinity()
+	})
+}
+
+// SetClientIPHeader sets the "client_ip_header" field.
+func (u *ServiceConfigUpsertOne) SetClientIPHeader(v string) *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetClientIPHeader(v)
+	})
+}
+
+// UpdateClientIPHeader sets the "client_ip_header" field to the value that was provided on create.
+func (u *ServiceConfigUpsertOne) UpdateClientIPHeader() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateClientIPHeader()
+	})
+}
+
+// ClearClientIPHeader clears the value of the "client_ip_header" field.
+func (u *ServiceConfigUpsertOne) ClearClientIPHeader() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearClientIPHeader()
 	})
 }
 
@@ -2934,6 +2991,27 @@ func (u *ServiceConfigUpsertBulk) SetSessionAffinity(v bool) *ServiceConfigUpser
 func (u *ServiceConfigUpsertBulk) UpdateSessionAffinity() *ServiceConfigUpsertBulk {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.UpdateSessionAffinity()
+	})
+}
+
+// SetClientIPHeader sets the "client_ip_header" field.
+func (u *ServiceConfigUpsertBulk) SetClientIPHeader(v string) *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetClientIPHeader(v)
+	})
+}
+
+// UpdateClientIPHeader sets the "client_ip_header" field to the value that was provided on create.
+func (u *ServiceConfigUpsertBulk) UpdateClientIPHeader() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateClientIPHeader()
+	})
+}
+
+// ClearClientIPHeader clears the value of the "client_ip_header" field.
+func (u *ServiceConfigUpsertBulk) ClearClientIPHeader() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.ClearClientIPHeader()
 	})
 }
 

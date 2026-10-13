@@ -31,6 +31,7 @@ export const ServiceChangeFieldSchema = z.enum([
   "isPublic",
   "maxRequestBodySizeMb",
   "sessionAffinity",
+  "clientIpHeader",
   "cronSchedule",
   "cronTimezone",
   "replicaCount",
@@ -95,9 +96,22 @@ const StagedListChangeBaseSchema = z.object({
   createdAt: z.number(),
 });
 
+export const HostRedirectTargetSchema = z.object({
+  to: z.string(),
+  statusCode: z.number(),
+});
+
+export const HostHeaderTargetSchema = z.object({
+  name: z.string(),
+  value: z.string(),
+});
+
 export const HostTargetSchema = z.object({
   host: z.string(),
   port: z.number().optional(),
+  redirect: HostRedirectTargetSchema.optional(),
+  basicAuth: z.object({ username: z.string(), password: z.string().optional() }).optional(),
+  responseHeaders: z.array(HostHeaderTargetSchema).optional(),
 });
 
 export type THostTarget = z.infer<typeof HostTargetSchema>;

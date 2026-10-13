@@ -186,7 +186,7 @@ export function splitProvidedVariables<T extends { name: string }>(provided: rea
 
 type TEndpointConfig = {
   is_public: boolean;
-  hosts: { host: string; target_port?: number }[];
+  hosts: { host: string; target_port?: number; redirect?: unknown }[];
   ports: { port: number; protocol?: string; is_nodeport?: boolean; node_port?: number }[];
 };
 
@@ -212,7 +212,7 @@ function publicEndpointTargets(config: TEndpointConfig, isDatabase: boolean) {
   const targets: number[] = [];
   const fronted = new Set<number>();
   for (const host of config.hosts) {
-    if (isWildcardDomain(host.host)) continue;
+    if (isWildcardDomain(host.host) || host.redirect) continue;
     const bridged = host.target_port !== undefined && nodePorts.has(host.target_port);
     if (!bridged && isDatabase) continue;
     targets.push(host.target_port ?? 0);

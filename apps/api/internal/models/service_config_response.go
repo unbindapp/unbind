@@ -23,6 +23,7 @@ type ServiceConfigResponse struct {
 	IsPublic                      bool                  `json:"is_public"`
 	MaxRequestBodySizeMB          *int32                `json:"max_request_body_size_mb,omitempty" doc:"Largest request body the service's domains accept, in MB. Unset uses the default of 100"`
 	SessionAffinity               bool                  `json:"session_affinity" doc:"Whether the service's domains pin each visitor to one replica with a cookie"`
+	ClientIPHeader                *string               `json:"client_ip_header,omitempty" doc:"Header the service's domains take the visitor's IP address from. Unset means automatic: CF-Connecting-IP while a domain is proxied through Cloudflare"`
 	Stopped                       bool                  `json:"stopped" doc:"Whether the service is stopped and runs no replicas"`
 	CronSchedule                  *string               `json:"cron_schedule,omitempty" doc:"Cron expression the service runs on instead of running continuously"`
 	CronTimezone                  *string               `json:"cron_timezone,omitempty" doc:"IANA time zone of the cron schedule, UTC when unset"`
@@ -100,7 +101,7 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 			WatchPaths:                    entity.WatchPaths,
 			Builder:                       entity.Builder,
 			Icon:                          entity.Icon,
-			Hosts:                         entity.Hosts,
+			Hosts:                         schema.RedactedHosts(entity.Hosts),
 			Ports:                         entity.Ports,
 			Replicas:                      entity.Replicas,
 			AutoDeploy:                    entity.AutoDeploy,
@@ -110,6 +111,7 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 			IsPublic:                      entity.IsPublic,
 			MaxRequestBodySizeMB:          entity.MaxRequestBodySizeMB,
 			SessionAffinity:               entity.SessionAffinity,
+			ClientIPHeader:                entity.ClientIPHeader,
 			Stopped:                       entity.Stopped,
 			CronSchedule:                  entity.CronSchedule,
 			CronTimezone:                  entity.CronTimezone,

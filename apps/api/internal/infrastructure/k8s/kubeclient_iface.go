@@ -22,7 +22,8 @@ type KubeClientInterface interface {
 	// ListCronRuns returns the runs the cluster still keeps for a scheduled service, newest first
 	ListCronRuns(ctx context.Context, namespace string, serviceID uuid.UUID, client kubernetes.Interface) ([]*models.CronRunResponse, error)
 	// StartCronRun starts one run outside the schedule, the way kubectl create job --from does.
-	// The run is owned by the CronJob so it counts against its history and concurrency.
+	// The run is owned by the CronJob so it is kept with its history. The controller only
+	// tracks the jobs it started itself, so overlap is checked against the owned jobs here.
 	StartCronRun(ctx context.Context, namespace, cronJobName string, client kubernetes.Interface) (*models.CronRunResponse, error)
 	// ListUnalertedFailedCronRuns finds failed runs in every namespace that no alert went out for yet
 	ListUnalertedFailedCronRuns(ctx context.Context, client kubernetes.Interface) ([]*batchv1.Job, error)

@@ -87,6 +87,7 @@ type MutateConfigInput struct {
 	RunCommand                    *string
 	Public                        *bool
 	MaxRequestBodySizeMB          *int32
+	ClientIPHeader                *string
 	SessionAffinity               *bool
 	Stopped                       *bool
 	CronSchedule                  *string
@@ -177,6 +178,7 @@ func (self *ServiceRepository) CreateConfig(
 		SetNillableRunCommand(input.RunCommand).
 		SetNillableIsPublic(input.Public).
 		SetNillableMaxRequestBodySizeMB(input.MaxRequestBodySizeMB).
+		SetNillableClientIPHeader(input.ClientIPHeader).
 		SetNillableSessionAffinity(input.SessionAffinity).
 		SetNillableStopped(input.Stopped).
 		SetNillableCronSchedule(input.CronSchedule).
@@ -361,6 +363,14 @@ func (self *ServiceRepository) UpdateConfig(
 			upd.ClearMaxRequestBodySizeMB()
 		} else {
 			upd.SetMaxRequestBodySizeMB(*input.MaxRequestBodySizeMB)
+		}
+	}
+
+	if input.ClientIPHeader != nil {
+		if *input.ClientIPHeader == "" {
+			upd.ClearClientIPHeader()
+		} else {
+			upd.SetClientIPHeader(*input.ClientIPHeader)
 		}
 	}
 

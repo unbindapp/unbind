@@ -558,15 +558,15 @@ func init() {
 	// serviceconfig.DefaultSessionAffinity holds the default value on creation for the session_affinity field.
 	serviceconfig.DefaultSessionAffinity = serviceconfigDescSessionAffinity.Default.(bool)
 	// serviceconfigDescStopped is the schema descriptor for stopped field.
-	serviceconfigDescStopped := serviceconfigFields[20].Descriptor()
+	serviceconfigDescStopped := serviceconfigFields[21].Descriptor()
 	// serviceconfig.DefaultStopped holds the default value on creation for the stopped field.
 	serviceconfig.DefaultStopped = serviceconfigDescStopped.Default.(bool)
 	// serviceconfigDescBackupSchedule is the schema descriptor for backup_schedule field.
-	serviceconfigDescBackupSchedule := serviceconfigFields[27].Descriptor()
+	serviceconfigDescBackupSchedule := serviceconfigFields[28].Descriptor()
 	// serviceconfig.DefaultBackupSchedule holds the default value on creation for the backup_schedule field.
 	serviceconfig.DefaultBackupSchedule = serviceconfigDescBackupSchedule.Default.(string)
 	// serviceconfigDescBackupRetentionCount is the schema descriptor for backup_retention_count field.
-	serviceconfigDescBackupRetentionCount := serviceconfigFields[28].Descriptor()
+	serviceconfigDescBackupRetentionCount := serviceconfigFields[29].Descriptor()
 	// serviceconfig.DefaultBackupRetentionCount holds the default value on creation for the backup_retention_count field.
 	serviceconfig.DefaultBackupRetentionCount = serviceconfigDescBackupRetentionCount.Default.(int)
 	// serviceconfigDescID is the schema descriptor for id field.

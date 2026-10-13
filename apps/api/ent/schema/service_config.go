@@ -51,6 +51,7 @@ func (ServiceConfig) Fields() []ent.Field {
 		field.Bool("is_public").Default(false).Comment("Whether the service is publicly accessible, creates an ingress resource"),
 		field.Int32("max_request_body_size_mb").Optional().Nillable().Comment("Largest request body public domains accept in MB, unset uses the default of 100"),
 		field.Bool("session_affinity").Default(false).Comment("Whether public domains pin each visitor to one replica with a cookie"),
+		field.String("client_ip_header").Optional().Nillable().Comment("Header a proxy in front of the service carries the visitor's address in, unset picks Cloudflare's when a domain is proxied through it"),
 		field.Bool("stopped").Default(false).Comment("Whether the service is stopped and runs no replicas"),
 		field.String("cron_schedule").Optional().Nillable().Comment("Cron expression. When set the service runs on this schedule instead of continuously"),
 		field.String("cron_timezone").Optional().Nillable().Comment("IANA time zone of the cron schedule, UTC when empty"),

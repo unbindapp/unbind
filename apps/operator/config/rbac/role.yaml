@@ -102,6 +102,8 @@ rules:
   - gateway.envoyproxy.io
   resources:
   - backendtrafficpolicies
+  - clienttrafficpolicies
+  - securitypolicies
   verbs:
   - create
   - delete

@@ -121,6 +121,12 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
         keywords: ["request", "body", "upload", "file", "size", "limit", "413", "payload"],
       },
       {
+        id: settingsIds.networking.clientIpHeader,
+        title: "Client IP Header",
+        description: "Header a proxy in front of the service puts the visitor's address in.",
+        keywords: ["client", "ip", "address", "proxy", "cloudflare", "forwarded", "real ip"],
+      },
+      {
         id: settingsIds.networking.sessionAffinity,
         title: "Sticky Sessions",
         description: "Pin each visitor to one replica with a cookie.",
