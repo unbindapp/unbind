@@ -513,5 +513,10 @@
     "version": "v0.1.102",
     "summary": "Redirect domains without a target port now route, and domain cleanup no longer removes secrets it did not create.",
     "breaking": false
+  },
+  "v0.1.103": {
+    "version": "v0.1.103",
+    "summary": "Domains that proxy to an external URL, Redis append-only persistence for new databases, steadier routes when a domain is removed, and fewer redundant service updates.",
+    "breaking": false
   }
 }
