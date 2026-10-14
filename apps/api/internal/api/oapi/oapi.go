@@ -7,10 +7,14 @@ package oapi
 import (
 	"context"
 	"slices"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/unbindapp/unbind-api/ent/schema"
 )
+
+// huma's default is 5s, which answers 408 when a proxy in front of us stalls an upload
+const bodyReadTimeout = 60 * time.Second
 
 // Action classifies an operation by its effect. It drives the documented error
 // responses and the agent risk hints, so callers declare intent once instead of
@@ -216,6 +220,10 @@ func Apply(action Action, op *huma.Operation, opts ...Option) {
 	}
 
 	op.Errors = mergeInts(mergeInts(p.errors, clusterErrors), op.Errors)
+
+	if op.BodyReadTimeout == 0 {
+		op.BodyReadTimeout = bodyReadTimeout
+	}
 
 	if op.Metadata == nil {
 		op.Metadata = map[string]any{}
