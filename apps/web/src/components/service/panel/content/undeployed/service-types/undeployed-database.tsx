@@ -12,7 +12,6 @@ import BrandIcon from "@/components/icons/brand";
 import {
   backupSchedulePresets,
   customScheduleValue,
-  databaseTypesWithoutBackups,
   validateBackupRetentionCount,
   validateCronExpression,
 } from "@/components/service/backups/backup-config";
@@ -110,8 +109,6 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
   const { setIsOpen: setIsConnectOpen } = useConnectOpen();
 
   const persistenceKey = `undeployed-database:${serviceId}`;
-
-  const backupsDisabled = databaseTypesWithoutBackups.includes(type);
 
   const {
     query: { data: dataS3Buckets, isPending: isPendingS3Buckets, error: errorS3Buckets },
@@ -372,170 +369,166 @@ function UndeployedContentDatabase_({ type, version }: TProps) {
               />
             </BlockItemContent>
           </BlockItem>
-          {!backupsDisabled && (
-            <>
-              <BlockItem>
-                <BlockItemHeader>
-                  <BlockItemTitle>Backup Bucket</BlockItemTitle>
-                </BlockItemHeader>
-                <BlockItemContent>
-                  <form.AppField
-                    name="s3BucketId"
-                    children={(field) => (
-                      <field.AsyncAndSearchableSelect
-                        dontCheckUntilSubmit
-                        field={field}
-                        value={field.state.value}
-                        onChange={(v) => field.handleChange(v)}
-                        items={s3BucketItems}
-                        isPending={isPendingS3Buckets}
-                        error={errorS3Buckets?.message}
-                        commandInputPlaceholder="Search buckets..."
-                        CommandEmptyText="No buckets found"
-                        CommandEmptyIcon={CylinderIcon}
-                        CommandItemElement={S3BucketCommandItemElement}
-                        TriggerWrapper={hasNoBuckets ? AddBackupBucketTriggerMemoized : undefined}
-                        CommandItemsPinned={({ setIsOpen, commandValue }) => {
-                          if (commandValue === "" || hasNoBuckets) {
-                            return null;
-                          }
-                          return (
-                            <CommandItem
-                              onSelect={() => {
-                                field.handleChange("");
-                                setIsOpen(false);
-                              }}
-                              className="group/item text-warning data-[selected=true]:bg-warning/4-10 data-[selected=true]:text-warning px-3 font-medium"
-                            >
-                              <OctagonXIcon className="size-4" />
-                              <p className="min-w-0 shrink leading-tight">Disable backups</p>
-                            </CommandItem>
-                          );
-                        }}
-                      >
-                        {({ isOpen }) => {
-                          const selected = dataS3Buckets?.buckets.find(
-                            (s3Bucket) => s3Bucket.id === field.state.value,
-                          );
-                          return (
-                            <BlockItemButtonLike
-                              asElement="button"
-                              text={
-                                selected ? (
-                                  <S3BucketLabel name={selected.name} bucket={selected.bucket} />
-                                ) : (
-                                  "Select a bucket"
-                                )
-                              }
-                              Icon={({ className }) => <CylinderIcon className={className} />}
-                              variant="outline"
-                              open={isOpen}
-                              onBlur={field.handleBlur}
-                            />
-                          );
-                        }}
-                      </field.AsyncAndSearchableSelect>
-                    )}
-                  />
-                </BlockItemContent>
-              </BlockItem>
-              {s3BucketId && (
-                <BlockItem className="md:mt-6">
-                  <BlockItemHeader>
-                    <BlockItemTitle>Backup Schedule</BlockItemTitle>
-                  </BlockItemHeader>
-                  <BlockItemContent className="gap-0">
-                    <form.AppField
-                      name="backupSchedulePreset"
-                      children={(field) => (
-                        <field.AsyncDropdownMenu
-                          dontCheckUntilSubmit
-                          field={field}
-                          value={field.state.value}
-                          onChange={(v) => {
-                            field.handleChange(v);
-                            if (v === customScheduleValue) return;
-                            form.setFieldValue("backupScheduleCustom", v);
+          <BlockItem>
+            <BlockItemHeader>
+              <BlockItemTitle>Backup Bucket</BlockItemTitle>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <form.AppField
+                name="s3BucketId"
+                children={(field) => (
+                  <field.AsyncAndSearchableSelect
+                    dontCheckUntilSubmit
+                    field={field}
+                    value={field.state.value}
+                    onChange={(v) => field.handleChange(v)}
+                    items={s3BucketItems}
+                    isPending={isPendingS3Buckets}
+                    error={errorS3Buckets?.message}
+                    commandInputPlaceholder="Search buckets..."
+                    CommandEmptyText="No buckets found"
+                    CommandEmptyIcon={CylinderIcon}
+                    CommandItemElement={S3BucketCommandItemElement}
+                    TriggerWrapper={hasNoBuckets ? AddBackupBucketTriggerMemoized : undefined}
+                    CommandItemsPinned={({ setIsOpen, commandValue }) => {
+                      if (commandValue === "" || hasNoBuckets) {
+                        return null;
+                      }
+                      return (
+                        <CommandItem
+                          onSelect={() => {
+                            field.handleChange("");
+                            setIsOpen(false);
                           }}
-                          items={scheduleItems}
-                          isPending={false}
-                          error={undefined}
+                          className="group/item text-warning data-[selected=true]:bg-warning/4-10 data-[selected=true]:text-warning px-3 font-medium"
                         >
-                          {({ isOpen }) => (
-                            <BlockItemButtonLike
-                              asElement="button"
-                              data-custom={field.state.value === customScheduleValue || undefined}
-                              className="data-custom:rounded-b-none data-custom:border-b-0"
-                              text={scheduleLabel(field.state.value)}
-                              Icon={({ className }) => <CalendarClockIcon className={className} />}
-                              variant="outline"
-                              open={isOpen}
-                              onBlur={field.handleBlur}
-                            />
-                          )}
-                        </field.AsyncDropdownMenu>
-                      )}
-                    />
-                    {schedulePreset === customScheduleValue && (
-                      <>
-                        <div className="bg-border -mt-1 h-px w-full" />
-                        <form.AppField
-                          name="backupScheduleCustom"
-                          validators={{
-                            onChange: ({ value }) => validateCronExpression(value),
-                          }}
-                          children={(field) => (
-                            <field.TextField
-                              className="-mt-1"
-                              classNameInput="rounded-t-none border-t-0 font-mono"
-                              field={field}
-                              value={field.state.value}
-                              onBlur={field.handleBlur}
-                              onChange={(e) => field.handleChange(e.target.value)}
-                              placeholder={defaultBackupSchedule}
-                              autoCapitalize="off"
-                              autoCorrect="off"
-                              autoComplete="off"
-                              spellCheck="false"
-                            />
-                          )}
+                          <OctagonXIcon className="size-4" />
+                          <p className="min-w-0 shrink leading-tight">Disable backups</p>
+                        </CommandItem>
+                      );
+                    }}
+                  >
+                    {({ isOpen }) => {
+                      const selected = dataS3Buckets?.buckets.find(
+                        (s3Bucket) => s3Bucket.id === field.state.value,
+                      );
+                      return (
+                        <BlockItemButtonLike
+                          asElement="button"
+                          text={
+                            selected ? (
+                              <S3BucketLabel name={selected.name} bucket={selected.bucket} />
+                            ) : (
+                              "Select a bucket"
+                            )
+                          }
+                          Icon={({ className }) => <CylinderIcon className={className} />}
+                          variant="outline"
+                          open={isOpen}
+                          onBlur={field.handleBlur}
                         />
-                      </>
-                    )}
-                  </BlockItemContent>
-                </BlockItem>
-              )}
-              {s3BucketId && (
-                <BlockItem className="md:mt-6">
-                  <BlockItemHeader>
-                    <BlockItemTitle>Backup Retention</BlockItemTitle>
-                  </BlockItemHeader>
-                  <BlockItemContent>
+                      );
+                    }}
+                  </field.AsyncAndSearchableSelect>
+                )}
+              />
+            </BlockItemContent>
+          </BlockItem>
+          {s3BucketId && (
+            <BlockItem className="md:mt-6">
+              <BlockItemHeader>
+                <BlockItemTitle>Backup Schedule</BlockItemTitle>
+              </BlockItemHeader>
+              <BlockItemContent className="gap-0">
+                <form.AppField
+                  name="backupSchedulePreset"
+                  children={(field) => (
+                    <field.AsyncDropdownMenu
+                      dontCheckUntilSubmit
+                      field={field}
+                      value={field.state.value}
+                      onChange={(v) => {
+                        field.handleChange(v);
+                        if (v === customScheduleValue) return;
+                        form.setFieldValue("backupScheduleCustom", v);
+                      }}
+                      items={scheduleItems}
+                      isPending={false}
+                      error={undefined}
+                    >
+                      {({ isOpen }) => (
+                        <BlockItemButtonLike
+                          asElement="button"
+                          data-custom={field.state.value === customScheduleValue || undefined}
+                          className="data-custom:rounded-b-none data-custom:border-b-0"
+                          text={scheduleLabel(field.state.value)}
+                          Icon={({ className }) => <CalendarClockIcon className={className} />}
+                          variant="outline"
+                          open={isOpen}
+                          onBlur={field.handleBlur}
+                        />
+                      )}
+                    </field.AsyncDropdownMenu>
+                  )}
+                />
+                {schedulePreset === customScheduleValue && (
+                  <>
+                    <div className="bg-border -mt-1 h-px w-full" />
                     <form.AppField
-                      name="backupRetentionCount"
+                      name="backupScheduleCustom"
                       validators={{
-                        onChange: ({ value }) => validateBackupRetentionCount(value),
+                        onChange: ({ value }) => validateCronExpression(value),
                       }}
                       children={(field) => (
                         <field.TextField
+                          className="-mt-1"
+                          classNameInput="rounded-t-none border-t-0 font-mono"
                           field={field}
                           value={field.state.value}
                           onBlur={field.handleBlur}
                           onChange={(e) => field.handleChange(e.target.value)}
-                          placeholder={defaultBackupRetentionCount}
+                          placeholder={defaultBackupSchedule}
                           autoCapitalize="off"
                           autoCorrect="off"
                           autoComplete="off"
                           spellCheck="false"
-                          inputMode="numeric"
-                          unit="backups"
                         />
                       )}
                     />
-                  </BlockItemContent>
-                </BlockItem>
-              )}
-            </>
+                  </>
+                )}
+              </BlockItemContent>
+            </BlockItem>
+          )}
+          {s3BucketId && (
+            <BlockItem className="md:mt-6">
+              <BlockItemHeader>
+                <BlockItemTitle>Backup Retention</BlockItemTitle>
+              </BlockItemHeader>
+              <BlockItemContent>
+                <form.AppField
+                  name="backupRetentionCount"
+                  validators={{
+                    onChange: ({ value }) => validateBackupRetentionCount(value),
+                  }}
+                  children={(field) => (
+                    <field.TextField
+                      field={field}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder={defaultBackupRetentionCount}
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      autoComplete="off"
+                      spellCheck="false"
+                      inputMode="numeric"
+                      unit="backups"
+                    />
+                  )}
+                />
+              </BlockItemContent>
+            </BlockItem>
           )}
         </Block>
         <VariablesBlock

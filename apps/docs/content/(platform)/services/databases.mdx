@@ -46,12 +46,40 @@ Backups go to an S3 compatible bucket. First [add a bucket](/teams/s3-storage) t
 - **Backup Schedule**: every hour, every 6 or 12 hours, daily, weekly, or a custom cron expression like `0 3 * * *`.
 - **Backup Retention**: how many backups to keep. Older ones are deleted.
 
-Backups are available for PostgreSQL, MySQL, MongoDB and ClickHouse. Redis has none.
+Backups are available for every database.
 
 <Callout title="Restoring">
   There is no restore button in the UI yet. The backups are standard files in your bucket, written
   by the backup tools of each database. Test a restore before you need one.
 </Callout>
+
+### Restore Redis
+
+Redis backups are snapshot files in the bucket, at `<service id>/backups/<name>/<time>.rdb`, named by the UTC time they were taken. Writes made after a backup ran are not in it.
+
+To put one back on its Redis, you need [access to the server](/operations/cluster-access).
+
+1. Download the backup from your bucket to the server as `backup.rdb`.
+2. Copy it onto the Redis volume. `<name>` is the folder name from the bucket path. The first command shows the `<namespace>`.
+
+   ```bash
+   sudo kubectl get pods -A | grep <name>-0
+   sudo kubectl cp backup.rdb <namespace>/<name>-0:/data/restore.rdb -c redis
+   ```
+
+3. Swap it in and restart Redis:
+
+   ```bash
+   sudo kubectl exec -n <namespace> <name>-0 -c redis -- sh -c '
+     export REDISCLI_AUTH=$REDIS_PASSWORD
+     redis-cli CONFIG SET appendonly no
+     redis-cli CONFIG SET save ""
+     rm -rf /data/appendonlydir
+     mv /data/restore.rdb /data/dump.rdb'
+   sudo kubectl delete pod -n <namespace> <name>-0
+   ```
+
+Redis starts with the data from the backup, and the **Append-Only File** setting applies again. Everything in Redis before the restore is replaced, including writes that arrive during these steps.
 
 ## PostgreSQL replication settings
 
@@ -66,3 +94,5 @@ Redis keeps its data in memory and writes it to the volume. Its **Database** sec
 New Redis databases have it on. Redis databases created before the setting keep snapshots only until you turn it on. Turn it on for anything that keeps state you cannot rebuild, such as job queues or balances.
 
 Changing it restarts the database. Before Redis starts, Unbind converts the data on the volume to the new format, so nothing is lost either way. A large dataset takes longer to start while it converts.
+
+The append-only file protects against a crash, not against losing the volume. For an off-site copy, turn on [backups](#backups).

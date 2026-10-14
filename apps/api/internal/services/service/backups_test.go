@@ -29,8 +29,11 @@ func TestValidateBackupsSupported(t *testing.T) {
 	redis, err := provider.FetchDatabaseDefinition(context.Background(), "", "redis")
 	require.NoError(t, err)
 
+	withoutS3 := &databases.Definition{Name: "Example"}
+
 	assert.NoError(t, validateBackupsSupported(schema.ServiceTypeDatabase, postgres))
-	assert.ErrorContains(t, validateBackupsSupported(schema.ServiceTypeDatabase, redis), "Redis does not support backups")
+	assert.NoError(t, validateBackupsSupported(schema.ServiceTypeDatabase, redis))
+	assert.ErrorContains(t, validateBackupsSupported(schema.ServiceTypeDatabase, withoutS3), "Example does not support backups")
 	assert.ErrorContains(t, validateBackupsSupported(schema.ServiceTypeGithub, nil), "only apply to database services")
 	assert.ErrorContains(t, validateBackupsSupported(schema.ServiceTypeDockerimage, postgres), "only apply to database services")
 }

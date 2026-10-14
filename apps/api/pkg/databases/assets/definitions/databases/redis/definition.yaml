@@ -186,3 +186,112 @@ extraInitContainers:
 # Disable metrics
 metrics:
   enabled: false
+
+{{- if .Parameters.s3.enabled }}
+{{- $s3 := .Parameters.s3 }}
+{{- $backupPath := printf "s3://%s/%s/backups/%s/" $s3.bucket ($s3.backupPrefix | default "redis") .Name }}
+extraObjects:
+  - apiVersion: batch/v1
+    kind: CronJob
+    metadata:
+      name: {{ .Name }}-s3-backup
+      namespace: {{ .Namespace }}
+      labels:
+        unbind/usd-type: {{ .Definition.Type | quote }}
+        unbind/usd-version: {{ .Definition.Version | quote }}
+        unbind/usd-category: databases
+        app.kubernetes.io/instance: {{ .Name }}
+        app.kubernetes.io/managed-by: Helm
+        {{- range $key, $value := .Parameters.labels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      schedule: {{ $s3.backupSchedule | default "0 0 * * *" | quote }}
+      concurrencyPolicy: Forbid
+      jobTemplate:
+        spec:
+          ttlSecondsAfterFinished: 300
+          backoffLimit: 2
+          template:
+            spec:
+              restartPolicy: Never
+              # Pod 0 is the primary in both standalone and replication mode
+              initContainers:
+                - name: dump
+                  image: "docker.io/redis:{{ .Parameters.version | default "8.10" }}"
+                  env:
+                    - name: REDISCLI_AUTH
+                      valueFrom:
+                        secretKeyRef:
+                          name: {{ .Parameters.secretName }}
+                          key: {{ .Parameters.secretKey }}
+                  command:
+                    - /bin/sh
+                    - -ec
+                    - |
+                      redis-cli -h {{ .Name }}-0.{{ .Name }}-headless.{{ .Namespace }}.svc.cluster.local --rdb /backup/dump.rdb
+                      redis-check-rdb /backup/dump.rdb
+                  securityContext:
+                    runAsUser: 999
+                    runAsGroup: 999
+                    runAsNonRoot: true
+                    privileged: false
+                    allowPrivilegeEscalation: false
+                    readOnlyRootFilesystem: true
+                    capabilities:
+                      drop: ["ALL"]
+                    seccompProfile:
+                      type: RuntimeDefault
+                  volumeMounts:
+                    - name: backup
+                      mountPath: /backup
+              containers:
+                - name: upload
+                  image: amazon/aws-cli:2.37.11
+                  env:
+                    - name: AWS_ACCESS_KEY_ID
+                      valueFrom:
+                        secretKeyRef:
+                          name: {{ $s3.secretName }}
+                          key: {{ $s3.accessKey | default "access_key_id" }}
+                    - name: AWS_SECRET_ACCESS_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: {{ $s3.secretName }}
+                          key: {{ $s3.secretKey | default "secret_key" }}
+                    {{- if $s3.region }}
+                    - name: AWS_DEFAULT_REGION
+                      value: {{ $s3.region | quote }}
+                    {{- end }}
+                  command:
+                    - /bin/sh
+                    - -ec
+                    - |
+                      BACKUP_PATH={{ $backupPath | quote }}
+                      RETENTION={{ $s3.backupRetention | default 2 }}
+
+                      aws s3 cp /backup/dump.rdb "${BACKUP_PATH}$(date -u +%Y%m%d_%H%M%S).rdb" \
+                        --endpoint-url={{ $s3.endpoint | quote }} --checksum-algorithm CRC32
+
+                      BACKUPS=$(aws s3 ls "$BACKUP_PATH" --endpoint-url={{ $s3.endpoint | quote }} \
+                        | awk '{print $4}' \
+                        | grep -E '^[0-9]{8}_[0-9]{6}\.rdb$' \
+                        | sort || true)
+                      BACKUP_COUNT=$(echo "$BACKUPS" | grep -c . || true)
+
+                      if [ "$BACKUP_COUNT" -le "$RETENTION" ]; then
+                        echo "Have $BACKUP_COUNT backups, retention is $RETENTION. Nothing to delete."
+                        exit 0
+                      fi
+
+                      echo "$BACKUPS" | head -n "$((BACKUP_COUNT - RETENTION))" | while read -r file; do
+                        echo "Deleting old backup: $file"
+                        aws s3 rm "${BACKUP_PATH}${file}" --endpoint-url={{ $s3.endpoint | quote }}
+                      done
+                  volumeMounts:
+                    - name: backup
+                      mountPath: /backup
+              volumes:
+                - name: backup
+                  emptyDir: {}
+{{- end }}

@@ -1,4 +1,3 @@
-import { databaseTypesWithoutBackups } from "@/components/service/backups/backup-config";
 import { TServiceShallow } from "@/lib/queries/services";
 
 export function shouldServiceSettingsHaveDeploySection(service: TServiceShallow) {
@@ -22,9 +21,7 @@ export function shouldServiceSettingsHaveCronSchedule(service: TServiceShallow) 
 }
 
 export function shouldServiceSettingsHaveBackupsSection(service: TServiceShallow) {
-  if (service.type !== "database") return false;
-  if (!service.database_type) return false;
-  return !databaseTypesWithoutBackups.includes(service.database_type);
+  return service.type === "database";
 }
 
 export function shouldServiceSettingsHaveBuildSection(service: TServiceShallow) {

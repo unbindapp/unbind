@@ -11,6 +11,8 @@ port: 6379
 imports:
   - path: "../../common/base.yaml"
     as: base
+  - path: "../../common/s3-schema.yaml"
+    as: s3Schema
   - path: "../../common/labels.yaml"
     as: labelsSchema
 schema:
@@ -38,5 +40,7 @@ schema:
       description: "Log every write to an append-only file. Unset leaves the chart default and skips the conversion init container"
     common:
       $ref: "#/imports/base"
+    s3:
+      $ref: "#/imports/s3Schema"
     labels:
       $ref: "#/imports/labelsSchema"
