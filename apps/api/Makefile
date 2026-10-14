@@ -13,7 +13,7 @@ help:
 
 migrate:
 	@if [ -z "$(NAME)" ]; then \
-		echo "❌ Error: NAME parameter is required"; \
+		echo "Error: NAME parameter is required"; \
 		echo "Usage: make migrate NAME=your_migration_name"; \
 		exit 1; \
 	fi

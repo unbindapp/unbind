@@ -56,7 +56,7 @@ function execCopy(text: string) {
   document.body.removeChild(ta);
 }
 
-// xterm wants real colors, not our CSS vars — make the browser resolve them to rgb().
+// xterm wants real colors, not our CSS vars, so have the browser resolve them to rgb().
 function resolveColor(probe: HTMLElement, cssVar: string) {
   probe.style.color = `var(${cssVar})`;
   return getComputedStyle(probe).color;
@@ -115,7 +115,7 @@ const PodTerminal = forwardRef<TPodTerminalHandle, TProps>(function PodTerminal(
     });
 
     // The Terminal (and its scrollback) survives reconnects; only the socket is recreated.
-    // Transient drops back off and retry — a real exit/error stays dead.
+    // Transient drops back off and retry. A real exit/error stays dead.
     let ws: WebSocket | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     let attempt = 0;
@@ -226,7 +226,7 @@ const PodTerminal = forwardRef<TPodTerminalHandle, TProps>(function PodTerminal(
       if (!e.ctrlKey && !e.metaKey) return true;
       const key = e.key.toLowerCase();
 
-      // Returning false lets the browser paste natively into xterm's textarea — Firefox
+      // Returning false lets the browser paste natively into xterm's textarea. Firefox
       // won't give us clipboard.readText(), so this is the only cross-browser path.
       if (key === "v" && (e.metaKey || e.shiftKey)) {
         return false;

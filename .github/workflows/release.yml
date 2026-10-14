@@ -1,4 +1,4 @@
-name: 🚀 Release
+name: Release
 
 on:
   push:
@@ -89,11 +89,11 @@ jobs:
             git commit -m "releases: add metadata entry for $VERSION"
             git push origin HEAD:master && exit 0
           done
-          echo "::error::could not push a metadata entry for $VERSION to master — add it manually"
+          echo "::error::could not push a metadata entry for $VERSION to master, add it manually"
           exit 1
 
   images:
-    name: 🔨 Build images
+    name: Build images
     needs: version
     strategy:
       matrix:
@@ -163,7 +163,7 @@ jobs:
           tags: ghcr.io/unbindapp/unbind-operator:${{ env.VERSION }}-${{ matrix.arch }}
 
   manifests:
-    name: 📦 Multi-arch manifests
+    name: Multi-arch manifests
     needs: [version, images]
     runs-on: ubuntu-24.04
     env:
@@ -189,7 +189,7 @@ jobs:
           done
 
   installer:
-    name: 🧰 Build installer binaries
+    name: Build installer binaries
     needs: version
     runs-on: ubuntu-24.04
     env:
@@ -220,7 +220,7 @@ jobs:
             apps/installer/unbind-installer-*.gz.sha256
 
   release:
-    name: 📝 GitHub Release
+    name: GitHub Release
     needs: [version, manifests, installer]
     runs-on: ubuntu-24.04
     env:
@@ -248,11 +248,11 @@ jobs:
           CHANGELOG=$(echo "$CHANGELOG" | grep -v '^- releases: add metadata entry for ' || true)
           {
             echo "body<<EOF"
-            echo "## 🚀 Unbind ${VERSION}"
+            echo "## Unbind ${VERSION}"
             echo ""
             echo "${SUMMARY}"
             echo ""
-            echo "### 📦 Container Images"
+            echo "### Container Images"
             echo ""
             echo "| Component | Image |"
             echo "|-----------|-------|"
@@ -260,13 +260,13 @@ jobs:
             echo "| Builder | \`ghcr.io/unbindapp/unbind-builder:${VERSION}\` |"
             echo "| Operator | \`ghcr.io/unbindapp/unbind-operator:${VERSION}\` |"
             echo ""
-            echo "### 🧰 Installer"
+            echo "### Installer"
             echo ""
             echo '```bash'
             echo "curl -fsSL https://raw.githubusercontent.com/unbindapp/unbind/master/apps/installer/install.sh | sh"
             echo '```'
             echo ""
-            echo "### 📝 What's Changed"
+            echo "### What's Changed"
             echo ""
             echo "${CHANGELOG}"
             echo "EOF"

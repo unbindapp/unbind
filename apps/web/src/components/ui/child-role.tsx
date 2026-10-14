@@ -19,7 +19,7 @@ export function withChildRole<T extends object>(component: T, role: string): T {
   return component;
 }
 
-/** Match a child by role — compares by value, so it survives Fast Refresh. */
+/** Match a child by role. Compares by value, so it survives Fast Refresh. */
 export function hasChildRole(child: ReactNode, role: string): child is ReactElement {
   return (
     isValidElement(child) &&

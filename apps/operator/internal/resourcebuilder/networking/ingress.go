@@ -1,45 +1,23 @@
 package networking
 
 import (
-	"fmt"
-
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// hostIngressName names the Ingress of a host that carries options of its own,
-// which the ingress controllers only read per Ingress.
-func hostIngressName(svc *v1.Service, index int) string {
-	return fmt.Sprintf("%s-host-%d", svc.Name, index)
-}
-
 // splitHosts separates the hosts the shared Ingress serves from the ones that need
-// an Ingress of their own, keyed by their position in the config.
-func splitHosts(svc *v1.Service) (plain []v1.HostSpec, optioned map[int]v1.HostSpec) {
-	optioned = map[int]v1.HostSpec{}
-	for i, host := range svc.Spec.Config.Hosts {
+// an Ingress of their own, since the ingress controllers read options per Ingress.
+func splitHosts(svc *v1.Service) (plain, optioned []v1.HostSpec) {
+	for _, host := range svc.Spec.Config.Hosts {
 		if hasRouteOptions(host) {
-			optioned[i] = host
+			optioned = append(optioned, host)
 			continue
 		}
 		plain = append(plain, host)
 	}
 	return plain, optioned
-}
-
-func sortedIndexes(optioned map[int]v1.HostSpec) []int {
-	indexes := make([]int, 0, len(optioned))
-	for i := range optioned {
-		indexes = append(indexes, i)
-	}
-	for i := 1; i < len(indexes); i++ {
-		for j := i; j > 0 && indexes[j] < indexes[j-1]; j-- {
-			indexes[j], indexes[j-1] = indexes[j-1], indexes[j]
-		}
-	}
-	return indexes
 }
 
 // buildIngress assembles a classic networking.k8s.io/v1 Ingress, shared by the

@@ -25,7 +25,7 @@ schema:
       required: true
     version:
       type: "string"
-      # 8.x only — 7.x predates Redis returning to an open license (AGPLv3 at 8.0).
+      # 8.x only, 7.x predates Redis returning to an open license (AGPLv3 at 8.0).
       description: "Redis version"
       default: "8.10"
       enum: ["8.4", "8.6", "8.8", "8.10"]

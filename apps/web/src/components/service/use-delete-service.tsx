@@ -19,7 +19,7 @@ export default function useDeleteService({ onSuccess }: TProps = {}) {
     projectId,
     environmentId,
   });
-  // Deleting a service leaves its volumes behind as dangling — refresh the
+  // Deleting a service leaves its volumes behind as dangling. Refresh the
   // volumes list so they show up in the project's Volumes section right away.
   const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
 

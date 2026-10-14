@@ -80,7 +80,7 @@ func (pd *PortDetector) scanPythonFiles(root string) (*int, error) {
 		default:
 			return nil
 		}
-		return fs.SkipAll // got one — stop walking
+		return fs.SkipAll
 	})
 	if err != nil && err != fs.SkipAll {
 		return nil, err

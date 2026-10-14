@@ -1,7 +1,7 @@
 # Agent Skills
 
 This directory holds agent skills in the [Agent Skills](https://agentskills.io) open
-standard — a portable, version-controlled format for giving AI agents specialized
+standard, a portable, version-controlled format for giving AI agents specialized
 capabilities. Each skill is a directory with a `SKILL.md` entrypoint plus optional
 `references/` and `assets/`. Agents load metadata at startup, full instructions on
 activation, and supporting files on demand.
@@ -10,8 +10,8 @@ activation, and supporting files on demand.
 
 | Skill | Description |
 |-------|-------------|
-| [unbind-template-dev](unbind-template-dev/) | Author one-click app templates for Unbind — services, inputs, generated secrets, variable references, the deploy flow, and the icon registry. |
-| [unbind-create-release](unbind-create-release/) | Create a tagged release — repo checks, three summary options for approval, annotated tag, workflow watch, and verification of the GitHub Release and metadata entry. |
+| [unbind-template-dev](unbind-template-dev/) | Author one-click app templates for Unbind: services, inputs, generated secrets, variable references, the deploy flow, and the icon registry. |
+| [unbind-create-release](unbind-create-release/) | Create a tagged release: repo checks, three summary options for approval, annotated tag, workflow watch, and verification of the GitHub Release and metadata entry. |
 
 ## Installation
 

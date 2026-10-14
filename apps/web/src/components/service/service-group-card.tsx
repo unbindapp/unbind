@@ -305,7 +305,7 @@ function DeleteTrigger({
   children,
 }: TDeleteTriggerProps) {
   const { refetch: refetchServices } = useServicesUtils({ teamId, projectId, environmentId });
-  // Deleted services leave their volumes behind as dangling — refresh the
+  // Deleted services leave their volumes behind as dangling. Refresh the
   // volumes list so they show up in the project's Volumes section right away.
   const { invalidate: invalidateVolumes } = useVolumesUtils({ teamId, projectId, environmentId });
   const discardStaged = useStagedChangesStore((s) => s.discardReferencing);

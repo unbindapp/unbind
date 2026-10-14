@@ -9,7 +9,7 @@ import (
 )
 
 // CSRFSecret derives a stable HMAC key from the RSA signing key. The key is
-// persisted and restart-stable, so the derived secret is too — no separate
+// persisted and restart-stable, so the derived secret is too. No separate
 // config value is needed.
 func CSRFSecret(privateKey *rsa.PrivateKey) []byte {
 	der := x509.MarshalPKCS1PrivateKey(privateKey)

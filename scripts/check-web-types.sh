@@ -13,7 +13,7 @@ trap 'rm -f "$SPEC" "$GENERATED"' EXIT
 (cd "$ROOT/apps/web" && node ./scripts/generate-sdk/main.ts -i "$SPEC" -o "$GENERATED") >/dev/null
 
 if ! diff -q "$COMMITTED" "$GENERATED" >/dev/null 2>&1; then
-	echo "✘ Web client types are out of sync with the API."
+	echo "Web client types are out of sync with the API."
 	echo "  Run ./scripts/gen-web-types.sh and commit apps/web/src/lib/server/client.gen.ts"
 	exit 1
 fi

@@ -45,9 +45,9 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	var httpHosts, grpcHosts []v1.HostSpec
 	var httpRouteNames []string
 	if httpRoutable {
-		for i, host := range svc.Spec.Config.Hosts {
+		for _, host := range svc.Spec.Config.Hosts {
 			listeners = append(listeners, gwapiv1.Listener{
-				Name:     gwapiv1.SectionName(fmt.Sprintf("https-%d", i)),
+				Name:     hostListenerName(host),
 				Hostname: ptr.To(gwapiv1.Hostname(host.Host)),
 				Port:     443,
 				Protocol: gwapiv1.HTTPSProtocolType,
@@ -64,9 +64,9 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 				continue
 			}
 			httpHosts = append(httpHosts, host)
-			name := hostObjectName(svc, i)
+			name := hostObjectName(svc, host)
 			httpRouteNames = append(httpRouteNames, name)
-			objects = append(objects, p.httpRoute(svc, in.Labels, name, i, host))
+			objects = append(objects, p.httpRoute(svc, in.Labels, name, host))
 			if p.cfg.GatewayControllerEnvoy && host.BasicAuth != nil {
 				objects = append(objects,
 					htpasswdSecret(svc, in.Labels, name, ".htpasswd", host.BasicAuth),
@@ -134,7 +134,12 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 		objects = append(objects, wildcardCertificate(p.cfg, svc, in.Labels, wildcards))
 	}
 
-	return append([]client.Object{gateway}, objects...), nil
+	// Last, so a listener never comes up before its route and auth policy exist
+	return append(objects, gateway), nil
+}
+
+func hostListenerName(host v1.HostSpec) gwapiv1.SectionName {
+	return gwapiv1.SectionName("https-" + hostKey(host))
 }
 
 func (p gatewayProvider) parentRef(svc *v1.Service, section *gwapiv1.SectionName) gwapiv1.ParentReference {
@@ -146,7 +151,7 @@ func (p gatewayProvider) parentRef(svc *v1.Service, section *gwapiv1.SectionName
 	}
 }
 
-func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, name string, index int, host v1.HostSpec) *gwapiv1.HTTPRoute {
+func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, name string, host v1.HostSpec) *gwapiv1.HTTPRoute {
 	port, path := resolveHostPort(svc, host)
 	rule := gwapiv1.HTTPRouteRule{
 		Matches: []gwapiv1.HTTPRouteMatch{{
@@ -164,7 +169,7 @@ func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, na
 	if len(host.ResponseHeaders) > 0 {
 		rule.Filters = append(rule.Filters, responseHeaderFilter(host.ResponseHeaders))
 	}
-	section := gwapiv1.SectionName(fmt.Sprintf("https-%d", index))
+	section := hostListenerName(host)
 	return &gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: svc.Namespace, Labels: labels},
 		Spec: gwapiv1.HTTPRouteSpec{

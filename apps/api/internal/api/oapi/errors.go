@@ -109,7 +109,7 @@ func mapKubernetesError(err error) (error, bool) {
 // isSelfThrottled reports whether client-go's own rate limiter rejected the call
 // before it ever left the process. It carries no sentinel error and does not wrap
 // context.DeadlineExceeded, so the string client-go builds it from is all there
-// is to match on — and being told "Internal server error" for a limit we set
+// is to match on, and being told "Internal server error" for a limit we set
 // ourselves has cost enough debugging already.
 func isSelfThrottled(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "client rate limiter Wait returned an error")

@@ -1,4 +1,4 @@
-name: 📦 Publish Charts
+name: Publish Charts
 
 on:
   push:
@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   publish:
-    name: 🚀 Package and Push
+    name: Package and Push
     runs-on: ubuntu-24.04
     strategy:
       matrix:

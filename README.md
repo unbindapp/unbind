@@ -23,7 +23,7 @@ Unbind is an open-source **Platform as a Service (PaaS)** for managing all kinds
 - **Security** integrating OAuth2/OIDC with native [Kubernetes RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
 - **Metrics** with the [Victoria k8s stack](https://docs.victoriametrics.com/helm/victoriametrics-k8s-stack/) or [Prometheus kube stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
 - **Templates** for zero-config deployments of popular open-source products (Plausible, Supabase, WordPress, MinIO, and more)
-- **Production-grade databases with backups** via [operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) and Helm charts — backing up to any S3-compatible storage
+- **Production-grade databases with backups** via [operators](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/) and Helm charts, backing up to any S3-compatible storage
 
 ---
 
@@ -43,7 +43,7 @@ unbind/
 ├── Dockerfile          # App image (SPA + API)  -> ghcr.io/unbindapp/unbind
 ├── Dockerfile.builder  # Builder image          -> ghcr.io/unbindapp/unbind-builder
 ├── Makefile            # Local dev / build orchestration
-├── LICENSE             # MIT (the code is MIT, the brand is not — see TRADEMARK.md)
+├── LICENSE             # MIT (the code is MIT, the brand is not, see TRADEMARK.md)
 └── TRADEMARK.md
 ```
 
@@ -103,12 +103,12 @@ built SPA (`go:embed` over `apps/api/internal/web/dist`) and serves it as the ro
 
 - Registered API routes at root (`/auth`, `/teams`, `/health`, `/.well-known/*`, …) take precedence.
 - Anything else serves a static asset, or falls back to `index.html` for client-side routing.
-- Hashed assets are cached immutably; `config.json` is never cached — mirroring the old nginx rules.
+- Hashed assets are cached immutably; `config.json` is never cached, mirroring the old nginx rules.
 
 The SPA talks to the API **same-origin** at `/api/go` (set in `apps/web/public/config.json`). In a
 deployment the ingress strips the `/api/go` and `/api/oauth2` prefixes so the API receives root
 paths; in local dev the Vite proxy strips them. Because the API and SPA share an origin, the auth
-session cookie is first-party — no cross-site cookie/CORS handling needed.
+session cookie is first-party, so no cross-site cookie/CORS handling is needed.
 
 ---
 
@@ -133,7 +133,7 @@ make dev-reset     # delete the cluster and the database
 ### 0. Toolchains
 
 ```bash
-nix develop        # Go, Node, kubectl, helm, helmfile, k3d — all pinned
+nix develop        # Go, Node, kubectl, helm, helmfile, k3d, all pinned
 ```
 
 VS Code: install the direnv extension, or launch with `nix develop --command code .`.
@@ -145,15 +145,15 @@ make dev-infra     # Postgres + Redis (docker compose)
 make dev-cluster   # k3d cluster running the installer's helmfile stack (env: dev)
 ```
 
-The dev cluster is the real platform stack minus database/redis/unbind-app — the host runs those.
+The dev cluster is the real platform stack minus database/redis/unbind-app. The host runs those.
 Kubeconfig lands at `apps/api/.data/kubernetes/k3d.kubeconfig.yaml`; the dev shell exports
-`KUBECONFIG` to it. Local dev never touches `~/.kube/config` or any other cluster — `make dev`
+`KUBECONFIG` to it. Local dev never touches `~/.kube/config` or any other cluster. `make dev`
 pins `KUBECONFIG` in `apps/api/.env` to the k3d file. `.env` is created from
 `apps/api/.env.example` on first run; the API bootstraps the default team/group/registry on
 startup. `make operator-run` runs the operator against it. Migrations are embedded and applied
-on API startup — no separate migrate step.
+on API startup, no separate migrate step.
 
-### 2a. Two-process dev loop (recommended — hot reload for the UI)
+### 2a. Two-process dev loop (recommended, hot reload for the UI)
 
 ```bash
 make dev-api       # API on :8089 (serves API + a placeholder SPA shell)
@@ -167,16 +167,16 @@ To point the UI at a remote API instead, set `VITE_DEV_API_PROXY` (defaults to t
 cd apps/web && VITE_DEV_API_PROXY=https://api.unbind.app npm run dev
 ```
 
-### 2b. Single binary (production-like — the API serves the real SPA)
+### 2b. Single binary (production-like, the API serves the real SPA)
 
 ```bash
 make app           # build SPA -> embed into apps/api/internal/web/dist -> build apps/api/bin/unbind
 make run           # build + run the single binary on :8089
 ```
 
-Then open **http://localhost:8089** — the API serves the real SPA at `/` and the API at `/api/go`.
+Then open **http://localhost:8089**. The API serves the real SPA at `/` and the API at `/api/go`.
 
-> **Can I run the API standalone?** Yes. `cd apps/api && go run ./cmd/api` always works — a committed
+> **Can I run the API standalone?** Yes. `cd apps/api && go run ./cmd/api` always works. A committed
 > placeholder `index.html` lets the embed compile without a web build, so every API route works and
 > `/` serves a minimal shell. Run `make app` (or `make embed`) first if you want the real UI baked in.
 
@@ -206,7 +206,7 @@ go run ./cmd/cli sync:group-to-k8s
 
 ## Builds & releases
 
-CI is path-aware — a change only triggers the work it affects:
+CI is path-aware. A change only triggers the work it affects:
 
 | Workflow | Trigger | Builds |
 | --- | --- | --- |
@@ -215,14 +215,14 @@ CI is path-aware — a change only triggers the work it affects:
 | `build-operator.yml` | push to `master` touching `apps/operator` | `unbind-operator` image (multi-arch) |
 | `release.yml` | push tag `v*.*.*` | all images at `:<tag>` **and** installer binaries, in one GitHub Release |
 
-Releases are driven entirely by tagging this repo — there is no cross-repo dispatch. The
+Releases are driven entirely by tagging this repo. There is no cross-repo dispatch. The
 in-app updater reads [`deploy/releases/metadata.json`](deploy/releases/README.md) from `master`
 and offers a version once its GitHub Release exists **and** it has a metadata entry.
 
 Cutting a release:
 
-1. `git tag -a vX.Y.Z -m "What changed" && git push origin vX.Y.Z` — `release.yml` adds the `deploy/releases/metadata.json` entry to `master` from the tag message if it is missing.
-2. Breaking releases only: add the entry (with `breaking: true` and `depends_on`) and any `deploy/releases/<tag>/` manifests to `master` **before** tagging — the workflow leaves existing entries alone.
+1. `git tag -a vX.Y.Z -m "What changed" && git push origin vX.Y.Z`. `release.yml` adds the `deploy/releases/metadata.json` entry to `master` from the tag message if it is missing.
+2. Breaking releases only: add the entry (with `breaking: true` and `depends_on`) and any `deploy/releases/<tag>/` manifests to `master` **before** tagging. The workflow leaves existing entries alone.
 3. When the workflow finishes, `install.sh` resolves the new version via `releases/latest` and running installs see it under **Update**.
 
 | Component | Image |
@@ -241,8 +241,8 @@ curl -fsSL https://raw.githubusercontent.com/unbindapp/unbind/master/apps/instal
 
 ## License
 
-The **code** is licensed under the [MIT License](LICENSE). The **Unbind brand** is not — see
-[TRADEMARK.md](TRADEMARK.md).
+The **code** is licensed under the [MIT License](LICENSE). The **Unbind brand** is not (see
+[TRADEMARK.md](TRADEMARK.md)).
 
 <div align="center">
 

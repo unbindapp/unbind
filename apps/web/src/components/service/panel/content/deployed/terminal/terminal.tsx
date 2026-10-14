@@ -77,7 +77,7 @@ export default function Terminal() {
     return data.data.find((p) => p.containers.some((i) => i.ready)) ?? data.data[0];
   }, [data, selectedPod]);
 
-  // Cache the resolved pod for the pin above. This only writes a ref — it never gates rendering,
+  // Cache the resolved pod for the pin above. This only writes a ref. It never gates rendering,
   // so it can't reintroduce the empty-state flash.
   useEffect(() => {
     if (activePod) pinnedPodRef.current = activePod.kubernetes_name;

@@ -19,7 +19,7 @@ import { UpdateToastProvider } from "@/components/system/update/update-status-pr
 export const Route = createFileRoute("/$team_id/_team")({
   loader: ({ context: { queryClient }, params }) => {
     // Warm the cache (this also runs on intent preload) without blocking the
-    // navigation — the components below render immediately and show skeletons.
+    // navigation. The components below render immediately and show skeletons.
     void queryClient.prefetchQuery(teamsListQuery());
     if (isSystemViewer(queryClient.getQueryData(meQuery.queryKey))) {
       void queryClient.prefetchQuery(systemQuery());

@@ -2,6 +2,9 @@ package networking
 
 import (
 	"encoding/base64"
+	"fmt"
+	"reflect"
+	"slices"
 	"strings"
 	"testing"
 
@@ -23,6 +26,24 @@ func httpRoutesByName(objs []client.Object) map[string]*gwapiv1.HTTPRoute {
 		}
 	}
 	return routes
+}
+
+func httpRouteFor(objs []client.Object, host string) *gwapiv1.HTTPRoute {
+	for _, o := range objs {
+		if r, ok := o.(*gwapiv1.HTTPRoute); ok && slices.Contains(r.Spec.Hostnames, gwapiv1.Hostname(host)) {
+			return r
+		}
+	}
+	return nil
+}
+
+func ingressFor(objs []client.Object, host string) *networkingv1.Ingress {
+	for _, o := range objs {
+		if i, ok := o.(*networkingv1.Ingress); ok && slices.Contains(ingressHostsOf(i), host) {
+			return i
+		}
+	}
+	return nil
 }
 
 func ingressesByName(objs []client.Object) map[string]*networkingv1.Ingress {
@@ -59,15 +80,14 @@ func TestGatewayRoutePerHost(t *testing.T) {
 	if len(routes) != 2 {
 		t.Fatalf("expected a route per host, got %v", routes)
 	}
-	first, second := routes["web"], routes["web-1"]
+	first, second := httpRouteFor(objs, "example.com"), httpRouteFor(objs, "admin.example.com")
 	if first == nil || second == nil {
-		t.Fatalf("expected routes web and web-1, got %v", routes)
+		t.Fatalf("expected a route per host, got %v", routes)
 	}
-	if got := string(*second.Spec.ParentRefs[0].SectionName); got != "https-1" {
-		t.Errorf("second route listener = %q, want https-1", got)
-	}
-	if got := second.Spec.Hostnames; len(got) != 1 || got[0] != "admin.example.com" {
-		t.Errorf("second route hostnames = %v", got)
+	section := *second.Spec.ParentRefs[0].SectionName
+	listener := slices.IndexFunc(findGateway(objs).Spec.Listeners, func(l gwapiv1.Listener) bool { return l.Name == section })
+	if listener < 0 || string(*findGateway(objs).Spec.Listeners[listener].Hostname) != "admin.example.com" {
+		t.Errorf("second route binds listener %q, which is not the admin.example.com listener", section)
 	}
 	if got := *second.Spec.Rules[0].BackendRefs[0].Port; got != 9090 {
 		t.Errorf("second route port = %d, want 9090", got)
@@ -93,9 +113,7 @@ func TestGatewayRedirect(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BuildRoutes: %v", err)
 	}
-	routes := httpRoutesByName(objs)
-
-	rule := routes["web"].Spec.Rules[0]
+	rule := httpRouteFor(objs, "www.example.com").Spec.Rules[0]
 	if len(rule.BackendRefs) != 0 {
 		t.Errorf("a redirect must not route to the service, got backends %v", rule.BackendRefs)
 	}
@@ -107,7 +125,7 @@ func TestGatewayRedirect(t *testing.T) {
 		t.Errorf("a target without a path keeps the request path, got path %+v port %v", redirect.Path, redirect.Port)
 	}
 
-	redirect = routes["web-1"].Spec.Rules[0].Filters[0].RequestRedirect
+	redirect = httpRouteFor(objs, "old.example.com").Spec.Rules[0].Filters[0].RequestRedirect
 	if *redirect.Scheme != "http" || *redirect.Port != 8080 || *redirect.StatusCode != 301 {
 		t.Errorf("redirect = %+v", redirect)
 	}
@@ -125,7 +143,8 @@ func TestGatewayBasicAuth(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BuildRoutes: %v", err)
 	}
-	secret := findNamed(objs, "Secret", "web-htpasswd")
+	route := httpRouteFor(objs, "example.com").Name
+	secret := findNamed(objs, "Secret", route+"-htpasswd")
 	if secret == nil {
 		t.Fatalf("expected the htpasswd secret, got %v", objs)
 	}
@@ -133,22 +152,22 @@ func TestGatewayBasicAuth(t *testing.T) {
 	if data != base64.StdEncoding.EncodeToString([]byte("admin:{SHA}hash\n")) {
 		t.Errorf("htpasswd data = %q", data)
 	}
-	policy := findNamed(objs, "SecurityPolicy", "web")
+	policy := findNamed(objs, "SecurityPolicy", route)
 	if policy == nil {
 		t.Fatalf("expected a SecurityPolicy, got %v", objs)
 	}
-	if got, _, _ := unstructured.NestedString(policy.Object, "spec", "basicAuth", "users", "name"); got != "web-htpasswd" {
+	if got, _, _ := unstructured.NestedString(policy.Object, "spec", "basicAuth", "users", "name"); got != route+"-htpasswd" {
 		t.Errorf("policy users secret = %q", got)
 	}
 	refs, _, _ := unstructured.NestedSlice(policy.Object, "spec", "targetRefs")
-	if name := refs[0].(map[string]any)["name"]; name != "web" {
+	if name := refs[0].(map[string]any)["name"]; name != route {
 		t.Errorf("policy target = %v, want the host's route", refs)
 	}
 
 	// A missing hash closes the host instead of opening it
 	svc.Spec.Config.Hosts[0].BasicAuth.PasswordHash = ""
 	objs, _ = New(ProviderGateway, envoyConfig).BuildRoutes(RouteInput{Service: svc})
-	data, _, _ = unstructured.NestedString(findNamed(objs, "Secret", "web-htpasswd").Object, "data", ".htpasswd")
+	data, _, _ = unstructured.NestedString(findNamed(objs, "Secret", route+"-htpasswd").Object, "data", ".htpasswd")
 	if data != "" {
 		t.Errorf("missing hash should give an empty htpasswd, got %q", data)
 	}
@@ -168,7 +187,7 @@ func TestGatewayResponseHeaders(t *testing.T) {
 		{Name: "Cache-Control", Value: "public, max-age=600"},
 	}
 	objs, _ := New(ProviderGateway, envoyConfig).BuildRoutes(RouteInput{Service: svc})
-	rule := httpRoutesByName(objs)["web"].Spec.Rules[0]
+	rule := httpRouteFor(objs, "example.com").Spec.Rules[0]
 	if len(rule.BackendRefs) != 1 {
 		t.Errorf("headers keep the host routed, got backends %v", rule.BackendRefs)
 	}
@@ -221,11 +240,11 @@ func TestNginxHostOptions(t *testing.T) {
 	if hosts := ingressHostsOf(ingresses["web"]); len(hosts) != 1 || hosts[0] != "example.com" {
 		t.Errorf("shared ingress hosts = %v", hosts)
 	}
-	host := ingresses["web-host-1"]
-	if host == nil {
-		t.Fatalf("expected ingress web-host-1, got %v", ingresses)
+	host := ingressFor(objs, "www.example.com")
+	if host == nil || host.Name == "web" {
+		t.Fatalf("expected an ingress of its own for www.example.com, got %v", ingresses)
 	}
-	if got := host.Spec.TLS[0].SecretName; got != "web-host-1-tls-secret" {
+	if got := host.Spec.TLS[0].SecretName; got != host.Name+"-tls-secret" {
 		t.Errorf("host ingress tls secret = %q", got)
 	}
 	snippet := host.Annotations["nginx.ingress.kubernetes.io/configuration-snippet"]
@@ -234,10 +253,10 @@ func TestNginxHostOptions(t *testing.T) {
 			t.Errorf("snippet %q lacks %q", snippet, want)
 		}
 	}
-	if host.Annotations["nginx.ingress.kubernetes.io/auth-type"] != "basic" || host.Annotations["nginx.ingress.kubernetes.io/auth-secret"] != "web-host-1-htpasswd" {
+	if host.Annotations["nginx.ingress.kubernetes.io/auth-type"] != "basic" || host.Annotations["nginx.ingress.kubernetes.io/auth-secret"] != host.Name+"-htpasswd" {
 		t.Errorf("auth annotations = %v", host.Annotations)
 	}
-	secret := findNamed(objs, "Secret", "web-host-1-htpasswd")
+	secret := findNamed(objs, "Secret", host.Name+"-htpasswd")
 	if data, _, _ := unstructured.NestedString(secret.Object, "data", "auth"); data != base64.StdEncoding.EncodeToString([]byte("u:h\n")) {
 		t.Errorf("nginx reads the auth key, got %q", data)
 	}
@@ -245,7 +264,7 @@ func TestNginxHostOptions(t *testing.T) {
 	// A redirect to a path drops the request path
 	svc.Spec.Config.Hosts[1].Redirect.To = "https://example.com/plugins"
 	objs, _ = New(ProviderNginx, Config{}).BuildRoutes(in)
-	snippet = ingressesByName(objs)["web-host-1"].Annotations["nginx.ingress.kubernetes.io/configuration-snippet"]
+	snippet = ingressFor(objs, "www.example.com").Annotations["nginx.ingress.kubernetes.io/configuration-snippet"]
 	if !strings.Contains(snippet, "return 308 https://example.com/plugins;") {
 		t.Errorf("snippet = %q", snippet)
 	}
@@ -267,6 +286,7 @@ func TestTraefikHostOptions(t *testing.T) {
 		BasicAuth:       &v1.HostBasicAuthSpec{Username: "u"},
 		ResponseHeaders: []v1.HostHeaderSpec{{Name: "Cache-Control", Value: "no-store"}},
 	}}
+	svc.Namespace = "ns"
 	objs, err := New(ProviderTraefik, Config{}).BuildRoutes(RouteInput{Service: svc})
 	if err != nil {
 		t.Fatalf("BuildRoutes: %v", err)
@@ -275,16 +295,13 @@ func TestTraefikHostOptions(t *testing.T) {
 	if _, shared := ingresses["web"]; shared || len(ingresses) != 1 {
 		t.Fatalf("every host has options, so only its own ingress is expected, got %v", ingresses)
 	}
-	host := ingresses["web-host-0"]
-	want := "ns-web-redirect@kubernetescrd,ns-web-buffering@kubernetescrd,ns-web-host-0-redirect@kubernetescrd,ns-web-host-0-auth@kubernetescrd,ns-web-host-0-headers@kubernetescrd"
-	svc.Namespace = "ns"
-	objs, _ = New(ProviderTraefik, Config{}).BuildRoutes(RouteInput{Service: svc})
-	host = ingressesByName(objs)["web-host-0"]
-	if got := host.Annotations["traefik.ingress.kubernetes.io/router.middlewares"]; got != want {
+	name := ingressFor(objs, "www.example.com").Name
+	want := fmt.Sprintf("ns-web-redirect@kubernetescrd,ns-web-buffering@kubernetescrd,ns-%[1]s-redirect@kubernetescrd,ns-%[1]s-auth@kubernetescrd,ns-%[1]s-headers@kubernetescrd", name)
+	if got := ingresses[name].Annotations["traefik.ingress.kubernetes.io/router.middlewares"]; got != want {
 		t.Errorf("middlewares = %q, want %q", got, want)
 	}
 
-	redirect := findNamed(objs, "Middleware", "web-host-0-redirect")
+	redirect := findNamed(objs, "Middleware", name+"-redirect")
 	if regex, _, _ := unstructured.NestedString(redirect.Object, "spec", "redirectRegex", "regex"); regex != "^https?://[^/]+(.*)$" {
 		t.Errorf("redirect regex = %q", regex)
 	}
@@ -294,15 +311,81 @@ func TestTraefikHostOptions(t *testing.T) {
 	if permanent, _, _ := unstructured.NestedBool(redirect.Object, "spec", "redirectRegex", "permanent"); permanent {
 		t.Errorf("302 is not permanent")
 	}
-	auth := findNamed(objs, "Middleware", "web-host-0-auth")
-	if secret, _, _ := unstructured.NestedString(auth.Object, "spec", "basicAuth", "secret"); secret != "web-host-0-htpasswd" {
+	auth := findNamed(objs, "Middleware", name+"-auth")
+	if secret, _, _ := unstructured.NestedString(auth.Object, "spec", "basicAuth", "secret"); secret != name+"-htpasswd" {
 		t.Errorf("auth secret = %q", secret)
 	}
-	if data, _, _ := unstructured.NestedString(findNamed(objs, "Secret", "web-host-0-htpasswd").Object, "data", "users"); data != "" {
+	if data, _, _ := unstructured.NestedString(findNamed(objs, "Secret", name+"-htpasswd").Object, "data", "users"); data != "" {
 		t.Errorf("traefik reads the users key, and a missing hash leaves it empty, got %q", data)
 	}
-	headers := findNamed(objs, "Middleware", "web-host-0-headers")
+	headers := findNamed(objs, "Middleware", name+"-headers")
 	if value, _, _ := unstructured.NestedString(headers.Object, "spec", "headers", "customResponseHeaders", "Cache-Control"); value != "no-store" {
 		t.Errorf("header value = %q", value)
+	}
+}
+
+// Removing or inserting a host must leave every other host's objects as they were
+func TestRemovingHostKeepsOtherHosts(t *testing.T) {
+	hosts := []v1.HostSpec{
+		{Host: "danklinux.com", Path: "/"},
+		{Host: "plugins.danklinux.com", Path: "/", Redirect: &v1.HostRedirectSpec{To: "https://danklinux.com/plugins", StatusCode: 308}},
+		{Host: "install.danklinux.com", Path: "/", ResponseHeaders: []v1.HostHeaderSpec{{Name: "Cache-Control", Value: "no-store"}}},
+		{Host: "api.danklinux.com", Path: "/", BasicAuth: &v1.HostBasicAuthSpec{Username: "u", PasswordHash: "h"}},
+	}
+	for _, provider := range []Provider{ProviderGateway, ProviderNginx, ProviderTraefik} {
+		withPlugins := buildWithHosts(t, provider, hosts)
+		withoutPlugins := buildWithHosts(t, provider, slices.Concat(hosts[:1], hosts[2:]))
+		assertKept(t, provider, withoutPlugins, withPlugins)
+	}
+}
+
+func buildWithHosts(t *testing.T, provider Provider, hosts []v1.HostSpec) []client.Object {
+	t.Helper()
+	svc := setName(publicService(), "dux")
+	svc.Spec.Config.Hosts = hosts
+	objs, err := New(provider, envoyConfig).BuildRoutes(RouteInput{Service: svc})
+	if err != nil {
+		t.Fatalf("%s BuildRoutes: %v", provider, err)
+	}
+	return objs
+}
+
+func objectKey(obj client.Object) string {
+	if u, ok := obj.(*unstructured.Unstructured); ok {
+		return u.GetKind() + "/" + u.GetName()
+	}
+	return fmt.Sprintf("%T/%s", obj, obj.GetName())
+}
+
+// assertKept checks every object of fewer is in more unchanged, apart from the
+// Gateway's listener list and the Certificate, which name every host.
+func assertKept(t *testing.T, provider Provider, fewer, more []client.Object) {
+	t.Helper()
+	moreByKey := map[string]client.Object{}
+	for _, obj := range more {
+		moreByKey[objectKey(obj)] = obj
+	}
+	for _, obj := range fewer {
+		key := objectKey(obj)
+		other, ok := moreByKey[key]
+		if !ok {
+			t.Errorf("%s: %s exists only without the removed host", provider, key)
+			continue
+		}
+		if u, ok := obj.(*unstructured.Unstructured); ok && u.GetKind() == "Certificate" {
+			continue
+		}
+		gateway, ok := obj.(*gwapiv1.Gateway)
+		if !ok {
+			if !reflect.DeepEqual(obj, other) {
+				t.Errorf("%s: %s changed", provider, key)
+			}
+			continue
+		}
+		for _, listener := range gateway.Spec.Listeners {
+			if !slices.ContainsFunc(other.(*gwapiv1.Gateway).Spec.Listeners, func(l gwapiv1.Listener) bool { return reflect.DeepEqual(l, listener) }) {
+				t.Errorf("%s: listener %s for %s changed", provider, listener.Name, *listener.Hostname)
+			}
+		}
 	}
 }

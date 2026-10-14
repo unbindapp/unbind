@@ -116,7 +116,7 @@ func (suite *UpdatePVCSuite) TestRejectsShrink() {
 }
 
 // A rename must be a pure metadata write: no service lookups, no database
-// StatefulSet deletion, no PVC resize, no pod restarts — even when the volume
+// StatefulSet deletion, no PVC resize, no pod restarts, even when the volume
 // is a mounted database volume. The strict mocks fail the test if any of
 // those calls happen.
 func (suite *UpdatePVCSuite) TestRenameOnlyDoesNotTouchKubernetes() {
@@ -174,7 +174,7 @@ func (suite *UpdatePVCSuite) TestRenameOnlyDoesNotTouchKubernetes() {
 	suite.Equal(&newDescription, result.Description)
 }
 
-// Sending the current size is not a resize — the update must skip the PVC
+// Sending the current size is not a resize. The update must skip the PVC
 // patch and the rolling pod restart.
 func (suite *UpdatePVCSuite) TestRejectsTakenName() {
 	takenName := "Search Data"

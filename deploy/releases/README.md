@@ -47,7 +47,7 @@ kept (cluster-scoped resources keep their scope). Versions without a directory j
 the `unbind` and `unbind-operator` images.
 
 The kustomization is rendered by the binary the install is updating *from*, not the target
-version — and a multi-version update path renders every step with that same old binary.
+version, and a multi-version update path renders every step with that same old binary.
 Updaters before v0.1.26 forced every resource into the system namespace, so until no
 supported update path starts before v0.1.26, a bundle targeting another namespace must
 force it back via its own `transformers:` entry:
@@ -62,13 +62,13 @@ metadata:
 
 The rendered manifests are applied by a short-lived job running as the elevated
 `unbind-updater-sa` service account (cluster-admin, created by the chart at install time),
-so a release can ship cluster-scoped resources — ClusterRoles, CRDs — that the API's own
+so a release can ship cluster-scoped resources (ClusterRoles, CRDs) that the API's own
 service account may not grant itself. The applier server-side-applies every document
 (field manager `unbind-updater`) after a full dry-run pass, so an invalid bundle is
 rejected before anything lands.
 
 `release.yml` fails a tag whose charts under `deploy/charts/charts/` changed since the
-previous release but that ships no `deploy/releases/<tag>/` directory — the in-app updater
+previous release but that ships no `deploy/releases/<tag>/` directory. The in-app updater
 never applies charts, so such a change would silently miss existing installs. Ship the
 equivalent resources or patches as release manifests, or add an empty `kustomization.yaml`
 (no job is run for an empty render) to acknowledge the change is fresh-install-only.

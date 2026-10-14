@@ -28,7 +28,7 @@ storage size, etc.). WordPress = MySQL + the WordPress image, wired by four env 
 Supabase = Postgres + a dozen images, wired by JWTs and host references.
 
 A template is a single Go function returning `*schema.TemplateDefinition`. There is no YAML,
-no DSL — it's typed Go. The whole system lives in two trees:
+no DSL, it's typed Go. The whole system lives in two trees:
 
 - **Definitions + resolution + API + deploy:** `apps/api/`
 - **Gallery, deploy form, icons:** `apps/web/`
@@ -54,14 +54,14 @@ TSX icon blocks. Match the surrounding code.
 - **Don't over-comment.** No comments on self-explanatory code. A doc comment on the template
   func is enough; don't narrate every field. Let the struct read as data.
 - **Guard clauses.** Return/continue early on the exception; don't nest the happy path inside
-  `if` blocks. The resolver functions in `renderer.go` are the pattern — bail when the input
+  `if` blocks. The resolver functions in `renderer.go` are the pattern: bail when the input
   map is empty, handle the case, move on.
 - **Prefer `switch`/`case`** over `if`/`else if` chains, especially when branching on a type
   or enum (`Generator.Type`, `Input.Type`, `ServiceType`). Reads cleaner and extends cleanly.
 
 ## Step 1: Scaffold the definition
 
-Every template file is one function. Match the existing files — `pocketbase.go` is the
+Every template file is one function. Match the existing files. `pocketbase.go` is the
 smallest complete example (single service + volume), `wordpress.go` is the smallest
 multi-service example (DB + app + refs), `supabase_lite.go` is the kitchen sink.
 
@@ -116,14 +116,14 @@ Two service shapes. Full field reference: [references/schema-reference.md](refer
 		Type: utils.ToPtr(schema.HealthCheckTypeHTTP),
 		Path: "/health",
 		Port: utils.ToPtr(int32(8080)),
-		// startup/health timing — copy from pocketbase.go
+		// startup/health timing, copy from pocketbase.go
 	},
 	Variables:          []schema.TemplateVariable{ /* Step 4 */ },
 	VariableReferences: []schema.TemplateVariableReference{ /* Step 5 */ },
 }
 ```
 
-**Database** (`Type: ServiceTypeDatabase`, `Builder: ServiceBuilderDatabase`). No image —
+**Database** (`Type: ServiceTypeDatabase`, `Builder: ServiceBuilderDatabase`). No image.
 `DatabaseType` selects the operator-backed engine (`"postgres"`, `"mysql"`, `"redis"`, ...).
 Sizing comes from a `database-size` input.
 
@@ -145,7 +145,7 @@ Sizing comes from a `database-size` input.
 
 A database service auto-exposes these variables for other services to reference:
 `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_DEFAULT_DB_NAME`, `DATABASE_HOST`,
-`DATABASE_PORT`. You do not declare them — you reference them (Step 5).
+`DATABASE_PORT`. You do not declare them, you reference them (Step 5).
 
 `DependsOn: []string{"service_db"}` controls startup ordering by service ID.
 
@@ -179,7 +179,7 @@ Inputs: []schema.TemplateInput{
 
 `Hidden: true` keeps an input out of the form (used for `InputTypeGeneratedPassword` shared
 secrets). `Collapsed: true` keeps the input visible but tucked under a collapsed dropdown in
-the form — a softer alternative to `Hidden` for advanced/secondary fields. `Default` is a
+the form, a softer alternative to `Hidden` for advanced/secondary fields. `Default` is a
 `*string`; sizes are in GB without the `Gi` suffix.
 
 **Storage collapse convention:** when a template has **2 or more** storage inputs
@@ -206,15 +206,15 @@ Variables: []schema.TemplateVariable{
 Generator types: `Email`, `Password` (32 alphanumeric chars, safe to embed in URLs, DSNs and
 shell commands), `PasswordBcrypt` (emits `<NAME>` as the hash
 plus `<NAME-minus-_HASH>_PLAINTEXT`), `Input` (echoes an input value, supports `AddPrefix`),
-`JWT` (emits three vars via `JWTParams`), `StringReplace` (deferred templating — see below).
+`JWT` (emits three vars via `JWTParams`), `StringReplace` (deferred templating, see below).
 
 **StringReplace** is the escape hatch for config-file-as-env-var. The `Value` is a template
 string resolved last, after all other vars exist. Available placeholders:
 
 - `${NAMESPACE}`
-- `${<SERVICE_ID_UPPER>_<VARNAME>}` — any non-stringreplace var with a value
-- `${<SERVICE_ID_UPPER>_KUBE_NAME}` — the deployed k8s service name
-- `${<INPUT_ID_UPPER>_VALUE}` — a user input value
+- `${<SERVICE_ID_UPPER>_<VARNAME>}`: any non-stringreplace var with a value
+- `${<SERVICE_ID_UPPER>_KUBE_NAME}`: the deployed k8s service name
+- `${<INPUT_ID_UPPER>_VALUE}`: a user input value
 
 ```go
 {
@@ -257,7 +257,7 @@ VariableReferences: []schema.TemplateVariableReference{
 Details and edge cases (`AdditionalTemplateSources`, `ResolveAsNormalVariable`, the moco
 MySQL host prefix) in [references/inputs-and-generators.md](references/inputs-and-generators.md).
 
-## Step 6: Add the icon (REQUIRED — easy to forget)
+## Step 6: Add the icon (REQUIRED, easy to forget)
 
 Icons are **hardcoded SVGs**, not files in a folder. `Icon: "myapp"` matches an entry in
 `apps/web/src/components/icons/brand.tsx`. No entry → the UI renders a `BanIcon` (the
@@ -288,7 +288,7 @@ className. Both the template and each service can set `Icon`. Details:
 
 1. Add your func to `AvailableTemplates()` in `apps/api/pkg/templates/templater.go`.
 2. `cd apps/api && go build ./... && go test ./pkg/templates/`.
-3. The renderer test (`renderer_test.go`) covers generation/replacement/volumes — add a case
+3. The renderer test (`renderer_test.go`) covers generation/replacement/volumes. Add a case
    if you do anything non-obvious.
 
 ## Pushing edits to an existing template (the seeding gotcha)
@@ -298,33 +298,33 @@ Templates seed to the DB on API startup via `UpsertPredefinedTemplates`
 `OnConflict(Name, Version) DoNothing`.
 
 **Consequence:** editing a shipped template without changing anything else will NOT update
-the DB row — the conflict on `(Name, Version)` makes it a no-op. **Bump `Version`** whenever
+the DB row. The conflict on `(Name, Version)` makes it a no-op. **Bump `Version`** whenever
 you change a template that has already been seeded, or the change never reaches running
 installs.
 
 ## Common mistakes
 
-1. **Forgot to register** in `AvailableTemplates()` — template silently never appears.
-2. **Edited a template but didn't bump `Version`** — DB keeps the old definition.
-3. **Missing icon entry** in `brand.tsx` — UI shows a "ban" icon. Easy to miss in review.
-4. **`InputTypeVolumeSize` without `Volume`** — `ResolveTemplate` errors at deploy time.
-5. **`:latest` image tag** — pin a digest/tag; templates must be reproducible.
-6. **Referencing a DB var that doesn't exist** — DB services expose a fixed set
+1. **Forgot to register** in `AvailableTemplates()`: template silently never appears.
+2. **Edited a template but didn't bump `Version`**: DB keeps the old definition.
+3. **Missing icon entry** in `brand.tsx`: UI shows a "ban" icon. Easy to miss in review.
+4. **`InputTypeVolumeSize` without `Volume`**: `ResolveTemplate` errors at deploy time.
+5. **`:latest` image tag**: pin a digest/tag; templates must be reproducible.
+6. **Referencing a DB var that doesn't exist**: DB services expose a fixed set
    (`DATABASE_USERNAME/PASSWORD/HOST/PORT/DEFAULT_DB_NAME`); spelling counts.
-7. **`${...}` placeholder that resolves to nothing** — StringReplace leaves unmatched
+7. **`${...}` placeholder that resolves to nothing**: StringReplace leaves unmatched
    placeholders untouched, shipping a literal `${FOO}` into the container. Check the keys.
-8. **Service `ID` collisions or stale `DependsOn`/`SourceID`** — refs are by service `ID`
+8. **Service `ID` collisions or stale `DependsOn`/`SourceID`**: refs are by service `ID`
    string; a typo wires nothing and fails silently.
 
 ## Reference files
 
-- [references/schema-reference.md](references/schema-reference.md) — every struct + field
+- [references/schema-reference.md](references/schema-reference.md): every struct + field
   (`TemplateDefinition`, `TemplateService`, `TemplateInput`, `HealthCheck`, `PortSpec`,
   `Resources`, `DatabaseConfig`, ...).
-- [references/inputs-and-generators.md](references/inputs-and-generators.md) — input types,
+- [references/inputs-and-generators.md](references/inputs-and-generators.md): input types,
   generator behaviors, variable-reference resolution, StringReplace placeholder map.
-- [references/architecture.md](references/architecture.md) — e2e flow API → operator,
+- [references/architecture.md](references/architecture.md): e2e flow API → operator,
   where to look when a deploy misbehaves.
-- [references/frontend-and-icons.md](references/frontend-and-icons.md) — gallery, deploy
+- [references/frontend-and-icons.md](references/frontend-and-icons.md): gallery, deploy
   form generation, the icon registry.
-- [assets/template-skeleton.go](assets/template-skeleton.go) — copy-paste starting point.
+- [assets/template-skeleton.go](assets/template-skeleton.go): copy-paste starting point.

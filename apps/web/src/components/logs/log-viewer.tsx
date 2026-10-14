@@ -498,12 +498,12 @@ function LogList({
  * Brings the highlighted line into view. The line sits mid-window after "view
  * in context", so it may be pages older than the initial (newest-first) fetch:
  * older pages are pulled until it shows up or the buffer has reached past its
- * timestamp — a line that is gone for good settles on the closest moment
+ * timestamp. A line that is gone for good settles on the closest moment
  * instead. Runs once per result set and highlight; historical windows never
- * append or evict, so the target line stays in the buffer once found — though
+ * append or evict, so the target line stays in the buffer once found, though
  * its index still shifts when the scroll trigger prepends more older pages. A stale buffer still
  * belongs to the previous query, so it waits the refresh out. Reports the whole
- * search as "locating" so the viewer can show it as pending — except while an
+ * search as "locating" so the viewer can show it as pending, except while an
  * older page has failed, when the retry UI should be readable instead.
  */
 function useScrollToHighlight({

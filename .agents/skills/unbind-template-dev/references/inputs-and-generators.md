@@ -16,7 +16,7 @@ inputs, kubeNameMap, namespace)`, called from the deploy service.
 | Database size | `InputTypeDatabaseSize` | Storage slider | Sets `service.DatabaseConfig.StorageSize`. Validated as a storage quantity. |
 | Node port | `InputTypeGeneratedNodePort` | (host/hidden) | Appends a `PortSpec{IsNodePort:true, ...}`. Uses `input.PortProtocol` (default TCP). |
 | Generated password | `InputTypeGeneratedPassword` | hidden | One password generated at deploy, shared across services via `${<ID_UPPER>_VALUE}`. Mark `Hidden: true`. |
-| Node IP | `InputTypeGeneratedNodeIP` | — | Cluster node IP (e.g. WireGuard). |
+| Node IP | `InputTypeGeneratedNodeIP` | none | Cluster node IP (e.g. WireGuard). |
 | Variable | `InputTypeVariable` | Text field | Plain user-supplied value. |
 
 `input.Default` is `*string`; sizes are entered as GB integers without the `Gi` suffix
@@ -26,8 +26,8 @@ inputs, kubeNameMap, namespace)`, called from the deploy service.
 
 Two independent visibility flags on `TemplateInput`:
 
-- `Hidden: true` — the input never renders in the form (used for shared generated secrets).
-- `Collapsed: true` — the input still renders, but tucked under a collapsed dropdown so it
+- `Hidden: true`: the input never renders in the form (used for shared generated secrets).
+- `Collapsed: true`: the input still renders, but tucked under a collapsed dropdown so it
   doesn't crowd the default view.
 
 **Storage collapse convention:** when a template exposes **2 or more** storage inputs
@@ -49,7 +49,7 @@ hidden `InputTypeGeneratedPassword` input and references it everywhere as
 ## Generators
 
 `ValueGenerator.Type` in `template.go`. Set on a `TemplateVariable`; the resolver fills
-`Value`. Generation runs in `resolveGeneratedVariables` (renderer.go) — except
+`Value`. Generation runs in `resolveGeneratedVariables` (renderer.go), except
 `StringReplace`, deferred to the end.
 
 | Type | Const | Produces |
@@ -99,7 +99,7 @@ become real variables on that service. Other services reference them by those ke
 
 `<SERVICE_ID_UPPER>` is the service `ID` uppercased: `service_db` → `SERVICE_DB`.
 
-> Unmatched placeholders are left **literally** in the string — a typo'd `${FOO}` ships as
+> Unmatched placeholders are left **literally** in the string. A typo'd `${FOO}` ships as
 > `${FOO}`. Verify your keys.
 
 Used for config files as variables (Kong's `kong.yml`), connection strings, etc.
@@ -125,14 +125,14 @@ is a normal variable whose value happens to contain references.
 ### Patterns (from real templates)
 
 ```go
-// wordpress.go — plain DB credential wiring
+// wordpress.go: plain DB credential wiring
 {SourceID: "service_mysql", SourceName: "DATABASE_USERNAME", TargetName: "WORDPRESS_DB_USER"},
 {SourceID: "service_mysql", SourceName: "DATABASE_HOST",     TargetName: "WORDPRESS_DB_HOST"},
 
-// supabase_lite.go — host-only reference (no SourceName)
+// supabase_lite.go: host-only reference (no SourceName)
 {SourceID: "service_kong", TargetName: "API_EXTERNAL_URL", IsHost: true},
 
-// supabase_lite.go — connection string with input + referenced host
+// supabase_lite.go: connection string with input + referenced host
 {
 	SourceID: "service_postgresql", SourceName: "DATABASE_HOST", TargetName: "PGRST_DB_URI",
 	TemplateString: "postgresql://authenticator:${INPUT_INTERNAL_PASSWORD_VALUE}@${DATABASE_HOST}:5432/postgres?sslmode=disable",

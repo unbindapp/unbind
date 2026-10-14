@@ -105,7 +105,7 @@ type TVolumeRef = {
 };
 
 // Lists every PVC in the environment, including ones not mounted on any
-// service (dangling) — the services list only surfaces mounted volumes.
+// service (dangling). The services list only surfaces mounted volumes.
 export const volumesListQuery = (input: {
   teamId: string;
   projectId: string;

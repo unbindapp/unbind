@@ -311,7 +311,7 @@ func (self *Updater) rollbackToVersion(ctx context.Context, version string) erro
 
 // CheckUpdateComplete reports whether the update to targetVersion has fully rolled out.
 // A process running any other version never reports complete regardless of cluster
-// state — "updated" may only come from the binary that is the target version.
+// state. "updated" may only come from the binary that is the target version.
 func (self *Updater) CheckUpdateComplete(ctx context.Context, targetVersion string) (bool, error) {
 	if targetVersion != self.CurrentVersion {
 		return false, nil

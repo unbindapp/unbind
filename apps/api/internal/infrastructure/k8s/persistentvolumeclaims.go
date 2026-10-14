@@ -342,8 +342,8 @@ func resolveMountStatus(serviceID *uuid.UUID, service *ent.Service, claimedByPod
 	return models.PVCMountStatusAttaching
 }
 
-// mountBlockingPods filters out pods that have finished (Succeeded or Failed) —
-// the kubelet has already unmounted their volumes, so they no longer keep a PVC in use.
+// mountBlockingPods filters out pods that have finished (Succeeded or Failed).
+// The kubelet has already unmounted their volumes, so they no longer keep a PVC in use.
 func mountBlockingPods(pods []corev1.Pod) []corev1.Pod {
 	var blocking []corev1.Pod
 	for _, pod := range pods {
@@ -417,7 +417,7 @@ func (self *KubeClient) buildPVCInfo(ctx context.Context, pvc *corev1.Persistent
 	projectID := parseOptionalUUID(pvcLabels[projectLabel])
 	environmentID := parseOptionalUUID(pvcLabels[environmentLabel])
 
-	// A PVC with a deletion timestamp is terminating — kubernetes removes the
+	// A PVC with a deletion timestamp is terminating. Kubernetes removes the
 	// object asynchronously once its finalizers are cleared.
 	isDeleting := pvc.DeletionTimestamp != nil
 	canDelete := len(pvc.OwnerReferences) == 0 && binding.ServiceID == nil && !binding.InUseByPods && !isDeleting

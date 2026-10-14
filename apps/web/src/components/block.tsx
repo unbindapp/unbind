@@ -215,7 +215,7 @@ type TBlockItemButtonLikeProps = {
       asElement: "div";
     } & React.HTMLAttributes<HTMLDivElement>)
   | ({
-      // External link (opens in a new tab) — a plain styled anchor, not a
+      // External link (opens in a new tab). A plain styled anchor, not a
       // router Link, so it keeps a real `href`.
       asElement: "LinkButton";
     } & Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "color">)

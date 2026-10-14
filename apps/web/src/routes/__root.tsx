@@ -17,7 +17,7 @@ export type RouterContext = {
 };
 
 // The command panel renders across the whole app (team and project areas), so its
-// search params live on the root route — the only common ancestor.
+// search params live on the root route, the only common ancestor.
 const searchSchema = z.object({
   [commandPanelKey]: z.string().optional(),
   [commandPanelPageKey]: z.string().optional(),

@@ -33,9 +33,8 @@ func (p nginxProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	if len(plain) > 0 {
 		objects = append(objects, buildIngress(in, svc.Name, "nginx", annotations, plain, tlsSecretName(svc)))
 	}
-	for _, i := range sortedIndexes(optioned) {
-		host := optioned[i]
-		name := hostIngressName(svc, i)
+	for _, host := range optioned {
+		name := hostObjectName(svc, host)
 		hostAnnotations := nginxAnnotations(svc)
 		if host.Protocol == "grpc" {
 			hostAnnotations["nginx.ingress.kubernetes.io/backend-protocol"] = "GRPC"

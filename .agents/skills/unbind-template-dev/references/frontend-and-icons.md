@@ -1,7 +1,7 @@
 # Frontend & Icons
 
 The web app is `apps/web/` (Next.js + React Query + Zustand). You touch it for one required
-thing — the icon — and otherwise the deploy form is generated automatically from your
+thing (the icon), and otherwise the deploy form is generated automatically from your
 inputs.
 
 ## Icons (required, hardcoded)
@@ -48,7 +48,7 @@ pass through. `defaultClassName` is `"size-5 shrink-0"`.
 
 ### Optional brand color
 
-Monochrome icons inherit `currentColor` — usually fine. For a brand-colored icon (rendered
+Monochrome icons inherit `currentColor`, usually fine. For a brand-colored icon (rendered
 when the caller passes `color="brand"`):
 
 1. Add the color in `apps/web/src/globals.css` in **three** places: `:root` (light), `.dark`,
@@ -68,7 +68,7 @@ Pocketbase is a monochrome example; `go` and `postgresql` are colored examples.
 Templates are browsed from the **command panel** ("New Service" flow), not a standalone
 marketplace page:
 
-- `apps/web/src/components/command-panel/context-command-panel/items/template.tsx` — builds
+- `apps/web/src/components/command-panel/context-command-panel/items/template.tsx`: builds
   one command item per template: title `name`, subtitle `description`, search `keywords`,
   the template `icon`, service count, and the set of service icons.
 
@@ -87,7 +87,7 @@ from `template.definition.inputs`, skipping `hidden` inputs. Field by `type`:
 | `variable`, `generated-*`      | text field                                                                |
 
 `required`, `default`, and `description` drive validation, prefill, and help text. You get
-the form for free by declaring inputs correctly — no frontend work needed beyond the icon.
+the form for free by declaring inputs correctly, no frontend work needed beyond the icon.
 
 Visibility flags: `hidden` inputs are skipped entirely; `collapsed` inputs still render but
 sit under a collapsed dropdown (advanced/secondary fields, e.g. the storage inputs on
@@ -99,6 +99,6 @@ tag, or `database_type:version`).
 ## API client / types
 
 `apps/web/src/lib/server/client.gen.ts` is a **generated** TypeScript + Zod SDK from the Go
-OpenAPI spec — do not hand-edit. Regenerate it when the Go template schema changes (see the
+OpenAPI spec. Do not hand-edit. Regenerate it when the Go template schema changes (see the
 web app's codegen script). Queries live in `apps/web/src/lib/queries/templates.ts`
 (`templatesListQuery`, get-by-id, `deployTemplate`).

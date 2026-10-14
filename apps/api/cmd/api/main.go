@@ -105,19 +105,19 @@ func startAPI(cfg *config.Config) {
 	if err != nil {
 		log.Fatalf("Failed to create ent client: %v", err)
 	}
-	log.Info("🪿 Running migrations...")
+	log.Info("Running migrations...")
 
 	// Migrations are embedded in the binary (see ent/migrate/embed.go).
 	goose.SetLogger(log.GetLogger())
 	goose.SetBaseFS(entmigrate.MigrationsFS)
 	if err := goose.SetDialect("postgres"); err != nil {
-		log.Fatalf("🪿 goose dialect error: %v", err)
+		log.Fatalf("goose dialect error: %v", err)
 	}
 
 	if err := goose.Up(sqlDB, "migrations", goose.WithAllowMissing()); err != nil {
-		log.Fatalf("🪿 goose up err: %v", err)
+		log.Fatalf("goose up err: %v", err)
 	}
-	log.Info("🪿 Migrations applied successfully")
+	log.Info("Migrations applied successfully")
 
 	repo := repositories.NewRepositories(db)
 

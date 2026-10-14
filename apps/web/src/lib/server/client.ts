@@ -9,8 +9,8 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
  *
  * Auth is httpOnly cookies (access_token, refresh_token); the browser never sees a
  * token. Every request sends `credentials: "include"`. The server rotates the access
- * token transparently via the refresh-token cookie — there is no client-driven refresh
- * endpoint — so a 401 means the session is genuinely dead and callers treat it as
+ * token transparently via the refresh-token cookie (there is no client-driven refresh
+ * endpoint), so a 401 means the session is genuinely dead and callers treat it as
  * "signed out" (e.g. the root route guard redirects to `/sign-in`).
  */
 export const apiFetch: typeof fetch = async (input, init) => {

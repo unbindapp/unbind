@@ -25,9 +25,9 @@ inspect. File:line refs are starting points, not exact across edits.
 
 `internal/api/handlers/templates/`:
 
-- `GET /templates/list` → `ListTemplates` — gallery, filtered by cluster capabilities
+- `GET /templates/list` → `ListTemplates`: gallery, filtered by cluster capabilities
   (`RequiredCapabilities`).
-- `GET /templates/get?id=` → `GetTemplateByID` — full definition for the deploy panel.
+- `GET /templates/get?id=` → `GetTemplateByID`: full definition for the deploy panel.
 - `POST /templates/deploy` → `DeployTemplate`.
 
 Business logic in `internal/services/templates/`. Input to deploy:
@@ -42,10 +42,10 @@ Business logic in `internal/services/templates/`. Input to deploy:
 2. Resolve host inputs (domains).
 3. Build `kubeNameMap`: `templateServiceID → k8s slug name`.
 4. **`templater.ResolveTemplate(&def, inputs, kubeNameMap, namespace)`** (`renderer.go`):
-   - Generate variables (passwords, JWTs, emails, bcrypt) — `resolveGeneratedVariables`.
-   - `resolveVolumes` — `volume-size` inputs → `service.Volumes` (appends `Gi`).
-   - `resolveNodePorts` — `generated-node-port` inputs → `service.Ports`.
-   - `resolveDatabaseSizes` — `database-size` inputs → `DatabaseConfig.StorageSize`.
+   - Generate variables (passwords, JWTs, emails, bcrypt): `resolveGeneratedVariables`.
+   - `resolveVolumes`: `volume-size` inputs → `service.Volumes` (appends `Gi`).
+   - `resolveNodePorts`: `generated-node-port` inputs → `service.Ports`.
+   - `resolveDatabaseSizes`: `database-size` inputs → `DatabaseConfig.StorageSize`.
    - Run StringReplace across vars, ref `TemplateString`s, and `DatabaseConfig.InitDB`.
    Returns a fully materialized `TemplateDefinition`.
 

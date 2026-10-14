@@ -27,7 +27,7 @@ export const loadingReferencesIconKey = "loading-references";
 
 // Nothing is styled from the grammar: whether a ${...} is a real reference
 // depends on the live reference list, so it's decorated below instead. A
-// half-typed one is left plain — the dropdown is already showing the matches.
+// half-typed one is left plain, the dropdown is already showing the matches.
 const referenceChip = Decoration.mark({ class: "tok-chip tok-chip-process" });
 const referenceName = Decoration.mark({ class: "tok-key" });
 const referencePunctuation = Decoration.mark({ class: "tok-punct" });

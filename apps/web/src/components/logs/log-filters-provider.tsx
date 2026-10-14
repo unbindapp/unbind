@@ -183,7 +183,7 @@ export const LogFiltersProvider: React.FC<TProps> = ({ children, logType }) => {
     ],
   );
 
-  // Tokens can be left sitting in `q` — committed before the service list
+  // Tokens can be left sitting in `q`, committed before the service list
   // loaded, or a hand-written URL. Fold them into the params once they resolve
   // so the filter menu reflects them too; existing params win on conflict.
   useEffect(() => {

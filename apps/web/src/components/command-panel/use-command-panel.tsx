@@ -4,7 +4,7 @@ import { defaultAnimationMs } from "@/lib/constants";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef } from "react";
 
-// Command panel params live on the root route — it renders across both the team
+// Command panel params live on the root route. It renders across both the team
 // and project areas, so root is their only common ancestor.
 const routeApi = getRouteApi("__root__");
 

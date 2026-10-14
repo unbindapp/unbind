@@ -204,9 +204,9 @@ func TestGatewayRoutes(t *testing.T) {
 		t.Fatalf("expected gateway + httproute + policy + certificate, got %d", len(objs))
 	}
 
-	gw, ok := objs[0].(*gwapiv1.Gateway)
+	gw, ok := objs[len(objs)-1].(*gwapiv1.Gateway)
 	if !ok {
-		t.Fatalf("expected *Gateway, got %T", objs[0])
+		t.Fatalf("expected the Gateway last, after the routes and policies its listeners serve, got %T", objs[len(objs)-1])
 	}
 	if got := string(gw.Spec.GatewayClassName); got != "unbind" {
 		t.Errorf("gatewayClassName = %q, want unbind", got)
@@ -243,9 +243,9 @@ func TestGatewayRoutes(t *testing.T) {
 		t.Errorf("certificate dnsNames = %v, want [example.com]", dns)
 	}
 
-	route, ok := objs[1].(*gwapiv1.HTTPRoute)
-	if !ok {
-		t.Fatalf("expected *HTTPRoute, got %T", objs[1])
+	route := httpRouteFor(objs, "example.com")
+	if route == nil {
+		t.Fatalf("expected an HTTPRoute for example.com, got %#v", objs)
 	}
 	if got := string(route.Spec.ParentRefs[0].Name); got != "web" {
 		t.Errorf("parentRef name = %q, want web (per-service gateway)", got)
@@ -276,6 +276,15 @@ var gatewayDurationPattern = regexp.MustCompile(`^([0-9]{1,5}(h|m|s|ms)){1,4}$`)
 // findCertificate returns the cert-manager Certificate among built objects, if any.
 func findCertificate(objs []client.Object) *unstructured.Unstructured {
 	return findKind(objs, "Certificate")
+}
+
+func findGateway(objs []client.Object) *gwapiv1.Gateway {
+	for _, o := range objs {
+		if gw, ok := o.(*gwapiv1.Gateway); ok {
+			return gw
+		}
+	}
+	return nil
 }
 
 func findKind(objs []client.Object, kind string) *unstructured.Unstructured {
@@ -340,7 +349,7 @@ func TestGatewayL4UDP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BuildRoutes: %v", err)
 	}
-	gw := objs[0].(*gwapiv1.Gateway)
+	gw := findGateway(objs)
 	if len(gw.Spec.Listeners) != 1 || gw.Spec.Listeners[0].Protocol != gwapiv1.UDPProtocolType {
 		t.Fatalf("expected one UDP listener, got %#v", gw.Spec.Listeners)
 	}
@@ -401,7 +410,7 @@ func TestGatewayWildcardHost(t *testing.T) {
 	}
 
 	listenerSecrets := map[string]string{}
-	for _, l := range objs[0].(*gwapiv1.Gateway).Spec.Listeners {
+	for _, l := range findGateway(objs).Spec.Listeners {
 		listenerSecrets[string(*l.Hostname)] = string(l.TLS.CertificateRefs[0].Name)
 	}
 	want := map[string]string{"example.com": "web-tls-secret", "*.example.com": "web-wildcard-tls-secret"}

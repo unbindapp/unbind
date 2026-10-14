@@ -133,7 +133,7 @@ export const databaseQuery = (input: { type: string; version?: string }) =>
     },
   });
 
-// Mutations take the goClient's native input types directly — the flat form-field
+// Mutations take the goClient's native input types directly. The flat form-field
 // → nested input mapping (resources, health_check, etc.) belongs to the form.
 export async function createService(input: CreateServiceInput) {
   const res = await getGoClient().services.create(input);

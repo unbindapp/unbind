@@ -22,7 +22,7 @@ type AnalysisTarget struct {
 
 // AnalyzeSourceCodeAnchored analyzes the directory the service is actually built
 // from: the Dockerfile's directory (then the build context) when one is
-// configured, otherwise the clone root — refined through the Dockerfile's stages
+// configured, otherwise the clone root, refined through the Dockerfile's stages
 // when the root matches nothing, or through workspace start-script filters
 // (e.g. `pnpm --filter @acme/web start`) when the root is a bare workspace shell.
 func AnalyzeSourceCodeAnchored(cloneDir string, target AnalysisTarget) (*AnalysisResult, error) {

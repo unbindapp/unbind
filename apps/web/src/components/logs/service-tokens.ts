@@ -1,5 +1,5 @@
 // @service: values are resolved to service IDs before anything reaches the API,
-// so the token in the search bar only has to be readable and unambiguous — it
+// so the token in the search bar only has to be readable and unambiguous. It
 // does not have to be the literal service name.
 //
 // A space or a quote would end the token in the search grammar (see

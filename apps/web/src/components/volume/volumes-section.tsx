@@ -5,7 +5,7 @@ import { useMemo } from "react";
 
 // Lists volumes that aren't mounted on any service (e.g. left behind by a
 // deleted service) so they can be reattached or cleaned up. Renders nothing
-// while there are no dangling volumes — there is deliberately no way to
+// while there are no dangling volumes. There is deliberately no way to
 // create a volume from here.
 export default function VolumesSection() {
   const {

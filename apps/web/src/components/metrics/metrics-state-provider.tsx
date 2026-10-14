@@ -40,7 +40,7 @@ export function getAgeBasedDefaultIntervalEnum(
 /**
  * Resolves the interval the metrics tab will fetch with, mirroring
  * {@link MetricsStateProvider}: search param wins, then the age-based default,
- * then the global default — validated against the known intervals.
+ * then the global default, validated against the known intervals.
  */
 export function resolveMetricsIntervalEnum(params: {
   searchParamValue: string | null;

@@ -31,7 +31,7 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   // Dev only: proxy the API prefixes so the browser talks to the API same-origin.
   // The session cookie comes back rewritten to a host-only (localhost) cookie, so it's
-  // first-party — sidestepping the cross-site SameSite/CORS issues that otherwise drop
+  // first-party, sidestepping the cross-site SameSite/CORS issues that otherwise drop
   // the auth cookie. In dev, config.ts sets apiUrl to "/api/go".
   server: {
     proxy: {

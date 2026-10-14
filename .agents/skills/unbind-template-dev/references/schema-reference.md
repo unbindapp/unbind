@@ -2,9 +2,9 @@
 
 Every type a template author touches. Definitions live in:
 
-- `apps/api/ent/schema/template.go` — template-specific types
-- `apps/api/ent/schema/service_config_types.go` — shared service config (ports, health, resources)
-- `apps/api/ent/schema/service.go` — service enums
+- `apps/api/ent/schema/template.go`: template-specific types
+- `apps/api/ent/schema/service_config_types.go`: shared service config (ports, health, resources)
+- `apps/api/ent/schema/service.go`: service enums
 
 `TemplateDefinition` is stored as a JSON blob in the `templates` DB table's `definition`
 column. The `json` tags below are the wire/storage names and the frontend Zod schema names.
@@ -56,7 +56,7 @@ column. The `json` tags below are the wire/storage names and the frontend Zod sc
 | `VariablesMounts` | `[]*VariableMount` | no | Mount a variable as a file (e.g. a config file var). |
 | `SecurityContext` | `*SecurityContext` | no | Capabilities / privileged. |
 | `ProtectedVariables` | `[]string` | no | Vars the user can neither edit nor delete. Only for values that must never change. Do not list secrets here, the user has to be able to rotate them. Keys a generator derives from a secret (JWT anon/service keys, the Convex admin key) are protected automatically and reissued when their secret is edited. A database service always gets its `DATABASE_*` credentials protected. |
-| `InitDBReplacers` | `map[string]string` | no | `{placeholderInSQL: stringReplaceMapKey}` — substituted into `DatabaseConfig.InitDB`. |
+| `InitDBReplacers` | `map[string]string` | no | `{placeholderInSQL: stringReplaceMapKey}`, substituted into `DatabaseConfig.InitDB`. |
 
 ### Database services expose these variables
 
@@ -103,7 +103,7 @@ See inputs-and-generators.md for resolution semantics.
 
 ## TemplateVolume
 
-`Name string`, `CapacityGB string` (e.g. `"10Gi"` — set by the resolver from the input),
+`Name string`, `CapacityGB string` (e.g. `"10Gi"`, set by the resolver from the input),
 `MountPath string`. You normally only set `Name` + `MountPath` (inside a `volume-size`
 input); the resolver fills `CapacityGB`.
 
@@ -169,7 +169,7 @@ database → `Type: database` + `Builder: database`.
 
 ## Other types (rarely needed)
 
-- `VariableMount{Name, Path}` — mount a variable's value as a file.
-- `InitContainer{Image, Command}` — run before main.
+- `VariableMount{Name, Path}`: mount a variable's value as a file.
+- `InitContainer{Image, Command}`: run before main.
 - `SecurityContext{Capabilities *Capabilities, Privileged *bool}`,
-  `Capabilities{Add, Drop []Capability}` — e.g. WireGuard needs `NET_ADMIN`.
+  `Capabilities{Add, Drop []Capability}`, e.g. WireGuard needs `NET_ADMIN`.

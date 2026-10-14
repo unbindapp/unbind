@@ -200,14 +200,14 @@ func (m Model) renderWildcardRecordCheck() string {
 	case res == nil:
 		return renderCheckLine(m, checkPending, label, "checking…")
 	case res.wildcardProxied:
-		detail := fmt.Sprintf("proxied through Cloudflare with no edge certificate for *.%s (Universal SSL covers one level only) — set the record to DNS-only (grey cloud)", m.dnsInfo.UnbindDomain)
+		detail := fmt.Sprintf("proxied through Cloudflare with no edge certificate for *.%s (Universal SSL covers one level only). Set the record to DNS-only (grey cloud)", m.dnsInfo.UnbindDomain)
 		return renderCheckLine(m, checkFail, label, detail)
 	case res.wildcardResolved && res.wildcardCloudflare:
 		return renderCheckLine(m, checkOK, label, "proxied through Cloudflare")
 	case res.wildcardResolved:
 		return renderCheckLine(m, checkOK, label, "→ "+m.dnsInfo.ExternalIP)
 	default:
-		return renderCheckLine(m, checkPending, label, "not detected yet — automatic service domains stay disabled until it is")
+		return renderCheckLine(m, checkPending, label, "not detected yet, automatic service domains stay disabled until it is")
 	}
 }
 

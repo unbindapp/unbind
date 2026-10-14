@@ -15,7 +15,7 @@ export type TIntentHandlers = {
  * Pass a callback to run when the user signals intent toward an element (hover/focus/touch);
  * get back event handler props to spread onto any element (`Button`, `div`, `a`, ...).
  *
- * This is NOT a router preload — it just runs `onIntent`, typically
+ * This is NOT a router preload. It just runs `onIntent`, typically
  * `queryClient.prefetchQuery(...)`. De-duping the actual work is the caller's job: a query's
  * `staleTime` already no-ops repeated prefetches.
  */

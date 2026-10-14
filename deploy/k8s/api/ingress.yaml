@@ -53,7 +53,7 @@ spec:
                   number: 8089
 ---
 # Same-origin API paths for the embedded SPA. The merged image serves API routes
-# at root, so strip /api/go and /api/oauth2 before they reach the service — this
+# at root, so strip /api/go and /api/oauth2 before they reach the service. This
 # mirrors the charts/self-hosted ingress and lets the SPA (apiUrl=/api/go) work.
 apiVersion: networking.k8s.io/v1
 kind: Ingress

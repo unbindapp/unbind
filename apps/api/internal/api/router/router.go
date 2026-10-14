@@ -130,7 +130,7 @@ func NewHumaConfig(title, version string, cookieSecure bool) huma.Config {
 }
 
 // RegisterRoutes only wires routes and operation metadata, so it's safe to call
-// with an empty *server.Server when generating the spec offline — handlers are
+// with an empty *server.Server when generating the spec offline. Handlers are
 // never invoked here.
 func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middleware, allowedOrigins []string) {
 	authSecurity := []map[string][]string{

@@ -51,9 +51,8 @@ func (p traefikProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 		objects = append(objects, buildIngress(in, svc.Name, "traefik", annotations, plain, tlsSecretName(svc)))
 	}
 	objects = append(objects, redirect, buffering)
-	for _, i := range sortedIndexes(optioned) {
-		host := optioned[i]
-		name := hostIngressName(svc, i)
+	for _, host := range optioned {
+		name := hostObjectName(svc, host)
 		middlewares := []*unstructured.Unstructured{redirect, buffering}
 		if target, ok := parseRedirect(host.Redirect); ok {
 			middlewares = append(middlewares, traefikMiddleware(name+"-redirect", svc.Namespace, in.Labels, traefikRedirect(target, host.Redirect.StatusCode)))

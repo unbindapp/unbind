@@ -50,7 +50,7 @@ import RegistryWarningToastProvider from "@/components/system/registry/registry-
 import { UpdateToastProvider } from "@/components/system/update/update-status-provider";
 import VolumePanelProvider from "@/components/volume/panel/volume-panel-provider";
 
-// All search params owned by the project area live here — every panel/logs/metrics
+// All search params owned by the project area live here. Every panel/logs/metrics
 // consumer is mounted within this route's subtree, so this is their common ancestor.
 const searchSchema = z.object({
   environment: z.string().optional(),
@@ -94,7 +94,7 @@ export const Route = createFileRoute("/$team_id/project/$project_id")({
   },
   loader: ({ context: { queryClient }, params }) => {
     // Warm the cache (this also runs on intent preload) without blocking the
-    // navigation — the components below render immediately and show skeletons.
+    // navigation. The components below render immediately and show skeletons.
     void queryClient.prefetchQuery(
       projectQuery({ teamId: params.team_id, projectId: params.project_id }),
     );
@@ -134,7 +134,7 @@ function ProjectLayout() {
           <Navigate
             to="/$team_id/project/$project_id"
             params={{ team_id: teamId, project_id: projectId }}
-            // Preserve the rest of the search (open panels etc.) — replacing it
+            // Preserve the rest of the search (open panels etc.). Replacing it
             // wholesale would close any deep-linked service/deployment panel.
             search={(prev) => ({ ...prev, environment: fallback })}
             replace

@@ -1,6 +1,7 @@
 package networking
 
 import (
+	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"net/url"
@@ -20,13 +21,13 @@ func hasRouteOptions(host v1.HostSpec) bool {
 	return host.Redirect != nil || host.BasicAuth != nil || len(host.ResponseHeaders) > 0
 }
 
-// hostObjectName names the objects a host gets for itself. The first host keeps the
-// service's name so existing single-domain services never churn.
-func hostObjectName(svc *v1.Service, index int) string {
-	if index == 0 {
-		return svc.Name
-	}
-	return fmt.Sprintf("%s-%d", svc.Name, index)
+// Names follow the hostname, not its position, so removing a host never renames another host's objects.
+func hostKey(host v1.HostSpec) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(strings.ToLower(host.Host))))[:10]
+}
+
+func hostObjectName(svc *v1.Service, host v1.HostSpec) string {
+	return svc.Name + "-host-" + hostKey(host)
 }
 
 const htpasswdSecretSuffix = "-htpasswd"

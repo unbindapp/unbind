@@ -445,7 +445,7 @@
 }
 
 /* The xterm canvas only paints its content box, so the padding we add on .xterm
-   shows through as bare black. The viewport spans the full padded box — color it
+   shows through as bare black. The viewport spans the full padded box, so color it
    to match so the padding strip blends seamlessly with the terminal background. */
 .xterm .xterm-viewport {
   background-color: var(--background) !important;

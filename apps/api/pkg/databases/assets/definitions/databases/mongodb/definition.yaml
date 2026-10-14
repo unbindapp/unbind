@@ -12,7 +12,7 @@ commonLabels:
 
 # commonLabels don't reach the pod template; podLabels do. The platform detects
 # readiness by the unbind-service label, so the pods need it. Only emit unbind-*
-# keys — the chart already sets app.kubernetes.io/* on the pod template, and
+# keys. The chart already sets app.kubernetes.io/* on the pod template, and
 # re-emitting them here produces duplicate map keys that break post-render.
 # unbind-deployment is excluded: it changes every deploy and would roll the pods
 # on the podTemplate change each time.

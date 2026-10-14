@@ -55,9 +55,9 @@ export default function useLogStream({ streamKey, buildUrl, onBatch, onErrorEven
         if (!response.ok || !contentType?.startsWith("text/event-stream")) {
           const body = await response.text().catch(() => "");
           const detail = `${response.status} (${contentType ?? "no content-type"}): ${body}`;
-          // auth/permission failures won't heal by retrying — surface them
+          // auth/permission failures won't heal by retrying, so surface them
           if ([401, 403, 404].includes(response.status)) {
-            throw new FatalStreamError(`Live stream stopped — ${detail}`);
+            throw new FatalStreamError(`Live stream stopped: ${detail}`);
           }
           throw new RetriableStreamError(`SSE ${detail}`);
         }

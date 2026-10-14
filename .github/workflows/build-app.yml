@@ -1,4 +1,4 @@
-name: 💫 Build App
+name: Build App
 
 on:
   push:
@@ -28,7 +28,7 @@ env:
 
 jobs:
   build:
-    name: 🔨 Build and Push Images
+    name: Build and Push Images
     strategy:
       matrix:
         include:
@@ -78,7 +78,7 @@ jobs:
             *.platform=${{ matrix.platform }}
 
   deploy_prod:
-    name: 🚀 Publish and Deploy App (PROD)
+    name: Publish and Deploy App (PROD)
     runs-on: ubuntu-24.04
     needs: build
     steps:

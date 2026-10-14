@@ -30,7 +30,7 @@ export const Route = createFileRoute("/sign-in/")({
       const status = await getGoClient().setup.status();
       firstUserCreated = status.data.is_first_user_created;
     } catch {
-      // API unreachable — fall through to the sign-in form.
+      // API unreachable, fall through to the sign-in form.
     }
     if (!firstUserCreated) throw redirect({ to: "/welcome" });
   },

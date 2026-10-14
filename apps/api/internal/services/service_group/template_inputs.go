@@ -575,7 +575,7 @@ const bytesPerGB = 1024 * 1024 * 1024
 
 // roundGB matches the two-decimal rounding KubeClient applies to PVCInfo.CapacityGB. Sizes stored
 // as mebibyte-rounded quantities ("10342Mi") are not whole hundredths of a GiB, so without this the
-// database branch would report 10.099609375 where the volume branch reports 10.1 — and the
+// database branch would report 10.099609375 where the volume branch reports 10.1, and the
 // shrink guard in UpdateTemplateInputs would reject an unchanged value as a shrink.
 func roundGB(gb float64) float64 {
 	return math.Round(gb*100) / 100
