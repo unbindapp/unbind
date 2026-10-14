@@ -38,7 +38,7 @@ import {
   useStagedNetworking,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { useServiceEndpoints } from "@/components/service/service-endpoints-provider";
-import { hostTargetFromSpec } from "@/components/staged-changes/host-target";
+import { hostTargetFromSpec, routeLabel, sameRoute } from "@/components/staged-changes/host-target";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -247,16 +247,19 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
                 )}
                 {endpointsData?.endpoints &&
                   !isDatabase &&
-                  service.config.hosts.map((saved) => {
+                  service.config.hosts.map((spec) => {
+                    const saved = hostTargetFromSpec(spec);
                     const endpoint = endpointsData.endpoints.external.find(
                       (e) => e.host === saved.host,
                     );
-                    const change = stagedHosts.find((c) => c.previous?.host === saved.host);
-                    const shown = change?.value ?? hostTargetFromSpec(saved);
+                    const change = stagedHosts.find(
+                      (c) => c.previous && sameRoute(c.previous, saved),
+                    );
+                    const shown = change?.value ?? saved;
                     return (
                       <DomainPortCard
                         mode="public"
-                        key={`${saved.host}:${shown.host}:${shown.port}`}
+                        key={`${routeLabel(saved)}:${routeLabel(shown)}:${shown.port}`}
                         domain={shown.host}
                         port={shown.port}
                         options={shown}

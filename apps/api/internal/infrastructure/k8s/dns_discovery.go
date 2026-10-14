@@ -7,6 +7,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"net/http"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -23,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	k8slabels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -227,7 +229,8 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 
 	// Gateway clusters route via HTTPRoutes rather than Ingresses
 	if self.NetworkingProvider(ctx) == providerGateway {
-		gateways, err := self.listGateways(ctx, namespace, labelSelector)
+		// A domain shared by path terminates on the Gateway of the service that owns its listener
+		gateways, err := self.listGateways(ctx, namespace, "")
 		if err != nil {
 			return nil, err
 		}
@@ -236,7 +239,11 @@ func (self *KubeClient) DiscoverEndpointsByLabels(ctx context.Context, namespace
 			return nil, err
 		}
 		attempting = append(attempting, gatewayAttempting...)
-		self.appendGatewayL4Endpoints(ctx, gateways, discovery)
+		selector := k8slabels.SelectorFromSet(labels)
+		own := slices.DeleteFunc(gateways, func(gateway unstructured.Unstructured) bool {
+			return !selector.Matches(k8slabels.Set(gateway.GetLabels()))
+		})
+		self.appendGatewayL4Endpoints(ctx, own, discovery)
 	}
 
 	// If there are any hosts in "Attempting" state, fetch their CertificateRequest conditions

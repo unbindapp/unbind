@@ -1,4 +1,4 @@
-import { headerLines } from "@/components/staged-changes/host-target";
+import { headerLines, routeLabel } from "@/components/staged-changes/host-target";
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import { useDeviceSize } from "@/components/providers/device-size-provider";
@@ -657,8 +657,9 @@ function listRow(change: TStagedListChange, isApplying: boolean): TChangeRow {
   };
 }
 
-function hostTargetLabel({ host, port, redirect, proxy, basicAuth, responseHeaders }: THostTarget) {
-  const lines = [host];
+function hostTargetLabel(target: THostTarget) {
+  const { port, redirect, proxy, basicAuth, responseHeaders } = target;
+  const lines = [routeLabel(target)];
   if (redirect) lines.push(`Redirect to ${redirect.to} (${redirect.statusCode})`);
   else if (proxy) lines.push(`Proxy to ${proxy.to}`);
   else if (port !== undefined) lines.push(`Port ${port}`);

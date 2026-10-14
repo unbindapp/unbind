@@ -73,6 +73,58 @@ func TestValidateHostsProxyNeedsGateway(t *testing.T) {
 	}
 }
 
+func TestValidateHostPath(t *testing.T) {
+	tests := []struct {
+		path    string
+		grpc    bool
+		wantErr string
+	}{
+		{path: ""},
+		{path: "/"},
+		{path: "/api"},
+		{path: "/api/"},
+		{path: "/socket.io"},
+		{path: "/.well-known/acme"},
+		{path: "/blog/v1.2-release"},
+		{path: "", grpc: true},
+		{path: "/api", grpc: true, wantErr: "grpc domain answers on every path"},
+		{path: "api", wantErr: "start with /"},
+		{path: "/a//b", wantErr: "between single slashes"},
+		{path: "/a/../b", wantErr: "between single slashes"},
+		{path: "/a/.", wantErr: "between single slashes"},
+		{path: "/a b", wantErr: "between single slashes"},
+		{path: "/a%2Fb", wantErr: "between single slashes"},
+		{path: "/a?b", wantErr: "between single slashes"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.path, func(t *testing.T) {
+			host := schema.HostSpec{Host: "example.com", Path: tt.path}
+			if tt.grpc {
+				host.Protocol = new(schema.HostProtocolGRPC)
+			}
+			err := validateHostPath(host)
+			if tt.wantErr == "" {
+				assert.NoError(t, err)
+				return
+			}
+			assert.ErrorContains(t, err, tt.wantErr)
+		})
+	}
+}
+
+func TestDuplicateRoute(t *testing.T) {
+	_, ok := duplicateRoute([]schema.HostSpec{{Host: "example.com"}, {Host: "example.com", Path: "/api"}, {Host: "www.example.com"}})
+	assert.False(t, ok)
+
+	route, ok := duplicateRoute([]schema.HostSpec{{Host: "example.com", Path: "/api"}, {Host: "Example.com", Path: "/api/"}})
+	assert.True(t, ok)
+	assert.Equal(t, "Example.com/api", route)
+
+	route, ok = duplicateRoute([]schema.HostSpec{{Host: "example.com"}, {Host: "example.com", Path: "/"}})
+	assert.True(t, ok)
+	assert.Equal(t, "example.com", route)
+}
+
 func TestValidateHostOptions(t *testing.T) {
 	redirect := func(to string, status int) *schema.HostRedirect {
 		return &schema.HostRedirect{To: to, StatusCode: status}
@@ -149,6 +201,10 @@ func TestServiceURLSkipsRedirectsAndProxies(t *testing.T) {
 
 	_, ok = serviceURL(hosts[:3])
 	assert.False(t, ok)
+
+	url, ok = serviceURL([]schema.HostSpec{{Host: "example.com", Path: "/inquire/"}})
+	assert.True(t, ok)
+	assert.Equal(t, "https://example.com/inquire", url)
 }
 
 func TestPrepareBasicAuth(t *testing.T) {
@@ -171,6 +227,20 @@ func TestPrepareBasicAuth(t *testing.T) {
 		hosts := []schema.HostSpec{{Host: "invoice.example.com", BasicAuth: &schema.HostBasicAuth{Username: "admin", PasswordHash: "{SHA}forged"}}}
 		assert.NoError(t, prepareBasicAuth(saved, hosts))
 		assert.Equal(t, "{SHA}saved", hosts[0].BasicAuth.PasswordHash)
+	})
+
+	t.Run("the saved hash belongs to the domain on the same path", func(t *testing.T) {
+		split := []schema.HostSpec{{Host: "example.com"}, {Host: "example.com", Path: "/admin", BasicAuth: &schema.HostBasicAuth{Username: "admin", PasswordHash: "{SHA}saved"}}}
+		kept := []schema.HostSpec{{Host: "example.com", Path: "/admin/", BasicAuth: &schema.HostBasicAuth{Username: "admin"}}}
+		assert.NoError(t, prepareBasicAuth(split, kept))
+		assert.Equal(t, "{SHA}saved", kept[0].BasicAuth.PasswordHash)
+
+		moved := []schema.HostSpec{{Host: "example.com", Path: "/staff", PrevPath: new("/admin"), BasicAuth: &schema.HostBasicAuth{Username: "admin"}}}
+		assert.NoError(t, prepareBasicAuth(split, moved))
+		assert.Equal(t, "{SHA}saved", moved[0].BasicAuth.PasswordHash)
+
+		root := []schema.HostSpec{{Host: "example.com", BasicAuth: &schema.HostBasicAuth{Username: "admin"}}}
+		assert.ErrorContains(t, prepareBasicAuth(split, root), "enter a password")
 	})
 
 	t.Run("a domain without a saved password needs one", func(t *testing.T) {

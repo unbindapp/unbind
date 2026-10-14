@@ -15,7 +15,7 @@ type ResourceBuilderInterface interface {
 	BuildDeployment() (*appsv1.Deployment, error)
 	BuildCronJob() (*batchv1.CronJob, error)
 	BuildServices() ([]*corev1.Service, error)
-	BuildRoutes() ([]client.Object, error)
+	BuildRoutes(listenerGateways map[string]string) ([]client.Object, error)
 	BuildDatabaseObjects(ctx context.Context, logger logr.Logger, dataVolumeCapacity string) ([]runtime.Object, error)
 }
 

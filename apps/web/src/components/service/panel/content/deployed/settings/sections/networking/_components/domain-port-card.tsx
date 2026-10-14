@@ -19,7 +19,7 @@ import { getNetworkingDisplayUrl } from "@/components/service/panel/content/depl
 import { TModeAndPort } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
 import { useStageNetworking } from "@/components/service/panel/content/deployed/settings/use-service-changes";
 import { DomainStatusRow } from "@/components/service/panel/content/undeployed/domain-card";
-import { hostTargetsEqual } from "@/components/staged-changes/host-target";
+import { hostTargetsEqual, routeLabel, sameRoute } from "@/components/staged-changes/host-target";
 import { StagedChip, type TStagedState } from "@/components/staged-changes/staged-chip";
 import type { TStagedListEntry } from "@/components/staged-changes/staged-changes-provider";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,10 @@ export default function DomainPortCard({
   const savedOptionValues = useMemo(() => domainOptionsToValues(saved ?? undefined), [saved]);
   const stagedState = getStagedState(staged);
   const isApplying = staged?.isApplying === true;
+  const address =
+    mode === "public"
+      ? routeLabel({ host: domain, path: options?.path })
+      : getNetworkingDisplayUrl({ host: domain, port: port.toString() });
 
   const customPortText = "Custom Port";
 
@@ -134,8 +138,8 @@ export default function DomainPortCard({
         ...domainOptionsFromValues(value.options),
       };
 
-      // A staged domain that gets another name is another change
-      const isRenamedAddition = staged && !saved && next.host !== domain;
+      // A staged domain that gets another name or path is another change
+      const isRenamedAddition = staged && !saved && !sameRoute(next, shown);
       const isBackToSaved =
         saved !== null && hostTargetsEqual(saved, next) && !next.basicAuth?.password;
       if (staged && (isRenamedAddition || isBackToSaved)) discard([staged.id]);
@@ -149,8 +153,8 @@ export default function DomainPortCard({
       stagePort(port, "remove");
       return;
     }
-    stageHost({ host: domain, port }, null);
-  }, [mode, stagePort, stageHost, domain, port]);
+    stageHost({ host: domain, path: options?.path, port }, null);
+  }, [mode, stagePort, stageHost, domain, options?.path, port]);
 
   const changeCount = useStore(form.store, (s) => {
     let count = 0;
@@ -195,10 +199,7 @@ export default function DomainPortCard({
             disabled={isEditing}
             classNameIcon="size-4"
             variant={buttonVariant}
-            valueToCopy={getNetworkingDisplayUrl({
-              host: domain,
-              port: mode === "public" ? "" : port.toString(),
-            })}
+            valueToCopy={address}
           />
           {mode === "public" && stagedState !== "deleted" && (
             <Button
@@ -248,8 +249,7 @@ export default function DomainPortCard({
       isEditing,
       isApplying,
       mode,
-      port,
-      domain,
+      address,
       service.type,
       form,
       staged,
@@ -272,10 +272,7 @@ export default function DomainPortCard({
           asElement="div"
           classNameText="whitespace-normal"
           className="group-data-editing/field:bg-change/2-10 group-data-editing/field:text-change group-data-staged/field:bg-change/2-10 group-data-staged/field:text-change group-data-has-dns/field:ring-border z-1 border-none group-data-editing/field:rounded-b-none group-data-has-dns/field:ring-1"
-          text={getNetworkingDisplayUrl({
-            host: domain,
-            port: mode === "public" ? "" : port?.toString(),
-          })}
+          text={address}
           description={({ className }) => {
             if (mode !== "public") return null;
             if (port === undefined && !options?.redirect && !options?.proxy) return null;

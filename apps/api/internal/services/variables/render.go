@@ -326,7 +326,7 @@ func (rc *renderContext) addressValue(source *ent.Service, base string, endpoint
 		if endpoint.L4 {
 			return net.JoinHostPort(endpoint.Host, strconv.Itoa(int(endpoint.Port))), true
 		}
-		return fmt.Sprintf("https://%s", endpoint.Host), true
+		return fmt.Sprintf("https://%s%s", endpoint.Host, endpoint.Path), true
 	case vartemplate.KeyDatabaseURLPrivate, vartemplate.KeyDatabaseURLPublic:
 		if !isDatabase(source) {
 			return "", false

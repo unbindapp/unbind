@@ -390,13 +390,16 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 		if err := self.validateHosts(ctx, tx, claimedHosts); err != nil {
 			return err
 		}
+		if route, ok := duplicateRoute(service_repo.MergeHosts(service.Edges.ServiceConfig.Hosts, input.OverwriteHosts, input.UpsertHosts, input.RemoveHosts)); ok {
+			return invalid("domain %s is listed twice", route)
+		}
 		for _, host := range claimedHosts {
-			conflicts, err := self.repo.Service().CountHostConflicts(ctx, tx, host.Host, input.TeamID, new(service.ID))
+			conflicts, err := self.repo.Service().CountHostConflicts(ctx, tx, host, input.TeamID, new(service.ID))
 			if err != nil {
 				return errdefs.NewInternalError(err, "Failed to check the domain for collisions")
 			}
 			if conflicts > 0 {
-				return hostConflictError(host.Host)
+				return hostConflictError(host)
 			}
 		}
 

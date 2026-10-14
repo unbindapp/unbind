@@ -14,6 +14,7 @@ import {
 } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-options-fields";
 import { TMode } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
 import { useStageNetworking } from "@/components/service/panel/content/deployed/settings/use-service-changes";
+import { hostTargetFromSpec, routeLabel, routePath } from "@/components/staged-changes/host-target";
 import type { TStagedListEntry } from "@/components/staged-changes/staged-changes-provider";
 import { useSystem } from "@/components/system/system-provider";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ const DraftSchema = z.object({
   targetPortType: z.string(),
   targetPort: z.string(),
   options: z.object({
+    path: z.string(),
     redirectTo: z.string(),
     redirectStatus: z.string(),
     proxyTo: z.string(),
@@ -66,12 +68,12 @@ export default function AddDomainPortCard({
 }) {
   const { stageHost, stagePort } = useStageNetworking(service);
 
-  const takenHosts = useMemo(() => {
-    const hosts = new Set(service.config.hosts.map((h) => h.host));
+  const takenRoutes = useMemo(() => {
+    const routes = new Set(service.config.hosts.map((h) => routeLabel(hostTargetFromSpec(h))));
     for (const change of staged) {
-      if (change.kind === "host" && change.value) hosts.add(change.value.host);
+      if (change.kind === "host" && change.value) routes.add(routeLabel(change.value));
     }
-    return hosts;
+    return routes;
   }, [service.config.hosts, staged]);
 
   const { data: systemData } = useSystem();
@@ -86,10 +88,10 @@ export default function AddDomainPortCard({
         wildcardDomain,
         seed: i === 0 ? service.id : `${service.id}:${i}`,
       });
-      if (!takenHosts.has(domain)) return domain;
+      if (!takenRoutes.has(domain)) return domain;
     }
     return undefined;
-  }, [mode, wildcardDomain, service.name, service.id, takenHosts]);
+  }, [mode, wildcardDomain, service.name, service.id, takenRoutes]);
   const [generatedDomain, setGeneratedDomain] = useState<string | undefined>(undefined);
 
   const defaultTargetPortType =
@@ -211,9 +213,16 @@ export default function AddDomainPortCard({
                       <form.AppField
                         name="host"
                         validators={{
-                          onChange: ({ value }) => {
-                            if (takenHosts.has(value)) {
-                              return { message: "This domain already exists." };
+                          onChangeListenTo: ["options.path"],
+                          onChange: ({ value, fieldApi }) => {
+                            const path = fieldApi.form.getFieldValue("options.path");
+                            if (takenRoutes.has(routeLabel({ host: value, path }))) {
+                              const isWholeDomain = routePath(path) === "/";
+                              return {
+                                message: isWholeDomain
+                                  ? "This domain already exists."
+                                  : "This path already exists on the domain.",
+                              };
                             }
                             return validateDomain({ value, isPublic: true });
                           },

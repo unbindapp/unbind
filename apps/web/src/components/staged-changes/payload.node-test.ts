@@ -279,6 +279,18 @@ test("folds domain, port and volume changes into the update of their service", (
           value: null,
           addsPort: false,
         }),
+        list({
+          kind: "host",
+          previous: { host: "app.example.com", path: "/v1", port: 3000 },
+          value: { host: "app.example.com", path: "/v2", port: 3000 },
+          addsPort: false,
+        }),
+        list({
+          kind: "host",
+          previous: { host: "app.example.com", path: "/old", port: 3000 },
+          value: null,
+          addsPort: false,
+        }),
         list({ kind: "port", port: 9000, op: "add" }),
         list({ kind: "port", port: 3001, op: "remove" }),
         list({ kind: "volume", volumeId: "pvc-1", volumeName: "data", mountPath: "/data" }),
@@ -290,11 +302,31 @@ test("folds domain, port and volume changes into the update of their service", (
   const [update] = payload.services;
   assert.equal(update.replicas, 2);
   assert.deepEqual(update.upsert_hosts, [
-    { host: "new.example.com", path: "", target_port: 8080, prev_host: undefined },
-    { host: "renamed.example.com", path: "", target_port: 8080, prev_host: "old.example.com" },
+    {
+      host: "new.example.com",
+      path: "",
+      target_port: 8080,
+      prev_host: undefined,
+      prev_path: undefined,
+    },
+    {
+      host: "renamed.example.com",
+      path: "",
+      target_port: 8080,
+      prev_host: "old.example.com",
+      prev_path: "",
+    },
+    {
+      host: "app.example.com",
+      path: "/v2",
+      target_port: 3000,
+      prev_host: "app.example.com",
+      prev_path: "/v1",
+    },
   ]);
   assert.deepEqual(update.remove_hosts, [
     { host: "gone.example.com", path: "", target_port: 3000 },
+    { host: "app.example.com", path: "/old", target_port: 3000 },
   ]);
   assert.deepEqual(update.add_ports, [{ port: 8080 }, { port: 9000 }]);
   assert.deepEqual(update.remove_ports, [{ port: 3001 }]);
@@ -338,6 +370,7 @@ test("a domain's redirect, basic auth and headers travel with its upsert", () =>
       path: "",
       target_port: 3000,
       prev_host: undefined,
+      prev_path: undefined,
       redirect: { to: "https://example.com", status_code: 308 },
     },
     {
@@ -345,6 +378,7 @@ test("a domain's redirect, basic auth and headers travel with its upsert", () =>
       path: "",
       target_port: 3000,
       prev_host: "invoice.example.com",
+      prev_path: "",
       basic_auth: { username: "admin", password: "secret" },
       response_headers: [{ name: "Cache-Control", value: "no-store" }],
     },

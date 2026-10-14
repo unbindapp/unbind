@@ -228,6 +228,38 @@ test("listChangesMatchingServer finds the list changes the server already has", 
   assert.deepEqual(settled, [added.id, removed.id, portAdded.id, portRemoved.id]);
 });
 
+test("listChangesMatchingServer tells the paths of one host apart", () => {
+  const pathAdded = list({
+    kind: "host",
+    previous: null,
+    value: { host: "app.example.com", path: "/api", port: 5555 },
+    addsPort: false,
+  });
+  const pathRemoved = list({
+    kind: "host",
+    previous: { host: "app.example.com", path: "/old", port: 3000 },
+    value: null,
+    addsPort: false,
+  });
+  const halfMoved = list({
+    kind: "host",
+    previous: { host: "app.example.com", path: "/v1", port: 3000 },
+    value: { host: "app.example.com", path: "/v2", port: 3000 },
+    addsPort: false,
+  });
+
+  const settled = listChangesMatchingServer([pathAdded, pathRemoved, halfMoved], {
+    hosts: [
+      { host: "app.example.com", port: 3000 },
+      { host: "app.example.com", path: "/api/", port: 5555 },
+      { host: "app.example.com", path: "/v1", port: 3000 },
+      { host: "app.example.com", path: "/v2", port: 3000 },
+    ],
+  });
+
+  assert.deepEqual(settled, [pathAdded.id, pathRemoved.id]);
+});
+
 test("listChangesMatchingServer leaves lists it was not given alone", () => {
   const port = list({ kind: "port", port: 3000, op: "add" });
   const volume = list({

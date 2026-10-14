@@ -510,12 +510,12 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "host input not found")
 				}
 				// Count domain collisions
-				domainCount, err := self.repo.Service().CountHostConflicts(ctx, tx, hostSpec.Host, input.TeamID, nil)
+				domainCount, err := self.repo.Service().CountHostConflicts(ctx, tx, hostSpec, input.TeamID, nil)
 				if err != nil {
 					return fmt.Errorf("failed to count domain collisions: %w", err)
 				}
 				if domainCount > 0 {
-					return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", hostSpec.Host))
+					return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", hostSpec.Route()))
 				}
 				hosts = append(hosts, hostSpec)
 			}

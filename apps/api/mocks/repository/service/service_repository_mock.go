@@ -132,7 +132,7 @@ func (_c *ServiceRepositoryMock_CountDomainCollisons_Call) RunAndReturn(run func
 }
 
 // CountHostConflicts provides a mock function for the type ServiceRepositoryMock
-func (_mock *ServiceRepositoryMock) CountHostConflicts(ctx context.Context, tx repository.TxInterface, host string, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error) {
+func (_mock *ServiceRepositoryMock) CountHostConflicts(ctx context.Context, tx repository.TxInterface, host schema.HostSpec, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error) {
 	ret := _mock.Called(ctx, tx, host, teamID, excludingServiceID)
 
 	if len(ret) == 0 {
@@ -141,15 +141,15 @@ func (_mock *ServiceRepositoryMock) CountHostConflicts(ctx context.Context, tx r
 
 	var r0 int
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, uuid.UUID, *uuid.UUID) (int, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, schema.HostSpec, uuid.UUID, *uuid.UUID) (int, error)); ok {
 		return returnFunc(ctx, tx, host, teamID, excludingServiceID)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, string, uuid.UUID, *uuid.UUID) int); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, schema.HostSpec, uuid.UUID, *uuid.UUID) int); ok {
 		r0 = returnFunc(ctx, tx, host, teamID, excludingServiceID)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, string, uuid.UUID, *uuid.UUID) error); ok {
+	if returnFunc, ok := ret.Get(1).(func(context.Context, repository.TxInterface, schema.HostSpec, uuid.UUID, *uuid.UUID) error); ok {
 		r1 = returnFunc(ctx, tx, host, teamID, excludingServiceID)
 	} else {
 		r1 = ret.Error(1)
@@ -165,14 +165,14 @@ type ServiceRepositoryMock_CountHostConflicts_Call struct {
 // CountHostConflicts is a helper method to define mock.On call
 //   - ctx context.Context
 //   - tx repository.TxInterface
-//   - host string
+//   - host schema.HostSpec
 //   - teamID uuid.UUID
 //   - excludingServiceID *uuid.UUID
 func (_e *ServiceRepositoryMock_Expecter) CountHostConflicts(ctx any, tx any, host any, teamID any, excludingServiceID any) *ServiceRepositoryMock_CountHostConflicts_Call {
 	return &ServiceRepositoryMock_CountHostConflicts_Call{Call: _e.mock.On("CountHostConflicts", ctx, tx, host, teamID, excludingServiceID)}
 }
 
-func (_c *ServiceRepositoryMock_CountHostConflicts_Call) Run(run func(ctx context.Context, tx repository.TxInterface, host string, teamID uuid.UUID, excludingServiceID *uuid.UUID)) *ServiceRepositoryMock_CountHostConflicts_Call {
+func (_c *ServiceRepositoryMock_CountHostConflicts_Call) Run(run func(ctx context.Context, tx repository.TxInterface, host schema.HostSpec, teamID uuid.UUID, excludingServiceID *uuid.UUID)) *ServiceRepositoryMock_CountHostConflicts_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -182,9 +182,9 @@ func (_c *ServiceRepositoryMock_CountHostConflicts_Call) Run(run func(ctx contex
 		if args[1] != nil {
 			arg1 = args[1].(repository.TxInterface)
 		}
-		var arg2 string
+		var arg2 schema.HostSpec
 		if args[2] != nil {
-			arg2 = args[2].(string)
+			arg2 = args[2].(schema.HostSpec)
 		}
 		var arg3 uuid.UUID
 		if args[3] != nil {
@@ -210,7 +210,7 @@ func (_c *ServiceRepositoryMock_CountHostConflicts_Call) Return(n int, err error
 	return _c
 }
 
-func (_c *ServiceRepositoryMock_CountHostConflicts_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, host string, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error)) *ServiceRepositoryMock_CountHostConflicts_Call {
+func (_c *ServiceRepositoryMock_CountHostConflicts_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, host schema.HostSpec, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error)) *ServiceRepositoryMock_CountHostConflicts_Call {
 	_c.Call.Return(run)
 	return _c
 }

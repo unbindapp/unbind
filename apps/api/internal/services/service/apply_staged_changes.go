@@ -156,17 +156,18 @@ func (self *ServiceService) checkHostClaims(ctx context.Context, updates []*serv
 	for _, update := range updates {
 		inputs = append(inputs, update.input)
 	}
-	if host, ok := hostClaimedTwice(inputs); ok {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s is added to more than one service", host))
+	if route, ok := hostClaimedTwice(inputs); ok {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s is added to more than one service", route))
 	}
 
 	for _, update := range updates {
-		if err := self.validateHosts(ctx, nil, slices.Concat(update.input.OverwriteHosts, update.input.UpsertHosts)); err != nil {
+		claimed := slices.Concat(update.input.OverwriteHosts, update.input.UpsertHosts)
+		if err := self.validateHosts(ctx, nil, claimed); err != nil {
 			return err
 		}
 		released := releasedHosts(inputs, update.input.ServiceID)
-		for _, host := range claimedHosts(update.input) {
-			if _, ok := released[host]; ok {
+		for _, host := range claimed {
+			if _, ok := released[host.RouteKey()]; ok {
 				continue
 			}
 			count, err := self.repo.Service().CountHostConflicts(ctx, nil, host, update.input.TeamID, &update.service.ID)
@@ -197,28 +198,20 @@ func nameClaimedTwice(updates []*serviceUpdate) (string, bool) {
 	return "", false
 }
 
-func claimedHosts(input *models.UpdateServiceInput) []string {
-	hosts := make([]string, 0, len(input.OverwriteHosts)+len(input.UpsertHosts))
-	for _, host := range slices.Concat(input.OverwriteHosts, input.UpsertHosts) {
-		hosts = append(hosts, strings.ToLower(host.Host))
-	}
-	return hosts
-}
-
 func hostClaimedTwice(inputs []*models.UpdateServiceInput) (string, bool) {
 	claimedBy := map[string]uuid.UUID{}
 	for _, input := range inputs {
-		for _, host := range claimedHosts(input) {
-			if owner, ok := claimedBy[host]; ok && owner != input.ServiceID {
-				return host, true
+		for _, host := range slices.Concat(input.OverwriteHosts, input.UpsertHosts) {
+			if owner, ok := claimedBy[host.RouteKey()]; ok && owner != input.ServiceID {
+				return host.Route(), true
 			}
-			claimedBy[host] = input.ServiceID
+			claimedBy[host.RouteKey()] = input.ServiceID
 		}
 	}
 	return "", false
 }
 
-// releasedHosts lists the domains the other services in the batch remove or rename away from
+// releasedHosts lists the routes the other services in the batch remove or move away from
 func releasedHosts(inputs []*models.UpdateServiceInput, exceptServiceID uuid.UUID) map[string]struct{} {
 	released := map[string]struct{}{}
 	for _, input := range inputs {
@@ -226,11 +219,11 @@ func releasedHosts(inputs []*models.UpdateServiceInput, exceptServiceID uuid.UUI
 			continue
 		}
 		for _, host := range input.RemoveHosts {
-			released[strings.ToLower(host.Host)] = struct{}{}
+			released[host.RouteKey()] = struct{}{}
 		}
 		for _, host := range input.UpsertHosts {
-			if host.PrevHost != nil && !strings.EqualFold(*host.PrevHost, host.Host) {
-				released[strings.ToLower(*host.PrevHost)] = struct{}{}
+			if host.PrevRouteKey() != host.RouteKey() {
+				released[host.PrevRouteKey()] = struct{}{}
 			}
 		}
 	}

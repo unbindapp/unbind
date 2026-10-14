@@ -7,6 +7,9 @@ import {
   hostTargetToSpec,
   hostTargetsEqual,
   parseHeaderLine,
+  routeLabel,
+  routePath,
+  sameRoute,
 } from "./host-target.ts";
 
 test("hostTargetFromSpec fills the redirect status the API left out", () => {
@@ -58,11 +61,36 @@ test("a proxy round trips between the spec and the staged target", () => {
     path: "",
     target_port: undefined,
     prev_host: undefined,
+    prev_path: undefined,
     proxy: { to: "https://raw.githubusercontent.com/org/repo/main/install.sh" },
   };
   const target = hostTargetFromSpec(spec);
   assert.deepEqual(target.proxy, spec.proxy);
   assert.deepEqual(hostTargetToSpec(target), spec);
+});
+
+test("a path is part of the domain, the whole domain has none", () => {
+  const api = hostTargetFromSpec({ host: "example.com", path: "/api", target_port: 5555 });
+  assert.deepEqual(api, { host: "example.com", path: "/api", port: 5555 });
+  assert.deepEqual(hostTargetFromSpec({ host: "example.com", path: "/", target_port: 3000 }), {
+    host: "example.com",
+    port: 3000,
+  });
+
+  assert.equal(routePath(undefined), "/");
+  assert.equal(routePath("/"), "/");
+  assert.equal(routePath("/api/"), "/api");
+  assert.equal(routeLabel(api), "example.com/api");
+  assert.equal(routeLabel({ host: "example.com", path: "" }), "example.com");
+  assert.ok(sameRoute({ host: "example.com" }, { host: "example.com", path: "/" }));
+  assert.ok(sameRoute(api, { host: "example.com", path: "/api/" }));
+  assert.ok(!sameRoute(api, { host: "example.com" }));
+  assert.ok(!hostTargetsEqual(api, { host: "example.com", port: 5555 }));
+
+  const moved = hostTargetToSpec({ host: "example.com", path: "/v2", port: 5555 }, api);
+  assert.equal(moved.path, "/v2");
+  assert.equal(moved.prev_host, "example.com");
+  assert.equal(moved.prev_path, "/api");
 });
 
 test("header lines round trip through parseHeaderLine", () => {

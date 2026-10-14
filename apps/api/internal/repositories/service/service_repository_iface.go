@@ -35,10 +35,11 @@ type ServiceRepositoryInterface interface {
 	GetByEnvironmentID(ctx context.Context, environmentID uuid.UUID, authPredicate predicate.Service, withLatestDeployment bool) ([]*ent.Service, error)
 	GetGithubPrivateKey(ctx context.Context, serviceID uuid.UUID) (string, error)
 	CountDomainCollisons(ctx context.Context, tx repository.TxInterface, domain string, excludingServiceID *uuid.UUID) (int, error)
-	// CountHostConflicts counts what stops a team from claiming host: every other service
-	// holding the same host, and services of other teams whose host overlaps it through a
-	// wildcard. Overlap inside one team is left to the team.
-	CountHostConflicts(ctx context.Context, tx repository.TxInterface, host string, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error)
+	// CountHostConflicts counts what stops a team from claiming a domain: services of other
+	// teams holding the host or overlapping it through a wildcard, and services of the team
+	// on the same host and path. A team shares a host across paths, except with grpc and
+	// database domains. Overlap inside one team is left to the team.
+	CountHostConflicts(ctx context.Context, tx repository.TxInterface, host schema.HostSpec, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error)
 	GetDeploymentNamespace(ctx context.Context, serviceID uuid.UUID) (string, error)
 	// Summarize services in environment
 	// SummarizeServices counts services and collects their icons per environment,

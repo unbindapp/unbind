@@ -3,7 +3,7 @@ package networking
 import (
 	"fmt"
 	"maps"
-	"slices"
+	"strings"
 
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -42,37 +42,43 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	var listeners []gwapiv1.Listener
 	var objects []client.Object
 
-	// HTTP / gRPC hosts: one HTTPS listener per host. Each HTTP host gets its own
+	// HTTP / gRPC hosts: one HTTPS listener per hostname. Each HTTP host gets its own
 	// HTTPRoute bound to its listener, since a rule cannot match on hostname and the
-	// hosts differ in port, redirect, auth or headers.
-	var httpHosts, grpcHosts []v1.HostSpec
+	// hosts differ in path, port, redirect, auth or headers. A hostname shared with
+	// another service of the namespace listens on the Gateway of the one owning it.
+	var listenedHosts, grpcHosts []v1.HostSpec
 	var httpRouteNames []string
 	if httpRoutable {
+		listened := map[string]bool{}
 		for _, host := range svc.Spec.Config.Hosts {
 			if !p.canRoute(host) {
 				continue
 			}
-			listeners = append(listeners, gwapiv1.Listener{
-				Name:     hostListenerName(host),
-				Hostname: ptr.To(gwapiv1.Hostname(host.Host)),
-				Port:     443,
-				Protocol: gwapiv1.HTTPSProtocolType,
-				TLS: &gwapiv1.ListenerTLSConfig{
-					Mode:            ptr.To(gwapiv1.TLSModeTerminate),
-					CertificateRefs: []gwapiv1.SecretObjectReference{{Name: gwapiv1.ObjectName(hostTLSSecretName(svc, host))}},
-				},
-				AllowedRoutes: &gwapiv1.AllowedRoutes{
-					Namespaces: &gwapiv1.RouteNamespaces{From: ptr.To(gwapiv1.NamespacesFromSame)},
-				},
-			})
+			gateway := in.listenerGateway(host)
+			if hostname := strings.ToLower(host.Host); gateway == svc.Name && !listened[hostname] {
+				listened[hostname] = true
+				listenedHosts = append(listenedHosts, host)
+				listeners = append(listeners, gwapiv1.Listener{
+					Name:     hostListenerName(host),
+					Hostname: ptr.To(gwapiv1.Hostname(host.Host)),
+					Port:     443,
+					Protocol: gwapiv1.HTTPSProtocolType,
+					TLS: &gwapiv1.ListenerTLSConfig{
+						Mode:            ptr.To(gwapiv1.TLSModeTerminate),
+						CertificateRefs: []gwapiv1.SecretObjectReference{{Name: gwapiv1.ObjectName(hostTLSSecretName(svc, host))}},
+					},
+					AllowedRoutes: &gwapiv1.AllowedRoutes{
+						Namespaces: &gwapiv1.RouteNamespaces{From: ptr.To(gwapiv1.NamespacesFromSame)},
+					},
+				})
+			}
 			if host.Protocol == "grpc" {
 				grpcHosts = append(grpcHosts, host)
 				continue
 			}
-			httpHosts = append(httpHosts, host)
 			name := hostObjectName(svc, host)
 			httpRouteNames = append(httpRouteNames, name)
-			objects = append(objects, p.httpRoute(svc, in.Labels, name, host))
+			objects = append(objects, p.httpRoute(svc, in.Labels, name, host, gateway))
 			if target, ok := parseProxy(host.Proxy); ok {
 				objects = append(objects, proxyUpstream(svc, in.Labels, host, target)...)
 			}
@@ -88,9 +94,6 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 		}
 		if p.cfg.GatewayControllerEnvoy && svc.Spec.Config.SessionAffinity && len(httpRouteNames) > 0 {
 			objects = append(objects, envoyAffinityPolicy(in, httpRouteNames))
-		}
-		if p.cfg.GatewayControllerEnvoy && svc.Spec.Config.ClientIPHeader != "" {
-			objects = append(objects, envoyClientIPPolicy(in))
 		}
 	}
 
@@ -116,6 +119,28 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 		objects = append(objects, p.l4Route(svc, in.Labels, port, listenerName, proto))
 	}
 
+	// Emit an explicit Certificate (not the gateway-shim) with issue-temporary-certificate
+	// so the HTTPS listener programs immediately; otherwise the shared Envoy resets that
+	// SNI until ACME issues (ERR_CONNECTION_RESET). Raw L4 needs no cert.
+	var acmeHosts []v1.HostSpec
+	for _, host := range listenedHosts {
+		if !isWildcardHost(host) {
+			acmeHosts = append(acmeHosts, host)
+		}
+	}
+	if len(acmeHosts) > 0 {
+		objects = append(objects, p.certificate(svc, in.Labels, acmeHosts))
+	}
+	if wildcards := wildcardHosts(listenedHosts); len(wildcards) > 0 {
+		objects = append(objects, wildcardCertificate(p.cfg, svc, in.Labels, wildcards))
+	}
+
+	if len(listeners) == 0 {
+		return objects, nil
+	}
+	if p.cfg.GatewayControllerEnvoy && httpRoutable && svc.Spec.Config.ClientIPHeader != "" {
+		objects = append(objects, envoyClientIPPolicy(in))
+	}
 	gateway := &gwapiv1.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      svc.Name,
@@ -127,24 +152,71 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 			Listeners:        listeners,
 		},
 	}
-	// Emit an explicit Certificate (not the gateway-shim) with issue-temporary-certificate
-	// so the HTTPS listener programs immediately; otherwise the shared Envoy resets that
-	// SNI until ACME issues (ERR_CONNECTION_RESET). Raw L4 needs no cert.
-	var acmeHosts []v1.HostSpec
-	for _, host := range slices.Concat(httpHosts, grpcHosts) {
-		if !isWildcardHost(host) {
-			acmeHosts = append(acmeHosts, host)
-		}
-	}
-	if len(acmeHosts) > 0 {
-		objects = append(objects, p.certificate(svc, in.Labels, acmeHosts))
-	}
-	if wildcards := wildcardHosts(svc.Spec.Config.Hosts); httpRoutable && len(wildcards) > 0 {
-		objects = append(objects, wildcardCertificate(p.cfg, svc, in.Labels, wildcards))
-	}
-
 	// Last, so a listener never comes up before its route and auth policy exist
 	return append(objects, gateway), nil
+}
+
+// ListenerGateways picks, for each hostname the service shares with other services of
+// its namespace, the one whose Gateway carries the listener: the service routing the
+// whole domain, else the oldest. Hostnames the service listens on itself are left out.
+func ListenerGateways(cfg Config, svc *v1.Service, namespaceServices []v1.Service) map[string]string {
+	p := gatewayProvider{cfg: cfg}
+	owners := map[string]string{}
+	for _, host := range p.routedHTTPHosts(svc) {
+		hostname := strings.ToLower(host.Host)
+		if _, ok := owners[hostname]; ok {
+			continue
+		}
+		owner := svc
+		for i := range namespaceServices {
+			other := &namespaceServices[i]
+			if other.Name != svc.Name && p.ownsListenerBefore(other, owner, hostname) {
+				owner = other
+			}
+		}
+		owners[hostname] = owner.Name
+	}
+	maps.DeleteFunc(owners, func(_, owner string) bool { return owner == svc.Name })
+	return owners
+}
+
+func (p gatewayProvider) routedHTTPHosts(svc *v1.Service) []v1.HostSpec {
+	if !svc.DeletionTimestamp.IsZero() || svc.Spec.Config.CronSchedule != "" || !needsRoutes(svc) {
+		return nil
+	}
+	var hosts []v1.HostSpec
+	for _, host := range svc.Spec.Config.Hosts {
+		if host.Protocol != "grpc" && p.canRoute(host) {
+			hosts = append(hosts, host)
+		}
+	}
+	return hosts
+}
+
+func (p gatewayProvider) ownsListenerBefore(candidate, owner *v1.Service, hostname string) bool {
+	candidateRoutes, candidateWhole := p.routesHostname(candidate, hostname)
+	if !candidateRoutes {
+		return false
+	}
+	_, ownerWhole := p.routesHostname(owner, hostname)
+	if candidateWhole != ownerWhole {
+		return candidateWhole
+	}
+	if !candidate.CreationTimestamp.Equal(&owner.CreationTimestamp) {
+		return candidate.CreationTimestamp.Before(&owner.CreationTimestamp)
+	}
+	return candidate.Name < owner.Name
+}
+
+func (p gatewayProvider) routesHostname(svc *v1.Service, hostname string) (routes, wholeDomain bool) {
+	for _, host := range p.routedHTTPHosts(svc) {
+		if !strings.EqualFold(host.Host, hostname) {
+			continue
+		}
+		routes = true
+		wholeDomain = wholeDomain || hostPath(host) == "/"
+	}
+	return routes, wholeDomain
 }
 
 // Only Envoy Gateway reaches hostnames outside the cluster. A proxied host it cannot
@@ -158,19 +230,19 @@ func (p gatewayProvider) canRoute(host v1.HostSpec) bool {
 }
 
 func hostListenerName(host v1.HostSpec) gwapiv1.SectionName {
-	return gwapiv1.SectionName("https-" + hostKey(host))
+	return gwapiv1.SectionName("https-" + hostnameKey(host))
 }
 
-func (p gatewayProvider) parentRef(svc *v1.Service, section *gwapiv1.SectionName) gwapiv1.ParentReference {
+func (p gatewayProvider) parentRef(gateway string, section *gwapiv1.SectionName) gwapiv1.ParentReference {
 	return gwapiv1.ParentReference{
 		Group:       ptr.To(gwapiv1.Group("gateway.networking.k8s.io")),
 		Kind:        ptr.To(gwapiv1.Kind("Gateway")),
-		Name:        gwapiv1.ObjectName(svc.Name),
+		Name:        gwapiv1.ObjectName(gateway),
 		SectionName: section,
 	}
 }
 
-func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, name string, host v1.HostSpec) *gwapiv1.HTTPRoute {
+func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, name string, host v1.HostSpec, gateway string) *gwapiv1.HTTPRoute {
 	port, path := resolveHostPort(svc, host)
 	rule := gwapiv1.HTTPRouteRule{
 		Matches: []gwapiv1.HTTPRouteMatch{{
@@ -197,7 +269,7 @@ func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, na
 	return &gwapiv1.HTTPRoute{
 		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: svc.Namespace, Labels: labels},
 		Spec: gwapiv1.HTTPRouteSpec{
-			CommonRouteSpec: gwapiv1.CommonRouteSpec{ParentRefs: []gwapiv1.ParentReference{p.parentRef(svc, &section)}},
+			CommonRouteSpec: gwapiv1.CommonRouteSpec{ParentRefs: []gwapiv1.ParentReference{p.parentRef(gateway, &section)}},
 			Hostnames:       []gwapiv1.Hostname{gwapiv1.Hostname(host.Host)},
 			Rules:           []gwapiv1.HTTPRouteRule{rule},
 		},
@@ -312,7 +384,7 @@ func (p gatewayProvider) grpcRoute(svc *v1.Service, labels map[string]string, ho
 	return &gwapiv1.GRPCRoute{
 		ObjectMeta: metav1.ObjectMeta{Name: svc.Name + "-grpc", Namespace: svc.Namespace, Labels: labels},
 		Spec: gwapiv1.GRPCRouteSpec{
-			CommonRouteSpec: gwapiv1.CommonRouteSpec{ParentRefs: []gwapiv1.ParentReference{p.parentRef(svc, nil)}},
+			CommonRouteSpec: gwapiv1.CommonRouteSpec{ParentRefs: []gwapiv1.ParentReference{p.parentRef(svc.Name, nil)}},
 			Hostnames:       hostnames,
 			Rules: []gwapiv1.GRPCRouteRule{{
 				BackendRefs: []gwapiv1.GRPCBackendRef{{BackendRef: gwapiv1.BackendRef{
@@ -328,7 +400,7 @@ func (p gatewayProvider) l4Route(svc *v1.Service, labels map[string]string, port
 	backend := []gwapiv1a2.BackendRef{{BackendObjectReference: gwapiv1.BackendObjectReference{
 		Name: gwapiv1.ObjectName(l4BackendName(svc)), Port: ptr.To(gwapiv1.PortNumber(port.Port)),
 	}}}
-	parents := []gwapiv1.ParentReference{p.parentRef(svc, &section)}
+	parents := []gwapiv1.ParentReference{p.parentRef(svc.Name, &section)}
 
 	if proto == "UDP" {
 		name = fmt.Sprintf("%s-udp-%d", svc.Name, *port.NodePort)

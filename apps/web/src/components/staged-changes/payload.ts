@@ -112,13 +112,17 @@ function addListChange(input: TUpdateServiceInput, change: TStagedListChange) {
     if (!change.previous) return;
     input.removeHosts = [
       ...(input.removeHosts ?? []),
-      { host: change.previous.host, path: "", target_port: change.previous.port },
+      {
+        host: change.previous.host,
+        path: change.previous.path ?? "",
+        target_port: change.previous.port,
+      },
     ];
     return;
   }
   input.upsertHosts = [
     ...(input.upsertHosts ?? []),
-    hostTargetToSpec(change.value, change.previous?.host),
+    hostTargetToSpec(change.value, change.previous),
   ];
   if (change.addsPort && change.value.port !== undefined) addPort(input, change.value.port);
 }

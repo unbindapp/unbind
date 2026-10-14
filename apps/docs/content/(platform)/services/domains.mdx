@@ -70,6 +70,18 @@ A few rules apply:
 - A wildcard can't cover the domain of your Unbind instance or its generated domains.
 - `UNBIND_URL_PUBLIC` and the other public variables never point at a wildcard. They use the service's other domains.
 
+## Split a domain by path
+
+A domain can send each path to a different service, like `example.com` to the website and `example.com/api` to the API. Add the domain to every service that takes a part of it, and type a **Path** on each one except the service that answers the rest. The longest matching path wins.
+
+- A path covers itself and everything under it: `/api` takes `/api` and `/api/users`, not `/apis`.
+- The service gets the full path: the one under `/api` sees `/api/users`, not `/users`.
+- One service can take several paths of a domain, like `/api` and `/socket.io`.
+- The paths of a domain share its DNS record.
+- Only services of one team can share a domain. A gRPC domain can't be split.
+- A redirect, proxy, basic auth or response header applies to the path it is set on, so `example.com/blog/old` can redirect to `https://example.com/blog/new` while the rest of the domain reaches the service.
+- `UNBIND_URL_PUBLIC` includes the path, like `https://example.com/api`.
+
 ## Redirect a domain
 
 A domain can send visitors to another URL instead of the service. Press the pencil on the domain, type the URL in **Redirect**, like `https://example.com`, pick the **Redirect Status** and deploy.

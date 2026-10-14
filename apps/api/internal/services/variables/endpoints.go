@@ -24,7 +24,9 @@ const httpsPort int32 = 443
 // UNBIND_URL_PUBLIC_8080 name the same logical port. Label is the protocol the
 // endpoint carries when the engine speaks more than one, and names the key instead.
 type serviceEndpoint struct {
-	Host     string
+	Host string
+	// Path is the prefix a domain routes to the service, empty for the whole domain
+	Path     string
 	IsDomain bool
 	Port     int32
 	Target   int32
@@ -96,6 +98,9 @@ func publicEndpointsFor(serviceType schema.ServiceType, databaseType string, con
 		}
 
 		endpoint := serviceEndpoint{Host: host.Host, IsDomain: true, Port: httpsPort}
+		if path := host.RoutePath(); path != "/" {
+			endpoint.Path = path
+		}
 		if host.TargetPort != nil {
 			endpoint.Target = *host.TargetPort
 			endpoint.Label = databases.ProtocolLabel(databaseType, *host.TargetPort)

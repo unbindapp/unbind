@@ -630,7 +630,23 @@ func (suite *ServiceQueriesSuite) TestCountHostConflicts() {
 		SetHosts([]schema.HostSpec{
 			{Host: "*.wild.com", TargetPort: new(int32(3000))},
 			{Host: "api.taken.com", TargetPort: new(int32(3000))},
+			{Host: "shop.com", Path: "/", TargetPort: new(int32(3000))},
+			{Host: "grpc.com", Protocol: new(schema.HostProtocolGRPC), TargetPort: new(int32(3000))},
 		}).
+		SaveX(suite.Ctx)
+
+	databaseService := suite.DB.Service.Create().
+		SetType(schema.ServiceTypeDatabase).
+		SetKubernetesName("database-service").
+		SetName("Database Service").
+		SetEnvironmentID(suite.testEnvironment.ID).
+		SetKubernetesSecret("database-service-secret").
+		SaveX(suite.Ctx)
+	suite.DB.ServiceConfig.Create().
+		SetServiceID(databaseService.ID).
+		SetBuilder(schema.ServiceBuilderDatabase).
+		SetIcon("postgres").
+		SetHosts([]schema.HostSpec{{Host: "db.com", TargetPort: new(int32(5432))}}).
 		SaveX(suite.Ctx)
 
 	sameTeam := suite.testTeam.ID
@@ -638,22 +654,29 @@ func (suite *ServiceQueriesSuite) TestCountHostConflicts() {
 
 	tests := []struct {
 		name      string
-		host      string
+		host      schema.HostSpec
 		teamID    uuid.UUID
 		excluding *uuid.UUID
 		want      int
 	}{
-		{"same host, same team", "*.wild.com", sameTeam, nil, 1},
-		{"same host, case insensitive", "*.WILD.com", sameTeam, nil, 1},
-		{"same host, own service excluded", "*.wild.com", sameTeam, &wildcardService.ID, 0},
-		{"host under the team's own wildcard", "app.wild.com", sameTeam, nil, 0},
-		{"wildcard over the team's own host", "*.taken.com", sameTeam, nil, 0},
-		{"host under another team's wildcard", "app.wild.com", otherTeam, nil, 1},
-		{"nested host under another team's wildcard", "a.b.wild.com", otherTeam, nil, 1},
-		{"wildcard under another team's wildcard", "*.apps.wild.com", otherTeam, nil, 1},
-		{"wildcard over another team's host", "*.taken.com", otherTeam, nil, 1},
-		{"apex of another team's wildcard", "wild.com", otherTeam, nil, 0},
-		{"sibling of another team's host", "app.taken.com", otherTeam, nil, 0},
+		{"same host, same team", schema.HostSpec{Host: "*.wild.com"}, sameTeam, nil, 1},
+		{"same host, case insensitive", schema.HostSpec{Host: "*.WILD.com"}, sameTeam, nil, 1},
+		{"same host, own service excluded", schema.HostSpec{Host: "*.wild.com"}, sameTeam, &wildcardService.ID, 0},
+		{"host under the team's own wildcard", schema.HostSpec{Host: "app.wild.com"}, sameTeam, nil, 0},
+		{"wildcard over the team's own host", schema.HostSpec{Host: "*.taken.com"}, sameTeam, nil, 0},
+		{"host under another team's wildcard", schema.HostSpec{Host: "app.wild.com"}, otherTeam, nil, 1},
+		{"nested host under another team's wildcard", schema.HostSpec{Host: "a.b.wild.com"}, otherTeam, nil, 1},
+		{"wildcard under another team's wildcard", schema.HostSpec{Host: "*.apps.wild.com"}, otherTeam, nil, 1},
+		{"wildcard over another team's host", schema.HostSpec{Host: "*.taken.com"}, otherTeam, nil, 1},
+		{"apex of another team's wildcard", schema.HostSpec{Host: "wild.com"}, otherTeam, nil, 0},
+		{"sibling of another team's host", schema.HostSpec{Host: "app.taken.com"}, otherTeam, nil, 0},
+		{"same host and path, same team", schema.HostSpec{Host: "shop.com", Path: ""}, sameTeam, nil, 1},
+		{"same host, trailing slash path", schema.HostSpec{Host: "SHOP.com", Path: "/"}, sameTeam, nil, 1},
+		{"same host, other path, same team", schema.HostSpec{Host: "shop.com", Path: "/api"}, sameTeam, nil, 0},
+		{"same host, other path, other team", schema.HostSpec{Host: "shop.com", Path: "/api"}, otherTeam, nil, 1},
+		{"path on a grpc domain", schema.HostSpec{Host: "grpc.com", Path: "/api"}, sameTeam, nil, 1},
+		{"grpc on a shared domain", schema.HostSpec{Host: "shop.com", Path: "/api", Protocol: new(schema.HostProtocolGRPC)}, sameTeam, nil, 1},
+		{"path on a database domain", schema.HostSpec{Host: "db.com", Path: "/api"}, sameTeam, nil, 1},
 	}
 	for _, tt := range tests {
 		suite.Run(tt.name, func() {
@@ -665,7 +688,7 @@ func (suite *ServiceQueriesSuite) TestCountHostConflicts() {
 
 	suite.Run("Error when DB closed", func() {
 		suite.DB.Close()
-		_, err := suite.serviceRepo.CountHostConflicts(suite.Ctx, nil, "app.wild.com", otherTeam, nil)
+		_, err := suite.serviceRepo.CountHostConflicts(suite.Ctx, nil, schema.HostSpec{Host: "app.wild.com"}, otherTeam, nil)
 		suite.Error(err)
 	})
 }

@@ -1,6 +1,7 @@
 // Relative imports so this can run under `node --test`.
 import { z } from "zod";
 import { VariableReferenceSourceTypeSchema } from "../../lib/server/client.gen.ts";
+import { routeLabel } from "./host-target.ts";
 
 export const VariableScopeSchema = z.object({
   type: VariableReferenceSourceTypeSchema,
@@ -109,6 +110,7 @@ export const HostHeaderTargetSchema = z.object({
 
 export const HostTargetSchema = z.object({
   host: z.string(),
+  path: z.string().optional(),
   port: z.number().optional(),
   redirect: HostRedirectTargetSchema.optional(),
   proxy: z.object({ to: z.string() }).optional(),
@@ -177,7 +179,7 @@ export function listChangeValue(change: TStagedListChange): string | null {
   if (change.kind === "port") return change.op;
   if (change.kind === "volume") return `${change.serviceId}:${change.mountPath ?? "unmounted"}`;
   if (change.value === null) return null;
-  return `${change.value.host}:${change.value.port ?? ""}`;
+  return `${routeLabel(change.value)}:${change.value.port ?? ""}`;
 }
 
 export function variableScopeKey(scope: TVariableScope) {
@@ -198,9 +200,9 @@ export function serviceChangeId(serviceId: string, field: TServiceChangeField) {
   return `service:${serviceId}:${field}`;
 }
 
-// A domain keeps the id of the host the server has, so an edit and a removal replace each other
-export function hostChangeId(serviceId: string, host: string) {
-  return `host:${serviceId}:${host}`;
+// A domain keeps the id of the route the server has, so an edit and a removal replace each other
+export function hostChangeId(serviceId: string, route: string) {
+  return `host:${serviceId}:${route}`;
 }
 
 export function portChangeId(serviceId: string, port: number) {
@@ -215,8 +217,8 @@ export function volumeChangeId(volumeId: string) {
 export function listChangeId(change: TStageListInput) {
   if (change.kind === "port") return portChangeId(change.serviceId, change.port);
   if (change.kind === "volume") return volumeChangeId(change.volumeId);
-  const host = change.previous?.host ?? change.value?.host ?? "";
-  return hostChangeId(change.serviceId, host);
+  const target = change.previous ?? change.value;
+  return hostChangeId(change.serviceId, target ? routeLabel(target) : "");
 }
 
 export function countChanges(state: TStagedChangesState) {

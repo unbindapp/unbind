@@ -19,7 +19,7 @@ func TestHostClaimedTwice(t *testing.T) {
 			{ServiceID: second, UpsertHosts: host("APP.example.com")},
 		})
 		assert.True(t, ok)
-		assert.Equal(t, "app.example.com", claimed)
+		assert.Equal(t, "APP.example.com", claimed)
 	})
 
 	t.Run("different domains", func(t *testing.T) {
@@ -28,6 +28,23 @@ func TestHostClaimedTwice(t *testing.T) {
 			{ServiceID: second, OverwriteHosts: host("b.example.com")},
 		})
 		assert.False(t, ok)
+	})
+
+	t.Run("one domain split by path", func(t *testing.T) {
+		_, ok := hostClaimedTwice([]*models.UpdateServiceInput{
+			{ServiceID: first, UpsertHosts: host("app.example.com")},
+			{ServiceID: second, UpsertHosts: []schema.HostSpec{{Host: "app.example.com", Path: "/api"}}},
+		})
+		assert.False(t, ok)
+	})
+
+	t.Run("two services adding one path", func(t *testing.T) {
+		claimed, ok := hostClaimedTwice([]*models.UpdateServiceInput{
+			{ServiceID: first, UpsertHosts: []schema.HostSpec{{Host: "app.example.com", Path: "/api/"}}},
+			{ServiceID: second, UpsertHosts: []schema.HostSpec{{Host: "app.example.com", Path: "/api"}}},
+		})
+		assert.True(t, ok)
+		assert.Equal(t, "app.example.com/api", claimed)
 	})
 }
 
@@ -40,16 +57,19 @@ func TestReleasedHosts(t *testing.T) {
 			UpsertHosts: []schema.HostSpec{
 				{Host: "new.example.com", PrevHost: new("old.example.com")},
 				{Host: "same.example.com", PrevHost: new("same.example.com")},
+				{Host: "split.example.com", Path: "/v2", PrevPath: new("/v1")},
 			},
 		},
 		{ServiceID: second, RemoveHosts: []schema.HostSpec{{Host: "own.example.com"}}},
 	}
 
 	released := releasedHosts(inputs, second)
-	assert.Contains(t, released, "removed.example.com")
-	assert.Contains(t, released, "old.example.com")
-	assert.NotContains(t, released, "same.example.com")
-	assert.NotContains(t, released, "own.example.com")
+	assert.Contains(t, released, "removed.example.com/")
+	assert.Contains(t, released, "old.example.com/")
+	assert.Contains(t, released, "split.example.com/v1")
+	assert.NotContains(t, released, "same.example.com/")
+	assert.NotContains(t, released, "split.example.com/v2")
+	assert.NotContains(t, released, "own.example.com/")
 }
 
 func TestSortHostReleasesFirst(t *testing.T) {

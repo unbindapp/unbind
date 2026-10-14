@@ -22,9 +22,42 @@ func hasRouteOptions(host v1.HostSpec) bool {
 	return host.Redirect != nil || host.BasicAuth != nil || len(host.ResponseHeaders) > 0
 }
 
-// Names follow the hostname, not its position, so removing a host never renames another host's objects.
+// routeID is the hostname and path a host routes, the hostname alone for the whole domain
+func routeID(host v1.HostSpec) string {
+	hostname := strings.ToLower(host.Host)
+	if path := hostPath(host); path != "/" {
+		return hostname + path
+	}
+	return hostname
+}
+
+// HostURL is the address visitors open for the host
+func HostURL(host v1.HostSpec) string {
+	if path := hostPath(host); path != "/" {
+		return "https://" + host.Host + path
+	}
+	return "https://" + host.Host
+}
+
+func hostPath(host v1.HostSpec) string {
+	trimmed := strings.TrimSuffix(host.Path, "/")
+	if trimmed == "" {
+		return "/"
+	}
+	return trimmed
+}
+
+// Names follow the hostname and path, not their position, so removing a host never renames another host's objects.
 func hostKey(host v1.HostSpec) string {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(strings.ToLower(host.Host))))[:10]
+	return shortHash(routeID(host))
+}
+
+func hostnameKey(host v1.HostSpec) string {
+	return shortHash(strings.ToLower(host.Host))
+}
+
+func shortHash(value string) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(value)))[:10]
 }
 
 func hostObjectName(svc *v1.Service, host v1.HostSpec) string {
@@ -39,8 +72,7 @@ func htpasswdSecretName(objectName string) string {
 
 // A Service name allows 63 characters, too few for the service name and the host key together
 func proxyUpstreamName(svc *v1.Service, host v1.HostSpec) string {
-	sum := sha256.Sum256([]byte(svc.Name + "/" + strings.ToLower(host.Host)))
-	return fmt.Sprintf("proxy-%x", sum)[:16]
+	return "proxy-" + shortHash(svc.Name+"/"+routeID(host))
 }
 
 var proxyUpstreamNamePattern = regexp.MustCompile(`^proxy-[0-9a-f]{10}$`)

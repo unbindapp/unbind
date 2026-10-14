@@ -237,8 +237,8 @@ func (_c *ResourceBuilderMock_BuildDeployment_Call) RunAndReturn(run func() (*v1
 }
 
 // BuildRoutes provides a mock function for the type ResourceBuilderMock
-func (_mock *ResourceBuilderMock) BuildRoutes() ([]client.Object, error) {
-	ret := _mock.Called()
+func (_mock *ResourceBuilderMock) BuildRoutes(listenerGateways map[string]string) ([]client.Object, error) {
+	ret := _mock.Called(listenerGateways)
 
 	if len(ret) == 0 {
 		panic("no return value specified for BuildRoutes")
@@ -246,18 +246,18 @@ func (_mock *ResourceBuilderMock) BuildRoutes() ([]client.Object, error) {
 
 	var r0 []client.Object
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func() ([]client.Object, error)); ok {
-		return returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(map[string]string) ([]client.Object, error)); ok {
+		return returnFunc(listenerGateways)
 	}
-	if returnFunc, ok := ret.Get(0).(func() []client.Object); ok {
-		r0 = returnFunc()
+	if returnFunc, ok := ret.Get(0).(func(map[string]string) []client.Object); ok {
+		r0 = returnFunc(listenerGateways)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]client.Object)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func() error); ok {
-		r1 = returnFunc()
+	if returnFunc, ok := ret.Get(1).(func(map[string]string) error); ok {
+		r1 = returnFunc(listenerGateways)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -270,13 +270,20 @@ type ResourceBuilderMock_BuildRoutes_Call struct {
 }
 
 // BuildRoutes is a helper method to define mock.On call
-func (_e *ResourceBuilderMock_Expecter) BuildRoutes() *ResourceBuilderMock_BuildRoutes_Call {
-	return &ResourceBuilderMock_BuildRoutes_Call{Call: _e.mock.On("BuildRoutes")}
+//   - listenerGateways map[string]string
+func (_e *ResourceBuilderMock_Expecter) BuildRoutes(listenerGateways any) *ResourceBuilderMock_BuildRoutes_Call {
+	return &ResourceBuilderMock_BuildRoutes_Call{Call: _e.mock.On("BuildRoutes", listenerGateways)}
 }
 
-func (_c *ResourceBuilderMock_BuildRoutes_Call) Run(run func()) *ResourceBuilderMock_BuildRoutes_Call {
+func (_c *ResourceBuilderMock_BuildRoutes_Call) Run(run func(listenerGateways map[string]string)) *ResourceBuilderMock_BuildRoutes_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run()
+		var arg0 map[string]string
+		if args[0] != nil {
+			arg0 = args[0].(map[string]string)
+		}
+		run(
+			arg0,
+		)
 	})
 	return _c
 }
@@ -286,7 +293,7 @@ func (_c *ResourceBuilderMock_BuildRoutes_Call) Return(objects []client.Object, 
 	return _c
 }
 
-func (_c *ResourceBuilderMock_BuildRoutes_Call) RunAndReturn(run func() ([]client.Object, error)) *ResourceBuilderMock_BuildRoutes_Call {
+func (_c *ResourceBuilderMock_BuildRoutes_Call) RunAndReturn(run func(listenerGateways map[string]string) ([]client.Object, error)) *ResourceBuilderMock_BuildRoutes_Call {
 	_c.Call.Return(run)
 	return _c
 }

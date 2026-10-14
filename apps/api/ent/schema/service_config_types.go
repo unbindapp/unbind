@@ -19,8 +19,9 @@ import (
 // * Custom kubernetes-like types
 type HostSpec struct {
 	PrevHost   *string        `json:"prev_host,omitempty" required:"false" doc:"Previous host for the service, used for upserting key"`
+	PrevPath   *string        `json:"prev_path,omitempty" required:"false" doc:"Previous path of the domain, keys the upsert together with prev_host when the path changes"`
 	Host       string         `json:"host" doc:"Domain the service answers on, e.g. app.example.com. A wildcard like *.example.com answers every subdomain, but it is served with a self-signed certificate and needs a proxy such as Cloudflare in front to give visitors a trusted one"`
-	Path       string         `json:"path"`
+	Path       string         `json:"path" maxLength:"1024" doc:"Path prefix the domain sends to the service, e.g. /api. Empty or / is the whole domain. Services of one team can share a domain on different paths, the longest matching prefix wins"`
 	TargetPort *int32         `json:"target_port,omitempty" required:"false"`
 	Protocol   *HostProtocol  `json:"protocol,omitempty" required:"false" doc:"Application protocol for the domain: http (default) or grpc"`
 	Redirect   *HostRedirect  `json:"redirect,omitempty" required:"false" doc:"Send every request for the domain to another URL instead of the service, e.g. www.example.com to https://example.com. The port is ignored while a redirect is set"`
@@ -217,6 +218,48 @@ func AsV1HostSpecs(hosts []HostSpec) []v1.HostSpec {
 // ReachesService is false for a host that redirects or proxies visitors elsewhere
 func (h HostSpec) ReachesService() bool {
 	return h.Redirect == nil && h.Proxy == nil
+}
+
+func (h HostSpec) IsGRPC() bool {
+	return h.Protocol != nil && *h.Protocol == HostProtocolGRPC
+}
+
+// RoutePath is the path prefix the domain answers on, / for the whole domain
+func (h HostSpec) RoutePath() string {
+	return routePath(h.Path)
+}
+
+// RouteKey identifies a domain: no two entries in a team answer on the same host and path
+func (h HostSpec) RouteKey() string {
+	return strings.ToLower(h.Host) + h.RoutePath()
+}
+
+// PrevRouteKey is the route an upsert replaces
+func (h HostSpec) PrevRouteKey() string {
+	host, path := h.Host, h.Path
+	if h.PrevHost != nil {
+		host = *h.PrevHost
+	}
+	if h.PrevPath != nil {
+		path = *h.PrevPath
+	}
+	return strings.ToLower(host) + routePath(path)
+}
+
+// Route is the domain as visitors type it, with the path unless it is the whole domain
+func (h HostSpec) Route() string {
+	if h.RoutePath() == "/" {
+		return h.Host
+	}
+	return h.Host + h.RoutePath()
+}
+
+func routePath(path string) string {
+	trimmed := strings.TrimSuffix(path, "/")
+	if trimmed == "" {
+		return "/"
+	}
+	return trimmed
 }
 
 type PortSpec struct {

@@ -30,15 +30,27 @@ func TestMergeHosts(t *testing.T) {
 	assert.Equal(t, []schema.HostSpec{{Host: "z.com"}}, MergeHosts(existing, []schema.HostSpec{{Host: "z.com"}}, []schema.HostSpec{{Host: "c.com"}}, nil))
 	assert.Equal(t, append(existing, schema.HostSpec{Host: "c.com"}), MergeHosts(existing, nil, []schema.HostSpec{{Host: "c.com"}}, nil))
 	assert.Equal(t,
-		[]schema.HostSpec{{Host: "b.com"}, {Host: "a.com", Path: "/api", TemplateInputID: utils.ToPtr("domain"), DisplayName: utils.ToPtr("Domain")}},
+		append(existing, schema.HostSpec{Host: "a.com", Path: "/api"}),
 		MergeHosts(existing, nil, []schema.HostSpec{{Host: "a.com", Path: "/api"}}, nil),
+	)
+	assert.Equal(t,
+		[]schema.HostSpec{{Host: "b.com"}, {Host: "A.com", Path: "/", TemplateInputID: utils.ToPtr("domain"), DisplayName: utils.ToPtr("Domain")}},
+		MergeHosts(existing, nil, []schema.HostSpec{{Host: "A.com", Path: "/"}}, nil),
+	)
+	assert.Equal(t,
+		[]schema.HostSpec{{Host: "b.com"}, {Host: "a.com", Path: "/v2", TemplateInputID: utils.ToPtr("domain"), DisplayName: utils.ToPtr("Domain")}},
+		MergeHosts(existing, nil, []schema.HostSpec{{Host: "a.com", Path: "/v2", PrevPath: utils.ToPtr("")}}, nil),
 	)
 	assert.Equal(t,
 		[]schema.HostSpec{{Host: "b.com"}, {Host: "new.com", TemplateInputID: utils.ToPtr("domain"), DisplayName: utils.ToPtr("Domain")}},
 		MergeHosts(existing, nil, []schema.HostSpec{{Host: "new.com", PrevHost: utils.ToPtr("a.com")}}, nil),
 	)
 	assert.Equal(t, []schema.HostSpec{{Host: "b.com"}}, MergeHosts(existing, nil, nil, []schema.HostSpec{{Host: "a.com"}}))
+	assert.Equal(t, existing, MergeHosts(existing, nil, nil, []schema.HostSpec{{Host: "a.com", Path: "/api"}}))
 	assert.Empty(t, MergeHosts(existing, nil, nil, existing))
+
+	split := []schema.HostSpec{{Host: "a.com"}, {Host: "a.com", Path: "/api"}}
+	assert.Equal(t, []schema.HostSpec{{Host: "a.com"}}, MergeHosts(split, nil, nil, []schema.HostSpec{{Host: "a.com", Path: "/api/"}}))
 }
 
 func TestProtectedVariablesFor(t *testing.T) {

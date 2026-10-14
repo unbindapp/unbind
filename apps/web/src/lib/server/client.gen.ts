@@ -212,8 +212,9 @@ export const HostSpecSchema = z
     description: z.string().optional(),
     display_name: z.string().optional(), // Human label from the template input, e.g. Cloud Domain
     host: z.string(), // Domain the service answers on, e.g. app.example.com. A wildcard like *.example.com answers every subdomain, but it is served with a self-signed certificate and needs a proxy such as Cloudflare in front to give visitors a trusted one
-    path: z.string(),
+    path: z.string(), // Path prefix the domain sends to the service, e.g. /api. Empty or / is the whole domain. Services of one team can share a domain on different paths, the longest matching prefix wins
     prev_host: z.string().optional(), // Previous host for the service, used for upserting key
+    prev_path: z.string().optional(), // Previous path of the domain, keys the upsert together with prev_host when the path changes
     protocol: z.string().optional(), // Application protocol for the domain: http (default) or grpc
     proxy: HostProxySchema.optional(), // Serve another URL on the domain instead of the service, without a redirect. Needs the gateway networking provider. Not with a redirect or grpc. The port is ignored while a proxy is set
     redirect: HostRedirectSchema.optional(), // Send every request for the domain to another URL instead of the service, e.g. www.example.com to https://example.com. The port is ignored while a redirect is set

@@ -240,10 +240,11 @@ func (self *ServiceRepository) CountDomainCollisons(ctx context.Context, tx repo
 	return jsonCount, nil
 }
 
-// CountHostConflicts counts what stops a team from claiming host: every other service
-// holding the same host, and services of other teams whose host overlaps it through a
-// wildcard. Overlap inside one team is left to the team.
-func (self *ServiceRepository) CountHostConflicts(ctx context.Context, tx repository.TxInterface, host string, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error) {
+// CountHostConflicts counts what stops a team from claiming a domain: services of other
+// teams holding the host or overlapping it through a wildcard, and services of the team
+// on the same host and path. A team shares a host across paths, except with grpc and
+// database domains. Overlap inside one team is left to the team.
+func (self *ServiceRepository) CountHostConflicts(ctx context.Context, tx repository.TxInterface, host schema.HostSpec, teamID uuid.UUID, excludingServiceID *uuid.UUID) (int, error) {
 	db := self.base.DB
 	if tx != nil {
 		db = tx.Client()
@@ -268,14 +269,25 @@ func (self *ServiceRepository) CountHostConflicts(ctx context.Context, tx reposi
 		return 0, err
 	}
 
+	databaseConfigIDs, err := db.ServiceConfig.Query().
+		Where(
+			serviceconfig.HostsNotNil(),
+			serviceconfig.HasServiceWith(service.TypeEQ(schema.ServiceTypeDatabase)),
+		).
+		IDs(ctx)
+	if err != nil {
+		return 0, err
+	}
+
 	count := 0
 	for _, config := range configs {
 		isOtherTeam := slices.Contains(otherTeamConfigIDs, config.ID)
+		exclusive := isOtherTeam || host.IsGRPC() || slices.Contains(databaseConfigIDs, config.ID)
 		if slices.ContainsFunc(config.Hosts, func(existing schema.HostSpec) bool {
-			if strings.EqualFold(existing.Host, host) {
-				return true
+			if !strings.EqualFold(existing.Host, host.Host) {
+				return isOtherTeam && utils.HostsOverlap(existing.Host, host.Host)
 			}
-			return isOtherTeam && utils.HostsOverlap(existing.Host, host)
+			return exclusive || existing.IsGRPC() || existing.RoutePath() == host.RoutePath()
 		}) {
 			count++
 		}

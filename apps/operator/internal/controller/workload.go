@@ -210,7 +210,11 @@ func kubeServiceNeedsUpdate(logger logr.Logger, desired, existing *corev1.Servic
 // collecting any owned routing objects of any kind that are no longer desired so
 // switching providers self-heals.
 func (r *ServiceReconciler) reconcileRoutes(ctx context.Context, rb resourcebuilder.ResourceBuilderInterface, service v1.Service) error {
-	desired, err := rb.BuildRoutes()
+	listenerGateways, err := r.listenerGateways(ctx, &service)
+	if err != nil {
+		return err
+	}
+	desired, err := rb.BuildRoutes(listenerGateways)
 	if err != nil && !stderrors.Is(err, networking.ErrRouteNotNeeded) {
 		return fmt.Errorf("building routes: %w", err)
 	}

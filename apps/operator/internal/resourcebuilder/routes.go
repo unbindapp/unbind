@@ -9,9 +9,10 @@ import (
 // controller-specific objects (Ingress, HTTPRoute, Middleware, ...) for the
 // service's external routing. Returns networking.ErrRouteNotNeeded when the
 // service exposes no public hosts/ports.
-func (rb *ResourceBuilder) BuildRoutes() ([]client.Object, error) {
+func (rb *ResourceBuilder) BuildRoutes(listenerGateways map[string]string) ([]client.Object, error) {
 	return rb.provider.BuildRoutes(networking.RouteInput{
-		Service: rb.service,
-		Labels:  rb.getCommonLabels(),
+		Service:          rb.service,
+		Labels:           rb.getCommonLabels(),
+		ListenerGateways: listenerGateways,
 	})
 }

@@ -2,6 +2,7 @@ package networking
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
@@ -63,6 +64,16 @@ type Config struct {
 type RouteInput struct {
 	Service *v1.Service
 	Labels  map[string]string
+	// ListenerGateways names the Gateway of another service that carries the listener of
+	// a shared hostname, keyed by lowercase hostname
+	ListenerGateways map[string]string
+}
+
+func (in RouteInput) listenerGateway(host v1.HostSpec) string {
+	if gateway, ok := in.ListenerGateways[strings.ToLower(host.Host)]; ok {
+		return gateway
+	}
+	return in.Service.Name
 }
 
 // NetworkingProvider builds the controller-specific routing objects for a service.
@@ -188,7 +199,7 @@ func isWildcardHost(host v1.HostSpec) bool {
 func wildcardHosts(hosts []v1.HostSpec) []v1.HostSpec {
 	var wildcards []v1.HostSpec
 	for _, host := range hosts {
-		if isWildcardHost(host) {
+		if isWildcardHost(host) && !slices.ContainsFunc(wildcards, func(w v1.HostSpec) bool { return strings.EqualFold(w.Host, host.Host) }) {
 			wildcards = append(wildcards, host)
 		}
 	}

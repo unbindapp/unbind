@@ -68,6 +68,23 @@ func TestPublicEndpointsFor(t *testing.T) {
 		assert.Equal(t, []serviceEndpoint{{Host: "app.example.com", IsDomain: true, Port: 443, Target: 3000}}, app(config))
 	})
 
+	t.Run("a domain split by path keeps its path", func(t *testing.T) {
+		config := &ent.ServiceConfig{
+			IsPublic: true,
+			Ports:    []schema.PortSpec{{Port: 3001}},
+			Hosts:    []schema.HostSpec{{Host: "example.com", Path: "/inquire/", TargetPort: utils.ToPtr[int32](3001)}},
+		}
+		endpoints := app(config)
+		assert.Equal(t, []serviceEndpoint{{Host: "example.com", Path: "/inquire", IsDomain: true, Port: 443, Target: 3001}}, endpoints)
+
+		rc := &renderContext{}
+		url, ok := rc.addressValue(&ent.Service{Type: schema.ServiceTypeGithub}, vartemplate.KeyURLPublic, endpoints[0], true)
+		assert.True(t, ok)
+		assert.Equal(t, "https://example.com/inquire", url)
+		host, _ := rc.addressValue(&ent.Service{Type: schema.ServiceTypeGithub}, vartemplate.KeyHostPublic, endpoints[0], true)
+		assert.Equal(t, "example.com", host)
+	})
+
 	t.Run("a wildcard host names no endpoint", func(t *testing.T) {
 		config := &ent.ServiceConfig{
 			IsPublic: true,

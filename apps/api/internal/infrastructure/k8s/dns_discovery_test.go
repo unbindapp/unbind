@@ -21,7 +21,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	k8sschema "k8s.io/apimachinery/pkg/runtime/schema"
+	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/kubernetes/fake"
 )
 
@@ -540,4 +543,55 @@ func TestDeleteOldVerificationRoutes(t *testing.T) {
 	assert.NoError(t, err)
 
 	mockConfig.AssertExpectations(t)
+}
+
+func TestDiscoverGatewayEndpointsOnASharedDomain(t *testing.T) {
+	gateway := &unstructured.Unstructured{Object: map[string]any{
+		"spec": map[string]any{"listeners": []any{map[string]any{
+			"name":     "https-example",
+			"protocol": "HTTPS",
+			"hostname": "example.com",
+			"port":     int64(443),
+			"tls":      map[string]any{"certificateRefs": []any{map[string]any{"name": "frontend-tls-secret"}}},
+		}}},
+	}}
+	gateway.SetAPIVersion("gateway.networking.k8s.io/v1")
+	gateway.SetKind("Gateway")
+	gateway.SetName("frontend")
+	gateway.SetNamespace("default")
+	gateway.SetLabels(map[string]string{"unbind-service": "frontend"})
+
+	route := &unstructured.Unstructured{Object: map[string]any{
+		"spec": map[string]any{
+			"hostnames": []any{"example.com"},
+			"rules": []any{map[string]any{
+				"matches":     []any{map[string]any{"path": map[string]any{"type": "PathPrefix", "value": "/inquire"}}},
+				"backendRefs": []any{map[string]any{"name": "inquire", "port": int64(3001)}},
+			}},
+		},
+	}}
+	route.SetAPIVersion("gateway.networking.k8s.io/v1")
+	route.SetKind("HTTPRoute")
+	route.SetName("inquire-host-example")
+	route.SetNamespace("default")
+	route.SetLabels(map[string]string{"unbind-service": "inquire"})
+
+	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[k8sschema.GroupVersionResource]string{
+		gatewayGVR:   "GatewayList",
+		httpRouteGVR: "HTTPRouteList",
+	}, route)
+	// Seeded objects land under the guessed resource "gatewaies"
+	_, err := dyn.Resource(gatewayGVR).Namespace("default").Create(context.Background(), gateway, metav1.CreateOptions{})
+	require.NoError(t, err)
+	mockConfig := &mocks_config.ConfigMock{}
+	mockConfig.On("GetNetworkingProvider").Return("gateway")
+	client := &KubeClient{client: dyn, config: mockConfig}
+	clientset := fake.NewSimpleClientset(tlsSecret("frontend-tls-secret", testCertPEM(t, "R3", "example.com")))
+
+	result, err := client.DiscoverEndpointsByLabels(context.Background(), "default", map[string]string{"unbind-service": "inquire"}, false, clientset)
+	require.NoError(t, err)
+	require.Len(t, result.External, 1)
+	assert.Equal(t, "example.com", result.External[0].Host)
+	assert.Equal(t, "/inquire", result.External[0].Path)
+	assert.Equal(t, models.TlsStatusIssued, result.External[0].TlsStatus)
 }

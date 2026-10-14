@@ -209,7 +209,7 @@ func (r *ServiceReconciler) updateServiceStatus(ctx context.Context, service *v1
 	var newURLs []string
 	if len(service.Spec.Config.Hosts) > 0 && service.Spec.Config.Public && service.Spec.Type != "database" {
 		for _, host := range service.Spec.Config.Hosts {
-			newURLs = append(newURLs, fmt.Sprintf("https://%s", host.Host))
+			newURLs = append(newURLs, networking.HostURL(host))
 		}
 	}
 
@@ -307,7 +307,8 @@ func (r *ServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			Owns(&gwapiv1.GRPCRoute{}).
 			Owns(&gwapiv1a2.TCPRoute{}).
 			Owns(&gwapiv1a2.UDPRoute{}).
-			Owns(&gwapiv1.Gateway{})
+			Owns(&gwapiv1.Gateway{}).
+			Watches(&v1.Service{}, r.hostPeersHandler())
 	}
 
 	c, err := builder.Build(r)

@@ -14,12 +14,19 @@ import {
   headerLines,
   parseHeaderLine,
   redirectStatusCodes,
+  routePath,
 } from "@/components/staged-changes/host-target";
 import type { THostTarget } from "@/components/staged-changes/types";
 import { useSystem } from "@/components/system/system-provider";
 import { withFieldGroup } from "@/lib/hooks/use-app-form";
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { ArrowRightLeftIcon, CornerDownRightIcon, KeyRoundIcon, UserIcon } from "lucide-react";
+import {
+  ArrowRightLeftIcon,
+  CornerDownRightIcon,
+  KeyRoundIcon,
+  RouteIcon,
+  UserIcon,
+} from "lucide-react";
 
 const redirectStatusLabels: Record<(typeof redirectStatusCodes)[number], string> = {
   301: "301 Moved Permanently",
@@ -35,11 +42,12 @@ const redirectStatusItems = redirectStatusCodes.map((code) => ({
 
 export type THostOptions = Pick<
   THostTarget,
-  "redirect" | "proxy" | "basicAuth" | "responseHeaders"
+  "path" | "redirect" | "proxy" | "basicAuth" | "responseHeaders"
 >;
 
 // The options as the form holds them
 export type TDomainOptionsValues = {
+  path: string;
   redirectTo: string;
   redirectStatus: string;
   proxyTo: string;
@@ -50,6 +58,7 @@ export type TDomainOptionsValues = {
 };
 
 export const defaultDomainOptionsValues: TDomainOptionsValues = {
+  path: "",
   redirectTo: "",
   redirectStatus: String(defaultRedirectStatusCode),
   proxyTo: "",
@@ -60,6 +69,7 @@ export const defaultDomainOptionsValues: TDomainOptionsValues = {
 
 export function domainOptionsToValues(options: THostOptions | undefined): TDomainOptionsValues {
   return {
+    path: options?.path ?? "",
     redirectTo: options?.redirect?.to ?? "",
     redirectStatus: String(options?.redirect?.statusCode ?? defaultRedirectStatusCode),
     proxyTo: options?.proxy?.to ?? "",
@@ -79,6 +89,8 @@ export function domainOptionsFromValues(values: TDomainOptionsValues): THostOpti
   const options: THostOptions = {};
   const target = domainTarget(values);
   const username = values.basicAuthUsername.trim();
+  const path = values.path.trim();
+  if (routePath(path) !== "/") options.path = path;
   if (target === "redirect") {
     options.redirect = { to: values.redirectTo.trim(), statusCode: Number(values.redirectStatus) };
   }
@@ -92,6 +104,7 @@ export function domainOptionsFromValues(values: TDomainOptionsValues): THostOpti
 }
 
 export const domainOptionsFieldNames = [
+  "path",
   "redirectTo",
   "redirectStatus",
   "proxyTo",
@@ -99,6 +112,17 @@ export const domainOptionsFieldNames = [
   "basicAuthPassword",
   "responseHeaders",
 ] as const;
+
+export function validateDomainPath(value: string) {
+  const path = routePath(value.trim());
+  if (path === "/") return undefined;
+  if (!path.startsWith("/")) return { message: "Start the path with /, like /api." };
+  const segments = path.slice(1).split("/");
+  if (segments.some((s) => s === "." || s === ".." || !/^[A-Za-z0-9._~-]+$/.test(s))) {
+    return { message: "Use letters, digits and . _ ~ - between single slashes." };
+  }
+  return undefined;
+}
 
 function validateTargetUrl(value: string, kind: "redirect" | "proxy") {
   const trimmed = value.trim();
@@ -144,6 +168,41 @@ export const DomainOptionsFields = withFieldGroup({
       systemData?.data.networking_provider === "gateway" || serverValues.proxyTo !== "";
     return (
       <>
+        <Block>
+          <group.AppField
+            name="path"
+            validators={{ onChange: ({ value }) => validateDomainPath(value) }}
+          >
+            {(field) => (
+              <BlockItem className="w-full md:w-full">
+                <BlockItemHeader type="column">
+                  <BlockItemTitle>Path</BlockItemTitle>
+                  <BlockItemDescription>
+                    Answer only requests under this path, like /api. Leave it empty for the whole
+                    domain.
+                  </BlockItemDescription>
+                </BlockItemHeader>
+                <BlockItemContent>
+                  <field.TextField
+                    field={asFieldApi(field)}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="/"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    autoComplete="off"
+                    spellCheck="false"
+                    Icon={RouteIcon}
+                    hasChanges={
+                      routePath(field.state.value.trim()) !== routePath(serverValues.path)
+                    }
+                  />
+                </BlockItemContent>
+              </BlockItem>
+            )}
+          </group.AppField>
+        </Block>
         <group.Subscribe selector={(s) => domainTarget(s.values)}>
           {(target) => (
             <>

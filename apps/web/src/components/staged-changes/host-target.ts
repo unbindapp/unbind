@@ -5,9 +5,30 @@ import type { THostTarget } from "./types.ts";
 export const defaultRedirectStatusCode = 308;
 export const redirectStatusCodes = [301, 302, 307, 308] as const;
 
+// The path prefix a domain answers on, / for the whole domain
+export function routePath(path: string | undefined) {
+  const trimmed = path?.endsWith("/") ? path.slice(0, -1) : (path ?? "");
+  return trimmed === "" ? "/" : trimmed;
+}
+
+// One host can route several paths, so a domain is its host and path
+export function sameRoute(
+  a: Pick<THostTarget, "host" | "path">,
+  b: Pick<THostTarget, "host" | "path">,
+) {
+  return a.host === b.host && routePath(a.path) === routePath(b.path);
+}
+
+// The domain as visitors type it, with the path unless it is the whole domain
+export function routeLabel({ host, path }: Pick<THostTarget, "host" | "path">) {
+  const prefix = routePath(path);
+  return prefix === "/" ? host : host + prefix;
+}
+
 // A saved domain as the staged changes see it
 export function hostTargetFromSpec(spec: HostSpec): THostTarget {
   const target: THostTarget = { host: spec.host, port: spec.target_port };
+  if (routePath(spec.path) !== "/") target.path = spec.path;
   if (spec.redirect) {
     target.redirect = {
       to: spec.redirect.to,
@@ -22,12 +43,13 @@ export function hostTargetFromSpec(spec: HostSpec): THostTarget {
   return target;
 }
 
-export function hostTargetToSpec(target: THostTarget, prevHost?: string): HostSpec {
+export function hostTargetToSpec(target: THostTarget, previous?: THostTarget | null): HostSpec {
   const spec: HostSpec = {
     host: target.host,
-    path: "",
+    path: target.path ?? "",
     target_port: target.port,
-    prev_host: prevHost,
+    prev_host: previous?.host,
+    prev_path: previous ? (previous.path ?? "") : undefined,
   };
   if (target.redirect) {
     spec.redirect = {
@@ -49,7 +71,7 @@ export function hostTargetToSpec(target: THostTarget, prevHost?: string): HostSp
 // domain as far as the server can tell
 export function hostTargetsEqual(a: THostTarget, b: THostTarget) {
   return (
-    a.host === b.host &&
+    sameRoute(a, b) &&
     a.port === b.port &&
     a.redirect?.to === b.redirect?.to &&
     a.redirect?.statusCode === b.redirect?.statusCode &&

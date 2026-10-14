@@ -142,6 +142,9 @@ func (self *ServiceService) validateHosts(ctx context.Context, tx repository.TxI
 		if err := utils.ValidateServiceHost(host.Host); err != nil {
 			return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
 		}
+		if err := validateHostPath(host); err != nil {
+			return err
+		}
 		if err := validateHostOptions(host); err != nil {
 			return err
 		}
@@ -193,17 +196,17 @@ func (self *ServiceService) reservedHosts(ctx context.Context, tx repository.TxI
 func serviceURL(hosts []schema.HostSpec) (string, bool) {
 	for _, host := range hosts {
 		if !utils.IsWildcardHost(host.Host) && host.ReachesService() {
-			return fmt.Sprintf("https://%s", host.Host), true
+			return fmt.Sprintf("https://%s", host.Route()), true
 		}
 	}
 	return "", false
 }
 
-func hostConflictError(host string) error {
-	if utils.IsWildcardHost(host) {
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s is already in use, or covers a domain another team uses", host))
+func hostConflictError(host schema.HostSpec) error {
+	if utils.IsWildcardHost(host.Host) {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s is already in use, or covers a domain another team uses", host.Route()))
 	}
-	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", host))
+	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("domain %s already in use", host.Route()))
 }
 
 // prepareDatabaseExposure allocates the external port a public database is reached

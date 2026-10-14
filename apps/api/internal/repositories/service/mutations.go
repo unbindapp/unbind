@@ -704,47 +704,39 @@ func MergePorts(existing, overwrite, add, remove []schema.PortSpec) []schema.Por
 }
 
 // MergeHosts applies an update's host inputs to the existing hosts. Overwrite wins,
-// otherwise upserts replace the host they name (or their previous host) keeping its
-// template metadata, and removed hosts drop out. PrevHost only keys the update, it is
-// not stored.
+// otherwise upserts replace the domain on the same host and path (or their previous
+// one) keeping its template metadata, and removed domains drop out. PrevHost and
+// PrevPath only key the update, they are not stored.
 func MergeHosts(existing, overwrite, upsert, remove []schema.HostSpec) []schema.HostSpec {
 	if len(overwrite) > 0 {
-		return withoutPrevHost(overwrite)
+		return withoutPrevRoute(overwrite)
 	}
 	if len(upsert) == 0 && len(remove) == 0 {
 		return existing
 	}
 
-	existingByHost := make(map[string]schema.HostSpec, len(existing))
+	existingByRoute := make(map[string]schema.HostSpec, len(existing))
 	for _, host := range existing {
-		existingByHost[host.Host] = host
+		existingByRoute[host.RouteKey()] = host
 	}
 
 	toRemove := make(map[string]bool, len(upsert)+len(remove))
 	for _, host := range upsert {
-		if host.PrevHost != nil {
-			toRemove[*host.PrevHost] = true
-			continue
-		}
-		toRemove[host.Host] = true
+		toRemove[host.PrevRouteKey()] = true
 	}
 	for _, host := range remove {
-		toRemove[host.Host] = true
+		toRemove[host.RouteKey()] = true
 	}
 
 	var merged []schema.HostSpec
 	for _, host := range existing {
-		if !toRemove[host.Host] {
+		if !toRemove[host.RouteKey()] {
 			merged = append(merged, host)
 		}
 	}
 
 	for _, host := range upsert {
-		matchKey := host.Host
-		if host.PrevHost != nil {
-			matchKey = *host.PrevHost
-		}
-		if prev, ok := existingByHost[matchKey]; ok {
+		if prev, ok := existingByRoute[host.PrevRouteKey()]; ok {
 			if host.TemplateInputID == nil {
 				host.TemplateInputID = prev.TemplateInputID
 			}
@@ -755,16 +747,16 @@ func MergeHosts(existing, overwrite, upsert, remove []schema.HostSpec) []schema.
 				host.Description = prev.Description
 			}
 		}
-		host.PrevHost = nil
+		host.PrevHost, host.PrevPath = nil, nil
 		merged = append(merged, host)
 	}
 	return merged
 }
 
-func withoutPrevHost(hosts []schema.HostSpec) []schema.HostSpec {
+func withoutPrevRoute(hosts []schema.HostSpec) []schema.HostSpec {
 	stripped := make([]schema.HostSpec, len(hosts))
 	for i, host := range hosts {
-		host.PrevHost = nil
+		host.PrevHost, host.PrevPath = nil, nil
 		stripped[i] = host
 	}
 	return stripped

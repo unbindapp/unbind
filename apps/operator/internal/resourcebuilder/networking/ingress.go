@@ -1,6 +1,9 @@
 package networking
 
 import (
+	"slices"
+	"strings"
+
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -55,10 +58,10 @@ func buildIngress(in RouteInput, name, className string, annotations map[string]
 			},
 		}
 		if isWildcardHost(host) {
-			wildcardTLSHosts = append(wildcardTLSHosts, host.Host)
+			wildcardTLSHosts = appendUniqueHost(wildcardTLSHosts, host.Host)
 			continue
 		}
-		acmeHosts = append(acmeHosts, host.Host)
+		acmeHosts = appendUniqueHost(acmeHosts, host.Host)
 	}
 
 	var tls []networkingv1.IngressTLS
@@ -83,6 +86,13 @@ func buildIngress(in RouteInput, name, className string, annotations map[string]
 			Rules:            rules,
 		},
 	}
+}
+
+func appendUniqueHost(hosts []string, host string) []string {
+	if slices.ContainsFunc(hosts, func(existing string) bool { return strings.EqualFold(existing, host) }) {
+		return hosts
+	}
+	return append(hosts, host)
 }
 
 // ingressRoutes puts the wildcard Certificate ahead of the Ingresses: cert-manager's
