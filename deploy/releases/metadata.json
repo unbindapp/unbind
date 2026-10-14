@@ -518,5 +518,10 @@
     "version": "v0.1.103",
     "summary": "Domains that proxy to an external URL, Redis append-only persistence for new databases, steadier routes when a domain is removed, and fewer redundant service updates.",
     "breaking": false
+  },
+  "v0.1.104": {
+    "version": "v0.1.104",
+    "summary": "Share a domain between services by path, with redirects, proxies, basic auth and response headers set per path, and public URLs that include the path.",
+    "breaking": false
   }
 }
