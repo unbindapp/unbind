@@ -26,7 +26,7 @@ func TestEmbeddedDefinitionsSupportsBackups(t *testing.T) {
 		"mysql":      true,
 		"mongodb":    true,
 		"clickhouse": true,
-		"redis":      false,
+		"redis":      true,
 	}
 	for dbType, supportsBackups := range expected {
 		def, err := provider.FetchDatabaseDefinition(context.Background(), "", dbType)

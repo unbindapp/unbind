@@ -2223,3 +2223,58 @@ func TestRedisDefinitionRendersAppendOnly(t *testing.T) {
 		})
 	}
 }
+
+func TestRedisDefinitionRendersS3Backups(t *testing.T) {
+	provider := NewDatabaseProvider()
+	renderer := NewDatabaseRenderer()
+
+	render := func(t *testing.T, s3 map[string]any) string {
+		def, err := provider.FetchDatabaseDefinition(context.Background(), "", "redis")
+		require.NoError(t, err)
+
+		params := map[string]any{
+			"secretName": "test-secret",
+			"secretKey":  "DATABASE_PASSWORD",
+			"common":     map[string]any{"storage": "1Gi", "replicas": int32(1)},
+			"s3":         s3,
+		}
+		result, err := renderer.Render(def, &RenderContext{Name: "test-redis", Namespace: "team-ns", Parameters: params})
+		require.NoError(t, err)
+		return result
+	}
+
+	t.Run("disabled renders no backup job", func(t *testing.T) {
+		result := render(t, map[string]any{})
+		assert.NotContains(t, result, "extraObjects")
+		assert.NotContains(t, result, "CronJob")
+	})
+
+	t.Run("enabled dumps the primary and uploads to the bucket", func(t *testing.T) {
+		result := render(t, map[string]any{
+			"enabled":         true,
+			"bucket":          "backups",
+			"endpoint":        "https://s3.example.com",
+			"region":          "eu-central-1",
+			"secretName":      "bucket-secret",
+			"backupPrefix":    "service-id",
+			"backupSchedule":  "0 */6 * * *",
+			"backupRetention": 5,
+		})
+		for _, want := range []string{
+			"kind: CronJob",
+			"name: test-redis-s3-backup",
+			"schedule: 0 */6 * * *",
+			"redis-cli -h test-redis-0.test-redis-headless.team-ns.svc.cluster.local --rdb /backup/dump.rdb",
+			"redis-check-rdb /backup/dump.rdb",
+			"name: REDISCLI_AUTH",
+			"key: DATABASE_PASSWORD",
+			"BACKUP_PATH=\"s3://backups/service-id/backups/test-redis/\"",
+			"RETENTION=5",
+			"--endpoint-url=\"https://s3.example.com\"",
+			"name: bucket-secret",
+			"value: eu-central-1",
+		} {
+			assert.Contains(t, result, want)
+		}
+	})
+}

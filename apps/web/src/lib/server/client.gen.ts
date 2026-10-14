@@ -275,7 +275,7 @@ export const UpdateServiceInputSchema = z
     repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
-    s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for databases that support backups, Redis does not
+    s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for database services
     service_id: z.string(),
     session_affinity: z.boolean().optional(), // Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Caches like Cloudflare skip responses that set the cookie. Not for databases
     stopped: z.boolean().optional(), // Stop or start the service. A stopped service runs no replicas while its volumes, domains, variables and settings stay in place. Set false to start it again. Not for databases
@@ -901,7 +901,7 @@ export const CreateServiceInputSchema = z
     repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
     run_command: z.string().optional(),
-    s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for databases that support backups, Redis does not
+    s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for database services
     session_affinity: z.boolean().optional(), // Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Defaults to false. Caches like Cloudflare skip responses that set the cookie. Not for databases
     team_id: z.string(),
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
