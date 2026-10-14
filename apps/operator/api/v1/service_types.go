@@ -212,6 +212,8 @@ type HostSpec struct {
 	Protocol string `json:"protocol,omitempty" required:"false"`
 	// Redirect answers every request for the host with a redirect instead of routing it
 	Redirect *HostRedirectSpec `json:"redirect,omitempty" required:"false"`
+	// Proxy serves another URL on the host instead of the service
+	Proxy *HostProxySpec `json:"proxy,omitempty" required:"false"`
 	// BasicAuth asks visitors for a username and password before the host answers
 	BasicAuth *HostBasicAuthSpec `json:"basicAuth,omitempty" required:"false"`
 	// ResponseHeaders are set on every response of the host
@@ -223,6 +225,11 @@ type HostRedirectSpec struct {
 	To string `json:"to"`
 	// +kubebuilder:validation:Enum=301;302;307;308
 	StatusCode int32 `json:"statusCode"`
+}
+
+type HostProxySpec struct {
+	// To is the URL requests are sent to. With a path every request gets that path, without one the request path is kept
+	To string `json:"to"`
 }
 
 type HostBasicAuthSpec struct {
@@ -273,6 +280,8 @@ type DatabaseConfigSpec struct {
 	SharedBuffersMB int `json:"sharedBuffersMb,omitempty"`
 	// MySQL only, 0 sizes it from the memory limit
 	InnodbBufferPoolSizeMB int `json:"innodbBufferPoolSizeMb,omitempty"`
+	// Redis only, nil leaves databases created before the setting untouched
+	AppendOnly *bool `json:"appendOnly,omitempty"`
 }
 
 func (self *DatabaseConfigSpec) AsMap() map[string]any {
@@ -306,6 +315,9 @@ func (self *DatabaseConfigSpec) AsMap() map[string]any {
 	}
 	if self.InnodbBufferPoolSizeMB > 0 {
 		res["innodbBufferPoolSizeMb"] = self.InnodbBufferPoolSizeMB
+	}
+	if self.AppendOnly != nil {
+		res["appendOnly"] = *self.AppendOnly
 	}
 	return res
 }

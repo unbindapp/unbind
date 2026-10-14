@@ -12,6 +12,7 @@ import {
   domainOptionsFieldNames,
   domainOptionsFromValues,
   domainOptionsToValues,
+  domainTarget,
   type THostOptions,
 } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-options-fields";
 import { getNetworkingDisplayUrl } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/helpers";
@@ -31,6 +32,7 @@ import { TServiceShallow } from "@/lib/queries/services";
 import { DNSStatus } from "@/lib/server/client.gen";
 import { useStore } from "@tanstack/react-form";
 import {
+  ArrowRightLeftIcon,
   CheckCircleIcon,
   CircleAlertIcon,
   CornerDownRightIcon,
@@ -162,7 +164,7 @@ export default function DomainPortCard({
     }
     return count;
   });
-  const hasRedirect = useStore(form.store, (s) => s.values.options.redirectTo.trim() !== "");
+  const skipsService = useStore(form.store, (s) => domainTarget(s.values.options) !== "service");
 
   const isEditing = useStore(form.store, (s) => s.values.isEditing);
   const showDnsStatus =
@@ -275,7 +277,8 @@ export default function DomainPortCard({
             port: mode === "public" ? "" : port?.toString(),
           })}
           description={({ className }) => {
-            if (port === undefined || mode !== "public") return null;
+            if (mode !== "public") return null;
+            if (port === undefined && !options?.redirect && !options?.proxy) return null;
             const rowClassName = cn(
               "text-muted-foreground group-data-editing/field:text-change/9-10 group-data-staged/field:text-change/9-10 flex w-full items-start gap-1.5 text-sm leading-tight font-medium",
               className,
@@ -291,6 +294,11 @@ export default function DomainPortCard({
                         {options.redirect.to}
                         <span className="opacity-60">{` · ${options.redirect.statusCode}`}</span>
                       </p>
+                    </>
+                  ) : options?.proxy ? (
+                    <>
+                      <ArrowRightLeftIcon className="mt-0.375 size-3.5 shrink-0" />
+                      <p className="min-w-0 shrink wrap-anywhere">{options.proxy.to}</p>
                     </>
                   ) : (
                     <>
@@ -325,7 +333,7 @@ export default function DomainPortCard({
             );
           }}
           Icon={({ className }: { className?: string }) =>
-            port === undefined && !isEditing ? (
+            port === undefined && !options?.redirect && !options?.proxy && !isEditing ? (
               <CircleAlertIcon className={cn("text-warning", className, "size-4.5")} />
             ) : mode === "private" ? (
               <GlobeLockIcon className={className} />
@@ -380,8 +388,8 @@ export default function DomainPortCard({
                 </form.AppField>
               </Block>
               <div
-                data-redirect={hasRedirect || undefined}
-                className="flex w-full flex-col data-redirect:hidden"
+                data-skips-service={skipsService || undefined}
+                className="flex w-full flex-col data-skips-service:hidden"
               >
                 {allPortOptions.length === 0 && (
                   <Block>

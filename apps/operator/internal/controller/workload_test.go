@@ -33,6 +33,11 @@ func TestIngressNeedsUpdate(t *testing.T) {
 	assert.True(t, ingressNeedsUpdate(withBodySize("10m"), withBodySize("100m")))
 	assert.True(t, ingressNeedsUpdate(ingress("a.com"), withBodySize("100m")))
 	assert.True(t, ingressNeedsUpdate(withBodySize("100m"), ingress("a.com")))
+
+	stamped := withBodySize("100m")
+	stamped.Annotations[renderHashAnnotation] = "hash"
+	assert.False(t, ingressNeedsUpdate(stamped, withBodySize("100m")), "the render hash on the live ingress is not a change")
+	assert.True(t, ingressNeedsUpdate(stamped, ingress("a.com")))
 }
 
 func TestKubeServiceNeedsUpdateOnRemovedPort(t *testing.T) {
@@ -59,4 +64,15 @@ func TestKubeServiceNeedsUpdateOnAnnotations(t *testing.T) {
 	assert.False(t, kubeServiceNeedsUpdate(logr.Discard(), &corev1.Service{}, &corev1.Service{}))
 	assert.True(t, kubeServiceNeedsUpdate(logr.Discard(), &corev1.Service{}, sticky()))
 	assert.True(t, kubeServiceNeedsUpdate(logr.Discard(), sticky(), &corev1.Service{}))
+
+	stamped := func(svc *corev1.Service) *corev1.Service {
+		if svc.Annotations == nil {
+			svc.Annotations = map[string]string{}
+		}
+		svc.Annotations[renderHashAnnotation] = "hash"
+		return svc
+	}
+	assert.False(t, kubeServiceNeedsUpdate(logr.Discard(), &corev1.Service{}, stamped(&corev1.Service{})), "the render hash on the live service is not a change")
+	assert.False(t, kubeServiceNeedsUpdate(logr.Discard(), sticky(), stamped(sticky())))
+	assert.True(t, kubeServiceNeedsUpdate(logr.Discard(), &corev1.Service{}, stamped(sticky())))
 }

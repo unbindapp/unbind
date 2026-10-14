@@ -199,7 +199,7 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
       {
         id: settingsIds.deploy.cronSchedule,
         title: "Cron Schedule",
-        description: "Run the service on a schedule instead of continuously.",
+        description: "Run the start command on a schedule.",
         keywords: ["cron", "schedule", "job", "scheduled", "periodic", "timer", "interval"],
       },
       {
@@ -275,7 +275,7 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
   {
     id: "database",
     title: "Database",
-    keywords: ["postgres", "postgresql"],
+    keywords: ["postgres", "postgresql", "redis"],
     items: [
       {
         id: settingsIds.database.walLevel,
@@ -294,6 +294,12 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
         title: "Slot WAL Keep Size",
         description: "Caps the WAL kept for lagging replication slots.",
         keywords: ["wal", "disk", "size", "mb", "lag", "replication"],
+      },
+      {
+        id: settingsIds.database.appendOnly,
+        title: "Append-Only File",
+        description: "Logs every write, so a crash loses at most a second of writes.",
+        keywords: ["aof", "appendonly", "persistence", "durability", "redis", "snapshot"],
       },
     ],
   },

@@ -24,6 +24,7 @@ type HostSpec struct {
 	TargetPort *int32         `json:"target_port,omitempty" required:"false"`
 	Protocol   *HostProtocol  `json:"protocol,omitempty" required:"false" doc:"Application protocol for the domain: http (default) or grpc"`
 	Redirect   *HostRedirect  `json:"redirect,omitempty" required:"false" doc:"Send every request for the domain to another URL instead of the service, e.g. www.example.com to https://example.com. The port is ignored while a redirect is set"`
+	Proxy      *HostProxy     `json:"proxy,omitempty" required:"false" doc:"Serve another URL on the domain instead of the service, without a redirect. Needs the gateway networking provider. Not with a redirect or grpc. The port is ignored while a proxy is set"`
 	BasicAuth  *HostBasicAuth `json:"basic_auth,omitempty" required:"false" doc:"Ask visitors for a username and password before the service answers on this domain. Not with a redirect"`
 	// Headers are set on every response of the domain, a later one with the same name wins
 	ResponseHeaders []HostHeader `json:"response_headers,omitempty" required:"false" maxItems:"20" doc:"Headers set on every response of the domain, e.g. Strict-Transport-Security or Cache-Control. At most 20"`
@@ -36,6 +37,10 @@ type HostSpec struct {
 type HostRedirect struct {
 	To         string `json:"to" doc:"URL visitors are sent to, with http or https, e.g. https://example.com. With no path the request path is kept, with a path every request lands on that path"`
 	StatusCode int    `json:"status_code,omitempty" required:"false" enum:"301,302,307,308" doc:"HTTP status of the redirect. 308 when unset, which keeps the request method"`
+}
+
+type HostProxy struct {
+	To string `json:"to" doc:"URL requests are sent to, with http or https and a public hostname, e.g. https://raw.githubusercontent.com/org/repo/main/install.sh. With no path the request path is kept, with a path every request is sent to that path. The query is kept. The upstream sees its own hostname as Host, https is verified against the system CAs"`
 }
 
 type HostBasicAuth struct {
@@ -196,6 +201,9 @@ func AsV1HostSpecs(hosts []HostSpec) []v1.HostSpec {
 		if host.Redirect != nil {
 			v1Hosts[i].Redirect = &v1.HostRedirectSpec{To: host.Redirect.To, StatusCode: int32(host.Redirect.Status())}
 		}
+		if host.Proxy != nil {
+			v1Hosts[i].Proxy = &v1.HostProxySpec{To: host.Proxy.To}
+		}
 		if host.BasicAuth != nil {
 			v1Hosts[i].BasicAuth = &v1.HostBasicAuthSpec{Username: host.BasicAuth.Username, PasswordHash: host.BasicAuth.PasswordHash}
 		}
@@ -206,9 +214,9 @@ func AsV1HostSpecs(hosts []HostSpec) []v1.HostSpec {
 	return v1Hosts
 }
 
-// IsRedirect reports whether the host sends visitors elsewhere instead of to the service
-func (h HostSpec) IsRedirect() bool {
-	return h.Redirect != nil
+// ReachesService is false for a host that redirects or proxies visitors elsewhere
+func (h HostSpec) ReachesService() bool {
+	return h.Redirect == nil && h.Proxy == nil
 }
 
 type PortSpec struct {
@@ -618,6 +626,8 @@ type DatabaseConfig struct {
 	SharedBuffersMB      *int     `json:"sharedBuffersMb,omitempty" required:"false" minimum:"0" doc:"PostgreSQL shared_buffers in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most half of the memory limit. Changing it restarts the database"`
 	// MySQL only
 	InnodbBufferPoolSizeMB *int `json:"innodbBufferPoolSizeMb,omitempty" required:"false" minimum:"0" doc:"MySQL innodb_buffer_pool_size in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most three quarters of the memory limit, and rounded down to whole 128MB chunks. Changing it restarts the database"`
+	// Redis only
+	AppendOnly *bool `json:"appendOnly,omitempty" required:"false" doc:"Redis only. Log every write to an append-only file, so a crash loses at most a second of writes instead of everything since the last snapshot. On by default for new Redis databases. Changing it restarts the database and converts its data"`
 }
 
 // Update requests carry only the fields they change
@@ -659,7 +669,25 @@ func MergeDatabaseConfig(existing, patch *DatabaseConfig) *DatabaseConfig {
 	if patch.InnodbBufferPoolSizeMB != nil {
 		merged.InnodbBufferPoolSizeMB = patch.InnodbBufferPoolSizeMB
 	}
+	if patch.AppendOnly != nil {
+		merged.AppendOnly = patch.AppendOnly
+	}
 	return &merged
+}
+
+// New Redis databases log to an append-only file, older ones keep what they were created with
+func (self *DatabaseConfig) ApplyCreateDefaults(databaseType string) {
+	if databaseType != databases.TypeRedis || self.AppendOnly != nil {
+		return
+	}
+	self.AppendOnly = new(true)
+}
+
+func (self *DatabaseConfig) ValidateAppendOnly(databaseType string) error {
+	if self == nil || self.AppendOnly == nil || databaseType == databases.TypeRedis {
+		return nil
+	}
+	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "appendOnly only applies to redis databases")
 }
 
 const minDatabaseCacheMegabytes = 16
@@ -729,6 +757,7 @@ func (self *DatabaseConfig) AsV1DatabaseConfig() (*v1.DatabaseConfigSpec, error)
 		MaxSlotWalKeepSizeMB:   intOrZero(self.MaxSlotWalKeepSizeMB),
 		SharedBuffersMB:        intOrZero(self.SharedBuffersMB),
 		InnodbBufferPoolSizeMB: intOrZero(self.InnodbBufferPoolSizeMB),
+		AppendOnly:             self.AppendOnly,
 	}
 	if self.StorageSize != "" {
 		qty, err := utils.ParseStorageQuantity(self.StorageSize)

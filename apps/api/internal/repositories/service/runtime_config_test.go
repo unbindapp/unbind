@@ -23,6 +23,7 @@ func TestApplyRuntimeConfig(t *testing.T) {
 			{Host: "new.example.com", TargetPort: new(int32(3000))},
 			{Host: "no-port.example.com"},
 			{Host: "www.example.com", Redirect: &schema.HostRedirect{To: "https://example.com", StatusCode: 301}},
+			{Host: "install.example.com", Proxy: &schema.HostProxy{To: "https://example.net/install.sh"}},
 		},
 		Ports:                []schema.PortSpec{{Port: 3000}},
 		IsPublic:             false,
@@ -39,7 +40,8 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Equal(t, []v1.HostSpec{
 		{Host: "new.example.com", Port: new(int32(3000))},
 		{Host: "www.example.com", Redirect: &v1.HostRedirectSpec{To: "https://example.com", StatusCode: 301}},
-	}, spec.Hosts, "a redirect is routed without a target port")
+		{Host: "install.example.com", Proxy: &v1.HostProxySpec{To: "https://example.net/install.sh"}},
+	}, spec.Hosts, "a redirect or proxy is routed without a target port")
 	assert.Equal(t, schema.AsV1PortSpecs(config.Ports), spec.Ports)
 	assert.False(t, spec.Public)
 	assert.Equal(t, int32(3), *spec.Replicas)

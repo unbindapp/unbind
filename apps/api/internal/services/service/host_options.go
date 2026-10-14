@@ -2,33 +2,46 @@ package service_service
 
 import (
 	"fmt"
+	"net"
 	"net/url"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"golang.org/x/net/publicsuffix"
+	k8svalidation "k8s.io/apimachinery/pkg/util/validation"
 )
 
 var (
 	usernamePattern     = regexp.MustCompile(`^[^:\s]{1,64}$`)
 	headerNamePattern   = regexp.MustCompile(`^[A-Za-z0-9-]{1,128}$`)
 	redirectStatusCodes = []int{301, 302, 307, 308}
+	proxyPathPattern    = regexp.MustCompile(`^[A-Za-z0-9/._~!$&'()*+,;=:@-]*$`)
 	// Headers that frame the response, which a set header would corrupt
 	reservedResponseHeaders = []string{"content-length", "transfer-encoding", "connection", "host"}
 )
 
 const maxHeaderValueLength = 1024
 
-// validateHostOptions checks a domain's redirect, basic auth and headers. The values
+// validateHostOptions checks a domain's redirect, proxy, basic auth and headers. The values
 // land in Envoy filters and nginx config verbatim, so the character set stays narrow.
 func validateHostOptions(host schema.HostSpec) error {
 	if host.Redirect != nil {
 		if host.BasicAuth != nil {
 			return invalid("domain %s: a redirect cannot have basic auth, the service never answers", host.Host)
 		}
+		if host.Proxy != nil {
+			return invalid("domain %s: a domain can redirect or proxy, not both", host.Host)
+		}
 		if err := validateRedirect(host); err != nil {
+			return err
+		}
+	}
+	if host.Proxy != nil {
+		if err := validateProxy(host); err != nil {
 			return err
 		}
 	}
@@ -71,6 +84,45 @@ func validateRedirect(host schema.HostSpec) error {
 		return invalid("domain %s: redirect status must be 301, 302, 307 or 308", host.Host)
 	}
 	return nil
+}
+
+func validateProxy(host schema.HostSpec) error {
+	if host.Protocol != nil && *host.Protocol == schema.HostProtocolGRPC {
+		return invalid("domain %s: a proxy serves http, not grpc", host.Host)
+	}
+	target, err := url.Parse(host.Proxy.To)
+	if err != nil || (target.Scheme != "http" && target.Scheme != "https") || target.Hostname() == "" {
+		return invalid("domain %s: proxy to a URL with http or https, like https://example.com", host.Host)
+	}
+	if target.RawQuery != "" || target.Fragment != "" || target.User != nil {
+		return invalid("domain %s: a proxy URL cannot have a query, fragment or credentials", host.Host)
+	}
+	if port := target.Port(); port != "" {
+		if n, err := strconv.Atoi(port); err != nil || n < 1 || n > 65535 {
+			return invalid("domain %s: the proxy port must be between 1 and 65535", host.Host)
+		}
+	}
+	if !isPublicHostname(target.Hostname()) {
+		return invalid("domain %s: proxy to a public hostname, not an IP address or a name inside the cluster", host.Host)
+	}
+	if strings.EqualFold(target.Hostname(), host.Host) {
+		return invalid("domain %s: a proxy to itself would loop", host.Host)
+	}
+	if !proxyPathPattern.MatchString(target.Path) {
+		return invalid("domain %s: the proxy path can only have characters a URL path allows unescaped", host.Host)
+	}
+	return nil
+}
+
+// The proxy resolves the target from inside the cluster, where a name without a known
+// public suffix can reach a cluster service through the DNS search domains
+func isPublicHostname(hostname string) bool {
+	name := strings.ToLower(hostname)
+	if net.ParseIP(name) != nil || len(k8svalidation.IsDNS1123Subdomain(name)) > 0 {
+		return false
+	}
+	suffix, icann := publicsuffix.PublicSuffix(name)
+	return icann || strings.Contains(suffix, ".")
 }
 
 func validateHeaderValue(value string) error {

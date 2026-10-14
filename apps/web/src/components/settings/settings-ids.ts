@@ -45,6 +45,7 @@ export const settingsIds = {
     walLevel: "database_wal-level",
     replication: "database_replication",
     slotWalKeepSize: "database_slot-wal-keep-size",
+    appendOnly: "database_append-only",
   },
 } as const;
 

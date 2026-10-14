@@ -657,9 +657,10 @@ function listRow(change: TStagedListChange, isApplying: boolean): TChangeRow {
   };
 }
 
-function hostTargetLabel({ host, port, redirect, basicAuth, responseHeaders }: THostTarget) {
+function hostTargetLabel({ host, port, redirect, proxy, basicAuth, responseHeaders }: THostTarget) {
   const lines = [host];
   if (redirect) lines.push(`Redirect to ${redirect.to} (${redirect.statusCode})`);
+  else if (proxy) lines.push(`Proxy to ${proxy.to}`);
   else if (port !== undefined) lines.push(`Port ${port}`);
   if (basicAuth) {
     lines.push(`Basic auth ${basicAuth.username}${basicAuth.password ? " (new password)" : ""}`);

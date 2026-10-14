@@ -2161,3 +2161,65 @@ func TestDefinitionsRenderMemoryTuning(t *testing.T) {
 		})
 	}
 }
+
+func TestRedisDefinitionRendersAppendOnly(t *testing.T) {
+	provider := NewDatabaseProvider()
+	renderer := NewDatabaseRenderer()
+
+	render := func(t *testing.T, params map[string]any) string {
+		def, err := provider.FetchDatabaseDefinition(context.Background(), "", "redis")
+		require.NoError(t, err)
+
+		params["secretName"] = "test-secret"
+		params["secretKey"] = "password"
+		params["common"] = map[string]any{
+			"storage":  "1Gi",
+			"replicas": int32(1),
+			"resources": map[string]any{
+				"requests": map[string]any{"cpu": "50m", "memory": "128M"},
+				"limits":   map[string]any{"cpu": "1", "memory": "2048M"},
+			},
+		}
+		result, err := renderer.Render(def, &RenderContext{Name: "test-redis", Namespace: "default", Parameters: params})
+		require.NoError(t, err)
+		return result
+	}
+
+	cases := map[string]struct {
+		params map[string]any
+		want   []string
+		absent []string
+	}{
+		"unset keeps databases created before the setting unchanged": {
+			params: map[string]any{},
+			absent: []string{"appendonly", "aof-convert", "extraInitContainers"},
+		},
+		"on": {
+			params: map[string]any{"appendOnly": true},
+			want: []string{
+				"- --appendonly yes",
+				"name: aof-convert",
+				"value: \"yes\"",
+				"image: docker.io/redis:8.10",
+				"memory: 2048M",
+				"mountPath: /data",
+			},
+		},
+		"off converts back": {
+			params: map[string]any{"appendOnly": false},
+			want:   []string{"- --appendonly no", "name: aof-convert", "value: \"no\""},
+		},
+	}
+
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			result := render(t, tc.params)
+			for _, want := range tc.want {
+				assert.Contains(t, result, want)
+			}
+			for _, unwanted := range tc.absent {
+				assert.NotContains(t, result, unwanted)
+			}
+		})
+	}
+}

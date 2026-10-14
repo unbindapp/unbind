@@ -4,6 +4,7 @@ import { test } from "node:test";
 import {
   headerLines,
   hostTargetFromSpec,
+  hostTargetToSpec,
   hostTargetsEqual,
   parseHeaderLine,
 } from "./host-target.ts";
@@ -48,6 +49,20 @@ test("hostTargetsEqual compares every option, treating empty as unset", () => {
   assert.ok(
     !hostTargetsEqual(saved, { ...saved, redirect: { to: "https://x.com", statusCode: 301 } }),
   );
+  assert.ok(!hostTargetsEqual(saved, { ...saved, proxy: { to: "https://x.com/install.sh" } }));
+});
+
+test("a proxy round trips between the spec and the staged target", () => {
+  const spec = {
+    host: "install.example.com",
+    path: "",
+    target_port: undefined,
+    prev_host: undefined,
+    proxy: { to: "https://raw.githubusercontent.com/org/repo/main/install.sh" },
+  };
+  const target = hostTargetFromSpec(spec);
+  assert.deepEqual(target.proxy, spec.proxy);
+  assert.deepEqual(hostTargetToSpec(target), spec);
 });
 
 test("header lines round trip through parseHeaderLine", () => {

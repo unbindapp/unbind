@@ -1,0 +1,5 @@
+# Service CRD with the domain proxy option and Redis appendOnly, operator ClusterRole with EndpointSlices and
+# BackendTLSPolicies
+resources:
+  - services-crd.yaml
+  - rbac.yaml

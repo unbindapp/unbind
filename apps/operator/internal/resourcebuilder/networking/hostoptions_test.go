@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
+	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/utils/ptr"
@@ -386,6 +388,121 @@ func assertKept(t *testing.T, provider Provider, fewer, more []client.Object) {
 			if !slices.ContainsFunc(other.(*gwapiv1.Gateway).Spec.Listeners, func(l gwapiv1.Listener) bool { return reflect.DeepEqual(l, listener) }) {
 				t.Errorf("%s: listener %s for %s changed", provider, listener.Name, *listener.Hostname)
 			}
+		}
+	}
+}
+
+func typedObject[T client.Object](objs []client.Object, name string) T {
+	var zero T
+	for _, o := range objs {
+		if typed, ok := o.(T); ok && o.GetName() == name {
+			return typed
+		}
+	}
+	return zero
+}
+
+func TestGatewayProxy(t *testing.T) {
+	svc := setName(publicService(), "web")
+	svc.Namespace = "team"
+	svc.Spec.Config.Hosts = []v1.HostSpec{
+		{Host: "install.example.com", Path: "/", Proxy: &v1.HostProxySpec{To: "https://raw.githubusercontent.com/org/repo/main/install.sh"}},
+		{Host: "legacy.example.com", Path: "/", Proxy: &v1.HostProxySpec{To: "http://legacy.example.net:8080"}},
+	}
+	labels := map[string]string{"app.kubernetes.io/instance": "web", "unbind-service": "svc-id"}
+	objs, err := New(ProviderGateway, envoyConfig).BuildRoutes(RouteInput{Service: svc, Labels: labels})
+	if err != nil {
+		t.Fatalf("BuildRoutes: %v", err)
+	}
+
+	install := proxyUpstreamName(svc, svc.Spec.Config.Hosts[0])
+	rule := httpRouteFor(objs, "install.example.com").Spec.Rules[0]
+	backend := rule.BackendRefs[0].BackendObjectReference
+	if string(backend.Name) != install || *backend.Port != 443 {
+		t.Errorf("proxy route backend = %s:%d, want %s:443", backend.Name, *backend.Port, install)
+	}
+	rewrite := rule.Filters[0].URLRewrite
+	if string(*rewrite.Hostname) != "raw.githubusercontent.com" {
+		t.Errorf("upstream Host = %s, want the target hostname", *rewrite.Hostname)
+	}
+	if rewrite.Path == nil || *rewrite.Path.ReplaceFullPath != "/org/repo/main/install.sh" {
+		t.Errorf("a target with a path serves that path for every request, got %+v", rewrite.Path)
+	}
+
+	service := typedObject[*corev1.Service](objs, install)
+	if service == nil || service.Spec.ClusterIP != corev1.ClusterIPNone || len(service.Spec.Selector) != 0 || service.Spec.Ports[0].Port != 443 {
+		t.Fatalf("upstream service = %+v, want a headless service on 443 without a selector", service)
+	}
+	if service.Spec.IPFamilyPolicy == nil || *service.Spec.IPFamilyPolicy != corev1.IPFamilyPolicySingleStack {
+		t.Errorf("upstream must be single stack, dual stack makes Envoy resolve IPv6 upstreams")
+	}
+	if _, ok := service.Labels["unbind-service"]; ok || service.Labels["app.kubernetes.io/instance"] != "web" {
+		t.Errorf("upstream labels = %v, want the instance label without unbind-service", service.Labels)
+	}
+	slice := typedObject[*discoveryv1.EndpointSlice](objs, install)
+	if slice == nil || slice.AddressType != discoveryv1.AddressTypeFQDN || slice.Endpoints[0].Addresses[0] != "raw.githubusercontent.com" {
+		t.Fatalf("endpoint slice = %+v, want an FQDN endpoint for the target", slice)
+	}
+	if slice.Labels[discoveryv1.LabelServiceName] != install || *slice.Ports[0].Name != service.Spec.Ports[0].Name {
+		t.Errorf("endpoint slice does not back the upstream service: labels %v ports %+v", slice.Labels, slice.Ports)
+	}
+	policy := typedObject[*gwapiv1.BackendTLSPolicy](objs, install)
+	if policy == nil || string(policy.Spec.Validation.Hostname) != "raw.githubusercontent.com" ||
+		*policy.Spec.Validation.WellKnownCACertificates != gwapiv1.WellKnownCACertificatesSystem {
+		t.Fatalf("https target needs TLS verified against the system CAs, got %+v", policy)
+	}
+
+	legacy := proxyUpstreamName(svc, svc.Spec.Config.Hosts[1])
+	rule = httpRouteFor(objs, "legacy.example.com").Spec.Rules[0]
+	if *rule.BackendRefs[0].Port != 8080 || rule.Filters[0].URLRewrite.Path != nil {
+		t.Errorf("http target keeps its port and the request path, got port %d rewrite %+v", *rule.BackendRefs[0].Port, rule.Filters[0].URLRewrite)
+	}
+	if typedObject[*gwapiv1.BackendTLSPolicy](objs, legacy) != nil {
+		t.Errorf("an http target must not get a TLS policy")
+	}
+}
+
+func TestProxyNeedsEnvoyGateway(t *testing.T) {
+	svc := setName(publicService(), "web")
+	svc.Spec.Config.Hosts = append(svc.Spec.Config.Hosts, v1.HostSpec{
+		Host: "install.example.com", Path: "/", Proxy: &v1.HostProxySpec{To: "https://raw.githubusercontent.com/install.sh"},
+	})
+	for name, provider := range map[string]NetworkingProvider{
+		"gateway without envoy": New(ProviderGateway, Config{GatewayClassName: "unbind", ClusterIssuer: "le"}),
+		"nginx":                 New(ProviderNginx, Config{}),
+		"traefik":               New(ProviderTraefik, Config{}),
+	} {
+		t.Run(name, func(t *testing.T) {
+			objs, err := provider.BuildRoutes(RouteInput{Service: svc})
+			if err != nil {
+				t.Fatalf("BuildRoutes: %v", err)
+			}
+			if httpRouteFor(objs, "install.example.com") != nil || ingressFor(objs, "install.example.com") != nil {
+				t.Errorf("a proxied host must not be routed to the service")
+			}
+			if httpRouteFor(objs, "example.com") == nil && ingressFor(objs, "example.com") == nil {
+				t.Errorf("the other host lost its route")
+			}
+			if gw := findGateway(objs); gw != nil && len(gw.Spec.Listeners) != 1 {
+				t.Errorf("listeners = %v, want only the routed host", gw.Spec.Listeners)
+			}
+		})
+	}
+}
+
+func TestProxyUpstreamName(t *testing.T) {
+	host := v1.HostSpec{Host: "install.example.com"}
+	long := setName(publicService(), strings.Repeat("a", 32)+"-abcdefghijkl")
+	name := proxyUpstreamName(long, host)
+	if len(name) > 63 || !IsRouteObjectName("Service", name) || !IsRouteObjectName("EndpointSlice", name) {
+		t.Errorf("upstream name %q must be a valid Service name the route cleanup recognizes", name)
+	}
+	if proxyUpstreamName(setName(publicService(), "other"), host) == name {
+		t.Errorf("two services in one namespace must not share an upstream for the same domain")
+	}
+	for _, kept := range []string{long.Name, long.Name + "-nodeport", long.Name + "-db", "proxy-" + strings.Repeat("a", 12), "proxy-abc"} {
+		if IsRouteObjectName("Service", kept) {
+			t.Errorf("%q is not a proxy upstream and must survive route cleanup", kept)
 		}
 	}
 }

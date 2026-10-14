@@ -63,8 +63,7 @@ export default function NetworkingSection({ service }: TProps) {
         entityId={getNetworkingEntityId(service.id)}
       >
         <CronScheduleNotice className="px-1 pt-0 pb-0">
-          Domains and ports are not available for cron schedules. A run serves no traffic, it does
-          its work and exits.
+          Domains and ports are not available for cron schedules.
         </CronScheduleNotice>
       </SettingsSection>
     );

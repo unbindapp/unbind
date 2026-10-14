@@ -9,6 +9,7 @@ import (
 	"github.com/unbindapp/unbind-api/config"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	mocks_infrastructure_k8s "github.com/unbindapp/unbind-api/mocks/infrastructure/k8s"
 	mocks_repositories "github.com/unbindapp/unbind-api/mocks/repositories"
 	mocks_repository_system "github.com/unbindapp/unbind-api/mocks/repository/system"
 )
@@ -55,9 +56,29 @@ func TestValidateHosts(t *testing.T) {
 	}
 }
 
+func TestValidateHostsProxyNeedsGateway(t *testing.T) {
+	hosts := []schema.HostSpec{{Host: "install.example.com", Proxy: &schema.HostProxy{To: "https://example.net/install.sh"}}}
+	for provider, wantErr := range map[string]string{"gateway": "", "nginx": "gateway networking provider", "traefik": "gateway networking provider"} {
+		t.Run(provider, func(t *testing.T) {
+			k8s := mocks_infrastructure_k8s.NewKubeClientMock(t)
+			k8s.EXPECT().NetworkingProvider(mock.Anything).Return(provider)
+			service := &ServiceService{k8s: k8s}
+			err := service.validateHosts(context.Background(), nil, hosts)
+			if wantErr == "" {
+				assert.NoError(t, err)
+				return
+			}
+			assert.ErrorContains(t, err, wantErr)
+		})
+	}
+}
+
 func TestValidateHostOptions(t *testing.T) {
 	redirect := func(to string, status int) *schema.HostRedirect {
 		return &schema.HostRedirect{To: to, StatusCode: status}
+	}
+	proxy := func(to string) *schema.HostProxy {
+		return &schema.HostProxy{To: to}
 	}
 	tests := []struct {
 		name    string
@@ -84,6 +105,24 @@ func TestValidateHostOptions(t *testing.T) {
 		{name: "header value with a quote", host: schema.HostSpec{Host: "api.example.com", ResponseHeaders: []schema.HostHeader{{Name: "X-A", Value: `say "hi"`}}}, wantErr: "without quotes"},
 		{name: "header value with a dollar", host: schema.HostSpec{Host: "api.example.com", ResponseHeaders: []schema.HostHeader{{Name: "X-A", Value: "$request_uri"}}}, wantErr: "dollar"},
 		{name: "empty header value", host: schema.HostSpec{Host: "api.example.com", ResponseHeaders: []schema.HostHeader{{Name: "X-A", Value: ""}}}, wantErr: "needs a value"},
+		{name: "proxy to a host that is a listed suffix", host: schema.HostSpec{Host: "echo.example.com", Proxy: proxy("https://httpbin.org/anything")}},
+		{name: "proxy to a file", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("https://raw.githubusercontent.com/org/repo/main/install.sh")}},
+		{name: "proxy to a port with basic auth", host: schema.HostSpec{Host: "legacy.example.com", Proxy: proxy("http://Legacy.Example.net:8080"), BasicAuth: &schema.HostBasicAuth{Username: "admin"}}},
+		{name: "proxy and redirect", host: schema.HostSpec{Host: "www.example.com", Redirect: redirect("https://example.com", 308), Proxy: proxy("https://example.net")}, wantErr: "not both"},
+		{name: "grpc proxy", host: schema.HostSpec{Host: "api.example.com", Protocol: new(schema.HostProtocolGRPC), Proxy: proxy("https://example.net")}, wantErr: "not grpc"},
+		{name: "proxy without a scheme", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("example.net/install.sh")}, wantErr: "http or https"},
+		{name: "proxy with a query", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("https://example.net/?a=b")}, wantErr: "query"},
+		{name: "proxy with credentials", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("https://user:pass@example.net")}, wantErr: "credentials"},
+		{name: "proxy port out of range", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("https://example.net:70000")}, wantErr: "between 1 and 65535"},
+		{name: "proxy to itself", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("https://install.example.com/other")}, wantErr: "loop"},
+		{name: "proxy path with a space", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("https://example.net/a%20b")}, wantErr: "path"},
+		{name: "proxy to an IP", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("http://10.43.0.1")}, wantErr: "public hostname"},
+		{name: "proxy to the metadata address", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("http://169.254.169.254/latest")}, wantErr: "public hostname"},
+		{name: "proxy to localhost", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("http://localhost:8080")}, wantErr: "public hostname"},
+		{name: "proxy to a cluster service", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("http://postgres.team.svc.cluster.local:5432")}, wantErr: "public hostname"},
+		{name: "proxy to a service by namespace", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("https://kubernetes.default")}, wantErr: "public hostname"},
+		{name: "proxy to an internal name", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("http://metadata.google.internal")}, wantErr: "public hostname"},
+		{name: "proxy to an underscore name", host: schema.HostSpec{Host: "install.example.com", Proxy: proxy("https://my_host.example.com")}, wantErr: "public hostname"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -97,17 +136,18 @@ func TestValidateHostOptions(t *testing.T) {
 	}
 }
 
-func TestServiceURLSkipsRedirects(t *testing.T) {
+func TestServiceURLSkipsRedirectsAndProxies(t *testing.T) {
 	hosts := []schema.HostSpec{
 		{Host: "*.example.com"},
 		{Host: "www.example.com", Redirect: &schema.HostRedirect{To: "https://example.com"}},
+		{Host: "install.example.com", Proxy: &schema.HostProxy{To: "https://example.net/install.sh"}},
 		{Host: "example.com"},
 	}
 	url, ok := serviceURL(hosts)
 	assert.True(t, ok)
 	assert.Equal(t, "https://example.com", url)
 
-	_, ok = serviceURL(hosts[:2])
+	_, ok = serviceURL(hosts[:3])
 	assert.False(t, ok)
 }
 

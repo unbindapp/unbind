@@ -95,6 +95,94 @@ extraConfig: |
   maxmemory {{ .Parameters.maxMemory }}
 {{- end }}
 
+{{- if hasKey .Parameters "appendOnly" }}
+{{- $appendOnly := ternary "yes" "no" (eq (toString .Parameters.appendOnly) "true") }}
+{{- $resources := dict "requests" (dict "cpu" (.Parameters.common.resources.requests.cpu | default "100m") "memory" (.Parameters.common.resources.requests.memory | default "128Mi")) }}
+{{- with .Parameters.common.resources.limits }}
+{{- $limits := dict }}
+{{- if .cpu }}{{ $_ := set $limits "cpu" .cpu }}{{ end }}
+{{- if .memory }}{{ $_ := set $limits "memory" .memory }}{{ end }}
+{{- if $limits }}{{ $_ := set $resources "limits" $limits }}{{ end }}
+{{- end }}
+extraFlags:
+  - --appendonly {{ $appendOnly }}
+
+# Redis started with appendonly yes over a dump.rdb and no append-only file starts empty
+extraVolumes:
+  - name: aof-convert
+    emptyDir: {}
+extraInitContainers:
+  - name: aof-convert
+    image: "docker.io/redis:{{ .Parameters.version | default "8.10" }}"
+    env:
+      - name: APPEND_ONLY
+        value: {{ $appendOnly | quote }}
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        cd /data
+        manifest=appendonlydir/appendonly.aof.manifest
+        sock=/aof-convert/redis.sock
+        cli() { redis-cli -s "$sock" "$@"; }
+        start() {
+          redis-server --port 0 --unixsocket "$sock" --dir /data --save "" --appendonly "$1" &
+          pid=$!
+          until [ "$(cli ping 2>/dev/null)" = PONG ]; do
+            kill -0 "$pid"
+            sleep 1
+          done
+        }
+        stop() {
+          cli shutdown "$@" >/dev/null 2>&1 || true
+          wait "$pid"
+        }
+        rewrite_done() {
+          info=$(cli info persistence | tr -d '\r')
+          if echo "$info" | grep -qx 'aof_last_bgrewrite_status:err'; then
+            echo "AOF rewrite failed"
+            exit 1
+          fi
+          [ -f "$manifest" ] && echo "$info" | grep -qx 'aof_rewrite_in_progress:0' && echo "$info" | grep -qx 'aof_rewrite_scheduled:0'
+        }
+        if [ -d appendonlydir ] && [ ! -f "$manifest" ]; then
+          echo "Removing an append-only directory without a manifest"
+          rm -rf appendonlydir
+        fi
+        if [ "$APPEND_ONLY" = yes ] && [ ! -f "$manifest" ] && [ -f dump.rdb ]; then
+          echo "Converting dump.rdb to an append-only file"
+          start no
+          cli config set appendonly yes >/dev/null
+          until rewrite_done; do sleep 1; done
+          stop
+        fi
+        if [ "$APPEND_ONLY" = no ] && [ -f "$manifest" ]; then
+          echo "Converting the append-only file to dump.rdb"
+          start yes
+          [ "$(cli save)" = OK ]
+          stop nosave
+          rm "$manifest"
+          rm -rf appendonlydir
+        fi
+    securityContext:
+      runAsUser: 999
+      runAsGroup: 999
+      runAsNonRoot: true
+      privileged: false
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: ["ALL"]
+      seccompProfile:
+        type: RuntimeDefault
+    resources: {{ toJson $resources }}
+    volumeMounts:
+      - name: data
+        mountPath: /data
+      - name: aof-convert
+        mountPath: /aof-convert
+{{- end }}
+
 # Disable metrics
 metrics:
   enabled: false

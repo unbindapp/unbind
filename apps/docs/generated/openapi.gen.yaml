@@ -686,6 +686,9 @@ components:
     DatabaseConfig:
       additionalProperties: false
       properties:
+        appendOnly:
+          description: Redis only. Log every write to an append-only file, so a crash loses at most a second of writes instead of everything since the last snapshot. On by default for new Redis databases. Changing it restarts the database and converts its data
+          type: boolean
         defaultDatabaseName:
           type: string
         initdb:
@@ -725,6 +728,8 @@ components:
     DatabaseConfigResponse:
       additionalProperties: false
       properties:
+        append_only:
+          type: boolean
         default_database_name:
           type: string
         innodb_buffer_pool_size_mb:
@@ -754,6 +759,7 @@ components:
         - max_slot_wal_keep_size_mb
         - shared_buffers_mb
         - innodb_buffer_pool_size_mb
+        - append_only
       type: object
     DatabaseConfigurable:
       additionalProperties: false
@@ -1505,6 +1511,15 @@ components:
         - name
         - value
       type: object
+    HostProxy:
+      additionalProperties: false
+      properties:
+        to:
+          description: URL requests are sent to, with http or https and a public hostname, e.g. https://raw.githubusercontent.com/org/repo/main/install.sh. With no path the request path is kept, with a path every request is sent to that path. The query is kept. The upstream sees its own hostname as Host, https is verified against the system CAs
+          type: string
+      required:
+        - to
+      type: object
     HostRedirect:
       additionalProperties: false
       properties:
@@ -1545,6 +1560,9 @@ components:
         protocol:
           description: "Application protocol for the domain: http (default) or grpc"
           type: string
+        proxy:
+          $ref: "#/components/schemas/HostProxy"
+          description: Serve another URL on the domain instead of the service, without a redirect. Needs the gateway networking provider. Not with a redirect or grpc. The port is ignored while a proxy is set
         redirect:
           $ref: "#/components/schemas/HostRedirect"
           description: Send every request for the domain to another URL instead of the service, e.g. www.example.com to https://example.com. The port is ignored while a redirect is set

@@ -87,6 +87,7 @@ export const UpdateServiceInputSchema = z
     maxReplicationSlots: z.number().int().min(0).optional(),
     maxWalSenders: z.number().int().min(0).optional(),
     maxSlotWalKeepSizeMb: z.number().int().min(0).optional(),
+    appendOnly: z.boolean().optional(),
   })
   .strip();
 
@@ -140,6 +141,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     maxReplicationSlots,
     maxWalSenders,
     maxSlotWalKeepSizeMb,
+    appendOnly,
     upsertHosts,
     removeHosts,
     addPorts,
@@ -191,6 +193,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     maxReplicationSlots,
     maxWalSenders,
     maxSlotWalKeepSizeMb,
+    appendOnly,
   ].some((value) => value !== undefined);
   const databaseConfigInput: UpdateServiceInput["database_config"] | undefined = hasDatabaseSettings
     ? { ...databaseConfig }
@@ -202,6 +205,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     databaseConfigInput.maxWalSenders = maxWalSenders;
   if (maxSlotWalKeepSizeMb !== undefined && databaseConfigInput)
     databaseConfigInput.maxSlotWalKeepSizeMb = maxSlotWalKeepSizeMb;
+  if (appendOnly !== undefined && databaseConfigInput) databaseConfigInput.appendOnly = appendOnly;
 
   const repository =
     gitRepository === undefined ? undefined : parseGitRepositoryValue(gitRepository);

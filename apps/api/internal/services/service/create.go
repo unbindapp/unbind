@@ -147,6 +147,11 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			return nil, err
 		}
 
+		if err := input.DatabaseConfig.ValidateAppendOnly(*input.DatabaseType); err != nil {
+			return nil, err
+		}
+		input.DatabaseConfig.ApplyCreateDefaults(*input.DatabaseType)
+
 		if dbVersion == nil {
 			versionProperty, ok := dbDefinition.Schema.Properties["version"]
 			if ok {

@@ -223,10 +223,7 @@ function Section({ service }: { service: TServiceShallow }) {
           <BlockItem id={settingsIds.deploy.cronSchedule} className="w-full md:w-full">
             <BlockItemHeader type="column">
               <BlockItemTitle>Cron Schedule</BlockItemTitle>
-              <BlockItemDescription>
-                Run the service on a schedule instead of continuously. On every tick it runs its
-                start command and exits.
-              </BlockItemDescription>
+              <BlockItemDescription>Run the start command on a schedule.</BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent className="gap-0">
               <form.AppField

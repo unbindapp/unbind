@@ -99,6 +99,18 @@ rules:
   - update
   - watch
 - apiGroups:
+  - discovery.k8s.io
+  resources:
+  - endpointslices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - gateway.envoyproxy.io
   resources:
   - backendtrafficpolicies
@@ -115,14 +127,7 @@ rules:
 - apiGroups:
   - gateway.networking.k8s.io
   resources:
-  - gatewayclasses
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - gateway.networking.k8s.io
-  resources:
+  - backendtlspolicies
   - gateways
   - grpcroutes
   - httproutes
@@ -135,6 +140,14 @@ rules:
   - list
   - patch
   - update
+  - watch
+- apiGroups:
+  - gateway.networking.k8s.io
+  resources:
+  - gatewayclasses
+  verbs:
+  - get
+  - list
   - watch
 - apiGroups:
   - helm.toolkit.fluxcd.io

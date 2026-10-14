@@ -63,8 +63,9 @@ type DatabaseConfigResponse struct {
 	MaxWalSenders        int             `json:"max_wal_senders"`
 	MaxSlotWalKeepSizeMB int             `json:"max_slot_wal_keep_size_mb"`
 	// 0 means sized from the memory limit
-	SharedBuffersMB        int `json:"shared_buffers_mb"`
-	InnodbBufferPoolSizeMB int `json:"innodb_buffer_pool_size_mb"`
+	SharedBuffersMB        int  `json:"shared_buffers_mb"`
+	InnodbBufferPoolSizeMB int  `json:"innodb_buffer_pool_size_mb"`
+	AppendOnly             bool `json:"append_only"`
 }
 
 func transformDatabaseConfig(config *schema.DatabaseConfig) *DatabaseConfigResponse {
@@ -81,6 +82,7 @@ func transformDatabaseConfig(config *schema.DatabaseConfig) *DatabaseConfigRespo
 		MaxSlotWalKeepSizeMB:   intOrZero(config.MaxSlotWalKeepSizeMB),
 		SharedBuffersMB:        intOrZero(config.SharedBuffersMB),
 		InnodbBufferPoolSizeMB: intOrZero(config.InnodbBufferPoolSizeMB),
+		AppendOnly:             config.AppendOnly != nil && *config.AppendOnly,
 	}
 }
 

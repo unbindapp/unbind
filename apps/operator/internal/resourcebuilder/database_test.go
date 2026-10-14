@@ -268,6 +268,18 @@ func TestBuildDatabaseConfigKeepsOverridesOutOfTheParameters(t *testing.T) {
 	assert.Equal(t, "300MB", dbConfig["postgresql"].(map[string]any)["sharedBuffers"])
 }
 
+func TestBuildDatabaseConfigPassesRedisAppendOnlyOnlyWhenSet(t *testing.T) {
+	service := &v1.Service{}
+	service.Spec.Config.Database.Type = "redis"
+	service.Spec.Config.Database.Config = &v1.DatabaseConfigSpec{}
+	rb := NewResourceBuilder(service, nil, nil)
+	assert.NotContains(t, rb.buildDatabaseConfig(""), "appendOnly")
+
+	appendOnly := false
+	service.Spec.Config.Database.Config.AppendOnly = &appendOnly
+	assert.Equal(t, false, rb.buildDatabaseConfig("")["appendOnly"])
+}
+
 func TestBuildDatabaseConfigSizesParallelismFromTheCPULimit(t *testing.T) {
 	service := &v1.Service{}
 	service.Spec.Config.Database.Type = "postgres"

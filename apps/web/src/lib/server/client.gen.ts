@@ -139,6 +139,7 @@ export const WalLevelSchema = z.enum(['replica', 'logical']);
 
 export const DatabaseConfigSchema = z
   .object({
+    appendOnly: z.boolean().optional(), // Redis only. Log every write to an append-only file, so a crash loses at most a second of writes instead of everything since the last snapshot. On by default for new Redis databases. Changing it restarts the database and converts its data
     defaultDatabaseName: z.string().optional(),
     initdb: z.string().optional(),
     innodbBufferPoolSizeMb: z.number().optional(), // MySQL innodb_buffer_pool_size in megabytes. 0 sizes it from the memory limit, which is right for most databases. At most three quarters of the memory limit, and rounded down to whole 128MB chunks. Changing it restarts the database
@@ -183,6 +184,12 @@ export const HostBasicAuthSchema = z
   })
   .strip();
 
+export const HostProxySchema = z
+  .object({
+    to: z.string(), // URL requests are sent to, with http or https and a public hostname, e.g. https://raw.githubusercontent.com/org/repo/main/install.sh. With no path the request path is kept, with a path every request is sent to that path. The query is kept. The upstream sees its own hostname as Host, https is verified against the system CAs
+  })
+  .strip();
+
 export const HostRedirectSchema = z
   .object({
     status_code: z
@@ -208,6 +215,7 @@ export const HostSpecSchema = z
     path: z.string(),
     prev_host: z.string().optional(), // Previous host for the service, used for upserting key
     protocol: z.string().optional(), // Application protocol for the domain: http (default) or grpc
+    proxy: HostProxySchema.optional(), // Serve another URL on the domain instead of the service, without a redirect. Needs the gateway networking provider. Not with a redirect or grpc. The port is ignored while a proxy is set
     redirect: HostRedirectSchema.optional(), // Send every request for the domain to another URL instead of the service, e.g. www.example.com to https://example.com. The port is ignored while a redirect is set
     response_headers: z.array(HostHeaderSchema).nullable().optional(), // Headers set on every response of the domain, e.g. Strict-Transport-Security or Cache-Control. At most 20
     target_port: z.number().optional(),
@@ -903,6 +911,7 @@ export const CreateServiceInputSchema = z
 
 export const DatabaseConfigResponseSchema = z
   .object({
+    append_only: z.boolean(),
     default_database_name: z.string().optional(),
     innodb_buffer_pool_size_mb: z.number(),
     max_replication_slots: z.number(),
@@ -3273,6 +3282,7 @@ export type HealthCheckType = z.infer<typeof HealthCheckTypeSchema>;
 export type HealthCheck = z.infer<typeof HealthCheckSchema>;
 export type InitContainer = z.infer<typeof InitContainerSchema>;
 export type HostBasicAuth = z.infer<typeof HostBasicAuthSchema>;
+export type HostProxy = z.infer<typeof HostProxySchema>;
 export type HostRedirect = z.infer<typeof HostRedirectSchema>;
 export type HostHeader = z.infer<typeof HostHeaderSchema>;
 export type HostSpec = z.infer<typeof HostSpecSchema>;

@@ -126,11 +126,11 @@ func (r *ServiceReconciler) cleanupStaleRoutes(ctx context.Context, service *v1.
 				continue
 			}
 			// cert-manager's ingress-shim copies the Ingress labels onto the Certificates it owns,
-			// and the service's own variables Secret is not a routing object
-			if (gvk.Kind == "Certificate" || gvk.Kind == "Secret") && !metav1.IsControlledBy(item, service) {
+			// and Secrets and Services that are not routes carry the same instance label
+			if isSharedLabelKind(gvk.Kind) && !metav1.IsControlledBy(item, service) {
 				continue
 			}
-			if gvk.Kind == "Secret" && !networking.IsRouteSecretName(item.GetName()) {
+			if !networking.IsRouteObjectName(gvk.Kind, item.GetName()) {
 				continue
 			}
 			stale := &unstructured.Unstructured{}
@@ -144,6 +144,14 @@ func (r *ServiceReconciler) cleanupStaleRoutes(ctx context.Context, service *v1.
 		}
 	}
 	return nil
+}
+
+func isSharedLabelKind(kind string) bool {
+	switch kind {
+	case "Certificate", "Secret", "Service", "EndpointSlice":
+		return true
+	}
+	return false
 }
 
 const (

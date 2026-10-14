@@ -78,6 +78,10 @@ spec:
                     properties:
                       config:
                         properties:
+                          appendOnly:
+                            description: Redis only, nil leaves databases created
+                              before the setting untouched
+                            type: boolean
                           defaultDatabaseName:
                             type: string
                           initdb:
@@ -235,6 +239,18 @@ spec:
                           - http
                           - grpc
                           type: string
+                        proxy:
+                          description: Proxy serves another URL on the host instead
+                            of the service
+                          properties:
+                            to:
+                              description: To is the URL requests are sent to. With
+                                a path every request gets that path, without one the
+                                request path is kept
+                              type: string
+                          required:
+                          - to
+                          type: object
                         redirect:
                           description: Redirect answers every request for the host
                             with a redirect instead of routing it

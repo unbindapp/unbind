@@ -8,9 +8,11 @@ import {
   BlockItemTitle,
 } from "@/components/block";
 import { validatePositiveInteger } from "@/components/service/backups/backup-config";
+import HeaderToggle from "@/components/service/header-toggle";
 import { useSettingsSectionSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
 import {
   hasApplying,
+  stagedBoolean,
   stagedNumber,
   stagedString,
   useResetFormOnStagedChange,
@@ -35,11 +37,66 @@ type TProps = {
 export default function DatabaseSection({ service }: TProps) {
   const { isSectionVisible } = useSettingsSectionSearch("database");
   if (!isSectionVisible) return null;
-  if (service.type !== "database" || service.database_type !== "postgres") {
+  if (service.type !== "database") {
     return <ErrorWithWrapper message="Unsupported service type" />;
   }
 
-  return <PostgresSection service={service} />;
+  switch (service.database_type) {
+    case "postgres":
+      return <PostgresSection service={service} />;
+    case "redis":
+      return <RedisSection service={service} />;
+    default:
+      return <ErrorWithWrapper message="Unsupported service type" />;
+  }
+}
+
+const redisFields: TServiceChangeField[] = ["appendOnly"];
+
+function RedisSection({ service }: { service: TServiceShallow }) {
+  const sectionHighlightId = useMemo(() => getEntityId(service), [service]);
+  const serverAppendOnly = service.config.database_config?.append_only ?? false;
+  const { staged, stage, unstage } = useServiceChanges(service, { appendOnly: serverAppendOnly });
+  const { isItemVisible } = useSettingsSectionSearch("database");
+  if (!isItemVisible(settingsIds.database.appendOnly)) return null;
+
+  return (
+    <SettingsSection
+      title="Database"
+      id="database"
+      Icon={DatabaseIcon}
+      entityId={sectionHighlightId}
+      hasChanges={staged.appendOnly !== undefined}
+      isApplying={hasApplying(staged, redisFields)}
+      onDiscard={() => unstage(redisFields)}
+    >
+      <Block>
+        <BlockItem id={settingsIds.database.appendOnly} className="w-full md:w-full">
+          <BlockItemHeader>
+            <BlockItemTitle>Persistence</BlockItemTitle>
+            <HeaderToggle
+              label="Append-Only File"
+              checked={stagedBoolean(staged.appendOnly, serverAppendOnly)}
+              hasChanges={staged.appendOnly !== undefined}
+              onChange={(checked) =>
+                stage({
+                  field: "appendOnly",
+                  label: "Append-Only File",
+                  value: checked,
+                  previous: serverAppendOnly,
+                  format: (value) => (value ? "On" : "Off"),
+                })
+              }
+            />
+          </BlockItemHeader>
+          <BlockItemDescription className="px-1.5">
+            Logs every write, so a crash loses at most a second of writes instead of everything
+            since the last snapshot. Changing it restarts the database.
+          </BlockItemDescription>
+        </BlockItem>
+      </Block>
+    </SettingsSection>
+  );
 }
 
 // The API treats 0 as unset, which leaves the PostgreSQL default in place

@@ -73,11 +73,11 @@ func valueOrEmpty(value *string) string {
 	return *value
 }
 
-// RoutableHosts leaves out hosts without a target port, except redirects, which never reach the service
+// RoutableHosts leaves out hosts without a target port, except redirects and proxies, which never reach the service
 func RoutableHosts(hosts []schema.HostSpec) []v1.HostSpec {
 	var routable []v1.HostSpec
-	for _, host := range schema.AsV1HostSpecs(hosts) {
-		if host.Port == nil && host.Redirect == nil {
+	for i, host := range schema.AsV1HostSpecs(hosts) {
+		if host.Port == nil && hosts[i].ReachesService() {
 			continue
 		}
 		routable = append(routable, host)

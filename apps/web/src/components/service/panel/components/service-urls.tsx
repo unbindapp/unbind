@@ -42,11 +42,11 @@ export default function ServiceUrls({ service }: TProps) {
 
   if (!service.config.is_public) return null;
 
-  // A redirect sends visitors elsewhere, so it is not an address of the service
-  const redirectHosts = new Set(
-    (service.config.hosts || []).flatMap((h) => (h.redirect ? [h.host] : [])),
+  // A redirect or proxy sends visitors elsewhere, so it is not an address of the service
+  const elsewhereHosts = new Set(
+    (service.config.hosts || []).flatMap((h) => (h.redirect || h.proxy ? [h.host] : [])),
   );
-  const hosts = (service.config.hosts || []).filter((h) => !redirectHosts.has(h.host));
+  const hosts = (service.config.hosts || []).filter((h) => !elsewhereHosts.has(h.host));
   const isDatabase = service.type === "database";
   // A public database is reached at an allocated port, so it has no host to gate on
   if (!isDatabase && hosts.length < 1) return null;
@@ -70,7 +70,7 @@ export default function ServiceUrls({ service }: TProps) {
         )}
       {endpoints &&
         endpoints
-          .filter((e) => e.target_port !== undefined && !redirectHosts.has(e.host))
+          .filter((e) => e.target_port !== undefined && !elsewhereHosts.has(e.host))
           .map((e) => (
             <ServiceUrl
               key={`${e.host}${e.path}${e.target_port}`}

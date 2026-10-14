@@ -14,6 +14,7 @@ export function hostTargetFromSpec(spec: HostSpec): THostTarget {
       statusCode: spec.redirect.status_code ?? defaultRedirectStatusCode,
     };
   }
+  if (spec.proxy) target.proxy = { to: spec.proxy.to };
   if (spec.basic_auth) target.basicAuth = { username: spec.basic_auth.username };
   if (spec.response_headers && spec.response_headers.length > 0) {
     target.responseHeaders = spec.response_headers.map((h) => ({ name: h.name, value: h.value }));
@@ -34,6 +35,7 @@ export function hostTargetToSpec(target: THostTarget, prevHost?: string): HostSp
       status_code: redirectStatusCodes.find((code) => code === target.redirect?.statusCode),
     };
   }
+  if (target.proxy) spec.proxy = { to: target.proxy.to };
   if (target.basicAuth) {
     spec.basic_auth = { username: target.basicAuth.username, password: target.basicAuth.password };
   }
@@ -51,6 +53,7 @@ export function hostTargetsEqual(a: THostTarget, b: THostTarget) {
     a.port === b.port &&
     a.redirect?.to === b.redirect?.to &&
     a.redirect?.statusCode === b.redirect?.statusCode &&
+    a.proxy?.to === b.proxy?.to &&
     a.basicAuth?.username === b.basicAuth?.username &&
     headerLines(a.responseHeaders).join("\n") === headerLines(b.responseHeaders).join("\n")
   );

@@ -89,6 +89,43 @@ func TestMergeDatabaseConfigCarriesCacheOverrides(t *testing.T) {
 	)
 }
 
+func TestDatabaseConfigAppendOnly(t *testing.T) {
+	t.Run("new redis turns it on", func(t *testing.T) {
+		config := &DatabaseConfig{}
+		config.ApplyCreateDefaults("redis")
+		assert.Equal(t, new(true), config.AppendOnly)
+	})
+	t.Run("an explicit off on create stays off", func(t *testing.T) {
+		config := &DatabaseConfig{AppendOnly: new(false)}
+		config.ApplyCreateDefaults("redis")
+		assert.Equal(t, new(false), config.AppendOnly)
+	})
+	t.Run("other engines stay unset", func(t *testing.T) {
+		config := &DatabaseConfig{}
+		config.ApplyCreateDefaults("postgres")
+		assert.Nil(t, config.AppendOnly)
+	})
+	t.Run("an update without it keeps the stored value", func(t *testing.T) {
+		merged := MergeDatabaseConfig(&DatabaseConfig{AppendOnly: new(true)}, &DatabaseConfig{StorageSize: "2Gi"})
+		assert.Equal(t, new(true), merged.AppendOnly)
+		assert.Equal(t, new(false), MergeDatabaseConfig(merged, &DatabaseConfig{AppendOnly: new(false)}).AppendOnly)
+	})
+	t.Run("only redis accepts it", func(t *testing.T) {
+		assert.NoError(t, (&DatabaseConfig{AppendOnly: new(false)}).ValidateAppendOnly("redis"))
+		assert.NoError(t, (&DatabaseConfig{}).ValidateAppendOnly("mysql"))
+		assert.ErrorContains(t, (&DatabaseConfig{AppendOnly: new(true)}).ValidateAppendOnly("postgres"), "only applies to redis")
+	})
+	t.Run("reaches the operator only when set", func(t *testing.T) {
+		unset, err := (&DatabaseConfig{}).AsV1DatabaseConfig()
+		assert.NoError(t, err)
+		assert.NotContains(t, unset.AsMap(), "appendOnly")
+
+		off, err := (&DatabaseConfig{AppendOnly: new(false)}).AsV1DatabaseConfig()
+		assert.NoError(t, err)
+		assert.Equal(t, false, off.AsMap()["appendOnly"])
+	})
+}
+
 func TestDatabaseConfigValidateMemorySettings(t *testing.T) {
 	limited := &Resources{MemoryLimitsMegabytes: 2048}
 

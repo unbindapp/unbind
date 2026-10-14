@@ -121,6 +121,9 @@ func RouteGVKs() []schema.GroupVersionKind {
 		{Group: "gateway.envoyproxy.io", Version: "v1alpha1", Kind: "BackendTrafficPolicy"},
 		{Group: "gateway.envoyproxy.io", Version: "v1alpha1", Kind: "SecurityPolicy"},
 		{Group: "gateway.envoyproxy.io", Version: "v1alpha1", Kind: "ClientTrafficPolicy"},
+		{Group: "gateway.networking.k8s.io", Version: "v1", Kind: "BackendTLSPolicy"},
+		{Group: "", Version: "v1", Kind: "Service"},
+		{Group: "discovery.k8s.io", Version: "v1", Kind: "EndpointSlice"},
 		htpasswdSecretGVK,
 		certificateGVK,
 	}

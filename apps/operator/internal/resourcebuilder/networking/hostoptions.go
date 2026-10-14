@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -36,13 +37,28 @@ func htpasswdSecretName(objectName string) string {
 	return objectName + htpasswdSecretSuffix
 }
 
-// IsRouteSecretName reports whether a Secret is one the route builders create. Other
-// Secrets carry the same instance label, such as the Postgres operator's credentials.
-func IsRouteSecretName(name string) bool {
-	return strings.HasSuffix(name, htpasswdSecretSuffix)
+// A Service name allows 63 characters, too few for the service name and the host key together
+func proxyUpstreamName(svc *v1.Service, host v1.HostSpec) string {
+	sum := sha256.Sum256([]byte(svc.Name + "/" + strings.ToLower(host.Host)))
+	return fmt.Sprintf("proxy-%x", sum)[:16]
 }
 
-type redirectTarget struct {
+var proxyUpstreamNamePattern = regexp.MustCompile(`^proxy-[0-9a-f]{10}$`)
+
+// IsRouteObjectName reports whether a core object is one the route builders create.
+// Others carry the same instance label: the service's own Service and EndpointSlices,
+// or the Postgres operator's credentials.
+func IsRouteObjectName(kind, name string) bool {
+	switch kind {
+	case "Secret":
+		return strings.HasSuffix(name, htpasswdSecretSuffix)
+	case "Service", "EndpointSlice":
+		return proxyUpstreamNamePattern.MatchString(name)
+	}
+	return true
+}
+
+type urlTarget struct {
 	Scheme string
 	Host   string
 	Port   *int32
@@ -52,15 +68,28 @@ type redirectTarget struct {
 
 // parseRedirect splits the redirect URL the API validated. A URL that does not
 // parse keeps the host routed to the service instead of breaking the route.
-func parseRedirect(redirect *v1.HostRedirectSpec) (redirectTarget, bool) {
+func parseRedirect(redirect *v1.HostRedirectSpec) (urlTarget, bool) {
 	if redirect == nil {
-		return redirectTarget{}, false
+		return urlTarget{}, false
 	}
-	parsed, err := url.Parse(redirect.To)
+	return parseURLTarget(redirect.To)
+}
+
+func parseProxy(proxy *v1.HostProxySpec) (urlTarget, bool) {
+	if proxy == nil {
+		return urlTarget{}, false
+	}
+	target, ok := parseURLTarget(proxy.To)
+	target.Host = strings.ToLower(target.Host)
+	return target, ok
+}
+
+func parseURLTarget(raw string) (urlTarget, bool) {
+	parsed, err := url.Parse(raw)
 	if err != nil || parsed.Hostname() == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
-		return redirectTarget{}, false
+		return urlTarget{}, false
 	}
-	target := redirectTarget{Scheme: parsed.Scheme, Host: parsed.Hostname()}
+	target := urlTarget{Scheme: parsed.Scheme, Host: parsed.Hostname()}
 	if parsed.Path != "" && parsed.Path != "/" {
 		target.Path = parsed.Path
 	}
@@ -72,14 +101,24 @@ func parseRedirect(redirect *v1.HostRedirectSpec) (redirectTarget, bool) {
 	return target, true
 }
 
-// URL is the redirect target as one string, with the request path left to the
-// caller when Path is empty.
-func (t redirectTarget) URL() string {
+// URL is the target as one string, with the request path left to the caller when
+// Path is empty.
+func (t urlTarget) URL() string {
 	u := t.Scheme + "://" + t.Host
 	if t.Port != nil {
 		u += ":" + strconv.Itoa(int(*t.Port))
 	}
 	return u + t.Path
+}
+
+func (t urlTarget) PortOrDefault() int32 {
+	if t.Port != nil {
+		return *t.Port
+	}
+	if t.Scheme == "https" {
+		return 443
+	}
+	return 80
 }
 
 // htpasswdSecret holds the host's user in htpasswd form under the key the

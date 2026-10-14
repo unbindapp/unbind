@@ -197,7 +197,7 @@ func kubeServiceNeedsUpdate(logger logr.Logger, desired, existing *corev1.Servic
 	case serviceTypeOrDefault(existing.Spec.Type) != serviceTypeOrDefault(desired.Spec.Type):
 		logger.Info("Service type needs update", "from", existing.Spec.Type, "to", desired.Spec.Type)
 		return true
-	case !maps.Equal(desired.Annotations, existing.Annotations):
+	case !annotationsMatch(desired.Annotations, existing.Annotations):
 		logger.Info("Service annotations need update")
 		return true
 	default:
@@ -319,7 +319,14 @@ func ingressNeedsUpdate(existing, desired *networkingv1.Ingress) bool {
 	return !equality.Semantic.DeepDerivative(desired.Spec, existing.Spec) ||
 		!slices.Equal(ingressHosts(desired), ingressHosts(existing)) ||
 		!equality.Semantic.DeepDerivative(desired.Labels, existing.Labels) ||
-		!maps.Equal(desired.Annotations, existing.Annotations)
+		!annotationsMatch(desired.Annotations, existing.Annotations)
+}
+
+// The render hash is stamped on the live object only, so it never appears in the desired one
+func annotationsMatch(desired, existing map[string]string) bool {
+	live := maps.Clone(existing)
+	delete(live, renderHashAnnotation)
+	return maps.Equal(desired, live)
 }
 
 func ingressHosts(ingress *networkingv1.Ingress) []string {

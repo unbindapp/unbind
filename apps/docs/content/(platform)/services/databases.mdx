@@ -58,3 +58,11 @@ Backups are available for PostgreSQL, MySQL, MongoDB and ClickHouse. Redis has n
 PostgreSQL has a **Database** section in its settings with **WAL Level**. Leave it on `replica` unless a tool asks for logical replication, such as change data capture. With `logical` you can also set **Replication Slots**, **WAL Senders** and **Slot WAL keep size**.
 
 **Slot WAL keep size** limits how much WAL a replication slot can keep when its subscriber falls behind. Without a limit, one idle subscriber can fill the volume and stop the database. Leave it empty to use **Auto**, a quarter of the volume, which grows when you expand the volume. You can set it anywhere from 64 MB to half of the volume. If a subscriber falls further behind than the limit, PostgreSQL drops its slot and the subscriber has to sync again. Clear the field to go back to Auto.
+
+## Redis persistence
+
+Redis keeps its data in memory and writes it to the volume. Its **Database** section has an **Append-Only File** toggle. With it on, Redis logs every write and syncs the log once a second, so a crash loses at most about a second of writes. With it off, Redis only saves snapshots: one when at least 10000 keys changed in a minute, 100 in five minutes or 1 in an hour. A crash then loses everything since the last snapshot.
+
+New Redis databases have it on. Redis databases created before the setting keep snapshots only until you turn it on. Turn it on for anything that keeps state you cannot rebuild, such as job queues or balances.
+
+Changing it restarts the database. Before Redis starts, Unbind converts the data on the volume to the new format, so nothing is lost either way. A large dataset takes longer to start while it converts.

@@ -145,6 +145,9 @@ func (self *ServiceService) validateHosts(ctx context.Context, tx repository.TxI
 		if err := validateHostOptions(host); err != nil {
 			return err
 		}
+		if host.Proxy != nil && self.k8s.NetworkingProvider(ctx) != "gateway" {
+			return invalid("domain %s: a proxy needs the gateway networking provider", host.Host)
+		}
 		if !utils.IsWildcardHost(host.Host) {
 			continue
 		}
@@ -186,10 +189,10 @@ func (self *ServiceService) reservedHosts(ctx context.Context, tx repository.TxI
 }
 
 // serviceURL is the first address a visitor can open: wildcards only match addresses
-// and a redirect sends them elsewhere
+// and a redirect or proxy sends them elsewhere
 func serviceURL(hosts []schema.HostSpec) (string, bool) {
 	for _, host := range hosts {
-		if !utils.IsWildcardHost(host.Host) && !host.IsRedirect() {
+		if !utils.IsWildcardHost(host.Host) && host.ReachesService() {
 			return fmt.Sprintf("https://%s", host.Host), true
 		}
 	}

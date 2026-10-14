@@ -2,9 +2,12 @@ package networking
 
 import (
 	"fmt"
+	"maps"
 	"slices"
 
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
+	corev1 "k8s.io/api/core/v1"
+	discoveryv1 "k8s.io/api/discovery/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -46,6 +49,9 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	var httpRouteNames []string
 	if httpRoutable {
 		for _, host := range svc.Spec.Config.Hosts {
+			if !p.canRoute(host) {
+				continue
+			}
 			listeners = append(listeners, gwapiv1.Listener{
 				Name:     hostListenerName(host),
 				Hostname: ptr.To(gwapiv1.Hostname(host.Host)),
@@ -67,6 +73,9 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 			name := hostObjectName(svc, host)
 			httpRouteNames = append(httpRouteNames, name)
 			objects = append(objects, p.httpRoute(svc, in.Labels, name, host))
+			if target, ok := parseProxy(host.Proxy); ok {
+				objects = append(objects, proxyUpstream(svc, in.Labels, host, target)...)
+			}
 			if p.cfg.GatewayControllerEnvoy && host.BasicAuth != nil {
 				objects = append(objects,
 					htpasswdSecret(svc, in.Labels, name, ".htpasswd", host.BasicAuth),
@@ -138,6 +147,16 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	return append(objects, gateway), nil
 }
 
+// Only Envoy Gateway reaches hostnames outside the cluster. A proxied host it cannot
+// serve gets no route at all, never one to the service.
+func (p gatewayProvider) canRoute(host v1.HostSpec) bool {
+	if host.Proxy == nil {
+		return true
+	}
+	_, ok := parseProxy(host.Proxy)
+	return ok && p.cfg.GatewayControllerEnvoy
+}
+
 func hostListenerName(host v1.HostSpec) gwapiv1.SectionName {
 	return gwapiv1.SectionName("https-" + hostKey(host))
 }
@@ -158,13 +177,18 @@ func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, na
 			Path: &gwapiv1.HTTPPathMatch{Type: ptr.To(gwapiv1.PathMatchPathPrefix), Value: ptr.To(path)},
 		}},
 	}
-	if target, ok := parseRedirect(host.Redirect); ok {
-		rule.Filters = append(rule.Filters, redirectFilter(target, host.Redirect.StatusCode))
-	} else {
-		rule.BackendRefs = []gwapiv1.HTTPBackendRef{{BackendRef: gwapiv1.BackendRef{
-			BackendObjectReference: gwapiv1.BackendObjectReference{Name: gwapiv1.ObjectName(svc.Name), Port: ptr.To(gwapiv1.PortNumber(port))},
-		}}}
-		rule.Timeouts = &gwapiv1.HTTPRouteTimeouts{Request: ptr.To(gwapiv1.Duration("21600s"))}
+	redirect, redirected := parseRedirect(host.Redirect)
+	proxy, proxied := parseProxy(host.Proxy)
+	switch {
+	case redirected:
+		rule.Filters = append(rule.Filters, redirectFilter(redirect, host.Redirect.StatusCode))
+	case proxied:
+		rule.Filters = append(rule.Filters, proxyRewriteFilter(proxy))
+		rule.BackendRefs = httpBackendRefs(proxyUpstreamName(svc, host), proxy.PortOrDefault())
+		rule.Timeouts = longRequestTimeouts()
+	default:
+		rule.BackendRefs = httpBackendRefs(svc.Name, port)
+		rule.Timeouts = longRequestTimeouts()
 	}
 	if len(host.ResponseHeaders) > 0 {
 		rule.Filters = append(rule.Filters, responseHeaderFilter(host.ResponseHeaders))
@@ -180,7 +204,77 @@ func (p gatewayProvider) httpRoute(svc *v1.Service, labels map[string]string, na
 	}
 }
 
-func redirectFilter(target redirectTarget, statusCode int32) gwapiv1.HTTPRouteFilter {
+func httpBackendRefs(serviceName string, port int32) []gwapiv1.HTTPBackendRef {
+	return []gwapiv1.HTTPBackendRef{{BackendRef: gwapiv1.BackendRef{
+		BackendObjectReference: gwapiv1.BackendObjectReference{Name: gwapiv1.ObjectName(serviceName), Port: ptr.To(gwapiv1.PortNumber(port))},
+	}}}
+}
+
+func longRequestTimeouts() *gwapiv1.HTTPRouteTimeouts {
+	return &gwapiv1.HTTPRouteTimeouts{Request: ptr.To(gwapiv1.Duration("21600s"))}
+}
+
+func proxyRewriteFilter(target urlTarget) gwapiv1.HTTPRouteFilter {
+	rewrite := &gwapiv1.HTTPURLRewriteFilter{Hostname: ptr.To(gwapiv1.PreciseHostname(target.Host))}
+	if target.Path != "" {
+		rewrite.Path = &gwapiv1.HTTPPathModifier{Type: gwapiv1.FullPathHTTPPathModifier, ReplaceFullPath: ptr.To(target.Path)}
+	}
+	return gwapiv1.HTTPRouteFilter{Type: gwapiv1.HTTPRouteFilterURLRewrite, URLRewrite: rewrite}
+}
+
+const proxyPortName = "upstream"
+
+// proxyUpstream is the proxy target as a Service without a selector. Envoy Gateway
+// refuses ExternalName Services, but resolves the hostname of an FQDN EndpointSlice.
+func proxyUpstream(svc *v1.Service, labels map[string]string, host v1.HostSpec, target urlTarget) []client.Object {
+	name := proxyUpstreamName(svc, host)
+	port := target.PortOrDefault()
+	upstreamLabels := maps.Clone(labels)
+	// Endpoint discovery lists the Services carrying it as the service's own addresses
+	delete(upstreamLabels, "unbind-service")
+
+	service := &corev1.Service{
+		TypeMeta:   metav1.TypeMeta{APIVersion: "v1", Kind: "Service"},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: svc.Namespace, Labels: upstreamLabels},
+		Spec: corev1.ServiceSpec{
+			ClusterIP: corev1.ClusterIPNone,
+			// Selector-less headless Services default to dual stack, and Envoy aborts on an IPv6 upstream without IPv6
+			IPFamilyPolicy: ptr.To(corev1.IPFamilyPolicySingleStack),
+			Ports:          []corev1.ServicePort{{Name: proxyPortName, Port: port, Protocol: corev1.ProtocolTCP}},
+		},
+	}
+
+	sliceLabels := maps.Clone(upstreamLabels)
+	sliceLabels[discoveryv1.LabelServiceName] = name
+	sliceLabels[discoveryv1.LabelManagedBy] = "unbind-operator"
+	slice := &discoveryv1.EndpointSlice{
+		TypeMeta:    metav1.TypeMeta{APIVersion: "discovery.k8s.io/v1", Kind: "EndpointSlice"},
+		ObjectMeta:  metav1.ObjectMeta{Name: name, Namespace: svc.Namespace, Labels: sliceLabels},
+		AddressType: discoveryv1.AddressTypeFQDN,
+		Endpoints:   []discoveryv1.Endpoint{{Addresses: []string{target.Host}}},
+		Ports:       []discoveryv1.EndpointPort{{Name: ptr.To(proxyPortName), Port: ptr.To(port), Protocol: ptr.To(corev1.ProtocolTCP)}},
+	}
+	if target.Scheme != "https" {
+		return []client.Object{service, slice}
+	}
+
+	policy := &gwapiv1.BackendTLSPolicy{
+		TypeMeta:   metav1.TypeMeta{APIVersion: gwapiv1.GroupVersion.String(), Kind: "BackendTLSPolicy"},
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: svc.Namespace, Labels: upstreamLabels},
+		Spec: gwapiv1.BackendTLSPolicySpec{
+			TargetRefs: []gwapiv1.LocalPolicyTargetReferenceWithSectionName{{
+				LocalPolicyTargetReference: gwapiv1.LocalPolicyTargetReference{Group: "", Kind: "Service", Name: gwapiv1.ObjectName(name)},
+			}},
+			Validation: gwapiv1.BackendTLSPolicyValidation{
+				Hostname:                gwapiv1.PreciseHostname(target.Host),
+				WellKnownCACertificates: ptr.To(gwapiv1.WellKnownCACertificatesSystem),
+			},
+		},
+	}
+	return []client.Object{service, slice, policy}
+}
+
+func redirectFilter(target urlTarget, statusCode int32) gwapiv1.HTTPRouteFilter {
 	redirect := &gwapiv1.HTTPRequestRedirectFilter{
 		Scheme:     ptr.To(target.Scheme),
 		Hostname:   ptr.To(gwapiv1.PreciseHostname(target.Host)),

@@ -32,5 +32,6 @@ export function shouldServiceSettingsHaveBuildSection(service: TServiceShallow) 
 }
 
 export function shouldServiceSettingsHaveDatabaseSection(service: TServiceShallow) {
-  return service.type === "database" && service.database_type === "postgres";
+  if (service.type !== "database") return false;
+  return service.database_type === "postgres" || service.database_type === "redis";
 }

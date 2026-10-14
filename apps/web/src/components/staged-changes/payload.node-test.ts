@@ -191,6 +191,11 @@ test("nests database settings into database_config", () => {
   });
 });
 
+test("nests the redis append-only toggle into database_config", () => {
+  const payload = buildApplyStagedChangesPayload(state([], [service("appendOnly", false)]));
+  assert.deepEqual(payload.services[0].database_config, { appendOnly: false });
+});
+
 test("keeps only the changes that failed to apply", () => {
   const current = state(
     [

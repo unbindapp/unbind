@@ -261,6 +261,9 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		if err := databaseConfig.ValidateMemorySettings(*service.Database, resources); err != nil {
 			return nil, err
 		}
+		if err := databaseConfig.ValidateAppendOnly(*service.Database); err != nil {
+			return nil, err
+		}
 	}
 
 	if slotWalKeepSizeChanged && service.Database != nil {

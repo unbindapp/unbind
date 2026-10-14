@@ -63,6 +63,7 @@ export const ServiceChangeFieldSchema = z.enum([
   "maxReplicationSlots",
   "maxWalSenders",
   "maxSlotWalKeepSizeMb",
+  "appendOnly",
 ]);
 
 export type TServiceChangeField = z.infer<typeof ServiceChangeFieldSchema>;
@@ -110,6 +111,7 @@ export const HostTargetSchema = z.object({
   host: z.string(),
   port: z.number().optional(),
   redirect: HostRedirectTargetSchema.optional(),
+  proxy: z.object({ to: z.string() }).optional(),
   basicAuth: z.object({ username: z.string(), password: z.string().optional() }).optional(),
   responseHeaders: z.array(HostHeaderTargetSchema).optional(),
 });

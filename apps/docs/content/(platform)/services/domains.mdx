@@ -83,6 +83,20 @@ A redirect domain still needs a DNS record and gets its own certificate, so visi
 
 This is how to send `www.example.com` to `example.com`: add `www.example.com` to the service that serves `example.com`, with a redirect to `https://example.com`.
 
+## Proxy a domain
+
+A domain can serve another URL without a redirect, so visitors stay on your domain. Press the pencil on the domain, type the URL in **Proxy**, like `https://raw.githubusercontent.com/org/repo/main/install.sh`, and deploy. Tools that don't follow redirects, like `curl` without `-L`, get the content itself.
+
+- A URL with no path keeps the path of the request: `docs.example.com/start` serves `example.net/start`.
+- A URL with a path serves that path for every request, like the install script above.
+- The query of the request is kept.
+- The upstream sees its own hostname in the `Host` header. HTTPS URLs are checked against the public certificate authorities, so a self-signed upstream fails.
+- The URL needs a public hostname. IP addresses and names inside the cluster are refused.
+
+A proxied domain still needs a DNS record and gets its own certificate. Basic auth and response headers work on it. Like a redirect, it is not one of the service's addresses.
+
+Proxies need Envoy Gateway, the default. Installs on ingress-nginx or Traefik don't show the setting.
+
 ## Password protect a domain
 
 **Basic Auth** asks visitors for a username and password before the service answers. Press the pencil on the domain, type a username and a password and deploy. Browsers show a login prompt, and tools send the pair with `curl -u`.

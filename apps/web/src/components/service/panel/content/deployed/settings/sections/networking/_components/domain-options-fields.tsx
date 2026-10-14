@@ -16,9 +16,10 @@ import {
   redirectStatusCodes,
 } from "@/components/staged-changes/host-target";
 import type { THostTarget } from "@/components/staged-changes/types";
+import { useSystem } from "@/components/system/system-provider";
 import { withFieldGroup } from "@/lib/hooks/use-app-form";
 import type { AnyFieldApi } from "@tanstack/react-form";
-import { CornerDownRightIcon, KeyRoundIcon, UserIcon } from "lucide-react";
+import { ArrowRightLeftIcon, CornerDownRightIcon, KeyRoundIcon, UserIcon } from "lucide-react";
 
 const redirectStatusLabels: Record<(typeof redirectStatusCodes)[number], string> = {
   301: "301 Moved Permanently",
@@ -32,12 +33,16 @@ const redirectStatusItems = redirectStatusCodes.map((code) => ({
   label: redirectStatusLabels[code],
 }));
 
-export type THostOptions = Pick<THostTarget, "redirect" | "basicAuth" | "responseHeaders">;
+export type THostOptions = Pick<
+  THostTarget,
+  "redirect" | "proxy" | "basicAuth" | "responseHeaders"
+>;
 
 // The options as the form holds them
 export type TDomainOptionsValues = {
   redirectTo: string;
   redirectStatus: string;
+  proxyTo: string;
   basicAuthUsername: string;
   // Only ever typed, the server never returns it
   basicAuthPassword: string;
@@ -47,6 +52,7 @@ export type TDomainOptionsValues = {
 export const defaultDomainOptionsValues: TDomainOptionsValues = {
   redirectTo: "",
   redirectStatus: String(defaultRedirectStatusCode),
+  proxyTo: "",
   basicAuthUsername: "",
   basicAuthPassword: "",
   responseHeaders: [],
@@ -56,19 +62,28 @@ export function domainOptionsToValues(options: THostOptions | undefined): TDomai
   return {
     redirectTo: options?.redirect?.to ?? "",
     redirectStatus: String(options?.redirect?.statusCode ?? defaultRedirectStatusCode),
+    proxyTo: options?.proxy?.to ?? "",
     basicAuthUsername: options?.basicAuth?.username ?? "",
     basicAuthPassword: "",
     responseHeaders: headerLines(options?.responseHeaders),
   };
 }
 
+export function domainTarget(values: TDomainOptionsValues) {
+  if (values.redirectTo.trim() !== "") return "redirect";
+  if (values.proxyTo.trim() !== "") return "proxy";
+  return "service";
+}
+
 export function domainOptionsFromValues(values: TDomainOptionsValues): THostOptions {
   const options: THostOptions = {};
-  const redirectTo = values.redirectTo.trim();
+  const target = domainTarget(values);
   const username = values.basicAuthUsername.trim();
-  if (redirectTo) {
-    options.redirect = { to: redirectTo, statusCode: Number(values.redirectStatus) };
-  } else if (username) {
+  if (target === "redirect") {
+    options.redirect = { to: values.redirectTo.trim(), statusCode: Number(values.redirectStatus) };
+  }
+  if (target === "proxy") options.proxy = { to: values.proxyTo.trim() };
+  if (target !== "redirect" && username) {
     options.basicAuth = { username, password: values.basicAuthPassword || undefined };
   }
   const headers = values.responseHeaders.map(parseHeaderLine).filter((h) => h !== null);
@@ -79,12 +94,13 @@ export function domainOptionsFromValues(values: TDomainOptionsValues): THostOpti
 export const domainOptionsFieldNames = [
   "redirectTo",
   "redirectStatus",
+  "proxyTo",
   "basicAuthUsername",
   "basicAuthPassword",
   "responseHeaders",
 ] as const;
 
-export function validateRedirectTo(value: string) {
+function validateTargetUrl(value: string, kind: "redirect" | "proxy") {
   const trimmed = value.trim();
   if (trimmed === "") return undefined;
   if (!/^https?:\/\//i.test(trimmed)) {
@@ -94,13 +110,16 @@ export function validateRedirectTo(value: string) {
     const url = new URL(trimmed);
     if (!url.hostname) return { message: "Enter a URL like https://example.com." };
     if (url.search || url.hash || url.username) {
-      return { message: "A redirect URL cannot have a query, fragment or credentials." };
+      return { message: `A ${kind} URL cannot have a query, fragment or credentials.` };
     }
   } catch {
     return { message: "Enter a URL like https://example.com." };
   }
   return undefined;
 }
+
+export const validateRedirectTo = (value: string) => validateTargetUrl(value, "redirect");
+export const validateProxyTo = (value: string) => validateTargetUrl(value, "proxy");
 
 export function validateResponseHeaders(value: string[]) {
   if (value.some((line) => parseHeaderLine(line) === null)) {
@@ -118,145 +137,192 @@ export const DomainOptionsFields = withFieldGroup({
     serverValues: defaultDomainOptionsValues,
   },
   render: function Render({ group, serverValues }) {
+    const { data: systemData } = useSystem();
     const hasSavedPassword = serverValues.basicAuthUsername !== "";
+    // A saved proxy stays editable so it can be removed after the provider changed
+    const canProxy =
+      systemData?.data.networking_provider === "gateway" || serverValues.proxyTo !== "";
     return (
       <>
-        <Block>
-          <group.AppField
-            name="redirectTo"
-            validators={{ onChange: ({ value }) => validateRedirectTo(value) }}
-          >
-            {(field) => (
-              <BlockItem className="w-full md:w-full">
-                <BlockItemHeader type="column">
-                  <BlockItemTitle>Redirect</BlockItemTitle>
-                  <BlockItemDescription>
-                    Send visitors to another URL instead of the service. The path is kept when the
-                    URL has none.
-                  </BlockItemDescription>
-                </BlockItemHeader>
-                <BlockItemContent>
-                  <field.TextField
-                    field={asFieldApi(field)}
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="https://example.com"
-                    autoCapitalize="off"
-                    autoCorrect="off"
-                    autoComplete="off"
-                    spellCheck="false"
-                    inputMode="url"
-                    Icon={CornerDownRightIcon}
-                    hasChanges={field.state.value.trim() !== serverValues.redirectTo}
-                  />
-                </BlockItemContent>
-              </BlockItem>
-            )}
-          </group.AppField>
-        </Block>
-        <group.Subscribe selector={(s) => s.values.redirectTo.trim() !== ""}>
-          {(hasRedirect) =>
-            hasRedirect ? (
-              <Block>
-                <group.AppField name="redirectStatus">
-                  {(field) => (
-                    <BlockItem className="w-full md:w-full">
-                      <BlockItemHeader type="column">
-                        <BlockItemTitle>Redirect Status</BlockItemTitle>
-                      </BlockItemHeader>
-                      <BlockItemContent>
-                        <field.AsyncDropdownMenu
-                          dontCheckUntilSubmit
-                          field={asFieldApi(field)}
-                          value={field.state.value}
-                          onChange={(v) => field.handleChange(v)}
-                          items={redirectStatusItems}
-                          isPending={false}
-                          error={undefined}
-                        >
-                          {({ isOpen }) => (
-                            <BlockItemButtonLike
-                              asElement="button"
-                              text={
-                                redirectStatusItems.find((i) => i.value === field.state.value)
-                                  ?.label ?? field.state.value
-                              }
-                              variant="outline"
-                              open={isOpen}
-                              onBlur={field.handleBlur}
-                              hasChanges={field.state.value !== serverValues.redirectStatus}
-                            />
-                          )}
-                        </field.AsyncDropdownMenu>
-                      </BlockItemContent>
-                    </BlockItem>
-                  )}
-                </group.AppField>
-              </Block>
-            ) : (
-              <Block>
-                <BlockItem className="w-full md:w-full">
-                  <BlockItemHeader type="column">
-                    <BlockItemTitle>Basic Auth</BlockItemTitle>
-                    <BlockItemDescription>
-                      Ask visitors for a username and password before the service answers.
-                    </BlockItemDescription>
-                  </BlockItemHeader>
-                  <BlockItemContent>
-                    <div className="flex w-full flex-col">
-                      <group.AppField name="basicAuthUsername">
-                        {(field) => (
+        <group.Subscribe selector={(s) => domainTarget(s.values)}>
+          {(target) => (
+            <>
+              {target !== "proxy" && (
+                <Block>
+                  <group.AppField
+                    name="redirectTo"
+                    validators={{ onChange: ({ value }) => validateRedirectTo(value) }}
+                  >
+                    {(field) => (
+                      <BlockItem className="w-full md:w-full">
+                        <BlockItemHeader type="column">
+                          <BlockItemTitle>Redirect</BlockItemTitle>
+                          <BlockItemDescription>
+                            Send visitors to another URL instead of the service. The path is kept
+                            when the URL has none.
+                          </BlockItemDescription>
+                        </BlockItemHeader>
+                        <BlockItemContent>
                           <field.TextField
                             field={asFieldApi(field)}
                             value={field.state.value}
                             onBlur={field.handleBlur}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            placeholder="Username"
+                            placeholder="https://example.com"
                             autoCapitalize="off"
                             autoCorrect="off"
                             autoComplete="off"
                             spellCheck="false"
-                            Icon={UserIcon}
-                            classNameInput="rounded-b-none"
-                            hasChanges={field.state.value.trim() !== serverValues.basicAuthUsername}
+                            inputMode="url"
+                            Icon={CornerDownRightIcon}
+                            hasChanges={field.state.value.trim() !== serverValues.redirectTo}
                           />
-                        )}
-                      </group.AppField>
-                      <div className="bg-border h-px w-full" />
-                      <group.AppField
-                        name="basicAuthPassword"
-                        validators={{
-                          onSubmit: ({ value }) => {
-                            const isProtected =
-                              group.getFieldValue("redirectTo").trim() === "" &&
-                              group.getFieldValue("basicAuthUsername").trim() !== "";
-                            if (!isProtected || hasSavedPassword || value !== "") return undefined;
-                            return { message: "Enter a password." };
-                          },
-                        }}
-                      >
-                        {(field) => (
+                        </BlockItemContent>
+                      </BlockItem>
+                    )}
+                  </group.AppField>
+                </Block>
+              )}
+              {target === "redirect" && (
+                <Block>
+                  <group.AppField name="redirectStatus">
+                    {(field) => (
+                      <BlockItem className="w-full md:w-full">
+                        <BlockItemHeader type="column">
+                          <BlockItemTitle>Redirect Status</BlockItemTitle>
+                        </BlockItemHeader>
+                        <BlockItemContent>
+                          <field.AsyncDropdownMenu
+                            dontCheckUntilSubmit
+                            field={asFieldApi(field)}
+                            value={field.state.value}
+                            onChange={(v) => field.handleChange(v)}
+                            items={redirectStatusItems}
+                            isPending={false}
+                            error={undefined}
+                          >
+                            {({ isOpen }) => (
+                              <BlockItemButtonLike
+                                asElement="button"
+                                text={
+                                  redirectStatusItems.find((i) => i.value === field.state.value)
+                                    ?.label ?? field.state.value
+                                }
+                                variant="outline"
+                                open={isOpen}
+                                onBlur={field.handleBlur}
+                                hasChanges={field.state.value !== serverValues.redirectStatus}
+                              />
+                            )}
+                          </field.AsyncDropdownMenu>
+                        </BlockItemContent>
+                      </BlockItem>
+                    )}
+                  </group.AppField>
+                </Block>
+              )}
+              {target !== "redirect" && canProxy && (
+                <Block>
+                  <group.AppField
+                    name="proxyTo"
+                    validators={{ onChange: ({ value }) => validateProxyTo(value) }}
+                  >
+                    {(field) => (
+                      <BlockItem className="w-full md:w-full">
+                        <BlockItemHeader type="column">
+                          <BlockItemTitle>Proxy</BlockItemTitle>
+                          <BlockItemDescription>
+                            Serve another URL on this domain instead of the service.
+                          </BlockItemDescription>
+                        </BlockItemHeader>
+                        <BlockItemContent>
                           <field.TextField
                             field={asFieldApi(field)}
                             value={field.state.value}
                             onBlur={field.handleBlur}
                             onChange={(e) => field.handleChange(e.target.value)}
-                            type="password"
-                            placeholder={hasSavedPassword ? "Password (unchanged)" : "Password"}
-                            autoComplete="new-password"
-                            Icon={KeyRoundIcon}
-                            classNameInput="rounded-t-none border-t-0"
-                            hasChanges={field.state.value !== ""}
+                            placeholder="https://example.com/install.sh"
+                            autoCapitalize="off"
+                            autoCorrect="off"
+                            autoComplete="off"
+                            spellCheck="false"
+                            inputMode="url"
+                            Icon={ArrowRightLeftIcon}
+                            hasChanges={field.state.value.trim() !== serverValues.proxyTo}
                           />
-                        )}
-                      </group.AppField>
-                    </div>
-                  </BlockItemContent>
-                </BlockItem>
-              </Block>
-            )
-          }
+                        </BlockItemContent>
+                      </BlockItem>
+                    )}
+                  </group.AppField>
+                </Block>
+              )}
+              {target !== "redirect" && (
+                <Block>
+                  <BlockItem className="w-full md:w-full">
+                    <BlockItemHeader type="column">
+                      <BlockItemTitle>Basic Auth</BlockItemTitle>
+                      <BlockItemDescription>
+                        Ask visitors for a username and password before the domain answers.
+                      </BlockItemDescription>
+                    </BlockItemHeader>
+                    <BlockItemContent>
+                      <div className="flex w-full flex-col">
+                        <group.AppField name="basicAuthUsername">
+                          {(field) => (
+                            <field.TextField
+                              field={asFieldApi(field)}
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              placeholder="Username"
+                              autoCapitalize="off"
+                              autoCorrect="off"
+                              autoComplete="off"
+                              spellCheck="false"
+                              Icon={UserIcon}
+                              classNameInput="rounded-b-none"
+                              hasChanges={
+                                field.state.value.trim() !== serverValues.basicAuthUsername
+                              }
+                            />
+                          )}
+                        </group.AppField>
+                        <div className="bg-border h-px w-full" />
+                        <group.AppField
+                          name="basicAuthPassword"
+                          validators={{
+                            onSubmit: ({ value }) => {
+                              const isProtected =
+                                group.getFieldValue("redirectTo").trim() === "" &&
+                                group.getFieldValue("basicAuthUsername").trim() !== "";
+                              if (!isProtected || hasSavedPassword || value !== "")
+                                return undefined;
+                              return { message: "Enter a password." };
+                            },
+                          }}
+                        >
+                          {(field) => (
+                            <field.TextField
+                              field={asFieldApi(field)}
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) => field.handleChange(e.target.value)}
+                              type="password"
+                              placeholder={hasSavedPassword ? "Password (unchanged)" : "Password"}
+                              autoComplete="new-password"
+                              Icon={KeyRoundIcon}
+                              classNameInput="rounded-t-none border-t-0"
+                              hasChanges={field.state.value !== ""}
+                            />
+                          )}
+                        </group.AppField>
+                      </div>
+                    </BlockItemContent>
+                  </BlockItem>
+                </Block>
+              )}
+            </>
+          )}
         </group.Subscribe>
         <Block>
           <group.AppField

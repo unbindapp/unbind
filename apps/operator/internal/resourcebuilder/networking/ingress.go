@@ -9,8 +9,12 @@ import (
 
 // splitHosts separates the hosts the shared Ingress serves from the ones that need
 // an Ingress of their own, since the ingress controllers read options per Ingress.
+// Proxied hosts are left out, only Envoy Gateway serves them.
 func splitHosts(svc *v1.Service) (plain, optioned []v1.HostSpec) {
 	for _, host := range svc.Spec.Config.Hosts {
+		if host.Proxy != nil {
+			continue
+		}
 		if hasRouteOptions(host) {
 			optioned = append(optioned, host)
 			continue

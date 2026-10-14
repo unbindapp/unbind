@@ -80,8 +80,8 @@ func publicEndpointsFor(serviceType schema.ServiceType, databaseType string, con
 	fronted := make(map[int32]struct{})
 	for _, host := range config.Hosts {
 		// A wildcard is a pattern, not an address a client can connect to, and a
-		// redirect never reaches the service
-		if utils.IsWildcardHost(host.Host) || host.IsRedirect() {
+		// redirect or proxy never reaches the service
+		if utils.IsWildcardHost(host.Host) || !host.ReachesService() {
 			continue
 		}
 		var nodePort int32

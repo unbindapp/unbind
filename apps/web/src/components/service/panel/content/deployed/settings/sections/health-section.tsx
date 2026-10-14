@@ -49,8 +49,7 @@ export default function HealthSection({ service }: TProps) {
     return (
       <SettingsSection title="Health" id="health" Icon={HeartIcon} entityId={getEntityId(service)}>
         <CronScheduleNotice className="px-1 pt-0 pb-0">
-          Health checks are not available for cron schedules. A run counts as healthy when it exits
-          successfully.
+          Health checks are not available for cron schedules.
         </CronScheduleNotice>
       </SettingsSection>
     );

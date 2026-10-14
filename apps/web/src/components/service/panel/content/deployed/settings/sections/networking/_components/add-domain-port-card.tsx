@@ -10,6 +10,7 @@ import {
   DomainOptionsFields,
   defaultDomainOptionsValues,
   domainOptionsFromValues,
+  domainTarget,
 } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/domain-options-fields";
 import { TMode } from "@/components/service/panel/content/deployed/settings/sections/networking/_components/types";
 import { useStageNetworking } from "@/components/service/panel/content/deployed/settings/use-service-changes";
@@ -44,6 +45,7 @@ const DraftSchema = z.object({
   options: z.object({
     redirectTo: z.string(),
     redirectStatus: z.string(),
+    proxyTo: z.string(),
     basicAuthUsername: z.string(),
     basicAuthPassword: z.string(),
     responseHeaders: z.array(z.string()),
@@ -141,7 +143,7 @@ export default function AddDomainPortCard({
     return Array.from(allPorts);
   }, [service.detected_ports, currentPorts]);
 
-  const hasRedirect = useStore(form.store, (s) => s.values.options.redirectTo.trim() !== "");
+  const skipsService = useStore(form.store, (s) => domainTarget(s.values.options) !== "service");
 
   // A restored draft can name a port the service no longer has
   const targetPortType = useStore(form.store, (s) => s.values.targetPortType);
@@ -265,8 +267,8 @@ export default function AddDomainPortCard({
                     </Block>
                   )}
                   <div
-                    data-redirect={hasRedirect || undefined}
-                    className="flex w-full flex-col data-redirect:hidden"
+                    data-skips-service={skipsService || undefined}
+                    className="flex w-full flex-col data-skips-service:hidden"
                   >
                     {(mode === "private" || allPortOptions.length === 0) && (
                       <Block>

@@ -335,6 +335,7 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 					}
 					templateService.DatabaseConfig.StorageSize = size
 				}
+				templateService.DatabaseConfig.ApplyCreateDefaults(*templateService.DatabaseType)
 			}
 
 			kubernetesName, ok := kubeNameMap[templateService.ID]
