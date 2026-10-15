@@ -11,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { defaultAnimationMs } from "@/lib/constants";
 import { getTakenNameError } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
 import {
@@ -23,7 +22,7 @@ import {
 } from "@/lib/queries/teams";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { ReactElement, useRef, useState } from "react";
+import { ReactElement, useState } from "react";
 
 type TProps = {
   children: ReactElement;
@@ -43,16 +42,19 @@ export function CreateTeamDialog({ children, dialogOnOpenChange }: TProps) {
   } = useMutation({ mutationFn: createTeamFn });
 
   const [open, setOpen] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const onOpenChange = (o: boolean) => {
+    setOpen(o);
+    dialogOnOpenChange?.(o);
+  };
 
   const form = useAppForm({
     defaultValues: { name: "", description: "" },
     validators: { onChange: TeamUpdateFormSchema },
-    onSubmit: async ({ formApi, value }) => {
+    onSubmit: async ({ value }) => {
       const res = await createTeam({ name: value.name, description: value.description });
       await queryClient.invalidateQueries({ queryKey: queryKeyTeams.list() });
-      setOpen(false);
-      formApi.reset();
+      onOpenChange(false);
       await router.navigate({ to: "/$team_id", params: { team_id: res.data.id } });
     },
   });
@@ -60,16 +62,11 @@ export function CreateTeamDialog({ children, dialogOnOpenChange }: TProps) {
   return (
     <Dialog
       open={open}
-      onOpenChange={(o) => {
-        setOpen(o);
-        if (!o) {
-          if (timeoutRef.current) clearTimeout(timeoutRef.current);
-          timeoutRef.current = setTimeout(() => {
-            form.reset();
-            createTeamReset();
-          }, defaultAnimationMs);
-        }
-        dialogOnOpenChange?.(o);
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(o) => {
+        if (o) return;
+        form.reset();
+        createTeamReset();
       }}
     >
       <DialogTrigger render={children} />

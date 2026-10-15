@@ -23,6 +23,7 @@ export default function TeamBreadcrumb({ className }: TProps) {
   const canCreateTeam = isSystemAdmin(me);
 
   const [selectedTeamId, setSelectedTeamId] = useState(teamIdFromPathname);
+  const [isTeamsMenuOpen, setIsTeamsMenuOpen] = useState(false);
 
   useEffect(() => {
     setSelectedTeamId(teamIdFromPathname);
@@ -49,7 +50,15 @@ export default function TeamBreadcrumb({ className }: TProps) {
   );
 
   const CreateTeamDialogMemoized = useCallback(
-    ({ children }: { children: ReactElement }) => <CreateTeamDialog>{children}</CreateTeamDialog>,
+    ({ children }: { children: ReactElement }) => (
+      <CreateTeamDialog
+        dialogOnOpenChange={(o) => {
+          if (!o) setIsTeamsMenuOpen(false);
+        }}
+      >
+        {children}
+      </CreateTeamDialog>
+    ),
     [],
   );
 
@@ -67,6 +76,8 @@ export default function TeamBreadcrumb({ className }: TProps) {
       {canCreateTeam ? (
         <BreadcrumbItem
           {...shared}
+          open={isTeamsMenuOpen}
+          setOpen={setIsTeamsMenuOpen}
           newItemTitle="New Team"
           newItemIsPending={false}
           newItemDontCloseMenuOnSelect={true}
