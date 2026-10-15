@@ -5,6 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/validation"
 )
@@ -45,6 +46,27 @@ func TestReplicasWithVolume(t *testing.T) {
 
 	service.Spec.Config.Stopped = true
 	assert.Equal(t, int32(0), NewResourceBuilder(service, nil, nil).replicas(), "a stopped service runs nothing")
+}
+
+func TestDeploymentStrategy(t *testing.T) {
+	service := &v1.Service{}
+	service.Spec.Config.Image = "app:1"
+
+	deployment, err := NewResourceBuilder(service, nil, nil).BuildDeployment()
+	assert.NoError(t, err)
+	assert.Equal(t, appsv1.RollingUpdateDeploymentStrategyType, deployment.Spec.Strategy.Type)
+
+	service.Spec.Config.Rollout = v1.RolloutStopFirst
+	deployment, err = NewResourceBuilder(service, nil, nil).BuildDeployment()
+	assert.NoError(t, err)
+	assert.Equal(t, appsv1.RecreateDeploymentStrategyType, deployment.Spec.Strategy.Type, "a stop-first rollout never overlaps")
+	assert.Equal(t, int64(5), *deployment.Spec.Template.Spec.TerminationGracePeriodSeconds, "it keeps the full grace period to finish its work")
+
+	service.Spec.Config.Rollout = v1.RolloutRolling
+	service.Spec.Config.Volumes = []v1.VolumeSpec{{Name: "data", MountPath: "/data"}}
+	deployment, err = NewResourceBuilder(service, nil, nil).BuildDeployment()
+	assert.NoError(t, err)
+	assert.Equal(t, appsv1.RecreateDeploymentStrategyType, deployment.Spec.Strategy.Type, "a volume takes one writer at a time")
 }
 
 func TestTerminationGracePeriod(t *testing.T) {

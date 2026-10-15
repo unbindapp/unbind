@@ -14,6 +14,14 @@ var cloudflareChecker = utils.NewDNSChecker()
 // ClientIPHeader is the header the service's domains take the visitor's address from:
 // the one chosen for the service, or Cloudflare's while a domain is proxied through it.
 // Resolved on every rollout, so a domain moving on or off Cloudflare is picked up then.
+// A resource rendered before the setting existed carries no rollout, which is rolling
+func RolloutOrDefault(rollout string) string {
+	if rollout == "" {
+		return string(schema.RolloutRolling)
+	}
+	return rollout
+}
+
 func ClientIPHeader(config *ent.ServiceConfig) string {
 	return clientIPHeader(config, func(host string) bool {
 		proxied, _ := cloudflareChecker.IsUsingCloudflareProxy(host)
@@ -47,6 +55,7 @@ func ApplyRuntimeConfig(spec *v1.ServiceConfigSpec, config *ent.ServiceConfig) {
 	spec.Public = config.IsPublic
 	spec.MaxRequestBodySizeMB = config.MaxRequestBodySizeMB
 	spec.SessionAffinity = config.SessionAffinity
+	spec.Rollout = string(config.Rollout)
 	spec.Stopped = config.Stopped
 	spec.CronSchedule = valueOrEmpty(config.CronSchedule)
 	spec.CronTimeZone = valueOrEmpty(config.CronTimezone)

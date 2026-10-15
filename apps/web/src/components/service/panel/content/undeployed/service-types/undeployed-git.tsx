@@ -13,7 +13,7 @@ import HeaderToggle from "@/components/service/header-toggle";
 import DomainPortBlock from "@/components/service/panel/content/undeployed/blocks/domain-port-block";
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";
-import AdvancedSettingsButton from "@/components/service/panel/content/undeployed/service-types/advanced-settings-button";
+import AdvancedSettingsButton from "@/components/service/advanced-settings-button";
 import useCreateFirstDeployment from "@/components/service/panel/content/undeployed/use-create-first-deployment";
 import { softValidateVariables } from "@/components/service/panel/content/undeployed/validators";
 import { WrapperForm, WrapperInner } from "@/components/service/panel/content/undeployed/wrapper";

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -96,8 +97,9 @@ func (rb *ResourceBuilder) buildPodSecurityContext() *corev1.PodSecurityContext 
 	}
 }
 
+// A volume takes one writer at a time, and a stop-first rollout must never overlap
 func (rb *ResourceBuilder) buildDeploymentStrategy() appsv1.DeploymentStrategy {
-	if len(rb.service.Spec.Config.Volumes) > 0 {
+	if len(rb.service.Spec.Config.Volumes) > 0 || rb.service.Spec.Config.Rollout == v1.RolloutStopFirst {
 		return appsv1.DeploymentStrategy{Type: appsv1.RecreateDeploymentStrategyType}
 	}
 	return appsv1.DeploymentStrategy{Type: appsv1.RollingUpdateDeploymentStrategyType}

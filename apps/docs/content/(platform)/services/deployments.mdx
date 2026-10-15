@@ -61,6 +61,8 @@ When a deployment replaces a version, the old replicas get a stop signal (`SIGTE
 
 A service with a [volume](/services/volumes#deployments) gets about 2 seconds instead, because the new version can't start until the old one is gone.
 
+A service with [Rollout](/services/replicas-and-health#rollout) set to **Stop first** also waits for the old version to stop, but keeps the 5 seconds so it can finish its work.
+
 ## Actions on a deployment
 
 Open the menu on a deployment.

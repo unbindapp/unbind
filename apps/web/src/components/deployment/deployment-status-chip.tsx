@@ -44,16 +44,43 @@ export default function DeploymentStatusChip({
   }, [deployment, isPlaceholder, stopped]);
 
   return (
+    <StatusChip
+      text={statusText}
+      Icon={Icon}
+      color={getDeploymentStatusChipColor({ deployment, isPlaceholder, stopped })}
+      isPlaceholder={isPlaceholder}
+      iconClassName={iconClassName}
+      className={className}
+    />
+  );
+}
+
+export function StatusChip({
+  text,
+  Icon,
+  color,
+  isPlaceholder,
+  iconClassName,
+  className,
+}: {
+  text: string;
+  Icon: FC<{ className?: string }>;
+  color: TStatusColor;
+  isPlaceholder?: boolean;
+  iconClassName?: string;
+  className?: string;
+}) {
+  return (
     <div
       data-placeholder={isPlaceholder || undefined}
-      data-color={getDeploymentStatusChipColor({ deployment, isPlaceholder, stopped })}
+      data-color={color}
       className={cn(
         "bg-foreground/3-10 text-muted-foreground data-[color=wait]:bg-wait/4-10 data-[color=destructive]:bg-destructive/4-10 data-[color=destructive]:text-destructive data-[color=wait]:text-wait data-[color=process]:bg-process/4-10 data-[color=process]:text-process data-[color=success]:bg-success/4-10 data-[color=success]:text-success data-placeholder:bg-muted-more-foreground data-placeholder:animate-skeleton flex max-w-full min-w-0 shrink items-center justify-start gap-1.5 rounded-md px-2 py-1.25 text-sm font-medium data-placeholder:text-transparent",
         className,
       )}
     >
       <Icon className={cn("-ml-px size-3.5 shrink-0", iconClassName)} />
-      <p className="min-w-0 shrink leading-tight wrap-break-word">{statusText}</p>
+      <p className="min-w-0 shrink leading-tight wrap-break-word">{text}</p>
     </div>
   );
 }
@@ -62,11 +89,11 @@ function AnimatedHourglassIcon({ className }: { className?: string }) {
   return <HourglassIcon className={cn("animate-hourglass", className)} />;
 }
 
-function AnimatedLoaderIcon({ className }: { className?: string }) {
+export function AnimatedLoaderIcon({ className }: { className?: string }) {
   return <LoaderIcon className={cn("animate-spin", className)} />;
 }
 
-type TDeploymentStatusColor = "default" | "wait" | "process" | "destructive" | "success";
+export type TStatusColor = "default" | "wait" | "process" | "destructive" | "success";
 
 export function getDeploymentStatusChipColor({
   deployment,
@@ -76,7 +103,7 @@ export function getDeploymentStatusChipColor({
   deployment?: TDeploymentShallow;
   isPlaceholder?: boolean;
   stopped?: boolean;
-}): TDeploymentStatusColor {
+}): TStatusColor {
   if (isPlaceholder || !deployment) return "default";
   if (stopped && deployment.status === "active") return "default";
   if (deployment.status === "build-queued") return "wait";

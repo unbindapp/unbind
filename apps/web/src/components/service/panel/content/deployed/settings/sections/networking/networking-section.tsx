@@ -1,4 +1,4 @@
-import CronScheduleNotice from "@/components/service/cron/cron-schedule-notice";
+import SettingNotice from "@/components/settings/setting-notice";
 import { isScheduledService } from "@/components/service/cron/cron-schedule";
 import {
   Block,
@@ -62,9 +62,9 @@ export default function NetworkingSection({ service }: TProps) {
         Icon={NetworkIcon}
         entityId={getNetworkingEntityId(service.id)}
       >
-        <CronScheduleNotice className="px-1 pt-0 pb-0">
+        <SettingNotice className="px-1 pt-0 pb-0">
           Domains and ports are not available for cron schedules.
-        </CronScheduleNotice>
+        </SettingNotice>
       </SettingsSection>
     );
   }
@@ -415,8 +415,7 @@ function AllServiceTypesSection({ service }: { service: TServiceShallow }) {
             <BlockItemHeader type="column">
               <BlockItemTitle>Client IP Header</BlockItemTitle>
               <BlockItemDescription>
-                Header a proxy in front of the service, like Cloudflare, puts the visitor&apos;s
-                address in. Automatic uses CF-Connecting-IP while a domain is behind Cloudflare.
+                Header a proxy like Cloudflare puts the visitor&apos;s address in.
               </BlockItemDescription>
             </BlockItemHeader>
             <BlockItemContent>

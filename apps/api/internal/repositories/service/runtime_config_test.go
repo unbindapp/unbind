@@ -30,6 +30,7 @@ func TestApplyRuntimeConfig(t *testing.T) {
 		Replicas:             3,
 		MaxRequestBodySizeMB: new(int32(500)),
 		SessionAffinity:      true,
+		Rollout:              schema.RolloutStopFirst,
 		Stopped:              true,
 		CronSchedule:         new("*/10 * * * *"),
 		CronTimezone:         new("Europe/Berlin"),
@@ -47,6 +48,7 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Equal(t, int32(3), *spec.Replicas)
 	assert.Equal(t, int32(500), *spec.MaxRequestBodySizeMB)
 	assert.True(t, spec.SessionAffinity)
+	assert.Equal(t, "stop-first", spec.Rollout)
 	assert.True(t, spec.Stopped)
 	assert.Equal(t, "*/10 * * * *", spec.CronSchedule)
 	assert.Equal(t, "Europe/Berlin", spec.CronTimeZone)
@@ -58,9 +60,16 @@ func TestApplyRuntimeConfig(t *testing.T) {
 	assert.Empty(t, spec.Ports)
 	assert.Nil(t, spec.MaxRequestBodySizeMB)
 	assert.False(t, spec.SessionAffinity)
+	assert.Empty(t, spec.Rollout)
 	assert.False(t, spec.Stopped)
 	assert.Empty(t, spec.CronSchedule, "a cleared schedule runs the service continuously again")
 	assert.Empty(t, spec.CronTimeZone)
+}
+
+func TestRolloutOrDefault(t *testing.T) {
+	assert.Equal(t, "rolling", RolloutOrDefault(""), "a resource from before the setting rolls")
+	assert.Equal(t, "rolling", RolloutOrDefault("rolling"))
+	assert.Equal(t, "stop-first", RolloutOrDefault("stop-first"))
 }
 
 func TestApplyRuntimeConfigHealthCheckAndVariableMounts(t *testing.T) {

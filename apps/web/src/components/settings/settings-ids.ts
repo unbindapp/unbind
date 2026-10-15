@@ -34,6 +34,7 @@ export const settingsIds = {
     cronSchedule: "deploy_cron-schedule",
     cronTimezone: "deploy_cron-timezone",
     replicas: "deploy_replicas",
+    rollout: "deploy_rollout",
     resourceLimits: "deploy_resource-limits",
   },
   health: {

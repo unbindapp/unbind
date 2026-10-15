@@ -288,6 +288,20 @@ func (_c *ServiceConfigCreate) SetNillableSessionAffinity(v *bool) *ServiceConfi
 	return _c
 }
 
+// SetRollout sets the "rollout" field.
+func (_c *ServiceConfigCreate) SetRollout(v schema.Rollout) *ServiceConfigCreate {
+	_c.mutation.SetRollout(v)
+	return _c
+}
+
+// SetNillableRollout sets the "rollout" field if the given value is not nil.
+func (_c *ServiceConfigCreate) SetNillableRollout(v *schema.Rollout) *ServiceConfigCreate {
+	if v != nil {
+		_c.SetRollout(*v)
+	}
+	return _c
+}
+
 // SetClientIPHeader sets the "client_ip_header" field.
 func (_c *ServiceConfigCreate) SetClientIPHeader(v string) *ServiceConfigCreate {
 	_c.mutation.SetClientIPHeader(v)
@@ -551,6 +565,10 @@ func (_c *ServiceConfigCreate) defaults() {
 		v := serviceconfig.DefaultSessionAffinity
 		_c.mutation.SetSessionAffinity(v)
 	}
+	if _, ok := _c.mutation.Rollout(); !ok {
+		v := serviceconfig.DefaultRollout
+		_c.mutation.SetRollout(v)
+	}
 	if _, ok := _c.mutation.Stopped(); !ok {
 		v := serviceconfig.DefaultStopped
 		_c.mutation.SetStopped(v)
@@ -612,6 +630,14 @@ func (_c *ServiceConfigCreate) check() error {
 	}
 	if _, ok := _c.mutation.SessionAffinity(); !ok {
 		return &ValidationError{Name: "session_affinity", err: errors.New(`ent: missing required field "ServiceConfig.session_affinity"`)}
+	}
+	if _, ok := _c.mutation.Rollout(); !ok {
+		return &ValidationError{Name: "rollout", err: errors.New(`ent: missing required field "ServiceConfig.rollout"`)}
+	}
+	if v, ok := _c.mutation.Rollout(); ok {
+		if err := serviceconfig.RolloutValidator(v); err != nil {
+			return &ValidationError{Name: "rollout", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.rollout": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.Stopped(); !ok {
 		return &ValidationError{Name: "stopped", err: errors.New(`ent: missing required field "ServiceConfig.stopped"`)}
@@ -754,6 +780,10 @@ func (_c *ServiceConfigCreate) createSpec() (*ServiceConfig, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.SessionAffinity(); ok {
 		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
 		_node.SessionAffinity = value
+	}
+	if value, ok := _c.mutation.Rollout(); ok {
+		_spec.SetField(serviceconfig.FieldRollout, field.TypeEnum, value)
+		_node.Rollout = value
 	}
 	if value, ok := _c.mutation.ClientIPHeader(); ok {
 		_spec.SetField(serviceconfig.FieldClientIPHeader, field.TypeString, value)
@@ -1248,6 +1278,18 @@ func (u *ServiceConfigUpsert) SetSessionAffinity(v bool) *ServiceConfigUpsert {
 // UpdateSessionAffinity sets the "session_affinity" field to the value that was provided on create.
 func (u *ServiceConfigUpsert) UpdateSessionAffinity() *ServiceConfigUpsert {
 	u.SetExcluded(serviceconfig.FieldSessionAffinity)
+	return u
+}
+
+// SetRollout sets the "rollout" field.
+func (u *ServiceConfigUpsert) SetRollout(v schema.Rollout) *ServiceConfigUpsert {
+	u.Set(serviceconfig.FieldRollout, v)
+	return u
+}
+
+// UpdateRollout sets the "rollout" field to the value that was provided on create.
+func (u *ServiceConfigUpsert) UpdateRollout() *ServiceConfigUpsert {
+	u.SetExcluded(serviceconfig.FieldRollout)
 	return u
 }
 
@@ -2010,6 +2052,20 @@ func (u *ServiceConfigUpsertOne) SetSessionAffinity(v bool) *ServiceConfigUpsert
 func (u *ServiceConfigUpsertOne) UpdateSessionAffinity() *ServiceConfigUpsertOne {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.UpdateSessionAffinity()
+	})
+}
+
+// SetRollout sets the "rollout" field.
+func (u *ServiceConfigUpsertOne) SetRollout(v schema.Rollout) *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetRollout(v)
+	})
+}
+
+// UpdateRollout sets the "rollout" field to the value that was provided on create.
+func (u *ServiceConfigUpsertOne) UpdateRollout() *ServiceConfigUpsertOne {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateRollout()
 	})
 }
 
@@ -2991,6 +3047,20 @@ func (u *ServiceConfigUpsertBulk) SetSessionAffinity(v bool) *ServiceConfigUpser
 func (u *ServiceConfigUpsertBulk) UpdateSessionAffinity() *ServiceConfigUpsertBulk {
 	return u.Update(func(s *ServiceConfigUpsert) {
 		s.UpdateSessionAffinity()
+	})
+}
+
+// SetRollout sets the "rollout" field.
+func (u *ServiceConfigUpsertBulk) SetRollout(v schema.Rollout) *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.SetRollout(v)
+	})
+}
+
+// UpdateRollout sets the "rollout" field to the value that was provided on create.
+func (u *ServiceConfigUpsertBulk) UpdateRollout() *ServiceConfigUpsertBulk {
+	return u.Update(func(s *ServiceConfigUpsert) {
+		s.UpdateRollout()
 	})
 }
 

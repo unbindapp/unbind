@@ -25,6 +25,7 @@ export type TStagedFields = Partial<Record<TServiceChangeField, TStagedServiceFi
 export const networkAccessFields: TServiceChangeField[] = ["isPublic"];
 export const requestSizeFields: TServiceChangeField[] = ["maxRequestBodySizeMb"];
 export const sessionAffinityFields: TServiceChangeField[] = ["sessionAffinity"];
+export const rolloutFields: TServiceChangeField[] = ["rollout"];
 export const clientIpHeaderFields: TServiceChangeField[] = ["clientIpHeader"];
 export type TServerValues = Partial<Record<TServiceChangeField, string | number | boolean>>;
 

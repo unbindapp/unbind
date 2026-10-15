@@ -15,6 +15,17 @@ A service with a [volume](/services/volumes#replicas) always runs 1 replica and 
 
 Databases have no replica setting.
 
+## Rollout
+
+**Rollout** under **Deploy** in the service settings is how a deployment replaces the running version:
+
+- **Rolling**, the default: the new version starts next to the old one, and the old one stops once the new one is ready. No gap.
+- **Stop first**: the old version stops before the new one starts, so the two never run at once. Every deployment has a gap of a few seconds. The new image is pulled first, and an image that can't be pulled leaves the running version in place.
+
+Pick **Stop first** for an app that must never run twice at the same time, not even for a few seconds: a bot that holds one token, a worker that owns a wallet, a job that must not overlap. With more than one replica, all old replicas stop before the new ones start.
+
+A service with a [volume](/services/volumes#deployments) always stops first, and the setting is locked.
+
 ## Stop a service
 
 To turn a service off without deleting it, open the menu on its current deployment and choose **Stop**. The service runs no replicas until you choose **Start** from the same menu. Its volumes, domains, variables and settings stay as they are, and it comes back with the replica count it had.

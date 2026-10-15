@@ -822,6 +822,40 @@ func intOrZero(value *int) int {
 //* Enums
 
 // Builder enum
+// Rollout is how a deployment replaces the running version
+type Rollout string
+
+const (
+	// RolloutRolling starts the new version next to the old one and stops the old one once the new one is ready
+	RolloutRolling Rollout = "rolling"
+	// RolloutStopFirst stops the old version before the new one starts, so the two never run at once
+	RolloutStopFirst Rollout = "stop-first"
+)
+
+var allRollouts = []Rollout{RolloutRolling, RolloutStopFirst}
+
+// Values provides list valid values for Enum.
+func (r Rollout) Values() (kinds []string) {
+	for _, r := range allRollouts {
+		kinds = append(kinds, string(r))
+	}
+	return
+}
+
+// Register enum in OpenAPI specification
+// https://github.com/danielgtaylor/huma/issues/621
+func (r Rollout) Schema(reg huma.Registry) *huma.Schema {
+	if reg.Map()["Rollout"] == nil {
+		schemaRef := reg.Schema(reflect.TypeOf(""), true, "Rollout")
+		schemaRef.Title = "Rollout"
+		for _, v := range allRollouts {
+			schemaRef.Enum = append(schemaRef.Enum, string(v))
+		}
+		reg.Map()["Rollout"] = schemaRef
+	}
+	return &huma.Schema{Ref: "#/components/schemas/Rollout"}
+}
+
 type ServiceBuilder string
 
 const (

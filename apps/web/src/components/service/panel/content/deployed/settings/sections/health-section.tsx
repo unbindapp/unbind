@@ -1,4 +1,4 @@
-import CronScheduleNotice from "@/components/service/cron/cron-schedule-notice";
+import SettingNotice from "@/components/settings/setting-notice";
 import { isScheduledService } from "@/components/service/cron/cron-schedule";
 import {
   Block,
@@ -48,9 +48,9 @@ export default function HealthSection({ service }: TProps) {
   if (isScheduledService(service)) {
     return (
       <SettingsSection title="Health" id="health" Icon={HeartIcon} entityId={getEntityId(service)}>
-        <CronScheduleNotice className="px-1 pt-0 pb-0">
+        <SettingNotice className="px-1 pt-0 pb-0">
           Health checks are not available for cron schedules.
-        </CronScheduleNotice>
+        </SettingNotice>
       </SettingsSection>
     );
   }

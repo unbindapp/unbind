@@ -77,7 +77,7 @@ export function CreateTeamDialog({ children, dialogOnOpenChange }: TProps) {
         <DialogHeader>
           <DialogTitle>Create Team</DialogTitle>
           <DialogDescription>
-            A team gets its own namespace. You become its first admin.
+            Teams keep their projects, members and settings apart. You become its first admin.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -99,7 +99,7 @@ export function CreateTeamDialog({ children, dialogOnOpenChange }: TProps) {
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
                 className="w-full"
-                placeholder="Platform"
+                placeholder="Name"
                 maxLength={teamNameMaxLength}
               />
             )}

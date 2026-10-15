@@ -155,6 +155,7 @@ func estimateConfigChange(config *ent.ServiceConfig, input *models.UpdateService
 	if input.Replicas != nil && *input.Replicas != config.Replicas ||
 		input.IsPublic != nil && *input.IsPublic != config.IsPublic ||
 		input.SessionAffinity != nil && *input.SessionAffinity != config.SessionAffinity ||
+		input.Rollout != nil && *input.Rollout != config.Rollout ||
 		input.Stopped != nil && *input.Stopped != config.Stopped ||
 		clearableChanged(input.CronSchedule, config.CronSchedule) ||
 		clearableChanged(input.CronTimezone, config.CronTimezone) ||

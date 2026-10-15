@@ -41,7 +41,7 @@ function Content({ className }: { className?: string }) {
         )}
       </div>
       <p className="text-muted-foreground mt-1.5 w-full px-1 leading-tight">
-        People with a role on this team, and anyone who reaches it through another group.
+        Everyone who can open this team, with their role.
       </p>
       <div className="mt-3 flex w-full flex-col gap-2">
         {members.error && !members.data && <ErrorCard message={members.error.message} />}

@@ -68,6 +68,8 @@ type ServiceConfig struct {
 	MaxRequestBodySizeMB *int32 `json:"max_request_body_size_mb,omitempty"`
 	// Whether public domains pin each visitor to one replica with a cookie
 	SessionAffinity bool `json:"session_affinity,omitempty"`
+	// How a deployment replaces the running version: rolling starts the new one next to the old one, stop-first stops the old one before the new one starts
+	Rollout schema.Rollout `json:"rollout,omitempty"`
 	// Header a proxy in front of the service carries the visitor's address in, unset picks Cloudflare's when a domain is proxied through it
 	ClientIPHeader *string `json:"client_ip_header,omitempty"`
 	// Whether the service is stopped and runs no replicas
@@ -156,7 +158,7 @@ func (*ServiceConfig) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case serviceconfig.FieldReplicas, serviceconfig.FieldMaxRequestBodySizeMB, serviceconfig.FieldBackupRetentionCount:
 			values[i] = new(sql.NullInt64)
-		case serviceconfig.FieldBuilder, serviceconfig.FieldIcon, serviceconfig.FieldDockerBuilderDockerfilePath, serviceconfig.FieldDockerBuilderBuildContext, serviceconfig.FieldRailpackProvider, serviceconfig.FieldRailpackFramework, serviceconfig.FieldGitBranch, serviceconfig.FieldGitTag, serviceconfig.FieldRailpackBuilderInstallCommand, serviceconfig.FieldRailpackBuilderBuildCommand, serviceconfig.FieldRunCommand, serviceconfig.FieldClientIPHeader, serviceconfig.FieldCronSchedule, serviceconfig.FieldCronTimezone, serviceconfig.FieldImage, serviceconfig.FieldDefinitionVersion, serviceconfig.FieldBackupSchedule:
+		case serviceconfig.FieldBuilder, serviceconfig.FieldIcon, serviceconfig.FieldDockerBuilderDockerfilePath, serviceconfig.FieldDockerBuilderBuildContext, serviceconfig.FieldRailpackProvider, serviceconfig.FieldRailpackFramework, serviceconfig.FieldGitBranch, serviceconfig.FieldGitTag, serviceconfig.FieldRailpackBuilderInstallCommand, serviceconfig.FieldRailpackBuilderBuildCommand, serviceconfig.FieldRunCommand, serviceconfig.FieldRollout, serviceconfig.FieldClientIPHeader, serviceconfig.FieldCronSchedule, serviceconfig.FieldCronTimezone, serviceconfig.FieldImage, serviceconfig.FieldDefinitionVersion, serviceconfig.FieldBackupSchedule:
 			values[i] = new(sql.NullString)
 		case serviceconfig.FieldCreatedAt, serviceconfig.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -330,6 +332,12 @@ func (_m *ServiceConfig) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field session_affinity", values[i])
 			} else if value.Valid {
 				_m.SessionAffinity = value.Bool
+			}
+		case serviceconfig.FieldRollout:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field rollout", values[i])
+			} else if value.Valid {
+				_m.Rollout = schema.Rollout(value.String)
 			}
 		case serviceconfig.FieldClientIPHeader:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -593,6 +601,9 @@ func (_m *ServiceConfig) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("session_affinity=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SessionAffinity))
+	builder.WriteString(", ")
+	builder.WriteString("rollout=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Rollout))
 	builder.WriteString(", ")
 	if v := _m.ClientIPHeader; v != nil {
 		builder.WriteString("client_ip_header=")

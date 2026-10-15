@@ -1,6 +1,16 @@
+import { deploymentCardClassName } from "@/components/deployment/deployment-card";
+import {
+  AnimatedLoaderIcon,
+  StatusChip,
+  type TStatusColor,
+} from "@/components/deployment/deployment-status-chip";
+import { deploymentPanelTabKey } from "@/components/deployment/panel/constants";
 import { useDeploymentPanel } from "@/components/deployment/panel/deployment-panel-provider";
+import ErrorCard from "@/components/error-card";
 import ErrorLine from "@/components/error-line";
+import AnimatedTimerIcon from "@/components/icons/animated-timer";
 import NoItemsCard from "@/components/no-items-card";
+import { useNow } from "@/components/providers/now-provider";
 import { useService } from "@/components/service/service-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
@@ -8,13 +18,11 @@ import { getDurationStr, useTimeDifference } from "@/lib/hooks/use-time-differen
 import { cronRunsListQuery, startCronRun, TCronRun } from "@/lib/queries/cron";
 import { TServiceShallow } from "@/lib/queries/services";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  CalendarClockIcon,
-  CircleCheckIcon,
-  LoaderIcon,
-  PlayIcon,
-  TriangleAlertIcon,
-} from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { CalendarClockIcon, CircleCheckIcon, PlayIcon, TriangleAlertIcon } from "lucide-react";
+import { FC } from "react";
+
+const placeholderArray = Array.from({ length: 3 }, (_, i) => i);
 
 export default function CronRuns({ service }: { service: TServiceShallow }) {
   const { teamId, projectId, environmentId, serviceId } = useService();
@@ -23,7 +31,6 @@ export default function CronRuns({ service }: { service: TServiceShallow }) {
     ...cronRunsListQuery(ids),
     refetchInterval: 5000,
   });
-  const { openPanel } = useDeploymentPanel();
 
   const isRunning = data?.runs.some((run) => run.status === "running") ?? false;
   const {
@@ -36,26 +43,28 @@ export default function CronRuns({ service }: { service: TServiceShallow }) {
   });
 
   return (
-    <div className="flex w-full flex-col gap-2 pb-3">
-      <div className="flex w-full items-center justify-between gap-2 px-2">
-        <h3 className="text-muted-foreground leading-tight font-medium">Runs</h3>
+    <>
+      <div
+        data-pending={isPending || undefined}
+        className="group/header flex w-full items-center justify-between gap-2 px-2 pb-1"
+      >
+        <h3 className="text-muted-foreground group-data-pending/header:bg-muted-foreground group-data-pending/header:animate-skeleton leading-tight font-medium group-data-pending/header:rounded-md group-data-pending/header:text-transparent">
+          Runs
+        </h3>
         <Button
           type="button"
           variant="outline"
           disabled={isPending || isRunning || service.config.stopped}
+          fadeOnDisabled={false}
           isPending={isStarting}
           onClick={() => runNow(ids)}
-          className="gap-1.5"
+          className="group-data-pending/header:bg-muted-more-foreground group-data-pending/header:animate-skeleton -my-1.5 -mr-2 shrink-0 gap-1.5 px-3 py-2 font-semibold group-data-pending/header:text-transparent"
         >
-          <PlayIcon className="-ml-0.5 size-4 shrink-0" />
+          <PlayIcon className="-ml-1 size-5 shrink-0" />
           <p className="min-w-0 shrink">{isRunning ? "Running" : "Run Now"}</p>
         </Button>
       </div>
       {startError && <ErrorLine message={startError.message} />}
-      {!data && error && <ErrorLine message={error.message} />}
-      {!data && !error && (
-        <div className="bg-muted-foreground animate-skeleton h-10.5 w-full rounded-lg" />
-      )}
       {data && data.runs.length === 0 && (
         <NoItemsCard Icon={CalendarClockIcon}>
           No runs yet. The first one starts at the next tick of the schedule.
@@ -65,91 +74,113 @@ export default function CronRuns({ service }: { service: TServiceShallow }) {
         <ol className="flex w-full flex-col gap-2">
           {data.runs.map((run) => (
             <li className="w-full" key={run.name}>
-              <RunLine
-                run={run}
-                onOpen={
-                  run.deployment_id
-                    ? () => openPanel(run.deployment_id as string, "deploy-logs")
-                    : undefined
-                }
-              />
+              <RunCard run={run} />
             </li>
           ))}
         </ol>
       )}
-    </div>
+      {!data && isPending && placeholderArray.map((i) => <RunCard key={i} isPlaceholder />)}
+      {!data && !isPending && error && <ErrorCard message={error.message} />}
+    </>
   );
 }
 
-type TRunTone = "muted" | "success" | "destructive";
+type TRunProps = { run: TCronRun; isPlaceholder?: never } | { run?: never; isPlaceholder: true };
 
-function describeRun(run: TCronRun): {
-  Icon: typeof CircleCheckIcon;
-  tone: TRunTone;
+function describeRun(run: TCronRun | undefined): {
   text: string;
+  Icon: FC<{ className?: string }>;
+  color: TStatusColor;
 } {
-  switch (run.status) {
+  switch (run?.status) {
     case "running":
-      return { Icon: LoaderIcon, tone: "muted", text: "Running" };
+      return { text: "RUNNING", Icon: AnimatedLoaderIcon, color: "process" };
     case "failed":
-      return {
-        Icon: TriangleAlertIcon,
-        tone: "destructive",
-        text: run.failure_reason ? `Failed: ${run.failure_reason}` : "Failed",
-      };
-    case "succeeded": {
-      const started = run.started_at ?? run.created_at;
-      const duration = run.completed_at
-        ? getDurationStr({ start: started, end: run.completed_at })
-        : "";
-      return {
-        Icon: CircleCheckIcon,
-        tone: "success",
-        text: duration ? `Succeeded in ${duration}` : "Succeeded",
-      };
-    }
+      return { text: "FAILED", Icon: TriangleAlertIcon, color: "destructive" };
+    case "succeeded":
+      return { text: "SUCCEEDED", Icon: CircleCheckIcon, color: "success" };
+    default:
+      return { text: "LOADING", Icon: AnimatedLoaderIcon, color: "default" };
   }
 }
 
-function RunLine({ run, onOpen }: { run: TCronRun; onOpen?: () => void }) {
-  const { str: timeAgo } = useTimeDifference({ timestamp: new Date(run.created_at).getTime() });
-  const { Icon, tone, text } = describeRun(run);
-  const trigger = run.manual ? "Started manually" : "Scheduled";
-  const meta = timeAgo ? `${trigger}, ${timeAgo}` : trigger;
+function RunCard({ run, isPlaceholder }: TRunProps) {
+  const { getOpenSearch } = useDeploymentPanel();
+  const now = useNow();
+  const { str: timeAgo } = useTimeDifference({
+    timestamp: run ? new Date(run.created_at).getTime() : Date.now(),
+  });
+  const { text, Icon, color } = describeRun(run);
+  const isRunning = run?.status === "running";
+  const started = run?.started_at ?? run?.created_at;
+  const durationStr =
+    !run || !started
+      ? undefined
+      : run.completed_at
+        ? getDurationStr({ start: started, end: run.completed_at })
+        : isRunning
+          ? getDurationStr({ start: started, end: now })
+          : undefined;
+  const skeleton =
+    "group-data-placeholder/card:bg-foreground group-data-placeholder/card:animate-skeleton group-data-placeholder/card:rounded-md group-data-placeholder/card:text-transparent";
 
   const content = (
     <>
-      <div className="line-icon text-muted-foreground group-data-[tone=destructive]/line:text-destructive group-data-[tone=success]/line:text-success">
-        <Icon
-          className={cn("-ml-0.5 size-4 shrink-0", run.status === "running" && "animate-spin")}
-        />
+      <div className="flex flex-col items-start justify-start sm:w-34 sm:pr-3">
+        <StatusChip text={text} Icon={Icon} color={color} isPlaceholder={isPlaceholder} />
       </div>
-      <p className="min-w-0 flex-1 text-left font-medium wrap-break-word">{text}</p>
-      <p className="text-muted-foreground shrink-0 text-sm">{meta}</p>
+      <div className="mt-1.5 flex min-w-0 flex-1 flex-col gap-1.25 pb-0.5 sm:mt-0">
+        <p className={cn("max-w-full min-w-0 shrink leading-tight wrap-break-word", skeleton)}>
+          {!run ? "Scheduled" : run.manual ? "Started manually" : "Scheduled"}
+        </p>
+        <div className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-0.5 font-mono text-sm leading-tight">
+          <p className={cn("min-w-0 shrink", skeleton)}>{run ? timeAgo : "1 hr. ago"}</p>
+          {(isPlaceholder || durationStr) && (
+            <>
+              <span className="text-muted-most-foreground">|</span>
+              <p className={cn("min-w-0 shrink", skeleton)}>
+                <span className="inline-icon mr-[0.4ch]">
+                  <AnimatedTimerIcon animate={isRunning} className="size-3.5 shrink-0" />
+                </span>
+                {durationStr ?? "0:05"}
+              </p>
+            </>
+          )}
+        </div>
+        {run?.failure_reason && (
+          <p className="text-destructive min-w-0 shrink text-sm leading-tight wrap-break-word">
+            {run.failure_reason}
+          </p>
+        )}
+      </div>
     </>
   );
-  const className =
-    "group/line flex w-full min-w-0 items-start gap-2 rounded-lg border px-3 py-2.5 leading-tight";
+  const className = cn(deploymentCardClassName, "sm:pr-4");
 
-  if (!onOpen) {
-    return (
-      <div data-tone={tone} className={className}>
-        {content}
-      </div>
-    );
-  }
   return (
-    <button
-      type="button"
-      data-tone={tone}
-      onClick={onOpen}
-      title="Open the logs of this run's deployment"
-      className={cn(
-        className,
-        "has-hover:hover:bg-border/8-10 active:bg-border/8-10 focus-visible:ring-primary/8-10 cursor-pointer focus-visible:ring-1 focus-visible:outline-hidden",
-      )}
+    <div
+      data-color={color}
+      data-placeholder={isPlaceholder || undefined}
+      className="group/card relative flex w-full flex-row items-stretch rounded-xl"
     >
-      {content}
-    </button>
+      {run?.deployment_id ? (
+        <Link
+          from="/$team_id/project/$project_id"
+          to="."
+          search={(prev) => ({
+            ...prev,
+            ...getOpenSearch(run.deployment_id as string),
+            [deploymentPanelTabKey]: "deploy-logs",
+          })}
+          replace={true}
+          resetScroll={false}
+          className={className}
+        >
+          {content}
+        </Link>
+      ) : (
+        <div className={className}>{content}</div>
+      )}
+    </div>
   );
 }

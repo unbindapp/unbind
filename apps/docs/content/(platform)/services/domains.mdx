@@ -72,7 +72,7 @@ A few rules apply:
 
 ## Split a domain by path
 
-A domain can send each path to a different service, like `example.com` to the website and `example.com/api` to the API. Add the domain to every service that takes a part of it, and type a **Path** on each one except the service that answers the rest. The longest matching path wins.
+A domain can send each path to a different service, like `example.com` to the website and `example.com/api` to the API. Add the domain to every service that takes a part of it, and type a **Path** under **Advanced Settings** on each one except the service that answers the rest. The longest matching path wins.
 
 - A path covers itself and everything under it: `/api` takes `/api` and `/api/users`, not `/apis`.
 - The service gets the full path: the one under `/api` sees `/api/users`, not `/users`.
@@ -84,7 +84,7 @@ A domain can send each path to a different service, like `example.com` to the we
 
 ## Redirect a domain
 
-A domain can send visitors to another URL instead of the service. Press the pencil on the domain, type the URL in **Redirect**, like `https://example.com`, pick the **Redirect Status** and deploy.
+A domain can send visitors to another URL instead of the service. Press the pencil on the domain, open **Advanced Settings**, type the URL in **Redirect**, like `https://example.com`, pick the **Redirect Status** and deploy.
 
 - A URL with no path keeps the path and query of the request: `www.example.com/pricing` goes to `example.com/pricing`.
 - A URL with a path drops it: every page of `plugins.example.com` goes to `example.com/plugins`.
@@ -97,7 +97,7 @@ This is how to send `www.example.com` to `example.com`: add `www.example.com` to
 
 ## Proxy a domain
 
-A domain can serve another URL without a redirect, so visitors stay on your domain. Press the pencil on the domain, type the URL in **Proxy**, like `https://raw.githubusercontent.com/org/repo/main/install.sh`, and deploy. Tools that don't follow redirects, like `curl` without `-L`, get the content itself.
+A domain can serve another URL without a redirect, so visitors stay on your domain. Press the pencil on the domain, open **Advanced Settings**, type the URL in **Proxy**, like `https://raw.githubusercontent.com/org/repo/main/install.sh`, and deploy. Tools that don't follow redirects, like `curl` without `-L`, get the content itself.
 
 - A URL with no path keeps the path of the request: `docs.example.com/start` serves `example.net/start`.
 - A URL with a path serves that path for every request, like the install script above.
@@ -111,13 +111,13 @@ Proxies need Envoy Gateway, the default. Installs on ingress-nginx or Traefik do
 
 ## Password protect a domain
 
-**Basic Auth** asks visitors for a username and password before the service answers. Press the pencil on the domain, type a username and a password and deploy. Browsers show a login prompt, and tools send the pair with `curl -u`.
+**Basic Auth** asks visitors for a username and password before the service answers. Press the pencil on the domain, open **Advanced Settings**, type a username and a password and deploy. Browsers show a login prompt, and tools send the pair with `curl -u`.
 
 Unbind keeps a hash of the password, never the password itself, and never shows it again. To change it, type a new one. Leaving the password empty on a later edit keeps the current one. A domain with a redirect has no basic auth, since the service never answers on it.
 
 ## Response headers
 
-**Response Headers** adds headers to every response of a domain, typed as `Name: value`. A header the service already sends is replaced.
+**Response Headers**, under **Advanced Settings** of a domain, adds headers to every response of it, typed as `Name: value`. A header the service already sends is replaced.
 
 Common ones:
 
