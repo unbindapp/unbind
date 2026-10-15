@@ -523,5 +523,10 @@
     "version": "v0.1.104",
     "summary": "Share a domain between services by path, with redirects, proxies, basic auth and response headers set per path, and public URLs that include the path.",
     "breaking": false
+  },
+  "v0.1.105": {
+    "version": "v0.1.105",
+    "summary": "Scheduled Redis backups to S3, a stop-first rollout setting for services, domain options moved under Advanced Settings, a reworked cron runs list, and longer waits for slow request bodies.",
+    "breaking": false
   }
 }
