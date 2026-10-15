@@ -67,8 +67,9 @@ service account may not grant itself. The applier server-side-applies every docu
 (field manager `unbind-updater`) after a full dry-run pass, so an invalid bundle is
 rejected before anything lands.
 
-`release.yml` fails a tag whose charts under `deploy/charts/charts/` changed since the
-previous release but that ships no `deploy/releases/<tag>/` directory. The in-app updater
+`release.yml` fails a tag whose charts under `deploy/charts/charts/`, or whose operator CRDs
+and RBAC under `apps/operator/config/crd/bases/` and `apps/operator/config/rbac/`, changed
+since the previous release but that ships no `deploy/releases/<tag>/` directory. The in-app updater
 never applies charts, so such a change would silently miss existing installs. Ship the
 equivalent resources or patches as release manifests, or add an empty `kustomization.yaml`
 (no job is run for an empty render) to acknowledge the change is fresh-install-only.

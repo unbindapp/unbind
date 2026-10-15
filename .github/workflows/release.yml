@@ -38,16 +38,16 @@ jobs:
             echo "No previous release tag; skipping chart guard"
             exit 0
           fi
-          CHANGED=$(git diff --name-only -I '^\s*#' "$PREV" "$VERSION" -- deploy/charts/charts/)
+          CHANGED=$(git diff --name-only -I '^\s*#' "$PREV" "$VERSION" -- deploy/charts/charts/ apps/operator/config/crd/bases/ apps/operator/config/rbac/)
           if [ -z "$CHANGED" ]; then
-            echo "No chart changes since $PREV"
+            echo "No chart, CRD or operator RBAC changes since $PREV"
             exit 0
           fi
           if git ls-tree -d "$VERSION" "deploy/releases/$VERSION" | grep -q .; then
-            echo "Charts changed and deploy/releases/$VERSION/ exists"
+            echo "Charts, CRDs or operator RBAC changed and deploy/releases/$VERSION/ exists"
             exit 0
           fi
-          echo "::error::Charts changed since $PREV but deploy/releases/$VERSION/ is missing:"
+          echo "::error::Charts, CRDs or operator RBAC changed since $PREV but deploy/releases/$VERSION/ is missing:"
           echo "$CHANGED" | while read -r f; do echo "::error::  $f"; done
           echo "::error::The in-app updater never applies charts, so existing installs only receive release manifests. Ship the equivalent change under deploy/releases/$VERSION/, or add an empty kustomization.yaml there to acknowledge it is fresh-install-only."
           exit 1

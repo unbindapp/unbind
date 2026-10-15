@@ -373,6 +373,13 @@ spec:
                     - memoryLimitsMegabytes
                     - memoryRequestsMegabytes
                     type: object
+                  rollout:
+                    description: Rollout is how a deployment replaces the running
+                      version
+                    enum:
+                    - rolling
+                    - stop-first
+                    type: string
                   runCommand:
                     description: RunCommand is a custom run command
                     type: string
