@@ -1133,6 +1133,36 @@ func SessionAffinityNEQ(v bool) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldNEQ(FieldSessionAffinity, v))
 }
 
+// RolloutEQ applies the EQ predicate on the "rollout" field.
+func RolloutEQ(v schema.Rollout) predicate.ServiceConfig {
+	vc := v
+	return predicate.ServiceConfig(sql.FieldEQ(FieldRollout, vc))
+}
+
+// RolloutNEQ applies the NEQ predicate on the "rollout" field.
+func RolloutNEQ(v schema.Rollout) predicate.ServiceConfig {
+	vc := v
+	return predicate.ServiceConfig(sql.FieldNEQ(FieldRollout, vc))
+}
+
+// RolloutIn applies the In predicate on the "rollout" field.
+func RolloutIn(vs ...schema.Rollout) predicate.ServiceConfig {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ServiceConfig(sql.FieldIn(FieldRollout, v...))
+}
+
+// RolloutNotIn applies the NotIn predicate on the "rollout" field.
+func RolloutNotIn(vs ...schema.Rollout) predicate.ServiceConfig {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ServiceConfig(sql.FieldNotIn(FieldRollout, v...))
+}
+
 // ClientIPHeaderEQ applies the EQ predicate on the "client_ip_header" field.
 func ClientIPHeaderEQ(v string) predicate.ServiceConfig {
 	return predicate.ServiceConfig(sql.FieldEQ(FieldClientIPHeader, v))

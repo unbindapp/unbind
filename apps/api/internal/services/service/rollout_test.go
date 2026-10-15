@@ -44,6 +44,7 @@ func TestEstimateConfigChange(t *testing.T) {
 		Image:                       "nginx:1.25",
 		RunCommand:                  utils.ToPtr("npm start"),
 		MaxRequestBodySizeMB:        utils.ToPtr[int32](500),
+		Rollout:                     schema.RolloutRolling,
 	}
 
 	tests := []struct {
@@ -67,6 +68,8 @@ func TestEstimateConfigChange(t *testing.T) {
 		{"request size reset", models.UpdateServiceInput{MaxRequestBodySizeMB: utils.ToPtr[int32](0)}, service_repo.NeedsDeployment},
 		{"same session affinity", models.UpdateServiceInput{SessionAffinity: utils.ToPtr(false)}, service_repo.NoDeploymentNeeded},
 		{"session affinity", models.UpdateServiceInput{SessionAffinity: utils.ToPtr(true)}, service_repo.NeedsDeployment},
+		{"same rollout", models.UpdateServiceInput{Rollout: utils.ToPtr(schema.RolloutRolling)}, service_repo.NoDeploymentNeeded},
+		{"rollout", models.UpdateServiceInput{Rollout: utils.ToPtr(schema.RolloutStopFirst)}, service_repo.NeedsDeployment},
 		{"still running", models.UpdateServiceInput{Stopped: utils.ToPtr(false)}, service_repo.NoDeploymentNeeded},
 		{"stopped", models.UpdateServiceInput{Stopped: utils.ToPtr(true)}, service_repo.NeedsDeployment},
 		{"cron schedule", models.UpdateServiceInput{CronSchedule: utils.ToPtr("0 * * * *")}, service_repo.NeedsDeployment},

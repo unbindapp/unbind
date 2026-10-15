@@ -5,6 +5,7 @@ import {
   HealthCheckTypeSchema,
   HostSpecSchema,
   PortSpecSchema,
+  RolloutSchema,
   ServiceBuilderSchema,
   ServiceVolumeSchema,
   WalLevelSchema,
@@ -28,6 +29,8 @@ export const ServiceDescriptionSchema = z
     `Description should be at most ${serviceDescriptionMaxLength} characters.`,
   );
 
+export type TRollout = z.infer<typeof RolloutSchema>;
+
 export const UpdateServiceInputSchema = z
   .object({
     teamId: z.string().uuid(),
@@ -45,6 +48,7 @@ export const UpdateServiceInputSchema = z
     image: z.string().optional(),
     isPublic: z.boolean().optional(),
     sessionAffinity: z.boolean().optional(),
+    rollout: RolloutSchema.optional(),
     // "" goes back to automatic
     clientIpHeader: z.string().optional(),
     stopped: z.boolean().optional(),
@@ -109,6 +113,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     image,
     isPublic,
     sessionAffinity,
+    rollout,
     clientIpHeader,
     stopped,
     cronSchedule,
@@ -226,6 +231,7 @@ export function toUpdateServiceInput(input: TUpdateServiceInput): UpdateServiceI
     image,
     is_public: isPublic,
     session_affinity: sessionAffinity,
+    rollout,
     client_ip_header: clientIpHeader,
     stopped,
     cron_schedule: cronSchedule,

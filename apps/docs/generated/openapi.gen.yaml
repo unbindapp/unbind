@@ -583,6 +583,9 @@ components:
         resources:
           $ref: "#/components/schemas/Resources"
           description: Resource limits and requests for the service containers
+        rollout:
+          $ref: "#/components/schemas/Rollout"
+          description: How a deployment replaces the running version. rolling (default) starts the new version next to the old one, so there is no gap. stop-first stops the old version before the new one starts, so the two never run at once, for apps that must not overlap like bots or wallets, at the cost of a few seconds of downtime per deployment. A service with a volume always stops first. Not for databases
         run_command:
           type: string
         s3_backup_bucket_id:
@@ -2557,6 +2560,12 @@ components:
       required:
         - restarted
       type: object
+    Rollout:
+      enum:
+        - rolling
+        - stop-first
+      title: Rollout
+      type: string
     S3AccessTestInput:
       additionalProperties: false
       properties:
@@ -2973,6 +2982,9 @@ components:
           type: integer
         resources:
           $ref: "#/components/schemas/Resources"
+        rollout:
+          $ref: "#/components/schemas/Rollout"
+          description: How a deployment replaces the running version. rolling starts the new one next to the old one, stop-first stops the old one before the new one starts
         run_command:
           type: string
         s3_backup_bucket_id:
@@ -3008,6 +3020,7 @@ components:
         - auto_deploy
         - is_public
         - session_affinity
+        - rollout
         - stopped
         - backup_schedule
         - backup_retention_count
@@ -4276,6 +4289,9 @@ components:
         resources:
           $ref: "#/components/schemas/Resources"
           description: Resource limits and requests for the service containers
+        rollout:
+          $ref: "#/components/schemas/Rollout"
+          description: How a deployment replaces the running version. rolling starts the new version next to the old one, so there is no gap. stop-first stops the old version before the new one starts, so the two never run at once, for apps that must not overlap like bots or wallets, at the cost of a few seconds of downtime per deployment. A service with a volume always stops first. Not for databases
         run_command:
           type: string
         s3_backup_bucket_id:

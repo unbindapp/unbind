@@ -20132,6 +20132,7 @@ type ServiceConfigMutation struct {
 	max_request_body_size_mb         *int32
 	addmax_request_body_size_mb      *int32
 	session_affinity                 *bool
+	rollout                          *schema.Rollout
 	client_ip_header                 *string
 	stopped                          *bool
 	cron_schedule                    *string
@@ -21318,6 +21319,42 @@ func (m *ServiceConfigMutation) ResetSessionAffinity() {
 	m.session_affinity = nil
 }
 
+// SetRollout sets the "rollout" field.
+func (m *ServiceConfigMutation) SetRollout(s schema.Rollout) {
+	m.rollout = &s
+}
+
+// Rollout returns the value of the "rollout" field in the mutation.
+func (m *ServiceConfigMutation) Rollout() (r schema.Rollout, exists bool) {
+	v := m.rollout
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRollout returns the old "rollout" field's value of the ServiceConfig entity.
+// If the ServiceConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceConfigMutation) OldRollout(ctx context.Context) (v schema.Rollout, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRollout is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRollout requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRollout: %w", err)
+	}
+	return oldValue.Rollout, nil
+}
+
+// ResetRollout resets all changes to the "rollout" field.
+func (m *ServiceConfigMutation) ResetRollout() {
+	m.rollout = nil
+}
+
 // SetClientIPHeader sets the "client_ip_header" field.
 func (m *ServiceConfigMutation) SetClientIPHeader(s string) {
 	m.client_ip_header = &s
@@ -22333,7 +22370,7 @@ func (m *ServiceConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceConfigMutation) Fields() []string {
-	fields := make([]string, 0, 40)
+	fields := make([]string, 0, 41)
 	if m.created_at != nil {
 		fields = append(fields, serviceconfig.FieldCreatedAt)
 	}
@@ -22399,6 +22436,9 @@ func (m *ServiceConfigMutation) Fields() []string {
 	}
 	if m.session_affinity != nil {
 		fields = append(fields, serviceconfig.FieldSessionAffinity)
+	}
+	if m.rollout != nil {
+		fields = append(fields, serviceconfig.FieldRollout)
 	}
 	if m.client_ip_header != nil {
 		fields = append(fields, serviceconfig.FieldClientIPHeader)
@@ -22506,6 +22546,8 @@ func (m *ServiceConfigMutation) Field(name string) (ent.Value, bool) {
 		return m.MaxRequestBodySizeMB()
 	case serviceconfig.FieldSessionAffinity:
 		return m.SessionAffinity()
+	case serviceconfig.FieldRollout:
+		return m.Rollout()
 	case serviceconfig.FieldClientIPHeader:
 		return m.ClientIPHeader()
 	case serviceconfig.FieldStopped:
@@ -22595,6 +22637,8 @@ func (m *ServiceConfigMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldMaxRequestBodySizeMB(ctx)
 	case serviceconfig.FieldSessionAffinity:
 		return m.OldSessionAffinity(ctx)
+	case serviceconfig.FieldRollout:
+		return m.OldRollout(ctx)
 	case serviceconfig.FieldClientIPHeader:
 		return m.OldClientIPHeader(ctx)
 	case serviceconfig.FieldStopped:
@@ -22793,6 +22837,13 @@ func (m *ServiceConfigMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSessionAffinity(v)
+		return nil
+	case serviceconfig.FieldRollout:
+		v, ok := value.(schema.Rollout)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRollout(v)
 		return nil
 	case serviceconfig.FieldClientIPHeader:
 		v, ok := value.(string)
@@ -23244,6 +23295,9 @@ func (m *ServiceConfigMutation) ResetField(name string) error {
 		return nil
 	case serviceconfig.FieldSessionAffinity:
 		m.ResetSessionAffinity()
+		return nil
+	case serviceconfig.FieldRollout:
+		m.ResetRollout()
 		return nil
 	case serviceconfig.FieldClientIPHeader:
 		m.ResetClientIPHeader()

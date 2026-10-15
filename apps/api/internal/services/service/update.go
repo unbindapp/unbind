@@ -164,6 +164,9 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 	if input.SessionAffinity != nil && service.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no sticky sessions")
 	}
+	if input.Rollout != nil && service.Type == schema.ServiceTypeDatabase {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, databaseRolloutMessage)
+	}
 	if input.Stopped != nil && service.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases can't be stopped")
 	}
@@ -506,6 +509,7 @@ func (self *ServiceService) applyServiceUpdate(ctx context.Context, update *serv
 			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
 			ClientIPHeader:                input.ClientIPHeader,
 			SessionAffinity:               input.SessionAffinity,
+			Rollout:                       input.Rollout,
 			Stopped:                       input.Stopped,
 			CronSchedule:                  input.CronSchedule,
 			CronTimezone:                  input.CronTimezone,
@@ -663,6 +667,13 @@ func (self *ServiceService) notifyServiceUpdated(requesterUserID uuid.UUID, inpu
 			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
 				Name:  "Client IP Header",
 				Value: clientIPHeaderLabel(*input.ClientIPHeader),
+			})
+		}
+
+		if input.Rollout != nil {
+			data.Fields = append(data.Fields, webhooks_service.WebhookDataField{
+				Name:  "Rollout",
+				Value: string(*input.Rollout),
 			})
 		}
 
@@ -834,6 +845,8 @@ func validateVolumeReplicas(config *ent.ServiceConfig, input *models.UpdateServi
 	}
 	return nil
 }
+
+const databaseRolloutMessage = "Databases have no rollout setting"
 
 func ReplicatedMountError(replicas int32) error {
 	return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("This service runs %d replicas and replicas can't share a volume. Set its replicas to 1 before mounting a volume", replicas))

@@ -62,6 +62,8 @@ const (
 	FieldMaxRequestBodySizeMB = "max_request_body_size_mb"
 	// FieldSessionAffinity holds the string denoting the session_affinity field in the database.
 	FieldSessionAffinity = "session_affinity"
+	// FieldRollout holds the string denoting the rollout field in the database.
+	FieldRollout = "rollout"
 	// FieldClientIPHeader holds the string denoting the client_ip_header field in the database.
 	FieldClientIPHeader = "client_ip_header"
 	// FieldStopped holds the string denoting the stopped field in the database.
@@ -145,6 +147,7 @@ var Columns = []string{
 	FieldIsPublic,
 	FieldMaxRequestBodySizeMB,
 	FieldSessionAffinity,
+	FieldRollout,
 	FieldClientIPHeader,
 	FieldStopped,
 	FieldCronSchedule,
@@ -227,6 +230,18 @@ func RailpackFrameworkValidator(rf enum.Framework) error {
 		return nil
 	default:
 		return fmt.Errorf("serviceconfig: invalid enum value for railpack_framework field: %q", rf)
+	}
+}
+
+const DefaultRollout schema.Rollout = "rolling"
+
+// RolloutValidator is a validator for the "rollout" field enum values. It is called by the builders before save.
+func RolloutValidator(r schema.Rollout) error {
+	switch r {
+	case "rolling", "stop-first":
+		return nil
+	default:
+		return fmt.Errorf("serviceconfig: invalid enum value for rollout field: %q", r)
 	}
 }
 
@@ -331,6 +346,11 @@ func ByMaxRequestBodySizeMB(opts ...sql.OrderTermOption) OrderOption {
 // BySessionAffinity orders the results by the session_affinity field.
 func BySessionAffinity(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSessionAffinity, opts...).ToFunc()
+}
+
+// ByRollout orders the results by the rollout field.
+func ByRollout(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRollout, opts...).ToFunc()
 }
 
 // ByClientIPHeader orders the results by the client_ip_header field.

@@ -86,6 +86,13 @@ type ServiceSpec struct {
 }
 
 // ServiceConfigSpec defines configuration for a service
+const (
+	// RolloutRolling starts the new version next to the old one, the default
+	RolloutRolling = "rolling"
+	// RolloutStopFirst stops the old version before the new one starts
+	RolloutStopFirst = "stop-first"
+)
+
 type ServiceConfigSpec struct {
 	// GitBranch to build from
 	GitBranch string `json:"gitBranch,omitempty"`
@@ -112,6 +119,9 @@ type ServiceConfigSpec struct {
 
 	// SessionAffinity pins each visitor to one replica with a cookie
 	SessionAffinity bool `json:"sessionAffinity,omitempty"`
+	// Rollout is how a deployment replaces the running version
+	// +kubebuilder:validation:Enum=rolling;stop-first
+	Rollout string `json:"rollout,omitempty"`
 	// ClientIPHeader names the header a proxy in front of the service carries the visitor's address in
 	ClientIPHeader string `json:"clientIPHeader,omitempty" required:"false"`
 

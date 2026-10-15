@@ -40,7 +40,7 @@ A service can run on a cron schedule instead of continuously: set cron_schedule 
 
 Services of one team can share a domain on different paths: give each the same host with its own path, like / on the website and /api on the server, and the longest matching path wins. upsert_hosts and remove_hosts match a domain by host and path; send prev_host and prev_path to change either.
 
-A service holds one volume at most. A service with a volume runs a single replica, because replicas can't share a volume: set replicas to 1 before mounting one. Its rollouts stop the running replica before the new one starts, so expect a short gap. The new image is pulled first, and an image that can't be pulled leaves the running replica in place.`
+A service holds one volume at most. A service with a volume runs a single replica, because replicas can't share a volume: set replicas to 1 before mounting one. Its rollouts stop the running replica before the new one starts, so expect a short gap. The new image is pulled first, and an image that can't be pulled leaves the running replica in place. rollout stop-first gives a service without a volume the same rollout, for apps that must never run two versions at once like bots or wallets; rolling, the default, starts the new version next to the old one.`
 )
 
 type Options struct {

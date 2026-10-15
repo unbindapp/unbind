@@ -89,6 +89,7 @@ type MutateConfigInput struct {
 	MaxRequestBodySizeMB          *int32
 	ClientIPHeader                *string
 	SessionAffinity               *bool
+	Rollout                       *schema.Rollout
 	Stopped                       *bool
 	CronSchedule                  *string
 	CronTimezone                  *string
@@ -180,6 +181,7 @@ func (self *ServiceRepository) CreateConfig(
 		SetNillableMaxRequestBodySizeMB(input.MaxRequestBodySizeMB).
 		SetNillableClientIPHeader(input.ClientIPHeader).
 		SetNillableSessionAffinity(input.SessionAffinity).
+		SetNillableRollout(input.Rollout).
 		SetNillableStopped(input.Stopped).
 		SetNillableCronSchedule(input.CronSchedule).
 		SetNillableCronTimezone(input.CronTimezone).
@@ -314,6 +316,7 @@ func (self *ServiceRepository) UpdateConfig(
 		SetNillableAutoDeploy(input.AutoDeploy).
 		SetNillableIsPublic(input.Public).
 		SetNillableSessionAffinity(input.SessionAffinity).
+		SetNillableRollout(input.Rollout).
 		SetNillableStopped(input.Stopped).
 		SetNillableImage(input.Image).
 		SetNillableDefinitionVersion(input.CustomDefinitionVersion).

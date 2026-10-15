@@ -23,6 +23,7 @@ type ServiceConfigResponse struct {
 	IsPublic                      bool                  `json:"is_public"`
 	MaxRequestBodySizeMB          *int32                `json:"max_request_body_size_mb,omitempty" doc:"Largest request body the service's domains accept, in MB. Unset uses the default of 100"`
 	SessionAffinity               bool                  `json:"session_affinity" doc:"Whether the service's domains pin each visitor to one replica with a cookie"`
+	Rollout                       schema.Rollout        `json:"rollout" doc:"How a deployment replaces the running version. rolling starts the new one next to the old one, stop-first stops the old one before the new one starts"`
 	ClientIPHeader                *string               `json:"client_ip_header,omitempty" doc:"Header the service's domains take the visitor's IP address from. Unset means automatic: CF-Connecting-IP while a domain is proxied through Cloudflare"`
 	Stopped                       bool                  `json:"stopped" doc:"Whether the service is stopped and runs no replicas"`
 	CronSchedule                  *string               `json:"cron_schedule,omitempty" doc:"Cron expression the service runs on instead of running continuously"`
@@ -113,6 +114,7 @@ func TransformServiceConfigEntity(entity *ent.ServiceConfig) *ServiceConfigRespo
 			IsPublic:                      entity.IsPublic,
 			MaxRequestBodySizeMB:          entity.MaxRequestBodySizeMB,
 			SessionAffinity:               entity.SessionAffinity,
+			Rollout:                       entity.Rollout,
 			ClientIPHeader:                entity.ClientIPHeader,
 			Stopped:                       entity.Stopped,
 			CronSchedule:                  entity.CronSchedule,

@@ -233,6 +233,8 @@ export const ResourcesSchema = z
   })
   .strip();
 
+export const RolloutSchema = z.enum(['rolling', 'stop-first']);
+
 export const UpdateServiceInputSchema = z
   .object({
     add_ports: z.array(PortSpecSchema).nullable().optional(), // Additional ports to add, will not remove existing ports
@@ -274,6 +276,7 @@ export const UpdateServiceInputSchema = z
     repository_name: z.string().optional(), // Must be a repository the GitHub installation has access to
     repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
+    rollout: RolloutSchema.optional(), // How a deployment replaces the running version. rolling starts the new version next to the old one, so there is no gap. stop-first stops the old version before the new one starts, so the two never run at once, for apps that must not overlap like bots or wallets, at the cost of a few seconds of downtime per deployment. A service with a volume always stops first. Not for databases
     run_command: z.string().optional(),
     s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for database services
     service_id: z.string(),
@@ -900,6 +903,7 @@ export const CreateServiceInputSchema = z
     repository_name: z.string().optional(), // Must be a repository the GitHub installation has access to
     repository_owner: z.string().optional(), // Must be the account the GitHub installation belongs to
     resources: ResourcesSchema.optional(), // Resource limits and requests for the service containers
+    rollout: RolloutSchema.optional(), // How a deployment replaces the running version. rolling (default) starts the new version next to the old one, so there is no gap. stop-first stops the old version before the new one starts, so the two never run at once, for apps that must not overlap like bots or wallets, at the cost of a few seconds of downtime per deployment. A service with a volume always stops first. Not for databases
     run_command: z.string().optional(),
     s3_backup_bucket_id: z.string().optional(), // S3 bucket to store database backups in. Only for database services
     session_affinity: z.boolean().optional(), // Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Defaults to false. Caches like Cloudflare skip responses that set the cookie. Not for databases
@@ -959,6 +963,7 @@ export const ServiceConfigResponseSchema = z
     railpack_builder_install_command: z.string().optional(),
     replicas: z.number(),
     resources: ResourcesSchema.optional(),
+    rollout: RolloutSchema, // How a deployment replaces the running version. rolling starts the new one next to the old one, stop-first stops the old one before the new one starts
     run_command: z.string().optional(),
     s3_backup_bucket_id: z.string().optional(),
     security_context: SecurityContextSchema.optional(),
@@ -3288,6 +3293,7 @@ export type HostRedirect = z.infer<typeof HostRedirectSchema>;
 export type HostHeader = z.infer<typeof HostHeaderSchema>;
 export type HostSpec = z.infer<typeof HostSpecSchema>;
 export type Resources = z.infer<typeof ResourcesSchema>;
+export type Rollout = z.infer<typeof RolloutSchema>;
 export type UpdateServiceInput = z.infer<typeof UpdateServiceInputSchema>;
 export type VariableReferenceSourceType = z.infer<typeof VariableReferenceSourceTypeSchema>;
 export type VariableUpsertInput = z.infer<typeof VariableUpsertInputSchema>;

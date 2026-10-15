@@ -215,6 +215,20 @@ export const settingsSearchIndex: TSettingsSearchSection[] = [
         keywords: ["instances", "scale", "count", "horizontal", "pods"],
       },
       {
+        id: settingsIds.deploy.rollout,
+        title: "Rollout",
+        description: "How a deployment replaces the running version.",
+        keywords: [
+          "rolling",
+          "stop first",
+          "recreate",
+          "overlap",
+          "strategy",
+          "single instance",
+          "downtime",
+        ],
+      },
+      {
         id: settingsIds.deploy.resourceLimits,
         title: "Resource Limits",
         description: "The maximum vCPU and memory to allocate for each replica.",

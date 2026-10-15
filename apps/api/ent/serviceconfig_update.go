@@ -407,6 +407,20 @@ func (_u *ServiceConfigUpdate) SetNillableSessionAffinity(v *bool) *ServiceConfi
 	return _u
 }
 
+// SetRollout sets the "rollout" field.
+func (_u *ServiceConfigUpdate) SetRollout(v schema.Rollout) *ServiceConfigUpdate {
+	_u.mutation.SetRollout(v)
+	return _u
+}
+
+// SetNillableRollout sets the "rollout" field if the given value is not nil.
+func (_u *ServiceConfigUpdate) SetNillableRollout(v *schema.Rollout) *ServiceConfigUpdate {
+	if v != nil {
+		_u.SetRollout(*v)
+	}
+	return _u
+}
+
 // SetClientIPHeader sets the "client_ip_header" field.
 func (_u *ServiceConfigUpdate) SetClientIPHeader(v string) *ServiceConfigUpdate {
 	_u.mutation.SetClientIPHeader(v)
@@ -788,6 +802,11 @@ func (_u *ServiceConfigUpdate) check() error {
 			return &ValidationError{Name: "railpack_framework", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.railpack_framework": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Rollout(); ok {
+		if err := serviceconfig.RolloutValidator(v); err != nil {
+			return &ValidationError{Name: "rollout", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.rollout": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.HealthCheck(); ok {
 		if err := v.Validate(); err != nil {
 			return &ValidationError{Name: "health_check", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.health_check": %w`, err)}
@@ -941,6 +960,9 @@ func (_u *ServiceConfigUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	}
 	if value, ok := _u.mutation.SessionAffinity(); ok {
 		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Rollout(); ok {
+		_spec.SetField(serviceconfig.FieldRollout, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.ClientIPHeader(); ok {
 		_spec.SetField(serviceconfig.FieldClientIPHeader, field.TypeString, value)
@@ -1510,6 +1532,20 @@ func (_u *ServiceConfigUpdateOne) SetNillableSessionAffinity(v *bool) *ServiceCo
 	return _u
 }
 
+// SetRollout sets the "rollout" field.
+func (_u *ServiceConfigUpdateOne) SetRollout(v schema.Rollout) *ServiceConfigUpdateOne {
+	_u.mutation.SetRollout(v)
+	return _u
+}
+
+// SetNillableRollout sets the "rollout" field if the given value is not nil.
+func (_u *ServiceConfigUpdateOne) SetNillableRollout(v *schema.Rollout) *ServiceConfigUpdateOne {
+	if v != nil {
+		_u.SetRollout(*v)
+	}
+	return _u
+}
+
 // SetClientIPHeader sets the "client_ip_header" field.
 func (_u *ServiceConfigUpdateOne) SetClientIPHeader(v string) *ServiceConfigUpdateOne {
 	_u.mutation.SetClientIPHeader(v)
@@ -1904,6 +1940,11 @@ func (_u *ServiceConfigUpdateOne) check() error {
 			return &ValidationError{Name: "railpack_framework", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.railpack_framework": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Rollout(); ok {
+		if err := serviceconfig.RolloutValidator(v); err != nil {
+			return &ValidationError{Name: "rollout", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.rollout": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.HealthCheck(); ok {
 		if err := v.Validate(); err != nil {
 			return &ValidationError{Name: "health_check", err: fmt.Errorf(`ent: validator failed for field "ServiceConfig.health_check": %w`, err)}
@@ -2074,6 +2115,9 @@ func (_u *ServiceConfigUpdateOne) sqlSave(ctx context.Context) (_node *ServiceCo
 	}
 	if value, ok := _u.mutation.SessionAffinity(); ok {
 		_spec.SetField(serviceconfig.FieldSessionAffinity, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Rollout(); ok {
+		_spec.SetField(serviceconfig.FieldRollout, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.ClientIPHeader(); ok {
 		_spec.SetField(serviceconfig.FieldClientIPHeader, field.TypeString, value)

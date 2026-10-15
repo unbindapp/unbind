@@ -1,8 +1,8 @@
 import { cn } from "@/components/ui/utils";
 import { InfoIcon } from "lucide-react";
 
-// Tells why a setting is off for a service that runs on a cron schedule
-export default function CronScheduleNotice({
+// Tells why a setting is locked or unavailable
+export default function SettingNotice({
   children,
   className,
 }: {

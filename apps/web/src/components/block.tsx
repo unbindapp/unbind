@@ -17,6 +17,7 @@ import {
 
 const BLOCK_ROLE = {
   header: "block.header",
+  description: "block.description",
   content: "block.content",
 } as const;
 
@@ -91,6 +92,7 @@ export function BlockItemDescription({
     </p>
   );
 }
+withChildRole(BlockItemDescription, BLOCK_ROLE.description);
 
 export function BlockItem({
   className,
@@ -99,6 +101,8 @@ export function BlockItem({
 }: { className?: string; children: ReactNode } & HTMLAttributes<HTMLDivElement>) {
   const childrenArray = Children.toArray(children);
   const Header = childrenArray.find((child) => hasChildRole(child, BLOCK_ROLE.header));
+  // A description next to the header, under a row header that holds a toggle
+  const Description = childrenArray.find((child) => hasChildRole(child, BLOCK_ROLE.description));
   const Content = childrenArray.find((child) => hasChildRole(child, BLOCK_ROLE.content));
   return (
     <div
@@ -106,6 +110,7 @@ export function BlockItem({
       {...rest}
     >
       {Header}
+      {Description}
       {Content}
     </div>
   );

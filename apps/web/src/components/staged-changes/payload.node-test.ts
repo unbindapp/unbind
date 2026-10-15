@@ -233,6 +233,14 @@ test("sends a staged auto deploy toggle as auto_deploy", () => {
   assert.equal(untouched.services[0].auto_deploy, undefined);
 });
 
+test("sends a staged rollout as rollout", () => {
+  const payload = buildApplyStagedChangesPayload(state([], [service("rollout", "stop-first")]));
+  assert.equal(payload.services[0].rollout, "stop-first");
+
+  const untouched = buildApplyStagedChangesPayload(state([], [service("gitBranch", "main")]));
+  assert.equal(untouched.services[0].rollout, undefined);
+});
+
 test("sends a staged sticky sessions toggle as session_affinity", () => {
   const payload = buildApplyStagedChangesPayload(state([], [service("sessionAffinity", true)]));
   assert.equal(payload.services[0].session_affinity, true);

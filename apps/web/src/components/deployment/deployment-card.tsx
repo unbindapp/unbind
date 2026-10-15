@@ -85,6 +85,9 @@ type TProps = HTMLAttributes<HTMLDivElement> &
       }
   ) & { service: TServiceShallow };
 
+export const deploymentCardClassName =
+  "has-hover:group-hover/card:bg-border/8-10 has-hover:group-hover/card:group-data-[color=destructive]/card:bg-destructive/3-10 has-hover:group-hover/card:group-data-[color=process]/card:bg-process/3-10 has-hover:group-hover/card:group-data-[color=success]/card:bg-success/3-10 has-hover:group-hover/card:group-data-[color=wait]/card:bg-wait/3-10 has-hover:hover:bg-border/8-10 has-hover:hover:group-data-[color=destructive]/card:bg-destructive/3-10 has-hover:hover:group-data-[color=process]/card:bg-process/3-10 has-hover:hover:group-data-[color=success]/card:bg-success/3-10 has-hover:hover:group-data-[color=wait]/card:bg-wait/3-10 focus-visible:bg-border/8-10 focus-visible:group-data-[color=process]/card:bg-process/3-10 focus-visible:group-data-[color=destructive]/card:bg-destructive/3-10 focus-visible:group-data-[color=success]/card:bg-success/3-10 focus-visible:group-data-[color=wait]/card:bg-wait/3-10 group-data-[color=destructive]/card:bg-destructive/1-10 group-data-[color=process]/card:bg-process/1-10 group-data-[color=success]/card:bg-success/1-10 group-data-[color=wait]/card:bg-wait/1-10 active:bg-border/8-10 active:group-data-[color=destructive]/card:bg-destructive/3-10 active:group-data-[color=process]/card:bg-process/3-10 active:group-data-[color=success]/card:bg-success/3-10 active:group-data-[color=wait]/card:bg-wait/3-10 group-data-[color=destructive]/card:border-destructive/4-10 group-data-[color=process]/card:border-process/4-10 group-data-[color=success]/card:border-success/4-10 group-data-[color=wait]/card:border-wait/4-10 focus-visible:ring-offset-background focus-visible:ring-primary/8-10 flex min-w-0 flex-1 flex-col rounded-xl border px-3.5 py-3 text-left focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:flex-row sm:items-center sm:py-3.5 sm:pr-13 sm:pl-4";
+
 export default function DeploymentCard({
   deployment,
   currentDeployment,
@@ -111,9 +114,6 @@ export default function DeploymentCard({
   const temporarilyHideReplicas =
     showReplicas &&
     (deployment?.status === "build-pending" || deployment?.status === "build-queued");
-
-  const cardClassName =
-    "has-hover:group-hover/card:bg-border/8-10 has-hover:group-hover/card:group-data-[color=destructive]/card:bg-destructive/3-10 has-hover:group-hover/card:group-data-[color=process]/card:bg-process/3-10 has-hover:group-hover/card:group-data-[color=success]/card:bg-success/3-10 has-hover:group-hover/card:group-data-[color=wait]/card:bg-wait/3-10 has-hover:hover:bg-border/8-10 has-hover:hover:group-data-[color=destructive]/card:bg-destructive/3-10 has-hover:hover:group-data-[color=process]/card:bg-process/3-10 has-hover:hover:group-data-[color=success]/card:bg-success/3-10 has-hover:hover:group-data-[color=wait]/card:bg-wait/3-10 focus-visible:bg-border/8-10 focus-visible:group-data-[color=process]/card:bg-process/3-10 focus-visible:group-data-[color=destructive]/card:bg-destructive/3-10 focus-visible:group-data-[color=success]/card:bg-success/3-10 focus-visible:group-data-[color=wait]/card:bg-wait/3-10 group-data-[color=destructive]/card:bg-destructive/1-10 group-data-[color=process]/card:bg-process/1-10 group-data-[color=success]/card:bg-success/1-10 group-data-[color=wait]/card:bg-wait/1-10 active:bg-border/8-10 active:group-data-[color=destructive]/card:bg-destructive/3-10 active:group-data-[color=process]/card:bg-process/3-10 active:group-data-[color=success]/card:bg-success/3-10 active:group-data-[color=wait]/card:bg-wait/3-10 group-data-[color=destructive]/card:border-destructive/4-10 group-data-[color=process]/card:border-process/4-10 group-data-[color=success]/card:border-success/4-10 group-data-[color=wait]/card:border-wait/4-10 focus-visible:ring-offset-background focus-visible:ring-primary/8-10 flex min-w-0 flex-1 flex-col rounded-xl border px-3.5 py-3 text-left focus-visible:ring-1 focus-visible:ring-offset-2 focus-visible:outline-hidden sm:flex-row sm:items-center sm:py-3.5 sm:pr-13 sm:pl-4";
 
   const cardContent = (
     <>
@@ -172,12 +172,12 @@ export default function DeploymentCard({
           })}
           replace={true}
           resetScroll={false}
-          className={cardClassName}
+          className={deploymentCardClassName}
         >
           {cardContent}
         </Link>
       ) : (
-        <button className={cardClassName}>{cardContent}</button>
+        <button className={deploymentCardClassName}>{cardContent}</button>
       )}
       <div className="absolute top-1 right-1 shrink-0 sm:top-1/2 sm:right-2 sm:-translate-y-1/2">
         {isPlaceholder ? (

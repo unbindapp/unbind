@@ -60,6 +60,9 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	if input.SessionAffinity != nil && input.Type == schema.ServiceTypeDatabase {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Databases have no sticky sessions")
 	}
+	if input.Rollout != nil && input.Type == schema.ServiceTypeDatabase {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, databaseRolloutMessage)
+	}
 	if err := validateCronInput(input.Type, input.CronSchedule, input.CronTimezone); err != nil {
 		return nil, err
 	}
@@ -459,6 +462,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			MaxRequestBodySizeMB:          input.MaxRequestBodySizeMB,
 			ClientIPHeader:                input.ClientIPHeader,
 			SessionAffinity:               input.SessionAffinity,
+			Rollout:                       input.Rollout,
 			Image:                         input.Image,
 			DockerBuilderDockerfilePath:   input.DockerBuilderDockerfilePath,
 			DockerBuilderBuildContext:     input.DockerBuilderBuildContext,
