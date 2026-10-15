@@ -528,5 +528,10 @@
     "version": "v0.1.105",
     "summary": "Scheduled Redis backups to S3, a stop-first rollout setting for services, domain options moved under Advanced Settings, a reworked cron runs list, and longer waits for slow request bodies.",
     "breaking": false
+  },
+  "v0.1.106": {
+    "version": "v0.1.106",
+    "summary": "Ships the missing service definition update so the stop-first rollout setting works on existing installs, and fixes dialogs from dropdown menus closing on first click.",
+    "breaking": false
   }
 }
