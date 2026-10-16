@@ -3,7 +3,6 @@ package service_repo
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"slices"
 	"strings"
 
@@ -25,6 +24,7 @@ import (
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
+	"k8s.io/apimachinery/pkg/api/equality"
 )
 
 func (self *ServiceRepository) GetByID(ctx context.Context, serviceID uuid.UUID) (svc *ent.Service, err error) {
@@ -395,10 +395,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	} else if len(activeBuilds) > 0 && activeBuilds[0].ResourceDefinition != nil {
 		current = activeBuilds[0]
 	}
-	// Create a an object with only fields we care to compare
-	if current.ResourceDefinition.Spec.Config.Volumes == nil {
-		current.ResourceDefinition.Spec.Config.Volumes = []v1.VolumeSpec{}
-	}
+	// Only fields we care about, compared semantically: empty lists come back nil from storage
 	existingCrd := &v1.Service{
 		Spec: v1.ServiceSpec{
 			Builder:              current.ResourceDefinition.Spec.Builder,
@@ -479,7 +476,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 
 	// Repository and branch need a new build
 	if existingCrd.Spec.GitRepository != newCrd.Spec.GitRepository ||
-		!reflect.DeepEqual(existingCrd.Spec.GitHubInstallationID, newCrd.Spec.GitHubInstallationID) ||
+		!equality.Semantic.DeepEqual(existingCrd.Spec.GitHubInstallationID, newCrd.Spec.GitHubInstallationID) ||
 		existingCrd.Spec.Config.GitBranch != newCrd.Spec.Config.GitBranch {
 		return NeedsBuildAndDeployment, nil
 	}
@@ -496,7 +493,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	}
 
 	// Just update the custom resource
-	if !reflect.DeepEqual(existingCrd, newCrd) {
+	if !equality.Semantic.DeepEqual(existingCrd, newCrd) {
 		return NeedsDeployment, nil
 	}
 
@@ -504,7 +501,7 @@ func (self *ServiceRepository) NeedsDeployment(ctx context.Context, service *ent
 	if err != nil {
 		return NoDeploymentNeeded, err
 	}
-	if !reflect.DeepEqual(
+	if !equality.Semantic.DeepEqual(
 		renderedDatabaseConfig(current.ResourceDefinition.Spec.Config.Database.Config),
 		renderedDatabaseConfig(newDatabaseConfig),
 	) {
