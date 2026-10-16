@@ -2,6 +2,7 @@ package user_handler
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
@@ -12,7 +13,9 @@ import (
 
 type UpdatePasswordInput struct {
 	server.BaseAuthInput
-	Body struct {
+	RefreshTokenSecure http.Cookie `cookie:"__Host-refresh_token"`
+	RefreshToken       http.Cookie `cookie:"refresh_token"`
+	Body               struct {
 		UserID          *uuid.UUID `json:"user_id,omitempty" format:"uuid" doc:"Defaults to the authenticated user; changing another user's password requires system admin"`
 		CurrentPassword string     `json:"current_password,omitempty" doc:"Required when changing your own password"`
 		NewPassword     string     `json:"new_password" required:"true" minLength:"8"`
@@ -31,10 +34,15 @@ func (self *HandlerGroup) UpdatePassword(ctx context.Context, input *UpdatePassw
 		return nil, err
 	}
 
+	keep := input.RefreshTokenSecure.Value
+	if keep == "" {
+		keep = input.RefreshToken.Value
+	}
 	updated, err := self.srv.UserService.UpdatePassword(ctx, user.ID, &user_service.UpdatePasswordInput{
-		UserID:          input.Body.UserID,
-		CurrentPassword: input.Body.CurrentPassword,
-		NewPassword:     input.Body.NewPassword,
+		UserID:           input.Body.UserID,
+		CurrentPassword:  input.Body.CurrentPassword,
+		NewPassword:      input.Body.NewPassword,
+		KeepRefreshToken: keep,
 	})
 	if err != nil {
 		return nil, oapi.MapError(err)

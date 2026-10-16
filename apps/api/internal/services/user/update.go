@@ -15,6 +15,8 @@ type UpdatePasswordInput struct {
 	UserID          *uuid.UUID
 	CurrentPassword string
 	NewPassword     string
+	// The requester's own session survives when they change their own password
+	KeepRefreshToken string
 }
 
 func (self *UserService) UpdatePassword(ctx context.Context, requesterUserID uuid.UUID, input *UpdatePasswordInput) (*ent.User, error) {
@@ -52,6 +54,14 @@ func (self *UserService) UpdatePassword(ctx context.Context, requesterUserID uui
 	}
 
 	if err := self.repo.User().UpdatePassword(ctx, targetUserID, input.NewPassword); err != nil {
+		return nil, err
+	}
+	// A stolen session must not outlive the credential it was issued for
+	keep := ""
+	if targetUserID == requesterUserID {
+		keep = input.KeepRefreshToken
+	}
+	if err := self.repo.Oauth().RevokeUserTokens(ctx, targetUserID, keep); err != nil {
 		return nil, err
 	}
 

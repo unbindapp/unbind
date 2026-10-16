@@ -9,6 +9,7 @@ import (
 	"crypto/rsa"
 	"time"
 
+	"github.com/google/uuid"
 	mock "github.com/stretchr/testify/mock"
 	"github.com/unbindapp/unbind-api/ent"
 )
@@ -514,6 +515,69 @@ func (_c *OauthRepositoryMock_RevokeRefreshToken_Call) Return(err error) *OauthR
 }
 
 func (_c *OauthRepositoryMock_RevokeRefreshToken_Call) RunAndReturn(run func(ctx context.Context, refreshToken string) error) *OauthRepositoryMock_RevokeRefreshToken_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RevokeUserTokens provides a mock function for the type OauthRepositoryMock
+func (_mock *OauthRepositoryMock) RevokeUserTokens(ctx context.Context, userID uuid.UUID, keepRefreshToken string) error {
+	ret := _mock.Called(ctx, userID, keepRefreshToken)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RevokeUserTokens")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string) error); ok {
+		r0 = returnFunc(ctx, userID, keepRefreshToken)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// OauthRepositoryMock_RevokeUserTokens_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RevokeUserTokens'
+type OauthRepositoryMock_RevokeUserTokens_Call struct {
+	*mock.Call
+}
+
+// RevokeUserTokens is a helper method to define mock.On call
+//   - ctx context.Context
+//   - userID uuid.UUID
+//   - keepRefreshToken string
+func (_e *OauthRepositoryMock_Expecter) RevokeUserTokens(ctx any, userID any, keepRefreshToken any) *OauthRepositoryMock_RevokeUserTokens_Call {
+	return &OauthRepositoryMock_RevokeUserTokens_Call{Call: _e.mock.On("RevokeUserTokens", ctx, userID, keepRefreshToken)}
+}
+
+func (_c *OauthRepositoryMock_RevokeUserTokens_Call) Run(run func(ctx context.Context, userID uuid.UUID, keepRefreshToken string)) *OauthRepositoryMock_RevokeUserTokens_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *OauthRepositoryMock_RevokeUserTokens_Call) Return(err error) *OauthRepositoryMock_RevokeUserTokens_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *OauthRepositoryMock_RevokeUserTokens_Call) RunAndReturn(run func(ctx context.Context, userID uuid.UUID, keepRefreshToken string) error) *OauthRepositoryMock_RevokeUserTokens_Call {
 	_c.Call.Return(run)
 	return _c
 }

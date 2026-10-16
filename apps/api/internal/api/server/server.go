@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/unbindapp/unbind-api/internal/api/middleware"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -70,6 +71,7 @@ type Server struct {
 	DatabaseProvider     *databases.DatabaseProvider
 	DNSChecker           *utils.DNSChecker
 	TokenManager         *auth.TokenManager
+	RateLimiter          *middleware.RateLimiter
 	UpdateManager        *updater.Updater
 	// Services
 	GroupService        *group_service.GroupService

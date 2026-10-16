@@ -65,4 +65,4 @@ Be careful when retrying a `POST` that creates something after a network error. 
 
 ## Rate limits
 
-The HTTP API has no rate limit of its own. The MCP endpoint allows 600 requests per minute per IP address, and the [OAuth endpoints](/api/connected-apps#for-app-developers) have lower limits. Going over answers 429 with a `Retry-After` header.
+Signing in with a password is limited to 20 attempts per minute per IP address and 10 per account. The rest of the HTTP API has no rate limit of its own. The MCP endpoint allows 600 requests per minute per IP address, and the [OAuth endpoints](/api/connected-apps#for-app-developers) have lower limits. Going over answers 429 with a `Retry-After` header.

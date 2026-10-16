@@ -551,8 +551,12 @@ func (self *cli) changeUserPassword(email, password string) {
 		fmt.Printf("Error updating user: %v\n", err)
 		return
 	}
+	if err := self.repository.Oauth().RevokeUserTokens(context.Background(), u.ID, ""); err != nil {
+		fmt.Printf("Error signing out the user's sessions: %v\n", err)
+		return
+	}
 
-	fmt.Println("Password updated successfully:")
+	fmt.Println("Password updated successfully, every session of the user was signed out:")
 	fmt.Printf("ID: %s\n", u.ID)
 	fmt.Printf("Email: %s\n", u.Email)
 }

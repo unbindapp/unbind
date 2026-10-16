@@ -3,6 +3,7 @@ package auth_handler
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -32,6 +33,11 @@ type SessionResponse struct {
 }
 
 func (self *HandlerGroup) Login(ctx context.Context, input *LoginInput) (*SessionResponse, error) {
+	if self.srv.RateLimiter != nil {
+		if allowed, retryAfter := self.srv.RateLimiter.AllowLogin(ctx, input.Body.Email); !allowed {
+			return nil, huma.Error429TooManyRequests("Too many login attempts for this account, try again in " + strconv.Itoa(retryAfter) + " seconds")
+		}
+	}
 	user, err := self.srv.Repository.User().Authenticate(ctx, input.Body.Email, input.Body.Password)
 	if err != nil {
 		return nil, huma.Error401Unauthorized("Invalid email or password")

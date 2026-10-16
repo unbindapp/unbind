@@ -93,6 +93,10 @@ func NewHumaConfig(title, version string, cookieSecure bool) huma.Config {
 // with an empty *server.Server when generating the spec offline. Handlers are
 // never invoked here.
 func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middleware, allowedOrigins []string) {
+	loginLimit := func(ctx huma.Context, next func(huma.Context)) { next(ctx) }
+	if srvImpl.RateLimiter != nil {
+		loginLimit = srvImpl.RateLimiter.LoginLimit(api)
+	}
 	authSecurity := []map[string][]string{
 		{"cookieAuth": {}},
 		{"bearerAuth": {}},
@@ -102,6 +106,11 @@ func RegisterRoutes(api huma.API, srvImpl *server.Server, mw *middleware.Middlew
 		if authed {
 			grp.UseMiddleware(mw.Authenticate)
 			grp.UseMiddleware(mw.CSRF)
+		} else {
+			grp.UseMiddleware(mw.RequireAllowedOrigin)
+		}
+		if prefix == "/auth" {
+			grp.UseMiddleware(loginLimit)
 		}
 		grp.UseModifier(func(op *huma.Operation, next func(*huma.Operation)) {
 			op.Tags = []string{tag}

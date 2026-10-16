@@ -228,6 +228,7 @@ func startAPI(cfg *config.Config) {
 		DatabaseProvider:     dbProvider,
 		DNSChecker:           utils.NewDNSChecker(),
 		UpdateManager:        updater.New(cfg, Version, kubeClient, redisClient),
+		RateLimiter:          middleware.NewRateLimiter(redisClient),
 		GroupService:         groupService,
 		UserService:          userService,
 		TeamService:          teamService,
@@ -335,8 +336,7 @@ func startAPI(cfg *config.Config) {
 
 		// OAuth authorization server and the MCP resource, at the root so
 		// clients discover them from the issuer origin.
-		rateLimiter := middleware.NewRateLimiter(redisClient)
-		oauthserver_handler.NewHandler(oauthServerService).Mount(r, rateLimiter)
+		oauthserver_handler.NewHandler(oauthServerService).Mount(r, srvImpl.RateLimiter)
 
 		mcpServer, err := mcpserver.New(mcpserver.Options{
 			API:     api,
@@ -349,7 +349,7 @@ func startAPI(cfg *config.Config) {
 		if err != nil {
 			log.Fatal("Failed to build the MCP server", "err", err)
 		}
-		mcpServer.Mount(r, rateLimiter)
+		mcpServer.Mount(r, srvImpl.RateLimiter)
 	})
 
 	// Serve the embedded SPA for any path the API doesn't claim. In the deployed

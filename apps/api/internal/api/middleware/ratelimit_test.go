@@ -1,12 +1,15 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/alicebob/miniredis/v2"
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/humatest"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -63,5 +66,36 @@ func TestRateLimiterFailsOpenWithoutRedis(t *testing.T) {
 		if rec := hit(handler, "10.0.0.1:1234"); rec.Code != http.StatusNoContent {
 			t.Fatalf("request %d: status = %d", i+1, rec.Code)
 		}
+	}
+}
+
+func TestLoginLimitsPerAddressAndPerAccount(t *testing.T) {
+	mr := miniredis.RunT(t)
+	limiter := NewRateLimiter(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
+	_, api := humatest.New(t)
+	huma.Post(api, "/login", func(ctx context.Context, _ *struct{}) (*struct{}, error) { return nil, nil }, func(op *huma.Operation) {
+		op.Middlewares = huma.Middlewares{limiter.LoginLimit(api)}
+	})
+
+	for i := 0; i < loginPerMinute; i++ {
+		if resp := api.Post("/login"); resp.Code != http.StatusNoContent {
+			t.Fatalf("attempt %d: status = %d", i+1, resp.Code)
+		}
+	}
+	resp := api.Post("/login")
+	if resp.Code != http.StatusTooManyRequests || resp.Header().Get("Retry-After") == "" {
+		t.Fatalf("attempt %d: status = %d, Retry-After = %q", loginPerMinute+1, resp.Code, resp.Header().Get("Retry-After"))
+	}
+
+	for i := 0; i < loginPerAccountPerMinute; i++ {
+		if allowed, _ := limiter.AllowLogin(context.Background(), "Admin@Example.com"); !allowed {
+			t.Fatalf("account attempt %d refused", i+1)
+		}
+	}
+	if allowed, _ := limiter.AllowLogin(context.Background(), "admin@example.com"); allowed {
+		t.Fatal("the account budget is shared across spellings")
+	}
+	if allowed, _ := limiter.AllowLogin(context.Background(), "someone@example.com"); !allowed {
+		t.Fatal("another account has its own budget")
 	}
 }

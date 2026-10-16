@@ -2,11 +2,13 @@ package oauth_repo
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"time"
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
+	"github.com/unbindapp/unbind-api/ent/user"
 )
 
 func (self *OauthRepository) CreateToken(ctx context.Context, accessToken, refreshToken, clientID, scope string, expiresAt time.Time, user *ent.User) (*ent.Oauth2Token, error) {
@@ -27,6 +29,16 @@ func (self *OauthRepository) RevokeAccessToken(ctx context.Context, accessToken 
 
 func (self *OauthRepository) RevokeRefreshToken(ctx context.Context, refreshToken string) error {
 	_, err := self.base.DB.Oauth2Token.Update().Where(oauth2token.RefreshToken(refreshToken)).SetRevoked(true).Save(ctx)
+	return err
+}
+
+// RevokeUserTokens ends every session of a user except the one holding keepRefreshToken
+func (self *OauthRepository) RevokeUserTokens(ctx context.Context, userID uuid.UUID, keepRefreshToken string) error {
+	query := self.base.DB.Oauth2Token.Update().Where(oauth2token.HasUserWith(user.ID(userID)))
+	if keepRefreshToken != "" {
+		query = query.Where(oauth2token.RefreshTokenNEQ(keepRefreshToken))
+	}
+	_, err := query.SetRevoked(true).Save(ctx)
 	return err
 }
 

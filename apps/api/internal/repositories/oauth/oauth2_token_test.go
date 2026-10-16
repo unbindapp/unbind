@@ -218,6 +218,26 @@ func (suite *OAuth2TokenSuite) TestRevokeAccessToken() {
 	suite.True(updated.Revoked)
 }
 
+func (suite *OAuth2TokenSuite) TestRevokeUserTokensKeepsOneSession() {
+	expires := time.Now().Add(time.Hour)
+	stolen, err := suite.oauthRepo.CreateToken(suite.Ctx, "access-stolen", "refresh-stolen", "unbind-api", "openid", expires, suite.testUser)
+	suite.NoError(err)
+	current, err := suite.oauthRepo.CreateToken(suite.Ctx, "access-current", "refresh-current", "unbind-api", "openid", expires, suite.testUser)
+	suite.NoError(err)
+	other := suite.DB.User.Create().SetEmail("other@example.com").SetPasswordHash("x").SaveX(suite.Ctx)
+	theirs, err := suite.oauthRepo.CreateToken(suite.Ctx, "access-other", "refresh-other", "unbind-api", "openid", expires, other)
+	suite.NoError(err)
+
+	suite.NoError(suite.oauthRepo.RevokeUserTokens(suite.Ctx, suite.testUser.ID, "refresh-current"))
+
+	suite.True(suite.DB.Oauth2Token.GetX(suite.Ctx, stolen.ID).Revoked)
+	suite.False(suite.DB.Oauth2Token.GetX(suite.Ctx, current.ID).Revoked)
+	suite.False(suite.DB.Oauth2Token.GetX(suite.Ctx, theirs.ID).Revoked)
+
+	suite.NoError(suite.oauthRepo.RevokeUserTokens(suite.Ctx, suite.testUser.ID, ""))
+	suite.True(suite.DB.Oauth2Token.GetX(suite.Ctx, current.ID).Revoked)
+}
+
 func (suite *OAuth2TokenSuite) TestRevokeAccessTokenNotFound() {
 	nonExistentToken := "non-existent-revoke-access"
 

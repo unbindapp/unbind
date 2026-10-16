@@ -38,6 +38,7 @@ func (self *UserRepository) Authenticate(ctx context.Context, email, password st
 
 	if err != nil {
 		if ent.IsNotFound(err) {
+			_ = verifyPassword(unknownUserHash, password)
 			return nil, ErrUserNotFound
 		}
 		return nil, fmt.Errorf("querying user: %w", err)
@@ -50,6 +51,15 @@ func (self *UserRepository) Authenticate(ctx context.Context, email, password st
 
 	return user, nil
 }
+
+// Compared against when no account matches, so the response takes as long as a wrong password
+var unknownUserHash = func() string {
+	hash, err := bcrypt.GenerateFromPassword([]byte("unknown-user"), bcrypt.DefaultCost)
+	if err != nil {
+		panic(err)
+	}
+	return string(hash)
+}()
 
 // verifyPassword checks if the provided password matches the stored hash
 func verifyPassword(hashedPassword, plainPassword string) error {

@@ -48,6 +48,22 @@ func (self *Middleware) CSRF(ctx huma.Context, next func(huma.Context)) {
 	next(ctx)
 }
 
+// RequireAllowedOrigin refuses a state-changing request a browser sends from a
+// foreign site, so a cross-site form cannot log the victim into another account.
+// Requests without an Origin header come from scripts and webhooks, not forms.
+func (self *Middleware) RequireAllowedOrigin(ctx huma.Context, next func(huma.Context)) {
+	switch ctx.Method() {
+	case http.MethodGet, http.MethodHead, http.MethodOptions:
+		next(ctx)
+		return
+	}
+	if origin := ctx.Header("Origin"); origin != "" && !originMatches(origin, self.allowedOrigins) {
+		_ = huma.WriteErr(self.api, ctx, http.StatusForbidden, "Request origin not allowed")
+		return
+	}
+	next(ctx)
+}
+
 // refererOrigin extracts the scheme+host prefix from a Referer URL.
 func refererOrigin(referer string) string {
 	scheme, rest, found := strings.Cut(referer, "://")

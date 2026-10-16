@@ -7,6 +7,7 @@ import (
 	"crypto/rsa"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 )
 
@@ -16,6 +17,8 @@ type OauthRepositoryInterface interface {
 	CreateToken(ctx context.Context, accessToken, refreshToken, clientID, scope string, expiresAt time.Time, user *ent.User) (*ent.Oauth2Token, error)
 	RevokeAccessToken(ctx context.Context, accessToken string) error
 	RevokeRefreshToken(ctx context.Context, refreshToken string) error
+	// RevokeUserTokens ends every session of a user except the one holding keepRefreshToken
+	RevokeUserTokens(ctx context.Context, userID uuid.UUID, keepRefreshToken string) error
 	GetByAccessToken(ctx context.Context, accessToken string) (*ent.Oauth2Token, error)
 	GetByRefreshToken(ctx context.Context, refreshToken string) (*ent.Oauth2Token, error)
 	CleanTokenStore(ctx context.Context) (result error)

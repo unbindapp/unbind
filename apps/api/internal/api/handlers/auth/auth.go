@@ -21,7 +21,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Description: "Authenticate with email and password. On success, sets access and refresh session cookies.",
 		Path:        "/login",
 		Method:      http.MethodPost,
-		Errors:      []int{http.StatusUnauthorized},
+		Errors:      []int{http.StatusUnauthorized, http.StatusTooManyRequests},
 	}, handlers.Login, oapi.Public)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
