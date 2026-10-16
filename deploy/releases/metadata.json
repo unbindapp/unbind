@@ -533,5 +533,10 @@
     "version": "v0.1.106",
     "summary": "Ships the missing service definition update so the stop-first rollout setting works on existing installs, and fixes dialogs from dropdown menus closing on first click.",
     "breaking": false
+  },
+  "v0.1.107": {
+    "version": "v0.1.107",
+    "summary": "Password-protected platform Redis limited to the API, hidden service group secrets for viewers, safer domain redirects, no redeploys when nothing changed, and helmfile sync fixes.",
+    "breaking": false
   }
 }
