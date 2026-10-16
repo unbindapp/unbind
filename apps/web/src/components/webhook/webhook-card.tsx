@@ -82,11 +82,11 @@ export default function WebhookCard({ type, webhook, teamId, projectId }: TProps
         <Button
           data-visible={isUrlVisible || undefined}
           onClick={() => setIsUrlVisible((prev) => !prev)}
-          aria-label={isUrlVisible ? "Hide URL" : "Show URL"}
+          aria-label={webhook?.url_redacted ? "URL hidden" : isUrlVisible ? "Hide URL" : "Show URL"}
           variant="ghost"
           size="icon"
           className="text-muted-more-foreground group/button rounded-lg"
-          disabled={!threeDotTButtonProps}
+          disabled={!threeDotTButtonProps || webhook?.url_redacted}
           fadeOnDisabled={false}
         >
           <div className="relative size-5">

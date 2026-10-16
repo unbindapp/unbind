@@ -47,7 +47,7 @@ func (self *ServiceGroupService) GetTemplateInputs(ctx context.Context, requeste
 	if err != nil {
 		return nil, err
 	}
-	canReadValues, err := permissions_repo.CanReadVariableValues(ctx, self.repo.Permissions(), requesterUserID, schema.ResourceTypeEnvironment, input.EnvironmentID)
+	canReadValues, err := permissions_repo.CanReadSecrets(ctx, self.repo.Permissions(), requesterUserID, schema.PrivilegeReadVariableValues, schema.ResourceTypeEnvironment, input.EnvironmentID)
 	if err != nil {
 		return nil, err
 	}

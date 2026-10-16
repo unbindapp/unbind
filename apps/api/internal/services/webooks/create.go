@@ -8,36 +8,16 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
-	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 func (self *WebhooksService) CreateWebhook(ctx context.Context, requesterUserID uuid.UUID, input *models.WebhookCreateInput) (*models.WebhookResponse, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		// Team editor can create projects
-		{
-			Action:       schema.ActionEditor,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   input.TeamID,
-		},
-	}
-
-	// Also check project if it's specified
-	if input.Type == schema.WebhookTypeProject {
-		if input.ProjectID == nil {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Project ID is required for project webhooks")
-		}
-
-		permissionChecks = append(permissionChecks, permissions_repo.PermissionCheck{
-			Action:       schema.ActionEditor,
-			ResourceType: schema.ResourceTypeProject,
-			ResourceID:   *input.ProjectID,
-		})
-	}
-
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
+	s, err := self.resolveScope(ctx, input.Type, input.TeamID, input.ProjectID)
+	if err != nil {
 		return nil, err
 	}
-
+	if err := self.authorize(ctx, requesterUserID, schema.ActionEditor, s); err != nil {
+		return nil, err
+	}
 	if err := validateEvents(input.Type, input.Events); err != nil {
 		return nil, err
 	}
@@ -46,8 +26,11 @@ func (self *WebhooksService) CreateWebhook(ctx context.Context, requesterUserID 
 	if err != nil {
 		return nil, err
 	}
-
-	return self.redactURL(ctx, models.TransformWebhookEntity(webhook)), nil
+	response := models.TransformWebhookEntity(webhook)
+	if err := self.redact(ctx, requesterUserID, s, response); err != nil {
+		return nil, err
+	}
+	return response, nil
 }
 
 func validateEvents(webhookType schema.WebhookType, events []schema.WebhookEvent) error {

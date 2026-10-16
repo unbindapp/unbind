@@ -1104,7 +1104,7 @@ export const WebhookResponseSchema = z
     team_id: z.string(),
     type: WebhookTypeSchema,
     url: z.string(), // Blank when url_redacted is true
-    url_redacted: z.boolean(), // True when the caller may not see the URL. It needs the read_webhook_urls privilege.
+    url_redacted: z.boolean(), // True when the caller may not see the URL. A session needs the editor role on the webhook's team or project; a key or connected app needs the read_webhook_urls privilege on top.
   })
   .strip();
 

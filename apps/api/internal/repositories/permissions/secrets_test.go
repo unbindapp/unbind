@@ -27,7 +27,7 @@ func (s *checkStub) Check(ctx context.Context, _ uuid.UUID, checks []PermissionC
 	return s.err
 }
 
-func TestCanReadVariableValues(t *testing.T) {
+func TestCanReadSecrets(t *testing.T) {
 	envID := uuid.New()
 	viewerKey := APIKeyAccess{Role: entSchema.ActionViewer, FullAccess: true}
 	readingKey := APIKeyAccess{Role: entSchema.ActionViewer, FullAccess: true, Privileges: []entSchema.KeyPrivilege{entSchema.PrivilegeReadVariableValues}}
@@ -49,7 +49,7 @@ func TestCanReadVariableValues(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			stub := &checkStub{err: tt.checkErr}
-			got, err := CanReadVariableValues(tt.ctx, stub, uuid.New(), entSchema.ResourceTypeEnvironment, envID)
+			got, err := CanReadSecrets(tt.ctx, stub, uuid.New(), entSchema.PrivilegeReadVariableValues, entSchema.ResourceTypeEnvironment, envID)
 			require.NoError(t, err)
 			assert.Equal(t, tt.want, got)
 			require.Len(t, stub.calls, tt.wantChecks)
@@ -61,9 +61,9 @@ func TestCanReadVariableValues(t *testing.T) {
 	}
 }
 
-func TestCanReadVariableValuesReturnsOtherErrors(t *testing.T) {
+func TestCanReadSecretsReturnsOtherErrors(t *testing.T) {
 	boom := errors.New("db down")
-	got, err := CanReadVariableValues(context.Background(), &checkStub{err: boom}, uuid.New(), entSchema.ResourceTypeEnvironment, uuid.New())
+	got, err := CanReadSecrets(context.Background(), &checkStub{err: boom}, uuid.New(), entSchema.PrivilegeReadVariableValues, entSchema.ResourceTypeEnvironment, uuid.New())
 	assert.ErrorIs(t, err, boom)
 	assert.False(t, got)
 }

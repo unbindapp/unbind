@@ -27,7 +27,7 @@ func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, reques
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Service group not found")
 	}
-	canReadValues, err := permissions_repo.CanReadVariableValues(ctx, self.repo.Permissions(), requesterUserID, schema.ResourceTypeEnvironment, input.EnvironmentID)
+	canReadValues, err := permissions_repo.CanReadSecrets(ctx, self.repo.Permissions(), requesterUserID, schema.PrivilegeReadVariableValues, schema.ResourceTypeEnvironment, input.EnvironmentID)
 	if err != nil {
 		return nil, err
 	}

@@ -62,7 +62,7 @@ func (self *VariablesService) canReadValues(ctx context.Context, userID uuid.UUI
 	if err != nil {
 		return false, err
 	}
-	return permissions_repo.CanReadVariableValues(ctx, self.repo.Permissions(), userID, resourceType, resourceID)
+	return permissions_repo.CanReadSecrets(ctx, self.repo.Permissions(), userID, schema.PrivilegeReadVariableValues, resourceType, resourceID)
 }
 
 func (self *VariablesService) checkScopePermission(ctx context.Context, userID uuid.UUID, action schema.PermittedAction, variableType schema.VariableReferenceSourceType, teamID, projectID, environmentID, serviceID uuid.UUID) error {

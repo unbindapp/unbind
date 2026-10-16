@@ -9,15 +9,15 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 )
 
-// CanReadVariableValues decides whether the caller may see stored values on a
-// resource. A session needs the editor role there, because a stored secret is as
-// good as write access to whatever it unlocks. A key or connected app needs the
-// read_variable_values privilege, whatever its role, as long as its owner holds
-// editor.
-func CanReadVariableValues(ctx context.Context, perms PermissionsRepositoryInterface, userID uuid.UUID, resourceType entSchema.ResourceType, resourceID uuid.UUID) (bool, error) {
+// CanReadSecrets decides whether the caller may see stored secrets on a
+// resource, such as variable values or webhook URLs. A session needs the editor
+// role there, because a stored secret is as good as write access to whatever it
+// unlocks. A key or connected app needs the privilege, whatever its role, as
+// long as its owner holds editor.
+func CanReadSecrets(ctx context.Context, perms PermissionsRepositoryInterface, userID uuid.UUID, privilege entSchema.KeyPrivilege, resourceType entSchema.ResourceType, resourceID uuid.UUID) (bool, error) {
 	access, limited := APIKeyAccessFromContext(ctx)
 	if limited {
-		if !access.Has(entSchema.PrivilegeReadVariableValues) {
+		if !access.Has(privilege) {
 			return false, nil
 		}
 		access.Role = entSchema.ActionEditor

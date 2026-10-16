@@ -4670,7 +4670,7 @@ components:
           description: Blank when url_redacted is true
           type: string
         url_redacted:
-          description: True when the caller may not see the URL. It needs the read_webhook_urls privilege.
+          description: True when the caller may not see the URL. A session needs the editor role on the webhook's team or project; a key or connected app needs the read_webhook_urls privilege on top.
           type: boolean
       required:
         - id

@@ -8,111 +8,57 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
-	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
 
 func (self *WebhooksService) GetWebhookByID(ctx context.Context, requesterUserID uuid.UUID, input *models.WebhookGetInput) (*models.WebhookResponse, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   input.TeamID,
-		},
-	}
-
-	// Also check project if it's specified
+	var projectID *uuid.UUID
 	if input.ProjectID != uuid.Nil {
-		permissionChecks = append(permissionChecks, permissions_repo.PermissionCheck{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeProject,
-			ResourceID:   input.ProjectID,
-		})
+		projectID = &input.ProjectID
 	}
-
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, errdefs.MaskAsNotFound(err, "Webhook not found")
-	}
-
-	webhook, err := self.repo.Webhooks().GetByID(ctx, input.ID)
+	webhook, s, err := self.loadOwned(ctx, input.ID, input.TeamID, projectID)
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Webhook not found")
-		}
+		return nil, err
+	}
+	if err := self.authorize(ctx, requesterUserID, schema.ActionViewer, s); err != nil {
 		return nil, err
 	}
 
-	if webhook.Type == schema.WebhookTypeTeam && input.TeamID != webhook.TeamID {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Webhook not found")
-	}
-
-	if webhook.Type == schema.WebhookTypeProject && (input.ProjectID == uuid.Nil || webhook.ProjectID == nil || input.ProjectID != *webhook.ProjectID) {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Webhook not found")
-	}
-
-	webhook, err = self.repo.Webhooks().GetByID(ctx, input.ID)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Webhook not found")
-		}
+	response := models.TransformWebhookEntity(webhook)
+	if err := self.redact(ctx, requesterUserID, s, response); err != nil {
 		return nil, err
 	}
-
-	return self.redactURL(ctx, models.TransformWebhookEntity(webhook)), nil
+	return response, nil
 }
 
 func (self *WebhooksService) ListWebhooks(ctx context.Context, requesterUserID uuid.UUID, input *models.WebhookListInput) ([]*models.WebhookResponse, error) {
-	permissionChecks := []permissions_repo.PermissionCheck{
-		// Team editor can create projects
-		{
-			Action:       schema.ActionViewer,
-			ResourceType: schema.ResourceTypeTeam,
-			ResourceID:   input.TeamID,
-		},
-	}
-
-	// Also check project if it's specified
+	var projectID *uuid.UUID
 	if input.ProjectID != uuid.Nil {
-		permissionChecks = append(permissionChecks, permissions_repo.PermissionCheck{
-			Action:       schema.ActionEditor,
-			ResourceType: schema.ResourceTypeProject,
-			ResourceID:   input.ProjectID,
-		})
-	} else if input.Type == schema.WebhookTypeProject {
-		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Project ID is required for project webhooks")
+		projectID = &input.ProjectID
+	}
+	s, err := self.resolveScope(ctx, input.Type, input.TeamID, projectID)
+	if err != nil {
+		return nil, err
+	}
+	if err := self.authorize(ctx, requesterUserID, schema.ActionViewer, s); err != nil {
+		return nil, err
 	}
 
-	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
-		return nil, errdefs.MaskAsNotFound(err, "Team not found")
-	}
-
-	webhooks := []*ent.Webhook{}
-	var err error
+	var webhooks []*ent.Webhook
 	switch input.Type {
 	case schema.WebhookTypeProject:
-		webhooks, err = self.repo.Webhooks().GetByProject(ctx, input.ProjectID)
+		webhooks, err = self.repo.Webhooks().GetByProject(ctx, s.resourceID)
 	case schema.WebhookTypeTeam:
-		webhooks, err = self.repo.Webhooks().GetByTeam(ctx, input.TeamID)
+		webhooks, err = self.repo.Webhooks().GetByTeam(ctx, s.resourceID)
+	default:
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Unknown webhook type")
 	}
 	if err != nil {
-		if ent.IsNotFound(err) {
-			return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Webhooks not found")
-		}
 		return nil, err
 	}
 
 	responses := models.TransformWebhookEntities(webhooks)
-	for _, response := range responses {
-		self.redactURL(ctx, response)
+	if err := self.redact(ctx, requesterUserID, s, responses...); err != nil {
+		return nil, err
 	}
 	return responses, nil
-}
-
-// redactURL blanks the URL for keys and connected apps without the
-// read_webhook_urls privilege. Sessions always see it.
-func (self *WebhooksService) redactURL(ctx context.Context, response *models.WebhookResponse) *models.WebhookResponse {
-	if permissions_repo.HasPrivilege(ctx, schema.PrivilegeReadWebhookURLs) {
-		return response
-	}
-	response.Redact()
-	return response
 }
