@@ -83,8 +83,7 @@ func (self *WebhooksService) sendTelegramWebhook(level WebhookLevel, event schem
 
 	resp, err := self.httpClient.Do(req)
 	if err != nil {
-		log.Errorf("Failed to send Telegram webhook: %v", err)
-		return err
+		return fmt.Errorf("failed to send Telegram webhook: %w", transportError(err))
 	}
 	defer resp.Body.Close()
 

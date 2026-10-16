@@ -53,12 +53,12 @@ func (self *WebhooksService) sendDiscordWebhook(level WebhookLevel, event schema
 
 	resp, err := self.httpClient.Do(req)
 	if err != nil {
-		log.Errorf("Failed to send discord webhook: %v", err)
-		return err
+		return fmt.Errorf("failed to send discord webhook: %w", transportError(err))
 	}
+	defer resp.Body.Close()
 
 	if !slices.Contains([]int{http.StatusOK, http.StatusNoContent}, resp.StatusCode) {
-		log.Errorf("Failed to send discord webhook: %v", resp.Status)
+		return fmt.Errorf("failed to send discord webhook: %s", resp.Status)
 	}
 
 	return nil

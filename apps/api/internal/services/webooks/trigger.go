@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
@@ -93,12 +94,22 @@ func (self *WebhooksService) TriggerWebhooks(ctx context.Context, level WebhookL
 	var errs []error
 	for _, webhook := range webhooks {
 		if err := self.send(level, event, message, webhook.URL); err != nil {
-			log.Errorf("Failed to send webhook %s to %s: %v", event, webhook.URL, err)
+			log.Errorf("Failed to send webhook %s for event %s: %v", webhook.ID, event, err)
 			errs = append(errs, err)
 		}
 	}
 
 	return errors.Join(errs...)
+}
+
+// transportError strips the request URL the http client puts into its errors. The
+// URL is the webhook's secret, and these errors end up in build logs viewers can read.
+func transportError(err error) error {
+	var urlErr *url.Error
+	if errors.As(err, &urlErr) {
+		return urlErr.Err
+	}
+	return err
 }
 
 func (self *WebhooksService) webhooksForEvent(ctx context.Context, event schema.WebhookEvent, teamID uuid.UUID, projectID uuid.UUID) ([]*ent.Webhook, error) {
@@ -146,11 +157,11 @@ func (self *WebhooksService) sendDefaultWebhook(level WebhookLevel, event schema
 
 	resp, err := self.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to send webhook: %w", err)
+		return fmt.Errorf("failed to send webhook: %w", transportError(err))
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusOK {
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		return nil
 	}
 

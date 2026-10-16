@@ -80,6 +80,24 @@ func TestTriggerWebhooks_FailingWebhookDoesNotStopTheNext(t *testing.T) {
 
 	require.Error(t, err)
 	assert.Equal(t, map[string]int{"/broken": 1, "/working": 1}, counter.hits)
+	// The error reaches build logs that viewers can read, so it never carries the
+	// URL, whose path holds the token. The host of a dial error is not a secret.
+	assert.NotContains(t, err.Error(), server.URL)
+	assert.NotContains(t, err.Error(), "/unreachable")
+	assert.Contains(t, err.Error(), "connection refused")
+}
+
+func TestTriggerWebhooks_AnySuccessStatusCounts(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+	}))
+	defer server.Close()
+	service, webhookRepo := newTriggerService(t, server.Client())
+	projectID := uuid.New()
+	webhookRepo.EXPECT().GetByProjectForEvent(mock.Anything, projectID, schema.WebhookEventServiceUpdated).Return([]*ent.Webhook{{URL: server.URL + "/queue"}}, nil)
+
+	err := service.TriggerWebhooks(context.Background(), WebhookLevelInfo, schema.WebhookEventServiceUpdated, WebhookData{Title: "Service Updated"}, uuid.New(), projectID)
+	assert.NoError(t, err)
 }
 
 func TestTriggerWebhooks_ProjectEventsUseTeamWebhooks(t *testing.T) {

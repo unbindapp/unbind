@@ -56,8 +56,7 @@ func (self *WebhooksService) sendSlackWebhook(level WebhookLevel, event schema.W
 
 	resp, err := self.httpClient.Do(req)
 	if err != nil {
-		log.Errorf("Failed to send slack webhook: %v", err)
-		return err
+		return fmt.Errorf("failed to send slack webhook: %w", transportError(err))
 	}
 	defer resp.Body.Close()
 
