@@ -892,8 +892,8 @@ releases:
               memory: "10Mi"
               cpu: "50m"
             limits:
-              cpu: {{ .Values | get "overrides.unbind.api.resources.limits.cpu" "500m" }}
-              memory: {{ .Values | get "overrides.unbind.api.resources.limits.memory" "2Gi" }}
+              cpu: {{ .Values | get "overrides.unbind.api.resources.limits.cpu" "500m" | quote }}
+              memory: {{ .Values | get "overrides.unbind.api.resources.limits.memory" "2Gi" | quote }}
           containerPort: 8089
           service:
             type: ClusterIP

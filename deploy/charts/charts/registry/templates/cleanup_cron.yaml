@@ -1,10 +1,24 @@
+{{- /* The API stores the cleanup threshold and schedule from System Settings on this CronJob, so an upgrade keeps them. */}}
+{{- $schedule := .Values.cleanup.schedule | default "0 * * * *" }}
+{{- $threshold := .Values.cleanup.threshold }}
+{{- $live := lookup "batch/v1" "CronJob" .Release.Namespace "registry-cleanup" }}
+{{- if $live }}
+{{- $schedule = $live.spec.schedule }}
+{{- range $live.spec.jobTemplate.spec.template.spec.containers }}
+{{- range .env | default list }}
+{{- if and (eq .name "MAX_STORAGE") .value }}
+{{- $threshold = .value }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: registry-cleanup
   namespace: {{ .Release.Namespace }}
 spec:
-  schedule: "{{ .Values.cleanup.schedule | default "0 * * * *" }}"
+  schedule: {{ $schedule | quote }}
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -27,7 +41,7 @@ spec:
                     fieldRef:
                       fieldPath: metadata.namespace
                 - name: MAX_STORAGE
-                  value: {{ .Values.cleanup.threshold | quote }}
+                  value: {{ $threshold | quote }}
               resources:
                 requests:
                   cpu: 50m
