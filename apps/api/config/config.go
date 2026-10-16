@@ -60,7 +60,8 @@ type Config struct {
 	// the API reaches postgres at an address pods cannot (local dev).
 	BuilderPostgresHost string `env:"BUILDER_POSTGRES_HOST"`
 	// Redis
-	RedisURL string `env:"REDIS_URL" envDefault:"localhost:6379"`
+	RedisURL      string `env:"REDIS_URL" envDefault:"localhost:6379"`
+	RedisPassword string `env:"REDIS_PASSWORD"`
 	// Auth tokens. TokenAudience is the JWT "aud" claim minted into access tokens.
 	TokenAudience string `env:"TOKEN_AUDIENCE" envDefault:"unbind-api"`
 	// CookieSecure should be false only for local http development.

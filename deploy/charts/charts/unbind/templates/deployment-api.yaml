@@ -55,6 +55,13 @@ spec:
           env:
             - name: UPDATER_SERVICE_ACCOUNT
               value: {{ .Values.updater.serviceAccount.name | quote }}
+            {{- if .Values.redis.passwordSecret.name }}
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.passwordSecret.name }}
+                  key: {{ .Values.redis.passwordSecret.key }}
+            {{- end }}
             {{- with .Values.api.env }}
             {{- toYaml . | nindent 12 }}
             {{- end }}

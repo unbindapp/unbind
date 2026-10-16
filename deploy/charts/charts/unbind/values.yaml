@@ -42,6 +42,20 @@ database:
   userKey: "username"
   passwordKey: "password"
 
+# Redis the API connects to (REDIS_URL lives in api.env). The password comes from
+# passwordSecret; leave name empty for a Redis without auth. The NetworkPolicy
+# limits the bundled Redis pods to the API pods.
+redis:
+  passwordSecret:
+    name: "redis"
+    key: "redis-password"
+  networkPolicy:
+    enabled: true
+    podLabels:
+      app.kubernetes.io/name: redis
+      app.kubernetes.io/instance: redis
+    port: 6379
+
 # Ingress common configuration
 ingress:
   className: "nginx"

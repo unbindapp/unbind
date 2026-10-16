@@ -97,9 +97,12 @@ overrides:
         name: unbind
         user: unbind
         secretName: unbind.pg-unbind.credentials.postgresql.acid.zalan.do
-      # Redis Redis configuration
+      # Redis configuration. The bundled Redis stores its password in the "redis"
+      # secret; point these at your own secret when components.redis is disabled.
       redis:
         url: redis-headless.unbind-system:6379
+        # passwordSecretName: redis
+        # passwordSecretKey: redis-password
       # Builder configuration
       buildImager: unbindapp/unbind-builder:latest
       # Registry configuration

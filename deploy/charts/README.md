@@ -60,6 +60,10 @@ configs:
 
 The ClusterIP must match `registryClusterIP` and fall within your cluster's service CIDR (k3s default `10.43.0.0/16`). No NodePort, ingress, domain, or firewall rules are required.
 
+### redis
+
+The bundled Redis requires a password. The chart generates it into the `redis` secret (key `redis-password`) and the API reads it from there. A NetworkPolicy only lets the API pods reach it, so other workloads in the cluster cannot read the deployment queue. If you bring your own Redis, set `overrides.unbind.api.redis.url` and point `overrides.unbind.api.redis.passwordSecretName` and `passwordSecretKey` at a secret in the Unbind namespace, or leave `passwordSecretName` empty for a Redis without auth.
+
 ### buildkitd
 
 Buildkitd will only schedule once per node, so you should not set replicas > the number of nodes in your cluster or else you'll have scheduling errors.

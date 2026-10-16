@@ -1,0 +1,3 @@
+# Redis NetworkPolicy from the unbind chart. The Redis password itself needs a helmfile sync.
+resources:
+  - redis-networkpolicy.yaml

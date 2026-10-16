@@ -1,0 +1,27 @@
+# Helm ownership metadata lets the next helmfile sync adopt this object
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: unbind-api-redis
+  namespace: unbind-system
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: unbind-app
+    meta.helm.sh/release-namespace: unbind-system
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: redis
+      app.kubernetes.io/name: redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: unbind-api
+              app.kubernetes.io/instance: unbind-app
+      ports:
+        - port: 6379
+          protocol: TCP

@@ -439,8 +439,9 @@ releases:
     version: 0.37.2
     values:
       - architecture: standalone
+        # The chart generates the password into the "redis" secret and keeps it across upgrades.
         auth:
-          enabled: false
+          enabled: true
         persistence:
           enabled: true
           size: 512Mi
@@ -453,7 +454,6 @@ releases:
             cpu: 150m
         extraConfig: |
           appendonly yes
-          protected-mode no
     labels:
       component: redis
     installed: {{ .Values | get "components.redis.enabled" true }}
@@ -965,6 +965,13 @@ releases:
               value: {{ .Values | get "overrides.unbind.api.loki.endpoint" (printf "http://loki-gateway.%s.svc.cluster.local" .Values.namespace) }}
             - name: PROMETHEUS_ENDPOINT
               value: {{ .Values | get "overrides.unbind.api.prometheus.endpoint" (printf "http://vmsingle-victoria-metrics-k8s-stack.%s:8428" .Values.namespace) }}
+
+      - redis:
+          passwordSecret:
+            name: {{ .Values | get "overrides.unbind.api.redis.passwordSecretName" (ternary "redis" "" (.Values | get "components.redis.enabled" true)) | quote }}
+            key: {{ .Values | get "overrides.unbind.api.redis.passwordSecretKey" "redis-password" | quote }}
+          networkPolicy:
+            enabled: {{ .Values | get "components.redis.enabled" true }}
 
       - serviceAccount:
           create: true

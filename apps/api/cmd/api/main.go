@@ -91,8 +91,7 @@ func startAPI(cfg *config.Config) {
 
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisURL,
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Password: cfg.RedisPassword,
 	})
 	defer redisClient.Close()
 
