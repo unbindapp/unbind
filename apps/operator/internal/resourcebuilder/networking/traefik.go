@@ -93,7 +93,7 @@ func traefikAnnotations(namespace string, middlewares ...*unstructured.Unstructu
 // traefikRedirect rewrites the whole request URL. Traefik picks 301/302 for GET and
 // 308/307 for other methods from the permanent flag, so 308 maps to permanent.
 func traefikRedirect(target urlTarget, statusCode int32) map[string]any {
-	regex, replacement := "^.*$", target.URL()
+	regex, replacement := "^.*$", strings.ReplaceAll(target.URL(), "$", "$$")
 	if target.Path == "" {
 		regex, replacement = "^https?://[^/]+(.*)$", target.URL()+"${1}"
 	}

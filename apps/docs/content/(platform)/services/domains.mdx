@@ -84,7 +84,7 @@ A domain can send each path to a different service, like `example.com` to the we
 
 ## Redirect a domain
 
-A domain can send visitors to another URL instead of the service. Press the pencil on the domain, open **Advanced Settings**, type the URL in **Redirect**, like `https://example.com`, pick the **Redirect Status** and deploy.
+A domain can send visitors to another URL instead of the service. Press the pencil on the domain, open **Advanced Settings**, type the URL in **Redirect**, like `https://example.com`, pick the **Redirect Status** and deploy. The URL cannot carry a query string, and its path only takes letters, digits and `/ . _ ~ ! * + , : @ = -`.
 
 - A URL with no path keeps the path and query of the request: `www.example.com/pricing` goes to `example.com/pricing`.
 - A URL with a path drops it: every page of `plugins.example.com` goes to `example.com/plugins`.

@@ -270,6 +270,17 @@ func TestNginxHostOptions(t *testing.T) {
 	if !strings.Contains(snippet, "return 308 https://example.com/plugins;") {
 		t.Errorf("snippet = %q", snippet)
 	}
+
+	// A path the API would reject never reaches the config, so a stored one cannot inject directives
+	svc.Spec.Config.Hosts[1].Redirect.To = "https://example.com/x%3B%0A%7D%0Alocation%20/leak%20%7B%20alias%20/var/run/secrets/%3B%20%7D"
+	objs, _ = New(ProviderNginx, Config{}).BuildRoutes(in)
+	snippet = ingressFor(objs, "www.example.com").Annotations["nginx.ingress.kubernetes.io/configuration-snippet"]
+	if strings.Contains(snippet, "return") || strings.Contains(snippet, "location") {
+		t.Errorf("snippet carried the redirect: %q", snippet)
+	}
+	if !strings.Contains(snippet, `more_set_headers "Cache-Control: public, max-age=600";`) {
+		t.Errorf("snippet lost the headers: %q", snippet)
+	}
 }
 
 func ingressHostsOf(ingress *networkingv1.Ingress) []string {

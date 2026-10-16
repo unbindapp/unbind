@@ -20,6 +20,7 @@ var (
 	headerNamePattern   = regexp.MustCompile(`^[A-Za-z0-9-]{1,128}$`)
 	redirectStatusCodes = []int{301, 302, 307, 308}
 	proxyPathPattern    = regexp.MustCompile(`^[A-Za-z0-9/._~!$&'()*+,;=:@-]*$`)
+	redirectPathPattern = regexp.MustCompile(`^[A-Za-z0-9/._~!*+,:@=-]*$`)
 	pathSegmentPattern  = regexp.MustCompile(`^[A-Za-z0-9._~-]+$`)
 	// Headers that frame the response, which a set header would corrupt
 	reservedResponseHeaders = []string{"content-length", "transfer-encoding", "connection", "host"}
@@ -109,6 +110,9 @@ func validateRedirect(host schema.HostSpec) error {
 	}
 	if target.RawQuery != "" || target.Fragment != "" || target.User != nil {
 		return invalid("domain %s: a redirect URL cannot have a query, fragment or credentials", host.Route())
+	}
+	if !redirectPathPattern.MatchString(target.Path) {
+		return invalid("domain %s: the redirect path can only have letters, digits and / . _ ~ ! * + , : @ = -", host.Route())
 	}
 	if strings.EqualFold(target.Hostname(), host.Host) && target.Path == "" {
 		return invalid("domain %s: a redirect to itself would loop", host.Route())

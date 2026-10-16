@@ -2,11 +2,15 @@ package networking
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// The snippet is raw nginx config, so a redirect path is limited to what the API allows
+var nginxRedirectPathPattern = regexp.MustCompile(`^[A-Za-z0-9/._~!*+,:@=-]*$`)
 
 type nginxProvider struct {
 	cfg Config
@@ -61,7 +65,7 @@ func nginxSnippet(host v1.HostSpec) string {
 	for _, header := range host.ResponseHeaders {
 		lines = append(lines, fmt.Sprintf("more_set_headers \"%s: %s\";", header.Name, header.Value))
 	}
-	if target, ok := parseRedirect(host.Redirect); ok {
+	if target, ok := parseRedirect(host.Redirect); ok && nginxRedirectPathPattern.MatchString(target.Path) {
 		url := target.URL()
 		if target.Path == "" {
 			url += "$request_uri"
