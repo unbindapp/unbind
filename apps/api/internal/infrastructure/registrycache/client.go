@@ -19,15 +19,30 @@ const manifestAccept = "application/vnd.oci.image.manifest.v1+json, application/
 const digestHeader = "Docker-Content-Digest"
 
 type Client struct {
-	baseURL string
-	http    *http.Client
+	baseURL  string
+	username string
+	password string
+	http     *http.Client
 }
 
-func NewClient(baseURL string) *Client {
+func NewClient(baseURL, username, password string) *Client {
 	return &Client{
-		baseURL: baseURL,
-		http:    &http.Client{Timeout: 30 * time.Second},
+		baseURL:  baseURL,
+		username: username,
+		password: password,
+		http:     &http.Client{Timeout: 30 * time.Second},
 	}
+}
+
+func (self *Client) newRequest(ctx context.Context, method, endpoint string) (*http.Request, error) {
+	req, err := http.NewRequestWithContext(ctx, method, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+	if self.username != "" {
+		req.SetBasicAuth(self.username, self.password)
+	}
+	return req, nil
 }
 
 type Manifest struct {
@@ -84,7 +99,7 @@ func (self *Client) Manifest(ctx context.Context, repo, ref string) (*Manifest, 
 
 func (self *Client) DeleteManifest(ctx context.Context, repo, digest string) error {
 	endpoint := fmt.Sprintf("%s/v2/%s/manifests/%s", self.baseURL, repo, url.PathEscape(digest))
-	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, endpoint, nil)
+	req, err := self.newRequest(ctx, http.MethodDelete, endpoint)
 	if err != nil {
 		return err
 	}
@@ -151,7 +166,7 @@ func (self *Client) verifyManifest(ctx context.Context, repo, ref string, depth 
 }
 
 func (self *Client) exists(ctx context.Context, endpoint, accept string) (bool, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodHead, endpoint, nil)
+	req, err := self.newRequest(ctx, http.MethodHead, endpoint)
 	if err != nil {
 		return false, err
 	}
@@ -184,7 +199,7 @@ func (self *Client) getJSON(ctx context.Context, endpoint string, headers map[st
 }
 
 func (self *Client) get(ctx context.Context, endpoint string, headers map[string]string) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	req, err := self.newRequest(ctx, http.MethodGet, endpoint)
 	if err != nil {
 		return nil, err
 	}

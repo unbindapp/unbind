@@ -40,7 +40,7 @@ kube-state-metrics:
 
 Unbind supports two registry modes, chosen during installation:
 
-- **Self-hosted (default):** an in-cluster docker registry, used for builds from source. It needs **no domain** and is reachable only inside the cluster on a pinned ClusterIP (`registryClusterIP`, default `10.43.255.250`) over plain HTTP. It is never exposed externally.
+- **Self-hosted (default):** an in-cluster docker registry, used for builds from source. It needs **no domain** and is reachable only inside the cluster on a pinned ClusterIP (`registryClusterIP`, default `10.43.255.250`) over plain HTTP. It is never exposed externally. It requires a login: the registry release's hook generates one into `registry-basic-auth` (htpasswd) and `registry-credentials`. The API keeps the htpasswd file in step with `registry-credentials`, pushes with that login and copies a pull secret into every team namespace, so a node's mirror config carries no credentials.
 - **External:** Docker Hub, GHCR, Quay, or any other registry, configured with credentials.
 
 For the self-hosted registry, a node's containerd cannot resolve the in-cluster name (`docker-registry.unbind-system:5000`) on its own, so each node needs a `registries.yaml` pointing it at the pinned ClusterIP. **The installer writes this automatically** on the primary node, and `unbind add-node` prints the same file for new nodes.

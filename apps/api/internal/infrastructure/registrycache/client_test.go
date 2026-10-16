@@ -18,7 +18,7 @@ func TestTagsNullList(t *testing.T) {
 	}))
 	defer server.Close()
 
-	tags, err := NewClient(server.URL).Tags(context.Background(), "tezara")
+	tags, err := NewClient(server.URL, "", "").Tags(context.Background(), "tezara")
 
 	require.NoError(t, err)
 	assert.Empty(t, tags)
@@ -31,7 +31,7 @@ func TestManifestReturnsDigestAndBlobs(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client := NewClient(server.URL)
+	client := NewClient(server.URL, "", "")
 	manifest, err := client.Manifest(context.Background(), "tezara", "abc")
 	require.NoError(t, err)
 	assert.Equal(t, "sha256:manifest", manifest.Digest)
@@ -57,7 +57,7 @@ func TestCollectBlobsWalksImageIndex(t *testing.T) {
 	defer server.Close()
 
 	blobs := map[string]int64{}
-	err := collectBlobs(context.Background(), NewClient(server.URL), "tezara", "multi", blobs, 0)
+	err := collectBlobs(context.Background(), NewClient(server.URL, "", ""), "tezara", "multi", blobs, 0)
 
 	require.NoError(t, err)
 	assert.Equal(t, map[string]int64{"sha256:c1": 1, "sha256:c2": 2, "sha256:shared": 50}, blobs)
@@ -71,7 +71,7 @@ func TestDeleteManifestToleratesMissingManifest(t *testing.T) {
 	}))
 	defer server.Close()
 
-	err := NewClient(server.URL).DeleteManifest(context.Background(), "tezara", "sha256:gone")
+	err := NewClient(server.URL, "", "").DeleteManifest(context.Background(), "tezara", "sha256:gone")
 
 	require.NoError(t, err)
 	assert.Equal(t, "DELETE /v2/tezara/manifests/sha256:gone", seen)
@@ -84,7 +84,7 @@ func TestDeleteManifestSurfacesErrors(t *testing.T) {
 	}))
 	defer server.Close()
 
-	err := NewClient(server.URL).DeleteManifest(context.Background(), "tezara", "sha256:abc")
+	err := NewClient(server.URL, "", "").DeleteManifest(context.Background(), "tezara", "sha256:abc")
 
 	require.ErrorContains(t, err, "405")
 }
@@ -126,10 +126,31 @@ func TestVerifyImage(t *testing.T) {
 			server := fakeRegistry(t, tc.missing, tc.status)
 			defer server.Close()
 
-			err := NewClient(server.URL).VerifyImage(context.Background(), "tezara", "abc")
+			err := NewClient(server.URL, "", "").VerifyImage(context.Background(), "tezara", "abc")
 
 			assert.Equal(t, tc.fails, err != nil)
 			assert.Equal(t, tc.incomplete, errors.Is(err, ErrImageIncomplete))
 		})
 	}
+}
+
+func TestClientSendsBasicAuth(t *testing.T) {
+	var user, pass string
+	var ok bool
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, pass, ok = r.BasicAuth()
+		w.Header().Set(digestHeader, "sha256:abc")
+		_, _ = w.Write([]byte(`{"repositories":[]}`))
+	}))
+	defer server.Close()
+
+	_, err := NewClient(server.URL, "admin", "s3cret").Repositories(context.Background())
+	require.NoError(t, err)
+	assert.True(t, ok)
+	assert.Equal(t, "admin", user)
+	assert.Equal(t, "s3cret", pass)
+
+	_, err = NewClient(server.URL, "", "").Repositories(context.Background())
+	require.NoError(t, err)
+	assert.False(t, ok, "no credentials, no header")
 }

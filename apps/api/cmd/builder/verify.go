@@ -11,13 +11,13 @@ import (
 )
 
 // A registry cleanup that overlaps the push can drop blobs of the image. Pushing again uploads them.
-func buildVerified(ctx context.Context, systemNamespace string, build func() (string, error)) (string, error) {
+func buildVerified(ctx context.Context, registry *registrycache.Client, systemNamespace string, build func() (string, error)) (string, error) {
 	image, err := build()
 	if err != nil && !isBlobUnknown(err) {
 		return "", err
 	}
 	if err == nil {
-		err = verifyPushedImage(ctx, systemNamespace, image)
+		err = verifyPushedImage(ctx, registry, systemNamespace, image)
 		if !errors.Is(err, registrycache.ErrImageIncomplete) {
 			if err != nil {
 				log.Warnf("Could not verify the pushed image: %v", err)
@@ -31,7 +31,7 @@ func buildVerified(ctx context.Context, systemNamespace string, build func() (st
 	if err != nil {
 		return "", err
 	}
-	if err := verifyPushedImage(ctx, systemNamespace, image); errors.Is(err, registrycache.ErrImageIncomplete) {
+	if err := verifyPushedImage(ctx, registry, systemNamespace, image); errors.Is(err, registrycache.ErrImageIncomplete) {
 		return "", err
 	}
 	return image, nil
@@ -42,12 +42,12 @@ func isBlobUnknown(err error) bool {
 }
 
 // Only the internal registry runs cleanup, an external one is not checked
-func verifyPushedImage(ctx context.Context, systemNamespace, image string) error {
+func verifyPushedImage(ctx context.Context, registry *registrycache.Client, systemNamespace, image string) error {
 	repo, tag, ok := internalImageRef(systemNamespace, image)
 	if !ok {
 		return nil
 	}
-	return registrycache.NewClient(registrycache.RegistryURL(systemNamespace)).VerifyImage(ctx, repo, tag)
+	return registry.VerifyImage(ctx, repo, tag)
 }
 
 func internalImageRef(systemNamespace, image string) (repo, tag string, ok bool) {

@@ -42,6 +42,16 @@ spec:
                       fieldPath: metadata.namespace
                 - name: MAX_STORAGE
                   value: {{ $threshold | quote }}
+                - name: BOOTSTRAP_CONTAINER_REGISTRY_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: registry-credentials
+                      key: username
+                - name: BOOTSTRAP_CONTAINER_REGISTRY_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: registry-credentials
+                      key: password
               resources:
                 requests:
                   cpu: 50m

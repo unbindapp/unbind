@@ -25,6 +25,10 @@ data:
       addr: :5000
       headers:
         X-Content-Type-Options: [nosniff]
+    auth:
+      htpasswd:
+        realm: unbind
+        path: /etc/registry-auth/auth
     health:
       storagedriver:
         enabled: true

@@ -78,18 +78,18 @@ type Cleaner struct {
 	restCfg   *rest.Config
 }
 
-func NewCleaner(namespace string, restCfg *rest.Config) (*Cleaner, error) {
+func NewCleaner(namespace, username, password string, restCfg *rest.Config) (*Cleaner, error) {
 	clientset, err := kubernetes.NewForConfig(restCfg)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create kubernetes client: %w", err)
 	}
-	return newCleaner(namespace, clientset, restCfg), nil
+	return newCleaner(namespace, NewClient(RegistryURL(namespace), username, password), clientset, restCfg), nil
 }
 
-func newCleaner(namespace string, clientset kubernetes.Interface, restCfg *rest.Config) *Cleaner {
+func newCleaner(namespace string, registry *Client, clientset kubernetes.Interface, restCfg *rest.Config) *Cleaner {
 	return &Cleaner{
 		namespace: namespace,
-		registry:  NewClient(RegistryURL(namespace)),
+		registry:  registry,
 		clientset: clientset,
 		restCfg:   restCfg,
 	}

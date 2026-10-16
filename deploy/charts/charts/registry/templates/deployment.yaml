@@ -33,6 +33,9 @@ spec:
             - name: registry-config
               mountPath: /etc/distribution
               readOnly: true
+            - name: registry-auth
+              mountPath: /etc/registry-auth
+              readOnly: true
           securityContext:
             runAsUser: 0
       volumes:
@@ -42,3 +45,6 @@ spec:
         - name: registry-config
           configMap:
             name: docker-registry-config
+        - name: registry-auth
+          secret:
+            secretName: registry-basic-auth

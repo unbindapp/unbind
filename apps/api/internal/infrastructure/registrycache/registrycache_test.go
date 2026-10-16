@@ -50,7 +50,7 @@ func TestConvertCleanupContainerLeavesCLIJobAlone(t *testing.T) {
 func TestSyncCleanupJob(t *testing.T) {
 	current := func(image string) (*batchv1.JobSpec, *corev1.Container) {
 		return &batchv1.JobSpec{ActiveDeadlineSeconds: new(cleanupTimeoutSeconds), BackoffLimit: new(int32(0))},
-			&corev1.Container{Image: image, Command: cleanupCommand}
+			&corev1.Container{Image: image, Command: cleanupCommand, Env: registryCredentialEnv()}
 	}
 
 	spec, container := current("ghcr.io/unbindapp/unbind:01a82cc")
@@ -69,6 +69,12 @@ func TestSyncCleanupJob(t *testing.T) {
 	assert.True(t, syncCleanupJob(legacy, container, ""))
 	assert.Equal(t, cleanupTimeoutSeconds, *legacy.ActiveDeadlineSeconds)
 	assert.Equal(t, int32(0), *legacy.BackoffLimit)
+
+	spec, container = current("ghcr.io/unbindapp/unbind:v0.1.89")
+	container.Env = []corev1.EnvVar{{Name: ThresholdEnvVar, Value: "16Gi"}}
+	assert.True(t, syncCleanupJob(spec, container, ""), "a job without the registry login gets it")
+	assert.Equal(t, append([]corev1.EnvVar{{Name: ThresholdEnvVar, Value: "16Gi"}}, registryCredentialEnv()...), container.Env)
+	assert.False(t, syncCleanupJob(spec, container, ""))
 }
 
 func TestStaleCleanupJobs(t *testing.T) {
@@ -82,25 +88,66 @@ func TestStaleCleanupJobs(t *testing.T) {
 	assert.Equal(t, []string{"registry-cleanup-stuck"}, staleCleanupJobs([]batchv1.Job{stuck, running, done, build}, now))
 }
 
-func TestMountRegistryConfigAddsVolumeOnce(t *testing.T) {
+func TestMountRegistryVolumesAddsBothOnce(t *testing.T) {
 	spec := &corev1.PodSpec{
 		Containers: []corev1.Container{{Name: RegistryContainerName}},
 		Volumes:    []corev1.Volume{{Name: "registry-storage"}},
 	}
 
-	require.True(t, mountRegistryConfig(spec))
-	require.False(t, mountRegistryConfig(spec))
+	require.True(t, mountRegistryVolumes(spec))
+	require.False(t, mountRegistryVolumes(spec))
 
-	require.Len(t, spec.Volumes, 2)
+	require.Len(t, spec.Volumes, 3)
 	assert.Equal(t, RegistryConfigMapName, spec.Volumes[1].ConfigMap.Name)
-	assert.Equal(t, []corev1.VolumeMount{{Name: registryConfigVolume, MountPath: registryConfigDir, ReadOnly: true}}, spec.Containers[0].VolumeMounts)
+	assert.Equal(t, RegistryAuthSecretName, spec.Volumes[2].Secret.SecretName)
+	assert.Equal(t, []corev1.VolumeMount{
+		{Name: registryConfigVolume, MountPath: registryConfigDir, ReadOnly: true},
+		{Name: registryAuthVolume, MountPath: registryAuthDir, ReadOnly: true},
+	}, spec.Containers[0].VolumeMounts)
 }
 
-func TestMountRegistryConfigSkipsUnknownContainer(t *testing.T) {
+func TestMountRegistryVolumesAddsTheAuthMountToAnOlderSpec(t *testing.T) {
+	spec := &corev1.PodSpec{
+		Containers: []corev1.Container{{Name: RegistryContainerName, VolumeMounts: []corev1.VolumeMount{{Name: registryConfigVolume, MountPath: registryConfigDir, ReadOnly: true}}}},
+		Volumes:    []corev1.Volume{{Name: "registry-storage"}, {Name: registryConfigVolume}},
+	}
+
+	require.True(t, mountRegistryVolumes(spec))
+	require.Len(t, spec.Volumes, 3)
+	assert.Equal(t, registryAuthVolume, spec.Volumes[2].Name)
+	assert.Len(t, spec.Containers[0].VolumeMounts, 2)
+}
+
+func TestMountRegistryVolumesSkipsUnknownContainer(t *testing.T) {
 	spec := &corev1.PodSpec{Containers: []corev1.Container{{Name: "other"}}}
 
-	assert.False(t, mountRegistryConfig(spec))
+	assert.False(t, mountRegistryVolumes(spec))
 	assert.Empty(t, spec.Volumes)
+}
+
+func TestRestartPodsStampsTheTemplate(t *testing.T) {
+	template := &corev1.PodTemplateSpec{}
+	restartPods(template, time.Date(2026, 10, 16, 12, 0, 0, 0, time.UTC))
+	assert.Equal(t, "2026-10-16T12:00:00Z", template.Annotations[restartAnnotation])
+}
+
+func TestHtpasswd(t *testing.T) {
+	entry, err := htpasswdEntry("admin", "s3cret")
+	require.NoError(t, err)
+	assert.True(t, strings.HasPrefix(string(entry), "admin:$2a$"))
+
+	assert.True(t, htpasswdMatches(entry, "admin", "s3cret"))
+	assert.False(t, htpasswdMatches(entry, "admin", "wrong"))
+	assert.False(t, htpasswdMatches(entry, "other", "s3cret"))
+	assert.False(t, htpasswdMatches(nil, "admin", "s3cret"))
+
+	// htpasswd -B writes the 2y variant, which the same hash verifies
+	fromHtpasswd := []byte(strings.Replace(string(entry), "admin:$2a$", "admin:$2y$", 1))
+	assert.True(t, htpasswdMatches(fromHtpasswd, "admin", "s3cret"))
+}
+
+func TestRegistryConfigEnablesHtpasswdAuth(t *testing.T) {
+	assert.Contains(t, registryConfig, "auth:\n  htpasswd:\n    realm: unbind\n    path: "+registryAuthDir+"/"+registryAuthKey+"\n")
 }
 
 func TestGrantJobListAddsRuleOnce(t *testing.T) {

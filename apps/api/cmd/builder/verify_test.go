@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/registrycache"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -34,7 +35,7 @@ func TestInternalImageRef(t *testing.T) {
 
 func TestBuildVerifiedPushesAgainWhenTheRegistryRejectsMissingBlobs(t *testing.T) {
 	calls := 0
-	image, err := buildVerified(context.Background(), "unbind-system", func() (string, error) {
+	image, err := buildVerified(context.Background(), registrycache.NewClient(registrycache.RegistryURL("unbind-system"), "", ""), "unbind-system", func() (string, error) {
 		calls++
 		if calls == 1 {
 			return "", errors.New("failed to push: unexpected status: 400 Bad Request: MANIFEST_BLOB_UNKNOWN: blob unknown to registry")
@@ -49,7 +50,7 @@ func TestBuildVerifiedPushesAgainWhenTheRegistryRejectsMissingBlobs(t *testing.T
 
 func TestBuildVerifiedDoesNotRetryOtherFailures(t *testing.T) {
 	calls := 0
-	_, err := buildVerified(context.Background(), "unbind-system", func() (string, error) {
+	_, err := buildVerified(context.Background(), registrycache.NewClient(registrycache.RegistryURL("unbind-system"), "", ""), "unbind-system", func() (string, error) {
 		calls++
 		return "", errors.New("dockerfile not found")
 	})

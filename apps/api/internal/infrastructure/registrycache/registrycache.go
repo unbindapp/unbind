@@ -21,17 +21,19 @@ import (
 )
 
 const (
-	CleanupCronJobName     = k8s.RegistryCleanupCronJobName
-	CleanupContainerName   = "registry-cleanup"
-	CleanupRoleName        = "registry-cleanup-role"
-	RegistryPVCName        = "registry-pvc"
-	RegistryServiceName    = "docker-registry"
-	RegistryServicePort    = 5000
-	ThresholdEnvVar        = "MAX_STORAGE"
-	DefaultCleanupSchedule = "0 * * * *"
-	PruneAllFlag           = "--all"
-	TerminationMessagePath = "/dev/termination-log"
-	cleanupTimeoutSeconds  = int64(k8s.RegistryCleanupTimeout / time.Second)
+	CleanupCronJobName   = k8s.RegistryCleanupCronJobName
+	CleanupContainerName = "registry-cleanup"
+	CleanupRoleName      = "registry-cleanup-role"
+	RegistryPVCName      = "registry-pvc"
+	RegistryServiceName  = "docker-registry"
+	// Written by the helmfile registry hook, read by the API as BOOTSTRAP_CONTAINER_REGISTRY_*
+	RegistryCredentialsSecretName = "registry-credentials"
+	RegistryServicePort           = 5000
+	ThresholdEnvVar               = "MAX_STORAGE"
+	DefaultCleanupSchedule        = "0 * * * *"
+	PruneAllFlag                  = "--all"
+	TerminationMessagePath        = "/dev/termination-log"
+	cleanupTimeoutSeconds         = int64(k8s.RegistryCleanupTimeout / time.Second)
 	// Set by kubectl create job --from=cronjob as well
 	manualRunAnnotation = "cronjob.kubernetes.io/instantiate"
 	manualRunValue      = "manual"
@@ -57,7 +59,7 @@ func NewManager(cfg *config.Config, k8sClient *k8s.KubeClient) *Manager {
 	return &Manager{
 		cfg:     cfg,
 		k8s:     k8sClient,
-		cleaner: newCleaner(cfg.GetSystemNamespace(), k8sClient.GetInternalClient(), k8sClient.GetInternalRestConfig()),
+		cleaner: newCleaner(cfg.GetSystemNamespace(), NewClient(RegistryURL(cfg.GetSystemNamespace()), cfg.BootstrapContainerRegistryUser, cfg.BootstrapContainerRegistryPassword), k8sClient.GetInternalClient(), k8sClient.GetInternalRestConfig()),
 	}
 }
 
@@ -199,7 +201,33 @@ func syncCleanupJob(jobSpec *batchv1.JobSpec, container *corev1.Container, image
 		jobSpec.BackoffLimit = new(int32(0))
 		changed = true
 	}
+	return grantRegistryCredentials(container) || changed
+}
+
+// grantRegistryCredentials hands the cleanup job the registry login the API uses
+func grantRegistryCredentials(container *corev1.Container) bool {
+	changed := false
+	for _, env := range registryCredentialEnv() {
+		if slices.ContainsFunc(container.Env, func(existing corev1.EnvVar) bool { return existing.Name == env.Name }) {
+			continue
+		}
+		container.Env = append(container.Env, env)
+		changed = true
+	}
 	return changed
+}
+
+func registryCredentialEnv() []corev1.EnvVar {
+	fromSecret := func(name, key string) corev1.EnvVar {
+		return corev1.EnvVar{Name: name, ValueFrom: &corev1.EnvVarSource{SecretKeyRef: &corev1.SecretKeySelector{
+			LocalObjectReference: corev1.LocalObjectReference{Name: RegistryCredentialsSecretName},
+			Key:                  key,
+		}}}
+	}
+	return []corev1.EnvVar{
+		fromSecret("BOOTSTRAP_CONTAINER_REGISTRY_USER", "username"),
+		fromSecret("BOOTSTRAP_CONTAINER_REGISTRY_PASSWORD", "password"),
+	}
 }
 
 func (self *Manager) deleteStaleCleanupJobs(ctx context.Context) error {

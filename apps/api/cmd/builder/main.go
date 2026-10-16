@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/registrycache"
 	"os"
 	"time"
 
@@ -264,9 +265,10 @@ func main() {
 		}
 		buildSecrets := mergeBuildSecrets(cfg, rawSecrets, additionalEnv)
 
+		registry := registrycache.NewClient(registrycache.RegistryURL(cfg.GetSystemNamespace()), cfg.ContainerRegistryUser, cfg.ContainerRegistryPassword)
 		switch cfg.ServiceBuilder {
 		case schema.ServiceBuilderRailpack:
-			dockerImg, err = buildVerified(ctx, cfg.GetSystemNamespace(), func() (string, error) {
+			dockerImg, err = buildVerified(ctx, registry, cfg.GetSystemNamespace(), func() (string, error) {
 				image, _, err := builder.BuildWithRailpack(ctx, buildSecrets)
 				return image, err
 			})
@@ -277,7 +279,7 @@ func main() {
 				log.Fatalf("Failed to build with railpack: %v", err)
 			}
 		case schema.ServiceBuilderDocker:
-			dockerImg, err = buildVerified(ctx, cfg.GetSystemNamespace(), func() (string, error) {
+			dockerImg, err = buildVerified(ctx, registry, cfg.GetSystemNamespace(), func() (string, error) {
 				image, _, err := builder.BuildDockerfile(ctx, buildSecrets)
 				return image, err
 			})

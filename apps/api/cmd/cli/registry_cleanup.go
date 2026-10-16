@@ -37,7 +37,7 @@ func runRegistryCleanup(cfg *config.Config, args []string) {
 		failCleanup("failed to build kubernetes config: %v", err)
 	}
 
-	cleaner, err := registrycache.NewCleaner(cfg.SystemNamespace, restConfig)
+	cleaner, err := registrycache.NewCleaner(cfg.SystemNamespace, cfg.BootstrapContainerRegistryUser, cfg.BootstrapContainerRegistryPassword, restConfig)
 	if err != nil {
 		failCleanup("failed to create registry cleaner: %v", err)
 	}
