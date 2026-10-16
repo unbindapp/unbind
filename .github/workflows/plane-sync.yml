@@ -1,0 +1,22 @@
+name: Plane sync
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+      - run: python3 .github/scripts/plane_sync.py
+        env:
+          PLANE_API_KEY: ${{ secrets.PLANE_API_KEY }}
