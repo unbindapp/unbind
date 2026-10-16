@@ -76,13 +76,14 @@ func (self *ProjectService) UpdateProject(ctx context.Context, requesterUserID u
 	}
 
 	// Trigger webhook
+	projectID := project.ID
 	go func() {
 		event := schema.WebhookEventProjectUpdated
 		level := webhooks_service.WebhookLevelInfo
 
-		project, err := self.repo.Project().GetByID(context.Background(), project.ID)
+		project, err := self.repo.Project().GetByID(context.Background(), projectID)
 		if err != nil {
-			log.Errorf("Failed to get project %s: %v", project.ID.String(), err)
+			log.Errorf("Failed to get project %s: %v", projectID, err)
 			return
 		}
 

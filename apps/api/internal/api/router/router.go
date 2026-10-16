@@ -4,10 +4,7 @@
 package router
 
 import (
-	"net/url"
-
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/gorilla/schema"
 	"github.com/unbindapp/unbind-api/internal/api/middleware"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
@@ -42,40 +39,6 @@ import (
 	variables_handler "github.com/unbindapp/unbind-api/internal/api/handlers/variables"
 	webhooks_handler "github.com/unbindapp/unbind-api/internal/api/handlers/webhooks"
 )
-
-// Adding a format for form data
-var decoder = schema.NewDecoder()
-var urlEncodedFormat = huma.Format{
-	Marshal: nil,
-	Unmarshal: func(data []byte, v any) error {
-		values, err := url.ParseQuery(string(data))
-		if err != nil {
-			return err
-		}
-
-		// WARNING: Dirty workaround!
-		// During validation, Huma first parses the body into []any, map[string]any or equivalent for easy validation,
-		// before parsing it into the target struct.
-		// However, gorilla/schema requires a struct for decoding, so we need to map `url.Values` to a
-		// `map[string]any` if this happens.
-		// See: https://github.com/danielgtaylor/huma/blob/main/huma.go#L1264
-		if vPtr, ok := v.(*any); ok {
-			m := map[string]any{}
-			for k, v := range values {
-				if len(v) > 1 {
-					m[k] = v
-				} else if len(v) == 1 {
-					m[k] = v[0]
-				}
-			}
-			*vPtr = m
-			return nil
-		}
-
-		// `v` is a struct, try decode normally
-		return decoder.Decode(v, values)
-	},
-}
 
 func NewHumaConfig(title, version string, cookieSecure bool) huma.Config {
 	// Install the shared error envelope before any operation is registered, so
@@ -123,9 +86,6 @@ func NewHumaConfig(title, version string, cookieSecure bool) huma.Config {
 		// with the request that caused them.
 		Transformers: []huma.Transformer{middleware.ErrorTransformer},
 	}
-	cfg.Formats["application/x-www-form-urlencoded"] = urlEncodedFormat
-	cfg.Formats["x-www-form-urlencoded"] = urlEncodedFormat
-
 	return cfg
 }
 

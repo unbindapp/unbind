@@ -99,7 +99,7 @@ func (self *VariablesService) renderVariables(ctx context.Context, client kubern
 	}
 
 	for name, value := range templated {
-		rendered, unresolved := vartemplate.Render(value, rc.resolve)
+		rendered, unresolved := rc.render(value)
 		result.Env[name] = rendered
 		if len(unresolved) > 0 {
 			result.Unresolved[name] = unresolved
@@ -119,6 +119,15 @@ func (self *VariablesService) renderVariables(ctx context.Context, client kubern
 // value that is itself a reference is rendered too, and a loop ends here.
 const maxReferenceDepth = 8
 
+// maxRenderedBytes bounds what one render may produce in total. Stored values can
+// repeat a reference whose value repeats another, so output is capped, not only depth.
+const maxRenderedBytes = 1 << 20
+
+type resolution struct {
+	value string
+	ok    bool
+}
+
 type renderContext struct {
 	ctx          context.Context
 	svc          *VariablesService
@@ -130,6 +139,10 @@ type renderContext struct {
 	// Referenced services by ID, nil for one that is missing or outside the project
 	services map[uuid.UUID]*ent.Service
 	secrets  map[string]map[string][]byte
+	// Each distinct token is resolved once; one on the stack is a cycle
+	resolved  map[string]resolution
+	resolving map[string]struct{}
+	remaining int
 	// Nil until a public endpoint needs the cluster's own address
 	resolvedClusterAddress *string
 }
@@ -158,8 +171,11 @@ func (self *VariablesService) newRenderContext(ctx context.Context, client kuber
 			schema.VariableReferenceSourceTypeProject:     project.KubernetesSecret,
 			schema.VariableReferenceSourceTypeEnvironment: environment.KubernetesSecret,
 		},
-		services: make(map[uuid.UUID]*ent.Service),
-		secrets:  make(map[string]map[string][]byte),
+		services:  make(map[uuid.UUID]*ent.Service),
+		secrets:   make(map[string]map[string][]byte),
+		resolved:  make(map[string]resolution),
+		resolving: make(map[string]struct{}),
+		remaining: maxRenderedBytes,
 	}
 
 	var serviceIDs []uuid.UUID
@@ -235,6 +251,13 @@ func (rc *renderContext) secret(name string) map[string][]byte {
 	return data
 }
 
+// render gives each stored value the whole output budget; cached resolutions are
+// charged again per occurrence
+func (rc *renderContext) render(value string) (string, []vartemplate.Token) {
+	rc.remaining = maxRenderedBytes
+	return vartemplate.Render(value, rc.resolve)
+}
+
 func (rc *renderContext) resolve(token vartemplate.Token) (string, bool) {
 	return rc.resolveAt(token, 0)
 }
@@ -243,6 +266,36 @@ func (rc *renderContext) resolveAt(token vartemplate.Token, depth int) (string, 
 	if depth > maxReferenceDepth {
 		return "", false
 	}
+	if cached, ok := rc.resolved[token.Raw]; ok {
+		return rc.spend(cached)
+	}
+	if _, cyclic := rc.resolving[token.Raw]; cyclic {
+		return "", false
+	}
+	rc.resolving[token.Raw] = struct{}{}
+	value, ok := rc.resolveSource(token, depth)
+	delete(rc.resolving, token.Raw)
+	// A value cut short by the budget is not what the token resolves to
+	if rc.remaining >= 0 {
+		rc.resolved[token.Raw] = resolution{value: value, ok: ok}
+	}
+	return rc.spend(resolution{value: value, ok: ok})
+}
+
+// spend charges a resolved value against the render's output budget, once per
+// occurrence, and leaves the reference unresolved when the budget is gone
+func (rc *renderContext) spend(r resolution) (string, bool) {
+	if !r.ok {
+		return "", false
+	}
+	rc.remaining -= len(r.value)
+	if rc.remaining < 0 {
+		return "", false
+	}
+	return r.value, true
+}
+
+func (rc *renderContext) resolveSource(token vartemplate.Token, depth int) (string, bool) {
 	if token.SourceType != schema.VariableReferenceSourceTypeService {
 		secretName, ok := rc.scopeSecrets[token.SourceType]
 		if !ok || secretName == "" {
@@ -379,6 +432,7 @@ func (rc *renderContext) clusterAddress() string {
 }
 
 func (rc *renderContext) referenceInfos(value string) []models.VariableReferenceInfo {
+	rc.remaining = maxRenderedBytes
 	tokens := vartemplate.Parse(value)
 	infos := make([]models.VariableReferenceInfo, 0, len(tokens))
 	for _, token := range tokens {

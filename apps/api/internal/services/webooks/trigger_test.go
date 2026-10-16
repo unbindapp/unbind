@@ -1,6 +1,7 @@
 package webhooks_service
 
 import (
+	"bytes"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -177,4 +178,19 @@ func TestUpdateWebhook_RejectsEventsOfTheOtherLevel(t *testing.T) {
 	var customErr *errdefs.CustomError
 	require.ErrorAs(t, err, &customErr)
 	assert.Equal(t, errdefs.ErrTypeInvalidInput, customErr.Type)
+}
+
+// A failing target can answer with anything, so only a slice of its body reaches the error
+func TestFailedWebhookErrorIsBounded(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write(bytes.Repeat([]byte("x"), 1<<20))
+	}))
+	defer server.Close()
+
+	err := NewWebhooksService(nil).sendDefaultWebhook(WebhookLevelInfo, schema.WebhookEventServiceUpdated, WebhookData{Title: "t"}, server.URL)
+
+	require.Error(t, err)
+	assert.Less(t, len(err.Error()), maxWebhookErrorBytes+128)
+	assert.Contains(t, err.Error(), "500")
 }

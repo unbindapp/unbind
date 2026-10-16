@@ -490,13 +490,14 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	}
 
 	// Trigger webhook
+	serviceID := service.ID
 	go func() {
 		event := schema.WebhookEventServiceCreated
 		level := webhooks_service.WebhookLevelInfo
 
-		service, err := self.repo.Service().GetByID(context.Background(), service.ID)
+		service, err := self.repo.Service().GetByID(context.Background(), serviceID)
 		if err != nil {
-			log.Errorf("Failed to get service %s: %v", service.ID.String(), err)
+			log.Errorf("Failed to get service %s: %v", serviceID, err)
 			return
 		}
 

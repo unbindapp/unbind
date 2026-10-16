@@ -2,8 +2,15 @@ package webhooks_service
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
+)
+
+// A webhook target is whatever URL an editor typed, so the request is bounded
+const (
+	webhookTimeout       = 15 * time.Second
+	maxWebhookErrorBytes = 4 << 10
 )
 
 // Integrate webhooks management with internal permissions and kubernetes RBAC
@@ -17,6 +24,6 @@ type WebhooksService struct {
 func NewWebhooksService(repo repositories.RepositoriesInterface) *WebhooksService {
 	return &WebhooksService{
 		repo:       repo,
-		httpClient: &http.Client{},
+		httpClient: &http.Client{Timeout: webhookTimeout},
 	}
 }

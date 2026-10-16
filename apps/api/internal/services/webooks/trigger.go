@@ -154,7 +154,7 @@ func (self *WebhooksService) sendDefaultWebhook(level WebhookLevel, event schema
 		return nil
 	}
 
-	bodyBytes, readErr := io.ReadAll(resp.Body)
+	bodyBytes, readErr := io.ReadAll(io.LimitReader(resp.Body, maxWebhookErrorBytes))
 	if readErr != nil {
 		return fmt.Errorf("failed to send webhook: %s, couldn't read response", resp.Status)
 	}

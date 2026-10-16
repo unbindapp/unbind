@@ -17,6 +17,10 @@ import (
 const (
 	pingInterval = 30 * time.Second
 	writeTimeout = 10 * time.Second
+	// A missed pong closes the connection; the client answers pings on its own
+	readTimeout = 2 * pingInterval
+	// Keystrokes and resize events, never bulk data
+	maxClientMessageBytes = 64 << 10
 )
 
 // Browser input and resize events.
@@ -78,6 +82,9 @@ type wsConn struct {
 }
 
 func newWSConn(ws *websocket.Conn) *wsConn {
+	ws.SetReadLimit(maxClientMessageBytes)
+	_ = ws.SetReadDeadline(time.Now().Add(readTimeout))
+	ws.SetPongHandler(func(string) error { return ws.SetReadDeadline(time.Now().Add(readTimeout)) })
 	c := &wsConn{ws: ws}
 	c.out = &wsWriter{conn: c}
 	return c

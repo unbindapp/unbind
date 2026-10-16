@@ -1,11 +1,13 @@
 package variables_service
 
 import (
+	"bytes"
 	"context"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
@@ -461,6 +463,44 @@ func (suite *RenderSuite) TestRender_SelfReferences() {
 	suite.Equal(string(values["SELF"]), result.Env["SELF"])
 	suite.Equal(string(values["NO_KEY"]), result.Env["NO_KEY"])
 	suite.Len(result.Unresolved, 4)
+}
+
+// Repeated references multiply at every level, so a render is capped by the bytes it
+// produces instead of running for k^depth resolutions, and a cycle is cut where it closes
+func (suite *RenderSuite) TestRender_FanOutIsBounded() {
+	own := suite.target.ID
+	repeat := func(key string, n int) []byte {
+		return bytes.Repeat([]byte(vartemplate.ServiceToken(own, key)), n)
+	}
+	values := map[string][]byte{
+		"L1":     repeat("L2", 100),
+		"L2":     repeat("L3", 100),
+		"L3":     repeat("L4", 100),
+		"L4":     repeat("LEAF", 100),
+		"LEAF":   []byte("0123456789"),
+		"LOOP_A": repeat("LOOP_B", 50),
+		"LOOP_B": repeat("LOOP_A", 50),
+		"SMALL":  repeat("LEAF", 3),
+	}
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{own}).Return([]*ent.Service{suite.target}, nil).Once()
+	suite.expectSecret(suite.target.KubernetesSecret, values)
+
+	done := make(chan *RenderResult, 1)
+	go func() {
+		result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
+		suite.NoError(err)
+		done <- result
+	}()
+	select {
+	case result := <-done:
+		suite.Equal("012345678901234567890123456789", result.Env["SMALL"])
+		suite.Equal(string(values["L1"]), result.Env["L1"], "a billion bytes of output is left unresolved")
+		suite.Equal(string(values["LOOP_A"]), result.Env["LOOP_A"])
+		suite.Contains(result.Unresolved, "L1")
+		suite.Contains(result.Unresolved, "LOOP_A")
+	case <-time.After(5 * time.Second):
+		suite.Fail("render did not finish")
+	}
 }
 
 // A referenced value that is itself a reference is rendered too, loading the service
