@@ -27,6 +27,10 @@ func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, reques
 	if err := self.repo.Permissions().Check(ctx, requesterUserID, permissionChecks); err != nil {
 		return nil, errdefs.MaskAsNotFound(err, "Service group not found")
 	}
+	canReadValues, err := permissions_repo.CanReadVariableValues(ctx, self.repo.Permissions(), requesterUserID, schema.ResourceTypeEnvironment, input.EnvironmentID)
+	if err != nil {
+		return nil, err
+	}
 
 	environment, project, err := self.VerifyInputs(ctx, input.TeamID, input.ProjectID, input.EnvironmentID)
 	if err != nil {
@@ -91,6 +95,9 @@ func (self *ServiceGroupService) GetServiceGroupInfo(ctx context.Context, reques
 		}
 
 		resp.Services = append(resp.Services, info)
+	}
+	if !canReadValues {
+		resp.Redact()
 	}
 
 	return resp, nil

@@ -6,9 +6,19 @@ import (
 )
 
 type ServiceGroupInfoResponse struct {
-	ServiceGroup *ServiceGroupResponse      `json:"service_group"`
-	TemplateID   *uuid.UUID                 `json:"template_id,omitempty" format:"uuid"`
-	Services     []*ServiceGroupServiceInfo `json:"services" nullable:"false"`
+	ServiceGroup   *ServiceGroupResponse      `json:"service_group"`
+	TemplateID     *uuid.UUID                 `json:"template_id,omitempty" format:"uuid"`
+	Services       []*ServiceGroupServiceInfo `json:"services" nullable:"false"`
+	ValuesRedacted bool                       `json:"values_redacted" doc:"True when the caller may only see variable names. Every variable value is blank. A session needs the editor role; a key or connected app needs the read_variable_values privilege."`
+}
+
+func (r *ServiceGroupInfoResponse) Redact() {
+	r.ValuesRedacted = true
+	for _, service := range r.Services {
+		for _, variable := range service.Variables {
+			variable.Value = ""
+		}
+	}
 }
 
 type ServiceGroupServiceInfo struct {
@@ -42,6 +52,16 @@ type ServiceGroupTemplateInputsResponse struct {
 	TemplateID     *uuid.UUID               `json:"template_id,omitempty" format:"uuid"`
 	Version        int                      `json:"version"`
 	Inputs         []*DeployedTemplateInput `json:"inputs" nullable:"false"`
+	ValuesRedacted bool                     `json:"values_redacted" doc:"True when the caller may only see which variable inputs exist. Every variable input's current_value is blank; hosts and sizes stay. A session needs the editor role; a key or connected app needs the read_variable_values privilege."`
+}
+
+func (r *ServiceGroupTemplateInputsResponse) Redact() {
+	r.ValuesRedacted = true
+	for _, input := range r.Inputs {
+		if input.Type == schema.InputTypeVariable {
+			input.CurrentValue = ""
+		}
+	}
 }
 
 // DeployedTemplateInput mirrors a template definition input plus its deployed value. Values transport as

@@ -1748,6 +1748,7 @@ export const ServiceGroupInfoResponseSchema = z
     service_group: ServiceGroupResponseSchema,
     services: z.array(ServiceGroupServiceInfoSchema),
     template_id: z.string().optional(),
+    values_redacted: z.boolean(), // True when the caller may only see variable names. Every variable value is blank. A session needs the editor role; a key or connected app needs the read_variable_values privilege.
   })
   .strip();
 
@@ -1768,6 +1769,7 @@ export const ServiceGroupTemplateInputsResponseSchema = z
     inputs: z.array(DeployedTemplateInputSchema),
     service_group_id: z.string(),
     template_id: z.string().optional(),
+    values_redacted: z.boolean(), // True when the caller may only see which variable inputs exist. Every variable input's current_value is blank; hosts and sizes stay. A session needs the editor role; a key or connected app needs the read_variable_values privilege.
     version: z.number(),
   })
   .strip();

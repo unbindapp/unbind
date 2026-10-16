@@ -3093,9 +3093,13 @@ components:
         template_id:
           format: uuid
           type: string
+        values_redacted:
+          description: True when the caller may only see variable names. Every variable value is blank. A session needs the editor role; a key or connected app needs the read_variable_values privilege.
+          type: boolean
       required:
         - service_group
         - services
+        - values_redacted
       type: object
     ServiceGroupResponse:
       additionalProperties: false
@@ -3168,6 +3172,9 @@ components:
         template_id:
           format: uuid
           type: string
+        values_redacted:
+          description: True when the caller may only see which variable inputs exist. Every variable input's current_value is blank; hosts and sizes stay. A session needs the editor role; a key or connected app needs the read_variable_values privilege.
+          type: boolean
         version:
           format: int64
           type: integer
@@ -3175,6 +3182,7 @@ components:
         - service_group_id
         - version
         - inputs
+        - values_redacted
       type: object
     ServiceGroupVariableInfo:
       additionalProperties: false

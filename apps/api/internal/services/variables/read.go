@@ -2,7 +2,6 @@ package variables_service
 
 import (
 	"context"
-	"errors"
 	"maps"
 	"slices"
 
@@ -59,42 +58,34 @@ func (self *VariablesService) GetVariables(ctx context.Context, userID uuid.UUID
 }
 
 func (self *VariablesService) canReadValues(ctx context.Context, userID uuid.UUID, input models.BaseVariablesInput) (bool, error) {
-	access, limited := permissions_repo.APIKeyAccessFromContext(ctx)
-	if !limited {
-		return self.holdsScopePermission(ctx, userID, schema.ActionEditor, input)
+	resourceType, resourceID, err := scopeResource(input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
+	if err != nil {
+		return false, err
 	}
-	if !access.Has(schema.PrivilegeReadVariableValues) {
-		return false, nil
-	}
-	// The credential's role is lifted so only its resources and the owner's
-	// own grants decide.
-	access.Role = schema.ActionEditor
-	return self.holdsScopePermission(permissions_repo.WithAPIKeyAccess(ctx, access), userID, schema.ActionEditor, input)
-}
-
-func (self *VariablesService) holdsScopePermission(ctx context.Context, userID uuid.UUID, action schema.PermittedAction, input models.BaseVariablesInput) (bool, error) {
-	err := self.checkScopePermission(ctx, userID, action, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
-	if errors.Is(err, errdefs.ErrUnauthorized) {
-		return false, nil
-	}
-	return err == nil, err
+	return permissions_repo.CanReadVariableValues(ctx, self.repo.Permissions(), userID, resourceType, resourceID)
 }
 
 func (self *VariablesService) checkScopePermission(ctx context.Context, userID uuid.UUID, action schema.PermittedAction, variableType schema.VariableReferenceSourceType, teamID, projectID, environmentID, serviceID uuid.UUID) error {
-	check := permissions_repo.PermissionCheck{Action: action}
+	resourceType, resourceID, err := scopeResource(variableType, teamID, projectID, environmentID, serviceID)
+	if err != nil {
+		return err
+	}
+	return self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{{Action: action, ResourceType: resourceType, ResourceID: resourceID}})
+}
+
+func scopeResource(variableType schema.VariableReferenceSourceType, teamID, projectID, environmentID, serviceID uuid.UUID) (schema.ResourceType, uuid.UUID, error) {
 	switch variableType {
 	case schema.VariableReferenceSourceTypeTeam:
-		check.ResourceType, check.ResourceID = schema.ResourceTypeTeam, teamID
+		return schema.ResourceTypeTeam, teamID, nil
 	case schema.VariableReferenceSourceTypeProject:
-		check.ResourceType, check.ResourceID = schema.ResourceTypeProject, projectID
+		return schema.ResourceTypeProject, projectID, nil
 	case schema.VariableReferenceSourceTypeEnvironment:
-		check.ResourceType, check.ResourceID = schema.ResourceTypeEnvironment, environmentID
+		return schema.ResourceTypeEnvironment, environmentID, nil
 	case schema.VariableReferenceSourceTypeService:
-		check.ResourceType, check.ResourceID = schema.ResourceTypeService, serviceID
+		return schema.ResourceTypeService, serviceID, nil
 	default:
-		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid variable type")
+		return "", uuid.Nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Invalid variable type")
 	}
-	return self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{check})
 }
 
 // buildResponse lists the variables and, for services, renders their references

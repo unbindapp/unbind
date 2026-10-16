@@ -47,6 +47,10 @@ func (self *ServiceGroupService) GetTemplateInputs(ctx context.Context, requeste
 	if err != nil {
 		return nil, err
 	}
+	canReadValues, err := permissions_repo.CanReadVariableValues(ctx, self.repo.Permissions(), requesterUserID, schema.ResourceTypeEnvironment, input.EnvironmentID)
+	if err != nil {
+		return nil, err
+	}
 
 	resp := &models.ServiceGroupTemplateInputsResponse{
 		ServiceGroupID: input.ID,
@@ -56,6 +60,9 @@ func (self *ServiceGroupService) GetTemplateInputs(ctx context.Context, requeste
 	}
 	for _, r := range tc.resolved {
 		resp.Inputs = append(resp.Inputs, r.state)
+	}
+	if !canReadValues {
+		resp.Redact()
 	}
 	return resp, nil
 }
