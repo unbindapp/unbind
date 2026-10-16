@@ -8094,7 +8094,7 @@ paths:
         risk: medium
   /service_groups/delete:
     delete:
-      description: Delete a service group. Optionally deletes the services it contains.
+      description: Delete a service group. Optionally deletes the services it contains, which takes the admin role on each of them.
       operationId: delete-service-group
       requestBody:
         content:

@@ -76,7 +76,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-service-group",
 		Summary:     "Delete Service Group",
-		Description: "Delete a service group. Optionally deletes the services it contains.",
+		Description: "Delete a service group. Optionally deletes the services it contains, which takes the admin role on each of them.",
 		Path:        "/delete",
 		Method:      http.MethodDelete,
 	}, handlers.DeleteServiceGroup, oapi.MCP)

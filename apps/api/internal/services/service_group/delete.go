@@ -53,6 +53,15 @@ func (self *ServiceGroupService) DeleteServiceGroup(ctx context.Context, request
 			return err
 		}
 
+		// Deleting a service takes admin on it, grouped or not
+		for _, service := range services {
+			if err := self.repo.Permissions().Check(ctx, requesterUserID, []permissions_repo.PermissionCheck{
+				{Action: schema.ActionAdmin, ResourceType: schema.ResourceTypeService, ResourceID: service.ID},
+			}); err != nil {
+				return err
+			}
+		}
+
 		client := self.k8s.GetInternalClient()
 
 		// Delete kubernetes resources, db resource

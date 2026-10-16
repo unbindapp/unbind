@@ -153,6 +153,10 @@ func (self *DeploymentService) CreateRedeployment(ctx context.Context, requester
 		return nil, err
 	}
 
+	if deployment.ServiceID != service.ID {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Deployment not found")
+	}
+
 	// Check if we can redeploy without rebuilding, disabling the build cache implies a rebuild
 	if input.SmartRedeploy && !input.DisableBuildCache && self.canRedeployWithoutBuild(ctx, service, deployment) {
 		return self.redeployExistingImage(ctx, service, deployment)

@@ -1,14 +1,17 @@
 package servicegroup_service
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
+	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/services"
 )
 
@@ -71,4 +74,40 @@ func (suite *GroupAccessSuite) TestDeleteRejectsGroupOfAnotherEnvironment() {
 
 func TestGroupAccessSuite(t *testing.T) {
 	suite.Run(t, new(GroupAccessSuite))
+}
+
+// Deleting the group's services is deleting services, which takes admin on each
+type DeleteServicesSuite struct {
+	services.ServiceTestSuite
+}
+
+func (suite *DeleteServicesSuite) TestEditorIsRefused() {
+	service := &ServiceGroupService{repo: suite.MockRepo, k8s: suite.MockK8s}
+	userID, teamID, projectID, environmentID := uuid.New(), uuid.New(), uuid.New(), uuid.New()
+	group := &ent.ServiceGroup{ID: uuid.New(), Name: "mine", EnvironmentID: environmentID}
+	member := &ent.Service{ID: uuid.New(), KubernetesName: "db"}
+	suite.MockPermissionsRepo.EXPECT().Check(suite.Ctx, userID, mock.Anything).RunAndReturn(func(_ context.Context, _ uuid.UUID, checks []permissions_repo.PermissionCheck) error {
+		if checks[0].Action == schema.ActionAdmin {
+			return errdefs.ErrUnauthorized
+		}
+		return nil
+	})
+	suite.MockEnvironmentRepo.EXPECT().GetByID(suite.Ctx, environmentID).Return(&ent.Environment{
+		ID:    environmentID,
+		Edges: ent.EnvironmentEdges{Project: &ent.Project{ID: projectID, Edges: ent.ProjectEdges{Team: &ent.Team{ID: teamID}}}},
+	}, nil)
+	suite.MockServiceGroupRepo.EXPECT().GetByID(suite.Ctx, group.ID).Return(group, nil)
+	suite.MockServiceGroupRepo.EXPECT().GetServices(suite.Ctx, group.ID).Return([]*ent.Service{member}, nil)
+
+	err := service.DeleteServiceGroup(suite.Ctx, userID, &models.DeleteServiceGroupInput{
+		ID: group.ID, TeamID: teamID, ProjectID: projectID, EnvironmentID: environmentID, DeleteServices: true,
+	})
+
+	suite.ErrorIs(err, errdefs.ErrUnauthorized)
+	suite.MockK8s.AssertNotCalled(suite.T(), "DeleteUnbindService", mock.Anything, mock.Anything, mock.Anything)
+	suite.MockServiceGroupRepo.AssertNotCalled(suite.T(), "Delete", mock.Anything, mock.Anything, mock.Anything)
+}
+
+func TestDeleteServicesSuite(t *testing.T) {
+	suite.Run(t, new(DeleteServicesSuite))
 }

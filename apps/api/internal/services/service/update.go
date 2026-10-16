@@ -129,6 +129,12 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 		return nil, err
 	}
 
+	// The body's team, project and environment scope the host conflict check, the
+	// mountable volumes and the webhooks, so they have to be the service's own
+	if service.EnvironmentID != input.EnvironmentID {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, "Service not found")
+	}
+
 	if err := self.cleanServiceRename(ctx, input, service); err != nil {
 		return nil, err
 	}

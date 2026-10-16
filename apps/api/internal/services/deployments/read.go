@@ -82,6 +82,10 @@ func (self *DeploymentService) GetDeploymentByID(ctx context.Context, requesterU
 		return nil, err
 	}
 
+	if deployment.ServiceID != service.ID {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeNotFound, input.DeploymentID.String())
+	}
+
 	if service.CurrentDeploymentID != nil && *service.CurrentDeploymentID == deployment.ID {
 		// If this is the current deployment, attach replica data
 		return self.AttachReplicaDataToCurrent(ctx, []*models.DeploymentResponse{models.TransformDeploymentEntity(deployment)}, service)
