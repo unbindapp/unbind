@@ -1195,6 +1195,55 @@ func (suite *ServiceQueriesSuite) TestNeedsDeployment() {
 		suite.NoError(err)
 		suite.Equal(NoDeploymentNeeded, result)
 	})
+
+	suite.Run("NeedsDeployment No Hosts Or Ports", func() {
+		service := suite.DB.Service.Create().
+			SetType(schema.ServiceTypeDockerimage).
+			SetKubernetesName("worker").
+			SetName("Worker").
+			SetEnvironmentID(suite.testEnvironment.ID).
+			SetKubernetesSecret("worker-secret").
+			SaveX(suite.Ctx)
+		config := suite.DB.ServiceConfig.Create().
+			SetServiceID(service.ID).
+			SetBuilder(schema.ServiceBuilderDocker).
+			SetIcon("docker").
+			SetReplicas(1).
+			SetImage("worker:1").
+			SaveX(suite.Ctx)
+		deployment := suite.DB.Deployment.Create().
+			SetServiceID(service.ID).
+			SetStatus(schema.DeploymentStatusBuildSucceeded).
+			SetSource(schema.DeploymentSourceManual).
+			SetBuilder(schema.ServiceBuilderDocker).
+			SetImage("worker:1").
+			SetResourceDefinition(&v1.Service{
+				Spec: v1.ServiceSpec{
+					Builder: "docker",
+					Config: v1.ServiceConfigSpec{
+						Image:     "worker:1",
+						Hosts:     schema.AsV1HostSpecs(nil),
+						Ports:     schema.AsV1PortSpecs(nil),
+						Volumes:   schema.AsV1Volumes(nil),
+						Replicas:  utils.ToPtr[int32](1),
+						Resources: schema.ResolveResources(nil),
+					},
+				},
+			}).
+			SaveX(suite.Ctx)
+		suite.DB.Service.UpdateOneID(service.ID).SetCurrentDeploymentID(deployment.ID).SaveX(suite.Ctx)
+
+		result, err := suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService(service.ID))
+		suite.NoError(err)
+		suite.Equal(NoDeploymentNeeded, result)
+
+		suite.DB.ServiceConfig.UpdateOneID(config.ID).
+			SetPorts([]schema.PortSpec{{Port: 8080, Protocol: utils.ToPtr(schema.ProtocolTCP)}}).
+			SaveX(suite.Ctx)
+		result, err = suite.serviceRepo.NeedsDeployment(suite.Ctx, loadService(service.ID))
+		suite.NoError(err)
+		suite.Equal(NeedsDeployment, result)
+	})
 }
 
 func (suite *ServiceQueriesSuite) TestIsVolumeInUse() {
