@@ -68,7 +68,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "add-group-member",
 		Summary:     "Add Group Member",
-		Description: "Add a user to a group",
+		Description: "Add a user to a group. The caller has to hold every permission the group grants, unless they are a system admin.",
 		Path:        "/members/add",
 		Method:      http.MethodPost,
 	}, handlers.AddGroupMember)
@@ -76,7 +76,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID: "remove-group-member",
 		Summary:     "Remove Group Member",
-		Description: "Remove a user from a group",
+		Description: "Remove a user from a group. Anyone can leave a group; removing someone else takes the same permissions as adding them.",
 		Path:        "/members/remove",
 		Method:      http.MethodDelete,
 	}, handlers.RemoveGroupMember)
