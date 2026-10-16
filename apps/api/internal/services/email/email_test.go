@@ -81,3 +81,28 @@ func (suite *EmailSuite) TestUpdateRejectsUnknownEncryption() {
 func TestEmailSuite(t *testing.T) {
 	suite.Run(t, new(EmailSuite))
 }
+
+// A stored password is for one relay. Pointing the settings at another host without
+// entering a password drops it instead of sending it there.
+func (suite *EmailSuite) TestChangingTheRelayDropsTheStoredPassword() {
+	client := &kubernetes.Clientset{}
+	userID := uuid.New()
+	stored := &schema.EmailSettings{Host: "smtp.example", Port: 587, Username: "apikey", FromAddress: "unbind@example.com", Encryption: "starttls"}
+	suite.MockPermissionsRepo.EXPECT().Check(suite.Ctx, userID, mock.Anything).Return(nil)
+	suite.MockSystemRepo.EXPECT().GetSystemSettings(suite.Ctx, nil).Return(&ent.SystemSetting{EmailSettings: stored}, nil)
+	suite.MockSystemRepo.EXPECT().UpdateSystemSettings(suite.Ctx, mock.Anything).Return(&ent.SystemSetting{}, nil)
+
+	moved := *stored
+	moved.Host = "smtp.attacker.example"
+	moved.Encryption = "none"
+	suite.MockK8s.EXPECT().GetInternalClient().Return(client).Once()
+	suite.MockK8s.EXPECT().DeleteSecret(suite.Ctx, "unbind-smtp", "unbind-system", client).Return(nil).Once()
+	_, err := suite.service.UpdateSettings(suite.Ctx, userID, &EmailSettingsUpdateInput{EmailSettings: moved})
+	suite.NoError(err)
+
+	sameRelayNewName := *stored
+	sameRelayNewName.FromName = "Ops"
+	_, err = suite.service.UpdateSettings(suite.Ctx, userID, &EmailSettingsUpdateInput{EmailSettings: sameRelayNewName})
+	suite.NoError(err)
+	suite.MockK8s.AssertNumberOfCalls(suite.T(), "DeleteSecret", 1)
+}

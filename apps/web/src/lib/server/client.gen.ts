@@ -1428,7 +1428,7 @@ export const EmailSettingsUpdateInputSchema = z
     from_address: z.string(),
     from_name: z.string().optional(),
     host: z.string(),
-    password: z.string().nullable().optional(), // Omit to keep the stored password; send an empty string to clear it
+    password: z.string().nullable().optional(), // Omit to keep the stored password for the same host, port and username; it is dropped when any of those change. Send an empty string to clear it
     port: z.number(),
     username: z.string().optional(),
   })

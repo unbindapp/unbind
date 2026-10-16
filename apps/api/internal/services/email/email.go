@@ -42,7 +42,7 @@ type EmailSettingsResponse struct {
 
 type EmailSettingsUpdateInput struct {
 	schema.EmailSettings
-	Password *string `json:"password" required:"false" doc:"Omit to keep the stored password; send an empty string to clear it"`
+	Password *string `json:"password" required:"false" doc:"Omit to keep the stored password for the same host, port and username; it is dropped when any of those change. Send an empty string to clear it"`
 }
 
 func (self *EmailService) GetSettings(ctx context.Context, requesterUserID uuid.UUID) (*EmailSettingsResponse, error) {
@@ -69,9 +69,21 @@ func (self *EmailService) UpdateSettings(ctx context.Context, requesterUserID uu
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Encryption must be starttls, tls or none")
 	}
 
-	if input.Password != nil {
+	switch {
+	case input.Password != nil:
 		if err := self.storePassword(ctx, *input.Password); err != nil {
 			return nil, err
+		}
+	default:
+		// A stored password belongs to one relay; it is never sent to another
+		stored, err := self.repo.System().GetSystemSettings(ctx, nil)
+		if err != nil && !ent.IsNotFound(err) {
+			return nil, err
+		}
+		if stored != nil && stored.EmailSettings != nil && !sameRelay(*stored.EmailSettings, input.EmailSettings) {
+			if err := self.dropPassword(ctx); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -89,11 +101,7 @@ func (self *EmailService) ClearSettings(ctx context.Context, requesterUserID uui
 	if _, err := self.repo.System().UpdateSystemSettings(ctx, &system_repo.SystemSettingUpdateInput{ClearEmailSettings: true}); err != nil {
 		return err
 	}
-	err := self.k8s.DeleteSecret(ctx, smtpSecretName, self.cfg.SystemNamespace, self.k8s.GetInternalClient())
-	if err != nil && !apierrors.IsNotFound(err) {
-		return err
-	}
-	return nil
+	return self.dropPassword(ctx)
 }
 
 // SendTest mails the requester so the relay can be checked from the UI.
@@ -167,6 +175,18 @@ func (self *EmailService) settings(ctx context.Context) (mail.Settings, bool, er
 		FromName:    cfg.FromName,
 		Encryption:  mail.Encryption(cfg.Encryption),
 	}, true, nil
+}
+
+func sameRelay(a, b schema.EmailSettings) bool {
+	return a.Host == b.Host && a.Port == b.Port && a.Username == b.Username
+}
+
+func (self *EmailService) dropPassword(ctx context.Context) error {
+	err := self.k8s.DeleteSecret(ctx, smtpSecretName, self.cfg.SystemNamespace, self.k8s.GetInternalClient())
+	if err != nil && !apierrors.IsNotFound(err) {
+		return err
+	}
+	return nil
 }
 
 func (self *EmailService) storePassword(ctx context.Context, password string) error {

@@ -22,7 +22,7 @@ Go to **System** > **Settings** > **Email**.
 | **Host**         | The relay's SMTP server, such as `smtp.postmarkapp.com`                                                                                           |
 | **Port**         | Usually `587` with STARTTLS or `465` with TLS                                                                                                     |
 | **Username**     | What the relay gave you. Leave it empty for a relay that needs no login.                                                                          |
-| **Password**     | Kept in a Kubernetes secret in the system namespace, never in the database.                                                                       |
+| **Password**     | Kept in a Kubernetes secret in the system namespace, never in the database. Changing the host, port or username drops it, so enter it again then. |
 | **From address** | The address mail comes from. It has to belong to a domain the relay allows.                                                                       |
 | **From name**    | Shown as the sender, such as `Unbind`                                                                                                             |
 | **Encryption**   | **STARTTLS** upgrades the connection, **TLS** connects encrypted, **None** sends in the clear. Use **None** only for a relay on your own network. |
