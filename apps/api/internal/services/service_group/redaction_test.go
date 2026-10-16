@@ -162,6 +162,25 @@ func (suite *ValueRedactionSuite) TestInfoForKeyWithoutPrivilege() {
 	suite.Equal(map[string]string{"SECRET_VAR": "", "ADMIN_KEY": ""}, suite.groupInfoValues(resp))
 }
 
+// Template inputs take plain values, so a reference token cannot sneak a secret
+// past the variables API's reference checks
+func (suite *ValueRedactionSuite) TestEditingAVariableInputRefusesReferences() {
+	suite.expectRole(suite.Ctx, true)
+	suite.expectGroup(suite.Ctx)
+	suite.MockEnvironmentRepo.EXPECT().GetByID(suite.Ctx, suite.input.EnvironmentID).Return(&ent.Environment{
+		ID:    suite.input.EnvironmentID,
+		Edges: ent.EnvironmentEdges{Project: &ent.Project{ID: suite.input.ProjectID, Edges: ent.ProjectEdges{Team: &ent.Team{ID: suite.input.TeamID, Namespace: "team-ns"}}}},
+	}, nil).Maybe()
+
+	_, err := suite.service.UpdateTemplateInputs(suite.Ctx, suite.userID, &models.UpdateServiceGroupTemplateInputsInput{
+		ID: suite.input.ID, TeamID: suite.input.TeamID, ProjectID: suite.input.ProjectID, EnvironmentID: suite.input.EnvironmentID,
+		Inputs: []models.TemplateInputValue{{ID: "input_secret", Value: "${{service:" + uuid.New().String() + ".DATABASE_PASSWORD}}"}},
+	})
+
+	suite.ErrorIs(err, errdefs.ErrInvalidInput)
+	suite.MockK8s.AssertNotCalled(suite.T(), "UpsertSecretValues", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything)
+}
+
 func TestValueRedactionSuite(t *testing.T) {
 	suite.Run(t, new(ValueRedactionSuite))
 }

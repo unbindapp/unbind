@@ -34,6 +34,8 @@ REDIS_URL=redis://default:${Redis.DATABASE_PASSWORD}@${Redis.UNBIND_HOST_PRIVATE
 - **Any service in the same project, including the service itself**: its variables, plus everything under **Provided by Unbind**.
 - **Team and project variables**: values you keep in one place for many services.
 
+Referencing a value shows it to everyone who can read the variables you write it into, so you need the editor role on the source, the same role that shows you its values. Template inputs take plain values, not references.
+
 Every service offers these, under **Provided by Unbind**:
 
 | Key                                          | What it holds                                                     |

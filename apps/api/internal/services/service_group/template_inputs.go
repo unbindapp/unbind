@@ -3,6 +3,7 @@ package servicegroup_service
 import (
 	"context"
 	"fmt"
+	"github.com/unbindapp/unbind-api/internal/vartemplate"
 	"maps"
 	"math"
 	"slices"
@@ -479,6 +480,9 @@ func (self *ServiceGroupService) UpdateTemplateInputs(ctx context.Context, reque
 				touched[f.service.ID] = true
 			}
 		case schema.InputTypeVariable:
+			if vartemplate.HasTokens(edit.Value) {
+				return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("input %q can't hold a variable reference", edit.ID))
+			}
 			for _, f := range r.fanout {
 				res, err := f.gen.Generate(map[string]string{edit.ID: edit.Value})
 				if err != nil {

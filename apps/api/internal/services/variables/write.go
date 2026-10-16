@@ -70,6 +70,19 @@ func (self *VariableWrite) final() map[string][]byte {
 	return finalValues(self.existing, self.upserts, self.deletes, self.overwrite)
 }
 
+func writeScope(variableType schema.VariableReferenceSourceType, team *ent.Team, project *ent.Project, environment *ent.Environment, service *ent.Service) referenceScope {
+	switch variableType {
+	case schema.VariableReferenceSourceTypeService:
+		return serviceScope(service)
+	case schema.VariableReferenceSourceTypeEnvironment:
+		return referenceScope{teamID: team.ID, projectID: project.ID, environmentID: environment.ID}
+	case schema.VariableReferenceSourceTypeProject:
+		return referenceScope{teamID: team.ID, projectID: project.ID}
+	default:
+		return referenceScope{teamID: team.ID}
+	}
+}
+
 // PrepareVariableWrite validates a write without touching anything. Apply it with
 // ApplyVariableWrite and restart pods with RestartForWrite.
 func (self *VariablesService) PrepareVariableWrite(
@@ -84,7 +97,7 @@ func (self *VariablesService) PrepareVariableWrite(
 		return nil, err
 	}
 
-	team, _, _, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
+	team, project, environment, service, secretName, err := self.validateBaseInputs(ctx, input.Type, input.TeamID, input.ProjectID, input.EnvironmentID, input.ServiceID)
 	if err != nil {
 		return nil, err
 	}
@@ -111,13 +124,14 @@ func (self *VariablesService) PrepareVariableWrite(
 		}
 	}
 
+	if len(upserts) > 0 {
+		if err := self.validateReferences(ctx, userID, writeScope(input.Type, team, project, environment, service), upserts); err != nil {
+			return nil, err
+		}
+	}
+
 	overwrite := behavior == models.VariableUpdateBehaviorOverwrite
 	if input.Type == schema.VariableReferenceSourceTypeService {
-		if len(upserts) > 0 {
-			if err := self.validateReferences(ctx, userID, service, upserts); err != nil {
-				return nil, err
-			}
-		}
 		protected := service.Edges.ServiceConfig.ProtectedVariables
 		if name, violated := protectedViolation(existing, upserts, deletes, protected); violated {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,

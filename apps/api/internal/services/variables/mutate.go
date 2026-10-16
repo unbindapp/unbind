@@ -75,13 +75,63 @@ func (self *VariablesService) pruneVariableConfig(ctx context.Context, tx reposi
 	return nil
 }
 
-// validateReferences checks that every referenced source exists in the same project
-// and is visible to the writer, that mounted variables stay literal and that no
-// variable references itself. The service's own variables need no lookup.
-func (self *VariablesService) validateReferences(ctx context.Context, userID uuid.UUID, service *ent.Service, newVariables map[string][]byte) error {
+// referenceScope is where a value is written, which bounds what it may reference.
+// projectID and environmentID are nil above those levels; service is set for a
+// service's own variables, whose self-references need no lookup.
+type referenceScope struct {
+	teamID        uuid.UUID
+	projectID     uuid.UUID
+	environmentID uuid.UUID
+	service       *ent.Service
+}
+
+func serviceScope(service *ent.Service) referenceScope {
+	environment := service.Edges.Environment
+	return referenceScope{teamID: environment.Edges.Project.TeamID, projectID: environment.ProjectID, environmentID: environment.ID, service: service}
+}
+
+func (s referenceScope) scopeCheck(sourceType schema.VariableReferenceSourceType) (permissions_repo.PermissionCheck, error) {
+	switch sourceType {
+	case schema.VariableReferenceSourceTypeTeam:
+		return permissions_repo.PermissionCheck{Action: schema.ActionEditor, ResourceType: schema.ResourceTypeTeam, ResourceID: s.teamID}, nil
+	case schema.VariableReferenceSourceTypeProject:
+		if s.projectID != uuid.Nil {
+			return permissions_repo.PermissionCheck{Action: schema.ActionEditor, ResourceType: schema.ResourceTypeProject, ResourceID: s.projectID}, nil
+		}
+	case schema.VariableReferenceSourceTypeEnvironment:
+		if s.environmentID != uuid.Nil {
+			return permissions_repo.PermissionCheck{Action: schema.ActionEditor, ResourceType: schema.ResourceTypeEnvironment, ResourceID: s.environmentID}, nil
+		}
+	}
+	return permissions_repo.PermissionCheck{}, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("A variable here can't reference %s variables", sourceType))
+}
+
+func (s referenceScope) contains(source *ent.Service) bool {
+	environment := source.Edges.Environment
+	if environment == nil {
+		return false
+	}
+	if s.projectID != uuid.Nil {
+		return environment.ProjectID == s.projectID
+	}
+	return environment.Edges.Project != nil && environment.Edges.Project.TeamID == s.teamID
+}
+
+func (s referenceScope) where() string {
+	if s.projectID != uuid.Nil {
+		return "project"
+	}
+	return "team"
+}
+
+// validateReferences checks that every referenced source sits inside the scope and
+// that the writer holds editor on it, since a reference shows its value to everyone
+// who can read the written variables. Mounted variables stay literal and no variable
+// references itself.
+func (self *VariablesService) validateReferences(ctx context.Context, userID uuid.UUID, scope referenceScope, newVariables map[string][]byte) error {
 	mounted := make(map[string]struct{})
-	if service.Edges.ServiceConfig != nil {
-		for _, mount := range service.Edges.ServiceConfig.VariableMounts {
+	if scope.service != nil && scope.service.Edges.ServiceConfig != nil {
+		for _, mount := range scope.service.Edges.ServiceConfig.VariableMounts {
 			mounted[mount.Name] = struct{}{}
 		}
 	}
@@ -102,7 +152,7 @@ func (self *VariablesService) validateReferences(ctx context.Context, userID uui
 				scopes[token.SourceType] = struct{}{}
 				continue
 			}
-			if token.SourceID == service.ID {
+			if scope.service != nil && token.SourceID == scope.service.ID {
 				if token.Key == name {
 					return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("Variable %s can't reference itself", name))
 				}
@@ -116,20 +166,13 @@ func (self *VariablesService) validateReferences(ctx context.Context, userID uui
 		}
 	}
 
-	environment := service.Edges.Environment
-	project := environment.Edges.Project
-	for scope := range scopes {
-		var check permissions_repo.PermissionCheck
-		switch scope {
-		case schema.VariableReferenceSourceTypeTeam:
-			check = permissions_repo.PermissionCheck{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeTeam, ResourceID: project.TeamID}
-		case schema.VariableReferenceSourceTypeProject:
-			check = permissions_repo.PermissionCheck{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeProject, ResourceID: project.ID}
-		case schema.VariableReferenceSourceTypeEnvironment:
-			check = permissions_repo.PermissionCheck{Action: schema.ActionViewer, ResourceType: schema.ResourceTypeEnvironment, ResourceID: environment.ID}
+	for sourceType := range scopes {
+		check, err := scope.scopeCheck(sourceType)
+		if err != nil {
+			return err
 		}
 		if err := self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{check}); err != nil {
-			return errdefs.MaskAsNotFound(err, fmt.Sprintf("Referenced %s not found", scope))
+			return errdefs.MaskAsNotFound(err, fmt.Sprintf("Referenced %s not found", sourceType))
 		}
 	}
 
@@ -147,13 +190,13 @@ func (self *VariablesService) validateReferences(ctx context.Context, userID uui
 	}
 	for _, serviceID := range serviceIDs {
 		source, ok := sourceByID[serviceID]
-		if !ok || source.Edges.Environment == nil || source.Edges.Environment.ProjectID != project.ID {
-			return errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Referenced service %s not found in this project", serviceID))
+		if !ok || !scope.contains(source) {
+			return errdefs.NewCustomError(errdefs.ErrTypeNotFound, fmt.Sprintf("Referenced service %s not found in this %s", serviceID, scope.where()))
 		}
 		if err := self.repo.Permissions().Check(ctx, userID, []permissions_repo.PermissionCheck{{
-			Action: schema.ActionViewer, ResourceType: schema.ResourceTypeService, ResourceID: serviceID,
+			Action: schema.ActionEditor, ResourceType: schema.ResourceTypeService, ResourceID: serviceID,
 		}}); err != nil {
-			return errdefs.MaskAsNotFound(err, fmt.Sprintf("Referenced service %s not found in this project", serviceID))
+			return errdefs.MaskAsNotFound(err, fmt.Sprintf("Referenced service %s not found in this %s", serviceID, scope.where()))
 		}
 	}
 

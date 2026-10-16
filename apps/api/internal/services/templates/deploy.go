@@ -80,6 +80,9 @@ func (self *TemplatesService) DeployTemplate(ctx context.Context, requesterUserI
 			}
 		}
 
+		if exists && vartemplate.HasTokens(value) {
+			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, fmt.Sprintf("input %s can't hold a variable reference", defInput.Name))
+		}
 		if !exists {
 			if defInput.Default != nil {
 				value = *defInput.Default

@@ -2,6 +2,7 @@ package variables_service
 
 import (
 	"context"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"slices"
 	"strings"
 	"testing"
@@ -353,41 +354,83 @@ func (suite *RenderSuite) TestValidateReferences() {
 	userID := uuid.New()
 	api := suite.newService("api", schema.ServiceTypeGithub, nil)
 	suite.target.Edges.ServiceConfig.VariableMounts = []*schema.VariableMount{{Name: "CONFIG", Path: "/etc/config"}}
+	scope := serviceScope(suite.target)
 
-	err := suite.service.validateReferences(suite.ctx, userID, suite.target, map[string][]byte{
+	err := suite.service.validateReferences(suite.ctx, userID, scope, map[string][]byte{
 		"CONFIG": []byte(vartemplate.ServiceToken(api.ID, "KEY")),
 	})
 	suite.ErrorContains(err, "mounted as a file")
 
+	// A reference reveals the source's values, so it takes the role that reads them
 	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{api.ID}).Return([]*ent.Service{api}, nil).Once()
 	suite.perms.EXPECT().Check(suite.ctx, userID, []permissions_repo.PermissionCheck{{
-		Action: schema.ActionViewer, ResourceType: schema.ResourceTypeService, ResourceID: api.ID,
+		Action: schema.ActionEditor, ResourceType: schema.ResourceTypeService, ResourceID: api.ID,
 	}}).Return(nil).Once()
 	suite.perms.EXPECT().Check(suite.ctx, userID, []permissions_repo.PermissionCheck{{
-		Action: schema.ActionViewer, ResourceType: schema.ResourceTypeProject, ResourceID: suite.project.ID,
+		Action: schema.ActionEditor, ResourceType: schema.ResourceTypeProject, ResourceID: suite.project.ID,
 	}}).Return(nil).Once()
-	err = suite.service.validateReferences(suite.ctx, userID, suite.target, map[string][]byte{
+	err = suite.service.validateReferences(suite.ctx, userID, scope, map[string][]byte{
 		"OK":    []byte(vartemplate.ServiceToken(api.ID, "KEY") + vartemplate.ServiceToken(api.ID, "OTHER")),
 		"SCOPE": []byte(vartemplate.ScopeToken(schema.VariableReferenceSourceTypeProject, "KEY")),
 	})
 	suite.NoError(err)
 
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{api.ID}).Return([]*ent.Service{api}, nil).Once()
+	suite.perms.EXPECT().Check(suite.ctx, userID, []permissions_repo.PermissionCheck{{
+		Action: schema.ActionEditor, ResourceType: schema.ResourceTypeService, ResourceID: api.ID,
+	}}).Return(errdefs.ErrUnauthorized).Once()
+	err = suite.service.validateReferences(suite.ctx, userID, scope, map[string][]byte{
+		"VIEWER_ONLY": []byte(vartemplate.ServiceToken(api.ID, "KEY")),
+	})
+	suite.ErrorIs(err, errdefs.ErrNotFound)
+
 	foreign := uuid.New()
 	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{foreign}).Return(nil, nil).Once()
-	err = suite.service.validateReferences(suite.ctx, userID, suite.target, map[string][]byte{
+	err = suite.service.validateReferences(suite.ctx, userID, scope, map[string][]byte{
 		"BAD": []byte(vartemplate.ServiceToken(foreign, "KEY")),
 	})
 	suite.ErrorContains(err, "not found in this project")
 
 	// The service's own variables and addresses need no lookup, only a loop is refused
-	err = suite.service.validateReferences(suite.ctx, userID, suite.target, map[string][]byte{
+	err = suite.service.validateReferences(suite.ctx, userID, scope, map[string][]byte{
 		"OWN": []byte(vartemplate.ServiceToken(suite.target.ID, "OTHER") + vartemplate.ServiceToken(suite.target.ID, "UNBIND_URL_PRIVATE")),
 	})
 	suite.NoError(err)
-	err = suite.service.validateReferences(suite.ctx, userID, suite.target, map[string][]byte{
+	err = suite.service.validateReferences(suite.ctx, userID, scope, map[string][]byte{
 		"LOOP": []byte("x-" + vartemplate.ServiceToken(suite.target.ID, "LOOP")),
 	})
 	suite.ErrorContains(err, "can't reference itself")
+}
+
+// Scope variables can hold references too, so writing them is checked the same way
+func (suite *RenderSuite) TestValidateReferencesInScopeVariables() {
+	userID := uuid.New()
+	prod := suite.newService("prod-db", schema.ServiceTypeDatabase, utils.ToPtr("postgres"))
+	environmentScope := referenceScope{teamID: suite.team.ID, projectID: suite.project.ID, environmentID: suite.environment.ID}
+	teamScope := referenceScope{teamID: suite.team.ID}
+
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{prod.ID}).Return([]*ent.Service{prod}, nil).Once()
+	suite.perms.EXPECT().Check(suite.ctx, userID, []permissions_repo.PermissionCheck{{
+		Action: schema.ActionEditor, ResourceType: schema.ResourceTypeService, ResourceID: prod.ID,
+	}}).Return(errdefs.ErrUnauthorized).Once()
+	err := suite.service.validateReferences(suite.ctx, userID, environmentScope, map[string][]byte{
+		"LEAK": []byte(vartemplate.ServiceToken(prod.ID, "DATABASE_PASSWORD")),
+	})
+	suite.ErrorIs(err, errdefs.ErrNotFound)
+
+	suite.svcRepo.EXPECT().GetByIDs(suite.ctx, []uuid.UUID{prod.ID}).Return([]*ent.Service{prod}, nil).Once()
+	suite.perms.EXPECT().Check(suite.ctx, userID, []permissions_repo.PermissionCheck{{
+		Action: schema.ActionEditor, ResourceType: schema.ResourceTypeService, ResourceID: prod.ID,
+	}}).Return(nil).Once()
+	err = suite.service.validateReferences(suite.ctx, userID, teamScope, map[string][]byte{
+		"DSN": []byte(vartemplate.ServiceToken(prod.ID, "DATABASE_URL")),
+	})
+	suite.NoError(err)
+
+	err = suite.service.validateReferences(suite.ctx, userID, teamScope, map[string][]byte{
+		"NARROWER": []byte(vartemplate.ScopeToken(schema.VariableReferenceSourceTypeProject, "KEY")),
+	})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput)
 }
 
 func (suite *RenderSuite) TestRender_SelfReferences() {
