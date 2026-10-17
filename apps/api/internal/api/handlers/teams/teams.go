@@ -44,7 +44,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Update, huma.Operation{
 		OperationID:  "update-team-icon",
 		Summary:      "Update Team Icon",
-		Description:  "Replace the team's icon with an SVG, PNG or JPEG file, up to 50 KB and 1024x1024. SVGs can't have scripts or external links.",
+		Description:  "Replace the team's icon with an SVG, PNG or JPEG file, up to 512 KB and 1024x1024. SVGs can't have scripts or external links.",
 		Path:         "/icon/update",
 		Method:       http.MethodPut,
 		MaxBodyBytes: updateTeamIconMaxBodyBytes,

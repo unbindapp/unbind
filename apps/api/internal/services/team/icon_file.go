@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	IconMaxBytes     = 50 * 1024
+	IconMaxBytes     = 512 * 1024
 	IconMaxDimension = 1024
 
 	iconTypeSVG  = "image/svg+xml"
@@ -55,7 +55,7 @@ func parseIcon(data []byte) (*iconFile, error) {
 		return nil, invalidIcon("Icon is empty")
 	}
 	if len(data) > IconMaxBytes {
-		return nil, invalidIcon("Icon is larger than 50 KB")
+		return nil, invalidIcon("Icon is larger than 512 KB")
 	}
 
 	switch {

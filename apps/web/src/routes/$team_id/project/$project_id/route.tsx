@@ -36,6 +36,7 @@ import {
 import { MetricsIntervalEnum } from "@/lib/queries/metrics";
 import { projectQuery, projectsListQuery } from "@/lib/queries/projects";
 import { systemQuery } from "@/lib/queries/system";
+import { teamQuery } from "@/lib/queries/teams";
 import { templatesListQuery } from "@/lib/queries/templates";
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
@@ -99,6 +100,7 @@ export const Route = createFileRoute("/$team_id/project/$project_id")({
       projectQuery({ teamId: params.team_id, projectId: params.project_id }),
     );
     void queryClient.prefetchQuery(projectsListQuery({ teamId: params.team_id }));
+    void queryClient.prefetchQuery(teamQuery({ teamId: params.team_id }));
     void queryClient.prefetchQuery(templatesListQuery());
     void queryClient.prefetchQuery(systemQuery());
   },
