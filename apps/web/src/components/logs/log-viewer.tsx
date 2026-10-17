@@ -818,7 +818,7 @@ function NoLogsFound({ shouldHaveLogs }: { shouldHaveLogs?: boolean }) {
   const Icon = isWaitingForLogs ? AnimatedHourglassIcon : SearchIcon;
 
   return (
-    <NoItemsCard Icon={Icon} className="min-h-42">
+    <NoItemsCard Icon={Icon} cardHeight="lg">
       <p className="w-full max-w-lg">
         {searchError ? (
           <>{searchError}</>
