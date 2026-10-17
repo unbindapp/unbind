@@ -108,6 +108,7 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
+  itemSorter,
   valueFormatter = (value) => value.toLocaleString(),
 }: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
   React.ComponentProps<"div"> & {
@@ -147,6 +148,18 @@ function ChartTooltipContent({
     return <div className={cn("font-medium", labelClassName)}>{value}</div>;
   }, [label, labelFormatter, payload, hideLabel, labelClassName, config, labelKey]);
 
+  const sortedPayload = React.useMemo(() => {
+    if (!payload || !itemSorter) {
+      return payload;
+    }
+    return [...payload].sort((a, b) => {
+      const keyA = itemSorter(a);
+      const keyB = itemSorter(b);
+      if (keyA === keyB) return 0;
+      return keyA < keyB ? -1 : 1;
+    });
+  }, [payload, itemSorter]);
+
   if (!active || !payload?.length) {
     return null;
   }
@@ -162,7 +175,7 @@ function ChartTooltipContent({
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5 text-xs">
-        {payload.map((item, index) => {
+        {sortedPayload?.map((item, index) => {
           const key = `${nameKey || item.name || item.dataKey || "value"}`;
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
           const indicatorColor = color || item.payload.fill || item.color;
