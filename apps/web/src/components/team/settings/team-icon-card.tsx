@@ -23,7 +23,7 @@ import {
   type TTeam,
 } from "@/lib/queries/teams";
 import { useMutation } from "@tanstack/react-query";
-import { ImageIcon, LoaderIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { LoaderIcon, PenIcon, Trash2Icon } from "lucide-react";
 import { DragEvent, useRef, useState } from "react";
 
 type TProps = {
@@ -84,8 +84,6 @@ export default function TeamIconCard({ className }: TProps) {
       className={cn("group/card w-full", className)}
     >
       <SettingsCard
-        title="Team Avatar"
-        Icon={ImageIcon}
         className="group-data-dragging/card:border-foreground/30 transition"
         footer={
           <>
@@ -101,7 +99,7 @@ export default function TeamIconCard({ className }: TProps) {
                     upload.reset();
                     remove.mutate({ teamId });
                   }}
-                  className="gap-1.5 px-4 py-2"
+                  className="gap-1.5 px-4"
                 >
                   {remove.isPending ? (
                     <LoaderIcon className="-ml-0.5 size-4.5 shrink-0 animate-spin" />
@@ -136,7 +134,7 @@ export default function TeamIconCard({ className }: TProps) {
                     onClick={() => inputRef.current?.click()}
                   />
                 ) : (
-                  <div className="bg-foreground animate-skeleton size-16 shrink-0 rounded-full" />
+                  <div className="bg-foreground animate-skeleton size-14 shrink-0 rounded-full" />
                 )}
                 <input
                   ref={inputRef}
@@ -170,7 +168,7 @@ function IconPicker({
   disabled: boolean;
   onClick: () => void;
 }) {
-  if (!canEdit) return <TeamIcon team={team} className="size-16" />;
+  if (!canEdit) return <TeamIcon team={team} className="size-14" />;
 
   return (
     <button
@@ -179,14 +177,14 @@ function IconPicker({
       data-pending={isPending || undefined}
       disabled={disabled}
       onClick={onClick}
-      className="group/picker focus-visible:ring-primary/8-10 relative size-16 shrink-0 cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-default"
+      className="group/picker focus-visible:ring-primary/8-10 relative size-14 shrink-0 cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-default"
     >
-      <TeamIcon team={team} className="size-full transition group-data-pending/picker:opacity-50" />
-      <div className="bg-background text-foreground border-border touch:scale-100 touch:opacity-100 pointer-events-none absolute -right-0.5 -bottom-0.5 flex size-7 scale-75 items-center justify-center rounded-full border opacity-0 shadow-sm transition group-focus-visible/picker:scale-100 group-focus-visible/picker:opacity-100 group-active/picker:scale-100 group-active/picker:opacity-100 group-data-dragging/card:scale-100 group-data-dragging/card:opacity-100 group-data-pending/picker:scale-100 group-data-pending/picker:opacity-100 has-hover:group-hover/picker:scale-100 has-hover:group-hover/picker:opacity-100">
+      <TeamIcon team={team} className="size-full" />
+      <div className="bg-background/10-10 text-foreground pointer-events-none absolute inset-0 flex items-center justify-center rounded-full opacity-0 transition group-focus-visible/picker:opacity-100 group-active/picker:opacity-100 group-data-dragging/card:opacity-100 group-data-pending/picker:opacity-100 has-hover:group-hover/picker:opacity-100">
         {isPending ? (
-          <LoaderIcon className="size-3.5 animate-spin" />
+          <LoaderIcon className="size-5 animate-spin" />
         ) : (
-          <PencilIcon className="size-3.5" />
+          <PenIcon className="size-5 -rotate-30 transition group-focus-visible/picker:rotate-0 group-active/picker:rotate-0 group-data-dragging/card:rotate-0 has-hover:group-hover/picker:rotate-0" />
         )}
       </div>
     </button>

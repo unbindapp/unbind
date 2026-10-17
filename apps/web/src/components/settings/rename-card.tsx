@@ -11,7 +11,7 @@ import SettingsCard, { SettingsCardFooterRow } from "@/components/settings/setti
 import { cn } from "@/components/ui/utils";
 import { getTakenNameError, TUniqueAmong } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { IdCardIcon, LoaderIcon, SaveIcon } from "lucide-react";
+import { LoaderIcon, SaveIcon } from "lucide-react";
 import { ZodObject, ZodString, ZodTypeAny } from "zod";
 
 type TRenameCardType = "team" | "project";
@@ -85,8 +85,6 @@ export default function RenameCard({
       className={cn("w-full", className)}
     >
       <SettingsCard
-        title={copy.card}
-        Icon={IdCardIcon}
         footer={
           <>
             {error && <ErrorLine message={error.message} />}
@@ -99,7 +97,7 @@ export default function RenameCard({
                   return (
                     <form.SubmitButton
                       data-submitting={isSubmitting || undefined}
-                      className="group/button"
+                      className="group/button px-4"
                       disabled={valuesUnchanged}
                     >
                       <div className="-ml-0.5 size-4.5 shrink-0">
@@ -118,8 +116,8 @@ export default function RenameCard({
           </>
         }
       >
-        <Block>
-          <BlockItem>
+        <Block className="md:gap-y-6">
+          <BlockItem className="md:w-full xl:w-1/2">
             <BlockItemHeader type="column">
               <BlockItemTitle>{copy.name}</BlockItemTitle>
               <BlockItemDescription>{copy.nameDescription}</BlockItemDescription>
@@ -145,7 +143,7 @@ export default function RenameCard({
               />
             </BlockItemContent>
           </BlockItem>
-          <BlockItem>
+          <BlockItem className="md:w-full xl:w-1/2">
             <BlockItemHeader type="column">
               <BlockItemTitle>{copy.description}</BlockItemTitle>
               <BlockItemDescription>{copy.descriptionDescription}</BlockItemDescription>
@@ -177,7 +175,6 @@ export default function RenameCard({
 function getCopy(type: TRenameCardType) {
   if (type === "project") {
     return {
-      card: "Project Details",
       name: "Project Name",
       nameDescription: "Shown in the breadcrumb.",
       namePlaceholder: "my-project",
@@ -186,7 +183,6 @@ function getCopy(type: TRenameCardType) {
     };
   }
   return {
-    card: "Team Details",
     name: "Team Name",
     nameDescription: "Shown in the team switcher.",
     namePlaceholder: "My Team",
