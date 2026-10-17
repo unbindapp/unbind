@@ -33,6 +33,8 @@ type SystemSetting struct {
 	RegistryCacheSettings *schema.RegistryCacheSettings `json:"registry_cache_settings,omitempty"`
 	// Outgoing mail relay, password kept in a Kubernetes secret
 	EmailSettings *schema.EmailSettings `json:"email_settings,omitempty"`
+	// Whether pods only accept connections from their own team, the system and network exceptions
+	TeamNetworkIsolation bool `json:"team_network_isolation,omitempty"`
 	// Whether stored variables were rewritten from ${{service.<id>.KEY}} to ${{service:<id>.KEY}}
 	ServiceReferenceSyntaxMigrated bool `json:"service_reference_syntax_migrated,omitempty"`
 	selectValues                   sql.SelectValues
@@ -45,7 +47,7 @@ func (*SystemSetting) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case systemsetting.FieldBuildkitSettings, systemsetting.FieldRegistryCacheSettings, systemsetting.FieldEmailSettings:
 			values[i] = new([]byte)
-		case systemsetting.FieldServiceReferenceSyntaxMigrated:
+		case systemsetting.FieldTeamNetworkIsolation, systemsetting.FieldServiceReferenceSyntaxMigrated:
 			values[i] = new(sql.NullBool)
 		case systemsetting.FieldWildcardBaseURL:
 			values[i] = new(sql.NullString)
@@ -117,6 +119,12 @@ func (_m *SystemSetting) assignValues(columns []string, values []any) error {
 					return fmt.Errorf("unmarshal field email_settings: %w", err)
 				}
 			}
+		case systemsetting.FieldTeamNetworkIsolation:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field team_network_isolation", values[i])
+			} else if value.Valid {
+				_m.TeamNetworkIsolation = value.Bool
+			}
 		case systemsetting.FieldServiceReferenceSyntaxMigrated:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field service_reference_syntax_migrated", values[i])
@@ -178,6 +186,9 @@ func (_m *SystemSetting) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("email_settings=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EmailSettings))
+	builder.WriteString(", ")
+	builder.WriteString("team_network_isolation=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TeamNetworkIsolation))
 	builder.WriteString(", ")
 	builder.WriteString("service_reference_syntax_migrated=")
 	builder.WriteString(fmt.Sprintf("%v", _m.ServiceReferenceSyntaxMigrated))

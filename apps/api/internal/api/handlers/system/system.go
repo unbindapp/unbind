@@ -178,6 +178,46 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodDelete,
 	}, handlers.ClearEmailSettings)
 
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-network-settings",
+		Summary:     "Get Network Settings",
+		Description: "Get whether teams are isolated from each other on the network, and the exceptions that let a service accept connections from outside its team.",
+		Path:        "/network/get",
+		Method:      http.MethodGet,
+	}, handlers.GetNetworkSettings)
+
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "update-network-settings",
+		Summary:     "Update Network Settings",
+		Description: "Turn team network isolation on or off. With it on, services only accept connections from their own team, the system and network exceptions.",
+		Path:        "/network/update",
+		Method:      http.MethodPut,
+	}, handlers.UpdateNetworkSettings)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "list-network-services",
+		Summary:     "List Network Services",
+		Description: "List every service in every team, to pick the source and target of a network exception.",
+		Path:        "/network/services",
+		Method:      http.MethodGet,
+	}, handlers.ListNetworkServices)
+
+	oapi.Register(grp, oapi.Create, huma.Operation{
+		OperationID: "create-network-exception",
+		Summary:     "Create Network Exception",
+		Description: "Let a service accept connections from a service in another team, or from every source.",
+		Path:        "/network/exceptions/create",
+		Method:      http.MethodPost,
+	}, handlers.CreateNetworkException)
+
+	oapi.Register(grp, oapi.Delete, huma.Operation{
+		OperationID: "delete-network-exception",
+		Summary:     "Delete Network Exception",
+		Description: "Remove a network exception. The connections it allowed are refused while team network isolation is on.",
+		Path:        "/network/exceptions/delete",
+		Method:      http.MethodDelete,
+	}, handlers.DeleteNetworkException)
+
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "send-test-email",
 		Summary:     "Send Test Email",

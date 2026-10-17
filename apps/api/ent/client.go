@@ -25,6 +25,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/jwtkey"
+	"github.com/unbindapp/unbind-api/ent/networkexception"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
 	"github.com/unbindapp/unbind-api/ent/oauthclient"
@@ -71,6 +72,8 @@ type Client struct {
 	Invitation *InvitationClient
 	// JWTKey is the client for interacting with the JWTKey builders.
 	JWTKey *JWTKeyClient
+	// NetworkException is the client for interacting with the NetworkException builders.
+	NetworkException *NetworkExceptionClient
 	// OAuthAuthorizationCode is the client for interacting with the OAuthAuthorizationCode builders.
 	OAuthAuthorizationCode *OAuthAuthorizationCodeClient
 	// OAuthClient is the client for interacting with the OAuthClient builders.
@@ -129,6 +132,7 @@ func (c *Client) init() {
 	c.Group = NewGroupClient(c.config)
 	c.Invitation = NewInvitationClient(c.config)
 	c.JWTKey = NewJWTKeyClient(c.config)
+	c.NetworkException = NewNetworkExceptionClient(c.config)
 	c.OAuthAuthorizationCode = NewOAuthAuthorizationCodeClient(c.config)
 	c.OAuthClient = NewOAuthClientClient(c.config)
 	c.OAuthGrant = NewOAuthGrantClient(c.config)
@@ -249,6 +253,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Group:                  NewGroupClient(cfg),
 		Invitation:             NewInvitationClient(cfg),
 		JWTKey:                 NewJWTKeyClient(cfg),
+		NetworkException:       NewNetworkExceptionClient(cfg),
 		OAuthAuthorizationCode: NewOAuthAuthorizationCodeClient(cfg),
 		OAuthClient:            NewOAuthClientClient(cfg),
 		OAuthGrant:             NewOAuthGrantClient(cfg),
@@ -296,6 +301,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Group:                  NewGroupClient(cfg),
 		Invitation:             NewInvitationClient(cfg),
 		JWTKey:                 NewJWTKeyClient(cfg),
+		NetworkException:       NewNetworkExceptionClient(cfg),
 		OAuthAuthorizationCode: NewOAuthAuthorizationCodeClient(cfg),
 		OAuthClient:            NewOAuthClientClient(cfg),
 		OAuthGrant:             NewOAuthGrantClient(cfg),
@@ -345,7 +351,7 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.APIKey, c.Bootstrap, c.Deployment, c.Environment, c.GithubApp,
-		c.GithubInstallation, c.Group, c.Invitation, c.JWTKey,
+		c.GithubInstallation, c.Group, c.Invitation, c.JWTKey, c.NetworkException,
 		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
 		c.Oauth2Token, c.PVCMetadata, c.Permission, c.Project, c.Registry, c.S3Bucket,
 		c.Service, c.ServiceConfig, c.ServiceGroup, c.SystemSetting, c.Team,
@@ -360,7 +366,7 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.APIKey, c.Bootstrap, c.Deployment, c.Environment, c.GithubApp,
-		c.GithubInstallation, c.Group, c.Invitation, c.JWTKey,
+		c.GithubInstallation, c.Group, c.Invitation, c.JWTKey, c.NetworkException,
 		c.OAuthAuthorizationCode, c.OAuthClient, c.OAuthGrant, c.OAuthGrantToken,
 		c.Oauth2Token, c.PVCMetadata, c.Permission, c.Project, c.Registry, c.S3Bucket,
 		c.Service, c.ServiceConfig, c.ServiceGroup, c.SystemSetting, c.Team,
@@ -391,6 +397,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Invitation.mutate(ctx, m)
 	case *JWTKeyMutation:
 		return c.JWTKey.mutate(ctx, m)
+	case *NetworkExceptionMutation:
+		return c.NetworkException.mutate(ctx, m)
 	case *OAuthAuthorizationCodeMutation:
 		return c.OAuthAuthorizationCode.mutate(ctx, m)
 	case *OAuthClientMutation:
@@ -1884,6 +1892,171 @@ func (c *JWTKeyClient) mutate(ctx context.Context, m *JWTKeyMutation) (Value, er
 		return (&JWTKeyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown JWTKey mutation op: %q", m.Op())
+	}
+}
+
+// NetworkExceptionClient is a client for the NetworkException schema.
+type NetworkExceptionClient struct {
+	config
+}
+
+// NewNetworkExceptionClient returns a client for the NetworkException from the given config.
+func NewNetworkExceptionClient(c config) *NetworkExceptionClient {
+	return &NetworkExceptionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `networkexception.Hooks(f(g(h())))`.
+func (c *NetworkExceptionClient) Use(hooks ...Hook) {
+	c.hooks.NetworkException = append(c.hooks.NetworkException, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `networkexception.Intercept(f(g(h())))`.
+func (c *NetworkExceptionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NetworkException = append(c.inters.NetworkException, interceptors...)
+}
+
+// Create returns a builder for creating a NetworkException entity.
+func (c *NetworkExceptionClient) Create() *NetworkExceptionCreate {
+	mutation := newNetworkExceptionMutation(c.config, OpCreate)
+	return &NetworkExceptionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NetworkException entities.
+func (c *NetworkExceptionClient) CreateBulk(builders ...*NetworkExceptionCreate) *NetworkExceptionCreateBulk {
+	return &NetworkExceptionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NetworkExceptionClient) MapCreateBulk(slice any, setFunc func(*NetworkExceptionCreate, int)) *NetworkExceptionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NetworkExceptionCreateBulk{err: fmt.Errorf("calling to NetworkExceptionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NetworkExceptionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NetworkExceptionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NetworkException.
+func (c *NetworkExceptionClient) Update() *NetworkExceptionUpdate {
+	mutation := newNetworkExceptionMutation(c.config, OpUpdate)
+	return &NetworkExceptionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NetworkExceptionClient) UpdateOne(_m *NetworkException) *NetworkExceptionUpdateOne {
+	mutation := newNetworkExceptionMutation(c.config, OpUpdateOne, withNetworkException(_m))
+	return &NetworkExceptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NetworkExceptionClient) UpdateOneID(id uuid.UUID) *NetworkExceptionUpdateOne {
+	mutation := newNetworkExceptionMutation(c.config, OpUpdateOne, withNetworkExceptionID(id))
+	return &NetworkExceptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NetworkException.
+func (c *NetworkExceptionClient) Delete() *NetworkExceptionDelete {
+	mutation := newNetworkExceptionMutation(c.config, OpDelete)
+	return &NetworkExceptionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NetworkExceptionClient) DeleteOne(_m *NetworkException) *NetworkExceptionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NetworkExceptionClient) DeleteOneID(id uuid.UUID) *NetworkExceptionDeleteOne {
+	builder := c.Delete().Where(networkexception.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NetworkExceptionDeleteOne{builder}
+}
+
+// Query returns a query builder for NetworkException.
+func (c *NetworkExceptionClient) Query() *NetworkExceptionQuery {
+	return &NetworkExceptionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNetworkException},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NetworkException entity by its id.
+func (c *NetworkExceptionClient) Get(ctx context.Context, id uuid.UUID) (*NetworkException, error) {
+	return c.Query().Where(networkexception.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NetworkExceptionClient) GetX(ctx context.Context, id uuid.UUID) *NetworkException {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QuerySourceService queries the source_service edge of a NetworkException.
+func (c *NetworkExceptionClient) QuerySourceService(_m *NetworkException) *ServiceQuery {
+	query := (&ServiceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(networkexception.Table, networkexception.FieldID, id),
+			sqlgraph.To(service.Table, service.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, networkexception.SourceServiceTable, networkexception.SourceServiceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetService queries the target_service edge of a NetworkException.
+func (c *NetworkExceptionClient) QueryTargetService(_m *NetworkException) *ServiceQuery {
+	query := (&ServiceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(networkexception.Table, networkexception.FieldID, id),
+			sqlgraph.To(service.Table, service.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, networkexception.TargetServiceTable, networkexception.TargetServiceColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *NetworkExceptionClient) Hooks() []Hook {
+	return c.hooks.NetworkException
+}
+
+// Interceptors returns the client interceptors.
+func (c *NetworkExceptionClient) Interceptors() []Interceptor {
+	return c.inters.NetworkException
+}
+
+func (c *NetworkExceptionClient) mutate(ctx context.Context, m *NetworkExceptionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NetworkExceptionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NetworkExceptionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NetworkExceptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NetworkExceptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NetworkException mutation op: %q", m.Op())
 	}
 }
 
@@ -3629,6 +3802,38 @@ func (c *ServiceClient) QueryServiceGroup(_m *Service) *ServiceGroupQuery {
 	return query
 }
 
+// QueryOutgoingNetworkExceptions queries the outgoing_network_exceptions edge of a Service.
+func (c *ServiceClient) QueryOutgoingNetworkExceptions(_m *Service) *NetworkExceptionQuery {
+	query := (&NetworkExceptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(service.Table, service.FieldID, id),
+			sqlgraph.To(networkexception.Table, networkexception.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, service.OutgoingNetworkExceptionsTable, service.OutgoingNetworkExceptionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncomingNetworkExceptions queries the incoming_network_exceptions edge of a Service.
+func (c *ServiceClient) QueryIncomingNetworkExceptions(_m *Service) *NetworkExceptionQuery {
+	query := (&NetworkExceptionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(service.Table, service.FieldID, id),
+			sqlgraph.To(networkexception.Table, networkexception.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, service.IncomingNetworkExceptionsTable, service.IncomingNetworkExceptionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ServiceClient) Hooks() []Hook {
 	return c.hooks.Service
@@ -5106,17 +5311,17 @@ func (c *WebhookClient) mutate(ctx context.Context, m *WebhookMutation) (Value, 
 type (
 	hooks struct {
 		APIKey, Bootstrap, Deployment, Environment, GithubApp, GithubInstallation,
-		Group, Invitation, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
-		OAuthGrantToken, Oauth2Token, PVCMetadata, Permission, Project, Registry,
-		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, TeamIcon,
-		Template, User, Webhook []ent.Hook
+		Group, Invitation, JWTKey, NetworkException, OAuthAuthorizationCode,
+		OAuthClient, OAuthGrant, OAuthGrantToken, Oauth2Token, PVCMetadata, Permission,
+		Project, Registry, S3Bucket, Service, ServiceConfig, ServiceGroup,
+		SystemSetting, Team, TeamIcon, Template, User, Webhook []ent.Hook
 	}
 	inters struct {
 		APIKey, Bootstrap, Deployment, Environment, GithubApp, GithubInstallation,
-		Group, Invitation, JWTKey, OAuthAuthorizationCode, OAuthClient, OAuthGrant,
-		OAuthGrantToken, Oauth2Token, PVCMetadata, Permission, Project, Registry,
-		S3Bucket, Service, ServiceConfig, ServiceGroup, SystemSetting, Team, TeamIcon,
-		Template, User, Webhook []ent.Interceptor
+		Group, Invitation, JWTKey, NetworkException, OAuthAuthorizationCode,
+		OAuthClient, OAuthGrant, OAuthGrantToken, Oauth2Token, PVCMetadata, Permission,
+		Project, Registry, S3Bucket, Service, ServiceConfig, ServiceGroup,
+		SystemSetting, Team, TeamIcon, Template, User, Webhook []ent.Interceptor
 	}
 )
 

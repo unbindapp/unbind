@@ -1,4 +1,4 @@
-h1:ZwL9+spGpoYaRLoTaQV+gpu8hwMhYzdNIKbJRk6uKfQ=
+h1:5BFcm5ZXz0TVttT1DzB8kOGrVRrzyFq37fa92U5MhP0=
 20250519010757_initial_migration.sql h1:94lMwKemoNX/ichD+2Vzb7GmOHXVj4qVTfeBInQAe0g=
 20250519163449_add_init_containers.sql h1:7bt+zCbtmlYr1QDztgka0R5wUxdjD7XYUkrhL9GYYIQ=
 20250521202532_non_nillable_kubernetes_secret.sql h1:eDpMWyeBXh5cG4poavaUMeYs5QXddFBBIyYlxc+nq64=
@@ -46,3 +46,4 @@ h1:ZwL9+spGpoYaRLoTaQV+gpu8hwMhYzdNIKbJRk6uKfQ=
 20261015133505_rollout.sql h1:XojFA6OkWm6QLDihXjqRTvCSO9alvWluFHNvBW82AUA=
 20261016222621_team_icons.sql h1:z/0fMVG7355SVpAqOUui17Px3Jx+9FQJFIzWmHGRBf0=
 20261017090000_github_app_teams.sql h1:j9IBUD7IDXXorzPAkPqIFuTZ12I9EvrlW3LbXxHUaAY=
+20261017152745_network_exceptions.sql h1:8DxllTMyEDZbGzocCwxCkbIyOK7dpxAYdxX07zcqNiQ=

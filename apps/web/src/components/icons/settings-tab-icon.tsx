@@ -7,6 +7,7 @@ import {
   KeySquareIcon,
   BlocksIcon,
   MailIcon,
+  NetworkIcon,
   PackageIcon,
   SlidersHorizontalIcon,
   TriangleAlertIcon,
@@ -27,7 +28,8 @@ export type TSettingsTabVariant =
   | "connected-apps"
   | "github"
   | "registry"
-  | "email";
+  | "email"
+  | "network";
 
 export default function SettingsTabIcon({
   variant,
@@ -72,6 +74,10 @@ export default function SettingsTabIcon({
 
   if (variant === "email") {
     return <MailIcon className={cn("size-5 shrink-0", className)} {...rest} />;
+  }
+
+  if (variant === "network") {
+    return <NetworkIcon className={cn("size-5 shrink-0", className)} {...rest} />;
   }
 
   if (variant === "storage") {

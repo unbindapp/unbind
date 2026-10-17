@@ -17,7 +17,8 @@ import (
 func (k *KubeClient) CreateNamespace(ctx context.Context, namespaceName string, client kubernetes.Interface) (*corev1.Namespace, error) {
 	namespace := &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: namespaceName,
+			Name:   namespaceName,
+			Labels: map[string]string{TeamNamespaceLabel: "true"},
 		},
 	}
 

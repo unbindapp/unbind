@@ -117,6 +117,18 @@ func (f JWTKeyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, erro
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.JWTKeyMutation", m)
 }
 
+// The NetworkExceptionFunc type is an adapter to allow the use of ordinary
+// function as NetworkException mutator.
+type NetworkExceptionFunc func(context.Context, *ent.NetworkExceptionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NetworkExceptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NetworkExceptionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NetworkExceptionMutation", m)
+}
+
 // The OAuthAuthorizationCodeFunc type is an adapter to allow the use of ordinary
 // function as OAuthAuthorizationCode mutator.
 type OAuthAuthorizationCodeFunc func(context.Context, *ent.OAuthAuthorizationCodeMutation) (ent.Value, error)

@@ -21,6 +21,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/jwtkey"
+	"github.com/unbindapp/unbind-api/ent/networkexception"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
 	"github.com/unbindapp/unbind-api/ent/oauthclient"
@@ -64,6 +65,7 @@ const (
 	TypeGroup                  = "Group"
 	TypeInvitation             = "Invitation"
 	TypeJWTKey                 = "JWTKey"
+	TypeNetworkException       = "NetworkException"
 	TypeOAuthAuthorizationCode = "OAuthAuthorizationCode"
 	TypeOAuthClient            = "OAuthClient"
 	TypeOAuthGrant             = "OAuthGrant"
@@ -9180,6 +9182,622 @@ func (m *JWTKeyMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown JWTKey edge %s", name)
 }
 
+// NetworkExceptionMutation represents an operation that mutates the NetworkException nodes in the graph.
+type NetworkExceptionMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	clearedFields         map[string]struct{}
+	source_service        *uuid.UUID
+	clearedsource_service bool
+	target_service        *uuid.UUID
+	clearedtarget_service bool
+	done                  bool
+	oldValue              func(context.Context) (*NetworkException, error)
+	predicates            []predicate.NetworkException
+}
+
+var _ ent.Mutation = (*NetworkExceptionMutation)(nil)
+
+// networkexceptionOption allows management of the mutation configuration using functional options.
+type networkexceptionOption func(*NetworkExceptionMutation)
+
+// newNetworkExceptionMutation creates new mutation for the NetworkException entity.
+func newNetworkExceptionMutation(c config, op Op, opts ...networkexceptionOption) *NetworkExceptionMutation {
+	m := &NetworkExceptionMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeNetworkException,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withNetworkExceptionID sets the ID field of the mutation.
+func withNetworkExceptionID(id uuid.UUID) networkexceptionOption {
+	return func(m *NetworkExceptionMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *NetworkException
+		)
+		m.oldValue = func(ctx context.Context) (*NetworkException, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().NetworkException.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withNetworkException sets the old NetworkException of the mutation.
+func withNetworkException(node *NetworkException) networkexceptionOption {
+	return func(m *NetworkExceptionMutation) {
+		m.oldValue = func(context.Context) (*NetworkException, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m NetworkExceptionMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m NetworkExceptionMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of NetworkException entities.
+func (m *NetworkExceptionMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *NetworkExceptionMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *NetworkExceptionMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().NetworkException.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *NetworkExceptionMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NetworkExceptionMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the NetworkException entity.
+// If the NetworkException object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NetworkExceptionMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NetworkExceptionMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *NetworkExceptionMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *NetworkExceptionMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the NetworkException entity.
+// If the NetworkException object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NetworkExceptionMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *NetworkExceptionMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetSourceServiceID sets the "source_service_id" field.
+func (m *NetworkExceptionMutation) SetSourceServiceID(u uuid.UUID) {
+	m.source_service = &u
+}
+
+// SourceServiceID returns the value of the "source_service_id" field in the mutation.
+func (m *NetworkExceptionMutation) SourceServiceID() (r uuid.UUID, exists bool) {
+	v := m.source_service
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceServiceID returns the old "source_service_id" field's value of the NetworkException entity.
+// If the NetworkException object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NetworkExceptionMutation) OldSourceServiceID(ctx context.Context) (v *uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceServiceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceServiceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceServiceID: %w", err)
+	}
+	return oldValue.SourceServiceID, nil
+}
+
+// ClearSourceServiceID clears the value of the "source_service_id" field.
+func (m *NetworkExceptionMutation) ClearSourceServiceID() {
+	m.source_service = nil
+	m.clearedFields[networkexception.FieldSourceServiceID] = struct{}{}
+}
+
+// SourceServiceIDCleared returns if the "source_service_id" field was cleared in this mutation.
+func (m *NetworkExceptionMutation) SourceServiceIDCleared() bool {
+	_, ok := m.clearedFields[networkexception.FieldSourceServiceID]
+	return ok
+}
+
+// ResetSourceServiceID resets all changes to the "source_service_id" field.
+func (m *NetworkExceptionMutation) ResetSourceServiceID() {
+	m.source_service = nil
+	delete(m.clearedFields, networkexception.FieldSourceServiceID)
+}
+
+// SetTargetServiceID sets the "target_service_id" field.
+func (m *NetworkExceptionMutation) SetTargetServiceID(u uuid.UUID) {
+	m.target_service = &u
+}
+
+// TargetServiceID returns the value of the "target_service_id" field in the mutation.
+func (m *NetworkExceptionMutation) TargetServiceID() (r uuid.UUID, exists bool) {
+	v := m.target_service
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetServiceID returns the old "target_service_id" field's value of the NetworkException entity.
+// If the NetworkException object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NetworkExceptionMutation) OldTargetServiceID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetServiceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetServiceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetServiceID: %w", err)
+	}
+	return oldValue.TargetServiceID, nil
+}
+
+// ResetTargetServiceID resets all changes to the "target_service_id" field.
+func (m *NetworkExceptionMutation) ResetTargetServiceID() {
+	m.target_service = nil
+}
+
+// ClearSourceService clears the "source_service" edge to the Service entity.
+func (m *NetworkExceptionMutation) ClearSourceService() {
+	m.clearedsource_service = true
+	m.clearedFields[networkexception.FieldSourceServiceID] = struct{}{}
+}
+
+// SourceServiceCleared reports if the "source_service" edge to the Service entity was cleared.
+func (m *NetworkExceptionMutation) SourceServiceCleared() bool {
+	return m.SourceServiceIDCleared() || m.clearedsource_service
+}
+
+// SourceServiceIDs returns the "source_service" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SourceServiceID instead. It exists only for internal usage by the builders.
+func (m *NetworkExceptionMutation) SourceServiceIDs() (ids []uuid.UUID) {
+	if id := m.source_service; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSourceService resets all changes to the "source_service" edge.
+func (m *NetworkExceptionMutation) ResetSourceService() {
+	m.source_service = nil
+	m.clearedsource_service = false
+}
+
+// ClearTargetService clears the "target_service" edge to the Service entity.
+func (m *NetworkExceptionMutation) ClearTargetService() {
+	m.clearedtarget_service = true
+	m.clearedFields[networkexception.FieldTargetServiceID] = struct{}{}
+}
+
+// TargetServiceCleared reports if the "target_service" edge to the Service entity was cleared.
+func (m *NetworkExceptionMutation) TargetServiceCleared() bool {
+	return m.clearedtarget_service
+}
+
+// TargetServiceIDs returns the "target_service" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TargetServiceID instead. It exists only for internal usage by the builders.
+func (m *NetworkExceptionMutation) TargetServiceIDs() (ids []uuid.UUID) {
+	if id := m.target_service; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTargetService resets all changes to the "target_service" edge.
+func (m *NetworkExceptionMutation) ResetTargetService() {
+	m.target_service = nil
+	m.clearedtarget_service = false
+}
+
+// Where appends a list predicates to the NetworkExceptionMutation builder.
+func (m *NetworkExceptionMutation) Where(ps ...predicate.NetworkException) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the NetworkExceptionMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *NetworkExceptionMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.NetworkException, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *NetworkExceptionMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *NetworkExceptionMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (NetworkException).
+func (m *NetworkExceptionMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *NetworkExceptionMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.created_at != nil {
+		fields = append(fields, networkexception.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, networkexception.FieldUpdatedAt)
+	}
+	if m.source_service != nil {
+		fields = append(fields, networkexception.FieldSourceServiceID)
+	}
+	if m.target_service != nil {
+		fields = append(fields, networkexception.FieldTargetServiceID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *NetworkExceptionMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case networkexception.FieldCreatedAt:
+		return m.CreatedAt()
+	case networkexception.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case networkexception.FieldSourceServiceID:
+		return m.SourceServiceID()
+	case networkexception.FieldTargetServiceID:
+		return m.TargetServiceID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *NetworkExceptionMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case networkexception.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case networkexception.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case networkexception.FieldSourceServiceID:
+		return m.OldSourceServiceID(ctx)
+	case networkexception.FieldTargetServiceID:
+		return m.OldTargetServiceID(ctx)
+	}
+	return nil, fmt.Errorf("unknown NetworkException field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NetworkExceptionMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case networkexception.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case networkexception.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case networkexception.FieldSourceServiceID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceServiceID(v)
+		return nil
+	case networkexception.FieldTargetServiceID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetServiceID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown NetworkException field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *NetworkExceptionMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *NetworkExceptionMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *NetworkExceptionMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown NetworkException numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *NetworkExceptionMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(networkexception.FieldSourceServiceID) {
+		fields = append(fields, networkexception.FieldSourceServiceID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *NetworkExceptionMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *NetworkExceptionMutation) ClearField(name string) error {
+	switch name {
+	case networkexception.FieldSourceServiceID:
+		m.ClearSourceServiceID()
+		return nil
+	}
+	return fmt.Errorf("unknown NetworkException nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *NetworkExceptionMutation) ResetField(name string) error {
+	switch name {
+	case networkexception.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case networkexception.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case networkexception.FieldSourceServiceID:
+		m.ResetSourceServiceID()
+		return nil
+	case networkexception.FieldTargetServiceID:
+		m.ResetTargetServiceID()
+		return nil
+	}
+	return fmt.Errorf("unknown NetworkException field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *NetworkExceptionMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.source_service != nil {
+		edges = append(edges, networkexception.EdgeSourceService)
+	}
+	if m.target_service != nil {
+		edges = append(edges, networkexception.EdgeTargetService)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *NetworkExceptionMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case networkexception.EdgeSourceService:
+		if id := m.source_service; id != nil {
+			return []ent.Value{*id}
+		}
+	case networkexception.EdgeTargetService:
+		if id := m.target_service; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *NetworkExceptionMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *NetworkExceptionMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *NetworkExceptionMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedsource_service {
+		edges = append(edges, networkexception.EdgeSourceService)
+	}
+	if m.clearedtarget_service {
+		edges = append(edges, networkexception.EdgeTargetService)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *NetworkExceptionMutation) EdgeCleared(name string) bool {
+	switch name {
+	case networkexception.EdgeSourceService:
+		return m.clearedsource_service
+	case networkexception.EdgeTargetService:
+		return m.clearedtarget_service
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *NetworkExceptionMutation) ClearEdge(name string) error {
+	switch name {
+	case networkexception.EdgeSourceService:
+		m.ClearSourceService()
+		return nil
+	case networkexception.EdgeTargetService:
+		m.ClearTargetService()
+		return nil
+	}
+	return fmt.Errorf("unknown NetworkException unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *NetworkExceptionMutation) ResetEdge(name string) error {
+	switch name {
+	case networkexception.EdgeSourceService:
+		m.ResetSourceService()
+		return nil
+	case networkexception.EdgeTargetService:
+		m.ResetTargetService()
+		return nil
+	}
+	return fmt.Errorf("unknown NetworkException edge %s", name)
+}
+
 // OAuthAuthorizationCodeMutation represents an operation that mutates the OAuthAuthorizationCode nodes in the graph.
 type OAuthAuthorizationCodeMutation struct {
 	config
@@ -18186,43 +18804,49 @@ func (m *S3BucketMutation) ResetEdge(name string) error {
 // ServiceMutation represents an operation that mutates the Service nodes in the graph.
 type ServiceMutation struct {
 	config
-	op                         Op
-	typ                        string
-	id                         *uuid.UUID
-	created_at                 *time.Time
-	updated_at                 *time.Time
-	_type                      *schema.ServiceType
-	kubernetes_name            *string
-	name                       *string
-	description                *string
-	detected_ports             *[]schema.PortSpec
-	appenddetected_ports       []schema.PortSpec
-	database                   *string
-	database_version           *string
-	git_repository_owner       *string
-	git_repository             *string
-	kubernetes_secret          *string
-	template_instance_id       *uuid.UUID
-	template_service_id        *string
-	clearedFields              map[string]struct{}
-	environment                *uuid.UUID
-	clearedenvironment         bool
-	github_installation        *int64
-	clearedgithub_installation bool
-	service_config             *uuid.UUID
-	clearedservice_config      bool
-	deployments                map[uuid.UUID]struct{}
-	removeddeployments         map[uuid.UUID]struct{}
-	cleareddeployments         bool
-	current_deployment         *uuid.UUID
-	clearedcurrent_deployment  bool
-	template                   *uuid.UUID
-	clearedtemplate            bool
-	service_group              *uuid.UUID
-	clearedservice_group       bool
-	done                       bool
-	oldValue                   func(context.Context) (*Service, error)
-	predicates                 []predicate.Service
+	op                                 Op
+	typ                                string
+	id                                 *uuid.UUID
+	created_at                         *time.Time
+	updated_at                         *time.Time
+	_type                              *schema.ServiceType
+	kubernetes_name                    *string
+	name                               *string
+	description                        *string
+	detected_ports                     *[]schema.PortSpec
+	appenddetected_ports               []schema.PortSpec
+	database                           *string
+	database_version                   *string
+	git_repository_owner               *string
+	git_repository                     *string
+	kubernetes_secret                  *string
+	template_instance_id               *uuid.UUID
+	template_service_id                *string
+	clearedFields                      map[string]struct{}
+	environment                        *uuid.UUID
+	clearedenvironment                 bool
+	github_installation                *int64
+	clearedgithub_installation         bool
+	service_config                     *uuid.UUID
+	clearedservice_config              bool
+	deployments                        map[uuid.UUID]struct{}
+	removeddeployments                 map[uuid.UUID]struct{}
+	cleareddeployments                 bool
+	current_deployment                 *uuid.UUID
+	clearedcurrent_deployment          bool
+	template                           *uuid.UUID
+	clearedtemplate                    bool
+	service_group                      *uuid.UUID
+	clearedservice_group               bool
+	outgoing_network_exceptions        map[uuid.UUID]struct{}
+	removedoutgoing_network_exceptions map[uuid.UUID]struct{}
+	clearedoutgoing_network_exceptions bool
+	incoming_network_exceptions        map[uuid.UUID]struct{}
+	removedincoming_network_exceptions map[uuid.UUID]struct{}
+	clearedincoming_network_exceptions bool
+	done                               bool
+	oldValue                           func(context.Context) (*Service, error)
+	predicates                         []predicate.Service
 }
 
 var _ ent.Mutation = (*ServiceMutation)(nil)
@@ -19413,6 +20037,114 @@ func (m *ServiceMutation) ResetServiceGroup() {
 	m.clearedservice_group = false
 }
 
+// AddOutgoingNetworkExceptionIDs adds the "outgoing_network_exceptions" edge to the NetworkException entity by ids.
+func (m *ServiceMutation) AddOutgoingNetworkExceptionIDs(ids ...uuid.UUID) {
+	if m.outgoing_network_exceptions == nil {
+		m.outgoing_network_exceptions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.outgoing_network_exceptions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOutgoingNetworkExceptions clears the "outgoing_network_exceptions" edge to the NetworkException entity.
+func (m *ServiceMutation) ClearOutgoingNetworkExceptions() {
+	m.clearedoutgoing_network_exceptions = true
+}
+
+// OutgoingNetworkExceptionsCleared reports if the "outgoing_network_exceptions" edge to the NetworkException entity was cleared.
+func (m *ServiceMutation) OutgoingNetworkExceptionsCleared() bool {
+	return m.clearedoutgoing_network_exceptions
+}
+
+// RemoveOutgoingNetworkExceptionIDs removes the "outgoing_network_exceptions" edge to the NetworkException entity by IDs.
+func (m *ServiceMutation) RemoveOutgoingNetworkExceptionIDs(ids ...uuid.UUID) {
+	if m.removedoutgoing_network_exceptions == nil {
+		m.removedoutgoing_network_exceptions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.outgoing_network_exceptions, ids[i])
+		m.removedoutgoing_network_exceptions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOutgoingNetworkExceptions returns the removed IDs of the "outgoing_network_exceptions" edge to the NetworkException entity.
+func (m *ServiceMutation) RemovedOutgoingNetworkExceptionsIDs() (ids []uuid.UUID) {
+	for id := range m.removedoutgoing_network_exceptions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OutgoingNetworkExceptionsIDs returns the "outgoing_network_exceptions" edge IDs in the mutation.
+func (m *ServiceMutation) OutgoingNetworkExceptionsIDs() (ids []uuid.UUID) {
+	for id := range m.outgoing_network_exceptions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOutgoingNetworkExceptions resets all changes to the "outgoing_network_exceptions" edge.
+func (m *ServiceMutation) ResetOutgoingNetworkExceptions() {
+	m.outgoing_network_exceptions = nil
+	m.clearedoutgoing_network_exceptions = false
+	m.removedoutgoing_network_exceptions = nil
+}
+
+// AddIncomingNetworkExceptionIDs adds the "incoming_network_exceptions" edge to the NetworkException entity by ids.
+func (m *ServiceMutation) AddIncomingNetworkExceptionIDs(ids ...uuid.UUID) {
+	if m.incoming_network_exceptions == nil {
+		m.incoming_network_exceptions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.incoming_network_exceptions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIncomingNetworkExceptions clears the "incoming_network_exceptions" edge to the NetworkException entity.
+func (m *ServiceMutation) ClearIncomingNetworkExceptions() {
+	m.clearedincoming_network_exceptions = true
+}
+
+// IncomingNetworkExceptionsCleared reports if the "incoming_network_exceptions" edge to the NetworkException entity was cleared.
+func (m *ServiceMutation) IncomingNetworkExceptionsCleared() bool {
+	return m.clearedincoming_network_exceptions
+}
+
+// RemoveIncomingNetworkExceptionIDs removes the "incoming_network_exceptions" edge to the NetworkException entity by IDs.
+func (m *ServiceMutation) RemoveIncomingNetworkExceptionIDs(ids ...uuid.UUID) {
+	if m.removedincoming_network_exceptions == nil {
+		m.removedincoming_network_exceptions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.incoming_network_exceptions, ids[i])
+		m.removedincoming_network_exceptions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIncomingNetworkExceptions returns the removed IDs of the "incoming_network_exceptions" edge to the NetworkException entity.
+func (m *ServiceMutation) RemovedIncomingNetworkExceptionsIDs() (ids []uuid.UUID) {
+	for id := range m.removedincoming_network_exceptions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IncomingNetworkExceptionsIDs returns the "incoming_network_exceptions" edge IDs in the mutation.
+func (m *ServiceMutation) IncomingNetworkExceptionsIDs() (ids []uuid.UUID) {
+	for id := range m.incoming_network_exceptions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIncomingNetworkExceptions resets all changes to the "incoming_network_exceptions" edge.
+func (m *ServiceMutation) ResetIncomingNetworkExceptions() {
+	m.incoming_network_exceptions = nil
+	m.clearedincoming_network_exceptions = false
+	m.removedincoming_network_exceptions = nil
+}
+
 // Where appends a list predicates to the ServiceMutation builder.
 func (m *ServiceMutation) Where(ps ...predicate.Service) {
 	m.predicates = append(m.predicates, ps...)
@@ -19930,7 +20662,7 @@ func (m *ServiceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ServiceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 9)
 	if m.environment != nil {
 		edges = append(edges, service.EdgeEnvironment)
 	}
@@ -19951,6 +20683,12 @@ func (m *ServiceMutation) AddedEdges() []string {
 	}
 	if m.service_group != nil {
 		edges = append(edges, service.EdgeServiceGroup)
+	}
+	if m.outgoing_network_exceptions != nil {
+		edges = append(edges, service.EdgeOutgoingNetworkExceptions)
+	}
+	if m.incoming_network_exceptions != nil {
+		edges = append(edges, service.EdgeIncomingNetworkExceptions)
 	}
 	return edges
 }
@@ -19989,15 +20727,33 @@ func (m *ServiceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.service_group; id != nil {
 			return []ent.Value{*id}
 		}
+	case service.EdgeOutgoingNetworkExceptions:
+		ids := make([]ent.Value, 0, len(m.outgoing_network_exceptions))
+		for id := range m.outgoing_network_exceptions {
+			ids = append(ids, id)
+		}
+		return ids
+	case service.EdgeIncomingNetworkExceptions:
+		ids := make([]ent.Value, 0, len(m.incoming_network_exceptions))
+		for id := range m.incoming_network_exceptions {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ServiceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 9)
 	if m.removeddeployments != nil {
 		edges = append(edges, service.EdgeDeployments)
+	}
+	if m.removedoutgoing_network_exceptions != nil {
+		edges = append(edges, service.EdgeOutgoingNetworkExceptions)
+	}
+	if m.removedincoming_network_exceptions != nil {
+		edges = append(edges, service.EdgeIncomingNetworkExceptions)
 	}
 	return edges
 }
@@ -20012,13 +20768,25 @@ func (m *ServiceMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case service.EdgeOutgoingNetworkExceptions:
+		ids := make([]ent.Value, 0, len(m.removedoutgoing_network_exceptions))
+		for id := range m.removedoutgoing_network_exceptions {
+			ids = append(ids, id)
+		}
+		return ids
+	case service.EdgeIncomingNetworkExceptions:
+		ids := make([]ent.Value, 0, len(m.removedincoming_network_exceptions))
+		for id := range m.removedincoming_network_exceptions {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ServiceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 9)
 	if m.clearedenvironment {
 		edges = append(edges, service.EdgeEnvironment)
 	}
@@ -20039,6 +20807,12 @@ func (m *ServiceMutation) ClearedEdges() []string {
 	}
 	if m.clearedservice_group {
 		edges = append(edges, service.EdgeServiceGroup)
+	}
+	if m.clearedoutgoing_network_exceptions {
+		edges = append(edges, service.EdgeOutgoingNetworkExceptions)
+	}
+	if m.clearedincoming_network_exceptions {
+		edges = append(edges, service.EdgeIncomingNetworkExceptions)
 	}
 	return edges
 }
@@ -20061,6 +20835,10 @@ func (m *ServiceMutation) EdgeCleared(name string) bool {
 		return m.clearedtemplate
 	case service.EdgeServiceGroup:
 		return m.clearedservice_group
+	case service.EdgeOutgoingNetworkExceptions:
+		return m.clearedoutgoing_network_exceptions
+	case service.EdgeIncomingNetworkExceptions:
+		return m.clearedincoming_network_exceptions
 	}
 	return false
 }
@@ -20115,6 +20893,12 @@ func (m *ServiceMutation) ResetEdge(name string) error {
 		return nil
 	case service.EdgeServiceGroup:
 		m.ResetServiceGroup()
+		return nil
+	case service.EdgeOutgoingNetworkExceptions:
+		m.ResetOutgoingNetworkExceptions()
+		return nil
+	case service.EdgeIncomingNetworkExceptions:
+		m.ResetIncomingNetworkExceptions()
 		return nil
 	}
 	return fmt.Errorf("unknown Service edge %s", name)
@@ -24336,6 +25120,7 @@ type SystemSettingMutation struct {
 	buildkit_settings                 **schema.BuildkitSettings
 	registry_cache_settings           **schema.RegistryCacheSettings
 	email_settings                    **schema.EmailSettings
+	team_network_isolation            *bool
 	service_reference_syntax_migrated *bool
 	clearedFields                     map[string]struct{}
 	done                              bool
@@ -24715,6 +25500,42 @@ func (m *SystemSettingMutation) ResetEmailSettings() {
 	delete(m.clearedFields, systemsetting.FieldEmailSettings)
 }
 
+// SetTeamNetworkIsolation sets the "team_network_isolation" field.
+func (m *SystemSettingMutation) SetTeamNetworkIsolation(b bool) {
+	m.team_network_isolation = &b
+}
+
+// TeamNetworkIsolation returns the value of the "team_network_isolation" field in the mutation.
+func (m *SystemSettingMutation) TeamNetworkIsolation() (r bool, exists bool) {
+	v := m.team_network_isolation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTeamNetworkIsolation returns the old "team_network_isolation" field's value of the SystemSetting entity.
+// If the SystemSetting object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemSettingMutation) OldTeamNetworkIsolation(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTeamNetworkIsolation is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTeamNetworkIsolation requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTeamNetworkIsolation: %w", err)
+	}
+	return oldValue.TeamNetworkIsolation, nil
+}
+
+// ResetTeamNetworkIsolation resets all changes to the "team_network_isolation" field.
+func (m *SystemSettingMutation) ResetTeamNetworkIsolation() {
+	m.team_network_isolation = nil
+}
+
 // SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
 func (m *SystemSettingMutation) SetServiceReferenceSyntaxMigrated(b bool) {
 	m.service_reference_syntax_migrated = &b
@@ -24785,7 +25606,7 @@ func (m *SystemSettingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemSettingMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, systemsetting.FieldCreatedAt)
 	}
@@ -24803,6 +25624,9 @@ func (m *SystemSettingMutation) Fields() []string {
 	}
 	if m.email_settings != nil {
 		fields = append(fields, systemsetting.FieldEmailSettings)
+	}
+	if m.team_network_isolation != nil {
+		fields = append(fields, systemsetting.FieldTeamNetworkIsolation)
 	}
 	if m.service_reference_syntax_migrated != nil {
 		fields = append(fields, systemsetting.FieldServiceReferenceSyntaxMigrated)
@@ -24827,6 +25651,8 @@ func (m *SystemSettingMutation) Field(name string) (ent.Value, bool) {
 		return m.RegistryCacheSettings()
 	case systemsetting.FieldEmailSettings:
 		return m.EmailSettings()
+	case systemsetting.FieldTeamNetworkIsolation:
+		return m.TeamNetworkIsolation()
 	case systemsetting.FieldServiceReferenceSyntaxMigrated:
 		return m.ServiceReferenceSyntaxMigrated()
 	}
@@ -24850,6 +25676,8 @@ func (m *SystemSettingMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldRegistryCacheSettings(ctx)
 	case systemsetting.FieldEmailSettings:
 		return m.OldEmailSettings(ctx)
+	case systemsetting.FieldTeamNetworkIsolation:
+		return m.OldTeamNetworkIsolation(ctx)
 	case systemsetting.FieldServiceReferenceSyntaxMigrated:
 		return m.OldServiceReferenceSyntaxMigrated(ctx)
 	}
@@ -24902,6 +25730,13 @@ func (m *SystemSettingMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEmailSettings(v)
+		return nil
+	case systemsetting.FieldTeamNetworkIsolation:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTeamNetworkIsolation(v)
 		return nil
 	case systemsetting.FieldServiceReferenceSyntaxMigrated:
 		v, ok := value.(bool)
@@ -25003,6 +25838,9 @@ func (m *SystemSettingMutation) ResetField(name string) error {
 		return nil
 	case systemsetting.FieldEmailSettings:
 		m.ResetEmailSettings()
+		return nil
+	case systemsetting.FieldTeamNetworkIsolation:
+		m.ResetTeamNetworkIsolation()
 		return nil
 	case systemsetting.FieldServiceReferenceSyntaxMigrated:
 		m.ResetServiceReferenceSyntaxMigrated()
