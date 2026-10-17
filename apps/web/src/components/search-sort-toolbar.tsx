@@ -120,7 +120,6 @@ function SortDropdown({
           <DropdownMenuItem
             data-not-default={isNotDefaultState || undefined}
             disabled={!isNotDefaultState}
-            closeOnClick={false}
             onClick={() => onSortChange(defaultListSort)}
             className={cn(
               "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/4-10 data-not-default:active:bg-warning/4-10",
