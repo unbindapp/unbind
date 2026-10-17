@@ -1,6 +1,7 @@
 import ServiceCard from "@/components/service/service-card";
 import type { TServiceShallow } from "@/lib/queries/services";
 import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import type { ComponentProps } from "react";
 
 type TProps = {
@@ -12,14 +13,18 @@ type TProps = {
 >;
 
 export default function SortableServiceCard({ service, disabled, ...rest }: TProps) {
-  // The list itself moves while dragging and a copy follows the pointer, so the card never moves on its own
-  const { setNodeRef, listeners, isDragging } = useSortable({ id: service.id, disabled });
+  // The list itself reorders while dragging, the transform only animates the card to its new place
+  const { setNodeRef, listeners, transform, transition, isDragging } = useSortable({
+    id: service.id,
+    disabled,
+  });
 
   return (
     <ServiceCard
       {...rest}
       service={service}
       ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
       dragListeners={disabled ? undefined : listeners}
       isDragSource={isDragging}
     />

@@ -4,13 +4,16 @@ import { toast } from "@/components/ui/toast";
 import { queryKeyProjects, reorderProjects, type TProjectShallow } from "@/lib/queries/projects";
 import {
   blockClickAfterDrag,
+  closestInSameList,
+  keepInPlace,
   releaseClickAfterDrag,
   useCardSensors,
 } from "@/components/sortable/card-sorting";
-import { closestCenter, DndContext, type DragEndEvent } from "@dnd-kit/core";
-import { arrayMove, rectSortingStrategy, SortableContext, useSortable } from "@dnd-kit/sortable";
+import { DndContext, DragOverlay, type DragOverEvent, type DragStartEvent } from "@dnd-kit/core";
+import { arrayMove, SortableContext, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 type TProps = {
   teamId: string;
@@ -22,27 +25,61 @@ type TProps = {
 export default function SortableProjectCards({ teamId, projects, disabled, className }: TProps) {
   const reorder = useReorderProjects(teamId);
   const sensors = useCardSensors();
-  const ids = projects.map((p) => p.id);
+  // While dragging, the list shows where the card would land. After the drop it stays until
+  // the reorder reaches the query cache, a tick later.
+  const [preview, setPreview] = useState<{
+    projects: TProjectShallow[];
+    of: TProjectShallow[];
+  } | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  if (preview && !activeId && preview.of !== projects) setPreview(null);
+  const shown = preview?.projects ?? projects;
 
-  const onDragEnd = ({ active, over }: DragEndEvent) => {
-    releaseClickAfterDrag();
-    if (!over || active.id === over.id) return;
-    const from = ids.indexOf(String(active.id));
-    const to = ids.indexOf(String(over.id));
-    if (from < 0 || to < 0) return;
-    reorder(arrayMove(ids, from, to));
+  const onDragStart = ({ active }: DragStartEvent) => {
+    blockClickAfterDrag();
+    setActiveId(String(active.id));
+    setPreview({ projects, of: projects });
   };
+
+  const onDragOver = ({ active, over }: DragOverEvent) => {
+    if (!over || active.id === over.id) return;
+    setPreview((current) => {
+      if (!current) return current;
+      const ids = current.projects.map((p) => p.id);
+      const from = ids.indexOf(String(active.id));
+      const to = ids.indexOf(String(over.id));
+      if (from < 0 || to < 0) return current;
+      return { ...current, projects: arrayMove(current.projects, from, to) };
+    });
+  };
+
+  const onDragEnd = () => {
+    releaseClickAfterDrag();
+    const ids = preview?.projects.map((p) => p.id);
+    if (ids && ids.join() !== projects.map((p) => p.id).join()) reorder(ids);
+    setPreview((current) => (current ? { ...current, of: projects } : current));
+    setActiveId(null);
+  };
+
+  const onDragCancel = () => {
+    releaseClickAfterDrag();
+    setPreview(null);
+    setActiveId(null);
+  };
+
+  const active = activeId ? shown.find((p) => p.id === activeId) : undefined;
 
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={blockClickAfterDrag}
+      collisionDetection={closestInSameList}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
       onDragEnd={onDragEnd}
-      onDragCancel={releaseClickAfterDrag}
+      onDragCancel={onDragCancel}
     >
-      <SortableContext items={ids} strategy={rectSortingStrategy} disabled={disabled}>
-        {projects.map((project) => (
+      <SortableContext items={shown.map((p) => p.id)} strategy={keepInPlace} disabled={disabled}>
+        {shown.map((project) => (
           <SortableProjectCard
             key={project.id}
             project={project}
@@ -51,6 +88,9 @@ export default function SortableProjectCards({ teamId, projects, disabled, class
           />
         ))}
       </SortableContext>
+      <DragOverlay>
+        {active && <ProjectCard project={active} isDragging className="h-full" />}
+      </DragOverlay>
     </DndContext>
   );
 }
@@ -64,6 +104,7 @@ function SortableProjectCard({
   disabled: boolean;
   className?: string;
 }) {
+  // The list itself reorders while dragging, the transform only animates the card to its new place
   const { setNodeRef, listeners, transform, transition, isDragging } = useSortable({
     id: project.id,
     disabled,
@@ -75,7 +116,7 @@ function SortableProjectCard({
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       dragListeners={disabled ? undefined : listeners}
-      isDragging={isDragging}
+      isDragSource={isDragging}
       className={className}
     />
   );

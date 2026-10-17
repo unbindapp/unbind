@@ -20,6 +20,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -37,30 +38,39 @@ export default function SortableServiceBlocks({ blocks, disabled, ...scope }: TP
   const reorder = useReorderServices(scope);
   const sensors = useCardSensors();
   // While dragging, the list shows where the item would land and the page lays it out,
-  // since groups and services differ in size
-  const [preview, setPreview] = useState<TServiceBlock[] | null>(null);
+  // since groups and services differ in size. After the drop it stays until the reorder
+  // reaches the query cache, a tick later.
+  const [preview, setPreview] = useState<{ blocks: TServiceBlock[]; of: TServiceBlock[] } | null>(
+    null,
+  );
   const [activeId, setActiveId] = useState<string | null>(null);
-  const shown = preview ?? blocks;
+  if (preview && !activeId && preview.of !== blocks) setPreview(null);
+  const shown = preview?.blocks ?? blocks;
 
   const onDragStart = ({ active }: DragStartEvent) => {
     blockClickAfterDrag();
     setActiveId(String(active.id));
-    setPreview(blocks);
+    setPreview({ blocks, of: blocks });
   };
 
   const onDragOver = ({ active, over }: DragOverEvent) => {
     if (!over || active.id === over.id) return;
     const list = active.data.current?.sortable?.containerId;
     setPreview((current) =>
-      moveInList(current ?? blocks, list, String(active.id), String(over.id)),
+      current
+        ? {
+            ...current,
+            blocks: moveInList(current.blocks, list, String(active.id), String(over.id)),
+          }
+        : current,
     );
   };
 
   const onDragEnd = ({ active }: DragEndEvent) => {
     releaseClickAfterDrag();
     const list = active.data.current?.sortable?.containerId;
-    if (preview) commit(list, preview);
-    setPreview(null);
+    if (preview) commit(list, preview.blocks);
+    setPreview((current) => (current ? { ...current, of: blocks } : current));
     setActiveId(null);
   };
 
@@ -170,13 +180,17 @@ function SortableServiceGroup({
   disabled,
   ...scope
 }: TScope & { block: Extract<TServiceBlock, { type: "service-group" }>; disabled: boolean }) {
-  const { setNodeRef, listeners, isDragging } = useSortable({ id: block.id, disabled });
+  const { setNodeRef, listeners, transform, transition, isDragging } = useSortable({
+    id: block.id,
+    disabled,
+  });
 
   return (
     <ServiceGroupCard
       groupObject={block}
       {...scope}
       ref={setNodeRef}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
       dragListeners={disabled ? undefined : listeners}
       isDragSource={isDragging}
       sortDisabled={disabled}
