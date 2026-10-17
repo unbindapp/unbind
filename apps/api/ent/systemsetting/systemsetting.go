@@ -26,6 +26,8 @@ const (
 	FieldRegistryCacheSettings = "registry_cache_settings"
 	// FieldEmailSettings holds the string denoting the email_settings field in the database.
 	FieldEmailSettings = "email_settings"
+	// FieldTeamNetworkIsolation holds the string denoting the team_network_isolation field in the database.
+	FieldTeamNetworkIsolation = "team_network_isolation"
 	// FieldServiceReferenceSyntaxMigrated holds the string denoting the service_reference_syntax_migrated field in the database.
 	FieldServiceReferenceSyntaxMigrated = "service_reference_syntax_migrated"
 	// Table holds the table name of the systemsetting in the database.
@@ -41,6 +43,7 @@ var Columns = []string{
 	FieldBuildkitSettings,
 	FieldRegistryCacheSettings,
 	FieldEmailSettings,
+	FieldTeamNetworkIsolation,
 	FieldServiceReferenceSyntaxMigrated,
 }
 
@@ -61,6 +64,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultTeamNetworkIsolation holds the default value on creation for the "team_network_isolation" field.
+	DefaultTeamNetworkIsolation bool
 	// DefaultServiceReferenceSyntaxMigrated holds the default value on creation for the "service_reference_syntax_migrated" field.
 	DefaultServiceReferenceSyntaxMigrated bool
 	// DefaultID holds the default value on creation for the "id" field.
@@ -88,6 +93,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByWildcardBaseURL orders the results by the wildcard_base_url field.
 func ByWildcardBaseURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWildcardBaseURL, opts...).ToFunc()
+}
+
+// ByTeamNetworkIsolation orders the results by the team_network_isolation field.
+func ByTeamNetworkIsolation(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTeamNetworkIsolation, opts...).ToFunc()
 }
 
 // ByServiceReferenceSyntaxMigrated orders the results by the service_reference_syntax_migrated field.

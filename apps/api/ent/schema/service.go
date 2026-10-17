@@ -118,6 +118,13 @@ func (Service) Edges() []ent.Edge {
 		edge.From("template", Template.Type).Ref("services").Field("template_id").Unique(),
 		// M2O with service groups
 		edge.From("service_group", ServiceGroup.Type).Ref("services").Field("service_group_id").Unique(),
+		// O2M network exceptions this service is the source or the target of
+		edge.To("outgoing_network_exceptions", NetworkException.Type).Annotations(
+			entsql.Annotation{OnDelete: entsql.Cascade},
+		),
+		edge.To("incoming_network_exceptions", NetworkException.Type).Annotations(
+			entsql.Annotation{OnDelete: entsql.Cascade},
+		),
 	}
 }
 

@@ -50,6 +50,80 @@ func (_m *SystemRepositoryMock) EXPECT() *SystemRepositoryMock_Expecter {
 	return &SystemRepositoryMock_Expecter{mock: &_m.Mock}
 }
 
+// CreateNetworkException provides a mock function for the type SystemRepositoryMock
+func (_mock *SystemRepositoryMock) CreateNetworkException(ctx context.Context, sourceServiceID *uuid.UUID, targetServiceID uuid.UUID) (*ent.NetworkException, error) {
+	ret := _mock.Called(ctx, sourceServiceID, targetServiceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateNetworkException")
+	}
+
+	var r0 *ent.NetworkException
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *uuid.UUID, uuid.UUID) (*ent.NetworkException, error)); ok {
+		return returnFunc(ctx, sourceServiceID, targetServiceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *uuid.UUID, uuid.UUID) *ent.NetworkException); ok {
+		r0 = returnFunc(ctx, sourceServiceID, targetServiceID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.NetworkException)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, sourceServiceID, targetServiceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// SystemRepositoryMock_CreateNetworkException_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateNetworkException'
+type SystemRepositoryMock_CreateNetworkException_Call struct {
+	*mock.Call
+}
+
+// CreateNetworkException is a helper method to define mock.On call
+//   - ctx context.Context
+//   - sourceServiceID *uuid.UUID
+//   - targetServiceID uuid.UUID
+func (_e *SystemRepositoryMock_Expecter) CreateNetworkException(ctx any, sourceServiceID any, targetServiceID any) *SystemRepositoryMock_CreateNetworkException_Call {
+	return &SystemRepositoryMock_CreateNetworkException_Call{Call: _e.mock.On("CreateNetworkException", ctx, sourceServiceID, targetServiceID)}
+}
+
+func (_c *SystemRepositoryMock_CreateNetworkException_Call) Run(run func(ctx context.Context, sourceServiceID *uuid.UUID, targetServiceID uuid.UUID)) *SystemRepositoryMock_CreateNetworkException_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(*uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *SystemRepositoryMock_CreateNetworkException_Call) Return(networkException *ent.NetworkException, err error) *SystemRepositoryMock_CreateNetworkException_Call {
+	_c.Call.Return(networkException, err)
+	return _c
+}
+
+func (_c *SystemRepositoryMock_CreateNetworkException_Call) RunAndReturn(run func(ctx context.Context, sourceServiceID *uuid.UUID, targetServiceID uuid.UUID) (*ent.NetworkException, error)) *SystemRepositoryMock_CreateNetworkException_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateRegistry provides a mock function for the type SystemRepositoryMock
 func (_mock *SystemRepositoryMock) CreateRegistry(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool, insecure bool) (*ent.Registry, error) {
 	ret := _mock.Called(ctx, tx, host, kubernetesSecret, isDefault, insecure)
@@ -138,6 +212,63 @@ func (_c *SystemRepositoryMock_CreateRegistry_Call) Return(registry *ent.Registr
 }
 
 func (_c *SystemRepositoryMock_CreateRegistry_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, host string, kubernetesSecret string, isDefault bool, insecure bool) (*ent.Registry, error)) *SystemRepositoryMock_CreateRegistry_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// DeleteNetworkException provides a mock function for the type SystemRepositoryMock
+func (_mock *SystemRepositoryMock) DeleteNetworkException(ctx context.Context, id uuid.UUID) error {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteNetworkException")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// SystemRepositoryMock_DeleteNetworkException_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteNetworkException'
+type SystemRepositoryMock_DeleteNetworkException_Call struct {
+	*mock.Call
+}
+
+// DeleteNetworkException is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *SystemRepositoryMock_Expecter) DeleteNetworkException(ctx any, id any) *SystemRepositoryMock_DeleteNetworkException_Call {
+	return &SystemRepositoryMock_DeleteNetworkException_Call{Call: _e.mock.On("DeleteNetworkException", ctx, id)}
+}
+
+func (_c *SystemRepositoryMock_DeleteNetworkException_Call) Run(run func(ctx context.Context, id uuid.UUID)) *SystemRepositoryMock_DeleteNetworkException_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *SystemRepositoryMock_DeleteNetworkException_Call) Return(err error) *SystemRepositoryMock_DeleteNetworkException_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *SystemRepositoryMock_DeleteNetworkException_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *SystemRepositoryMock_DeleteNetworkException_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -510,6 +641,136 @@ func (_c *SystemRepositoryMock_GetInsecureRegistryHosts_Call) RunAndReturn(run f
 	return _c
 }
 
+// GetNetworkException provides a mock function for the type SystemRepositoryMock
+func (_mock *SystemRepositoryMock) GetNetworkException(ctx context.Context, id uuid.UUID) (*ent.NetworkException, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNetworkException")
+	}
+
+	var r0 *ent.NetworkException
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.NetworkException, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.NetworkException); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.NetworkException)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// SystemRepositoryMock_GetNetworkException_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNetworkException'
+type SystemRepositoryMock_GetNetworkException_Call struct {
+	*mock.Call
+}
+
+// GetNetworkException is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *SystemRepositoryMock_Expecter) GetNetworkException(ctx any, id any) *SystemRepositoryMock_GetNetworkException_Call {
+	return &SystemRepositoryMock_GetNetworkException_Call{Call: _e.mock.On("GetNetworkException", ctx, id)}
+}
+
+func (_c *SystemRepositoryMock_GetNetworkException_Call) Run(run func(ctx context.Context, id uuid.UUID)) *SystemRepositoryMock_GetNetworkException_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetNetworkException_Call) Return(networkException *ent.NetworkException, err error) *SystemRepositoryMock_GetNetworkException_Call {
+	_c.Call.Return(networkException, err)
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetNetworkException_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.NetworkException, error)) *SystemRepositoryMock_GetNetworkException_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetNetworkExceptions provides a mock function for the type SystemRepositoryMock
+func (_mock *SystemRepositoryMock) GetNetworkExceptions(ctx context.Context) ([]*ent.NetworkException, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetNetworkExceptions")
+	}
+
+	var r0 []*ent.NetworkException
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]*ent.NetworkException, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []*ent.NetworkException); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.NetworkException)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// SystemRepositoryMock_GetNetworkExceptions_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetNetworkExceptions'
+type SystemRepositoryMock_GetNetworkExceptions_Call struct {
+	*mock.Call
+}
+
+// GetNetworkExceptions is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *SystemRepositoryMock_Expecter) GetNetworkExceptions(ctx any) *SystemRepositoryMock_GetNetworkExceptions_Call {
+	return &SystemRepositoryMock_GetNetworkExceptions_Call{Call: _e.mock.On("GetNetworkExceptions", ctx)}
+}
+
+func (_c *SystemRepositoryMock_GetNetworkExceptions_Call) Run(run func(ctx context.Context)) *SystemRepositoryMock_GetNetworkExceptions_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetNetworkExceptions_Call) Return(networkExceptions []*ent.NetworkException, err error) *SystemRepositoryMock_GetNetworkExceptions_Call {
+	_c.Call.Return(networkExceptions, err)
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetNetworkExceptions_Call) RunAndReturn(run func(ctx context.Context) ([]*ent.NetworkException, error)) *SystemRepositoryMock_GetNetworkExceptions_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetPVCMetadata provides a mock function for the type SystemRepositoryMock
 func (_mock *SystemRepositoryMock) GetPVCMetadata(ctx context.Context, tx repository.TxInterface, pvcIDs []string) (map[string]*ent.PVCMetadata, error) {
 	ret := _mock.Called(ctx, tx, pvcIDs)
@@ -652,6 +913,136 @@ func (_c *SystemRepositoryMock_GetRegistry_Call) RunAndReturn(run func(ctx conte
 	return _c
 }
 
+// GetServiceWithTeam provides a mock function for the type SystemRepositoryMock
+func (_mock *SystemRepositoryMock) GetServiceWithTeam(ctx context.Context, id uuid.UUID) (*ent.Service, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetServiceWithTeam")
+	}
+
+	var r0 *ent.Service
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.Service, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.Service); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.Service)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// SystemRepositoryMock_GetServiceWithTeam_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetServiceWithTeam'
+type SystemRepositoryMock_GetServiceWithTeam_Call struct {
+	*mock.Call
+}
+
+// GetServiceWithTeam is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *SystemRepositoryMock_Expecter) GetServiceWithTeam(ctx any, id any) *SystemRepositoryMock_GetServiceWithTeam_Call {
+	return &SystemRepositoryMock_GetServiceWithTeam_Call{Call: _e.mock.On("GetServiceWithTeam", ctx, id)}
+}
+
+func (_c *SystemRepositoryMock_GetServiceWithTeam_Call) Run(run func(ctx context.Context, id uuid.UUID)) *SystemRepositoryMock_GetServiceWithTeam_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetServiceWithTeam_Call) Return(service *ent.Service, err error) *SystemRepositoryMock_GetServiceWithTeam_Call {
+	_c.Call.Return(service, err)
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetServiceWithTeam_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.Service, error)) *SystemRepositoryMock_GetServiceWithTeam_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetServicesWithTeam provides a mock function for the type SystemRepositoryMock
+func (_mock *SystemRepositoryMock) GetServicesWithTeam(ctx context.Context) ([]*ent.Service, error) {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetServicesWithTeam")
+	}
+
+	var r0 []*ent.Service
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) ([]*ent.Service, error)); ok {
+		return returnFunc(ctx)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context) []*ent.Service); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*ent.Service)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = returnFunc(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// SystemRepositoryMock_GetServicesWithTeam_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetServicesWithTeam'
+type SystemRepositoryMock_GetServicesWithTeam_Call struct {
+	*mock.Call
+}
+
+// GetServicesWithTeam is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *SystemRepositoryMock_Expecter) GetServicesWithTeam(ctx any) *SystemRepositoryMock_GetServicesWithTeam_Call {
+	return &SystemRepositoryMock_GetServicesWithTeam_Call{Call: _e.mock.On("GetServicesWithTeam", ctx)}
+}
+
+func (_c *SystemRepositoryMock_GetServicesWithTeam_Call) Run(run func(ctx context.Context)) *SystemRepositoryMock_GetServicesWithTeam_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetServicesWithTeam_Call) Return(services []*ent.Service, err error) *SystemRepositoryMock_GetServicesWithTeam_Call {
+	_c.Call.Return(services, err)
+	return _c
+}
+
+func (_c *SystemRepositoryMock_GetServicesWithTeam_Call) RunAndReturn(run func(ctx context.Context) ([]*ent.Service, error)) *SystemRepositoryMock_GetServicesWithTeam_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetSystemSettings provides a mock function for the type SystemRepositoryMock
 func (_mock *SystemRepositoryMock) GetSystemSettings(ctx context.Context, tx repository.TxInterface) (*ent.SystemSetting, error) {
 	ret := _mock.Called(ctx, tx)
@@ -767,6 +1158,78 @@ func (_c *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call) Return(e
 }
 
 func (_c *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call) RunAndReturn(run func(ctx context.Context) error) *SystemRepositoryMock_MarkServiceReferenceSyntaxMigrated_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NetworkExceptionExists provides a mock function for the type SystemRepositoryMock
+func (_mock *SystemRepositoryMock) NetworkExceptionExists(ctx context.Context, sourceServiceID *uuid.UUID, targetServiceID uuid.UUID) (bool, error) {
+	ret := _mock.Called(ctx, sourceServiceID, targetServiceID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for NetworkExceptionExists")
+	}
+
+	var r0 bool
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *uuid.UUID, uuid.UUID) (bool, error)); ok {
+		return returnFunc(ctx, sourceServiceID, targetServiceID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *uuid.UUID, uuid.UUID) bool); ok {
+		r0 = returnFunc(ctx, sourceServiceID, targetServiceID)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *uuid.UUID, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, sourceServiceID, targetServiceID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// SystemRepositoryMock_NetworkExceptionExists_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'NetworkExceptionExists'
+type SystemRepositoryMock_NetworkExceptionExists_Call struct {
+	*mock.Call
+}
+
+// NetworkExceptionExists is a helper method to define mock.On call
+//   - ctx context.Context
+//   - sourceServiceID *uuid.UUID
+//   - targetServiceID uuid.UUID
+func (_e *SystemRepositoryMock_Expecter) NetworkExceptionExists(ctx any, sourceServiceID any, targetServiceID any) *SystemRepositoryMock_NetworkExceptionExists_Call {
+	return &SystemRepositoryMock_NetworkExceptionExists_Call{Call: _e.mock.On("NetworkExceptionExists", ctx, sourceServiceID, targetServiceID)}
+}
+
+func (_c *SystemRepositoryMock_NetworkExceptionExists_Call) Run(run func(ctx context.Context, sourceServiceID *uuid.UUID, targetServiceID uuid.UUID)) *SystemRepositoryMock_NetworkExceptionExists_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(*uuid.UUID)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *SystemRepositoryMock_NetworkExceptionExists_Call) Return(b bool, err error) *SystemRepositoryMock_NetworkExceptionExists_Call {
+	_c.Call.Return(b, err)
+	return _c
+}
+
+func (_c *SystemRepositoryMock_NetworkExceptionExists_Call) RunAndReturn(run func(ctx context.Context, sourceServiceID *uuid.UUID, targetServiceID uuid.UUID) (bool, error)) *SystemRepositoryMock_NetworkExceptionExists_Call {
 	_c.Call.Return(run)
 	return _c
 }

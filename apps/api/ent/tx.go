@@ -32,6 +32,8 @@ type Tx struct {
 	Invitation *InvitationClient
 	// JWTKey is the client for interacting with the JWTKey builders.
 	JWTKey *JWTKeyClient
+	// NetworkException is the client for interacting with the NetworkException builders.
+	NetworkException *NetworkExceptionClient
 	// OAuthAuthorizationCode is the client for interacting with the OAuthAuthorizationCode builders.
 	OAuthAuthorizationCode *OAuthAuthorizationCodeClient
 	// OAuthClient is the client for interacting with the OAuthClient builders.
@@ -210,6 +212,7 @@ func (tx *Tx) init() {
 	tx.Group = NewGroupClient(tx.config)
 	tx.Invitation = NewInvitationClient(tx.config)
 	tx.JWTKey = NewJWTKeyClient(tx.config)
+	tx.NetworkException = NewNetworkExceptionClient(tx.config)
 	tx.OAuthAuthorizationCode = NewOAuthAuthorizationCodeClient(tx.config)
 	tx.OAuthClient = NewOAuthClientClient(tx.config)
 	tx.OAuthGrant = NewOAuthGrantClient(tx.config)

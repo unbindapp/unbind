@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/deployment"
 	"github.com/unbindapp/unbind-api/ent/environment"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
+	"github.com/unbindapp/unbind-api/ent/networkexception"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
@@ -322,6 +323,36 @@ func (_c *ServiceCreate) SetServiceGroup(v *ServiceGroup) *ServiceCreate {
 	return _c.SetServiceGroupID(v.ID)
 }
 
+// AddOutgoingNetworkExceptionIDs adds the "outgoing_network_exceptions" edge to the NetworkException entity by IDs.
+func (_c *ServiceCreate) AddOutgoingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceCreate {
+	_c.mutation.AddOutgoingNetworkExceptionIDs(ids...)
+	return _c
+}
+
+// AddOutgoingNetworkExceptions adds the "outgoing_network_exceptions" edges to the NetworkException entity.
+func (_c *ServiceCreate) AddOutgoingNetworkExceptions(v ...*NetworkException) *ServiceCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddOutgoingNetworkExceptionIDs(ids...)
+}
+
+// AddIncomingNetworkExceptionIDs adds the "incoming_network_exceptions" edge to the NetworkException entity by IDs.
+func (_c *ServiceCreate) AddIncomingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceCreate {
+	_c.mutation.AddIncomingNetworkExceptionIDs(ids...)
+	return _c
+}
+
+// AddIncomingNetworkExceptions adds the "incoming_network_exceptions" edges to the NetworkException entity.
+func (_c *ServiceCreate) AddIncomingNetworkExceptions(v ...*NetworkException) *ServiceCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddIncomingNetworkExceptionIDs(ids...)
+}
+
 // Mutation returns the ServiceMutation object of the builder.
 func (_c *ServiceCreate) Mutation() *ServiceMutation {
 	return _c.mutation
@@ -614,6 +645,38 @@ func (_c *ServiceCreate) createSpec() (*Service, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ServiceGroupID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OutgoingNetworkExceptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.OutgoingNetworkExceptionsTable,
+			Columns: []string{service.OutgoingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.IncomingNetworkExceptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.IncomingNetworkExceptionsTable,
+			Columns: []string{service.IncomingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

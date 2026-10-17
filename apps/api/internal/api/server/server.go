@@ -24,6 +24,7 @@ import (
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
 	logs_service "github.com/unbindapp/unbind-api/internal/services/logs"
 	metric_service "github.com/unbindapp/unbind-api/internal/services/metrics"
+	network_service "github.com/unbindapp/unbind-api/internal/services/network"
 	oauthserver_service "github.com/unbindapp/unbind-api/internal/services/oauthserver"
 	project_service "github.com/unbindapp/unbind-api/internal/services/project"
 	replica_service "github.com/unbindapp/unbind-api/internal/services/replicas"
@@ -78,6 +79,7 @@ type Server struct {
 	UserService         *user_service.UserService
 	TeamService         *team_service.TeamService
 	EmailService        *email_service.EmailService
+	NetworkService      *network_service.NetworkService
 	ProjectService      *project_service.ProjectService
 	ServiceService      *service_service.ServiceService
 	EnvironmentService  *environment_service.EnvironmentService

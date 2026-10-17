@@ -85,6 +85,20 @@ func (_c *SystemSettingCreate) SetEmailSettings(v *schema.EmailSettings) *System
 	return _c
 }
 
+// SetTeamNetworkIsolation sets the "team_network_isolation" field.
+func (_c *SystemSettingCreate) SetTeamNetworkIsolation(v bool) *SystemSettingCreate {
+	_c.mutation.SetTeamNetworkIsolation(v)
+	return _c
+}
+
+// SetNillableTeamNetworkIsolation sets the "team_network_isolation" field if the given value is not nil.
+func (_c *SystemSettingCreate) SetNillableTeamNetworkIsolation(v *bool) *SystemSettingCreate {
+	if v != nil {
+		_c.SetTeamNetworkIsolation(*v)
+	}
+	return _c
+}
+
 // SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
 func (_c *SystemSettingCreate) SetServiceReferenceSyntaxMigrated(v bool) *SystemSettingCreate {
 	_c.mutation.SetServiceReferenceSyntaxMigrated(v)
@@ -156,6 +170,10 @@ func (_c *SystemSettingCreate) defaults() {
 		v := systemsetting.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.TeamNetworkIsolation(); !ok {
+		v := systemsetting.DefaultTeamNetworkIsolation
+		_c.mutation.SetTeamNetworkIsolation(v)
+	}
 	if _, ok := _c.mutation.ServiceReferenceSyntaxMigrated(); !ok {
 		v := systemsetting.DefaultServiceReferenceSyntaxMigrated
 		_c.mutation.SetServiceReferenceSyntaxMigrated(v)
@@ -173,6 +191,9 @@ func (_c *SystemSettingCreate) check() error {
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SystemSetting.updated_at"`)}
+	}
+	if _, ok := _c.mutation.TeamNetworkIsolation(); !ok {
+		return &ValidationError{Name: "team_network_isolation", err: errors.New(`ent: missing required field "SystemSetting.team_network_isolation"`)}
 	}
 	if _, ok := _c.mutation.ServiceReferenceSyntaxMigrated(); !ok {
 		return &ValidationError{Name: "service_reference_syntax_migrated", err: errors.New(`ent: missing required field "SystemSetting.service_reference_syntax_migrated"`)}
@@ -236,6 +257,10 @@ func (_c *SystemSettingCreate) createSpec() (*SystemSetting, *sqlgraph.CreateSpe
 	if value, ok := _c.mutation.EmailSettings(); ok {
 		_spec.SetField(systemsetting.FieldEmailSettings, field.TypeJSON, value)
 		_node.EmailSettings = value
+	}
+	if value, ok := _c.mutation.TeamNetworkIsolation(); ok {
+		_spec.SetField(systemsetting.FieldTeamNetworkIsolation, field.TypeBool, value)
+		_node.TeamNetworkIsolation = value
 	}
 	if value, ok := _c.mutation.ServiceReferenceSyntaxMigrated(); ok {
 		_spec.SetField(systemsetting.FieldServiceReferenceSyntaxMigrated, field.TypeBool, value)
@@ -374,6 +399,18 @@ func (u *SystemSettingUpsert) UpdateEmailSettings() *SystemSettingUpsert {
 // ClearEmailSettings clears the value of the "email_settings" field.
 func (u *SystemSettingUpsert) ClearEmailSettings() *SystemSettingUpsert {
 	u.SetNull(systemsetting.FieldEmailSettings)
+	return u
+}
+
+// SetTeamNetworkIsolation sets the "team_network_isolation" field.
+func (u *SystemSettingUpsert) SetTeamNetworkIsolation(v bool) *SystemSettingUpsert {
+	u.Set(systemsetting.FieldTeamNetworkIsolation, v)
+	return u
+}
+
+// UpdateTeamNetworkIsolation sets the "team_network_isolation" field to the value that was provided on create.
+func (u *SystemSettingUpsert) UpdateTeamNetworkIsolation() *SystemSettingUpsert {
+	u.SetExcluded(systemsetting.FieldTeamNetworkIsolation)
 	return u
 }
 
@@ -535,6 +572,20 @@ func (u *SystemSettingUpsertOne) UpdateEmailSettings() *SystemSettingUpsertOne {
 func (u *SystemSettingUpsertOne) ClearEmailSettings() *SystemSettingUpsertOne {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.ClearEmailSettings()
+	})
+}
+
+// SetTeamNetworkIsolation sets the "team_network_isolation" field.
+func (u *SystemSettingUpsertOne) SetTeamNetworkIsolation(v bool) *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetTeamNetworkIsolation(v)
+	})
+}
+
+// UpdateTeamNetworkIsolation sets the "team_network_isolation" field to the value that was provided on create.
+func (u *SystemSettingUpsertOne) UpdateTeamNetworkIsolation() *SystemSettingUpsertOne {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateTeamNetworkIsolation()
 	})
 }
 
@@ -865,6 +916,20 @@ func (u *SystemSettingUpsertBulk) UpdateEmailSettings() *SystemSettingUpsertBulk
 func (u *SystemSettingUpsertBulk) ClearEmailSettings() *SystemSettingUpsertBulk {
 	return u.Update(func(s *SystemSettingUpsert) {
 		s.ClearEmailSettings()
+	})
+}
+
+// SetTeamNetworkIsolation sets the "team_network_isolation" field.
+func (u *SystemSettingUpsertBulk) SetTeamNetworkIsolation(v bool) *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.SetTeamNetworkIsolation(v)
+	})
+}
+
+// UpdateTeamNetworkIsolation sets the "team_network_isolation" field to the value that was provided on create.
+func (u *SystemSettingUpsertBulk) UpdateTeamNetworkIsolation() *SystemSettingUpsertBulk {
+	return u.Update(func(s *SystemSettingUpsert) {
+		s.UpdateTeamNetworkIsolation()
 	})
 }
 

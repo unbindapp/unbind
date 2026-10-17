@@ -13,6 +13,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/invitation"
+	"github.com/unbindapp/unbind-api/ent/networkexception"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
 	"github.com/unbindapp/unbind-api/ent/oauthclient"
@@ -242,6 +243,27 @@ func init() {
 	invitationDescID := invitationMixinFields0[0].Descriptor()
 	// invitation.DefaultID holds the default value on creation for the id field.
 	invitation.DefaultID = invitationDescID.Default.(func() uuid.UUID)
+	networkexceptionMixin := schema.NetworkException{}.Mixin()
+	networkexceptionMixinFields0 := networkexceptionMixin[0].Fields()
+	_ = networkexceptionMixinFields0
+	networkexceptionMixinFields1 := networkexceptionMixin[1].Fields()
+	_ = networkexceptionMixinFields1
+	networkexceptionFields := schema.NetworkException{}.Fields()
+	_ = networkexceptionFields
+	// networkexceptionDescCreatedAt is the schema descriptor for created_at field.
+	networkexceptionDescCreatedAt := networkexceptionMixinFields1[0].Descriptor()
+	// networkexception.DefaultCreatedAt holds the default value on creation for the created_at field.
+	networkexception.DefaultCreatedAt = networkexceptionDescCreatedAt.Default.(func() time.Time)
+	// networkexceptionDescUpdatedAt is the schema descriptor for updated_at field.
+	networkexceptionDescUpdatedAt := networkexceptionMixinFields1[1].Descriptor()
+	// networkexception.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	networkexception.DefaultUpdatedAt = networkexceptionDescUpdatedAt.Default.(func() time.Time)
+	// networkexception.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	networkexception.UpdateDefaultUpdatedAt = networkexceptionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// networkexceptionDescID is the schema descriptor for id field.
+	networkexceptionDescID := networkexceptionMixinFields0[0].Descriptor()
+	// networkexception.DefaultID holds the default value on creation for the id field.
+	networkexception.DefaultID = networkexceptionDescID.Default.(func() uuid.UUID)
 	oauthauthorizationcodeMixin := schema.OAuthAuthorizationCode{}.Mixin()
 	oauthauthorizationcodeMixinFields0 := oauthauthorizationcodeMixin[0].Fields()
 	_ = oauthauthorizationcodeMixinFields0
@@ -616,8 +638,12 @@ func init() {
 	systemsetting.DefaultUpdatedAt = systemsettingDescUpdatedAt.Default.(func() time.Time)
 	// systemsetting.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	systemsetting.UpdateDefaultUpdatedAt = systemsettingDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemsettingDescTeamNetworkIsolation is the schema descriptor for team_network_isolation field.
+	systemsettingDescTeamNetworkIsolation := systemsettingFields[4].Descriptor()
+	// systemsetting.DefaultTeamNetworkIsolation holds the default value on creation for the team_network_isolation field.
+	systemsetting.DefaultTeamNetworkIsolation = systemsettingDescTeamNetworkIsolation.Default.(bool)
 	// systemsettingDescServiceReferenceSyntaxMigrated is the schema descriptor for service_reference_syntax_migrated field.
-	systemsettingDescServiceReferenceSyntaxMigrated := systemsettingFields[4].Descriptor()
+	systemsettingDescServiceReferenceSyntaxMigrated := systemsettingFields[5].Descriptor()
 	// systemsetting.DefaultServiceReferenceSyntaxMigrated holds the default value on creation for the service_reference_syntax_migrated field.
 	systemsetting.DefaultServiceReferenceSyntaxMigrated = systemsettingDescServiceReferenceSyntaxMigrated.Default.(bool)
 	// systemsettingDescID is the schema descriptor for id field.

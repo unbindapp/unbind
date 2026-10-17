@@ -94,12 +94,15 @@ func (self *TeamService) CreateTeam(ctx context.Context, requesterUserID uuid.UU
 		return nil, fmt.Errorf("error adding creator to team admins: %w", err)
 	}
 
-	// Both repair themselves on the next API start, so a failure here is logged, not returned
+	// These repair themselves on the next API start, so a failure here is logged, not returned
 	if err := self.copyRegistrySecrets(ctx, namespace); err != nil {
 		log.Warnf("Failed to copy registry credentials into namespace %s: %v", namespace, err)
 	}
 	if err := self.rbacManager.SyncAllGroups(ctx); err != nil {
 		log.Warnf("Failed to sync Kubernetes RBAC after creating team %s: %v", team.ID, err)
+	}
+	if err := self.networkPolicyManager.Sync(ctx); err != nil {
+		log.Warnf("Failed to sync network policies after creating team %s: %v", team.ID, err)
 	}
 
 	permSet, err := self.repo.Permissions().GetUserPermissionSet(ctx, requesterUserID)
