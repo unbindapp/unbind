@@ -78,7 +78,7 @@ export default function ServiceGroupCard({
       data-dragging={isDragging || undefined}
       data-drag-source={isDragSource || undefined}
       className={cn(
-        "group/group relative flex w-full p-1 data-drag-source:opacity-40 data-dragging:cursor-grabbing",
+        "group/group data-drag-source:before:border-border relative flex w-full p-1 data-drag-source:*:invisible data-drag-source:before:absolute data-drag-source:before:inset-1 data-drag-source:before:rounded-xl data-drag-source:before:border data-drag-source:before:border-dashed data-dragging:cursor-grabbing",
         className,
       )}
     >
@@ -130,7 +130,10 @@ export default function ServiceGroupCard({
                   projectId={projectId}
                   environmentId={environmentId}
                   isDeleting={isDeleting}
-                  className={cn("min-h-40", classNameServiceCard)}
+                  className={cn(
+                    "min-h-40 data-drag-source:before:rounded-lg",
+                    classNameServiceCard,
+                  )}
                   classNameCard="rounded-lg"
                   classNameVolumes="rounded-b-lg"
                   classNameVolumeLast="rounded-b-lg"

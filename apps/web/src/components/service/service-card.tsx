@@ -168,7 +168,7 @@ export default function ServiceCard({
       data-dragging={isDragging || undefined}
       data-drag-source={isDragSource || undefined}
       className={cn(
-        "group/item data-deleting:animate-skeleton-smooth-weaker relative flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-drag-source:opacity-40 data-dragging:cursor-grabbing",
+        "group/item data-deleting:animate-skeleton-smooth-weaker data-drag-source:before:border-border relative flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-drag-source:*:invisible data-drag-source:before:absolute data-drag-source:before:inset-1 data-drag-source:before:rounded-xl data-drag-source:before:border data-drag-source:before:border-dashed data-dragging:cursor-grabbing",
         className,
       )}
     >
