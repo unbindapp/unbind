@@ -101,7 +101,7 @@ export default function TeamIconCard({ className }: TProps) {
                     upload.reset();
                     remove.mutate({ teamId });
                   }}
-                  className="gap-1.5 py-2"
+                  className="gap-1.5 px-4 py-2"
                 >
                   {remove.isPending ? (
                     <LoaderIcon className="-ml-0.5 size-4.5 shrink-0 animate-spin" />
