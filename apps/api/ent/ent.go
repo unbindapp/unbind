@@ -36,6 +36,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/servicegroup"
 	"github.com/unbindapp/unbind-api/ent/systemsetting"
 	"github.com/unbindapp/unbind-api/ent/team"
+	"github.com/unbindapp/unbind-api/ent/teamicon"
 	"github.com/unbindapp/unbind-api/ent/template"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/ent/webhook"
@@ -123,6 +124,7 @@ func checkColumn(t, c string) error {
 			servicegroup.Table:           servicegroup.ValidColumn,
 			systemsetting.Table:          systemsetting.ValidColumn,
 			team.Table:                   team.ValidColumn,
+			teamicon.Table:               teamicon.ValidColumn,
 			template.Table:               template.ValidColumn,
 			user.Table:                   user.ValidColumn,
 			webhook.Table:                webhook.ValidColumn,

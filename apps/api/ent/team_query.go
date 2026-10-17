@@ -20,6 +20,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/team"
+	"github.com/unbindapp/unbind-api/ent/teamicon"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/ent/webhook"
 )
@@ -38,6 +39,7 @@ type TeamQuery struct {
 	withInvitations  *InvitationQuery
 	withGithubApps   *GithubAppQuery
 	withTeamWebhooks *WebhookQuery
+	withIcon         *TeamIconQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -222,6 +224,28 @@ func (_q *TeamQuery) QueryTeamWebhooks() *WebhookQuery {
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(webhook.Table, webhook.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, team.TeamWebhooksTable, team.TeamWebhooksColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIcon chains the current query on the "icon" edge.
+func (_q *TeamQuery) QueryIcon() *TeamIconQuery {
+	query := (&TeamIconClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, selector),
+			sqlgraph.To(teamicon.Table, teamicon.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, team.IconTable, team.IconColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -428,6 +452,7 @@ func (_q *TeamQuery) Clone() *TeamQuery {
 		withInvitations:  _q.withInvitations.Clone(),
 		withGithubApps:   _q.withGithubApps.Clone(),
 		withTeamWebhooks: _q.withTeamWebhooks.Clone(),
+		withIcon:         _q.withIcon.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -512,6 +537,17 @@ func (_q *TeamQuery) WithTeamWebhooks(opts ...func(*WebhookQuery)) *TeamQuery {
 	return _q
 }
 
+// WithIcon tells the query-builder to eager-load the nodes that are connected to
+// the "icon" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *TeamQuery) WithIcon(opts ...func(*TeamIconQuery)) *TeamQuery {
+	query := (&TeamIconClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withIcon = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -590,7 +626,7 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 	var (
 		nodes       = []*Team{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			_q.withProjects != nil,
 			_q.withS3Buckets != nil,
 			_q.withMembers != nil,
@@ -598,6 +634,7 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 			_q.withInvitations != nil,
 			_q.withGithubApps != nil,
 			_q.withTeamWebhooks != nil,
+			_q.withIcon != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -667,6 +704,12 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 		if err := _q.loadTeamWebhooks(ctx, query, nodes,
 			func(n *Team) { n.Edges.TeamWebhooks = []*Webhook{} },
 			func(n *Team, e *Webhook) { n.Edges.TeamWebhooks = append(n.Edges.TeamWebhooks, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withIcon; query != nil {
+		if err := _q.loadIcon(ctx, query, nodes, nil,
+			func(n *Team, e *TeamIcon) { n.Edges.Icon = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -905,6 +948,33 @@ func (_q *TeamQuery) loadTeamWebhooks(ctx context.Context, query *WebhookQuery, 
 	}
 	query.Where(predicate.Webhook(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(team.TeamWebhooksColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TeamID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "team_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *TeamQuery) loadIcon(ctx context.Context, query *TeamIconQuery, nodes []*Team, init func(*Team), assign func(*Team, *TeamIcon)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Team)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(teamicon.FieldTeamID)
+	}
+	query.Where(predicate.TeamIcon(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(team.IconColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

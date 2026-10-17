@@ -62,6 +62,8 @@ type Tx struct {
 	SystemSetting *SystemSettingClient
 	// Team is the client for interacting with the Team builders.
 	Team *TeamClient
+	// TeamIcon is the client for interacting with the TeamIcon builders.
+	TeamIcon *TeamIconClient
 	// Template is the client for interacting with the Template builders.
 	Template *TemplateClient
 	// User is the client for interacting with the User builders.
@@ -223,6 +225,7 @@ func (tx *Tx) init() {
 	tx.ServiceGroup = NewServiceGroupClient(tx.config)
 	tx.SystemSetting = NewSystemSettingClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
+	tx.TeamIcon = NewTeamIconClient(tx.config)
 	tx.Template = NewTemplateClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.Webhook = NewWebhookClient(tx.config)

@@ -937,6 +937,15 @@ components:
       required:
         - data
       type: object
+    DeleteTeamIconInputBody:
+      additionalProperties: false
+      properties:
+        team_id:
+          format: uuid
+          type: string
+      required:
+        - team_id
+      type: object
     DeleteVariablesInputBody:
       additionalProperties: false
       properties:
@@ -3389,6 +3398,14 @@ components:
       required:
         - data
       type: object
+    TeamIconResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          $ref: "#/components/schemas/TeamResponse"
+      required:
+        - data
+      type: object
     TeamResponse:
       additionalProperties: false
       properties:
@@ -3396,6 +3413,12 @@ components:
           format: date-time
           type: string
         description:
+          type:
+            - string
+            - "null"
+        icon_updated_at:
+          description: When the team's icon was last set. Empty when the team uses its default letter icon.
+          format: date-time
           type:
             - string
             - "null"
@@ -3417,6 +3440,7 @@ components:
         - name
         - description
         - created_at
+        - icon_updated_at
         - permissions
       type: object
     TeamResponseBody:
@@ -4335,6 +4359,20 @@ components:
         - project_id
         - environment_id
         - service_id
+      type: object
+    UpdateTeamIconInputBody:
+      additionalProperties: false
+      properties:
+        data:
+          contentEncoding: base64
+          description: The icon file, base64 encoded. SVG, PNG or JPEG, up to 50 KB and 1024x1024.
+          type: string
+        team_id:
+          format: uuid
+          type: string
+      required:
+        - team_id
+        - data
       type: object
     UpdateTeamInputBody:
       additionalProperties: false
@@ -10951,6 +10989,300 @@ paths:
         readOnlyHint: true
         requiresConfirmation: false
         risk: low
+  /teams/icon:
+    get:
+      description: Get the team's icon file. Answers not found when the team has no icon.
+      operationId: get-team-icon
+      parameters:
+        - explode: false
+          in: query
+          name: team_id
+          required: true
+          schema:
+            type: string
+        - description: Cache key, the team's icon_updated_at
+          explode: false
+          in: query
+          name: v
+          schema:
+            description: Cache key, the team's icon_updated_at
+            type: string
+      responses:
+        "200":
+          content:
+            image/jpeg: {}
+            image/png: {}
+            image/svg+xml: {}
+          description: The icon file
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            Content-Security-Policy:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+            X-Content-Type-Options:
+              schema:
+                type: string
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Get Team Icon
+      tags:
+        - Teams
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: true
+        requiresConfirmation: false
+        risk: low
+  /teams/icon/delete:
+    delete:
+      description: Remove the team's icon so it shows the first letter of its name again.
+      operationId: delete-team-icon
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteTeamIconInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamIconResponseBody"
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Delete Team Icon
+      tags:
+        - Teams
+      x-agent:
+        destructiveHint: true
+        idempotentHint: false
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: true
+        risk: high
+  /teams/icon/update:
+    put:
+      description: Replace the team's icon with an SVG, PNG or JPEG file, up to 50 KB and 1024x1024. SVGs can't have scripts or external links.
+      operationId: update-team-icon
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTeamIconInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamIconResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Update Team Icon
+      tags:
+        - Teams
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: false
+        risk: medium
   /teams/list:
     get:
       description: List the teams the current user can see.

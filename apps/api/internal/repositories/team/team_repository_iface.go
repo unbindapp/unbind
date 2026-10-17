@@ -13,6 +13,9 @@ import (
 
 // TeamRepositoryInterface ...
 type TeamRepositoryInterface interface {
+	GetIcon(ctx context.Context, teamID uuid.UUID) (*ent.TeamIcon, error)
+	SetIcon(ctx context.Context, teamID uuid.UUID, contentType string, data []byte) error
+	DeleteIcon(ctx context.Context, teamID uuid.UUID) error
 	// CreateInvitation replaces any pending invitation for the same address on the team.
 	CreateInvitation(ctx context.Context, input *CreateInvitationInput) (*ent.Invitation, error)
 	GetInvitationByTokenHash(ctx context.Context, tokenHash string) (*ent.Invitation, error)

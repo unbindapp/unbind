@@ -825,6 +825,29 @@ var (
 			},
 		},
 	}
+	// TeamIconsColumns holds the columns for the "team_icons" table.
+	TeamIconsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "content_type", Type: field.TypeString},
+		{Name: "data", Type: field.TypeBytes},
+		{Name: "team_id", Type: field.TypeUUID, Unique: true},
+	}
+	// TeamIconsTable holds the schema information for the "team_icons" table.
+	TeamIconsTable = &schema.Table{
+		Name:       "team_icons",
+		Columns:    TeamIconsColumns,
+		PrimaryKey: []*schema.Column{TeamIconsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "team_icons_teams_icon",
+				Columns:    []*schema.Column{TeamIconsColumns[5]},
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// TemplatesColumns holds the columns for the "templates" table.
 	TemplatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -999,6 +1022,7 @@ var (
 		ServiceGroupsTable,
 		SystemSettingsTable,
 		TeamsTable,
+		TeamIconsTable,
 		TemplatesTable,
 		UsersTable,
 		WebhooksTable,
@@ -1104,6 +1128,10 @@ func init() {
 	}
 	TeamsTable.Annotation = &entsql.Annotation{
 		Table: "teams",
+	}
+	TeamIconsTable.ForeignKeys[0].RefTable = TeamsTable
+	TeamIconsTable.Annotation = &entsql.Annotation{
+		Table: "team_icons",
 	}
 	TemplatesTable.Annotation = &entsql.Annotation{
 		Table: "templates",

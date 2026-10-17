@@ -1,8 +1,17 @@
+import {
+  Block,
+  BlockItem,
+  BlockItemContent,
+  BlockItemDescription,
+  BlockItemHeader,
+  BlockItemTitle,
+} from "@/components/block";
 import ErrorLine from "@/components/error-line";
+import SettingsCard, { SettingsCardFooterRow } from "@/components/settings/settings-card";
 import { cn } from "@/components/ui/utils";
 import { getTakenNameError, TUniqueAmong } from "@/lib/helpers/unique-name";
 import { useAppForm } from "@/lib/hooks/use-app-form";
-import { LoaderIcon, SaveIcon } from "lucide-react";
+import { IdCardIcon, LoaderIcon, SaveIcon } from "lucide-react";
 import { ZodObject, ZodString, ZodTypeAny } from "zod";
 
 type TRenameCardType = "team" | "project";
@@ -65,101 +74,125 @@ export default function RenameCard({
     },
   });
 
-  const { name: nameTitle, description: descriptionTitle } = getInputTitles(type);
+  const copy = getCopy(type);
 
   return (
-    <div className={cn("flex w-full flex-col gap-3", className)}>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit(e);
-        }}
-        className="flex w-full flex-col gap-3 xl:flex-row xl:items-start"
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.handleSubmit(e);
+      }}
+      className={cn("w-full", className)}
+    >
+      <SettingsCard
+        title={copy.card}
+        Icon={IdCardIcon}
+        footer={
+          <>
+            {error && <ErrorLine message={error.message} />}
+            <SettingsCardFooterRow>
+              <form.Subscribe
+                selector={(state) => ({ isSubmitting: state.isSubmitting, values: state.values })}
+                children={({ isSubmitting, values }) => {
+                  const valuesUnchanged =
+                    values.name === name && looseMatch(values.description, description);
+                  return (
+                    <form.SubmitButton
+                      data-submitting={isSubmitting || undefined}
+                      className="group/button"
+                      disabled={valuesUnchanged}
+                    >
+                      <div className="-ml-0.5 size-4.5 shrink-0">
+                        {isSubmitting ? (
+                          <LoaderIcon className="size-full animate-spin" />
+                        ) : (
+                          <SaveIcon className="size-full" />
+                        )}
+                      </div>
+                      <p className="min-w-0 shrink">Save</p>
+                    </form.SubmitButton>
+                  );
+                }}
+              />
+            </SettingsCardFooterRow>
+          </>
+        }
       >
-        <form.AppField
-          name="name"
-          validators={{
-            onChange: ({ value }) => getTakenNameError(value, uniqueAmong, name),
-          }}
-          children={(field) => (
-            <field.TextField
-              field={field}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-              layout="label-included"
-              inputTitle={nameTitle}
-              className="flex-1 xl:max-w-72"
-              maxLength={nameMaxLength}
-              revertTo={name ?? ""}
-              onRevert={() => field.setValue(name ?? "")}
-            />
-          )}
-        />
-        <form.AppField
-          name="description"
-          children={(field) => (
-            <field.TextField
-              field={field}
-              value={field.state.value}
-              onBlur={field.handleBlur}
-              onChange={(e) => field.handleChange(e.target.value)}
-              layout="label-included"
-              inputTitle={descriptionTitle}
-              className="flex-1"
-              maxLength={descriptionMaxLength}
-              revertTo={description ?? ""}
-              onRevert={() => field.setValue(description ?? "")}
-            />
-          )}
-        />
-        <form.Subscribe
-          selector={(state) => ({ isSubmitting: state.isSubmitting, values: state.values })}
-          children={({ isSubmitting, values }) => {
-            const valuesUnchanged =
-              values.name === name && looseMatch(values.description, description);
-            return (
-              <form.SubmitButton
-                data-submitting={isSubmitting || undefined}
-                className="group/button w-full md:w-auto xl:py-3.5"
-                disabled={valuesUnchanged}
-              >
-                <div className="-ml-0.5 size-4.5 shrink-0">
-                  {isSubmitting ? (
-                    <LoaderIcon className="size-full animate-spin" />
-                  ) : (
-                    <SaveIcon className="size-full" />
-                  )}
-                </div>
-                <p className="min-w-0 shrink">Save</p>
-              </form.SubmitButton>
-            );
-          }}
-        />
-      </form>
-      {error && <ErrorLine message={error.message} />}
-    </div>
+        <Block>
+          <BlockItem>
+            <BlockItemHeader type="column">
+              <BlockItemTitle>{copy.name}</BlockItemTitle>
+              <BlockItemDescription>{copy.nameDescription}</BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <form.AppField
+                name="name"
+                validators={{
+                  onChange: ({ value }) => getTakenNameError(value, uniqueAmong, name),
+                }}
+                children={(field) => (
+                  <field.TextField
+                    field={field}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder={copy.namePlaceholder}
+                    maxLength={nameMaxLength}
+                    revertTo={name ?? ""}
+                    onRevert={() => field.setValue(name ?? "")}
+                  />
+                )}
+              />
+            </BlockItemContent>
+          </BlockItem>
+          <BlockItem>
+            <BlockItemHeader type="column">
+              <BlockItemTitle>{copy.description}</BlockItemTitle>
+              <BlockItemDescription>{copy.descriptionDescription}</BlockItemDescription>
+            </BlockItemHeader>
+            <BlockItemContent>
+              <form.AppField
+                name="description"
+                children={(field) => (
+                  <field.TextField
+                    field={field}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    placeholder="Optional"
+                    maxLength={descriptionMaxLength}
+                    revertTo={description ?? ""}
+                    onRevert={() => field.setValue(description ?? "")}
+                  />
+                )}
+              />
+            </BlockItemContent>
+          </BlockItem>
+        </Block>
+      </SettingsCard>
+    </form>
   );
 }
 
-function getInputTitles(type: TRenameCardType) {
-  switch (type) {
-    case "team":
-      return {
-        name: "Team Name",
-        description: "Team Description",
-      };
-    case "project":
-      return {
-        name: "Project Name",
-        description: "Project Description",
-      };
-    default:
-      return {
-        name: "Name",
-        description: "Description",
-      };
+function getCopy(type: TRenameCardType) {
+  if (type === "project") {
+    return {
+      card: "Project Details",
+      name: "Project Name",
+      nameDescription: "Shown in the breadcrumb.",
+      namePlaceholder: "my-project",
+      description: "Project Description",
+      descriptionDescription: "A short note on what the project is for.",
+    };
   }
+  return {
+    card: "Team Details",
+    name: "Team Name",
+    nameDescription: "Shown in the team switcher.",
+    namePlaceholder: "My Team",
+    description: "Team Description",
+    descriptionDescription: "A short note on what the team is for.",
+  };
 }
 
 function looseMatch(a: string | null | undefined, b: string | null | undefined) {

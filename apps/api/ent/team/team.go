@@ -43,6 +43,8 @@ const (
 	EdgeGithubApps = "github_apps"
 	// EdgeTeamWebhooks holds the string denoting the team_webhooks edge name in mutations.
 	EdgeTeamWebhooks = "team_webhooks"
+	// EdgeIcon holds the string denoting the icon edge name in mutations.
+	EdgeIcon = "icon"
 	// Table holds the table name of the team in the database.
 	Table = "teams"
 	// ProjectsTable is the table that holds the projects relation/edge.
@@ -92,6 +94,13 @@ const (
 	TeamWebhooksInverseTable = "webhooks"
 	// TeamWebhooksColumn is the table column denoting the team_webhooks relation/edge.
 	TeamWebhooksColumn = "team_id"
+	// IconTable is the table that holds the icon relation/edge.
+	IconTable = "team_icons"
+	// IconInverseTable is the table name for the TeamIcon entity.
+	// It exists in this package in order to avoid circular dependency with the "teamicon" package.
+	IconInverseTable = "team_icons"
+	// IconColumn is the table column denoting the icon relation/edge.
+	IconColumn = "team_id"
 )
 
 // Columns holds all SQL columns for team fields.
@@ -275,6 +284,13 @@ func ByTeamWebhooks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTeamWebhooksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByIconField orders the results by icon field.
+func ByIconField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIconStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newProjectsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -322,5 +338,12 @@ func newTeamWebhooksStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TeamWebhooksInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, TeamWebhooksTable, TeamWebhooksColumn),
+	)
+}
+func newIconStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IconInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, IconTable, IconColumn),
 	)
 }

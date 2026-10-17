@@ -19,6 +19,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/team"
+	"github.com/unbindapp/unbind-api/ent/teamicon"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/ent/webhook"
 )
@@ -214,6 +215,25 @@ func (_c *TeamCreate) AddTeamWebhooks(v ...*Webhook) *TeamCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddTeamWebhookIDs(ids...)
+}
+
+// SetIconID sets the "icon" edge to the TeamIcon entity by ID.
+func (_c *TeamCreate) SetIconID(id uuid.UUID) *TeamCreate {
+	_c.mutation.SetIconID(id)
+	return _c
+}
+
+// SetNillableIconID sets the "icon" edge to the TeamIcon entity by ID if the given value is not nil.
+func (_c *TeamCreate) SetNillableIconID(id *uuid.UUID) *TeamCreate {
+	if id != nil {
+		_c = _c.SetIconID(*id)
+	}
+	return _c
+}
+
+// SetIcon sets the "icon" edge to the TeamIcon entity.
+func (_c *TeamCreate) SetIcon(v *TeamIcon) *TeamCreate {
+	return _c.SetIconID(v.ID)
 }
 
 // Mutation returns the TeamMutation object of the builder.
@@ -459,6 +479,22 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(webhook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.IconIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   team.IconTable,
+			Columns: []string{team.IconColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teamicon.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

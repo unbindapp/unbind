@@ -11,7 +11,7 @@ function ProjectGeneralSettings() {
   const { team_id: teamId, project_id: projectId } = Route.useParams();
   return (
     <>
-      <SettingsTabTitle>Details</SettingsTabTitle>
+      <SettingsTabTitle>General</SettingsTabTitle>
       <GeneralTabContent className="mt-3" teamId={teamId} projectId={projectId} />
     </>
   );

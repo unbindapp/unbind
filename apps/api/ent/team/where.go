@@ -667,6 +667,29 @@ func HasTeamWebhooksWith(preds ...predicate.Webhook) predicate.Team {
 	})
 }
 
+// HasIcon applies the HasEdge predicate on the "icon" edge.
+func HasIcon() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, IconTable, IconColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIconWith applies the HasEdge predicate on the "icon" edge with a given conditions (other predicates).
+func HasIconWith(preds ...predicate.TeamIcon) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := newIconStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Team) predicate.Team {
 	return predicate.Team(sql.AndPredicates(predicates...))

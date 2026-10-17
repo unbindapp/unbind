@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
+import { getConfig } from "@/lib/config";
 import { getGoClient } from "@/lib/server/client";
 import type {
   InvitationResponse,
@@ -115,6 +116,49 @@ export async function updateTeam(input: { teamId: string; name: string; descript
     description: input.description,
   });
   return { data: res.data };
+}
+
+export async function updateTeamIcon(input: { teamId: string; file: File }) {
+  const res = await getGoClient().teams.icon.update({
+    team_id: input.teamId,
+    data: await readFileAsBase64(input.file),
+  });
+  return { data: res.data };
+}
+
+export async function deleteTeamIcon(input: { teamId: string }) {
+  const res = await getGoClient().teams.icon.delete({ team_id: input.teamId });
+  return { data: res.data };
+}
+
+export function teamIconUrl(team: Pick<TTeam, "id" | "icon_updated_at">) {
+  if (!team.icon_updated_at) return null;
+  const params = new URLSearchParams({ team_id: team.id, v: team.icon_updated_at });
+  return `${getConfig().apiUrl}/teams/icon?${params}`;
+}
+
+export const teamIconMaxBytes = 50 * 1024;
+export const teamIconAccept = ".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg";
+const teamIconTypes = ["image/svg+xml", "image/png", "image/jpeg"];
+const teamIconExtensions = [".svg", ".png", ".jpg", ".jpeg"];
+
+export function getTeamIconFileError(file: File) {
+  const name = file.name.toLowerCase();
+  const typeOk =
+    teamIconTypes.includes(file.type) ||
+    (file.type === "" && teamIconExtensions.some((ext) => name.endsWith(ext)));
+  if (!typeOk) return "Not an SVG, PNG or JPEG";
+  if (file.size > teamIconMaxBytes) return "Larger than 50 KB";
+  return null;
+}
+
+function readFileAsBase64(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",", 2)[1] ?? "");
+    reader.onerror = () => reject(reader.error ?? new Error("Couldn't read the file"));
+    reader.readAsDataURL(file);
+  });
 }
 
 // ---- Types ----

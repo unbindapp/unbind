@@ -1,6 +1,6 @@
 ---
 title: Managing Teams
-description: Create teams, rename them and delete them.
+description: Create teams, rename them, give them an icon and delete them.
 ---
 
 A team is the top of the tree. It holds projects and the settings they share, and it has its own [members](/teams/members-and-permissions). Every team runs in its own namespace on the cluster, so nothing in one team can see another.
@@ -19,13 +19,21 @@ A new team starts empty. Create a project in it to get going. See [Projects and 
 
 **Team** > **Settings** has:
 
-- **General**: rename the team and change its description.
+- **General**: the team's name, description and icon.
 - **Variables**: values shared by every project in the team. See [Variables](/services/variables#team-and-project-variables).
 - **Storage**: buckets for database backups. See [S3 Storage](/teams/s3-storage).
 - **Members**: who can reach the team and with what role.
 - **Webhooks**: notifications about the team's projects and services. See [Webhooks](/monitoring/webhooks).
 - **GitHub Apps**: GitHub connections shared with the team.
 - **Danger Zone**: delete the team.
+
+## Team icon
+
+A team shows its icon next to its name in the team switcher. Until you set one, the icon is the first letter of the team's name in a circle.
+
+To set one, go to **Settings** > **General** and click the avatar in the **Team Avatar** card, or drop a file on the card. It can be an SVG, PNG or JPEG of up to 50 KB and 1024×1024 pixels. The icon is cropped to a circle, so a square image works best. **Remove** goes back to the letter.
+
+Changing the icon needs the editor role on the team. SVGs need a `viewBox` and can't have scripts or links to other files. PNG and JPEG files are stored without their metadata, such as camera or location details.
 
 ## Delete a team
 
