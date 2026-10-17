@@ -213,6 +213,57 @@ func (suite *UpdaterTestSuite) TestClearUpdatesCache() {
 	suite.mockReleaseManager.AssertExpectations(suite.T())
 }
 
+func (suite *UpdaterTestSuite) TestRefreshUpdates_BypassesFreshCache() {
+	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
+	suite.NoError(updater.redisCache.SetWithExpiration(suite.ctx, updatesCacheKey, &UpdateCacheItem{
+		ForVersion: "v1.0.0",
+		Updates:    []release.VersionMetadata{},
+		CheckedAt:  time.Now().Add(-time.Minute),
+	}, updatesCacheTTL))
+	suite.mockReleaseManager.On("AvailableUpdates", suite.ctx, "v1.0.0").Return([]release.VersionMetadata{{Version: "v1.1.0"}}, nil).Once()
+
+	updates, err := updater.RefreshUpdates(suite.ctx)
+	suite.NoError(err)
+	suite.Equal([]release.VersionMetadata{{Version: "v1.1.0"}}, updates)
+
+	// The refreshed list replaces the cache, so regular checks see the new release too.
+	updates, err = updater.CheckForUpdates(suite.ctx)
+	suite.NoError(err)
+	suite.Equal([]release.VersionMetadata{{Version: "v1.1.0"}}, updates)
+	suite.mockReleaseManager.AssertExpectations(suite.T())
+}
+
+func (suite *UpdaterTestSuite) TestRefreshUpdates_CooldownServesCache() {
+	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
+	suite.mockReleaseManager.On("AvailableUpdates", suite.ctx, "v1.0.0").Return([]release.VersionMetadata{{Version: "v1.1.0"}}, nil).Once()
+
+	_, err := updater.RefreshUpdates(suite.ctx)
+	suite.NoError(err)
+
+	updates, err := updater.RefreshUpdates(suite.ctx)
+	suite.NoError(err)
+	suite.Equal([]release.VersionMetadata{{Version: "v1.1.0"}}, updates)
+	suite.mockReleaseManager.AssertExpectations(suite.T())
+}
+
+func (suite *UpdaterTestSuite) TestRefreshUpdates_ErrorKeepsCache() {
+	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)
+	cached := &UpdateCacheItem{
+		ForVersion: "v1.0.0",
+		Updates:    []release.VersionMetadata{{Version: "v1.1.0"}},
+		CheckedAt:  time.Now().Add(-time.Minute),
+	}
+	suite.NoError(updater.redisCache.SetWithExpiration(suite.ctx, updatesCacheKey, cached, updatesCacheTTL))
+	suite.mockReleaseManager.On("AvailableUpdates", suite.ctx, "v1.0.0").Return([]release.VersionMetadata{}, errors.New("rate limited")).Once()
+
+	_, err := updater.RefreshUpdates(suite.ctx)
+	suite.ErrorContains(err, "rate limited")
+
+	updates, err := updater.CheckForUpdates(suite.ctx)
+	suite.NoError(err)
+	suite.Equal(cached.Updates, updates)
+}
+
 // Test GetLatestVersion method
 func (suite *UpdaterTestSuite) TestGetLatestVersion_Success() {
 	updater := NewWithReleaseManager(suite.cfg, "v1.0.0", suite.mockK8sClient, suite.redisClient, suite.mockReleaseManager)

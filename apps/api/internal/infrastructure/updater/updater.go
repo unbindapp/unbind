@@ -48,6 +48,8 @@ const (
 	updatesCacheKey       = "updates"
 	updatesCacheTTL       = time.Hour
 	updatesCacheFreshness = 10 * time.Minute
+	// updatesRefreshCooldown keeps repeated manual checks from spending the unauthenticated GitHub API quota.
+	updatesRefreshCooldown = 10 * time.Second
 )
 
 // New creates a new updater instance
@@ -93,23 +95,13 @@ func NewWithReleaseManager(cfg *config.Config, currentVersion string, k8sClient 
 
 // CheckForUpdates checks if there are any available updates
 func (self *Updater) CheckForUpdates(ctx context.Context) ([]release.VersionMetadata, error) {
-	cacheItem, err := self.redisCache.Get(ctx, updatesCacheKey)
-	if err != nil {
-		if err != redis.Nil {
-			log.Errorf("Error reading from cache: %v", err)
-		}
-		cacheItem = nil
-	} else if cacheItem != nil && cacheItem.ForVersion != self.CurrentVersion {
-		cacheItem = nil
-	}
-
+	cacheItem := self.cachedUpdates(ctx)
 	if cacheItem != nil && time.Since(cacheItem.CheckedAt) < updatesCacheFreshness {
 		log.Infof("Returning cached updates from %v", cacheItem.CheckedAt)
 		return self.newerThanCurrent(cacheItem.Updates), nil
 	}
 
-	// Cache expired or empty, fetch new updates
-	updates, err := self.releaseManager.AvailableUpdates(ctx, self.CurrentVersion)
+	updates, err := self.fetchUpdates(ctx)
 	if err != nil {
 		if cacheItem != nil {
 			log.Errorf("Failed to check for updates, returning stale cache from %v: %v", cacheItem.CheckedAt, err)
@@ -120,7 +112,44 @@ func (self *Updater) CheckForUpdates(ctx context.Context) ([]release.VersionMeta
 		return []release.VersionMetadata{}, nil
 	}
 
-	cacheItem = &UpdateCacheItem{
+	return self.newerThanCurrent(updates), nil
+}
+
+// RefreshUpdates asks GitHub again regardless of the cache, except right after another refresh.
+func (self *Updater) RefreshUpdates(ctx context.Context) ([]release.VersionMetadata, error) {
+	if cacheItem := self.cachedUpdates(ctx); cacheItem != nil && time.Since(cacheItem.CheckedAt) < updatesRefreshCooldown {
+		return self.newerThanCurrent(cacheItem.Updates), nil
+	}
+
+	updates, err := self.fetchUpdates(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return self.newerThanCurrent(updates), nil
+}
+
+func (self *Updater) cachedUpdates(ctx context.Context) *UpdateCacheItem {
+	cacheItem, err := self.redisCache.Get(ctx, updatesCacheKey)
+	if err != nil {
+		if err != redis.Nil {
+			log.Errorf("Error reading from cache: %v", err)
+		}
+		return nil
+	}
+	if cacheItem == nil || cacheItem.ForVersion != self.CurrentVersion {
+		return nil
+	}
+	return cacheItem
+}
+
+func (self *Updater) fetchUpdates(ctx context.Context) ([]release.VersionMetadata, error) {
+	updates, err := self.releaseManager.AvailableUpdates(ctx, self.CurrentVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	cacheItem := &UpdateCacheItem{
 		ForVersion: self.CurrentVersion,
 		Updates:    updates,
 		CheckedAt:  time.Now(),
@@ -129,7 +158,7 @@ func (self *Updater) CheckForUpdates(ctx context.Context) ([]release.VersionMeta
 		log.Errorf("Failed to cache updates: %v", err)
 	}
 
-	return self.newerThanCurrent(updates), nil
+	return updates, nil
 }
 
 // newerThanCurrent drops anything at or below the running version so no cache

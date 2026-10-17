@@ -44,11 +44,10 @@ type ManagerInterface interface {
 }
 
 type Manager struct {
-	client      GitHubClientInterface
-	httpClient  *http.Client
-	owner       string
-	repo        string
-	metadataURL string
+	client     GitHubClientInterface
+	httpClient *http.Client
+	owner      string
+	repo       string
 }
 
 // NewManager creates a release manager for DefaultOwner/DefaultRepo; repoOverride may be "repo" or "owner/repo".
@@ -61,11 +60,10 @@ func NewManager(client GitHubClientInterface, repoOverride string) *Manager {
 	}
 
 	return &Manager{
-		client:      client,
-		httpClient:  &http.Client{Timeout: 30 * time.Second},
-		owner:       owner,
-		repo:        repo,
-		metadataURL: fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/%s", owner, repo, DefaultBranch, MetadataPath),
+		client:     client,
+		httpClient: &http.Client{Timeout: 30 * time.Second},
+		owner:      owner,
+		repo:       repo,
 	}
 }
 

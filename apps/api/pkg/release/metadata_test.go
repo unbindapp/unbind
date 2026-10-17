@@ -2,9 +2,7 @@ package release
 
 import (
 	"context"
-	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"errors"
 	"testing"
 
 	"github.com/google/go-github/v69/github"
@@ -14,7 +12,6 @@ import (
 type MetadataTestSuite struct {
 	suite.Suite
 	manager  *Manager
-	server   *httptest.Server
 	metadata VersionMetadataMap
 }
 
@@ -45,35 +42,47 @@ func (s *MetadataTestSuite) SetupTest() {
 		},
 	}
 
-	// Create test server
-	s.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/unbindapp/unbind/master/deploy/releases/metadata.json" {
-			data, _ := json.Marshal(s.metadata)
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(data)
-			return
-		}
-		w.WriteHeader(http.StatusNotFound)
-	}))
-
 	mockClient := &mockGitHubClient{
+		getContentsFunc: metadataContents(s.metadata),
 		listReleasesFunc: func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
 			return releasesFor("v0.1.0", "v0.2.0", "v0.3.0", "v0.4.0"), nil, nil
 		},
 	}
 
 	s.manager = NewManager(mockClient, "")
-	s.manager.metadataURL = s.server.URL + "/unbindapp/unbind/master/deploy/releases/metadata.json"
-}
-
-func (s *MetadataTestSuite) TearDownTest() {
-	s.server.Close()
 }
 
 func (s *MetadataTestSuite) TestGetVersionMetadata() {
 	metadata, err := s.manager.GetVersionMetadata(context.Background())
 	s.NoError(err)
 	s.Equal(s.metadata, metadata)
+}
+
+func (s *MetadataTestSuite) TestGetVersionMetadata_FetchError() {
+	s.manager.client.(*mockGitHubClient).getContentsFunc = func(ctx context.Context, owner, repo, path string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
+		return nil, nil, nil, errors.New("rate limited")
+	}
+
+	_, err := s.manager.GetVersionMetadata(context.Background())
+	s.ErrorContains(err, "rate limited")
+}
+
+func (s *MetadataTestSuite) TestGetVersionMetadata_Directory() {
+	s.manager.client.(*mockGitHubClient).getContentsFunc = func(ctx context.Context, owner, repo, path string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
+		return nil, []*github.RepositoryContent{}, nil, nil
+	}
+
+	_, err := s.manager.GetVersionMetadata(context.Background())
+	s.Error(err)
+}
+
+func (s *MetadataTestSuite) TestGetVersionMetadata_InvalidJSON() {
+	s.manager.client.(*mockGitHubClient).getContentsFunc = func(ctx context.Context, owner, repo, path string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
+		return &github.RepositoryContent{Content: new("{not json")}, nil, nil, nil
+	}
+
+	_, err := s.manager.GetVersionMetadata(context.Background())
+	s.ErrorContains(err, "failed to parse metadata")
 }
 
 func (s *MetadataTestSuite) TestGetUpdatePath() {

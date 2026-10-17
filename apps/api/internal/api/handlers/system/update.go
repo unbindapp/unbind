@@ -183,19 +183,44 @@ func (self *HandlerGroup) GetUpdateStatus(ctx context.Context, input *server.Bas
 		return nil, err
 	}
 
+	// The release list is best-effort: an unreachable GitHub must not hide the
+	// state of an update that is already running.
+	updates, err := self.srv.UpdateManager.CheckForUpdates(ctx)
+	if err != nil {
+		log.Errorf("Failed to check for updates: %v", err)
+	}
+
+	return self.updateStatus(ctx, updates)
+}
+
+// * Check for updates
+func (self *HandlerGroup) CheckForUpdates(ctx context.Context, input *server.BaseAuthInput) (*UpdateStatusResponse, error) {
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := self.CheckPermissions(ctx, user.ID); err != nil {
+		return nil, err
+	}
+
+	updates, err := self.srv.UpdateManager.RefreshUpdates(ctx)
+	if err != nil {
+		log.Errorf("Failed to refresh updates: %v", err)
+		return nil, huma.Error502BadGateway("Failed to fetch releases from GitHub")
+	}
+
+	return self.updateStatus(ctx, updates)
+}
+
+func (self *HandlerGroup) updateStatus(ctx context.Context, updates []release.VersionMetadata) (*UpdateStatusResponse, error) {
 	resp := &UpdateStatusResponse{}
 	resp.Body.CurrentVersion = self.srv.UpdateManager.CurrentVersion
 	resp.Body.CurrentVersionURL = self.srv.UpdateManager.ReleaseURL(self.srv.UpdateManager.CurrentVersion)
 	resp.Body.AvailableVersions = []AvailableVersion{}
 
-	// The release list is best-effort: an unreachable GitHub must not hide the
-	// state of an update that is already running.
-	allUpdates, err := self.srv.UpdateManager.CheckForUpdates(ctx)
-	if err != nil {
-		log.Errorf("Failed to check for updates: %v", err)
-	}
 	// The update manager already returns newer-than-current versions, oldest first.
-	for _, update := range allUpdates {
+	for _, update := range updates {
 		changes := update.Changes
 		if changes == nil {
 			changes = []release.Change{}

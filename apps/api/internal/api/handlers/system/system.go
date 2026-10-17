@@ -58,6 +58,15 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	}, handlers.GetUpdateStatus, oapi.OpenWorld)
 
 	oapi.Register(grp, oapi.Invoke, huma.Operation{
+		OperationID: "check-for-updates",
+		Summary:     "Check for Updates",
+		Description: "Fetch the Unbind release list from GitHub now instead of serving the cached one, then return the update status.",
+		Path:        "/update/check",
+		Method:      http.MethodPost,
+		Errors:      []int{http.StatusBadGateway},
+	}, handlers.CheckForUpdates, oapi.OpenWorld)
+
+	oapi.Register(grp, oapi.Invoke, huma.Operation{
 		OperationID: "generate-wildcard-domain",
 		Summary:     "Generate Wildcard Domain",
 		Description: "Generate an unbind.app wildcard subdomain from a base name.",

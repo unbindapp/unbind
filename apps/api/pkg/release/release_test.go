@@ -2,6 +2,7 @@ package release
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -36,6 +37,17 @@ func (m *mockRepositoriesService) GetContents(ctx context.Context, owner, repo, 
 	return m.client.getContentsFunc(ctx, owner, repo, path, opts)
 }
 
+func metadataContents(metadata VersionMetadataMap) func(ctx context.Context, owner, repo, path string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
+	return func(ctx context.Context, owner, repo, path string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
+		if path != MetadataPath || opts.Ref != DefaultBranch {
+			return nil, nil, &github.Response{Response: &http.Response{StatusCode: http.StatusNotFound}}, errors.New("404 Not Found")
+		}
+		data, _ := json.Marshal(metadata)
+		content := base64.StdEncoding.EncodeToString(data)
+		return &github.RepositoryContent{Type: new("file"), Encoding: new("base64"), Content: &content}, nil, nil, nil
+	}
+}
+
 func releasesFor(tags ...string) []*github.RepositoryRelease {
 	releases := make([]*github.RepositoryRelease, 0, len(tags))
 	for _, tag := range tags {
@@ -65,7 +77,6 @@ const releaseBodyV002 = `## 🚀 Unbind v0.0.2
 type ReleaseTestSuite struct {
 	suite.Suite
 	manager  *Manager
-	server   *httptest.Server
 	metadata VersionMetadataMap
 }
 
@@ -95,18 +106,8 @@ func (s *ReleaseTestSuite) SetupTest() {
 		},
 	}
 
-	// Create test server
-	s.server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/unbindapp/unbind/master/deploy/releases/metadata.json" {
-			data, _ := json.Marshal(s.metadata)
-			w.Header().Set("Content-Type", "application/json")
-			w.Write(data)
-			return
-		}
-		w.WriteHeader(http.StatusNotFound)
-	}))
-
 	mockClient := &mockGitHubClient{
+		getContentsFunc: metadataContents(s.metadata),
 		listReleasesFunc: func(ctx context.Context, owner, repo string, opts *github.ListOptions) ([]*github.RepositoryRelease, *github.Response, error) {
 			return []*github.RepositoryRelease{
 				releaseWithBody("v0.0.1", ""),
@@ -118,14 +119,12 @@ func (s *ReleaseTestSuite) SetupTest() {
 	}
 
 	s.manager = NewManager(mockClient, "")
-	s.manager.metadataURL = s.server.URL + "/unbindapp/unbind/master/deploy/releases/metadata.json"
 }
 
 func (s *ReleaseTestSuite) TestNewManager() {
 	m := NewManager(&mockGitHubClient{}, "")
 	s.Equal("unbindapp", m.owner)
 	s.Equal("unbind", m.repo)
-	s.Equal("https://raw.githubusercontent.com/unbindapp/unbind/master/deploy/releases/metadata.json", m.metadataURL)
 
 	m = NewManager(&mockGitHubClient{}, "fork")
 	s.Equal("unbindapp", m.owner)
@@ -134,7 +133,6 @@ func (s *ReleaseTestSuite) TestNewManager() {
 	m = NewManager(&mockGitHubClient{}, "someone/fork")
 	s.Equal("someone", m.owner)
 	s.Equal("fork", m.repo)
-	s.Equal("https://raw.githubusercontent.com/someone/fork/master/deploy/releases/metadata.json", m.metadataURL)
 }
 
 func (s *ReleaseTestSuite) TestReleaseURL() {
@@ -146,10 +144,6 @@ func (s *ReleaseTestSuite) TestReleaseURL() {
 
 	m = NewManager(&mockGitHubClient{}, "someone/fork")
 	s.Equal("https://github.com/someone/fork/releases#release-v1.2.3", m.ReleaseURL("v1.2.3"))
-}
-
-func (s *ReleaseTestSuite) TearDownTest() {
-	s.server.Close()
 }
 
 func (s *ReleaseTestSuite) TestAvailableUpdates() {

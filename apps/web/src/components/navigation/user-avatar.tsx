@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/components/ui/utils";
+import CheckForUpdatesButton from "@/components/system/update/check-for-updates-button";
 import { useUpdateStatus } from "@/components/system/update/update-status-provider";
 import { useIsAwayFromHome } from "@/lib/hooks/use-is-away-from-home";
 import { isSystemAdmin, isSystemViewer, meQuery } from "@/lib/queries/me";
@@ -103,7 +104,12 @@ export default function UserAvatar({ email, className }: TProps) {
         </Button>
       </DropdownOrDrawerTrigger>
       <DropdownOrDrawerContentForDrawer>
-        <div className="group/list flex w-full flex-col px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+4rem)]">
+        <div
+          className={cn(
+            "group/list flex w-full flex-col px-2 pt-2 pb-[calc(var(--safe-area-inset-bottom)+4rem)]",
+            canSeeSystem && isAdmin && "pb-[calc(var(--safe-area-inset-bottom)+6.75rem)]",
+          )}
+        >
           {hasUpdateAvailable && (
             <NewVersionCard
               className="pt-0 pb-1.5"
@@ -166,8 +172,11 @@ export default function UserAvatar({ email, className }: TProps) {
           <div
             data-pending={isPendingSystem || undefined}
             data-error={(!systemData && !isPendingSystem && isErrorSystem) || undefined}
-            className="group/version bg-background absolute bottom-(--safe-area-inset-bottom) z-10 flex w-full border-t"
+            className="group/version bg-background absolute bottom-(--safe-area-inset-bottom) z-10 flex w-full flex-col border-t"
           >
+            {isAdmin && (
+              <CheckForUpdatesButton variant="drawer-item" onUpdateClicked={() => setOpen(false)} />
+            )}
             {systemData ? (
               <a
                 target="_blank"
@@ -256,6 +265,12 @@ export default function UserAvatar({ email, className }: TProps) {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              {isAdmin && (
+                <CheckForUpdatesButton
+                  variant="dropdown-menu-item"
+                  onUpdateClicked={() => setOpen(false)}
+                />
+              )}
               {systemData ? (
                 <DropdownMenuItem
                   className="group/version flex w-full cursor-pointer items-center gap-1.5 px-3 py-2 text-left leading-tight"
