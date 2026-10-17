@@ -179,7 +179,7 @@ function NoActiveDeploymentCard() {
   });
 
   return (
-    <NoItemsCard Icon={PowerIcon}>
+    <NoItemsCard Icon={PowerIcon} cardHeight="lg">
       <p className="w-full leading-tight">There is no active deployment</p>
       {error && <ErrorLine className="mt-2" message={error.message} />}
       <Button

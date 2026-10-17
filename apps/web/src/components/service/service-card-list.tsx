@@ -101,7 +101,7 @@ export default function ServiceCardList({ search, sort, onClearSearch }: TProps)
     return (
       <Wrapper>
         <li className="w-full p-1">
-          <NoItemsCard Icon={SearchIcon}>
+          <NoItemsCard Icon={SearchIcon} cardHeight="lg">
             <p className="w-full max-w-lg leading-tight">No services match the current search</p>
             <Button className="mt-2" onClick={onClearSearch}>
               <RotateCcwIcon className="-ml-1 size-5 shrink-0" />
