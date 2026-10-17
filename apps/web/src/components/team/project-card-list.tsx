@@ -1,23 +1,33 @@
 "use client";
 
 import ErrorCard from "@/components/error-card";
+import NoItemsCard from "@/components/no-items-card";
 import { CreateProjectDialog } from "@/components/project/create-project-dialog";
 import { useProjects } from "@/components/project/projects-provider";
 import ProjectCard from "@/components/team/project-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { PlusIcon } from "lucide-react";
-import { ReactNode } from "react";
+import { filterAndSortProjects, type TProjectSort } from "@/lib/project-sort";
+import { PlusIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
+import { ReactNode, useMemo } from "react";
 
 type TProps = {
   teamId: string;
+  search: string;
+  sort: TProjectSort;
+  onClearSearch: () => void;
 };
 
 const placeholderArray = Array.from({ length: 6 });
 
-export default function ProjectCardList({ teamId }: TProps) {
+export default function ProjectCardList({ teamId, search, sort, onClearSearch }: TProps) {
   const { data, isPending, error } = useProjects();
   const projects = data?.projects;
+  const visibleProjects = useMemo(
+    () => (projects ? filterAndSortProjects(projects, { search, sort }) : []),
+    [projects, search, sort],
+  );
+  const isSearching = search.trim() !== "";
 
   if (!projects && !isPending && error) {
     return (
@@ -39,12 +49,28 @@ export default function ProjectCardList({ teamId }: TProps) {
     );
   }
 
+  if (isSearching && visibleProjects.length === 0) {
+    return (
+      <Wrapper>
+        <li className="w-full p-1">
+          <NoItemsCard Icon={SearchIcon}>
+            <p className="w-full max-w-lg leading-tight">No projects match the current search</p>
+            <Button className="mt-2" onClick={onClearSearch}>
+              <RotateCcwIcon className="-ml-1 size-5 shrink-0" />
+              <p className="min-w-0 shrink">Clear Search</p>
+            </Button>
+          </NoItemsCard>
+        </li>
+      </Wrapper>
+    );
+  }
+
   return (
     <Wrapper>
-      {projects.map((i) => (
+      {visibleProjects.map((i) => (
         <ProjectCard key={i.id} project={i} className="w-full md:w-1/2 lg:w-1/3" />
       ))}
-      {projects.length < 3 && (
+      {!isSearching && projects.length < 3 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <CreateProjectDialog teamId={teamId}>
             <Button

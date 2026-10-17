@@ -1,57 +1,15 @@
 import { useSettingsSearch } from "@/components/service/panel/content/deployed/settings/settings-search-provider";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/components/ui/utils";
-import { SearchIcon, XIcon } from "lucide-react";
-import { useRef } from "react";
+import SearchInput from "@/components/ui/search-input";
 
 export default function SettingsSearchBar({ className }: { className?: string }) {
   const { query, setQuery } = useSettingsSearch();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const hasValue = query !== "";
-
-  const clear = () => {
-    setQuery("");
-    inputRef.current?.focus();
-  };
 
   return (
-    <div className={cn("relative flex w-full items-stretch", className)}>
-      <div className="text-muted-foreground pointer-events-none absolute inset-y-0 left-0 z-1 flex w-8.25 items-center pl-2.75">
-        <SearchIcon className="size-4" />
-      </div>
-      <Input
-        ref={inputRef}
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key !== "Escape" || !hasValue) return;
-          e.preventDefault();
-          e.stopPropagation();
-          clear();
-        }}
-        aria-label="Search settings"
-        placeholder="Search settings"
-        autoCapitalize="off"
-        autoCorrect="off"
-        autoComplete="off"
-        spellCheck={false}
-        className="pr-11.5 pl-8.5"
-      />
-      <div className="pointer-events-none absolute top-0 right-0 flex h-full w-11 items-center justify-end overflow-hidden pr-0.75">
-        <Button
-          type="button"
-          aria-label="Clear search"
-          data-has-value={hasValue || undefined}
-          disabled={!hasValue}
-          onClick={clear}
-          variant="ghost"
-          size="icon"
-          className="text-muted-more-foreground pointer-events-auto size-9 translate-x-full rounded-md transition data-has-value:translate-x-0"
-        >
-          <XIcon className="size-4.5" />
-        </Button>
-      </div>
-    </div>
+    <SearchInput
+      value={query}
+      onValueChange={setQuery}
+      placeholder="Search settings"
+      className={className}
+    />
   );
 }
