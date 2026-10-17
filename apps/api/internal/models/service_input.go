@@ -25,6 +25,7 @@ type CreateServiceInput struct {
 	Ports                         []schema.PortSpec     `json:"ports,omitempty"`
 	Replicas                      *int32                `minimum:"1" maximum:"10" json:"replicas,omitempty" doc:"Must be 1 for a service with a volume"`
 	AutoDeploy                    *bool                 `json:"auto_deploy,omitempty" doc:"Deploy on every push to the branch. Only for a GitHub service, defaults to true"`
+	WatchPaths                    []string              `json:"watch_paths,omitempty" required:"false" doc:"Gitignore-style patterns, a push deploys only when a changed file matches. Unset deploys on every push. Only for a GitHub service"`
 	RailpackBuilderInstallCommand *string               `json:"railpack_builder_install_command,omitempty"`
 	RailpackBuilderBuildCommand   *string               `json:"railpack_builder_build_command,omitempty"`
 	RunCommand                    *string               `json:"run_command,omitempty"`

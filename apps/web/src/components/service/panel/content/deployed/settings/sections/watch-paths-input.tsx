@@ -31,6 +31,7 @@ function isAddItem(item: TItem): item is TAddItem {
 
 type TProps = {
   service: TServiceShallow;
+  branch?: string;
   value: string[];
   serverValue: string[];
   onChange: (value: string[]) => void;
@@ -39,6 +40,7 @@ type TProps = {
 
 export default function WatchPathsInput({
   service,
+  branch,
   value,
   serverValue,
   onChange,
@@ -54,7 +56,7 @@ export default function WatchPathsInput({
       installationId: service.github_installation_id ?? 0,
       owner: service.git_repository_owner ?? "",
       repoName: service.git_repository ?? "",
-      ref: service.config.git_branch ?? "",
+      ref: branch ?? service.config.git_branch ?? "",
     }),
     enabled: hasOpened,
   });

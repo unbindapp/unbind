@@ -615,6 +615,13 @@ components:
           type:
             - array
             - "null"
+        watch_paths:
+          description: Gitignore-style patterns, a push deploys only when a changed file matches. Unset deploys on every push. Only for a GitHub service
+          items:
+            type: string
+          type:
+            - array
+            - "null"
       required:
         - team_id
         - project_id

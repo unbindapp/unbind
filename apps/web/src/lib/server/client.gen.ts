@@ -911,6 +911,7 @@ export const CreateServiceInputSchema = z
     type: ServiceTypeSchema, // Type of service, e.g. 'github', 'docker-image'
     variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
     volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volume to mount in the service, one at most
+    watch_paths: z.array(z.string()).nullable().optional(), // Gitignore-style patterns, a push deploys only when a changed file matches. Unset deploys on every push. Only for a GitHub service
   })
   .strip();
 

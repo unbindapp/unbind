@@ -197,6 +197,10 @@ func (self *ServiceRepository) CreateConfig(
 		c.SetResources(input.Resources)
 	}
 
+	if input.WatchPaths != nil && len(*input.WatchPaths) > 0 {
+		c.SetWatchPaths(*input.WatchPaths)
+	}
+
 	if input.InitContainers != nil {
 		c.SetInitContainers(input.InitContainers)
 	}
