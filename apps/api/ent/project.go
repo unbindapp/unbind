@@ -42,6 +42,8 @@ type Project struct {
 	DefaultEnvironmentID *uuid.UUID `json:"default_environment_id,omitempty"`
 	// Kubernetes secret for this project
 	KubernetesSecret string `json:"kubernetes_secret,omitempty"`
+	// Place in the team's custom order, lowest first
+	Position int `json:"position,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ProjectQuery when eager-loading is set.
 	Edges        ProjectEdges `json:"edges"`
@@ -112,6 +114,8 @@ func (*Project) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case project.FieldTags:
 			values[i] = new([]byte)
+		case project.FieldPosition:
+			values[i] = new(sql.NullInt64)
 		case project.FieldKubernetesName, project.FieldName, project.FieldDescription, project.FieldStatus, project.FieldKubernetesSecret:
 			values[i] = new(sql.NullString)
 		case project.FieldCreatedAt, project.FieldUpdatedAt:
@@ -203,6 +207,12 @@ func (_m *Project) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.KubernetesSecret = value.String
 			}
+		case project.FieldPosition:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field position", values[i])
+			} else if value.Valid {
+				_m.Position = int(value.Int64)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -292,6 +302,9 @@ func (_m *Project) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("kubernetes_secret=")
 	builder.WriteString(_m.KubernetesSecret)
+	builder.WriteString(", ")
+	builder.WriteString("position=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Position))
 	builder.WriteByte(')')
 	return builder.String()
 }

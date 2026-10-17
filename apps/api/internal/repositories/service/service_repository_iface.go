@@ -26,6 +26,12 @@ type ServiceRepositoryInterface interface {
 	UpdateVariableMounts(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, variableMounts []*schema.VariableMount) error
 	UpdateVariableMetadata(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, metadata map[string]schema.VariableMetadata) error
 	UpdateDatabaseStorageSize(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, newSize string) (*schema.DatabaseConfig, error)
+	// ReorderEnvironment puts the given groups and ungrouped services first, in
+	// the given order. The environment's others follow in the order they had.
+	ReorderEnvironment(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID, ids []uuid.UUID) error
+	// ReorderGroup puts the given services of a group first, in the given order.
+	// The group's other services follow in the order they had.
+	ReorderGroup(ctx context.Context, tx repository.TxInterface, groupID uuid.UUID, serviceIDs []uuid.UUID) error
 	GetByID(ctx context.Context, serviceID uuid.UUID) (svc *ent.Service, err error)
 	GetByIDsAndEnvironment(ctx context.Context, serviceIDs []uuid.UUID, environmentID uuid.UUID) ([]*ent.Service, error)
 	GetByName(ctx context.Context, name string) (*ent.Service, error)

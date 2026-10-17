@@ -438,6 +438,10 @@ func init() {
 	projectDescStatus := projectFields[3].Descriptor()
 	// project.DefaultStatus holds the default value on creation for the status field.
 	project.DefaultStatus = projectDescStatus.Default.(string)
+	// projectDescPosition is the schema descriptor for position field.
+	projectDescPosition := projectFields[8].Descriptor()
+	// project.DefaultPosition holds the default value on creation for the position field.
+	project.DefaultPosition = projectDescPosition.Default.(int)
 	// projectDescID is the schema descriptor for id field.
 	projectDescID := projectMixinFields0[0].Descriptor()
 	// project.DefaultID holds the default value on creation for the id field.
@@ -525,6 +529,10 @@ func init() {
 	serviceDescKubernetesName := serviceFields[1].Descriptor()
 	// service.KubernetesNameValidator is a validator for the "kubernetes_name" field. It is called by the builders before save.
 	service.KubernetesNameValidator = serviceDescKubernetesName.Validators[0].(func(string) error)
+	// serviceDescPosition is the schema descriptor for position field.
+	serviceDescPosition := serviceFields[17].Descriptor()
+	// service.DefaultPosition holds the default value on creation for the position field.
+	service.DefaultPosition = serviceDescPosition.Default.(int)
 	// serviceDescID is the schema descriptor for id field.
 	serviceDescID := serviceMixinFields0[0].Descriptor()
 	// service.DefaultID holds the default value on creation for the id field.
@@ -595,6 +603,10 @@ func init() {
 	servicegroup.DefaultUpdatedAt = servicegroupDescUpdatedAt.Default.(func() time.Time)
 	// servicegroup.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	servicegroup.UpdateDefaultUpdatedAt = servicegroupDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// servicegroupDescPosition is the schema descriptor for position field.
+	servicegroupDescPosition := servicegroupFields[5].Descriptor()
+	// servicegroup.DefaultPosition holds the default value on creation for the position field.
+	servicegroup.DefaultPosition = servicegroupDescPosition.Default.(int)
 	// servicegroupDescID is the schema descriptor for id field.
 	servicegroupDescID := servicegroupMixinFields0[0].Descriptor()
 	// servicegroup.DefaultID holds the default value on creation for the id field.

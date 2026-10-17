@@ -47,13 +47,26 @@ func (u SortOrder) Schema(r huma.Registry) *huma.Schema {
 type SortByField string
 
 const (
+	SortByCustom    SortByField = "custom"
+	SortByName      SortByField = "name"
 	SortByCreatedAt SortByField = "created_at"
 	SortByUpdatedAt SortByField = "updated_at"
 )
 
 var SortByFieldValues = []SortByField{
+	SortByCustom,
+	SortByName,
 	SortByCreatedAt,
 	SortByUpdatedAt,
+}
+
+// DefaultOrder is the direction a field reads naturally in: custom and name
+// from the top, dates from the most recent.
+func (u SortByField) DefaultOrder() SortOrder {
+	if u == SortByCustom || u == SortByName {
+		return SortOrderAsc
+	}
+	return SortOrderDesc
 }
 
 // Register enum in OpenAPI specification
@@ -71,6 +84,6 @@ func (u SortByField) Schema(r huma.Registry) *huma.Schema {
 }
 
 type SortInput struct {
-	SortByField SortByField `query:"sort_by" default:"created_at" required:"false"`
-	SortOrder   SortOrder   `query:"sort_order" default:"desc" required:"false"`
+	SortByField SortByField `query:"sort_by" default:"created_at" required:"false" doc:"custom is the order the team arranged by hand"`
+	SortOrder   SortOrder   `query:"sort_order" required:"false" doc:"Defaults to asc for custom and name, desc for created_at and updated_at"`
 }

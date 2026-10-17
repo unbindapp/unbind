@@ -2679,6 +2679,50 @@ export const RemoveTeamMemberResponseBodySchema = z
   })
   .strip();
 
+export const ReorderProjectsInputSchema = z
+  .object({
+    project_ids: z.array(z.string()), // Projects in the order they should be listed. Projects left out keep their order after these.
+    team_id: z.string(),
+  })
+  .strip();
+
+export const ReorderProjectsResponseBodySchema = z
+  .object({
+    data: z.array(ProjectResponseSchema),
+  })
+  .strip();
+
+export const ReorderServiceGroupInputSchema = z
+  .object({
+    environment_id: z.string(),
+    project_id: z.string(),
+    service_group_id: z.string(),
+    service_ids: z.array(z.string()), // Services of the group in the order they should be listed. The ones left out keep their order after these.
+    team_id: z.string(),
+  })
+  .strip();
+
+export const ReorderServiceGroupResponseBodySchema = z
+  .object({
+    data: z.array(ServiceResponseSchema),
+  })
+  .strip();
+
+export const ReorderServicesInputSchema = z
+  .object({
+    environment_id: z.string(),
+    ids: z.array(z.string()), // Service groups and services that are not in a group, in the order they should be listed. The ones left out keep their order after these. Order the services inside a group with reorder-service-group.
+    project_id: z.string(),
+    team_id: z.string(),
+  })
+  .strip();
+
+export const ReorderServicesResponseBodySchema = z
+  .object({
+    data: z.array(ServiceResponseSchema),
+  })
+  .strip();
+
 export const ReplicaTypeSchema = z.enum(['team', 'project', 'environment', 'service']);
 
 export const ResponseErrorSchema = z
@@ -2855,7 +2899,7 @@ export const SetupStatusResponseBodySchema = z
   })
   .strip();
 
-export const SortByFieldSchema = z.enum(['created_at', 'updated_at']);
+export const SortByFieldSchema = z.enum(['custom', 'name', 'created_at', 'updated_at']);
 
 export const SortOrderSchema = z.enum(['asc', 'desc']);
 
@@ -3631,6 +3675,12 @@ export type RegistryCacheStatsResponseBody = z.infer<typeof RegistryCacheStatsRe
 export type RemoveDeploymentInputBody = z.infer<typeof RemoveDeploymentInputBodySchema>;
 export type RemoveDeploymentOutputBody = z.infer<typeof RemoveDeploymentOutputBodySchema>;
 export type RemoveTeamMemberResponseBody = z.infer<typeof RemoveTeamMemberResponseBodySchema>;
+export type ReorderProjectsInput = z.infer<typeof ReorderProjectsInputSchema>;
+export type ReorderProjectsResponseBody = z.infer<typeof ReorderProjectsResponseBodySchema>;
+export type ReorderServiceGroupInput = z.infer<typeof ReorderServiceGroupInputSchema>;
+export type ReorderServiceGroupResponseBody = z.infer<typeof ReorderServiceGroupResponseBodySchema>;
+export type ReorderServicesInput = z.infer<typeof ReorderServicesInputSchema>;
+export type ReorderServicesResponseBody = z.infer<typeof ReorderServicesResponseBodySchema>;
 export type ReplicaType = z.infer<typeof ReplicaTypeSchema>;
 export type ResponseError = z.infer<typeof ResponseErrorSchema>;
 export type RestartReplicasInputBody = z.infer<typeof RestartReplicasInputBodySchema>;
@@ -3943,8 +3993,8 @@ export const get_projectQuerySchema = z
 
 export const list_projectsQuerySchema = z
   .object({
-    sort_by: SortByFieldSchema.optional(),
-    sort_order: SortOrderSchema.optional(),
+    sort_by: SortByFieldSchema.optional(), // custom is the order the team arranged by hand
+    sort_order: SortOrderSchema.optional(), // Defaults to asc for custom and name, desc for created_at and updated_at
     team_id: z.string(),
   })
   .passthrough();
@@ -4036,6 +4086,8 @@ export const get_serviceQuerySchema = z
 
 export const list_serviceQuerySchema = z
   .object({
+    sort_by: SortByFieldSchema.optional(), // custom is the order the team arranged by hand
+    sort_order: SortOrderSchema.optional(), // Defaults to asc for custom and name, desc for created_at and updated_at
     team_id: z.string(),
     project_id: z.string(),
     environment_id: z.string(),
@@ -7035,6 +7087,48 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           throw error;
         }
       },
+      reorder: async (
+        params: ReorderProjectsInput,
+        fetchOptions?: RequestInit,
+      ): Promise<ReorderProjectsResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/projects/reorder`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = ReorderProjectsInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ReorderProjectsResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
       update: async (
         params: UpdateProjectInput,
         fetchOptions?: RequestInit,
@@ -7538,6 +7632,48 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           throw error;
         }
       },
+      reorder: async (
+        params: ReorderServiceGroupInput,
+        fetchOptions?: RequestInit,
+      ): Promise<ReorderServiceGroupResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/service_groups/reorder`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = ReorderServiceGroupInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ReorderServiceGroupResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
       templateInputs: async (
         params: UpdateServiceGroupTemplateInputsInput,
         fetchOptions?: RequestInit,
@@ -7913,7 +8049,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             typeof window !== 'undefined' ? window.location.origin : undefined,
           );
           const validatedQuery = list_serviceQuerySchema.parse(params);
-          const queryKeys = ['team_id', 'project_id', 'environment_id'];
+          const queryKeys = ['sort_by', 'sort_order', 'team_id', 'project_id', 'environment_id'];
           queryKeys.forEach((key) => {
             const value = validatedQuery[key as keyof typeof validatedQuery];
             if (value !== undefined && value !== null) {
@@ -7935,6 +8071,48 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           const data = await response.json();
           const { data: parsedData, error } = ListServiceResponseBodySchema.safeParse(data);
+          if (error) {
+            console.error('Response validation error:', error);
+            console.error('Response data:', data);
+            throw new Error(error.message);
+          }
+          return parsedData;
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error('Error in API request:', error);
+          }
+          throw error;
+        }
+      },
+      reorder: async (
+        params: ReorderServicesInput,
+        fetchOptions?: RequestInit,
+      ): Promise<ReorderServicesResponseBody> => {
+        try {
+          if (!apiUrl || typeof apiUrl !== 'string') {
+            throw new Error('API URL is undefined or not a string');
+          }
+          const url = new URL(
+            `${apiUrl}/services/reorder`,
+            typeof window !== 'undefined' ? window.location.origin : undefined,
+          );
+
+          const options: RequestInit = {
+            method: 'PUT',
+            credentials: 'include',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            ...fetchOptions,
+          };
+          const validatedBody = ReorderServicesInputSchema.parse(params);
+          options.body = JSON.stringify(validatedBody);
+          const response = await fetchFn(url.toString(), options);
+          if (!response.ok) {
+            throw await parseApiError(response, url.toString());
+          }
+          const data = await response.json();
+          const { data: parsedData, error } = ReorderServicesResponseBodySchema.safeParse(data);
           if (error) {
             console.error('Response validation error:', error);
             console.error('Response data:', data);

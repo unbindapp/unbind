@@ -127,6 +127,20 @@ func (_c *ProjectCreate) SetKubernetesSecret(v string) *ProjectCreate {
 	return _c
 }
 
+// SetPosition sets the "position" field.
+func (_c *ProjectCreate) SetPosition(v int) *ProjectCreate {
+	_c.mutation.SetPosition(v)
+	return _c
+}
+
+// SetNillablePosition sets the "position" field if the given value is not nil.
+func (_c *ProjectCreate) SetNillablePosition(v *int) *ProjectCreate {
+	if v != nil {
+		_c.SetPosition(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ProjectCreate) SetID(v uuid.UUID) *ProjectCreate {
 	_c.mutation.SetID(v)
@@ -228,6 +242,10 @@ func (_c *ProjectCreate) defaults() {
 		v := project.DefaultStatus
 		_c.mutation.SetStatus(v)
 	}
+	if _, ok := _c.mutation.Position(); !ok {
+		v := project.DefaultPosition
+		_c.mutation.SetPosition(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := project.DefaultID()
 		_c.mutation.SetID(v)
@@ -261,6 +279,9 @@ func (_c *ProjectCreate) check() error {
 	}
 	if _, ok := _c.mutation.KubernetesSecret(); !ok {
 		return &ValidationError{Name: "kubernetes_secret", err: errors.New(`ent: missing required field "Project.kubernetes_secret"`)}
+	}
+	if _, ok := _c.mutation.Position(); !ok {
+		return &ValidationError{Name: "position", err: errors.New(`ent: missing required field "Project.position"`)}
 	}
 	if len(_c.mutation.TeamIDs()) == 0 {
 		return &ValidationError{Name: "team", err: errors.New(`ent: missing required edge "Project.team"`)}
@@ -332,6 +353,10 @@ func (_c *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.KubernetesSecret(); ok {
 		_spec.SetField(project.FieldKubernetesSecret, field.TypeString, value)
 		_node.KubernetesSecret = value
+	}
+	if value, ok := _c.mutation.Position(); ok {
+		_spec.SetField(project.FieldPosition, field.TypeInt, value)
+		_node.Position = value
 	}
 	if nodes := _c.mutation.TeamIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -577,6 +602,24 @@ func (u *ProjectUpsert) UpdateKubernetesSecret() *ProjectUpsert {
 	return u
 }
 
+// SetPosition sets the "position" field.
+func (u *ProjectUpsert) SetPosition(v int) *ProjectUpsert {
+	u.Set(project.FieldPosition, v)
+	return u
+}
+
+// UpdatePosition sets the "position" field to the value that was provided on create.
+func (u *ProjectUpsert) UpdatePosition() *ProjectUpsert {
+	u.SetExcluded(project.FieldPosition)
+	return u
+}
+
+// AddPosition adds v to the "position" field.
+func (u *ProjectUpsert) AddPosition(v int) *ProjectUpsert {
+	u.Add(project.FieldPosition, v)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -772,6 +815,27 @@ func (u *ProjectUpsertOne) SetKubernetesSecret(v string) *ProjectUpsertOne {
 func (u *ProjectUpsertOne) UpdateKubernetesSecret() *ProjectUpsertOne {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateKubernetesSecret()
+	})
+}
+
+// SetPosition sets the "position" field.
+func (u *ProjectUpsertOne) SetPosition(v int) *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetPosition(v)
+	})
+}
+
+// AddPosition adds v to the "position" field.
+func (u *ProjectUpsertOne) AddPosition(v int) *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.AddPosition(v)
+	})
+}
+
+// UpdatePosition sets the "position" field to the value that was provided on create.
+func (u *ProjectUpsertOne) UpdatePosition() *ProjectUpsertOne {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdatePosition()
 	})
 }
 
@@ -1137,6 +1201,27 @@ func (u *ProjectUpsertBulk) SetKubernetesSecret(v string) *ProjectUpsertBulk {
 func (u *ProjectUpsertBulk) UpdateKubernetesSecret() *ProjectUpsertBulk {
 	return u.Update(func(s *ProjectUpsert) {
 		s.UpdateKubernetesSecret()
+	})
+}
+
+// SetPosition sets the "position" field.
+func (u *ProjectUpsertBulk) SetPosition(v int) *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.SetPosition(v)
+	})
+}
+
+// AddPosition adds v to the "position" field.
+func (u *ProjectUpsertBulk) AddPosition(v int) *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.AddPosition(v)
+	})
+}
+
+// UpdatePosition sets the "position" field to the value that was provided on create.
+func (u *ProjectUpsertBulk) UpdatePosition() *ProjectUpsertBulk {
+	return u.Update(func(s *ProjectUpsert) {
+		s.UpdatePosition()
 	})
 }
 

@@ -168,6 +168,27 @@ func (_u *ProjectUpdate) SetNillableKubernetesSecret(v *string) *ProjectUpdate {
 	return _u
 }
 
+// SetPosition sets the "position" field.
+func (_u *ProjectUpdate) SetPosition(v int) *ProjectUpdate {
+	_u.mutation.ResetPosition()
+	_u.mutation.SetPosition(v)
+	return _u
+}
+
+// SetNillablePosition sets the "position" field if the given value is not nil.
+func (_u *ProjectUpdate) SetNillablePosition(v *int) *ProjectUpdate {
+	if v != nil {
+		_u.SetPosition(*v)
+	}
+	return _u
+}
+
+// AddPosition adds value to the "position" field.
+func (_u *ProjectUpdate) AddPosition(v int) *ProjectUpdate {
+	_u.mutation.AddPosition(v)
+	return _u
+}
+
 // SetTeam sets the "team" edge to the Team entity.
 func (_u *ProjectUpdate) SetTeam(v *Team) *ProjectUpdate {
 	return _u.SetTeamID(v.ID)
@@ -365,6 +386,12 @@ func (_u *ProjectUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(project.FieldKubernetesSecret, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Position(); ok {
+		_spec.SetField(project.FieldPosition, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPosition(); ok {
+		_spec.AddField(project.FieldPosition, field.TypeInt, value)
 	}
 	if _u.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -670,6 +697,27 @@ func (_u *ProjectUpdateOne) SetNillableKubernetesSecret(v *string) *ProjectUpdat
 	return _u
 }
 
+// SetPosition sets the "position" field.
+func (_u *ProjectUpdateOne) SetPosition(v int) *ProjectUpdateOne {
+	_u.mutation.ResetPosition()
+	_u.mutation.SetPosition(v)
+	return _u
+}
+
+// SetNillablePosition sets the "position" field if the given value is not nil.
+func (_u *ProjectUpdateOne) SetNillablePosition(v *int) *ProjectUpdateOne {
+	if v != nil {
+		_u.SetPosition(*v)
+	}
+	return _u
+}
+
+// AddPosition adds value to the "position" field.
+func (_u *ProjectUpdateOne) AddPosition(v int) *ProjectUpdateOne {
+	_u.mutation.AddPosition(v)
+	return _u
+}
+
 // SetTeam sets the "team" edge to the Team entity.
 func (_u *ProjectUpdateOne) SetTeam(v *Team) *ProjectUpdateOne {
 	return _u.SetTeamID(v.ID)
@@ -897,6 +945,12 @@ func (_u *ProjectUpdateOne) sqlSave(ctx context.Context) (_node *Project, err er
 	}
 	if value, ok := _u.mutation.KubernetesSecret(); ok {
 		_spec.SetField(project.FieldKubernetesSecret, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Position(); ok {
+		_spec.SetField(project.FieldPosition, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPosition(); ok {
+		_spec.AddField(project.FieldPosition, field.TypeInt, value)
 	}
 	if _u.mutation.TeamCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -142,6 +142,11 @@ func ServiceGroupID(v uuid.UUID) predicate.Service {
 	return predicate.Service(sql.FieldEQ(FieldServiceGroupID, v))
 }
 
+// Position applies equality check predicate on the "position" field. It's identical to PositionEQ.
+func Position(v int) predicate.Service {
+	return predicate.Service(sql.FieldEQ(FieldPosition, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Service {
 	return predicate.Service(sql.FieldEQ(FieldCreatedAt, v))
@@ -1095,6 +1100,46 @@ func ServiceGroupIDIsNil() predicate.Service {
 // ServiceGroupIDNotNil applies the NotNil predicate on the "service_group_id" field.
 func ServiceGroupIDNotNil() predicate.Service {
 	return predicate.Service(sql.FieldNotNull(FieldServiceGroupID))
+}
+
+// PositionEQ applies the EQ predicate on the "position" field.
+func PositionEQ(v int) predicate.Service {
+	return predicate.Service(sql.FieldEQ(FieldPosition, v))
+}
+
+// PositionNEQ applies the NEQ predicate on the "position" field.
+func PositionNEQ(v int) predicate.Service {
+	return predicate.Service(sql.FieldNEQ(FieldPosition, v))
+}
+
+// PositionIn applies the In predicate on the "position" field.
+func PositionIn(vs ...int) predicate.Service {
+	return predicate.Service(sql.FieldIn(FieldPosition, vs...))
+}
+
+// PositionNotIn applies the NotIn predicate on the "position" field.
+func PositionNotIn(vs ...int) predicate.Service {
+	return predicate.Service(sql.FieldNotIn(FieldPosition, vs...))
+}
+
+// PositionGT applies the GT predicate on the "position" field.
+func PositionGT(v int) predicate.Service {
+	return predicate.Service(sql.FieldGT(FieldPosition, v))
+}
+
+// PositionGTE applies the GTE predicate on the "position" field.
+func PositionGTE(v int) predicate.Service {
+	return predicate.Service(sql.FieldGTE(FieldPosition, v))
+}
+
+// PositionLT applies the LT predicate on the "position" field.
+func PositionLT(v int) predicate.Service {
+	return predicate.Service(sql.FieldLT(FieldPosition, v))
+}
+
+// PositionLTE applies the LTE predicate on the "position" field.
+func PositionLTE(v int) predicate.Service {
+	return predicate.Service(sql.FieldLTE(FieldPosition, v))
 }
 
 // HasEnvironment applies the HasEdge predicate on the "environment" edge.

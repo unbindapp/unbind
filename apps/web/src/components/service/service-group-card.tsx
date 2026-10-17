@@ -1,6 +1,7 @@
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
 import ServiceCard from "@/components/service/service-card";
-import { TServiceGroup } from "@/components/service/service-card-list";
+import SortableServiceCard from "@/components/service/sortable-service-card";
+import { TServiceGroup } from "@/components/service/service-blocks";
 import { useServicesUtils } from "@/components/service/services-provider";
 import { useTakenServiceNames } from "@/components/service/use-taken-service-names";
 import { useVolumesUtils } from "@/components/volume/volumes-provider";
@@ -19,7 +20,10 @@ import { useMutation } from "@tanstack/react-query";
 import { EllipsisVerticalIcon, PenIcon, Trash2Icon } from "lucide-react";
 import { ResultAsync } from "neverthrow";
 import { toast } from "@/components/ui/toast";
-import { ReactElement, useState } from "react";
+import type { DraggableSyntheticListeners } from "@dnd-kit/core";
+import { SortableContext } from "@dnd-kit/sortable";
+import { keepInPlace } from "@/components/sortable/card-sorting";
+import { CSSProperties, ReactElement, Ref, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,7 +42,15 @@ type TProps = {
   environmentId: string;
   className?: string;
   classNameServiceCard?: string;
-} & React.HTMLProps<HTMLLIElement>;
+  ref?: Ref<HTMLLIElement>;
+  style?: CSSProperties;
+  dragListeners?: DraggableSyntheticListeners;
+  isDragging?: boolean;
+  isDragSource?: boolean;
+  sortDisabled: boolean;
+  // The copy that follows the pointer, its cards can't be sortable again
+  asOverlay?: boolean;
+};
 
 export default function ServiceGroupCard({
   groupObject,
@@ -47,17 +59,30 @@ export default function ServiceGroupCard({
   environmentId,
   className,
   classNameServiceCard,
-  ...rest
+  ref,
+  style,
+  dragListeners,
+  isDragging,
+  isDragSource,
+  sortDisabled,
+  asOverlay,
 }: TProps) {
   const isDeleting = useIsDeleting(deleteMutationKeys.serviceGroup(groupObject.group.id));
 
   return (
     <li
+      ref={ref}
+      style={style}
+      {...dragListeners}
       data-deleting={isDeleting || undefined}
-      className={cn("group/group flex w-full p-1", className)}
-      {...rest}
+      data-dragging={isDragging || undefined}
+      data-drag-source={isDragSource || undefined}
+      className={cn(
+        "group/group relative flex w-full p-1 data-drag-source:opacity-40 data-dragging:cursor-grabbing",
+        className,
+      )}
     >
-      <div className="relative flex w-full flex-col rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_var(--opacity-8-10),transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_var(--opacity-8-10),transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px]">
+      <div className="group-data-dragging/group:bg-card-hover group-data-dragging/group:shadow-shadow-color/shadow-opacity relative flex w-full flex-col rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_var(--opacity-8-10),transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_var(--opacity-8-10),transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px] group-data-dragging/group:pointer-events-none group-data-dragging/group:shadow-lg">
         <NewEntityIndicator id={groupObject.group.id} />
         <div className="flex w-full items-center gap-2 px-4 pt-2.5 pr-10 pb-1.5 transition-opacity duration-(--skeleton-smooth-lead-in) group-data-deleting/group:pointer-events-none group-data-deleting/group:opacity-(--skeleton-smooth-weaker-opacity)">
           <TitleButton
@@ -75,20 +100,44 @@ export default function ServiceGroupCard({
           />
         </div>
         <ol className="flex w-full flex-wrap p-1">
-          {groupObject.services.map((service) => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              teamId={teamId}
-              projectId={projectId}
-              environmentId={environmentId}
-              isDeleting={isDeleting}
-              className={cn("min-h-40", classNameServiceCard)}
-              classNameCard="rounded-lg"
-              classNameVolumes="rounded-b-lg"
-              classNameVolumeLast="rounded-b-lg"
-            />
-          ))}
+          {asOverlay &&
+            groupObject.services.map((service) => (
+              <ServiceCard
+                key={service.id}
+                service={service}
+                teamId={teamId}
+                projectId={projectId}
+                environmentId={environmentId}
+                className={cn("min-h-40", classNameServiceCard)}
+                classNameCard="rounded-lg"
+                classNameVolumes="rounded-b-lg"
+                classNameVolumeLast="rounded-b-lg"
+              />
+            ))}
+          {!asOverlay && (
+            <SortableContext
+              id={groupObject.group.id}
+              items={groupObject.services.map((s) => s.id)}
+              strategy={keepInPlace}
+              disabled={sortDisabled}
+            >
+              {groupObject.services.map((service) => (
+                <SortableServiceCard
+                  key={service.id}
+                  service={service}
+                  disabled={sortDisabled}
+                  teamId={teamId}
+                  projectId={projectId}
+                  environmentId={environmentId}
+                  isDeleting={isDeleting}
+                  className={cn("min-h-40", classNameServiceCard)}
+                  classNameCard="rounded-lg"
+                  classNameVolumes="rounded-b-lg"
+                  classNameVolumeLast="rounded-b-lg"
+                />
+              ))}
+            </SortableContext>
+          )}
         </ol>
       </div>
     </li>

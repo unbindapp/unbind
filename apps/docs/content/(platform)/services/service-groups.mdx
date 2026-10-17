@@ -11,6 +11,14 @@ Deploying a [template](/templates) creates a group with all of the template's se
 
 Creating a group by hand, or moving services in and out of one, is not in the UI yet. Both are available through the [API and the MCP server](/api).
 
+## Ordering
+
+The services page searches and sorts the same way as the [projects page](/teams/projects-and-environments#finding-and-ordering-projects). Searching for a group's name shows the whole group.
+
+On **Custom**, drag a group to move it with all of its services, or drag a service inside a group to reorder the group. Services stay in their group while you drag: one dropped outside its group goes back where it was. The order is shared by everyone who can see the environment, and changing it needs the editor role. New services and groups go to the top, and a service added to a group goes to the top of that group.
+
+Through the API, `list-service` takes the same `sort_by` and `sort_order` as `list-projects`. `reorder-services` orders the groups and the services outside them, and `reorder-service-group` orders the services inside one group.
+
 ## Rename
 
 Open the menu on the group and choose **Rename** to change its name and description.

@@ -55,6 +55,8 @@ const (
 	FieldTemplateServiceID = "template_service_id"
 	// FieldServiceGroupID holds the string denoting the service_group_id field in the database.
 	FieldServiceGroupID = "service_group_id"
+	// FieldPosition holds the string denoting the position field in the database.
+	FieldPosition = "position"
 	// EdgeEnvironment holds the string denoting the environment edge name in mutations.
 	EdgeEnvironment = "environment"
 	// EdgeGithubInstallation holds the string denoting the github_installation edge name in mutations.
@@ -144,6 +146,7 @@ var Columns = []string{
 	FieldTemplateInstanceID,
 	FieldTemplateServiceID,
 	FieldServiceGroupID,
+	FieldPosition,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -165,6 +168,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// KubernetesNameValidator is a validator for the "kubernetes_name" field. It is called by the builders before save.
 	KubernetesNameValidator func(string) error
+	// DefaultPosition holds the default value on creation for the "position" field.
+	DefaultPosition int
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -275,6 +280,11 @@ func ByTemplateServiceID(opts ...sql.OrderTermOption) OrderOption {
 // ByServiceGroupID orders the results by the service_group_id field.
 func ByServiceGroupID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldServiceGroupID, opts...).ToFunc()
+}
+
+// ByPosition orders the results by the position field.
+func ByPosition(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPosition, opts...).ToFunc()
 }
 
 // ByEnvironmentField orders the results by environment field.

@@ -15584,6 +15584,8 @@ type ProjectMutation struct {
 	tags                       *[]string
 	appendtags                 []string
 	kubernetes_secret          *string
+	position                   *int
+	addposition                *int
 	clearedFields              map[string]struct{}
 	team                       *uuid.UUID
 	clearedteam                bool
@@ -16119,6 +16121,62 @@ func (m *ProjectMutation) ResetKubernetesSecret() {
 	m.kubernetes_secret = nil
 }
 
+// SetPosition sets the "position" field.
+func (m *ProjectMutation) SetPosition(i int) {
+	m.position = &i
+	m.addposition = nil
+}
+
+// Position returns the value of the "position" field in the mutation.
+func (m *ProjectMutation) Position() (r int, exists bool) {
+	v := m.position
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPosition returns the old "position" field's value of the Project entity.
+// If the Project object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProjectMutation) OldPosition(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPosition is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPosition requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPosition: %w", err)
+	}
+	return oldValue.Position, nil
+}
+
+// AddPosition adds i to the "position" field.
+func (m *ProjectMutation) AddPosition(i int) {
+	if m.addposition != nil {
+		*m.addposition += i
+	} else {
+		m.addposition = &i
+	}
+}
+
+// AddedPosition returns the value that was added to the "position" field in this mutation.
+func (m *ProjectMutation) AddedPosition() (r int, exists bool) {
+	v := m.addposition
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPosition resets all changes to the "position" field.
+func (m *ProjectMutation) ResetPosition() {
+	m.position = nil
+	m.addposition = nil
+}
+
 // ClearTeam clears the "team" edge to the Team entity.
 func (m *ProjectMutation) ClearTeam() {
 	m.clearedteam = true
@@ -16315,7 +16373,7 @@ func (m *ProjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProjectMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.created_at != nil {
 		fields = append(fields, project.FieldCreatedAt)
 	}
@@ -16346,6 +16404,9 @@ func (m *ProjectMutation) Fields() []string {
 	if m.kubernetes_secret != nil {
 		fields = append(fields, project.FieldKubernetesSecret)
 	}
+	if m.position != nil {
+		fields = append(fields, project.FieldPosition)
+	}
 	return fields
 }
 
@@ -16374,6 +16435,8 @@ func (m *ProjectMutation) Field(name string) (ent.Value, bool) {
 		return m.DefaultEnvironmentID()
 	case project.FieldKubernetesSecret:
 		return m.KubernetesSecret()
+	case project.FieldPosition:
+		return m.Position()
 	}
 	return nil, false
 }
@@ -16403,6 +16466,8 @@ func (m *ProjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldDefaultEnvironmentID(ctx)
 	case project.FieldKubernetesSecret:
 		return m.OldKubernetesSecret(ctx)
+	case project.FieldPosition:
+		return m.OldPosition(ctx)
 	}
 	return nil, fmt.Errorf("unknown Project field %s", name)
 }
@@ -16482,6 +16547,13 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetKubernetesSecret(v)
 		return nil
+	case project.FieldPosition:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPosition(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Project field %s", name)
 }
@@ -16489,13 +16561,21 @@ func (m *ProjectMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ProjectMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addposition != nil {
+		fields = append(fields, project.FieldPosition)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ProjectMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case project.FieldPosition:
+		return m.AddedPosition()
+	}
 	return nil, false
 }
 
@@ -16504,6 +16584,13 @@ func (m *ProjectMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ProjectMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case project.FieldPosition:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPosition(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Project numeric field %s", name)
 }
@@ -16581,6 +16668,9 @@ func (m *ProjectMutation) ResetField(name string) error {
 		return nil
 	case project.FieldKubernetesSecret:
 		m.ResetKubernetesSecret()
+		return nil
+	case project.FieldPosition:
+		m.ResetPosition()
 		return nil
 	}
 	return fmt.Errorf("unknown Project field %s", name)
@@ -18204,6 +18294,8 @@ type ServiceMutation struct {
 	kubernetes_secret          *string
 	template_instance_id       *uuid.UUID
 	template_service_id        *string
+	position                   *int
+	addposition                *int
 	clearedFields              map[string]struct{}
 	environment                *uuid.UUID
 	clearedenvironment         bool
@@ -19185,6 +19277,62 @@ func (m *ServiceMutation) ResetServiceGroupID() {
 	delete(m.clearedFields, service.FieldServiceGroupID)
 }
 
+// SetPosition sets the "position" field.
+func (m *ServiceMutation) SetPosition(i int) {
+	m.position = &i
+	m.addposition = nil
+}
+
+// Position returns the value of the "position" field in the mutation.
+func (m *ServiceMutation) Position() (r int, exists bool) {
+	v := m.position
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPosition returns the old "position" field's value of the Service entity.
+// If the Service object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceMutation) OldPosition(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPosition is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPosition requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPosition: %w", err)
+	}
+	return oldValue.Position, nil
+}
+
+// AddPosition adds i to the "position" field.
+func (m *ServiceMutation) AddPosition(i int) {
+	if m.addposition != nil {
+		*m.addposition += i
+	} else {
+		m.addposition = &i
+	}
+}
+
+// AddedPosition returns the value that was added to the "position" field in this mutation.
+func (m *ServiceMutation) AddedPosition() (r int, exists bool) {
+	v := m.addposition
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPosition resets all changes to the "position" field.
+func (m *ServiceMutation) ResetPosition() {
+	m.position = nil
+	m.addposition = nil
+}
+
 // ClearEnvironment clears the "environment" edge to the Environment entity.
 func (m *ServiceMutation) ClearEnvironment() {
 	m.clearedenvironment = true
@@ -19447,7 +19595,7 @@ func (m *ServiceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceMutation) Fields() []string {
-	fields := make([]string, 0, 19)
+	fields := make([]string, 0, 20)
 	if m.created_at != nil {
 		fields = append(fields, service.FieldCreatedAt)
 	}
@@ -19505,6 +19653,9 @@ func (m *ServiceMutation) Fields() []string {
 	if m.service_group != nil {
 		fields = append(fields, service.FieldServiceGroupID)
 	}
+	if m.position != nil {
+		fields = append(fields, service.FieldPosition)
+	}
 	return fields
 }
 
@@ -19551,6 +19702,8 @@ func (m *ServiceMutation) Field(name string) (ent.Value, bool) {
 		return m.TemplateServiceID()
 	case service.FieldServiceGroupID:
 		return m.ServiceGroupID()
+	case service.FieldPosition:
+		return m.Position()
 	}
 	return nil, false
 }
@@ -19598,6 +19751,8 @@ func (m *ServiceMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldTemplateServiceID(ctx)
 	case service.FieldServiceGroupID:
 		return m.OldServiceGroupID(ctx)
+	case service.FieldPosition:
+		return m.OldPosition(ctx)
 	}
 	return nil, fmt.Errorf("unknown Service field %s", name)
 }
@@ -19740,6 +19895,13 @@ func (m *ServiceMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetServiceGroupID(v)
 		return nil
+	case service.FieldPosition:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPosition(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Service field %s", name)
 }
@@ -19748,6 +19910,9 @@ func (m *ServiceMutation) SetField(name string, value ent.Value) error {
 // this mutation.
 func (m *ServiceMutation) AddedFields() []string {
 	var fields []string
+	if m.addposition != nil {
+		fields = append(fields, service.FieldPosition)
+	}
 	return fields
 }
 
@@ -19756,6 +19921,8 @@ func (m *ServiceMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *ServiceMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
+	case service.FieldPosition:
+		return m.AddedPosition()
 	}
 	return nil, false
 }
@@ -19765,6 +19932,13 @@ func (m *ServiceMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ServiceMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case service.FieldPosition:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPosition(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Service numeric field %s", name)
 }
@@ -19923,6 +20097,9 @@ func (m *ServiceMutation) ResetField(name string) error {
 		return nil
 	case service.FieldServiceGroupID:
 		m.ResetServiceGroupID()
+		return nil
+	case service.FieldPosition:
+		m.ResetPosition()
 		return nil
 	}
 	return fmt.Errorf("unknown Service field %s", name)
@@ -23481,6 +23658,8 @@ type ServiceGroupMutation struct {
 	icon               *string
 	description        *string
 	template_id        *uuid.UUID
+	position           *int
+	addposition        *int
 	clearedFields      map[string]struct{}
 	environment        *uuid.UUID
 	clearedenvironment bool
@@ -23887,6 +24066,62 @@ func (m *ServiceGroupMutation) ResetTemplateID() {
 	delete(m.clearedFields, servicegroup.FieldTemplateID)
 }
 
+// SetPosition sets the "position" field.
+func (m *ServiceGroupMutation) SetPosition(i int) {
+	m.position = &i
+	m.addposition = nil
+}
+
+// Position returns the value of the "position" field in the mutation.
+func (m *ServiceGroupMutation) Position() (r int, exists bool) {
+	v := m.position
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPosition returns the old "position" field's value of the ServiceGroup entity.
+// If the ServiceGroup object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ServiceGroupMutation) OldPosition(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPosition is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPosition requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPosition: %w", err)
+	}
+	return oldValue.Position, nil
+}
+
+// AddPosition adds i to the "position" field.
+func (m *ServiceGroupMutation) AddPosition(i int) {
+	if m.addposition != nil {
+		*m.addposition += i
+	} else {
+		m.addposition = &i
+	}
+}
+
+// AddedPosition returns the value that was added to the "position" field in this mutation.
+func (m *ServiceGroupMutation) AddedPosition() (r int, exists bool) {
+	v := m.addposition
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetPosition resets all changes to the "position" field.
+func (m *ServiceGroupMutation) ResetPosition() {
+	m.position = nil
+	m.addposition = nil
+}
+
 // ClearEnvironment clears the "environment" edge to the Environment entity.
 func (m *ServiceGroupMutation) ClearEnvironment() {
 	m.clearedenvironment = true
@@ -24002,7 +24237,7 @@ func (m *ServiceGroupMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ServiceGroupMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, servicegroup.FieldCreatedAt)
 	}
@@ -24023,6 +24258,9 @@ func (m *ServiceGroupMutation) Fields() []string {
 	}
 	if m.template_id != nil {
 		fields = append(fields, servicegroup.FieldTemplateID)
+	}
+	if m.position != nil {
+		fields = append(fields, servicegroup.FieldPosition)
 	}
 	return fields
 }
@@ -24046,6 +24284,8 @@ func (m *ServiceGroupMutation) Field(name string) (ent.Value, bool) {
 		return m.EnvironmentID()
 	case servicegroup.FieldTemplateID:
 		return m.TemplateID()
+	case servicegroup.FieldPosition:
+		return m.Position()
 	}
 	return nil, false
 }
@@ -24069,6 +24309,8 @@ func (m *ServiceGroupMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldEnvironmentID(ctx)
 	case servicegroup.FieldTemplateID:
 		return m.OldTemplateID(ctx)
+	case servicegroup.FieldPosition:
+		return m.OldPosition(ctx)
 	}
 	return nil, fmt.Errorf("unknown ServiceGroup field %s", name)
 }
@@ -24127,6 +24369,13 @@ func (m *ServiceGroupMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTemplateID(v)
 		return nil
+	case servicegroup.FieldPosition:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPosition(v)
+		return nil
 	}
 	return fmt.Errorf("unknown ServiceGroup field %s", name)
 }
@@ -24134,13 +24383,21 @@ func (m *ServiceGroupMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ServiceGroupMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addposition != nil {
+		fields = append(fields, servicegroup.FieldPosition)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ServiceGroupMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case servicegroup.FieldPosition:
+		return m.AddedPosition()
+	}
 	return nil, false
 }
 
@@ -24149,6 +24406,13 @@ func (m *ServiceGroupMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ServiceGroupMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case servicegroup.FieldPosition:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddPosition(v)
+		return nil
 	}
 	return fmt.Errorf("unknown ServiceGroup numeric field %s", name)
 }
@@ -24217,6 +24481,9 @@ func (m *ServiceGroupMutation) ResetField(name string) error {
 		return nil
 	case servicegroup.FieldTemplateID:
 		m.ResetTemplateID()
+		return nil
+	case servicegroup.FieldPosition:
+		m.ResetPosition()
 		return nil
 	}
 	return fmt.Errorf("unknown ServiceGroup field %s", name)

@@ -69,10 +69,43 @@ export const servicesListQuery = (input: {
         team_id: input.teamId,
         project_id: input.projectId,
         environment_id: input.environmentId,
+        sort_by: "custom",
       });
       return { services: res.data };
     },
   });
+
+export async function reorderServices(input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  ids: string[];
+}) {
+  const res = await getGoClient().services.reorder({
+    team_id: input.teamId,
+    project_id: input.projectId,
+    environment_id: input.environmentId,
+    ids: input.ids,
+  });
+  return { services: res.data };
+}
+
+export async function reorderServiceGroup(input: {
+  teamId: string;
+  projectId: string;
+  environmentId: string;
+  serviceGroupId: string;
+  serviceIds: string[];
+}) {
+  const res = await getGoClient().service_groups.reorder({
+    team_id: input.teamId,
+    project_id: input.projectId,
+    environment_id: input.environmentId,
+    service_group_id: input.serviceGroupId,
+    service_ids: input.serviceIds,
+  });
+  return { services: res.data };
+}
 
 export const serviceQuery = (input: {
   teamId: string;

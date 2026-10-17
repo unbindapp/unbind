@@ -577,6 +577,75 @@ func (_c *ProjectRepositoryMock_GetTeamID_Call) RunAndReturn(run func(ctx contex
 	return _c
 }
 
+// Reorder provides a mock function for the type ProjectRepositoryMock
+func (_mock *ProjectRepositoryMock) Reorder(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, projectIDs []uuid.UUID) error {
+	ret := _mock.Called(ctx, tx, teamID, projectIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Reorder")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, []uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, tx, teamID, projectIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// ProjectRepositoryMock_Reorder_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Reorder'
+type ProjectRepositoryMock_Reorder_Call struct {
+	*mock.Call
+}
+
+// Reorder is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - teamID uuid.UUID
+//   - projectIDs []uuid.UUID
+func (_e *ProjectRepositoryMock_Expecter) Reorder(ctx any, tx any, teamID any, projectIDs any) *ProjectRepositoryMock_Reorder_Call {
+	return &ProjectRepositoryMock_Reorder_Call{Call: _e.mock.On("Reorder", ctx, tx, teamID, projectIDs)}
+}
+
+func (_c *ProjectRepositoryMock_Reorder_Call) Run(run func(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, projectIDs []uuid.UUID)) *ProjectRepositoryMock_Reorder_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 []uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *ProjectRepositoryMock_Reorder_Call) Return(err error) *ProjectRepositoryMock_Reorder_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *ProjectRepositoryMock_Reorder_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID, projectIDs []uuid.UUID) error) *ProjectRepositoryMock_Reorder_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Update provides a mock function for the type ProjectRepositoryMock
 func (_mock *ProjectRepositoryMock) Update(ctx context.Context, tx repository.TxInterface, projectID uuid.UUID, defaultEnvironmentID *uuid.UUID, name string, description *string) (*ent.Project, error) {
 	ret := _mock.Called(ctx, tx, projectID, defaultEnvironmentID, name, description)

@@ -73,6 +73,14 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPut,
 	}, handlers.UpdateServiceGroup, oapi.MCP)
 
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "reorder-service-group",
+		Summary:     "Reorder Service Group",
+		Description: "Set the custom order of the services inside a service group. List them in the order they should appear; ones left out keep their order after the listed ones. To move the group itself, use reorder-services. Returns the environment's services in the new order.",
+		Path:        "/reorder",
+		Method:      http.MethodPut,
+	}, handlers.ReorderServiceGroup, oapi.MCP)
+
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-service-group",
 		Summary:     "Delete Service Group",

@@ -5,16 +5,18 @@ import NoItemsCard from "@/components/no-items-card";
 import { CreateProjectDialog } from "@/components/project/create-project-dialog";
 import { useProjects } from "@/components/project/projects-provider";
 import ProjectCard from "@/components/team/project-card";
+import SortableProjectCards from "@/components/team/sortable-project-cards";
+import { useTeam } from "@/components/team/team-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/utils";
-import { filterAndSortProjects, type TProjectSort } from "@/lib/project-sort";
+import { defaultListSort, matchesSearch, sortItems, type TListSort } from "@/lib/list-sort";
 import { PlusIcon, RotateCcwIcon, SearchIcon } from "lucide-react";
 import { ReactNode, useMemo } from "react";
 
 type TProps = {
   teamId: string;
   search: string;
-  sort: TProjectSort;
+  sort: TListSort;
   onClearSearch: () => void;
 };
 
@@ -24,10 +26,24 @@ export default function ProjectCardList({ teamId, search, sort, onClearSearch }:
   const { data, isPending, error } = useProjects();
   const projects = data?.projects;
   const visibleProjects = useMemo(
-    () => (projects ? filterAndSortProjects(projects, { search, sort }) : []),
+    () =>
+      projects
+        ? sortItems(
+            projects.filter((p) => matchesSearch(p.name, search)),
+            sort,
+            (p) => p,
+          )
+        : [],
     [projects, search, sort],
   );
   const isSearching = search.trim() !== "";
+  const {
+    query: { data: teamData },
+  } = useTeam();
+  const canReorder =
+    sort === defaultListSort &&
+    !isSearching &&
+    (teamData?.team.permissions.includes("editor") ?? false);
 
   if (!projects && !isPending && error) {
     return (
@@ -67,9 +83,12 @@ export default function ProjectCardList({ teamId, search, sort, onClearSearch }:
 
   return (
     <Wrapper>
-      {visibleProjects.map((i) => (
-        <ProjectCard key={i.id} project={i} className="w-full md:w-1/2 lg:w-1/3" />
-      ))}
+      <SortableProjectCards
+        teamId={teamId}
+        projects={visibleProjects}
+        disabled={!canReorder}
+        className="w-full md:w-1/2 lg:w-1/3"
+      />
       {!isSearching && projects.length < 3 && (
         <li className="flex w-full flex-col p-1 sm:w-1/2 lg:w-1/3">
           <CreateProjectDialog teamId={teamId}>

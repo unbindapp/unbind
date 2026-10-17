@@ -14,12 +14,7 @@ import NonDefaultIndicator from "@/components/ui/non-default-indicator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SearchInput from "@/components/ui/search-input";
 import { cn } from "@/components/ui/utils";
-import {
-  defaultProjectSort,
-  ProjectSortEnum,
-  projectSorts,
-  type TProjectSort,
-} from "@/lib/project-sort";
+import { defaultListSort, ListSortEnum, listSorts, type TListSort } from "@/lib/list-sort";
 import { CheckIcon, ListFilterIcon, RotateCcwIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -27,14 +22,18 @@ const dropdownCollisionPadding = { top: 16, bottom: 16, left: 8, right: 8 };
 const itemClassName = "py-3.5 sm:py-2.25";
 
 type TProps = {
+  searchPlaceholder: string;
+  sortLabel: string;
   search: string;
   onSearchChange: (value: string) => void;
-  sort: TProjectSort;
-  onSortChange: (value: TProjectSort) => void;
+  sort: TListSort;
+  onSortChange: (value: TListSort) => void;
   className?: string;
 };
 
-export default function ProjectsToolbar({
+export default function SearchSortToolbar({
+  searchPlaceholder,
+  sortLabel,
   search,
   onSearchChange,
   sort,
@@ -46,24 +45,26 @@ export default function ProjectsToolbar({
       <SearchInput
         value={search}
         onValueChange={onSearchChange}
-        placeholder="Search projects"
+        placeholder={searchPlaceholder}
         className="min-w-0 flex-1"
         classNameInput="bg-card py-1.5"
       />
-      <ProjectSortDropdown sort={sort} onSortChange={onSortChange} />
+      <SortDropdown label={sortLabel} sort={sort} onSortChange={onSortChange} />
     </div>
   );
 }
 
-function ProjectSortDropdown({
+function SortDropdown({
+  label,
   sort,
   onSortChange,
 }: {
-  sort: TProjectSort;
-  onSortChange: (value: TProjectSort) => void;
+  label: string;
+  sort: TListSort;
+  onSortChange: (value: TListSort) => void;
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const isNotDefaultState = sort !== defaultProjectSort;
+  const isNotDefaultState = sort !== defaultListSort;
 
   return (
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -72,7 +73,7 @@ function ProjectSortDropdown({
           <Button
             data-open={isDropdownOpen || undefined}
             data-non-default={isNotDefaultState || undefined}
-            aria-label="Sort projects"
+            aria-label={label}
             type="button"
             variant="outline"
             size="icon"
@@ -96,10 +97,10 @@ function ProjectSortDropdown({
             <DropdownMenuLabel>Sort By</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={sort}
-              onValueChange={(value) => onSortChange(ProjectSortEnum.parse(value))}
+              onValueChange={(value) => onSortChange(ListSortEnum.parse(value))}
               className="border-0 bg-transparent p-0"
             >
-              {projectSorts.map((s) => (
+              {listSorts.map((s) => (
                 <DropdownMenuRadioItem
                   key={s.value}
                   value={s.value}
@@ -120,7 +121,7 @@ function ProjectSortDropdown({
             data-not-default={isNotDefaultState || undefined}
             disabled={!isNotDefaultState}
             closeOnClick={false}
-            onClick={() => onSortChange(defaultProjectSort)}
+            onClick={() => onSortChange(defaultListSort)}
             className={cn(
               "group/item data-not-default:text-warning data-not-default:data-highlighted:bg-warning/4-10 data-not-default:active:bg-warning/4-10",
               itemClassName,

@@ -11,6 +11,7 @@ import (
 
 type ListServiceInput struct {
 	server.BaseAuthInput
+	models.SortInput
 	TeamID        uuid.UUID `query:"team_id" required:"true"`
 	ProjectID     uuid.UUID `query:"project_id" required:"true"`
 	EnvironmentID uuid.UUID `query:"environment_id" required:"true"`
@@ -35,6 +36,8 @@ func (self *HandlerGroup) ListServices(ctx context.Context, input *ListServiceIn
 		input.TeamID,
 		input.ProjectID,
 		input.EnvironmentID,
+		input.SortByField,
+		input.SortOrder,
 	)
 	if err != nil {
 		return nil, oapi.MapError(err)

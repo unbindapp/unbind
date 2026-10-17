@@ -108,6 +108,20 @@ func (_c *ServiceGroupCreate) SetNillableTemplateID(v *uuid.UUID) *ServiceGroupC
 	return _c
 }
 
+// SetPosition sets the "position" field.
+func (_c *ServiceGroupCreate) SetPosition(v int) *ServiceGroupCreate {
+	_c.mutation.SetPosition(v)
+	return _c
+}
+
+// SetNillablePosition sets the "position" field if the given value is not nil.
+func (_c *ServiceGroupCreate) SetNillablePosition(v *int) *ServiceGroupCreate {
+	if v != nil {
+		_c.SetPosition(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *ServiceGroupCreate) SetID(v uuid.UUID) *ServiceGroupCreate {
 	_c.mutation.SetID(v)
@@ -185,6 +199,10 @@ func (_c *ServiceGroupCreate) defaults() {
 		v := servicegroup.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.Position(); !ok {
+		v := servicegroup.DefaultPosition
+		_c.mutation.SetPosition(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := servicegroup.DefaultID()
 		_c.mutation.SetID(v)
@@ -204,6 +222,9 @@ func (_c *ServiceGroupCreate) check() error {
 	}
 	if _, ok := _c.mutation.EnvironmentID(); !ok {
 		return &ValidationError{Name: "environment_id", err: errors.New(`ent: missing required field "ServiceGroup.environment_id"`)}
+	}
+	if _, ok := _c.mutation.Position(); !ok {
+		return &ValidationError{Name: "position", err: errors.New(`ent: missing required field "ServiceGroup.position"`)}
 	}
 	if len(_c.mutation.EnvironmentIDs()) == 0 {
 		return &ValidationError{Name: "environment", err: errors.New(`ent: missing required edge "ServiceGroup.environment"`)}
@@ -267,6 +288,10 @@ func (_c *ServiceGroupCreate) createSpec() (*ServiceGroup, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.TemplateID(); ok {
 		_spec.SetField(servicegroup.FieldTemplateID, field.TypeUUID, value)
 		_node.TemplateID = &value
+	}
+	if value, ok := _c.mutation.Position(); ok {
+		_spec.SetField(servicegroup.FieldPosition, field.TypeInt, value)
+		_node.Position = value
 	}
 	if nodes := _c.mutation.EnvironmentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -443,6 +468,24 @@ func (u *ServiceGroupUpsert) ClearTemplateID() *ServiceGroupUpsert {
 	return u
 }
 
+// SetPosition sets the "position" field.
+func (u *ServiceGroupUpsert) SetPosition(v int) *ServiceGroupUpsert {
+	u.Set(servicegroup.FieldPosition, v)
+	return u
+}
+
+// UpdatePosition sets the "position" field to the value that was provided on create.
+func (u *ServiceGroupUpsert) UpdatePosition() *ServiceGroupUpsert {
+	u.SetExcluded(servicegroup.FieldPosition)
+	return u
+}
+
+// AddPosition adds v to the "position" field.
+func (u *ServiceGroupUpsert) AddPosition(v int) *ServiceGroupUpsert {
+	u.Add(servicegroup.FieldPosition, v)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -596,6 +639,27 @@ func (u *ServiceGroupUpsertOne) UpdateTemplateID() *ServiceGroupUpsertOne {
 func (u *ServiceGroupUpsertOne) ClearTemplateID() *ServiceGroupUpsertOne {
 	return u.Update(func(s *ServiceGroupUpsert) {
 		s.ClearTemplateID()
+	})
+}
+
+// SetPosition sets the "position" field.
+func (u *ServiceGroupUpsertOne) SetPosition(v int) *ServiceGroupUpsertOne {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.SetPosition(v)
+	})
+}
+
+// AddPosition adds v to the "position" field.
+func (u *ServiceGroupUpsertOne) AddPosition(v int) *ServiceGroupUpsertOne {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.AddPosition(v)
+	})
+}
+
+// UpdatePosition sets the "position" field to the value that was provided on create.
+func (u *ServiceGroupUpsertOne) UpdatePosition() *ServiceGroupUpsertOne {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.UpdatePosition()
 	})
 }
 
@@ -919,6 +983,27 @@ func (u *ServiceGroupUpsertBulk) UpdateTemplateID() *ServiceGroupUpsertBulk {
 func (u *ServiceGroupUpsertBulk) ClearTemplateID() *ServiceGroupUpsertBulk {
 	return u.Update(func(s *ServiceGroupUpsert) {
 		s.ClearTemplateID()
+	})
+}
+
+// SetPosition sets the "position" field.
+func (u *ServiceGroupUpsertBulk) SetPosition(v int) *ServiceGroupUpsertBulk {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.SetPosition(v)
+	})
+}
+
+// AddPosition adds v to the "position" field.
+func (u *ServiceGroupUpsertBulk) AddPosition(v int) *ServiceGroupUpsertBulk {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.AddPosition(v)
+	})
+}
+
+// UpdatePosition sets the "position" field to the value that was provided on create.
+func (u *ServiceGroupUpsertBulk) UpdatePosition() *ServiceGroupUpsertBulk {
+	return u.Update(func(s *ServiceGroupUpsert) {
+		s.UpdatePosition()
 	})
 }
 
