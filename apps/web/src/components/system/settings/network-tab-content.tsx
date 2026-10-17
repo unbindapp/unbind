@@ -3,6 +3,7 @@
 import { BlockItemButtonLike, BlockItemToggle } from "@/components/block";
 import ErrorLine from "@/components/error-line";
 import NoItemsCard from "@/components/no-items-card";
+import { searchItems } from "@/components/system/settings/network-search";
 import { Section, SectionSkeleton } from "@/components/system/settings/section";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ import {
   Trash2Icon,
   WaypointsIcon,
 } from "lucide-react";
-import { ComponentProps, useMemo } from "react";
+import { ComponentProps, useMemo, useState } from "react";
 
 const anySource = "any";
 const anySourcePath = "Servers, hosts and every team";
@@ -107,7 +108,6 @@ function serviceItem(service: TNetworkService): TCommandItem {
     value: service.id,
     label: service.name,
     description,
-    keywords: [service.name, description],
   };
 }
 
@@ -141,11 +141,21 @@ function AddExceptionForm({ onSaved }: { onSaved: () => Promise<void> }) {
           value: anySource,
           label: "Any source",
           description: anySourcePath,
-          keywords: ["any", "anywhere", "all"],
         },
         ...targetItems,
       ],
     [targetItems],
+  );
+
+  const [sourceSearch, setSourceSearch] = useState("");
+  const [targetSearch, setTargetSearch] = useState("");
+  const foundSources = useMemo(
+    () => sourceItems && searchItems(sourceItems, sourceSearch),
+    [sourceItems, sourceSearch],
+  );
+  const foundTargets = useMemo(
+    () => targetItems && searchItems(targetItems, targetSearch),
+    [targetItems, targetSearch],
   );
 
   const form = useAppForm({
@@ -177,8 +187,14 @@ function AddExceptionForm({ onSaved }: { onSaved: () => Promise<void> }) {
               hideError
               className="min-w-0 flex-1"
               value={field.state.value}
-              onChange={(v: string) => field.handleChange(v)}
-              items={sourceItems}
+              onChange={(v: string) => {
+                field.handleChange(v);
+                setSourceSearch("");
+              }}
+              items={foundSources}
+              commandShouldntFilter
+              commandInputValue={sourceSearch}
+              commandInputValueOnChange={setSourceSearch}
               isPending={isPending}
               error={error?.message}
               commandInputPlaceholder="Search services..."
@@ -207,8 +223,14 @@ function AddExceptionForm({ onSaved }: { onSaved: () => Promise<void> }) {
               hideError
               className="min-w-0 flex-1"
               value={field.state.value}
-              onChange={(v: string) => field.handleChange(v)}
-              items={targetItems}
+              onChange={(v: string) => {
+                field.handleChange(v);
+                setTargetSearch("");
+              }}
+              items={foundTargets}
+              commandShouldntFilter
+              commandInputValue={targetSearch}
+              commandInputValueOnChange={setTargetSearch}
               isPending={isPending}
               error={error?.message}
               commandInputPlaceholder="Search services..."
