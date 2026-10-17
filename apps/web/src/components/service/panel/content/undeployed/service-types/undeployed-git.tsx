@@ -3,6 +3,7 @@ import {
   BlockItem,
   BlockItemButtonLike,
   BlockItemContent,
+  BlockItemDescription,
   BlockItemHeader,
   BlockItemTitle,
 } from "@/components/block";
@@ -10,6 +11,7 @@ import { builderEnumToName } from "@/components/command-panel/context-command-pa
 import ErrorLine from "@/components/error-line";
 import BrandIcon from "@/components/icons/brand";
 import HeaderToggle from "@/components/service/header-toggle";
+import WatchPathsInput from "@/components/service/panel/content/deployed/settings/sections/watch-paths-input";
 import DomainPortBlock from "@/components/service/panel/content/undeployed/blocks/domain-port-block";
 import VariablesBlock from "@/components/service/panel/content/undeployed/blocks/variables-block";
 import DeployButtonSection from "@/components/service/panel/content/undeployed/deploy-button-section";
@@ -36,6 +38,7 @@ import {
   TServiceShallow,
 } from "@/lib/queries/services";
 import { TVariableForCreate } from "@/lib/queries/variables";
+import { joinWatchPaths } from "@/lib/watch-paths";
 import { useStore } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { GitBranchIcon } from "lucide-react";
@@ -65,6 +68,7 @@ const DraftSchema = z.object({
   dockerBuilderDockerfilePath: z.string(),
   dockerBuilderBuildContext: z.string(),
   startCommand: z.string(),
+  watchPaths: z.array(z.string()),
 });
 
 export function UndeployedContentGit({
@@ -136,6 +140,7 @@ export function UndeployedContentGit({
         dockerBuilderBuildContext?: string;
         startCommand?: string;
         autoDeploy?: boolean;
+        watchPaths?: string;
       } = {};
 
       if (formValues.builder !== service.config.builder) {
@@ -173,6 +178,10 @@ export function UndeployedContentGit({
       }
       if (formValues.autoDeploy !== service.config.auto_deploy) {
         extraProps.autoDeploy = formValues.autoDeploy;
+      }
+      const watchPaths = joinWatchPaths(formValues.watchPaths);
+      if (watchPaths !== joinWatchPaths(service.config.watch_paths)) {
+        extraProps.watchPaths = watchPaths;
       }
 
       await updateService({
@@ -243,6 +252,7 @@ export function UndeployedContentGit({
       dockerBuilderDockerfilePath: service.config.docker_builder_dockerfile_path || "",
       dockerBuilderBuildContext: service.config.docker_builder_build_context || "",
       startCommand: service.config.run_command || "",
+      watchPaths: service.config.watch_paths,
     },
     validators: {
       onChange: ({ value }) => {
@@ -590,6 +600,35 @@ export function UndeployedContentGit({
                   }}
                 />
               </Block>
+              <Block>
+                <form.Subscribe
+                  selector={(s) => s.values.branch}
+                  children={(branch) => (
+                    <form.AppField
+                      name="watchPaths"
+                      children={(field) => (
+                        <BlockItem className="w-full md:w-full">
+                          <BlockItemHeader type="column">
+                            <BlockItemTitle>Watch Paths</BlockItemTitle>
+                            <BlockItemDescription>
+                              Gitignore-style patterns. Leave empty to deploy on every push.
+                            </BlockItemDescription>
+                          </BlockItemHeader>
+                          <BlockItemContent>
+                            <WatchPathsInput
+                              service={service}
+                              branch={branch}
+                              value={field.state.value}
+                              serverValue={field.state.value}
+                              onChange={(patterns) => field.handleChange(patterns)}
+                            />
+                          </BlockItemContent>
+                        </BlockItem>
+                      )}
+                    />
+                  )}
+                />
+              </Block>
             </div>
           )}
         </div>
@@ -617,4 +656,5 @@ type TFormValues = {
   dockerBuilderDockerfilePath: string;
   dockerBuilderBuildContext: string;
   startCommand: string;
+  watchPaths: string[];
 };

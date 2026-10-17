@@ -21,6 +21,7 @@ import (
 	webhooks_service "github.com/unbindapp/unbind-api/internal/services/webooks"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer/enum"
+	"github.com/unbindapp/unbind-api/internal/watchpaths"
 	"github.com/unbindapp/unbind-api/pkg/databases"
 )
 
@@ -64,6 +65,11 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, databaseRolloutMessage)
 	}
 	if err := validateCronInput(input.Type, input.CronSchedule, input.CronTimezone); err != nil {
+		return nil, err
+	}
+
+	input.WatchPaths, err = cleanCreateWatchPaths(input.Type, input.WatchPaths)
+	if err != nil {
 		return nil, err
 	}
 
@@ -449,6 +455,7 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			Provider:                      provider,
 			Framework:                     framework,
 			GitBranch:                     gitBranch,
+			WatchPaths:                    &input.WatchPaths,
 			OverwritePorts:                ports,
 			OverwriteHosts:                hosts,
 			Replicas:                      input.Replicas,
@@ -567,8 +574,20 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 	return resp, nil
 }
 
-// A service that listens on a port is public unless the caller says otherwise.
-// A database is private unless the caller asks for a public one.
+func cleanCreateWatchPaths(serviceType schema.ServiceType, patterns []string) ([]string, error) {
+	if len(patterns) == 0 {
+		return nil, nil
+	}
+	if serviceType != schema.ServiceTypeGithub {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Watch paths only apply to git services")
+	}
+	cleaned, err := watchpaths.Clean(patterns)
+	if err != nil {
+		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, err.Error())
+	}
+	return cleaned, nil
+}
+
 func resolveAutoDeploy(requested *bool, serviceType schema.ServiceType) *bool {
 	if requested != nil {
 		return requested
@@ -579,6 +598,8 @@ func resolveAutoDeploy(requested *bool, serviceType schema.ServiceType) *bool {
 	return nil
 }
 
+// A service that listens on a port is public unless the caller says otherwise.
+// A database is private unless the caller asks for a public one.
 func resolveIsPublic(requested *bool, serviceType schema.ServiceType, ports []schema.PortSpec) *bool {
 	if requested != nil {
 		return requested

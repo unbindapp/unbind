@@ -1,6 +1,7 @@
 package service_service
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -60,6 +61,34 @@ func TestResolveAutoDeploy(t *testing.T) {
 			}
 			assert.NotNil(t, autoDeploy)
 			assert.Equal(t, *tt.want, *autoDeploy)
+		})
+	}
+}
+
+func TestCleanCreateWatchPaths(t *testing.T) {
+	tests := []struct {
+		name        string
+		serviceType schema.ServiceType
+		patterns    []string
+		want        []string
+		wantErr     bool
+	}{
+		{name: "unset stays unset", serviceType: schema.ServiceTypeGithub, patterns: nil, want: nil},
+		{name: "github patterns are trimmed and deduped", serviceType: schema.ServiceTypeGithub, patterns: []string{" server/** ", "", "server/**", "!server/README.md"}, want: []string{"server/**", "!server/README.md"}},
+		{name: "image service is refused", serviceType: schema.ServiceTypeDockerimage, patterns: []string{"server/**"}, wantErr: true},
+		{name: "database is refused", serviceType: schema.ServiceTypeDatabase, patterns: []string{"server/**"}, wantErr: true},
+		{name: "too long pattern is refused", serviceType: schema.ServiceTypeGithub, patterns: []string{strings.Repeat("a", 257)}, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cleaned, err := cleanCreateWatchPaths(tt.serviceType, tt.patterns)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, tt.want, cleaned)
 		})
 	}
 }

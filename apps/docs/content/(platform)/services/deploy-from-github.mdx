@@ -83,7 +83,7 @@ Before the first deployment you can check:
 - **Repository** and **Branch**: the default branch is selected. Pick another one if you need to.
 - **Domain and port**: a generated domain is suggested. See [Domains](/services/domains).
 - **Variables**: add what the app needs. See [Variables](/services/variables).
-- **Advanced Settings**: the builder and its commands. See [Builds](/services/builds).
+- **Advanced Settings**: the builder, its commands and the [watch paths](#watch-paths). See [Builds](/services/builds).
 
 Press **Deploy**.
 
@@ -97,7 +97,7 @@ Under **Source** > **Repository** in the service settings you can pick any repos
 
 ### Watch paths
 
-In a monorepo you do not want every push to redeploy every service. Under **Build** > **Watch Paths**, add gitignore-style patterns. A push then deploys only when one of the changed files matches. Watch paths only apply while auto deploy is on.
+In a monorepo you do not want every push to redeploy every service. Under **Build** > **Watch Paths**, or under **Advanced Settings** before the first deploy, add gitignore-style patterns. A push then deploys only when one of the changed files matches. Watch paths only apply while auto deploy is on. Over the API or MCP, send `watch_paths` when you create the service.
 
 ```text
 apps/web/**
