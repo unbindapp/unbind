@@ -74,6 +74,7 @@ export default function CheckForUpdatesButton({
   const navigate = useNavigate();
   const { state, check } = useCheckForUpdates();
   const { label, Icon } = checkStates[state];
+  const isSuccess = state === "up-to-date" || state === "update-available";
 
   const onClick = () => {
     if (state !== "update-available") {
@@ -86,7 +87,13 @@ export default function CheckForUpdatesButton({
 
   const content = (
     <>
-      <Icon className={cn("-ml-px size-3.75 shrink-0", state === "checking" && "animate-spin")} />
+      <Icon
+        className={cn(
+          "-ml-px size-3.75 shrink-0",
+          state === "checking" && "animate-spin",
+          isSuccess && "text-success",
+        )}
+      />
       <p className="min-w-0 shrink text-sm leading-tight">{label}</p>
     </>
   );
@@ -95,8 +102,9 @@ export default function CheckForUpdatesButton({
     "text-muted-foreground flex w-full items-center text-left leading-tight",
     (state === "idle" || state === "checking") &&
       "has-hover:hover:text-foreground active:text-foreground data-highlighted:text-foreground",
-    (state === "up-to-date" || state === "update-available") && "text-success",
-    state === "failed" && "text-destructive",
+    isSuccess && "text-foreground",
+    state === "failed" &&
+      "text-destructive has-hover:hover:text-destructive active:text-destructive data-highlighted:text-destructive",
   );
 
   if (variant === "drawer-item") {
