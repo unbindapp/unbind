@@ -48,6 +48,7 @@ export default function SearchSortToolbar({
         placeholder={searchPlaceholder}
         className="min-w-0 flex-1"
         classNameInput="bg-card py-1.5"
+        classNameClearButton="size-7.5"
       />
       <SortDropdown label={sortLabel} sort={sort} onSortChange={onSortChange} />
     </div>

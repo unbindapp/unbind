@@ -10,6 +10,7 @@ type TProps = {
   placeholder: string;
   className?: string;
   classNameInput?: string;
+  classNameClearButton?: string;
 };
 
 export default function SearchInput({
@@ -18,6 +19,7 @@ export default function SearchInput({
   placeholder,
   className,
   classNameInput,
+  classNameClearButton,
 }: TProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const hasValue = value !== "";
@@ -50,7 +52,7 @@ export default function SearchInput({
         spellCheck={false}
         className={cn("pr-10 pl-8.5", classNameInput)}
       />
-      <div className="pointer-events-none absolute inset-y-0 right-0 flex overflow-hidden p-1">
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center overflow-hidden p-1">
         <Button
           type="button"
           aria-label="Clear search"
@@ -59,7 +61,10 @@ export default function SearchInput({
           onClick={clear}
           variant="ghost"
           size="icon"
-          className="text-muted-more-foreground pointer-events-auto aspect-square h-full w-auto translate-x-[calc(100%+0.25rem)] rounded-sm transition data-has-value:translate-x-0"
+          className={cn(
+            "text-muted-more-foreground pointer-events-auto size-8.5 translate-x-[calc(100%+0.25rem)] rounded-sm transition data-has-value:translate-x-0",
+            classNameClearButton,
+          )}
         >
           <XIcon className="size-4.5" />
         </Button>
