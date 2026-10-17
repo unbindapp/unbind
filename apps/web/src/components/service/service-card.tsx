@@ -112,7 +112,7 @@ export default function ServiceCard({
 
   const isSortable = dragListeners !== undefined;
   const cardClassName = cn(
-    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border overflow-hidden px-5 py-3.5 text-left font-semibold data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:has-hover:hover:bg-change/4-10 data-staged:active:bg-change/4-10 group-data-dragging/item:bg-card-hover group-data-dragging/item:pointer-events-none group-data-dragging/item:shadow-lg group-data-dragging/item:shadow-shadow-color/shadow-opacity",
+    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border overflow-hidden px-5 py-3.5 text-left font-semibold data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:has-hover:hover:bg-change/4-10 data-staged:active:bg-change/4-10 group-data-dragging/item:bg-card-hover group-data-dragging/item:pointer-events-none",
     isSortable && "[-webkit-touch-callout:none]",
     classNameCard,
     volumes && volumes.length > 0 && "rounded-b-none border-b-0",
@@ -168,50 +168,53 @@ export default function ServiceCard({
       data-dragging={isDragging || undefined}
       data-drag-source={isDragSource || undefined}
       className={cn(
-        "group/item data-deleting:animate-skeleton-smooth-weaker data-drag-source:before:border-border relative flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-drag-source:*:invisible data-drag-source:before:absolute data-drag-source:before:inset-1 data-drag-source:before:rounded-xl data-drag-source:before:border data-drag-source:before:border-dashed data-dragging:cursor-grabbing",
+        "group/item data-deleting:animate-skeleton-smooth-weaker data-drag-source:before:border-border relative flex min-h-40 w-full flex-col p-1 data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-deleting:transition-opacity data-deleting:duration-(--skeleton-smooth-lead-in) data-drag-source:*:invisible data-drag-source:before:absolute data-drag-source:before:inset-1 data-drag-source:before:rounded-xl data-drag-source:before:border data-drag-source:before:border-dashed data-dragging:cursor-grabbing",
         className,
       )}
     >
-      <ServicePanelOrPlaceholder {...panelProps}>
-        {isPlaceholder ? (
-          <Button variant="card" className={cardClassName}>
-            {cardContent}
-          </Button>
-        ) : (
-          <LinkButton
-            data-staged={changeLabel !== null || undefined}
-            variant="card"
-            from="/$team_id/project/$project_id"
-            to="."
-            search={(prev) => ({ ...prev, ...getOpenSearch(service.id) })}
-            replace={true}
-            resetScroll={false}
-            disabled={isDeleting}
-            // The browser's own link dragging would cancel the reorder drag
-            draggable={isSortable ? false : undefined}
-            className={cardClassName}
-            {...buttonIntentProps}
-          >
-            {cardContent}
-          </LinkButton>
+      {/* The shadow wraps the volumes too, they would cover it on the card */}
+      <div className="group-data-dragging/item:shadow-shadow-color/shadow-opacity flex w-full flex-1 flex-col rounded-xl group-data-dragging/item:shadow-xl">
+        <ServicePanelOrPlaceholder {...panelProps}>
+          {isPlaceholder ? (
+            <Button variant="card" className={cardClassName}>
+              {cardContent}
+            </Button>
+          ) : (
+            <LinkButton
+              data-staged={changeLabel !== null || undefined}
+              variant="card"
+              from="/$team_id/project/$project_id"
+              to="."
+              search={(prev) => ({ ...prev, ...getOpenSearch(service.id) })}
+              replace={true}
+              resetScroll={false}
+              disabled={isDeleting}
+              // The browser's own link dragging would cancel the reorder drag
+              draggable={isSortable ? false : undefined}
+              className={cardClassName}
+              {...buttonIntentProps}
+            >
+              {cardContent}
+            </LinkButton>
+          )}
+        </ServicePanelOrPlaceholder>
+        {volumes && volumes.length > 0 && (
+          <div className={cn("bg-background rounded-b-xl text-xs", classNameVolumes)}>
+            {volumes.map((volume, index) => (
+              <VolumeLine
+                key={volume.id}
+                volume={volume}
+                className={cn(
+                  classNameVolume,
+                  index === volumes.length - 1 && "group-data-staged/item:border-change/7-10",
+                  index !== 0 && "-mt-px",
+                  index === volumes.length - 1 && (classNameVolumeLast || "rounded-b-xl"),
+                )}
+              />
+            ))}
+          </div>
         )}
-      </ServicePanelOrPlaceholder>
-      {volumes && volumes.length > 0 && (
-        <div className={cn("bg-background rounded-b-xl text-xs", classNameVolumes)}>
-          {volumes.map((volume, index) => (
-            <VolumeLine
-              key={volume.id}
-              volume={volume}
-              className={cn(
-                classNameVolume,
-                index === volumes.length - 1 && "group-data-staged/item:border-change/7-10",
-                index !== 0 && "-mt-px",
-                index === volumes.length - 1 && (classNameVolumeLast || "rounded-b-xl"),
-              )}
-            />
-          ))}
-        </div>
-      )}
+      </div>
     </li>
   );
 }

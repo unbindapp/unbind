@@ -65,7 +65,7 @@ export default function ProjectCard({
       data-dragging={isDragging || undefined}
       data-drag-source={isDragSource || undefined}
       className={cn(
-        "group/item data-deleting:animate-skeleton-smooth-weaker data-drag-source:before:border-border relative flex w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-drag-source:*:invisible data-drag-source:before:absolute data-drag-source:before:inset-1 data-drag-source:before:rounded-xl data-drag-source:before:border data-drag-source:before:border-dashed data-dragging:cursor-grabbing",
+        "group/item data-deleting:animate-skeleton-smooth-weaker data-drag-source:before:border-border relative flex w-full flex-col p-1 data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-deleting:transition-opacity data-deleting:duration-(--skeleton-smooth-lead-in) data-drag-source:*:invisible data-drag-source:before:absolute data-drag-source:before:inset-1 data-drag-source:before:rounded-xl data-drag-source:before:border data-drag-source:before:border-dashed data-dragging:cursor-grabbing",
         className,
       )}
     >
@@ -75,7 +75,7 @@ export default function ProjectCard({
         isDeleting={isDeleting}
         isSortable={dragListeners !== undefined}
         variant="card"
-        className="group-data-dragging/item:bg-card-hover group-data-dragging/item:shadow-shadow-color/shadow-opacity flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold group-data-dragging/item:pointer-events-none group-data-dragging/item:shadow-lg"
+        className="group-data-dragging/item:bg-card-hover group-data-dragging/item:shadow-shadow-color/shadow-opacity flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold group-data-dragging/item:pointer-events-none group-data-dragging/item:shadow-xl"
       >
         {project && <NewEntityIndicator id={project.id} />}
         <div className="flex w-full items-center justify-start gap-2">
