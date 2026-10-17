@@ -14,7 +14,7 @@ type CreateServiceInput struct {
 	Description   string    `json:"description,omitempty"`
 
 	// GitHub integration
-	GitHubInstallationID *int64  `json:"github_installation_id,omitempty"`
+	GitHubInstallationID *int64  `json:"github_installation_id,omitempty" doc:"An installation usable in the team, from list-github-installations. list-github-repositories shows which repositories each one reaches"`
 	RepositoryOwner      *string `json:"repository_owner,omitempty" doc:"Must be the account the GitHub installation belongs to"`
 	RepositoryName       *string `json:"repository_name,omitempty" doc:"Must be a repository the GitHub installation has access to"`
 

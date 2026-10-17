@@ -286,7 +286,7 @@ export function UndeployedContentGit({
     data: dataRepository,
     isPending: isPendingRepository,
     error: errorRepository,
-  } = useQuery(gitRepositoryQuery({ installationId, owner, repoName: repo }));
+  } = useQuery(gitRepositoryQuery({ teamId, installationId, owner, repoName: repo }));
 
   const branchItems: TCommandItem[] | undefined = useMemo(() => {
     const items: TCommandItem[] | undefined = dataRepository?.repository.branches?.map((b) => ({

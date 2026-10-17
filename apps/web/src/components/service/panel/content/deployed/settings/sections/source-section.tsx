@@ -21,6 +21,7 @@ import {
   useResetFormOnStagedChange,
   useServiceChanges,
 } from "@/components/service/panel/content/deployed/settings/use-service-changes";
+import { useService } from "@/components/service/service-provider";
 import ErrorWithWrapper from "@/components/settings/error-with-wrapper";
 import { settingsIds } from "@/components/settings/settings-ids";
 import { SettingsSection } from "@/components/settings/settings-section";
@@ -46,13 +47,13 @@ import {
 } from "@/lib/queries/update-service-input";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  CircleAlertIcon,
   CodeIcon,
   ExternalLink,
   GitBranchIcon,
   MilestoneIcon,
   PackageIcon,
   TagIcon,
-  TriangleAlertIcon,
 } from "lucide-react";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
@@ -110,6 +111,7 @@ function formatRepository(value: string) {
 
 function GitSection({ owner, repo, branch, installationId, service }: TGitSectionProps) {
   const { isItemVisible } = useSettingsSectionSearch("source");
+  const { teamId } = useService();
   const queryClient = useQueryClient();
   const isConnectionRemoved = installationId === undefined;
   const serverRepository = isConnectionRemoved
@@ -131,7 +133,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     data: dataRepositories,
     isPending: isPendingRepositories,
     error: errorRepositories,
-  } = useQuery(gitRepositoriesQuery());
+  } = useQuery(gitRepositoriesQuery({ teamId }));
 
   const {
     data: dataRepository,
@@ -139,6 +141,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     error: errorRepository,
   } = useQuery({
     ...gitRepositoryQuery({
+      teamId,
       installationId: selectedRepository?.installationId ?? 0,
       owner: selectedRepository?.owner ?? owner,
       repoName: selectedRepository?.name ?? repo,
@@ -201,6 +204,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
     try {
       const { repository: detail } = await queryClient.fetchQuery(
         gitRepositoryQuery({
+          teamId,
           installationId: repository.installationId,
           owner: repository.owner,
           repoName: repository.name,
@@ -277,7 +281,7 @@ function GitSection({ owner, repo, branch, installationId, service }: TGitSectio
       )}
       {isConnectionNotShared && (
         <SourceNotice>
-          This repository comes from a GitHub connection that is not shared with you.
+          This repository comes from a GitHub connection that is not shared with this team.
         </SourceNotice>
       )}
       {showRepository && (
@@ -409,7 +413,7 @@ function autoDeployLabel(value: boolean) {
 function SourceNotice({ children }: { children: ReactNode }) {
   return (
     <div className="bg-warning/3-10 text-warning flex w-full items-start gap-1.5 rounded-md px-3 py-2 text-sm font-medium">
-      <TriangleAlertIcon className="mt-px size-4 shrink-0" />
+      <CircleAlertIcon className="mt-px size-4 shrink-0" />
       <p className="min-w-0 flex-1 leading-tight">{children}</p>
     </div>
   );

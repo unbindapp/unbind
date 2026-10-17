@@ -9,6 +9,7 @@ const groupOrder = [
   "environments",
   "services",
   "service-groups",
+  "github",
   "users",
   "templates",
   "deployments",

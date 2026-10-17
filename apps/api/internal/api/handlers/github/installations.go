@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
 	"github.com/unbindapp/unbind-api/ent/schema"
@@ -22,8 +23,13 @@ type GithubAppInstallationListResponse struct {
 	}
 }
 
-func (self *HandlerGroup) HandleListGithubAppInstallations(ctx context.Context, input *server.BaseAuthInput) (*GithubAppInstallationListResponse, error) {
-	_, visibility, err := self.visibility(ctx)
+type GithubInstallationListInput struct {
+	server.BaseAuthInput
+	TeamID uuid.UUID `query:"team_id" required:"true" format:"uuid" doc:"The team to build in. Service counts are limited to it."`
+}
+
+func (self *HandlerGroup) HandleListGithubAppInstallations(ctx context.Context, input *GithubInstallationListInput) (*GithubAppInstallationListResponse, error) {
+	visibility, err := self.teamVisibility(ctx, input.TeamID)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +42,7 @@ func (self *HandlerGroup) HandleListGithubAppInstallations(ctx context.Context, 
 	for i, installation := range installations {
 		ids[i] = installation.ID
 	}
-	counts, err := self.srv.Repository.Github().CountServicesByInstallation(ctx, ids, nil)
+	counts, err := self.srv.Repository.Github().CountServicesByInstallation(ctx, ids, &input.TeamID)
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to count the services built from GitHub"))
 	}

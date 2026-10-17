@@ -44,7 +44,7 @@ export const useGithubAppsUtils = () => {
     invalidate: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeyGitApps.all() }),
-        queryClient.invalidateQueries({ queryKey: queryKeyGit.repositories() }),
+        queryClient.invalidateQueries({ queryKey: queryKeyGit.repositoriesAll() }),
       ]);
     },
   };

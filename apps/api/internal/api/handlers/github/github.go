@@ -33,6 +33,18 @@ func (self *HandlerGroup) visibility(ctx context.Context) (*ent.User, github_rep
 	return user, github_repo.AppVisibility{UserID: user.ID, Teams: teams}, nil
 }
 
+// teamVisibility is what the caller can build from in a team they can see
+func (self *HandlerGroup) teamVisibility(ctx context.Context, teamID uuid.UUID) (github_repo.AppVisibility, error) {
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return github_repo.AppVisibility{}, err
+	}
+	if err := self.srv.Repository.Permissions().CheckVisible(ctx, user.ID, schema.ResourceTypeTeam, teamID); err != nil {
+		return github_repo.AppVisibility{}, oapi.MapError(errdefs.MaskAsNotFound(err, "Team not found"))
+	}
+	return github_repo.TeamAppVisibility(user.ID, teamID), nil
+}
+
 func (self *HandlerGroup) checkTeam(ctx context.Context, userID uuid.UUID, teamID uuid.UUID, action schema.PermittedAction) error {
 	checks := []permissions_repo.PermissionCheck{
 		{Action: action, ResourceType: schema.ResourceTypeTeam, ResourceID: teamID},
@@ -88,7 +100,39 @@ func (self *HandlerGroup) canManage(ctx context.Context, user *ent.User, app *en
 	return nil
 }
 
+// RegisterHandlers serves the reads an API key may use to pick an installation and repository for a service
 func RegisterHandlers(server *server.Server, grp *huma.Group) {
+	handlers := &HandlerGroup{
+		srv: server,
+	}
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "list-github-installations",
+		Summary:     "List GitHub Installations",
+		Description: "List the GitHub accounts and organizations the caller can build from in a team: their own connections, the ones shared with the team and the ones shared with all teams. Pass an installation's id as github_installation_id to create-service in that team. An installation that is suspended or not active cannot be used. With repository_selection selected, only the repositories picked on GitHub are reachable; list-github-repositories shows them.",
+		Path:        "/installations",
+		Method:      http.MethodGet,
+	}, handlers.HandleListGithubAppInstallations, oapi.MCP)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "list-github-repositories",
+		Summary:     "List GitHub Repositories",
+		Description: "List the repositories the caller can build in a team, each with the installation_id to pass to create-service along with owner.login and name. A repository missing here cannot be built in the team until it is added to the installation on GitHub or its connection is shared with the team.",
+		Path:        "/repositories",
+		Method:      http.MethodGet,
+	}, handlers.HandleListGithubRepositories, oapi.OpenWorld, oapi.MCP)
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-github-repository",
+		Summary:     "Get GitHub Repository",
+		Description: "Get a repository's default branch, branches and tags through a GitHub installation usable in the team, to pick the branch for create-service.",
+		Path:        "/repositories/info",
+		Method:      http.MethodGet,
+	}, handlers.HandleGetGithubRepositoryDetail, oapi.OpenWorld, oapi.MCP)
+}
+
+// RegisterSessionOnlyHandlers connects, shares and removes GitHub apps, which API keys may never do
+func RegisterSessionOnlyHandlers(server *server.Server, grp *huma.Group) {
 	handlers := &HandlerGroup{
 		srv: server,
 	}
@@ -141,14 +185,6 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodDelete,
 	}, handlers.HandleDeleteGithubApp, oapi.OpenWorld)
 
-	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "list-app-installations",
-		Summary:     "List Installations",
-		Description: "List installations of the GitHub apps the caller can see.",
-		Path:        "/installations",
-		Method:      http.MethodGet,
-	}, handlers.HandleListGithubAppInstallations)
-
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-installation",
 		Summary:     "Delete Installation",
@@ -156,22 +192,6 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/installation/delete",
 		Method:      http.MethodDelete,
 	}, handlers.HandleDeleteGithubInstallation, oapi.OpenWorld)
-
-	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "list-repositories",
-		Summary:     "List Repositories",
-		Description: "List the repositories reachable through the GitHub apps the caller can see. Per-user repository permissions are not verified.",
-		Path:        "/repositories",
-		Method:      http.MethodGet,
-	}, handlers.HandleListGithubRepositories, oapi.OpenWorld)
-
-	oapi.Register(grp, oapi.Read, huma.Operation{
-		OperationID: "repo-detail",
-		Summary:     "Repository Detail",
-		Description: "Get a repository's branches and tags.",
-		Path:        "/repositories/info",
-		Method:      http.MethodGet,
-	}, handlers.HandleGetGithubRepositoryDetail, oapi.OpenWorld)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "repo-watch-path-suggestions",

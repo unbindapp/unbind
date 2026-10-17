@@ -521,6 +521,7 @@ components:
           format: uuid
           type: string
         github_installation_id:
+          description: An installation usable in the team, from list-github-installations. list-github-repositories shows which repositories each one reaches
           format: int64
           type: integer
         health_check:
@@ -1454,6 +1455,278 @@ components:
       required:
         - name
         - avatar_url
+      type: object
+    GithubAppInstallationListResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/GithubInstallationAPIResponse"
+          type: array
+      required:
+        - data
+      type: object
+    GithubBranch:
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        protected:
+          type: boolean
+        ref:
+          type: string
+        sha:
+          type: string
+      required:
+        - name
+        - ref
+        - protected
+        - sha
+      type: object
+    GithubInstallationAPIResponse:
+      additionalProperties: false
+      properties:
+        account_id:
+          format: int64
+          type: integer
+        account_login:
+          type: string
+        account_type:
+          type: string
+        account_url:
+          type: string
+        active:
+          type: boolean
+        created_at:
+          format: date-time
+          type: string
+        events:
+          items:
+            type: string
+          type:
+            - array
+            - "null"
+        github_app_id:
+          format: int64
+          type: integer
+        id:
+          format: int64
+          type: integer
+        permissions:
+          $ref: "#/components/schemas/GithubInstallationPermissions"
+        repository_selection:
+          type: string
+        service_count:
+          format: int64
+          type: integer
+        suspended:
+          type: boolean
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - created_at
+        - updated_at
+        - github_app_id
+        - account_id
+        - account_login
+        - account_type
+        - account_url
+        - repository_selection
+        - suspended
+        - active
+        - permissions
+        - events
+        - service_count
+      type: object
+    GithubInstallationPermissions:
+      additionalProperties: false
+      properties:
+        contents:
+          type: string
+        metadata:
+          type: string
+      type: object
+    GithubRepository:
+      additionalProperties: false
+      properties:
+        clone_url:
+          type: string
+        full_name:
+          type: string
+        homepage:
+          type: string
+        html_url:
+          type: string
+        id:
+          format: int64
+          type: integer
+        installation_id:
+          format: int64
+          type: integer
+        name:
+          type: string
+        owner:
+          $ref: "#/components/schemas/GithubRepositoryOwner"
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - installation_id
+        - name
+        - full_name
+        - html_url
+        - clone_url
+        - homepage
+        - owner
+        - updated_at
+      type: object
+    GithubRepositoryDetail:
+      additionalProperties: false
+      properties:
+        archived:
+          type: boolean
+        branches:
+          items:
+            $ref: "#/components/schemas/GithubBranch"
+          type:
+            - array
+            - "null"
+        createdAt:
+          format: date-time
+          type: string
+        defaultBranch:
+          type: string
+        description:
+          type: string
+        disabled:
+          type: boolean
+        fork:
+          type: boolean
+        forksCount:
+          format: int64
+          type: integer
+        fullName:
+          type: string
+        htmlUrl:
+          type: string
+        id:
+          format: int64
+          type: integer
+        installationId:
+          format: int64
+          type: integer
+        language:
+          type: string
+        name:
+          type: string
+        openIssuesCount:
+          format: int64
+          type: integer
+        owner:
+          $ref: "#/components/schemas/GithubRepositoryOwner"
+        private:
+          type: boolean
+        pushedAt:
+          format: date-time
+          type: string
+        size:
+          format: int64
+          type: integer
+        stargazersCount:
+          format: int64
+          type: integer
+        tags:
+          items:
+            $ref: "#/components/schemas/GithubTag"
+          type:
+            - array
+            - "null"
+        updatedAt:
+          format: date-time
+          type: string
+        url:
+          type: string
+        watchersCount:
+          format: int64
+          type: integer
+      required:
+        - id
+        - installationId
+        - name
+        - fullName
+        - description
+        - url
+        - htmlUrl
+        - defaultBranch
+        - language
+        - private
+        - fork
+        - archived
+        - disabled
+        - size
+        - stargazersCount
+        - watchersCount
+        - forksCount
+        - openIssuesCount
+        - createdAt
+        - updatedAt
+        - pushedAt
+        - branches
+        - tags
+        - owner
+      type: object
+    GithubRepositoryDetailResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          $ref: "#/components/schemas/GithubRepositoryDetail"
+      required:
+        - data
+      type: object
+    GithubRepositoryListResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/GithubRepository"
+          type: array
+      required:
+        - data
+      type: object
+    GithubRepositoryOwner:
+      additionalProperties: false
+      properties:
+        avatar_url:
+          type: string
+        id:
+          format: int64
+          type: integer
+        login:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - name
+        - login
+        - avatar_url
+      type: object
+    GithubTag:
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+        ref:
+          type: string
+        sha:
+          type: string
+      required:
+        - name
+        - ref
+        - sha
       type: object
     HealthCheck:
       additionalProperties: false
@@ -6350,6 +6623,304 @@ paths:
         readOnlyHint: false
         requiresConfirmation: false
         risk: medium
+  /github/installations:
+    get:
+      description: "List the GitHub accounts and organizations the caller can build from in a team: their own connections, the ones shared with the team and the ones shared with all teams. Pass an installation's id as github_installation_id to create-service in that team. An installation that is suspended or not active cannot be used. With repository_selection selected, only the repositories picked on GitHub are reachable; list-github-repositories shows them."
+      operationId: list-github-installations
+      parameters:
+        - description: The team to build in. Service counts are limited to it.
+          explode: false
+          in: query
+          name: team_id
+          required: true
+          schema:
+            description: The team to build in. Service counts are limited to it.
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubAppInstallationListResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: List GitHub Installations
+      tags:
+        - GitHub
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: true
+        requiresConfirmation: false
+        risk: low
+  /github/repositories:
+    get:
+      description: List the repositories the caller can build in a team, each with the installation_id to pass to create-service along with owner.login and name. A repository missing here cannot be built in the team until it is added to the installation on GitHub or its connection is shared with the team.
+      operationId: list-github-repositories
+      parameters:
+        - description: The team to build in
+          explode: false
+          in: query
+          name: team_id
+          required: true
+          schema:
+            description: The team to build in
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubRepositoryListResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: List GitHub Repositories
+      tags:
+        - GitHub
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: true
+        readOnlyHint: true
+        requiresConfirmation: false
+        risk: low
+  /github/repositories/info:
+    get:
+      description: Get a repository's default branch, branches and tags through a GitHub installation usable in the team, to pick the branch for create-service.
+      operationId: get-github-repository
+      parameters:
+        - description: The team to build in
+          explode: false
+          in: query
+          name: team_id
+          required: true
+          schema:
+            description: The team to build in
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: installation_id
+          required: true
+          schema:
+            format: int64
+            type: integer
+        - explode: false
+          in: query
+          name: owner
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: repo_name
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubRepositoryDetailResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Get GitHub Repository
+      tags:
+        - GitHub
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: true
+        readOnlyHint: true
+        requiresConfirmation: false
+        risk: low
   /logs/query:
     get:
       description: Query historical logs for a team, project, environment, service, or deployment. Send the ID of the level named by type along with the IDs of every level above it. The deployment and build types need service_id and deployment_id. Needs the read_logs privilege.
