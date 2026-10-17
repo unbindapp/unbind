@@ -36,7 +36,7 @@ import {
 import { MetricsIntervalEnum } from "@/lib/queries/metrics";
 import { projectQuery, projectsListQuery } from "@/lib/queries/projects";
 import { systemQuery } from "@/lib/queries/system";
-import { teamQuery } from "@/lib/queries/teams";
+import { teamQuery, teamsListQuery } from "@/lib/queries/teams";
 import { templatesListQuery } from "@/lib/queries/templates";
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
@@ -45,6 +45,7 @@ import ProjectProvider from "@/components/project/project-provider";
 import ProjectsProvider from "@/components/project/projects-provider";
 import ServicePanelProvider from "@/components/service/panel/service-panel-provider";
 import SystemProvider from "@/components/system/system-provider";
+import TeamGuard from "@/components/team/team-guard";
 import TemplateDraftPanelProvider from "@/components/templates/panel/template-draft-panel-provider";
 import TemplatesProvider from "@/components/templates/templates-provider";
 import RegistryWarningToastProvider from "@/components/system/registry/registry-warning-toast-provider";
@@ -101,6 +102,7 @@ export const Route = createFileRoute("/$team_id/project/$project_id")({
     );
     void queryClient.prefetchQuery(projectsListQuery({ teamId: params.team_id }));
     void queryClient.prefetchQuery(teamQuery({ teamId: params.team_id }));
+    void queryClient.prefetchQuery(teamsListQuery());
     void queryClient.prefetchQuery(templatesListQuery());
     void queryClient.prefetchQuery(systemQuery());
   },
@@ -147,36 +149,38 @@ function ProjectLayout() {
   }
 
   return (
-    <SystemProvider>
-      <TemplatesProvider>
-        <UpdateToastProvider>
-          <RegistryWarningToastProvider>
-            <ProjectsProvider teamId={teamId}>
-              <ProjectProvider teamId={teamId} projectId={projectId}>
-                <TemplateDraftPanelProvider>
-                  <ServicePanelProvider>
-                    <VolumePanelProvider>
-                      <ProjectNavbar />
-                      <Outlet />
-                      {!isLogsPage && <NavbarSafeAreaInsetBottom className="sm:hidden" />}
-                      <ContextCommandPanel
-                        title="Project Command Panel"
-                        description="Project command panel"
-                        triggerType="layout"
-                        context={{
-                          contextType: "project",
-                          projectId,
-                          teamId,
-                        }}
-                      />
-                    </VolumePanelProvider>
-                  </ServicePanelProvider>
-                </TemplateDraftPanelProvider>
-              </ProjectProvider>
-            </ProjectsProvider>
-          </RegistryWarningToastProvider>
-        </UpdateToastProvider>
-      </TemplatesProvider>
-    </SystemProvider>
+    <TeamGuard teamId={teamId}>
+      <SystemProvider>
+        <TemplatesProvider>
+          <UpdateToastProvider>
+            <RegistryWarningToastProvider>
+              <ProjectsProvider teamId={teamId}>
+                <ProjectProvider teamId={teamId} projectId={projectId}>
+                  <TemplateDraftPanelProvider>
+                    <ServicePanelProvider>
+                      <VolumePanelProvider>
+                        <ProjectNavbar />
+                        <Outlet />
+                        {!isLogsPage && <NavbarSafeAreaInsetBottom className="sm:hidden" />}
+                        <ContextCommandPanel
+                          title="Project Command Panel"
+                          description="Project command panel"
+                          triggerType="layout"
+                          context={{
+                            contextType: "project",
+                            projectId,
+                            teamId,
+                          }}
+                        />
+                      </VolumePanelProvider>
+                    </ServicePanelProvider>
+                  </TemplateDraftPanelProvider>
+                </ProjectProvider>
+              </ProjectsProvider>
+            </RegistryWarningToastProvider>
+          </UpdateToastProvider>
+        </TemplatesProvider>
+      </SystemProvider>
+    </TeamGuard>
   );
 }

@@ -99,8 +99,6 @@ jobs:
           cache: "npm"
           cache-dependency-path: apps/web/package-lock.json
       - run: npm ci
-      # `npm run build` (eslint + vite build) also generates src/routeTree.gen.ts,
-      # which typecheck needs. It's gitignored and produced at build time.
       - run: npm run build
       - run: npm run typecheck
 

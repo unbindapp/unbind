@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write src",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npm run generate-routes && tsc --noEmit",
+    "generate-routes": "node ./scripts/generate-routes.ts",
     "test": "node --test 'src/**/*.node-test.ts'",
     "generate-sdk": "go -C ../api run ./cmd/openapi > /tmp/unbind-openapi.gen.yaml && node ./scripts/generate-sdk/main.ts -i /tmp/unbind-openapi.gen.yaml",
     "generate-grammars": "lezer-generator --typeScript src/components/logs/log-search.grammar -o src/components/logs/log-search.gen.ts && lezer-generator --typeScript src/components/variables/variable-reference.grammar -o src/components/variables/variable-reference.gen.ts"
