@@ -553,5 +553,10 @@
     "version": "v0.1.110",
     "summary": "Network isolation between teams, exceptions for services that call across teams or accept outside connections, and a new Network page in system settings.",
     "breaking": false
+  },
+  "v0.1.111": {
+    "version": "v0.1.111",
+    "summary": "Search, sort and drag-to-reorder for projects and services, drop position outlines, smoother card dragging on iOS, mobile Safari search fixes, and better network exception search.",
+    "breaking": false
   }
 }
