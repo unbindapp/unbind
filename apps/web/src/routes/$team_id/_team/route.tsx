@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Navigate, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 import { useRememberTeam } from "@/lib/last-team";
 import { isSystemViewer, meQuery } from "@/lib/queries/me";
@@ -9,6 +9,7 @@ import { templatesListQuery } from "@/lib/queries/templates";
 import ContextCommandPanel from "@/components/command-panel/context-command-panel/context-command-panel";
 import NavbarSafeAreaInsetBottom from "@/components/navigation/navbar-safe-area-inset-bottom";
 import SystemProvider from "@/components/system/system-provider";
+import TeamGuard from "@/components/team/team-guard";
 import TeamNavbar from "@/components/team/team-navbar";
 import TeamProvider from "@/components/team/team-provider";
 import TeamsProvider from "@/components/team/teams-provider";
@@ -35,33 +36,29 @@ function TeamLayout() {
   const { data: teamsData } = useQuery(teamsListQuery());
   useRememberTeam(teamId);
 
-  // Redirect to the first team if the requested team isn't one of the user's.
-  // Moved out of the loader so navigation isn't blocked on the teams list.
-  if (teamsData && teamsData.teams.length >= 1 && !teamsData.teams.some((t) => t.id === teamId)) {
-    return <Navigate to="/$team_id" params={{ team_id: teamsData.teams[0].id }} replace />;
-  }
-
   return (
-    <SystemProvider>
-      <TemplatesProvider>
-        <UpdateToastProvider>
-          <RegistryWarningToastProvider>
-            <TeamsProvider initialData={teamsData}>
-              <TeamProvider teamId={teamId}>
-                <TeamNavbar />
-                <Outlet />
-                <NavbarSafeAreaInsetBottom className="sm:hidden" />
-                <ContextCommandPanel
-                  title="Team Command Panel"
-                  description="Team command panel"
-                  context={{ contextType: "team", teamId }}
-                  triggerType="layout"
-                />
-              </TeamProvider>
-            </TeamsProvider>
-          </RegistryWarningToastProvider>
-        </UpdateToastProvider>
-      </TemplatesProvider>
-    </SystemProvider>
+    <TeamGuard teamId={teamId}>
+      <SystemProvider>
+        <TemplatesProvider>
+          <UpdateToastProvider>
+            <RegistryWarningToastProvider>
+              <TeamsProvider initialData={teamsData}>
+                <TeamProvider teamId={teamId}>
+                  <TeamNavbar />
+                  <Outlet />
+                  <NavbarSafeAreaInsetBottom className="sm:hidden" />
+                  <ContextCommandPanel
+                    title="Team Command Panel"
+                    description="Team command panel"
+                    context={{ contextType: "team", teamId }}
+                    triggerType="layout"
+                  />
+                </TeamProvider>
+              </TeamsProvider>
+            </RegistryWarningToastProvider>
+          </UpdateToastProvider>
+        </TemplatesProvider>
+      </SystemProvider>
+    </TeamGuard>
   );
 }
