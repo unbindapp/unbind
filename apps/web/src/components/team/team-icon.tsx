@@ -10,15 +10,13 @@ type TProps = {
 export default function TeamIcon({ team, className }: TProps) {
   const src = teamIconUrl(team);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const hasImage = !!src && src !== failedSrc;
 
   return (
     <div
-      className={cn(
-        "bg-card border-border shrink-0 overflow-hidden rounded-full border",
-        className,
-      )}
+      className={cn("shrink-0 overflow-hidden rounded-full", !hasImage && "bg-border", className)}
     >
-      {src && src !== failedSrc ? (
+      {hasImage ? (
         <img
           src={src}
           alt=""

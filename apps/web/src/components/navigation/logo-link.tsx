@@ -41,8 +41,8 @@ function ProjectTeamIcon({ teamId }: { teamId: string }) {
   const { data, isPending } = useQuery(teamQuery({ teamId }));
 
   if (isPending) {
-    return <div className="bg-foreground animate-skeleton relative size-6.5 rounded-full" />;
+    return <div className="bg-foreground animate-skeleton relative size-6 rounded-full" />;
   }
   if (!data) return <Logo className="relative size-6" />;
-  return <TeamIcon team={data.team} className="relative size-6.5" />;
+  return <TeamIcon team={data.team} className="relative size-6" />;
 }
