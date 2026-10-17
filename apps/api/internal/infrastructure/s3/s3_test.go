@@ -3,6 +3,8 @@ package s3
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"testing"
@@ -304,15 +306,42 @@ func (suite *S3TestSuite) TestMapS3Error_301Redirect() {
 func (suite *S3TestSuite) TestMapS3Error_URLError() {
 	urlErr := &url.Error{
 		Op:  "Put",
-		URL: "https://abc.r2.cloudflarestorage.com/bucket/.probe-123?x-id=PutObject",
-		Err: errors.New("remote error: tls: handshake failure"),
+		URL: "https://s3.example.com/bucket/.probe-123?x-id=PutObject",
+		Err: errors.New("dial tcp 10.0.0.1:443: connect: connection refused"),
 	}
 
 	result := mapS3Error(urlErr)
 
 	customErr := result.(*errdefs.CustomError)
 	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
-	suite.Equal("Could not connect to the endpoint: remote error: tls: handshake failure", customErr.Message)
+	suite.Equal("Could not connect to the endpoint: dial tcp 10.0.0.1:443: connect: connection refused", customErr.Message)
+}
+
+func (suite *S3TestSuite) TestMapS3Error_TLSHandshakeRejected() {
+	err := fmt.Errorf("operation error S3: PutObject, exceeded maximum number of attempts, 3: %w", &url.Error{
+		Op:  "Put",
+		URL: "https://abc.r2.cloudflarestorage.com/bucket/.probe-123?x-id=PutObject",
+		Err: &net.OpError{Op: "remote error", Err: errors.New("tls: handshake failure")},
+	})
+
+	result := mapS3Error(err)
+
+	customErr := result.(*errdefs.CustomError)
+	suite.Equal(errdefs.ErrTypeInvalidInput, customErr.Type)
+	suite.Contains(customErr.Message, "rejected the TLS handshake")
+}
+
+func (suite *S3TestSuite) TestMapS3Error_OtherTLSAlert() {
+	err := &url.Error{
+		Op:  "Put",
+		URL: "https://s3.example.com/bucket/.probe-123?x-id=PutObject",
+		Err: &net.OpError{Op: "remote error", Err: errors.New("tls: protocol version not supported")},
+	}
+
+	result := mapS3Error(err)
+
+	customErr := result.(*errdefs.CustomError)
+	suite.Equal("Could not connect to the endpoint: remote error: tls: protocol version not supported", customErr.Message)
 }
 
 func (suite *S3TestSuite) TestMapS3Error_OtherError() {

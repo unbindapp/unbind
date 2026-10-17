@@ -32,5 +32,6 @@ Buckets belong to the team, so every database in the team can use them. Pick one
 
 - **Give the key as little as possible.** It needs to read and write that one bucket, nothing more.
 - **Keep backups somewhere else.** A bucket on the same servers as the database does not help when those servers are gone.
+- **New Cloudflare R2 accounts take a few minutes.** Right after R2 is turned on, Cloudflare can reject connections to the account's endpoint with a TLS handshake error. Wait a few minutes and try again.
 - **Editing keeps the secret.** When you edit a bucket, leave the key fields empty to keep the stored ones.
 - **Buckets cannot be managed through the API or MCP**, because their credentials should not pass through a model conversation.

@@ -182,6 +182,11 @@ func mapS3Error(err error) error {
 		}
 	}
 
+	if isTLSHandshakeRejected(err) {
+		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
+			"The endpoint rejected the TLS handshake. Check the endpoint URL. A new Cloudflare R2 account can take a few minutes before its endpoint works, so try again shortly.")
+	}
+
 	var urlErr *url.Error
 	if errors.As(err, &urlErr) {
 		return errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
@@ -190,4 +195,13 @@ func mapS3Error(err error) error {
 
 	// Fallback: surface the original error.
 	return err
+}
+
+// R2 sends this alert for an account whose endpoint certificate isn't served yet
+func isTLSHandshakeRejected(err error) bool {
+	var opErr *net.OpError
+	if !errors.As(err, &opErr) || opErr.Op != "remote error" || opErr.Err == nil {
+		return false
+	}
+	return opErr.Err.Error() == "tls: handshake failure"
 }
