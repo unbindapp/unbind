@@ -12,13 +12,18 @@ import {
   type TProjectLinkProps,
   type TProjectShallow,
 } from "@/lib/queries/projects";
+import type { DraggableSyntheticListeners } from "@dnd-kit/core";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { LoaderIcon } from "lucide-react";
-import { ReactNode } from "react";
+import { CSSProperties, ReactNode, Ref } from "react";
 
 type TProps = {
   className?: string;
+  ref?: Ref<HTMLLIElement>;
+  style?: CSSProperties;
+  dragListeners?: DraggableSyntheticListeners;
+  isDragging?: boolean;
 } & (
   | { project: TProjectShallow; isPlaceholder?: never }
   | { project?: never; isPlaceholder: true }
@@ -26,7 +31,15 @@ type TProps = {
 
 const maxIconSlots = 5;
 
-export default function ProjectCard({ project, isPlaceholder, className }: TProps) {
+export default function ProjectCard({
+  project,
+  isPlaceholder,
+  className,
+  ref,
+  style,
+  dragListeners,
+  isDragging,
+}: TProps) {
   const isDeleting = useIsDeleting(deleteMutationKeys.project(project?.id ?? ""));
   const environments = !isPlaceholder ? project.environments : [];
   const serviceCount = !isPlaceholder ? project.service_count : 1;
@@ -42,10 +55,14 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
 
   return (
     <li
+      ref={ref}
+      style={style}
+      {...dragListeners}
       data-placeholder={isPlaceholder || undefined}
       data-deleting={isDeleting || undefined}
+      data-dragging={isDragging || undefined}
       className={cn(
-        "group/item data-deleting:animate-skeleton-smooth-weaker flex w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity)",
+        "group/item data-deleting:animate-skeleton-smooth-weaker relative flex w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-dragging:z-10 data-dragging:cursor-grabbing",
         className,
       )}
     >
@@ -53,8 +70,9 @@ export default function ProjectCard({ project, isPlaceholder, className }: TProp
         project={project}
         linkProps={linkProps}
         isDeleting={isDeleting}
+        isSortable={dragListeners !== undefined}
         variant="card"
-        className="flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold"
+        className="group-data-dragging/item:bg-card-hover group-data-dragging/item:shadow-shadow-color/shadow-opacity flex min-h-38 w-full flex-col items-start gap-12 rounded-xl border px-5 py-3.5 text-left font-semibold group-data-dragging/item:pointer-events-none group-data-dragging/item:shadow-lg"
       >
         {project && <NewEntityIndicator id={project.id} />}
         <div className="flex w-full items-center justify-start gap-2">
@@ -111,6 +129,7 @@ function ConditionalButton({
   variant,
   project,
   isDeleting,
+  isSortable,
   className,
   children,
 }: {
@@ -118,6 +137,7 @@ function ConditionalButton({
   variant: TButtonVariants["variant"];
   project?: TProjectShallow;
   isDeleting: boolean;
+  isSortable: boolean;
   className: string;
   children: ReactNode;
 }) {
@@ -167,7 +187,14 @@ function ConditionalButton({
   }
 
   return (
-    <LinkButton {...linkProps} variant={variant} disabled={isDeleting} className={className}>
+    <LinkButton
+      {...linkProps}
+      variant={variant}
+      disabled={isDeleting}
+      // The browser's own link dragging would cancel the reorder drag
+      draggable={isSortable ? false : undefined}
+      className={cn(isSortable && "[-webkit-touch-callout:none]", className)}
+    >
       {children}
     </LinkButton>
   );

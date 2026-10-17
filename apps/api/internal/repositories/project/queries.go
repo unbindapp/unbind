@@ -3,6 +3,7 @@ package project_repo
 import (
 	"context"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/environment"
@@ -45,20 +46,36 @@ func (self *ProjectRepository) GetByTeam(ctx context.Context, teamID uuid.UUID, 
 		q = q.Where(authPredicate)
 	}
 
-	if sortField != "" && sortOrder != "" {
-		switch sortField {
-		case models.SortByCreatedAt:
-			q.Order(sortOrder.SortFunction()(project.FieldCreatedAt))
-		case models.SortByUpdatedAt:
-			q.Order(sortOrder.SortFunction()(project.FieldUpdatedAt))
-		default:
-			q.Order(ent.Asc(project.FieldCreatedAt))
-		}
-	} else {
-		q.Order(ent.Asc(project.FieldCreatedAt))
-	}
+	q.Order(projectOrder(sortField, sortOrder)...)
 
 	return q.All(ctx)
+}
+
+func projectOrder(sortField models.SortByField, sortOrder models.SortOrder) []project.OrderOption {
+	if sortOrder == "" {
+		sortOrder = sortField.DefaultOrder()
+	}
+	direction := sql.OrderAsc()
+	if sortOrder == models.SortOrderDesc {
+		direction = sql.OrderDesc()
+	}
+
+	tieBreak := project.ByID()
+	switch sortField {
+	case models.SortByCustom:
+		// Projects that share a position, like ones never reordered, go newest first
+		createdAt := sql.OrderDesc()
+		if sortOrder == models.SortOrderDesc {
+			createdAt = sql.OrderAsc()
+		}
+		return []project.OrderOption{project.ByPosition(direction), project.ByCreatedAt(createdAt), tieBreak}
+	case models.SortByName:
+		return []project.OrderOption{project.ByName(direction), tieBreak}
+	case models.SortByUpdatedAt:
+		return []project.OrderOption{project.ByUpdatedAt(direction), tieBreak}
+	default:
+		return []project.OrderOption{project.ByCreatedAt(direction), tieBreak}
+	}
 }
 
 func (self *ProjectRepository) GetNamesByTeam(ctx context.Context, tx repository.TxInterface, teamID uuid.UUID) ([]string, error) {

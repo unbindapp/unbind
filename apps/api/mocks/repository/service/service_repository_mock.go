@@ -1746,6 +1746,144 @@ func (_c *ServiceRepositoryMock_NeedsDeployment_Call) RunAndReturn(run func(ctx 
 	return _c
 }
 
+// ReorderEnvironment provides a mock function for the type ServiceRepositoryMock
+func (_mock *ServiceRepositoryMock) ReorderEnvironment(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID, ids []uuid.UUID) error {
+	ret := _mock.Called(ctx, tx, environmentID, ids)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ReorderEnvironment")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, []uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, tx, environmentID, ids)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// ServiceRepositoryMock_ReorderEnvironment_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReorderEnvironment'
+type ServiceRepositoryMock_ReorderEnvironment_Call struct {
+	*mock.Call
+}
+
+// ReorderEnvironment is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - environmentID uuid.UUID
+//   - ids []uuid.UUID
+func (_e *ServiceRepositoryMock_Expecter) ReorderEnvironment(ctx any, tx any, environmentID any, ids any) *ServiceRepositoryMock_ReorderEnvironment_Call {
+	return &ServiceRepositoryMock_ReorderEnvironment_Call{Call: _e.mock.On("ReorderEnvironment", ctx, tx, environmentID, ids)}
+}
+
+func (_c *ServiceRepositoryMock_ReorderEnvironment_Call) Run(run func(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID, ids []uuid.UUID)) *ServiceRepositoryMock_ReorderEnvironment_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 []uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_ReorderEnvironment_Call) Return(err error) *ServiceRepositoryMock_ReorderEnvironment_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_ReorderEnvironment_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, environmentID uuid.UUID, ids []uuid.UUID) error) *ServiceRepositoryMock_ReorderEnvironment_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ReorderGroup provides a mock function for the type ServiceRepositoryMock
+func (_mock *ServiceRepositoryMock) ReorderGroup(ctx context.Context, tx repository.TxInterface, groupID uuid.UUID, serviceIDs []uuid.UUID) error {
+	ret := _mock.Called(ctx, tx, groupID, serviceIDs)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ReorderGroup")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, repository.TxInterface, uuid.UUID, []uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, tx, groupID, serviceIDs)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// ServiceRepositoryMock_ReorderGroup_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReorderGroup'
+type ServiceRepositoryMock_ReorderGroup_Call struct {
+	*mock.Call
+}
+
+// ReorderGroup is a helper method to define mock.On call
+//   - ctx context.Context
+//   - tx repository.TxInterface
+//   - groupID uuid.UUID
+//   - serviceIDs []uuid.UUID
+func (_e *ServiceRepositoryMock_Expecter) ReorderGroup(ctx any, tx any, groupID any, serviceIDs any) *ServiceRepositoryMock_ReorderGroup_Call {
+	return &ServiceRepositoryMock_ReorderGroup_Call{Call: _e.mock.On("ReorderGroup", ctx, tx, groupID, serviceIDs)}
+}
+
+func (_c *ServiceRepositoryMock_ReorderGroup_Call) Run(run func(ctx context.Context, tx repository.TxInterface, groupID uuid.UUID, serviceIDs []uuid.UUID)) *ServiceRepositoryMock_ReorderGroup_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 repository.TxInterface
+		if args[1] != nil {
+			arg1 = args[1].(repository.TxInterface)
+		}
+		var arg2 uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].(uuid.UUID)
+		}
+		var arg3 []uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].([]uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_ReorderGroup_Call) Return(err error) *ServiceRepositoryMock_ReorderGroup_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *ServiceRepositoryMock_ReorderGroup_Call) RunAndReturn(run func(ctx context.Context, tx repository.TxInterface, groupID uuid.UUID, serviceIDs []uuid.UUID) error) *ServiceRepositoryMock_ReorderGroup_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SetCurrentDeployment provides a mock function for the type ServiceRepositoryMock
 func (_mock *ServiceRepositoryMock) SetCurrentDeployment(ctx context.Context, tx repository.TxInterface, serviceID uuid.UUID, deploymentID uuid.UUID) error {
 	ret := _mock.Called(ctx, tx, serviceID, deploymentID)

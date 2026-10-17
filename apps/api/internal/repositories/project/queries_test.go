@@ -210,15 +210,15 @@ func (suite *ProjectQueriesSuite) TestGetByTeamBasic() {
 	suite.NoError(err)
 	suite.Len(projects, 2)
 
-	// Should be ordered by created_at ascending by default
-	suite.Equal(suite.testProject.ID, projects[0].ID)  // Created first
-	suite.Equal(suite.testProject2.ID, projects[1].ID) // Created second
+	// Newest first by default
+	suite.Equal(suite.testProject2.ID, projects[0].ID)
+	suite.Equal(suite.testProject.ID, projects[1].ID)
 
 	// Verify environments are loaded for each project
 	suite.NotNil(projects[0].Edges.Environments)
-	suite.Len(projects[0].Edges.Environments, 2)
+	suite.Len(projects[0].Edges.Environments, 1)
 	suite.NotNil(projects[1].Edges.Environments)
-	suite.Len(projects[1].Edges.Environments, 1)
+	suite.Len(projects[1].Edges.Environments, 2)
 }
 
 func (suite *ProjectQueriesSuite) TestGetByTeamDifferentTeam() {
@@ -321,15 +321,50 @@ func (suite *ProjectQueriesSuite) TestGetByTeamSortByUpdatedAtDesc() {
 	suite.True(projects[0].UpdatedAt.After(projects[1].UpdatedAt))
 }
 
-func (suite *ProjectQueriesSuite) TestGetByTeamSortByInvalidField() {
-	// Invalid sort field should fallback to created_at ascending
-	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, "invalid_field", models.SortOrderDesc)
-	suite.NoError(err)
-	suite.Len(projects, 2)
+func (suite *ProjectQueriesSuite) TestGetByTeamSortByCustom() {
+	suite.DB.Project.UpdateOneID(suite.testProject.ID).SetPosition(-1).ExecX(suite.Ctx)
 
-	// Should fallback to created_at ascending despite desc order specified
-	suite.Equal(suite.testProject.ID, projects[0].ID)  // Created earlier
-	suite.Equal(suite.testProject2.ID, projects[1].ID) // Created later
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByCustom, "")
+	suite.NoError(err)
+	suite.Equal([]uuid.UUID{suite.testProject.ID, suite.testProject2.ID}, projectIDs(projects))
+
+	projects, err = suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByCustom, models.SortOrderDesc)
+	suite.NoError(err)
+	suite.Equal([]uuid.UUID{suite.testProject2.ID, suite.testProject.ID}, projectIDs(projects))
+}
+
+func (suite *ProjectQueriesSuite) TestGetByTeamSortByCustomTiePutsNewerFirst() {
+	// Both projects sit at position 0
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByCustom, models.SortOrderAsc)
+	suite.NoError(err)
+	suite.Equal([]uuid.UUID{suite.testProject2.ID, suite.testProject.ID}, projectIDs(projects))
+}
+
+func (suite *ProjectQueriesSuite) TestGetByTeamSortByName() {
+	suite.DB.Project.UpdateOneID(suite.testProject.ID).SetName("beta").ExecX(suite.Ctx)
+	suite.DB.Project.UpdateOneID(suite.testProject2.ID).SetName("alpha").ExecX(suite.Ctx)
+
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByName, "")
+	suite.NoError(err)
+	suite.Equal([]uuid.UUID{suite.testProject2.ID, suite.testProject.ID}, projectIDs(projects))
+
+	projects, err = suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByName, models.SortOrderDesc)
+	suite.NoError(err)
+	suite.Equal([]uuid.UUID{suite.testProject.ID, suite.testProject2.ID}, projectIDs(projects))
+}
+
+func (suite *ProjectQueriesSuite) TestGetByTeamSortByCreatedAtDefaultsToNewestFirst() {
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByCreatedAt, "")
+	suite.NoError(err)
+	suite.Equal([]uuid.UUID{suite.testProject2.ID, suite.testProject.ID}, projectIDs(projects))
+}
+
+func projectIDs(projects []*ent.Project) []uuid.UUID {
+	ids := make([]uuid.UUID, len(projects))
+	for i, p := range projects {
+		ids[i] = p.ID
+	}
+	return ids
 }
 
 func (suite *ProjectQueriesSuite) TestGetByTeamSortWithAuthPredicate() {

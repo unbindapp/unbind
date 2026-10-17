@@ -11,10 +11,11 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 )
 
 // Get all services in an environment
-func (self *ServiceService) GetServicesInEnvironment(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID uuid.UUID) ([]*models.ServiceResponse, error) {
+func (self *ServiceService) GetServicesInEnvironment(ctx context.Context, requesterUserID uuid.UUID, teamID, projectID, environmentID uuid.UUID, sortBy models.SortByField, sortOrder models.SortOrder) ([]*models.ServiceResponse, error) {
 	// Step 1: Get accessible service predicates for the user, scoped to the environmentID.
 	servicePreds, err := self.repo.Permissions().GetAccessibleServicePredicates(ctx, requesterUserID, schema.ActionViewer, &environmentID)
 	if err != nil {
@@ -38,6 +39,7 @@ func (self *ServiceService) GetServicesInEnvironment(ctx context.Context, reques
 		log.Errorf("Error fetching services for environment %s: %v", environmentID, err)
 		return nil, fmt.Errorf("error fetching services for environment %s: %w", environmentID, err)
 	}
+	service_repo.SortServices(services, sortBy, sortOrder)
 
 	volumeMap, err := self.GetVolumesForServices(ctx, project.Edges.Team.Namespace, project.Edges.Team.ID, services)
 	if err != nil {

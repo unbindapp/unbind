@@ -558,6 +558,49 @@ func (suite *ServiceGroupMutationsSuite) TestDeleteByEnvironmentID() {
 	})
 }
 
+func (suite *ServiceGroupMutationsSuite) TestPositions() {
+	suite.Run("New Group Goes First", func() {
+		suite.DB.Service.UpdateOneID(suite.testService2.ID).SetPosition(-4).ExecX(suite.Ctx)
+
+		group, err := suite.serviceGroupRepo.Create(suite.Ctx, nil, "Positions Group", nil, nil, suite.testEnvironment.ID, nil)
+		suite.NoError(err)
+		suite.Equal(-5, group.Position)
+	})
+
+	suite.Run("Joining And Leaving Go First In Their Level", func() {
+		suite.DB.Service.UpdateOneID(suite.testService1.ID).SetPosition(2).ExecX(suite.Ctx)
+		suite.DB.ServiceGroup.UpdateOneID(suite.testServiceGroup.ID).SetPosition(-6).ExecX(suite.Ctx)
+
+		_, err := suite.serviceGroupRepo.Update(suite.Ctx, &models.UpdateServiceGroupInput{
+			ID:            suite.testServiceGroup.ID,
+			EnvironmentID: suite.testEnvironment.ID,
+			AddServiceIDs: []uuid.UUID{suite.testService2.ID},
+		})
+		suite.NoError(err)
+		joined := suite.DB.Service.GetX(suite.Ctx, suite.testService2.ID)
+		suite.Equal(suite.testServiceGroup.ID, *joined.ServiceGroupID)
+		suite.Equal(1, joined.Position)
+
+		_, err = suite.serviceGroupRepo.Update(suite.Ctx, &models.UpdateServiceGroupInput{
+			ID:               suite.testServiceGroup.ID,
+			EnvironmentID:    suite.testEnvironment.ID,
+			RemoveServiceIDs: []uuid.UUID{suite.testService1.ID},
+		})
+		suite.NoError(err)
+		left := suite.DB.Service.GetX(suite.Ctx, suite.testService1.ID)
+		suite.Nil(left.ServiceGroupID)
+		suite.Equal(-7, left.Position)
+	})
+
+	suite.Run("Deleted Group Leaves Its Services In Its Place", func() {
+		suite.DB.ServiceGroup.UpdateOneID(suite.testServiceGroup.ID).SetPosition(3).ExecX(suite.Ctx)
+
+		err := suite.serviceGroupRepo.Delete(suite.Ctx, nil, suite.testServiceGroup.ID)
+		suite.NoError(err)
+		suite.Equal(3, suite.DB.Service.GetX(suite.Ctx, suite.testService2.ID).Position)
+	})
+}
+
 func TestServiceGroupMutationsSuite(t *testing.T) {
 	suite.Run(t, new(ServiceGroupMutationsSuite))
 }

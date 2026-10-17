@@ -2,10 +2,13 @@ package project_repo
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/suite"
 	"github.com/unbindapp/unbind-api/ent"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
+	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -501,6 +504,99 @@ func (suite *ProjectMutationsSuite) TestDeleteDBClosed() {
 	err := suite.projectRepo.Delete(suite.Ctx, nil, project.ID)
 	suite.Error(err)
 	suite.ErrorContains(err, "database is closed")
+}
+
+func (suite *ProjectMutationsSuite) TestCreatePutsNewProjectsFirst() {
+	first, err := suite.projectRepo.Create(suite.Ctx, nil, suite.testTeam.ID, "first-k8s", "first", nil, "secret-1")
+	suite.NoError(err)
+	suite.Equal(0, first.Position)
+
+	suite.DB.Project.UpdateOneID(first.ID).SetPosition(4).ExecX(suite.Ctx)
+
+	second, err := suite.projectRepo.Create(suite.Ctx, nil, suite.testTeam.ID, "second-k8s", "second", nil, "secret-2")
+	suite.NoError(err)
+	suite.Equal(3, second.Position)
+}
+
+func (suite *ProjectMutationsSuite) createProjects(names ...string) []*ent.Project {
+	projects := make([]*ent.Project, len(names))
+	for i, name := range names {
+		projects[i] = suite.DB.Project.Create().
+			SetTeamID(suite.testTeam.ID).
+			SetKubernetesName(name + "-k8s").
+			SetName(name).
+			SetKubernetesSecret(name + "-secret").
+			SetPosition(i).
+			SetUpdatedAt(time.Now().Add(-time.Hour)).
+			SaveX(suite.Ctx)
+	}
+	return projects
+}
+
+func (suite *ProjectMutationsSuite) customOrder() []uuid.UUID {
+	projects, err := suite.projectRepo.GetByTeam(suite.Ctx, suite.testTeam.ID, nil, nil, models.SortByCustom, models.SortOrderAsc)
+	suite.Require().NoError(err)
+	ids := make([]uuid.UUID, len(projects))
+	for i, p := range projects {
+		ids[i] = p.ID
+	}
+	return ids
+}
+
+func (suite *ProjectMutationsSuite) TestReorder() {
+	p := suite.createProjects("a", "b", "c")
+
+	err := suite.projectRepo.Reorder(suite.Ctx, nil, suite.testTeam.ID, []uuid.UUID{p[2].ID, p[0].ID, p[1].ID})
+	suite.NoError(err)
+	suite.Equal([]uuid.UUID{p[2].ID, p[0].ID, p[1].ID}, suite.customOrder())
+}
+
+func (suite *ProjectMutationsSuite) TestReorderKeepsUnlistedProjectsInOrderAfterListed() {
+	p := suite.createProjects("a", "b", "c", "d")
+
+	err := suite.projectRepo.Reorder(suite.Ctx, nil, suite.testTeam.ID, []uuid.UUID{p[2].ID})
+	suite.NoError(err)
+	suite.Equal([]uuid.UUID{p[2].ID, p[0].ID, p[1].ID, p[3].ID}, suite.customOrder())
+}
+
+func (suite *ProjectMutationsSuite) TestReorderKeepsUpdatedAt() {
+	p := suite.createProjects("a", "b")
+
+	err := suite.projectRepo.Reorder(suite.Ctx, nil, suite.testTeam.ID, []uuid.UUID{p[1].ID, p[0].ID})
+	suite.NoError(err)
+
+	for _, project := range p {
+		saved := suite.DB.Project.GetX(suite.Ctx, project.ID)
+		suite.True(project.UpdatedAt.Equal(saved.UpdatedAt))
+	}
+}
+
+func (suite *ProjectMutationsSuite) TestReorderRejectsProjectsOfAnotherTeam() {
+	p := suite.createProjects("a")
+	otherTeam := suite.DB.Team.Create().
+		SetName("Other Team").
+		SetKubernetesName("other-team-k8s").
+		SetKubernetesSecret("other-secret").
+		SetNamespace("other-namespace").
+		SaveX(suite.Ctx)
+	other := suite.DB.Project.Create().
+		SetTeamID(otherTeam.ID).
+		SetKubernetesName("other-k8s").
+		SetName("other").
+		SetKubernetesSecret("other-project-secret").
+		SaveX(suite.Ctx)
+
+	err := suite.projectRepo.Reorder(suite.Ctx, nil, suite.testTeam.ID, []uuid.UUID{other.ID, p[0].ID})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput)
+	suite.Equal(0, suite.DB.Project.GetX(suite.Ctx, other.ID).Position)
+}
+
+func (suite *ProjectMutationsSuite) TestReorderRejectsDuplicates() {
+	p := suite.createProjects("a", "b")
+
+	err := suite.projectRepo.Reorder(suite.Ctx, nil, suite.testTeam.ID, []uuid.UUID{p[1].ID, p[1].ID})
+	suite.ErrorIs(err, errdefs.ErrInvalidInput)
+	suite.Equal([]uuid.UUID{p[0].ID, p[1].ID}, suite.customOrder())
 }
 
 func TestProjectMutationsSuite(t *testing.T) {

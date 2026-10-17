@@ -29,10 +29,16 @@ import {
   PowerIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { ReactElement, ReactNode, useMemo } from "react";
+import type { DraggableSyntheticListeners } from "@dnd-kit/core";
+import { CSSProperties, ReactElement, ReactNode, Ref, useMemo } from "react";
 
 type TProps = {
   className?: string;
+  ref?: Ref<HTMLLIElement>;
+  style?: CSSProperties;
+  dragListeners?: DraggableSyntheticListeners;
+  isDragging?: boolean;
+  isDragSource?: boolean;
   isDeleting?: boolean;
   classNameCard?: string;
   classNameVolumes?: string;
@@ -63,6 +69,11 @@ export default function ServiceCard({
   isPlaceholder,
   isDeleting: isDeletingProp,
   className,
+  ref,
+  style,
+  dragListeners,
+  isDragging,
+  isDragSource,
   classNameCard,
   classNameVolumes,
   classNameVolume,
@@ -99,8 +110,10 @@ export default function ServiceCard({
     enabled: !isPlaceholder && !isDeleting,
   });
 
+  const isSortable = dragListeners !== undefined;
   const cardClassName = cn(
-    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border overflow-hidden px-5 py-3.5 text-left font-semibold data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:has-hover:hover:bg-change/4-10 data-staged:active:bg-change/4-10",
+    "flex w-full flex-1 flex-col items-start gap-6 rounded-xl border overflow-hidden px-5 py-3.5 text-left font-semibold data-staged:bg-change/2-10 data-staged:border-change/5-10 data-staged:has-hover:hover:bg-change/4-10 data-staged:active:bg-change/4-10 group-data-dragging/item:bg-card-hover group-data-dragging/item:pointer-events-none group-data-dragging/item:shadow-lg group-data-dragging/item:shadow-shadow-color/shadow-opacity",
+    isSortable && "[-webkit-touch-callout:none]",
     classNameCard,
     volumes && volumes.length > 0 && "rounded-b-none border-b-0",
   );
@@ -146,11 +159,16 @@ export default function ServiceCard({
 
   return (
     <li
+      ref={ref}
+      style={style}
+      {...dragListeners}
       data-placeholder={isPlaceholder || undefined}
       data-deleting={isDeleting || undefined}
       data-staged={changeLabel !== null || undefined}
+      data-dragging={isDragging || undefined}
+      data-drag-source={isDragSource || undefined}
       className={cn(
-        "group/item data-deleting:animate-skeleton-smooth-weaker flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity)",
+        "group/item data-deleting:animate-skeleton-smooth-weaker relative flex min-h-40 w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-drag-source:opacity-40 data-dragging:cursor-grabbing",
         className,
       )}
     >
@@ -169,6 +187,8 @@ export default function ServiceCard({
             replace={true}
             resetScroll={false}
             disabled={isDeleting}
+            // The browser's own link dragging would cancel the reorder drag
+            draggable={isSortable ? false : undefined}
             className={cardClassName}
             {...buttonIntentProps}
           >

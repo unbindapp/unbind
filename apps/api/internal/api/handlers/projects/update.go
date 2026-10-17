@@ -10,6 +10,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/models"
+	project_service "github.com/unbindapp/unbind-api/internal/services/project"
 )
 
 type UpdateProjectInput struct {
@@ -52,5 +53,32 @@ func (self *HandlerGroup) UpdateProject(ctx context.Context, input *UpdateProjec
 
 	resp := &UpdateProjectResponse{}
 	resp.Body.Data = updatedProject
+	return resp, nil
+}
+
+type ReorderProjectsInput struct {
+	server.BaseAuthInput
+	Body *project_service.ReorderProjectsInput
+}
+
+type ReorderProjectsResponse struct {
+	Body struct {
+		Data []*models.ProjectResponse `json:"data" nullable:"false"`
+	}
+}
+
+func (self *HandlerGroup) ReorderProjects(ctx context.Context, input *ReorderProjectsInput) (*ReorderProjectsResponse, error) {
+	user, _, err := self.srv.AuthenticatedUser(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	projects, err := self.srv.ProjectService.ReorderProjects(ctx, user.ID, input.Body)
+	if err != nil {
+		return nil, oapi.MapError(err)
+	}
+
+	resp := &ReorderProjectsResponse{}
+	resp.Body.Data = projects
 	return resp, nil
 }

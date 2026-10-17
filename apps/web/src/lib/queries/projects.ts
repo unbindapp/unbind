@@ -16,7 +16,7 @@ export const projectsListQuery = (input: { teamId: string }) =>
   queryOptions({
     queryKey: queryKeyProjects.list(input),
     queryFn: async () => {
-      const res = await getGoClient().projects.list({ team_id: input.teamId });
+      const res = await getGoClient().projects.list({ team_id: input.teamId, sort_by: "custom" });
       return { projects: res.data };
     },
   });
@@ -59,6 +59,14 @@ export async function updateProject(input: {
     description: input.description,
   });
   return { data: res.data };
+}
+
+export async function reorderProjects(input: { teamId: string; projectIds: string[] }) {
+  const res = await getGoClient().projects.reorder({
+    team_id: input.teamId,
+    project_ids: input.projectIds,
+  });
+  return { projects: res.data };
 }
 
 export async function deleteProject(input: { teamId: string; projectId: string }) {

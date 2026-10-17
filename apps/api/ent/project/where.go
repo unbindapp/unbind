@@ -101,6 +101,11 @@ func KubernetesSecret(v string) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldKubernetesSecret, v))
 }
 
+// Position applies equality check predicate on the "position" field. It's identical to PositionEQ.
+func Position(v int) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldPosition, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Project {
 	return predicate.Project(sql.FieldEQ(FieldCreatedAt, v))
@@ -574,6 +579,46 @@ func KubernetesSecretEqualFold(v string) predicate.Project {
 // KubernetesSecretContainsFold applies the ContainsFold predicate on the "kubernetes_secret" field.
 func KubernetesSecretContainsFold(v string) predicate.Project {
 	return predicate.Project(sql.FieldContainsFold(FieldKubernetesSecret, v))
+}
+
+// PositionEQ applies the EQ predicate on the "position" field.
+func PositionEQ(v int) predicate.Project {
+	return predicate.Project(sql.FieldEQ(FieldPosition, v))
+}
+
+// PositionNEQ applies the NEQ predicate on the "position" field.
+func PositionNEQ(v int) predicate.Project {
+	return predicate.Project(sql.FieldNEQ(FieldPosition, v))
+}
+
+// PositionIn applies the In predicate on the "position" field.
+func PositionIn(vs ...int) predicate.Project {
+	return predicate.Project(sql.FieldIn(FieldPosition, vs...))
+}
+
+// PositionNotIn applies the NotIn predicate on the "position" field.
+func PositionNotIn(vs ...int) predicate.Project {
+	return predicate.Project(sql.FieldNotIn(FieldPosition, vs...))
+}
+
+// PositionGT applies the GT predicate on the "position" field.
+func PositionGT(v int) predicate.Project {
+	return predicate.Project(sql.FieldGT(FieldPosition, v))
+}
+
+// PositionGTE applies the GTE predicate on the "position" field.
+func PositionGTE(v int) predicate.Project {
+	return predicate.Project(sql.FieldGTE(FieldPosition, v))
+}
+
+// PositionLT applies the LT predicate on the "position" field.
+func PositionLT(v int) predicate.Project {
+	return predicate.Project(sql.FieldLT(FieldPosition, v))
+}
+
+// PositionLTE applies the LTE predicate on the "position" field.
+func PositionLTE(v int) predicate.Project {
+	return predicate.Project(sql.FieldLTE(FieldPosition, v))
 }
 
 // HasTeam applies the HasEdge predicate on the "team" edge.

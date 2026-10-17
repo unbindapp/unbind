@@ -2703,6 +2703,110 @@ components:
       required:
         - data
       type: object
+    ReorderProjectsInput:
+      additionalProperties: false
+      properties:
+        project_ids:
+          description: Projects in the order they should be listed. Projects left out keep their order after these.
+          items:
+            format: uuid
+            type: string
+          maxItems: 1000
+          minItems: 1
+          type: array
+        team_id:
+          format: uuid
+          type: string
+      required:
+        - team_id
+        - project_ids
+      type: object
+    ReorderProjectsResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/ProjectResponse"
+          type: array
+      required:
+        - data
+      type: object
+    ReorderServiceGroupInput:
+      additionalProperties: false
+      properties:
+        environment_id:
+          format: uuid
+          type: string
+        project_id:
+          format: uuid
+          type: string
+        service_group_id:
+          format: uuid
+          type: string
+        service_ids:
+          description: Services of the group in the order they should be listed. The ones left out keep their order after these.
+          items:
+            format: uuid
+            type: string
+          maxItems: 1000
+          minItems: 1
+          type: array
+        team_id:
+          format: uuid
+          type: string
+      required:
+        - team_id
+        - project_id
+        - environment_id
+        - service_group_id
+        - service_ids
+      type: object
+    ReorderServiceGroupResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/ServiceResponse"
+          type: array
+      required:
+        - data
+      type: object
+    ReorderServicesInput:
+      additionalProperties: false
+      properties:
+        environment_id:
+          format: uuid
+          type: string
+        ids:
+          description: Service groups and services that are not in a group, in the order they should be listed. The ones left out keep their order after these. Order the services inside a group with reorder-service-group.
+          items:
+            format: uuid
+            type: string
+          maxItems: 1000
+          minItems: 1
+          type: array
+        project_id:
+          format: uuid
+          type: string
+        team_id:
+          format: uuid
+          type: string
+      required:
+        - team_id
+        - project_id
+        - environment_id
+        - ids
+      type: object
+    ReorderServicesResponseBody:
+      additionalProperties: false
+      properties:
+        data:
+          items:
+            $ref: "#/components/schemas/ServiceResponse"
+          type: array
+      required:
+        - data
+      type: object
     ReplicaHealth:
       enum:
         - pending
@@ -3600,6 +3704,8 @@ components:
       type: object
     SortByField:
       enum:
+        - custom
+        - name
         - created_at
         - updated_at
       title: SortByField
@@ -7922,21 +8028,24 @@ paths:
         risk: low
   /projects/list:
     get:
-      description: List all projects in a team.
+      description: List all projects in a team, newest first by default. sort_by custom gives the team's own order, the one people arrange in the UI.
       operationId: list-projects
       parameters:
-        - explode: false
+        - description: custom is the order the team arranged by hand
+          explode: false
           in: query
           name: sort_by
           schema:
             $ref: "#/components/schemas/SortByField"
             default: created_at
-        - explode: false
+            description: custom is the order the team arranged by hand
+        - description: Defaults to asc for custom and name, desc for created_at and updated_at
+          explode: false
           in: query
           name: sort_order
           schema:
             $ref: "#/components/schemas/SortOrder"
-            default: desc
+            description: Defaults to asc for custom and name, desc for created_at and updated_at
         - explode: false
           in: query
           name: team_id
@@ -8022,6 +8131,100 @@ paths:
         readOnlyHint: true
         requiresConfirmation: false
         risk: low
+  /projects/reorder:
+    put:
+      description: Set the team's custom order of projects, which every member of the team sees. List the projects in the order they should appear; projects left out keep their order after the listed ones. Returns the team's projects in the new order.
+      operationId: reorder-projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReorderProjectsInput"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReorderProjectsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Reorder Projects
+      tags:
+        - Projects
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: false
+        risk: medium
   /projects/update:
     put:
       description: Update a project's name, description, or default environment.
@@ -9147,6 +9350,100 @@ paths:
         readOnlyHint: true
         requiresConfirmation: false
         risk: low
+  /service_groups/reorder:
+    put:
+      description: Set the custom order of the services inside a service group. List them in the order they should appear; ones left out keep their order after the listed ones. To move the group itself, use reorder-services. Returns the environment's services in the new order.
+      operationId: reorder-service-group
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReorderServiceGroupInput"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReorderServiceGroupResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Reorder Service Group
+      tags:
+        - Service Groups
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: false
+        risk: medium
   /service_groups/template-inputs:
     get:
       description: Get the deployed template's inputs in order with current values. Only valid for template-deployed groups.
@@ -10033,9 +10330,24 @@ paths:
         risk: low
   /services/list:
     get:
-      description: List all services in an environment.
+      description: List all services in an environment, newest first by default. sort_by custom gives the order people arrange in the UI, with each group's services together where the group sits.
       operationId: list-service
       parameters:
+        - description: custom is the order the team arranged by hand
+          explode: false
+          in: query
+          name: sort_by
+          schema:
+            $ref: "#/components/schemas/SortByField"
+            default: created_at
+            description: custom is the order the team arranged by hand
+        - description: Defaults to asc for custom and name, desc for created_at and updated_at
+          explode: false
+          in: query
+          name: sort_order
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+            description: Defaults to asc for custom and name, desc for created_at and updated_at
         - explode: false
           in: query
           name: team_id
@@ -10133,6 +10445,100 @@ paths:
         readOnlyHint: true
         requiresConfirmation: false
         risk: low
+  /services/reorder:
+    put:
+      description: Set the custom order of an environment's service groups and the services that are not in a group, which everyone who sees the environment gets. List them in the order they should appear; ones left out keep their order after the listed ones. A group moves with its services. Returns the environment's services in the new order.
+      operationId: reorder-services
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReorderServicesInput"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReorderServicesResponseBody"
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Request
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unauthorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Forbidden
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Not Found
+        "409":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Conflict
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Unprocessable Entity
+        "429":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Too Many Requests
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Internal Server Error
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Bad Gateway
+        "503":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Service Unavailable
+        "504":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseError"
+          description: Gateway Timeout
+      security:
+        - bearerAuth: []
+      summary: Reorder Services
+      tags:
+        - Services
+      x-agent:
+        destructiveHint: false
+        idempotentHint: true
+        openWorldHint: false
+        readOnlyHint: false
+        requiresConfirmation: false
+        risk: medium
   /services/update:
     put:
       description: Update a service's config (source, build, runtime, networking). A running service rolls the change out right away, rebuilding when the source or a build setting changed. A service that was never deployed picks it up on its first deployment.

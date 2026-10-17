@@ -87,6 +87,7 @@ func (Service) Fields() []ent.Field {
 		field.UUID("template_instance_id", uuid.UUID{}).Optional().Nillable().Comment("Group reference of all services launched together from a template."),
 		field.String("template_service_id").Optional().Nillable().Comment("ID of the service in the template definition, which the name stops matching after a rename"),
 		field.UUID("service_group_id", uuid.UUID{}).Optional().Nillable().Comment("The group this service belongs to"),
+		field.Int("position").Default(0).Comment("Place in the custom order, among the environment's groups and ungrouped services, or within its group"),
 	}
 }
 

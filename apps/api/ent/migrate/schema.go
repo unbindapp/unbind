@@ -554,6 +554,7 @@ var (
 		{Name: "status", Type: field.TypeString, Default: "active"},
 		{Name: "tags", Type: field.TypeJSON, Nullable: true},
 		{Name: "kubernetes_secret", Type: field.TypeString},
+		{Name: "position", Type: field.TypeInt, Default: 0},
 		{Name: "default_environment_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "team_id", Type: field.TypeUUID},
 	}
@@ -565,13 +566,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "projects_environments_project_default",
-				Columns:    []*schema.Column{ProjectsColumns[9]},
+				Columns:    []*schema.Column{ProjectsColumns[10]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "projects_teams_projects",
-				Columns:    []*schema.Column{ProjectsColumns[10]},
+				Columns:    []*schema.Column{ProjectsColumns[11]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -580,7 +581,12 @@ var (
 			{
 				Name:    "project_team_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{ProjectsColumns[10], ProjectsColumns[4]},
+				Columns: []*schema.Column{ProjectsColumns[11], ProjectsColumns[4]},
+			},
+			{
+				Name:    "project_team_id_position",
+				Unique:  false,
+				Columns: []*schema.Column{ProjectsColumns[11], ProjectsColumns[9]},
 			},
 		},
 	}
@@ -650,6 +656,7 @@ var (
 		{Name: "kubernetes_secret", Type: field.TypeString},
 		{Name: "template_instance_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "template_service_id", Type: field.TypeString, Nullable: true},
+		{Name: "position", Type: field.TypeInt, Default: 0},
 		{Name: "environment_id", Type: field.TypeUUID},
 		{Name: "github_installation_id", Type: field.TypeInt64, Nullable: true},
 		{Name: "current_deployment_id", Type: field.TypeUUID, Nullable: true},
@@ -664,31 +671,31 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "services_environments_services",
-				Columns:    []*schema.Column{ServicesColumns[15]},
+				Columns:    []*schema.Column{ServicesColumns[16]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "services_github_installations_services",
-				Columns:    []*schema.Column{ServicesColumns[16]},
+				Columns:    []*schema.Column{ServicesColumns[17]},
 				RefColumns: []*schema.Column{GithubInstallationsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "services_deployments_current_deployment",
-				Columns:    []*schema.Column{ServicesColumns[17]},
+				Columns:    []*schema.Column{ServicesColumns[18]},
 				RefColumns: []*schema.Column{DeploymentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "services_service_groups_services",
-				Columns:    []*schema.Column{ServicesColumns[18]},
+				Columns:    []*schema.Column{ServicesColumns[19]},
 				RefColumns: []*schema.Column{ServiceGroupsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "services_templates_services",
-				Columns:    []*schema.Column{ServicesColumns[19]},
+				Columns:    []*schema.Column{ServicesColumns[20]},
 				RefColumns: []*schema.Column{TemplatesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -697,17 +704,17 @@ var (
 			{
 				Name:    "service_environment_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{ServicesColumns[15], ServicesColumns[5]},
+				Columns: []*schema.Column{ServicesColumns[16], ServicesColumns[5]},
 			},
 			{
 				Name:    "service_environment_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{ServicesColumns[15], ServicesColumns[1]},
+				Columns: []*schema.Column{ServicesColumns[16], ServicesColumns[1]},
 			},
 			{
 				Name:    "service_service_group_id_created_at",
 				Unique:  false,
-				Columns: []*schema.Column{ServicesColumns[18], ServicesColumns[1]},
+				Columns: []*schema.Column{ServicesColumns[19], ServicesColumns[1]},
 			},
 			{
 				Name:    "service_created_at",
@@ -790,6 +797,7 @@ var (
 		{Name: "icon", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "template_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "position", Type: field.TypeInt, Default: 0},
 		{Name: "environment_id", Type: field.TypeUUID},
 	}
 	// ServiceGroupsTable holds the schema information for the "service_groups" table.
@@ -800,7 +808,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "service_groups_environments_service_groups",
-				Columns:    []*schema.Column{ServiceGroupsColumns[7]},
+				Columns:    []*schema.Column{ServiceGroupsColumns[8]},
 				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -809,7 +817,7 @@ var (
 			{
 				Name:    "servicegroup_environment_id_name",
 				Unique:  true,
-				Columns: []*schema.Column{ServiceGroupsColumns[7], ServiceGroupsColumns[3]},
+				Columns: []*schema.Column{ServiceGroupsColumns[8], ServiceGroupsColumns[3]},
 			},
 		},
 	}

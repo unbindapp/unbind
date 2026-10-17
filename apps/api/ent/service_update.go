@@ -353,6 +353,27 @@ func (_u *ServiceUpdate) ClearServiceGroupID() *ServiceUpdate {
 	return _u
 }
 
+// SetPosition sets the "position" field.
+func (_u *ServiceUpdate) SetPosition(v int) *ServiceUpdate {
+	_u.mutation.ResetPosition()
+	_u.mutation.SetPosition(v)
+	return _u
+}
+
+// SetNillablePosition sets the "position" field if the given value is not nil.
+func (_u *ServiceUpdate) SetNillablePosition(v *int) *ServiceUpdate {
+	if v != nil {
+		_u.SetPosition(*v)
+	}
+	return _u
+}
+
+// AddPosition adds value to the "position" field.
+func (_u *ServiceUpdate) AddPosition(v int) *ServiceUpdate {
+	_u.mutation.AddPosition(v)
+	return _u
+}
+
 // SetEnvironment sets the "environment" edge to the Environment entity.
 func (_u *ServiceUpdate) SetEnvironment(v *Environment) *ServiceUpdate {
 	return _u.SetEnvironmentID(v.ID)
@@ -685,6 +706,12 @@ func (_u *ServiceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.TemplateServiceIDCleared() {
 		_spec.ClearField(service.FieldTemplateServiceID, field.TypeString)
+	}
+	if value, ok := _u.mutation.Position(); ok {
+		_spec.SetField(service.FieldPosition, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPosition(); ok {
+		_spec.AddField(service.FieldPosition, field.TypeInt, value)
 	}
 	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1331,6 +1358,27 @@ func (_u *ServiceUpdateOne) ClearServiceGroupID() *ServiceUpdateOne {
 	return _u
 }
 
+// SetPosition sets the "position" field.
+func (_u *ServiceUpdateOne) SetPosition(v int) *ServiceUpdateOne {
+	_u.mutation.ResetPosition()
+	_u.mutation.SetPosition(v)
+	return _u
+}
+
+// SetNillablePosition sets the "position" field if the given value is not nil.
+func (_u *ServiceUpdateOne) SetNillablePosition(v *int) *ServiceUpdateOne {
+	if v != nil {
+		_u.SetPosition(*v)
+	}
+	return _u
+}
+
+// AddPosition adds value to the "position" field.
+func (_u *ServiceUpdateOne) AddPosition(v int) *ServiceUpdateOne {
+	_u.mutation.AddPosition(v)
+	return _u
+}
+
 // SetEnvironment sets the "environment" edge to the Environment entity.
 func (_u *ServiceUpdateOne) SetEnvironment(v *Environment) *ServiceUpdateOne {
 	return _u.SetEnvironmentID(v.ID)
@@ -1693,6 +1741,12 @@ func (_u *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err er
 	}
 	if _u.mutation.TemplateServiceIDCleared() {
 		_spec.ClearField(service.FieldTemplateServiceID, field.TypeString)
+	}
+	if value, ok := _u.mutation.Position(); ok {
+		_spec.SetField(service.FieldPosition, field.TypeInt, value)
+	}
+	if value, ok := _u.mutation.AddedPosition(); ok {
+		_spec.AddField(service.FieldPosition, field.TypeInt, value)
 	}
 	if _u.mutation.EnvironmentCleared() {
 		edge := &sqlgraph.EdgeSpec{

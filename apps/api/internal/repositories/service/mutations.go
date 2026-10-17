@@ -45,7 +45,20 @@ func (self *ServiceRepository) Create(
 		db = tx.Client()
 	}
 
+	// New services go to the top of their group, or of the environment
+	var position int
+	var err error
+	if input.ServiceGroupID != nil {
+		position, err = GroupPositionAbove(ctx, db, *input.ServiceGroupID)
+	} else {
+		position, err = TopLevelPositionAbove(ctx, db, input.EnvironmentID)
+	}
+	if err != nil {
+		return nil, err
+	}
+
 	return db.Service.Create().
+		SetPosition(position).
 		SetType(input.ServiceType).
 		SetKubernetesName(input.KubernetesName).
 		SetName(input.Name).

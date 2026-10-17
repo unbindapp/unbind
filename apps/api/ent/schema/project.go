@@ -35,6 +35,7 @@ func (Project) Fields() []ent.Field {
 		field.Strings("tags").Optional(),
 		field.UUID("default_environment_id", uuid.UUID{}).Optional().Nillable(),
 		field.String("kubernetes_secret").Comment("Kubernetes secret for this project"),
+		field.Int("position").Default(0).Comment("Place in the team's custom order, lowest first"),
 	}
 }
 
@@ -63,6 +64,7 @@ func (Project) Edges() []ent.Edge {
 func (Project) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("team_id", "name").Unique(),
+		index.Fields("team_id", "position"),
 	}
 }
 

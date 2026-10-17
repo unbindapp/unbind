@@ -34,6 +34,8 @@ type ServiceGroup struct {
 	EnvironmentID uuid.UUID `json:"environment_id,omitempty"`
 	// Set when the group was created by deploying a template
 	TemplateID *uuid.UUID `json:"template_id,omitempty"`
+	// Place in the custom order, among the environment's groups and ungrouped services
+	Position int `json:"position,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ServiceGroupQuery when eager-loading is set.
 	Edges        ServiceGroupEdges `json:"edges"`
@@ -78,6 +80,8 @@ func (*ServiceGroup) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case servicegroup.FieldTemplateID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case servicegroup.FieldPosition:
+			values[i] = new(sql.NullInt64)
 		case servicegroup.FieldName, servicegroup.FieldIcon, servicegroup.FieldDescription:
 			values[i] = new(sql.NullString)
 		case servicegroup.FieldCreatedAt, servicegroup.FieldUpdatedAt:
@@ -149,6 +153,12 @@ func (_m *ServiceGroup) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TemplateID = new(uuid.UUID)
 				*_m.TemplateID = *value.S.(*uuid.UUID)
+			}
+		case servicegroup.FieldPosition:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field position", values[i])
+			} else if value.Valid {
+				_m.Position = int(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -222,6 +232,9 @@ func (_m *ServiceGroup) String() string {
 		builder.WriteString("template_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("position=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Position))
 	builder.WriteByte(')')
 	return builder.String()
 }

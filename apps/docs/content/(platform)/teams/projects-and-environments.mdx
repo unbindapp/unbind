@@ -19,6 +19,20 @@ Every new project starts with an environment called `production`.
 - **Webhooks**: notifications about services and deployments. See [Webhooks](/monitoring/webhooks).
 - **Danger Zone**: delete the project.
 
+### Finding and ordering projects
+
+The search box on the team page filters projects by name. The sort button next to it switches between:
+
+- **Custom**: the order your team arranged. This is the default.
+- **Newest First** and **Oldest First**: by creation date.
+- **A → Z** and **Z → A**: by name.
+
+To arrange projects, keep the sort on **Custom**, clear the search, and drag a card to its new place. On a phone, press and hold a card first. With a keyboard, focus a card, press **Space**, move it with the arrow keys and press **Space** again.
+
+The custom order is shared: everyone in the team sees the same one. Changing it needs the editor role. New projects go to the top.
+
+Through the [API](/api), `list-projects` lists newest first unless you pass `sort_by` (`custom`, `name`, `created_at` or `updated_at`) and `sort_order`. `reorder-projects` sets the custom order.
+
 ## Environments
 
 Add one under **Settings** > **Environments**. It starts empty. There is no way to copy an environment yet, so you add its services again, or script it through the [API](/api).

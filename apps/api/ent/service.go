@@ -65,6 +65,8 @@ type Service struct {
 	TemplateServiceID *string `json:"template_service_id,omitempty"`
 	// The group this service belongs to
 	ServiceGroupID *uuid.UUID `json:"service_group_id,omitempty"`
+	// Place in the custom order, among the environment's groups and ungrouped services, or within its group
+	Position int `json:"position,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ServiceQuery when eager-loading is set.
 	Edges        ServiceEdges `json:"edges"`
@@ -198,7 +200,7 @@ func (*Service) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case service.FieldDetectedPorts:
 			values[i] = new([]byte)
-		case service.FieldGithubInstallationID:
+		case service.FieldGithubInstallationID, service.FieldPosition:
 			values[i] = new(sql.NullInt64)
 		case service.FieldType, service.FieldKubernetesName, service.FieldName, service.FieldDescription, service.FieldDatabase, service.FieldDatabaseVersion, service.FieldGitRepositoryOwner, service.FieldGitRepository, service.FieldKubernetesSecret, service.FieldTemplateServiceID:
 			values[i] = new(sql.NullString)
@@ -352,6 +354,12 @@ func (_m *Service) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ServiceGroupID = new(uuid.UUID)
 				*_m.ServiceGroupID = *value.S.(*uuid.UUID)
+			}
+		case service.FieldPosition:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field position", values[i])
+			} else if value.Valid {
+				_m.Position = int(value.Int64)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -510,6 +518,9 @@ func (_m *Service) String() string {
 		builder.WriteString("service_group_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("position=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Position))
 	builder.WriteByte(')')
 	return builder.String()
 }

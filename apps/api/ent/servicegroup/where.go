@@ -91,6 +91,11 @@ func TemplateID(v uuid.UUID) predicate.ServiceGroup {
 	return predicate.ServiceGroup(sql.FieldEQ(FieldTemplateID, v))
 }
 
+// Position applies equality check predicate on the "position" field. It's identical to PositionEQ.
+func Position(v int) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldEQ(FieldPosition, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.ServiceGroup {
 	return predicate.ServiceGroup(sql.FieldEQ(FieldCreatedAt, v))
@@ -454,6 +459,46 @@ func TemplateIDIsNil() predicate.ServiceGroup {
 // TemplateIDNotNil applies the NotNil predicate on the "template_id" field.
 func TemplateIDNotNil() predicate.ServiceGroup {
 	return predicate.ServiceGroup(sql.FieldNotNull(FieldTemplateID))
+}
+
+// PositionEQ applies the EQ predicate on the "position" field.
+func PositionEQ(v int) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldEQ(FieldPosition, v))
+}
+
+// PositionNEQ applies the NEQ predicate on the "position" field.
+func PositionNEQ(v int) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldNEQ(FieldPosition, v))
+}
+
+// PositionIn applies the In predicate on the "position" field.
+func PositionIn(vs ...int) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldIn(FieldPosition, vs...))
+}
+
+// PositionNotIn applies the NotIn predicate on the "position" field.
+func PositionNotIn(vs ...int) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldNotIn(FieldPosition, vs...))
+}
+
+// PositionGT applies the GT predicate on the "position" field.
+func PositionGT(v int) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldGT(FieldPosition, v))
+}
+
+// PositionGTE applies the GTE predicate on the "position" field.
+func PositionGTE(v int) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldGTE(FieldPosition, v))
+}
+
+// PositionLT applies the LT predicate on the "position" field.
+func PositionLT(v int) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldLT(FieldPosition, v))
+}
+
+// PositionLTE applies the LTE predicate on the "position" field.
+func PositionLTE(v int) predicate.ServiceGroup {
+	return predicate.ServiceGroup(sql.FieldLTE(FieldPosition, v))
 }
 
 // HasEnvironment applies the HasEdge predicate on the "environment" edge.

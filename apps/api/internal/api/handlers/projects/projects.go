@@ -28,7 +28,7 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-projects",
 		Summary:     "List Projects",
-		Description: "List all projects in a team.",
+		Description: "List all projects in a team, newest first by default. sort_by custom gives the team's own order, the one people arrange in the UI.",
 		Path:        "/list",
 		Method:      http.MethodGet,
 	}, handlers.ListProjects, oapi.MCP)
@@ -48,6 +48,14 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Path:        "/update",
 		Method:      http.MethodPut,
 	}, handlers.UpdateProject, oapi.MCP)
+
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "reorder-projects",
+		Summary:     "Reorder Projects",
+		Description: "Set the team's custom order of projects, which every member of the team sees. List the projects in the order they should appear; projects left out keep their order after the listed ones. Returns the team's projects in the new order.",
+		Path:        "/reorder",
+		Method:      http.MethodPut,
+	}, handlers.ReorderProjects, oapi.MCP)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-project",

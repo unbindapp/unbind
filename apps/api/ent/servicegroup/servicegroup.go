@@ -29,6 +29,8 @@ const (
 	FieldEnvironmentID = "environment_id"
 	// FieldTemplateID holds the string denoting the template_id field in the database.
 	FieldTemplateID = "template_id"
+	// FieldPosition holds the string denoting the position field in the database.
+	FieldPosition = "position"
 	// EdgeEnvironment holds the string denoting the environment edge name in mutations.
 	EdgeEnvironment = "environment"
 	// EdgeServices holds the string denoting the services edge name in mutations.
@@ -61,6 +63,7 @@ var Columns = []string{
 	FieldDescription,
 	FieldEnvironmentID,
 	FieldTemplateID,
+	FieldPosition,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -80,6 +83,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultPosition holds the default value on creation for the "position" field.
+	DefaultPosition int
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -125,6 +130,11 @@ func ByEnvironmentID(opts ...sql.OrderTermOption) OrderOption {
 // ByTemplateID orders the results by the template_id field.
 func ByTemplateID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTemplateID, opts...).ToFunc()
+}
+
+// ByPosition orders the results by the position field.
+func ByPosition(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPosition, opts...).ToFunc()
 }
 
 // ByEnvironmentField orders the results by environment field.

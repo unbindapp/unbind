@@ -20,10 +20,18 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "list-service",
 		Summary:     "List Services",
-		Description: "List all services in an environment.",
+		Description: "List all services in an environment, newest first by default. sort_by custom gives the order people arrange in the UI, with each group's services together where the group sits.",
 		Path:        "/list",
 		Method:      http.MethodGet,
 	}, handlers.ListServices, oapi.MCP)
+
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID: "reorder-services",
+		Summary:     "Reorder Services",
+		Description: "Set the custom order of an environment's service groups and the services that are not in a group, which everyone who sees the environment gets. List them in the order they should appear; ones left out keep their order after the listed ones. A group moves with its services. Returns the environment's services in the new order.",
+		Path:        "/reorder",
+		Method:      http.MethodPut,
+	}, handlers.ReorderServices, oapi.MCP)
 
 	oapi.Register(grp, oapi.Read, huma.Operation{
 		OperationID: "get-service",
