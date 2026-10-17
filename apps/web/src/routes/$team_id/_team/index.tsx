@@ -36,7 +36,7 @@ function TeamProjectsPage() {
               onSearchChange={setSearch}
               sort={sort}
               onSortChange={setSort}
-              className="order-last w-full lg:order-none lg:-my-2 lg:w-68"
+              className="order-last w-full lg:order-none lg:-my-2 lg:w-60"
             />
             <NewProjectButton teamId={teamId} />
           </div>
