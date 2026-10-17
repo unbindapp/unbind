@@ -204,6 +204,7 @@ export default function ServiceCard({
               <VolumeLine
                 key={volume.id}
                 volume={volume}
+                isSortable={isSortable}
                 className={cn(
                   classNameVolume,
                   index === volumes.length - 1 && "group-data-staged/item:border-change/7-10",

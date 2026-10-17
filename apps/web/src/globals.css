@@ -79,6 +79,11 @@
   user-select: none !important;
 }
 
+/* A card drag would otherwise select the text it passes over on touch screens */
+:root:has([data-drag-source]) * {
+  user-select: none !important;
+}
+
 /* An open drawer covers the navbar, so the changes bar only keeps its gap */
 :root:has([data-slot="drawer-content"]:not([data-ending-style])) {
   --changes-bar-inset-bottom: calc(var(--safe-area-inset-bottom) + var(--changes-bar-gap));

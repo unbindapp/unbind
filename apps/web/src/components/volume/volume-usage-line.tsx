@@ -15,10 +15,11 @@ import { useMemo } from "react";
 
 type TProps = {
   volume: TVolumeShallow;
+  isSortable?: boolean;
   className?: string;
 };
 
-export default function VolumeUsageLine({ volume, className }: TProps) {
+export default function VolumeUsageLine({ volume, isSortable, className }: TProps) {
   const { getOpenSearch } = useVolumePanel();
   const usagePercentage = useMemo(() => {
     if (volume.used_gb === undefined || !volume.capacity_gb) return undefined;
@@ -46,8 +47,11 @@ export default function VolumeUsageLine({ volume, className }: TProps) {
         search={(prev) => ({ ...prev, ...getOpenSearch(volume.id) })}
         replace={true}
         resetScroll={false}
+        // The browser's own link dragging would cancel the reorder drag
+        draggable={isSortable ? false : undefined}
         className={cn(
           "group/line bg-background relative w-full overflow-hidden rounded-none border px-0 py-2",
+          isSortable && "[-webkit-touch-callout:none]",
           className,
         )}
       >
