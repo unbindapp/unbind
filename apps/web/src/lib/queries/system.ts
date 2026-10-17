@@ -88,3 +88,8 @@ export async function applyUpdate(targetVersion: string) {
   const res = await getGoClient().system.update.apply({ target_version: targetVersion });
   return { data: res };
 }
+
+export async function checkForUpdates() {
+  const res = await getGoClient().system.update.check();
+  return { data: res };
+}
