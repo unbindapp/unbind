@@ -15,7 +15,7 @@ import (
 )
 
 func (self *TeamRepository) GetAll(ctx context.Context, authPredicate predicate.Team) ([]*ent.Team, error) {
-	q := self.base.DB.Team.Query()
+	q := self.base.DB.Team.Query().WithIcon(withIconTime)
 	if authPredicate != nil {
 		q = q.Where(authPredicate)
 	}
@@ -25,6 +25,7 @@ func (self *TeamRepository) GetAll(ctx context.Context, authPredicate predicate.
 func (self *TeamRepository) GetByID(ctx context.Context, id uuid.UUID) (*ent.Team, error) {
 	return self.base.DB.Team.Query().
 		Where(team.ID(id)).
+		WithIcon(withIconTime).
 		WithProjects(func(pq *ent.ProjectQuery) {
 			pq.WithEnvironments(
 				func(eq *ent.EnvironmentQuery) {

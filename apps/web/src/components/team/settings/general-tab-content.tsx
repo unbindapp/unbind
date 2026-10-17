@@ -1,6 +1,7 @@
 "use client";
 
 import RenameCard from "@/components/settings/rename-card";
+import TeamIconCard from "@/components/team/settings/team-icon-card";
 import { useTeam } from "@/components/team/team-provider";
 import { useTeams } from "@/components/team/teams-provider";
 import { cn } from "@/components/ui/utils";
@@ -26,7 +27,7 @@ export default function GeneralTabContent({ teamId, className }: TProps) {
   const { mutateAsync: updateTeam, error } = useMutation({ mutationFn: updateTeamFn });
 
   return (
-    <div className={cn("flex w-full flex-col gap-3", className)}>
+    <div className={cn("flex w-full flex-col gap-4", className)}>
       <RenameCard
         type="team"
         onSubmit={async (value) => {
@@ -45,6 +46,7 @@ export default function GeneralTabContent({ teamId, className }: TProps) {
         schema={TeamUpdateFormSchema}
         uniqueAmong={{ names: teamsData?.teams.map((t) => t.name) ?? [], entity: "a team" }}
       />
+      <TeamIconCard />
     </div>
   );
 }

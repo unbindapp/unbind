@@ -8,6 +8,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/permission"
 	"github.com/unbindapp/unbind-api/ent/schema"
+	"github.com/unbindapp/unbind-api/ent/team"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 )
 
@@ -40,7 +41,13 @@ func (self *TeamRepository) Update(ctx context.Context, teamID uuid.UUID, name s
 			m.SetDescription(*description)
 		}
 	}
-	return m.Save(ctx)
+	if err := m.Exec(ctx); err != nil {
+		return nil, err
+	}
+	return self.base.DB.Team.Query().
+		Where(team.ID(teamID)).
+		WithIcon(withIconTime).
+		Only(ctx)
 }
 
 // Delete removes the team, its role groups (by cascade) and every grant that

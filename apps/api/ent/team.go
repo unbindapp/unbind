@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/team"
+	"github.com/unbindapp/unbind-api/ent/teamicon"
 )
 
 // Team is the model entity for the Team schema.
@@ -55,9 +56,11 @@ type TeamEdges struct {
 	GithubApps []*GithubApp `json:"github_apps,omitempty"`
 	// TeamWebhooks holds the value of the team_webhooks edge.
 	TeamWebhooks []*Webhook `json:"team_webhooks,omitempty"`
+	// Icon holds the value of the icon edge.
+	Icon *TeamIcon `json:"icon,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // ProjectsOrErr returns the Projects value or an error if the edge
@@ -121,6 +124,17 @@ func (e TeamEdges) TeamWebhooksOrErr() ([]*Webhook, error) {
 		return e.TeamWebhooks, nil
 	}
 	return nil, &NotLoadedError{edge: "team_webhooks"}
+}
+
+// IconOrErr returns the Icon value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TeamEdges) IconOrErr() (*TeamIcon, error) {
+	if e.Icon != nil {
+		return e.Icon, nil
+	} else if e.loadedTypes[7] {
+		return nil, &NotFoundError{label: teamicon.Label}
+	}
+	return nil, &NotLoadedError{edge: "icon"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -244,6 +258,11 @@ func (_m *Team) QueryGithubApps() *GithubAppQuery {
 // QueryTeamWebhooks queries the "team_webhooks" edge of the Team entity.
 func (_m *Team) QueryTeamWebhooks() *WebhookQuery {
 	return NewTeamClient(_m.config).QueryTeamWebhooks(_m)
+}
+
+// QueryIcon queries the "icon" edge of the Team entity.
+func (_m *Team) QueryIcon() *TeamIconQuery {
+	return NewTeamClient(_m.config).QueryIcon(_m)
 }
 
 // Update returns a builder for updating this Team.

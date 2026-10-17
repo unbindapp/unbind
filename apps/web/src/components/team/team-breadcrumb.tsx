@@ -3,6 +3,7 @@
 import { BreadcrumbItem } from "@/components/navigation/breadcrumb-item";
 import { BreadcrumbWrapper } from "@/components/navigation/breadcrumb-wrapper";
 import { CreateTeamDialog } from "@/components/team/create-team-dialog";
+import TeamIcon from "@/components/team/team-icon";
 import { useTeams } from "@/components/team/teams-provider";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
 import { isSystemAdmin, meQuery } from "@/lib/queries/me";
@@ -49,6 +50,16 @@ export default function TeamBreadcrumb({ className }: TProps) {
     [router],
   );
 
+  const teams = teamData?.teams;
+  const TeamIconItem = useCallback(
+    ({ id, className }: { id: string; className?: string }) => {
+      const team = teams?.find((t) => t.id === id);
+      if (!team) return null;
+      return <TeamIcon team={team} className={className} />;
+    },
+    [teams],
+  );
+
   const CreateTeamDialogMemoized = useCallback(
     ({ children }: { children: ReactElement }) => (
       <CreateTeamDialog
@@ -63,7 +74,8 @@ export default function TeamBreadcrumb({ className }: TProps) {
   );
 
   const shared = {
-    flipChevronOnSm: true,
+    chevron: "up-down" as const,
+    IconItem: TeamIconItem,
     title: "Teams",
     selectedItem: selectedTeam,
     items: teamData?.teams,

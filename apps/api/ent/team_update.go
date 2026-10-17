@@ -19,6 +19,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/project"
 	"github.com/unbindapp/unbind-api/ent/s3bucket"
 	"github.com/unbindapp/unbind-api/ent/team"
+	"github.com/unbindapp/unbind-api/ent/teamicon"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/ent/webhook"
 )
@@ -224,6 +225,25 @@ func (_u *TeamUpdate) AddTeamWebhooks(v ...*Webhook) *TeamUpdate {
 	return _u.AddTeamWebhookIDs(ids...)
 }
 
+// SetIconID sets the "icon" edge to the TeamIcon entity by ID.
+func (_u *TeamUpdate) SetIconID(id uuid.UUID) *TeamUpdate {
+	_u.mutation.SetIconID(id)
+	return _u
+}
+
+// SetNillableIconID sets the "icon" edge to the TeamIcon entity by ID if the given value is not nil.
+func (_u *TeamUpdate) SetNillableIconID(id *uuid.UUID) *TeamUpdate {
+	if id != nil {
+		_u = _u.SetIconID(*id)
+	}
+	return _u
+}
+
+// SetIcon sets the "icon" edge to the TeamIcon entity.
+func (_u *TeamUpdate) SetIcon(v *TeamIcon) *TeamUpdate {
+	return _u.SetIconID(v.ID)
+}
+
 // Mutation returns the TeamMutation object of the builder.
 func (_u *TeamUpdate) Mutation() *TeamMutation {
 	return _u.mutation
@@ -374,6 +394,12 @@ func (_u *TeamUpdate) RemoveTeamWebhooks(v ...*Webhook) *TeamUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTeamWebhookIDs(ids...)
+}
+
+// ClearIcon clears the "icon" edge to the TeamIcon entity.
+func (_u *TeamUpdate) ClearIcon() *TeamUpdate {
+	_u.mutation.ClearIcon()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -776,6 +802,35 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.IconCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   team.IconTable,
+			Columns: []string{team.IconColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teamicon.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IconIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   team.IconTable,
+			Columns: []string{team.IconColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teamicon.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -985,6 +1040,25 @@ func (_u *TeamUpdateOne) AddTeamWebhooks(v ...*Webhook) *TeamUpdateOne {
 	return _u.AddTeamWebhookIDs(ids...)
 }
 
+// SetIconID sets the "icon" edge to the TeamIcon entity by ID.
+func (_u *TeamUpdateOne) SetIconID(id uuid.UUID) *TeamUpdateOne {
+	_u.mutation.SetIconID(id)
+	return _u
+}
+
+// SetNillableIconID sets the "icon" edge to the TeamIcon entity by ID if the given value is not nil.
+func (_u *TeamUpdateOne) SetNillableIconID(id *uuid.UUID) *TeamUpdateOne {
+	if id != nil {
+		_u = _u.SetIconID(*id)
+	}
+	return _u
+}
+
+// SetIcon sets the "icon" edge to the TeamIcon entity.
+func (_u *TeamUpdateOne) SetIcon(v *TeamIcon) *TeamUpdateOne {
+	return _u.SetIconID(v.ID)
+}
+
 // Mutation returns the TeamMutation object of the builder.
 func (_u *TeamUpdateOne) Mutation() *TeamMutation {
 	return _u.mutation
@@ -1135,6 +1209,12 @@ func (_u *TeamUpdateOne) RemoveTeamWebhooks(v ...*Webhook) *TeamUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTeamWebhookIDs(ids...)
+}
+
+// ClearIcon clears the "icon" edge to the TeamIcon entity.
+func (_u *TeamUpdateOne) ClearIcon() *TeamUpdateOne {
+	_u.mutation.ClearIcon()
+	return _u
 }
 
 // Where appends a list predicates to the TeamUpdate builder.
@@ -1560,6 +1640,35 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(webhook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IconCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   team.IconTable,
+			Columns: []string{team.IconColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teamicon.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IconIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   team.IconTable,
+			Columns: []string{team.IconColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(teamicon.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -18,6 +18,7 @@ import {
   ArrowRightIcon,
   CheckIcon,
   ChevronDownIcon,
+  ChevronsUpDownIcon,
   LoaderIcon,
   PlusIcon,
   SettingsIcon,
@@ -46,6 +47,7 @@ type TProps<T> = {
   onIntent: (id: string) => void;
   IconItem?: FC<{ id: string; className?: string }>;
   flipChevronOnSm?: boolean;
+  chevron?: TTriggerChevron;
   showArrow?: (i: T) => boolean;
   children?: ReactNode;
   sideOffset?: number;
@@ -86,6 +88,7 @@ export function BreadcrumbItem<T>({
   onIntent,
   IconItem,
   flipChevronOnSm,
+  chevron,
   newItemTitle,
   newItemIsPending,
   newItemDontCloseMenuOnSelect,
@@ -148,6 +151,7 @@ export function BreadcrumbItem<T>({
             item={selectedItem === null ? { name: "Not Found", id: "not-found" } : selectedItem}
             Icon={IconItem}
             flipChevronOnSm={flipChevronOnSm}
+            chevron={chevron}
             className={classNameTrigger}
           />
         )}
@@ -471,16 +475,20 @@ function DropdownItem<T>({
   );
 }
 
+type TTriggerChevron = "down" | "up-down";
+
 function Trigger<T>({
   item,
   Icon,
   className,
   flipChevronOnSm,
+  chevron = "down",
   ...rest
 }: ComponentProps<"button"> & {
   item?: TBreadcrumbItem<T>;
   Icon?: FC<{ id: string; className: string }>;
   flipChevronOnSm?: boolean;
+  chevron?: TTriggerChevron;
 }) {
   return (
     <Button
@@ -502,10 +510,14 @@ function Trigger<T>({
       <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton relative truncate py-0.5 leading-none group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
         {item == undefined ? "Loading" : item?.name}
       </p>
-      <ChevronDownIcon
-        data-flip-chevron-sm={flipChevronOnSm || undefined}
-        className="text-muted-more-foreground relative -my-1 -ml-1 size-4 transition group-data-popup-open/button:rotate-180 data-flip-chevron-sm:rotate-180 group-data-popup-open/button:data-flip-chevron-sm:rotate-360 sm:data-flip-chevron-sm:rotate-0 sm:group-data-popup-open/button:data-flip-chevron-sm:rotate-180"
-      />
+      {chevron === "up-down" ? (
+        <ChevronsUpDownIcon className="text-muted-more-foreground relative -my-1 -ml-1 size-4" />
+      ) : (
+        <ChevronDownIcon
+          data-flip-chevron-sm={flipChevronOnSm || undefined}
+          className="text-muted-more-foreground relative -my-1 -ml-1 size-4 transition group-data-popup-open/button:rotate-180 data-flip-chevron-sm:rotate-180 group-data-popup-open/button:data-flip-chevron-sm:rotate-360 sm:data-flip-chevron-sm:rotate-0 sm:group-data-popup-open/button:data-flip-chevron-sm:rotate-180"
+        />
+      )}
     </Button>
   );
 }

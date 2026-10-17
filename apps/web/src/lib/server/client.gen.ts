@@ -1041,6 +1041,7 @@ export const TeamResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
     description: z.string().nullable(),
+    icon_updated_at: z.string().datetime({ offset: true }).nullable(), // When the team's icon was last set. Empty when the team uses its default letter icon.
     id: z.string(),
     kubernetes_name: z.string(),
     name: z.string(),
@@ -1272,6 +1273,12 @@ export const DeleteServiceInputBodySchema = z
 export const DeleteServiceResponseBodySchema = z
   .object({
     data: DeletedResponseSchema,
+  })
+  .strip();
+
+export const DeleteTeamIconInputBodySchema = z
+  .object({
+    team_id: z.string(),
   })
   .strip();
 
@@ -2900,6 +2907,12 @@ export const SystemSettingsUpdateInputSchema = z
   })
   .strip();
 
+export const TeamIconResponseBodySchema = z
+  .object({
+    data: TeamResponseSchema,
+  })
+  .strip();
+
 export const TeamMemberAddInputSchema = z
   .object({
     email: z.string(), // Email of an existing account. Accounts are created by instance admins.
@@ -3132,6 +3145,13 @@ export const UpdateStatusResponseBodySchema = z
     message: z.string().optional(),
     ready: z.boolean(),
     target_version: z.string().optional(),
+  })
+  .strip();
+
+export const UpdateTeamIconInputBodySchema = z
+  .object({
+    data: z.string(), // The icon file, base64 encoded. SVG, PNG or JPEG, up to 50 KB and 1024x1024.
+    team_id: z.string(),
   })
   .strip();
 
@@ -3403,6 +3423,7 @@ export type DeleteServiceGroupInput = z.infer<typeof DeleteServiceGroupInputSche
 export type DeleteServiceGroupResponseBody = z.infer<typeof DeleteServiceGroupResponseBodySchema>;
 export type DeleteServiceInputBody = z.infer<typeof DeleteServiceInputBodySchema>;
 export type DeleteServiceResponseBody = z.infer<typeof DeleteServiceResponseBodySchema>;
+export type DeleteTeamIconInputBody = z.infer<typeof DeleteTeamIconInputBodySchema>;
 export type DeleteTeamInputBody = z.infer<typeof DeleteTeamInputBodySchema>;
 export type DeleteTeamResponseBody = z.infer<typeof DeleteTeamResponseBodySchema>;
 export type DeleteUserInputBody = z.infer<typeof DeleteUserInputBodySchema>;
@@ -3633,6 +3654,7 @@ export type SuccessResponseBody = z.infer<typeof SuccessResponseBodySchema>;
 export type SystemMeta = z.infer<typeof SystemMetaSchema>;
 export type SystemMetaResponseBody = z.infer<typeof SystemMetaResponseBodySchema>;
 export type SystemSettingsUpdateInput = z.infer<typeof SystemSettingsUpdateInputSchema>;
+export type TeamIconResponseBody = z.infer<typeof TeamIconResponseBodySchema>;
 export type TeamMemberAddInput = z.infer<typeof TeamMemberAddInputSchema>;
 export type TeamMemberRemoveInput = z.infer<typeof TeamMemberRemoveInputSchema>;
 export type TeamMemberResponseBody = z.infer<typeof TeamMemberResponseBodySchema>;
@@ -3667,6 +3689,7 @@ export type UpdateServiceGroupTemplateInputsResponseBody = z.infer<
   typeof UpdateServiceGroupTemplateInputsResponseBodySchema
 >;
 export type UpdateStatusResponseBody = z.infer<typeof UpdateStatusResponseBodySchema>;
+export type UpdateTeamIconInputBody = z.infer<typeof UpdateTeamIconInputBodySchema>;
 export type UpdateTeamInputBody = z.infer<typeof UpdateTeamInputBodySchema>;
 export type UpdateTeamResponseBody = z.infer<typeof UpdateTeamResponseBodySchema>;
 export type UpdateWebhookResponseBody = z.infer<typeof UpdateWebhookResponseBodySchema>;
@@ -4045,6 +4068,13 @@ export const get_registryQuerySchema = z
 export const get_teamQuerySchema = z
   .object({
     team_id: z.string(),
+  })
+  .passthrough();
+
+export const get_team_iconQuerySchema = z
+  .object({
+    team_id: z.string(),
+    v: z.string().optional(), // Cache key, the team's icon_updated_at
   })
   .passthrough();
 
@@ -9579,6 +9609,133 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           throw error;
         }
       },
+      icon: Object.assign(
+        async (params: z.infer<typeof get_team_iconQuerySchema>, fetchOptions?: RequestInit) => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/teams/icon`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+            const validatedQuery = get_team_iconQuerySchema.parse(params);
+            const queryKeys = ['team_id', 'v'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            return data;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        {
+          delete: async (
+            params: DeleteTeamIconInputBody,
+            fetchOptions?: RequestInit,
+          ): Promise<TeamIconResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/teams/icon/delete`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = DeleteTeamIconInputBodySchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } = TeamIconResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          update: async (
+            params: UpdateTeamIconInputBody,
+            fetchOptions?: RequestInit,
+          ): Promise<TeamIconResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/teams/icon/update`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = UpdateTeamIconInputBodySchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } = TeamIconResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+        },
+      ),
       invitations: Object.assign(
         async (
           params: z.infer<typeof list_team_invitationsQuerySchema>,

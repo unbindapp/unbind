@@ -57,6 +57,10 @@ func (Team) Edges() []ent.Edge {
 		edge.To("team_webhooks", Webhook.Type).Annotations(
 			entsql.Annotation{OnDelete: entsql.Cascade},
 		),
+		// O2O to the uploaded icon, kept out of the teams table so team queries stay small
+		edge.To("icon", TeamIcon.Type).Unique().Annotations(
+			entsql.Annotation{OnDelete: entsql.Cascade},
+		),
 	}
 }
 

@@ -280,6 +280,63 @@ func (_c *TeamRepositoryMock_Delete_Call) RunAndReturn(run func(ctx context.Cont
 	return _c
 }
 
+// DeleteIcon provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) DeleteIcon(ctx context.Context, teamID uuid.UUID) error {
+	ret := _mock.Called(ctx, teamID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteIcon")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+		r0 = returnFunc(ctx, teamID)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// TeamRepositoryMock_DeleteIcon_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteIcon'
+type TeamRepositoryMock_DeleteIcon_Call struct {
+	*mock.Call
+}
+
+// DeleteIcon is a helper method to define mock.On call
+//   - ctx context.Context
+//   - teamID uuid.UUID
+func (_e *TeamRepositoryMock_Expecter) DeleteIcon(ctx any, teamID any) *TeamRepositoryMock_DeleteIcon_Call {
+	return &TeamRepositoryMock_DeleteIcon_Call{Call: _e.mock.On("DeleteIcon", ctx, teamID)}
+}
+
+func (_c *TeamRepositoryMock_DeleteIcon_Call) Run(run func(ctx context.Context, teamID uuid.UUID)) *TeamRepositoryMock_DeleteIcon_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_DeleteIcon_Call) Return(err error) *TeamRepositoryMock_DeleteIcon_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_DeleteIcon_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID) error) *TeamRepositoryMock_DeleteIcon_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteInvitation provides a mock function for the type TeamRepositoryMock
 func (_mock *TeamRepositoryMock) DeleteInvitation(ctx context.Context, teamID uuid.UUID, invitationID uuid.UUID) error {
 	ret := _mock.Called(ctx, teamID, invitationID)
@@ -617,6 +674,74 @@ func (_c *TeamRepositoryMock_GetGroupsReachingTeam_Call) Return(groups []*ent.Gr
 }
 
 func (_c *TeamRepositoryMock_GetGroupsReachingTeam_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID) ([]*ent.Group, error)) *TeamRepositoryMock_GetGroupsReachingTeam_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetIcon provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) GetIcon(ctx context.Context, teamID uuid.UUID) (*ent.TeamIcon, error) {
+	ret := _mock.Called(ctx, teamID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetIcon")
+	}
+
+	var r0 *ent.TeamIcon
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.TeamIcon, error)); ok {
+		return returnFunc(ctx, teamID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.TeamIcon); ok {
+		r0 = returnFunc(ctx, teamID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.TeamIcon)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, teamID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// TeamRepositoryMock_GetIcon_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetIcon'
+type TeamRepositoryMock_GetIcon_Call struct {
+	*mock.Call
+}
+
+// GetIcon is a helper method to define mock.On call
+//   - ctx context.Context
+//   - teamID uuid.UUID
+func (_e *TeamRepositoryMock_Expecter) GetIcon(ctx any, teamID any) *TeamRepositoryMock_GetIcon_Call {
+	return &TeamRepositoryMock_GetIcon_Call{Call: _e.mock.On("GetIcon", ctx, teamID)}
+}
+
+func (_c *TeamRepositoryMock_GetIcon_Call) Run(run func(ctx context.Context, teamID uuid.UUID)) *TeamRepositoryMock_GetIcon_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_GetIcon_Call) Return(teamIcon *ent.TeamIcon, err error) *TeamRepositoryMock_GetIcon_Call {
+	_c.Call.Return(teamIcon, err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_GetIcon_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID) (*ent.TeamIcon, error)) *TeamRepositoryMock_GetIcon_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1084,6 +1209,75 @@ func (_c *TeamRepositoryMock_MarkInvitationAccepted_Call) Return(err error) *Tea
 }
 
 func (_c *TeamRepositoryMock_MarkInvitationAccepted_Call) RunAndReturn(run func(ctx context.Context, invitationID uuid.UUID) error) *TeamRepositoryMock_MarkInvitationAccepted_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetIcon provides a mock function for the type TeamRepositoryMock
+func (_mock *TeamRepositoryMock) SetIcon(ctx context.Context, teamID uuid.UUID, contentType string, data []byte) error {
+	ret := _mock.Called(ctx, teamID, contentType, data)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetIcon")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, string, []byte) error); ok {
+		r0 = returnFunc(ctx, teamID, contentType, data)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// TeamRepositoryMock_SetIcon_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetIcon'
+type TeamRepositoryMock_SetIcon_Call struct {
+	*mock.Call
+}
+
+// SetIcon is a helper method to define mock.On call
+//   - ctx context.Context
+//   - teamID uuid.UUID
+//   - contentType string
+//   - data []byte
+func (_e *TeamRepositoryMock_Expecter) SetIcon(ctx any, teamID any, contentType any, data any) *TeamRepositoryMock_SetIcon_Call {
+	return &TeamRepositoryMock_SetIcon_Call{Call: _e.mock.On("SetIcon", ctx, teamID, contentType, data)}
+}
+
+func (_c *TeamRepositoryMock_SetIcon_Call) Run(run func(ctx context.Context, teamID uuid.UUID, contentType string, data []byte)) *TeamRepositoryMock_SetIcon_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 []byte
+		if args[3] != nil {
+			arg3 = args[3].([]byte)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *TeamRepositoryMock_SetIcon_Call) Return(err error) *TeamRepositoryMock_SetIcon_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *TeamRepositoryMock_SetIcon_Call) RunAndReturn(run func(ctx context.Context, teamID uuid.UUID, contentType string, data []byte) error) *TeamRepositoryMock_SetIcon_Call {
 	_c.Call.Return(run)
 	return _c
 }

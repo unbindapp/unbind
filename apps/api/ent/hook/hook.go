@@ -297,6 +297,18 @@ func (f TeamFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TeamMutation", m)
 }
 
+// The TeamIconFunc type is an adapter to allow the use of ordinary
+// function as TeamIcon mutator.
+type TeamIconFunc func(context.Context, *ent.TeamIconMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f TeamIconFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.TeamIconMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TeamIconMutation", m)
+}
+
 // The TemplateFunc type is an adapter to allow the use of ordinary
 // function as Template mutator.
 type TemplateFunc func(context.Context, *ent.TemplateMutation) (ent.Value, error)

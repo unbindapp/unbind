@@ -38,6 +38,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/servicegroup"
 	"github.com/unbindapp/unbind-api/ent/systemsetting"
 	"github.com/unbindapp/unbind-api/ent/team"
+	"github.com/unbindapp/unbind-api/ent/teamicon"
 	"github.com/unbindapp/unbind-api/ent/template"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/ent/webhook"
@@ -78,6 +79,7 @@ const (
 	TypeServiceGroup           = "ServiceGroup"
 	TypeSystemSetting          = "SystemSetting"
 	TypeTeam                   = "Team"
+	TypeTeamIcon               = "TeamIcon"
 	TypeTemplate               = "Template"
 	TypeUser                   = "User"
 	TypeWebhook                = "Webhook"
@@ -25074,6 +25076,8 @@ type TeamMutation struct {
 	team_webhooks        map[uuid.UUID]struct{}
 	removedteam_webhooks map[uuid.UUID]struct{}
 	clearedteam_webhooks bool
+	icon                 *uuid.UUID
+	clearedicon          bool
 	done                 bool
 	oldValue             func(context.Context) (*Team, error)
 	predicates           []predicate.Team
@@ -25826,6 +25830,45 @@ func (m *TeamMutation) ResetTeamWebhooks() {
 	m.removedteam_webhooks = nil
 }
 
+// SetIconID sets the "icon" edge to the TeamIcon entity by id.
+func (m *TeamMutation) SetIconID(id uuid.UUID) {
+	m.icon = &id
+}
+
+// ClearIcon clears the "icon" edge to the TeamIcon entity.
+func (m *TeamMutation) ClearIcon() {
+	m.clearedicon = true
+}
+
+// IconCleared reports if the "icon" edge to the TeamIcon entity was cleared.
+func (m *TeamMutation) IconCleared() bool {
+	return m.clearedicon
+}
+
+// IconID returns the "icon" edge ID in the mutation.
+func (m *TeamMutation) IconID() (id uuid.UUID, exists bool) {
+	if m.icon != nil {
+		return *m.icon, true
+	}
+	return
+}
+
+// IconIDs returns the "icon" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IconID instead. It exists only for internal usage by the builders.
+func (m *TeamMutation) IconIDs() (ids []uuid.UUID) {
+	if id := m.icon; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIcon resets all changes to the "icon" edge.
+func (m *TeamMutation) ResetIcon() {
+	m.icon = nil
+	m.clearedicon = false
+}
+
 // Where appends a list predicates to the TeamMutation builder.
 func (m *TeamMutation) Where(ps ...predicate.Team) {
 	m.predicates = append(m.predicates, ps...)
@@ -26070,7 +26113,7 @@ func (m *TeamMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TeamMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.projects != nil {
 		edges = append(edges, team.EdgeProjects)
 	}
@@ -26091,6 +26134,9 @@ func (m *TeamMutation) AddedEdges() []string {
 	}
 	if m.team_webhooks != nil {
 		edges = append(edges, team.EdgeTeamWebhooks)
+	}
+	if m.icon != nil {
+		edges = append(edges, team.EdgeIcon)
 	}
 	return edges
 }
@@ -26141,13 +26187,17 @@ func (m *TeamMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case team.EdgeIcon:
+		if id := m.icon; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TeamMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.removedprojects != nil {
 		edges = append(edges, team.EdgeProjects)
 	}
@@ -26224,7 +26274,7 @@ func (m *TeamMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TeamMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.clearedprojects {
 		edges = append(edges, team.EdgeProjects)
 	}
@@ -26245,6 +26295,9 @@ func (m *TeamMutation) ClearedEdges() []string {
 	}
 	if m.clearedteam_webhooks {
 		edges = append(edges, team.EdgeTeamWebhooks)
+	}
+	if m.clearedicon {
+		edges = append(edges, team.EdgeIcon)
 	}
 	return edges
 }
@@ -26267,6 +26320,8 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 		return m.clearedgithub_apps
 	case team.EdgeTeamWebhooks:
 		return m.clearedteam_webhooks
+	case team.EdgeIcon:
+		return m.clearedicon
 	}
 	return false
 }
@@ -26275,6 +26330,9 @@ func (m *TeamMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *TeamMutation) ClearEdge(name string) error {
 	switch name {
+	case team.EdgeIcon:
+		m.ClearIcon()
+		return nil
 	}
 	return fmt.Errorf("unknown Team unique edge %s", name)
 }
@@ -26304,8 +26362,613 @@ func (m *TeamMutation) ResetEdge(name string) error {
 	case team.EdgeTeamWebhooks:
 		m.ResetTeamWebhooks()
 		return nil
+	case team.EdgeIcon:
+		m.ResetIcon()
+		return nil
 	}
 	return fmt.Errorf("unknown Team edge %s", name)
+}
+
+// TeamIconMutation represents an operation that mutates the TeamIcon nodes in the graph.
+type TeamIconMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	created_at    *time.Time
+	updated_at    *time.Time
+	content_type  *string
+	data          *[]byte
+	clearedFields map[string]struct{}
+	team          *uuid.UUID
+	clearedteam   bool
+	done          bool
+	oldValue      func(context.Context) (*TeamIcon, error)
+	predicates    []predicate.TeamIcon
+}
+
+var _ ent.Mutation = (*TeamIconMutation)(nil)
+
+// teamiconOption allows management of the mutation configuration using functional options.
+type teamiconOption func(*TeamIconMutation)
+
+// newTeamIconMutation creates new mutation for the TeamIcon entity.
+func newTeamIconMutation(c config, op Op, opts ...teamiconOption) *TeamIconMutation {
+	m := &TeamIconMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTeamIcon,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTeamIconID sets the ID field of the mutation.
+func withTeamIconID(id uuid.UUID) teamiconOption {
+	return func(m *TeamIconMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *TeamIcon
+		)
+		m.oldValue = func(ctx context.Context) (*TeamIcon, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().TeamIcon.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTeamIcon sets the old TeamIcon of the mutation.
+func withTeamIcon(node *TeamIcon) teamiconOption {
+	return func(m *TeamIconMutation) {
+		m.oldValue = func(context.Context) (*TeamIcon, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TeamIconMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TeamIconMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of TeamIcon entities.
+func (m *TeamIconMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TeamIconMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TeamIconMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().TeamIcon.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *TeamIconMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TeamIconMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the TeamIcon entity.
+// If the TeamIcon object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamIconMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TeamIconMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *TeamIconMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *TeamIconMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the TeamIcon entity.
+// If the TeamIcon object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamIconMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *TeamIconMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetTeamID sets the "team_id" field.
+func (m *TeamIconMutation) SetTeamID(u uuid.UUID) {
+	m.team = &u
+}
+
+// TeamID returns the value of the "team_id" field in the mutation.
+func (m *TeamIconMutation) TeamID() (r uuid.UUID, exists bool) {
+	v := m.team
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTeamID returns the old "team_id" field's value of the TeamIcon entity.
+// If the TeamIcon object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamIconMutation) OldTeamID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTeamID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTeamID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTeamID: %w", err)
+	}
+	return oldValue.TeamID, nil
+}
+
+// ResetTeamID resets all changes to the "team_id" field.
+func (m *TeamIconMutation) ResetTeamID() {
+	m.team = nil
+}
+
+// SetContentType sets the "content_type" field.
+func (m *TeamIconMutation) SetContentType(s string) {
+	m.content_type = &s
+}
+
+// ContentType returns the value of the "content_type" field in the mutation.
+func (m *TeamIconMutation) ContentType() (r string, exists bool) {
+	v := m.content_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContentType returns the old "content_type" field's value of the TeamIcon entity.
+// If the TeamIcon object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamIconMutation) OldContentType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContentType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContentType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContentType: %w", err)
+	}
+	return oldValue.ContentType, nil
+}
+
+// ResetContentType resets all changes to the "content_type" field.
+func (m *TeamIconMutation) ResetContentType() {
+	m.content_type = nil
+}
+
+// SetData sets the "data" field.
+func (m *TeamIconMutation) SetData(b []byte) {
+	m.data = &b
+}
+
+// Data returns the value of the "data" field in the mutation.
+func (m *TeamIconMutation) Data() (r []byte, exists bool) {
+	v := m.data
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldData returns the old "data" field's value of the TeamIcon entity.
+// If the TeamIcon object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamIconMutation) OldData(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldData is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldData requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldData: %w", err)
+	}
+	return oldValue.Data, nil
+}
+
+// ResetData resets all changes to the "data" field.
+func (m *TeamIconMutation) ResetData() {
+	m.data = nil
+}
+
+// ClearTeam clears the "team" edge to the Team entity.
+func (m *TeamIconMutation) ClearTeam() {
+	m.clearedteam = true
+	m.clearedFields[teamicon.FieldTeamID] = struct{}{}
+}
+
+// TeamCleared reports if the "team" edge to the Team entity was cleared.
+func (m *TeamIconMutation) TeamCleared() bool {
+	return m.clearedteam
+}
+
+// TeamIDs returns the "team" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TeamID instead. It exists only for internal usage by the builders.
+func (m *TeamIconMutation) TeamIDs() (ids []uuid.UUID) {
+	if id := m.team; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTeam resets all changes to the "team" edge.
+func (m *TeamIconMutation) ResetTeam() {
+	m.team = nil
+	m.clearedteam = false
+}
+
+// Where appends a list predicates to the TeamIconMutation builder.
+func (m *TeamIconMutation) Where(ps ...predicate.TeamIcon) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TeamIconMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TeamIconMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.TeamIcon, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TeamIconMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TeamIconMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (TeamIcon).
+func (m *TeamIconMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TeamIconMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.created_at != nil {
+		fields = append(fields, teamicon.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, teamicon.FieldUpdatedAt)
+	}
+	if m.team != nil {
+		fields = append(fields, teamicon.FieldTeamID)
+	}
+	if m.content_type != nil {
+		fields = append(fields, teamicon.FieldContentType)
+	}
+	if m.data != nil {
+		fields = append(fields, teamicon.FieldData)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TeamIconMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case teamicon.FieldCreatedAt:
+		return m.CreatedAt()
+	case teamicon.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case teamicon.FieldTeamID:
+		return m.TeamID()
+	case teamicon.FieldContentType:
+		return m.ContentType()
+	case teamicon.FieldData:
+		return m.Data()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TeamIconMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case teamicon.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case teamicon.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case teamicon.FieldTeamID:
+		return m.OldTeamID(ctx)
+	case teamicon.FieldContentType:
+		return m.OldContentType(ctx)
+	case teamicon.FieldData:
+		return m.OldData(ctx)
+	}
+	return nil, fmt.Errorf("unknown TeamIcon field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TeamIconMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case teamicon.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case teamicon.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case teamicon.FieldTeamID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTeamID(v)
+		return nil
+	case teamicon.FieldContentType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContentType(v)
+		return nil
+	case teamicon.FieldData:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetData(v)
+		return nil
+	}
+	return fmt.Errorf("unknown TeamIcon field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TeamIconMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TeamIconMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TeamIconMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown TeamIcon numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TeamIconMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TeamIconMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TeamIconMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown TeamIcon nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TeamIconMutation) ResetField(name string) error {
+	switch name {
+	case teamicon.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case teamicon.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case teamicon.FieldTeamID:
+		m.ResetTeamID()
+		return nil
+	case teamicon.FieldContentType:
+		m.ResetContentType()
+		return nil
+	case teamicon.FieldData:
+		m.ResetData()
+		return nil
+	}
+	return fmt.Errorf("unknown TeamIcon field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TeamIconMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.team != nil {
+		edges = append(edges, teamicon.EdgeTeam)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TeamIconMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case teamicon.EdgeTeam:
+		if id := m.team; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TeamIconMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TeamIconMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TeamIconMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedteam {
+		edges = append(edges, teamicon.EdgeTeam)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TeamIconMutation) EdgeCleared(name string) bool {
+	switch name {
+	case teamicon.EdgeTeam:
+		return m.clearedteam
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TeamIconMutation) ClearEdge(name string) error {
+	switch name {
+	case teamicon.EdgeTeam:
+		m.ClearTeam()
+		return nil
+	}
+	return fmt.Errorf("unknown TeamIcon unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TeamIconMutation) ResetEdge(name string) error {
+	switch name {
+	case teamicon.EdgeTeam:
+		m.ResetTeam()
+		return nil
+	}
+	return fmt.Errorf("unknown TeamIcon edge %s", name)
 }
 
 // TemplateMutation represents an operation that mutates the Template nodes in the graph.

@@ -41,6 +41,41 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 		Method:      http.MethodPut,
 	}, handlers.UpdateTeam, oapi.NoMCP("Team settings are managed in the UI"))
 
+	oapi.Register(grp, oapi.Update, huma.Operation{
+		OperationID:  "update-team-icon",
+		Summary:      "Update Team Icon",
+		Description:  "Replace the team's icon with an SVG, PNG or JPEG file, up to 50 KB and 1024x1024. SVGs can't have scripts or external links.",
+		Path:         "/icon/update",
+		Method:       http.MethodPut,
+		MaxBodyBytes: updateTeamIconMaxBodyBytes,
+	}, handlers.UpdateTeamIcon, oapi.NoMCP("Team settings are managed in the UI"))
+
+	oapi.Register(grp, oapi.Delete, huma.Operation{
+		OperationID: "delete-team-icon",
+		Summary:     "Delete Team Icon",
+		Description: "Remove the team's icon so it shows the first letter of its name again.",
+		Path:        "/icon/delete",
+		Method:      http.MethodDelete,
+	}, handlers.DeleteTeamIcon, oapi.NoMCP("Team settings are managed in the UI"))
+
+	oapi.Register(grp, oapi.Read, huma.Operation{
+		OperationID: "get-team-icon",
+		Summary:     "Get Team Icon",
+		Description: "Get the team's icon file. Answers not found when the team has no icon.",
+		Path:        "/icon",
+		Method:      http.MethodGet,
+		Responses: map[string]*huma.Response{
+			"200": {
+				Description: "The icon file",
+				Content: map[string]*huma.MediaType{
+					"image/svg+xml": {},
+					"image/png":     {},
+					"image/jpeg":    {},
+				},
+			},
+		},
+	}, handlers.GetTeamIcon, oapi.NoMCP("Returns an image for the UI"))
+
 	// Creating teams, deleting them and managing who is on them change
 	// authorization, so like users and groups they are session only.
 	oapi.Register(grp, oapi.Create, huma.Operation{

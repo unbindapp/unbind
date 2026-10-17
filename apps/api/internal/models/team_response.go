@@ -14,6 +14,7 @@ type TeamResponse struct {
 	Name           string                   `json:"name"`
 	Description    *string                  `json:"description"`
 	CreatedAt      time.Time                `json:"created_at"`
+	IconUpdatedAt  *time.Time               `json:"icon_updated_at" doc:"When the team's icon was last set. Empty when the team uses its default letter icon."`
 	Permissions    []schema.PermittedAction `json:"permissions" nullable:"false" doc:"Actions the current user can perform on this resource"`
 }
 
@@ -28,6 +29,9 @@ func TransformTeamEntity(entity *ent.Team) *TeamResponse {
 			Description:    entity.Description,
 			CreatedAt:      entity.CreatedAt,
 			Permissions:    []schema.PermittedAction{},
+		}
+		if entity.Edges.Icon != nil {
+			response.IconUpdatedAt = &entity.Edges.Icon.UpdatedAt
 		}
 	}
 	return response

@@ -78,6 +78,9 @@ type SystemSetting func(*sql.Selector)
 // Team is the predicate function for team builders.
 type Team func(*sql.Selector)
 
+// TeamIcon is the predicate function for teamicon builders.
+type TeamIcon func(*sql.Selector)
+
 // Template is the predicate function for template builders.
 type Template func(*sql.Selector)
 

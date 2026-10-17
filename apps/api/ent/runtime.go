@@ -29,6 +29,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/servicegroup"
 	"github.com/unbindapp/unbind-api/ent/systemsetting"
 	"github.com/unbindapp/unbind-api/ent/team"
+	"github.com/unbindapp/unbind-api/ent/teamicon"
 	"github.com/unbindapp/unbind-api/ent/template"
 	"github.com/unbindapp/unbind-api/ent/user"
 	"github.com/unbindapp/unbind-api/ent/webhook"
@@ -644,6 +645,27 @@ func init() {
 	teamDescID := teamMixinFields0[0].Descriptor()
 	// team.DefaultID holds the default value on creation for the id field.
 	team.DefaultID = teamDescID.Default.(func() uuid.UUID)
+	teamiconMixin := schema.TeamIcon{}.Mixin()
+	teamiconMixinFields0 := teamiconMixin[0].Fields()
+	_ = teamiconMixinFields0
+	teamiconMixinFields1 := teamiconMixin[1].Fields()
+	_ = teamiconMixinFields1
+	teamiconFields := schema.TeamIcon{}.Fields()
+	_ = teamiconFields
+	// teamiconDescCreatedAt is the schema descriptor for created_at field.
+	teamiconDescCreatedAt := teamiconMixinFields1[0].Descriptor()
+	// teamicon.DefaultCreatedAt holds the default value on creation for the created_at field.
+	teamicon.DefaultCreatedAt = teamiconDescCreatedAt.Default.(func() time.Time)
+	// teamiconDescUpdatedAt is the schema descriptor for updated_at field.
+	teamiconDescUpdatedAt := teamiconMixinFields1[1].Descriptor()
+	// teamicon.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	teamicon.DefaultUpdatedAt = teamiconDescUpdatedAt.Default.(func() time.Time)
+	// teamicon.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	teamicon.UpdateDefaultUpdatedAt = teamiconDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// teamiconDescID is the schema descriptor for id field.
+	teamiconDescID := teamiconMixinFields0[0].Descriptor()
+	// teamicon.DefaultID holds the default value on creation for the id field.
+	teamicon.DefaultID = teamiconDescID.Default.(func() uuid.UUID)
 	templateMixin := schema.Template{}.Mixin()
 	templateMixinFields0 := templateMixin[0].Fields()
 	_ = templateMixinFields0
