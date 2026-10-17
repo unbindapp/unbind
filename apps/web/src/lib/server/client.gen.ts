@@ -709,6 +709,41 @@ export const CreateGroupResponseBodySchema = z
   })
   .strip();
 
+export const CreateNetworkExceptionInputSchema = z
+  .object({
+    source_service_id: z.string().optional(), // Service allowed to connect, omit to accept connections from every source, including servers and hosts outside the cluster
+    target_service_id: z.string(), // Service that accepts the connections
+  })
+  .strip();
+
+export const NetworkServiceResponseSchema = z
+  .object({
+    environment_id: z.string(),
+    environment_name: z.string(),
+    id: z.string(),
+    name: z.string(),
+    project_id: z.string(),
+    project_name: z.string(),
+    team_id: z.string(),
+    team_name: z.string(),
+  })
+  .strip();
+
+export const NetworkExceptionResponseSchema = z
+  .object({
+    created_at: z.string().datetime({ offset: true }),
+    id: z.string(),
+    source: NetworkServiceResponseSchema.optional(), // The service allowed to connect, empty when every source is allowed
+    target: NetworkServiceResponseSchema,
+  })
+  .strip();
+
+export const CreateNetworkExceptionResponseBodySchema = z
+  .object({
+    data: NetworkExceptionResponseSchema,
+  })
+  .strip();
+
 export const PvcScopeSchema = z.enum(['team', 'project', 'environment']);
 
 export const CreatePVCInputSchema = z
@@ -1195,6 +1230,12 @@ export const DeleteGroupInputBodySchema = z
 export const DeleteGroupResponseBodySchema = z
   .object({
     data: DeletedResponseSchema,
+  })
+  .strip();
+
+export const DeleteNetworkExceptionInputSchema = z
+  .object({
+    id: z.string(),
   })
   .strip();
 
@@ -2365,6 +2406,12 @@ export const ListGroupsResponseBodySchema = z
   })
   .strip();
 
+export const ListNetworkServicesResponseBodySchema = z
+  .object({
+    data: z.array(NetworkServiceResponseSchema),
+  })
+  .strip();
+
 export const ListPVCResponseBodySchema = z
   .object({
     data: z.array(PVCInfoSchema),
@@ -2561,6 +2608,19 @@ export const LogoutResponseBodySchema = z
   .strip();
 
 export const LokiDirectionSchema = z.enum(['forward', 'backward']);
+
+export const NetworkSettingsResponseSchema = z
+  .object({
+    exceptions: z.array(NetworkExceptionResponseSchema),
+    team_network_isolation: z.boolean(),
+  })
+  .strip();
+
+export const NetworkSettingsResponseBodySchema = z
+  .object({
+    data: NetworkSettingsResponseSchema,
+  })
+  .strip();
 
 export const QueryLogsResponseBodySchema = z
   .object({
@@ -3089,6 +3149,12 @@ export const UpdateGroupResponseBodySchema = z
   })
   .strip();
 
+export const UpdateNetworkSettingsInputSchema = z
+  .object({
+    team_network_isolation: z.boolean(), // Whether services only accept connections from their own team, the system and network exceptions
+  })
+  .strip();
+
 export const UpdatePVCInputSchema = z
   .object({
     capacity_gb: z.number().nullable().optional(), // Size of the volume in GB (e.g., '10')
@@ -3415,6 +3481,12 @@ export type CreateEnvironmentResponseBody = z.infer<typeof CreateEnvironmentResp
 export type CreateGroupInputBody = z.infer<typeof CreateGroupInputBodySchema>;
 export type GroupResponse = z.infer<typeof GroupResponseSchema>;
 export type CreateGroupResponseBody = z.infer<typeof CreateGroupResponseBodySchema>;
+export type CreateNetworkExceptionInput = z.infer<typeof CreateNetworkExceptionInputSchema>;
+export type NetworkServiceResponse = z.infer<typeof NetworkServiceResponseSchema>;
+export type NetworkExceptionResponse = z.infer<typeof NetworkExceptionResponseSchema>;
+export type CreateNetworkExceptionResponseBody = z.infer<
+  typeof CreateNetworkExceptionResponseBodySchema
+>;
 export type PvcScope = z.infer<typeof PvcScopeSchema>;
 export type CreatePVCInput = z.infer<typeof CreatePVCInputSchema>;
 export type PVCMountStatus = z.infer<typeof PVCMountStatusSchema>;
@@ -3466,6 +3538,7 @@ export type DeleteEnvironmentInputBody = z.infer<typeof DeleteEnvironmentInputBo
 export type DeleteEnvironmentResponseBody = z.infer<typeof DeleteEnvironmentResponseBodySchema>;
 export type DeleteGroupInputBody = z.infer<typeof DeleteGroupInputBodySchema>;
 export type DeleteGroupResponseBody = z.infer<typeof DeleteGroupResponseBodySchema>;
+export type DeleteNetworkExceptionInput = z.infer<typeof DeleteNetworkExceptionInputSchema>;
 export type DeletePVCInput = z.infer<typeof DeletePVCInputSchema>;
 export type DeletePVCResponseBody = z.infer<typeof DeletePVCResponseBodySchema>;
 export type DeleteProjectInputBody = z.infer<typeof DeleteProjectInputBodySchema>;
@@ -3631,6 +3704,7 @@ export type ListGroupPermissionsResponseBody = z.infer<
   typeof ListGroupPermissionsResponseBodySchema
 >;
 export type ListGroupsResponseBody = z.infer<typeof ListGroupsResponseBodySchema>;
+export type ListNetworkServicesResponseBody = z.infer<typeof ListNetworkServicesResponseBodySchema>;
 export type ListPVCResponseBody = z.infer<typeof ListPVCResponseBodySchema>;
 export type ListProjectResponseBody = z.infer<typeof ListProjectResponseBodySchema>;
 export type ListRegistriesResponseBody = z.infer<typeof ListRegistriesResponseBodySchema>;
@@ -3659,6 +3733,8 @@ export type LogType = z.infer<typeof LogTypeSchema>;
 export type LoginInputBody = z.infer<typeof LoginInputBodySchema>;
 export type LogoutResponseBody = z.infer<typeof LogoutResponseBodySchema>;
 export type LokiDirection = z.infer<typeof LokiDirectionSchema>;
+export type NetworkSettingsResponse = z.infer<typeof NetworkSettingsResponseSchema>;
+export type NetworkSettingsResponseBody = z.infer<typeof NetworkSettingsResponseBodySchema>;
 export type QueryLogsResponseBody = z.infer<typeof QueryLogsResponseBodySchema>;
 export type RedeployInputBody = z.infer<typeof RedeployInputBodySchema>;
 export type RedeployOutputBody = z.infer<typeof RedeployOutputBodySchema>;
@@ -3735,6 +3811,7 @@ export type UpdateEnvironmentInput = z.infer<typeof UpdateEnvironmentInputSchema
 export type UpdateEnvironmentResponseBody = z.infer<typeof UpdateEnvironmentResponseBodySchema>;
 export type UpdateGroupInputBody = z.infer<typeof UpdateGroupInputBodySchema>;
 export type UpdateGroupResponseBody = z.infer<typeof UpdateGroupResponseBodySchema>;
+export type UpdateNetworkSettingsInput = z.infer<typeof UpdateNetworkSettingsInputSchema>;
 export type UpdatePVCInput = z.infer<typeof UpdatePVCInputSchema>;
 export type UpdatePVCResponseBody = z.infer<typeof UpdatePVCResponseBodySchema>;
 export type UpdatePasswordInputBody = z.infer<typeof UpdatePasswordInputBodySchema>;
@@ -9356,6 +9433,211 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
           }
           throw error;
         }
+      },
+      network: {
+        exceptions: {
+          create: async (
+            params: CreateNetworkExceptionInput,
+            fetchOptions?: RequestInit,
+          ): Promise<CreateNetworkExceptionResponseBody> => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/system/network/exceptions/create`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = CreateNetworkExceptionInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              const { data: parsedData, error } =
+                CreateNetworkExceptionResponseBodySchema.safeParse(data);
+              if (error) {
+                console.error('Response validation error:', error);
+                console.error('Response data:', data);
+                throw new Error(error.message);
+              }
+              return parsedData;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+          delete: async (params: DeleteNetworkExceptionInput, fetchOptions?: RequestInit) => {
+            try {
+              if (!apiUrl || typeof apiUrl !== 'string') {
+                throw new Error('API URL is undefined or not a string');
+              }
+              const url = new URL(
+                `${apiUrl}/system/network/exceptions/delete`,
+                typeof window !== 'undefined' ? window.location.origin : undefined,
+              );
+
+              const options: RequestInit = {
+                method: 'DELETE',
+                credentials: 'include',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                ...fetchOptions,
+              };
+              const validatedBody = DeleteNetworkExceptionInputSchema.parse(params);
+              options.body = JSON.stringify(validatedBody);
+              const response = await fetchFn(url.toString(), options);
+              if (!response.ok) {
+                throw await parseApiError(response, url.toString());
+              }
+              const data = await response.json();
+              return data;
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error('Error in API request:', error);
+              }
+              throw error;
+            }
+          },
+        },
+        get: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<NetworkSettingsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/network/get`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = NetworkSettingsResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        services: async (
+          params?: undefined,
+          fetchOptions?: RequestInit,
+        ): Promise<ListNetworkServicesResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/network/services`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } =
+              ListNetworkServicesResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
+        update: async (
+          params: UpdateNetworkSettingsInput,
+          fetchOptions?: RequestInit,
+        ): Promise<NetworkSettingsResponseBody> => {
+          try {
+            if (!apiUrl || typeof apiUrl !== 'string') {
+              throw new Error('API URL is undefined or not a string');
+            }
+            const url = new URL(
+              `${apiUrl}/system/network/update`,
+              typeof window !== 'undefined' ? window.location.origin : undefined,
+            );
+
+            const options: RequestInit = {
+              method: 'PUT',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              ...fetchOptions,
+            };
+            const validatedBody = UpdateNetworkSettingsInputSchema.parse(params);
+            options.body = JSON.stringify(validatedBody);
+            const response = await fetchFn(url.toString(), options);
+            if (!response.ok) {
+              throw await parseApiError(response, url.toString());
+            }
+            const data = await response.json();
+            const { data: parsedData, error } = NetworkSettingsResponseBodySchema.safeParse(data);
+            if (error) {
+              console.error('Response validation error:', error);
+              console.error('Response data:', data);
+              throw new Error(error.message);
+            }
+            return parsedData;
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.error('Error in API request:', error);
+            }
+            throw error;
+          }
+        },
       },
       registries: {
         create: async (

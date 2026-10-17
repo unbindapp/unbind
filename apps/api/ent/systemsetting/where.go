@@ -70,6 +70,11 @@ func WildcardBaseURL(v string) predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldEQ(FieldWildcardBaseURL, v))
 }
 
+// TeamNetworkIsolation applies equality check predicate on the "team_network_isolation" field. It's identical to TeamNetworkIsolationEQ.
+func TeamNetworkIsolation(v bool) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldEQ(FieldTeamNetworkIsolation, v))
+}
+
 // ServiceReferenceSyntaxMigrated applies equality check predicate on the "service_reference_syntax_migrated" field. It's identical to ServiceReferenceSyntaxMigratedEQ.
 func ServiceReferenceSyntaxMigrated(v bool) predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldEQ(FieldServiceReferenceSyntaxMigrated, v))
@@ -258,6 +263,16 @@ func EmailSettingsIsNil() predicate.SystemSetting {
 // EmailSettingsNotNil applies the NotNil predicate on the "email_settings" field.
 func EmailSettingsNotNil() predicate.SystemSetting {
 	return predicate.SystemSetting(sql.FieldNotNull(FieldEmailSettings))
+}
+
+// TeamNetworkIsolationEQ applies the EQ predicate on the "team_network_isolation" field.
+func TeamNetworkIsolationEQ(v bool) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldEQ(FieldTeamNetworkIsolation, v))
+}
+
+// TeamNetworkIsolationNEQ applies the NEQ predicate on the "team_network_isolation" field.
+func TeamNetworkIsolationNEQ(v bool) predicate.SystemSetting {
+	return predicate.SystemSetting(sql.FieldNEQ(FieldTeamNetworkIsolation, v))
 }
 
 // ServiceReferenceSyntaxMigratedEQ applies the EQ predicate on the "service_reference_syntax_migrated" field.

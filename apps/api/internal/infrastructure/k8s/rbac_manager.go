@@ -117,7 +117,7 @@ func (self *RBACManager) createOrUpdateRole(ctx context.Context, roleName, names
 		"persistentvolumeclaims",
 
 		// Networking resources
-		"ingresses", "networkpolicies", "services",
+		"ingresses", "services",
 
 		// Observability resources
 		"events", "endpoints", "pods/log",
@@ -246,7 +246,7 @@ func filterResourcesByAPIGroup(resources []string, apiGroup string) []string {
 		}
 	case "networking.k8s.io":
 		networkingResources := []string{
-			"ingresses", "networkpolicies", "ingressclasses",
+			"ingresses", "ingressclasses",
 		}
 		for _, r := range resources {
 			if slices.Contains(networkingResources, r) {

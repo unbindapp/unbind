@@ -25,6 +25,7 @@ type SystemSettingUpdateInput struct {
 	RegistryCacheSettings *schema.RegistryCacheSettings `json:"registry_cache_settings" doc:"Registry cache cleanup settings"`
 	EmailSettings         *schema.EmailSettings         `json:"email_settings" doc:"Outgoing mail relay"`
 	ClearEmailSettings    bool                          `json:"clear_email_settings" doc:"Remove the outgoing mail relay"`
+	TeamNetworkIsolation  *bool                         `json:"team_network_isolation" doc:"Whether pods only accept connections from their own team"`
 }
 
 func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *SystemSettingUpdateInput) (settings *ent.SystemSetting, err error) {
@@ -65,6 +66,10 @@ func (self *SystemRepository) UpdateSystemSettings(ctx context.Context, input *S
 		}
 		if input.ClearEmailSettings {
 			m.ClearEmailSettings()
+		}
+
+		if input.TeamNetworkIsolation != nil {
+			m.SetTeamNetworkIsolation(*input.TeamNetworkIsolation)
 		}
 
 		settings, err = m.Save(ctx)

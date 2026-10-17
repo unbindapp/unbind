@@ -167,7 +167,7 @@ Your services reach each other without going through the internet. Every service
 API_URL=${API.UNBIND_URL_PRIVATE}
 ```
 
-A service with no domain is private. Workers, queues and internal APIs never need one.
+A service with no domain is private. Workers, queues and internal APIs never need one. With [network isolation](/operations/network-isolation) on, a private address only answers services in the same team, unless a system admin adds an exception.
 
 ## Databases and other TCP services
 

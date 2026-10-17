@@ -52,6 +52,7 @@ import (
 	group_service "github.com/unbindapp/unbind-api/internal/services/group"
 	logs_service "github.com/unbindapp/unbind-api/internal/services/logs"
 	metric_service "github.com/unbindapp/unbind-api/internal/services/metrics"
+	network_service "github.com/unbindapp/unbind-api/internal/services/network"
 	oauthserver_service "github.com/unbindapp/unbind-api/internal/services/oauthserver"
 	project_service "github.com/unbindapp/unbind-api/internal/services/project"
 	replica_service "github.com/unbindapp/unbind-api/internal/services/replicas"
@@ -199,7 +200,12 @@ func startAPI(cfg *config.Config) {
 	storageService := storage_service.NewStorageService(cfg, repo, kubeClient, promClient, serviceService)
 	go storageService.StoreDatabaseVolumeNames(ctx)
 	emailService := email_service.NewEmailService(cfg, repo, kubeClient, mail.SMTPSender{})
-	teamService := team_service.NewTeamService(cfg, repo, kubeClient, rbacManager, projectService, storageService, emailService)
+	networkPolicyManager := k8s.NewNetworkPolicyManager(repo, kubeClient.GetInternalClient())
+	if err := networkPolicyManager.Sync(ctx); err != nil {
+		log.Errorf("Failed to sync network policies: %v", err)
+	}
+	networkService := network_service.NewNetworkService(repo, networkPolicyManager)
+	teamService := team_service.NewTeamService(cfg, repo, kubeClient, rbacManager, networkPolicyManager, projectService, storageService, emailService)
 	templateService := templates_service.NewTemplatesService(cfg, repo, kubeClient, dbProvider, deploymentController)
 	serviceGroupService := servicegroup_service.NewServiceGroupService(cfg, repo, kubeClient, deploymentController, serviceService, storageService)
 	terminalService := terminal_service.NewTerminalService(repo, kubeClient)
@@ -233,6 +239,7 @@ func startAPI(cfg *config.Config) {
 		UserService:          userService,
 		TeamService:          teamService,
 		EmailService:         emailService,
+		NetworkService:       networkService,
 		ProjectService:       projectService,
 		ServiceService:       serviceService,
 		EnvironmentService:   environmentService,
@@ -419,6 +426,22 @@ func startAPI(cfg *config.Config) {
 	)
 	if err != nil {
 		log.Fatal("Failed to create database sync job", "err", err)
+	}
+
+	// Follow node port changes and repair network policies changed by hand
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(time.Minute),
+		gocron.NewTask(
+			func(ctx context.Context) {
+				if err := networkPolicyManager.Sync(ctx); err != nil {
+					log.Error("Failed to sync network policies", "err", err)
+				}
+			},
+			ctx,
+		),
+	)
+	if err != nil {
+		log.Fatal("Failed to create network policy sync job", "err", err)
 	}
 
 	// Reclaim disk pinned by removed Longhorn snapshots

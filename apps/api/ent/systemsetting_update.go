@@ -92,6 +92,20 @@ func (_u *SystemSettingUpdate) ClearEmailSettings() *SystemSettingUpdate {
 	return _u
 }
 
+// SetTeamNetworkIsolation sets the "team_network_isolation" field.
+func (_u *SystemSettingUpdate) SetTeamNetworkIsolation(v bool) *SystemSettingUpdate {
+	_u.mutation.SetTeamNetworkIsolation(v)
+	return _u
+}
+
+// SetNillableTeamNetworkIsolation sets the "team_network_isolation" field if the given value is not nil.
+func (_u *SystemSettingUpdate) SetNillableTeamNetworkIsolation(v *bool) *SystemSettingUpdate {
+	if v != nil {
+		_u.SetTeamNetworkIsolation(*v)
+	}
+	return _u
+}
+
 // SetServiceReferenceSyntaxMigrated sets the "service_reference_syntax_migrated" field.
 func (_u *SystemSettingUpdate) SetServiceReferenceSyntaxMigrated(v bool) *SystemSettingUpdate {
 	_u.mutation.SetServiceReferenceSyntaxMigrated(v)
@@ -189,6 +203,9 @@ func (_u *SystemSettingUpdate) sqlSave(ctx context.Context) (_node int, err erro
 	if _u.mutation.EmailSettingsCleared() {
 		_spec.ClearField(systemsetting.FieldEmailSettings, field.TypeJSON)
 	}
+	if value, ok := _u.mutation.TeamNetworkIsolation(); ok {
+		_spec.SetField(systemsetting.FieldTeamNetworkIsolation, field.TypeBool, value)
+	}
 	if value, ok := _u.mutation.ServiceReferenceSyntaxMigrated(); ok {
 		_spec.SetField(systemsetting.FieldServiceReferenceSyntaxMigrated, field.TypeBool, value)
 	}
@@ -273,6 +290,20 @@ func (_u *SystemSettingUpdateOne) SetEmailSettings(v *schema.EmailSettings) *Sys
 // ClearEmailSettings clears the value of the "email_settings" field.
 func (_u *SystemSettingUpdateOne) ClearEmailSettings() *SystemSettingUpdateOne {
 	_u.mutation.ClearEmailSettings()
+	return _u
+}
+
+// SetTeamNetworkIsolation sets the "team_network_isolation" field.
+func (_u *SystemSettingUpdateOne) SetTeamNetworkIsolation(v bool) *SystemSettingUpdateOne {
+	_u.mutation.SetTeamNetworkIsolation(v)
+	return _u
+}
+
+// SetNillableTeamNetworkIsolation sets the "team_network_isolation" field if the given value is not nil.
+func (_u *SystemSettingUpdateOne) SetNillableTeamNetworkIsolation(v *bool) *SystemSettingUpdateOne {
+	if v != nil {
+		_u.SetTeamNetworkIsolation(*v)
+	}
 	return _u
 }
 
@@ -402,6 +433,9 @@ func (_u *SystemSettingUpdateOne) sqlSave(ctx context.Context) (_node *SystemSet
 	}
 	if _u.mutation.EmailSettingsCleared() {
 		_spec.ClearField(systemsetting.FieldEmailSettings, field.TypeJSON)
+	}
+	if value, ok := _u.mutation.TeamNetworkIsolation(); ok {
+		_spec.SetField(systemsetting.FieldTeamNetworkIsolation, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.ServiceReferenceSyntaxMigrated(); ok {
 		_spec.SetField(systemsetting.FieldServiceReferenceSyntaxMigrated, field.TypeBool, value)

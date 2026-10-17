@@ -89,9 +89,13 @@ type ServiceEdges struct {
 	Template *Template `json:"template,omitempty"`
 	// ServiceGroup holds the value of the service_group edge.
 	ServiceGroup *ServiceGroup `json:"service_group,omitempty"`
+	// OutgoingNetworkExceptions holds the value of the outgoing_network_exceptions edge.
+	OutgoingNetworkExceptions []*NetworkException `json:"outgoing_network_exceptions,omitempty"`
+	// IncomingNetworkExceptions holds the value of the incoming_network_exceptions edge.
+	IncomingNetworkExceptions []*NetworkException `json:"incoming_network_exceptions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [9]bool
 }
 
 // EnvironmentOrErr returns the Environment value or an error if the edge
@@ -167,6 +171,24 @@ func (e ServiceEdges) ServiceGroupOrErr() (*ServiceGroup, error) {
 		return nil, &NotFoundError{label: servicegroup.Label}
 	}
 	return nil, &NotLoadedError{edge: "service_group"}
+}
+
+// OutgoingNetworkExceptionsOrErr returns the OutgoingNetworkExceptions value or an error if the edge
+// was not loaded in eager-loading.
+func (e ServiceEdges) OutgoingNetworkExceptionsOrErr() ([]*NetworkException, error) {
+	if e.loadedTypes[7] {
+		return e.OutgoingNetworkExceptions, nil
+	}
+	return nil, &NotLoadedError{edge: "outgoing_network_exceptions"}
+}
+
+// IncomingNetworkExceptionsOrErr returns the IncomingNetworkExceptions value or an error if the edge
+// was not loaded in eager-loading.
+func (e ServiceEdges) IncomingNetworkExceptionsOrErr() ([]*NetworkException, error) {
+	if e.loadedTypes[8] {
+		return e.IncomingNetworkExceptions, nil
+	}
+	return nil, &NotLoadedError{edge: "incoming_network_exceptions"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -385,6 +407,16 @@ func (_m *Service) QueryTemplate() *TemplateQuery {
 // QueryServiceGroup queries the "service_group" edge of the Service entity.
 func (_m *Service) QueryServiceGroup() *ServiceGroupQuery {
 	return NewServiceClient(_m.config).QueryServiceGroup(_m)
+}
+
+// QueryOutgoingNetworkExceptions queries the "outgoing_network_exceptions" edge of the Service entity.
+func (_m *Service) QueryOutgoingNetworkExceptions() *NetworkExceptionQuery {
+	return NewServiceClient(_m.config).QueryOutgoingNetworkExceptions(_m)
+}
+
+// QueryIncomingNetworkExceptions queries the "incoming_network_exceptions" edge of the Service entity.
+func (_m *Service) QueryIncomingNetworkExceptions() *NetworkExceptionQuery {
+	return NewServiceClient(_m.config).QueryIncomingNetworkExceptions(_m)
 }
 
 // Update returns a builder for updating this Service.

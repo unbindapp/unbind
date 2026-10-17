@@ -21,6 +21,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/group"
 	"github.com/unbindapp/unbind-api/ent/invitation"
 	"github.com/unbindapp/unbind-api/ent/jwtkey"
+	"github.com/unbindapp/unbind-api/ent/networkexception"
 	"github.com/unbindapp/unbind-api/ent/oauth2token"
 	"github.com/unbindapp/unbind-api/ent/oauthauthorizationcode"
 	"github.com/unbindapp/unbind-api/ent/oauthclient"
@@ -109,6 +110,7 @@ func checkColumn(t, c string) error {
 			group.Table:                  group.ValidColumn,
 			invitation.Table:             invitation.ValidColumn,
 			jwtkey.Table:                 jwtkey.ValidColumn,
+			networkexception.Table:       networkexception.ValidColumn,
 			oauthauthorizationcode.Table: oauthauthorizationcode.ValidColumn,
 			oauthclient.Table:            oauthclient.ValidColumn,
 			oauthgrant.Table:             oauthgrant.ValidColumn,

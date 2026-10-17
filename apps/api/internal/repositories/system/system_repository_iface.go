@@ -12,6 +12,13 @@ import (
 
 // SystemRepositoryInterface ...
 type SystemRepositoryInterface interface {
+	GetNetworkExceptions(ctx context.Context) ([]*ent.NetworkException, error)
+	GetNetworkException(ctx context.Context, id uuid.UUID) (*ent.NetworkException, error)
+	NetworkExceptionExists(ctx context.Context, sourceServiceID *uuid.UUID, targetServiceID uuid.UUID) (bool, error)
+	CreateNetworkException(ctx context.Context, sourceServiceID *uuid.UUID, targetServiceID uuid.UUID) (*ent.NetworkException, error)
+	DeleteNetworkException(ctx context.Context, id uuid.UUID) error
+	GetServicesWithTeam(ctx context.Context) ([]*ent.Service, error)
+	GetServiceWithTeam(ctx context.Context, id uuid.UUID) (*ent.Service, error)
 	UpsertPVCMetadata(ctx context.Context, tx repository.TxInterface, pvcID string, name *string, description *string) error
 	GetPVCMetadata(ctx context.Context, tx repository.TxInterface, pvcIDs []string) (map[string]*ent.PVCMetadata, error)
 	// keeps a volume's display identity across a rebind

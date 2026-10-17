@@ -1,0 +1,38 @@
+---
+title: Network Isolation
+description: Keep teams from reaching each other's services.
+---
+
+With team isolation on, a service only accepts connections from:
+
+- Services in its own team
+- Unbind itself: domains, builds, logs and metrics keep working
+- Anywhere, on a port exposed on the servers with **Network Access**, since that port is public anyway
+- The sources an exception allows
+
+Everything else is refused, including a service in another team that calls the private address of yours. Outgoing connections are not limited: services still reach the internet and other teams' public domains.
+
+It is on for new instances. Instances that existed before it start with it off, so you can add exceptions first.
+
+## Turn it on
+
+Go to **System** > **Settings** > **Network**. Only system admins see this page.
+
+Before turning it on, find the services that call a service in another team and add an exception for each. Look for private addresses or `.svc.cluster.local` names of another team in variables and commands.
+
+## Exceptions
+
+An exception lets one service accept connections from a source outside its team:
+
+- **A service in another team**, such as a server in one team calling a wallet in another. Only that service gets through, not the rest of its team.
+- **Any source**, for a service that receives connections from servers or from hosts on your private network, such as callbacks from a node that runs outside Unbind.
+
+An exception opens every port of the service. Deleting a service removes its exceptions.
+
+Services in the same team always reach each other, so an exception between them is refused.
+
+## How it works
+
+Unbind keeps a [NetworkPolicy](https://kubernetes.io/docs/concepts/services-networking/network-policies/) in every team namespace and one per exception, and checks them every minute. A policy changed or deleted by hand is put back. Team members can no longer edit NetworkPolicies in their namespace.
+
+Your cluster's network plugin has to enforce NetworkPolicy. k3s does out of the box. On [your own Kubernetes](/operations/bring-your-own-kubernetes), check your plugin.

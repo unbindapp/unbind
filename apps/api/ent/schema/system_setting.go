@@ -59,6 +59,9 @@ func (SystemSetting) Fields() []ent.Field {
 		field.JSON("email_settings", &EmailSettings{}).
 			Optional().
 			Comment("Outgoing mail relay, password kept in a Kubernetes secret"),
+		field.Bool("team_network_isolation").
+			Default(true).
+			Comment("Whether pods only accept connections from their own team, the system and network exceptions"),
 		field.Bool("service_reference_syntax_migrated").
 			Default(false).
 			Comment("Whether stored variables were rewritten from ${{service.<id>.KEY}} to ${{service:<id>.KEY}}"),

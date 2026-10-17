@@ -299,6 +299,41 @@ var (
 		Columns:    JwtKeysColumns,
 		PrimaryKey: []*schema.Column{JwtKeysColumns[0]},
 	}
+	// NetworkExceptionsColumns holds the columns for the "network_exceptions" table.
+	NetworkExceptionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "source_service_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "target_service_id", Type: field.TypeUUID},
+	}
+	// NetworkExceptionsTable holds the schema information for the "network_exceptions" table.
+	NetworkExceptionsTable = &schema.Table{
+		Name:       "network_exceptions",
+		Columns:    NetworkExceptionsColumns,
+		PrimaryKey: []*schema.Column{NetworkExceptionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "network_exceptions_services_outgoing_network_exceptions",
+				Columns:    []*schema.Column{NetworkExceptionsColumns[3]},
+				RefColumns: []*schema.Column{ServicesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "network_exceptions_services_incoming_network_exceptions",
+				Columns:    []*schema.Column{NetworkExceptionsColumns[4]},
+				RefColumns: []*schema.Column{ServicesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "networkexception_source_service_id_target_service_id",
+				Unique:  true,
+				Columns: []*schema.Column{NetworkExceptionsColumns[3], NetworkExceptionsColumns[4]},
+			},
+		},
+	}
 	// OauthAuthorizationCodesColumns holds the columns for the "oauth_authorization_codes" table.
 	OauthAuthorizationCodesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -795,6 +830,7 @@ var (
 		{Name: "buildkit_settings", Type: field.TypeJSON, Nullable: true},
 		{Name: "registry_cache_settings", Type: field.TypeJSON, Nullable: true},
 		{Name: "email_settings", Type: field.TypeJSON, Nullable: true},
+		{Name: "team_network_isolation", Type: field.TypeBool, Default: true},
 		{Name: "service_reference_syntax_migrated", Type: field.TypeBool, Default: false},
 	}
 	// SystemSettingsTable holds the schema information for the "system_settings" table.
@@ -1034,6 +1070,7 @@ var (
 		GroupsTable,
 		InvitationsTable,
 		JwtKeysTable,
+		NetworkExceptionsTable,
 		OauthAuthorizationCodesTable,
 		OauthClientsTable,
 		OauthGrantsTable,
@@ -1095,6 +1132,11 @@ func init() {
 	}
 	JwtKeysTable.Annotation = &entsql.Annotation{
 		Table: "jwt_keys",
+	}
+	NetworkExceptionsTable.ForeignKeys[0].RefTable = ServicesTable
+	NetworkExceptionsTable.ForeignKeys[1].RefTable = ServicesTable
+	NetworkExceptionsTable.Annotation = &entsql.Annotation{
+		Table: "network_exceptions",
 	}
 	OauthAuthorizationCodesTable.ForeignKeys[0].RefTable = UsersTable
 	OauthAuthorizationCodesTable.Annotation = &entsql.Annotation{

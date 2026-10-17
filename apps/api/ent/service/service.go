@@ -71,6 +71,10 @@ const (
 	EdgeTemplate = "template"
 	// EdgeServiceGroup holds the string denoting the service_group edge name in mutations.
 	EdgeServiceGroup = "service_group"
+	// EdgeOutgoingNetworkExceptions holds the string denoting the outgoing_network_exceptions edge name in mutations.
+	EdgeOutgoingNetworkExceptions = "outgoing_network_exceptions"
+	// EdgeIncomingNetworkExceptions holds the string denoting the incoming_network_exceptions edge name in mutations.
+	EdgeIncomingNetworkExceptions = "incoming_network_exceptions"
 	// Table holds the table name of the service in the database.
 	Table = "services"
 	// EnvironmentTable is the table that holds the environment relation/edge.
@@ -122,6 +126,20 @@ const (
 	ServiceGroupInverseTable = "service_groups"
 	// ServiceGroupColumn is the table column denoting the service_group relation/edge.
 	ServiceGroupColumn = "service_group_id"
+	// OutgoingNetworkExceptionsTable is the table that holds the outgoing_network_exceptions relation/edge.
+	OutgoingNetworkExceptionsTable = "network_exceptions"
+	// OutgoingNetworkExceptionsInverseTable is the table name for the NetworkException entity.
+	// It exists in this package in order to avoid circular dependency with the "networkexception" package.
+	OutgoingNetworkExceptionsInverseTable = "network_exceptions"
+	// OutgoingNetworkExceptionsColumn is the table column denoting the outgoing_network_exceptions relation/edge.
+	OutgoingNetworkExceptionsColumn = "source_service_id"
+	// IncomingNetworkExceptionsTable is the table that holds the incoming_network_exceptions relation/edge.
+	IncomingNetworkExceptionsTable = "network_exceptions"
+	// IncomingNetworkExceptionsInverseTable is the table name for the NetworkException entity.
+	// It exists in this package in order to avoid circular dependency with the "networkexception" package.
+	IncomingNetworkExceptionsInverseTable = "network_exceptions"
+	// IncomingNetworkExceptionsColumn is the table column denoting the incoming_network_exceptions relation/edge.
+	IncomingNetworkExceptionsColumn = "target_service_id"
 )
 
 // Columns holds all SQL columns for service fields.
@@ -342,6 +360,34 @@ func ByServiceGroupField(field string, opts ...sql.OrderTermOption) OrderOption 
 		sqlgraph.OrderByNeighborTerms(s, newServiceGroupStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByOutgoingNetworkExceptionsCount orders the results by outgoing_network_exceptions count.
+func ByOutgoingNetworkExceptionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOutgoingNetworkExceptionsStep(), opts...)
+	}
+}
+
+// ByOutgoingNetworkExceptions orders the results by outgoing_network_exceptions terms.
+func ByOutgoingNetworkExceptions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOutgoingNetworkExceptionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByIncomingNetworkExceptionsCount orders the results by incoming_network_exceptions count.
+func ByIncomingNetworkExceptionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIncomingNetworkExceptionsStep(), opts...)
+	}
+}
+
+// ByIncomingNetworkExceptions orders the results by incoming_network_exceptions terms.
+func ByIncomingNetworkExceptions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncomingNetworkExceptionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newEnvironmentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -389,5 +435,19 @@ func newServiceGroupStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ServiceGroupInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, ServiceGroupTable, ServiceGroupColumn),
+	)
+}
+func newOutgoingNetworkExceptionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OutgoingNetworkExceptionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OutgoingNetworkExceptionsTable, OutgoingNetworkExceptionsColumn),
+	)
+}
+func newIncomingNetworkExceptionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncomingNetworkExceptionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, IncomingNetworkExceptionsTable, IncomingNetworkExceptionsColumn),
 	)
 }

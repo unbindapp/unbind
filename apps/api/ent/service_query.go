@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/deployment"
 	"github.com/unbindapp/unbind-api/ent/environment"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
+	"github.com/unbindapp/unbind-api/ent/networkexception"
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/service"
 	"github.com/unbindapp/unbind-api/ent/serviceconfig"
@@ -26,18 +27,20 @@ import (
 // ServiceQuery is the builder for querying Service entities.
 type ServiceQuery struct {
 	config
-	ctx                    *QueryContext
-	order                  []service.OrderOption
-	inters                 []Interceptor
-	predicates             []predicate.Service
-	withEnvironment        *EnvironmentQuery
-	withGithubInstallation *GithubInstallationQuery
-	withServiceConfig      *ServiceConfigQuery
-	withDeployments        *DeploymentQuery
-	withCurrentDeployment  *DeploymentQuery
-	withTemplate           *TemplateQuery
-	withServiceGroup       *ServiceGroupQuery
-	modifiers              []func(*sql.Selector)
+	ctx                           *QueryContext
+	order                         []service.OrderOption
+	inters                        []Interceptor
+	predicates                    []predicate.Service
+	withEnvironment               *EnvironmentQuery
+	withGithubInstallation        *GithubInstallationQuery
+	withServiceConfig             *ServiceConfigQuery
+	withDeployments               *DeploymentQuery
+	withCurrentDeployment         *DeploymentQuery
+	withTemplate                  *TemplateQuery
+	withServiceGroup              *ServiceGroupQuery
+	withOutgoingNetworkExceptions *NetworkExceptionQuery
+	withIncomingNetworkExceptions *NetworkExceptionQuery
+	modifiers                     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -221,6 +224,50 @@ func (_q *ServiceQuery) QueryServiceGroup() *ServiceGroupQuery {
 			sqlgraph.From(service.Table, service.FieldID, selector),
 			sqlgraph.To(servicegroup.Table, servicegroup.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, service.ServiceGroupTable, service.ServiceGroupColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOutgoingNetworkExceptions chains the current query on the "outgoing_network_exceptions" edge.
+func (_q *ServiceQuery) QueryOutgoingNetworkExceptions() *NetworkExceptionQuery {
+	query := (&NetworkExceptionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(service.Table, service.FieldID, selector),
+			sqlgraph.To(networkexception.Table, networkexception.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, service.OutgoingNetworkExceptionsTable, service.OutgoingNetworkExceptionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIncomingNetworkExceptions chains the current query on the "incoming_network_exceptions" edge.
+func (_q *ServiceQuery) QueryIncomingNetworkExceptions() *NetworkExceptionQuery {
+	query := (&NetworkExceptionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(service.Table, service.FieldID, selector),
+			sqlgraph.To(networkexception.Table, networkexception.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, service.IncomingNetworkExceptionsTable, service.IncomingNetworkExceptionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -415,18 +462,20 @@ func (_q *ServiceQuery) Clone() *ServiceQuery {
 		return nil
 	}
 	return &ServiceQuery{
-		config:                 _q.config,
-		ctx:                    _q.ctx.Clone(),
-		order:                  append([]service.OrderOption{}, _q.order...),
-		inters:                 append([]Interceptor{}, _q.inters...),
-		predicates:             append([]predicate.Service{}, _q.predicates...),
-		withEnvironment:        _q.withEnvironment.Clone(),
-		withGithubInstallation: _q.withGithubInstallation.Clone(),
-		withServiceConfig:      _q.withServiceConfig.Clone(),
-		withDeployments:        _q.withDeployments.Clone(),
-		withCurrentDeployment:  _q.withCurrentDeployment.Clone(),
-		withTemplate:           _q.withTemplate.Clone(),
-		withServiceGroup:       _q.withServiceGroup.Clone(),
+		config:                        _q.config,
+		ctx:                           _q.ctx.Clone(),
+		order:                         append([]service.OrderOption{}, _q.order...),
+		inters:                        append([]Interceptor{}, _q.inters...),
+		predicates:                    append([]predicate.Service{}, _q.predicates...),
+		withEnvironment:               _q.withEnvironment.Clone(),
+		withGithubInstallation:        _q.withGithubInstallation.Clone(),
+		withServiceConfig:             _q.withServiceConfig.Clone(),
+		withDeployments:               _q.withDeployments.Clone(),
+		withCurrentDeployment:         _q.withCurrentDeployment.Clone(),
+		withTemplate:                  _q.withTemplate.Clone(),
+		withServiceGroup:              _q.withServiceGroup.Clone(),
+		withOutgoingNetworkExceptions: _q.withOutgoingNetworkExceptions.Clone(),
+		withIncomingNetworkExceptions: _q.withIncomingNetworkExceptions.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -511,6 +560,28 @@ func (_q *ServiceQuery) WithServiceGroup(opts ...func(*ServiceGroupQuery)) *Serv
 	return _q
 }
 
+// WithOutgoingNetworkExceptions tells the query-builder to eager-load the nodes that are connected to
+// the "outgoing_network_exceptions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ServiceQuery) WithOutgoingNetworkExceptions(opts ...func(*NetworkExceptionQuery)) *ServiceQuery {
+	query := (&NetworkExceptionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOutgoingNetworkExceptions = query
+	return _q
+}
+
+// WithIncomingNetworkExceptions tells the query-builder to eager-load the nodes that are connected to
+// the "incoming_network_exceptions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ServiceQuery) WithIncomingNetworkExceptions(opts ...func(*NetworkExceptionQuery)) *ServiceQuery {
+	query := (&NetworkExceptionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withIncomingNetworkExceptions = query
+	return _q
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -589,7 +660,7 @@ func (_q *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serv
 	var (
 		nodes       = []*Service{}
 		_spec       = _q.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [9]bool{
 			_q.withEnvironment != nil,
 			_q.withGithubInstallation != nil,
 			_q.withServiceConfig != nil,
@@ -597,6 +668,8 @@ func (_q *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serv
 			_q.withCurrentDeployment != nil,
 			_q.withTemplate != nil,
 			_q.withServiceGroup != nil,
+			_q.withOutgoingNetworkExceptions != nil,
+			_q.withIncomingNetworkExceptions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -660,6 +733,24 @@ func (_q *ServiceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Serv
 	if query := _q.withServiceGroup; query != nil {
 		if err := _q.loadServiceGroup(ctx, query, nodes, nil,
 			func(n *Service, e *ServiceGroup) { n.Edges.ServiceGroup = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOutgoingNetworkExceptions; query != nil {
+		if err := _q.loadOutgoingNetworkExceptions(ctx, query, nodes,
+			func(n *Service) { n.Edges.OutgoingNetworkExceptions = []*NetworkException{} },
+			func(n *Service, e *NetworkException) {
+				n.Edges.OutgoingNetworkExceptions = append(n.Edges.OutgoingNetworkExceptions, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withIncomingNetworkExceptions; query != nil {
+		if err := _q.loadIncomingNetworkExceptions(ctx, query, nodes,
+			func(n *Service) { n.Edges.IncomingNetworkExceptions = []*NetworkException{} },
+			func(n *Service, e *NetworkException) {
+				n.Edges.IncomingNetworkExceptions = append(n.Edges.IncomingNetworkExceptions, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -877,6 +968,69 @@ func (_q *ServiceQuery) loadServiceGroup(ctx context.Context, query *ServiceGrou
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *ServiceQuery) loadOutgoingNetworkExceptions(ctx context.Context, query *NetworkExceptionQuery, nodes []*Service, init func(*Service), assign func(*Service, *NetworkException)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Service)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(networkexception.FieldSourceServiceID)
+	}
+	query.Where(predicate.NetworkException(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(service.OutgoingNetworkExceptionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.SourceServiceID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "source_service_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "source_service_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *ServiceQuery) loadIncomingNetworkExceptions(ctx context.Context, query *NetworkExceptionQuery, nodes []*Service, init func(*Service), assign func(*Service, *NetworkException)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Service)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(networkexception.FieldTargetServiceID)
+	}
+	query.Where(predicate.NetworkException(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(service.IncomingNetworkExceptionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TargetServiceID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "target_service_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

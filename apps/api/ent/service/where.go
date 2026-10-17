@@ -1303,6 +1303,52 @@ func HasServiceGroupWith(preds ...predicate.ServiceGroup) predicate.Service {
 	})
 }
 
+// HasOutgoingNetworkExceptions applies the HasEdge predicate on the "outgoing_network_exceptions" edge.
+func HasOutgoingNetworkExceptions() predicate.Service {
+	return predicate.Service(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OutgoingNetworkExceptionsTable, OutgoingNetworkExceptionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOutgoingNetworkExceptionsWith applies the HasEdge predicate on the "outgoing_network_exceptions" edge with a given conditions (other predicates).
+func HasOutgoingNetworkExceptionsWith(preds ...predicate.NetworkException) predicate.Service {
+	return predicate.Service(func(s *sql.Selector) {
+		step := newOutgoingNetworkExceptionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasIncomingNetworkExceptions applies the HasEdge predicate on the "incoming_network_exceptions" edge.
+func HasIncomingNetworkExceptions() predicate.Service {
+	return predicate.Service(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, IncomingNetworkExceptionsTable, IncomingNetworkExceptionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIncomingNetworkExceptionsWith applies the HasEdge predicate on the "incoming_network_exceptions" edge with a given conditions (other predicates).
+func HasIncomingNetworkExceptionsWith(preds ...predicate.NetworkException) predicate.Service {
+	return predicate.Service(func(s *sql.Selector) {
+		step := newIncomingNetworkExceptionsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Service) predicate.Service {
 	return predicate.Service(sql.AndPredicates(predicates...))

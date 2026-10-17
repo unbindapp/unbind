@@ -16,6 +16,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/deployment"
 	"github.com/unbindapp/unbind-api/ent/environment"
 	"github.com/unbindapp/unbind-api/ent/githubinstallation"
+	"github.com/unbindapp/unbind-api/ent/networkexception"
 	"github.com/unbindapp/unbind-api/ent/predicate"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/ent/service"
@@ -432,6 +433,36 @@ func (_u *ServiceUpdate) SetServiceGroup(v *ServiceGroup) *ServiceUpdate {
 	return _u.SetServiceGroupID(v.ID)
 }
 
+// AddOutgoingNetworkExceptionIDs adds the "outgoing_network_exceptions" edge to the NetworkException entity by IDs.
+func (_u *ServiceUpdate) AddOutgoingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceUpdate {
+	_u.mutation.AddOutgoingNetworkExceptionIDs(ids...)
+	return _u
+}
+
+// AddOutgoingNetworkExceptions adds the "outgoing_network_exceptions" edges to the NetworkException entity.
+func (_u *ServiceUpdate) AddOutgoingNetworkExceptions(v ...*NetworkException) *ServiceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOutgoingNetworkExceptionIDs(ids...)
+}
+
+// AddIncomingNetworkExceptionIDs adds the "incoming_network_exceptions" edge to the NetworkException entity by IDs.
+func (_u *ServiceUpdate) AddIncomingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceUpdate {
+	_u.mutation.AddIncomingNetworkExceptionIDs(ids...)
+	return _u
+}
+
+// AddIncomingNetworkExceptions adds the "incoming_network_exceptions" edges to the NetworkException entity.
+func (_u *ServiceUpdate) AddIncomingNetworkExceptions(v ...*NetworkException) *ServiceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIncomingNetworkExceptionIDs(ids...)
+}
+
 // Mutation returns the ServiceMutation object of the builder.
 func (_u *ServiceUpdate) Mutation() *ServiceMutation {
 	return _u.mutation
@@ -492,6 +523,48 @@ func (_u *ServiceUpdate) ClearTemplate() *ServiceUpdate {
 func (_u *ServiceUpdate) ClearServiceGroup() *ServiceUpdate {
 	_u.mutation.ClearServiceGroup()
 	return _u
+}
+
+// ClearOutgoingNetworkExceptions clears all "outgoing_network_exceptions" edges to the NetworkException entity.
+func (_u *ServiceUpdate) ClearOutgoingNetworkExceptions() *ServiceUpdate {
+	_u.mutation.ClearOutgoingNetworkExceptions()
+	return _u
+}
+
+// RemoveOutgoingNetworkExceptionIDs removes the "outgoing_network_exceptions" edge to NetworkException entities by IDs.
+func (_u *ServiceUpdate) RemoveOutgoingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceUpdate {
+	_u.mutation.RemoveOutgoingNetworkExceptionIDs(ids...)
+	return _u
+}
+
+// RemoveOutgoingNetworkExceptions removes "outgoing_network_exceptions" edges to NetworkException entities.
+func (_u *ServiceUpdate) RemoveOutgoingNetworkExceptions(v ...*NetworkException) *ServiceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOutgoingNetworkExceptionIDs(ids...)
+}
+
+// ClearIncomingNetworkExceptions clears all "incoming_network_exceptions" edges to the NetworkException entity.
+func (_u *ServiceUpdate) ClearIncomingNetworkExceptions() *ServiceUpdate {
+	_u.mutation.ClearIncomingNetworkExceptions()
+	return _u
+}
+
+// RemoveIncomingNetworkExceptionIDs removes the "incoming_network_exceptions" edge to NetworkException entities by IDs.
+func (_u *ServiceUpdate) RemoveIncomingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceUpdate {
+	_u.mutation.RemoveIncomingNetworkExceptionIDs(ids...)
+	return _u
+}
+
+// RemoveIncomingNetworkExceptions removes "incoming_network_exceptions" edges to NetworkException entities.
+func (_u *ServiceUpdate) RemoveIncomingNetworkExceptions(v ...*NetworkException) *ServiceUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIncomingNetworkExceptionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -852,6 +925,96 @@ func (_u *ServiceUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(servicegroup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OutgoingNetworkExceptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.OutgoingNetworkExceptionsTable,
+			Columns: []string{service.OutgoingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOutgoingNetworkExceptionsIDs(); len(nodes) > 0 && !_u.mutation.OutgoingNetworkExceptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.OutgoingNetworkExceptionsTable,
+			Columns: []string{service.OutgoingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OutgoingNetworkExceptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.OutgoingNetworkExceptionsTable,
+			Columns: []string{service.OutgoingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IncomingNetworkExceptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.IncomingNetworkExceptionsTable,
+			Columns: []string{service.IncomingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIncomingNetworkExceptionsIDs(); len(nodes) > 0 && !_u.mutation.IncomingNetworkExceptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.IncomingNetworkExceptionsTable,
+			Columns: []string{service.IncomingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncomingNetworkExceptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.IncomingNetworkExceptionsTable,
+			Columns: []string{service.IncomingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1275,6 +1438,36 @@ func (_u *ServiceUpdateOne) SetServiceGroup(v *ServiceGroup) *ServiceUpdateOne {
 	return _u.SetServiceGroupID(v.ID)
 }
 
+// AddOutgoingNetworkExceptionIDs adds the "outgoing_network_exceptions" edge to the NetworkException entity by IDs.
+func (_u *ServiceUpdateOne) AddOutgoingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.AddOutgoingNetworkExceptionIDs(ids...)
+	return _u
+}
+
+// AddOutgoingNetworkExceptions adds the "outgoing_network_exceptions" edges to the NetworkException entity.
+func (_u *ServiceUpdateOne) AddOutgoingNetworkExceptions(v ...*NetworkException) *ServiceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOutgoingNetworkExceptionIDs(ids...)
+}
+
+// AddIncomingNetworkExceptionIDs adds the "incoming_network_exceptions" edge to the NetworkException entity by IDs.
+func (_u *ServiceUpdateOne) AddIncomingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.AddIncomingNetworkExceptionIDs(ids...)
+	return _u
+}
+
+// AddIncomingNetworkExceptions adds the "incoming_network_exceptions" edges to the NetworkException entity.
+func (_u *ServiceUpdateOne) AddIncomingNetworkExceptions(v ...*NetworkException) *ServiceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddIncomingNetworkExceptionIDs(ids...)
+}
+
 // Mutation returns the ServiceMutation object of the builder.
 func (_u *ServiceUpdateOne) Mutation() *ServiceMutation {
 	return _u.mutation
@@ -1335,6 +1528,48 @@ func (_u *ServiceUpdateOne) ClearTemplate() *ServiceUpdateOne {
 func (_u *ServiceUpdateOne) ClearServiceGroup() *ServiceUpdateOne {
 	_u.mutation.ClearServiceGroup()
 	return _u
+}
+
+// ClearOutgoingNetworkExceptions clears all "outgoing_network_exceptions" edges to the NetworkException entity.
+func (_u *ServiceUpdateOne) ClearOutgoingNetworkExceptions() *ServiceUpdateOne {
+	_u.mutation.ClearOutgoingNetworkExceptions()
+	return _u
+}
+
+// RemoveOutgoingNetworkExceptionIDs removes the "outgoing_network_exceptions" edge to NetworkException entities by IDs.
+func (_u *ServiceUpdateOne) RemoveOutgoingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.RemoveOutgoingNetworkExceptionIDs(ids...)
+	return _u
+}
+
+// RemoveOutgoingNetworkExceptions removes "outgoing_network_exceptions" edges to NetworkException entities.
+func (_u *ServiceUpdateOne) RemoveOutgoingNetworkExceptions(v ...*NetworkException) *ServiceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOutgoingNetworkExceptionIDs(ids...)
+}
+
+// ClearIncomingNetworkExceptions clears all "incoming_network_exceptions" edges to the NetworkException entity.
+func (_u *ServiceUpdateOne) ClearIncomingNetworkExceptions() *ServiceUpdateOne {
+	_u.mutation.ClearIncomingNetworkExceptions()
+	return _u
+}
+
+// RemoveIncomingNetworkExceptionIDs removes the "incoming_network_exceptions" edge to NetworkException entities by IDs.
+func (_u *ServiceUpdateOne) RemoveIncomingNetworkExceptionIDs(ids ...uuid.UUID) *ServiceUpdateOne {
+	_u.mutation.RemoveIncomingNetworkExceptionIDs(ids...)
+	return _u
+}
+
+// RemoveIncomingNetworkExceptions removes "incoming_network_exceptions" edges to NetworkException entities.
+func (_u *ServiceUpdateOne) RemoveIncomingNetworkExceptions(v ...*NetworkException) *ServiceUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveIncomingNetworkExceptionIDs(ids...)
 }
 
 // Where appends a list predicates to the ServiceUpdate builder.
@@ -1725,6 +1960,96 @@ func (_u *ServiceUpdateOne) sqlSave(ctx context.Context) (_node *Service, err er
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(servicegroup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.OutgoingNetworkExceptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.OutgoingNetworkExceptionsTable,
+			Columns: []string{service.OutgoingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOutgoingNetworkExceptionsIDs(); len(nodes) > 0 && !_u.mutation.OutgoingNetworkExceptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.OutgoingNetworkExceptionsTable,
+			Columns: []string{service.OutgoingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OutgoingNetworkExceptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.OutgoingNetworkExceptionsTable,
+			Columns: []string{service.OutgoingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.IncomingNetworkExceptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.IncomingNetworkExceptionsTable,
+			Columns: []string{service.IncomingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedIncomingNetworkExceptionsIDs(); len(nodes) > 0 && !_u.mutation.IncomingNetworkExceptionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.IncomingNetworkExceptionsTable,
+			Columns: []string{service.IncomingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.IncomingNetworkExceptionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   service.IncomingNetworkExceptionsTable,
+			Columns: []string{service.IncomingNetworkExceptionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(networkexception.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

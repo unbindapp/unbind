@@ -548,5 +548,10 @@
     "version": "v0.1.109",
     "summary": "GitHub connections shared with many or all teams, watch paths when creating a service, GitHub repositories over MCP, a check for updates button, and team icon polish.",
     "breaking": false
+  },
+  "v0.1.110": {
+    "version": "v0.1.110",
+    "summary": "Network isolation between teams, exceptions for services that call across teams or accept outside connections, and a new Network page in system settings.",
+    "breaking": false
   }
 }

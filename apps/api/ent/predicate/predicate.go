@@ -33,6 +33,9 @@ type Invitation func(*sql.Selector)
 // JWTKey is the predicate function for jwtkey builders.
 type JWTKey func(*sql.Selector)
 
+// NetworkException is the predicate function for networkexception builders.
+type NetworkException func(*sql.Selector)
+
 // OAuthAuthorizationCode is the predicate function for oauthauthorizationcode builders.
 type OAuthAuthorizationCode func(*sql.Selector)
 
