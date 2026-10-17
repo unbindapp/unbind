@@ -142,7 +142,13 @@ export function BreadcrumbItem<T>({
   );
 
   return (
-    <DropdownOrDrawer title={title} open={open} onOpenChange={setOpen} sideOffset={sideOffset}>
+    <DropdownOrDrawer
+      title={title}
+      open={open}
+      onOpenChange={setOpen}
+      sideOffset={sideOffset}
+      classNameDropdown="sm:w-[min(16rem,var(--available-width))]"
+    >
       <DropdownOrDrawerTrigger>
         {children ? (
           children
@@ -169,7 +175,6 @@ export function BreadcrumbItem<T>({
                 lastHoveredItem={lastHoveredItem}
                 setLastHoveredItem={setLastHoveredItem}
                 IconItem={IconItem}
-                classNameIcon="size-5.5"
                 showArrow={showArrow}
               />
             );
@@ -227,7 +232,6 @@ export function BreadcrumbItem<T>({
                 lastHoveredItem={lastHoveredItem}
                 setLastHoveredItem={setLastHoveredItem}
                 IconItem={IconItem}
-                classNameIcon="size-5"
                 showArrow={showArrow}
               />
             );
@@ -293,7 +297,6 @@ function SheetItem<T>({
   setLastHoveredItem,
   showArrow,
   IconItem,
-  classNameIcon,
   isPending,
   className,
   disabled,
@@ -309,7 +312,6 @@ function SheetItem<T>({
   setLastHoveredItem: Dispatch<SetStateAction<TBreadcrumbItem<T> | null | undefined>>;
   showArrow?: (i: TBreadcrumbItem<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
-  classNameIcon?: string;
   isPending?: boolean;
   comingSoon?: boolean;
   className?: string;
@@ -347,7 +349,7 @@ function SheetItem<T>({
           isPending ? (
             <LoaderIcon id={item.id} className="-my-1 -ml-1 size-5 shrink-0 animate-spin" />
           ) : (
-            <IconItem id={item.id} className={cn("-my-1 -ml-1 size-5 shrink-0", classNameIcon)} />
+            <IconItem id={item.id} className="-my-1 -ml-1 size-5 shrink-0" />
           )
         ) : null}
         <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
@@ -387,7 +389,6 @@ type TDropdownItemProps<T> = {
   setLastHoveredItem: Dispatch<SetStateAction<TBreadcrumbItem<T> | null | undefined>>;
   showArrow?: (i: TBreadcrumbItem<T>) => boolean;
   IconItem?: FC<{ id: string; className?: string }>;
-  classNameIcon?: string;
   isPending?: boolean;
   comingSoon?: boolean;
   className?: string;
@@ -404,7 +405,6 @@ function DropdownItem<T>({
   setLastHoveredItem,
   showArrow,
   IconItem,
-  classNameIcon,
   isPending,
   className,
   comingSoon,
@@ -453,10 +453,7 @@ function DropdownItem<T>({
           isPending ? (
             <LoaderIcon id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0 animate-spin" />
           ) : (
-            <IconItem
-              id={item.id}
-              className={cn("-my-1 -ml-0.5 size-4.5 shrink-0", classNameIcon)}
-            />
+            <IconItem id={item.id} className="-my-1 -ml-0.5 size-4.5 shrink-0" />
           )
         ) : null}
         <div className="flex min-w-0 shrink items-center justify-between gap-3">
@@ -507,7 +504,7 @@ function Trigger<T>({
       data-no-icon={Icon === undefined || undefined}
       data-pending={item == undefined || undefined}
       className={cn(
-        `group/button relative flex max-w-44 min-w-0 shrink items-center justify-start gap-2 rounded border-none px-1.5 py-3.5 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent data-no-icon:pl-2.75`,
+        `group/button relative flex max-w-44 min-w-0 shrink items-center justify-start gap-1.5 rounded border-none px-1.5 py-3.5 text-sm font-medium focus-visible:ring-0 focus-visible:ring-offset-0 active:bg-transparent has-hover:hover:bg-transparent data-no-icon:pl-2.75`,
         className,
       )}
       {...rest}
@@ -515,16 +512,16 @@ function Trigger<T>({
       <div className="pointer-events-none absolute top-0 left-0 h-full w-full py-1.5">
         <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/8-10 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
       </div>
-      {Icon && item && <Icon id={item.id} className="relative -my-px -mr-0.5 size-5" />}
+      {Icon && item && <Icon id={item.id} className="relative size-4.5" />}
       <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton relative truncate py-0.5 leading-none group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
         {item == undefined ? "Loading" : item?.name}
       </p>
       {chevron === "up-down" ? (
-        <ChevronsUpDownIcon className="text-muted-more-foreground relative -my-1 -ml-1 size-4" />
+        <ChevronsUpDownIcon className="text-muted-more-foreground relative -my-1 -ml-0.5 size-4" />
       ) : (
         <ChevronDownIcon
           data-flip-chevron-sm={flipChevronOnSm || undefined}
-          className="text-muted-more-foreground relative -my-1 -ml-1 size-4 transition group-data-popup-open/button:rotate-180 data-flip-chevron-sm:rotate-180 group-data-popup-open/button:data-flip-chevron-sm:rotate-360 sm:data-flip-chevron-sm:rotate-0 sm:group-data-popup-open/button:data-flip-chevron-sm:rotate-180"
+          className="text-muted-more-foreground relative -my-1 -ml-0.5 size-4 transition group-data-popup-open/button:rotate-180 data-flip-chevron-sm:rotate-180 group-data-popup-open/button:data-flip-chevron-sm:rotate-360 sm:data-flip-chevron-sm:rotate-0 sm:group-data-popup-open/button:data-flip-chevron-sm:rotate-180"
         />
       )}
     </Button>

@@ -180,7 +180,7 @@ function IconPicker({
       className="group/picker focus-visible:ring-primary/8-10 relative size-14 shrink-0 cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-default"
     >
       <TeamIcon team={team} className="size-full" />
-      <div className="bg-background/10-10 text-foreground pointer-events-none absolute inset-px flex items-center justify-center rounded-full opacity-0 transition group-focus-visible/picker:opacity-100 group-active/picker:opacity-100 group-data-dragging/card:opacity-100 group-data-pending/picker:opacity-100 has-hover:group-hover/picker:opacity-100">
+      <div className="bg-background/10-10 text-foreground pointer-events-none absolute inset-0 flex items-center justify-center rounded-full opacity-0 transition group-focus-visible/picker:opacity-100 group-active/picker:opacity-100 group-data-dragging/card:opacity-100 group-data-pending/picker:opacity-100 has-hover:group-hover/picker:opacity-100">
         {isPending ? (
           <LoaderIcon className="size-5 animate-spin" />
         ) : (
