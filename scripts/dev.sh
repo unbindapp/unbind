@@ -9,6 +9,16 @@ DEV_ADMIN_PASSWORD=unbind-dev
 
 log() { printf '\033[1;34m[dev]\033[0m %s\n' "$*"; }
 
+require_main_checkout() {
+  local common
+  common=$(git rev-parse --path-format=absolute --git-common-dir)
+  [ "$(git rev-parse --path-format=absolute --git-dir)" = "$common" ] && return
+  echo "run this from the main checkout ($(dirname "$common")), not a worktree: the dev containers are shared and their data path is relative" >&2
+  exit 1
+}
+
+require_main_checkout
+
 if ! command -v k3d >/dev/null; then
   log "k3d not found on PATH; re-launching inside nix develop"
   exec nix develop --command ./scripts/dev.sh "$@"

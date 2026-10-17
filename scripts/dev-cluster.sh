@@ -67,7 +67,11 @@ sys.exit(1)' "$CLUSTER"
 
 up() {
   if k3d cluster get "$CLUSTER" >/dev/null 2>&1 && ! cluster_running; then
-    k3d cluster start "$CLUSTER"
+    if ! k3d cluster start "$CLUSTER" --timeout 180s; then
+      echo "k3d cluster start timed out. After a hard reboot the server's Docker log can be corrupt and k3d waits on it forever; clear it with:" >&2
+      echo "  truncate -s 0 \"\$(docker inspect --format '{{.LogPath}}' k3d-$CLUSTER-server-0)\"" >&2
+      exit 1
+    fi
   fi
 
   if ! k3d cluster get "$CLUSTER" >/dev/null 2>&1; then

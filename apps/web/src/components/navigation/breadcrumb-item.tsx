@@ -515,7 +515,7 @@ function Trigger<T>({
       <div className="pointer-events-none absolute top-0 left-0 h-full w-full py-1.5">
         <div className="bg-border/0 has-hover:group-hover/button:bg-border group-active/button:bg-border group-focus-visible/button:ring-primary/8-10 h-full w-full rounded-lg group-focus-visible/button:ring-1" />
       </div>
-      {Icon && item && <Icon id={item.id} className="relative -my-px size-5" />}
+      {Icon && item && <Icon id={item.id} className="relative -my-px -mr-0.5 size-5" />}
       <p className="group-data-pending/button:bg-foreground group-data-pending/button:animate-skeleton relative truncate py-0.5 leading-none group-data-pending/button:rounded-sm group-data-pending/button:text-transparent">
         {item == undefined ? "Loading" : item?.name}
       </p>
