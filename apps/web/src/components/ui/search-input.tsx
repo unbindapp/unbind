@@ -59,7 +59,7 @@ export default function SearchInput({
           onClick={clear}
           variant="ghost"
           size="icon"
-          className="text-muted-more-foreground pointer-events-auto aspect-square h-full w-auto translate-x-[calc(100%+0.25rem)] rounded-md transition data-has-value:translate-x-0"
+          className="text-muted-more-foreground pointer-events-auto aspect-square h-full w-auto translate-x-[calc(100%+0.25rem)] rounded-sm transition data-has-value:translate-x-0"
         >
           <XIcon className="size-4.5" />
         </Button>
