@@ -79,6 +79,7 @@ func (suite *UserServiceSuite) TestUpdatePassword() {
 		suite.MockUserRepo.EXPECT().GetByID(suite.Ctx, suite.requesterID).Return(requester, nil).Once()
 		suite.MockUserRepo.EXPECT().Authenticate(suite.Ctx, "self@example.com", "current").Return(requester, nil).Once()
 		suite.MockUserRepo.EXPECT().UpdatePassword(suite.Ctx, suite.requesterID, "new-password").Return(nil).Once()
+		suite.MockOauthRepo.EXPECT().RevokeUserTokens(suite.Ctx, suite.requesterID, "").Return(nil).Once()
 
 		user, err := suite.service.UpdatePassword(suite.Ctx, suite.requesterID, &UpdatePasswordInput{
 			CurrentPassword: "current",
@@ -114,6 +115,7 @@ func (suite *UserServiceSuite) TestUpdatePassword() {
 		suite.MockUserRepo.EXPECT().GetByID(suite.Ctx, suite.targetID).Return(suite.targetUser, nil).Once()
 		suite.MockPermissionsRepo.EXPECT().Check(suite.Ctx, suite.requesterID, mock.Anything).Return(nil).Once()
 		suite.MockUserRepo.EXPECT().UpdatePassword(suite.Ctx, suite.targetID, "new-password").Return(nil).Once()
+		suite.MockOauthRepo.EXPECT().RevokeUserTokens(suite.Ctx, suite.targetID, "").Return(nil).Once()
 
 		user, err := suite.service.UpdatePassword(suite.Ctx, suite.requesterID, &UpdatePasswordInput{
 			UserID:      &suite.targetID,
