@@ -39,6 +39,7 @@ type GithubHandlerSuite struct {
 	teamViewer   *ent.User
 	teamEditor   *ent.User
 	outsider     *ent.User
+	admin        *ent.User
 	app          *ent.GithubApp
 	installation *ent.GithubInstallation
 }
@@ -61,6 +62,7 @@ func (suite *GithubHandlerSuite) SetupTest() {
 	suite.teamViewer = suite.userWithGrant("viewer@example.com", schema.ActionViewer, suite.team.ID)
 	suite.teamEditor = suite.userWithGrant("editor@example.com", schema.ActionEditor, suite.team.ID)
 	suite.outsider = suite.userWithGrant("outsider@example.com", schema.ActionEditor, suite.otherTeam.ID)
+	suite.admin = suite.systemAdmin("admin@example.com")
 
 	suite.app = suite.DB.GithubApp.Create().
 		SetID(12345).
@@ -103,6 +105,20 @@ func (suite *GithubHandlerSuite) userWithGrant(email string, action schema.Permi
 	return suite.DB.User.Create().SetEmail(email).SetPasswordHash("x").AddGroupIDs(group.ID).SaveX(suite.Ctx)
 }
 
+// systemAdmin is a member of the superuser group, admin of the system and of every team
+func (suite *GithubHandlerSuite) systemAdmin(email string) *ent.User {
+	group := suite.DB.Group.Create().SetName(email).SaveX(suite.Ctx)
+	for _, resourceType := range []schema.ResourceType{schema.ResourceTypeSystem, schema.ResourceTypeTeam} {
+		perm := suite.DB.Permission.Create().
+			SetAction(schema.ActionAdmin).
+			SetResourceType(resourceType).
+			SetResourceSelector(schema.ResourceSelector{Superuser: true}).
+			SaveX(suite.Ctx)
+		group.Update().AddPermissionIDs(perm.ID).ExecX(suite.Ctx)
+	}
+	return suite.DB.User.Create().SetEmail(email).SetPasswordHash("x").AddGroupIDs(group.ID).SaveX(suite.Ctx)
+}
+
 func (suite *GithubHandlerSuite) createService(name string, teamID uuid.UUID, installationID int64) *ent.Service {
 	project := suite.DB.Project.Create().
 		SetKubernetesName(name).
@@ -129,7 +145,7 @@ func (suite *GithubHandlerSuite) createService(name string, teamID uuid.UUID, in
 }
 
 func (suite *GithubHandlerSuite) shareWithTeam(teamID uuid.UUID) {
-	suite.DB.GithubApp.UpdateOneID(suite.app.ID).SetTeamID(teamID).ExecX(suite.Ctx)
+	suite.DB.GithubApp.UpdateOneID(suite.app.ID).AddTeamIDs(teamID).ExecX(suite.Ctx)
 }
 
 func (suite *GithubHandlerSuite) as(user *ent.User) context.Context {
@@ -153,7 +169,7 @@ func (suite *GithubHandlerSuite) TestPrivateAppVisibleOnlyToCreator() {
 	suite.Require().Len(apps, 1)
 	suite.Equal(suite.creator.ID, *apps[0].CreatedBy)
 	suite.Equal("creator@example.com", *apps[0].CreatedByEmail)
-	suite.Nil(apps[0].TeamID)
+	suite.Empty(apps[0].Teams)
 	suite.Len(apps[0].Installations, 1)
 
 	suite.Empty(suite.listApps(suite.teamEditor, &GithubAppListInput{}))
@@ -174,8 +190,7 @@ func (suite *GithubHandlerSuite) TestSharedAppVisibleToTeam() {
 
 	apps := suite.listApps(suite.teamViewer, &GithubAppListInput{})
 	suite.Require().Len(apps, 1)
-	suite.Equal(suite.team.ID, *apps[0].TeamID)
-	suite.Equal("team", *apps[0].TeamName)
+	suite.Equal([]*GithubAppTeamAPIResponse{{ID: suite.team.ID, Name: "team"}}, apps[0].Teams)
 
 	suite.Len(suite.listApps(suite.teamViewer, &GithubAppListInput{TeamID: suite.team.ID}), 1)
 	suite.Empty(suite.listApps(suite.teamViewer, &GithubAppListInput{Owned: true}))
@@ -201,41 +216,137 @@ func (suite *GithubHandlerSuite) TestServiceCountsFollowTheTeamFilter() {
 	suite.Equal(1, apps[0].Installations[0].ServiceCount)
 }
 
-func (suite *GithubHandlerSuite) setTeam(user *ent.User, teamID *uuid.UUID) (*GithubAppSetTeamResponse, error) {
-	input := &GithubAppSetTeamInput{}
+func (suite *GithubHandlerSuite) TestSharedWithSeveralTeams() {
+	suite.shareWithTeam(suite.team.ID)
+	suite.shareWithTeam(suite.otherTeam.ID)
+
+	teamNames := func(user *ent.User) []string {
+		apps := suite.listApps(user, &GithubAppListInput{})
+		suite.Require().Len(apps, 1)
+		names := []string{}
+		for _, team := range apps[0].Teams {
+			names = append(names, team.Name)
+		}
+		return names
+	}
+	suite.Equal([]string{"other", "team"}, teamNames(suite.creator))
+	suite.Equal([]string{"team"}, teamNames(suite.teamViewer), "other teams' names stay hidden")
+	suite.Equal([]string{"other"}, teamNames(suite.outsider))
+	suite.Len(suite.listApps(suite.outsider, &GithubAppListInput{TeamID: suite.otherTeam.ID}), 1)
+}
+
+func (suite *GithubHandlerSuite) updateTeams(user *ent.User, add []uuid.UUID, remove []uuid.UUID) (*GithubAppUpdateTeamsResponse, error) {
+	input := &GithubAppUpdateTeamsInput{}
 	input.Body.UUID = suite.app.UUID
-	input.Body.TeamID = teamID
-	return suite.handlers.HandleSetGithubAppTeam(suite.as(user), input)
+	input.Body.AddTeamIDs = add
+	input.Body.RemoveTeamIDs = remove
+	return suite.handlers.HandleUpdateGithubAppTeams(suite.as(user), input)
 }
 
 func (suite *GithubHandlerSuite) TestCreatorSharesWithTeamsTheyEdit() {
-	resp, err := suite.setTeam(suite.creator, &suite.team.ID)
+	resp, err := suite.updateTeams(suite.creator, []uuid.UUID{suite.team.ID}, nil)
 	suite.Require().NoError(err)
-	suite.Equal(suite.team.ID, *resp.Body.Data.TeamID)
+	suite.Equal([]*GithubAppTeamAPIResponse{{ID: suite.team.ID, Name: "team"}}, resp.Body.Data.Teams)
 
-	_, err = suite.setTeam(suite.creator, &suite.otherTeam.ID)
+	_, err = suite.updateTeams(suite.creator, []uuid.UUID{suite.otherTeam.ID}, nil)
 	suite.assertStatus(err, 403)
 
-	resp, err = suite.setTeam(suite.creator, nil)
+	resp, err = suite.updateTeams(suite.creator, nil, []uuid.UUID{suite.team.ID})
 	suite.Require().NoError(err)
-	suite.Nil(resp.Body.Data.TeamID)
+	suite.Empty(resp.Body.Data.Teams)
 }
 
-func (suite *GithubHandlerSuite) TestTeamEditorCanOnlyUnshare() {
+func (suite *GithubHandlerSuite) TestSystemAdminSharesWithAnyTeam() {
+	_, err := suite.updateTeams(suite.admin, []uuid.UUID{suite.team.ID}, nil)
+	suite.assertStatus(err, 404)
+
+	suite.shareWithTeam(suite.team.ID)
+	resp, err := suite.updateTeams(suite.admin, []uuid.UUID{suite.otherTeam.ID}, nil)
+	suite.Require().NoError(err)
+	suite.Len(resp.Body.Data.Teams, 2)
+
+	_, err = suite.updateTeams(suite.admin, []uuid.UUID{uuid.New()}, nil)
+	suite.assertStatus(err, 404)
+
+	_, err = suite.updateTeams(suite.admin, []uuid.UUID{suite.team.ID}, []uuid.UUID{suite.team.ID})
+	suite.assertStatus(err, 400)
+}
+
+func (suite *GithubHandlerSuite) setAllTeams(user *ent.User, allTeams bool) (*GithubAppUpdateTeamsResponse, error) {
+	input := &GithubAppUpdateTeamsInput{}
+	input.Body.UUID = suite.app.UUID
+	input.Body.AllTeams = &allTeams
+	return suite.handlers.HandleUpdateGithubAppTeams(suite.as(user), input)
+}
+
+func (suite *GithubHandlerSuite) TestOnlySystemAdminSharesWithAllTeams() {
+	_, err := suite.setAllTeams(suite.creator, true)
+	suite.assertStatus(err, 403)
+	suite.Empty(suite.listApps(suite.outsider, &GithubAppListInput{}))
+
+	suite.shareWithTeam(suite.team.ID)
+	resp, err := suite.setAllTeams(suite.admin, true)
+	suite.Require().NoError(err)
+	suite.True(resp.Body.Data.SharedWithAllTeams)
+
+	suite.Len(suite.listApps(suite.outsider, &GithubAppListInput{}), 1)
+	suite.Len(suite.listApps(suite.outsider, &GithubAppListInput{TeamID: suite.otherTeam.ID}), 1)
+
+	_, err = suite.setAllTeams(suite.teamEditor, false)
+	suite.assertStatus(err, 403)
+
+	resp, err = suite.setAllTeams(suite.creator, false)
+	suite.Require().NoError(err)
+	suite.False(resp.Body.Data.SharedWithAllTeams)
+	suite.Empty(suite.listApps(suite.outsider, &GithubAppListInput{}))
+}
+
+func (suite *GithubHandlerSuite) TestAppSharedWithAllTeamsNeedsAdminOnceCreatorIsGone() {
+	suite.DB.GithubApp.UpdateOneID(suite.app.ID).SetSharedWithAllTeams(true).ExecX(suite.Ctx)
+	suite.DB.User.DeleteOneID(suite.creator.ID).ExecX(suite.Ctx)
+
+	_, err := suite.setAllTeams(suite.admin, false)
+	suite.assertStatus(err, 400)
+
+	suite.assertStatus(suite.deleteApp(suite.teamEditor), 403)
+
+	suite.githubClient.EXPECT().DeleteInstallation(mock.Anything, mock.Anything, suite.installation.ID).Return(nil).Once()
+	suite.Require().NoError(suite.deleteApp(suite.admin))
+}
+
+func (suite *GithubHandlerSuite) TestTeamEditorCanOnlyRemoveTheirTeam() {
 	suite.shareWithTeam(suite.team.ID)
 
-	_, err := suite.setTeam(suite.teamEditor, &suite.otherTeam.ID)
+	_, err := suite.updateTeams(suite.teamEditor, []uuid.UUID{suite.otherTeam.ID}, nil)
 	suite.assertStatus(err, 403)
 
-	_, err = suite.setTeam(suite.teamViewer, nil)
+	suite.shareWithTeam(suite.otherTeam.ID)
+	_, err = suite.updateTeams(suite.teamEditor, nil, []uuid.UUID{suite.otherTeam.ID})
 	suite.assertStatus(err, 403)
 
-	resp, err := suite.setTeam(suite.teamEditor, nil)
+	_, err = suite.updateTeams(suite.teamViewer, nil, []uuid.UUID{suite.team.ID})
+	suite.assertStatus(err, 403)
+
+	resp, err := suite.updateTeams(suite.teamEditor, nil, []uuid.UUID{suite.team.ID})
 	suite.Require().NoError(err)
-	suite.Nil(resp.Body.Data.TeamID)
+	suite.Nil(resp.Body.Data, "the editor no longer sees the app")
+	suite.Len(suite.listApps(suite.outsider, &GithubAppListInput{}), 1)
 
-	_, err = suite.setTeam(suite.teamEditor, nil)
+	_, err = suite.updateTeams(suite.teamEditor, nil, []uuid.UUID{suite.team.ID})
 	suite.assertStatus(err, 404)
+}
+
+func (suite *GithubHandlerSuite) TestAppWithoutCreatorKeepsATeam() {
+	suite.shareWithTeam(suite.team.ID)
+	suite.DB.User.DeleteOneID(suite.creator.ID).ExecX(suite.Ctx)
+
+	_, err := suite.updateTeams(suite.teamEditor, nil, []uuid.UUID{suite.team.ID})
+	suite.assertStatus(err, 400)
+
+	_, err = suite.updateTeams(suite.admin, []uuid.UUID{suite.otherTeam.ID}, nil)
+	suite.Require().NoError(err)
+	_, err = suite.updateTeams(suite.teamEditor, nil, []uuid.UUID{suite.team.ID})
+	suite.Require().NoError(err)
 }
 
 func (suite *GithubHandlerSuite) TestConnectingWithATeamNeedsTeamEditor() {
@@ -276,6 +387,18 @@ func (suite *GithubHandlerSuite) TestTeamEditorRemovesAppOnceCreatorIsGone() {
 
 	suite.githubClient.EXPECT().DeleteInstallation(mock.Anything, mock.Anything, suite.installation.ID).Return(nil).Once()
 	suite.Require().NoError(suite.deleteApp(suite.teamEditor))
+	suite.False(suite.DB.GithubApp.Query().ExistX(suite.Ctx))
+}
+
+func (suite *GithubHandlerSuite) TestAppSharedWithOtherTeamsNeedsAdminOnceCreatorIsGone() {
+	suite.shareWithTeam(suite.team.ID)
+	suite.shareWithTeam(suite.otherTeam.ID)
+	suite.DB.User.DeleteOneID(suite.creator.ID).ExecX(suite.Ctx)
+
+	suite.assertStatus(suite.deleteApp(suite.teamEditor), 403)
+
+	suite.githubClient.EXPECT().DeleteInstallation(mock.Anything, mock.Anything, suite.installation.ID).Return(nil).Once()
+	suite.Require().NoError(suite.deleteApp(suite.admin))
 	suite.False(suite.DB.GithubApp.Query().ExistX(suite.Ctx))
 }
 
@@ -381,7 +504,7 @@ func (suite *GithubHandlerSuite) TestSaveRenamedApp() {
 	suite.Equal("My Unbind", app.Name)
 	suite.Equal("my-unbind", app.Slug)
 	suite.Equal(suite.creator.ID, *app.CreatedBy)
-	suite.Equal(suite.team.ID, *app.TeamID)
+	suite.Equal([]uuid.UUID{suite.team.ID}, app.QueryTeams().IDsX(suite.Ctx))
 
 	_, err = suite.handlers.HandleGithubAppSave(suite.as(suite.creator), suite.saveInput(state))
 	suite.assertStatus(err, http.StatusBadRequest)

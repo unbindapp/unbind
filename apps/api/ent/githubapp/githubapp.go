@@ -23,8 +23,8 @@ const (
 	FieldUUID = "uuid"
 	// FieldCreatedBy holds the string denoting the created_by field in the database.
 	FieldCreatedBy = "created_by"
-	// FieldTeamID holds the string denoting the team_id field in the database.
-	FieldTeamID = "team_id"
+	// FieldSharedWithAllTeams holds the string denoting the shared_with_all_teams field in the database.
+	FieldSharedWithAllTeams = "shared_with_all_teams"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldSlug holds the string denoting the slug field in the database.
@@ -45,8 +45,8 @@ const (
 	EdgeInstallations = "installations"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
-	// EdgeTeam holds the string denoting the team edge name in mutations.
-	EdgeTeam = "team"
+	// EdgeTeams holds the string denoting the teams edge name in mutations.
+	EdgeTeams = "teams"
 	// Table holds the table name of the githubapp in the database.
 	Table = "github_apps"
 	// InstallationsTable is the table that holds the installations relation/edge.
@@ -63,13 +63,11 @@ const (
 	UsersInverseTable = "users"
 	// UsersColumn is the table column denoting the users relation/edge.
 	UsersColumn = "created_by"
-	// TeamTable is the table that holds the team relation/edge.
-	TeamTable = "github_apps"
-	// TeamInverseTable is the table name for the Team entity.
+	// TeamsTable is the table that holds the teams relation/edge. The primary key declared below.
+	TeamsTable = "team_github_apps"
+	// TeamsInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
-	TeamInverseTable = "teams"
-	// TeamColumn is the table column denoting the team relation/edge.
-	TeamColumn = "team_id"
+	TeamsInverseTable = "teams"
 )
 
 // Columns holds all SQL columns for githubapp fields.
@@ -79,7 +77,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldUUID,
 	FieldCreatedBy,
-	FieldTeamID,
+	FieldSharedWithAllTeams,
 	FieldName,
 	FieldSlug,
 	FieldOwnerLogin,
@@ -89,6 +87,12 @@ var Columns = []string{
 	FieldWebhookSecret,
 	FieldPrivateKey,
 }
+
+var (
+	// TeamsPrimaryKey and TeamsColumn2 are the table columns denoting the
+	// primary key for the teams relation (M2M).
+	TeamsPrimaryKey = []string{"team_id", "github_app_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -107,6 +111,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultSharedWithAllTeams holds the default value on creation for the "shared_with_all_teams" field.
+	DefaultSharedWithAllTeams bool
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
 	// SlugValidator is a validator for the "slug" field. It is called by the builders before save.
@@ -166,9 +172,9 @@ func ByCreatedBy(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedBy, opts...).ToFunc()
 }
 
-// ByTeamID orders the results by the team_id field.
-func ByTeamID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTeamID, opts...).ToFunc()
+// BySharedWithAllTeams orders the results by the shared_with_all_teams field.
+func BySharedWithAllTeams(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSharedWithAllTeams, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.
@@ -232,10 +238,17 @@ func ByUsersField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByTeamField orders the results by team field.
-func ByTeamField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByTeamsCount orders the results by teams count.
+func ByTeamsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTeamStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newTeamsStep(), opts...)
+	}
+}
+
+// ByTeams orders the results by teams terms.
+func ByTeams(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTeamsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newInstallationsStep() *sqlgraph.Step {
@@ -252,10 +265,10 @@ func newUsersStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, UsersTable, UsersColumn),
 	)
 }
-func newTeamStep() *sqlgraph.Step {
+func newTeamsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TeamInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, TeamTable, TeamColumn),
+		sqlgraph.To(TeamsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, TeamsTable, TeamsPrimaryKey...),
 	)
 }

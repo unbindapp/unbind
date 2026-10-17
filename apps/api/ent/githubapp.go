@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent/githubapp"
-	"github.com/unbindapp/unbind-api/ent/team"
 	"github.com/unbindapp/unbind-api/ent/user"
 )
 
@@ -29,8 +28,8 @@ type GithubApp struct {
 	UUID uuid.UUID `json:"uuid,omitempty"`
 	// The user that created this github app.
 	CreatedBy *uuid.UUID `json:"created_by,omitempty"`
-	// The team whose members can use this app, unset when only the creator can
-	TeamID *uuid.UUID `json:"team_id,omitempty"`
+	// Every team, including future ones, can use this app
+	SharedWithAllTeams bool `json:"shared_with_all_teams,omitempty"`
 	// Name of the GitHub App
 	Name string `json:"name,omitempty"`
 	// The name GitHub uses in the app's URLs
@@ -59,8 +58,8 @@ type GithubAppEdges struct {
 	Installations []*GithubInstallation `json:"installations,omitempty"`
 	// Users holds the value of the users edge.
 	Users *User `json:"users,omitempty"`
-	// Team holds the value of the team edge.
-	Team *Team `json:"team,omitempty"`
+	// Teams holds the value of the teams edge.
+	Teams []*Team `json:"teams,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -86,15 +85,13 @@ func (e GithubAppEdges) UsersOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "users"}
 }
 
-// TeamOrErr returns the Team value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e GithubAppEdges) TeamOrErr() (*Team, error) {
-	if e.Team != nil {
-		return e.Team, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: team.Label}
+// TeamsOrErr returns the Teams value or an error if the edge
+// was not loaded in eager-loading.
+func (e GithubAppEdges) TeamsOrErr() ([]*Team, error) {
+	if e.loadedTypes[2] {
+		return e.Teams, nil
 	}
-	return nil, &NotLoadedError{edge: "team"}
+	return nil, &NotLoadedError{edge: "teams"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -102,8 +99,10 @@ func (*GithubApp) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case githubapp.FieldCreatedBy, githubapp.FieldTeamID:
+		case githubapp.FieldCreatedBy:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case githubapp.FieldSharedWithAllTeams:
+			values[i] = new(sql.NullBool)
 		case githubapp.FieldID:
 			values[i] = new(sql.NullInt64)
 		case githubapp.FieldName, githubapp.FieldSlug, githubapp.FieldOwnerLogin, githubapp.FieldOwnerType, githubapp.FieldClientID, githubapp.FieldClientSecret, githubapp.FieldWebhookSecret, githubapp.FieldPrivateKey:
@@ -158,12 +157,11 @@ func (_m *GithubApp) assignValues(columns []string, values []any) error {
 				_m.CreatedBy = new(uuid.UUID)
 				*_m.CreatedBy = *value.S.(*uuid.UUID)
 			}
-		case githubapp.FieldTeamID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field team_id", values[i])
+		case githubapp.FieldSharedWithAllTeams:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field shared_with_all_teams", values[i])
 			} else if value.Valid {
-				_m.TeamID = new(uuid.UUID)
-				*_m.TeamID = *value.S.(*uuid.UUID)
+				_m.SharedWithAllTeams = value.Bool
 			}
 		case githubapp.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -236,9 +234,9 @@ func (_m *GithubApp) QueryUsers() *UserQuery {
 	return NewGithubAppClient(_m.config).QueryUsers(_m)
 }
 
-// QueryTeam queries the "team" edge of the GithubApp entity.
-func (_m *GithubApp) QueryTeam() *TeamQuery {
-	return NewGithubAppClient(_m.config).QueryTeam(_m)
+// QueryTeams queries the "teams" edge of the GithubApp entity.
+func (_m *GithubApp) QueryTeams() *TeamQuery {
+	return NewGithubAppClient(_m.config).QueryTeams(_m)
 }
 
 // Update returns a builder for updating this GithubApp.
@@ -278,10 +276,8 @@ func (_m *GithubApp) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := _m.TeamID; v != nil {
-		builder.WriteString("team_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("shared_with_all_teams=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SharedWithAllTeams))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)

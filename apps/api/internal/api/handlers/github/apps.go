@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/url"
+	"slices"
 	"strings"
 	"time"
 
@@ -302,25 +303,32 @@ func (self *HandlerGroup) HandleGetGithubApp(ctx context.Context, input *GithubA
 	return resp, nil
 }
 
-// PUT app team
-type GithubAppSetTeamInput struct {
+// PUT app teams
+type GithubAppUpdateTeamsInput struct {
 	server.BaseAuthInput
 	Body struct {
-		UUID   uuid.UUID  `json:"uuid" required:"true" format:"uuid"`
-		TeamID *uuid.UUID `json:"team_id,omitempty" nullable:"true" doc:"The team to share the app with, omit or send null to make it private to its creator"`
+		UUID          uuid.UUID   `json:"uuid" required:"true" format:"uuid"`
+		AddTeamIDs    []uuid.UUID `json:"add_team_ids,omitempty" nullable:"false" doc:"Teams to share the app with"`
+		RemoveTeamIDs []uuid.UUID `json:"remove_team_ids,omitempty" nullable:"false" doc:"Teams to stop sharing the app with"`
+		AllTeams      *bool       `json:"shared_with_all_teams,omitempty" doc:"Share the app with every team, including future ones. Only a system admin can turn it on."`
 	}
 }
 
-type GithubAppSetTeamResponse struct {
+type GithubAppUpdateTeamsResponse struct {
 	Body struct {
-		Data *GithubAppAPIResponse `json:"data"`
+		Data *GithubAppAPIResponse `json:"data,omitempty" doc:"Unset when the caller can no longer see the app"`
 	}
 }
 
-func (self *HandlerGroup) HandleSetGithubAppTeam(ctx context.Context, input *GithubAppSetTeamInput) (*GithubAppSetTeamResponse, error) {
+func (self *HandlerGroup) HandleUpdateGithubAppTeams(ctx context.Context, input *GithubAppUpdateTeamsInput) (*GithubAppUpdateTeamsResponse, error) {
 	user, visibility, err := self.visibility(ctx)
 	if err != nil {
 		return nil, err
+	}
+	for _, teamID := range input.Body.AddTeamIDs {
+		if slices.Contains(input.Body.RemoveTeamIDs, teamID) {
+			return nil, huma.Error400BadRequest("A team cannot be added and removed at once")
+		}
 	}
 
 	app, err := self.srv.Repository.Github().GetVisibleAppByUUID(ctx, visibility, input.Body.UUID)
@@ -330,26 +338,32 @@ func (self *HandlerGroup) HandleSetGithubAppTeam(ctx context.Context, input *Git
 		}
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub app"))
 	}
-
-	isCreator := app.CreatedBy != nil && *app.CreatedBy == user.ID
-	switch {
-	case isCreator && input.Body.TeamID != nil:
-		if err := self.checkTeam(ctx, user.ID, *input.Body.TeamID, schema.ActionEditor); err != nil {
-			return nil, err
-		}
-	case isCreator:
-	case input.Body.TeamID == nil && app.TeamID != nil:
-		if err := self.checkTeam(ctx, user.ID, *app.TeamID, schema.ActionEditor); err != nil {
-			return nil, err
-		}
-	default:
-		return nil, huma.Error403Forbidden("Only the user who connected the app can share it")
+	current, err := self.srv.Repository.Github().GetAppTeamIDs(ctx, app.ID)
+	if err != nil {
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub app's teams"))
+	}
+	added, removed := teamChanges(current, input.Body.AddTeamIDs, input.Body.RemoveTeamIDs)
+	allTeams := app.SharedWithAllTeams
+	if input.Body.AllTeams != nil {
+		allTeams = *input.Body.AllTeams
 	}
 
-	if _, err := self.srv.Repository.Github().SetAppTeam(ctx, app.ID, input.Body.TeamID); err != nil {
-		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to update the GitHub app's team"))
+	if err := self.checkTeamChanges(ctx, user.ID, app, added, removed, allTeams); err != nil {
+		return nil, err
 	}
-	updated, err := self.srv.Repository.Github().GetGithubAppByUUID(ctx, input.Body.UUID)
+	if app.CreatedBy == nil && !allTeams && len(current)+len(added)-len(removed) == 0 {
+		return nil, huma.Error400BadRequest("The user who connected this app is gone, so it needs a team. Remove the app instead.")
+	}
+
+	if err := self.srv.Repository.Github().UpdateAppTeams(ctx, app.ID, added, removed, allTeams); err != nil {
+		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to update the GitHub app's teams"))
+	}
+
+	resp := &GithubAppUpdateTeamsResponse{}
+	updated, err := self.srv.Repository.Github().GetVisibleAppByUUID(ctx, visibility, input.Body.UUID)
+	if ent.IsNotFound(err) {
+		return resp, nil
+	}
 	if err != nil {
 		return nil, oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub app"))
 	}
@@ -357,10 +371,65 @@ func (self *HandlerGroup) HandleSetGithubAppTeam(ctx context.Context, input *Git
 	if err != nil {
 		return nil, err
 	}
-
-	resp := &GithubAppSetTeamResponse{}
 	resp.Body.Data = transformGithubAppEntity(updated, counts)
 	return resp, nil
+}
+
+// teamChanges keeps the teams that are not shared yet and the ones that are, without repeats
+func teamChanges(current []uuid.UUID, add []uuid.UUID, remove []uuid.UUID) (added []uuid.UUID, removed []uuid.UUID) {
+	for _, teamID := range add {
+		if !slices.Contains(current, teamID) && !slices.Contains(added, teamID) {
+			added = append(added, teamID)
+		}
+	}
+	for _, teamID := range remove {
+		if slices.Contains(current, teamID) && !slices.Contains(removed, teamID) {
+			removed = append(removed, teamID)
+		}
+	}
+	return added, removed
+}
+
+// checkTeamChanges lets the creator add teams they edit and a system admin add any team or
+// share with all teams. Both remove any team; anyone else removes the teams they edit.
+func (self *HandlerGroup) checkTeamChanges(ctx context.Context, userID uuid.UUID, app *ent.GithubApp, added []uuid.UUID, removed []uuid.UUID, allTeams bool) error {
+	isCreator := app.CreatedBy != nil && *app.CreatedBy == userID
+	isAdmin, err := self.isSystemAdmin(ctx, userID)
+	if err != nil {
+		return err
+	}
+	if allTeams && !app.SharedWithAllTeams && !isAdmin {
+		return huma.Error403Forbidden("Only a system admin can share an app with all teams")
+	}
+	if !allTeams && app.SharedWithAllTeams && !isCreator && !isAdmin {
+		return huma.Error403Forbidden("Only the user who connected the app or a system admin can stop sharing it with all teams")
+	}
+	if len(added) > 0 && !isCreator && !isAdmin {
+		return huma.Error403Forbidden("Only the user who connected the app or a system admin can share it")
+	}
+	for _, teamID := range added {
+		if !isAdmin {
+			if err := self.checkTeam(ctx, userID, teamID, schema.ActionEditor); err != nil {
+				return err
+			}
+			continue
+		}
+		if _, err := self.srv.Repository.Team().GetByID(ctx, teamID); err != nil {
+			if ent.IsNotFound(err) {
+				return huma.Error404NotFound("Team not found")
+			}
+			return oapi.MapError(errdefs.NewInternalError(err, "Failed to read the team"))
+		}
+	}
+	if isCreator || isAdmin {
+		return nil
+	}
+	for _, teamID := range removed {
+		if err := self.checkTeam(ctx, userID, teamID, schema.ActionEditor); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // DELETE app
@@ -430,23 +499,24 @@ func transformGithubAppEntity(entity *ent.GithubApp, serviceCounts map[int64]int
 	}
 
 	resp := &GithubAppAPIResponse{
-		ID:            entity.ID,
-		UUID:          entity.UUID,
-		CreatedAt:     entity.CreatedAt,
-		UpdatedAt:     entity.UpdatedAt,
-		CreatedBy:     entity.CreatedBy,
-		TeamID:        entity.TeamID,
-		Name:          entity.Name,
-		Slug:          entity.Slug,
-		OwnerLogin:    entity.OwnerLogin,
-		OwnerType:     entity.OwnerType,
-		Installations: installations,
+		ID:                 entity.ID,
+		UUID:               entity.UUID,
+		CreatedAt:          entity.CreatedAt,
+		UpdatedAt:          entity.UpdatedAt,
+		CreatedBy:          entity.CreatedBy,
+		Teams:              []*GithubAppTeamAPIResponse{},
+		SharedWithAllTeams: entity.SharedWithAllTeams,
+		Name:               entity.Name,
+		Slug:               entity.Slug,
+		OwnerLogin:         entity.OwnerLogin,
+		OwnerType:          entity.OwnerType,
+		Installations:      installations,
 	}
 	if entity.Edges.Users != nil {
 		resp.CreatedByEmail = new(entity.Edges.Users.Email)
 	}
-	if entity.Edges.Team != nil {
-		resp.TeamName = new(entity.Edges.Team.Name)
+	for _, team := range entity.Edges.Teams {
+		resp.Teams = append(resp.Teams, &GithubAppTeamAPIResponse{ID: team.ID, Name: team.Name})
 	}
 	return resp
 }
@@ -470,9 +540,10 @@ type GithubAppAPIResponse struct {
 	// The user that connected this app, unset once that user is deleted.
 	CreatedBy      *uuid.UUID `json:"created_by,omitempty"`
 	CreatedByEmail *string    `json:"created_by_email,omitempty"`
-	// The team the app is shared with, unset when only its creator can use it.
-	TeamID   *uuid.UUID `json:"team_id,omitempty"`
-	TeamName *string    `json:"team_name,omitempty"`
+	// The teams the app is shared with that the caller can view, empty when only its creator can use it.
+	Teams []*GithubAppTeamAPIResponse `json:"teams" nullable:"false"`
+	// Every team, including future ones, can use the app.
+	SharedWithAllTeams bool `json:"shared_with_all_teams"`
 	// Name of the GitHub App
 	Name string `json:"name"`
 	// The name GitHub uses in the app's URLs
@@ -481,4 +552,9 @@ type GithubAppAPIResponse struct {
 	OwnerLogin    string                           `json:"owner_login"`
 	OwnerType     githubapp.OwnerType              `json:"owner_type,omitempty" enum:"Organization,User"`
 	Installations []*GithubInstallationAPIResponse `json:"installations" nullable:"false"`
+}
+
+type GithubAppTeamAPIResponse struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
 }

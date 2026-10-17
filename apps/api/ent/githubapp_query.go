@@ -29,7 +29,7 @@ type GithubAppQuery struct {
 	predicates        []predicate.GithubApp
 	withInstallations *GithubInstallationQuery
 	withUsers         *UserQuery
-	withTeam          *TeamQuery
+	withTeams         *TeamQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -111,8 +111,8 @@ func (_q *GithubAppQuery) QueryUsers() *UserQuery {
 	return query
 }
 
-// QueryTeam chains the current query on the "team" edge.
-func (_q *GithubAppQuery) QueryTeam() *TeamQuery {
+// QueryTeams chains the current query on the "teams" edge.
+func (_q *GithubAppQuery) QueryTeams() *TeamQuery {
 	query := (&TeamClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -125,7 +125,7 @@ func (_q *GithubAppQuery) QueryTeam() *TeamQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(githubapp.Table, githubapp.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, githubapp.TeamTable, githubapp.TeamColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, githubapp.TeamsTable, githubapp.TeamsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -327,7 +327,7 @@ func (_q *GithubAppQuery) Clone() *GithubAppQuery {
 		predicates:        append([]predicate.GithubApp{}, _q.predicates...),
 		withInstallations: _q.withInstallations.Clone(),
 		withUsers:         _q.withUsers.Clone(),
-		withTeam:          _q.withTeam.Clone(),
+		withTeams:         _q.withTeams.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -357,14 +357,14 @@ func (_q *GithubAppQuery) WithUsers(opts ...func(*UserQuery)) *GithubAppQuery {
 	return _q
 }
 
-// WithTeam tells the query-builder to eager-load the nodes that are connected to
-// the "team" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *GithubAppQuery) WithTeam(opts ...func(*TeamQuery)) *GithubAppQuery {
+// WithTeams tells the query-builder to eager-load the nodes that are connected to
+// the "teams" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GithubAppQuery) WithTeams(opts ...func(*TeamQuery)) *GithubAppQuery {
 	query := (&TeamClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withTeam = query
+	_q.withTeams = query
 	return _q
 }
 
@@ -449,7 +449,7 @@ func (_q *GithubAppQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Gi
 		loadedTypes = [3]bool{
 			_q.withInstallations != nil,
 			_q.withUsers != nil,
-			_q.withTeam != nil,
+			_q.withTeams != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -486,9 +486,10 @@ func (_q *GithubAppQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Gi
 			return nil, err
 		}
 	}
-	if query := _q.withTeam; query != nil {
-		if err := _q.loadTeam(ctx, query, nodes, nil,
-			func(n *GithubApp, e *Team) { n.Edges.Team = e }); err != nil {
+	if query := _q.withTeams; query != nil {
+		if err := _q.loadTeams(ctx, query, nodes,
+			func(n *GithubApp) { n.Edges.Teams = []*Team{} },
+			func(n *GithubApp, e *Team) { n.Edges.Teams = append(n.Edges.Teams, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -557,34 +558,63 @@ func (_q *GithubAppQuery) loadUsers(ctx context.Context, query *UserQuery, nodes
 	}
 	return nil
 }
-func (_q *GithubAppQuery) loadTeam(ctx context.Context, query *TeamQuery, nodes []*GithubApp, init func(*GithubApp), assign func(*GithubApp, *Team)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*GithubApp)
-	for i := range nodes {
-		if nodes[i].TeamID == nil {
-			continue
+func (_q *GithubAppQuery) loadTeams(ctx context.Context, query *TeamQuery, nodes []*GithubApp, init func(*GithubApp), assign func(*GithubApp, *Team)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int64]*GithubApp)
+	nids := make(map[uuid.UUID]map[*GithubApp]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
 		}
-		fk := *nodes[i].TeamID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(ids) == 0 {
-		return nil
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(githubapp.TeamsTable)
+		s.Join(joinT).On(s.C(team.FieldID), joinT.C(githubapp.TeamsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(githubapp.TeamsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(githubapp.TeamsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
 	}
-	query.Where(team.IDIn(ids...))
-	neighbors, err := query.All(ctx)
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := values[0].(*sql.NullInt64).Int64
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*GithubApp]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Team](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "team_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "teams" node returned %v`, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil
@@ -620,9 +650,6 @@ func (_q *GithubAppQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withUsers != nil {
 			_spec.Node.AddColumnOnce(githubapp.FieldCreatedBy)
-		}
-		if _q.withTeam != nil {
-			_spec.Node.AddColumnOnce(githubapp.FieldTeamID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -1202,15 +1202,15 @@ func (c *GithubAppClient) QueryUsers(_m *GithubApp) *UserQuery {
 	return query
 }
 
-// QueryTeam queries the team edge of a GithubApp.
-func (c *GithubAppClient) QueryTeam(_m *GithubApp) *TeamQuery {
+// QueryTeams queries the teams edge of a GithubApp.
+func (c *GithubAppClient) QueryTeams(_m *GithubApp) *TeamQuery {
 	query := (&TeamClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(githubapp.Table, githubapp.FieldID, id),
 			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, githubapp.TeamTable, githubapp.TeamColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, githubapp.TeamsTable, githubapp.TeamsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -4313,7 +4313,7 @@ func (c *TeamClient) QueryGithubApps(_m *Team) *GithubAppQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(githubapp.Table, githubapp.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, team.GithubAppsTable, team.GithubAppsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, team.GithubAppsTable, team.GithubAppsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

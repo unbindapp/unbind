@@ -6,18 +6,18 @@ import { useGithubApps } from "@/components/git/github-apps-provider";
 import BrandIcon from "@/components/icons/brand";
 import NoItemsCard from "@/components/no-items-card";
 import { cn } from "@/components/ui/utils";
-import { ReactNode } from "react";
+import { ComponentProps, ReactNode } from "react";
 
 type TProps = {
   view: TGithubAppCardView;
-  canEditTeam?: boolean;
+  team?: ComponentProps<typeof GithubAppCard>["team"];
   className?: string;
   children?: ReactNode;
 };
 
 const placeholderArray = Array.from({ length: 2 }, (_, i) => i);
 
-export default function GithubAppsList({ view, canEditTeam, className, children }: TProps) {
+export default function GithubAppsList({ view, team, className, children }: TProps) {
   const {
     query: { data, isPending, error },
   } = useGithubApps();
@@ -55,7 +55,7 @@ export default function GithubAppsList({ view, canEditTeam, className, children 
   return (
     <Wrapper className={className}>
       {data.apps.map((app) => (
-        <GithubAppCard key={app.uuid} app={app} view={view} canEditTeam={canEditTeam} />
+        <GithubAppCard key={app.uuid} app={app} view={view} team={team} />
       ))}
       {children}
     </Wrapper>

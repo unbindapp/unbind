@@ -4494,31 +4494,33 @@ func (m *EnvironmentMutation) ResetEdge(name string) error {
 // GithubAppMutation represents an operation that mutates the GithubApp nodes in the graph.
 type GithubAppMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *int64
-	created_at           *time.Time
-	updated_at           *time.Time
-	uuid                 *uuid.UUID
-	name                 *string
-	slug                 *string
-	owner_login          *string
-	owner_type           *githubapp.OwnerType
-	client_id            *string
-	client_secret        *string
-	webhook_secret       *string
-	private_key          *string
-	clearedFields        map[string]struct{}
-	installations        map[int64]struct{}
-	removedinstallations map[int64]struct{}
-	clearedinstallations bool
-	users                *uuid.UUID
-	clearedusers         bool
-	team                 *uuid.UUID
-	clearedteam          bool
-	done                 bool
-	oldValue             func(context.Context) (*GithubApp, error)
-	predicates           []predicate.GithubApp
+	op                    Op
+	typ                   string
+	id                    *int64
+	created_at            *time.Time
+	updated_at            *time.Time
+	uuid                  *uuid.UUID
+	shared_with_all_teams *bool
+	name                  *string
+	slug                  *string
+	owner_login           *string
+	owner_type            *githubapp.OwnerType
+	client_id             *string
+	client_secret         *string
+	webhook_secret        *string
+	private_key           *string
+	clearedFields         map[string]struct{}
+	installations         map[int64]struct{}
+	removedinstallations  map[int64]struct{}
+	clearedinstallations  bool
+	users                 *uuid.UUID
+	clearedusers          bool
+	teams                 map[uuid.UUID]struct{}
+	removedteams          map[uuid.UUID]struct{}
+	clearedteams          bool
+	done                  bool
+	oldValue              func(context.Context) (*GithubApp, error)
+	predicates            []predicate.GithubApp
 }
 
 var _ ent.Mutation = (*GithubAppMutation)(nil)
@@ -4782,53 +4784,40 @@ func (m *GithubAppMutation) ResetCreatedBy() {
 	delete(m.clearedFields, githubapp.FieldCreatedBy)
 }
 
-// SetTeamID sets the "team_id" field.
-func (m *GithubAppMutation) SetTeamID(u uuid.UUID) {
-	m.team = &u
+// SetSharedWithAllTeams sets the "shared_with_all_teams" field.
+func (m *GithubAppMutation) SetSharedWithAllTeams(b bool) {
+	m.shared_with_all_teams = &b
 }
 
-// TeamID returns the value of the "team_id" field in the mutation.
-func (m *GithubAppMutation) TeamID() (r uuid.UUID, exists bool) {
-	v := m.team
+// SharedWithAllTeams returns the value of the "shared_with_all_teams" field in the mutation.
+func (m *GithubAppMutation) SharedWithAllTeams() (r bool, exists bool) {
+	v := m.shared_with_all_teams
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTeamID returns the old "team_id" field's value of the GithubApp entity.
+// OldSharedWithAllTeams returns the old "shared_with_all_teams" field's value of the GithubApp entity.
 // If the GithubApp object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GithubAppMutation) OldTeamID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *GithubAppMutation) OldSharedWithAllTeams(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTeamID is only allowed on UpdateOne operations")
+		return v, errors.New("OldSharedWithAllTeams is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTeamID requires an ID field in the mutation")
+		return v, errors.New("OldSharedWithAllTeams requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTeamID: %w", err)
+		return v, fmt.Errorf("querying old value for OldSharedWithAllTeams: %w", err)
 	}
-	return oldValue.TeamID, nil
+	return oldValue.SharedWithAllTeams, nil
 }
 
-// ClearTeamID clears the value of the "team_id" field.
-func (m *GithubAppMutation) ClearTeamID() {
-	m.team = nil
-	m.clearedFields[githubapp.FieldTeamID] = struct{}{}
-}
-
-// TeamIDCleared returns if the "team_id" field was cleared in this mutation.
-func (m *GithubAppMutation) TeamIDCleared() bool {
-	_, ok := m.clearedFields[githubapp.FieldTeamID]
-	return ok
-}
-
-// ResetTeamID resets all changes to the "team_id" field.
-func (m *GithubAppMutation) ResetTeamID() {
-	m.team = nil
-	delete(m.clearedFields, githubapp.FieldTeamID)
+// ResetSharedWithAllTeams resets all changes to the "shared_with_all_teams" field.
+func (m *GithubAppMutation) ResetSharedWithAllTeams() {
+	m.shared_with_all_teams = nil
 }
 
 // SetName sets the "name" field.
@@ -5239,31 +5228,58 @@ func (m *GithubAppMutation) ResetUsers() {
 	m.clearedusers = false
 }
 
-// ClearTeam clears the "team" edge to the Team entity.
-func (m *GithubAppMutation) ClearTeam() {
-	m.clearedteam = true
-	m.clearedFields[githubapp.FieldTeamID] = struct{}{}
+// AddTeamIDs adds the "teams" edge to the Team entity by ids.
+func (m *GithubAppMutation) AddTeamIDs(ids ...uuid.UUID) {
+	if m.teams == nil {
+		m.teams = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.teams[ids[i]] = struct{}{}
+	}
 }
 
-// TeamCleared reports if the "team" edge to the Team entity was cleared.
-func (m *GithubAppMutation) TeamCleared() bool {
-	return m.TeamIDCleared() || m.clearedteam
+// ClearTeams clears the "teams" edge to the Team entity.
+func (m *GithubAppMutation) ClearTeams() {
+	m.clearedteams = true
 }
 
-// TeamIDs returns the "team" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TeamID instead. It exists only for internal usage by the builders.
-func (m *GithubAppMutation) TeamIDs() (ids []uuid.UUID) {
-	if id := m.team; id != nil {
-		ids = append(ids, *id)
+// TeamsCleared reports if the "teams" edge to the Team entity was cleared.
+func (m *GithubAppMutation) TeamsCleared() bool {
+	return m.clearedteams
+}
+
+// RemoveTeamIDs removes the "teams" edge to the Team entity by IDs.
+func (m *GithubAppMutation) RemoveTeamIDs(ids ...uuid.UUID) {
+	if m.removedteams == nil {
+		m.removedteams = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.teams, ids[i])
+		m.removedteams[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTeams returns the removed IDs of the "teams" edge to the Team entity.
+func (m *GithubAppMutation) RemovedTeamsIDs() (ids []uuid.UUID) {
+	for id := range m.removedteams {
+		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTeam resets all changes to the "team" edge.
-func (m *GithubAppMutation) ResetTeam() {
-	m.team = nil
-	m.clearedteam = false
+// TeamsIDs returns the "teams" edge IDs in the mutation.
+func (m *GithubAppMutation) TeamsIDs() (ids []uuid.UUID) {
+	for id := range m.teams {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTeams resets all changes to the "teams" edge.
+func (m *GithubAppMutation) ResetTeams() {
+	m.teams = nil
+	m.clearedteams = false
+	m.removedteams = nil
 }
 
 // Where appends a list predicates to the GithubAppMutation builder.
@@ -5313,8 +5329,8 @@ func (m *GithubAppMutation) Fields() []string {
 	if m.users != nil {
 		fields = append(fields, githubapp.FieldCreatedBy)
 	}
-	if m.team != nil {
-		fields = append(fields, githubapp.FieldTeamID)
+	if m.shared_with_all_teams != nil {
+		fields = append(fields, githubapp.FieldSharedWithAllTeams)
 	}
 	if m.name != nil {
 		fields = append(fields, githubapp.FieldName)
@@ -5356,8 +5372,8 @@ func (m *GithubAppMutation) Field(name string) (ent.Value, bool) {
 		return m.UUID()
 	case githubapp.FieldCreatedBy:
 		return m.CreatedBy()
-	case githubapp.FieldTeamID:
-		return m.TeamID()
+	case githubapp.FieldSharedWithAllTeams:
+		return m.SharedWithAllTeams()
 	case githubapp.FieldName:
 		return m.Name()
 	case githubapp.FieldSlug:
@@ -5391,8 +5407,8 @@ func (m *GithubAppMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldUUID(ctx)
 	case githubapp.FieldCreatedBy:
 		return m.OldCreatedBy(ctx)
-	case githubapp.FieldTeamID:
-		return m.OldTeamID(ctx)
+	case githubapp.FieldSharedWithAllTeams:
+		return m.OldSharedWithAllTeams(ctx)
 	case githubapp.FieldName:
 		return m.OldName(ctx)
 	case githubapp.FieldSlug:
@@ -5446,12 +5462,12 @@ func (m *GithubAppMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatedBy(v)
 		return nil
-	case githubapp.FieldTeamID:
-		v, ok := value.(uuid.UUID)
+	case githubapp.FieldSharedWithAllTeams:
+		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTeamID(v)
+		m.SetSharedWithAllTeams(v)
 		return nil
 	case githubapp.FieldName:
 		v, ok := value.(string)
@@ -5542,9 +5558,6 @@ func (m *GithubAppMutation) ClearedFields() []string {
 	if m.FieldCleared(githubapp.FieldCreatedBy) {
 		fields = append(fields, githubapp.FieldCreatedBy)
 	}
-	if m.FieldCleared(githubapp.FieldTeamID) {
-		fields = append(fields, githubapp.FieldTeamID)
-	}
 	if m.FieldCleared(githubapp.FieldOwnerLogin) {
 		fields = append(fields, githubapp.FieldOwnerLogin)
 	}
@@ -5567,9 +5580,6 @@ func (m *GithubAppMutation) ClearField(name string) error {
 	switch name {
 	case githubapp.FieldCreatedBy:
 		m.ClearCreatedBy()
-		return nil
-	case githubapp.FieldTeamID:
-		m.ClearTeamID()
 		return nil
 	case githubapp.FieldOwnerLogin:
 		m.ClearOwnerLogin()
@@ -5597,8 +5607,8 @@ func (m *GithubAppMutation) ResetField(name string) error {
 	case githubapp.FieldCreatedBy:
 		m.ResetCreatedBy()
 		return nil
-	case githubapp.FieldTeamID:
-		m.ResetTeamID()
+	case githubapp.FieldSharedWithAllTeams:
+		m.ResetSharedWithAllTeams()
 		return nil
 	case githubapp.FieldName:
 		m.ResetName()
@@ -5637,8 +5647,8 @@ func (m *GithubAppMutation) AddedEdges() []string {
 	if m.users != nil {
 		edges = append(edges, githubapp.EdgeUsers)
 	}
-	if m.team != nil {
-		edges = append(edges, githubapp.EdgeTeam)
+	if m.teams != nil {
+		edges = append(edges, githubapp.EdgeTeams)
 	}
 	return edges
 }
@@ -5657,10 +5667,12 @@ func (m *GithubAppMutation) AddedIDs(name string) []ent.Value {
 		if id := m.users; id != nil {
 			return []ent.Value{*id}
 		}
-	case githubapp.EdgeTeam:
-		if id := m.team; id != nil {
-			return []ent.Value{*id}
+	case githubapp.EdgeTeams:
+		ids := make([]ent.Value, 0, len(m.teams))
+		for id := range m.teams {
+			ids = append(ids, id)
 		}
+		return ids
 	}
 	return nil
 }
@@ -5670,6 +5682,9 @@ func (m *GithubAppMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.removedinstallations != nil {
 		edges = append(edges, githubapp.EdgeInstallations)
+	}
+	if m.removedteams != nil {
+		edges = append(edges, githubapp.EdgeTeams)
 	}
 	return edges
 }
@@ -5681,6 +5696,12 @@ func (m *GithubAppMutation) RemovedIDs(name string) []ent.Value {
 	case githubapp.EdgeInstallations:
 		ids := make([]ent.Value, 0, len(m.removedinstallations))
 		for id := range m.removedinstallations {
+			ids = append(ids, id)
+		}
+		return ids
+	case githubapp.EdgeTeams:
+		ids := make([]ent.Value, 0, len(m.removedteams))
+		for id := range m.removedteams {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5697,8 +5718,8 @@ func (m *GithubAppMutation) ClearedEdges() []string {
 	if m.clearedusers {
 		edges = append(edges, githubapp.EdgeUsers)
 	}
-	if m.clearedteam {
-		edges = append(edges, githubapp.EdgeTeam)
+	if m.clearedteams {
+		edges = append(edges, githubapp.EdgeTeams)
 	}
 	return edges
 }
@@ -5711,8 +5732,8 @@ func (m *GithubAppMutation) EdgeCleared(name string) bool {
 		return m.clearedinstallations
 	case githubapp.EdgeUsers:
 		return m.clearedusers
-	case githubapp.EdgeTeam:
-		return m.clearedteam
+	case githubapp.EdgeTeams:
+		return m.clearedteams
 	}
 	return false
 }
@@ -5723,9 +5744,6 @@ func (m *GithubAppMutation) ClearEdge(name string) error {
 	switch name {
 	case githubapp.EdgeUsers:
 		m.ClearUsers()
-		return nil
-	case githubapp.EdgeTeam:
-		m.ClearTeam()
 		return nil
 	}
 	return fmt.Errorf("unknown GithubApp unique edge %s", name)
@@ -5741,8 +5759,8 @@ func (m *GithubAppMutation) ResetEdge(name string) error {
 	case githubapp.EdgeUsers:
 		m.ResetUsers()
 		return nil
-	case githubapp.EdgeTeam:
-		m.ResetTeam()
+	case githubapp.EdgeTeams:
+		m.ResetTeams()
 		return nil
 	}
 	return fmt.Errorf("unknown GithubApp edge %s", name)

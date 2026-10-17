@@ -37,10 +37,9 @@ func (GithubApp) Fields() []ent.Field {
 			Optional().
 			Nillable().
 			Comment("The user that created this github app."),
-		field.UUID("team_id", uuid.UUID{}).
-			Optional().
-			Nillable().
-			Comment("The team whose members can use this app, unset when only the creator can"),
+		field.Bool("shared_with_all_teams").
+			Default(false).
+			Comment("Every team, including future ones, can use this app"),
 		field.String("name").
 			NotEmpty().
 			Comment("Name of the GitHub App"),
@@ -81,11 +80,9 @@ func (GithubApp) Edges() []ent.Edge {
 			Ref("created_by").
 			Field("created_by").
 			Unique(),
-		// M2O with teams
-		edge.From("team", Team.Type).
-			Ref("github_apps").
-			Field("team_id").
-			Unique(),
+		// M2M with the teams whose members can use this app, none when only the creator can
+		edge.From("teams", Team.Type).
+			Ref("github_apps"),
 	}
 }
 

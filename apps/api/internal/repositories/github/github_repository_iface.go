@@ -23,7 +23,9 @@ type GithubRepositoryInterface interface {
 	CreateApp(ctx context.Context, uniqueUuid uuid.UUID, app *github.AppConfig, createdBy uuid.UUID, teamID *uuid.UUID) (*ent.GithubApp, error)
 	GetGithubAppByID(ctx context.Context, ID int64) (*ent.GithubApp, error)
 	GetGithubAppByUUID(ctx context.Context, ID uuid.UUID) (*ent.GithubApp, error)
-	SetAppTeam(ctx context.Context, ID int64, teamID *uuid.UUID) (*ent.GithubApp, error)
+	// GetAppTeamIDs lists every team the app is shared with, including the ones the caller cannot view
+	GetAppTeamIDs(ctx context.Context, ID int64) ([]uuid.UUID, error)
+	UpdateAppTeams(ctx context.Context, ID int64, add []uuid.UUID, remove []uuid.UUID, allTeams bool) error
 	// UpdateAppFromGithub stores the name, slug and owner the app has on GitHub now
 	UpdateAppFromGithub(ctx context.Context, ID int64, app *github.App) (*ent.GithubApp, error)
 	DeleteApp(ctx context.Context, ID int64) error

@@ -80,13 +80,11 @@ const (
 	InvitationsInverseTable = "invitations"
 	// InvitationsColumn is the table column denoting the invitations relation/edge.
 	InvitationsColumn = "team_id"
-	// GithubAppsTable is the table that holds the github_apps relation/edge.
-	GithubAppsTable = "github_apps"
+	// GithubAppsTable is the table that holds the github_apps relation/edge. The primary key declared below.
+	GithubAppsTable = "team_github_apps"
 	// GithubAppsInverseTable is the table name for the GithubApp entity.
 	// It exists in this package in order to avoid circular dependency with the "githubapp" package.
 	GithubAppsInverseTable = "github_apps"
-	// GithubAppsColumn is the table column denoting the github_apps relation/edge.
-	GithubAppsColumn = "team_id"
 	// TeamWebhooksTable is the table that holds the team_webhooks relation/edge.
 	TeamWebhooksTable = "webhooks"
 	// TeamWebhooksInverseTable is the table name for the Webhook entity.
@@ -119,6 +117,9 @@ var (
 	// MembersPrimaryKey and MembersColumn2 are the table columns denoting the
 	// primary key for the members relation (M2M).
 	MembersPrimaryKey = []string{"user_id", "team_id"}
+	// GithubAppsPrimaryKey and GithubAppsColumn2 are the table columns denoting the
+	// primary key for the github_apps relation (M2M).
+	GithubAppsPrimaryKey = []string{"team_id", "github_app_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -330,7 +331,7 @@ func newGithubAppsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(GithubAppsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, GithubAppsTable, GithubAppsColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, GithubAppsTable, GithubAppsPrimaryKey...),
 	)
 }
 func newTeamWebhooksStep() *sqlgraph.Step {

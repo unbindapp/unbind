@@ -160,6 +160,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "uuid", Type: field.TypeUUID, Unique: true},
+		{Name: "shared_with_all_teams", Type: field.TypeBool, Default: false},
 		{Name: "name", Type: field.TypeString},
 		{Name: "slug", Type: field.TypeString},
 		{Name: "owner_login", Type: field.TypeString, Nullable: true},
@@ -168,7 +169,6 @@ var (
 		{Name: "client_secret", Type: field.TypeString},
 		{Name: "webhook_secret", Type: field.TypeString},
 		{Name: "private_key", Type: field.TypeString, Size: 2147483647},
-		{Name: "team_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "created_by", Type: field.TypeUUID, Nullable: true},
 	}
 	// GithubAppsTable holds the schema information for the "github_apps" table.
@@ -177,12 +177,6 @@ var (
 		Columns:    GithubAppsColumns,
 		PrimaryKey: []*schema.Column{GithubAppsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "github_apps_teams_github_apps",
-				Columns:    []*schema.Column{GithubAppsColumns[12]},
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
 			{
 				Symbol:     "github_apps_users_created_by",
 				Columns:    []*schema.Column{GithubAppsColumns[13]},
@@ -946,6 +940,31 @@ var (
 			},
 		},
 	}
+	// TeamGithubAppsColumns holds the columns for the "team_github_apps" table.
+	TeamGithubAppsColumns = []*schema.Column{
+		{Name: "team_id", Type: field.TypeUUID},
+		{Name: "github_app_id", Type: field.TypeInt64},
+	}
+	// TeamGithubAppsTable holds the schema information for the "team_github_apps" table.
+	TeamGithubAppsTable = &schema.Table{
+		Name:       "team_github_apps",
+		Columns:    TeamGithubAppsColumns,
+		PrimaryKey: []*schema.Column{TeamGithubAppsColumns[0], TeamGithubAppsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "team_github_apps_team_id",
+				Columns:    []*schema.Column{TeamGithubAppsColumns[0]},
+				RefColumns: []*schema.Column{TeamsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "team_github_apps_github_app_id",
+				Columns:    []*schema.Column{TeamGithubAppsColumns[1]},
+				RefColumns: []*schema.Column{GithubAppsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// UserGroupsColumns holds the columns for the "user_groups" table.
 	UserGroupsColumns = []*schema.Column{
 		{Name: "user_id", Type: field.TypeUUID},
@@ -1027,6 +1046,7 @@ var (
 		UsersTable,
 		WebhooksTable,
 		GroupPermissionsTable,
+		TeamGithubAppsTable,
 		UserGroupsTable,
 		UserTeamsTable,
 	}
@@ -1048,8 +1068,7 @@ func init() {
 	EnvironmentsTable.Annotation = &entsql.Annotation{
 		Table: "environments",
 	}
-	GithubAppsTable.ForeignKeys[0].RefTable = TeamsTable
-	GithubAppsTable.ForeignKeys[1].RefTable = UsersTable
+	GithubAppsTable.ForeignKeys[0].RefTable = UsersTable
 	GithubAppsTable.Annotation = &entsql.Annotation{
 		Table: "github_apps",
 	}
@@ -1146,6 +1165,8 @@ func init() {
 	}
 	GroupPermissionsTable.ForeignKeys[0].RefTable = GroupsTable
 	GroupPermissionsTable.ForeignKeys[1].RefTable = PermissionsTable
+	TeamGithubAppsTable.ForeignKeys[0].RefTable = TeamsTable
+	TeamGithubAppsTable.ForeignKeys[1].RefTable = GithubAppsTable
 	UserGroupsTable.ForeignKeys[0].RefTable = UsersTable
 	UserGroupsTable.ForeignKeys[1].RefTable = GroupsTable
 	UserTeamsTable.ForeignKeys[0].RefTable = UsersTable

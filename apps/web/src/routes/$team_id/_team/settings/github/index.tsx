@@ -27,7 +27,7 @@ function TeamGithubSettings() {
       <p className="text-muted-foreground mt-0.5 w-full px-1">
         GitHub Apps shared with this team. Members can deploy from their repositories.
       </p>
-      <GithubAppsList view="team" canEditTeam={canEditTeam} className="mt-3">
+      <GithubAppsList view="team" team={{ id: teamId, canEdit: canEditTeam }} className="mt-3">
         <ConnectGithubCard sharing={{ mode: "team", team }} />
       </GithubAppsList>
     </GithubAppsProvider>
