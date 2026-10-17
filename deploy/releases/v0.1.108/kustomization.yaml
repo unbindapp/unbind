@@ -1,0 +1,2 @@
+# Registry login (htpasswd secret, config and mounts, cleanup job credentials) reaches existing
+# installs through the API's startup reconcile, since external-registry installs have no registry to patch.
