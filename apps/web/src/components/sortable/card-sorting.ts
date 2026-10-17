@@ -6,19 +6,45 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
+  type Activator,
   type CollisionDetection,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates, type SortingStrategy } from "@dnd-kit/sortable";
+import type { SyntheticEvent } from "react";
 
 // Space picks a card up, so Enter keeps opening it
 const keyboardCodes = { start: ["Space"], cancel: ["Escape"], end: ["Space", "Enter"] };
 
+// Panels and dialogs a card opens are portaled out of it, but React still bubbles
+// their events to the card. Only presses on the card itself pick it up.
+function onCardItself<A extends Activator<never>>(activators: A[]): A[] {
+  return activators.map((activator) => ({
+    ...activator,
+    handler: (event: SyntheticEvent, ...rest: [never, never]) => {
+      if (!(event.currentTarget as Node).contains(event.target as Node)) return false;
+      return activator.handler(event, ...rest);
+    },
+  }));
+}
+
+class CardMouseSensor extends MouseSensor {
+  static activators = onCardItself(MouseSensor.activators);
+}
+
+class CardTouchSensor extends TouchSensor {
+  static activators = onCardItself(TouchSensor.activators);
+}
+
+class CardKeyboardSensor extends KeyboardSensor {
+  static activators = onCardItself(KeyboardSensor.activators);
+}
+
 // Short clicks and taps stay navigation, only a real drag reorders
 export function useCardSensors() {
   return useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates, keyboardCodes }),
+    useSensor(CardMouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(CardTouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
+    useSensor(CardKeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates, keyboardCodes }),
   );
 }
 
