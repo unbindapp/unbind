@@ -4365,7 +4365,7 @@ components:
       properties:
         data:
           contentEncoding: base64
-          description: The icon file, base64 encoded. SVG, PNG or JPEG, up to 50 KB and 1024x1024.
+          description: The icon file, base64 encoded. SVG, PNG or JPEG, up to 512 KB and 1024x1024.
           type: string
         team_id:
           format: uuid
@@ -11190,7 +11190,7 @@ paths:
         risk: high
   /teams/icon/update:
     put:
-      description: Replace the team's icon with an SVG, PNG or JPEG file, up to 50 KB and 1024x1024. SVGs can't have scripts or external links.
+      description: Replace the team's icon with an SVG, PNG or JPEG file, up to 512 KB and 1024x1024. SVGs can't have scripts or external links.
       operationId: update-team-icon
       requestBody:
         content:

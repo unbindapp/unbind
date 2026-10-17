@@ -101,6 +101,12 @@ repos:
 
       # --- apps/web (staged files only; paths are repo-relative so strip the
       #     apps/web/ prefix before running from inside apps/web) ---
+      - id: web-install
+        name: "web: install packages"
+        entry: bash -c 'cd apps/web && { [ -d node_modules ] || npm ci --no-audit --no-fund; }'
+        language: system
+        files: ^apps/web/
+        pass_filenames: false
       - id: web-eslint
         name: "web: eslint"
         entry: bash -c 'cd apps/web && exec npx --no-install eslint "${@#apps/web/}"' --
@@ -122,6 +128,12 @@ repos:
         pass_filenames: false
 
       # --- apps/docs ---
+      - id: docs-install
+        name: "docs: install packages"
+        entry: bash -c 'cd apps/docs && { [ -d node_modules ] || npm ci --no-audit --no-fund; }'
+        language: system
+        files: ^apps/docs/
+        pass_filenames: false
       - id: docs-prettier
         name: "docs: prettier --check"
         entry: bash -c 'cd apps/docs && exec npx --no-install prettier --check --ignore-unknown "${@#apps/docs/}"' --

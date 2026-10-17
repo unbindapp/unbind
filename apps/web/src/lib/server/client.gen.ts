@@ -3150,7 +3150,7 @@ export const UpdateStatusResponseBodySchema = z
 
 export const UpdateTeamIconInputBodySchema = z
   .object({
-    data: z.string(), // The icon file, base64 encoded. SVG, PNG or JPEG, up to 50 KB and 1024x1024.
+    data: z.string(), // The icon file, base64 encoded. SVG, PNG or JPEG, up to 512 KB and 1024x1024.
     team_id: z.string(),
   })
   .strip();

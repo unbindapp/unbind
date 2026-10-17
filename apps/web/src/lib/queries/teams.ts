@@ -137,7 +137,7 @@ export function teamIconUrl(team: Pick<TTeam, "id" | "icon_updated_at">) {
   return `${getConfig().apiUrl}/teams/icon?${params}`;
 }
 
-export const teamIconMaxBytes = 50 * 1024;
+export const teamIconMaxBytes = 512 * 1024;
 export const teamIconAccept = ".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg";
 const teamIconTypes = ["image/svg+xml", "image/png", "image/jpeg"];
 const teamIconExtensions = [".svg", ".png", ".jpg", ".jpeg"];
@@ -148,7 +148,7 @@ export function getTeamIconFileError(file: File) {
     teamIconTypes.includes(file.type) ||
     (file.type === "" && teamIconExtensions.some((ext) => name.endsWith(ext)));
   if (!typeOk) return "Not an SVG, PNG or JPEG";
-  if (file.size > teamIconMaxBytes) return "Larger than 50 KB";
+  if (file.size > teamIconMaxBytes) return "Larger than 512 KB";
   return null;
 }
 

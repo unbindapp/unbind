@@ -90,7 +90,7 @@ export default function TeamIconCard({ className }: TProps) {
         footer={
           <>
             {error && <ErrorLine message={error} />}
-            <SettingsCardFooterRow hint="SVG, PNG or JPEG, up to 50 KB">
+            <SettingsCardFooterRow hint="SVG, PNG or JPEG, up to 512 KB">
               {canEdit && hasIcon && (
                 <Button
                   type="button"

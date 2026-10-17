@@ -9,8 +9,8 @@ import (
 	"github.com/unbindapp/unbind-api/internal/models"
 )
 
-// Room for a 50 KB file once base64 encoded, plus the JSON around it
-const updateTeamIconMaxBodyBytes = 80 * 1024
+// Room for a 512 KB file once base64 encoded, plus the JSON around it
+const updateTeamIconMaxBodyBytes = 720 * 1024
 
 // Served icons can't run anything, even when opened directly
 const teamIconCSP = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"
@@ -19,7 +19,7 @@ type UpdateTeamIconInput struct {
 	server.BaseAuthInput
 	Body struct {
 		TeamID uuid.UUID `json:"team_id" format:"uuid" required:"true"`
-		Data   []byte    `json:"data" required:"true" doc:"The icon file, base64 encoded. SVG, PNG or JPEG, up to 50 KB and 1024x1024."`
+		Data   []byte    `json:"data" required:"true" doc:"The icon file, base64 encoded. SVG, PNG or JPEG, up to 512 KB and 1024x1024."`
 	}
 }
 

@@ -109,7 +109,7 @@ func TestParseIconRejects(t *testing.T) {
 		message string
 	}{
 		{"empty", nil, "Icon is empty"},
-		{"over 50 KB", svg(`<desc>` + strings.Repeat("a", IconMaxBytes) + `</desc>`), "Icon is larger than 50 KB"},
+		{"over 512 KB", svg(`<desc>` + strings.Repeat("a", IconMaxBytes) + `</desc>`), "Icon is larger than 512 KB"},
 		{"gif", []byte("GIF89a\x01\x00\x01\x00"), "Icon is not an SVG, PNG or JPEG"},
 		{"plain text", []byte("hello"), "Icon is not an SVG, PNG or JPEG"},
 		{"html", []byte(`<html><body>hi</body></html>`), "Icon is not an SVG, PNG or JPEG"},
