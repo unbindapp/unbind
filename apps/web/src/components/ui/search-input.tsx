@@ -48,9 +48,9 @@ export default function SearchInput({
         autoCorrect="off"
         autoComplete="off"
         spellCheck={false}
-        className={cn("pr-11.5 pl-8.5", classNameInput)}
+        className={cn("pr-10 pl-8.5", classNameInput)}
       />
-      <div className="pointer-events-none absolute top-0 right-0 flex h-full w-11 items-center justify-end overflow-hidden pr-0.75">
+      <div className="pointer-events-none absolute inset-y-0 right-0 flex overflow-hidden p-1">
         <Button
           type="button"
           aria-label="Clear search"
@@ -59,7 +59,7 @@ export default function SearchInput({
           onClick={clear}
           variant="ghost"
           size="icon"
-          className="text-muted-more-foreground pointer-events-auto size-9 translate-x-full rounded-md transition data-has-value:translate-x-0"
+          className="text-muted-more-foreground pointer-events-auto aspect-square h-full w-auto translate-x-[calc(100%+0.25rem)] rounded-md transition data-has-value:translate-x-0"
         >
           <XIcon className="size-4.5" />
         </Button>
