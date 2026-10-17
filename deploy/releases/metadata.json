@@ -543,5 +543,10 @@
     "version": "v0.1.108",
     "summary": "Security hardening across logins, permissions, webhooks and the built-in registry, encrypted public database connections, custom team icons, and clearer R2 bucket errors.",
     "breaking": false
+  },
+  "v0.1.109": {
+    "version": "v0.1.109",
+    "summary": "GitHub connections shared with many or all teams, watch paths when creating a service, GitHub repositories over MCP, a check for updates button, and team icon polish.",
+    "breaking": false
   }
 }
