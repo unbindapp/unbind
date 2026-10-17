@@ -5,7 +5,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	v1 "github.com/unbindapp/unbind-operator/api/v1"
+	"github.com/unbindapp/unbind-operator/internal/resourcebuilder/networking"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/utils/ptr"
 )
 
 func TestApplyDbCommonConfigResources(t *testing.T) {
@@ -352,4 +354,21 @@ func TestBuildDatabaseConfigCapsSlotWalKeepSizeFromTheRealVolume(t *testing.T) {
 			assert.Equal(t, tt.expected, dbConfig["maxSlotWalKeepSizeMb"])
 		})
 	}
+}
+
+func TestBuildDatabaseConfigPassesTheTLSIssuerOnlyWhilePublic(t *testing.T) {
+	provider := networking.New(networking.ProviderNginx, networking.Config{SelfSignedIssuer: "unbind-selfsigned"})
+	service := &v1.Service{}
+	service.Spec.Config.Database.Type = "redis"
+	service.Spec.Config.Ports = []v1.PortSpec{{Port: 6379}}
+
+	private := NewResourceBuilder(service, nil, provider).buildDatabaseConfig("")
+	assert.NotContains(t, private["common"].(map[string]any), "tls")
+
+	service.Spec.Config.Ports[0].NodePort = ptr.To(int32(30001))
+	public := NewResourceBuilder(service, nil, provider).buildDatabaseConfig("")
+	assert.Equal(t, map[string]any{"issuer": "unbind-selfsigned"}, public["common"].(map[string]any)["tls"])
+
+	noProvider := NewResourceBuilder(service, nil, nil).buildDatabaseConfig("")
+	assert.NotContains(t, noProvider["common"].(map[string]any), "tls")
 }

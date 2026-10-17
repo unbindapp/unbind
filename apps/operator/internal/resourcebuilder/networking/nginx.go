@@ -20,7 +20,8 @@ func (nginxProvider) Name() Provider { return ProviderNginx }
 
 func (nginxProvider) ServiceAnnotations(*v1.Service) map[string]string { return nil }
 
-func (nginxProvider) ExposesL4ViaGateway() bool { return false }
+func (nginxProvider) ExposesL4ViaGateway() bool  { return false }
+func (p nginxProvider) SelfSignedIssuer() string { return p.cfg.SelfSignedIssuer }
 
 func (p nginxProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	svc := in.Service

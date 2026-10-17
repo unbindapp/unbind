@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/unbindapp/unbind-api/pkg/databases"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -100,11 +101,12 @@ func (rb *ResourceBuilder) buildDatabaseServices() ([]*corev1.Service, error) {
 		if port.Protocol != nil {
 			protocol = *port.Protocol
 		}
+		// The route keeps the plaintext port number, the engine answers it with TLS
 		servicePort := corev1.ServicePort{
 			Name:       strings.ToLower(fmt.Sprintf("%s-%d-%s", rb.service.Spec.Name, port.Port, protocol)),
 			Protocol:   protocol,
 			Port:       port.Port,
-			TargetPort: intstr.FromInt32(port.Port),
+			TargetPort: intstr.FromInt32(databases.TLSPort(rb.service.Spec.Config.Database.Type, port.Port)),
 		}
 		if !viaGateway {
 			servicePort.NodePort = *port.NodePort

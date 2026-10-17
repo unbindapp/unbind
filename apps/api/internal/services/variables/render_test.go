@@ -283,8 +283,9 @@ func (suite *RenderSuite) TestRender_ClickhouseBothProtocols() {
 	host := "clickhouse-analytics-abc123.unbind-team.svc.cluster.local"
 	suite.Equal("clickhouse://default:pw@"+host+":9000/default", result.Env["NATIVE"])
 	suite.Equal("http://default:pw@"+host+":8123/default", result.Env["HTTP"])
-	suite.Equal("clickhouse://default:pw@ch.example.com:30001/default", result.Env["NATIVE_PUB"])
-	suite.Equal("http://default:pw@ch.example.com:30002/default", result.Env["HTTP_PUB"])
+	// Public endpoints front the engine's TLS listeners
+	suite.Equal("clickhouse://default:pw@ch.example.com:30001/default?secure=true&skip_verify=true", result.Env["NATIVE_PUB"])
+	suite.Equal("https://default:pw@ch.example.com:30002/default", result.Env["HTTP_PUB"])
 	suite.Equal("30002", result.Env["HTTP_PORT"])
 	// The keys written before protocols were named still resolve to the same endpoint
 	suite.Equal(result.Env["HTTP"], result.Env["BY_PORT"])
@@ -321,7 +322,7 @@ func (suite *RenderSuite) TestRender_ClickhouseStrandedHost() {
 
 	result, err := suite.service.renderVariables(suite.ctx, suite.k8sClient, suite.target, values)
 	suite.NoError(err)
-	suite.Equal("clickhouse://default:pw@10.0.0.7:32368/default", result.Env["PUB"])
+	suite.Equal("clickhouse://default:pw@10.0.0.7:32368/default?secure=true&skip_verify=true", result.Env["PUB"])
 	suite.Equal("10.0.0.7", result.Env["PUB_HOST"])
 	// The HTTP protocol has no public address at all, so its key resolves to nothing
 	suite.False(result.FullyResolved())

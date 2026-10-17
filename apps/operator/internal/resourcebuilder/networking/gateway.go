@@ -25,7 +25,8 @@ func (gatewayProvider) Name() Provider { return ProviderGateway }
 
 func (gatewayProvider) ServiceAnnotations(*v1.Service) map[string]string { return nil }
 
-func (gatewayProvider) ExposesL4ViaGateway() bool { return true }
+func (gatewayProvider) ExposesL4ViaGateway() bool  { return true }
+func (p gatewayProvider) SelfSignedIssuer() string { return p.cfg.SelfSignedIssuer }
 
 // BuildRoutes emits a per-service Gateway plus the routes for each exposure:
 // HTTPRoute/GRPCRoute for HTTP(S) hosts (certificate over HTTP-01, self-signed for

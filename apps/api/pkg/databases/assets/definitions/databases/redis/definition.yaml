@@ -3,6 +3,8 @@
 
 # Total nodes (default 1). int-coerce: schema defaults are float64 and `gt` needs matching types.
 {{- $requestedReplicas := .Parameters.common.replicas | default 1 | int -}}
+{{- $tlsIssuer := dig "common" "tls" "issuer" "" .Parameters -}}
+{{- $tlsSecret := printf "%s-tls" .Name -}}
 
 # Apply common labels to all resources created by the chart
 commonLabels:
@@ -89,10 +91,28 @@ resources:
 {{- end }}
 {{- end }}
 
-{{- if .Parameters.maxMemory }}
-# The policy stays noeviction, queues and sessions break when keys are evicted
+{{- if or .Parameters.maxMemory $tlsIssuer }}
 extraConfig: |
+{{- if .Parameters.maxMemory }}
+  # The policy stays noeviction, queues and sessions break when keys are evicted
   maxmemory {{ .Parameters.maxMemory }}
+{{- end }}
+{{- if $tlsIssuer }}
+  # Public clients reach 6380, the plaintext port stays for the cluster
+  tls-port 6380
+  tls-cert-file /etc/redis/tls/tls.crt
+  tls-key-file /etc/redis/tls/tls.key
+  tls-auth-clients no
+{{- end }}
+{{- end }}
+
+{{- $extraVolumes := list }}
+{{- if $tlsIssuer }}
+{{- $extraVolumes = append $extraVolumes (dict "name" "tls" "secret" (dict "secretName" $tlsSecret "defaultMode" 0440)) }}
+extraVolumeMounts:
+  - name: tls
+    mountPath: /etc/redis/tls
+    readOnly: true
 {{- end }}
 
 {{- if hasKey .Parameters "appendOnly" }}
@@ -106,11 +126,9 @@ extraConfig: |
 {{- end }}
 extraFlags:
   - --appendonly {{ $appendOnly }}
+{{- $extraVolumes = append $extraVolumes (dict "name" "aof-convert" "emptyDir" (dict)) }}
 
 # Redis started with appendonly yes over a dump.rdb and no append-only file starts empty
-extraVolumes:
-  - name: aof-convert
-    emptyDir: {}
 extraInitContainers:
   - name: aof-convert
     image: "docker.io/redis:{{ .Parameters.version | default "8.10" }}"
@@ -187,10 +205,42 @@ extraInitContainers:
 metrics:
   enabled: false
 
+{{- if $extraVolumes }}
+extraVolumes: {{ toJson $extraVolumes }}
+{{- end }}
+
+{{- if or .Parameters.s3.enabled $tlsIssuer }}
+extraObjects:
+{{- end }}
+{{- if $tlsIssuer }}
+  - apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: {{ $tlsSecret }}
+      namespace: {{ .Namespace }}
+      labels:
+        unbind/usd-type: {{ .Definition.Type | quote }}
+        unbind/usd-version: {{ .Definition.Version | quote }}
+        unbind/usd-category: databases
+        {{- range $key, $value := .Parameters.labels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      secretName: {{ $tlsSecret }}
+      commonName: {{ .Name }}
+      dnsNames:
+        - {{ .Name }}
+        - {{ .Name }}.{{ .Namespace }}.svc
+        - {{ .Name }}.{{ .Namespace }}.svc.cluster.local
+      # Redis reads the files once at start, so the certificate outlives any restart gap
+      duration: 87600h
+      issuerRef:
+        name: {{ $tlsIssuer }}
+        kind: ClusterIssuer
+{{- end }}
 {{- if .Parameters.s3.enabled }}
 {{- $s3 := .Parameters.s3 }}
 {{- $backupPath := printf "s3://%s/%s/backups/%s/" $s3.bucket ($s3.backupPrefix | default "redis") .Name }}
-extraObjects:
   - apiVersion: batch/v1
     kind: CronJob
     metadata:

@@ -8,7 +8,8 @@ import (
 )
 
 // Connection describes how to reach a database. The same shape builds the
-// in-cluster string and the internet-facing one, which differ only in address.
+// in-cluster string and the internet-facing one, which differ in address and in
+// whether the engine's TLS listener is behind it.
 type Connection struct {
 	Type     string
 	Host     string
@@ -16,6 +17,7 @@ type Connection struct {
 	Username string
 	Password string
 	Database string
+	TLS      bool
 }
 
 // CredentialKeys are the credentials stored on every database service. The engine
@@ -62,6 +64,26 @@ func DefaultHTTPPort(databaseType string) int32 {
 		return 8123
 	}
 	return 0
+}
+
+// TLSPort is the container port an engine serves TLS on for the given plaintext
+// port. Postgres and MySQL negotiate TLS on their only port; Redis and ClickHouse
+// open a second listener next to the plaintext one; MongoDB accepts both on one port.
+func TLSPort(databaseType string, port int32) int32 {
+	switch databaseType {
+	case "redis":
+		if port == DefaultPort(databaseType) {
+			return 6380
+		}
+	case "clickhouse":
+		switch port {
+		case DefaultPort(databaseType):
+			return 9440
+		case DefaultHTTPPort(databaseType):
+			return 8443
+		}
+	}
+	return port
 }
 
 // LabelHTTP names an engine's HTTP protocol in the keys that address it
@@ -123,16 +145,29 @@ func ConnectionString(conn Connection) string {
 	address := net.JoinHostPort(conn.Host, strconv.Itoa(int(port)))
 	credentials := url.UserPassword(username, conn.Password).String()
 
+	// The certificates are self-signed, so the TLS strings encrypt without verifying
 	switch conn.Type {
 	case "postgres":
+		if conn.TLS {
+			return fmt.Sprintf("postgresql://%s@%s/%s?sslmode=require", credentials, address, database)
+		}
 		return fmt.Sprintf("postgresql://%s@%s/%s?sslmode=disable", credentials, address, database)
 	case "redis":
+		if conn.TLS {
+			return fmt.Sprintf("rediss://%s@%s", credentials, address)
+		}
 		return fmt.Sprintf("redis://%s@%s", credentials, address)
 	case "mysql":
 		return fmt.Sprintf("mysql://%s@%s/%s", credentials, address, database)
 	case "mongodb":
+		if conn.TLS {
+			return fmt.Sprintf("mongodb://%s@%s/%s?tls=true&tlsAllowInvalidCertificates=true", credentials, address, database)
+		}
 		return fmt.Sprintf("mongodb://%s@%s/%s?ssl=false", credentials, address, database)
 	case "clickhouse":
+		if conn.TLS {
+			return fmt.Sprintf("clickhouse://%s@%s/%s?secure=true&skip_verify=true", credentials, address, database)
+		}
 		return fmt.Sprintf("clickhouse://%s@%s/%s", credentials, address, database)
 	}
 	return ""
@@ -157,7 +192,12 @@ func HTTPConnectionString(conn Connection) string {
 	if database == "" {
 		database = DefaultDatabaseName(conn.Type)
 	}
-	return fmt.Sprintf("http://%s@%s/%s",
+	scheme := "http"
+	if conn.TLS {
+		scheme = "https"
+	}
+	return fmt.Sprintf("%s://%s@%s/%s",
+		scheme,
 		url.UserPassword(username, conn.Password).String(),
 		net.JoinHostPort(conn.Host, strconv.Itoa(int(port))),
 		database,

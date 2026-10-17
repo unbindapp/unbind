@@ -87,6 +87,9 @@ type NetworkingProvider interface {
 	// Gateway L4 routes (true) or NodePort Services (false). When true the backing
 	// Service stays ClusterIP and the provider emits TCP/UDPRoutes.
 	ExposesL4ViaGateway() bool
+	// SelfSignedIssuer names the cert-manager ClusterIssuer that signs certificates
+	// no ACME issuer can, such as wildcard hosts and public database listeners.
+	SelfSignedIssuer() string
 }
 
 // externalL4Ports returns the ports flagged for external L4 exposure (NodePort set).

@@ -1,3 +1,5 @@
+{{- $tlsIssuer := dig "common" "tls" "issuer" "" .Parameters -}}
+{{- $tlsSecret := printf "%s-tls" .Name -}}
 apiVersion: clickhouse.altinity.com/v1
 kind: ClickHouseInstallation
 metadata:
@@ -13,7 +15,40 @@ metadata:
     {{- end }}
 spec:
   configuration:
+    {{- if $tlsIssuer }}
+    # Public clients reach the secure ports, the plaintext ports stay for the cluster
+    settings:
+      tcp_port_secure: 9440
+      https_port: 8443
+    {{- end }}
     files:
+      {{- if $tlsIssuer }}
+      # The operator mounts secret files at secrets.d/<file>/<secret>/<key>
+      config.d/99-tls.xml: |
+        <clickhouse>
+          <openSSL>
+            <server>
+              <certificateFile>/etc/clickhouse-server/secrets.d/tls.crt/{{ $tlsSecret }}/tls.crt</certificateFile>
+              <privateKeyFile>/etc/clickhouse-server/secrets.d/tls.key/{{ $tlsSecret }}/tls.key</privateKeyFile>
+              <verificationMode>none</verificationMode>
+              <loadDefaultCAFile>true</loadDefaultCAFile>
+              <cacheSessions>true</cacheSessions>
+              <disableProtocols>sslv2,sslv3</disableProtocols>
+              <preferServerCiphers>true</preferServerCiphers>
+            </server>
+          </openSSL>
+        </clickhouse>
+      tls.crt:
+        valueFrom:
+          secretKeyRef:
+            name: {{ $tlsSecret }}
+            key: tls.crt
+      tls.key:
+        valueFrom:
+          secretKeyRef:
+            name: {{ $tlsSecret }}
+            key: tls.key
+      {{- end }}
       config.d/99-listen-ipv4-only.xml: |
         <clickhouse>
           <!-- Delete the "::" listen_host that the base image ships
@@ -579,4 +614,30 @@ spec:
               done
 
               echo "RESTORE COMPLETED SUCCESSFULLY"
+{{- end }}
+{{- if $tlsIssuer }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $tlsSecret }}
+  namespace: {{ .Namespace }}
+  labels:
+    unbind/usd-type: {{ .Definition.Type | quote }}
+    unbind/usd-version: {{ .Definition.Version | quote }}
+    unbind/usd-category: databases
+    {{- range $key, $value := .Parameters.labels }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  secretName: {{ $tlsSecret }}
+  commonName: {{ .Name }}
+  dnsNames:
+    - {{ .Name }}
+    - {{ .Name }}.{{ .Namespace }}.svc
+    - {{ .Name }}.{{ .Namespace }}.svc.cluster.local
+  duration: 87600h
+  issuerRef:
+    name: {{ $tlsIssuer }}
+    kind: ClusterIssuer
 {{- end }}

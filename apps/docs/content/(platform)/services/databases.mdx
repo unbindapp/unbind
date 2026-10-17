@@ -38,6 +38,20 @@ Databases are private by default. To connect from your laptop or an outside tool
   **Private** when you are done.
 </Callout>
 
+### Public connections are encrypted
+
+A public database serves TLS with a self-signed certificate, so the password and the data never cross the internet in plain text. The public URL already asks for encryption without verifying the certificate. The private URL stays plain text: it never leaves your Unbind instance.
+
+| Database   | Public URL                                          | Notes                                                                                                              |
+| ---------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| PostgreSQL | `sslmode=require`                                   |                                                                                                                    |
+| MySQL      | unchanged                                           | MySQL clients negotiate TLS on their own. The server always offers it.                                             |
+| Redis      | `rediss://`                                         | Most Redis clients verify certificates. Tell yours to skip verification, for example `redis-cli --tls --insecure`. |
+| MongoDB    | `tls=true&tlsAllowInvalidCertificates=true`         |                                                                                                                    |
+| ClickHouse | `secure=true&skip_verify=true`, `https://` for HTTP | `curl` needs `-k`.                                                                                                 |
+
+Redis, MongoDB and ClickHouse start their TLS listener when you set **Network Access** to **Public**, which restarts the database once. Switching back to **Private** restarts it again. PostgreSQL and MySQL always have TLS on and do not restart.
+
 ## Backups
 
 Backups go to an S3 compatible bucket. First [add a bucket](/teams/s3-storage) to the team. Then, in the database's settings under **Backups**:

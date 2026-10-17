@@ -58,7 +58,7 @@ func TestCleanupStaleBackupObjects(t *testing.T) {
 		c := fake.NewClientBuilder().WithScheme(s).WithObjects(service, prune, kept, foreign, policy).Build()
 		r := &ServiceReconciler{Client: c, Scheme: s}
 
-		require.NoError(t, r.cleanupStaleBackupObjects(ctx, service, []runtime.Object{kept}))
+		require.NoError(t, r.cleanupStaleConditionalObjects(ctx, service, []runtime.Object{kept}))
 
 		assert.False(t, exists(c, prune), "prune cronjob should be deleted")
 		assert.False(t, exists(c, policy), "backup policy should be deleted")
@@ -70,7 +70,7 @@ func TestCleanupStaleBackupObjects(t *testing.T) {
 		c := fake.NewClientBuilder().WithScheme(s).WithObjects(service, prune, policy).Build()
 		r := &ServiceReconciler{Client: c, Scheme: s}
 
-		require.NoError(t, r.cleanupStaleBackupObjects(ctx, service, []runtime.Object{prune, policy}))
+		require.NoError(t, r.cleanupStaleConditionalObjects(ctx, service, []runtime.Object{prune, policy}))
 
 		assert.True(t, exists(c, prune))
 		assert.True(t, exists(c, policy))

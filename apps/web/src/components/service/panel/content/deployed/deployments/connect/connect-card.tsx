@@ -146,7 +146,7 @@ export default function ConnectCard({ service }: TProps) {
               title="From the internet"
               description={
                 isPublic ? (
-                  "For connecting from outside Unbind."
+                  "For connecting from outside Unbind. Encrypted with a self-signed certificate."
                 ) : (
                   <>
                     This database is{" "}

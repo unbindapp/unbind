@@ -2,11 +2,14 @@ package databases
 
 import (
 	"context"
+	"io"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"gopkg.in/yaml.v2"
 )
 
 func TestDefinitionRendering(t *testing.T) {
@@ -2277,4 +2280,137 @@ func TestRedisDefinitionRendersS3Backups(t *testing.T) {
 			assert.Contains(t, result, want)
 		}
 	})
+}
+
+func TestDefinitionsRenderTLSOnlyWhilePublic(t *testing.T) {
+	provider := NewDatabaseProvider()
+	renderer := NewDatabaseRenderer()
+
+	render := func(t *testing.T, dbType string, tls map[string]any) string {
+		def, err := provider.FetchDatabaseDefinition(context.Background(), "", dbType)
+		require.NoError(t, err)
+
+		common := map[string]any{
+			"namespace": "default",
+			"storage":   "1Gi",
+			"replicas":  int32(1),
+			"resources": map[string]any{"requests": map[string]string{"cpu": "50m", "memory": "128M"}},
+		}
+		if tls != nil {
+			common["tls"] = tls
+		}
+		result, err := renderer.Render(def, &RenderContext{
+			Name:      "db-x",
+			Namespace: "team",
+			Parameters: map[string]any{
+				"existingSecretName": "test-secret",
+				"secretName":         "test-secret",
+				"secretKey":          "password",
+				"clusterName":        "clickhouse",
+				"common":             common,
+			},
+		})
+		require.NoError(t, err)
+		return result
+	}
+
+	cases := map[string][]string{
+		"redis": {
+			"tls-port 6380",
+			"tls-cert-file /etc/redis/tls/tls.crt",
+			"tls-auth-clients no",
+			"mountPath: /etc/redis/tls",
+			"secretName: db-x-tls",
+		},
+		"mongodb": {
+			"mode: allowTLS",
+			"certificateKeyFile: /etc/mongo-tls/tls-combined.pem",
+			"tlsUseSystemCA: true",
+			"bindIpAll: true",
+			"type: CombinedPEM",
+			"secretName: db-x-tls",
+		},
+		"clickhouse": {
+			"tcp_port_secure: 9440",
+			"https_port: 8443",
+			"<certificateFile>/etc/clickhouse-server/secrets.d/tls.crt/db-x-tls/tls.crt</certificateFile>",
+			"<privateKeyFile>/etc/clickhouse-server/secrets.d/tls.key/db-x-tls/tls.key</privateKeyFile>",
+			"name: db-x-tls",
+		},
+	}
+	for dbType, wants := range cases {
+		t.Run(dbType, func(t *testing.T) {
+			private := render(t, dbType, nil)
+			assert.NotContains(t, private, "Certificate")
+			assert.NotContains(t, private, "db-x-tls")
+			for _, want := range wants {
+				assert.NotContains(t, private, want)
+			}
+
+			public := render(t, dbType, map[string]any{"issuer": "unbind-selfsigned"})
+			assert.Contains(t, public, "kind: Certificate")
+			assert.Contains(t, public, "name: unbind-selfsigned")
+			assert.Contains(t, public, "kind: ClusterIssuer")
+			for _, want := range wants {
+				assert.Contains(t, public, want)
+			}
+		})
+	}
+}
+
+// helmValues returns the chart values of the HelmRelease in a rendered helm definition
+func helmValues(t *testing.T, rendered string) map[any]any {
+	decoder := yaml.NewDecoder(strings.NewReader(rendered))
+	for {
+		var doc map[any]any
+		err := decoder.Decode(&doc)
+		if err == io.EOF {
+			break
+		}
+		require.NoError(t, err)
+		if doc["kind"] != "HelmRelease" {
+			continue
+		}
+		return doc["spec"].(map[any]any)["values"].(map[any]any)
+	}
+	require.FailNow(t, "no HelmRelease rendered")
+	return nil
+}
+
+func TestRedisDefinitionMergesTLSWithOtherExtras(t *testing.T) {
+	provider := NewDatabaseProvider()
+	renderer := NewDatabaseRenderer()
+	def, err := provider.FetchDatabaseDefinition(context.Background(), "", "redis")
+	require.NoError(t, err)
+
+	result, err := renderer.Render(def, &RenderContext{
+		Name:      "db-x",
+		Namespace: "team",
+		Parameters: map[string]any{
+			"secretName": "test-secret",
+			"secretKey":  "password",
+			"maxMemory":  "268435456",
+			"appendOnly": true,
+			"common": map[string]any{
+				"storage":   "1Gi",
+				"replicas":  int32(1),
+				"resources": map[string]any{"requests": map[string]string{"cpu": "50m", "memory": "128M"}},
+				"tls":       map[string]any{"issuer": "unbind-selfsigned"},
+			},
+			"s3": map[string]any{
+				"enabled":    true,
+				"bucket":     "backups",
+				"endpoint":   "https://s3.example.com",
+				"secretName": "s3-secret",
+			},
+		},
+	})
+	require.NoError(t, err)
+
+	values := helmValues(t, result)
+	assert.Contains(t, values["extraConfig"], "maxmemory 268435456")
+	assert.Contains(t, values["extraConfig"], "tls-port 6380")
+	assert.Len(t, values["extraVolumes"], 2)
+	assert.Len(t, values["extraObjects"], 2)
+	assert.Len(t, values["extraInitContainers"], 1)
 }

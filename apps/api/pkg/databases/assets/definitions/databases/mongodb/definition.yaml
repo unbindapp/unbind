@@ -1,5 +1,7 @@
 # definitions/databases/mongodb/definition.yaml
 # Helm values for CloudPirates MongoDB chart
+{{- $tlsIssuer := dig "common" "tls" "issuer" "" .Parameters -}}
+{{- $tlsSecret := printf "%s-tls" .Name -}}
 
 # Apply common labels to all resources created by the chart
 commonLabels:
@@ -81,12 +83,67 @@ service:
   type: LoadBalancer
 {{- end }}
 
+{{- if $tlsIssuer }}
+# Public clients negotiate TLS on the one port, the cluster keeps connecting in plaintext.
+# The chart's own defaults are repeated because content replaces them.
+config:
+  content: |
+    systemLog:
+      quiet: true
+      verbosity: 0
+    net:
+      bindIpAll: true
+      tls:
+        mode: allowTLS
+        certificateKeyFile: /etc/mongo-tls/tls-combined.pem
+        allowConnectionsWithoutCertificates: true
+    setParameter:
+      tlsUseSystemCA: true
+extraVolumes:
+  - name: tls
+    secret:
+      secretName: {{ $tlsSecret }}
+      defaultMode: 0440
+extraVolumeMounts:
+  - name: tls
+    mountPath: /etc/mongo-tls
+    readOnly: true
+{{- end }}
+
 # Disable metrics exporter unless explicitly configured via parameters
 metrics:
   enabled: false
 
-{{- if or .Parameters.s3.enabled .Parameters.restore.enabled }}
+{{- if or .Parameters.s3.enabled .Parameters.restore.enabled $tlsIssuer }}
 extraObjects:
+{{- if $tlsIssuer }}
+  - apiVersion: cert-manager.io/v1
+    kind: Certificate
+    metadata:
+      name: {{ $tlsSecret }}
+      namespace: {{ .Namespace }}
+      labels:
+        unbind/usd-type: {{ .Definition.Type | quote }}
+        unbind/usd-version: {{ .Definition.Version | quote }}
+        unbind/usd-category: databases
+        {{- range $key, $value := .Parameters.labels }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    spec:
+      secretName: {{ $tlsSecret }}
+      commonName: {{ .Name }}
+      dnsNames:
+        - {{ .Name }}
+        - {{ .Name }}.{{ .Namespace }}.svc
+        - {{ .Name }}.{{ .Namespace }}.svc.cluster.local
+      # mongod reads the file once at start, so the certificate outlives any restart gap
+      duration: 87600h
+      additionalOutputFormats:
+        - type: CombinedPEM
+      issuerRef:
+        name: {{ $tlsIssuer }}
+        kind: ClusterIssuer
+{{- end }}
 {{- if .Parameters.s3.enabled }}
   - apiVersion: batch/v1
     kind: CronJob

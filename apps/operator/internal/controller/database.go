@@ -25,11 +25,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-// Backup objects are only rendered while a bucket is configured, so disabling
-// backups has to delete the ones an earlier reconcile created.
-var backupObjectGVKs = []schema.GroupVersionKind{
+// Backup objects are only rendered while a bucket is configured and the TLS
+// certificate only while the database is public, so turning either off has to
+// delete the ones an earlier reconcile created.
+var conditionalObjectGVKs = []schema.GroupVersionKind{
 	batchv1.SchemeGroupVersion.WithKind("CronJob"),
 	mocov1beta2.GroupVersion.WithKind("BackupPolicy"),
+	{Group: "cert-manager.io", Version: "v1", Kind: "Certificate"},
 }
 
 // reconcileDatabase handles Service resources of type "database": it installs the
@@ -71,12 +73,12 @@ func (r *ServiceReconciler) reconcileDatabase(ctx context.Context, rb resourcebu
 		return err
 	}
 
-	return r.cleanupStaleBackupObjects(ctx, &service, runtimeObjects)
+	return r.cleanupStaleConditionalObjects(ctx, &service, runtimeObjects)
 }
 
-// cleanupStaleBackupObjects deletes backup objects controlled by the service that
-// are no longer part of the rendered set. Kinds whose CRD is not installed are skipped.
-func (r *ServiceReconciler) cleanupStaleBackupObjects(ctx context.Context, service *v1.Service, desired []runtime.Object) error {
+// cleanupStaleConditionalObjects deletes conditional objects controlled by the service
+// that are no longer part of the rendered set. Kinds whose CRD is not installed are skipped.
+func (r *ServiceReconciler) cleanupStaleConditionalObjects(ctx context.Context, service *v1.Service, desired []runtime.Object) error {
 	desiredKeys := make(map[string]bool, len(desired))
 	for _, obj := range desired {
 		clientObj, ok := obj.(client.Object)
@@ -91,7 +93,7 @@ func (r *ServiceReconciler) cleanupStaleBackupObjects(ctx context.Context, servi
 	}
 
 	logger := log.FromContext(ctx)
-	for _, gvk := range backupObjectGVKs {
+	for _, gvk := range conditionalObjectGVKs {
 		list := &unstructured.UnstructuredList{}
 		list.SetGroupVersionKind(gvk.GroupVersion().WithKind(gvk.Kind + "List"))
 		if err := r.List(ctx, list, client.InNamespace(service.Namespace)); err != nil {
@@ -110,7 +112,7 @@ func (r *ServiceReconciler) cleanupStaleBackupObjects(ctx context.Context, servi
 			if desiredKeys[gvk.String()+"/"+item.GetName()] {
 				continue
 			}
-			logger.Info("Deleting stale backup object", "kind", gvk.Kind, "name", item.GetName())
+			logger.Info("Deleting stale database object", "kind", gvk.Kind, "name", item.GetName())
 			if err := r.Delete(ctx, item); client.IgnoreNotFound(err) != nil {
 				return fmt.Errorf("deleting %s %s: %w", gvk.Kind, item.GetName(), err)
 			}

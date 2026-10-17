@@ -29,7 +29,8 @@ func (traefikProvider) ServiceAnnotations(svc *v1.Service) map[string]string {
 	return annotations
 }
 
-func (traefikProvider) ExposesL4ViaGateway() bool { return false }
+func (traefikProvider) ExposesL4ViaGateway() bool  { return false }
+func (p traefikProvider) SelfSignedIssuer() string { return p.cfg.SelfSignedIssuer }
 
 func (p traefikProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 	svc := in.Service

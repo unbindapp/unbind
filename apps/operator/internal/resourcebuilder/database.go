@@ -116,6 +116,10 @@ func (rb *ResourceBuilder) applyDbCommonConfig(dbConfig map[string]any, storage 
 	}
 	commonMap["replicas"] = replicaCount
 
+	if issuer := rb.tlsIssuer(); issuer != "" {
+		commonMap["tls"] = map[string]any{"issuer": issuer}
+	}
+
 	if res := rb.service.Spec.Config.Resources; res != nil {
 		resourcesMap := map[string]any{
 			"requests": make(map[string]string),
@@ -141,6 +145,24 @@ func (rb *ResourceBuilder) applyDbCommonConfig(dbConfig map[string]any, storage 
 }
 
 // empty for engines whose StatefulSet templates the claim, and for pre-managed services
+// tlsIssuer names the issuer for the engine's TLS listener, empty while the
+// database is private so its objects stay exactly as they were
+func (rb *ResourceBuilder) tlsIssuer() string {
+	if rb.provider == nil || !rb.hasExposedPort() {
+		return ""
+	}
+	return rb.provider.SelfSignedIssuer()
+}
+
+func (rb *ResourceBuilder) hasExposedPort() bool {
+	for _, port := range rb.service.Spec.Config.Ports {
+		if port.NodePort != nil {
+			return true
+		}
+	}
+	return false
+}
+
 func (rb *ResourceBuilder) existingClaimName() string {
 	if !databases.MountsExistingClaim(strings.ToLower(rb.service.Spec.Config.Database.Type)) {
 		return ""

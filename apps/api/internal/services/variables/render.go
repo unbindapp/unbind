@@ -384,17 +384,19 @@ func (rc *renderContext) addressValue(source *ent.Service, base string, endpoint
 		if !isDatabase(source) {
 			return "", false
 		}
-		return rc.databaseURL(source, endpoint)
+		return rc.databaseURL(source, endpoint, public)
 	}
 	return "", false
 }
 
 // databaseURL builds the engine's connection string against one endpoint, picking
-// the HTTP protocol when the endpoint fronts the engine's HTTP port
-func (rc *renderContext) databaseURL(source *ent.Service, endpoint serviceEndpoint) (string, bool) {
+// the HTTP protocol when the endpoint fronts the engine's HTTP port. A public
+// endpoint sits in front of the engine's TLS listener.
+func (rc *renderContext) databaseURL(source *ent.Service, endpoint serviceEndpoint, public bool) (string, bool) {
 	conn := databaseConnection(source, rc.secret(source.KubernetesSecret))
 	conn.Host = endpoint.Host
 	conn.Port = endpoint.Port
+	conn.TLS = public
 
 	url := databases.ConnectionString(conn)
 	if endpoint.Label == databases.LabelHTTP {
