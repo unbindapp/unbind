@@ -17,6 +17,14 @@ usage() {
   exit 1
 }
 
+require_main_checkout() {
+  local common
+  common=$(git rev-parse --path-format=absolute --git-common-dir)
+  [ "$(git rev-parse --path-format=absolute --git-dir)" = "$common" ] && return
+  echo "run this from the main checkout ($(dirname "$common")), not a worktree: the dev containers are shared and their data path is relative" >&2
+  exit 1
+}
+
 compose_state() {
   local running all
   running=$(docker ps --format '{{.Names}}' 2>/dev/null | grep -c '^unbind_\(postgres\|redis\)$' || true)
@@ -70,6 +78,7 @@ status() {
 }
 
 start() {
+  require_main_checkout
   if dev_pid >/dev/null; then
     log "already running"
     status
@@ -134,6 +143,7 @@ stop() {
 }
 
 reset() {
+  require_main_checkout
   stop_processes
   if [ "$(cluster_state)" != missing ]; then
     log "deleting cluster $CLUSTER"

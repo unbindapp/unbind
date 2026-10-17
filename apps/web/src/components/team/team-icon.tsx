@@ -11,14 +11,14 @@ export default function TeamIcon({ team, className }: TProps) {
   const src = teamIconUrl(team);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
 
-  if (src && src !== failedSrc) {
-    return (
-      <div
-        className={cn(
-          "bg-background border-border shrink-0 overflow-hidden rounded-full border",
-          className,
-        )}
-      >
+  return (
+    <div
+      className={cn(
+        "bg-card border-border shrink-0 overflow-hidden rounded-full border",
+        className,
+      )}
+    >
+      {src && src !== failedSrc ? (
         <img
           src={src}
           alt=""
@@ -26,24 +26,21 @@ export default function TeamIcon({ team, className }: TProps) {
           onError={() => setFailedSrc(src)}
           className="size-full object-cover"
         />
-      </div>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={cn("shrink-0", className)}>
-      <circle cx="12" cy="12" r="12" className="fill-foreground" />
-      <text
-        x="12"
-        y="12"
-        dy="0.36em"
-        textAnchor="middle"
-        fontSize="13"
-        className="fill-background font-semibold"
-      >
-        {firstLetter(team.name)}
-      </text>
-    </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className="size-full">
+          <text
+            x="12"
+            y="12"
+            dy="0.36em"
+            textAnchor="middle"
+            fontSize="13"
+            className="fill-foreground font-semibold"
+          >
+            {firstLetter(team.name)}
+          </text>
+        </svg>
+      )}
+    </div>
   );
 }
 
