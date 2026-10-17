@@ -887,7 +887,7 @@ export const CreateServiceInputSchema = z
     docker_builder_build_context: z.string().optional(), // Optional path to Dockerfile context, if using docker builder
     docker_builder_dockerfile_path: z.string().optional(), // Optional path to Dockerfile, if using docker builder
     environment_id: z.string(),
-    github_installation_id: z.number().optional(),
+    github_installation_id: z.number().optional(), // An installation usable in the team, from list-github-installations. list-github-repositories shows which repositories each one reaches
     health_check: HealthCheckSchema.optional(), // Health check configuration for the service
     hosts: z.array(HostSpecSchema).nullable().optional(),
     image: z.string().optional(),
@@ -3813,8 +3813,21 @@ export const list_appsQuerySchema = z
   })
   .passthrough();
 
-export const repo_detailQuerySchema = z
+export const list_github_installationsQuerySchema = z
   .object({
+    team_id: z.string(), // The team to build in. Service counts are limited to it.
+  })
+  .passthrough();
+
+export const list_github_repositoriesQuerySchema = z
+  .object({
+    team_id: z.string(), // The team to build in
+  })
+  .passthrough();
+
+export const get_github_repositoryQuerySchema = z
+  .object({
+    team_id: z.string(), // The team to build in
     installation_id: z.number(),
     owner: z.string(),
     repo_name: z.string(),
@@ -3823,6 +3836,7 @@ export const repo_detailQuerySchema = z
 
 export const repo_watch_path_suggestionsQuerySchema = z
   .object({
+    team_id: z.string(), // The team to build in
     installation_id: z.number(),
     owner: z.string(),
     repo_name: z.string(),
@@ -5749,7 +5763,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         },
       },
       installations: async (
-        params?: undefined,
+        params: z.infer<typeof list_github_installationsQuerySchema>,
         fetchOptions?: RequestInit,
       ): Promise<GithubAppInstallationListResponseBody> => {
         try {
@@ -5760,7 +5774,14 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             `${apiUrl}/github/installations`,
             typeof window !== 'undefined' ? window.location.origin : undefined,
           );
-
+          const validatedQuery = list_github_installationsQuerySchema.parse(params);
+          const queryKeys = ['team_id'];
+          queryKeys.forEach((key) => {
+            const value = validatedQuery[key as keyof typeof validatedQuery];
+            if (value !== undefined && value !== null) {
+              url.searchParams.append(key, String(value));
+            }
+          });
           const options: RequestInit = {
             method: 'GET',
             credentials: 'include',
@@ -5792,7 +5813,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
       },
       repositories: Object.assign(
         async (
-          params?: undefined,
+          params: z.infer<typeof list_github_repositoriesQuerySchema>,
           fetchOptions?: RequestInit,
         ): Promise<GithubRepositoryListResponseBody> => {
           try {
@@ -5803,7 +5824,14 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               `${apiUrl}/github/repositories`,
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
-
+            const validatedQuery = list_github_repositoriesQuerySchema.parse(params);
+            const queryKeys = ['team_id'];
+            queryKeys.forEach((key) => {
+              const value = validatedQuery[key as keyof typeof validatedQuery];
+              if (value !== undefined && value !== null) {
+                url.searchParams.append(key, String(value));
+              }
+            });
             const options: RequestInit = {
               method: 'GET',
               credentials: 'include',
@@ -5835,7 +5863,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
         },
         {
           info: async (
-            params: z.infer<typeof repo_detailQuerySchema>,
+            params: z.infer<typeof get_github_repositoryQuerySchema>,
             fetchOptions?: RequestInit,
           ): Promise<GithubRepositoryDetailResponseBody> => {
             try {
@@ -5846,8 +5874,8 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
                 `${apiUrl}/github/repositories/info`,
                 typeof window !== 'undefined' ? window.location.origin : undefined,
               );
-              const validatedQuery = repo_detailQuerySchema.parse(params);
-              const queryKeys = ['installation_id', 'owner', 'repo_name'];
+              const validatedQuery = get_github_repositoryQuerySchema.parse(params);
+              const queryKeys = ['team_id', 'installation_id', 'owner', 'repo_name'];
               queryKeys.forEach((key) => {
                 const value = validatedQuery[key as keyof typeof validatedQuery];
                 if (value !== undefined && value !== null) {
@@ -5896,7 +5924,7 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
                 typeof window !== 'undefined' ? window.location.origin : undefined,
               );
               const validatedQuery = repo_watch_path_suggestionsQuerySchema.parse(params);
-              const queryKeys = ['installation_id', 'owner', 'repo_name', 'ref'];
+              const queryKeys = ['team_id', 'installation_id', 'owner', 'repo_name', 'ref'];
               queryKeys.forEach((key) => {
                 const value = validatedQuery[key as keyof typeof validatedQuery];
                 if (value !== undefined && value !== null) {

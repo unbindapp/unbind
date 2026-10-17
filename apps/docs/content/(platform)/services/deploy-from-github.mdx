@@ -61,7 +61,7 @@ When the window closes you see **GitHub connected**.
 
 A connection belongs to the person who made it. Your avatar > **Account Settings** > **GitHub Apps** lists yours, with the accounts each one is installed on and how many services build from them.
 
-- **Visibility**: pick the teams that can use it, or **Only me** to take it back. Members of those teams see its repositories in the picker; nobody else does. When several teams build from the same GitHub account, share one connection with all of them instead of installing another app. System admins can also pick **All teams**, which includes teams created later.
+- **Visibility**: pick the teams that can use it, or **Only me** to take it back. A team's picker shows your own connections and the ones shared with that team. A connection shared with one of your teams does not show up in your other teams. When several teams build from the same GitHub account, share one connection with all of them instead of installing another app. System admins can also pick **All teams**, which includes teams created later.
 - **The link on an account row** opens that installation on GitHub, where you change which repositories the app can see. An app that is not installed anywhere yet links to GitHub's install page instead.
 - **Open on GitHub**: the app's own settings page. If you rename the app or move it to another account there, Unbind shows the change within 10 minutes.
 - **Remove**: uninstalls the app from every account and forgets it. Services built from it keep running but stop deploying on push until you pick a repository for them again. Delete the app itself under GitHub > **Settings** > **Developer settings** > **GitHub Apps** afterwards.
@@ -72,11 +72,13 @@ A connection shared with **All teams** shows up in every team. Its teams cannot 
 
 When the person who made a shared connection is deleted, the connection stays with its teams. If only one team has it, that team's editors can remove it. If several or all teams do, only a system admin can.
 
-A service whose connection is not shared with you shows its repository and branch, but you cannot change them. Ask the owner to share the connection with your team.
+A service whose connection is neither yours nor shared with its team shows its repository and branch, but you cannot change them. It keeps deploying on push. Ask the owner to share the connection with the service's team.
 
 ## Create the service
 
 Open the command panel, pick **GitHub Repo** and choose a repository. Unbind creates the service right away and looks at the code to work out the framework and the port it listens on.
+
+From the [API](/api) or an agent, `list-github-repositories` takes the team you build in and lists the repositories you can build there, each with the `installation_id` that `create-service` takes as `github_installation_id`. Connecting, sharing and removing connections stays in the UI.
 
 Before the first deployment you can check:
 

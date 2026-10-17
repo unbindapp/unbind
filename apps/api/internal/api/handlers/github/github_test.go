@@ -23,6 +23,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/api/server"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/cache"
 	github_integration "github.com/unbindapp/unbind-api/internal/integrations/github"
+	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	repository "github.com/unbindapp/unbind-api/internal/repositories/repositorytest"
 	mocks_integrations_github "github.com/unbindapp/unbind-api/mocks/integrations/github"
@@ -177,11 +178,11 @@ func (suite *GithubHandlerSuite) TestPrivateAppVisibleOnlyToCreator() {
 	_, err := suite.handlers.HandleGetGithubApp(suite.as(suite.teamEditor), &GithubAppGetInput{UUID: suite.app.UUID})
 	suite.assertStatus(err, 404)
 
-	installations, err := suite.handlers.HandleListGithubAppInstallations(suite.as(suite.teamEditor), &server.BaseAuthInput{})
+	installations, err := suite.listInstallations(suite.as(suite.teamEditor), suite.team.ID)
 	suite.Require().NoError(err)
-	suite.Empty(installations.Body.Data)
+	suite.Empty(installations)
 
-	_, err = suite.handlers.HandleGetGithubRepositoryDetail(suite.as(suite.teamEditor), &GithubRepositoryDetailInput{InstallationID: suite.installation.ID, Owner: "test-org", RepoName: "repo"})
+	_, err = suite.repositoryDetail(suite.as(suite.teamEditor), suite.team.ID)
 	suite.assertStatus(err, 404)
 }
 
@@ -199,9 +200,9 @@ func (suite *GithubHandlerSuite) TestSharedAppVisibleToTeam() {
 	_, err := suite.handlers.HandleListGithubApps(suite.as(suite.outsider), &GithubAppListInput{TeamID: suite.team.ID})
 	suite.assertStatus(err, 403)
 
-	installations, err := suite.handlers.HandleListGithubAppInstallations(suite.as(suite.teamViewer), &server.BaseAuthInput{})
+	installations, err := suite.listInstallations(suite.as(suite.teamViewer), suite.team.ID)
 	suite.Require().NoError(err)
-	suite.Len(installations.Body.Data, 1)
+	suite.Len(installations, 1)
 }
 
 func (suite *GithubHandlerSuite) TestServiceCountsFollowTheTeamFilter() {
@@ -233,6 +234,97 @@ func (suite *GithubHandlerSuite) TestSharedWithSeveralTeams() {
 	suite.Equal([]string{"team"}, teamNames(suite.teamViewer), "other teams' names stay hidden")
 	suite.Equal([]string{"other"}, teamNames(suite.outsider))
 	suite.Len(suite.listApps(suite.outsider, &GithubAppListInput{TeamID: suite.otherTeam.ID}), 1)
+}
+
+func (suite *GithubHandlerSuite) listInstallations(ctx context.Context, teamID uuid.UUID) ([]*GithubInstallationAPIResponse, error) {
+	resp, err := suite.handlers.HandleListGithubAppInstallations(ctx, &GithubInstallationListInput{TeamID: teamID})
+	if err != nil {
+		return nil, err
+	}
+	return resp.Body.Data, nil
+}
+
+func (suite *GithubHandlerSuite) repositoryDetail(ctx context.Context, teamID uuid.UUID) (*GithubRepositoryDetailResponse, error) {
+	return suite.handlers.HandleGetGithubRepositoryDetail(ctx, &GithubRepositoryDetailInput{TeamID: teamID, InstallationID: suite.installation.ID, Owner: "test-org", RepoName: "repo"})
+}
+
+func (suite *GithubHandlerSuite) grant(user *ent.User, action schema.PermittedAction, teamID uuid.UUID) {
+	perm := suite.DB.Permission.Create().
+		SetAction(action).
+		SetResourceType(schema.ResourceTypeTeam).
+		SetResourceSelector(schema.ResourceSelector{ID: teamID}).
+		SaveX(suite.Ctx)
+	suite.DB.Group.Create().SetName(user.Email + teamID.String()).AddPermissionIDs(perm.ID).AddUserIDs(user.ID).SaveX(suite.Ctx)
+}
+
+func (suite *GithubHandlerSuite) TestInstallationsFollowTheTeam() {
+	installations, err := suite.listInstallations(suite.as(suite.creator), suite.team.ID)
+	suite.Require().NoError(err)
+	suite.Len(installations, 1, "the creator builds from their own connection in any team")
+
+	suite.shareWithTeam(suite.team.ID)
+	suite.createService("in-team", suite.team.ID, suite.installation.ID)
+	suite.createService("elsewhere", suite.otherTeam.ID, suite.installation.ID)
+
+	installations, err = suite.listInstallations(suite.as(suite.teamViewer), suite.team.ID)
+	suite.Require().NoError(err)
+	suite.Require().Len(installations, 1)
+	suite.Equal(suite.installation.ID, installations[0].ID)
+	suite.Equal("test-org", installations[0].AccountLogin)
+	suite.Equal(1, installations[0].ServiceCount)
+
+	installations, err = suite.listInstallations(suite.as(suite.outsider), suite.otherTeam.ID)
+	suite.Require().NoError(err)
+	suite.Empty(installations)
+
+	_, err = suite.listInstallations(suite.as(suite.outsider), suite.team.ID)
+	suite.assertStatus(err, 404)
+
+	suite.DB.GithubApp.UpdateOneID(suite.app.ID).SetSharedWithAllTeams(true).ExecX(suite.Ctx)
+	installations, err = suite.listInstallations(suite.as(suite.outsider), suite.otherTeam.ID)
+	suite.Require().NoError(err)
+	suite.Len(installations, 1)
+}
+
+func (suite *GithubHandlerSuite) TestConnectionSharedWithAnotherTeamStaysThere() {
+	suite.shareWithTeam(suite.team.ID)
+	suite.grant(suite.teamViewer, schema.ActionEditor, suite.otherTeam.ID)
+
+	installations, err := suite.listInstallations(suite.as(suite.teamViewer), suite.otherTeam.ID)
+	suite.Require().NoError(err)
+	suite.Empty(installations)
+
+	_, err = suite.repositoryDetail(suite.as(suite.teamViewer), suite.otherTeam.ID)
+	suite.assertStatus(err, 404)
+}
+
+func (suite *GithubHandlerSuite) TestAPIKeyOnlySeesInstallationsOfItsTeams() {
+	suite.shareWithTeam(suite.team.ID)
+	suite.grant(suite.teamViewer, schema.ActionViewer, suite.otherTeam.ID)
+	project := suite.DB.Project.Create().
+		SetKubernetesName("project").
+		SetName("project").
+		SetTeamID(suite.team.ID).
+		SetKubernetesSecret("project-secret").
+		SaveX(suite.Ctx)
+
+	keyFor := func(resourceType schema.ResourceType, resourceID uuid.UUID) context.Context {
+		return permissions_repo.WithAPIKeyAccess(suite.as(suite.teamViewer), permissions_repo.APIKeyAccess{
+			Role:      schema.ActionViewer,
+			Resources: []schema.APIKeyResource{{ResourceType: resourceType, ResourceID: resourceID}},
+		})
+	}
+
+	installations, err := suite.listInstallations(keyFor(schema.ResourceTypeTeam, suite.team.ID), suite.team.ID)
+	suite.Require().NoError(err)
+	suite.Len(installations, 1)
+
+	installations, err = suite.listInstallations(keyFor(schema.ResourceTypeProject, project.ID), suite.team.ID)
+	suite.Require().NoError(err)
+	suite.Len(installations, 1, "a key limited to a project builds in the project's team")
+
+	_, err = suite.listInstallations(keyFor(schema.ResourceTypeTeam, suite.otherTeam.ID), suite.team.ID)
+	suite.assertStatus(err, 404)
 }
 
 func (suite *GithubHandlerSuite) updateTeams(user *ent.User, add []uuid.UUID, remove []uuid.UUID) (*GithubAppUpdateTeamsResponse, error) {
@@ -444,7 +536,7 @@ func (suite *GithubHandlerSuite) TestRepositoriesSkipUninstalledAndSuspended() {
 			return len(installations) == 1 && installations[0].ID == suite.installation.ID
 		})).
 		Return(nil, nil).Once()
-	resp, err := suite.handlers.HandleListGithubRepositories(suite.as(suite.creator), &server.BaseAuthInput{})
+	resp, err := suite.handlers.HandleListGithubRepositories(suite.as(suite.creator), &GithubRepositoryListInput{TeamID: suite.team.ID})
 	suite.Require().NoError(err)
 	suite.Empty(resp.Body.Data)
 }

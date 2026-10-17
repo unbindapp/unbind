@@ -10,11 +10,18 @@ import type {
 export type TGitRepository = GithubRepositoryListResponseBody["data"][number];
 
 export const queryKeyGit = {
-  repositories: () => ["git", "repositories"] as const,
+  repositoriesAll: () => ["git", "repositories"] as const,
+  repositories: (input: { teamId: string }) => ["git", "repositories", input.teamId] as const,
   app: (input: { uuid: string }) => ["git", "app", input.uuid] as const,
-  repository: (input: { installationId: number; owner: string; repoName: string }) =>
-    ["git", "repository", input.installationId, input.owner, input.repoName] as const,
+  repository: (input: {
+    teamId: string;
+    installationId: number;
+    owner: string;
+    repoName: string;
+  }) =>
+    ["git", "repository", input.teamId, input.installationId, input.owner, input.repoName] as const,
   watchPathSuggestions: (input: {
+    teamId: string;
     installationId: number;
     owner: string;
     repoName: string;
@@ -23,6 +30,7 @@ export const queryKeyGit = {
     [
       "git",
       "watch-path-suggestions",
+      input.teamId,
       input.installationId,
       input.owner,
       input.repoName,
@@ -30,11 +38,11 @@ export const queryKeyGit = {
     ] as const,
 };
 
-export const gitRepositoriesQuery = () =>
+export const gitRepositoriesQuery = (input: { teamId: string }) =>
   queryOptions({
-    queryKey: queryKeyGit.repositories(),
+    queryKey: queryKeyGit.repositories(input),
     queryFn: async () => {
-      const { data } = await getGoClient().github.repositories();
+      const { data } = await getGoClient().github.repositories({ team_id: input.teamId });
       return { repositories: data };
     },
   });
@@ -49,6 +57,7 @@ export const gitAppQuery = (input: { uuid: string }) =>
   });
 
 export const gitRepositoryQuery = (input: {
+  teamId: string;
   installationId: number;
   owner: string;
   repoName: string;
@@ -57,6 +66,7 @@ export const gitRepositoryQuery = (input: {
     queryKey: queryKeyGit.repository(input),
     queryFn: async () => {
       const res = await getGoClient().github.repositories.info({
+        team_id: input.teamId,
         installation_id: input.installationId,
         repo_name: input.repoName,
         owner: input.owner,
@@ -66,6 +76,7 @@ export const gitRepositoryQuery = (input: {
   });
 
 export const gitWatchPathSuggestionsQuery = (input: {
+  teamId: string;
   installationId: number;
   owner: string;
   repoName: string;
@@ -75,6 +86,7 @@ export const gitWatchPathSuggestionsQuery = (input: {
     queryKey: queryKeyGit.watchPathSuggestions(input),
     queryFn: async () => {
       const res = await getGoClient().github.repositories.watchPaths({
+        team_id: input.teamId,
         installation_id: input.installationId,
         repo_name: input.repoName,
         owner: input.owner,

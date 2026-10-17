@@ -16,7 +16,12 @@ import { useTemporarilyAddNewEntity } from "@/components/stores/main/main-store-
 import { usePendingEntityStore } from "@/components/stores/pending/pending-entity-store-provider";
 import { toast } from "@/components/ui/toast";
 import { useIdsFromPathname } from "@/lib/hooks/use-ids-from-pathname";
-import { gitRepositoriesQuery, queryKeyGitApps, type TGitRepository } from "@/lib/queries/git";
+import {
+  gitRepositoriesQuery,
+  queryKeyGit,
+  queryKeyGitApps,
+  type TGitRepository,
+} from "@/lib/queries/git";
 import {
   createService as createServiceFn,
   type TBuilderEnum,
@@ -219,7 +224,7 @@ function useGitItem({ context }: TProps) {
           environmentId,
         }),
       );
-      queryClient.resetQueries({ queryKey: gitRepositoriesQuery().queryKey });
+      queryClient.resetQueries({ queryKey: queryKeyGit.repositories({ teamId }) });
       queryClient.invalidateQueries({ queryKey: queryKeyGitApps.all() });
       queryKeys.forEach((queryKey) => {
         queryClient.resetQueries({ queryKey });
@@ -377,7 +382,7 @@ function useGitItem({ context }: TProps) {
         inputPlaceholder: "Deploy from GitHub...",
         itemsPinned: [configureGitHubItem],
         getItemsAsync: async () => {
-          const res = await queryClient.fetchQuery(gitRepositoriesQuery());
+          const res = await queryClient.fetchQuery(gitRepositoriesQuery({ teamId }));
           const items: TCommandPanelItem[] = res.repositories.map((r) => {
             const id = `${subpageId}_${r.full_name}`;
             return {

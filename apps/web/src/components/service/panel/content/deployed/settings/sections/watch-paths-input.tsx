@@ -1,4 +1,5 @@
 import ErrorCard from "@/components/error-card";
+import { useService } from "@/components/service/service-provider";
 import {
   Combobox,
   ComboboxChip,
@@ -50,9 +51,11 @@ export default function WatchPathsInput({
   const [hasOpened, setHasOpened] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const typed = useMemo(() => splitWatchPaths(inputValue), [inputValue]);
+  const { teamId } = useService();
 
   const { data, isPending, error } = useQuery({
     ...gitWatchPathSuggestionsQuery({
+      teamId,
       installationId: service.github_installation_id ?? 0,
       owner: service.git_repository_owner ?? "",
       repoName: service.git_repository ?? "",

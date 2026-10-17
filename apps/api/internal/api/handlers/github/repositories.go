@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/google/uuid"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
@@ -18,8 +19,13 @@ type GithubRepositoryListResponse struct {
 	}
 }
 
-func (self *HandlerGroup) HandleListGithubRepositories(ctx context.Context, input *server.BaseAuthInput) (*GithubRepositoryListResponse, error) {
-	_, visibility, err := self.visibility(ctx)
+type GithubRepositoryListInput struct {
+	server.BaseAuthInput
+	TeamID uuid.UUID `query:"team_id" required:"true" format:"uuid" doc:"The team to build in"`
+}
+
+func (self *HandlerGroup) HandleListGithubRepositories(ctx context.Context, input *GithubRepositoryListInput) (*GithubRepositoryListResponse, error) {
+	visibility, err := self.teamVisibility(ctx, input.TeamID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +57,10 @@ func (self *HandlerGroup) HandleListGithubRepositories(ctx context.Context, inpu
 // GET github repository details (branches, tags, etc.)
 type GithubRepositoryDetailInput struct {
 	server.BaseAuthInput
-	InstallationID int64  `query:"installation_id" required:"true"`
-	Owner          string `query:"owner" required:"true"`
-	RepoName       string `query:"repo_name" required:"true"`
+	TeamID         uuid.UUID `query:"team_id" required:"true" format:"uuid" doc:"The team to build in"`
+	InstallationID int64     `query:"installation_id" required:"true"`
+	Owner          string    `query:"owner" required:"true"`
+	RepoName       string    `query:"repo_name" required:"true"`
 }
 
 type GithubRepositoryDetailResponse struct {
@@ -63,7 +70,7 @@ type GithubRepositoryDetailResponse struct {
 }
 
 func (self *HandlerGroup) HandleGetGithubRepositoryDetail(ctx context.Context, input *GithubRepositoryDetailInput) (*GithubRepositoryDetailResponse, error) {
-	_, visibility, err := self.visibility(ctx)
+	visibility, err := self.teamVisibility(ctx, input.TeamID)
 	if err != nil {
 		return nil, err
 	}
@@ -89,10 +96,11 @@ func (self *HandlerGroup) HandleGetGithubRepositoryDetail(ctx context.Context, i
 // GET watch path suggestions derived from a repository's file tree
 type GithubWatchPathSuggestionsInput struct {
 	server.BaseAuthInput
-	InstallationID int64  `query:"installation_id" required:"true"`
-	Owner          string `query:"owner" required:"true"`
-	RepoName       string `query:"repo_name" required:"true"`
-	Ref            string `query:"ref" required:"true" doc:"Branch or tag to read the file tree from"`
+	TeamID         uuid.UUID `query:"team_id" required:"true" format:"uuid" doc:"The team to build in"`
+	InstallationID int64     `query:"installation_id" required:"true"`
+	Owner          string    `query:"owner" required:"true"`
+	RepoName       string    `query:"repo_name" required:"true"`
+	Ref            string    `query:"ref" required:"true" doc:"Branch or tag to read the file tree from"`
 }
 
 type GithubWatchPathSuggestions struct {
@@ -107,7 +115,7 @@ type GithubWatchPathSuggestionsResponse struct {
 }
 
 func (self *HandlerGroup) HandleGetGithubWatchPathSuggestions(ctx context.Context, input *GithubWatchPathSuggestionsInput) (*GithubWatchPathSuggestionsResponse, error) {
-	_, visibility, err := self.visibility(ctx)
+	visibility, err := self.teamVisibility(ctx, input.TeamID)
 	if err != nil {
 		return nil, err
 	}

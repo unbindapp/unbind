@@ -20,6 +20,12 @@ type AppVisibility struct {
 	Teams  predicate.Team
 }
 
+// TeamAppVisibility is what the user can build from in one team: their own apps,
+// the ones shared with the team and the ones shared with all teams
+func TeamAppVisibility(userID uuid.UUID, teamID uuid.UUID) AppVisibility {
+	return AppVisibility{UserID: userID, Teams: team.ID(teamID)}
+}
+
 func (self AppVisibility) predicate() predicate.GithubApp {
 	if self.Teams == nil {
 		return githubapp.Or(githubapp.CreatedBy(self.UserID), githubapp.HasTeams(), githubapp.SharedWithAllTeams(true))

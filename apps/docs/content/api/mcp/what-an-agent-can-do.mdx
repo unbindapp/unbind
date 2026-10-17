@@ -5,7 +5,7 @@ description: The tools an agent gets and how they map to the API.
 
 The MCP server has no logic of its own. Every tool is an operation of the HTTP API, called the same way, with the same validation and the same permissions. If the [API reference](/api/reference/teams/list-teams) says an operation does something, the tool with that name does exactly that.
 
-There are about 60 tools, and more than half of them only read.
+There are about 70 tools, and more than half of them only read.
 
 ## What is covered
 
@@ -13,6 +13,7 @@ There are about 60 tools, and more than half of them only read.
 | ----------------------------- | ---------------------------------------------------------------------------------- |
 | Teams, projects, environments | `list-teams`, `create-project`, `create-environment`                               |
 | Services                      | `create-service`, `update-service`, `list-available-databases`                     |
+| GitHub                        | `list-github-installations`, `list-github-repositories`, `get-github-repository`   |
 | Deployments                   | `trigger-deployment`, `get-deployment`, `redeploy-deployment`, `cancel-deployment` |
 | Variables                     | `list-variables`, `update-variables`, `list-available-references`                  |
 | Volumes                       | `create-volume`, `update-volume`, `get-volume-metrics`                             |
@@ -40,7 +41,7 @@ Two tools answer with a blank where a secret would be, unless the connection has
 - **S3 buckets**: creating or editing one means sending credentials, and those should not pass through a model conversation. Agents can list buckets and pick one for backups.
 - **Team settings**: managed in the UI.
 - **Live log streaming**: `query-logs` returns the same data.
-- **Anything that needs a browser session**: API keys, connected apps, the GitHub connection, system settings, users and the terminal.
+- **Anything that needs a browser session**: API keys, connected apps, connecting, sharing and removing GitHub apps, system settings, users and the terminal.
 
 ## How an agent finds its way
 
@@ -49,6 +50,7 @@ The server gives every client a short set of instructions. They are worth knowin
 - Resources nest as team > project > environment > service, and most tools need the IDs of every level above. Agents find them with `list-teams`, `list-projects`, `list-environments` and `list-service`.
 - Names are unique among siblings and case sensitive. A taken name answers "conflict", except for `create-service`, `create-service-group`, `create-volume` and `deploy-template`, which add a short suffix and keep going.
 - Agents call `whoami` first to learn their role, limits and privileges, and not to retry for values that come back redacted.
+- A service built from GitHub needs an installation, an owner and a repository. `list-github-repositories` lists the repositories the agent can build in a team, each with its installation. A repository that is not listed has to be added to the installation on GitHub, or its connection shared with the team, by a person first.
 - Creating a service does not deploy it. The agent calls `trigger-deployment`, polls `get-deployment` until it finishes, and reads `query-logs` when a build or a replica fails.
 - Once a service is running, changes to its config or variables roll out on their own, and so do the services that reference a changed variable.
 - A service's variables can reference other values instead of copying them, like `API_URL=${{service:<service_id>.UNBIND_URL_PRIVATE}}`, so they stay correct when the source changes. `list-available-references` lists what a service can use.

@@ -25,13 +25,9 @@ type githubSource struct {
 	defaultBranch string
 }
 
-// visibleInstallation loads an installation the requester connected or that is shared with a team they can view
-func (self *ServiceService) visibleInstallation(ctx context.Context, requesterUserID uuid.UUID, installationID int64) (*ent.GithubInstallation, error) {
-	teams, err := self.repo.Permissions().GetAccessibleTeamPredicates(ctx, requesterUserID, schema.ActionViewer)
-	if err != nil {
-		return nil, err
-	}
-	visibility := github_repo.AppVisibility{UserID: requesterUserID, Teams: teams}
+// visibleInstallation loads an installation the requester can build from in the service's team
+func (self *ServiceService) visibleInstallation(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, installationID int64) (*ent.GithubInstallation, error) {
+	visibility := github_repo.TeamAppVisibility(requesterUserID, teamID)
 	installation, err := self.repo.Github().GetVisibleInstallationByID(ctx, visibility, installationID)
 	if err != nil {
 		if ent.IsNotFound(err) {
@@ -42,8 +38,8 @@ func (self *ServiceService) visibleInstallation(ctx context.Context, requesterUs
 	return installation, nil
 }
 
-func (self *ServiceService) verifyGithubRepository(ctx context.Context, requesterUserID uuid.UUID, installationID int64, owner, repo string) (*githubSource, error) {
-	installation, err := self.visibleInstallation(ctx, requesterUserID, installationID)
+func (self *ServiceService) verifyGithubRepository(ctx context.Context, requesterUserID uuid.UUID, teamID uuid.UUID, installationID int64, owner, repo string) (*githubSource, error) {
+	installation, err := self.visibleInstallation(ctx, requesterUserID, teamID, installationID)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +172,7 @@ func (self *ServiceService) prepareSourceChange(ctx context.Context, requesterUs
 	}
 
 	if input.RepositoryName != nil {
-		source, err := self.verifyGithubRepository(ctx, requesterUserID, *input.GitHubInstallationID, *input.RepositoryOwner, *input.RepositoryName)
+		source, err := self.verifyGithubRepository(ctx, requesterUserID, input.TeamID, *input.GitHubInstallationID, *input.RepositoryOwner, *input.RepositoryName)
 		if err != nil {
 			return nil, err
 		}
@@ -200,7 +196,7 @@ func (self *ServiceService) prepareSourceChange(ctx context.Context, requesterUs
 	if service.GithubInstallationID == nil || service.GitRepository == nil {
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Service has no repository to pick a branch from")
 	}
-	installation, err := self.visibleInstallation(ctx, requesterUserID, *service.GithubInstallationID)
+	installation, err := self.visibleInstallation(ctx, requesterUserID, input.TeamID, *service.GithubInstallationID)
 	if err != nil {
 		return nil, err
 	}

@@ -469,6 +469,31 @@ func (suite *GithubInstallationSuite) TestVisibleInstallations() {
 	suite.Equal(suite.testApp.ID, visible.Edges.GithubApp.ID)
 }
 
+func (suite *GithubInstallationSuite) TestTeamVisibleInstallation() {
+	team := suite.DB.Team.Create().SetKubernetesName("t1").SetName("t1").SetNamespace("t1").SetKubernetesSecret("s").SaveX(suite.Ctx)
+	otherTeam := suite.DB.Team.Create().SetKubernetesName("t2").SetName("t2").SetNamespace("t2").SetKubernetesSecret("s").SaveX(suite.Ctx)
+	member := suite.DB.User.Create().SetEmail("member@example.com").SetPasswordHash("x").SaveX(suite.Ctx)
+	visibleIn := func(userID uuid.UUID, teamID uuid.UUID) bool {
+		_, err := suite.githubRepo.GetVisibleInstallationByID(suite.Ctx, TeamAppVisibility(userID, teamID), suite.testInstallation.ID)
+		if ent.IsNotFound(err) {
+			return false
+		}
+		suite.Require().NoError(err)
+		return true
+	}
+
+	suite.True(visibleIn(suite.testUser.ID, otherTeam.ID), "the creator builds from their own app in any team")
+	suite.False(visibleIn(member.ID, team.ID))
+
+	suite.DB.GithubApp.UpdateOneID(suite.testApp.ID).AddTeamIDs(team.ID).ExecX(suite.Ctx)
+	suite.True(visibleIn(member.ID, team.ID))
+	suite.False(visibleIn(member.ID, otherTeam.ID), "an app shared with one team is not usable in another")
+
+	suite.DB.GithubApp.UpdateOneID(suite.testApp.ID).SetSharedWithAllTeams(true).ExecX(suite.Ctx)
+	suite.True(visibleIn(member.ID, otherTeam.ID))
+	suite.False(visibleIn(member.ID, uuid.New()), "all teams still means a team that exists")
+}
+
 func (suite *GithubInstallationSuite) createService(name string, teamID uuid.UUID, installationID int64) *ent.Service {
 	project := suite.DB.Project.Create().
 		SetKubernetesName(name).
