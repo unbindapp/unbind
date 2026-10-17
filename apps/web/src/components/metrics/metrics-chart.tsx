@@ -27,6 +27,8 @@ const margin = { left: 4, right: 12, top: 4, bottom: 4 };
 
 const colorCount = 10;
 
+const sortByValueDescending = (item: { value?: unknown }) => -(Number(item.value) || 0);
+
 export default function MetricsChart({
   yFormatter,
   tooltipValueFormatter,
@@ -51,6 +53,16 @@ export default function MetricsChart({
     });
     return [[...keys], allIsNull];
   }, [chartData]);
+
+  const legendDataKeys = useMemo(() => {
+    const averages = new Map<string, number>();
+    dataKeys.forEach((key) => {
+      const values = chartData.map((row) => row[key]).filter((v) => v !== null && v !== undefined);
+      const sum = values.reduce<number>((total, v) => total + (Number(v) || 0), 0);
+      averages.set(key, values.length > 0 ? sum / values.length : 0);
+    });
+    return [...dataKeys].sort((a, b) => (averages.get(b) ?? 0) - (averages.get(a) ?? 0));
+  }, [dataKeys, chartData]);
 
   const [activeDataKey, setActiveDataKey] = useState<string | null>(null);
   const filteredDataKeys = useMemo(
@@ -113,6 +125,7 @@ export default function MetricsChart({
             />
             <YAxis tickMargin={8} tickLine={false} axisLine={false} tickFormatter={yFormatter} />
             <ChartTooltip
+              itemSorter={sortByValueDescending}
               content={
                 <ChartTooltipContent
                   indicator={activeDataKey ? "dot-circular" : "dot"}
@@ -148,7 +161,7 @@ export default function MetricsChart({
           data-has-active={activeDataKey || undefined}
           className="group/list z-0 -ml-1.5 flex w-[calc(100%+0.75rem)] flex-wrap pt-1.5 data-no-data-keys:pointer-events-none data-no-data-keys:opacity-0 sm:-ml-1 sm:w-[calc(100%+0.5rem)]"
         >
-          {dataKeys.map((dataKey) => (
+          {legendDataKeys.map((dataKey) => (
             <li key={dataKey} className="max-w-full">
               <Button
                 disabled={allDataKeysAreNull}
