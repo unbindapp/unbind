@@ -24,6 +24,7 @@ type TProps = {
   style?: CSSProperties;
   dragListeners?: DraggableSyntheticListeners;
   isDragging?: boolean;
+  isDragSource?: boolean;
 } & (
   | { project: TProjectShallow; isPlaceholder?: never }
   | { project?: never; isPlaceholder: true }
@@ -39,6 +40,7 @@ export default function ProjectCard({
   style,
   dragListeners,
   isDragging,
+  isDragSource,
 }: TProps) {
   const isDeleting = useIsDeleting(deleteMutationKeys.project(project?.id ?? ""));
   const environments = !isPlaceholder ? project.environments : [];
@@ -61,8 +63,9 @@ export default function ProjectCard({
       data-placeholder={isPlaceholder || undefined}
       data-deleting={isDeleting || undefined}
       data-dragging={isDragging || undefined}
+      data-drag-source={isDragSource || undefined}
       className={cn(
-        "group/item data-deleting:animate-skeleton-smooth-weaker relative flex w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-dragging:z-10 data-dragging:cursor-grabbing",
+        "group/item data-deleting:animate-skeleton-smooth-weaker relative flex w-full flex-col p-1 transition-opacity duration-(--skeleton-smooth-lead-in) data-deleting:pointer-events-none data-deleting:opacity-(--skeleton-smooth-weaker-opacity) data-drag-source:opacity-40 data-dragging:cursor-grabbing",
         className,
       )}
     >
