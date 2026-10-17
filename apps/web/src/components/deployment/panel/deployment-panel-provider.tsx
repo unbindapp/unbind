@@ -11,7 +11,7 @@ import { usePanelSearchState } from "@/components/panel/use-panel-search-state";
 import { drawerAnimationMs } from "@/lib/constants";
 import { TDeploymentShallow } from "@/lib/queries/deployments";
 import { getRouteApi } from "@tanstack/react-router";
-import { createContext, ReactNode, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
 
 const routeApi = getRouteApi("/$team_id/project/$project_id");
 
@@ -47,22 +47,15 @@ export const DeploymentPanelProvider: React.FC<{
     ownedKeys: deploymentPanelOwnedSearchKeys,
   });
 
-  const timeout = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
-    if (currentDeploymentId) {
-      if (!deployments) return;
-      setCurrentDeployment(
-        deployments.find((deployment) => deployment.id === currentDeploymentId) || null,
-      );
-    } else {
-      if (timeout.current) {
-        clearTimeout(timeout.current);
-      }
-      timeout.current = setTimeout(() => {
-        setCurrentDeployment(null);
-      }, drawerAnimationMs);
+    if (!currentDeploymentId) {
+      const timeout = setTimeout(() => setCurrentDeployment(null), drawerAnimationMs);
+      return () => clearTimeout(timeout);
     }
+    if (!deployments) return;
+    setCurrentDeployment(
+      deployments.find((deployment) => deployment.id === currentDeploymentId) || null,
+    );
   }, [currentDeploymentId, deployments]);
 
   const value: TDeploymentPanelContext = useMemo(
