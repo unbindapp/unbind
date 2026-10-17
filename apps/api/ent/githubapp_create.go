@@ -74,16 +74,16 @@ func (_c *GithubAppCreate) SetNillableCreatedBy(v *uuid.UUID) *GithubAppCreate {
 	return _c
 }
 
-// SetTeamID sets the "team_id" field.
-func (_c *GithubAppCreate) SetTeamID(v uuid.UUID) *GithubAppCreate {
-	_c.mutation.SetTeamID(v)
+// SetSharedWithAllTeams sets the "shared_with_all_teams" field.
+func (_c *GithubAppCreate) SetSharedWithAllTeams(v bool) *GithubAppCreate {
+	_c.mutation.SetSharedWithAllTeams(v)
 	return _c
 }
 
-// SetNillableTeamID sets the "team_id" field if the given value is not nil.
-func (_c *GithubAppCreate) SetNillableTeamID(v *uuid.UUID) *GithubAppCreate {
+// SetNillableSharedWithAllTeams sets the "shared_with_all_teams" field if the given value is not nil.
+func (_c *GithubAppCreate) SetNillableSharedWithAllTeams(v *bool) *GithubAppCreate {
 	if v != nil {
-		_c.SetTeamID(*v)
+		_c.SetSharedWithAllTeams(*v)
 	}
 	return _c
 }
@@ -192,9 +192,19 @@ func (_c *GithubAppCreate) SetUsers(v *User) *GithubAppCreate {
 	return _c.SetUsersID(v.ID)
 }
 
-// SetTeam sets the "team" edge to the Team entity.
-func (_c *GithubAppCreate) SetTeam(v *Team) *GithubAppCreate {
-	return _c.SetTeamID(v.ID)
+// AddTeamIDs adds the "teams" edge to the Team entity by IDs.
+func (_c *GithubAppCreate) AddTeamIDs(ids ...uuid.UUID) *GithubAppCreate {
+	_c.mutation.AddTeamIDs(ids...)
+	return _c
+}
+
+// AddTeams adds the "teams" edges to the Team entity.
+func (_c *GithubAppCreate) AddTeams(v ...*Team) *GithubAppCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddTeamIDs(ids...)
 }
 
 // Mutation returns the GithubAppMutation object of the builder.
@@ -240,6 +250,10 @@ func (_c *GithubAppCreate) defaults() {
 		v := githubapp.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.SharedWithAllTeams(); !ok {
+		v := githubapp.DefaultSharedWithAllTeams
+		_c.mutation.SetSharedWithAllTeams(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -252,6 +266,9 @@ func (_c *GithubAppCreate) check() error {
 	}
 	if _, ok := _c.mutation.UUID(); !ok {
 		return &ValidationError{Name: "uuid", err: errors.New(`ent: missing required field "GithubApp.uuid"`)}
+	}
+	if _, ok := _c.mutation.SharedWithAllTeams(); !ok {
+		return &ValidationError{Name: "shared_with_all_teams", err: errors.New(`ent: missing required field "GithubApp.shared_with_all_teams"`)}
 	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "GithubApp.name"`)}
@@ -336,6 +353,10 @@ func (_c *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 		_spec.SetField(githubapp.FieldUUID, field.TypeUUID, value)
 		_node.UUID = value
 	}
+	if value, ok := _c.mutation.SharedWithAllTeams(); ok {
+		_spec.SetField(githubapp.FieldSharedWithAllTeams, field.TypeBool, value)
+		_node.SharedWithAllTeams = value
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -401,12 +422,12 @@ func (_c *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 		_node.CreatedBy = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TeamsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   githubapp.TeamTable,
-			Columns: []string{githubapp.TeamColumn},
+			Table:   githubapp.TeamsTable,
+			Columns: githubapp.TeamsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
@@ -415,7 +436,6 @@ func (_c *GithubAppCreate) createSpec() (*GithubApp, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.TeamID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -500,21 +520,15 @@ func (u *GithubAppUpsert) ClearCreatedBy() *GithubAppUpsert {
 	return u
 }
 
-// SetTeamID sets the "team_id" field.
-func (u *GithubAppUpsert) SetTeamID(v uuid.UUID) *GithubAppUpsert {
-	u.Set(githubapp.FieldTeamID, v)
+// SetSharedWithAllTeams sets the "shared_with_all_teams" field.
+func (u *GithubAppUpsert) SetSharedWithAllTeams(v bool) *GithubAppUpsert {
+	u.Set(githubapp.FieldSharedWithAllTeams, v)
 	return u
 }
 
-// UpdateTeamID sets the "team_id" field to the value that was provided on create.
-func (u *GithubAppUpsert) UpdateTeamID() *GithubAppUpsert {
-	u.SetExcluded(githubapp.FieldTeamID)
-	return u
-}
-
-// ClearTeamID clears the value of the "team_id" field.
-func (u *GithubAppUpsert) ClearTeamID() *GithubAppUpsert {
-	u.SetNull(githubapp.FieldTeamID)
+// UpdateSharedWithAllTeams sets the "shared_with_all_teams" field to the value that was provided on create.
+func (u *GithubAppUpsert) UpdateSharedWithAllTeams() *GithubAppUpsert {
+	u.SetExcluded(githubapp.FieldSharedWithAllTeams)
 	return u
 }
 
@@ -715,24 +729,17 @@ func (u *GithubAppUpsertOne) ClearCreatedBy() *GithubAppUpsertOne {
 	})
 }
 
-// SetTeamID sets the "team_id" field.
-func (u *GithubAppUpsertOne) SetTeamID(v uuid.UUID) *GithubAppUpsertOne {
+// SetSharedWithAllTeams sets the "shared_with_all_teams" field.
+func (u *GithubAppUpsertOne) SetSharedWithAllTeams(v bool) *GithubAppUpsertOne {
 	return u.Update(func(s *GithubAppUpsert) {
-		s.SetTeamID(v)
+		s.SetSharedWithAllTeams(v)
 	})
 }
 
-// UpdateTeamID sets the "team_id" field to the value that was provided on create.
-func (u *GithubAppUpsertOne) UpdateTeamID() *GithubAppUpsertOne {
+// UpdateSharedWithAllTeams sets the "shared_with_all_teams" field to the value that was provided on create.
+func (u *GithubAppUpsertOne) UpdateSharedWithAllTeams() *GithubAppUpsertOne {
 	return u.Update(func(s *GithubAppUpsert) {
-		s.UpdateTeamID()
-	})
-}
-
-// ClearTeamID clears the value of the "team_id" field.
-func (u *GithubAppUpsertOne) ClearTeamID() *GithubAppUpsertOne {
-	return u.Update(func(s *GithubAppUpsert) {
-		s.ClearTeamID()
+		s.UpdateSharedWithAllTeams()
 	})
 }
 
@@ -1117,24 +1124,17 @@ func (u *GithubAppUpsertBulk) ClearCreatedBy() *GithubAppUpsertBulk {
 	})
 }
 
-// SetTeamID sets the "team_id" field.
-func (u *GithubAppUpsertBulk) SetTeamID(v uuid.UUID) *GithubAppUpsertBulk {
+// SetSharedWithAllTeams sets the "shared_with_all_teams" field.
+func (u *GithubAppUpsertBulk) SetSharedWithAllTeams(v bool) *GithubAppUpsertBulk {
 	return u.Update(func(s *GithubAppUpsert) {
-		s.SetTeamID(v)
+		s.SetSharedWithAllTeams(v)
 	})
 }
 
-// UpdateTeamID sets the "team_id" field to the value that was provided on create.
-func (u *GithubAppUpsertBulk) UpdateTeamID() *GithubAppUpsertBulk {
+// UpdateSharedWithAllTeams sets the "shared_with_all_teams" field to the value that was provided on create.
+func (u *GithubAppUpsertBulk) UpdateSharedWithAllTeams() *GithubAppUpsertBulk {
 	return u.Update(func(s *GithubAppUpsert) {
-		s.UpdateTeamID()
-	})
-}
-
-// ClearTeamID clears the value of the "team_id" field.
-func (u *GithubAppUpsertBulk) ClearTeamID() *GithubAppUpsertBulk {
-	return u.Update(func(s *GithubAppUpsert) {
-		s.ClearTeamID()
+		s.UpdateSharedWithAllTeams()
 	})
 }
 

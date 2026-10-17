@@ -2,6 +2,7 @@ package github_handler
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -10,6 +11,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/api/oapi"
 	"github.com/unbindapp/unbind-api/internal/api/server"
+	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	github_repo "github.com/unbindapp/unbind-api/internal/repositories/github"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 )
@@ -41,16 +43,49 @@ func (self *HandlerGroup) checkTeam(ctx context.Context, userID uuid.UUID, teamI
 	return nil
 }
 
-// canManage says whether the user may remove the app or its installations: the
-// creator always can, and once the creator is gone an editor of the team it is shared with can
+func (self *HandlerGroup) isSystemAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
+	checks := []permissions_repo.PermissionCheck{
+		{Action: schema.ActionAdmin, ResourceType: schema.ResourceTypeSystem},
+	}
+	err := self.srv.Repository.Permissions().Check(ctx, userID, checks)
+	if errors.Is(err, errdefs.ErrUnauthorized) {
+		return false, nil
+	}
+	if err != nil {
+		return false, oapi.MapError(err)
+	}
+	return true, nil
+}
+
+// canManage says whether the user may remove the app or its installations: the creator and system
+// admins can, and once the creator is gone so can an editor of every team it is shared with, unless that is all teams
 func (self *HandlerGroup) canManage(ctx context.Context, user *ent.User, app *ent.GithubApp) error {
 	if app.CreatedBy != nil && *app.CreatedBy == user.ID {
 		return nil
 	}
-	if app.CreatedBy == nil && app.TeamID != nil {
-		return self.checkTeam(ctx, user.ID, *app.TeamID, schema.ActionEditor)
+	isAdmin, err := self.isSystemAdmin(ctx, user.ID)
+	if err != nil {
+		return err
 	}
-	return huma.Error403Forbidden("Forbidden")
+	if isAdmin {
+		return nil
+	}
+	if app.CreatedBy != nil {
+		return huma.Error403Forbidden("Only the user who connected the app or a system admin can remove it")
+	}
+	if app.SharedWithAllTeams {
+		return huma.Error403Forbidden("The app is shared with all teams. Ask a system admin to remove it.")
+	}
+	teamIDs, err := self.srv.Repository.Github().GetAppTeamIDs(ctx, app.ID)
+	if err != nil {
+		return oapi.MapError(errdefs.NewInternalError(err, "Failed to read the GitHub app's teams"))
+	}
+	for _, teamID := range teamIDs {
+		if err := self.checkTeam(ctx, user.ID, teamID, schema.ActionEditor); err != nil {
+			return huma.Error403Forbidden("The app is shared with other teams too. Stop sharing it with your team, or ask a system admin to remove it.")
+		}
+	}
+	return nil
 }
 
 func RegisterHandlers(server *server.Server, grp *huma.Group) {
@@ -91,12 +126,12 @@ func RegisterHandlers(server *server.Server, grp *huma.Group) {
 	}, handlers.HandleListGithubApps)
 
 	oapi.Register(grp, oapi.Update, huma.Operation{
-		OperationID: "set-app-team",
-		Summary:     "Set App Team",
-		Description: "Share a GitHub app with a team or make it private again. The creator picks any team they can edit; a team editor can only remove the app from their team.",
-		Path:        "/app/team",
+		OperationID: "update-app-teams",
+		Summary:     "Update App Teams",
+		Description: "Share a GitHub app with teams or stop sharing it. The creator adds teams they can edit and a system admin adds any team or shares it with all teams, including future ones; a team editor can only remove their own team. An app whose creator is gone keeps at least one team.",
+		Path:        "/app/teams",
 		Method:      http.MethodPut,
-	}, handlers.HandleSetGithubAppTeam)
+	}, handlers.HandleUpdateGithubAppTeams)
 
 	oapi.Register(grp, oapi.Delete, huma.Operation{
 		OperationID: "delete-app",

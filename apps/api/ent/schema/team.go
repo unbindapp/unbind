@@ -49,10 +49,8 @@ func (Team) Edges() []ent.Edge {
 		edge.To("invitations", Invitation.Type).Annotations(
 			entsql.Annotation{OnDelete: entsql.Cascade},
 		),
-		// O2M to github apps shared with the team
-		edge.To("github_apps", GithubApp.Type).Annotations(
-			entsql.Annotation{OnDelete: entsql.SetNull},
-		),
+		// M2M to github apps shared with the team
+		edge.To("github_apps", GithubApp.Type),
 		// O2M edge for webhooks
 		edge.To("team_webhooks", Webhook.Type).Annotations(
 			entsql.Annotation{OnDelete: entsql.Cascade},

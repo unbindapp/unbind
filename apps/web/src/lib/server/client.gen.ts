@@ -1994,6 +1994,13 @@ export const GithubInstallationAPIResponseSchema = z
   })
   .strip();
 
+export const GithubAppTeamAPIResponseSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+  })
+  .strip();
+
 export const GithubAppAPIResponseSchema = z
   .object({
     created_at: z.string().datetime({ offset: true }),
@@ -2004,9 +2011,9 @@ export const GithubAppAPIResponseSchema = z
     name: z.string(),
     owner_login: z.string(),
     owner_type: z.enum(['Organization', 'User']).optional(),
+    shared_with_all_teams: z.boolean(),
     slug: z.string(),
-    team_id: z.string().optional(),
-    team_name: z.string().optional(),
+    teams: z.array(GithubAppTeamAPIResponseSchema),
     updated_at: z.string().datetime({ offset: true }),
     uuid: z.string(),
   })
@@ -2061,16 +2068,18 @@ export const GithubAppSaveResponseBodySchema = z
   })
   .strip();
 
-export const GithubAppSetTeamInputBodySchema = z
+export const GithubAppUpdateTeamsInputBodySchema = z
   .object({
-    team_id: z.string().nullable().optional(), // The team to share the app with, omit or send null to make it private to its creator
+    add_team_ids: z.array(z.string()).optional(), // Teams to share the app with
+    remove_team_ids: z.array(z.string()).optional(), // Teams to stop sharing the app with
+    shared_with_all_teams: z.boolean().optional(), // Share the app with every team, including future ones. Only a system admin can turn it on.
     uuid: z.string(),
   })
   .strip();
 
-export const GithubAppSetTeamResponseBodySchema = z
+export const GithubAppUpdateTeamsResponseBodySchema = z
   .object({
-    data: GithubAppAPIResponseSchema,
+    data: GithubAppAPIResponseSchema.optional(), // Unset when the caller can no longer see the app
   })
   .strip();
 
@@ -3512,6 +3521,7 @@ export type GetVolumeMetricsResponseBody = z.infer<typeof GetVolumeMetricsRespon
 export type GetWebhookResponseBody = z.infer<typeof GetWebhookResponseBodySchema>;
 export type GithubInstallationPermissions = z.infer<typeof GithubInstallationPermissionsSchema>;
 export type GithubInstallationAPIResponse = z.infer<typeof GithubInstallationAPIResponseSchema>;
+export type GithubAppTeamAPIResponse = z.infer<typeof GithubAppTeamAPIResponseSchema>;
 export type GithubAppAPIResponse = z.infer<typeof GithubAppAPIResponseSchema>;
 export type GithubAppCreateResponseBody = z.infer<typeof GithubAppCreateResponseBodySchema>;
 export type GithubAppDeleteInputBody = z.infer<typeof GithubAppDeleteInputBodySchema>;
@@ -3523,8 +3533,10 @@ export type GithubAppInstallationListResponseBody = z.infer<
 export type GithubAppListResponseBody = z.infer<typeof GithubAppListResponseBodySchema>;
 export type GithubAppSaveInputBody = z.infer<typeof GithubAppSaveInputBodySchema>;
 export type GithubAppSaveResponseBody = z.infer<typeof GithubAppSaveResponseBodySchema>;
-export type GithubAppSetTeamInputBody = z.infer<typeof GithubAppSetTeamInputBodySchema>;
-export type GithubAppSetTeamResponseBody = z.infer<typeof GithubAppSetTeamResponseBodySchema>;
+export type GithubAppUpdateTeamsInputBody = z.infer<typeof GithubAppUpdateTeamsInputBodySchema>;
+export type GithubAppUpdateTeamsResponseBody = z.infer<
+  typeof GithubAppUpdateTeamsResponseBodySchema
+>;
 export type GithubBranch = z.infer<typeof GithubBranchSchema>;
 export type GithubInstallationDeleteInputBody = z.infer<
   typeof GithubInstallationDeleteInputBodySchema
@@ -5598,16 +5610,16 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
             throw error;
           }
         },
-        team: async (
-          params: GithubAppSetTeamInputBody,
+        teams: async (
+          params: GithubAppUpdateTeamsInputBody,
           fetchOptions?: RequestInit,
-        ): Promise<GithubAppSetTeamResponseBody> => {
+        ): Promise<GithubAppUpdateTeamsResponseBody> => {
           try {
             if (!apiUrl || typeof apiUrl !== 'string') {
               throw new Error('API URL is undefined or not a string');
             }
             const url = new URL(
-              `${apiUrl}/github/app/team`,
+              `${apiUrl}/github/app/teams`,
               typeof window !== 'undefined' ? window.location.origin : undefined,
             );
 
@@ -5619,14 +5631,15 @@ export function createClient({ apiUrl, fetchFn = fetch }: ClientOptions) {
               },
               ...fetchOptions,
             };
-            const validatedBody = GithubAppSetTeamInputBodySchema.parse(params);
+            const validatedBody = GithubAppUpdateTeamsInputBodySchema.parse(params);
             options.body = JSON.stringify(validatedBody);
             const response = await fetchFn(url.toString(), options);
             if (!response.ok) {
               throw await parseApiError(response, url.toString());
             }
             const data = await response.json();
-            const { data: parsedData, error } = GithubAppSetTeamResponseBodySchema.safeParse(data);
+            const { data: parsedData, error } =
+              GithubAppUpdateTeamsResponseBodySchema.safeParse(data);
             if (error) {
               console.error('Response validation error:', error);
               console.error('Response data:', data);

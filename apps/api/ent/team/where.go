@@ -626,7 +626,7 @@ func HasGithubApps() predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, GithubAppsTable, GithubAppsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, GithubAppsTable, GithubAppsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

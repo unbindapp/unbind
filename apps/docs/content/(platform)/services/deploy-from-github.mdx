@@ -24,7 +24,7 @@ Open the command panel, pick **GitHub Repo**, then **Configure GitHub App**. You
 - **Only me**: only you can see these repositories.
 - **This team**: members of the team you are in can see them too.
 
-Starting from a team's settings skips this question: the app is shared with that team. From your account settings you pick the team. You can change this later from your account settings.
+Starting from a team's settings skips this question: the app is shared with that team. From your account settings you pick the team. You can share it with more teams later.
 
 </Step>
 <Step>
@@ -61,12 +61,16 @@ When the window closes you see **GitHub connected**.
 
 A connection belongs to the person who made it. Your avatar > **Account Settings** > **GitHub Apps** lists yours, with the accounts each one is installed on and how many services build from them.
 
-- **Visibility**: pick a team, or **Only me** to take it back. Members of the team see its repositories in the picker; nobody else does.
+- **Visibility**: pick the teams that can use it, or **Only me** to take it back. Members of those teams see its repositories in the picker; nobody else does. When several teams build from the same GitHub account, share one connection with all of them instead of installing another app. System admins can also pick **All teams**, which includes teams created later.
 - **The link on an account row** opens that installation on GitHub, where you change which repositories the app can see. An app that is not installed anywhere yet links to GitHub's install page instead.
 - **Open on GitHub**: the app's own settings page. If you rename the app or move it to another account there, Unbind shows the change within 10 minutes.
 - **Remove**: uninstalls the app from every account and forgets it. Services built from it keep running but stop deploying on push until you pick a repository for them again. Delete the app itself under GitHub > **Settings** > **Developer settings** > **GitHub Apps** afterwards.
 
-**Team Settings** > **GitHub Apps** lists the connections shared with the team. Team editors can **Stop Sharing** a connection, which takes the repositories out of the team's picker without touching the services. When the person who made a shared connection is deleted, the connection stays with the team and its editors can remove it.
+**Team Settings** > **GitHub Apps** lists the connections shared with the team. Team editors can **Stop Sharing** a connection, which takes the repositories out of the team's picker without touching the services or the other teams. System admins can also change a shared connection's **Visibility** from here and share it with any team.
+
+A connection shared with **All teams** shows up in every team. Its teams cannot stop sharing it one by one; the person who made it or a system admin changes its **Visibility** instead.
+
+When the person who made a shared connection is deleted, the connection stays with its teams. If only one team has it, that team's editors can remove it. If several or all teams do, only a system admin can.
 
 A service whose connection is not shared with you shows its repository and branch, but you cannot change them. Ask the owner to share the connection with your team.
 

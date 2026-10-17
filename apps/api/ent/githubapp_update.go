@@ -59,23 +59,17 @@ func (_u *GithubAppUpdate) ClearCreatedBy() *GithubAppUpdate {
 	return _u
 }
 
-// SetTeamID sets the "team_id" field.
-func (_u *GithubAppUpdate) SetTeamID(v uuid.UUID) *GithubAppUpdate {
-	_u.mutation.SetTeamID(v)
+// SetSharedWithAllTeams sets the "shared_with_all_teams" field.
+func (_u *GithubAppUpdate) SetSharedWithAllTeams(v bool) *GithubAppUpdate {
+	_u.mutation.SetSharedWithAllTeams(v)
 	return _u
 }
 
-// SetNillableTeamID sets the "team_id" field if the given value is not nil.
-func (_u *GithubAppUpdate) SetNillableTeamID(v *uuid.UUID) *GithubAppUpdate {
+// SetNillableSharedWithAllTeams sets the "shared_with_all_teams" field if the given value is not nil.
+func (_u *GithubAppUpdate) SetNillableSharedWithAllTeams(v *bool) *GithubAppUpdate {
 	if v != nil {
-		_u.SetTeamID(*v)
+		_u.SetSharedWithAllTeams(*v)
 	}
-	return _u
-}
-
-// ClearTeamID clears the value of the "team_id" field.
-func (_u *GithubAppUpdate) ClearTeamID() *GithubAppUpdate {
-	_u.mutation.ClearTeamID()
 	return _u
 }
 
@@ -237,9 +231,19 @@ func (_u *GithubAppUpdate) SetUsers(v *User) *GithubAppUpdate {
 	return _u.SetUsersID(v.ID)
 }
 
-// SetTeam sets the "team" edge to the Team entity.
-func (_u *GithubAppUpdate) SetTeam(v *Team) *GithubAppUpdate {
-	return _u.SetTeamID(v.ID)
+// AddTeamIDs adds the "teams" edge to the Team entity by IDs.
+func (_u *GithubAppUpdate) AddTeamIDs(ids ...uuid.UUID) *GithubAppUpdate {
+	_u.mutation.AddTeamIDs(ids...)
+	return _u
+}
+
+// AddTeams adds the "teams" edges to the Team entity.
+func (_u *GithubAppUpdate) AddTeams(v ...*Team) *GithubAppUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTeamIDs(ids...)
 }
 
 // Mutation returns the GithubAppMutation object of the builder.
@@ -274,10 +278,25 @@ func (_u *GithubAppUpdate) ClearUsers() *GithubAppUpdate {
 	return _u
 }
 
-// ClearTeam clears the "team" edge to the Team entity.
-func (_u *GithubAppUpdate) ClearTeam() *GithubAppUpdate {
-	_u.mutation.ClearTeam()
+// ClearTeams clears all "teams" edges to the Team entity.
+func (_u *GithubAppUpdate) ClearTeams() *GithubAppUpdate {
+	_u.mutation.ClearTeams()
 	return _u
+}
+
+// RemoveTeamIDs removes the "teams" edge to Team entities by IDs.
+func (_u *GithubAppUpdate) RemoveTeamIDs(ids ...uuid.UUID) *GithubAppUpdate {
+	_u.mutation.RemoveTeamIDs(ids...)
+	return _u
+}
+
+// RemoveTeams removes "teams" edges to Team entities.
+func (_u *GithubAppUpdate) RemoveTeams(v ...*Team) *GithubAppUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTeamIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -356,6 +375,9 @@ func (_u *GithubAppUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(githubapp.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.SharedWithAllTeams(); ok {
+		_spec.SetField(githubapp.FieldSharedWithAllTeams, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
@@ -461,12 +483,12 @@ func (_u *GithubAppUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.TeamCleared() {
+	if _u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   githubapp.TeamTable,
-			Columns: []string{githubapp.TeamColumn},
+			Table:   githubapp.TeamsTable,
+			Columns: githubapp.TeamsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
@@ -474,12 +496,28 @@ func (_u *GithubAppUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !_u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   githubapp.TeamTable,
-			Columns: []string{githubapp.TeamColumn},
+			Table:   githubapp.TeamsTable,
+			Columns: githubapp.TeamsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TeamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   githubapp.TeamsTable,
+			Columns: githubapp.TeamsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
@@ -538,23 +576,17 @@ func (_u *GithubAppUpdateOne) ClearCreatedBy() *GithubAppUpdateOne {
 	return _u
 }
 
-// SetTeamID sets the "team_id" field.
-func (_u *GithubAppUpdateOne) SetTeamID(v uuid.UUID) *GithubAppUpdateOne {
-	_u.mutation.SetTeamID(v)
+// SetSharedWithAllTeams sets the "shared_with_all_teams" field.
+func (_u *GithubAppUpdateOne) SetSharedWithAllTeams(v bool) *GithubAppUpdateOne {
+	_u.mutation.SetSharedWithAllTeams(v)
 	return _u
 }
 
-// SetNillableTeamID sets the "team_id" field if the given value is not nil.
-func (_u *GithubAppUpdateOne) SetNillableTeamID(v *uuid.UUID) *GithubAppUpdateOne {
+// SetNillableSharedWithAllTeams sets the "shared_with_all_teams" field if the given value is not nil.
+func (_u *GithubAppUpdateOne) SetNillableSharedWithAllTeams(v *bool) *GithubAppUpdateOne {
 	if v != nil {
-		_u.SetTeamID(*v)
+		_u.SetSharedWithAllTeams(*v)
 	}
-	return _u
-}
-
-// ClearTeamID clears the value of the "team_id" field.
-func (_u *GithubAppUpdateOne) ClearTeamID() *GithubAppUpdateOne {
-	_u.mutation.ClearTeamID()
 	return _u
 }
 
@@ -716,9 +748,19 @@ func (_u *GithubAppUpdateOne) SetUsers(v *User) *GithubAppUpdateOne {
 	return _u.SetUsersID(v.ID)
 }
 
-// SetTeam sets the "team" edge to the Team entity.
-func (_u *GithubAppUpdateOne) SetTeam(v *Team) *GithubAppUpdateOne {
-	return _u.SetTeamID(v.ID)
+// AddTeamIDs adds the "teams" edge to the Team entity by IDs.
+func (_u *GithubAppUpdateOne) AddTeamIDs(ids ...uuid.UUID) *GithubAppUpdateOne {
+	_u.mutation.AddTeamIDs(ids...)
+	return _u
+}
+
+// AddTeams adds the "teams" edges to the Team entity.
+func (_u *GithubAppUpdateOne) AddTeams(v ...*Team) *GithubAppUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddTeamIDs(ids...)
 }
 
 // Mutation returns the GithubAppMutation object of the builder.
@@ -753,10 +795,25 @@ func (_u *GithubAppUpdateOne) ClearUsers() *GithubAppUpdateOne {
 	return _u
 }
 
-// ClearTeam clears the "team" edge to the Team entity.
-func (_u *GithubAppUpdateOne) ClearTeam() *GithubAppUpdateOne {
-	_u.mutation.ClearTeam()
+// ClearTeams clears all "teams" edges to the Team entity.
+func (_u *GithubAppUpdateOne) ClearTeams() *GithubAppUpdateOne {
+	_u.mutation.ClearTeams()
 	return _u
+}
+
+// RemoveTeamIDs removes the "teams" edge to Team entities by IDs.
+func (_u *GithubAppUpdateOne) RemoveTeamIDs(ids ...uuid.UUID) *GithubAppUpdateOne {
+	_u.mutation.RemoveTeamIDs(ids...)
+	return _u
+}
+
+// RemoveTeams removes "teams" edges to Team entities.
+func (_u *GithubAppUpdateOne) RemoveTeams(v ...*Team) *GithubAppUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveTeamIDs(ids...)
 }
 
 // Where appends a list predicates to the GithubAppUpdate builder.
@@ -866,6 +923,9 @@ func (_u *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, er
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(githubapp.FieldUpdatedAt, field.TypeTime, value)
 	}
+	if value, ok := _u.mutation.SharedWithAllTeams(); ok {
+		_spec.SetField(githubapp.FieldSharedWithAllTeams, field.TypeBool, value)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(githubapp.FieldName, field.TypeString, value)
 	}
@@ -970,12 +1030,12 @@ func (_u *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, er
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.TeamCleared() {
+	if _u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   githubapp.TeamTable,
-			Columns: []string{githubapp.TeamColumn},
+			Table:   githubapp.TeamsTable,
+			Columns: githubapp.TeamsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
@@ -983,12 +1043,28 @@ func (_u *GithubAppUpdateOne) sqlSave(ctx context.Context) (_node *GithubApp, er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.TeamIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !_u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   githubapp.TeamTable,
-			Columns: []string{githubapp.TeamColumn},
+			Table:   githubapp.TeamsTable,
+			Columns: githubapp.TeamsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.TeamsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   githubapp.TeamsTable,
+			Columns: githubapp.TeamsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),

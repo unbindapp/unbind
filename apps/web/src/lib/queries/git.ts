@@ -111,8 +111,18 @@ export async function saveGitApp(input: { code: string; state: string }) {
   return res.data;
 }
 
-export async function setGitAppTeam(input: { uuid: string; teamId: string | null }) {
-  const res = await getGoClient().github.app.team({ uuid: input.uuid, team_id: input.teamId });
+export async function updateGitAppTeams(input: {
+  uuid: string;
+  addTeamIds?: string[];
+  removeTeamIds?: string[];
+  allTeams?: boolean;
+}) {
+  const res = await getGoClient().github.app.teams({
+    uuid: input.uuid,
+    add_team_ids: input.addTeamIds,
+    remove_team_ids: input.removeTeamIds,
+    shared_with_all_teams: input.allTeams,
+  });
   return { app: res.data };
 }
 

@@ -141,6 +141,10 @@ func init() {
 	githubapp.DefaultUpdatedAt = githubappDescUpdatedAt.Default.(func() time.Time)
 	// githubapp.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	githubapp.UpdateDefaultUpdatedAt = githubappDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// githubappDescSharedWithAllTeams is the schema descriptor for shared_with_all_teams field.
+	githubappDescSharedWithAllTeams := githubappFields[3].Descriptor()
+	// githubapp.DefaultSharedWithAllTeams holds the default value on creation for the shared_with_all_teams field.
+	githubapp.DefaultSharedWithAllTeams = githubappDescSharedWithAllTeams.Default.(bool)
 	// githubappDescName is the schema descriptor for name field.
 	githubappDescName := githubappFields[4].Descriptor()
 	// githubapp.NameValidator is a validator for the "name" field. It is called by the builders before save.

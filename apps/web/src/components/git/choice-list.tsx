@@ -13,27 +13,34 @@ export type TChoice = {
 
 const placeholderArray = Array.from({ length: 2 }, (_, i) => i);
 
-export default function ChoiceList({
-  items,
-  value,
-  onChange,
-  isPending,
-  error,
-  className,
-}: {
+type TProps = {
   items: TChoice[] | undefined;
-  value: string;
-  onChange: (value: string) => void;
   isPending?: boolean;
   error?: string;
   className?: string;
-}) {
+} & (
+  | { multiple?: false; value: string; onChange: (value: string) => void }
+  | { multiple: true; value: string[]; onChange: (value: string[]) => void }
+);
+
+export default function ChoiceList(props: TProps) {
+  const { items, isPending, error, className } = props;
   if (!items && !isPending && error) {
     return <ErrorCard className={className} message={error} />;
   }
+  const isSelected = (value: string) =>
+    props.multiple ? props.value.includes(value) : props.value === value;
+  const select = (value: string) => {
+    if (!props.multiple) return props.onChange(value);
+    props.onChange(
+      props.value.includes(value)
+        ? props.value.filter((v) => v !== value)
+        : [...props.value, value],
+    );
+  };
   return (
     <div
-      role="radiogroup"
+      role={props.multiple ? "group" : "radiogroup"}
       className={cn("flex w-full flex-col overflow-hidden rounded-xl border", className)}
     >
       {!items &&
@@ -52,25 +59,23 @@ export default function ChoiceList({
           </Button>
         ))}
       {items?.map((item, index) => {
-        const isSelected = value === item.value;
+        const selected = isSelected(item.value);
         return (
           <Button
             data-first={index === 0 || undefined}
             data-last={index === items.length - 1 || undefined}
-            data-selected={isSelected || undefined}
+            data-selected={selected || undefined}
             key={item.value}
             type="button"
-            role="radio"
-            aria-checked={isSelected}
+            role={props.multiple ? "checkbox" : "radio"}
+            aria-checked={selected}
             variant="ghost"
             className="group/button w-full justify-start gap-2 rounded-none border-t px-3.5 font-medium data-first:border-t-0"
-            onClick={() => onChange(item.value)}
+            onClick={() => select(item.value)}
           >
-            <item.Icon className="group-data-selected/button:text-success mt-px -ml-0.5 size-5 self-start" />
+            <item.Icon className="group-data-selected/button:text-success group-data-selected/button:border-success mt-px -ml-0.5 size-5 self-start" />
             <div className="flex min-w-0 flex-1 flex-col items-start gap-0.5 text-left">
-              <p className="group-data-selected/button:text-success max-w-full min-w-0 leading-tight">
-                {item.label}
-              </p>
+              <p className="max-w-full min-w-0 leading-tight">{item.label}</p>
               {item.description && (
                 <p className="text-muted-foreground max-w-full min-w-0 text-sm leading-tight font-normal">
                   {item.description}

@@ -454,6 +454,74 @@ func (_c *GithubRepositoryMock_GetApp_Call) RunAndReturn(run func(ctx context.Co
 	return _c
 }
 
+// GetAppTeamIDs provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) GetAppTeamIDs(ctx context.Context, ID int64) ([]uuid.UUID, error) {
+	ret := _mock.Called(ctx, ID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAppTeamIDs")
+	}
+
+	var r0 []uuid.UUID
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64) ([]uuid.UUID, error)); ok {
+		return returnFunc(ctx, ID)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64) []uuid.UUID); ok {
+		r0 = returnFunc(ctx, ID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]uuid.UUID)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = returnFunc(ctx, ID)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// GithubRepositoryMock_GetAppTeamIDs_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetAppTeamIDs'
+type GithubRepositoryMock_GetAppTeamIDs_Call struct {
+	*mock.Call
+}
+
+// GetAppTeamIDs is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ID int64
+func (_e *GithubRepositoryMock_Expecter) GetAppTeamIDs(ctx any, ID any) *GithubRepositoryMock_GetAppTeamIDs_Call {
+	return &GithubRepositoryMock_GetAppTeamIDs_Call{Call: _e.mock.On("GetAppTeamIDs", ctx, ID)}
+}
+
+func (_c *GithubRepositoryMock_GetAppTeamIDs_Call) Run(run func(ctx context.Context, ID int64)) *GithubRepositoryMock_GetAppTeamIDs_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int64
+		if args[1] != nil {
+			arg1 = args[1].(int64)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetAppTeamIDs_Call) Return(uUIDs []uuid.UUID, err error) *GithubRepositoryMock_GetAppTeamIDs_Call {
+	_c.Call.Return(uUIDs, err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_GetAppTeamIDs_Call) RunAndReturn(run func(ctx context.Context, ID int64) ([]uuid.UUID, error)) *GithubRepositoryMock_GetAppTeamIDs_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetApps provides a mock function for the type GithubRepositoryMock
 func (_mock *GithubRepositoryMock) GetApps(ctx context.Context, withInstallations bool) ([]*ent.GithubApp, error) {
 	ret := _mock.Called(ctx, withInstallations)
@@ -1152,80 +1220,6 @@ func (_c *GithubRepositoryMock_GetVisibleInstallations_Call) RunAndReturn(run fu
 	return _c
 }
 
-// SetAppTeam provides a mock function for the type GithubRepositoryMock
-func (_mock *GithubRepositoryMock) SetAppTeam(ctx context.Context, ID int64, teamID *uuid.UUID) (*ent.GithubApp, error) {
-	ret := _mock.Called(ctx, ID, teamID)
-
-	if len(ret) == 0 {
-		panic("no return value specified for SetAppTeam")
-	}
-
-	var r0 *ent.GithubApp
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, *uuid.UUID) (*ent.GithubApp, error)); ok {
-		return returnFunc(ctx, ID, teamID)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, *uuid.UUID) *ent.GithubApp); ok {
-		r0 = returnFunc(ctx, ID, teamID)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.GithubApp)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, int64, *uuid.UUID) error); ok {
-		r1 = returnFunc(ctx, ID, teamID)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// GithubRepositoryMock_SetAppTeam_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetAppTeam'
-type GithubRepositoryMock_SetAppTeam_Call struct {
-	*mock.Call
-}
-
-// SetAppTeam is a helper method to define mock.On call
-//   - ctx context.Context
-//   - ID int64
-//   - teamID *uuid.UUID
-func (_e *GithubRepositoryMock_Expecter) SetAppTeam(ctx any, ID any, teamID any) *GithubRepositoryMock_SetAppTeam_Call {
-	return &GithubRepositoryMock_SetAppTeam_Call{Call: _e.mock.On("SetAppTeam", ctx, ID, teamID)}
-}
-
-func (_c *GithubRepositoryMock_SetAppTeam_Call) Run(run func(ctx context.Context, ID int64, teamID *uuid.UUID)) *GithubRepositoryMock_SetAppTeam_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 int64
-		if args[1] != nil {
-			arg1 = args[1].(int64)
-		}
-		var arg2 *uuid.UUID
-		if args[2] != nil {
-			arg2 = args[2].(*uuid.UUID)
-		}
-		run(
-			arg0,
-			arg1,
-			arg2,
-		)
-	})
-	return _c
-}
-
-func (_c *GithubRepositoryMock_SetAppTeam_Call) Return(githubApp *ent.GithubApp, err error) *GithubRepositoryMock_SetAppTeam_Call {
-	_c.Call.Return(githubApp, err)
-	return _c
-}
-
-func (_c *GithubRepositoryMock_SetAppTeam_Call) RunAndReturn(run func(ctx context.Context, ID int64, teamID *uuid.UUID) (*ent.GithubApp, error)) *GithubRepositoryMock_SetAppTeam_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // SetInstallationActive provides a mock function for the type GithubRepositoryMock
 func (_mock *GithubRepositoryMock) SetInstallationActive(ctx context.Context, id int64, active bool) (*ent.GithubInstallation, error) {
 	ret := _mock.Called(ctx, id, active)
@@ -1444,6 +1438,81 @@ func (_c *GithubRepositoryMock_UpdateAppFromGithub_Call) Return(githubApp *ent.G
 }
 
 func (_c *GithubRepositoryMock_UpdateAppFromGithub_Call) RunAndReturn(run func(ctx context.Context, ID int64, app *github.App) (*ent.GithubApp, error)) *GithubRepositoryMock_UpdateAppFromGithub_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateAppTeams provides a mock function for the type GithubRepositoryMock
+func (_mock *GithubRepositoryMock) UpdateAppTeams(ctx context.Context, ID int64, add []uuid.UUID, remove []uuid.UUID, allTeams bool) error {
+	ret := _mock.Called(ctx, ID, add, remove, allTeams)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateAppTeams")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, int64, []uuid.UUID, []uuid.UUID, bool) error); ok {
+		r0 = returnFunc(ctx, ID, add, remove, allTeams)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// GithubRepositoryMock_UpdateAppTeams_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateAppTeams'
+type GithubRepositoryMock_UpdateAppTeams_Call struct {
+	*mock.Call
+}
+
+// UpdateAppTeams is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ID int64
+//   - add []uuid.UUID
+//   - remove []uuid.UUID
+//   - allTeams bool
+func (_e *GithubRepositoryMock_Expecter) UpdateAppTeams(ctx any, ID any, add any, remove any, allTeams any) *GithubRepositoryMock_UpdateAppTeams_Call {
+	return &GithubRepositoryMock_UpdateAppTeams_Call{Call: _e.mock.On("UpdateAppTeams", ctx, ID, add, remove, allTeams)}
+}
+
+func (_c *GithubRepositoryMock_UpdateAppTeams_Call) Run(run func(ctx context.Context, ID int64, add []uuid.UUID, remove []uuid.UUID, allTeams bool)) *GithubRepositoryMock_UpdateAppTeams_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 int64
+		if args[1] != nil {
+			arg1 = args[1].(int64)
+		}
+		var arg2 []uuid.UUID
+		if args[2] != nil {
+			arg2 = args[2].([]uuid.UUID)
+		}
+		var arg3 []uuid.UUID
+		if args[3] != nil {
+			arg3 = args[3].([]uuid.UUID)
+		}
+		var arg4 bool
+		if args[4] != nil {
+			arg4 = args[4].(bool)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *GithubRepositoryMock_UpdateAppTeams_Call) Return(err error) *GithubRepositoryMock_UpdateAppTeams_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *GithubRepositoryMock_UpdateAppTeams_Call) RunAndReturn(run func(ctx context.Context, ID int64, add []uuid.UUID, remove []uuid.UUID, allTeams bool) error) *GithubRepositoryMock_UpdateAppTeams_Call {
 	_c.Call.Return(run)
 	return _c
 }

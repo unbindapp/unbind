@@ -7,6 +7,7 @@ import ChoiceList, { type TChoice } from "@/components/git/choice-list";
 import { useGithubAppsUtils } from "@/components/git/github-apps-provider";
 import BrandIcon from "@/components/icons/brand";
 import { NewEntityIndicator } from "@/components/new-entity-indicator";
+import TeamIcon from "@/components/team/team-icon";
 import { DeleteEntityTrigger } from "@/components/triggers/delete-entity-trigger";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,11 +36,11 @@ import {
   gitAppInstallUrl,
   gitAppSettingsUrl,
   gitInstallationSettingsUrl,
-  setGitAppTeam as setGitAppTeamFn,
   type TGitApp,
   type TGitInstallation,
+  updateGitAppTeams as updateGitAppTeamsFn,
 } from "@/lib/queries/git";
-import { meQuery } from "@/lib/queries/me";
+import { isSystemAdmin, meQuery } from "@/lib/queries/me";
 import { teamsListQuery } from "@/lib/queries/teams";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -56,21 +57,31 @@ import {
   UserRoundXIcon,
   UsersIcon,
 } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { ComponentProps, ReactNode, useMemo, useState } from "react";
 
 export type TGithubAppCardView = "account" | "team";
 
+type TTeamContext = { id: string; canEdit: boolean };
+
 type TProps =
-  | { app: TGitApp; view: TGithubAppCardView; canEditTeam?: boolean; isPlaceholder?: never }
-  | { app?: never; view: TGithubAppCardView; canEditTeam?: never; isPlaceholder: true };
+  | { app: TGitApp; view: TGithubAppCardView; team?: TTeamContext; isPlaceholder?: never }
+  | { app?: never; view: TGithubAppCardView; team?: never; isPlaceholder: true };
 
 const placeholderTime = new Date("2020-01-01T00:00:00Z");
 
-export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }: TProps) {
+export default function GithubAppCard({ app, view, team, isPlaceholder }: TProps) {
   const { data: me } = useQuery(meQuery);
   const isOwner = !!app && !!me && app.created_by === me.id;
+  const isAdmin = isSystemAdmin(me);
   const ownerGone = !!app && !app.created_by;
-  const canManage = isOwner || (ownerGone && !!canEditTeam);
+  const isLastTeam = ownerGone && !app.shared_with_all_teams && app.teams.length === 1;
+  const canManage = isOwner || isAdmin || (isLastTeam && !!team?.canEdit);
+  const canUnshare =
+    view === "team" &&
+    !!team &&
+    !app.shared_with_all_teams &&
+    !isLastTeam &&
+    (isOwner || isAdmin || team.canEdit);
 
   return (
     <div
@@ -90,16 +101,26 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
           <p className="group-data-placeholder/item:animate-skeleton group-data-placeholder/item:bg-foreground min-w-0 shrink font-medium group-data-placeholder/item:rounded-sm group-data-placeholder/item:text-transparent">
             {app ? app.name : "Loading connection"}
           </p>
-          {!app || !app.team_id ? (
+          {app?.shared_with_all_teams ? (
+            <Chip className="text-process bg-process/4-10 border-process/4-10 font-medium">
+              <UsersIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+              All teams
+            </Chip>
+          ) : !app || app.teams.length === 0 ? (
             <Chip className="text-success bg-success/4-10 border-success/4-10 font-medium">
               <LockIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
               Only me
             </Chip>
           ) : (
-            <Chip className="text-process bg-process/4-10 border-process/4-10 font-medium">
-              <UsersIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
-              {app.team_name ?? "Team"}
-            </Chip>
+            app.teams.map((appTeam) => (
+              <Chip
+                key={appTeam.id}
+                className="text-process bg-process/4-10 border-process/4-10 font-medium"
+              >
+                <UsersIcon className="mr-1 mb-0.5 -ml-0.5 inline-block size-3" />
+                {appTeam.name}
+              </Chip>
+            ))
           )}
           {ownerGone && (
             <Chip className="text-warning bg-warning/4-10 border-warning/4-10 font-medium">
@@ -184,10 +205,11 @@ export default function GithubAppCard({ app, view, canEditTeam, isPlaceholder }:
       ) : (
         <ThreeDotButton
           app={app}
-          view={view}
           isOwner={isOwner}
+          isAdmin={isAdmin}
+          canShare={isOwner || isAdmin}
           canManage={canManage}
-          canUnshare={isOwner || (!ownerGone && !!app.team_id && !!canEditTeam)}
+          unshareTeamId={canUnshare ? team.id : undefined}
           className="absolute top-1 right-1"
         />
       )}
@@ -346,17 +368,19 @@ function ServicesNote({ count }: { count: number }) {
 
 function ThreeDotButton({
   app,
-  view,
   isOwner,
+  isAdmin,
+  canShare,
   canManage,
-  canUnshare,
+  unshareTeamId,
   className,
 }: {
   app: TGitApp;
-  view: TGithubAppCardView;
   isOwner: boolean;
+  isAdmin: boolean;
+  canShare: boolean;
   canManage: boolean;
-  canUnshare: boolean;
+  unshareTeamId?: string;
   className?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -391,7 +415,7 @@ function ThreeDotButton({
           <ScrollArea>
             <DropdownMenuGroup>
               {/* The dialogs live outside the menu; nested inside the open modal menu they would be inert */}
-              {view === "account" && isOwner && (
+              {canShare && (
                 <DialogTrigger
                   nativeButton={false}
                   handle={visibilityHandle}
@@ -411,7 +435,7 @@ function ThreeDotButton({
                 <BrandIcon brand="github" className="-ml-0.5 size-5" />
                 <p className="min-w-0 shrink leading-tight">Open on GitHub</p>
               </DropdownMenuItem>
-              {view === "team" && canUnshare && (
+              {unshareTeamId && (
                 <DialogTrigger
                   nativeButton={false}
                   handle={unshareHandle}
@@ -439,41 +463,72 @@ function ThreeDotButton({
           </ScrollArea>
         </DropdownMenuContent>
       </DropdownMenu>
-      {view === "account" && isOwner && <VisibilityDialog app={app} handle={visibilityHandle} />}
-      {view === "team" && canUnshare && <UnshareTrigger app={app} handle={unshareHandle} />}
+      {canShare && (
+        <VisibilityDialog app={app} isOwner={isOwner} isAdmin={isAdmin} handle={visibilityHandle} />
+      )}
+      {unshareTeamId && <UnshareTrigger app={app} teamId={unshareTeamId} handle={unshareHandle} />}
       {canManage && <DeleteAppTrigger app={app} handle={deleteHandle} />}
     </>
   );
 }
 
 const onlyMe = "only-me";
+const allTeams = "all-teams";
 
-function VisibilityDialog({ app, handle }: { app: TGitApp; handle: TDialogHandle }) {
+type TVisibility = { allTeams: boolean; teamIds: string[] };
+
+function VisibilityDialog({
+  app,
+  isOwner,
+  isAdmin,
+  handle,
+}: {
+  app: TGitApp;
+  isOwner: boolean;
+  isAdmin: boolean;
+  handle: TDialogHandle;
+}) {
   const { invalidate } = useGithubAppsUtils();
   const {
     data: teamsData,
     isPending: isPendingTeams,
     error: teamsError,
   } = useQuery(teamsListQuery());
-  const current = app.team_id ?? onlyMe;
-  const [picked, setPicked] = useState<string | null>(null);
-  const value = picked ?? current;
+  const current: TVisibility = {
+    allTeams: app.shared_with_all_teams,
+    teamIds: app.teams.map((team) => team.id),
+  };
+  const [picked, setPicked] = useState<TVisibility | null>(null);
+  const selected = picked ?? current;
   const {
-    mutateAsync: setTeam,
+    mutateAsync: updateTeams,
     isPending,
     error,
     reset,
-  } = useMutation({ mutationFn: setGitAppTeamFn });
+  } = useMutation({ mutationFn: updateGitAppTeamsFn });
 
-  const items: TChoice[] | undefined = teamsData
-    ? [
-        { value: onlyMe, label: "Only me", Icon: LockIcon },
-        ...teamsData.teams
-          .filter((team) => team.permissions.includes("editor") || team.id === app.team_id)
-          .map((team) => ({ value: team.id, label: team.name, Icon: UsersIcon })),
-      ]
-    : undefined;
-  const isUnchanged = value === current;
+  const scopeItems: TChoice[] = [
+    ...(isOwner ? [{ value: onlyMe, label: "Only me", Icon: LockIcon }] : []),
+    ...(isAdmin ? [{ value: allTeams, label: "All teams", Icon: UsersIcon }] : []),
+  ];
+  const scope = selected.allTeams ? allTeams : selected.teamIds.length === 0 ? onlyMe : "";
+  const teamItems = useMemo<TChoice[] | undefined>(() => {
+    if (!teamsData) return undefined;
+    const sharedIds = app.teams.map((team) => team.id);
+    return [
+      ...teamsData.teams
+        .filter((team) => team.permissions.includes("editor") || sharedIds.includes(team.id))
+        .map(teamChoice),
+      ...app.teams
+        .filter((appTeam) => !teamsData.teams.some((team) => team.id === appTeam.id))
+        .map((appTeam) => teamChoice({ ...appTeam, icon_updated_at: null })),
+    ];
+  }, [teamsData, app.teams]);
+  const added = selected.teamIds.filter((id) => !current.teamIds.includes(id));
+  const removed = current.teamIds.filter((id) => !selected.teamIds.includes(id));
+  const isUnchanged =
+    added.length === 0 && removed.length === 0 && selected.allTeams === current.allTeams;
+  const needsTeam = !app.created_by && !selected.allTeams && selected.teamIds.length === 0;
 
   return (
     <Dialog
@@ -489,21 +544,36 @@ function VisibilityDialog({ app, handle }: { app: TGitApp; handle: TDialogHandle
           <DialogTitle>Visibility</DialogTitle>
           <DialogDescription>Who should see the repositories?</DialogDescription>
         </DialogHeader>
-        <ChoiceList
-          items={items}
-          value={value}
-          onChange={setPicked}
-          isPending={isPendingTeams}
-          error={teamsError?.message}
-        />
+        <div className="flex w-full flex-col gap-2">
+          {scopeItems.length > 0 && (
+            <ChoiceList
+              items={scopeItems}
+              value={scope}
+              onChange={(value) => setPicked({ allTeams: value === allTeams, teamIds: [] })}
+            />
+          )}
+          <ChoiceList
+            multiple
+            items={teamItems}
+            value={selected.allTeams ? [] : selected.teamIds}
+            onChange={(teamIds) => setPicked({ allTeams: false, teamIds })}
+            isPending={isPendingTeams}
+            error={teamsError?.message}
+          />
+        </div>
         {error && <ErrorLine message={error.message} />}
         <div className="flex w-full flex-wrap items-center justify-end gap-2">
           <DialogClose render={<Button variant="outline">Cancel</Button>} />
           <Button
-            disabled={isUnchanged}
+            disabled={isUnchanged || needsTeam}
             isPending={isPending}
             onClick={async () => {
-              await setTeam({ uuid: app.uuid, teamId: value === onlyMe ? null : value });
+              await updateTeams({
+                uuid: app.uuid,
+                addTeamIds: added,
+                removeTeamIds: removed,
+                allTeams: selected.allTeams,
+              });
               await invalidate();
               setPicked(null);
               handle.close();
@@ -517,19 +587,40 @@ function VisibilityDialog({ app, handle }: { app: TGitApp; handle: TDialogHandle
   );
 }
 
-function UnshareTrigger({ app, handle }: { app: TGitApp; handle: TDialogHandle }) {
+function teamChoice(team: ComponentProps<typeof TeamIcon>["team"]): TChoice {
+  return {
+    value: team.id,
+    label: team.name,
+    Icon: ({ className }) => <TeamIcon team={team} className={className} />,
+  };
+}
+
+function UnshareTrigger({
+  app,
+  teamId,
+  handle,
+}: {
+  app: TGitApp;
+  teamId: string;
+  handle: TDialogHandle;
+}) {
   const { invalidate } = useGithubAppsUtils();
-  const { mutateAsync: setTeam, error, reset } = useMutation({ mutationFn: setGitAppTeamFn });
+  const {
+    mutateAsync: updateTeams,
+    error,
+    reset,
+  } = useMutation({ mutationFn: updateGitAppTeamsFn });
+  const teamName = app.teams.find((team) => team.id === teamId)?.name;
   return (
     <DeleteEntityTrigger
       dialogTitle="Stop Sharing"
       dialogDescription={
         <>
           Members of{" "}
-          {app.team_name ? (
+          {teamName ? (
             <span className="text-foreground font-medium">
               <UsersIcon className="mr-1 mb-[0.1lh] inline-block size-[0.7lh]" />
-              {app.team_name}
+              {teamName}
             </span>
           ) : (
             "the team"
@@ -546,7 +637,7 @@ function UnshareTrigger({ app, handle }: { app: TGitApp; handle: TDialogHandle }
       error={error}
       onDialogClose={reset}
       onSubmit={async () => {
-        await setTeam({ uuid: app.uuid, teamId: null });
+        await updateTeams({ uuid: app.uuid, removeTeamIds: [teamId] });
         await invalidate();
       }}
     />

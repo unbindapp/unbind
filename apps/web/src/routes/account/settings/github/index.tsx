@@ -25,7 +25,7 @@ function AccountGithubSettings() {
     <GithubAppsProvider filter={{ owned: true }}>
       <SettingsTabTitle>GitHub Apps</SettingsTabTitle>
       <p className="text-muted-foreground mt-0.5 w-full px-1">
-        GitHub Apps you connected. Share one with a team so its members can deploy from it.
+        GitHub Apps you connected. Share one with teams so their members can deploy from it.
       </p>
       <GithubAppsList view="account" className="mt-3">
         <ConnectGithubCard sharing={{ mode: "pick", teams }} />

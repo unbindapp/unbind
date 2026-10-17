@@ -388,36 +388,54 @@ func (suite *GithubAppSuite) TestVisibleApps() {
 		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID}, AppFilter{}))
 	})
 
-	suite.Run("shared app is visible to the team", func() {
-		_, err := suite.githubRepo.SetAppTeam(suite.Ctx, suite.testApp.ID, &team.ID)
-		suite.Require().NoError(err)
+	suite.Run("shared app is visible to its teams", func() {
+		suite.Require().NoError(suite.githubRepo.UpdateAppTeams(suite.Ctx, suite.testApp.ID, []uuid.UUID{team.ID, otherTeam.ID}, nil, false))
 
 		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, AppFilter{}))
+		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(otherTeam.ID)}, AppFilter{}))
 		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, AppFilter{TeamID: &team.ID}))
 		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, AppFilter{OwnedOnly: true}))
-		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(otherTeam.ID)}, AppFilter{}))
 		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID}, AppFilter{}), "nil teams means every team")
-
-		app, err := suite.githubRepo.GetVisibleAppByUUID(suite.Ctx, AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, suite.testApp.UUID)
-		suite.Require().NoError(err)
-		suite.Equal("team", app.Edges.Team.Name)
-		suite.Equal(suite.testUser.Email, app.Edges.Users.Email)
 	})
 
-	suite.Run("clearing the team makes it private again", func() {
-		_, err := suite.githubRepo.SetAppTeam(suite.Ctx, suite.testApp.ID, nil)
+	suite.Run("a teammate only sees the names of teams they can view", func() {
+		app, err := suite.githubRepo.GetVisibleAppByUUID(suite.Ctx, AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, suite.testApp.UUID)
 		suite.Require().NoError(err)
+		suite.Require().Len(app.Edges.Teams, 1)
+		suite.Equal("team", app.Edges.Teams[0].Name)
+		suite.Equal(suite.testUser.Email, app.Edges.Users.Email)
+
+		app, err = suite.githubRepo.GetVisibleAppByUUID(suite.Ctx, AppVisibility{UserID: suite.testUser.ID, Teams: memberOf(team.ID)}, suite.testApp.UUID)
+		suite.Require().NoError(err)
+		suite.Len(app.Edges.Teams, 2, "the creator sees every team they shared with")
+	})
+
+	suite.Run("removing a team keeps the others", func() {
+		suite.Require().NoError(suite.githubRepo.UpdateAppTeams(suite.Ctx, suite.testApp.ID, nil, []uuid.UUID{otherTeam.ID}, false))
+		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(otherTeam.ID)}, AppFilter{}))
+		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(team.ID)}, AppFilter{}))
+	})
+
+	suite.Run("removing every team makes it private again", func() {
+		suite.Require().NoError(suite.githubRepo.UpdateAppTeams(suite.Ctx, suite.testApp.ID, nil, []uuid.UUID{team.ID}, false))
 		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID}, AppFilter{}))
 	})
 
-	suite.Run("deleting the team unshares the app", func() {
-		_, err := suite.githubRepo.SetAppTeam(suite.Ctx, suite.testApp.ID, &team.ID)
-		suite.Require().NoError(err)
+	suite.Run("an app shared with all teams is visible to anyone on a team", func() {
+		suite.Require().NoError(suite.githubRepo.UpdateAppTeams(suite.Ctx, suite.testApp.ID, nil, nil, true))
+		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(otherTeam.ID)}, AppFilter{}))
+		suite.Equal(1, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(otherTeam.ID)}, AppFilter{TeamID: &otherTeam.ID}))
+		suite.Equal(0, sees(AppVisibility{UserID: teammate.ID, Teams: memberOf(uuid.New())}, AppFilter{}), "not on any team")
+		suite.Require().NoError(suite.githubRepo.UpdateAppTeams(suite.Ctx, suite.testApp.ID, nil, nil, false))
+	})
+
+	suite.Run("deleting a team unshares the app from it", func() {
+		suite.Require().NoError(suite.githubRepo.UpdateAppTeams(suite.Ctx, suite.testApp.ID, []uuid.UUID{team.ID, otherTeam.ID}, nil, false))
 		suite.DB.Team.DeleteOneID(team.ID).ExecX(suite.Ctx)
 
-		app, err := suite.githubRepo.GetGithubAppByID(suite.Ctx, suite.testApp.ID)
+		teamIDs, err := suite.githubRepo.GetAppTeamIDs(suite.Ctx, suite.testApp.ID)
 		suite.Require().NoError(err)
-		suite.Nil(app.TeamID)
+		suite.Equal([]uuid.UUID{otherTeam.ID}, teamIDs)
 	})
 }
 
@@ -436,7 +454,9 @@ func (suite *GithubAppSuite) TestCreateAppStoresTeamAndOwner() {
 
 	app, err := suite.githubRepo.CreateApp(suite.Ctx, uuid.New(), appConfig, suite.testUser.ID, &team.ID)
 	suite.Require().NoError(err)
-	suite.Equal(team.ID, *app.TeamID)
+	teamIDs, err := suite.githubRepo.GetAppTeamIDs(suite.Ctx, app.ID)
+	suite.Require().NoError(err)
+	suite.Equal([]uuid.UUID{team.ID}, teamIDs)
 	suite.Equal("acme", app.OwnerLogin)
 	suite.Equal(githubapp.OwnerTypeOrganization, app.OwnerType)
 	suite.Equal("owned-app", app.Slug)
@@ -467,7 +487,20 @@ func (suite *GithubAppSuite) TestDeletePrivateAppsByCreator() {
 		SetName("Shared").
 		SetSlug("shared").
 		SetCreatedBy(suite.testUser.ID).
-		SetTeamID(team.ID).
+		AddTeamIDs(team.ID).
+		SaveX(suite.Ctx)
+
+	everyone := suite.DB.GithubApp.Create().
+		SetID(778).
+		SetUUID(uuid.New()).
+		SetClientID("c").
+		SetClientSecret("s").
+		SetWebhookSecret("w").
+		SetPrivateKey("p").
+		SetName("Everyone").
+		SetSlug("everyone").
+		SetCreatedBy(suite.testUser.ID).
+		SetSharedWithAllTeams(true).
 		SaveX(suite.Ctx)
 
 	deleted, err := suite.githubRepo.DeletePrivateAppsByCreator(suite.Ctx, suite.testUser.ID)
@@ -476,4 +509,5 @@ func (suite *GithubAppSuite) TestDeletePrivateAppsByCreator() {
 
 	suite.False(suite.DB.GithubApp.Query().Where(githubapp.ID(suite.testApp.ID)).ExistX(suite.Ctx))
 	suite.True(suite.DB.GithubApp.Query().Where(githubapp.ID(shared.ID)).ExistX(suite.Ctx))
+	suite.True(suite.DB.GithubApp.Query().Where(githubapp.ID(everyone.ID)).ExistX(suite.Ctx))
 }
