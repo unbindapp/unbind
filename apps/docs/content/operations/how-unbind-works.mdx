@@ -12,7 +12,7 @@ Unbind is a layer on top of [Kubernetes](https://kubernetes.io). The UI talks ab
 1. **You push, or press Deploy.** The Unbind API records a deployment and puts it in the build queue.
 2. **A build runs.** The code is built into an image with [Railpack](https://railpack.com) or your Dockerfile, using [BuildKit](https://github.com/moby/buildkit).
 3. **The image is pushed** to the registry, by default one that runs inside your instance.
-4. **The API describes the service** as a custom resource: image, ports, domains, variables, volumes, health checks.
+4. **The build describes the service** as a custom resource: image, ports, domains, variables, volumes, health checks.
 5. **The Unbind operator turns that into Kubernetes resources**, and the new version starts next to the old one.
 6. **Traffic switches** once the new version is healthy. Certificates for new domains are requested from [Let's Encrypt](https://letsencrypt.org).
 

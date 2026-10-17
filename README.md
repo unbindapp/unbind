@@ -56,43 +56,66 @@ Run `go` commands from inside the app directory (e.g. `cd apps/api`).
 
 ```mermaid
 graph TB
+    Browser
+    MCPClient[MCP client<br/>OAuth grant or API key]
+    GitHub
+
+    Gateway[Envoy Gateway<br/>or ingress-nginx<br/>TLS: cert-manager]
+
     subgraph "App image (ghcr.io/unbindapp/unbind)"
         SPA[SPA<br/>embedded static build]
-        API[Unbind API<br/>Go + Huma]
-        API -->|serves at /| SPA
-    end
-
-    subgraph "Auth"
-        OIDC[OIDC issuer<br/>/api/oauth2]
+        API[Unbind API<br/>Go + Huma, auth, OAuth server]
+        MCP[MCP server<br/>/mcp]
+        MCP -->|in-process API calls| API
     end
 
     subgraph "Data"
-        DB[(PostgreSQL)]
-        Redis[(Redis<br/>cache & build queue)]
+        DB[(PostgreSQL<br/>Zalando operator)]
+        Redis[(Redis<br/>build queue, rate limits, cache)]
     end
 
     subgraph "Build system"
         BuildJob[K8s Job<br/>unbind-builder]
-        BuildKit[BuildKit]
-        Registry[Container Registry]
+        BuildKit[BuildKit<br/>Railpack or Dockerfile]
+        Registry[Container registry<br/>in-cluster or external]
         BuildJob --> BuildKit --> Registry
     end
 
-    subgraph "Kubernetes"
+    subgraph "Kubernetes (k3s)"
         KubeAPI[K8s API server]
-        Operator[Unbind Operator<br/>watches CRDs]
-        CRD[Service CRDs]
-        Operator -->|reconciles| CRD
+        CR[Service CR<br/>unbind.unbind.app/v1]
+        Operator[Unbind Operator]
+        Workloads[Deployments, CronJobs,<br/>routes, databases]
+        Operator -->|reconciles| CR
+        Operator -->|creates| Workloads
     end
 
-    Browser -->|/| SPA
-    Browser -->|/api/go| API
+    subgraph "Observability"
+        Alloy[Alloy]
+        Loki[(Loki)]
+        VM[(VictoriaMetrics)]
+        Alloy -->|pod logs| Loki
+    end
+
+    S3[(S3-compatible storage)]
+
+    Browser --> Gateway
+    MCPClient --> Gateway
+    GitHub -->|push webhooks| Gateway
+    Gateway -->|/| SPA
+    Gateway -->|/api/go| API
+    Gateway -->|/mcp| MCP
+    Gateway -->|app traffic| Workloads
     API --> DB
     API --> Redis
-    API -->|trigger build| BuildJob
-    API -->|reconcile| CRD
-    API -.->|mints tokens| OIDC
-    API -->|impersonates user| KubeAPI
+    API -->|queues builds as Jobs| BuildJob
+    API -->|ServiceAccount: namespaces, RBAC,<br/>NetworkPolicies, redeploys| KubeAPI
+    API -->|logs| Loki
+    API -->|metrics| VM
+    GitHub -.->|source| BuildJob
+    BuildJob -->|creates or updates| CR
+    Workloads -.->|pull images| Registry
+    Workloads -.->|database backups| S3
 ```
 
 ### How the API serves the SPA
