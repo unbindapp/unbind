@@ -92,3 +92,17 @@ func TestCleanCreateWatchPaths(t *testing.T) {
 		})
 	}
 }
+
+// A cron service built from a repo that EXPOSEs a port must not get that port, and
+// with no port it gets no generated domain
+func TestSkipsDetectedPortsForCron(t *testing.T) {
+	hourly := "0 * * * *"
+	empty := ""
+
+	assert.True(t, skipsDetectedPorts(true, &hourly))
+	assert.False(t, skipsDetectedPorts(false, &hourly), "ports the caller sent are kept")
+	assert.False(t, skipsDetectedPorts(true, &empty), "an empty schedule runs continuously")
+	assert.False(t, skipsDetectedPorts(true, nil))
+
+	assert.Nil(t, resolveIsPublic(nil, schema.ServiceTypeGithub, nil))
+}
