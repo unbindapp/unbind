@@ -116,6 +116,21 @@ releases:
     namespace: {{ .Values.namespace }}
     chart: vm/victoria-metrics-k8s-stack
     version: 0.95.2
+    # Hardened distros like Talos enforce baseline by default; a level already set is kept
+    hooks:
+      - &privilegedNamespace
+        events: ["presync"]
+        showlogs: true
+        command: "/bin/sh"
+        args:
+          - "-c"
+          - |
+            set -eu
+            NAMESPACE="{{ .Values.namespace }}"
+            kubectl create namespace "$NAMESPACE" 2>/dev/null || true
+            if [ -z "$(kubectl get namespace "$NAMESPACE" -o jsonpath='{.metadata.labels.pod-security\.kubernetes\.io/enforce}')" ]; then
+              kubectl label --overwrite namespace "$NAMESPACE" pod-security.kubernetes.io/enforce=privileged
+            fi
     values:
       - values/victoria-metrics-k8s-stack.yaml
       - vmsingle:
@@ -134,6 +149,8 @@ releases:
     namespace: {{ .Values.namespace }}
     chart: grafana/alloy
     version: 1.13.1
+    hooks:
+      - *privilegedNamespace
     values:
       -
         alloy:
@@ -337,6 +354,8 @@ releases:
   - name: buildkit
     namespace: {{ .Values.namespace }}
     chart: ./charts/buildkitd
+    hooks:
+      - *privilegedNamespace
     values:
       -
         resources: {}
