@@ -14,6 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
+	"github.com/unbindapp/unbind-api/internal/gitenv"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 )
@@ -156,7 +157,7 @@ func (self *ServiceService) deployAdhocService(ctx context.Context, service *ent
 			// Commit so the failed deployment stays visible
 			return nil
 		}
-		crdToDeploy.Spec.EnvVars = rendered.EnvVars()
+		crdToDeploy.Spec.EnvVars = gitenv.Append(rendered.EnvVars(), gitenv.DeploymentVars(newDeployment))
 
 		_, newService, err := self.k8s.DeployUnbindService(ctx, crdToDeploy)
 		if err != nil {

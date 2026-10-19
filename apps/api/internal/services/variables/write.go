@@ -12,6 +12,7 @@ import (
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/gitenv"
 	"github.com/unbindapp/unbind-api/internal/models"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
@@ -114,7 +115,7 @@ func (self *VariablesService) PrepareVariableWrite(
 	// would be shadowed and never read. A value stored under one of these names before
 	// they were reserved keeps working, or the raw editor could never save again.
 	for name, value := range upserts {
-		if _, stored := existing[name]; !stored && isProvidedKey(name) {
+		if _, stored := existing[name]; !stored && (isProvidedKey(name) || gitenv.IsKey(name)) {
 			return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput,
 				fmt.Sprintf("%s is provided by Unbind and cannot be set", name))
 		}

@@ -3,6 +3,7 @@ package builders
 import (
 	"context"
 	"fmt"
+	"maps"
 	"os"
 	"path"
 
@@ -58,6 +59,7 @@ func (self *Builder) BuildDockerfile(ctx context.Context, buildSecrets map[strin
 	// explicit "Dockerfile" hash to the same build.
 	inputs := self.buildInputs(tmpDir, buildSecrets)
 	outputImage, cacheKey := self.GenerateBuildMetadata(inputs)
+	self.gitEnv = inputs.gitEnv()
 
 	// Build using BuildKit
 	err = buildkit.BuildWithBuildkitClient(
@@ -66,7 +68,7 @@ func (self *Builder) BuildDockerfile(ctx context.Context, buildSecrets map[strin
 		buildkit.BuildWithBuildkitClientOptions{
 			ImageName:      outputImage,
 			CacheKey:       cacheKey,
-			Secrets:        buildSecrets,
+			Secrets:        withGitEnv(buildSecrets, self.gitEnv),
 			DockerfilePath: self.config.ServiceDockerBuilderDockerfilePath,
 			ContextPath:    self.config.ServiceDockerBuilderBuildContext,
 		},
@@ -79,4 +81,12 @@ func (self *Builder) BuildDockerfile(ctx context.Context, buildSecrets map[strin
 
 	log.Infof("Built image %s from Dockerfile: %s", outputImage, self.config.ServiceDockerBuilderDockerfilePath)
 	return outputImage, repoName, nil
+}
+
+// withGitEnv adds the git variables to what the Dockerfile can declare as ARGs
+func withGitEnv(buildSecrets map[string]string, gitEnv map[string]string) map[string]string {
+	merged := make(map[string]string, len(buildSecrets)+len(gitEnv))
+	maps.Copy(merged, buildSecrets)
+	maps.Copy(merged, gitEnv)
+	return merged
 }

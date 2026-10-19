@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
+	"maps"
 
 	"github.com/unbindapp/unbind-api/internal/common/log"
+	"github.com/unbindapp/unbind-api/internal/gitenv"
 	"github.com/unbindapp/unbind-api/pkg/builder/config"
 )
 
@@ -31,7 +33,8 @@ func decodeEnvJSON(raw string) (map[string]string, error) {
 	return env, nil
 }
 
-// mergeBuildSecrets layers the raw service secret under the rendered references so rendered values win
+// mergeBuildSecrets layers the raw service secret under the rendered references so rendered values win.
+// Git keys are left to the builder, which reads them from the clone.
 func mergeBuildSecrets(cfg *config.Config, rawSecrets, renderedEnv map[string]string) map[string]string {
 	buildSecrets := make(map[string]string, len(rawSecrets)+len(renderedEnv)+2)
 
@@ -48,5 +51,6 @@ func mergeBuildSecrets(cfg *config.Config, rawSecrets, renderedEnv map[string]st
 	for k, v := range renderedEnv {
 		buildSecrets[k] = v
 	}
+	maps.DeleteFunc(buildSecrets, func(k, _ string) bool { return gitenv.IsKey(k) })
 	return buildSecrets
 }

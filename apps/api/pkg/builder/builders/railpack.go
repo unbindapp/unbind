@@ -3,10 +3,13 @@ package builders
 import (
 	"context"
 	"fmt"
+	"maps"
 	"os"
+	"slices"
 
 	"github.com/railwayapp/railpack/core"
 	a "github.com/railwayapp/railpack/core/app"
+	"github.com/railwayapp/railpack/core/plan"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/integrations/github"
 	"github.com/unbindapp/unbind-api/pkg/builder/internal/buildkit"
@@ -51,6 +54,8 @@ func (self *Builder) BuildWithRailpack(ctx context.Context, buildSecrets map[str
 	// Metadata, resolved from the clone so the image ref covers the built commit
 	inputs := self.buildInputs(tmpDir, buildSecrets)
 	outputImage, cacheKey := self.GenerateBuildMetadata(inputs)
+	self.gitEnv = inputs.gitEnv()
+	addBuildStepVariables(buildResult.Plan, self.gitEnv)
 
 	err = buildkit.BuildWithBuildkitClient(
 		self.config,
@@ -105,4 +110,21 @@ func GenerateBuildResult(directory string, buildSecrets map[string]string, runCo
 	}
 
 	return buildResult, app, &env, nil
+}
+
+// addBuildStepVariables sets vars on the build step only. Every step reads every
+// secret, so passing a per-commit value as one would rerun the install steps on
+// every commit, while the build step copies the source and reruns anyway.
+func addBuildStepVariables(buildPlan *plan.BuildPlan, vars map[string]string) {
+	index := slices.IndexFunc(buildPlan.Steps, func(step plan.Step) bool {
+		return step.Name == "build"
+	})
+	if index < 0 {
+		return
+	}
+	step := &buildPlan.Steps[index]
+	if step.Variables == nil {
+		step.Variables = map[string]string{}
+	}
+	maps.Copy(step.Variables, vars)
 }
