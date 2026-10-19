@@ -114,3 +114,15 @@ func TestMergeBuildSecretsOmitsEmptyRailpackCommands(t *testing.T) {
 		t.Fatalf("expected no entries, got %v", got)
 	}
 }
+
+// The builder sets the git keys from the clone, a stored value must not shadow them
+func TestMergeBuildSecretsDropsGitKeys(t *testing.T) {
+	raw := map[string]string{"UNBIND_GIT_SHA": "stale", "A": "1"}
+	rendered := map[string]string{"UNBIND_GIT_BRANCH": "stale"}
+
+	got := mergeBuildSecrets(&config.Config{}, raw, rendered)
+
+	if len(got) != 1 || got["A"] != "1" {
+		t.Fatalf("got %v, want only A", got)
+	}
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/errdefs"
 	"github.com/unbindapp/unbind-api/internal/dbvolumes"
 	"github.com/unbindapp/unbind-api/internal/deployctl"
+	"github.com/unbindapp/unbind-api/internal/gitenv"
 	"github.com/unbindapp/unbind-api/internal/models"
 	permissions_repo "github.com/unbindapp/unbind-api/internal/repositories/permissions"
 	s3bucket_repo "github.com/unbindapp/unbind-api/internal/repositories/s3bucket"
@@ -20,12 +21,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func (self *DeploymentService) resolveReferences(ctx context.Context, service *ent.Service) ([]corev1.EnvVar, error) {
+func (self *DeploymentService) resolveEnv(ctx context.Context, service *ent.Service, deployment *ent.Deployment) ([]corev1.EnvVar, error) {
 	rendered, err := self.variableService.RenderServiceVariables(ctx, service.ID)
 	if err != nil {
 		return nil, err
 	}
-	return rendered.EnvVars(), nil
+	return gitenv.Append(rendered.EnvVars(), gitenv.DeploymentVars(deployment)), nil
 }
 
 func (self *DeploymentService) canRedeployWithoutBuild(ctx context.Context, service *ent.Service, deployment *ent.Deployment) bool {
@@ -48,7 +49,7 @@ func (self *DeploymentService) canRedeployWithoutBuild(ctx context.Context, serv
 }
 
 func (self *DeploymentService) redeployExistingImage(ctx context.Context, service *ent.Service, deployment *ent.Deployment) (*models.DeploymentResponse, error) {
-	envVars, err := self.resolveReferences(ctx, service)
+	envVars, err := self.resolveEnv(ctx, service, deployment)
 	if err != nil {
 		return nil, err
 	}

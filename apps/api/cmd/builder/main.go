@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/unbindapp/unbind-api/internal/infrastructure/registrycache"
+	"maps"
 	"os"
 	"time"
 
@@ -14,6 +14,7 @@ import (
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
 	"github.com/unbindapp/unbind-api/internal/infrastructure/database"
+	"github.com/unbindapp/unbind-api/internal/infrastructure/registrycache"
 	repository "github.com/unbindapp/unbind-api/internal/repositories"
 	"github.com/unbindapp/unbind-api/internal/repositories/repositories"
 	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
@@ -319,6 +320,7 @@ func main() {
 		log.Fatalf("Failed to read the service config: %v", err)
 	}
 
+	maps.Copy(additionalEnv, builder.GitEnv())
 	_, serviceSpec, err := k8s.DeployImage(ctx, crdName, dockerImg, additionalEnv, securityContext, healthCheck, variableMounts, current.Edges.ServiceConfig)
 	if err != nil {
 		if err := markDeploymentFailed(ctx, cfg, webhooksService, repo, fmt.Sprintf("failed to deploy image %v", err), cfg.ServiceDeploymentID); err != nil {

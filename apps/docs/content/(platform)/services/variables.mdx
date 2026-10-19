@@ -70,6 +70,17 @@ Set these under **Settings** > **Variables** of a team or a project. They are a 
 
 Some variables are managed by Unbind and show a lock, like a database's username and password. They can be read and referenced, but not changed or deleted.
 
+## Git commit
+
+A service built from GitHub also gets the commit it was built from, while it builds and while it runs. Use it to show a version or to tag error reports.
+
+| Key                 | What it holds                                 |
+| ------------------- | --------------------------------------------- |
+| `UNBIND_GIT_SHA`    | The full commit SHA                           |
+| `UNBIND_GIT_BRANCH` | The branch, not set when it builds from a tag |
+
+They are set by Unbind and can't be set as variables.
+
 ## Who can see values
 
 People with the viewer role see variable names but not values. Editors and admins see both.

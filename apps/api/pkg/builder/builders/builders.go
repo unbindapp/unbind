@@ -11,6 +11,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/unbindapp/unbind-api/internal/common/log"
 	"github.com/unbindapp/unbind-api/internal/common/utils"
+	"github.com/unbindapp/unbind-api/internal/gitenv"
 	"github.com/unbindapp/unbind-api/internal/sourceanalyzer"
 	"github.com/unbindapp/unbind-api/pkg/builder/config"
 )
@@ -18,6 +19,7 @@ import (
 type Builder struct {
 	config         *config.Config
 	analysisResult *sourceanalyzer.AnalysisResult
+	gitEnv         map[string]string
 }
 
 func NewBuilder(config *config.Config) *Builder {
@@ -30,6 +32,11 @@ func NewBuilder(config *config.Config) *Builder {
 // successful build, or nil if it wasn't run or failed.
 func (self *Builder) AnalysisResult() *sourceanalyzer.AnalysisResult {
 	return self.analysisResult
+}
+
+// GitEnv returns the git variables of the last build, or nil if it wasn't run
+func (self *Builder) GitEnv() map[string]string {
+	return self.gitEnv
 }
 
 // analyzeSource detects provider/framework from the build's clone, best-effort:
@@ -53,6 +60,7 @@ func (self *Builder) analyzeSource(tmpDir string) {
 // same image, so they share it.
 type BuildInputs struct {
 	CommitSHA      string
+	GitBranch      string
 	Builder        string
 	DockerfilePath string
 	BuildContext   string
@@ -80,7 +88,12 @@ func (in BuildInputs) configDigest() string {
 		in.BuildCommand,
 		in.RunCommand,
 		in.SecretsHash,
+		in.GitBranch,
 	)
+}
+
+func (in BuildInputs) gitEnv() map[string]string {
+	return gitenv.Vars(in.CommitSHA, in.GitBranch)
 }
 
 // cacheDigest keys the registry cache per service and build config. Build env is left
@@ -167,6 +180,7 @@ func (self *Builder) imageRepository() string {
 func (self *Builder) buildInputs(repoDir string, buildSecrets map[string]string) BuildInputs {
 	return BuildInputs{
 		CommitSHA:      self.resolveCommitSHA(repoDir),
+		GitBranch:      gitenv.Branch(self.config.GitRef),
 		Builder:        string(self.config.ServiceBuilder),
 		DockerfilePath: self.config.ServiceDockerBuilderDockerfilePath,
 		BuildContext:   self.config.ServiceDockerBuilderBuildContext,

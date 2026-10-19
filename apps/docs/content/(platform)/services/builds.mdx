@@ -42,6 +42,8 @@ ARG VITE_API_URL
 RUN npm run build
 ```
 
+The same goes for `UNBIND_GIT_SHA` and `UNBIND_GIT_BRANCH`, the commit being built. See [Git commit](/services/variables#git-commit).
+
 ## The build queue
 
 Builds run on your servers, and by default two run at a time. The rest wait in a queue. While a service has a build waiting, a newer one for the same service replaces it, so only the latest push gets built. A newer build also stops one that is already running, and starts once it has stopped.

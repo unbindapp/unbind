@@ -124,6 +124,29 @@ func TestGenerateBuildMetadataCommitChangesImageNotCache(t *testing.T) {
 	}
 }
 
+// The branch reaches the build as UNBIND_GIT_BRANCH, so two branches at one commit
+// can bake different output and must not share an image.
+func TestGenerateBuildMetadataBranchChangesImageNotCache(t *testing.T) {
+	b := testBuilder()
+	main := baseInputs()
+	main.GitBranch = "main"
+	mainImage, mainCache := b.GenerateBuildMetadata(main)
+
+	staging := baseInputs()
+	staging.GitBranch = "staging"
+	image, cache := b.GenerateBuildMetadata(staging)
+
+	if image == mainImage {
+		t.Errorf("two branches shared image ref %q", image)
+	}
+	if cache != mainCache {
+		t.Errorf("a branch change moved the cache ref: %q vs %q", cache, mainCache)
+	}
+	if b.RailpackCacheMountKey(staging) == b.RailpackCacheMountKey(main) {
+		t.Errorf("a branch change kept Railpack's cache mount key %q", b.RailpackCacheMountKey(staging))
+	}
+}
+
 // With no commit to identify the build we can't claim two builds are the same one,
 // so the tag falls back to being unique per deployment rather than shared.
 func TestGenerateBuildMetadataUnknownCommitStaysUnique(t *testing.T) {

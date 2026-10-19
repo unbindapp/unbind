@@ -41,7 +41,7 @@ func (self *DeploymentService) RemoveActiveDeployment(ctx context.Context, reque
 		return nil, errdefs.NewCustomError(errdefs.ErrTypeInvalidInput, "Deployment has no resource definition")
 	}
 
-	envVars, err := self.resolveReferences(ctx, service)
+	envVars, err := self.resolveEnv(ctx, service, deployment)
 	if err != nil {
 		return nil, err
 	}
