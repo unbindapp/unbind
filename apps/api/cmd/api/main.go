@@ -200,6 +200,9 @@ func startAPI(cfg *config.Config) {
 	storageService := storage_service.NewStorageService(cfg, repo, kubeClient, promClient, serviceService)
 	go storageService.StoreDatabaseVolumeNames(ctx)
 	emailService := email_service.NewEmailService(cfg, repo, kubeClient, mail.SMTPSender{})
+	if err := k8s.EnsurePrivilegedNamespace(ctx, kubeClient.GetInternalClient(), cfg.GetSystemNamespace()); err != nil {
+		log.Errorf("Failed to set the Pod Security level of the system namespace: %v", err)
+	}
 	networkPolicyManager := k8s.NewNetworkPolicyManager(repo, kubeClient.GetInternalClient())
 	if err := networkPolicyManager.Sync(ctx); err != nil {
 		log.Errorf("Failed to sync network policies: %v", err)
