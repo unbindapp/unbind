@@ -42,7 +42,7 @@ A failed run can send a [webhook](/monitoring/webhooks). Pick **Cron Run Failed*
 
 ## What changes with a schedule
 
-A service on a schedule has no replicas, domains or ports, and no health checks. Those settings show why they are unavailable. Its domains stop answering while it has a schedule and come back when the schedule is removed.
+A service on a schedule has no replicas, domains or ports, and no health checks. Those settings show why they are unavailable. Its domains stop answering while it has a schedule and come back when the schedule is removed. A service created with a schedule starts without a port or a domain, even when its Dockerfile exposes one.
 
 **Stop** suspends the schedule: no runs start until you **Start** it again, and the run history stays.
 

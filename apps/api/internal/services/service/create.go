@@ -321,6 +321,12 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 			}
 		}
 
+		sourcePorts := ports
+		skipDetectedPorts := skipsDetectedPorts(addDetectedPorts, input.CronSchedule)
+		if skipDetectedPorts {
+			ports = nil
+		}
+
 		// Validate health check
 		if input.HealthCheck != nil {
 			if input.HealthCheck.Port == nil && len(ports) > 0 {
@@ -414,6 +420,9 @@ func (self *ServiceService) CreateService(ctx context.Context, requesterUserID u
 		var detectedPorts []schema.PortSpec
 		if addDetectedPorts {
 			detectedPorts = ports
+		}
+		if skipDetectedPorts {
+			detectedPorts = sourcePorts
 		}
 
 		createService, err := self.repo.Service().Create(ctx, tx,
@@ -596,6 +605,12 @@ func resolveAutoDeploy(requested *bool, serviceType schema.ServiceType) *bool {
 		return new(true)
 	}
 	return nil
+}
+
+// A scheduled service answers no requests, so the ports detected from its source
+// stay metadata and never get it a port or a generated domain
+func skipsDetectedPorts(detected bool, cronSchedule *string) bool {
+	return detected && cronSchedule != nil && *cronSchedule != ""
 }
 
 // A service that listens on a port is public unless the caller says otherwise.
