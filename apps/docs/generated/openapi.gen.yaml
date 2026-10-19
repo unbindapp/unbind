@@ -4616,7 +4616,7 @@ components:
             - array
             - "null"
         is_public:
-          description: Whether the service is reachable from the internet. A database gets a public address when true and loses it when false
+          description: Whether the service is reachable from the internet. A database gets a public address when true and loses it when false. Any other service loses every domain when false
           type: boolean
         max_request_body_size_mb:
           description: Largest request body the service's domains accept, in MB. 0 resets it to the default of 100. Not for databases, and has no effect on clusters that route through a gateway
@@ -4632,12 +4632,14 @@ components:
             - string
             - "null"
         overwrite_hosts:
+          description: Replaces every domain. An empty list removes them all
           items:
             $ref: "#/components/schemas/HostSpec"
           type:
             - array
             - "null"
         overwrite_ports:
+          description: Replaces every port. An empty list removes them all. Not for databases
           items:
             $ref: "#/components/schemas/PortSpec"
           type:

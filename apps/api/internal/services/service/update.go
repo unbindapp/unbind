@@ -44,6 +44,26 @@ func removesLastHost(existing []schema.HostSpec, input *models.UpdateServiceInpu
 	return len(service_repo.MergeHosts(existing, input.OverwriteHosts, input.UpsertHosts, input.RemoveHosts)) == 0
 }
 
+// expandClears turns an empty overwrite list, and going private, into removals of
+// what the service has: the merge treats an empty overwrite as no change
+func expandClears(config *ent.ServiceConfig, input *models.UpdateServiceInput) error {
+	if input.IsPublic != nil && !*input.IsPublic {
+		if len(input.OverwriteHosts) > 0 || len(input.UpsertHosts) > 0 {
+			return invalid("is_public false removes every domain, it can't be sent with overwrite_hosts or upsert_hosts")
+		}
+		input.OverwriteHosts = []schema.HostSpec{}
+	}
+	if input.OverwriteHosts != nil && len(input.OverwriteHosts) == 0 {
+		input.OverwriteHosts = nil
+		input.RemoveHosts = append(input.RemoveHosts, config.Hosts...)
+	}
+	if input.OverwritePorts != nil && len(input.OverwritePorts) == 0 {
+		input.OverwritePorts = nil
+		input.RemovePorts = append(input.RemovePorts, config.Ports...)
+	}
+	return nil
+}
+
 // serviceUpdate is a validated update, ready to apply
 type serviceUpdate struct {
 	input   *models.UpdateServiceInput
@@ -178,6 +198,12 @@ func (self *ServiceService) prepareServiceUpdate(ctx context.Context, requesterU
 	}
 	if err := validateCronInput(service.Type, input.CronSchedule, input.CronTimezone); err != nil {
 		return nil, err
+	}
+
+	if service.Type != schema.ServiceTypeDatabase {
+		if err := expandClears(service.Edges.ServiceConfig, input); err != nil {
+			return nil, err
+		}
 	}
 
 	// For database we don't want to set ports

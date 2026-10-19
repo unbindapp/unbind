@@ -3,10 +3,13 @@ package service_service
 import (
 	"testing"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/unbindapp/unbind-api/ent"
 	"github.com/unbindapp/unbind-api/ent/schema"
 	"github.com/unbindapp/unbind-api/internal/models"
+	service_repo "github.com/unbindapp/unbind-api/internal/repositories/service"
 )
 
 func TestDatabasePortsWithNodePorts(t *testing.T) {
@@ -164,4 +167,54 @@ func TestSmallestVolumeMiB(t *testing.T) {
 	assert.Equal(t, int64(51200), smallestVolumeMiB(replicas, "50Gi"), "a resize in the same request")
 	assert.Equal(t, int64(2048), smallestVolumeMiB(nil, "2Gi"), "no claim yet")
 	assert.Equal(t, int64(1024), smallestVolumeMiB(nil, ""), "nothing recorded")
+}
+
+func TestExpandClears(t *testing.T) {
+	config := &ent.ServiceConfig{
+		Hosts: []schema.HostSpec{{Host: "a.com"}, {Host: "b.com"}},
+		Ports: []schema.PortSpec{{Port: 3000}},
+	}
+	decode := func(body string) *models.UpdateServiceInput {
+		var input models.UpdateServiceInput
+		require.NoError(t, huma.DefaultJSONFormat.Unmarshal([]byte(body), &input))
+		return &input
+	}
+
+	t.Run("empty overwrites remove everything", func(t *testing.T) {
+		input := decode(`{"overwrite_hosts": [], "overwrite_ports": []}`)
+		require.NoError(t, expandClears(config, input))
+		assert.Nil(t, input.OverwriteHosts)
+		assert.Nil(t, input.OverwritePorts)
+		assert.Equal(t, config.Hosts, input.RemoveHosts)
+		assert.Equal(t, config.Ports, input.RemovePorts)
+		assert.Empty(t, service_repo.MergeHosts(config.Hosts, input.OverwriteHosts, input.UpsertHosts, input.RemoveHosts))
+		assert.Empty(t, service_repo.MergePorts(config.Ports, input.OverwritePorts, input.AddPorts, input.RemovePorts))
+		assert.True(t, removesLastHost(config.Hosts, input))
+	})
+
+	t.Run("missing overwrites change nothing", func(t *testing.T) {
+		input := decode(`{"replicas": 2}`)
+		require.NoError(t, expandClears(config, input))
+		assert.Nil(t, input.RemoveHosts)
+		assert.Nil(t, input.RemovePorts)
+	})
+
+	t.Run("going private removes every domain", func(t *testing.T) {
+		input := decode(`{"is_public": false}`)
+		require.NoError(t, expandClears(config, input))
+		assert.Equal(t, config.Hosts, input.RemoveHosts)
+		assert.Nil(t, input.RemovePorts)
+		assert.True(t, removesLastHost(config.Hosts, input))
+	})
+
+	t.Run("going private with domains is refused", func(t *testing.T) {
+		assert.Error(t, expandClears(config, decode(`{"is_public": false, "upsert_hosts": [{"host": "c.com"}]}`)))
+		assert.Error(t, expandClears(config, decode(`{"is_public": false, "overwrite_hosts": [{"host": "c.com"}]}`)))
+	})
+
+	t.Run("empty overwrite with upserts keeps only the upserts", func(t *testing.T) {
+		input := decode(`{"overwrite_hosts": [], "upsert_hosts": [{"host": "c.com"}]}`)
+		require.NoError(t, expandClears(config, input))
+		assert.Equal(t, []schema.HostSpec{{Host: "c.com"}}, service_repo.MergeHosts(config.Hosts, input.OverwriteHosts, input.UpsertHosts, input.RemoveHosts))
+	})
 }
