@@ -258,11 +258,11 @@ export const UpdateServiceInputSchema = z
     health_check: HealthCheckSchema.optional(),
     image: z.string().optional(), // Image to run, with an optional tag. Only for an image service
     init_containers: z.array(InitContainerSchema).nullable().optional(), // List of init containers
-    is_public: z.boolean().optional(), // Whether the service is reachable from the internet. A database gets a public address when true and loses it when false
+    is_public: z.boolean().optional(), // Whether the service is reachable from the internet. A database gets a public address when true and loses it when false. Any other service loses every domain when false
     max_request_body_size_mb: z.number().optional(), // Largest request body the service's domains accept, in MB. 0 resets it to the default of 100. Not for databases, and has no effect on clusters that route through a gateway
     name: z.string().nullable().optional(), // Has to be unique in the environment
-    overwrite_hosts: z.array(HostSpecSchema).nullable().optional(),
-    overwrite_ports: z.array(PortSpecSchema).nullable().optional(),
+    overwrite_hosts: z.array(HostSpecSchema).nullable().optional(), // Replaces every domain. An empty list removes them all
+    overwrite_ports: z.array(PortSpecSchema).nullable().optional(), // Replaces every port. An empty list removes them all. Not for databases
     overwrite_variable_mounts: z.array(VariableMountSchema).nullable().optional(), // Mount variables as volumes
     overwrite_volumes: z.array(ServiceVolumeSchema).nullable().optional(), // Volume to mount on the service, replacing the current one. One at most
     project_id: z.string(),

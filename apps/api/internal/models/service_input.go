@@ -82,12 +82,12 @@ type UpdateServiceInput struct {
 	GitTag                        *string                `json:"git_tag,omitempty" required:"false" doc:"Tag to build from, supports glob patterns"`
 	WatchPaths                    *[]string              `json:"watch_paths,omitempty" required:"false" doc:"Gitignore-style patterns, a push deploys only when a changed file matches. Empty deploys on every push"`
 	Builder                       *schema.ServiceBuilder `json:"builder,omitempty" required:"false"`
-	OverwriteHosts                []schema.HostSpec      `json:"overwrite_hosts,omitempty" required:"false"`
+	OverwriteHosts                []schema.HostSpec      `json:"overwrite_hosts,omitempty" required:"false" doc:"Replaces every domain. An empty list removes them all"`
 	UpsertHosts                   []schema.HostSpec      `json:"upsert_hosts,omitempty" required:"false" doc:"Additional hosts to add, will not remove existing hosts"`
 	RemoveHosts                   []schema.HostSpec      `json:"remove_hosts,omitempty" required:"false" doc:"Hosts to remove"`
 	AddPorts                      []schema.PortSpec      `json:"add_ports,omitempty" required:"false" doc:"Additional ports to add, will not remove existing ports"`
 	RemovePorts                   []schema.PortSpec      `json:"remove_ports,omitempty" required:"false" doc:"Ports to remove"`
-	OverwritePorts                []schema.PortSpec      `json:"overwrite_ports,omitempty" required:"false"`
+	OverwritePorts                []schema.PortSpec      `json:"overwrite_ports,omitempty" required:"false" doc:"Replaces every port. An empty list removes them all. Not for databases"`
 	Replicas                      *int32                 `json:"replicas,omitempty" required:"false" minimum:"1" maximum:"10" doc:"Must be 1 for a service with a volume"`
 	AutoDeploy                    *bool                  `json:"auto_deploy,omitempty" required:"false" doc:"Deploy on every push to the branch. Only for a GitHub service"`
 	RailpackBuilderInstallCommand *string                `json:"railpack_builder_install_command,omitempty"`
@@ -95,7 +95,7 @@ type UpdateServiceInput struct {
 	RunCommand                    *string                `json:"run_command,omitempty" required:"false"`
 	CronSchedule                  *string                `json:"cron_schedule,omitempty" required:"false" doc:"Cron expression (minute hour day month weekday). When set the service runs its command on this schedule and exits instead of running continuously, with no replicas, ports or domains. Set empty string to run continuously again. Not for databases"`
 	CronTimezone                  *string                `json:"cron_timezone,omitempty" required:"false" doc:"IANA time zone for the cron schedule, e.g. 'Europe/Berlin'. Set empty string for UTC"`
-	IsPublic                      *bool                  `json:"is_public,omitempty" required:"false" doc:"Whether the service is reachable from the internet. A database gets a public address when true and loses it when false"`
+	IsPublic                      *bool                  `json:"is_public,omitempty" required:"false" doc:"Whether the service is reachable from the internet. A database gets a public address when true and loses it when false. Any other service loses every domain when false"`
 	MaxRequestBodySizeMB          *int32                 `json:"max_request_body_size_mb,omitempty" required:"false" minimum:"0" maximum:"10240" doc:"Largest request body the service's domains accept, in MB. 0 resets it to the default of 100. Not for databases, and has no effect on clusters that route through a gateway"`
 	SessionAffinity               *bool                  `json:"session_affinity,omitempty" required:"false" doc:"Pin each visitor to one replica with a cookie, for apps that keep sessions or websockets in memory. Caches like Cloudflare skip responses that set the cookie. Not for databases"`
 	Rollout                       *schema.Rollout        `json:"rollout,omitempty" required:"false" doc:"How a deployment replaces the running version. rolling starts the new version next to the old one, so there is no gap. stop-first stops the old version before the new one starts, so the two never run at once, for apps that must not overlap like bots or wallets, at the cost of a few seconds of downtime per deployment. A service with a volume always stops first. Not for databases"`
