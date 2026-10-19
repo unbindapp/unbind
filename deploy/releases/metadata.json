@@ -558,5 +558,10 @@
     "version": "v0.1.111",
     "summary": "Search, sort and drag-to-reorder for projects and services, drop position outlines, smoother card dragging on iOS, mobile Safari search fixes, and better network exception search.",
     "breaking": false
+  },
+  "v0.1.112": {
+    "version": "v0.1.112",
+    "summary": "The git commit and branch available to builds and running services, clearing a service's domains and ports in one update, and no stray domains on cron services.",
+    "breaking": false
   }
 }
