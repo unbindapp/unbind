@@ -4,6 +4,8 @@ import { toast } from "@/components/ui/toast";
 import { queryKeyProjects, reorderProjects, type TProjectShallow } from "@/lib/queries/projects";
 import {
   blockClickAfterDrag,
+  cardMeasuring,
+  cardOverlayProps,
   closestInSameList,
   keepInPlace,
   releaseClickAfterDrag,
@@ -73,6 +75,7 @@ export default function SortableProjectCards({ teamId, projects, disabled, class
     <DndContext
       sensors={sensors}
       collisionDetection={closestInSameList}
+      measuring={cardMeasuring}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
@@ -88,7 +91,7 @@ export default function SortableProjectCards({ teamId, projects, disabled, class
           />
         ))}
       </SortableContext>
-      <DragOverlay>
+      <DragOverlay {...cardOverlayProps}>
         {active && <ProjectCard project={active} isDragging className="h-full" />}
       </DragOverlay>
     </DndContext>

@@ -5,6 +5,8 @@ import type { TServicesResult } from "@/components/service/services-context";
 import SortableServiceCard from "@/components/service/sortable-service-card";
 import {
   blockClickAfterDrag,
+  cardMeasuring,
+  cardOverlayProps,
   closestInSameList,
   keepInPlace,
   releaseClickAfterDrag,
@@ -99,6 +101,7 @@ export default function SortableServiceBlocks({ blocks, disabled, ...scope }: TP
     <DndContext
       sensors={sensors}
       collisionDetection={closestInSameList}
+      measuring={cardMeasuring}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDragEnd={onDragEnd}
@@ -124,7 +127,7 @@ export default function SortableServiceBlocks({ blocks, disabled, ...scope }: TP
           ),
         )}
       </SortableContext>
-      <DragOverlay>
+      <DragOverlay {...cardOverlayProps}>
         {active?.type === "service" && (
           <ServiceCard service={active.service} {...scope} isDragging className="h-full" />
         )}
