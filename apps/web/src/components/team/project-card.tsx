@@ -162,7 +162,7 @@ function ConditionalButton({
 
   if (linkProps === undefined) {
     return (
-      <Button variant={variant} className={className}>
+      <Button data-card-shadow variant={variant} className={className}>
         {children}
       </Button>
     );
@@ -182,7 +182,7 @@ function ConditionalButton({
         }}
         error={error}
       >
-        <Button variant={variant} className={className}>
+        <Button data-card-shadow variant={variant} className={className}>
           {children}
         </Button>
       </DeleteEntityTrigger>
@@ -192,6 +192,7 @@ function ConditionalButton({
   return (
     <LinkButton
       {...linkProps}
+      data-card-shadow
       variant={variant}
       disabled={isDeleting}
       // The browser's own link dragging would cancel the reorder drag

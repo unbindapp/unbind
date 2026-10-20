@@ -173,7 +173,10 @@ export default function ServiceCard({
       )}
     >
       {/* The shadow wraps the volumes too, they would cover it on the card */}
-      <div className="group-data-dragging/item:shadow-shadow-color/shadow-opacity flex w-full flex-1 flex-col rounded-xl group-data-dragging/item:shadow-xl">
+      <div
+        data-card-shadow
+        className="group-data-dragging/item:shadow-shadow-color/shadow-opacity flex w-full flex-1 flex-col rounded-xl group-data-dragging/item:shadow-xl"
+      >
         <ServicePanelOrPlaceholder {...panelProps}>
           {isPlaceholder ? (
             <Button variant="card" className={cardClassName}>
