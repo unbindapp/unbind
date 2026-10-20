@@ -85,6 +85,7 @@ export default function TeamIconCard({ className }: TProps) {
     >
       <SettingsCard
         className="group-data-dragging/card:border-foreground/30 transition"
+        classNameContent="py-3 sm:py-4.25"
         footer={
           <>
             {error && <ErrorLine message={error} />}
