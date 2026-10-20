@@ -114,6 +114,7 @@
   --animate-loading-bar: loading-bar 45s linear infinite;
   --animate-line-in: line-in 0.01s step-end forwards;
   --animate-card-grab: card-grab 150ms ease-out both;
+  --animate-card-shadow-in: card-shadow-in 150ms ease-out;
   --animate-ping-pong: ping-pong 2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
   --animate-ping-pong-long: ping-pong 4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
 
@@ -244,7 +245,12 @@
       transform: scale(1);
     }
     100% {
-      transform: scale(0.97);
+      transform: scale(0.96);
+    }
+  }
+  @keyframes card-shadow-in {
+    0% {
+      box-shadow: none;
     }
   }
   @keyframes ping-pong {

@@ -82,7 +82,10 @@ export default function ServiceGroupCard({
         className,
       )}
     >
-      <div className="group-data-dragging/group:bg-card-hover group-data-dragging/group:shadow-shadow-color/shadow-opacity relative flex w-full flex-col rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_var(--opacity-8-10),transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_var(--opacity-8-10),transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px] group-data-dragging/group:pointer-events-none group-data-dragging/group:shadow-xl">
+      <div
+        data-card-shadow
+        className="group-data-dragging/group:bg-card-hover group-data-dragging/group:shadow-shadow-color/shadow-opacity relative flex w-full flex-col rounded-xl border bg-[radial-gradient(color-mix(in_oklab,var(--border)_var(--opacity-8-10),transparent)_1px,transparent_1px),radial-gradient(color-mix(in_oklab,var(--border)_var(--opacity-8-10),transparent)_1px,transparent_1px)] bg-size-[10px_10px] bg-position-[0px_0px,5px_5px] group-data-dragging/group:pointer-events-none group-data-dragging/group:shadow-xl"
+      >
         <NewEntityIndicator id={groupObject.group.id} />
         <div className="flex w-full items-center gap-2 px-4 pt-2.5 pr-10 pb-1.5 transition-opacity duration-(--skeleton-smooth-lead-in) group-data-deleting/group:pointer-events-none group-data-deleting/group:opacity-(--skeleton-smooth-weaker-opacity)">
           <TitleButton

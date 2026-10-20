@@ -51,7 +51,7 @@ class CardKeyboardSensor extends KeyboardSensor {
 export function useCardSensors() {
   return useSensors(
     useSensor(CardMouseSensor, {
-      activationConstraint: { distance: 6, delay: 300, tolerance: Infinity },
+      activationConstraint: { distance: 6, delay: 250, tolerance: Infinity },
     }),
     useSensor(CardTouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
     useSensor(CardKeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates, keyboardCodes }),
@@ -80,13 +80,15 @@ const translate = (x: number, y: number) => `translate3d(${x}px, ${y}px, 0)`;
 
 // The picked up card shrinks a little, and grows back as it lands. It grows back
 // even when it lands where it was picked up, which dnd-kit's own drop would skip.
+// Its shadow fades out and the spot it lands on stays outlined until it gets there.
 const dropCard: DropAnimationFunction = (params) => {
   const { active, dragOverlay, transform } = params;
   const card = dragOverlay.node.firstElementChild;
+  const shadow = dragOverlay.node.querySelector("[data-card-shadow]");
   const x = transform.x - (dragOverlay.rect.left - active.rect.left);
   const y = transform.y - (dragOverlay.rect.top - active.rect.top);
   const { duration, easing } = defaultDropAnimation;
-  const cleanup = defaultDropAnimation.sideEffects?.(params);
+  active.node.dataset.dragSource = "";
   const animations = [
     dragOverlay.node.animate(
       { transform: [translate(transform.x, transform.y), translate(x, y)] },
@@ -96,11 +98,20 @@ const dropCard: DropAnimationFunction = (params) => {
       { transform: [getComputedStyle(card).transform, "none"] },
       { duration, easing, fill: "forwards" },
     ),
+    shadow?.animate(
+      { boxShadow: [getComputedStyle(shadow).boxShadow, "none"] },
+      { duration, easing, fill: "forwards" },
+    ),
   ];
-  return Promise.allSettled(animations.map((a) => a?.finished)).then(() => cleanup?.());
+  return Promise.allSettled(animations.map((a) => a?.finished)).then(() => {
+    delete active.node.dataset.dragSource;
+  });
 };
 
-export const cardOverlayProps = { className: "*:animate-card-grab", dropAnimation: dropCard };
+export const cardOverlayProps = {
+  className: "*:animate-card-grab **:data-card-shadow:animate-card-shadow-in",
+  dropAnimation: dropCard,
+};
 
 // dnd-kit measures the overlay's card, so it has to see past the shrink to place the drop
 export const cardMeasuring: MeasuringConfiguration = {
