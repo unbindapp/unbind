@@ -118,7 +118,7 @@ export default function TeamIconCard({ className }: TProps) {
             <BlockItemContent>
               <div className="flex w-full items-center gap-4">
                 <BlockItemHeader type="column" className="min-w-0 flex-1 pb-0">
-                  <BlockItemTitle>Avatar</BlockItemTitle>
+                  <BlockItemTitle>Team Avatar</BlockItemTitle>
                   <BlockItemDescription>
                     {canEdit
                       ? "Shown next to the team's name. Click it to upload a new one."
