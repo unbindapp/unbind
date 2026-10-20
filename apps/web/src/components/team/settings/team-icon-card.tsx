@@ -90,17 +90,18 @@ export default function TeamIconCard({ className }: TProps) {
           <>
             {error && <ErrorLine message={error} />}
             <SettingsCardFooterRow hint="SVG, PNG or JPEG, up to 512 KB">
-              {canEdit && hasIcon && (
+              {canEdit && (
                 <Button
                   type="button"
                   variant="ghost-destructive"
-                  disabled={isBusy}
+                  disabled={isBusy || !hasIcon}
+                  aria-hidden={!hasIcon || undefined}
                   onClick={() => {
                     setFileError(null);
                     upload.reset();
                     remove.mutate({ teamId });
                   }}
-                  className="gap-1.5 px-4"
+                  className={cn("gap-1.5 px-4", !hasIcon && "disabled:opacity-0")}
                 >
                   {remove.isPending ? (
                     <LoaderIcon className="-ml-0.5 size-4.5 shrink-0 animate-spin" />
