@@ -33,6 +33,7 @@ const (
 	registryConfigPath = registryConfigDir + "/" + registryConfigKey
 	registryRepoDir    = registryDataDir + "/docker/registry/v2/repositories"
 	tagLinkMarker      = "/_manifests/tags/"
+	revisionLinkMarker = "/_manifests/revisions/sha256/"
 
 	buildCacheSuffix   = "-buildcache"
 	staleUploadMinutes = 1440
@@ -45,6 +46,7 @@ const (
 	freshTagGrace = time.Hour
 )
 
+// A manifest in a repository. Tag is empty for one that no tag points at anymore, like a build cache the next build overwrote.
 type TagInfo struct {
 	Repo    string
 	Tag     string
@@ -56,7 +58,14 @@ type TagInfo struct {
 }
 
 func (self TagInfo) Key() string {
+	if self.Untagged() {
+		return self.ManifestKey()
+	}
 	return self.Repo + ":" + self.Tag
+}
+
+func (self TagInfo) Untagged() bool {
+	return self.Tag == ""
 }
 
 func (self TagInfo) ManifestKey() string {
@@ -149,13 +158,17 @@ func (self *Cleaner) Run(ctx context.Context, thresholdBytes int64, pruneAll boo
 		log.Warnf("registry cleanup: over threshold with nothing prunable, grow the registry volume")
 	}
 
-	deleted := 0
+	deleted, deletedUntagged := 0, 0
 	for _, tag := range plan {
 		if err := self.registry.DeleteManifest(ctx, tag.Repo, tag.Digest); err != nil {
 			log.Warnf("registry cleanup: failed to delete %s: %v", tag.Key(), err)
 			continue
 		}
-		deleted++
+		if tag.Untagged() {
+			deletedUntagged++
+		} else {
+			deleted++
+		}
 		log.Infof("registry cleanup: deleted %s", tag.Key())
 	}
 	for _, child := range orphanedChildren(tags, plan) {
@@ -172,14 +185,15 @@ func (self *Cleaner) Run(ctx context.Context, thresholdBytes int64, pruneAll boo
 	if err != nil {
 		return nil, err
 	}
-	return cleanupResult(used, usedAfter, thresholdBytes, deleted), nil
+	return cleanupResult(used, usedAfter, thresholdBytes, deleted, deletedUntagged), nil
 }
 
-func cleanupResult(usedBefore, usedAfter, thresholdBytes int64, deleted int) *models.RegistryCleanupResult {
+func cleanupResult(usedBefore, usedAfter, thresholdBytes int64, deleted, deletedUntagged int) *models.RegistryCleanupResult {
 	result := &models.RegistryCleanupResult{
-		Outcome:       models.RegistryCleanupCleaned,
-		FreedBytes:    max(usedBefore-usedAfter, 0),
-		DeletedImages: deleted,
+		Outcome:         models.RegistryCleanupCleaned,
+		FreedBytes:      max(usedBefore-usedAfter, 0),
+		DeletedImages:   deleted,
+		DeletedUntagged: deletedUntagged,
 	}
 	if usedAfter >= thresholdBytes {
 		result.Outcome = models.RegistryCleanupOverThreshold
@@ -211,8 +225,11 @@ func planDeletions(tags []TagInfo, inUse map[string]bool, target int64, freshSin
 		candidates = append(candidates, tag)
 	}
 
-	// Oldest first: a cache in use is rewritten by every build, so a stale one sorts ahead of it
+	// Untagged manifests are worthless and go first, the rest oldest first: a cache in use is rewritten by every build, so a stale one sorts ahead of it
 	sort.SliceStable(candidates, func(i, j int) bool {
+		if candidates[i].Untagged() != candidates[j].Untagged() {
+			return candidates[i].Untagged()
+		}
 		return candidates[i].ModTime < candidates[j].ModTime
 	})
 
@@ -220,7 +237,7 @@ func planDeletions(tags []TagInfo, inUse map[string]bool, target int64, freshSin
 	var freed int64
 	planned := map[string]bool{}
 	for _, tag := range candidates {
-		if freed >= target {
+		if freed >= target && !tag.Untagged() {
 			break
 		}
 		// Deletion is by digest, so a manifest a protected tag also points at is off limits
@@ -288,6 +305,10 @@ func protectedTags(tags []TagInfo, inUse map[string]bool, freshSince int64) map[
 	for _, tag := range tags {
 		if inUse[tag.Key()] || inUse[tag.Repo+":"+tag.Digest] || tag.ModTime >= freshSince {
 			protected[tag.Key()] = true
+		}
+		// A push writes the manifest before the tag, so a fresh untagged one may still be getting its tag
+		if tag.Untagged() {
+			continue
 		}
 		key := newestKey{repo: tag.Repo, buildCache: tag.IsBuildCache()}
 		if current, ok := newest[key]; !ok || tag.ModTime > current.ModTime {
@@ -409,31 +430,79 @@ func (self *Cleaner) inventory(ctx context.Context, pod string) ([]TagInfo, erro
 			continue
 		}
 		for _, tag := range tags {
-			manifest, err := self.registry.Manifest(ctx, repo, tag)
+			info, err := self.describe(ctx, repo, tag, tag, modTimes[repo+":"+tag])
 			if err != nil {
-				log.Warnf("registry cleanup: failed to read manifest %s:%s: %v", repo, tag, err)
+				log.Warnf("registry cleanup: %v", err)
 				continue
 			}
-			blobs := map[string]int64{}
-			if err := collectBlobs(ctx, self.registry, repo, tag, blobs, 0); err != nil {
-				log.Warnf("registry cleanup: failed to size %s:%s: %v", repo, tag, err)
-				continue
-			}
-			children := make([]string, 0, len(manifest.Manifests))
-			for _, child := range manifest.Manifests {
-				children = append(children, child.Digest)
-			}
-			inventory = append(inventory, TagInfo{
-				Repo:     repo,
-				Tag:      tag,
-				Digest:   manifest.Digest,
-				Blobs:    blobs,
-				ModTime:  modTimes[repo+":"+tag],
-				Children: children,
-			})
+			inventory = append(inventory, info)
 		}
 	}
+
+	// Overwriting a tag leaves its old manifest in the repository, where only a deletion by digest reaches it
+	revisions, err := self.revisionModTimes(ctx, pod)
+	if err != nil {
+		log.Warnf("registry cleanup: failed to list stored manifests, leaving untagged ones alone: %v", err)
+		return inventory, nil
+	}
+	for _, revision := range untaggedRevisions(revisions, inventory) {
+		info, err := self.describe(ctx, revision.repo, revision.digest, "", revision.modTime)
+		if err != nil {
+			log.Warnf("registry cleanup: %v", err)
+			continue
+		}
+		inventory = append(inventory, info)
+	}
 	return inventory, nil
+}
+
+func (self *Cleaner) describe(ctx context.Context, repo, ref, tag string, modTime int64) (TagInfo, error) {
+	manifest, err := self.registry.Manifest(ctx, repo, ref)
+	if err != nil {
+		return TagInfo{}, fmt.Errorf("failed to read manifest %s/%s: %w", repo, ref, err)
+	}
+	blobs := map[string]int64{}
+	if err := collectBlobs(ctx, self.registry, repo, ref, blobs, 0); err != nil {
+		return TagInfo{}, fmt.Errorf("failed to size %s/%s: %w", repo, ref, err)
+	}
+	children := make([]string, 0, len(manifest.Manifests))
+	for _, child := range manifest.Manifests {
+		children = append(children, child.Digest)
+	}
+	return TagInfo{
+		Repo:     repo,
+		Tag:      tag,
+		Digest:   manifest.Digest,
+		Blobs:    blobs,
+		ModTime:  modTime,
+		Children: children,
+	}, nil
+}
+
+type manifestRevision struct {
+	repo    string
+	digest  string
+	modTime int64
+}
+
+// The children of a tagged index are untagged too, but deleting them breaks the index
+func untaggedRevisions(revisions []manifestRevision, tagged []TagInfo) []manifestRevision {
+	referenced := map[string]bool{}
+	for _, tag := range tagged {
+		referenced[tag.ManifestKey()] = true
+		for _, child := range tag.Children {
+			referenced[tag.Repo+"@"+child] = true
+		}
+	}
+
+	var untagged []manifestRevision
+	for _, revision := range revisions {
+		if referenced[revision.repo+"@"+revision.digest] {
+			continue
+		}
+		untagged = append(untagged, revision)
+	}
+	return untagged
 }
 
 func (self *Cleaner) inUseRefs(ctx context.Context) (map[string]bool, error) {
@@ -569,6 +638,52 @@ func tagKeyFromLinkPath(path string) (string, bool) {
 		return "", false
 	}
 	return repo + ":" + tag, true
+}
+
+func (self *Cleaner) revisionModTimes(ctx context.Context, pod string) ([]manifestRevision, error) {
+	command := fmt.Sprintf(`[ -d %[1]s ] || exit 0; find %[1]s -path '*%[2]s*/link' -exec stat -c '%%Y %%n' {} +`, registryRepoDir, revisionLinkMarker)
+	out, err := self.exec(ctx, pod, []string{"sh", "-c", command})
+	if err != nil {
+		return nil, err
+	}
+	return parseRevisionModTimes(out), nil
+}
+
+func parseRevisionModTimes(output string) []manifestRevision {
+	var revisions []manifestRevision
+	for line := range strings.SplitSeq(output, "\n") {
+		fields := strings.SplitN(strings.TrimSpace(line), " ", 2)
+		if len(fields) != 2 {
+			continue
+		}
+		epoch, err := strconv.ParseInt(fields[0], 10, 64)
+		if err != nil {
+			continue
+		}
+		revision, ok := revisionFromLinkPath(fields[1])
+		if !ok {
+			continue
+		}
+		revision.modTime = epoch
+		revisions = append(revisions, revision)
+	}
+	return revisions
+}
+
+func revisionFromLinkPath(path string) (manifestRevision, bool) {
+	trimmed := strings.TrimPrefix(path, registryRepoDir+"/")
+	if trimmed == path {
+		return manifestRevision{}, false
+	}
+	repo, rest, found := strings.Cut(trimmed, revisionLinkMarker)
+	if !found {
+		return manifestRevision{}, false
+	}
+	hex, rest, found := strings.Cut(rest, "/")
+	if !found || rest != "link" || repo == "" || hex == "" {
+		return manifestRevision{}, false
+	}
+	return manifestRevision{repo: repo, digest: "sha256:" + hex}, true
 }
 
 // Distribution's own purger only drops uploads older than 7 days, too slow for a full volume

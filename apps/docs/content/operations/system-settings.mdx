@@ -39,7 +39,7 @@ The bar shows how full the volume is, with a mark at the cleanup threshold. Usag
 
 ### Cleanup
 
-Cleanup runs every hour. When usage is over the threshold, it deletes the oldest images until usage is under it again. It never deletes:
+Cleanup runs every hour. When usage is over the threshold, it first deletes what nothing points at anymore: every build overwrites the build cache of the one before it, and the old cache stays on the volume until cleanup removes it. If usage is still over the threshold, it deletes the oldest images until usage is under it again. It never deletes:
 
 - Images that are deployed
 - Images pushed in the last hour
@@ -47,7 +47,7 @@ Cleanup runs every hour. When usage is over the threshold, it deletes the oldest
 
 Cleanup waits until no build is running before it deletes anything. Builds never wait for cleanup. If a build starts while cleanup is deleting and part of its image gets removed, the build notices and pushes the image again.
 
-The page shows the last run: how much space it freed and how many images it deleted. **Still over the threshold** means everything left is protected, so grow the volume.
+The page shows the last run: how much space it freed and how many images and overwritten caches it deleted. **Still over the threshold** means everything left is protected, so grow the volume.
 
 **Clean Up Now** runs cleanup right away and deletes every image it is allowed to delete, even when usage is under the threshold. Redeploying a deployment whose image was deleted builds it again.
 
