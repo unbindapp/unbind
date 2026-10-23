@@ -563,5 +563,10 @@
     "version": "v0.1.112",
     "summary": "The git commit and branch available to builds and running services, clearing a service's domains and ports in one update, and no stray domains on cron services.",
     "breaking": false
+  },
+  "v0.1.113": {
+    "version": "v0.1.113",
+    "summary": "Registry cleanup deletes overwritten build caches that filled the volume, card dragging that picks up on a short hold with faded shadows and a lasting drop outline, team avatar card polish, and muted sort menu items.",
+    "breaking": false
   }
 }
