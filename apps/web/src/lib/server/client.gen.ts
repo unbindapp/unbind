@@ -2662,6 +2662,7 @@ export const ReferenceableVariablesResponseBodySchema = z
 export const RegistryCleanupResultSchema = z
   .object({
     deleted_images: z.number(),
+    deleted_untagged: z.number(), // Manifests no tag pointed at anymore, mostly build caches the next build overwrote
     error: z.string().optional(),
     freed_bytes: z.number(),
     outcome: z.enum(['under_threshold', 'cleaned', 'over_threshold', 'skipped']).optional(), // under_threshold: nothing to do. cleaned: usage is under the threshold. over_threshold: usage is still over the threshold because everything left is protected. skipped: builds or another cleanup kept running

@@ -39,6 +39,7 @@ import type {
   RegistryCacheCleanupRun,
   RegistryCacheConfig,
   RegistryCacheStats,
+  RegistryCleanupResult,
 } from "@/lib/server/client.gen";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -292,7 +293,7 @@ function describeCleanup(run: RegistryCacheCleanupRun): {
 
   const result = run.result;
   const freed = result ? `Freed ${formatBytes(result.freed_bytes)}` : "";
-  const deleted = result ? pluralize(result.deleted_images, "image") : "";
+  const deleted = result ? describeDeleted(result) : "";
 
   switch (result?.outcome) {
     case "under_threshold":
@@ -317,6 +318,14 @@ function describeCleanup(run: RegistryCacheCleanupRun): {
       };
   }
   return { Icon: CircleCheckIcon, tone: "success", text: "Finished" };
+}
+
+function describeDeleted(result: RegistryCleanupResult) {
+  const images = pluralize(result.deleted_images, "image");
+  if (!result.deleted_untagged) return images;
+  const caches = pluralize(result.deleted_untagged, "overwritten cache");
+  if (!result.deleted_images) return caches;
+  return `${images} and ${caches}`;
 }
 
 function LastCleanupLine({

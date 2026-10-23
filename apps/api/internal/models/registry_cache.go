@@ -13,10 +13,11 @@ const (
 
 // RegistryCleanupResult is what a cleanup run reports when it exits.
 type RegistryCleanupResult struct {
-	Outcome       RegistryCleanupOutcome `json:"outcome,omitempty" required:"false" enum:"under_threshold,cleaned,over_threshold,skipped" doc:"under_threshold: nothing to do. cleaned: usage is under the threshold. over_threshold: usage is still over the threshold because everything left is protected. skipped: builds or another cleanup kept running"`
-	FreedBytes    int64                  `json:"freed_bytes"`
-	DeletedImages int                    `json:"deleted_images"`
-	Error         string                 `json:"error,omitempty" required:"false"`
+	Outcome         RegistryCleanupOutcome `json:"outcome,omitempty" required:"false" enum:"under_threshold,cleaned,over_threshold,skipped" doc:"under_threshold: nothing to do. cleaned: usage is under the threshold. over_threshold: usage is still over the threshold because everything left is protected. skipped: builds or another cleanup kept running"`
+	FreedBytes      int64                  `json:"freed_bytes"`
+	DeletedImages   int                    `json:"deleted_images"`
+	DeletedUntagged int                    `json:"deleted_untagged" doc:"Manifests no tag pointed at anymore, mostly build caches the next build overwrote"`
+	Error           string                 `json:"error,omitempty" required:"false"`
 }
 
 // RegistryCacheCleanupRun summarizes the most recent cleanup job execution.

@@ -287,17 +287,110 @@ func TestPlanDeletionsPruneAllKeepsProtectedTags(t *testing.T) {
 }
 
 func TestCleanupResultOutcome(t *testing.T) {
-	cleaned := cleanupResult(20*gib, 10*gib, 16*gib, 4)
+	cleaned := cleanupResult(20*gib, 10*gib, 16*gib, 4, 7)
 	assert.Equal(t, models.RegistryCleanupCleaned, cleaned.Outcome)
 	assert.Equal(t, 10*gib, cleaned.FreedBytes)
 	assert.Equal(t, 4, cleaned.DeletedImages)
+	assert.Equal(t, 7, cleaned.DeletedUntagged)
 
-	stuck := cleanupResult(20*gib, 20*gib, 16*gib, 0)
+	stuck := cleanupResult(20*gib, 20*gib, 16*gib, 0, 0)
 	assert.Equal(t, models.RegistryCleanupOverThreshold, stuck.Outcome)
 	assert.Zero(t, stuck.FreedBytes)
 
-	grew := cleanupResult(10*gib, 11*gib, 16*gib, 0)
+	grew := cleanupResult(10*gib, 11*gib, 16*gib, 0, 0)
 	assert.Zero(t, grew.FreedBytes)
+}
+
+func untagged(repo, digest string, modTime int64, blobs map[string]int64) TagInfo {
+	return TagInfo{Repo: repo, Digest: "sha256:" + digest, Blobs: blobs, ModTime: modTime}
+}
+
+// An overwritten build cache keeps its blobs on the volume although no tag reaches it anymore
+func TestPlanDeletionsDeletesEveryUntaggedManifestFirst(t *testing.T) {
+	tags := []TagInfo{
+		tag("app", "newest", 300, map[string]int64{"n": 100}),
+		tag("app", "old", 100, map[string]int64{"o": 100}),
+		tag("app", "current-buildcache", 300, map[string]int64{"c": 100}),
+		untagged("app", "cache-1", 200, map[string]int64{"c1": 100}),
+		untagged("app", "cache-2", 250, map[string]int64{"c2": 100}),
+	}
+
+	plan := planDeletions(tags, nil, 50, noFreshTags)
+
+	assert.Equal(t, []string{"app@sha256:cache-1", "app@sha256:cache-2"}, keys(plan))
+}
+
+func TestPlanDeletionsUntaggedBeforeTaggedImages(t *testing.T) {
+	tags := []TagInfo{
+		tag("app", "newest", 300, map[string]int64{"n": 100}),
+		tag("app", "old", 100, map[string]int64{"o": 100}),
+		untagged("app", "cache-1", 200, map[string]int64{"c1": 100}),
+	}
+
+	plan := planDeletions(tags, nil, 150, noFreshTags)
+
+	assert.Equal(t, []string{"app@sha256:cache-1", "app:old"}, keys(plan))
+}
+
+func TestPlanDeletionsKeepsFreshUntaggedManifests(t *testing.T) {
+	tags := []TagInfo{
+		tag("app", "newest", 300, map[string]int64{"n": 100}),
+		untagged("app", "being-tagged", 290, map[string]int64{"b": 100}),
+		untagged("app", "stale", 100, map[string]int64{"s": 100}),
+	}
+
+	plan := planDeletions(tags, nil, math.MaxInt64, 280)
+
+	assert.Equal(t, []string{"app@sha256:stale"}, keys(plan))
+}
+
+func TestPlanDeletionsUntaggedNeverCountsAsNewest(t *testing.T) {
+	tags := []TagInfo{
+		tag("app", "image", 100, map[string]int64{"i": 100}),
+		untagged("app", "newer-untagged", 200, map[string]int64{"u": 100}),
+	}
+
+	plan := planDeletions(tags, nil, math.MaxInt64, noFreshTags)
+
+	assert.Equal(t, []string{"app@sha256:newer-untagged"}, keys(plan))
+}
+
+func TestUntaggedRevisions(t *testing.T) {
+	tagged := []TagInfo{
+		{Repo: "app", Tag: "v1", Digest: "sha256:index", Children: []string{"sha256:amd64", "sha256:attest"}},
+		{Repo: "app", Tag: "v1-buildcache", Digest: "sha256:cache"},
+	}
+	revisions := []manifestRevision{
+		{repo: "app", digest: "sha256:index", modTime: 1},
+		{repo: "app", digest: "sha256:amd64", modTime: 1},
+		{repo: "app", digest: "sha256:attest", modTime: 1},
+		{repo: "app", digest: "sha256:cache", modTime: 1},
+		{repo: "app", digest: "sha256:old-cache", modTime: 2},
+		{repo: "other", digest: "sha256:cache", modTime: 3},
+	}
+
+	got := untaggedRevisions(revisions, tagged)
+
+	assert.Equal(t, []manifestRevision{
+		{repo: "app", digest: "sha256:old-cache", modTime: 2},
+		{repo: "other", digest: "sha256:cache", modTime: 3},
+	}, got)
+}
+
+func TestParseRevisionModTimes(t *testing.T) {
+	output := `1788280993 /var/lib/registry/docker/registry/v2/repositories/group/sub/_manifests/revisions/sha256/aaaa/link
+1788280994 /var/lib/registry/docker/registry/v2/repositories/tezara/_manifests/revisions/sha256/bbbb/link
+1788280995 /var/lib/registry/docker/registry/v2/repositories/tezara/_manifests/revisions/sha256/cccc/signatures/sha256/dddd/link
+1788280996 /var/lib/registry/docker/registry/v2/repositories/tezara/_manifests/tags/latest/current/link
+garbage line
+`
+
+	got := parseRevisionModTimes(output)
+
+	assert.Equal(t, []manifestRevision{
+		{repo: "group/sub", digest: "sha256:aaaa", modTime: 1788280993},
+		{repo: "tezara", digest: "sha256:bbbb", modTime: 1788280994},
+	}, got)
 }
 
 func cleanupJob(name string, created int64, finished bool) batchv1.Job {
