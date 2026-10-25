@@ -107,7 +107,7 @@ function SortDropdown({
                   value={s.value}
                   hideIndicator
                   closeOnClick
-                  className="group/item text-muted-foreground data-checked:text-foreground data-highlighted:text-foreground gap-2.5 rounded-md px-3 py-2.5 text-base leading-tight font-medium"
+                  className="group/item gap-2.5 rounded-md px-3 py-2.5 text-base leading-tight font-medium"
                 >
                   <p className="min-w-0 flex-1">{s.label}</p>
                   <CheckIcon className="size-4.5 shrink-0 opacity-0 group-data-checked/item:opacity-100" />
