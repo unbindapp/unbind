@@ -568,5 +568,10 @@
     "version": "v0.1.113",
     "summary": "Registry cleanup deletes overwritten build caches that filled the volume, card dragging that picks up on a short hold with faded shadows and a lasting drop outline, team avatar card polish, and muted sort menu items.",
     "breaking": false
+  },
+  "v0.1.114": {
+    "version": "v0.1.114",
+    "summary": "Registry cleanup keeps images used by cron jobs and stopped services, tighter search row spacing, and sort options no longer fade when unselected.",
+    "breaking": false
   }
 }
