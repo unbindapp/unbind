@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/unbindapp/unbind-api/internal/models"
+	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -271,6 +272,59 @@ func TestInUseRefsCollectsEveryContainer(t *testing.T) {
 	assert.True(t, refs["tezara:init-tag"])
 	assert.True(t, refs["tezara:main-tag"])
 	assert.True(t, refs["tezara:status-tag"])
+}
+
+func TestInUseRefsCollectsWorkloadsWithoutPods(t *testing.T) {
+	podSpec := func(image string) corev1.PodTemplateSpec {
+		return corev1.PodTemplateSpec{Spec: corev1.PodSpec{Containers: []corev1.Container{{Image: "docker-registry.unbind-system:5000/" + image}}}}
+	}
+	stopped := int32(0)
+	cleaner := &Cleaner{namespace: "unbind-system", clientset: k8sfake.NewClientset(
+		&appsv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{Name: "stopped", Namespace: "team"},
+			Spec:       appsv1.DeploymentSpec{Replicas: &stopped, Template: podSpec("web:stopped-tag")},
+		},
+		&appsv1.StatefulSet{
+			ObjectMeta: metav1.ObjectMeta{Name: "db", Namespace: "team"},
+			Spec:       appsv1.StatefulSetSpec{Template: podSpec("db:statefulset-tag")},
+		},
+		&appsv1.DaemonSet{
+			ObjectMeta: metav1.ObjectMeta{Name: "agent", Namespace: "team"},
+			Spec:       appsv1.DaemonSetSpec{Template: podSpec("agent:daemonset-tag")},
+		},
+		&batchv1.CronJob{
+			ObjectMeta: metav1.ObjectMeta{Name: "weekly", Namespace: "team"},
+			Spec: batchv1.CronJobSpec{
+				Schedule:    "0 4 * * 0",
+				JobTemplate: batchv1.JobTemplateSpec{Spec: batchv1.JobSpec{Template: podSpec("cleaner:cron-tag")}},
+			},
+		},
+		&batchv1.Job{
+			ObjectMeta: metav1.ObjectMeta{Name: "once", Namespace: "team"},
+			Spec:       batchv1.JobSpec{Template: podSpec("migrate:job-tag")},
+		},
+	)}
+
+	refs, err := cleaner.inUseRefs(context.Background())
+	require.NoError(t, err)
+
+	assert.True(t, refs["web:stopped-tag"])
+	assert.True(t, refs["db:statefulset-tag"])
+	assert.True(t, refs["agent:daemonset-tag"])
+	assert.True(t, refs["cleaner:cron-tag"])
+	assert.True(t, refs["migrate:job-tag"])
+}
+
+func TestPlanDeletionsKeepsImageOfCronJobBetweenRuns(t *testing.T) {
+	tags := []TagInfo{
+		tag("wban-backend", "old-cron", 100, map[string]int64{"a": gib}),
+		tag("wban-backend", "current", 200, map[string]int64{"b": gib}),
+	}
+	inUse := map[string]bool{"wban-backend:old-cron": true}
+
+	plan := planDeletions(tags, inUse, math.MaxInt64, noFreshTags)
+
+	assert.Empty(t, keys(plan))
 }
 
 func TestPlanDeletionsPruneAllKeepsProtectedTags(t *testing.T) {

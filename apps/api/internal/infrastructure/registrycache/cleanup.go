@@ -505,29 +505,72 @@ func untaggedRevisions(revisions []manifestRevision, tagged []TagInfo) []manifes
 	return untagged
 }
 
+// Workload templates count too: a CronJob between runs or a stopped service has no pod but still needs its image
 func (self *Cleaner) inUseRefs(ctx context.Context) (map[string]bool, error) {
-	pods, err := self.clientset.CoreV1().Pods("").List(ctx, metav1.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
 	refs := map[string]bool{}
 	add := func(image string) {
 		if key, ok := imageRefKey(image); ok {
 			refs[key] = true
 		}
 	}
+	addSpec := func(spec corev1.PodSpec) {
+		for _, container := range spec.InitContainers {
+			add(container.Image)
+		}
+		for _, container := range spec.Containers {
+			add(container.Image)
+		}
+	}
 
+	pods, err := self.clientset.CoreV1().Pods("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list pods: %w", err)
+	}
 	for _, pod := range pods.Items {
-		for _, container := range pod.Spec.InitContainers {
-			add(container.Image)
-		}
-		for _, container := range pod.Spec.Containers {
-			add(container.Image)
-		}
+		addSpec(pod.Spec)
 		for _, status := range pod.Status.ContainerStatuses {
 			add(status.Image)
 		}
+	}
+
+	deployments, err := self.clientset.AppsV1().Deployments("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list deployments: %w", err)
+	}
+	for _, deployment := range deployments.Items {
+		addSpec(deployment.Spec.Template.Spec)
+	}
+
+	statefulSets, err := self.clientset.AppsV1().StatefulSets("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list statefulsets: %w", err)
+	}
+	for _, statefulSet := range statefulSets.Items {
+		addSpec(statefulSet.Spec.Template.Spec)
+	}
+
+	daemonSets, err := self.clientset.AppsV1().DaemonSets("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list daemonsets: %w", err)
+	}
+	for _, daemonSet := range daemonSets.Items {
+		addSpec(daemonSet.Spec.Template.Spec)
+	}
+
+	cronJobs, err := self.clientset.BatchV1().CronJobs("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list cronjobs: %w", err)
+	}
+	for _, cronJob := range cronJobs.Items {
+		addSpec(cronJob.Spec.JobTemplate.Spec.Template.Spec)
+	}
+
+	jobs, err := self.clientset.BatchV1().Jobs("").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list jobs: %w", err)
+	}
+	for _, job := range jobs.Items {
+		addSpec(job.Spec.Template.Spec)
 	}
 	return refs, nil
 }

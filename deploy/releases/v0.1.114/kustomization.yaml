@@ -1,0 +1,3 @@
+# Registry cleanup ClusterRole that reads workloads, so images of cron jobs and stopped services stay protected
+resources:
+  - rbac.yaml

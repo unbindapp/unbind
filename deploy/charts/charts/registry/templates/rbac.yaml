@@ -35,7 +35,7 @@ roleRef:
   name: registry-cleanup-role
   apiGroup: rbac.authorization.k8s.io
 ---
-# Cluster-wide pod read so cleanup knows which images are deployed
+# Cluster-wide pod and workload read so cleanup knows which images are deployed
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -44,6 +44,12 @@ rules:
   - apiGroups: [""]
     resources: ["pods"]
     verbs: ["get", "list"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets"]
+    verbs: ["list"]
+  - apiGroups: ["batch"]
+    resources: ["cronjobs", "jobs"]
+    verbs: ["list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

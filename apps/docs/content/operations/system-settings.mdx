@@ -41,7 +41,7 @@ The bar shows how full the volume is, with a mark at the cleanup threshold. Usag
 
 Cleanup runs every hour. When usage is over the threshold, it first deletes what nothing points at anymore: every build overwrites the build cache of the one before it, and the old cache stays on the volume until cleanup removes it. If usage is still over the threshold, it deletes the oldest images until usage is under it again. It never deletes:
 
-- Images that are deployed
+- Images that are deployed, including stopped services and cron jobs between runs
 - Images pushed in the last hour
 - The newest image and the newest build cache of each repository
 
