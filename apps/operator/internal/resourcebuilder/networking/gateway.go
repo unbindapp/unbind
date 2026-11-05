@@ -100,8 +100,8 @@ func (p gatewayProvider) BuildRoutes(in RouteInput) ([]client.Object, error) {
 
 	// Raw L4 ports: one TCP/UDP listener + matching route per port.
 	for _, port := range l4Ports {
-		listenerName := gwapiv1.SectionName(fmt.Sprintf("l4-%d", *port.NodePort))
 		proto := portProtocol(port)
+		listenerName := l4ListenerName(port, proto)
 		listenerProto := gwapiv1.TCPProtocolType
 		routeKind := gwapiv1.Kind("TCPRoute")
 		if proto == "UDP" {
@@ -232,6 +232,14 @@ func (p gatewayProvider) canRoute(host v1.HostSpec) bool {
 
 func hostListenerName(host v1.HostSpec) gwapiv1.SectionName {
 	return gwapiv1.SectionName("https-" + hostnameKey(host))
+}
+
+// TCP listeners keep the name they had before UDP could share their port
+func l4ListenerName(port v1.PortSpec, proto string) gwapiv1.SectionName {
+	if proto == "UDP" {
+		return gwapiv1.SectionName(fmt.Sprintf("l4-udp-%d", *port.NodePort))
+	}
+	return gwapiv1.SectionName(fmt.Sprintf("l4-%d", *port.NodePort))
 }
 
 func (p gatewayProvider) parentRef(gateway string, section *gwapiv1.SectionName) gwapiv1.ParentReference {
