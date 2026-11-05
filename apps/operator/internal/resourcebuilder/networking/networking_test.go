@@ -371,6 +371,45 @@ func TestGatewayL4UDP(t *testing.T) {
 	}
 }
 
+func TestGatewayL4TCPAndUDPOnSamePort(t *testing.T) {
+	svc := setName(&v1.Service{
+		Spec: v1.ServiceSpec{
+			Config: v1.ServiceConfigSpec{
+				Ports: []v1.PortSpec{
+					{Port: 8388, NodePort: ptr.To(int32(8388)), Protocol: ptr.To(corev1.ProtocolTCP)},
+					{Port: 8388, NodePort: ptr.To(int32(8388)), Protocol: ptr.To(corev1.ProtocolUDP)},
+				},
+			},
+		},
+	}, "ss")
+
+	objs, err := New(ProviderGateway, Config{GatewayClassName: "unbind"}).BuildRoutes(RouteInput{Service: svc})
+	if err != nil {
+		t.Fatalf("BuildRoutes: %v", err)
+	}
+	listeners := map[gwapiv1.SectionName]gwapiv1.ProtocolType{}
+	for _, l := range findGateway(objs).Spec.Listeners {
+		listeners[l.Name] = l.Protocol
+	}
+	want := map[gwapiv1.SectionName]gwapiv1.ProtocolType{"l4-8388": gwapiv1.TCPProtocolType, "l4-udp-8388": gwapiv1.UDPProtocolType}
+	if !maps.Equal(listeners, want) {
+		t.Fatalf("listeners = %v, want %v", listeners, want)
+	}
+
+	sections := map[string]gwapiv1.SectionName{}
+	for _, o := range objs {
+		switch r := o.(type) {
+		case *gwapiv1a2.TCPRoute:
+			sections["TCPRoute"] = *r.Spec.ParentRefs[0].SectionName
+		case *gwapiv1a2.UDPRoute:
+			sections["UDPRoute"] = *r.Spec.ParentRefs[0].SectionName
+		}
+	}
+	if sections["TCPRoute"] != "l4-8388" || sections["UDPRoute"] != "l4-udp-8388" {
+		t.Errorf("route sections = %v, want TCPRoute on l4-8388 and UDPRoute on l4-udp-8388", sections)
+	}
+}
+
 func wildcardService() *v1.Service {
 	svc := setName(publicService(), "web")
 	svc.Spec.Config.Hosts = append(svc.Spec.Config.Hosts, v1.HostSpec{Host: "*.example.com", Path: "/"})
