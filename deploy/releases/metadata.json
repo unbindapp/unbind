@@ -573,5 +573,10 @@
     "version": "v0.1.114",
     "summary": "Registry cleanup keeps images used by cron jobs and stopped services, tighter search row spacing, and sort options no longer fade when unselected.",
     "breaking": false
+  },
+  "v0.1.115": {
+    "version": "v0.1.115",
+    "summary": "Services can expose TCP and UDP on the same port number.",
+    "breaking": false
   }
 }
